@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+require("source-map-support/register");
 
 const IPC = require("node-ipc").IPC;
 const Ganache = require("ganache-core/public-exports");
@@ -131,14 +132,14 @@ class Supervisor {
     const basename = `${ipc.config.appspace}${ipc.config.id}`;
     const servePath = path.join(dirname, basename);
 
-    ipc.serve(servePath, function() {
+    ipc.serve(servePath, function () {
       self.handle("start", arguments);
 
-      ipc.server.on("connect", function() {
+      ipc.server.on("connect", function () {
         self.handle("connect", arguments);
       });
 
-      ipc.server.on("socket.disconnected", function() {
+      ipc.server.on("socket.disconnected", function () {
         self.handle("disconnect", arguments);
       });
     });

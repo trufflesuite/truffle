@@ -19,17 +19,14 @@ before_install:
 matrix:
   fast_finish: true
   include:
-    - node_js: 8
+    - node_js: 10
       env: FABRICEVM=true
-    - node_js: 8
+    - node_js: 10
       env: COVERAGE=true
-    - if: |
-        branch = develop AND \
-        type = push
-      node_js: 10
-      env: COLONY=true
   allow_failures:
-    - node_js: 8
+    - node_js: 10
+      env: FABRICEVM=true
+    - node_js: 10
       env: COVERAGE=true
 
 install:

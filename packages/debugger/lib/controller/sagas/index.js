@@ -9,6 +9,7 @@ import * as trace from "lib/trace/sagas";
 import * as data from "lib/data/sagas";
 import * as evm from "lib/evm/sagas";
 import * as solidity from "lib/solidity/sagas";
+import * as stacktrace from "lib/stacktrace/sagas";
 
 import * as actions from "../actions";
 
@@ -67,22 +68,23 @@ function* advance(action) {
  * Note: It might take multiple instructions to express the same section of code.
  * "Stepping", then, is stepping to the next logical item, not stepping to the next
  * instruction. See advance() if you'd like to advance by one instruction.
+ *
+ * Note that if you are not in an internal source, this function will not stop in one
+ * (unless it hits the end of the trace); you will need to use advance() to get into
+ * one.  However, if you are already in an internal source, this function will not
+ * automatically step all the way out of it.
  */
 function* stepNext() {
-  const startingRange = yield select(controller.current.location.sourceRange);
+  const starting = yield select(controller.current.location);
 
-  var upcoming, finished;
+  let upcoming, finished;
 
   do {
     // advance at least once step
     yield* advance();
 
     // and check the next source range
-    try {
-      upcoming = yield select(controller.current.location);
-    } catch (e) {
-      upcoming = null;
-    }
+    upcoming = yield select(controller.current.location);
 
     finished = yield select(controller.current.trace.finished);
 
@@ -90,10 +92,13 @@ function* stepNext() {
   } while (
     !finished &&
     (!upcoming ||
+      (upcoming.source.internal && !starting.source.internal) ||
       !upcoming.node ||
       isDeliberatelySkippedNodeType(upcoming.node) ||
-      (upcoming.sourceRange.start == startingRange.start &&
-        upcoming.sourceRange.length == startingRange.length))
+      (upcoming.sourceRange.start === starting.sourceRange.start &&
+        upcoming.sourceRange.length === starting.sourceRange.length &&
+        upcoming.source.id === starting.source.id &&
+        upcoming.source.compilationId === starting.source.compilationId))
   );
 }
 
@@ -110,38 +115,35 @@ function* stepNext() {
  * step.
  */
 function* stepInto() {
-  if (yield select(controller.current.willJump)) {
-    yield* stepNext();
-    return;
-  }
-
-  if (yield select(controller.current.location.isMultiline)) {
-    yield* stepOver();
-    return;
-  }
-
   const startingDepth = yield select(controller.current.functionDepth);
-  const startingRange = yield select(controller.current.location.sourceRange);
-  var currentDepth;
-  var currentRange;
-  var finished;
+  const startingLocation = yield select(controller.current.location);
+  debug("startingDepth: %d", startingDepth);
+  debug("starting source range: %O", (startingLocation || {}).sourceRange);
+  let currentDepth;
+  let currentLocation;
+  let finished;
 
   do {
     yield* stepNext();
 
     currentDepth = yield select(controller.current.functionDepth);
-    currentRange = yield select(controller.current.location.sourceRange);
+    currentLocation = yield select(controller.current.location);
     finished = yield select(controller.current.trace.finished);
+    debug("currentDepth: %d", currentDepth);
+    debug("current source range: %O", (currentLocation || {}).sourceRange);
+    debug("finished: %o", finished);
   } while (
     //we aren't finished,
     !finished &&
     // the function stack has not increased,
     currentDepth <= startingDepth &&
-    // the current source range begins on or after the starting range,
-    currentRange.start >= startingRange.start &&
-    // and the current range ends on or before the starting range ends
-    currentRange.start + currentRange.length <=
-      startingRange.start + startingRange.length
+    // we haven't changed files,
+    currentLocation.source.compilationId ===
+      startingLocation.source.compilationId &&
+    currentLocation.source.id === startingLocation.source.id &&
+    //and we haven't changed lines
+    currentLocation.sourceRange.lines.start.line ===
+      startingLocation.sourceRange.lines.start.line
   );
 }
 
@@ -177,16 +179,16 @@ function* stepOut() {
  */
 function* stepOver() {
   const startingDepth = yield select(controller.current.functionDepth);
-  const startingRange = yield select(controller.current.location.sourceRange);
+  const startingLocation = yield select(controller.current.location);
   var currentDepth;
-  var currentRange;
+  var currentLocation;
   var finished;
 
   do {
     yield* stepNext();
 
     currentDepth = yield select(controller.current.functionDepth);
-    currentRange = yield select(controller.current.location.sourceRange);
+    currentLocation = yield select(controller.current.location);
     finished = yield select(controller.current.trace.finished);
   } while (
     // keep stepping provided:
@@ -194,12 +196,16 @@ function* stepOver() {
     // we haven't finished
     !finished &&
     // we haven't jumped out
-    !(currentDepth < startingDepth) &&
+    currentDepth >= startingDepth &&
     // either: function depth is greater than starting (ignore function calls)
     // or, if we're at the same depth, keep stepping until we're on a new
-    // line.
+    // line (which may be in a new file)
     (currentDepth > startingDepth ||
-      currentRange.lines.start.line == startingRange.lines.start.line)
+      (currentLocation.source.id === startingLocation.source.id &&
+        currentLocation.source.compilationId ===
+          startingLocation.source.compilationId &&
+        currentLocation.sourceRange.lines.start.line ===
+          startingLocation.sourceRange.lines.start.line))
   );
 }
 
@@ -220,9 +226,11 @@ function* continueUntilBreakpoint(action) {
   let currentLocation = yield select(controller.current.location);
   let currentLine = currentLocation.sourceRange.lines.start.line;
   let currentSourceId = currentLocation.source.id;
+  let currentCompilationId = currentLocation.source.compilationId;
 
   do {
-    yield* stepNext();
+    yield* advance(); //note: this avoids using stepNext in order to
+    //allow breakpoints in internal sources to work properly
 
     //note these two have not been updated yet; they'll be updated a
     //few lines down.  but at this point these are still the previous
@@ -241,17 +249,23 @@ function* continueUntilBreakpoint(action) {
     if (currentSourceId === undefined) {
       continue; //never stop on an unmapped instruction
     }
+    currentCompilationId = currentLocation.source.compilationId;
     let currentNode = currentLocation.node.id;
     currentLine = currentLocation.sourceRange.lines.start.line;
 
     breakpointHit =
-      breakpoints.filter(({ sourceId, line, node }) => {
+      breakpoints.filter(({ sourceId, compilationId, line, node }) => {
         if (node !== undefined) {
-          return sourceId === currentSourceId && node === currentNode;
+          return (
+            compilationId === currentCompilationId &&
+            sourceId === currentSourceId &&
+            node === currentNode
+          );
         }
         //otherwise, we have a line-style breakpoint; we want to stop at the
         //*first* point on the line
         return (
+          compilationId === currentCompilationId &&
           sourceId === currentSourceId &&
           line === currentLine &&
           (currentSourceId !== previousSourceId || currentLine !== previousLine)
@@ -262,10 +276,12 @@ function* continueUntilBreakpoint(action) {
 
 /**
  * reset -- reset the state of the debugger
+ * (we'll just reset all submodules regardless of which are in use)
  */
 export function* reset() {
   yield* data.reset();
   yield* evm.reset();
   yield* solidity.reset();
   yield* trace.reset();
+  yield* stacktrace.reset();
 }

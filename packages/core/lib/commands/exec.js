@@ -15,7 +15,7 @@ const command = {
     }
   },
   help: {
-    usage: "truffle exec <script.js> [--network <name>]",
+    usage: "truffle exec <script.js> [--network <name>] [--compile]",
     options: [
       {
         option: "<script.js>",
@@ -35,14 +35,15 @@ const command = {
       }
     ]
   },
-  run: function(options, done) {
+  run: function (options, done) {
     const Config = require("@truffle/config");
-    const Contracts = require("@truffle/workflow-compile");
+    const WorkflowCompile = require("@truffle/workflow-compile");
     const ConfigurationError = require("../errors/configurationerror");
     const Require = require("@truffle/require");
     const { Environment } = require("@truffle/environment");
     const path = require("path");
     const OS = require("os");
+    const { promisify } = require("util");
 
     const config = Config.detect(options);
 
@@ -73,29 +74,23 @@ const command = {
 
         // `--compile`
         if (options.c || options.compile) {
-          return Contracts.compile(config, function(err) {
-            if (err) return done(err);
-
-            Require.exec(
-              config.with({
-                file: file
-              }),
-              done
-            );
-          });
+          return WorkflowCompile.compile(config);
         }
-
-        // Just exec
-        Require.exec(
-          config.with({
-            file: file
-          }),
-          done
-        );
+        return;
       })
-      .catch(error => {
-        done(error);
-      });
+      .then(compilationOutput => {
+        // save artifacts if compilation took place
+        if (compilationOutput) {
+          return WorkflowCompile.save(config, compilationOutput);
+        }
+      })
+      .then(() => {
+        return promisify(Require.exec.bind(Require))(config.with({ file }));
+      })
+      .then(() => {
+        done();
+      })
+      .catch(done);
   }
 };
 

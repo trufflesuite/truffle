@@ -1,10 +1,14 @@
 import * as Codec from "@truffle/codec";
-
-const stringify = require("json-stable-stringify");
+import stringify from "json-stable-stringify";
 
 /** AST node types that are skipped by stepNext() to filter out some noise */
 export function isDeliberatelySkippedNodeType(node) {
-  const skippedTypes = ["ContractDefinition", "VariableDeclaration"];
+  const skippedTypes = [
+    "ContractDefinition",
+    "VariableDeclaration",
+    "YulVariableDeclaration",
+    "YulBlock"
+  ];
   return skippedTypes.includes(node.nodeType);
 }
 
@@ -12,7 +16,13 @@ export function isDeliberatelySkippedNodeType(node) {
 //these aren't the only types of skipped nodes, but determining all skipped
 //nodes would be too difficult
 export function isSkippedNodeType(node) {
-  const otherSkippedTypes = ["VariableDeclarationStatement", "Mapping"];
+  const otherSkippedTypes = [
+    "VariableDeclarationStatement",
+    "Mapping",
+    "Block",
+    "InlineAssembly", //definitely do *not* add to deliberately skipped!
+    "YulTypedName"
+  ];
   return (
     isDeliberatelySkippedNodeType(node) ||
     otherSkippedTypes.includes(node.nodeType) ||
@@ -32,21 +42,37 @@ export function prefixName(prefix, fn) {
   return fn;
 }
 
-/*
- * extract the primary source from a source map
- * (i.e., the source for the first instruction, found
- * between the second and third colons)
- * (this is something of a HACK)
+export function makePath(sourceId, pointer) {
+  return `${sourceId}:${pointer}`;
+}
+
+/**
+ * returns a new array which is a copy of array but with
+ * elements popped from the top until numToRemove elements
+ * satisfying the predicate have been removed (or until the
+ * array is empty)
  */
-export function extractPrimarySource(sourceMap) {
-  return parseInt(sourceMap.match(/^[^:]+:[^:]+:([^:]+):/)[1]);
+export function popNWhere(array, numToRemove, predicate) {
+  let newArray = array.slice();
+  //I'm going to write this the C way, hope you don't mind :P
+  while (numToRemove > 0 && newArray.length > 0) {
+    let top = newArray[newArray.length - 1];
+    if (predicate(top)) {
+      numToRemove--;
+    }
+    newArray.pop();
+  }
+  return newArray;
 }
 
 /**
  * @return 0x-prefix string of keccak256 hash
  */
 export function keccak256(...args) {
-  return Codec.Conversion.toHexString(Codec.Evm.Utils.keccak256(...args));
+  return Codec.Conversion.toHexString(
+    Codec.Evm.Utils.keccak256(...args),
+    Codec.Evm.Utils.WORD_SIZE
+  );
 }
 
 /**
@@ -117,11 +143,10 @@ export function isCreateMnemonic(op) {
 }
 
 /*
- * Given a mmemonic, determine whether it's the mnemonic of a normal
- * halting instruction
+ * Given a mmemonic, determine whether it's the mnemonic of a self-destruct
+ * instruction
  */
-export function isNormalHaltingMnemonic(op) {
-  const halts = ["STOP", "RETURN", "SELFDESTRUCT", "SUICIDE"];
-  //the mnemonic SUICIDE is no longer used, but just in case, I'm including it
-  return halts.includes(op);
+export function isSelfDestructMnemonic(op) {
+  const creates = ["SELFDESTRUCT", "SUICIDE"]; //latter name shouldn't be used anymore but let's be safe
+  return creates.includes(op);
 }

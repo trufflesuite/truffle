@@ -86,18 +86,40 @@ Save contract data as a `.json` file. Returns a Promise.
 
 Save many contracts to the filesystem at once. Returns a Promise.
 
-* `contracts`: Object. Keys are the contract names and the values are `contractData` objects, as in the `save()` function above:
+* `contracts`: (Object | Array). If an object is passed, the keys are the
+    contract names and the values are `contractData` objects, as in the `save`
+    function above. If an Array is used, the members are `contractData` objects
+    as in the `save` function above.
 
     ```javascript
     {
-      "MyContract": {
-        "abi": ...,
-        "bytecode": "..."
-      }
-      "AnotherContract": {
+      MyContract: {
+        abi: "...",
+        bytecode: "...",
+        // ...
+      },
+      AnotherContract: {
+        abi: "...",
+        bytecode: "...",
         // ...
       }
     }
+    ```
+    or
+    ```javascript
+    [
+      {
+        contract_name: "MyContract",
+        abi: "...",
+        bytecode: "...",
+        // ...
+      },{
+        contract_name: "AnotherContract",
+        abi: "...",
+        bytecode: "...",
+        // ...
+      }
+    ]
     ```
 
 ### Running Tests

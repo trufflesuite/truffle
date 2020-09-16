@@ -1,41 +1,52 @@
 {
   "name": "@truffle/resolver",
-  "version": "5.1.2",
   "description": "Resolve contract dependencies given multiple configurable dependency sources",
-  "main": "index.js",
-  "scripts": {
-    "test": "mocha"
-  },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/resolver",
-  "keywords": [
-    "ethereum",
-    "truffle",
-    "dependencies",
-    "resolver"
-  ],
-  "author": "Tim Coulter <tim@trufflesuite.com>",
   "license": "MIT",
+  "author": "Tim Coulter <tim@trufflesuite.com>",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/resolver#readme",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/resolver",
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/resolver#readme",
+  "version": "6.0.18",
+  "main": "dist/lib/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepare": "yarn build",
+    "test": "mocha -r ts-node/register test/*.ts"
+  },
+  "types": "dist/lib/index.d.ts",
   "dependencies": {
-    "@truffle/contract": "^4.1.9",
-    "@truffle/expect": "^0.0.13",
-    "@truffle/provisioner": "^0.2.0",
+    "@truffle/contract": "^4.2.22",
+    "@truffle/expect": "^0.0.15",
+    "@truffle/provisioner": "^0.2.6",
     "debug": "^4.1.1",
     "detect-installed": "^2.0.4",
     "get-installed-path": "^4.0.8",
     "glob": "^7.1.6",
+    "source-map-support": "^0.5.19",
     "supports-color": "^7.1.0"
-  },
-  "devDependencies": {
-    "mocha": "5.2.0",
-    "sinon": "^7.3.1"
   },
   "peerDependencies": {
     "@truffle/contract": "^4.0.13"
   },
+  "devDependencies": {
+    "@types/node": "^13.11.1",
+    "@types/sinon": "^9.0.0",
+    "mocha": "8.1.2",
+    "sinon": "9.0.2",
+    "ts-node": "8.10.2",
+    "typescript": "3.9.6"
+  },
+  "keywords": [
+    "dependencies",
+    "ethereum",
+    "resolver",
+    "truffle"
+  ],
   "publishConfig": {
     "access": "public"
   }

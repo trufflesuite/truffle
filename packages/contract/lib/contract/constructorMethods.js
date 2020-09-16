@@ -5,6 +5,7 @@ const {
 const utils = require("../utils");
 const execute = require("../execute");
 const bootstrap = require("./bootstrap");
+const debug = require("debug")("contract:contract:constructorMethods");
 
 module.exports = Contract => ({
   configureNetwork({ networkType, provider } = {}) {
@@ -44,9 +45,7 @@ module.exports = Contract => ({
 
     if (!this.bytecode || this.bytecode === "0x") {
       throw new Error(
-        `${
-          this.contractName
-        } error: contract binary not set. Can't deploy new instance.\n` +
+        `${this.contractName} error: contract binary not set. Can't deploy new instance.\n` +
           `This contract may be abstract, not implement an abstract parent's methods completely\n` +
           `or not invoke an inherited contract's constructor correctly\n`
       );
@@ -68,26 +67,21 @@ module.exports = Contract => ({
       );
     }
 
-    try {
-      await this.detectNetwork();
-      const onChainCode = await this.interfaceAdapter.getCode(address);
-      await utils.checkCode(onChainCode, this.contractName, address);
-      return new this(address);
-    } catch (error) {
-      throw error;
-    }
+    await this.detectNetwork();
+    const onChainCode = await this.interfaceAdapter.getCode(address);
+    await utils.checkCode(onChainCode, this.contractName, address);
+    return new this(address);
   },
 
   async deployed() {
-    try {
-      utils.checkProvider(this);
-      await this.detectNetwork();
-      utils.checkNetworkArtifactMatch(this);
-      utils.checkDeployment(this);
-      return new this(this.address);
-    } catch (error) {
-      throw error;
+    if (this.reloadJson) {
+      this.reloadJson(); //truffle test monkey-patches in this method
     }
+    utils.checkProvider(this);
+    await this.detectNetwork();
+    utils.checkNetworkArtifactMatch(this);
+    utils.checkDeployment(this);
+    return new this(this.address);
   },
 
   defaults(class_defaults) {
@@ -127,22 +121,14 @@ module.exports = Contract => ({
     // if artifacts already have a network_id and network configuration synced,
     // use that network and use latest block gasLimit
     if (this.network_id && this.networks[this.network_id] != null) {
-      try {
-        const { gasLimit } = await this.interfaceAdapter.getBlock("latest");
-        return { id: this.network_id, blockLimit: gasLimit };
-      } catch (error) {
-        throw error;
-      }
+      const { gasLimit } = await this.interfaceAdapter.getBlock("latest");
+      return { id: this.network_id, blockLimit: gasLimit };
     }
     // since artifacts don't have a network_id synced with a network configuration,
     // poll chain for network_id and sync artifacts
-    try {
-      const chainNetworkID = await this.interfaceAdapter.getNetworkId();
-      const { gasLimit } = await this.interfaceAdapter.getBlock("latest");
-      return await utils.setInstanceNetworkID(this, chainNetworkID, gasLimit);
-    } catch (error) {
-      throw error;
-    }
+    const chainNetworkID = await this.interfaceAdapter.getNetworkId();
+    const { gasLimit } = await this.interfaceAdapter.getBlock("latest");
+    return await utils.setInstanceNetworkID(this, chainNetworkID, gasLimit);
   },
 
   setNetwork(network_id) {

@@ -7,10 +7,10 @@ const ora = require("ora");
 
 const DebugUtils = require("@truffle/debug-utils");
 const selectors = require("@truffle/debugger").selectors;
-const { session, solidity, trace, evm, controller } = selectors;
+const { session, solidity, trace, evm, controller, stacktrace } = selectors;
 
 const analytics = require("../services/analytics");
-const ReplManager = require("../repl");
+const repl = require("repl");
 
 const { DebugPrinter } = require("./printer");
 
@@ -36,12 +36,12 @@ class DebugInterpreter {
   constructor(config, session, txHash) {
     this.session = session;
     this.network = config.network;
+    this.fetchExternal = config.fetchExternal;
     this.printer = new DebugPrinter(config, session);
     this.txHash = txHash;
     this.lastCommand = "n";
-
-    this.repl = config.repl || new ReplManager(config);
     this.enabledExpressions = new Set();
+    this.repl = null;
   }
 
   async setOrClearBreakpoint(args, setOrClear) {
@@ -50,11 +50,16 @@ class DebugInterpreter {
     const breakpoints = this.session.view(controller.breakpoints);
 
     const currentNode = currentLocation.node ? currentLocation.node.id : null;
-    const currentLine = currentLocation.sourceRange
-      ? currentLocation.sourceRange.lines.start.line
-      : null;
     const currentSourceId = currentLocation.source
       ? currentLocation.source.id
+      : null;
+    const currentLine =
+      currentSourceId !== null && currentSourceId !== undefined
+        ? //sourceRange is never null, so we go by whether currentSourceId is null/undefined
+          currentLocation.sourceRange.lines.start.line
+        : null;
+    const currentCompilationId = currentLocation.source
+      ? currentLocation.source.compilationId
       : null;
 
     let breakpoint = {};
@@ -69,17 +74,18 @@ class DebugInterpreter {
       breakpoint.node = currentNode;
       breakpoint.line = currentLine;
       breakpoint.sourceId = currentSourceId;
+      breakpoint.compilationId = currentCompilationId;
     }
 
     //the special case of "B all"
     else if (args[0] === "all") {
       if (setOrClear) {
         // only "B all" is legal, not "b all"
-        this.printer.print("Cannot add breakpoint everywhere.\n");
+        this.printer.print("Cannot add breakpoint everywhere.");
         return;
       }
       await this.session.removeAllBreakpoints();
-      this.printer.print("Removed all breakpoints.\n");
+      this.printer.print("Removed all breakpoints.");
       return;
     }
 
@@ -95,11 +101,12 @@ class DebugInterpreter {
       debug("delta %d", delta);
 
       if (isNaN(delta)) {
-        this.printer.print("Offset must be an integer.\n");
+        this.printer.print("Offset must be an integer.");
         return;
       }
 
       breakpoint.sourceId = currentSourceId;
+      breakpoint.compilationId = currentCompilationId;
       breakpoint.line = currentLine + delta;
     }
 
@@ -114,20 +121,24 @@ class DebugInterpreter {
       //first let's get the line number as usual
       let line = parseInt(lineArg, 10); //want an integer
       if (isNaN(line)) {
-        this.printer.print("Line number must be an integer.\n");
+        this.printer.print("Line number must be an integer.");
         return;
       }
 
       //search sources for given string
-      let sources = this.session.view(solidity.info.sources);
+      let sources = [].concat(
+        ...Object.values(this.session.view(solidity.info.sources)).map(
+          ({ byId }) => byId
+        )
+      );
 
       //we will indeed need the sources here, not just IDs
-      let matchingSources = Object.values(sources).filter(source =>
+      let matchingSources = sources.filter(source =>
         source.sourcePath.includes(sourceArg)
       );
 
       if (matchingSources.length === 0) {
-        this.printer.print(`No source file found matching ${sourceArg}.\n`);
+        this.printer.print(`No source file found matching ${sourceArg}.`);
         return;
       } else if (matchingSources.length > 1) {
         this.printer.print(
@@ -142,13 +153,14 @@ class DebugInterpreter {
 
       //otherwise, we found it!
       breakpoint.sourceId = matchingSources[0].id;
+      breakpoint.compilationId = matchingSources[0].compilationId;
       breakpoint.line = line - 1; //adjust for zero-indexing!
     }
 
     //otherwise, it's a simple line number
     else {
       debug("absolute case");
-      if (currentSourceId === null) {
+      if (currentSourceId === null || currentSourceId === undefined) {
         this.printer.print("Cannot determine current file.");
         return;
       }
@@ -156,11 +168,12 @@ class DebugInterpreter {
       debug("line %d", line);
 
       if (isNaN(line)) {
-        this.printer.print("Line number must be an integer.\n");
+        this.printer.print("Line number must be an integer.");
         return;
       }
 
       breakpoint.sourceId = currentSourceId;
+      breakpoint.compilationId = currentCompilationId;
       breakpoint.line = line - 1; //adjust for zero-indexing!
     }
 
@@ -174,7 +187,7 @@ class DebugInterpreter {
       //add it after that point
       if (breakpoint === null) {
         this.printer.print(
-          "Nowhere to add breakpoint at or beyond that location.\n"
+          "Nowhere to add breakpoint at or beyond that location."
         );
         return;
       }
@@ -182,17 +195,24 @@ class DebugInterpreter {
 
     //having constructed and adjusted breakpoint, here's now a
     //user-readable message describing its location
+    let sources = this.session.view(solidity.info.sources);
     let sourceNames = Object.assign(
       {},
-      ...Object.values(this.session.view(solidity.info.sources)).map(
-        ({ id, sourcePath }) => ({
-          [id]: path.basename(sourcePath)
+      ...Object.entries(sources).map(
+        ([compilationId, { byId: compilation }]) => ({
+          [compilationId]: Object.assign(
+            {},
+            ...Object.values(compilation).map(({ id, sourcePath }) => ({
+              [id]: path.basename(sourcePath)
+            }))
+          )
         })
       )
     );
     let locationMessage = DebugUtils.formatBreakpointLocation(
       breakpoint,
       true,
+      currentCompilationId,
       currentSourceId,
       sourceNames
     );
@@ -201,6 +221,7 @@ class DebugInterpreter {
     let alreadyExists =
       breakpoints.filter(
         existingBreakpoint =>
+          existingBreakpoint.compilationId === breakpoint.compilationId &&
           existingBreakpoint.sourceId === breakpoint.sourceId &&
           existingBreakpoint.line === breakpoint.line &&
           existingBreakpoint.node === breakpoint.node //may be undefined
@@ -216,12 +237,10 @@ class DebugInterpreter {
     //cleared, report back that we can't do that
     if (setOrClear === alreadyExists) {
       if (setOrClear) {
-        this.printer.print(
-          `Breakpoint at ${locationMessage} already exists.\n`
-        );
+        this.printer.print(`Breakpoint at ${locationMessage} already exists.`);
         return;
       } else {
-        this.printer.print(`No breakpoint at ${locationMessage} to remove.\n`);
+        this.printer.print(`No breakpoint at ${locationMessage} to remove.`);
         return;
       }
     }
@@ -230,10 +249,10 @@ class DebugInterpreter {
     //also report back to the user on what happened
     if (setOrClear) {
       await this.session.addBreakpoint(breakpoint);
-      this.printer.print(`Breakpoint added at ${locationMessage}.\n`);
+      this.printer.print(`Breakpoint added at ${locationMessage}.`);
     } else {
       await this.session.removeBreakpoint(breakpoint);
-      this.printer.print(`Breakpoint removed at ${locationMessage}.\n`);
+      this.printer.print(`Breakpoint removed at ${locationMessage}.`);
     }
     return;
   }
@@ -256,21 +275,11 @@ class DebugInterpreter {
       ? DebugUtils.formatPrompt(this.network, this.txHash)
       : DebugUtils.formatPrompt(this.network);
 
-    this.repl.start({
-      prompt,
-      interpreter: util.callbackify(this.interpreter.bind(this)),
+    this.repl = repl.start({
+      prompt: prompt,
+      eval: util.callbackify(this.interpreter.bind(this)),
       ignoreUndefined: true,
       done: terminate
-    });
-  }
-
-  setPrompt(prompt) {
-    this.repl.activate.bind(this.repl)({
-      prompt,
-      context: {},
-      //this argument only *adds* things, so it's safe to set it to {}
-      ignoreUndefined: true
-      //set to true because it's set to true below :P
     });
   }
 
@@ -284,10 +293,7 @@ class DebugInterpreter {
     }
 
     //split arguments for commands that want that; split on runs of spaces
-    splitArgs = cmd
-      .trim()
-      .split(/ +/)
-      .slice(1);
+    splitArgs = cmd.trim().split(/ +/).slice(1);
     debug("splitArgs %O", splitArgs);
 
     //warning: this bit *alters* cmd!
@@ -304,7 +310,7 @@ class DebugInterpreter {
 
     //quit if that's what we were given
     if (cmd === "q") {
-      return await util.promisify(this.repl.stop.bind(this.repl))();
+      process.exit();
     }
 
     let alreadyFinished = this.session.view(trace.finishedOrUnloaded);
@@ -377,33 +383,48 @@ class DebugInterpreter {
       }
     }
     if (cmd === "t") {
-      if (!this.session.view(selectors.session.status.loaded)) {
-        let txSpinner = ora(DebugUtils.formatTransactionStartMessage()).start();
-        await this.session.load(cmdArgs);
-        //if load succeeded
-        if (this.session.view(selectors.session.status.success)) {
-          txSpinner.succeed();
-          //if successful, change prompt
-          this.setPrompt(DebugUtils.formatPrompt(this.network, cmdArgs));
+      if (!this.fetchExternal) {
+        if (!this.session.view(selectors.session.status.loaded)) {
+          let txSpinner = ora(
+            DebugUtils.formatTransactionStartMessage()
+          ).start();
+          await this.session.load(cmdArgs);
+          //if load succeeded
+          if (this.session.view(selectors.session.status.success)) {
+            txSpinner.succeed();
+            //if successful, change prompt
+            this.repl.setPrompt(DebugUtils.formatPrompt(this.network, cmdArgs));
+          } else {
+            txSpinner.fail();
+            loadFailed = true;
+          }
         } else {
-          txSpinner.fail();
           loadFailed = true;
+          this.printer.print(
+            "Please unload the current transaction before loading a new one."
+          );
         }
       } else {
         loadFailed = true;
         this.printer.print(
-          "Please unload the current transaction before loading a new one."
+          "Cannot change transactions in fetch-external mode.  Please quit and restart the debugger instead."
         );
       }
     }
     if (cmd === "T") {
-      if (this.session.view(selectors.session.status.loaded)) {
-        await this.session.unload();
-        this.printer.print("Transaction unloaded.");
-        this.setPrompt(DebugUtils.formatPrompt(this.network));
+      if (!this.fetchExternal) {
+        if (this.session.view(selectors.session.status.loaded)) {
+          await this.session.unload();
+          this.printer.print("Transaction unloaded.");
+          this.repl.setPrompt(DebugUtils.formatPrompt(this.network));
+        } else {
+          this.printer.print("No transaction to unload.");
+          this.printer.print("");
+        }
       } else {
-        this.printer.print("No transaction to unload.");
-        this.printer.print("");
+        this.printer.print(
+          "Cannot change transactions in fetch-external mode.  Please quit and restart the debugger instead."
+        );
       }
     }
 
@@ -412,10 +433,22 @@ class DebugInterpreter {
       this.printer.print("");
       //check if transaction failed
       if (!this.session.view(evm.transaction.status)) {
-        this.printer.printRevertMessage();
+        await this.printer.printRevertMessage();
+        this.printer.print("");
+        this.printer.printStacktrace(true); //final stacktrace
+        this.printer.print("");
+        this.printer.print(DebugUtils.truffleColors.red("Location of error:"));
+        const stacktraceReport = this.session.view(
+          stacktrace.current.finalReport
+        );
+        const recordedLocation =
+          stacktraceReport[stacktraceReport.length - 1].location;
+        this.printer.printFile(recordedLocation);
+        this.printer.printState(undefined, undefined, recordedLocation);
       } else {
         //case if transaction succeeded
         this.printer.print("Transaction completed successfully.");
+        await this.printer.printReturnValue();
       }
     }
 
@@ -441,6 +474,9 @@ class DebugInterpreter {
         break;
       case "v":
         await this.printer.printVariables();
+        if (this.session.view(trace.finished)) {
+          await this.printer.printReturnValue();
+        }
         break;
       case ":":
         watchExpressionAnalytics(cmdArgs);
@@ -478,9 +514,14 @@ class DebugInterpreter {
           temporaryPrintouts.add(location);
         }
         if (this.session.view(selectors.session.status.loaded)) {
-          this.printer.printInstruction(temporaryPrintouts);
-          this.printer.printFile();
-          this.printer.printState();
+          if (this.session.view(trace.steps).length > 0) {
+            this.printer.printInstruction(temporaryPrintouts);
+            this.printer.printFile();
+            this.printer.printState();
+          } else {
+            //if there are no trace steps, let's just print a warning message
+            this.printer.print("No trace steps to inspect.");
+          }
         }
         //finally, print watch expressions
         await this.printer.printWatchExpressionsResults(
@@ -503,6 +544,35 @@ class DebugInterpreter {
           this.enabledExpressions
         );
         break;
+      case "s":
+        if (this.session.view(selectors.session.status.loaded)) {
+          //print final report if finished & failed, intermediate if not
+          if (
+            this.session.view(trace.finished) &&
+            !this.session.view(evm.transaction.status)
+          ) {
+            this.printer.printStacktrace(true); //print final stack trace
+            //Now: actually show the point where things went wrong
+            this.printer.print("");
+            this.printer.print(
+              DebugUtils.truffleColors.red("Location of error:")
+            );
+            const stacktraceReport = this.session.view(
+              stacktrace.current.finalReport
+            );
+            const recordedLocation =
+              stacktraceReport[stacktraceReport.length - 1].location;
+            this.printer.printFile(recordedLocation);
+            this.printer.printState(
+              LINES_BEFORE_LONG,
+              LINES_AFTER_LONG,
+              recordedLocation
+            );
+          } else {
+            this.printer.printStacktrace(false); //intermediate call stack
+          }
+        }
+        break;
       case "o":
       case "i":
       case "u":
@@ -522,6 +592,7 @@ class DebugInterpreter {
       case "r":
         if (this.session.view(selectors.session.status.loaded)) {
           this.printer.printAddressesAffected();
+          this.printer.warnIfNoSteps();
           this.printer.printFile();
           this.printer.printState();
         }
@@ -529,6 +600,7 @@ class DebugInterpreter {
       case "t":
         if (!loadFailed) {
           this.printer.printAddressesAffected();
+          this.printer.warnIfNoSteps();
           this.printer.printFile();
           this.printer.printState();
         } else if (this.session.view(selectors.session.status.isError)) {
@@ -540,12 +612,10 @@ class DebugInterpreter {
         //nothing to print
         break;
       default:
-        this.printer.printHelp();
+        this.printer.printHelp(this.lastCommand);
     }
 
     if (
-      cmd !== "i" &&
-      cmd !== "u" &&
       cmd !== "b" &&
       cmd !== "B" &&
       cmd !== "v" &&
@@ -559,7 +629,8 @@ class DebugInterpreter {
       cmd !== "r" &&
       cmd !== "-" &&
       cmd !== "t" &&
-      cmd !== "T"
+      cmd !== "T" &&
+      cmd !== "s"
     ) {
       this.lastCommand = cmd;
     }

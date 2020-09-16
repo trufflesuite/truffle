@@ -11,6 +11,7 @@ import BN from "bn.js";
 import * as Types from "./types";
 import * as Ast from "@truffle/codec/ast/types";
 import * as Storage from "@truffle/codec/storage/types";
+import { PaddingType } from "@truffle/codec/types";
 
 /*
  * SECTION 1: Generic types for values in general (including errors).
@@ -29,8 +30,6 @@ export type ErrorResult =
   | MagicErrorResult
   | TypeErrorResult
   | TupleErrorResult
-  | EnumErrorResult
-  | ContractErrorResult
   | FunctionExternalErrorResult
   | FunctionInternalErrorResult;
 
@@ -63,7 +62,7 @@ export type DecoderError =
   | InternalUseError;
 
 /*
- * SECTION 2: Elementary values
+ * SECTION 2: Built-in elementary types
  */
 
 /**
@@ -79,7 +78,10 @@ export type ElementaryErrorResult =
   | AddressErrorResult
   | StringErrorResult
   | FixedErrorResult
-  | UfixedErrorResult;
+  | UfixedErrorResult
+  | EnumErrorResult
+  | ContractErrorResult;
+
 /**
  * An error result for a bytestring
  *
@@ -116,6 +118,7 @@ export interface UintPaddingError {
    */
   raw: string;
   kind: "UintPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -147,6 +150,7 @@ export interface IntPaddingError {
    */
   raw: string;
   kind: "IntPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -165,7 +169,7 @@ export interface BoolErrorResult {
  *
  * @Category Elementary types
  */
-export type BoolError = BoolOutOfRangeError;
+export type BoolError = BoolOutOfRangeError | BoolPaddingError;
 
 /**
  * The bool is neither 0 nor 1
@@ -175,6 +179,20 @@ export type BoolError = BoolOutOfRangeError;
 export interface BoolOutOfRangeError {
   rawAsBN: BN;
   kind: "BoolOutOfRangeError";
+}
+
+/**
+ * A padding error for a boolean
+ *
+ * @Category Elementary types
+ */
+export interface BoolPaddingError {
+  /**
+   * hex string
+   */
+  raw: string;
+  kind: "BoolPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -206,6 +224,7 @@ export interface BytesPaddingError {
    */
   raw: string;
   kind: "BytesPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -255,6 +274,7 @@ export interface AddressPaddingError {
    */
   raw: string;
   kind: "AddressPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -314,6 +334,7 @@ export interface FixedPaddingError {
    */
   raw: string;
   kind: "FixedPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -334,10 +355,105 @@ export interface UfixedPaddingError {
    */
   raw: string;
   kind: "UfixedPaddingError";
+  paddingType: PaddingType;
 }
 
 /*
- * SECTION 3: CONTAINER TYPES (including magic)
+ * SECTION 3: User-defined elementary types
+ */
+
+/**
+ * An error result for an enum
+ *
+ * @Category User-defined elementary types
+ */
+export interface EnumErrorResult {
+  type: Types.EnumType;
+  kind: "error";
+  error: GenericError | EnumError;
+}
+
+/**
+ * An enum-specific error
+ *
+ * @Category User-defined elementary types
+ */
+export type EnumError =
+  | EnumOutOfRangeError
+  | EnumPaddingError
+  | EnumNotFoundDecodingError;
+
+/**
+ * The enum is out of range
+ *
+ * @Category User-defined elementary types
+ */
+export interface EnumOutOfRangeError {
+  kind: "EnumOutOfRangeError";
+  type: Types.EnumType;
+  rawAsBN: BN;
+}
+
+/**
+ * A padding error for an enum
+ *
+ * @Category Elementary types
+ */
+export interface EnumPaddingError {
+  /**
+   * hex string
+   */
+  raw: string;
+  type: Types.EnumType;
+  kind: "EnumPaddingError";
+  paddingType: PaddingType;
+}
+
+/**
+ * The enum type definition could not be located
+ *
+ * @Category User-defined elementary types
+ */
+export interface EnumNotFoundDecodingError {
+  kind: "EnumNotFoundDecodingError";
+  type: Types.EnumType;
+  rawAsBN: BN;
+}
+
+/**
+ * An error result for a contract
+ *
+ * @Category User-defined elementary types
+ */
+export interface ContractErrorResult {
+  type: Types.ContractType;
+  kind: "error";
+  error: GenericError | ContractError;
+}
+
+/**
+ * A contract-specific error
+ *
+ * @Category User-defined elementary types
+ */
+export type ContractError = ContractPaddingError;
+
+/**
+ * A padding error for contract (note padding is not always checked)
+ *
+ * @Category User-defined elementary types
+ */
+export interface ContractPaddingError {
+  /**
+   * hex string
+   */
+  raw: string;
+  kind: "ContractPaddingError";
+  paddingType: PaddingType;
+}
+
+/*
+ * SECTION 4: Container types (including magic)
  */
 
 /**
@@ -450,87 +566,7 @@ export interface TypeErrorResult {
 export type TypeErrorUnion = never;
 
 /*
- * SECTION 4: ENUMS
- * (they didn't fit anywhere else :P )
- */
-
-/**
- * An error result for an enum
- *
- * @Category Other user-defined types
- */
-export interface EnumErrorResult {
-  type: Types.EnumType;
-  kind: "error";
-  error: GenericError | EnumError;
-}
-
-/**
- * An enum-specific error
- *
- * @Category Other user-defined types
- */
-export type EnumError = EnumOutOfRangeError | EnumNotFoundDecodingError;
-
-/**
- * The enum is out of range
- *
- * @Category Other user-defined types
- */
-export interface EnumOutOfRangeError {
-  kind: "EnumOutOfRangeError";
-  type: Types.EnumType;
-  rawAsBN: BN;
-}
-
-/**
- * The enum type definition could not be located
- *
- * @Category Other user-defined types
- */
-export interface EnumNotFoundDecodingError {
-  kind: "EnumNotFoundDecodingError";
-  type: Types.EnumType;
-  rawAsBN: BN;
-}
-
-/*
- * SECTION 5: CONTRACTS
- */
-
-/**
- * An error result for a contract
- *
- * @Category Other user-defined types
- */
-export interface ContractErrorResult {
-  type: Types.ContractType;
-  kind: "error";
-  error: GenericError | ContractError;
-}
-
-/**
- * A contract-specific error
- *
- * @Category Other user-defined types
- */
-export type ContractError = ContractPaddingError;
-
-/**
- * A padding error for contract (note padding is not always checked)
- *
- * @Category Other user-defined types
- */
-export interface ContractPaddingError {
-  /**
-   * hex string
-   */
-  raw: string;
-  kind: "ContractPaddingError";
-}
-
-/*
- * SECTION 6: External functions
+ * SECTION 5: External functions
  */
 
 /**
@@ -564,6 +600,7 @@ export interface FunctionExternalNonStackPaddingError {
    */
   raw: string;
   kind: "FunctionExternalNonStackPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -584,7 +621,7 @@ export interface FunctionExternalStackPaddingError {
 }
 
 /*
- * SECTION 7: INTERNAL FUNCTIONS
+ * SECTION 6: Internal functions
  */
 
 /**
@@ -620,6 +657,7 @@ export interface FunctionInternalPaddingError {
    */
   raw: string;
   kind: "FunctionInternalPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -663,7 +701,7 @@ export interface MalformedInternalFunctionError {
 }
 
 /*
- * SECTION 8: GENERIC ERRORS
+ * SECTION 7: Generic errors
  */
 
 /**
@@ -684,7 +722,8 @@ export type ReadError =
   | UnsupportedConstantError
   | ReadErrorStack
   | ReadErrorBytes
-  | ReadErrorStorage;
+  | ReadErrorStorage
+  | UnusedImmutableError;
 /**
  * An error resulting from overlarge length or pointer values
  *
@@ -751,7 +790,12 @@ export interface ReadErrorStack {
 /**
  * A byte-based location
  */
-export type BytesLocation = "memory" | "calldata" | "eventdata" | "returndata";
+export type BytesLocation =
+  | "memory"
+  | "calldata"
+  | "eventdata"
+  | "returndata"
+  | "code";
 
 /**
  * Read error in a byte-based location (memory, calldata, etc)
@@ -776,6 +820,15 @@ export interface ReadErrorStorage {
 }
 
 /**
+ * Attempting to read an immutable that is never stored anywhere
+ *
+ * @Category Generic errors
+ */
+export interface UnusedImmutableError {
+  kind: "UnusedImmutableError";
+}
+
+/**
  * Error for array/string/bytestring having length bigger than a JS number
  *
  * @Category Generic errors
@@ -796,7 +849,7 @@ export interface OverlargePointersNotImplementedError {
   pointerAsBN: BN;
 }
 
-/* SECTION 9: Internal use errors */
+/* SECTION 8: Internal use errors */
 /* you should never see these returned.
  * they are only for internal use. */
 

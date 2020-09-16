@@ -5,9 +5,9 @@ const { CLIDebugger } = require("./cli");
 const execute = require("@truffle/contract/lib/execute");
 
 class CLIDebugHook {
-  constructor(config, compilation, runner) {
+  constructor(config, compilations, runner) {
     this.config = config;
-    this.compilation = compilation;
+    this.compilations = compilations;
     this.runner = runner; // mocha runner (**not** lib/test/testrunner)
   }
 
@@ -22,7 +22,7 @@ class CLIDebugHook {
     this.printStartTestHook(method);
 
     const interpreter = await new CLIDebugger(this.config, {
-      compilation: this.compilation
+      compilations: this.compilations
     }).run(txHash);
     await interpreter.start();
 

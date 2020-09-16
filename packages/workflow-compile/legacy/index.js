@@ -1,6 +1,5 @@
 const debug = require("debug")("workflow-compile");
-const mkdirp = require("mkdirp");
-const { promisify } = require("util");
+const fse = require("fs-extra");
 const externalCompile = require("@truffle/external-compile");
 const solcCompile = require("@truffle/compile-solidity/legacy");
 const vyperCompile = require("@truffle/compile-vyper");
@@ -41,7 +40,7 @@ const Contracts = {
   // network_id: network id to link saved contract artifacts.
   // quiet: Boolean. Suppress output. Defaults to false.
   // strict: Boolean. Return compiler warnings as errors. Defaults to false.
-  compile: async function(options, callback) {
+  compile: async function (options, callback) {
     const callbackPassed = typeof callback === "function";
     try {
       const config = prepareConfig(options);
@@ -77,11 +76,17 @@ const Contracts = {
       return result;
     } catch (error) {
       if (callbackPassed) return callback(error);
-      throw new Error(error);
+      throw error;
     }
   },
 
-  compileSources: async function(config, compilers) {
+  compileSources: async function (config, compilers) {
+    compilers = config.compiler
+      ? config.compiler === "none"
+        ? []
+        : [config.compiler]
+      : Object.keys(config.compilers);
+
     return Promise.all(
       compilers.map(async compiler => {
         const compile = SUPPORTED_COMPILERS[compiler];
@@ -115,7 +120,7 @@ const Contracts = {
   reportNothingToCompile,
 
   writeContracts: async (contracts, options) => {
-    await promisify(mkdirp)(options.contracts_build_directory);
+    fse.ensureDirSync(options.contracts_build_directory);
     await options.artifactor.saveAll(contracts);
   }
 };

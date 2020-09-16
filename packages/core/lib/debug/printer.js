@@ -2,13 +2,22 @@ const debugModule = require("debug");
 const debug = debugModule("lib:debug:printer");
 
 const path = require("path");
-const safeEval = require("safe-eval");
 
 const DebugUtils = require("@truffle/debug-utils");
 const Codec = require("@truffle/codec");
+const colors = require("colors");
+const Interpreter = require("js-interpreter");
 
 const selectors = require("@truffle/debugger").selectors;
-const { session, solidity, trace, controller, data, evm } = selectors;
+const {
+  session,
+  solidity,
+  trace,
+  controller,
+  data,
+  evm,
+  stacktrace
+} = selectors;
 
 class DebugPrinter {
   constructor(config, session) {
@@ -20,26 +29,32 @@ class DebugPrinter {
       try {
         selector = expr
           .split(".")
-          .filter(next => next.length > 0)
-          .reduce((sel, next) => sel[next], selectors);
+          .reduce((sel, next) => (next.length ? sel[next] : sel), selectors);
       } catch (_) {
         throw new Error("Unknown selector: %s", expr);
       }
 
       // throws its own exception
-      result = this.session.view(selector);
+      // note: we avoid using this.session so that this
+      // can be called from js-interpreter
+      result = session.view(selector);
 
       return result;
     };
 
     this.colorizedSources = {};
-    for (const source of Object.values(
+    for (const [compilationId, compilation] of Object.entries(
       this.session.view(solidity.info.sources)
     )) {
-      const id = source.id;
-      const uncolorized = source.source;
-      const colorized = DebugUtils.colorize(uncolorized);
-      this.colorizedSources[id] = colorized;
+      this.colorizedSources[compilationId] = {};
+      for (const source of compilation.byId) {
+        const { id, source: raw, internal: yul } = source;
+        //for now, we assume internal sources are Yul and
+        //user sources are Solidity
+        const detabbed = DebugUtils.tabsToSpaces(raw);
+        const colorized = DebugUtils.colorize(detabbed, yul);
+        this.colorizedSources[compilationId][id] = colorized;
+      }
     }
 
     this.printouts = new Set(["sta"]);
@@ -52,6 +67,7 @@ class DebugPrinter {
 
   printSessionLoaded() {
     this.printAddressesAffected();
+    this.warnIfNoSteps();
     this.printHelp();
     debug("Help printed");
     this.printFile();
@@ -69,22 +85,31 @@ class DebugPrinter {
     const affectedInstances = this.session.view(session.info.affectedInstances);
 
     this.config.logger.log("");
-    this.config.logger.log("Addresses called: (not created)");
+    this.config.logger.log("Addresses affected:");
     this.config.logger.log(
       DebugUtils.formatAffectedInstances(affectedInstances)
     );
   }
 
-  printHelp() {
-    this.config.logger.log("");
-    this.config.logger.log(DebugUtils.formatHelp());
+  warnIfNoSteps() {
+    if (this.session.view(trace.steps).length === 0) {
+      this.config.logger.log(
+        `${colors.bold(
+          "Warning:"
+        )} this transaction has no trace steps. This may happen if you are attempting to debug a transaction sent to an externally-owned account, or if the node you are connecting to failed to produce a trace for some reason. Please check your configuration and try again.`
+      );
+    }
   }
 
-  printFile() {
+  printHelp(lastCommand) {
+    this.config.logger.log("");
+    this.config.logger.log(DebugUtils.formatHelp(lastCommand));
+  }
+
+  printFile(location = this.session.view(controller.current.location)) {
     let message = "";
 
-    debug("about to determine sourcePath");
-    const sourcePath = this.session.view(solidity.current.source).sourcePath;
+    const sourcePath = location.source.sourcePath;
 
     if (sourcePath) {
       message += path.basename(sourcePath);
@@ -96,8 +121,15 @@ class DebugPrinter {
     this.config.logger.log(message + ":");
   }
 
-  printState(contextBefore = 2, contextAfter = 0) {
-    const { id: sourceId, source } = this.session.view(solidity.current.source);
+  printState(
+    contextBefore = 2,
+    contextAfter = 0,
+    location = this.session.view(controller.current.location)
+  ) {
+    const {
+      source: { id: sourceId, compilationId },
+      sourceRange: range
+    } = location;
 
     if (sourceId === undefined) {
       this.config.logger.log();
@@ -106,9 +138,13 @@ class DebugPrinter {
       return;
     }
 
-    const colorizedSource = this.colorizedSources[sourceId];
+    const source = this.session.view(solidity.info.sources)[compilationId].byId[
+      sourceId
+    ].source;
+    //we don't just get extract this from the location because passed-in location may be
+    //missing the soure text
+    const colorizedSource = this.colorizedSources[compilationId][sourceId];
 
-    const range = this.session.view(solidity.current.sourceRange);
     debug("range: %o", range);
 
     // We were splitting on OS.EOL, but it turns out on Windows,
@@ -187,19 +223,23 @@ class DebugPrinter {
     }
 
     this.config.logger.log("");
-    expressions.forEach(function(expression) {
+    for (const expression of expressions) {
       this.config.logger.log("  " + expression);
-    });
+    }
   }
 
   printBreakpoints() {
+    let sources = this.session.view(solidity.info.sources);
     let sourceNames = Object.assign(
       {},
-      ...Object.values(this.session.view(solidity.info.sources)).map(
-        ({ id, sourcePath }) => ({
-          [id]: path.basename(sourcePath)
-        })
-      )
+      ...Object.entries(sources).map(([compilationId, compilation]) => ({
+        [compilationId]: Object.assign(
+          {},
+          ...Object.values(compilation.byId).map(({ id, sourcePath }) => ({
+            [id]: path.basename(sourcePath)
+          }))
+        )
+      }))
     );
     let breakpoints = this.session.view(controller.breakpoints);
     if (breakpoints.length > 0) {
@@ -209,6 +249,7 @@ class DebugPrinter {
           breakpoint,
           currentLocation.node !== undefined &&
             breakpoint.node === currentLocation.node.id,
+          currentLocation.source.compilationId,
           currentLocation.source.id,
           sourceNames
         );
@@ -219,13 +260,14 @@ class DebugPrinter {
     }
   }
 
-  printRevertMessage() {
-    this.config.logger.log("Transaction halted with a RUNTIME ERROR.");
-    this.config.logger.log("");
-    let rawRevertMessage = this.session.view(evm.current.step.returnValue);
-    let revertDecodings = Codec.decodeRevert(
-      Codec.Conversion.toBytes(rawRevertMessage)
+  //this doesn't really *need* to be async as we could use codec directly, but, eh
+  async printRevertMessage() {
+    this.config.logger.log(
+      DebugUtils.truffleColors.red("Transaction halted with a RUNTIME ERROR.")
     );
+    this.config.logger.log("");
+    const revertDecodings = await this.session.returnValue(); //in this context we know it's a revert
+    debug("revertDecodings: %o", revertDecodings);
     switch (revertDecodings.length) {
       case 0:
         this.config.logger.log(
@@ -233,7 +275,7 @@ class DebugPrinter {
         );
         break;
       case 1:
-        let revertDecoding = revertDecodings[0];
+        const revertDecoding = revertDecodings[0];
         switch (revertDecoding.kind) {
           case "failure":
             this.config.logger.log(
@@ -241,7 +283,7 @@ class DebugPrinter {
             );
             break;
           case "revert":
-            let revertStringInfo = revertDecoding.arguments[0].value.value;
+            const revertStringInfo = revertDecoding.arguments[0].value.value;
             let revertString;
             switch (revertStringInfo.kind) {
               case "valid":
@@ -257,7 +299,9 @@ class DebugPrinter {
                 ).toString();
                 this.config.logger.log(`Revert message: ${revertString}`);
                 this.config.logger.log(
-                  "Warning: This message contained invalid UTF-8."
+                  `${colors.bold(
+                    "Warning:"
+                  )} This message contained invalid UTF-8.`
                 );
                 break;
             }
@@ -274,6 +318,139 @@ class DebugPrinter {
     this.config.logger.log(
       "Please inspect your transaction parameters and contract code to determine the meaning of this error."
     );
+  }
+
+  async printReturnValue() {
+    //note: when printing revert messages, this will do so in a somewhat
+    //different way than printRevertMessage does
+    const allocationFound = Boolean(
+      this.session.view(data.current.returnAllocation)
+    );
+    const decodings = await this.session.returnValue();
+    debug("decodings: %o", decodings);
+    if (!allocationFound && decodings.length === 0) {
+      //case 1: no allocation found, decoding failed
+      this.config.logger.log("");
+      this.config.logger.log(
+        "A value was returned but it could not be decoded."
+      );
+      this.config.logger.log("");
+    } else if (!allocationFound && decodings[0].status === true) {
+      //case 2: no allocation found, decoding succeeded, but not a revert
+      //(i.e. it's a presumed selfdestruct; no value was returned)
+      //do nothing
+    } else if (allocationFound && decodings.length === 0) {
+      //case 3: allocation found but decoding failed
+      this.config.logger.log("");
+      this.config.logger.log("The return value could not be decoded.");
+      this.config.logger.log("");
+    } else if (allocationFound && decodings[0].kind === "selfdestruct") {
+      //case 4: allocation found, apparent self-destruct (note due to the use of [0] this
+      //won't occur if no return value was expected, as return takes priority over selfdestruct)
+      //Oops -- in an actual selfdestruct, we won't have the code! >_>
+      //(Not until reconstruct mode exists...) Oh well, leaving this in
+      this.config.logger.log("");
+      this.config.logger.log(
+        "No value was returned even though one was expected.  This may indicate a self-destruct."
+      );
+      this.config.logger.log("");
+    } else if (decodings[0].kind === "failure") {
+      //case 5: revert (no message)
+      this.config.logger.log("");
+      this.config.logger.log("There was no revert message.");
+      this.config.logger.log("");
+    } else if (decodings[0].kind === "unknownbytecode") {
+      //case 6: unknown bytecode
+      this.config.logger.log("");
+      this.config.logger.log(
+        "Bytecode was returned, but it could not be identified."
+      );
+      this.config.logger.log("");
+    } else if (
+      decodings[0].kind === "return" &&
+      decodings[0].arguments.length === 0
+    ) {
+      //case 7: return values but with no content
+      //do nothing
+    } else if (decodings[0].kind === "bytecode") {
+      //case 8: known bytecode
+      this.config.logger.log("");
+      const decoding = decodings[0];
+      const contractKind = decoding.contractKind || "contract";
+      if (decoding.address !== undefined) {
+        this.config.logger.log(
+          `Returned bytecode for a ${contractKind} ${decoding.class.typeName} at ${decoding.address}.`
+        );
+      } else {
+        this.config.logger.log(
+          `Returned bytecode for a ${contractKind} ${decoding.class.typeName}.`
+        );
+      }
+      if (decoding.immutables && decoding.immutables.length > 0) {
+        this.config.logger.log("Immutable values:");
+        const prefixes = decoding.immutables.map(
+          ({ name, class: { typeName } }) => `${typeName}.${name}: `
+        );
+        const maxLength = Math.max(...prefixes.map(prefix => prefix.length));
+        const paddedPrefixes = prefixes.map(prefix =>
+          prefix.padStart(maxLength)
+        );
+        for (let index = 0; index < decoding.immutables.length; index++) {
+          const { value } = decoding.immutables[index];
+          const prefix = paddedPrefixes[index];
+          const formatted = DebugUtils.formatValue(value, maxLength);
+          this.config.logger.log(prefix + formatted);
+        }
+      }
+      this.config.logger.log("");
+    } else if (decodings[0].kind === "revert") {
+      //case 9: revert (with message)
+      this.config.logger.log("");
+      const prefix = "Revert string: ";
+      const value = decodings[0].arguments[0].value;
+      const formatted = DebugUtils.formatValue(value, prefix.length);
+      this.config.logger.log(prefix + formatted);
+      this.config.logger.log("");
+    } else if (
+      decodings[0].kind === "return" &&
+      decodings[0].arguments.length > 0
+    ) {
+      //case 10: actual return values to print!
+      this.config.logger.log("");
+      const values = decodings[0].arguments;
+      if (values.length === 1 && !values[0].name) {
+        //case 10a: if there's only one value and it's unnamed
+        const value = values[0].value;
+        const prefix = "Returned value: ";
+        const formatted = DebugUtils.formatValue(value, prefix.length);
+        this.config.logger.log(prefix + formatted);
+      } else {
+        //case 10b: otherwise
+        this.config.logger.log("Returned values:");
+        const prefixes = values.map(({ name }, index) =>
+          name ? `${name}: ` : `Component #${index + 1}: `
+        );
+        const maxLength = Math.max(...prefixes.map(prefix => prefix.length));
+        const paddedPrefixes = prefixes.map(prefix =>
+          prefix.padStart(maxLength)
+        );
+        for (let index = 0; index < values.length; index++) {
+          const { value } = values[index];
+          const prefix = paddedPrefixes[index];
+          const formatted = DebugUtils.formatValue(value, maxLength);
+          this.config.logger.log(prefix + formatted);
+        }
+      }
+      this.config.logger.log("");
+    }
+  }
+
+  printStacktrace(final) {
+    this.config.logger.log(final ? "Stacktrace:" : "Call stack:");
+    let report = final
+      ? this.session.view(stacktrace.current.finalReport)
+      : this.session.view(stacktrace.current.report);
+    this.config.logger.log(DebugUtils.formatStacktrace(report));
   }
 
   async printWatchExpressionsResults(expressions) {
@@ -303,34 +480,36 @@ class DebugPrinter {
   }
 
   async printVariables() {
-    let variables = await this.session.variables();
+    const values = await this.session.variables();
+    const sections = this.session.view(data.current.identifiers.sections);
 
-    debug("variables %o", variables);
-
-    // Get the length of the longest name.
-    const longestNameLength = Math.max.apply(
-      null,
-      Object.keys(variables).map(function(name) {
-        return name.length;
-      })
-    );
+    const sectionNames = {
+      builtin: "Solidity built-ins",
+      contract: "Contract variables",
+      local: "Local variables"
+    };
 
     this.config.logger.log();
 
-    Object.keys(variables).forEach(name => {
-      let paddedName = name + ":";
-
-      while (paddedName.length <= longestNameLength) {
-        paddedName = " " + paddedName;
+    for (const [section, variables] of Object.entries(sections)) {
+      if (variables.length > 0) {
+        this.config.logger.log(sectionNames[section] + ":");
+        // Get the length of the longest name.
+        const longestNameLength = variables.reduce((longest, name) => {
+          return name.length > longest ? name.length : longest;
+        }, -Infinity);
+        for (const variable of variables) {
+          const paddedName = variable.padStart(longestNameLength) + ":";
+          const value = values[variable];
+          const formatted = DebugUtils.formatValue(
+            value,
+            longestNameLength + 5
+          );
+          this.config.logger.log("  " + paddedName, formatted);
+        }
+        this.config.logger.log();
       }
-
-      const value = variables[name];
-      const formatted = DebugUtils.formatValue(value, longestNameLength + 5);
-
-      this.config.logger.log("  " + paddedName, formatted);
-    });
-
-    this.config.logger.log();
+    }
   }
 
   /**
@@ -348,15 +527,6 @@ class DebugPrinter {
   async evalAndPrintExpression(raw, indent, suppress) {
     let variables = await this.session.variables();
 
-    // converts all !<...> expressions to JS-valid selector requests
-    const preprocessSelectors = expr => {
-      const regex = /!<([^>]+)>/g;
-      const select = "$"; // expect repl context to have this func
-      const replacer = (_, selector) => `${select}("${selector}")`;
-
-      return expr.replace(regex, replacer);
-    };
-
     //if we're just dealing with a single variable, handle that case
     //separately (so that we can do things in a better way for that
     //case)
@@ -367,18 +537,22 @@ class DebugPrinter {
       this.config.logger.log();
       return;
     }
+    debug("expression case");
+
+    // converts all !<...> expressions to JS-valid selector requests
+    const preprocessSelectors = expr => {
+      const regex = /!<([^>]+)>/g;
+      const select = "$"; // expect repl context to have this func
+      const replacer = (_, selector) => `${select}("${selector}")`;
+
+      return expr.replace(regex, replacer);
+    };
 
     //HACK
     //if we're not in the single-variable case, we'll need to do some
     //things to Javascriptify our variables so that the JS syntax for
     //using them is closer to the Solidity syntax
-    variables = Codec.Format.Utils.Inspect.nativizeVariables(variables);
-
-    let context = Object.assign(
-      { $: this.select },
-
-      variables
-    );
+    let context = Codec.Format.Utils.Inspect.nativizeVariables(variables);
 
     //HACK -- we can't use "this" as a variable name, so we're going to
     //find an available replacement name, and then modify the context
@@ -411,31 +585,55 @@ class DebugPrinter {
     expr = preprocessSelectors(expr);
 
     try {
-      let result = safeEval(expr, context);
-      result = DebugUtils.cleanConstructors(result); //HACK
+      const result = this.safelyEvaluateWithSelectors(expr, context);
       const formatted = DebugUtils.formatValue(result, indent, true);
       this.config.logger.log(formatted);
       this.config.logger.log();
     } catch (e) {
-      // HACK: safeEval edits the expression to capture the result, which
-      // produces really weird output when there are errors. e.g.,
-      //
-      //   evalmachine.<anonymous>:1
-      //   SAFE_EVAL_857712=a
-      //   ^
-      //
-      //   ReferenceError: a is not defined
-      //     at evalmachine.<anonymous>:1:1
-      //     at ContextifyScript.Script.runInContext (vm.js:59:29)
-      //
-      // We want to hide this from the user if there's an error.
-      e.stack = e.stack.replace(/SAFE_EVAL_\d+=/, "");
       if (!suppress) {
         this.config.logger.log(e);
       } else {
         this.config.logger.log(DebugUtils.formatValue(undefined, indent, true));
       }
     }
+  }
+
+  //evaluates expression with the variables in context,
+  //but also has `$` as a variable that is the select function
+  safelyEvaluateWithSelectors(expression, context) {
+    const select = this.select;
+    let interpreter;
+    interpreter = new Interpreter(expression, function (
+      interpreter,
+      globalObject
+    ) {
+      //first let's set up our select function (which will be called $)
+      interpreter.setProperty(
+        globalObject,
+        "$",
+        interpreter.createNativeFunction(selectorName => {
+          debug("selecting %s", selectorName);
+          return interpreter.nativeToPseudo(select(selectorName));
+        })
+      );
+      //now let's set up the variables
+      for (const [variable, value] of Object.entries(context)) {
+        try {
+          debug("variable: %s", variable);
+          //note: circular objects wll raise an exception here and get excluded.
+          interpreter.setProperty(
+            globalObject,
+            variable,
+            interpreter.nativeToPseudo(value)
+          );
+        } catch (_) {
+          debug("failure");
+          //just omit things that don't work
+        }
+      }
+    });
+    interpreter.run();
+    return interpreter.pseudoToNative(interpreter.value);
   }
 }
 

@@ -3,7 +3,7 @@ const fse = require("fs-extra");
 const path = require("path");
 const assert = require("assert");
 const Resolver = require("@truffle/resolver");
-const compile = require("@truffle/compile-solidity/new");
+const { Compile } = require("@truffle/compile-solidity");
 const Config = require("@truffle/config");
 const { findOne } = require("./helpers");
 
@@ -11,14 +11,14 @@ function waitSecond() {
   return new Promise(resolve => setTimeout(() => resolve(), 1250));
 }
 
-describe("CompilerSupplier", function() {
-  describe("integration", function() {
+describe("CompilerSupplier", function () {
+  describe("integration", function () {
     this.timeout(40000);
     let oldPragmaPinSource; //  0.4.15
     let oldPragmaFloatSource; // ^0.4.15
     let version4PragmaSource; // ^0.4.21
     let version5PragmaSource; // ^0.5.0
-    let version6PragmaSource; // ^0.6.0
+    let versionLatestPragmaSource; // Currently: ^0.7.0
     let compileConfig;
 
     const options = {
@@ -27,7 +27,7 @@ describe("CompilerSupplier", function() {
       quiet: true
     };
 
-    before("get code", async function() {
+    before("get code", async function () {
       const oldPragmaPin = await fse.readFile(
         path.join(__dirname, "./sources/v0.4.15/OldPragmaPin.sol"),
         "utf-8"
@@ -45,8 +45,8 @@ describe("CompilerSupplier", function() {
         "utf-8"
       );
 
-      const version6Pragma = await fse.readFile(
-        path.join(__dirname, "./sources/v0.6.x/Version6Pragma.sol"),
+      const versionLatestPragma = await fse.readFile(
+        path.join(__dirname, "./sources/v0.7.x/Version7Pragma.sol"), //update when necessary
         "utf-8"
       );
 
@@ -54,19 +54,25 @@ describe("CompilerSupplier", function() {
       oldPragmaFloatSource = { "OldPragmaFloat.sol": oldPragmaFloat };
       version4PragmaSource = { "NewPragma.sol": version4Pragma };
       version5PragmaSource = { "Version5Pragma.sol": version5Pragma };
-      version6PragmaSource = { "Version6Pragma.sol": version6Pragma };
+      versionLatestPragmaSource = { "Version7Pragma.sol": versionLatestPragma }; //update when necessary
     });
 
-    it("compiles w/ default solc if no compiler specified (float)", async function() {
+    it("compiles w/ default solc if no compiler specified (float)", async function () {
       const defaultOptions = Config.default().merge(options);
 
-      const { contracts } = await compile(version5PragmaSource, defaultOptions);
-      const Version5Pragma = findOne("Version5Pragma", contracts);
+      const { compilations } = await Compile.sources({
+        sources: version5PragmaSource,
+        options: defaultOptions
+      });
+      const Version5Pragma = findOne(
+        "Version5Pragma",
+        compilations[0].contracts
+      );
 
       assert(Version5Pragma.contractName === "Version5Pragma");
     });
 
-    it("compiles w/ remote solc when options specify release (pinned)", async function() {
+    it("compiles w/ remote solc when options specify release (pinned)", async function () {
       options.compilers = {
         solc: {
           version: "0.4.15",
@@ -75,13 +81,16 @@ describe("CompilerSupplier", function() {
       };
       const config = new Config().with(options);
 
-      const { contracts } = await compile(oldPragmaPinSource, config);
-      const OldPragmaPin = findOne("OldPragmaPin", contracts);
+      const { compilations } = await Compile.sources({
+        sources: oldPragmaPinSource,
+        options: config
+      });
+      const OldPragmaPin = findOne("OldPragmaPin", compilations[0].contracts);
 
       assert(OldPragmaPin.contractName === "OldPragmaPin");
     });
 
-    it("compiles w/ remote solc when options specify prerelease (float)", async function() {
+    it("compiles w/ remote solc when options specify prerelease (float)", async function () {
       this.timeout(20000);
       // An 0.4.16 prerelease for 0.4.15
       options.compilers = {
@@ -92,13 +101,19 @@ describe("CompilerSupplier", function() {
       };
 
       const config = Config.default().merge(options);
-      const { contracts } = await compile(oldPragmaFloatSource, config);
-      const OldPragmaFloat = findOne("OldPragmaFloat", contracts);
+      const { compilations } = await Compile.sources({
+        sources: oldPragmaFloatSource,
+        options: config
+      });
+      const OldPragmaFloat = findOne(
+        "OldPragmaFloat",
+        compilations[0].contracts
+      );
 
       assert(OldPragmaFloat.contractName === "OldPragmaFloat");
     });
 
-    it("compiles w/ local path solc when options specify path", async function() {
+    it("compiles w/ local path solc when options specify path", async function () {
       const pathToSolc = path.join(
         __dirname,
         "../../../node_modules/solc/index.js"
@@ -112,15 +127,18 @@ describe("CompilerSupplier", function() {
 
       const localPathOptions = Config.default().merge(options);
 
-      const { contracts } = await compile(
-        version5PragmaSource,
-        localPathOptions
+      const { compilations } = await Compile.sources({
+        sources: version5PragmaSource,
+        options: localPathOptions
+      });
+      const Version5Pragma = findOne(
+        "Version5Pragma",
+        compilations[0].contracts
       );
-      const Version5Pragma = findOne("Version5Pragma", contracts);
       assert(Version5Pragma.contractName === "Version5Pragma");
     });
 
-    it("caches releases and uses them if available", async function() {
+    it("caches releases and uses them if available", async function () {
       let initialAccessTime;
       let finalAccessTime;
 
@@ -143,7 +161,10 @@ describe("CompilerSupplier", function() {
       const cachedOptions = Config.default().merge(options);
 
       // Run compiler, expecting solc to be downloaded and cached.
-      await compile(version4PragmaSource, cachedOptions);
+      await Compile.sources({
+        sources: version4PragmaSource,
+        options: cachedOptions
+      });
 
       assert(await fse.exists(expectedCache), "Should have cached compiler");
 
@@ -154,10 +175,13 @@ describe("CompilerSupplier", function() {
       // got accessed / ran ok.
       await waitSecond();
 
-      const { contracts } = await compile(version4PragmaSource, cachedOptions);
+      const { compilations } = await Compile.sources({
+        sources: version4PragmaSource,
+        options: cachedOptions
+      });
 
       finalAccessTime = (await fse.stat(expectedCache)).atime.getTime();
-      const NewPragma = findOne("NewPragma", contracts);
+      const NewPragma = findOne("NewPragma", compilations[0].contracts);
 
       assert(NewPragma.contractName === "NewPragma", "Should have compiled");
 
@@ -170,8 +194,8 @@ describe("CompilerSupplier", function() {
       }
     });
 
-    describe("native / docker [ @native ]", function() {
-      it("compiles with native solc", async function() {
+    describe("native / docker [ @native ]", function () {
+      it("compiles with native solc", async function () {
         options.compilers = {
           solc: {
             version: "native"
@@ -180,19 +204,22 @@ describe("CompilerSupplier", function() {
 
         const nativeSolcOptions = Config.default().merge(options);
 
-        const { contracts } = await compile(
-          version6PragmaSource,
-          nativeSolcOptions
-        );
-        const Version6Pragma = findOne("Version6Pragma", contracts);
-        assert(Version6Pragma.compiler.version.includes("0.6."));
+        const { compilations } = await Compile.sources({
+          sources: versionLatestPragmaSource,
+          options: nativeSolcOptions
+        });
+        const VersionLatestPragma = findOne(
+          "Version7Pragma",
+          compilations[0].contracts
+        ); //update when necessary
+        assert(VersionLatestPragma.compiler.version.includes("0.7.")); //update when necessary
         assert(
-          Version6Pragma.contractName === "Version6Pragma",
+          VersionLatestPragma.contractName === "Version7Pragma", //update when necessary
           "Should have compiled"
         );
       });
 
-      it("compiles with dockerized solc", async function() {
+      it("compiles with dockerized solc", async function () {
         options.compilers = {
           solc: {
             version: "0.4.22",
@@ -204,17 +231,17 @@ describe("CompilerSupplier", function() {
 
         const expectedVersion = "0.4.22+commit.4cb486ee.Linux.g++";
 
-        const { contracts } = await compile(
-          version4PragmaSource,
-          dockerizedSolcOptions
-        );
-        const NewPragma = findOne("NewPragma", contracts);
+        const { compilations } = await Compile.sources({
+          sources: version4PragmaSource,
+          options: dockerizedSolcOptions
+        });
+        const NewPragma = findOne("NewPragma", compilations[0].contracts);
 
         assert(NewPragma.compiler.version === expectedVersion);
         assert(NewPragma.contractName === "NewPragma", "Should have compiled");
       });
 
-      it("resolves imports correctly when using built solc", async function() {
+      it("resolves imports correctly when using built solc", async function () {
         const paths = [];
         paths.push(path.join(__dirname, "./sources/v0.4.x/ComplexOrdered.sol"));
         paths.push(path.join(__dirname, "./sources/v0.4.x/InheritB.sol"));
@@ -243,8 +270,14 @@ describe("CompilerSupplier", function() {
         options.resolver = new Resolver(options);
         options = Config.default().merge(options);
 
-        const { contracts } = await compile.with_dependencies(options);
-        const ComplexOrdered = findOne("ComplexOrdered", contracts);
+        const { compilations } = await Compile.sourcesWithDependencies({
+          paths,
+          options
+        });
+        const ComplexOrdered = findOne(
+          "ComplexOrdered",
+          compilations[0].contracts
+        );
 
         // This contract imports / inherits
         assert(
@@ -253,7 +286,7 @@ describe("CompilerSupplier", function() {
         );
       });
 
-      it("errors if running dockerized solc without specifying an image", async function() {
+      it("errors if running dockerized solc without specifying an image", async function () {
         options.compilers = {
           solc: {
             version: undefined,
@@ -265,7 +298,10 @@ describe("CompilerSupplier", function() {
 
         let error;
         try {
-          await compile(version4PragmaSource, compileConfig);
+          await Compile.sources({
+            sources: version4PragmaSource,
+            options: compileConfig
+          });
         } catch (err) {
           error = err;
         }
@@ -274,7 +310,7 @@ describe("CompilerSupplier", function() {
         assert(error.message.includes("option must be"));
       });
 
-      it("errors if running dockerized solc when image does not exist locally", async function() {
+      it("errors if running dockerized solc when image does not exist locally", async function () {
         const imageName = "fantasySolc.7777555";
 
         options.compilers = {
@@ -288,7 +324,10 @@ describe("CompilerSupplier", function() {
 
         let error;
         try {
-          await compile(version4PragmaSource, compileConfig);
+          await Compile.sources({
+            sources: version4PragmaSource,
+            options: compileConfig
+          });
         } catch (err) {
           error = err;
         }

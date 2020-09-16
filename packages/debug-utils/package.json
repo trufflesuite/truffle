@@ -1,33 +1,31 @@
 {
   "name": "@truffle/debug-utils",
-  "version": "2.1.7",
   "description": "Integration utils for truffle/debugger",
+  "license": "MIT",
+  "author": "Truffle Suite <inquiry@trufflesuite.com>",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/debug-utils#readme",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/debug-utils",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "version": "4.2.8",
+  "main": "index.js",
+  "scripts": {
+    "prepare": "exit 0"
+  },
   "dependencies": {
-    "@truffle/codec": "^0.3.6",
+    "@truffle/codec": "^0.6.1",
     "@trufflesuite/chromafi": "^2.1.2",
     "chalk": "^2.4.2",
     "debug": "^4.1.0",
     "highlight.js": "^9.15.8",
-    "highlightjs-solidity": "^1.0.10",
-    "node-dir": "0.1.17"
-  },
-  "main": "index.js",
-  "scripts": {
-    "test": "mocha"
-  },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/debug-utils",
-  "author": "Truffle Suite <inquiry@trufflesuite.com>",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/trufflesuite/truffle/issues"
-  },
-  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/debug-utils#readme",
-  "publishConfig": {
-    "access": "public"
+    "highlightjs-solidity": "^1.0.18"
   },
   "devDependencies": {
     "chai": "^4.2.0",
-    "mocha": "^6.1.4",
-    "safe-eval": "^0.4.1"
+    "mocha": "8.1.2"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

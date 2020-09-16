@@ -6,54 +6,91 @@ import { combineReducers } from "redux";
 import * as actions from "./actions";
 
 import * as Codec from "@truffle/codec";
-import { makeAssignment } from "lib/helpers";
+import { makeAssignment, makePath } from "lib/helpers";
 
 const DEFAULT_SCOPES = {
-  byId: {}
+  byCompilationId: {}
 };
 
 function scopes(state = DEFAULT_SCOPES, action) {
-  var scope;
-  var variables;
+  let scope;
+  let newState;
+  let variables;
 
   switch (action.type) {
-    case actions.SCOPE:
-      scope = state.byId[action.id] || {};
+    case actions.SCOPE: {
+      const { compilationId, id, sourceId, parentId, pointer } = action;
+      const astRef = id !== undefined ? id : makePath(sourceId, pointer);
+      //astRef is used throughout the data saga.
+      //it identifies an AST node within a given compilation either by:
+      //1. its ast ID, if it has one, or
+      //2. a combination of its source index and its JSON pointer if not
 
-      return {
-        byId: {
-          ...state.byId,
-
-          [action.id]: {
-            ...scope,
-
-            id: action.id,
-            sourceId: action.sourceId,
-            parentId: action.parentId,
-            pointer: action.pointer
+      newState = {
+        byCompilationId: {
+          ...state.byCompilationId,
+          [compilationId]: {
+            ...state.byCompilationId[compilationId] //just setting this up to avoid errors later
           }
         }
       };
 
-    case actions.DECLARE:
-      scope = state.byId[action.node.scope] || {};
+      //apologies for this multi-stage setup, but JS is like that...
+
+      newState.byCompilationId[compilationId] = {
+        ...newState.byCompilationId[compilationId],
+        byAstRef: {
+          ...newState.byCompilationId[compilationId].byAstRef
+        }
+      };
+
+      scope = newState.byCompilationId[compilationId].byAstRef[astRef];
+
+      newState.byCompilationId[compilationId].byAstRef[astRef] = {
+        ...scope,
+        id,
+        sourceId,
+        parentId, //may be null or undefined
+        pointer,
+        compilationId
+      };
+
+      return newState;
+    }
+
+    case actions.DECLARE: {
+      let { compilationId, name, astRef, scopeAstRef } = action;
+
+      //note: we can assume the compilation already exists!
+      scope = state.byCompilationId[compilationId].byAstRef[scopeAstRef] || {};
       variables = scope.variables || [];
 
       return {
-        byId: {
-          ...state.byId,
+        byCompilationId: {
+          ...state.byCompilationId,
+          [compilationId]: {
+            ...state.byCompilationId[compilationId],
+            byAstRef: {
+              ...state.byCompilationId[compilationId].byAstRef,
 
-          [action.node.scope]: {
-            ...scope,
+              [scopeAstRef]: {
+                ...scope,
 
-            variables: [
-              ...variables,
+                variables: [
+                  ...variables,
 
-              { name: action.node.name, id: action.node.id }
-            ]
+                  {
+                    name,
+                    astRef,
+                    compilationId
+                  }
+                ]
+              }
+            }
           }
         }
       };
+    }
 
     default:
       return state;
@@ -70,7 +107,10 @@ function scopes(state = DEFAULT_SCOPES, action) {
 function userDefinedTypes(state = [], action) {
   switch (action.type) {
     case actions.DEFINE_TYPE:
-      return [...state, action.node.id];
+      return [
+        ...state,
+        { id: action.node.id, compilationId: action.compilationId }
+      ];
     default:
       return state;
   }
@@ -79,7 +119,8 @@ function userDefinedTypes(state = [], action) {
 const DEFAULT_ALLOCATIONS = {
   storage: {},
   memory: {},
-  abi: {}
+  abi: {},
+  state: {}
 };
 
 function allocations(state = DEFAULT_ALLOCATIONS, action) {
@@ -87,10 +128,12 @@ function allocations(state = DEFAULT_ALLOCATIONS, action) {
     return {
       storage: action.storage,
       memory: action.memory,
-      abi: action.abi
+      abi: action.abi,
+      calldata: action.calldata,
+      state: action.state
     };
   } else {
-    return state;
+    return state; //not to be confused with action.state!
   }
 }
 
@@ -113,7 +156,7 @@ const DEFAULT_ASSIGNMENTS = {
     {}, //we start out with all globals assigned
     ...GLOBAL_ASSIGNMENTS.map(assignment => ({ [assignment.id]: assignment }))
   ),
-  byAstId: {}, //no regular variables assigned at start
+  byCompilationId: {}, //no regular variables assigned at start
   byBuiltin: Object.assign(
     {}, //again, all globals start assigned
     ...GLOBAL_ASSIGNMENTS.map(assignment => ({
@@ -129,7 +172,7 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
       debug("action.type %O", action.type);
       debug("action.assignments %O", action.assignments);
       return Object.values(action.assignments).reduce((acc, assignment) => {
-        let { id, astId } = assignment;
+        let { id, astRef, compilationId } = assignment;
         //we assume for now that only ordinary variables will be assigned this
         //way, and not globals; globals are handled in DEFAULT_ASSIGNMENTS
         return {
@@ -138,10 +181,21 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
             ...acc.byId,
             [id]: assignment
           },
-          byAstId: {
-            ...acc.byAstId,
-            [astId]: [...new Set([...(acc.byAstId[astId] || []), id])]
-            //we use a set for uniqueness
+          byCompilationId: {
+            ...acc.byCompilationId,
+            [compilationId]: {
+              ...acc.byCompilationId[compilationId],
+              byAstRef: {
+                ...(acc.byCompilationId[compilationId] || {}).byAstRef,
+                [astRef]: [
+                  ...new Set([
+                    ...(((acc.byCompilationId[compilationId] || {}).byAstRef ||
+                      {})[astRef] || []),
+                    id
+                  ])
+                ]
+              }
+            }
           }
         };
       }, state);

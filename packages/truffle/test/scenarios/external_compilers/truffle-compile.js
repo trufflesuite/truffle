@@ -8,7 +8,7 @@ var sandbox = require("../sandbox");
 var Server = require("../server");
 var Reporter = require("../reporter");
 
-describe("`truffle compile` as external", function() {
+describe("`truffle compile` as external", function () {
   // These tests rely on a solc jq dependency installed with apt-get
   // You can run them locally with `CI=true npm test`
   if (!process.env.CI) return;
@@ -17,15 +17,15 @@ describe("`truffle compile` as external", function() {
   var project = path.join(__dirname, "../../sources/external_compile");
   var logger = new MemoryLogger();
 
-  before("set up the server", function(done) {
+  before("set up the server", function (done) {
     Server.start(done);
   });
 
-  after("stop server", function(done) {
+  after("stop server", function (done) {
     Server.stop(done);
   });
 
-  before("set up sandbox", function() {
+  before("set up sandbox", function () {
     this.timeout(10000);
     return sandbox.create(project).then(conf => {
       config = conf;
@@ -37,104 +37,74 @@ describe("`truffle compile` as external", function() {
     });
   });
 
-  it("will compile", function(done) {
+  it("will compile", async function () {
     this.timeout(20000);
 
-    CommandRunner.run("compile --compiler=external", config, function(err) {
-      var output = logger.contents();
-      if (err) {
-        console.log(output);
-        return done(err);
-      }
-
-      assert(
-        fs.existsSync(
-          path.join(config.contracts_build_directory, "MetaCoin.json")
-        )
-      );
-      assert(
-        fs.existsSync(
-          path.join(config.contracts_build_directory, "ConvertLib.json")
-        )
-      );
-      assert(
-        fs.existsSync(
-          path.join(config.contracts_build_directory, "Migrations.json")
-        )
-      );
-      assert(
-        fs.existsSync(
-          path.join(config.contracts_build_directory, "ExtraMetaCoin.json")
-        )
-      );
-
-      done();
-    });
+    await CommandRunner.run("compile --compiler=external", config);
+    assert(
+      fs.existsSync(
+        path.join(config.contracts_build_directory, "MetaCoin.json")
+      )
+    );
+    assert(
+      fs.existsSync(
+        path.join(config.contracts_build_directory, "ConvertLib.json")
+      )
+    );
+    assert(
+      fs.existsSync(
+        path.join(config.contracts_build_directory, "Migrations.json")
+      )
+    );
+    assert(
+      fs.existsSync(
+        path.join(config.contracts_build_directory, "ExtraMetaCoin.json")
+      )
+    );
   });
 
-  it("will migrate", function(done) {
+  it("will migrate", async function () {
     this.timeout(50000);
 
-    CommandRunner.run("migrate", config, function(err) {
-      var output = logger.contents();
-      if (err) {
-        console.log(output);
-        return done(err);
-      }
+    await CommandRunner.run("migrate", config);
+    var MetaCoin = contract(
+      require(path.join(config.contracts_build_directory, "MetaCoin.json"))
+    );
+    var ConvertLib = contract(
+      require(path.join(config.contracts_build_directory, "ConvertLib.json"))
+    );
+    var Migrations = contract(
+      require(path.join(config.contracts_build_directory, "Migrations.json"))
+    );
+    var ExtraMetaCoin = contract(
+      require(path.join(config.contracts_build_directory, "ExtraMetaCoin.json"))
+    );
 
-      var MetaCoin = contract(
-        require(path.join(config.contracts_build_directory, "MetaCoin.json"))
-      );
-      var ConvertLib = contract(
-        require(path.join(config.contracts_build_directory, "ConvertLib.json"))
-      );
-      var Migrations = contract(
-        require(path.join(config.contracts_build_directory, "Migrations.json"))
-      );
-      var ExtraMetaCoin = contract(
-        require(path.join(
-          config.contracts_build_directory,
-          "ExtraMetaCoin.json"
-        ))
-      );
+    var promises = [];
 
-      var promises = [];
+    [MetaCoin, ConvertLib, Migrations, ExtraMetaCoin].forEach(function (
+      abstraction
+    ) {
+      abstraction.setProvider(config.provider);
 
-      [MetaCoin, ConvertLib, Migrations, ExtraMetaCoin].forEach(function(
-        abstraction
-      ) {
-        abstraction.setProvider(config.provider);
-
-        promises.push(
-          abstraction.deployed().then(function(instance) {
-            assert.notEqual(
-              instance.address,
-              null,
-              instance.contract_name + " didn't have an address!"
-            );
-          })
-        );
-      });
-
-      Promise.all(promises)
-        .then(function() {
-          done();
+      promises.push(
+        abstraction.deployed().then(function (instance) {
+          assert.notEqual(
+            instance.address,
+            null,
+            instance.contract_name + " didn't have an address!"
+          );
         })
-        .catch(done);
+      );
     });
+
+    await Promise.all(promises);
   });
 
-  it("will run tests", function(done) {
+  it("will run tests", async function () {
     this.timeout(70000);
-    CommandRunner.run("test", config, function(err) {
-      var output = logger.contents();
-      if (err) {
-        console.log(output);
-        return done(err);
-      }
-
-      assert(output.indexOf("3 passing") >= 0);
-      done();
-    });
+    await CommandRunner.run("test", config);
+    const output = logger.contents();
+    assert(output.indexOf("3 passing") >= 0);
   });
 });

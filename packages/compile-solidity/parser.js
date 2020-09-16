@@ -49,13 +49,27 @@ module.exports = {
     // Filter out our forced import, then get the import paths of the rest.
     const imports = errors
       .filter(({ message }) => !message.includes(failingImportFileName))
-      .map(({ formattedMessage }) => {
-        const matches = formattedMessage.match(
-          /import[^'"]?.*("|')([^'"]+)("|')/
-        );
+      .map(({ formattedMessage, message }) => {
+        // Multiline import check which works for solcjs and solc
+        // solcjs: ^ (Relevant source part starts here and spans across multiple lines)
+        // solc: Spanning multiple lines.
+        if (formattedMessage.includes("multiple lines")) {
+          // Parse the import filename from the error message, this does not include the full path to the import
+          const matches = message.match(/Source[^'"]?.*?("|')([^'"]+)("|')/);
+          if (matches) {
+            // Extract the full path by matching against body with the import filename
+            const fullPathRegex = new RegExp(`("|')(.*${matches[2]})("|')`);
+            const importMatches = body.match(fullPathRegex);
+            if (importMatches) return importMatches[2];
+          }
+        } else {
+          const matches = formattedMessage.match(
+            /import[^'"]?.*("|')([^'"]+)("|')/
+          );
 
-        // Return the item between the quotes.
-        if (matches) return matches[2];
+          // Return the item between the quotes.
+          if (matches) return matches[2];
+        }
       })
       .filter(match => match !== undefined);
 

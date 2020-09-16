@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "target": "es2016",
+    "noImplicitAny": true,
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "outDir": "dist",
+    "baseUrl": ".",
+    "lib": ["es2017"],
+    "paths": {
+    },
+    "rootDir": ".",
+    "types": ["mocha"],
+    "typeRoots": [
+      "../../node_modules/@types/fs-extra"
+    ]
+  },
+  "include": [
+    "./src/**/*.ts"
+  ]
+}

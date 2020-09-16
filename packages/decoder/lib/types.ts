@@ -1,13 +1,53 @@
 import BN from "bn.js";
 import { ContractObject as Artifact } from "@truffle/contract-schema/spec";
+import TruffleConfig from "@truffle/config";
 import {
   Format,
   Ast,
+  Compilations,
   Contexts,
   CalldataDecoding,
-  LogDecoding
+  LogDecoding,
+  StateVariable
 } from "@truffle/codec";
 import Web3 from "web3";
+
+//this used to be defined here, so let's continue
+//to export it
+export { StateVariable };
+
+/**
+ * This type represents information about a Truffle project that can be used to
+ * construct and initialize a decoder for that project.  This information may
+ * be passed in various ways; this type is given here as an interface rahter
+ * than a union, but note that really you only need to include one of these
+ * fields.  (The `compilations` field will be used if present, then `artifacts`
+ * if not, etc.)  Further options for how to specify project information are
+ * intended to be added in the future.
+ * @category Inputs
+ */
+export interface ProjectInfo {
+  /**
+   * An list of compilations, as specified in codec; this method of specifying
+   * a project is mostly intended for internal Truffle use for now, but you can
+   * see the documentation of the Compilations type if you want to use it.
+   */
+  compilations?: Compilations.Compilation[];
+  /**
+   * A list of contract artifacts for contracts in the project.
+   * Contract constructor objects may be substituted for artifacts, so if
+   * you're not sure which you're dealing with, it's OK.
+   */
+  artifacts?: Artifact[];
+  /**
+   * The project's config object.  If present, and it has the
+   * `contracts_build_directory` property, the decoder will automatically read
+   * all the artifacts from there and use those as the project information.
+   * Further, smarter use of the config object are intended to be added in
+   * the future.
+   */
+  config?: TruffleConfig;
+}
 
 /**
  * This type represents the state of a contract aside from its storage.
@@ -37,27 +77,6 @@ export interface ContractState {
 }
 
 /**
- * This type represents one of the decoded contract's state variables.
- * @category Results
- */
-export interface StateVariable {
-  /**
-   * The name of the variable.  Note that due to inheritance, this may not be unique.
-   */
-  name: string;
-  /**
-   * The class of the contract that defined the variable, as a Format.Types.ContractType.
-   * Note that this class may differ from that of the contract being decoded, due
-   * to inheritance.
-   */
-  class: Format.Types.ContractType;
-  /**
-   * The decoded value of the variable.  Note this is a Format.Values.Result, so it may be an error.
-   */
-  value: Format.Values.Result;
-}
-
-/**
  * This type represents a web3 Log object that has been decoded.
  * Note that it extends the Log type and just adds an additional field
  * with the decoding.
@@ -71,10 +90,6 @@ export interface DecodedLog extends Log {
    * information.
    */
   decodings: LogDecoding[];
-}
-
-export interface ContractMapping {
-  [nodeId: number]: Artifact;
 }
 
 export interface StorageCache {
@@ -91,15 +106,30 @@ export interface CodeCache {
   };
 }
 
+export interface CompilationAndContract {
+  compilation: Compilations.Compilation;
+  contract: Compilations.Contract;
+}
+
 export interface ContractAndContexts {
-  contract: Artifact;
+  compilationId: string;
+  contract: Compilations.Contract;
   node: Ast.AstNode;
   deployedContext?: Contexts.DecoderContext;
   constructorContext?: Contexts.DecoderContext;
 }
 
+export interface ContractInfo {
+  compilation: Compilations.Compilation;
+  contract: Compilations.Contract;
+  artifact: Artifact;
+  contractNode: Ast.AstNode;
+  contractNetwork: string;
+  contextHash: string;
+}
+
 /**
- * The type of the options parameter to events().  This type will be expanded in the future
+ * The type of the options parameter to [[WireDecoder.events|events()]].  This type will be expanded in the future
  * as more filtering options are added.
  * @category Inputs
  */
@@ -125,6 +155,25 @@ export interface EventOptions {
    * address as undefined.
    */
   address?: string;
+}
+
+/**
+ * The type of the options parameter to [[ContractDecoder.decodeReturnValue|decodeReturnValue()]].
+ * @category Inputs
+ */
+export interface ReturnOptions {
+  /**
+   * The block in which the call was made.  Defaults to "latest".
+   */
+  block?: BlockSpecifier;
+  /**
+   * If included, tells the decoder to interpret the return data as
+   * the return data from a successful call (if `true` is passed) or
+   * as the return data from a failed call (if `false` is passed). If
+   * omitted or set to `undefined`, the decoder will account for both
+   * possibilities.
+   */
+  status?: boolean | undefined;
 }
 
 /**

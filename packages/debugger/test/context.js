@@ -11,7 +11,7 @@ import Debugger from "lib/debugger";
 import sessionSelector from "lib/session/selectors";
 
 const __OUTER = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.7.0;
 
 import "./InnerContract.sol";
 
@@ -20,7 +20,7 @@ contract OuterContract {
 
   InnerContract inner;
 
-  constructor(address _inner) public {
+  constructor(address _inner) {
     inner = InnerContract(_inner);
   }
 
@@ -33,7 +33,7 @@ contract OuterContract {
 `;
 
 const __INNER = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.7.0;
 
 contract InnerContract {
   event Inner();
@@ -44,21 +44,56 @@ contract InnerContract {
 }
 `;
 
+const __IMMUTABLE = `
+pragma solidity ^0.7.0;
+
+contract ImmutableTest {
+  uint immutable x = 35;
+  function run() public {
+    TestLibrary.shout(x);
+  }
+}
+
+library TestLibrary {
+  event Shout(uint);
+  function shout(uint x) external {
+    emit Shout(x);
+  }
+}
+`;
+
+const __CREATION = `
+pragma solidity ^0.7.0;
+
+contract CreationTest {
+  function run() public {
+    new Created(1);
+  }
+}
+
+contract Created {
+  uint it;
+  constructor(uint x) {
+    it = x;
+  }
+}
+`;
+
 const __MIGRATION = `
 let OuterContract = artifacts.require("OuterContract");
 let InnerContract = artifacts.require("InnerContract");
+let ImmutableTest = artifacts.require("ImmutableTest");
+let TestLibrary = artifacts.require("TestLibrary");
+let CreationTest = artifacts.require("CreationTest");
 
-module.exports = function(deployer) {
-  return deployer
-    .then(function() {
-      return deployer.deploy(InnerContract);
-    })
-    .then(function() {
-      return InnerContract.deployed();
-    })
-    .then(function(inner) {
-      return deployer.deploy(OuterContract, inner.address);
-    });
+module.exports = async function(deployer) {
+  await deployer.deploy(InnerContract);
+  const inner = await InnerContract.deployed();
+  await deployer.deploy(OuterContract, inner.address);
+  await deployer.deploy(TestLibrary);
+  await deployer.link(TestLibrary, ImmutableTest);
+  await deployer.deploy(ImmutableTest);
+  await deployer.deploy(CreationTest);
 };
 `;
 
@@ -68,52 +103,48 @@ let migrations = {
 
 let sources = {
   "OuterLibrary.sol": __OUTER,
-  "InnerContract.sol": __INNER
+  "InnerContract.sol": __INNER,
+  "ImmutableTest.sol": __IMMUTABLE,
+  "CreationTest.sol": __CREATION
 };
 
-describe("Contexts", function() {
+describe("Contexts", function () {
   var provider;
 
   var abstractions;
-  var artifacts;
-  var files;
+  var compilations;
 
-  before("Create Provider", async function() {
+  before("Create Provider", async function () {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
-  before("Prepare contracts and artifacts", async function() {
+  before("Prepare contracts and artifacts", async function () {
     this.timeout(30000);
 
     let prepared = await prepareContracts(provider, sources, migrations);
     abstractions = prepared.abstractions;
-    artifacts = prepared.artifacts;
-    files = prepared.files;
+    compilations = prepared.compilations;
   });
 
-  it("returns view of addresses affected", async function() {
+  it("returns view of addresses affected", async function () {
     let outer = await abstractions.OuterContract.deployed();
     let inner = await abstractions.InnerContract.deployed();
 
     // run outer contract method
     let result = await outer.run();
 
-    assert.equal(result.receipt.rawLogs.length, 2, "There should be two logs");
+    assert.lengthOf(result.receipt.rawLogs, 2, "There should be two logs");
 
     let txHash = result.tx;
 
     let bugger = await Debugger.forTx(txHash, {
       provider,
-      files,
-      contracts: artifacts
+      compilations,
+      lightMode: true
     });
     debug("debugger ready");
 
-    let session = bugger.connect();
-
-    let affectedInstances = session.view(
-      sessionSelector.info.affectedInstances
-    );
+    let affectedInstances = bugger.view(sessionSelector.info.affectedInstances);
     debug("affectedInstances: %o", affectedInstances);
 
     let affectedAddresses = Object.keys(affectedInstances);
@@ -130,6 +161,65 @@ describe("Contexts", function() {
       affectedAddresses,
       inner.address,
       "InnerContract should be an affected address"
+    );
+  });
+
+  it("correctly identifies context in presence of libraries and immutables", async function () {
+    let ImmutableTest = await abstractions.ImmutableTest.deployed();
+    let address = ImmutableTest.address;
+    let TestLibrary = await abstractions.TestLibrary.deployed();
+    let libraryAddress = TestLibrary.address;
+
+    // run outer contract method
+    let result = await ImmutableTest.run();
+
+    let txHash = result.tx;
+
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      compilations,
+      lightMode: true
+    });
+    debug("debugger ready");
+
+    let affectedInstances = bugger.view(sessionSelector.info.affectedInstances);
+    debug("affectedInstances: %o", affectedInstances);
+
+    assert.property(affectedInstances, address);
+    assert.equal(affectedInstances[address].contractName, "ImmutableTest");
+    assert.property(affectedInstances, libraryAddress);
+    assert.equal(affectedInstances[libraryAddress].contractName, "TestLibrary");
+  });
+
+  it("determines encoded constructor arguments for creations", async function () {
+    let CreationTest = await abstractions.CreationTest.deployed();
+    let address = CreationTest.address;
+
+    let result = await CreationTest.run();
+    let txHash = result.tx;
+
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      compilations,
+      lightMode: true
+    });
+    debug("debugger ready");
+
+    let affectedInstances = bugger.view(sessionSelector.info.affectedInstances);
+    debug("affectedInstances: %o", affectedInstances);
+
+    //just some sanity checks
+    assert.lengthOf(Object.keys(affectedInstances), 2);
+    assert.property(affectedInstances, address);
+    assert.equal(affectedInstances[address].contractName, "CreationTest");
+    //now...
+    let createdAddress = Object.keys(affectedInstances).find(
+      newAddress => newAddress !== address
+    );
+    assert.equal(affectedInstances[createdAddress].contractName, "Created");
+    assert.equal(
+      affectedInstances[createdAddress].constructorArgs,
+      "1".padStart(64, "0")
     );
   });
 });

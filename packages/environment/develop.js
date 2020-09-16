@@ -4,7 +4,7 @@ const { spawn } = require("child_process");
 const debug = require("debug");
 
 const Develop = {
-  start: async function(ipcNetwork, options = {}) {
+  start: async function (ipcNetwork, options = {}) {
     let chainPath;
 
     // The path to the dev env process depends on whether or not
@@ -39,15 +39,10 @@ const Develop = {
     });
   },
 
-  connect: function(options, callback) {
+  connect: function (options) {
     const debugServer = debug("develop:ipc:server");
     const debugClient = debug("develop:ipc:client");
     const debugRPC = debug("develop:ganache");
-
-    if (typeof options === "function") {
-      callback = options;
-      options = {};
-    }
 
     options.retry = options.retry || false;
     options.log = options.log || false;
@@ -74,7 +69,7 @@ const Develop = {
     if (options.log) {
       debugRPC.enabled = true;
 
-      loggers.ganache = function() {
+      loggers.ganache = function () {
         // HACK-y: replace `{}` that is getting logged instead of ""
         var args = Array.prototype.slice.call(arguments);
         if (
@@ -93,60 +88,56 @@ const Develop = {
       ipc.config.maxRetries = 0;
     }
 
-    var disconnect = function() {
+    var disconnect = function () {
       ipc.disconnect(ipcNetwork);
     };
 
-    ipc.connectTo(ipcNetwork, connectPath, function() {
-      ipc.of[ipcNetwork].on("destroy", function() {
-        callback(new Error("IPC connection destroyed"));
-      });
+    return new Promise((resolve, reject) => {
+      ipc.connectTo(ipcNetwork, connectPath, function () {
+        ipc.of[ipcNetwork].on("destroy", function () {
+          reject(new Error("IPC connection destroyed"));
+        });
 
-      ipc.of[ipcNetwork].on("truffle.ready", function() {
-        callback(null, disconnect);
-      });
+        ipc.of[ipcNetwork].on("truffle.ready", function () {
+          resolve(disconnect);
+        });
 
-      Object.keys(loggers).forEach(function(key) {
-        var log = loggers[key];
-        if (log) {
-          var message = `truffle.${key}.log`;
-          ipc.of[ipcNetwork].on(message, log);
-        }
+        Object.keys(loggers).forEach(function (key) {
+          var log = loggers[key];
+          if (log) {
+            var message = `truffle.${key}.log`;
+            ipc.of[ipcNetwork].on(message, log);
+          }
+        });
       });
     });
   },
 
-  connectOrStart: function(options, ganacheOptions, callback) {
-    const self = this;
-
+  connectOrStart: async function (options, ganacheOptions) {
     options.retry = false;
 
     const ipcNetwork = options.network || "develop";
 
     let connectedAlready = false;
 
-    this.connect(
-      options,
-      async function(error, disconnect) {
-        if (error) {
-          await self.start(ipcNetwork, ganacheOptions);
-
-          options.retry = true;
-          self.connect(
-            options,
-            function(error, disconnect) {
-              if (connectedAlready) return;
-
-              connectedAlready = true;
-              callback(true, disconnect);
-            }
-          );
-        } else {
-          connectedAlready = true;
-          callback(false, disconnect);
-        }
-      }
-    );
+    try {
+      const disconnect = await this.connect(options);
+      connectedAlready = true;
+      return {
+        started: false,
+        disconnect
+      };
+    } catch (_error) {
+      await this.start(ipcNetwork, ganacheOptions);
+      options.retry = true;
+      const disconnect = await this.connect(options);
+      if (connectedAlready) return;
+      connectedAlready = true;
+      return {
+        started: true,
+        disconnect
+      };
+    }
   }
 };
 

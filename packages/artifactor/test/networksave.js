@@ -1,10 +1,11 @@
 const assert = require("chai").assert;
 const Artifactor = require("../");
-const temp = require("temp").track();
 const contract = require("@truffle/contract");
 const path = require("path");
 const fs = require("fs");
 const requireNoCache = require("require-nocache")(module);
+const tmp = require("tmp");
+tmp.setGracefulCleanup();
 
 const firstNetworkObj = {
   3: { address: "0xe6e1652a0397e078f434d6dda181b218cfd42e01" }
@@ -16,21 +17,22 @@ const thirdNetworkObj = {
   2: { address: "0x6a90f4263739e4e20146ee4b5691d5b0fe5d48ec" }
 };
 
-let dirPath, expected_filepath;
+let tempDir, expected_filepath;
 
 describe("if artifact file doesn't already exist...", () => {
   before(() => {
-    dirPath = temp.mkdirSync({
-      dir: path.resolve("./"),
+    tempDir = tmp.dirSync({
+      unsafeCleanup: true,
       prefix: "tmp-test-contract-"
     });
-    expected_filepath = path.join(dirPath, "Example.json");
+    expected_filepath = path.join(tempDir.name, "Example.json");
   });
+
   it("...artifactor merges a passed network object to json", done => {
     // make sure the artifact file doesn't already exist
     assert(!fs.existsSync(expected_filepath));
 
-    artifactor = new Artifactor(dirPath);
+    artifactor = new Artifactor(tempDir.name);
 
     artifactor
       .save({
@@ -55,7 +57,7 @@ describe("if artifact file already exists...", () => {
     // make sure the artifact file already exists
     assert(fs.existsSync(expected_filepath));
 
-    artifactor = new Artifactor(dirPath);
+    artifactor = new Artifactor(tempDir.name);
 
     artifactor
       .save({
@@ -80,7 +82,7 @@ describe("if artifact file already exists...", () => {
     // make sure the artifact file already exists
     assert(fs.existsSync(expected_filepath));
 
-    artifactor = new Artifactor(dirPath);
+    artifactor = new Artifactor(tempDir.name);
 
     artifactor
       .save({

@@ -6,24 +6,27 @@ const {
   createInterfaceAdapter
 } = require("@truffle/interface-adapter");
 const Config = require("@truffle/config");
-const Contracts = require("@truffle/workflow-compile/new");
+const WorkflowCompile = require("@truffle/workflow-compile");
 const Resolver = require("@truffle/resolver");
-const TestRunner = require("./testing/testrunner");
-const TestResolver = require("./testing/testresolver");
-const TestSource = require("./testing/testsource");
-const SolidityTest = require("./testing/soliditytest");
+const TestRunner = require("./testing/TestRunner");
+const TestResolver = require("./testing/TestResolver");
+const TestSource = require("./testing/TestSource");
+const SolidityTest = require("./testing/SolidityTest");
+const RangeUtils = require("@truffle/compile-solidity/compilerSupplier/rangeUtils");
 const expect = require("@truffle/expect");
 const Migrate = require("@truffle/migrate");
 const Profiler = require("@truffle/compile-solidity/profiler");
 const originalrequire = require("original-require");
+const Codec = require("@truffle/codec");
 const debug = require("debug")("lib:test");
+const Debugger = require("@truffle/debugger");
 
 let Mocha; // Late init with "mocha" or "mocha-parallel-tests"
 
 chai.use(require("./assertions"));
 
 const Test = {
-  run: async function(options) {
+  run: async function (options) {
     expect.options(options, [
       "contracts_directory",
       "contracts_build_directory",
@@ -58,7 +61,7 @@ const Test = {
     // e.g., https://github.com/ethereum/web3.js/blob/master/lib/web3/allevents.js#L61
     // Output looks like this during tests: https://gist.github.com/tcoulter/1988349d1ec65ce6b958
     const warn = config.logger.warn;
-    config.logger.warn = function(message) {
+    config.logger.warn = function (message) {
       if (message === "cannot find event for log") {
         return;
       } else {
@@ -113,12 +116,39 @@ const Test = {
 
     await this.performInitialDeploy(config, testResolver);
 
+    const solidityCompilationOutput = compilations.reduce(
+      (a, compilation) => {
+        if (compilation.compiler && compilation.compiler.name === "solc") {
+          a.sourceIndexes = a.sourceIndexes.concat(compilation.sourceIndexes);
+          a.contracts = a.contracts.concat(compilation.contracts);
+        }
+        return a;
+      },
+      { sourceIndexes: [], contracts: [] }
+    );
+
     await this.defineSolidityTests(
       mocha,
       testContracts,
-      compilations.solc.sourceIndexes,
+      solidityCompilationOutput.sourceIndexes,
       runner
     );
+
+    const debuggerCompilations = Codec.Compilations.Utils.shimArtifacts(
+      solidityCompilationOutput.contracts,
+      solidityCompilationOutput.sourceIndexes
+    );
+
+    //for stack traces, we'll need to set up a light-mode debugger...
+    let bugger;
+    if (config.stacktrace) {
+      debug("stacktraces on!");
+      bugger = await Debugger.forProject({
+        compilations: debuggerCompilations,
+        provider: config.provider,
+        lightMode: true
+      });
+    }
 
     await this.setJSTestGlobals({
       config,
@@ -127,7 +157,8 @@ const Test = {
       accounts,
       testResolver,
       runner,
-      compilation: compilations.solc
+      compilations: debuggerCompilations,
+      bugger
     });
 
     // Finally, run mocha.
@@ -143,16 +174,24 @@ const Test = {
     });
   },
 
-  createMocha: function(config) {
+  createMocha: function (config) {
     // Allow people to specify config.mocha in their config.
     const mochaConfig = config.mocha || {};
 
+    // Propagate --bail option to mocha
+    mochaConfig.bail = config.bail;
+
     // If the command line overrides color usage, use that.
-    if (config.colors != null) mochaConfig.useColors = config.colors;
+    if (config.color != null) {
+      mochaConfig.color = config.color;
+    } else if (config.colors != null) {
+      // --colors is a mocha alias for --color
+      mochaConfig.color = config.colors;
+    }
 
     // Default to true if configuration isn't set anywhere.
-    if (mochaConfig.useColors == null) {
-      mochaConfig.useColors = true;
+    if (mochaConfig.color == null) {
+      mochaConfig.color = true;
     }
 
     Mocha = mochaConfig.package || require("mocha");
@@ -162,11 +201,11 @@ const Test = {
     return mocha;
   },
 
-  getAccounts: function(interfaceAdapter) {
+  getAccounts: function (interfaceAdapter) {
     return interfaceAdapter.getAccounts();
   },
 
-  compileContractsWithTestFilesIfNeeded: async function(
+  compileContractsWithTestFilesIfNeeded: async function (
     solidityTestFiles,
     config,
     testResolver
@@ -174,18 +213,40 @@ const Test = {
     const updated =
       (await Profiler.updated(config.with({ resolver: testResolver }))) || [];
 
-    const compileConfig = config.with({
+    let compileConfig = config.with({
       all: config.compileAll === true,
       files: updated.concat(solidityTestFiles),
       resolver: testResolver,
       quiet: config.runnerOutputOnly || config.quiet,
       quietWrite: true
     });
-
+    if (config.compileAllDebug) {
+      let versionString = ((compileConfig.compilers || {}).solc || {}).version;
+      versionString = RangeUtils.resolveToRange(versionString);
+      if (RangeUtils.rangeContainsAtLeast(versionString, "0.6.3")) {
+        compileConfig = compileConfig.merge({
+          compilers: {
+            solc: {
+              settings: {
+                debug: {
+                  revertStrings: "debug"
+                }
+              }
+            }
+          }
+        });
+      } else {
+        config.logger.log(
+          `\n${colors.bold(
+            "Warning:"
+          )} Extra revert string info requires Solidity v0.6.3 or higher. For more\n  information, see release notes <https://github.com/ethereum/solidity/releases/tag/v0.6.3>`
+        );
+      }
+    }
     // Compile project contracts and test contracts
-    const { contracts, compilations } = await Contracts.compile(compileConfig);
-
-    await Contracts.save(compileConfig, contracts);
+    const { contracts, compilations } = await WorkflowCompile.compileAndSave(
+      compileConfig
+    );
 
     return {
       contracts,
@@ -193,7 +254,7 @@ const Test = {
     };
   },
 
-  performInitialDeploy: function(config, resolver) {
+  performInitialDeploy: function (config, resolver) {
     const migrateConfig = config.with({
       reset: true,
       resolver: resolver,
@@ -209,22 +270,37 @@ const Test = {
     }
   },
 
-  setJSTestGlobals: async function({
+  setJSTestGlobals: async function ({
     config,
     web3,
     interfaceAdapter,
     accounts,
     testResolver,
     runner,
-    compilation
+    compilations,
+    bugger //for stacktracing
   }) {
     global.interfaceAdapter = interfaceAdapter;
     global.web3 = web3;
     global.assert = chai.assert;
     global.expect = chai.expect;
     global.artifacts = {
-      require: import_path => testResolver.require(import_path)
+      require: importPath => {
+        let contract = testResolver.require(importPath);
+        //HACK: both of the following should go by means
+        //of the provisioner, but I'm not sure how to make
+        //that work at the moment
+        contract.reloadJson = function () {
+          const reloaded = testResolver.require(importPath);
+          this._json = reloaded._json;
+        };
+        if (bugger) {
+          contract.debugger = bugger;
+        }
+        return contract;
+      }
     };
+    global.config = config.normalize(config);
 
     global[config.debugGlobal] = async operation => {
       if (!config.debug) {
@@ -242,44 +318,44 @@ const Test = {
 
       // note: this.mochaRunner will be available by the time debug()
       // is invoked
-      const hook = new CLIDebugHook(config, compilation, this.mochaRunner);
+      const hook = new CLIDebugHook(config, compilations, this.mochaRunner);
 
       return await hook.debug(operation);
     };
 
-    const template = function(tests) {
+    const template = function (tests) {
       this.timeout(runner.TEST_TIMEOUT);
 
-      before("prepare suite", async function() {
+      before("prepare suite", async function () {
         this.timeout(runner.BEFORE_TIMEOUT);
         await runner.initialize();
       });
 
-      beforeEach("before test", async function() {
+      beforeEach("before test", async function () {
         await runner.startTest();
       });
 
-      afterEach("after test", async function() {
+      afterEach("after test", async function () {
         await runner.endTest(this);
       });
 
       tests(accounts);
     };
 
-    global.contract = function(name, tests) {
-      Mocha.describe("Contract: " + name, function() {
+    global.contract = function (name, tests) {
+      Mocha.describe("Contract: " + name, function () {
         template.bind(this, tests)();
       });
     };
 
-    global.contract.only = function(name, tests) {
-      Mocha.describe.only("Contract: " + name, function() {
+    global.contract.only = function (name, tests) {
+      Mocha.describe.only("Contract: " + name, function () {
         template.bind(this, tests)();
       });
     };
 
-    global.contract.skip = function(name, tests) {
-      Mocha.describe.skip("Contract: " + name, function() {
+    global.contract.skip = function (name, tests) {
+      Mocha.describe.skip("Contract: " + name, function () {
         template.bind(this, tests)();
       });
     };

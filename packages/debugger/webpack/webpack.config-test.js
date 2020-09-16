@@ -6,6 +6,7 @@ const WriteFilePlugin = require("write-file-webpack-plugin");
 const commonConfig = require("./webpack.config-common.js");
 
 module.exports = merge(commonConfig, {
+  mode: "development",
   module: {
     rules: [
       {
@@ -34,7 +35,5 @@ module.exports = merge(commonConfig, {
     }),
 
     new WriteFilePlugin()
-  ],
-
-  devtool: "#inline-cheap-module-source-map"
+  ]
 });

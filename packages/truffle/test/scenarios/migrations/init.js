@@ -7,16 +7,7 @@ const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const Web3 = require("web3");
 
-const log = console.log;
-
-function processErr(err, output) {
-  if (err) {
-    log(output);
-    throw new Error(err);
-  }
-}
-
-describe("solo migration", function() {
+describe("solo migration", function () {
   let config;
   let web3;
   let networkId;
@@ -26,7 +17,7 @@ describe("solo migration", function() {
   before(done => Server.start(done));
   after(done => Server.stop(done));
 
-  before(async function() {
+  before(async function () {
     this.timeout(10000);
     config = await sandbox.create(project);
     config.network = "development";
@@ -42,32 +33,27 @@ describe("solo migration", function() {
     networkId = await web3.eth.net.getId();
   });
 
-  it("runs a migration with just Migrations.sol ", function(done) {
+  it("runs a migration with just Migrations.sol ", async function () {
     this.timeout(70000);
 
-    CommandRunner.run("migrate", config, err => {
-      const output = logger.contents();
-      processErr(err, output);
+    await CommandRunner.run("migrate", config);
+    let output = logger.contents();
 
-      const location = path.join(
-        config.contracts_build_directory,
-        "Migrations.json"
-      );
-      const artifact = require(location);
-      const network = artifact.networks[networkId];
+    const location = path.join(
+      config.contracts_build_directory,
+      "Migrations.json"
+    );
+    const artifact = require(location);
+    const network = artifact.networks[networkId];
 
-      assert(output.includes(network.transactionHash));
-      assert(output.includes(network.address));
+    assert(output.includes(network.transactionHash));
+    assert(output.includes(network.address));
 
-      console.log(output);
+    console.log(output);
 
-      // Make sure it doesn't re-migrate the solo
-      CommandRunner.run("migrate", config, err => {
-        const output = logger.contents();
-        processErr(err, output);
-        assert(output.includes("Network up to date."));
-        done();
-      });
-    });
+    // Make sure it doesn't re-migrate the solo
+    await CommandRunner.run("migrate", config);
+    output = logger.contents();
+    assert(output.includes("Network up to date."));
   });
 });

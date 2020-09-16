@@ -3,60 +3,60 @@ const web3Utils = require("web3-utils");
 
 module.exports = {
   contract_name: {
-    get: function() {
+    get: function () {
       return this.contractName;
     },
-    set: function(val) {
+    set: function (val) {
       this.contractName = val;
     }
   },
   contractName: {
-    get: function() {
+    get: function () {
       return this._json.contractName || "Contract";
     },
-    set: function(val) {
+    set: function (val) {
       this._json.contractName = val;
     }
   },
 
   gasMultiplier: {
-    get: function() {
+    get: function () {
       if (this._json.gasMultiplier === undefined) {
         this._json.gasMultiplier = 1.25;
       }
       return this._json.gasMultiplier;
     },
-    set: function(val) {
+    set: function (val) {
       this._json.gasMultiplier = val;
     }
   },
   timeoutBlocks: {
-    get: function() {
+    get: function () {
       return this._json.timeoutBlocks;
     },
-    set: function(val) {
+    set: function (val) {
       this._json.timeoutBlocks = val;
     }
   },
   autoGas: {
-    get: function() {
+    get: function () {
       if (this._json.autoGas === undefined) {
         this._json.autoGas = true;
       }
       return this._json.autoGas;
     },
-    set: function(val) {
+    set: function (val) {
       this._json.autoGas = val;
     }
   },
   numberFormat: {
-    get: function() {
+    get: function () {
       if (this._json.numberFormat === undefined) {
         this._json.numberFormat = "BN";
       }
       return this._json.numberFormat;
     },
-    set: function(val) {
+    set: function (val) {
       const allowedFormats = ["BigNumber", "BN", "String"];
 
       const msg =
@@ -69,17 +69,17 @@ module.exports = {
     }
   },
   abi: {
-    get: function() {
+    get: function () {
       return this._json.abi;
     },
-    set: function(val) {
+    set: function (val) {
       this._json.abi = val;
     }
   },
-  metadata: function() {
+  metadata: function () {
     return this._json.metadata;
   },
-  network: function() {
+  network: function () {
     var network_id = this.network_id;
 
     if (network_id == null) {
@@ -121,11 +121,11 @@ module.exports = {
 
     return returnVal;
   },
-  networks: function() {
+  networks: function () {
     return this._json.networks;
   },
   address: {
-    get: function() {
+    get: function () {
       var address = this.network.address;
 
       if (address == null) {
@@ -138,7 +138,7 @@ module.exports = {
 
       return address;
     },
-    set: function(val) {
+    set: function (val) {
       if (val == null) {
         throw new Error("Cannot set deployed address; malformed value: " + val);
       }
@@ -173,14 +173,14 @@ module.exports = {
     }
   },
   transactionHash: {
-    get: function() {
+    get: function () {
       return this.network.transactionHash;
     },
-    set: function(val) {
+    set: function (val) {
       this.network.transactionHash = val;
     }
   },
-  links: function() {
+  links: function () {
     if (!this.network_id) {
       var error =
         this.contractName +
@@ -202,7 +202,7 @@ module.exports = {
 
     return this.network.links || {};
   },
-  events: function() {
+  events: function () {
     var events;
 
     if (this._json.networks[this.network_id] == null) {
@@ -214,7 +214,7 @@ module.exports = {
     // Merge abi events with whatever's returned.
     var abi = this.abi;
 
-    abi.forEach(function(item) {
+    abi.forEach(function (item) {
       if (item.type !== "event") return;
 
       if (item.signature) {
@@ -222,7 +222,7 @@ module.exports = {
       } else {
         var signature = item.name + "(";
 
-        item.inputs.forEach(function(input, index) {
+        item.inputs.forEach(function (input, index) {
           signature += input.type;
 
           if (index < item.inputs.length - 1) {
@@ -240,33 +240,33 @@ module.exports = {
 
     return events;
   },
-  binary: function() {
+  binary: function () {
     return utils.linkBytecode(this.bytecode, this.links);
   },
-  deployedBinary: function() {
+  deployedBinary: function () {
     return utils.linkBytecode(this.deployedBytecode, this.links);
   },
 
   // deprecated; use bytecode
   unlinked_binary: {
-    get: function() {
+    get: function () {
       return this.bytecode;
     },
-    set: function(val) {
+    set: function (val) {
       this.bytecode = val;
     }
   },
   // alias for unlinked_binary; unlinked_binary will eventually be deprecated
   bytecode: {
-    get: function() {
+    get: function () {
       return this._json.bytecode;
     },
-    set: function(val) {
+    set: function (val) {
       this._json.bytecode = val;
     }
   },
   deployedBytecode: {
-    get: function() {
+    get: function () {
       var code = this._json.deployedBytecode;
 
       if (!code) {
@@ -279,7 +279,7 @@ module.exports = {
 
       return code;
     },
-    set: function(val) {
+    set: function (val) {
       var code = val;
 
       if (val && val.indexOf("0x") !== 0) {
@@ -290,91 +290,115 @@ module.exports = {
     }
   },
   sourceMap: {
-    get: function() {
+    get: function () {
       return this._json.sourceMap;
     },
-    set: function(val) {
+    set: function (val) {
       this._json.sourceMap = val;
     }
   },
   deployedSourceMap: {
-    get: function() {
+    get: function () {
       return this._json.deployedSourceMap;
     },
-    set: function(val) {
+    set: function (val) {
       this._json.deployedSourceMap = val;
     }
   },
   source: {
-    get: function() {
+    get: function () {
       return this._json.source;
     },
-    set: function(val) {
+    set: function (val) {
       this._json.source = val;
     }
   },
   sourcePath: {
-    get: function() {
+    get: function () {
       return this._json.sourcePath;
     },
-    set: function(val) {
+    set: function (val) {
       this._json.sourcePath = val;
     }
   },
   legacyAST: {
-    get: function() {
+    get: function () {
       return this._json.legacyAST;
     },
-    set: function(val) {
+    set: function (val) {
       this._json.legacyAST = val;
     }
   },
   ast: {
-    get: function() {
+    get: function () {
       return this._json.ast;
     },
-    set: function(val) {
+    set: function (val) {
       this._json.ast = val;
     }
   },
   compiler: {
-    get: function() {
+    get: function () {
       return this._json.compiler;
     },
-    set: function(val) {
+    set: function (val) {
       this._json.compiler = val;
     }
   },
   // Deprecated
-  schema_version: function() {
+  schema_version: function () {
     return this.schemaVersion;
   },
-  schemaVersion: function() {
+  schemaVersion: function () {
     return this._json.schemaVersion;
   },
   // deprecated
-  updated_at: function() {
+  updated_at: function () {
     return this.updatedAt;
   },
-  updatedAt: function() {
+  updatedAt: function () {
     try {
       return this.network.updatedAt || this._json.updatedAt;
     } catch (e) {
       return this._json.updatedAt;
     }
   },
-  userdoc: function() {
+  userdoc: function () {
     return this._json.userdoc;
   },
-  devdoc: function() {
+  devdoc: function () {
     return this._json.devdoc;
   },
   networkType: {
-    get: function() {
+    get: function () {
       return this._json.networkType || "ethereum";
     },
-    set: function(_networkType) {
+    set: function (_networkType) {
       this._json.networkType = _networkType;
+    }
+  },
+  immutableReferences: {
+    get: function () {
+      return this._json.immutableReferences;
+    },
+    set: function (refs) {
+      this._json.immutableReferences = refs;
+    }
+  },
+  generatedSources: {
+    get: function () {
+      return this._json.generatedSources;
+    },
+    set: function (sources) {
+      this._json.generatedSources = sources;
+    }
+  },
+  deployedGeneratedSources: {
+    get: function () {
+      return this._json.deployedGeneratedSources;
+    },
+    set: function (sources) {
+      this._json.deployedGeneratedSources = sources;
     }
   }
 };

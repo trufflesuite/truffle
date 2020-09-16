@@ -1,5 +1,7 @@
+import "source-map-support/register";
 import path from "path";
-import lodash from "lodash";
+import assignIn from "lodash.assignin";
+import merge from "lodash.merge";
 import Module from "module";
 import findUp from "find-up";
 import Configstore from "configstore";
@@ -59,7 +61,7 @@ class TruffleConfig {
     Object.defineProperty(this, propertyName, {
       get:
         descriptor.get ||
-        function() {
+        function () {
           // value is specified
           if (propertyName in self._values) {
             return self._values[propertyName];
@@ -75,7 +77,7 @@ class TruffleConfig {
         },
       set:
         descriptor.set ||
-        function(value) {
+        function (value) {
           self._values[propertyName] = descriptor.transform
             ? descriptor.transform(value)
             : value;
@@ -106,7 +108,7 @@ class TruffleConfig {
     let eventsOptions = this.eventManagerOptions(this);
     this.events.updateSubscriberOptions(eventsOptions);
 
-    return lodash.extend(
+    return assignIn(
       Object.create(TruffleConfig.prototype),
       current,
       normalized
@@ -122,7 +124,7 @@ class TruffleConfig {
     propertyNames.forEach(key => {
       try {
         if (typeof clone[key] === "object" && this._deepCopy.includes(key)) {
-          this[key] = lodash.merge(this[key], clone[key]);
+          this[key] = merge(this[key], clone[key]);
         } else {
           this[key] = clone[key];
         }

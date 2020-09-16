@@ -1,30 +1,31 @@
 const debug = require("debug")("compile:run"); // eslint-disable-line no-unused-vars
 const OS = require("os");
 const semver = require("semver");
-
 const CompileError = require("./compileerror");
 const CompilerSupplier = require("./compilerSupplier");
 
+// this function returns a Compilation - legacy/index.js and ./index.js
+// both check to make sure rawSources exist before calling this method
+// however, there is a check here that returns null if no sources exist
 async function run(rawSources, options) {
   if (Object.keys(rawSources).length === 0) {
-    return {
-      contracts: [],
-      sourceIndexes: [],
-      compilerInfo: undefined
-    };
+    return null;
   }
+
   // Ensure sources have operating system independent paths
   // i.e., convert backslashes to forward slashes; things like C: are left intact.
   const { sources, targets, originalSourcePaths } = collectSources(
     rawSources,
     options.compilationTargets
   );
+
   // construct solc compiler input
   const compilerInput = prepareCompilerInput({
     sources,
     targets,
     settings: options.compilers.solc.settings
   });
+
   // perform compilation
   const { compilerOutput, solcVersion } = await invokeCompiler({
     compilerInput,
@@ -51,6 +52,7 @@ async function run(rawSources, options) {
   }
 
   // success case
+  // returns Compilation - see @truffle/compile-common
   return {
     sourceIndexes: processSources({
       compilerOutput,
@@ -62,7 +64,7 @@ async function run(rawSources, options) {
       solcVersion,
       originalSourcePaths
     }),
-    compilerInfo: {
+    compiler: {
       name: "solc",
       version: solcVersion
     }
@@ -184,6 +186,9 @@ function prepareCompilerInput({ sources, targets, settings }) {
       evmVersion: settings.evmVersion,
       optimizer: settings.optimizer,
       remappings: settings.remappings,
+      debug: settings.debug,
+      metadata: settings.metadata,
+      libraries: settings.libraries,
       // Specify compilation targets. Each target uses defaultSelectors,
       // defaulting to single target `*` if targets are unspecified
       outputSelection: prepareOutputSelection({ targets })
@@ -214,9 +219,14 @@ function prepareOutputSelection({ targets = [] }) {
       "abi",
       "metadata",
       "evm.bytecode.object",
+      "evm.bytecode.linkReferences",
       "evm.bytecode.sourceMap",
+      "evm.bytecode.generatedSources",
       "evm.deployedBytecode.object",
+      "evm.deployedBytecode.linkReferences",
       "evm.deployedBytecode.sourceMap",
+      "evm.deployedBytecode.immutableReferences",
+      "evm.deployedBytecode.generatedSources",
       "userdoc",
       "devdoc"
     ]
@@ -292,7 +302,7 @@ function detectErrors({
         OS.EOL,
         `Please update your truffle config or pragma statement(s).`,
         OS.EOL,
-        `(See https://truffleframework.com/docs/truffle/reference/configuration#compiler-configuration `,
+        `(See https://trufflesuite.com/docs/truffle/reference/configuration#compiler-configuration `,
         `for information on`,
         OS.EOL,
         `configuring Truffle to use a specific solc compiler version.)`
@@ -356,10 +366,17 @@ function processContracts({
           contractName,
           contract: {
             evm: {
-              bytecode: { sourceMap, linkReferences, object: bytecode },
+              bytecode: {
+                sourceMap,
+                linkReferences,
+                generatedSources,
+                object: bytecode
+              },
               deployedBytecode: {
                 sourceMap: deployedSourceMap,
                 linkReferences: deployedLinkReferences,
+                generatedSources: deployedGeneratedSources,
+                immutableReferences,
                 object: deployedBytecode
               }
             },
@@ -394,6 +411,10 @@ function processContracts({
             bytes: deployedBytecode,
             linkReferences: formatLinkReferences(deployedLinkReferences)
           }),
+          immutableReferences, //ideally this would be part of the deployedBytecode object,
+          //but compatibility makes that impossible
+          generatedSources,
+          deployedGeneratedSources,
           compiler: {
             name: "solc",
             version: solcVersion

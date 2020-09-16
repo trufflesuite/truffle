@@ -19,33 +19,63 @@ const session = createSelectorTree({
   info: {
     /**
      * session.info.affectedInstances
+     * NOTE: this really belongs in session.transaction,
+     * but that would be a breaking change
      */
     affectedInstances: createLeaf(
-      [evm.current.codex.instances, evm.info.contexts, solidity.info.sources],
+      [
+        evm.transaction.affectedInstances,
+        evm.info.contexts,
+        solidity.info.sources
+      ],
 
       (instances, contexts, sources) =>
         Object.assign(
           {},
           ...Object.entries(instances).map(
-            ([address, { context: contextId, binary }]) => {
+            ([
+              address,
+              {
+                context: contextId,
+                binary,
+                creationBinary,
+                creationContext: creationContextId
+              }
+            ]) => {
               debug("instances %O", instances);
               debug("contexts %O", contexts);
               let context = contexts[contextId];
               if (!context) {
                 return { [address]: { binary } };
               }
-              let { contractName, primarySource } = context;
+              let { contractName, compilationId, primarySource } = context;
+
+              debug("primarySource: %o", primarySource);
+              debug("compilationId: %s", compilationId);
+              debug("sources: %o", sources);
 
               let source =
                 primarySource !== undefined
-                  ? sources[primarySource]
+                  ? sources[compilationId].byId[primarySource]
                   : undefined;
+
+              let constructorArgs;
+              if (creationBinary !== undefined) {
+                let creationContext = contexts[creationContextId];
+                if (creationContext !== null) {
+                  //slice off the bytecode part of the constructor to leave the arguments
+                  constructorArgs = creationBinary.slice(
+                    creationContext.binary.length
+                  );
+                }
+              }
 
               return {
                 [address]: {
                   contractName,
                   source,
-                  binary
+                  binary,
+                  constructorArgs //will be defined only if created by this tx
                 }
               };
             }
@@ -127,13 +157,10 @@ const session = createSelectorTree({
      */
     loaded: createLeaf([trace.loaded], loaded => loaded),
 
-    /*
-     * session.status.projectInfoComputed
+    /**
+     * session.status.lightMode
      */
-    projectInfoComputed: createLeaf(
-      ["/state"],
-      state => state.projectInfoComputed
-    )
+    lightMode: createLeaf(["/state"], state => state.lightMode)
   }
 });
 

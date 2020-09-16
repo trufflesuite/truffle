@@ -13,7 +13,7 @@ import * as Codec from "@truffle/codec";
 import solidity from "lib/solidity/selectors";
 
 const __CALLDATA = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.7.0;
 pragma experimental ABIEncoderV2;
 
 contract CalldataTest {
@@ -69,6 +69,11 @@ contract CalldataTest {
     return stringBox.it; //break stringBox
   }
 
+  function sliceTest(uint[] calldata nums) external returns (uint[] memory) {
+    uint[] calldata sliced = nums[1 : nums.length - 1];
+    emit Done(); //break slice
+  }
+
 }
 
 library CalldataLibrary {
@@ -100,51 +105,45 @@ let migrations = {
   "2_deploy_contracts.js": __MIGRATION
 };
 
-describe("Calldata Decoding", function() {
+describe("Calldata Decoding", function () {
   var provider;
 
   var abstractions;
-  var artifacts;
-  var files;
+  var compilations;
 
-  before("Create Provider", async function() {
+  before("Create Provider", async function () {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
-  before("Prepare contracts and artifacts", async function() {
+  before("Prepare contracts and artifacts", async function () {
     this.timeout(30000);
 
     let prepared = await prepareContracts(provider, sources, migrations);
     abstractions = prepared.abstractions;
-    artifacts = prepared.artifacts;
-    files = prepared.files;
+    compilations = prepared.compilations;
   });
 
-  it("Decodes various types correctly", async function() {
+  it("Decodes various types correctly", async function () {
     this.timeout(9000);
     let instance = await abstractions.CalldataTest.deployed();
     let receipt = await instance.multiTester();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-
-    let sourceId = session.view(solidity.current.source).id;
-    let source = session.view(solidity.current.source).source;
-    await session.addBreakpoint({
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
       sourceId,
+      compilationId,
       line: lineOf("break multi", source)
     });
 
-    await session.continueUntilBreakpoint();
+    await bugger.continueUntilBreakpoint();
 
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
 
     const expectedResult = {
@@ -156,31 +155,27 @@ describe("Calldata Decoding", function() {
     assert.deepInclude(variables, expectedResult);
   });
 
-  it("Decodes correctly in the initial call", async function() {
+  it("Decodes correctly in the initial call", async function () {
     this.timeout(6000);
     let instance = await abstractions.CalldataTest.deployed();
     let receipt = await instance.simpleTest("hello world");
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-
-    let sourceId = session.view(solidity.current.source).id;
-    let source = session.view(solidity.current.source).source;
-    await session.addBreakpoint({
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
       sourceId,
+      compilationId,
       line: lineOf("break simple", source)
     });
 
-    await session.continueUntilBreakpoint();
+    await bugger.continueUntilBreakpoint();
 
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
 
     const expectedResult = {
@@ -190,31 +185,27 @@ describe("Calldata Decoding", function() {
     assert.include(variables, expectedResult);
   });
 
-  it("Decodes dynamic structs correctly", async function() {
+  it("Decodes dynamic structs correctly", async function () {
     this.timeout(6000);
     let instance = await abstractions.CalldataTest.deployed();
     let receipt = await instance.stringBoxTest({ it: "hello world" });
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-
-    let sourceId = session.view(solidity.current.source).id;
-    let source = session.view(solidity.current.source).source;
-    await session.addBreakpoint({
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
       sourceId,
+      compilationId,
       line: lineOf("break stringBox", source)
     });
 
-    await session.continueUntilBreakpoint();
+    await bugger.continueUntilBreakpoint();
 
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
 
     const expectedResult = {
@@ -226,7 +217,7 @@ describe("Calldata Decoding", function() {
     assert.deepInclude(variables, expectedResult);
   });
 
-  it("Decodes correctly in a pure call", async function() {
+  it("Decodes correctly in a pure call", async function () {
     this.timeout(6000);
     let instance = await abstractions.CalldataTest.deployed();
     let receipt = await instance.staticTester();
@@ -234,23 +225,22 @@ describe("Calldata Decoding", function() {
 
     let bugger = await Debugger.forTx(txHash, {
       provider,
-      files,
-      contracts: artifacts
+      compilations
     });
 
-    let session = bugger.connect();
-
-    let sourceId = session.view(solidity.current.source).id;
-    let source = session.view(solidity.current.source).source;
-    await session.addBreakpoint({
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
       sourceId,
+      compilationId,
       line: lineOf("break static", source)
     });
 
-    await session.continueUntilBreakpoint();
+    await bugger.continueUntilBreakpoint();
 
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
 
     const expectedResult = {
@@ -260,7 +250,7 @@ describe("Calldata Decoding", function() {
     assert.include(variables, expectedResult);
   });
 
-  it("Decodes correctly in a library call", async function() {
+  it("Decodes correctly in a library call", async function () {
     this.timeout(6000);
     let instance = await abstractions.CalldataTest.deployed();
     let receipt = await instance.delegateTester();
@@ -268,23 +258,22 @@ describe("Calldata Decoding", function() {
 
     let bugger = await Debugger.forTx(txHash, {
       provider,
-      files,
-      contracts: artifacts
+      compilations
     });
 
-    let session = bugger.connect();
-
-    let sourceId = session.view(solidity.current.source).id;
-    let source = session.view(solidity.current.source).source;
-    await session.addBreakpoint({
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
       sourceId,
+      compilationId,
       line: lineOf("break delegate", source)
     });
 
-    await session.continueUntilBreakpoint();
+    await bugger.continueUntilBreakpoint();
 
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
 
     const expectedResult = {
@@ -292,5 +281,38 @@ describe("Calldata Decoding", function() {
     };
 
     assert.include(variables, expectedResult);
+  });
+
+  it("Decodes array slices correctly", async function () {
+    this.timeout(6000);
+    let instance = await abstractions.CalldataTest.deployed();
+    let receipt = await instance.sliceTest([20, 21, 22, 23, 24]);
+    let txHash = receipt.tx;
+
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      compilations
+    });
+
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
+      sourceId,
+      compilationId,
+      line: lineOf("break slice", source)
+    });
+
+    await bugger.continueUntilBreakpoint();
+
+    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
+      await bugger.variables()
+    );
+
+    const expectedResult = {
+      sliced: [21, 22, 23]
+    };
+
+    assert.deepInclude(variables, expectedResult);
   });
 });

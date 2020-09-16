@@ -63,7 +63,7 @@ export function* decodeAbiReferenceByAddress(
   info: Evm.EvmInfo,
   options: DecoderOptions = {}
 ): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
-  let { strictAbiMode: strict, abiPointerBase: base } = options;
+  let { strictAbiMode: strict, abiPointerBase: base, lengthOverride } = options;
   base = base || 0; //in case base was undefined
   const {
     allocations: { abi: allocations },
@@ -76,11 +76,15 @@ export function* decodeAbiReferenceByAddress(
     pointer.location === "stack" || pointer.location === "stackliteral"
       ? "calldata"
       : pointer.location;
+  if (pointer.location !== "stack" && pointer.location !== "stackliteral") {
+    //length overrides are only applicable when you're decoding a pointer
+    //from the stack!  otherwise they must be ignored!
+    lengthOverride = undefined;
+  }
 
   let rawValue: Uint8Array;
   try {
     rawValue = yield* read(pointer, state);
-    debug("state: %O", state);
   } catch (error) {
     if (strict) {
       throw new StopDecodingError((<DecodingError>error).error);
@@ -152,28 +156,37 @@ export function* decodeAbiReferenceByAddress(
   switch (dataType.typeClass) {
     case "bytes":
     case "string":
-      //initial word contains length
-      try {
-        rawLength = yield* read(
-          {
-            location,
-            start: startPosition,
-            length: Evm.Utils.WORD_SIZE
-          },
-          state
-        );
-      } catch (error) {
-        if (strict) {
-          throw new StopDecodingError((<DecodingError>error).error);
+      //initial word contains length (unless an override was given)
+      if (lengthOverride !== undefined) {
+        lengthAsBN = lengthOverride;
+        //note in this case we do *not* increment start position;
+        //if a length override is given, that means the given start
+        //position skips over the length word!
+      } else {
+        try {
+          rawLength = yield* read(
+            {
+              location,
+              start: startPosition,
+              length: Evm.Utils.WORD_SIZE
+            },
+            state
+          );
+        } catch (error) {
+          if (strict) {
+            throw new StopDecodingError((<DecodingError>error).error);
+          }
+          return <Format.Errors.ErrorResult>{
+            //dunno why TS is failing here
+            type: dataType,
+            kind: "error" as const,
+            error: (<DecodingError>error).error
+          };
         }
-        return <Format.Errors.ErrorResult>{
-          //dunno why TS is failing here
-          type: dataType,
-          kind: "error" as const,
-          error: (<DecodingError>error).error
-        };
+        lengthAsBN = Conversion.toBN(rawLength);
+        startPosition += Evm.Utils.WORD_SIZE; //increment start position after reading length
+        //so it'll be set up to read the data
       }
-      lengthAsBN = Conversion.toBN(rawLength);
       if (strict && lengthAsBN.gtn(state[location].length)) {
         //you may notice that the comparison is a bit crude; that's OK, this is
         //just to prevent huge numbers from DOSing us, other errors will still
@@ -205,7 +218,7 @@ export function* decodeAbiReferenceByAddress(
 
       let childPointer: Pointer.AbiDataPointer = {
         location,
-        start: startPosition + Evm.Utils.WORD_SIZE,
+        start: startPosition,
         length
       };
 
@@ -217,36 +230,43 @@ export function* decodeAbiReferenceByAddress(
       );
 
     case "array":
-      switch (dataType.kind) {
-        case "dynamic":
-          //initial word contains array length
-          try {
-            rawLength = yield* read(
-              {
-                location,
-                start: startPosition,
-                length: Evm.Utils.WORD_SIZE
-              },
-              state
-            );
-          } catch (error) {
-            //error: DecodingError
-            if (strict) {
-              throw new StopDecodingError((<DecodingError>error).error);
-            }
-            return {
-              type: dataType,
-              kind: "error" as const,
-              error: (<DecodingError>error).error
-            };
+      if (dataType.kind === "static") {
+        //static-length array
+        lengthAsBN = dataType.length;
+        //note we don't increment start position; static arrays don't
+        //include a length word!
+      } else if (lengthOverride !== undefined) {
+        debug("override: %o", lengthOverride);
+        //dynamic-length array, but with length override
+        lengthAsBN = lengthOverride;
+        //we don't increment start position; if a length override was
+        //given, that means the pointer skipped the length word!
+      } else {
+        //dynamic-length array, read length from data
+        //initial word contains array length
+        try {
+          rawLength = yield* read(
+            {
+              location,
+              start: startPosition,
+              length: Evm.Utils.WORD_SIZE
+            },
+            state
+          );
+        } catch (error) {
+          //error: DecodingError
+          if (strict) {
+            throw new StopDecodingError((<DecodingError>error).error);
           }
-          lengthAsBN = Conversion.toBN(rawLength);
-          startPosition += Evm.Utils.WORD_SIZE; //increment startPosition
-          //to next word, as first word was used for length
-          break;
-        case "static":
-          lengthAsBN = dataType.length;
-          break;
+          return {
+            type: dataType,
+            kind: "error" as const,
+            error: (<DecodingError>error).error
+          };
+        }
+        lengthAsBN = Conversion.toBN(rawLength);
+        startPosition += Evm.Utils.WORD_SIZE; //increment startPosition
+        //to next word, as first word was used for length
       }
       if (strict && lengthAsBN.gtn(state[location].length)) {
         //you may notice that the comparison is a bit crude; that's OK, this is
@@ -436,7 +456,7 @@ function* decodeAbiStructByPosition(
   const typeLocation = location === "calldata" ? "calldata" : null; //other abi locations are not valid type locations
 
   const typeId = dataType.id;
-  const structAllocation = allocations[parseInt(typeId)];
+  const structAllocation = allocations[typeId];
   if (!structAllocation) {
     let error = {
       kind: "UserDefinedTypeNotFoundError" as const,
@@ -464,25 +484,8 @@ function* decodeAbiStructByPosition(
     };
 
     let memberName = memberAllocation.name;
-    let storedType = <Format.Types.StructType>userDefinedTypes[typeId];
-    if (!storedType) {
-      let error = {
-        kind: "UserDefinedTypeNotFoundError" as const,
-        type: dataType
-      };
-      if (options.strictAbiMode || options.allowRetry) {
-        throw new StopDecodingError(error, true);
-        //similarly we allow a retry if we couldn't locate the type
-      }
-      return {
-        type: dataType,
-        kind: "error" as const,
-        error
-      };
-    }
-    let storedMemberType = storedType.memberTypes[index].type;
     let memberType = Format.Types.specifyLocation(
-      storedMemberType,
+      memberAllocation.type,
       typeLocation
     );
 

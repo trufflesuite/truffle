@@ -1,23 +1,28 @@
-const compile = require("@truffle/compile-solidity/new");
+const { Compile } = require("@truffle/compile-solidity");
 
 class DebugCompiler {
   constructor(config) {
     this.config = config;
   }
 
-  async compile() {
-    //we need to set up a config object for the compiler.
-    //it's the same as the existing config, but we turn on quiet.
-    //unfortunately, we don't have Babel here, so cloning is annoying.
-    const compileConfig = Object.assign(
-      {},
-      ...Object.entries(this.config).map(([key, value]) => ({ [key]: value }))
-    ); //clone
-    compileConfig.quiet = true;
+  async compile(sources = undefined) {
+    const compileConfig = this.config.with({ quiet: true });
 
-    const { contracts, sourceIndexes } = await compile.all(compileConfig);
+    const { compilations } = sources
+      ? await Compile.sources({ sources, options: compileConfig }) //used by external.js
+      : await Compile.all(compileConfig);
 
-    return { contracts, sourceIndexes };
+    return compilations.reduce(
+      (a, compilation) => {
+        a.contracts = a.contracts.concat(compilation.contracts);
+        a.sourceIndexes = a.sourceIndexes.concat(compilation.sourceIndexes);
+        return a;
+      },
+      {
+        contracts: [],
+        sourceIndexes: []
+      }
+    );
   }
 }
 

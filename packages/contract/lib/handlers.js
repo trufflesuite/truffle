@@ -12,25 +12,28 @@ const handlers = {
   maxConfirmations: 24, // Maximum number of confirmation web3 emits
   defaultTimeoutBlocks: 50, // Maximum number of blocks web3 will wait before abandoning tx
   timeoutMessage: "50 blocks", // Substring of web3 timeout error.
+  defaultWeb3Error: "please check your gas limit", // Substring of default Web3 error
 
   // -----------------------------------  Helpers --------------------------------------------------
 
   /**
-   * Parses error message and determines if we should squash block timeout errors at user's request.
-   * @param  {Object} context execution state
-   * @param  {Object} error   error
+   * Parses error message and determines if we should squash web3 timeout errors at user's request.
+   * @param  {Object} contract contract instance
+   * @param  {Object} message  error message
    * @return {Boolean}
    */
-  ignoreTimeoutError: function(context, error) {
-    const timedOut =
-      error.message && error.message.includes(handlers.timeoutMessage);
+  ignoreTimeoutError({ contract }, { message }) {
+    const timedOut = message && message.includes(handlers.timeoutMessage);
 
     const shouldWait =
-      context.contract &&
-      context.contract.timeoutBlocks &&
-      context.contract.timeoutBlocks > handlers.defaultTimeoutBlocks;
+      contract &&
+      contract.timeoutBlocks &&
+      contract.timeoutBlocks > handlers.defaultTimeoutBlocks;
 
-    return timedOut && shouldWait;
+    const waitForTxPropagation =
+      message && message.includes(handlers.defaultWeb3Error);
+
+    return shouldWait && (timedOut || waitForTxPropagation);
   },
 
   /**
@@ -38,7 +41,7 @@ const handlers = {
    * @param {Object}       context  execution state
    * @param {PromiEvent}   emitter  promiEvent returned by a web3 method call
    */
-  setup: function(emitter, context) {
+  setup: function (emitter, context) {
     emitter.on("error", handlers.error.bind(emitter, context));
     emitter.on("transactionHash", handlers.hash.bind(emitter, context));
     emitter.on("confirmation", handlers.confirmation.bind(emitter, context));
@@ -52,7 +55,7 @@ const handlers = {
    * @param  {Object} context   execution state
    * @param  {Object} error     error
    */
-  error: function(context, error) {
+  error: function (context, error) {
     if (!handlers.ignoreTimeoutError(context, error)) {
       context.promiEvent.eventEmitter.emit("error", error);
       this.removeListener("error", handlers.error);
@@ -65,13 +68,13 @@ const handlers = {
    * @param  {Object} context   execution state
    * @param  {String} hash      transaction hash
    */
-  hash: function(context, hash) {
+  hash: function (context, hash) {
     context.transactionHash = hash;
     context.promiEvent.eventEmitter.emit("transactionHash", hash);
     this.removeListener("transactionHash", handlers.hash);
   },
 
-  confirmation: function(context, number, receipt) {
+  confirmation: function (context, number, receipt) {
     context.promiEvent.eventEmitter.emit("confirmation", number, receipt);
 
     // Per web3: initial confirmation index is 0
@@ -86,7 +89,7 @@ const handlers = {
    * @param  {Object} context   execution state
    * @param  {Object} receipt   transaction receipt
    */
-  receipt: async function(context, receipt) {
+  receipt: async function (context, receipt) {
     // keep around the raw (not decoded) logs in the raw logs field as a
     // stopgap until we can get the ABI for all events, not just the current
     // contract

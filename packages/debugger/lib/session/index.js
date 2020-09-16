@@ -2,41 +2,53 @@ import debugModule from "debug";
 const debug = debugModule("debugger:session");
 
 import * as Codec from "@truffle/codec";
+import { keccak256 } from "lib/helpers";
 
 import configureStore from "lib/store";
 
 import * as controller from "lib/controller/actions";
 import * as actions from "./actions";
 import data from "lib/data/selectors";
+import stacktrace from "lib/stacktrace/selectors";
 import session from "lib/session/selectors";
 import * as dataSagas from "lib/data/sagas";
 import * as controllerSagas from "lib/controller/sagas";
 import * as sagas from "./sagas";
 import controllerSelector from "lib/controller/selectors";
 
+import { createNestedSelector } from "reselect-tree";
+
+import ast from "lib/ast/selectors";
+import trace from "lib/trace/selectors";
+import evm from "lib/evm/selectors";
+import solidity from "lib/solidity/selectors";
+
 import rootSaga from "./sagas";
 import reducer from "./reducers";
+
+import { Shims } from "@truffle/compile-common";
 
 /**
  * Debugger Session
  */
 export default class Session {
   /**
-   * @param {Array<Contract>} contracts - contract definitions
-   * @param {Array<String>} files - array of filenames for sourceMap indexes
+   * @param {Array<Compilations>} compilations
    * @param {Web3Provider} provider - web3 provider
    * txHash parameter is now optional!
    * @private
    */
-  constructor(contracts, files, provider, txHash) {
+  constructor(compilations, provider, moduleOptions, txHash) {
     /**
      * @private
      */
-    let { store, sagaMiddleware } = configureStore(reducer, rootSaga);
+    let { store, sagaMiddleware } = configureStore(reducer, rootSaga, [
+      moduleOptions
+    ]);
     this._store = store;
     this._sagaMiddleware = sagaMiddleware;
 
-    let { contexts, sources } = Session.normalize(contracts, files);
+    let { contexts, sources } = Session.normalize(compilations);
 
     // record contracts
     this._store.dispatch(actions.recordContracts(contexts, sources));
@@ -99,79 +111,141 @@ export default class Session {
    * Multiple contracts can be defined in the same source file, but have
    * different bytecodes.
    *
-   * This iterates over the contracts and collects binaries separately
-   * from sources, using the optional `files` argument to force
-   * source ordering.
+   * (NOTE: now that this takes compilations, the splitting is largely already
+   * done.  However, there's still remaining work to do.)
+   *
    * @private
    */
-  static normalize(contracts, files = null) {
-    let sourcesByPath = {};
+  static normalize(compilations) {
     let contexts = [];
-    let sources;
+    let sources = {}; //by compilation, then index
 
-    for (let contract of contracts) {
-      let {
-        contractName,
-        binary,
-        sourceMap,
-        deployedBinary,
-        deployedSourceMap,
-        sourcePath,
-        source,
-        ast,
-        abi,
-        compiler
-      } = contract;
+    for (let compilation of compilations) {
+      if (compilation.unreliableSourceOrder) {
+        throw new Error(
+          `Error: Compilation ${compilation.id} has unreliable source order.`
+        );
+      }
+      let compiler = compilation.compiler; //note: we'll prefer one listed on contract or source
+      sources[compilation.id] = [];
+      for (let index in compilation.sources) {
+        //not the recommended way to iterate over an array,
+        //but the order doesn't matter here so it's safe
+        let source = compilation.sources[index];
+        if (!source) {
+          continue; //just for safety (in case there are gaps)
+        }
+        sources[compilation.id][index] = {
+          ...source,
+          compiler: source.compiler || compiler,
+          compilationId: compilation.id,
+          id: index
+        };
+      }
 
-      let contractNode = ast.nodes.find(
-        node =>
-          node.nodeType === "ContractDefinition" && node.name === contractName
-      ); //ideally we'd hold this off till later, but that would break the
-      //direction of the evm/solidity dependence, so we do it now
-
-      let contractId = contractNode.id;
-      let contractKind = contractNode.contractKind;
-      abi = Codec.AbiData.Utils.schemaAbiToAbi(abi); //let's handle this up front
-
-      debug("contractName %s", contractName);
-      debug("sourceMap %o", sourceMap);
-      debug("compiler %o", compiler);
-      debug("abi %O", abi);
-
-      sourcesByPath[sourcePath] = { sourcePath, source, ast, compiler };
-
-      if (binary && binary != "0x") {
-        contexts.push({
+      for (let contract of compilation.contracts) {
+        let {
           contractName,
-          binary,
+          bytecode: binary,
           sourceMap,
+          deployedBytecode: deployedBinary,
+          deployedSourceMap,
+          immutableReferences,
           abi,
           compiler,
-          contractId,
-          contractKind,
-          isConstructor: true
-        });
-      }
+          primarySourceId
+        } = contract;
 
-      if (deployedBinary && deployedBinary != "0x") {
-        contexts.push({
-          contractName,
-          binary: deployedBinary,
-          sourceMap: deployedSourceMap,
-          abi,
-          compiler,
-          contractId,
-          contractKind,
-          isConstructor: false
-        });
+        //hopefully we can get rid of this step eventually, but not yet
+        if (typeof binary === "object") {
+          binary = Shims.NewToLegacy.forBytecode(binary);
+        }
+        if (typeof deployedBinary === "object") {
+          deployedBinary = Shims.NewToLegacy.forBytecode(deployedBinary);
+        }
+
+        let primarySourceIndex;
+        if (primarySourceId !== undefined) {
+          //I'm assuming this finds it! it had better!
+          primarySourceIndex = compilation.sources.findIndex(
+            source => source && source.id === primarySourceId
+          );
+        }
+        //otherwise leave it undefined
+
+        //now: we need to find the contract node.
+        //note: ideally we'd hold this off till later, but that would break the
+        //direction of the evm/solidity dependence, so we do it now
+        let contractNode = Codec.Compilations.Utils.getContractNode(
+          contract,
+          compilation
+        );
+
+        let contractId = contractNode ? contractNode.id : undefined;
+        let contractKind = contractNode ? contractNode.contractKind : undefined;
+        abi = Codec.AbiData.Utils.schemaAbiToAbi(abi); //let's handle this up front
+
+        debug("contractName %s", contractName);
+        debug("sourceMap %o", sourceMap);
+        debug("compiler %o", compiler);
+        debug("abi %O", abi);
+
+        if (binary && binary != "0x") {
+          contexts.push({
+            contractName,
+            binary,
+            sourceMap,
+            primarySource: primarySourceIndex,
+            abi,
+            compiler,
+            compilationId: compilation.id,
+            contractId,
+            contractKind,
+            externalSolidity: compilation.externalSolidity,
+            isConstructor: true
+          });
+        }
+
+        if (deployedBinary && deployedBinary != "0x") {
+          contexts.push({
+            contractName,
+            binary: deployedBinary,
+            sourceMap: deployedSourceMap,
+            primarySource: primarySourceIndex,
+            immutableReferences,
+            abi,
+            compiler,
+            compilationId: compilation.id,
+            contractId,
+            contractKind,
+            externalSolidity: compilation.externalSolidity,
+            isConstructor: false
+          });
+        }
       }
     }
 
-    if (!files) {
-      sources = Object.values(sourcesByPath);
-    } else {
-      sources = files.map(file => sourcesByPath[file]);
-    }
+    //now: turn contexts from array into object
+    contexts = Object.assign(
+      {},
+      ...contexts.map(context => {
+        const contextHash = keccak256({
+          type: "string",
+          value: context.binary
+        });
+        //NOTE: we take hash as *string*, not as bytes, because the binary may
+        //contain link references!
+        return {
+          [contextHash]: {
+            ...context,
+            context: contextHash
+          }
+        };
+      })
+    );
+
+    //normalize contexts
+    contexts = Codec.Contexts.Utils.normalizeContexts(contexts);
 
     return { contexts, sources };
   }
@@ -308,8 +382,14 @@ export default class Session {
   async variable(name) {
     const definitions = this.view(data.current.identifiers.definitions);
     const refs = this.view(data.current.identifiers.refs);
+    const compilationId = this.view(data.current.compilationId);
 
-    return await this._runSaga(dataSagas.decode, definitions[name], refs[name]);
+    return await this._runSaga(
+      dataSagas.decode,
+      definitions[name],
+      refs[name],
+      compilationId
+    );
   }
 
   async variables() {
@@ -318,16 +398,68 @@ export default class Session {
     }
     let definitions = this.view(data.current.identifiers.definitions);
     let refs = this.view(data.current.identifiers.refs);
+    let compilationId = this.view(data.current.compilationId);
     let decoded = {};
     for (let [identifier, ref] of Object.entries(refs)) {
       if (identifier in definitions) {
         decoded[identifier] = await this._runSaga(
           dataSagas.decode,
           definitions[identifier],
-          ref
+          ref,
+          compilationId
         );
       }
     }
     return decoded;
+  }
+
+  async returnValue() {
+    if (
+      !this.view(session.status.loaded) ||
+      !this.view(evm.current.step.isHalting)
+    ) {
+      return null;
+    }
+    return await this._runSaga(dataSagas.decodeReturnValue);
+  }
+
+  callstack() {
+    if (!this.view(session.status.loaded)) {
+      return null;
+    }
+    return this.view(stacktrace.current.report);
+  }
+
+  stacktrace() {
+    if (!this.view(session.status.loaded)) {
+      return null;
+    }
+    return this.view(stacktrace.current.finalReport);
+  }
+
+  connect() {
+    return this; //for compatibility
+  }
+
+  async addExternalCompilations(compilations) {
+    let { contexts, sources } = Session.normalize(compilations);
+    return await this.dispatch(actions.addCompilations(sources, contexts));
+  }
+
+  async startFullMode() {
+    return await this.dispatch(actions.startFullMode());
+  }
+
+  get selectors() {
+    return createNestedSelector({
+      ast,
+      data,
+      trace,
+      evm,
+      solidity,
+      stacktrace,
+      session,
+      controller: controllerSelector
+    });
   }
 }

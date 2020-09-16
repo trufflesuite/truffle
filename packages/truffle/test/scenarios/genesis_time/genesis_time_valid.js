@@ -1,33 +1,25 @@
 const MemoryLogger = require("../memorylogger");
 const CommandRunner = require("../commandrunner");
-const assert = require("assert");
 const Reporter = require("../reporter");
 const Server = require("../server");
 var path = require("path");
 var sandbox = require("../sandbox");
 const fs = require("fs-extra");
 
-describe("Genesis time config for truffle test, passing tests [ @standalone ]", function() {
+describe("Genesis time config for truffle test, passing tests [ @standalone ]", function () {
   const logger = new MemoryLogger();
   let config;
 
-  function processErr(err, output) {
-    if (err) {
-      console.log(output);
-      throw new Error(err);
-    }
-  }
-
-  before("set up the server", function(done) {
+  before("set up the server", function (done) {
     Server.start(done);
   });
 
-  after("stop server", function(done) {
+  after("stop server", function (done) {
     Server.stop(done);
   });
 
-  describe("test with valid date", function() {
-    before("set up sandbox", function() {
+  describe("test with valid date", function () {
+    before("set up sandbox", function () {
       this.timeout(10000);
       let project = path.join(
         __dirname,
@@ -47,14 +39,9 @@ describe("Genesis time config for truffle test, passing tests [ @standalone ]", 
       await fs.ensureDir(config.test_directory);
     });
 
-    it("will run test and error should be undefined", function(done) {
+    it("will run test and error should be undefined", async function () {
       this.timeout(90000);
-      CommandRunner.run("test", config, function(err) {
-        const output = logger.contents();
-        processErr(err, output);
-        assert(typeof err === "undefined");
-        done();
-      });
+      await CommandRunner.run("test", config);
     });
   });
 });

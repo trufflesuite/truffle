@@ -1,27 +1,26 @@
-var MemoryLogger = require("../memorylogger");
-var CommandRunner = require("../commandrunner");
-var fs = require("fs");
-var path = require("path");
-var assert = require("assert");
-var Server = require("../server");
-var Reporter = require("../reporter");
-var sandbox = require("../sandbox");
-var log = console.log;
+const MemoryLogger = require("../memorylogger");
+const CommandRunner = require("../commandrunner");
+const fs = require("fs");
+const path = require("path");
+const assert = require("assert");
+const Server = require("../server");
+const Reporter = require("../reporter");
+const sandbox = require("../sandbox");
 
-describe("truffle exec [ @standalone ]", function() {
-  var config;
-  var project = path.join(__dirname, "../../sources/exec");
-  var logger = new MemoryLogger();
+describe("truffle exec [ @standalone ]", function () {
+  let config;
+  const project = path.join(__dirname, "../../sources/exec");
+  const logger = new MemoryLogger();
 
-  before("set up the server", function(done) {
+  before("set up the server", function (done) {
     Server.start(done);
   });
 
-  after("stop server", function(done) {
+  after("stop server", function (done) {
     Server.stop(done);
   });
 
-  beforeEach("set up sandbox", function() {
+  beforeEach("set up sandbox", function () {
     this.timeout(10000);
     return sandbox.create(project).then(conf => {
       config = conf;
@@ -33,51 +32,35 @@ describe("truffle exec [ @standalone ]", function() {
     });
   });
 
-  function processErr(err, output) {
-    if (err) {
-      log(output);
-      throw new Error(err);
-    }
-  }
-
-  it("runs script after compiling", function(done) {
+  it("runs script after compiling", async function () {
     this.timeout(30000);
+    await CommandRunner.run("compile", config);
+    assert(
+      fs.existsSync(
+        path.join(config.contracts_build_directory, "Executable.json")
+      )
+    );
 
-    CommandRunner.run("compile", config, function(err) {
-      processErr(err);
-
-      assert(
-        fs.existsSync(
-          path.join(config.contracts_build_directory, "Executable.json")
-        )
-      );
-
-      CommandRunner.run("exec script.js", config, function(err) {
-        const output = logger.contents();
-        processErr(err, output);
-        assert(output.includes("5"));
-        done();
-      });
-    });
+    await CommandRunner.run("exec script.js", config);
+    const output = logger.contents();
+    assert(output.includes("5"));
   });
 
   // Check accuracy of next test
-  it("errors when run without compiling", function(done) {
+  it("errors when run without compiling", async function () {
     this.timeout(30000);
-    CommandRunner.run("exec script.js", config, function(err) {
-      assert(err !== null);
-      done();
-    });
+    try {
+      await CommandRunner.run("exec script.js", config);
+      assert(false, "An error should have occurred.");
+    } catch (_error) {
+      assert(true);
+    }
   });
 
-  it("succeeds when -c flag is set", function(done) {
+  it("succeeds when -c flag is set", async function () {
     this.timeout(30000);
-
-    CommandRunner.run("exec -c script.js", config, function(err) {
-      const output = logger.contents();
-      processErr(err, output);
-      assert(output.includes("5"));
-      done();
-    });
+    await CommandRunner.run("exec -c script.js", config);
+    const output = logger.contents();
+    assert(output.includes("5"));
   });
 });

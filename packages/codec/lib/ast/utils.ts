@@ -23,6 +23,10 @@ export function typeString(definition: AstNode): string {
  * @category Definition Reading
  */
 export function typeStringWithoutLocation(definition: AstNode): string {
+  if (definition.nodeType === "YulTypedName") {
+    //for handling Yul variables
+    return "bytes32";
+  }
   return typeString(definition).replace(
     / (storage|memory|calldata)( slice)?$/,
     ""
@@ -37,6 +41,10 @@ export function typeStringWithoutLocation(definition: AstNode): string {
  * @category Definition Reading
  */
 export function typeClass(definition: AstNode): string {
+  if (definition.nodeType === "YulTypedName") {
+    //for handling Yul variables
+    return "bytes";
+  }
   return typeIdentifier(definition).match(/t_([^$_0-9]+)/)[1];
 }
 
@@ -85,6 +93,9 @@ export function visibility(definition: AstNode): Common.Visibility {
  * @category Definition Reading
  */
 export function specifiedSize(definition: AstNode): number {
+  if (definition.nodeType === "YulTypedName") {
+    return 32; //for handling Yul variables
+  }
   let specified = typeIdentifier(definition).match(/t_[a-z]+([0-9]+)/);
 
   if (!specified) {
@@ -265,8 +276,9 @@ export function spliceLocation(
  */
 export function regularizeTypeIdentifier(identifier: string): string {
   return identifier.replace(
-    /(?<=_(storage|memory|calldata))((_slice)?_ptr)?$/,
-    "_ptr"
+    /(_(storage|memory|calldata))((_slice)?_ptr)?$/,
+    "$1_ptr" //this used to use lookbehind for clarity, but Firefox...
+    //(see: https://github.com/trufflesuite/truffle/issues/3068 )
   );
 }
 
@@ -339,11 +351,12 @@ export function keyDefinition(definition: AstNode, scopes?: Scopes): AstNode {
       //otherwise, we'll need to perform some hackery, similarly to in baseDefinition;
       //we'll have to spoof it up ourselves
       let keyIdentifier = typeIdentifier(definition).match(
-        /^t_mapping\$_(.*?)_\$/
+        /^t_mapping\$_(.*?)_\$_/
       )[1];
       //use *non*-greedy match; note that if the key type could include
-      //dollar signs, this could cause a problem, but user-defined types
-      //are not allowed as key types, so this can't come up
+      //the sequence "_$_", this could cause a problem, but they can't; the only
+      //valid key types that include dollar signs at all are user-defined types,
+      //which contain both "$_" and "_$" but never "_$_".
 
       // HACK - internal types for memory or storage also seem to be pointers
       keyIdentifier = regularizeTypeIdentifier(keyIdentifier);
@@ -378,6 +391,58 @@ export function keyDefinition(definition: AstNode, scopes?: Scopes): AstNode {
 }
 
 /**
+ * for use for mappings only!
+ * @category Definition Reading
+ */
+export function valueDefinition(definition: AstNode, scopes?: Scopes): AstNode {
+  let result: AstNode;
+  //first: is there a value type already there? if so just use that
+  if (definition.valueType) {
+    return definition.valueType;
+  }
+  if (definition.typeName && definition.typeName.valueType) {
+    return definition.typeName.valueType;
+  }
+
+  //otherwise: is there a referencedDeclaration? if so try using that
+  let baseDeclarationId = definition.referencedDeclaration;
+  debug("baseDeclarationId %d", baseDeclarationId);
+  //if there's a referencedDeclaration, we'll use that
+  if (baseDeclarationId !== undefined) {
+    let baseDeclaration = scopes[baseDeclarationId].definition;
+    return baseDeclaration.valueType || baseDeclaration.typeName.valueType;
+  }
+
+  //otherwise, we'll need to perform some hackery, similarly to in keyDefinition;
+  //we'll have to spoof it up ourselves
+  let valueIdentifier = typeIdentifier(definition).match(
+    /^t_mapping\$_.*?_\$_(.*)_\$/
+  )[1];
+  //use *non*-greedy match on the key; note that if the key type could include
+  //the sequence "_$_", this could cause a problem, but they can't; the only
+  //valid key types that include dollar signs at all are user-defined types,
+  //which contain both "$_" and "_$" but never "_$_".
+
+  // HACK - internal types for memory or storage also seem to be pointers
+  valueIdentifier = regularizeTypeIdentifier(valueIdentifier);
+
+  let valueString = typeString(definition).match(
+    /mapping\(.*? => (.*)\)( storage)?$/
+  )[1];
+  //use *non*-greedy match; note that if the key type could include
+  //"=>", this could cause a problem, but mappings are not allowed as key
+  //types, so this can't come up
+
+  // another HACK - we get away with it because we're only using that one property
+  result = cloneDeep(definition);
+  result.typeDescriptions = {
+    typeIdentifier: valueIdentifier,
+    typeString: valueString
+  };
+  return result;
+}
+
+/**
  * returns input parameters, then output parameters
  * NOTE: ONLY FOR VARIABLE DECLARATIONS OF FUNCTION TYPE
  * NOT FOR FUNCTION DEFINITIONS
@@ -385,10 +450,14 @@ export function keyDefinition(definition: AstNode, scopes?: Scopes): AstNode {
  */
 export function parameters(definition: AstNode): [AstNode[], AstNode[]] {
   let typeObject = definition.typeName || definition;
-  return [
-    typeObject.parameterTypes.parameters,
-    typeObject.returnParameterTypes.parameters
-  ];
+  if (typeObject.parameterTypes && typeObject.returnParameterTypes) {
+    return [
+      typeObject.parameterTypes.parameters,
+      typeObject.returnParameterTypes.parameters
+    ];
+  } else {
+    return undefined;
+  }
 }
 
 /**

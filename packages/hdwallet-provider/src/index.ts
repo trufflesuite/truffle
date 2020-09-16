@@ -1,17 +1,27 @@
-import * as bip39 from "bip39";
+import "source-map-support/register";
+import * as bip39 from "ethereum-cryptography/bip39";
+import { wordlist } from "ethereum-cryptography/bip39/wordlists/english";
 import * as EthUtil from "ethereumjs-util";
 import ethJSWallet from "ethereumjs-wallet";
 import EthereumHDKey from "ethereumjs-wallet/hdkey";
 import Transaction from "ethereumjs-tx";
-import ProviderEngine from "web3-provider-engine";
-import FiltersSubprovider from "web3-provider-engine/subproviders/filters";
-import NonceSubProvider from "web3-provider-engine/subproviders/nonce-tracker";
-import HookedSubprovider from "web3-provider-engine/subproviders/hooked-wallet";
-import ProviderSubprovider from "web3-provider-engine/subproviders/provider";
+// @ts-ignore
+import ProviderEngine from "@trufflesuite/web3-provider-engine";
+import FiltersSubprovider from "@trufflesuite/web3-provider-engine/subproviders/filters";
+import NonceSubProvider from "@trufflesuite/web3-provider-engine/subproviders/nonce-tracker";
+import HookedSubprovider from "@trufflesuite/web3-provider-engine/subproviders/hooked-wallet";
+import ProviderSubprovider from "@trufflesuite/web3-provider-engine/subproviders/provider";
+// @ts-ignore
+import RpcProvider from "@trufflesuite/web3-provider-engine/subproviders/rpc";
+// @ts-ignore
+import WebsocketProvider from "@trufflesuite/web3-provider-engine/subproviders/websocket";
 import Url from "url";
-import Web3 from "web3";
 import { JSONRPCRequestPayload, JSONRPCErrorCallback } from "ethereum-protocol";
 import { Callback, JsonRPCResponse } from "web3/providers";
+import { ConstructorArguments } from "./constructor/ConstructorArguments";
+import { getOptions } from "./constructor/getOptions";
+import { getPrivateKeys } from "./constructor/getPrivateKeys";
+import { getMnemonic } from "./constructor/getMnemonic";
 
 // Important: do not use debug module. Reason: https://github.com/trufflesuite/truffle/issues/2374#issuecomment-536109086
 
@@ -30,51 +40,54 @@ class HDWalletProvider {
 
   public engine: ProviderEngine;
 
-  constructor(
-    mnemonic: string | string[],
-    provider: string | any,
-    addressIndex: number = 0,
-    numAddresses: number = 10,
-    shareNonce: boolean = true,
-    walletHdpath: string = `m/44'/60'/0'/0/`
-  ) {
-    this.walletHdpath = walletHdpath;
+  constructor(...args: ConstructorArguments) {
+    const {
+      providerOrUrl, // required
+      addressIndex = 0,
+      numberOfAddresses = 10,
+      shareNonce = true,
+      derivationPath = `m/44'/60'/0'/0/`,
+
+      // what's left is either a mnemonic or a list of private keys
+      ...signingAuthority
+    } = getOptions(...args);
+
+    const mnemonic = getMnemonic(signingAuthority);
+    const privateKeys = getPrivateKeys(signingAuthority);
+
+    this.walletHdpath = derivationPath;
     this.wallets = {};
     this.addresses = [];
     this.engine = new ProviderEngine();
 
-    if (!HDWalletProvider.isValidProvider(provider)) {
+    if (!HDWalletProvider.isValidProvider(providerOrUrl)) {
       throw new Error(
         [
-          `Malformed provider URL: '${provider}'`,
+          `Malformed provider URL: '${providerOrUrl}'`,
           "Please specify a correct URL, using the http, https, ws, or wss protocol.",
           ""
         ].join("\n")
       );
     }
 
-    // private helper to normalize given mnemonic
-    const normalizePrivateKeys = (
-      mnemonic: string | string[]
-    ): string[] | false => {
-      if (Array.isArray(mnemonic)) return mnemonic;
-      else if (mnemonic && !mnemonic.includes(" ")) return [mnemonic];
-      // if truthy, but no spaces in mnemonic
-      else return false; // neither an array nor valid value passed;
-    };
-
     // private helper to check if given mnemonic uses BIP39 passphrase protection
-    const checkBIP39Mnemonic = (mnemonic: string) => {
+    const checkBIP39Mnemonic = ({
+      phrase,
+      password
+    }: {
+      phrase: string;
+      password?: string;
+    }) => {
       this.hdwallet = EthereumHDKey.fromMasterSeed(
-        bip39.mnemonicToSeed(mnemonic)
+        bip39.mnemonicToSeedSync(phrase, password)
       );
 
-      if (!bip39.validateMnemonic(mnemonic)) {
+      if (!bip39.validateMnemonic(phrase, wordlist)) {
         throw new Error("Mnemonic invalid or undefined");
       }
 
       // crank the addresses out
-      for (let i = addressIndex; i < addressIndex + numAddresses; i++) {
+      for (let i = addressIndex; i < addressIndex + numberOfAddresses; i++) {
         const wallet = this.hdwallet
           .derivePath(this.walletHdpath + i)
           .getWallet();
@@ -98,10 +111,18 @@ class HDWalletProvider {
       }
     };
 
-    const privateKeys = normalizePrivateKeys(mnemonic);
+    if (mnemonic && mnemonic.phrase) {
+      checkBIP39Mnemonic(mnemonic);
+    } else if (privateKeys) {
+      ethUtilValidation(privateKeys);
+    } // no need to handle else case here, since matchesNewOptions() covers it
 
-    if (!privateKeys) checkBIP39Mnemonic(mnemonic as string);
-    else ethUtilValidation(privateKeys);
+    if (this.addresses.length === 0) {
+      throw new Error(
+        `Could not create addresses from your mnemonic or private key(s). ` +
+          `Please check that your inputs are correct.`
+      );
+    }
 
     const tmp_accounts = this.addresses;
     const tmp_wallets = this.wallets;
@@ -157,31 +178,30 @@ class HDWalletProvider {
       : this.engine.addProvider(singletonNonceSubProvider);
 
     this.engine.addProvider(new FiltersSubprovider());
-    if (typeof provider === "string") {
-      // shim Web3 to give it expected sendAsync method. Needed if web3-engine-provider upgraded!
-      // Web3.providers.HttpProvider.prototype.sendAsync =
-      // Web3.providers.HttpProvider.prototype.send;
-      let subProvider;
+    if (typeof providerOrUrl === "string") {
+      const url = providerOrUrl;
+
       const providerProtocol = (
-        Url.parse(provider).protocol || "http"
+        Url.parse(url).protocol || "http:"
       ).toLowerCase();
 
       switch (providerProtocol) {
-        case "ws":
-        case "wss":
-          subProvider = new Web3.providers.WebsocketProvider(provider);
+        case "ws:":
+        case "wss:":
+          this.engine.addProvider(new WebsocketProvider({ rpcUrl: url }));
+          break;
         default:
-          // @ts-ignore: Incorrect typings in @types/web3
-          subProvider = new Web3.providers.HttpProvider(provider, {
-            keepAlive: false
-          });
+          this.engine.addProvider(new RpcProvider({ rpcUrl: url }));
       }
-
-      this.engine.addProvider(new ProviderSubprovider(subProvider));
     } else {
+      const provider = providerOrUrl;
       this.engine.addProvider(new ProviderSubprovider(provider));
     }
-    this.engine.start(); // Required by the provider engine.
+
+    // Required by the provider engine.
+    this.engine.start((err: any) => {
+      if (err) throw err;
+    });
   }
 
   public send(

@@ -10,6 +10,7 @@ import * as Bytes from "@truffle/codec/bytes";
 import * as Pointer from "@truffle/codec/pointer";
 import { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
+import { isSkippedInMemoryStructs } from "@truffle/codec/memory/allocate";
 import { DecodingError } from "@truffle/codec/errors";
 
 export function* decodeMemory(
@@ -19,16 +20,9 @@ export function* decodeMemory(
   options: DecoderOptions = {}
 ): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   if (Format.Types.isReferenceType(dataType)) {
-    if (dataType.typeClass === "mapping") {
-      //special case: a mapping in memory is always empty
-      //(this is here and not in decodeMemoryReferenceByAddress
-      //since no addresses are involved, and it's not worth
-      //making into its own function)
-      return {
-        type: dataType,
-        kind: "value" as const,
-        value: []
-      };
+    if (isSkippedInMemoryStructs(dataType)) {
+      //special case; these types are always empty in memory
+      return decodeMemorySkippedType(dataType);
     } else {
       return yield* decodeMemoryReferenceByAddress(
         dataType,
@@ -39,6 +33,26 @@ export function* decodeMemory(
     }
   } else {
     return yield* Basic.Decode.decodeBasic(dataType, pointer, info, options);
+  }
+}
+
+function decodeMemorySkippedType(
+  dataType: Format.Types.Type
+): Format.Values.Result {
+  switch (dataType.typeClass) {
+    case "mapping":
+      return {
+        type: dataType,
+        kind: "value" as const,
+        value: []
+      };
+    case "array":
+      return {
+        type: dataType,
+        kind: "value" as const,
+        value: []
+      };
+    //other cases should not arise!
   }
 }
 
@@ -226,7 +240,7 @@ export function* decodeMemoryReferenceByAddress(
       } = info;
 
       const typeId = dataType.id;
-      const structAllocation = allocations[parseInt(typeId)];
+      const structAllocation = allocations[typeId];
       if (!structAllocation) {
         return {
           type: dataType,
@@ -251,22 +265,9 @@ export function* decodeMemoryReferenceByAddress(
           length: memberPointer.length //always equals WORD_SIZE or 0
         };
 
-        let memberName = memberAllocation.definition.name;
-        let storedType = <Format.Types.StructType>userDefinedTypes[typeId];
-        if (!storedType) {
-          return <Format.Errors.ErrorResult>{
-            //dunno why TS is failing here
-            type: dataType,
-            kind: "error" as const,
-            error: {
-              kind: "UserDefinedTypeNotFoundError",
-              type: dataType
-            }
-          };
-        }
-        let storedMemberType = storedType.memberTypes[index].type;
+        let memberName = memberAllocation.name;
         let memberType = Format.Types.specifyLocation(
-          storedMemberType,
+          memberAllocation.type,
           "memory"
         );
 

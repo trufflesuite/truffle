@@ -64,10 +64,13 @@ let trace = createSelectorTree({
    * trace.step
    *
    * current trace step
+   * HACK: if no steps,
+   * we will return a spoofed "past end" step
    */
   step: createLeaf(
     ["./steps", "./index"],
-    (steps, index) => (steps ? steps[index] : null) //null if no tx loaded
+    (steps, index) =>
+      steps ? (steps.length > 0 ? steps[index] : PAST_END_OF_TRACE) : null //null if no tx loaded
   ),
 
   /**
@@ -77,10 +80,8 @@ let trace = createSelectorTree({
    * HACK: if at the end,
    * we will return a spoofed "past end" step
    */
-  next: createLeaf(
-    ["./steps", "./index"],
-    (steps, index) =>
-      index < steps.length - 1 ? steps[index + 1] : PAST_END_OF_TRACE
+  next: createLeaf(["./steps", "./index"], (steps, index) =>
+    index < steps.length - 1 ? steps[index + 1] : PAST_END_OF_TRACE
   ),
 
   /*
@@ -92,7 +93,17 @@ let trace = createSelectorTree({
   nextOfSameDepth: createLeaf(["./steps", "./index"], (steps, index) => {
     let depth = steps[index].depth;
     return steps.slice(index + 1).find(step => step.depth === depth);
-  })
+  }),
+
+  /**
+   * trace.application
+   */
+  application: {
+    /**
+     * trace.application.submoduleCount
+     */
+    submoduleCount: state => state.trace.application.submoduleCount
+  }
 });
 
 export default trace;

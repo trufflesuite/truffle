@@ -3,7 +3,10 @@ const OS = require("os");
 
 const formatCommands = commands => {
   const names = Object.keys(commands);
-  const maxLength = Math.max.apply(null, names.map(name => name.length));
+  const maxLength = Math.max.apply(
+    null,
+    names.map(name => name.length)
+  );
 
   return names.map(name => {
     const spacing = Array(maxLength - name.length + 1).join(" ");
@@ -12,59 +15,59 @@ const formatCommands = commands => {
 };
 
 module.exports = {
-  initialization: function() {
+  initialization: function () {
     this.logger = console;
     this.ora = ora;
   },
   handlers: {
     "unbox:start": [
-      function() {
+      function () {
         this.logger.log(`${OS.EOL}Starting unbox...`);
         this.logger.log(`=================${OS.EOL}`);
       }
     ],
     "unbox:preparingToDownload:start": [
-      function() {
+      function () {
         this.spinner = this.ora("Preparing to download box").start();
       }
     ],
     "unbox:preparingToDownload:succeed": [
-      function() {
+      function () {
         this.spinner.succeed();
       }
     ],
     "unbox:downloadingBox:start": [
-      function() {
+      function () {
         this.spinner = this.ora("Downloading").start();
       }
     ],
     "unbox:downloadingBox:succeed": [
-      function() {
+      function () {
         this.spinner.succeed();
       }
     ],
     "unbox:cleaningTempFiles:start": [
-      function() {
-        this.spinner = this.ora("cleaning up temporary files").start();
+      function () {
+        this.spinner = this.ora("Cleaning up temporary files").start();
       }
     ],
     "unbox:cleaningTempFiles:succeed": [
-      function() {
+      function () {
         this.spinner.succeed();
       }
     ],
     "unbox:settingUpBox:start": [
-      function() {
+      function () {
         this.spinner = this.ora("Setting up box").start();
       }
     ],
     "unbox:settingUpBox:succeed": [
-      function() {
+      function () {
         this.spinner.succeed();
       }
     ],
     "unbox:succeed": [
-      function({ boxConfig }) {
+      function ({ boxConfig }) {
         this.logger.log(`${OS.EOL}Unbox successful, sweet!${OS.EOL}`);
 
         const commandMessages = formatCommands(boxConfig.commands);
@@ -79,7 +82,7 @@ module.exports = {
       }
     ],
     "unbox:fail": [
-      function() {
+      function () {
         this.spinner.fail();
         this.logger.log("Unbox failed!");
       }

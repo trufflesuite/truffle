@@ -17,8 +17,8 @@ interface InspectOptions {
 function cleanStylize(options: InspectOptions) {
   return Object.assign(
     {},
-    ...Object.entries(options).map(
-      ([key, value]) => (key === "stylize" ? {} : { [key]: value })
+    ...Object.entries(options).map(([key, value]) =>
+      key === "stylize" ? {} : { [key]: value }
     )
   );
 }
@@ -126,12 +126,12 @@ export class ResultInspector {
           case "mapping":
             return util.inspect(
               new Map(
-                (<Format.Values.MappingValue>this.result).value.map(
-                  ({ key, value }) => [
-                    new ResultInspector(key),
-                    new ResultInspector(value)
-                  ]
-                )
+                (<Format.Values.MappingValue>(
+                  this.result
+                )).value.map(({ key, value }) => [
+                  new ResultInspector(key),
+                  new ResultInspector(value)
+                ])
               ),
               options
             );
@@ -150,18 +150,49 @@ export class ResultInspector {
               options
             );
           }
+          case "tuple": {
+            let coercedResult = <Format.Values.TupleValue>this.result;
+            //if everything is named, do same as with struct.
+            //if not, just do an array.
+            //(good behavior in the mixed case is hard, unfortunately)
+            if (coercedResult.value.every(({ name }) => name)) {
+              return util.inspect(
+                Object.assign(
+                  {},
+                  ...coercedResult.value.map(({ name, value }) => ({
+                    [name]: new ResultInspector(value)
+                  }))
+                ),
+                options
+              );
+            } else {
+              return util.inspect(
+                coercedResult.value.map(
+                  ({ value }) => new ResultInspector(value)
+                ),
+                options
+              );
+            }
+          }
           case "type": {
-            //same as struct case but w/o circularity check
-            let coercedResult = <Format.Values.TypeValue>this.result;
-            return util.inspect(
-              Object.assign(
-                {},
-                ...coercedResult.value.map(({ name, value }) => ({
-                  [name]: new ResultInspector(value)
-                }))
-              ),
-              options
-            );
+            switch (this.result.type.type.typeClass) {
+              case "contract":
+                //same as struct case but w/o circularity check
+                return util.inspect(
+                  Object.assign(
+                    {},
+                    ...(<Format.Values.TypeValueContract>this.result).value.map(
+                      ({ name, value }) => ({
+                        [name]: new ResultInspector(value)
+                      })
+                    )
+                  ),
+                  options
+                );
+              case "enum": {
+                return enumTypeName(this.result.type.type);
+              }
+            }
           }
           case "magic":
             return util.inspect(
@@ -201,9 +232,7 @@ export class ResultInspector {
                     break;
                   case "invalid":
                   case "unknown":
-                    firstLine = `[Function: Unknown selector ${
-                      coercedResult.value.selector
-                    } of`;
+                    firstLine = `[Function: Unknown selector ${coercedResult.value.selector} of`;
                     break;
                 }
                 let secondLine = `${contractString}]`;
@@ -223,23 +252,24 @@ export class ResultInspector {
                 );
                 switch (coercedResult.value.kind) {
                   case "function":
-                    return options.stylize(
-                      `[Function: ${coercedResult.value.definedIn.typeName}.${
-                        coercedResult.value.name
-                      }]`,
-                      "special"
-                    );
+                    if (coercedResult.value.definedIn) {
+                      return options.stylize(
+                        `[Function: ${coercedResult.value.definedIn.typeName}.${coercedResult.value.name}]`,
+                        "special"
+                      );
+                    } else {
+                      return options.stylize(
+                        `[Function: ${coercedResult.value.name}]`,
+                        "special"
+                      );
+                    }
                   case "exception":
                     return coercedResult.value.deployedProgramCounter === 0
                       ? options.stylize(`[Function: <zero>]`, "special")
                       : options.stylize(`[Function: assert(false)]`, "special");
                   case "unknown":
                     let firstLine = `[Function: decoding not supported (raw info:`;
-                    let secondLine = `deployed PC=${
-                      coercedResult.value.deployedProgramCounter
-                    }, constructor PC=${
-                      coercedResult.value.constructorProgramCounter
-                    })]`;
+                    let secondLine = `deployed PC=${coercedResult.value.deployedProgramCounter}, constructor PC=${coercedResult.value.constructorProgramCounter})]`;
                     let breakingSpace =
                       firstLine.length + secondLine.length + 1 >
                       options.breakLength
@@ -259,35 +289,31 @@ export class ResultInspector {
         let errorResult = <Format.Errors.ErrorResult>this.result; //the hell?? why couldn't it make this inference??
         switch (errorResult.error.kind) {
           case "UintPaddingError":
-            return `Uint has extra leading bytes (padding error) (raw value ${
-              errorResult.error.raw
-            })`;
+            return `Uint has incorrect padding (expected padding: ${errorResult.error.paddingType}) (raw value ${errorResult.error.raw})`;
           case "IntPaddingError":
-            return `Int out of range (padding error) (raw value ${
-              errorResult.error.raw
-            })`;
+            return `Int has incorrect padding (expected padding: ${errorResult.error.paddingType}) (raw value ${errorResult.error.raw})`;
           case "UintPaddingError":
-            return `Ufixed has extra leading bytes (padding error) (raw value ${
-              errorResult.error.raw
-            })`;
+            return `Ufixed has (expected padding: ${errorResult.error.paddingType}) (raw value ${errorResult.error.raw})`;
           case "FixedPaddingError":
-            return `Fixed out of range (padding error) (raw value ${
-              errorResult.error.raw
-            })`;
+            return `Fixed has incorrect padding (expected padding: ${errorResult.error.paddingType}) (raw value ${errorResult.error.raw})`;
           case "BoolOutOfRangeError":
             return `Invalid boolean (numeric value ${errorResult.error.rawAsBN.toString()})`;
+          case "BoolPaddingError":
+            return `Boolean has incorrect padding (expected padding: ${errorResult.error.paddingType}) (raw value ${errorResult.error.raw})`;
           case "BytesPaddingError":
-            return `Bytestring has extra trailing bytes (padding error) (raw value ${
-              errorResult.error.raw
-            })`;
+            return `Bytestring has extra trailing bytes (padding error) (raw value ${errorResult.error.raw})`;
           case "AddressPaddingError":
-            return `Address has extra leading bytes (padding error) (raw value ${
-              errorResult.error.raw
-            })`;
+            return `Address has incorrect padding (expected padding: ${errorResult.error.paddingType}) (raw value ${errorResult.error.raw})`;
           case "EnumOutOfRangeError":
             return `Invalid ${enumTypeName(
               errorResult.error.type
             )} (numeric value ${errorResult.error.rawAsBN.toString()})`;
+          case "EnumPaddingError":
+            return `Enum ${enumTypeName(
+              errorResult.error.type
+            )} has incorrect padding (expected padding: ${
+              errorResult.error.paddingType
+            }) (raw value ${errorResult.error.raw})`;
           case "EnumNotFoundDecodingError":
             return `Unknown enum type ${enumTypeName(
               errorResult.error.type
@@ -295,39 +321,21 @@ export class ResultInspector {
               errorResult.error.type.id
             } (numeric value ${errorResult.error.rawAsBN.toString()})`;
           case "ContractPaddingError":
-            return `Contract address has extra leading bytes (padding error) (raw value ${
-              errorResult.error.raw
-            })`;
+            return `Contract address has incorrect padding (expected padding: ${errorResult.error.paddingType}) (raw value ${errorResult.error.raw})`;
           case "FunctionExternalNonStackPaddingError":
-            return `External function has extra trailing bytes (padding error) (raw value ${
-              errorResult.error.raw
-            })`;
+            return `External function has incorrect padding (expected padding: ${errorResult.error.paddingType}) (raw value ${errorResult.error.raw})`;
           case "FunctionExternalStackPaddingError":
-            return `External function address or selector has extra leading bytes (padding error) (raw address ${
-              errorResult.error.rawAddress
-            }, raw selector ${errorResult.error.rawSelector})`;
+            return `External function address or selector has extra leading bytes (padding error) (raw address ${errorResult.error.rawAddress}, raw selector ${errorResult.error.rawSelector})`;
           case "FunctionInternalPaddingError":
-            return `Internal function has extra leading bytes (padding error) (raw value ${
-              errorResult.error.raw
-            })`;
+            return `Internal function has incorrect padding (expected padding: ${errorResult.error.paddingType}) (raw value ${errorResult.error.raw})`;
           case "NoSuchInternalFunctionError":
-            return `Invalid function (Deployed PC=${
-              errorResult.error.deployedProgramCounter
-            }, constructor PC=${
-              errorResult.error.constructorProgramCounter
-            }) of contract ${errorResult.error.context.typeName}`;
+            return `Invalid function (Deployed PC=${errorResult.error.deployedProgramCounter}, constructor PC=${errorResult.error.constructorProgramCounter}) of contract ${errorResult.error.context.typeName}`;
           case "DeployedFunctionInConstructorError":
-            return `Deployed-style function (PC=${
-              errorResult.error.deployedProgramCounter
-            }) in constructor`;
+            return `Deployed-style function (PC=${errorResult.error.deployedProgramCounter}) in constructor`;
           case "MalformedInternalFunctionError":
-            return `Malformed internal function w/constructor PC only (value: ${
-              errorResult.error.constructorProgramCounter
-            })`;
+            return `Malformed internal function w/constructor PC only (value: ${errorResult.error.constructorProgramCounter})`;
           case "IndexedReferenceTypeError": //for this one we'll bother with some line-wrapping
-            let firstLine = `Cannot decode indexed parameter of reference type ${
-              errorResult.error.type.typeClass
-            }`;
+            let firstLine = `Cannot decode indexed parameter of reference type ${errorResult.error.type.typeClass}`;
             let secondLine = `(raw value ${errorResult.error.raw})`;
             let breakingSpace =
               firstLine.length + secondLine.length + 1 > options.breakLength
@@ -340,6 +348,7 @@ export class ResultInspector {
             return `Pointer is too large (value ${errorResult.error.pointerAsBN.toString()}); decoding is not supported`;
           case "UserDefinedTypeNotFoundError":
           case "UnsupportedConstantError":
+          case "UnusedImmutableError":
           case "ReadErrorStack":
           case "ReadErrorStorage":
           case "ReadErrorBytes":
@@ -391,9 +400,7 @@ function formatCircular(loopLength: number, options: InspectOptions): string {
 function enumFullName(value: Format.Values.EnumValue): string {
   switch (value.type.kind) {
     case "local":
-      return `${value.type.definingContractName}.${value.type.typeName}.${
-        value.value.name
-      }`;
+      return `${value.type.definingContractName}.${value.type.typeName}.${value.value.name}`;
     case "global":
       return `${value.type.typeName}.${value.value.name}`;
   }
@@ -410,9 +417,13 @@ export function nativizeVariables(variables: {
 }): { [name: string]: any } {
   return Object.assign(
     {},
-    ...Object.entries(variables).map(([name, value]) => ({
-      [name]: nativize(value)
-    }))
+    ...Object.entries(variables).map(([name, value]) => {
+      try {
+        return { [name]: nativize(value) };
+      } catch (_) {
+        return undefined; //I guess??
+      }
+    })
   );
 }
 
@@ -451,7 +462,13 @@ function nativizeWithTable(
   seenSoFar: any[]
 ): any {
   if (result.kind === "error") {
-    return undefined;
+    debug("ErrorResult: %O", result);
+    switch (result.error.kind) {
+      case "BoolOutOfRangeError":
+        return true;
+      default:
+        return undefined;
+    }
   }
   //NOTE: for simplicity, only arrays & structs will call nativizeWithTable;
   //other containers will just call nativize because they can get away with it
@@ -547,12 +564,24 @@ function nativizeWithTable(
       }
     }
     case "type":
-      return Object.assign(
-        {},
-        ...(<Format.Values.TypeValue>result).value.map(({ name, value }) => ({
-          [name]: nativize(value)
-        }))
-      );
+      switch (result.type.type.typeClass) {
+        case "contract":
+          return Object.assign(
+            {},
+            ...(<Format.Values.TypeValueContract>result).value.map(
+              ({ name, value }) => ({
+                [name]: nativize(value)
+              })
+            )
+          );
+        case "enum":
+          return Object.assign(
+            {},
+            ...(<Format.Values.TypeValueEnum>result).value.map(enumValue => ({
+              [enumValue.value.name]: nativize(enumValue)
+            }))
+          );
+      }
     case "tuple":
       return (<Format.Values.TupleValue>result).value.map(({ value }) =>
         nativize(value)
@@ -560,50 +589,36 @@ function nativizeWithTable(
     case "magic":
       return Object.assign(
         {},
-        ...Object.entries((<Format.Values.MagicValue>result).value).map(
-          ([key, value]) => ({ [key]: nativize(value) })
-        )
+        ...Object.entries(
+          (<Format.Values.MagicValue>result).value
+        ).map(([key, value]) => ({ [key]: nativize(value) }))
       );
     case "enum":
       return enumFullName(<Format.Values.EnumValue>result);
-    case "contract": {
-      let coercedResult = <Format.Values.ContractValue>result;
-      switch (coercedResult.value.kind) {
-        case "known":
-          return `${coercedResult.value.class.typeName}(${
-            coercedResult.value.address
-          })`;
-        case "unknown":
-          return coercedResult.value.address;
-      }
-      break; //to satisfy typescript
-    }
+    case "contract":
+      return (<Format.Values.ContractValue>result).value.address; //we no longer include additional info
     case "function":
       switch (result.type.visibility) {
         case "external": {
           let coercedResult = <Format.Values.FunctionExternalValue>result;
           switch (coercedResult.value.kind) {
             case "known":
-              return `${coercedResult.value.contract.class.typeName}(${
-                coercedResult.value.contract.address
-              }).${coercedResult.value.abi.name}`;
+              return `${coercedResult.value.contract.class.typeName}(${coercedResult.value.contract.address}).${coercedResult.value.abi.name}`;
             case "invalid":
-              return `${coercedResult.value.contract.class.typeName}(${
-                coercedResult.value.contract.address
-              }).call(${coercedResult.value.selector}...)`;
+              return `${coercedResult.value.contract.class.typeName}(${coercedResult.value.contract.address}).call(${coercedResult.value.selector}...)`;
             case "unknown":
-              return `${coercedResult.value.contract.address}.call(${
-                coercedResult.value.selector
-              }...)`;
+              return `${coercedResult.value.contract.address}.call(${coercedResult.value.selector}...)`;
           }
         }
         case "internal": {
           let coercedResult = <Format.Values.FunctionInternalValue>result;
           switch (coercedResult.value.kind) {
             case "function":
-              return `${coercedResult.value.definedIn.typeName}.${
-                coercedResult.value.name
-              }`;
+              if (coercedResult.value.definedIn) {
+                return `${coercedResult.value.definedIn.typeName}.${coercedResult.value.name}`;
+              } else {
+                return coercedResult.value.name;
+              }
             case "exception":
               return coercedResult.value.deployedProgramCounter === 0
                 ? `<zero>`

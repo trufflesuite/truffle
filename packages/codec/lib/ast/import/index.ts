@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("codec:ast:convert");
+const debug = debugModule("codec:ast:import");
 
 import BN from "bn.js";
 import * as Format from "@truffle/codec/format/common";
@@ -7,18 +7,23 @@ import * as Common from "@truffle/codec/common";
 import * as Compiler from "@truffle/codec/compiler";
 import * as Utils from "@truffle/codec/ast/utils";
 import { AstNode, AstNodes } from "@truffle/codec/ast/types";
+import { makeTypeId } from "@truffle/codec/contexts/import";
 
 //NOTE: the following function will *not* work for arbitrary nodes! It will,
-//however, work for the ones we need (i.e., variable definitions, and arbitrary
-//things of elementary type)
+//however, work well enough for what we need.  I.e., it will:
+//1. work when given the actual variable definition as the node,
+//2. work when given an elementary type as the node,
+//3. work when given a user-defined type as the node,
+//4. produce something of the correct size in all cases.
+//Use beyond that is at your own risk!
 //NOTE: set forceLocation to *null* to force no location. leave it undefined
 //to not force a location.
 export function definitionToType(
   definition: AstNode,
+  compilationId: string,
   compiler: Compiler.CompilerVersion,
   forceLocation?: Common.Location | null
 ): Format.Types.Type {
-  debug("definition %O", definition);
   let typeClass = Utils.typeClass(definition);
   let typeHint = Utils.typeStringWithoutLocation(definition);
   switch (typeClass) {
@@ -124,7 +129,12 @@ export function definitionToType(
     }
     case "array": {
       let baseDefinition = Utils.baseDefinition(definition);
-      let baseType = definitionToType(baseDefinition, compiler, forceLocation);
+      let baseType = definitionToType(
+        baseDefinition,
+        compilationId,
+        compiler,
+        forceLocation
+      );
       let location = forceLocation || Utils.referenceType(definition);
       if (Utils.isDynamicArray(definition)) {
         if (forceLocation !== null) {
@@ -170,16 +180,17 @@ export function definitionToType(
       //note that we can skip the scopes argument here! that's only needed when
       //a general node, rather than a declaration, is being passed in
       let keyType = <Format.Types.ElementaryType>(
-        definitionToType(keyDefinition, compiler, null)
+        definitionToType(keyDefinition, compilationId, compiler, null)
       );
       //suppress the location on the key type (it'll be given as memory but
       //this is meaningless)
       //also, we have to tell TypeScript ourselves that this will be an elementary
       //type; it has no way of knowing that
-      let valueDefinition =
-        definition.valueType || definition.typeName.valueType;
+      debug("definition: %O", definition);
+      let valueDefinition = Utils.valueDefinition(definition);
       let valueType = definitionToType(
         valueDefinition,
+        compilationId,
         compiler,
         forceLocation
       );
@@ -198,15 +209,19 @@ export function definitionToType(
       };
     }
     case "function": {
-      let visibility = Utils.visibility(definition);
-      let mutability = Utils.mutability(definition);
-      let [inputParameters, outputParameters] = Utils.parameters(definition);
+      //WARNING! This case will not work unless given the actual
+      //definition!  It should return something *roughly* usable, though.
+      let visibility = Utils.visibility(definition); //undefined if bad node
+      let mutability = Utils.mutability(definition); //undefined if bad node
+      let [inputParameters, outputParameters] = Utils.parameters(
+        definition
+      ) || [[], []]; //HACK
       //note: don't force a location on these! use the listed location!
       let inputParameterTypes = inputParameters.map(parameter =>
-        definitionToType(parameter, compiler)
+        definitionToType(parameter, compilationId, compiler)
       );
       let outputParameterTypes = outputParameters.map(parameter =>
-        definitionToType(parameter, compiler)
+        definitionToType(parameter, compilationId, compiler)
       );
       switch (visibility) {
         case "internal":
@@ -230,7 +245,7 @@ export function definitionToType(
       break; //to satisfy typescript
     }
     case "struct": {
-      let id = Utils.typeId(definition).toString();
+      let id = makeTypeId(Utils.typeId(definition), compilationId);
       let qualifiedName = Utils.typeStringWithoutLocation(definition).match(
         /struct (.*)/
       )[1];
@@ -281,7 +296,7 @@ export function definitionToType(
       }
     }
     case "enum": {
-      let id = Utils.typeId(definition).toString();
+      let id = makeTypeId(Utils.typeId(definition), compilationId);
       let qualifiedName = Utils.typeStringWithoutLocation(definition).match(
         /enum (.*)/
       )[1];
@@ -311,10 +326,11 @@ export function definitionToType(
       }
     }
     case "contract": {
-      let id = Utils.typeId(definition).toString();
-      let typeName = definition.typeName
-        ? definition.typeName.name
-        : definition.name;
+      let id = makeTypeId(Utils.typeId(definition), compilationId);
+      let typeName = Utils.typeStringWithoutLocation(definition).match(
+        /(contract|library|interface) (.*)/
+      )[2]; //note: we use the type string rather than the type identifier
+      //in order to avoid having to deal with the underscore problem
       let contractKind = Utils.contractKind(definition);
       return {
         typeClass,
@@ -341,12 +357,13 @@ export function definitionToType(
 //definition
 export function definitionToStoredType(
   definition: AstNode,
+  compilationId: string,
   compiler: Compiler.CompilerVersion,
   referenceDeclarations?: AstNodes
 ): Format.Types.UserDefinedType {
   switch (definition.nodeType) {
     case "StructDefinition": {
-      let id = definition.id.toString();
+      let id = makeTypeId(definition.id, compilationId);
       let definingContractName: string;
       let typeName: string;
       if (definition.canonicalName.includes(".")) {
@@ -360,18 +377,20 @@ export function definitionToStoredType(
         type: Format.Types.Type;
       }[] = definition.members.map(member => ({
         name: member.name,
-        type: definitionToType(member, compiler, null)
+        type: definitionToType(member, compilationId, compiler, null)
       }));
       let definingContract;
       if (referenceDeclarations) {
         let contractDefinition = Object.values(referenceDeclarations).find(
           node =>
             node.nodeType === "ContractDefinition" &&
-            node.nodes.some((subNode: AstNode) => subNode.id.toString() === id)
+            node.nodes.some(
+              (subNode: AstNode) => makeTypeId(subNode.id, compilationId) === id
+            )
         );
         if (contractDefinition) {
           definingContract = <Format.Types.ContractTypeNative>(
-            definitionToStoredType(contractDefinition, compiler)
+            definitionToStoredType(contractDefinition, compilationId, compiler)
           ); //can skip reference declarations
         }
       }
@@ -396,9 +415,10 @@ export function definitionToStoredType(
       }
     }
     case "EnumDefinition": {
-      let id = definition.id.toString();
+      let id = makeTypeId(definition.id, compilationId);
       let definingContractName: string;
       let typeName: string;
+      debug("typeName: %s", typeName);
       if (definition.canonicalName.includes(".")) {
         [definingContractName, typeName] = definition.canonicalName.split(".");
       } else {
@@ -411,12 +431,16 @@ export function definitionToStoredType(
         let contractDefinition = Object.values(referenceDeclarations).find(
           node =>
             node.nodeType === "ContractDefinition" &&
-            node.nodes.some((subNode: AstNode) => subNode.id.toString() === id)
+            node.nodes.some(
+              (subNode: AstNode) => makeTypeId(subNode.id, compilationId) === id
+            )
         );
         if (contractDefinition) {
           definingContract = <Format.Types.ContractTypeNative>(
-            definitionToStoredType(contractDefinition, compiler)
+            definitionToStoredType(contractDefinition, compilationId, compiler)
           ); //can skip reference declarations
+          debug("contractDefinition: %o", contractDefinition);
+          debug("definingContract: %o", definingContract);
         }
       }
       if (definingContract) {
@@ -440,7 +464,7 @@ export function definitionToStoredType(
       }
     }
     case "ContractDefinition": {
-      let id = definition.id.toString();
+      let id = makeTypeId(definition.id, compilationId);
       let typeName = definition.name;
       let contractKind = definition.contractKind;
       let payable = Utils.isContractPayable(definition);
