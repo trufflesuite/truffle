@@ -6,22 +6,12 @@ const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const Web3 = require("web3");
 
-const log = console.log;
-
-function processErr(err, output) {
-  if (err) {
-    log(output);
-    throw new Error(err);
-  }
-}
-
 describe("Testing with --console-log", () => {
   let config;
   const project = path.join(__dirname, "../../sources/console_logging");
   const logger = new MemoryLogger();
 
-  before(async function() {
-    this.timeout(10000);
+  before(async () => {
     config = await sandbox.create(project);
     config.network = "development";
     config.logger = logger;
@@ -34,28 +24,21 @@ describe("Testing with --console-log", () => {
     });
   });
 
-  it("successfully logs output when importing and using truffle/Console.sol", function(done) {
-    this.timeout(70000);
+  it("successfully logs output when importing and using truffle/Console.sol", async () => {
+    await CommandRunner.run("test --console-log", config);
+    const output = logger.contents();
+    assert(output.includes("Contract: LogTest"));
+    assert(output.includes("No. of detected _TruffleConsoleLog events:  6"));
+  }).timeout(20000);
 
-    CommandRunner.run("test --console-log", config, err => {
+  it("throws if --console-log flag is omitted", async () => {
+    try {
+      await CommandRunner.run("test", config);
+      assert.fail();
+    } catch (error) {
       const output = logger.contents();
-      processErr(err, output);
-
-      assert(output.includes("Contract: LogTest"));
-      assert(output.includes("No. of detected _TruffleConsoleLog events:  6"));
-      done();
-    });
-  });
-
-  it("throws if --console-log flag is omitted", function(done) {
-    this.timeout(70000);
-
-    CommandRunner.run("test", config, _err => {
-      const output = logger.contents();
-
       assert(output.includes("Error: while migrating MyDapp"));
       assert(output.includes("MyDapp contains unresolved libraries."));
-      done();
-    });
-  });
+    }
+  }).timeout(20000);
 });
