@@ -65,22 +65,6 @@ export class FS implements ResolverSource {
     ];
 
     let body, filePath;
-    if (importPath === "truffle/Console.sol") {
-      const actualImportPath =
-        // @ts-ignore
-        typeof BUNDLE_VERSION !== "undefined"
-          ? path.resolve(__dirname, path.basename(importPath))
-          : path.resolve(
-              __dirname,
-              "../../core/lib/logging",
-              path.basename(importPath)
-            );
-      const body = fs.readFileSync(actualImportPath, {
-        encoding: "utf8"
-      });
-      return { body, filePath: importPath };
-    }
-
     for (const possiblePath of possiblePaths) {
       try {
         const resolvedSource = fs.readFileSync(possiblePath, {
