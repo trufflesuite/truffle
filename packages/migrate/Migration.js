@@ -207,7 +207,6 @@ class Migration {
 
   async deployAndLinkLogger(options, resolver) {
     const { networks, network, network_id, provider, consoleLog } = options;
-
     if (consoleLog) {
       let Console;
       try {
@@ -229,15 +228,9 @@ class Migration {
       const files = await dir.promiseFiles(options.contracts_build_directory);
 
       const contracts = files
-        .filter(filePath => {
-          return path.extname(filePath) === ".json";
-        })
-        .map(filePath => {
-          return path.basename(filePath, ".json");
-        })
-        .map(contractName => {
-          return resolver.require(contractName);
-        });
+        .filter(filePath => path.extname(filePath) === ".json")
+        .map(filePath => path.basename(filePath, ".json"))
+        .map(contractName => resolver.require(contractName));
 
       for (const contract of contracts) {
         await loggerDeployer.link(Console, contract);

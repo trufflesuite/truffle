@@ -3,9 +3,11 @@ import { NPM } from "./npm";
 import { GlobalNPM } from "./globalnpm";
 import { FS } from "./fs";
 import { ResolverSource } from "../source";
+import { Truffle } from "./truffle";
 
 export function constructSources(options: any): ResolverSource[] {
   return [
+    new Truffle(),
     new EthPMv1(options.working_directory),
     new NPM(options.working_directory),
     new GlobalNPM(),

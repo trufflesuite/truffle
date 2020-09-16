@@ -101,15 +101,14 @@ module.exports = class TestSource {
     const loggingLibraries = ["Console"];
 
     for (const lib of loggingLibraries) {
-      const actualImportPath = typeof BUNDLE_VERSION !== "undefined"
-        ? path.resolve(__dirname, path.basename(importPath))
-        : path.resolve(__dirname, "../logging", path.basename(importPath));
-      if (importPath === `truffle/${lib}.sol`)
-        return fse.readFile(
-          actualImportPath,
-          { encoding: "utf8" },
-          (err, body) => callback(err, body, importPath)
-        );
+      const actualImportPath =
+        typeof BUNDLE_VERSION !== "undefined"
+          ? path.resolve(__dirname, path.basename(importPath))
+          : path.resolve(__dirname, "../logging", path.basename(importPath));
+      if (importPath === `truffle/${lib}.sol`) {
+        const body = fse.readFileSync(actualImportPath, { encoding: "utf8" });
+        return { body, filePath: importPath };
+      }
     }
   }
 
