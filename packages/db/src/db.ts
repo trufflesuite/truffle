@@ -1,7 +1,10 @@
 import { GraphQLSchema, DocumentNode, parse, execute } from "graphql";
 
 import { schema } from "@truffle/db/data";
-import { generateCompileLoad } from "@truffle/db/loaders/commands";
+import {
+  generateCompileLoad,
+  generateNamesLoad
+} from "@truffle/db/loaders/commands";
 import {
   WorkflowCompileResult,
   WorkspaceRequest,
@@ -55,26 +58,14 @@ export class TruffleDB {
     return await execute(this.schema, document, null, this.context, variables);
   }
 
-  *generateLoadNames(
+  async loadNames(
     project: DataModel.IProject,
     contractsByCompilation: Array<DataModel.IContract[]>
-  ): Generator<WorkspaceRequest, any, WorkspaceResponse<string>> {
-    for (const contracts of contractsByCompilation) {
-      let getCurrent = function* (name, type) {
-        return yield* generateProjectNameResolve(
-          toIdObject(project),
-          name,
-          type
-        );
-      };
-
-      const nameRecords = yield* generateNameRecordsLoad(
-        contracts,
-        "Contract",
-        getCurrent
-      );
-
-      yield* generateProjectNamesAssign(toIdObject(project), nameRecords);
+  ) {
+    const namesLoader = generateNamesLoad(project, contractsByCompilation);
+    let curNames = namesLoader.next();
+    while (!curNames.done) {
+      curNames = namesLoader.next();
     }
   }
 
@@ -98,14 +89,7 @@ export class TruffleDB {
     }
 
     if (names === true) {
-      const namesLoader = this.generateLoadNames(
-        cur.value.project,
-        cur.value.contractsByCompilation
-      );
-      let curNames = namesLoader.next();
-      while (!curNames.done) {
-        curNames = namesLoader.next();
-      }
+      this.loadNames(cur.value.project, cur.value.contractsByCompilation);
     }
 
     return cur.value;
