@@ -4,11 +4,6 @@ import { generateCompileLoad } from "@truffle/db/loaders/commands";
 import { WorkspaceRequest } from "@truffle/db/loaders/types";
 import { WorkflowCompileResult } from "@truffle/compile-common";
 import { Workspace } from "@truffle/db/workspace";
-import {
-  generateProjectNamesAssign,
-  generateProjectNameResolve
-} from "@truffle/db/loaders/resources/projects";
-import { generateNameRecordsLoad } from "@truffle/db/loaders/resources/nameRecords";
 
 interface IConfig {
   contracts_build_directory: string;
@@ -50,26 +45,14 @@ export class TruffleDB {
     return await execute(this.schema, document, null, this.context, variables);
   }
 
-  *generateLoadNames(
+  async loadNames(
     project: DataModel.IProject,
     contractsByCompilation: Array<DataModel.IContract[]>
-  ): Generator<WorkspaceRequest, any, WorkspaceResponse<string>> {
-    for (const contracts of contractsByCompilation) {
-      let getCurrent = function* (name, type) {
-        return yield* generateProjectNameResolve(
-          toIdObject(project),
-          name,
-          type
-        );
-      };
-
-      const nameRecords = yield* generateNameRecordsLoad(
-        contracts,
-        "Contract",
-        getCurrent
-      );
-
-      yield* generateProjectNamesAssign(toIdObject(project), nameRecords);
+  ) {
+    const namesLoader = generateNamesLoad(project, contractsByCompilation);
+    let curNames = namesLoader.next();
+    while (!curNames.done) {
+      curNames = namesLoader.next();
     }
   }
 
@@ -94,14 +77,7 @@ export class TruffleDB {
     }
 
     if (names === true) {
-      const namesLoader = this.generateLoadNames(
-        cur.value.project,
-        cur.value.contractsByCompilation
-      );
-      let curNames = namesLoader.next();
-      while (!curNames.done) {
-        curNames = namesLoader.next();
-      }
+      this.loadNames(cur.value.project, cur.value.contractsByCompilation);
     }
 
     return cur.value;

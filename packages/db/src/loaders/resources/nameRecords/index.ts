@@ -34,7 +34,6 @@ export function* generateNameRecordsLoad(
   const nameRecords = [];
   for (const resource of resources) {
     const { name } = resource;
-
     const current: DataModel.INameRecord = yield* getCurrent(name, type);
 
     if (current) {
