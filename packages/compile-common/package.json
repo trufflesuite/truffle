@@ -8,13 +8,17 @@
   "scripts": {
     "build": "tsc",
     "prepare": "yarn build",
+    "test": "mocha -r ts-node/register test/*.ts",
     "watch": "tsc -w"
   },
   "devDependencies": {
     "@types/fs-extra": "^8.1.0",
+    "@types/mocha": "^5.2.7",
     "typescript": "3.9.6"
   },
   "dependencies": {
+    "mocha": "8.0.1",
+    "ts-node": "8.10.2",
     "@truffle/contract-schema": "^3.2.5",
     "@truffle/resolver": "^6.0.18",
     "fs-extra": "^8.1.0"

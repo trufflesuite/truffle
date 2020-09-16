@@ -18,6 +18,10 @@ import WebsocketProvider from "@trufflesuite/web3-provider-engine/subproviders/w
 import Url from "url";
 import { JSONRPCRequestPayload, JSONRPCErrorCallback } from "ethereum-protocol";
 import { Callback, JsonRPCResponse } from "web3/providers";
+import { ConstructorArguments } from "./constructor/ConstructorArguments";
+import { getOptions } from "./constructor/getOptions";
+import { getPrivateKeys } from "./constructor/getPrivateKeys";
+import { getMnemonic } from "./constructor/getMnemonic";
 
 // Important: do not use debug module. Reason: https://github.com/trufflesuite/truffle/issues/2374#issuecomment-536109086
 
@@ -36,51 +40,54 @@ class HDWalletProvider {
 
   public engine: ProviderEngine;
 
-  constructor(
-    mnemonic: string | string[],
-    provider: string | any,
-    addressIndex: number = 0,
-    numAddresses: number = 10,
-    shareNonce: boolean = true,
-    walletHdpath: string = `m/44'/60'/0'/0/`
-  ) {
-    this.walletHdpath = walletHdpath;
+  constructor(...args: ConstructorArguments) {
+    const {
+      providerOrUrl, // required
+      addressIndex = 0,
+      numberOfAddresses = 10,
+      shareNonce = true,
+      derivationPath = `m/44'/60'/0'/0/`,
+
+      // what's left is either a mnemonic or a list of private keys
+      ...signingAuthority
+    } = getOptions(...args);
+
+    const mnemonic = getMnemonic(signingAuthority);
+    const privateKeys = getPrivateKeys(signingAuthority);
+
+    this.walletHdpath = derivationPath;
     this.wallets = {};
     this.addresses = [];
     this.engine = new ProviderEngine();
 
-    if (!HDWalletProvider.isValidProvider(provider)) {
+    if (!HDWalletProvider.isValidProvider(providerOrUrl)) {
       throw new Error(
         [
-          `Malformed provider URL: '${provider}'`,
+          `Malformed provider URL: '${providerOrUrl}'`,
           "Please specify a correct URL, using the http, https, ws, or wss protocol.",
           ""
         ].join("\n")
       );
     }
 
-    // private helper to normalize given mnemonic
-    const normalizePrivateKeys = (
-      mnemonic: string | string[]
-    ): string[] | false => {
-      if (Array.isArray(mnemonic)) return mnemonic;
-      else if (mnemonic && !mnemonic.includes(" ")) return [mnemonic];
-      // if truthy, but no spaces in mnemonic
-      else return false; // neither an array nor valid value passed;
-    };
-
     // private helper to check if given mnemonic uses BIP39 passphrase protection
-    const checkBIP39Mnemonic = (mnemonic: string) => {
+    const checkBIP39Mnemonic = ({
+      phrase,
+      password
+    }: {
+      phrase: string;
+      password?: string;
+    }) => {
       this.hdwallet = EthereumHDKey.fromMasterSeed(
-        bip39.mnemonicToSeedSync(mnemonic)
+        bip39.mnemonicToSeedSync(phrase, password)
       );
 
-      if (!bip39.validateMnemonic(mnemonic, wordlist)) {
+      if (!bip39.validateMnemonic(phrase, wordlist)) {
         throw new Error("Mnemonic invalid or undefined");
       }
 
       // crank the addresses out
-      for (let i = addressIndex; i < addressIndex + numAddresses; i++) {
+      for (let i = addressIndex; i < addressIndex + numberOfAddresses; i++) {
         const wallet = this.hdwallet
           .derivePath(this.walletHdpath + i)
           .getWallet();
@@ -104,10 +111,18 @@ class HDWalletProvider {
       }
     };
 
-    const privateKeys = normalizePrivateKeys(mnemonic);
+    if (mnemonic && mnemonic.phrase) {
+      checkBIP39Mnemonic(mnemonic);
+    } else if (privateKeys) {
+      ethUtilValidation(privateKeys);
+    } // no need to handle else case here, since matchesNewOptions() covers it
 
-    if (!privateKeys) checkBIP39Mnemonic(mnemonic as string);
-    else ethUtilValidation(privateKeys);
+    if (this.addresses.length === 0) {
+      throw new Error(
+        `Could not create addresses from your mnemonic or private key(s). ` +
+          `Please check that your inputs are correct.`
+      );
+    }
 
     const tmp_accounts = this.addresses;
     const tmp_wallets = this.wallets;
@@ -163,20 +178,23 @@ class HDWalletProvider {
       : this.engine.addProvider(singletonNonceSubProvider);
 
     this.engine.addProvider(new FiltersSubprovider());
-    if (typeof provider === "string") {
+    if (typeof providerOrUrl === "string") {
+      const url = providerOrUrl;
+
       const providerProtocol = (
-        Url.parse(provider).protocol || "http:"
+        Url.parse(url).protocol || "http:"
       ).toLowerCase();
 
       switch (providerProtocol) {
         case "ws:":
         case "wss:":
-          this.engine.addProvider(new WebsocketProvider({ rpcUrl: provider }));
+          this.engine.addProvider(new WebsocketProvider({ rpcUrl: url }));
           break;
         default:
-          this.engine.addProvider(new RpcProvider({ rpcUrl: provider }));
+          this.engine.addProvider(new RpcProvider({ rpcUrl: url }));
       }
     } else {
+      const provider = providerOrUrl;
       this.engine.addProvider(new ProviderSubprovider(provider));
     }
 

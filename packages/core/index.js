@@ -1,10 +1,11 @@
 require("source-map-support/register");
-var pkg = require("./package.json");
+const pkg = require("./package.json");
 
 module.exports = {
   build: require("./lib/build"),
   create: require("./lib/commands/create/helpers"),
-  contracts: require("@truffle/workflow-compile"),
+  // TODO: update this to non-legacy the next breaking change
+  contracts: require("@truffle/workflow-compile/legacy"),
   package: require("./lib/package"),
   test: require("./lib/test"),
   version: pkg.version,

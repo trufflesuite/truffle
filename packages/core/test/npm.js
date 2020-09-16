@@ -5,9 +5,9 @@ var path = require("path");
 var fse = require("fs-extra");
 var Resolver = require("@truffle/resolver");
 var Artifactor = require("@truffle/artifactor");
-var Contracts = require("@truffle/workflow-compile");
+var WorkflowCompile = require("@truffle/workflow-compile");
 
-describe("NPM integration", function() {
+describe("NPM integration", function () {
   var config;
   var moduleSource =
     "pragma solidity ^0.5.0; import './ModuleDependency.sol'; contract Module {}";
@@ -53,7 +53,7 @@ describe("NPM integration", function() {
     );
   });
 
-  after("Cleanup tmp files", function(done) {
+  after("Cleanup tmp files", function (done) {
     glob("tmp-*", (err, files) => {
       if (err) done(err);
       files.forEach(file => fse.removeSync(file));
@@ -61,7 +61,7 @@ describe("NPM integration", function() {
     });
   });
 
-  it("successfully finds the correct source via Sources lookup", async function() {
+  it("successfully finds the correct source via Sources lookup", async function () {
     const { body } = await config.resolver.resolve(
       "fake_source/contracts/Module.sol",
       config.sources
@@ -69,7 +69,7 @@ describe("NPM integration", function() {
     assert.equal(body, moduleSource);
   });
 
-  it("errors when module does not exist from any source", async function() {
+  it("errors when module does not exist from any source", async function () {
     try {
       await config.resolver.resolve(
         "some_source/contracts/SourceDoesNotExist.sol",
@@ -88,25 +88,18 @@ describe("NPM integration", function() {
     assert.fail("Source lookup should have errored but didn't");
   });
 
-  it("contract compiliation successfully picks up modules and their dependencies", function(done) {
+  it("successfully picks up modules and their dependencies during compilation", async function () {
     this.timeout(10000);
-
-    Contracts.compile(
+    const { contracts } = await WorkflowCompile.compileAndSave(
       config.with({
         quiet: true
-      }),
-      function(err, result) {
-        if (err) return done(err);
-        let { contracts } = result;
-
-        var contractNames = Object.keys(contracts);
-
-        assert.include(contractNames, "Parent");
-        assert.include(contractNames, "Module");
-        assert.include(contractNames, "ModuleDependency");
-
-        done();
-      }
+      })
     );
+    const contractNames = contracts.reduce((a, contract) => {
+      return a.concat(contract.contractName);
+    }, []);
+    assert.include(contractNames, "Parent");
+    assert.include(contractNames, "Module");
+    assert.include(contractNames, "ModuleDependency");
   });
 }).timeout(10000);

@@ -68,7 +68,7 @@ class Command {
     return {
       name: chosenCommand,
       argv,
-      command,
+      command
     };
   }
 
@@ -138,7 +138,7 @@ class Command {
       analytics.send({
         command: result.name ? result.name : "other",
         args: result.argv._,
-        version: bundled || "(unbundled) " + core,
+        version: bundled || "(unbundled) " + core
       });
     } catch (err) {
       callback(err);
