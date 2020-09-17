@@ -7,7 +7,7 @@ const MemoryStream = require("memorystream");
 const path = require("path");
 const fs = require("fs-extra");
 const glob = require("glob");
-const Contracts = require("@truffle/workflow-compile/new");
+const WorkflowCompile = require("@truffle/workflow-compile");
 const Test = require("@truffle/core/lib/test");
 
 let config;
@@ -135,7 +135,7 @@ describe("test command", () => {
   });
 
   it("compiles all initial contracts", async () => {
-    const { contracts } = await Contracts.compile(
+    const { contracts } = await WorkflowCompile.compile(
       config.with({
         all: false,
         quiet: true
@@ -194,7 +194,7 @@ describe("test command", () => {
     updateFile("MetaCoin.sol");
     updateFile("Migrations.sol");
 
-    const { contracts } = await Contracts.compile(
+    const { contracts } = await WorkflowCompile.compile(
       config.with({
         all: false,
         quiet: false
