@@ -19,6 +19,16 @@ import * as Codec from "@truffle/codec";
  */
 const identity = x => x;
 
+function solidityVersionHasNoNow(compiler) {
+  return (
+    compiler &&
+    //want to include prerelease versions of 0.7.0
+    semver.satisfies(compiler.version, "~0.7 || >=0.7.0", {
+      includePrerelease: true
+    })
+  );
+}
+
 function findAncestorOfType(node, types, scopes, pointer = null, root = null) {
   //note: you may want to include "SourceUnit" as a fallback type when using
   //this function for convenience.
@@ -29,7 +39,10 @@ function findAncestorOfType(node, types, scopes, pointer = null, root = null) {
     if (node.id !== undefined) {
       node = scopes[scopes[node.id].parentId].definition;
     } else {
-      if (pointer === null || root === null) {
+      if (pointer === null || root === null || pointer === "") {
+        //if we're trying to go up from the root but are still in Yul,
+        //or if we weren't given pointer and root at all,
+        //admit failure and return null
         return null;
       }
       pointer = pointer.replace(/\/[^/]*$/, ""); //chop off end
@@ -1125,7 +1138,7 @@ const data = createSelectorTree({
             return variables;
           }
 
-          return { ...variables, ...builtins };
+          return { ...builtins, ...variables };
         }
       ),
 
@@ -1137,9 +1150,9 @@ const data = createSelectorTree({
          * definitions for current variables, by identifier
          */
         _: createLeaf(
-          ["/current/scopes/inlined", "../_", "./this"],
+          ["/current/scopes/inlined", "../_", "./this", "/current/compiler"],
 
-          (scopes, identifiers, thisDefinition) => {
+          (scopes, identifiers, thisDefinition, compiler) => {
             let variables = Object.assign(
               {},
               ...Object.entries(identifiers).map(([identifier, variable]) => {
@@ -1156,14 +1169,18 @@ const data = createSelectorTree({
             let builtins = {
               msg: MSG_DEFINITION,
               tx: TX_DEFINITION,
-              block: BLOCK_DEFINITION,
-              now: NOW_DEFINITION
+              block: BLOCK_DEFINITION
             };
             //only include this when it has a proper definition
             if (thisDefinition) {
               builtins.this = thisDefinition;
             }
-            return { ...variables, ...builtins };
+            //only include now on versions prior to 0.7.0
+            if (!solidityVersionHasNoNow(compiler)) {
+              debug("adding now");
+              builtins.now = NOW_DEFINITION;
+            }
+            return { ...builtins, ...variables };
           }
         ),
 
@@ -1172,18 +1189,47 @@ const data = createSelectorTree({
          *
          * returns a spoofed definition for the this variable
          */
-        this: createLeaf(
-          ["/current/contract"],
-          contractNode =>
-            contractNode && contractNode.nodeType === "ContractDefinition"
-              ? spoofThisDefinition(
-                  contractNode.name,
-                  contractNode.id,
-                  contractNode.contractKind
-                )
-              : null
+        this: createLeaf(["/current/contract"], contractNode =>
+          contractNode && contractNode.nodeType === "ContractDefinition"
+            ? spoofThisDefinition(
+                contractNode.name,
+                contractNode.id,
+                contractNode.contractKind
+              )
+            : null
         )
       },
+
+      /**
+       * data.current.identifiers.sections
+       * intended for use by Teams Debugger
+       */
+      sections: createLeaf(["./refs"], refs => {
+        let sections = {
+          builtin: [],
+          contract: [],
+          local: []
+        };
+        for (const [identifier, ref] of Object.entries(refs)) {
+          switch (ref.location) {
+            case "special":
+              sections.builtin.push(identifier);
+              break;
+            case "stack":
+              sections.local.push(identifier);
+              break;
+            case "storage":
+            case "code":
+            case "nowhere":
+            case "memory":
+            case "definition":
+              sections.contract.push(identifier);
+              break;
+            //other cases shouldn't happen
+          }
+        }
+        return sections;
+      }),
 
       /**
        * data.current.identifiers.refs
@@ -1402,11 +1448,11 @@ const data = createSelectorTree({
   },
 
   /**
-   * data.nextMapped
+   * data.nextUserStep
    */
-  nextMapped: {
+  nextUserStep: {
     /**
-     * data.nextMapped.state
+     * data.nextUserStep.state
      * Yes, I'm just repeating the code for data.current.state.stack here;
      * not worth the trouble to factor out
      * HACK: this assumes we're not about to change context! don't use this if we
@@ -1414,10 +1460,10 @@ const data = createSelectorTree({
      */
     state: {
       /**
-       * data.nextMapped.state.stack
+       * data.nextUserStep.state.stack
        */
       stack: createLeaf(
-        [solidity.current.nextMapped],
+        [solidity.current.nextUserStep],
 
         step =>
           ((step || {}).stack || []).map(word => Codec.Conversion.toBytes(word))

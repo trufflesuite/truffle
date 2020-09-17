@@ -1,4 +1,4 @@
-const compile = require("@truffle/compile-solidity/new");
+const { Compile } = require("@truffle/compile-solidity");
 
 class DebugCompiler {
   constructor(config) {
@@ -8,14 +8,24 @@ class DebugCompiler {
   async compile(sources = undefined) {
     const compileConfig = this.config.with({ quiet: true });
 
-    const { contracts, sourceIndexes } = sources
-      ? await compile(sources, compileConfig) //used by external.js
-      : await compile.all(compileConfig);
+    const { compilations } = sources
+      ? await Compile.sources({ sources, options: compileConfig }) //used by external.js
+      : await Compile.all(compileConfig);
 
-    return { contracts, sourceIndexes };
+    return compilations.reduce(
+      (a, compilation) => {
+        a.contracts = a.contracts.concat(compilation.contracts);
+        a.sourceIndexes = a.sourceIndexes.concat(compilation.sourceIndexes);
+        return a;
+      },
+      {
+        contracts: [],
+        sourceIndexes: []
+      }
+    );
   }
 }
 
 module.exports = {
-  DebugCompiler,
+  DebugCompiler
 };

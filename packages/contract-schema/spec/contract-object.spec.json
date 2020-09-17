@@ -84,6 +84,12 @@
     },
     "immutableReferences": {
       "$ref": "#/definitions/ImmutableReferences"
+    },
+    "generatedSources": {
+      "$ref": "#/definitions/GeneratedSources"
+    },
+    "deployedGeneratedSources": {
+      "$ref": "#/definitions/GeneratedSources"
     }
   },
   "required": [
@@ -151,6 +157,20 @@
         }
       },
       "additionalProperties": false
+    },
+    "GeneratedSources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "integer", "minimum": 0},
+          "language": {"type": "string"},
+          "name": {"type": "string"},
+          "contents": {"type": "string"},
+          "ast": {"type": "object"}
+        },
+        "additionalProperties": false
+      }
     },
     "Source": {
       "type": "string"

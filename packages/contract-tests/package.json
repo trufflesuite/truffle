@@ -1,6 +1,6 @@
 {
   "name": "@truffle/contract-tests",
-  "version": "0.1.1",
+  "version": "0.1.3",
   "description": "Test suite for @truffle/contract smart contract abstraction (unpublished)",
   "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
   "homepage": "https://github.com/trufflesuite/truffle#readme",
@@ -21,8 +21,8 @@
   },
   "devDependencies": {
     "@truffle/blockchain-utils": "^0.0.25",
-    "@truffle/compile-solidity": "^4.3.20",
-    "@truffle/contract": "^4.2.20",
+    "@truffle/compile-solidity": "^4.3.22",
+    "@truffle/contract": "^4.2.22",
     "bignumber.js": "^7.2.1",
     "chai": "4.2.0",
     "debug": "^4.1.0",

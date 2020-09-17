@@ -12,7 +12,7 @@ import evm from "lib/evm/selectors";
 import trace from "lib/trace/selectors";
 
 const __OUTER = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.7.0;
 
 import "./Inner.sol";
 
@@ -21,7 +21,7 @@ contract Outer {
 
   Inner inner;
 
-  constructor(address _inner) public {
+  constructor(address _inner) {
     inner = Inner(_inner);
   }
 
@@ -35,7 +35,7 @@ contract Outer {
 `;
 
 const __INNER = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.7.0;
 
 contract Inner {
   function run() public {
@@ -63,17 +63,17 @@ let migrations = {
   "2_deploy_contracts.js": __MIGRATION
 };
 
-describe("EVM Debugging", function() {
+describe("EVM Debugging", function () {
   var provider;
 
   var abstractions;
   var compilations;
 
-  before("Create Provider", async function() {
+  before("Create Provider", async function () {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
-  before("Prepare contracts and artifacts", async function() {
+  before("Prepare contracts and artifacts", async function () {
     this.timeout(30000);
 
     let prepared = await prepareContracts(provider, sources, migrations);
@@ -81,8 +81,8 @@ describe("EVM Debugging", function() {
     compilations = prepared.compilations;
   });
 
-  describe("Function Depth", function() {
-    it("remains at 1 in absence of cross-contract calls", async function() {
+  describe("Function Depth", function () {
+    it("remains at 1 in absence of cross-contract calls", async function () {
       const maxExpected = 1;
 
       let instance = await abstractions.Inner.deployed();
@@ -107,7 +107,7 @@ describe("EVM Debugging", function() {
       } while (!finished);
     });
 
-    it("tracks callstack correctly", async function() {
+    it("tracks callstack correctly", async function () {
       // prepare
       let instance = await abstractions.Outer.deployed();
       let receipt = await instance.run();

@@ -13,7 +13,7 @@ import trace from "lib/trace/selectors";
 import controller from "lib/controller/selectors";
 
 const __TWOCONTRACTS = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.7.0;
 
 contract Contract1 {
   uint x;
@@ -34,17 +34,17 @@ let sources = {
   "TwoContracts.sol": __TWOCONTRACTS
 };
 
-describe("Loading and unloading transactions", function() {
+describe("Loading and unloading transactions", function () {
   var provider;
 
   var abstractions;
   var compilations;
 
-  before("Create Provider", async function() {
+  before("Create Provider", async function () {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
-  before("Prepare contracts and artifacts", async function() {
+  before("Prepare contracts and artifacts", async function () {
     this.timeout(30000);
 
     let prepared = await prepareContracts(provider, sources);
@@ -52,7 +52,7 @@ describe("Loading and unloading transactions", function() {
     compilations = prepared.compilations;
   });
 
-  it("Starts in transactionless mode and loads a transaction", async function() {
+  it("Starts in transactionless mode and loads a transaction", async function () {
     let instance = await abstractions.Contract1.deployed();
     let receipt = await instance.run();
     let txHash = receipt.tx;
@@ -73,7 +73,7 @@ describe("Loading and unloading transactions", function() {
     assert.deepInclude(variables, expected);
   });
 
-  it("Unloads a transaction and loads a new one", async function() {
+  it("Unloads a transaction and loads a new one", async function () {
     let instance1 = await abstractions.Contract1.deployed();
     let receipt1 = await instance1.run();
     let txHash1 = receipt1.tx;
@@ -106,7 +106,7 @@ describe("Loading and unloading transactions", function() {
     assert.deepInclude(variables, expected);
   });
 
-  it("Doesn't crash getting location when transactionless", async function() {
+  it("Doesn't crash getting location when transactionless", async function () {
     let bugger = await Debugger.forProject({
       provider,
       compilations,

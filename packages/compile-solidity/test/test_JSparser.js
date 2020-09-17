@@ -1,7 +1,7 @@
 const path = require("path");
 const assert = require("assert");
 const Resolver = require("@truffle/resolver");
-const compile = require("../index");
+const { Compile } = require("@truffle/compile-solidity");
 const Config = require("@truffle/config");
 
 describe("JSparser", () => {
@@ -22,7 +22,7 @@ describe("JSparser", () => {
     working_directory: __dirname
   };
 
-  it("resolves imports when using solcjs parser instead of docker [ @native ]", done => {
+  it("resolves imports when using solcjs parser instead of docker [ @native ]", async () => {
     options.compilers.solc.version = "0.4.22";
     options.compilers.solc.docker = true;
     options.contracts_directory = path.join(__dirname, "./sources/v0.4.x");
@@ -31,24 +31,25 @@ describe("JSparser", () => {
     paths.push(path.join(__dirname, "./sources/v0.4.x/ComplexOrdered.sol"));
     paths.push(path.join(__dirname, "./sources/v0.4.x/InheritB.sol"));
 
-    options.paths = paths;
     options.resolver = new Resolver(options);
 
     const config = Config.default().merge(options);
 
-    compile.with_dependencies(config, (err, result) => {
-      if (err) return done(err);
-
-      // This contract imports / inherits
-      assert(
-        result["ComplexOrdered"].contract_name === "ComplexOrdered",
-        "Should have compiled"
-      );
-      done();
+    const { compilations } = await Compile.sourcesWithDependencies({
+      paths,
+      options: config
     });
+    const contractWasCompiled = compilations.some(compilation => {
+      return compilation.contracts.some(contract => {
+        return contract.contractName === "ComplexOrdered";
+      });
+    });
+
+    // This contract imports / inherits
+    assert(contractWasCompiled, "Should have compiled");
   }).timeout(20000);
 
-  it("properly throws when passed an invalid parser value", done => {
+  it("properly throws when passed an invalid parser value", async () => {
     options.compilers.solc.parser = "badParser";
     options.contracts_directory = path.join(__dirname, "./sources/v0.5.x");
 
@@ -56,19 +57,18 @@ describe("JSparser", () => {
     paths.push(path.join(__dirname, "./sources/v0.5.x/ComplexOrdered.sol"));
     paths.push(path.join(__dirname, "./sources/v0.5.x/InheritB.sol"));
 
-    options.paths = paths;
     options.resolver = new Resolver(options);
 
     const config = Config.default().merge(options);
 
-    compile.with_dependencies(config, (err, result) => {
-      if (result) {
-        assert(false, "should have failed!");
-        done();
-      }
-
-      assert(err.message.match(/(Unsupported parser)/));
-      done();
-    });
+    try {
+      await Compile.sourcesWithDependencies({
+        paths,
+        options: config
+      });
+      assert(false, "this call should have failed!");
+    } catch (error) {
+      assert(error.message.match(/(Unsupported parser)/));
+    }
   }).timeout(3000);
 });

@@ -13,7 +13,7 @@ import trace from "lib/trace/selectors";
 import solidity from "lib/solidity/selectors";
 
 const __PRECOMPILE = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.7.0;
 
 contract HasPrecompile {
   event Called();
@@ -45,7 +45,7 @@ const TEST_CASES = [
   }
 ];
 
-describe("Precompiled Contracts", function() {
+describe("Precompiled Contracts", function () {
   let provider;
 
   let abstractions;
@@ -54,11 +54,11 @@ describe("Precompiled Contracts", function() {
   // object where key is selector name, value is list of results at step
   let results = {};
 
-  before("Create Provider", async function() {
+  before("Create Provider", async function () {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
-  before("Prepare contracts and artifacts", async function() {
+  before("Prepare contracts and artifacts", async function () {
     this.timeout(30000);
 
     let prepared = await prepareContracts(provider, sources);
@@ -66,14 +66,14 @@ describe("Precompiled Contracts", function() {
     compilations = prepared.compilations;
   });
 
-  before("Initialize results", function() {
+  before("Initialize results", function () {
     // initialize results as mapping of selector to step results list
     for (let { name } of TEST_CASES) {
       results[name] = [];
     }
   });
 
-  before("Step through debugger", async function() {
+  before("Step through debugger", async function () {
     let instance = await abstractions.HasPrecompile.deployed();
     let receipt = await instance.run();
     let txHash = receipt.tx;
@@ -104,14 +104,14 @@ describe("Precompiled Contracts", function() {
     } while (!finished);
   });
 
-  before("remove final step results", function() {
+  before("remove final step results", function () {
     // since these include one step past end of trace
     for (let { name } of TEST_CASES) {
       results[name].pop();
     }
   });
 
-  it("never fails to know the trace step", async function() {
+  it("never fails to know the trace step", async function () {
     // remove last item (known to be undefined)
     const result = results["trace.step"];
 
@@ -124,7 +124,7 @@ describe("Precompiled Contracts", function() {
     }
   });
 
-  it("never fails to know EVM context", async function() {
+  it("never fails to know EVM context", async function () {
     const result = results["evm.current.context"];
 
     for (let step of result) {
@@ -137,7 +137,7 @@ describe("Precompiled Contracts", function() {
     }
   });
 
-  it("never throws an exception for missing source range", async function() {
+  it("never throws an exception for missing source range", async function () {
     const result = results["solidity.current.sourceRange"];
 
     for (let step of result) {

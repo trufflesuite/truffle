@@ -94,7 +94,7 @@ const mappingFixtures = [
 
 debug("mappingFixtures %O", mappingFixtures);
 
-describe("Decoding", function() {
+describe("Decoding", function () {
   /*
    * Storage Tests
    */
@@ -104,7 +104,7 @@ describe("Decoding", function() {
     evm.current.state.storage,
 
     (contractName, fixtures) => {
-      return `pragma solidity ^0.6.1;
+      return `pragma solidity ^0.7.0;
 
 contract ${contractName} {
 
@@ -131,7 +131,7 @@ contract ${contractName} {
     evm.current.state.storage,
 
     (contractName, fixtures) => {
-      return `pragma solidity ^0.6.1;
+      return `pragma solidity ^0.7.0;
 
 contract ${contractName} {
   event Done();
@@ -147,11 +147,10 @@ contract ${contractName} {
     ${fixtures
       .map(({ name, type: { from }, value }) =>
         Object.entries(value)
-          .map(
-            ([k, v]) =>
-              from === "string"
-                ? `${name}["${k}"] = ${JSON.stringify(v)};`
-                : `${name}[${k}] = ${JSON.stringify(v)};`
+          .map(([k, v]) =>
+            from === "string"
+              ? `${name}["${k}"] = ${JSON.stringify(v)};`
+              : `${name}[${k}] = ${JSON.stringify(v)};`
           )
           .join("\n    ")
       )
@@ -186,7 +185,7 @@ contract ${contractName} {
         }
       }
 
-      return `pragma solidity ^0.6.1;
+      return `pragma solidity ^0.7.0;
 
 contract ${contractName} {
 
