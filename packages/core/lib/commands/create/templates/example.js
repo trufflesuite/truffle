@@ -1,9 +1,8 @@
 const Example = artifacts.require("Example");
 
-contract("Example", function() {
-  it("should assert true", async function(done) {
+contract("Example", () => {
+  it("should assert true", async () => {
     await Example.deployed();
-    assert.isTrue(true);
-    done();
+    return assert.isTrue(true);
   });
 });
