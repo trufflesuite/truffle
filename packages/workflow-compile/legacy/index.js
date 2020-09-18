@@ -16,7 +16,7 @@ const SUPPORTED_COMPILERS = {
   external: externalCompile
 };
 
-const Contracts = {
+const WorkflowCompile = {
   collectCompilations: async compilations => {
     let result = { outputs: {}, contracts: {} };
 
@@ -125,4 +125,4 @@ const Contracts = {
   }
 };
 
-module.exports = Contracts;
+module.exports = WorkflowCompile;
