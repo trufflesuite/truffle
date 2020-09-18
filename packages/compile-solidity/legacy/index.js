@@ -86,7 +86,7 @@ compile.with_dependencies = function (options, callback) {
 
   var config = Config.default().merge(options);
 
-  Profiler.required_sources(
+  Profiler.requiredSources(
     config.with({
       paths: options.paths,
       base_path: options.contracts_directory,
