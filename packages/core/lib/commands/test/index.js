@@ -7,7 +7,7 @@ const command = {
       type: "boolean",
       default: false
     },
-    "console-log": {
+    "solidity-logging": {
       describe: "Enable Solidity console logging"
     },
     "compile-all-debug": {
@@ -53,7 +53,7 @@ const command = {
       "                                " + // spacing to align with previous line
       "[--show-events] [--debug] [--debug-global <identifier>]\n" +
       "                                " + // spacing to align with previous line
-      "[--bail] [--stacktrace[-extra]] [--console-log]",
+      "[--bail] [--stacktrace[-extra]] [--solidity-logging]",
     options: [
       {
         option: "<test_file>",
@@ -68,7 +68,7 @@ const command = {
           "to be compiled."
       },
       {
-        option: "--console-log",
+        option: "--solidity-logging",
         description: "Enables Solidity console logging during testing."
       },
       {

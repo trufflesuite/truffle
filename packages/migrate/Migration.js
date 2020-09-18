@@ -206,8 +206,14 @@ class Migration {
   }
 
   async deployAndLinkLogger(options, resolver) {
-    const { networks, network, network_id, provider, consoleLog } = options;
-    if (consoleLog) {
+    const {
+      networks,
+      network,
+      network_id,
+      provider,
+      solidityLogging
+    } = options;
+    if (solidityLogging) {
       let Console;
       try {
         Console = resolver.require("Console");
