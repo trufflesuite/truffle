@@ -7,13 +7,11 @@ const command = {
       type: "boolean",
       default: false
     },
+    "solidity-logging": {
+      describe: "Enable Solidity console logging"
+    },
     "compile-all-debug": {
       describe: "Compile in debug mode",
-      type: "boolean",
-      default: false
-    },
-    "console-log": {
-      describe: "Enable Solidity console logging",
       type: "boolean",
       default: false
     },
@@ -55,7 +53,7 @@ const command = {
       "                                " + // spacing to align with previous line
       "[--show-events] [--debug] [--debug-global <identifier>]\n" +
       "                                " + // spacing to align with previous line
-      "[--console-log]",
+      "[--bail] [--stacktrace[-extra]] [--console-log]",
     options: [
       {
         option: "<test_file>",
@@ -70,14 +68,14 @@ const command = {
           "to be compiled."
       },
       {
+        option: "--solidity-logging",
+        description: "Enables Solidity console logging during testing."
+      },
+      {
         option: "--compile-all-debug",
         description:
           "Compile all contracts and do so in debug mode for extra revert info.  May " +
           "cause errors on large\n                    contracts."
-      },
-      {
-        option: "--console-log",
-        description: "Enables Solidity console logging during testing."
       },
       {
         option: "--network <name>",
