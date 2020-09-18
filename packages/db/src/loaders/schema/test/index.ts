@@ -10,14 +10,13 @@ import {
   ResolveProjectName
 } from "@truffle/db/loaders/resources/projects";
 import { generateId } from "@truffle/db/helpers";
-import * as Contracts from "@truffle/workflow-compile/new";
 import Migrate from "@truffle/migrate";
 import { Environment } from "@truffle/environment";
 import Config from "@truffle/config";
 import Ganache from "ganache-core";
 import Web3 from "web3";
 import * as fse from "fs-extra";
-import { shimBytecode } from "@truffle/workflow-compile/shims";
+import { forBytecode } from "@truffle/compile-common/src/shims/LegacyToNew";
 import * as tmp from "tmp";
 
 let server;
@@ -35,8 +34,8 @@ afterAll(async done => {
 
 // mocking the truffle-workflow-compile to avoid jest timing issues
 // and also to keep from adding more time to Travis testing
-jest.mock("@truffle/workflow-compile/new", () => ({
-  compile: function(config, callback) {
+jest.mock("@truffle/workflow-compile", () => ({
+  compile: function (config, callback) {
     return require(path.join(
       __dirname,
       "workflowCompileOutputMock",
@@ -350,8 +349,8 @@ describe("Compilation", () => {
           sourcePath: contract["sourcePath"]
         });
         sourceIds.push({ id: sourceId });
-        const shimBytecodeObject = shimBytecode(contract["bytecode"]);
-        const shimCallBytecodeObject = shimBytecode(
+        const shimBytecodeObject = forBytecode(contract["bytecode"]);
+        const shimCallBytecodeObject = forBytecode(
           contract["deployedBytecode"]
         );
         let bytecodeId = generateId(shimBytecodeObject);
@@ -620,7 +619,7 @@ describe("Compilation", () => {
         }
       } = await db.query(GetWorkspaceBytecode, bytecodeIds[index]);
 
-      let shimmedBytecode = shimBytecode(artifacts[index].bytecode);
+      let shimmedBytecode = forBytecode(artifacts[index].bytecode);
       expect(bytes).toEqual(shimmedBytecode.bytes);
     }
   });
@@ -684,10 +683,10 @@ describe("Compilation", () => {
         }
       } = await db.query(GetWorkspaceContract, contractIds[index]);
 
-      const artifactsCreateBytecode = shimBytecode(artifacts[index].bytecode);
+      const artifactsCreateBytecode = forBytecode(artifacts[index].bytecode);
       expect(createBytecode.bytes).toEqual(artifactsCreateBytecode.bytes);
 
-      const artifactsCallBytecode = shimBytecode(
+      const artifactsCallBytecode = forBytecode(
         artifacts[index].deployedBytecode
       );
       expect(callBytecode.bytes).toEqual(artifactsCallBytecode.bytes);

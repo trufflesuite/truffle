@@ -55,7 +55,7 @@ type Resource = {
 };
 
 export type IdObject<R extends Resource = Resource> = {
-  [N in keyof R]: N extends "id" ? string : never
+  [N in keyof R]: N extends "id" ? string : never;
 };
 
 export const toIdObject = <R extends Resource>({ id }: R): IdObject<R> =>
@@ -75,16 +75,3 @@ export type WorkspaceResponse<N extends string = string, R = any> = {
     workspace: { [RequestName in N]: R };
   };
 };
-
-/**
- * Output format of @truffle/workflow-compile/new
- */
-export interface WorkflowCompileResult {
-  compilations: {
-    [compilerName: string]: {
-      sourceIndexes: string[];
-      contracts: CompiledContract[];
-    };
-  };
-  contracts: { [contractName: string]: ContractObject };
-}

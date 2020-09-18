@@ -2,10 +2,8 @@ import { GraphQLSchema, DocumentNode, parse, execute } from "graphql";
 
 import { schema } from "@truffle/db/data";
 import { generateCompileLoad } from "@truffle/db/loaders/commands";
-import {
-  WorkflowCompileResult,
-  WorkspaceRequest
-} from "@truffle/db/loaders/types";
+import { WorkspaceRequest } from "@truffle/db/loaders/types";
+import { WorkflowCompileResult } from "@truffle/compile-common/src/types";
 import { Workspace } from "@truffle/db/workspace";
 
 interface IConfig {

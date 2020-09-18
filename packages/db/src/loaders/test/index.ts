@@ -3,8 +3,8 @@ import gql from "graphql-tag";
 import { TruffleDB } from "@truffle/db";
 import tmp from "tmp";
 
-jest.mock("@truffle/workflow-compile/new", () => ({
-  compile: function(config, callback) {
+jest.mock("@truffle/workflow-compile", () => ({
+  compile: function (config, callback) {
     return require(path.join(
       __dirname,
       "..",

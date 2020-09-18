@@ -1,5 +1,5 @@
 import { TruffleDB } from "@truffle/db/db";
-import * as Contracts from "@truffle/workflow-compile/new";
+import { WorkflowCompile } from "@truffle/workflow-compile";
 import { ContractObject } from "@truffle/contract-schema/spec";
 import * as fse from "fs-extra";
 import path from "path";
@@ -84,7 +84,7 @@ export class ArtifactsLoader {
   }
 
   async load(): Promise<void> {
-    const result = await Contracts.compile(this.config);
+    const result = await WorkflowCompile.compile(this.config);
 
     const { project, compilations } = await this.db.loadCompilations(result);
 

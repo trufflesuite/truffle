@@ -1,6 +1,5 @@
 import { generateId, Migrations, WorkspaceClient } from "./utils";
-import { shimBytecode } from "@truffle/workflow-compile/shims";
-
+import { forBytecode } from "@truffle/compile-common/src/shims/LegacyToNew";
 import { AddSource } from "./source.graphql";
 import { AddBytecode } from "./bytecode.graphql";
 import {
@@ -29,7 +28,7 @@ describe("Contract", () => {
     sourceId = sourceResult.sourcesAdd.sources[0].id;
 
     //add bytecode and get id
-    const shimmedBytecode = shimBytecode(Migrations.bytecode);
+    const shimmedBytecode = forBytecode(Migrations.bytecode);
 
     const bytecodeResult = await wsClient.execute(AddBytecode, shimmedBytecode);
     bytecodeId = bytecodeResult.bytecodesAdd.bytecodes[0].id;
