@@ -83,7 +83,6 @@ compile.with_dependencies = function (options, callback) {
     "contracts_directory",
     "resolver"
   ]);
-
   var config = Config.default().merge(options);
 
   Profiler.requiredSources(
@@ -91,20 +90,19 @@ compile.with_dependencies = function (options, callback) {
       paths: options.paths,
       base_path: options.contracts_directory,
       resolver: options.resolver
-    }),
-    (err, allSources, required) => {
-      if (err) return callback(err);
-
-      var hasTargets = required.length;
+    })
+  )
+    .then(({ allSources, compilationTargets }) => {
+      var hasTargets = compilationTargets.length;
 
       hasTargets
-        ? self.calculateCompiledSources(required, options)
+        ? self.calculateCompiledSources(compilationTargets, options)
         : self.calculateCompiledSources(allSources, options);
 
-      options.compilationTargets = required;
+      options.compilationTargets = compilationTargets;
       compile(allSources, options, callback);
-    }
-  );
+    })
+    .catch(callback);
 };
 
 compile.calculateCompiledSources = function (paths, options) {

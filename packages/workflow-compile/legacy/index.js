@@ -67,7 +67,7 @@ const WorkflowCompile = {
       if (config.events) {
         config.events.emit("compile:succeed", {
           contractsBuildDirectory: config.contracts_build_directory,
-          compilersInfo: config.compilersInfo
+          compilers: config.compilersInfo
         });
       }
 
@@ -92,18 +92,53 @@ const WorkflowCompile = {
         const compile = SUPPORTED_COMPILERS[compiler];
         if (!compile) throw new Error("Unsupported compiler: " + compiler);
 
-        const compileFunc = multiPromisify(
-          config.all === true || config.compileAll === true
-            ? compile.all
-            : compile.necessary
-        );
+        config.compilersInfo = [];
+        let contracts, output, compilerUsed;
+        if (compiler === "solc") {
+          const compileFunc = multiPromisify(
+            config.all === true || config.compileAll === true
+              ? compile.all
+              : compile.necessary
+          );
 
-        let [contracts, output, compilerUsed] = await compileFunc(config);
+          const result = await compileFunc(config);
+
+          contracts = result[0];
+          output = result[1];
+          compilerUsed = result[2];
+        } else {
+          const { Compile } = compile;
+          const compileFunc =
+            config.all === true || config.compileAll === true
+              ? Compile.all
+              : Compile.necessary;
+
+          const { compilations } = await compileFunc(config);
+          const result = compilations.reduce(
+            (a, compilation) => {
+              for (const contract of compilation.contracts) {
+                a.contracts[contract.contractName] = contract;
+              }
+              a.output = a.output.concat(compilation.sourceIndexes);
+              return a;
+            },
+            {
+              contracts: {},
+              output: []
+            }
+          );
+          contracts = result.contracts;
+          output = result.output;
+          if (compilations[0] && compilations[0].compiler) {
+            compilerUsed = {
+              name: compilations[0].compiler.name,
+              version: compilations[0].compiler.version
+            };
+          }
+        }
 
         if (compilerUsed) {
-          config.compilersInfo[compilerUsed.name] = {
-            version: compilerUsed.version
-          };
+          config.compilersInfo.push(compilerUsed);
         }
 
         if (contracts && Object.keys(contracts).length > 0) {
