@@ -9,7 +9,6 @@ import {
   WorkspaceRequest,
   WorkspaceResponse
 } from "@truffle/db/loaders/types";
-import { projectLoadGenerate } from "./projects";
 
 /**
  * generator function to load nameRecords and project names into Truffle DB
