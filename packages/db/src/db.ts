@@ -12,11 +12,7 @@ import {
   toIdObject
 } from "@truffle/db/loaders/types";
 import { Workspace } from "@truffle/db/workspace";
-import {
-  generateProjectNamesAssign,
-  generateProjectNameResolve
-} from "@truffle/db/loaders/resources/projects";
-import { generateNameRecordsLoad } from "@truffle/db/loaders/resources/nameRecords";
+import { projectLoadGenerate } from "@truffle/db/loaders/commands";
 
 interface IConfig {
   contracts_build_directory: string;
@@ -62,17 +58,48 @@ export class TruffleDB {
     project: DataModel.IProject,
     contractsByCompilation: Array<DataModel.IContract[]>
   ) {
-    const namesLoader = generateNamesLoad(project, contractsByCompilation);
+    const namesLoader = generateNamesLoad(
+      toIdObject(project),
+      contractsByCompilation
+    );
     let curNames = namesLoader.next();
+
     while (!curNames.done) {
-      curNames = namesLoader.next();
+      const {
+        request,
+        variables
+      }: WorkspaceRequest = curNames.value as WorkspaceRequest;
+      const namesResponse: WorkspaceResponse = await this.query(
+        request,
+        variables
+      );
+
+      curNames = namesLoader.next(namesResponse);
     }
   }
 
-  async loadCompilations(result: WorkflowCompileResult, names: boolean) {
-    const saga = generateCompileLoad(result, {
+  async loadProject(): Promise<DataModel.IProject> {
+    const projectRequest = projectLoadGenerate({
       directory: this.context.workingDirectory
-    });
+    }).next();
+
+    // this gets the response using that request, the project
+    const {
+      request,
+      variables
+    }: WorkspaceRequest = projectRequest.value as WorkspaceRequest;
+    const response = await this.query(request, variables);
+    const projectResponse = response.data.workspace.projectsAdd.projects[0];
+
+    return projectResponse;
+  }
+
+  async loadCompilations(
+    project: DataModel.IProject,
+    result: WorkflowCompileResult,
+    names: boolean
+  ) {
+    const saga = generateCompileLoad(result);
 
     let cur = saga.next();
     while (!cur.done) {
@@ -89,7 +116,7 @@ export class TruffleDB {
     }
 
     if (names === true) {
-      this.loadNames(cur.value.project, cur.value.contractsByCompilation);
+      await this.loadNames(project, cur.value.contractsByCompilation);
     }
 
     return cur.value;

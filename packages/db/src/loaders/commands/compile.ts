@@ -28,12 +28,8 @@ import { generateNameRecordsLoad } from "@truffle/db/loaders/resources/nameRecor
  * and ultimately returns nothing when complete.
  */
 export function* generateCompileLoad(
-  result: WorkflowCompileResult,
-  { directory }: { directory: string }
+  result: WorkflowCompileResult
 ): Generator<WorkspaceRequest, any, WorkspaceResponse<string>> {
-  // start by adding loading the project resource
-  const project = yield* generateProjectLoad(directory);
-
   const resultCompilations = processResultCompilations(result);
 
   // for each compilation returned by workflow-compile:
@@ -90,7 +86,7 @@ export function* generateCompileLoad(
     contractsByCompilation.push(contracts);
   }
 
-  return { project, compilations, contractsByCompilation };
+  return { compilations, contractsByCompilation };
 }
 
 function processResultCompilations(
