@@ -1,9 +1,7 @@
-import { TruffleDB } from "@truffle/db/db";
 import {
   WorkflowCompileResult,
   CompilationData,
   CompiledContract,
-  toIdObject,
   WorkspaceRequest,
   WorkspaceResponse
 } from "@truffle/db/loaders/types";
@@ -12,12 +10,6 @@ import { generateBytecodesLoad } from "@truffle/db/loaders/resources/bytecodes";
 import { generateCompilationsLoad } from "@truffle/db/loaders/resources/compilations";
 import { generateContractsLoad } from "@truffle/db/loaders/resources/contracts";
 import { generateSourcesLoad } from "@truffle/db/loaders/resources/sources";
-import {
-  generateProjectLoad,
-  generateProjectNameResolve,
-  generateProjectNamesAssign
-} from "@truffle/db/loaders/resources/projects";
-import { generateNameRecordsLoad } from "@truffle/db/loaders/resources/nameRecords";
 
 /**
  * For a compilation result from @truffle/workflow-compile/new, generate a
