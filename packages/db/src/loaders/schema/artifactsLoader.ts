@@ -91,9 +91,12 @@ export class ArtifactsLoader {
       this.config
     );
 
-    // second parameter in loadCompilation is for whether or not we need
+    const project = await this.db.loadProject();
+
+    // third parameter in loadCompilation is for whether or not we need
     // to update nameRecords (i.e. is this happening in test)
-    const { project, compilations } = await this.db.loadCompilations(
+    const { compilations } = await this.db.loadCompilations(
+      project,
       result,
       true
     );
