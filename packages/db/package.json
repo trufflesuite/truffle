@@ -57,6 +57,7 @@
     "@gnd/graphql-tools": "^4.0.5-fix.0",
     "@gnd/jsonschema2graphql": "^1.0.15",
     "@truffle/artifactor": "^4.0.74",
+    "@truffle/workflow-compile": "^2.1.48",
     "@truffle/compile-common": "^0.3.9",
     "apollo-server": "^2.3.1",
     "fse": "^4.0.1",
