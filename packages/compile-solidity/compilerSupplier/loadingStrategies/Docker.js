@@ -8,7 +8,9 @@ const VersionRange = require("./VersionRange");
 
 // Set a sensible limit for maxBuffer
 // See https://github.com/nodejs/node/pull/23027
-const maxBuffer = 1024 * 1024 * 100;
+const maxBuffer = Number(
+  process.env.DOCKER_COMPILER_MAX_BUFFER || 1024 * 1024 * 100
+);
 
 class Docker extends LoadingStrategy {
   async load() {
@@ -20,7 +22,8 @@ class Docker extends LoadingStrategy {
 
     try {
       return {
-        compile: options => String(execSync(command, { input: options, maxBuffer })),
+        compile: options =>
+          String(execSync(command, { input: options, maxBuffer })),
         version: () => versionString
       };
     } catch (error) {
