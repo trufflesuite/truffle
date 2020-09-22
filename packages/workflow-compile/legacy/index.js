@@ -1,9 +1,9 @@
 const debug = require("debug")("workflow-compile");
 const fse = require("fs-extra");
 const externalCompile = require("@truffle/external-compile");
-const solcCompile = require("@truffle/compile-solidity/legacy");
+const solcCompile = require("@truffle/compile-solidity");
 const vyperCompile = require("@truffle/compile-vyper");
-const { prepareConfig, multiPromisify } = require("../utils");
+const { prepareConfig } = require("../utils");
 const { Shims } = require("@truffle/compile-common");
 const {
   reportCompilationStarted,
@@ -94,50 +94,35 @@ const WorkflowCompile = {
         if (!compile) throw new Error("Unsupported compiler: " + compiler);
 
         config.compilersInfo = [];
-        let contracts, output, compilerUsed;
-        if (compiler === "solc") {
-          const compileFunc = multiPromisify(
-            config.all === true || config.compileAll === true
-              ? compile.all
-              : compile.necessary
-          );
+        const { Compile } = compile;
+        const compileFunc =
+          config.all === true || config.compileAll === true
+            ? Compile.all
+            : Compile.necessary;
 
-          const result = await compileFunc(config);
-
-          contracts = result[0];
-          output = result[1];
-          compilerUsed = result[2];
-        } else {
-          const { Compile } = compile;
-          const compileFunc =
-            config.all === true || config.compileAll === true
-              ? Compile.all
-              : Compile.necessary;
-
-          const { compilations } = await compileFunc(config);
-          const result = compilations.reduce(
-            (a, compilation) => {
-              for (const contract of compilation.contracts) {
-                a.contracts[
-                  contract.contractName
-                ] = Shims.NewToLegacy.forContract(contract);
-              }
-              a.output = a.output.concat(compilation.sourceIndexes);
-              return a;
-            },
-            {
-              contracts: {},
-              output: []
+        const { compilations } = await compileFunc(config);
+        const { contracts, output } = compilations.reduce(
+          (a, compilation) => {
+            for (const contract of compilation.contracts) {
+              a.contracts[
+                contract.contractName
+              ] = Shims.NewToLegacy.forContract(contract);
             }
-          );
-          contracts = result.contracts;
-          output = result.output;
-          if (compilations[0] && compilations[0].compiler) {
-            compilerUsed = {
-              name: compilations[0].compiler.name,
-              version: compilations[0].compiler.version
-            };
+            a.output = a.output.concat(compilation.sourceIndexes);
+            return a;
+          },
+          {
+            contracts: {},
+            output: []
           }
+        );
+
+        let compilerUsed;
+        if (compilations[0] && compilations[0].compiler) {
+          compilerUsed = {
+            name: compilations[0].compiler.name,
+            version: compilations[0].compiler.version
+          };
         }
 
         if (compilerUsed) {
