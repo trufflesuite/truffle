@@ -4,6 +4,7 @@ const externalCompile = require("@truffle/external-compile");
 const solcCompile = require("@truffle/compile-solidity/legacy");
 const vyperCompile = require("@truffle/compile-vyper");
 const { prepareConfig, multiPromisify } = require("../utils");
+const { Shims } = require("@truffle/compile-common");
 const {
   reportCompilationStarted,
   reportNothingToCompile,
@@ -40,7 +41,7 @@ const WorkflowCompile = {
   // network_id: network id to link saved contract artifacts.
   // quiet: Boolean. Suppress output. Defaults to false.
   // strict: Boolean. Return compiler warnings as errors. Defaults to false.
-  compile: async function (options, callback) {
+  compile: async function(options, callback) {
     const callbackPassed = typeof callback === "function";
     try {
       const config = prepareConfig(options);
@@ -80,7 +81,7 @@ const WorkflowCompile = {
     }
   },
 
-  compileSources: async function (config, compilers) {
+  compileSources: async function(config, compilers) {
     compilers = config.compiler
       ? config.compiler === "none"
         ? []
@@ -117,7 +118,9 @@ const WorkflowCompile = {
           const result = compilations.reduce(
             (a, compilation) => {
               for (const contract of compilation.contracts) {
-                a.contracts[contract.contractName] = contract;
+                a.contracts[
+                  contract.contractName
+                ] = Shims.NewToLegacy.forContract(contract);
               }
               a.output = a.output.concat(compilation.sourceIndexes);
               return a;
