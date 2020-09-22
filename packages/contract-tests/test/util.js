@@ -7,6 +7,7 @@ const { Compile } = require("@truffle/compile-solidity");
 const Config = require("@truffle/config");
 const contract = require("@truffle/contract");
 const path = require("path");
+const { Shims } = require("@truffle/compile-common");
 
 var log = {
   log: debug
@@ -23,20 +24,17 @@ var util = {
   // Compiles and instantiates (our friend) Example.sol
   createExample: async function() {
     return await util._createContractInstance(
-      path.join(__dirname, "sources", "Example.sol"),
-      "Example"
+      path.join(__dirname, "sources", "Example.sol")
     );
   },
 
   createABIV2UserDirectory: async function() {
     return await util._createContractInstance(
-      path.join(__dirname, "sources", "ABIV2UserDirectory.sol"),
-      "ABIV2UserDirectory"
+      path.join(__dirname, "sources", "ABIV2UserDirectory.sol")
     );
   },
 
-  _createContractInstance: async function(sourcePath, contractName) {
-    var contractObj;
+  _createContractInstance: async function(sourcePath) {
     const sources = {
       [sourcePath]: fs.readFileSync(sourcePath, { encoding: "utf8" })
     };
@@ -55,10 +53,11 @@ var util = {
         }
       }
     });
-    const { result } = await Compile.sources({
+    const { compilations } = await Compile.sources({
       sources,
       options: config
     });
+    const { contracts } = compilations[0];
 
     if (process.listeners("uncaughtException").length) {
       process.removeListener(
@@ -67,8 +66,7 @@ var util = {
       );
     }
 
-    contractObj = result[contractName];
-    return contract(contractObj);
+    return contract(Shims.NewToLegacy.forContract(contracts[0]));
   },
 
   // Spins up ganache with arbitrary options and
