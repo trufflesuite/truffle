@@ -4,6 +4,7 @@ import {
   Abi as SchemaAbi,
   ImmutableReferences
 } from "@truffle/contract-schema/spec";
+import { Bytecode } from "@truffle/compile-common";
 
 //Note to other people passing in compilations:
 //Please include all fields you can that aren't
@@ -132,14 +133,4 @@ export interface Contract {
    * The ID of the contract's primary source.
    */
   primarySourceId?: string;
-}
-
-//defining this ourselves for now, sorry!
-export interface Bytecode {
-  bytes: string;
-  linkReferences: {
-    offsets: number[];
-    name: string;
-    length: number;
-  }[];
 }
