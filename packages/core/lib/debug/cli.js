@@ -83,8 +83,7 @@ class CLIDebugger {
       }
     }
     //if not, or if build directory doens't exist, we have to recompile
-    let { contracts, files } = await this.compileSources();
-    return Codec.Compilations.Utils.shimArtifacts(contracts, files);
+    return await this.compileSources();
   }
 
   async compileSources() {
@@ -95,10 +94,15 @@ class CLIDebugger {
 
     compileSpinner.succeed();
 
-    return {
-      contracts: compilationResult.contracts,
-      files: compilationResult.sourceIndexes
-    };
+    return [].concat(
+      ...compilationResult.map((compilation, index) =>
+        Codec.Compilations.Utils.shimArtifacts(
+          compilation.contracts,
+          compilation.sourceIndexes,
+          `shimmedCompilationNumber(${index})`
+        )
+      )
+    );
   }
 
   async startDebugger(compilations) {
