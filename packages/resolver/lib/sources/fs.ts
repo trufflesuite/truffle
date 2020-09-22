@@ -26,12 +26,20 @@ export class FS implements ResolverSource {
     return result;
   }
 
+  /**
+   *
+   * @param importSourcePath The string in the require/import statement
+   *   This could be artifacts.require("Migrations") => "Migrations", or even
+   *   artifacts.require("Migrations.sol") => "Migrations.sol". This function handles both
+   * @param searchPath The location to search
+   * @returns The artifact as a JSON object
+   */
   searchForArtifact(
-    sourcePath: string,
+    importSourcePath: string,
     searchPath = this.contractsBuildDirectory
   ) {
     // most cases we can use the `{name}.sol -> {name}.json` convention
-    const likelyFileBasename = path.basename(sourcePath, ".sol");
+    const likelyFileBasename = path.basename(importSourcePath, ".sol");
     const likelyArtifactString = fs.readFileSync(
       path.join(searchPath, `${likelyFileBasename}.json`),
       "utf8"
@@ -41,9 +49,7 @@ export class FS implements ResolverSource {
     try {
       if (likelyArtifactString) {
         likelyArtifact = JSON.parse(likelyArtifactString);
-        if (likelyArtifact.sourcePath === sourcePath) {
-          return likelyArtifact;
-        }
+        return likelyArtifact;
       }
     } catch (e) {
       // do nothing, we'll handle this by doing a deeper search
@@ -70,8 +76,8 @@ export class FS implements ResolverSource {
 
           if (
             path.basename(artifact.sourcePath, ".sol") ===
-              path.basename(sourcePath, ".sol") ||
-            artifact.contractName === path.basename(sourcePath, ".sol")
+              path.basename(importSourcePath, ".sol") ||
+            artifact.contractName === path.basename(importSourcePath, ".sol")
           ) {
             return artifact;
           }
