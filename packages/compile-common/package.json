@@ -19,7 +19,6 @@
   },
   "dependencies": {
     "@truffle/contract-schema": "^3.2.5",
-    "@truffle/resolver": "^6.0.19",
     "fs-extra": "^8.1.0",
     "mocha": "8.0.1",
     "ts-node": "8.10.2"
