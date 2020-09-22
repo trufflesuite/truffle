@@ -4,10 +4,11 @@ const debug = debugModule("codec:compilations:utils");
 import * as Ast from "@truffle/codec/ast";
 import * as Compiler from "@truffle/codec/compiler";
 import { ContractObject as Artifact } from "@truffle/contract-schema/spec";
+import { CompiledContract } from "@truffle/compile-common";
 import { Compilation, Contract, Source } from "./types";
 
 export function shimArtifacts(
-  artifacts: Artifact[],
+  artifacts: (Artifact | CompiledContract)[],
   files?: string[],
   shimmedCompilationId = "shimmedcompilation",
   externalSolidity = false
@@ -20,7 +21,6 @@ export function shimArtifacts(
   for (let artifact of artifacts) {
     let {
       contractName,
-      contract_name,
       bytecode,
       sourceMap,
       deployedBytecode,
@@ -35,8 +35,11 @@ export function shimArtifacts(
       deployedGeneratedSources
     } = artifact;
 
-    contractName = contractName || <string>contract_name;
-    //dunno what's up w/ the type of contract_name, but it needs coercing
+    if ((<Artifact>artifact).contract_name) {
+      //just in case
+      contractName = <string>(<Artifact>artifact).contract_name;
+      //dunno what's up w/ the type of contract_name, but it needs coercing
+    }
 
     debug("contractName: %s", contractName);
 
