@@ -1,6 +1,6 @@
 const fse = require("fs-extra");
 const del = require("del");
-const Contracts = require("@truffle/workflow-compile");
+const WorkflowCompile = require("@truffle/workflow-compile");
 const BuildError = require("./errors/builderror");
 const { spawn } = require("child_process");
 const spawnargs = require("spawn-args");
@@ -11,7 +11,7 @@ function CommandBuilder(command) {
   this.command = command;
 }
 
-CommandBuilder.prototype.build = function(options, callback) {
+CommandBuilder.prototype.build = function (options, callback) {
   console.log("Running `" + this.command + "`...");
 
   const args = spawnargs(this.command);
@@ -27,15 +27,15 @@ CommandBuilder.prototype.build = function(options, callback) {
     })
   });
 
-  cmd.stdout.on("data", function(data) {
+  cmd.stdout.on("data", function (data) {
     console.log(data.toString());
   });
 
-  cmd.stderr.on("data", function(data) {
+  cmd.stderr.on("data", function (data) {
     console.error(data);
   });
 
-  cmd.on("close", function(code) {
+  cmd.on("close", function (code) {
     let error = null;
     if (code !== 0) {
       error = "Command exited with code " + code;
@@ -45,7 +45,7 @@ CommandBuilder.prototype.build = function(options, callback) {
 };
 
 const Build = {
-  clean: function(options, callback) {
+  clean: function (options, callback) {
     const destination = options.build_directory;
     const contracts_build_directory = options.contracts_build_directory;
 
@@ -60,7 +60,7 @@ const Build = {
       });
   },
 
-  build: function(options, callback) {
+  build: function (options, callback) {
     expect.options(options, [
       "build_directory",
       "working_directory",
@@ -101,23 +101,23 @@ const Build = {
       clean = builder.clean;
     }
 
-    clean(options, function(err) {
+    clean(options, function (err) {
       if (err) return callback(err);
 
       // If necessary. This prevents errors due to the .sol.js files not existing.
-      Contracts.compile(options, function(err) {
-        if (err) return callback(err);
-
-        if (builder) {
-          builder.build(options, function(err) {
-            if (typeof err === "string") {
-              return callback(new BuildError(err));
-            }
-            return callback(err);
-          });
-        }
-        return callback();
-      });
+      WorkflowCompile.compileAndSave(options)
+        .then(() => {
+          if (builder) {
+            builder.build(options, function (err) {
+              if (typeof err === "string") {
+                return callback(new BuildError(err));
+              }
+              return callback(err);
+            });
+          }
+          return callback();
+        })
+        .catch(callback);
     });
   }
 };

@@ -24,12 +24,12 @@ describe("Compilation Targets", () => {
 
       const target = {
         properties: {
-          contractName,
-        },
+          contractName
+        }
       };
 
       const expected = {
-        [contractName]: { contractName, abi },
+        [contractName]: { contractName, abi }
       };
 
       const actual = await processTarget(target, cwd);
@@ -46,11 +46,11 @@ describe("Compilation Targets", () => {
 
       const target = {
         properties: {
-          contractName,
+          contractName
         },
         fileProperties: {
-          bytecode: bytecodeFile,
-        },
+          bytecode: bytecodeFile
+        }
       };
 
       const processed = await processTarget(target, cwd);
@@ -67,11 +67,11 @@ describe("Compilation Targets", () => {
 
       const target = {
         properties: {
-          contractName,
+          contractName
         },
         fileProperties: {
-          bytecode: bytecodeFile,
-        },
+          bytecode: bytecodeFile
+        }
       };
 
       const processed = await processTarget(target, cwd);
@@ -88,8 +88,8 @@ describe("Compilation Targets", () => {
 
       const target = {
         fileProperties: {
-          contractName: contractNameFile,
-        },
+          contractName: contractNameFile
+        }
       };
 
       const processed = await processTarget(target, cwd);
@@ -106,11 +106,11 @@ describe("Compilation Targets", () => {
 
       const target = {
         properties: {
-          contractName,
+          contractName
         },
         fileProperties: {
-          bytecode: bytecodeFile,
-        },
+          bytecode: bytecodeFile
+        }
       };
 
       const processed = await processTarget(target, cwd);

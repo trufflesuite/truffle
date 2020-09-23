@@ -6,7 +6,7 @@ const {
   createInterfaceAdapter
 } = require("@truffle/interface-adapter");
 const Config = require("@truffle/config");
-const Contracts = require("@truffle/workflow-compile/new");
+const WorkflowCompile = require("@truffle/workflow-compile");
 const Resolver = require("@truffle/resolver");
 const TestRunner = require("./testing/TestRunner");
 const TestResolver = require("./testing/TestResolver");
@@ -116,16 +116,27 @@ const Test = {
 
     await this.performInitialDeploy(config, testResolver);
 
+    const solidityCompilationOutput = compilations.reduce(
+      (a, compilation) => {
+        if (compilation.compiler && compilation.compiler.name === "solc") {
+          a.sourceIndexes = a.sourceIndexes.concat(compilation.sourceIndexes);
+          a.contracts = a.contracts.concat(compilation.contracts);
+        }
+        return a;
+      },
+      { sourceIndexes: [], contracts: [] }
+    );
+
     await this.defineSolidityTests(
       mocha,
       testContracts,
-      compilations.solc.sourceIndexes,
+      solidityCompilationOutput.sourceIndexes,
       runner
     );
 
     const debuggerCompilations = Codec.Compilations.Utils.shimArtifacts(
-      compilations.solc.contracts,
-      compilations.solc.sourceIndexes
+      solidityCompilationOutput.contracts,
+      solidityCompilationOutput.sourceIndexes
     );
 
     //for stack traces, we'll need to set up a light-mode debugger...
@@ -233,9 +244,9 @@ const Test = {
       }
     }
     // Compile project contracts and test contracts
-    const { contracts, compilations } = await Contracts.compile(compileConfig);
-
-    await Contracts.save(compileConfig, contracts);
+    const { contracts, compilations } = await WorkflowCompile.compileAndSave(
+      compileConfig
+    );
 
     return {
       contracts,

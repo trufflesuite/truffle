@@ -689,7 +689,10 @@ var DebugUtils = {
       //handling padding & numbering manually
       lineNumbers: false,
       stripIndent: false,
-      codePad: 0
+      codePad: 0,
+      tabsToSpaces: false, //we handle this ourself and don't
+      //want chromafi's padding
+      lineEndPad: false
       //NOTE: you might think you should pass highlight: true,
       //but you'd be wrong!  I don't understand this either
     };

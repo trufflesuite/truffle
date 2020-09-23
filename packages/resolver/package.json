@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "6.0.18",
+  "version": "6.0.19",
   "main": "dist/lib/index.js",
   "files": [
     "dist"
@@ -22,7 +22,7 @@
   "dependencies": {
     "@truffle/contract": "^4.2.22",
     "@truffle/expect": "^0.0.15",
-    "@truffle/provisioner": "^0.2.6",
+    "@truffle/provisioner": "^0.2.7",
     "debug": "^4.1.1",
     "detect-installed": "^2.0.4",
     "get-installed-path": "^4.0.8",
