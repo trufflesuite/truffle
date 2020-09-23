@@ -60,6 +60,7 @@ export class TruffleDB {
 
     return response;
   }
+  
   async loadNames(
     project: DataModel.IProject,
     contractsByCompilation: Array<DataModel.IContract[]>
