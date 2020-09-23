@@ -1,8 +1,5 @@
-import { TruffleDB } from "@truffle/db";
 import { ArtifactsLoader } from "./artifactsLoader";
 export { ArtifactsLoader };
-import { schema as rootSchema } from "@truffle/db/schema";
-import { Workspace, schema } from "@truffle/db/workspace";
 const tmp = require("tmp");
 import { makeExecutableSchema } from "@gnd/graphql-tools";
 import { gql } from "apollo-server";

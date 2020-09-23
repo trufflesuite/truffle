@@ -1,4 +1,4 @@
-const ReplManager = require("./repl");
+const repl = require("repl");
 const Command = require("./command");
 const provision = require("@truffle/provisioner");
 const {
@@ -12,6 +12,7 @@ const TruffleError = require("@truffle/error");
 const fse = require("fs-extra");
 const path = require("path");
 const EventEmitter = require("events");
+const spawnSync = require("child_process").spawnSync;
 
 const processInput = input => {
   const inputComponents = input.trim().split(" ");
@@ -43,8 +44,9 @@ class Console extends EventEmitter {
 
     this.options = options;
 
-    this.repl = options.repl || new ReplManager(options);
     this.command = new Command(tasks);
+
+    this.repl = null;
 
     this.interfaceAdapter = createInterfaceAdapter({
       provider: options.provider,
@@ -54,38 +56,25 @@ class Console extends EventEmitter {
       provider: options.provider,
       networkType: options.networks[options.network].type
     });
-
-    // Bubble the ReplManager's exit event
-    this.repl.on("exit", () => this.emit("exit"));
-
-    // Bubble the ReplManager's reset event
-    this.repl.on("reset", () => this.emit("reset"));
   }
 
-  start(callback) {
-    if (!this.repl) this.repl = new Repl(this.options);
-
-    // TODO: This should probalby be elsewhere.
-    // It's here to ensure the repl manager instance gets
-    // passed down to commands.
-    this.options.repl = this.repl;
-
+  start() {
     try {
+      this.repl = repl.start({
+        prompt: "truffle(" + this.options.network + ")> ",
+        eval: this.interpret.bind(this)
+      });
+
       this.interfaceAdapter.getAccounts().then(fetchedAccounts => {
-        const abstractions = this.provision();
+        this.repl.context.web3 = this.web3;
+        this.repl.context.interfaceAdapter = this.interfaceAdapter;
+        this.repl.context.accounts = fetchedAccounts;
+      });
+      this.provision();
 
-        this.repl.start({
-          prompt: "truffle(" + this.options.network + ")> ",
-          context: {
-            web3: this.web3,
-            interfaceAdapter: this.interfaceAdapter,
-            accounts: fetchedAccounts
-          },
-          interpreter: this.interpret.bind(this),
-          done: callback
-        });
-
-        this.resetContractsInConsoleContext(abstractions);
+      //want repl to exit when it receives an exit command
+      this.repl.on("exit", () => {
+        process.exit();
       });
     } catch (error) {
       this.options.logger.log(
@@ -131,7 +120,6 @@ class Console extends EventEmitter {
     });
 
     this.resetContractsInConsoleContext(abstractions);
-
     return abstractions;
   }
 
@@ -144,7 +132,41 @@ class Console extends EventEmitter {
       contextVars[abstraction.contract_name] = abstraction;
     });
 
-    this.repl.setContextVars(contextVars);
+    // make sure the repl gets the new contracts in its context
+    Object.keys(contextVars || {}).forEach(key => {
+      this.repl.context[key] = contextVars[key];
+    });
+  }
+
+  runSpawn(inputStrings, options, callback) {
+    let childPath;
+    if (typeof BUNDLE_CONSOLE_CHILD_FILENAME !== "undefined") {
+      childPath = path.join(__dirname, BUNDLE_CONSOLE_CHILD_FILENAME);
+    } else {
+      childPath = path.join(__dirname, "../lib/console-child.js");
+    }
+
+    // stderr is piped here because we don't need to repeatedly see the parent
+    // errors/warnings in child process - specifically the error re: having
+    // multiple config files
+    const spawnOptions = { stdio: ["inherit", "inherit", "pipe"] };
+
+    const spawnInput = "--network " + options.network + " -- " + inputStrings;
+    try {
+      spawnSync(
+        "node",
+        ["--no-deprecation", childPath, spawnInput],
+        spawnOptions
+      );
+
+      // re-provision to ensure any changes are available in the repl
+      this.provision();
+    } catch (err) {
+      callback(err);
+    }
+
+    //display prompt when child repl process is finished
+    this.repl.displayPrompt();
   }
 
   interpret(input, context, filename, callback) {
@@ -152,7 +174,7 @@ class Console extends EventEmitter {
     if (
       this.command.getCommand(processedInput, this.options.noAliases) != null
     ) {
-      return this.command.run(processedInput, this.options, error => {
+      return this.runSpawn(processedInput, this.options, error => {
         if (error) {
           // Perform error handling ourselves.
           if (error instanceof TruffleError) {
@@ -224,6 +246,8 @@ class Console extends EventEmitter {
         breakOnSigint: true,
         filename: filename
       };
+
+      vm.createContext(context);
       return script.runInContext(context, options);
     };
 

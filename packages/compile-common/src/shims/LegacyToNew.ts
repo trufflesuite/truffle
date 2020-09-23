@@ -1,25 +1,11 @@
-const { multiPromisify } = require("./utils");
+import { Bytecode, CompiledContract, LinkReference } from "../types";
 
-function shimLegacy(method) {
-  return async config => {
-    const compile = multiPromisify(method);
-
-    const [contracts, sourceIndexes, compilerInfo] = await compile(config);
-
-    return {
-      contracts: shimContracts(contracts),
-      sourceIndexes,
-      compilerInfo
-    };
-  };
-}
-
-function shimContracts(contracts) {
+export function forContracts(contracts: any[]): CompiledContract[] {
   // convert to list
-  return Object.values(contracts).map(shimContract);
+  return Object.values(contracts).map(forContract);
 }
 
-function shimContract(contract) {
+export function forContract(contract: any): CompiledContract {
   const {
     contractName,
     contract_name,
@@ -36,7 +22,9 @@ function shimContract(contract) {
     compiler,
     devdoc,
     userdoc,
-    immutableReferences
+    immutableReferences,
+    generatedSources,
+    deployedGeneratedSources
   } = contract;
 
   return {
@@ -49,16 +37,18 @@ function shimContract(contract) {
     ast,
     abi,
     metadata,
-    bytecode: shimBytecode(bytecode),
-    deployedBytecode: shimBytecode(deployedBytecode),
+    bytecode: forBytecode(bytecode),
+    deployedBytecode: forBytecode(deployedBytecode),
     compiler,
     devdoc,
     userdoc,
-    immutableReferences
+    immutableReferences,
+    generatedSources,
+    deployedGeneratedSources
   };
 }
 
-function shimBytecode(bytecode) {
+export function forBytecode(bytecode: string): Bytecode {
   if (!bytecode) {
     return undefined;
   }
@@ -66,7 +56,7 @@ function shimBytecode(bytecode) {
     return bytecode;
   }
 
-  const linkReferences = [];
+  const linkReferences: LinkReference[] = [];
 
   const bytes = bytecode
     .slice(2) // remove 0x prefix
@@ -89,10 +79,3 @@ function shimBytecode(bytecode) {
 
   return { bytes, linkReferences };
 }
-
-module.exports = {
-  shimLegacy,
-  shimContracts,
-  shimContract,
-  shimBytecode
-};

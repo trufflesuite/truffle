@@ -1263,10 +1263,10 @@
   dependencies:
     defer-to-connect "^1.0.1"
 
-"@trufflesuite/chromafi@^2.1.2":
-  version "2.1.2"
-  resolved "https://registry.yarnpkg.com/@trufflesuite/chromafi/-/chromafi-2.1.2.tgz#50715070093c5543a406a2cc85fa70fc8d1a36ab"
-  integrity sha512-KcfjcH3B8+lHfSTfugFPBpMZmppLNCnM6/PP8ByrQLSACyjh9UOMUWHAW3FDHKEt1cOCzIFXrx2f4AFFrQFxSg==
+"@trufflesuite/chromafi@^2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@trufflesuite/chromafi/-/chromafi-2.2.0.tgz#18cceacbb44f1e22ec956dd7ad21a2ed414b09c7"
+  integrity sha512-km4Px34wZ015PDjAK0wfYBx+zoCE4qR3AY9NWLUvtjnnzhCUkaRFCpZdvwDEyB75EzFBoLwV9iiqboz+mMXwBA==
   dependencies:
     ansi-mark "^1.0.0"
     ansi-regex "^3.0.0"
@@ -10878,6 +10878,13 @@ jquery@^3.4.1:
   resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.4.1.tgz#714f1f8d9dde4bdfa55764ba37ef214630d80ef2"
   integrity sha512-36+AdBzCL+y6qjw5Tx7HgzeGCzC81MDDgaUP8ld2zhx58HdqXGoBd+tHdrBMiyjGQs0Hxs/MLZTu/eHNJJuWPw==
 
+js-interpreter@2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/js-interpreter/-/js-interpreter-2.2.0.tgz#a4f8699f833898f43e5deadffef52310e4649432"
+  integrity sha512-eZq/kAEjxahuGowG91tWLVgzPuLGGqyakTFF7JPlblV6b/Uu9EOnYxs5EOSVQlKwHoq7MND0gu1zk3OGs5a6Iw==
+  dependencies:
+    minimist "^1.2.0"
+
 js-message@1.0.5:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/js-message/-/js-message-1.0.5.tgz#2300d24b1af08e89dd095bc1a4c9c9cfcb892d15"
@@ -15781,10 +15788,10 @@ require-nocache@^1.0.0:
   resolved "https://registry.yarnpkg.com/require-nocache/-/require-nocache-1.0.0.tgz#a665d0b60a07e8249875790a4d350219d3c85fa3"
   integrity sha1-pmXQtgoH6CSYdXkKTTUCGdPIX6M=
 
-reselect-tree@^1.3.3:
-  version "1.3.3"
-  resolved "https://registry.yarnpkg.com/reselect-tree/-/reselect-tree-1.3.3.tgz#999f5fd7167d0d2610d5e48dcf8a7c03b28d159a"
-  integrity sha512-sG5sRWghWuWx+E2GolRZIGTVVNkMMvJpjI36gQYSOEtwca11mHtfZre6A6HNztxQcZCYdIwOB6qXt7HrAHrx0w==
+reselect-tree@^1.3.4:
+  version "1.3.4"
+  resolved "https://registry.yarnpkg.com/reselect-tree/-/reselect-tree-1.3.4.tgz#449629728e2dc79bf0602571ec8859ac34737089"
+  integrity sha512-1OgNq1IStyJFqIqOoD3k3Ge4SsYCMP9W88VQOfvgyLniVKLfvbYO1Vrl92SyEK5021MkoBX6tWb381VxTDyPBQ==
   dependencies:
     debug "^3.1.0"
     esdoc "^1.0.4"
@@ -16034,11 +16041,6 @@ safe-buffer@^5.0.1, safe-buffer@^5.1.0, safe-buffer@^5.1.1, safe-buffer@^5.1.2, 
   version "5.2.0"
   resolved "https://registry.yarnpkg.com/safe-buffer/-/safe-buffer-5.2.0.tgz#b74daec49b1148f88c64b68d49b1e815c1f2f519"
   integrity sha512-fZEwUGbVl7kouZs1jCdMLdt95hdIv0ZeHg6L7qPeciMZhZ+/gdesW4wgTARkrFWEpspjEATAzUGPG8N2jJiwbg==
-
-safe-eval@^0.4.1:
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/safe-eval/-/safe-eval-0.4.1.tgz#e54ba5a1bbdec795d488f6c8765e0c2a78b4cdc0"
-  integrity sha512-wmiu4RSYVZ690RP1+cv/LxfPK1dIlEN35aW7iv4SMYdqDrHbkll4+NJcHmKm7PbCuI1df1otOcPwgcc2iFR85g==
 
 safe-event-emitter@^1.0.1:
   version "1.0.1"

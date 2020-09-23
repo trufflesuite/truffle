@@ -1,10 +1,10 @@
 import {
-  CompiledContract,
   LoadedBytecodes,
   IdObject,
   WorkspaceRequest,
   WorkspaceResponse
 } from "@truffle/db/loaders/types";
+import { CompiledContract } from "@truffle/compile-common";
 
 import { AddContracts } from "./add.graphql";
 export { AddContracts };

@@ -64,7 +64,7 @@ var properties = {
   },
   abi: {
     sources: ["abi", "interface"],
-    transform: function(value) {
+    transform: function (value) {
       if (typeof value === "string") {
         try {
           value = JSON.parse(value);
@@ -83,7 +83,7 @@ var properties = {
   },
   bytecode: {
     sources: ["bytecode", "binary", "unlinked_binary", "evm.bytecode.object"],
-    transform: function(value) {
+    transform: function (value) {
       if (value && value.indexOf("0x") !== 0) {
         value = "0x" + value;
       }
@@ -96,7 +96,7 @@ var properties = {
       "runtimeBytecode",
       "evm.deployedBytecode.object"
     ],
-    transform: function(value) {
+    transform: function (value) {
       if (value && value.indexOf("0x") !== 0) {
         value = "0x" + value;
       }
@@ -104,6 +104,8 @@ var properties = {
     }
   },
   immutableReferences: {},
+  generatedSources: {},
+  deployedGeneratedSources: {},
   sourceMap: {
     sources: ["sourceMap", "srcmap", "evm.bytecode.sourceMap"]
   },
@@ -118,7 +120,7 @@ var properties = {
   sourcePath: {},
   ast: {},
   legacyAST: {
-    transform: function(value, obj) {
+    transform: function (value, obj) {
       var schemaVersion = obj.schemaVersion || "0.0.0";
 
       // legacyAST introduced in v2.0.0
@@ -140,7 +142,7 @@ var properties = {
      * @param {object | TruffleContract} obj - the context, or source object.
      * @return {object} The normalized Network object
      */
-    transform: function(value = {}, obj) {
+    transform: function (value = {}, obj) {
       // Sanitize value's events for known networks
       Object.keys(value).forEach(networkId => {
         if (value[networkId].events) {
@@ -165,7 +167,7 @@ var properties = {
   },
   updatedAt: {
     sources: ["updatedAt", "updated_at"],
-    transform: function(value) {
+    transform: function (value) {
       if (typeof value === "number") {
         value = new Date(value).toISOString();
       }
@@ -185,12 +187,12 @@ var properties = {
  */
 function getter(key, transform) {
   if (transform === undefined) {
-    transform = function(x) {
+    transform = function (x) {
       return x;
     };
   }
 
-  return function(obj) {
+  return function (obj) {
     try {
       return transform(obj[key]);
     } catch (e) {
@@ -211,8 +213,8 @@ function getter(key, transform) {
  */
 function chain() {
   var getters = Array.prototype.slice.call(arguments);
-  return function(obj) {
-    return getters.reduce(function(cur, get) {
+  return function (obj) {
+    return getters.reduce(function (cur, get) {
       return get(cur);
     }, obj);
   };
@@ -225,7 +227,7 @@ var TruffleContractSchema = {
   // Return a promise to validate a contract object
   // - Resolves as validated `contractObj`
   // - Rejects with list of errors from schema validator
-  validate: function(contractObj) {
+  validate: function (contractObj) {
     var ajv = new Ajv({ verbose: true });
     ajv.addSchema(abiSchema);
     ajv.addSchema(networkObjectSchema);
@@ -270,12 +272,12 @@ var TruffleContractSchema = {
 
   // accepts as argument anything that can be turned into a contract object
   // returns a contract object
-  normalize: function(objDirty, options) {
+  normalize: function (objDirty, options) {
     options = options || {};
     var normalized = {};
 
     // iterate over each property
-    Object.keys(properties).forEach(function(key) {
+    Object.keys(properties).forEach(function (key) {
       var property = properties[key];
       var value; // normalized value || undefined
 
@@ -289,7 +291,7 @@ var TruffleContractSchema = {
         // string refers to path to value in objDirty, split and chain
         // getters
         if (typeof source === "string") {
-          var traversals = source.split(".").map(function(k) {
+          var traversals = source.split(".").map(function (k) {
             return getter(k);
           });
           source = chain.apply(null, traversals);
@@ -311,7 +313,7 @@ var TruffleContractSchema = {
     });
 
     // Copy x- options
-    Object.keys(objDirty).forEach(function(key) {
+    Object.keys(objDirty).forEach(function (key) {
       if (key.indexOf("x-") === 0) {
         normalized[key] = getter(key)(objDirty);
       }

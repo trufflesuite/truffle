@@ -1,18 +1,17 @@
 import { GraphQLSchema, DocumentNode, parse, execute } from "graphql";
-
 import { schema } from "@truffle/db/data";
 import {
   generateCompileLoad,
-  generateNamesLoad
+  generateNamesLoad,
+  projectLoadGenerate
 } from "@truffle/db/loaders/commands";
 import {
-  WorkflowCompileResult,
   WorkspaceRequest,
   WorkspaceResponse,
   toIdObject
 } from "@truffle/db/loaders/types";
+import { WorkflowCompileResult } from "@truffle/compile-common";
 import { Workspace } from "@truffle/db/workspace";
-import { projectLoadGenerate } from "@truffle/db/loaders/commands";
 
 interface IConfig {
   contracts_build_directory: string;
@@ -102,6 +101,7 @@ export class TruffleDB {
     const saga = generateCompileLoad(result);
 
     let cur = saga.next();
+
     while (!cur.done) {
       // HACK not sure why this is necessary; TS knows we're not done, so
       // cur.value should only be WorkspaceRequest (first Generator param),

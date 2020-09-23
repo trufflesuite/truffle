@@ -1,5 +1,5 @@
-import fs from "fs";
-import { shimBytecode } from "@truffle/workflow-compile/shims";
+import * as fse from "fs-extra";
+import { Shims } from "@truffle/compile-common";
 
 const TruffleResolver = require("@truffle/resolver");
 
@@ -23,8 +23,12 @@ export const resolvers = {
 
         const artifact = truffleResolver.require(name)._json;
 
-        const linkedBytecodeCreate = shimBytecode(artifact.bytecode);
-        const linkedBytecodeCall = shimBytecode(artifact.deployedBytecode);
+        const linkedBytecodeCreate = Shims.LegacyToNew.forBytecode(
+          artifact.bytecode
+        );
+        const linkedBytecodeCall = Shims.LegacyToNew.forBytecode(
+          artifact.deployedBytecode
+        );
 
         const result = {
           ...artifact,
@@ -67,7 +71,7 @@ export const resolvers = {
     },
     contractNames: {
       resolve(_, {}, context: IContext): string[] {
-        const contents = fs.readdirSync(context.artifactsDirectory);
+        const contents = fse.readdirSync(context.artifactsDirectory);
 
         return contents
           .filter(filename => filename.endsWith(".json"))

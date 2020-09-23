@@ -1,11 +1,11 @@
 import { generateId, Migrations, WorkspaceClient } from "./utils";
-import { shimBytecode } from "@truffle/workflow-compile/shims";
 import { AddNetworks } from "./network.graphql";
 import {
   AddContractInstances,
   GetContractInstance,
   GetAllContractInstances
 } from "./contractInstance.graphql";
+import { Shims } from "@truffle/compile-common";
 
 describe("Contract Instance", () => {
   const wsClient = new WorkspaceClient();
@@ -26,7 +26,7 @@ describe("Contract Instance", () => {
       address: address,
       network: { id: addNetworkResult.networksAdd.networks[0].id }
     });
-    let shimmedBytecode = shimBytecode(Migrations.bytecode);
+    let shimmedBytecode = Shims.LegacyToNew.forBytecode(Migrations.bytecode);
 
     variables = [
       {

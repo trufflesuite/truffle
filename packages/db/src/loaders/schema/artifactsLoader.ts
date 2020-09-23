@@ -1,7 +1,4 @@
-import gql from "graphql-tag";
 import { TruffleDB } from "@truffle/db/db";
-import * as Contracts from "@truffle/workflow-compile/new";
-import { ContractObject } from "@truffle/contract-schema/spec";
 import * as fse from "fs-extra";
 import path from "path";
 import Config from "@truffle/config";
@@ -16,6 +13,11 @@ import {
   AssignProjectNames,
   ResolveProjectName
 } from "@truffle/db/loaders/resources/projects";
+import {
+  WorkflowCompileResult,
+  CompiledContract
+} from "@truffle/compile-common/src/types";
+import WorkflowCompile from "@truffle/workflow-compile";
 
 type NetworkLinkObject = {
   [name: string]: string;
@@ -85,7 +87,9 @@ export class ArtifactsLoader {
   }
 
   async load(): Promise<void> {
-    const result = await Contracts.compile(this.config);
+    const result: WorkflowCompileResult = await WorkflowCompile.compile(
+      this.config
+    );
 
     const project = await this.db.loadProject();
 
@@ -99,18 +103,18 @@ export class ArtifactsLoader {
 
     //map contracts and contract instances to compiler
     await Promise.all(
-      compilations.map(async ({ id }) => {
+      compilations.map(async ({ id }, index) => {
         const {
           data: {
             workspace: {
-              compilation: { compiler, processedSources }
+              compilation: { processedSources }
             }
           }
         } = await this.db.query(GetCompilation, { id });
 
         const networks = await this.loadNetworks(
           project.id,
-          result.compilations[compiler.name].contracts,
+          result.compilations[index].contracts,
           this.config["artifacts_directory"],
           this.config["contracts_directory"]
         );
@@ -119,10 +123,11 @@ export class ArtifactsLoader {
           .map(processedSource => processedSource.contracts)
           .flat();
 
-        const contracts = result.compilations[
-          compiler.name
-        ].contracts.map(({ contractName }) =>
-          processedSourceContracts.find(({ name }) => name === contractName)
+        let contracts = [];
+        result.compilations[index].contracts.map(({ contractName }) =>
+          contracts.push(
+            processedSourceContracts.find(({ name }) => name === contractName)
+          )
         );
 
         if (networks[0].length) {
@@ -173,7 +178,7 @@ export class ArtifactsLoader {
 
   async loadNetworks(
     projectId: string,
-    contracts: Array<ContractObject>,
+    contracts: Array<CompiledContract>,
     artifacts: string,
     workingDirectory: string
   ) {

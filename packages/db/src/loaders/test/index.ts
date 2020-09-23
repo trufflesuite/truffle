@@ -1,13 +1,10 @@
-import fs from "fs";
 import path from "path";
 import gql from "graphql-tag";
 import { TruffleDB } from "@truffle/db";
-import * as Contracts from "@truffle/workflow-compile/new";
-import Ganache from "ganache-core";
 import tmp from "tmp";
 
-jest.mock("@truffle/workflow-compile/new", () => ({
-  compile: function(config, callback) {
+jest.mock("@truffle/workflow-compile", () => ({
+  compile: function (config, callback) {
     return require(path.join(
       __dirname,
       "..",

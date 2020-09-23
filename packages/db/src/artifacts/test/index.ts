@@ -1,8 +1,7 @@
-import fs from "fs";
 import path from "path";
 import { TruffleDB } from "@truffle/db";
-import { shimBytecode } from "@truffle/workflow-compile/shims";
 import tmp from "tmp";
+import { Shims } from "@truffle/compile-common";
 
 const fixturesDirectory = path.join(
   __dirname, // db/src/test
@@ -160,8 +159,12 @@ describe("Artifacts queries", () => {
       callBytecode
     } = contract;
     expect(name).toEqual(Migrations.contractName);
-    expect(createBytecode).toEqual(shimBytecode(Migrations.bytecode));
-    expect(callBytecode).toEqual(shimBytecode(Migrations.deployedBytecode));
+    expect(createBytecode).toEqual(
+      Shims.LegacyToNew.forBytecode(Migrations.bytecode)
+    );
+    expect(callBytecode).toEqual(
+      Shims.LegacyToNew.forBytecode(Migrations.deployedBytecode)
+    );
 
     expect(processedSource).toHaveProperty("source");
     const { source } = processedSource;
@@ -237,9 +240,11 @@ describe("Artifacts queries", () => {
 
     const { bytecode } = callBytecode;
     const { bytes, linkReferences } = bytecode;
-    expect(bytes).toEqual(shimBytecode(Migrations.deployedBytecode).bytes);
+    expect(bytes).toEqual(
+      Shims.LegacyToNew.forBytecode(Migrations.deployedBytecode).bytes
+    );
     expect(linkReferences).toEqual(
-      shimBytecode(Migrations.deployedBytecode).linkReferences
+      Shims.LegacyToNew.forBytecode(Migrations.deployedBytecode).linkReferences
     );
   });
 });

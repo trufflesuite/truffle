@@ -35,9 +35,9 @@ const command = {
       }
     ]
   },
-  run: function(options, done) {
+  run: function (options, done) {
     const Config = require("@truffle/config");
-    const Contracts = require("@truffle/workflow-compile");
+    const WorkflowCompile = require("@truffle/workflow-compile");
     const ConfigurationError = require("../errors/configurationerror");
     const Require = require("@truffle/require");
     const { Environment } = require("@truffle/environment");
@@ -74,9 +74,15 @@ const command = {
 
         // `--compile`
         if (options.c || options.compile) {
-          return Contracts.compile(config);
+          return WorkflowCompile.compile(config);
         }
         return;
+      })
+      .then(compilationOutput => {
+        // save artifacts if compilation took place
+        if (compilationOutput) {
+          return WorkflowCompile.save(config, compilationOutput);
+        }
       })
       .then(() => {
         return promisify(Require.exec.bind(Require))(config.with({ file }));

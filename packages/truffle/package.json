@@ -7,7 +7,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.1.43",
+  "version": "5.1.45",
   "main": "./build/library.bundled.js",
   "bin": {
     "truffle": "./build/cli.bundled.js"
@@ -31,10 +31,10 @@
     "original-require": "1.0.1"
   },
   "devDependencies": {
-    "@truffle/box": "^2.1.0",
-    "@truffle/contract": "^4.2.21",
-    "@truffle/core": "^5.1.43",
-    "@truffle/debugger": "^7.6.0",
+    "@truffle/box": "^2.1.1",
+    "@truffle/contract": "^4.2.22",
+    "@truffle/core": "^5.1.45",
+    "@truffle/debugger": "^7.7.1",
     "@truffle/interface-adapter": "^0.4.16",
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^5.1.1",

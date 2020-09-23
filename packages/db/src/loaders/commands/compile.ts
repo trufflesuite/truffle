@@ -1,10 +1,13 @@
 import {
-  WorkflowCompileResult,
   CompilationData,
-  CompiledContract,
   WorkspaceRequest,
   WorkspaceResponse
 } from "@truffle/db/loaders/types";
+import {
+  WorkflowCompileResult,
+  Compilation,
+  CompiledContract
+} from "@truffle/compile-common/src/types";
 
 import { generateBytecodesLoad } from "@truffle/db/loaders/resources/bytecodes";
 import { generateCompilationsLoad } from "@truffle/db/loaders/resources/compilations";
@@ -89,10 +92,9 @@ function processResultCompilations(
     .map(processResultCompilation);
 }
 
-function processResultCompilation({
-  sourceIndexes,
-  contracts
-}: WorkflowCompileResult["compilations"][string]): CompilationData {
+function processResultCompilation(compilation: Compilation): CompilationData {
+  const { sourceIndexes, contracts } = compilation;
+
   const contractsBySourcePath: {
     [sourcePath: string]: CompiledContract[];
   } = contracts
