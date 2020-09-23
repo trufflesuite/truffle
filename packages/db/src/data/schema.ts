@@ -2,7 +2,7 @@ import { transformSchema, FilterRootFields } from "@gnd/graphql-tools";
 
 import { scopeSchemas } from "./utils";
 
-// import { abiSchema, schema as artifactsSchema } from "@truffle/db/artifacts";
+import { abiSchema, schema as artifactsSchema } from "@truffle/db/artifacts";
 import { schema as workspaceSchema } from "@truffle/db/workspace";
 import { loaderSchema } from "@truffle/db/loaders";
 
@@ -10,12 +10,13 @@ import { readInstructions } from "./bytecode";
 
 export const schema = scopeSchemas({
   subschemas: {
+    artifacts: artifactsSchema,
     workspace: workspaceSchema,
     loaders: loaderSchema
   },
   typeDefs: [
     // add types from abi schema
-    transformSchema(workspaceSchema, [new FilterRootFields(() => false)])
+    transformSchema(abiSchema, [new FilterRootFields(() => false)])
   ],
   resolvers: {
     Bytecode: {
@@ -39,14 +40,14 @@ export const schema = scopeSchemas({
             return "NormalFunction";
         }
       }
-    }
+    },
 
-    // NormalFunction: {
-    //   type: {
-    //     resolve(value) {
-    //       return "function";
-    //     }
-    //   }
-    // }
+    NormalFunction: {
+      type: {
+        resolve(value) {
+          return "function";
+        }
+      }
+    }
   }
 });
