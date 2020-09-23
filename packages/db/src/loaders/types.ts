@@ -1,23 +1,4 @@
-import { ContractObject } from "@truffle/contract-schema/spec";
-
-// NOTE we do not use the regular ContractObject type here because
-// @truffle/workflow-compile/new provides a different bytecode format than
-// @truffle/contract-schema defines
-export interface CompiledContract {
-  contractName: string;
-  abi: ContractObject["abi"];
-  bytecode: DataModel.IBytecode;
-  deployedBytecode: DataModel.IBytecode;
-  sourceMap: string;
-  deployedSourceMap: string;
-  source: string;
-  sourcePath: string;
-  ast: object;
-  compiler: {
-    name: string;
-    version: string;
-  };
-}
+import { CompiledContract } from "@truffle/compile-common";
 
 export interface CompilationData {
   compiler: {
@@ -55,7 +36,7 @@ type Resource = {
 };
 
 export type IdObject<R extends Resource = Resource> = {
-  [N in keyof R]: N extends "id" ? string : never
+  [N in keyof R]: N extends "id" ? string : never;
 };
 
 export const toIdObject = <R extends Resource>({ id }: R): IdObject<R> =>
@@ -75,16 +56,3 @@ export type WorkspaceResponse<N extends string = string, R = any> = {
     workspace: { [RequestName in N]: R };
   };
 };
-
-/**
- * Output format of @truffle/workflow-compile/new
- */
-export interface WorkflowCompileResult {
-  compilations: {
-    [compilerName: string]: {
-      sourceIndexes: string[];
-      contracts: CompiledContract[];
-    };
-  };
-  contracts: { [contractName: string]: ContractObject };
-}

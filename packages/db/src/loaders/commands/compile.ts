@@ -1,11 +1,14 @@
 import {
-  WorkflowCompileResult,
   CompilationData,
-  CompiledContract,
   toIdObject,
   WorkspaceRequest,
   WorkspaceResponse
 } from "@truffle/db/loaders/types";
+import {
+  WorkflowCompileResult,
+  Compilation,
+  CompiledContract
+} from "@truffle/compile-common/src/types";
 
 import { generateBytecodesLoad } from "@truffle/db/loaders/resources/bytecodes";
 import { generateCompilationsLoad } from "@truffle/db/loaders/resources/compilations";
@@ -33,7 +36,7 @@ export function* generateCompileLoad(
   // start by adding loading the project resource
   const project = yield* generateProjectLoad(directory);
 
-  const getCurrent = function*(name, type) {
+  const getCurrent = function* (name, type) {
     return yield* generateProjectNameResolve(toIdObject(project), name, type);
   };
 
@@ -110,10 +113,9 @@ function processResultCompilations(
     .map(processResultCompilation);
 }
 
-function processResultCompilation({
-  sourceIndexes,
-  contracts
-}: WorkflowCompileResult["compilations"][string]): CompilationData {
+function processResultCompilation(compilation: Compilation): CompilationData {
+  const { sourceIndexes, contracts } = compilation;
+
   const contractsBySourcePath: {
     [sourcePath: string]: CompiledContract[];
   } = contracts
