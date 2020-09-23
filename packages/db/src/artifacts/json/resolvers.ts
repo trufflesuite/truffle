@@ -1,5 +1,5 @@
 import * as fse from "fs-extra";
-import { forBytecode } from "@truffle/compile-common/src/shims/LegacyToNew";
+import { Shims } from "@truffle/compile-common";
 
 const TruffleResolver = require("@truffle/resolver");
 
@@ -23,8 +23,12 @@ export const resolvers = {
 
         const artifact = truffleResolver.require(name)._json;
 
-        const linkedBytecodeCreate = forBytecode(artifact.bytecode);
-        const linkedBytecodeCall = forBytecode(artifact.deployedBytecode);
+        const linkedBytecodeCreate = Shims.LegacyToNew.forBytecode(
+          artifact.bytecode
+        );
+        const linkedBytecodeCall = Shims.LegacyToNew.forBytecode(
+          artifact.deployedBytecode
+        );
 
         const result = {
           ...artifact,

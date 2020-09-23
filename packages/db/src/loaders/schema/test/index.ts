@@ -16,8 +16,8 @@ import Config from "@truffle/config";
 import Ganache from "ganache-core";
 import Web3 from "web3";
 import * as fse from "fs-extra";
-import { forBytecode } from "@truffle/compile-common/src/shims/LegacyToNew";
 import * as tmp from "tmp";
+import { Shims } from "@truffle/compile-common";
 
 let server;
 const port = 8545;
@@ -349,8 +349,10 @@ describe("Compilation", () => {
           sourcePath: contract["sourcePath"]
         });
         sourceIds.push({ id: sourceId });
-        const shimBytecodeObject = forBytecode(contract["bytecode"]);
-        const shimCallBytecodeObject = forBytecode(
+        const shimBytecodeObject = Shims.LegacyToNew.forBytecode(
+          contract["bytecode"]
+        );
+        const shimCallBytecodeObject = Shims.LegacyToNew.forBytecode(
           contract["deployedBytecode"]
         );
         let bytecodeId = generateId(shimBytecodeObject);
@@ -619,7 +621,9 @@ describe("Compilation", () => {
         }
       } = await db.query(GetWorkspaceBytecode, bytecodeIds[index]);
 
-      let shimmedBytecode = forBytecode(artifacts[index].bytecode);
+      let shimmedBytecode = Shims.LegacyToNew.forBytecode(
+        artifacts[index].bytecode
+      );
       expect(bytes).toEqual(shimmedBytecode.bytes);
     }
   });
@@ -683,10 +687,12 @@ describe("Compilation", () => {
         }
       } = await db.query(GetWorkspaceContract, contractIds[index]);
 
-      const artifactsCreateBytecode = forBytecode(artifacts[index].bytecode);
+      const artifactsCreateBytecode = Shims.LegacyToNew.forBytecode(
+        artifacts[index].bytecode
+      );
       expect(createBytecode.bytes).toEqual(artifactsCreateBytecode.bytes);
 
-      const artifactsCallBytecode = forBytecode(
+      const artifactsCallBytecode = Shims.LegacyToNew.forBytecode(
         artifacts[index].deployedBytecode
       );
       expect(callBytecode.bytes).toEqual(artifactsCallBytecode.bytes);
