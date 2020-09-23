@@ -94,7 +94,6 @@ afterAll(() => {
 describe("Artifacts queries", () => {
   it("lists artifact contract names", async () => {
     const result = await db.query(GetContractNames);
-    console.debug("contract names result " + JSON.stringify(result));
     expect(result).toHaveProperty("data");
 
     const { data } = result;
