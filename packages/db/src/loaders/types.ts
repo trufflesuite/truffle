@@ -1,23 +1,4 @@
-import { ContractObject } from "@truffle/contract-schema/spec";
-
-// NOTE we do not use the regular ContractObject type here because
-// @truffle/workflow-compile/new provides a different bytecode format than
-// @truffle/contract-schema defines
-export interface CompiledContract {
-  contractName: string;
-  abi: ContractObject["abi"];
-  bytecode: DataModel.IBytecode;
-  deployedBytecode: DataModel.IBytecode;
-  sourceMap: string;
-  deployedSourceMap: string;
-  source: string;
-  sourcePath: string;
-  ast: object;
-  compiler: {
-    name: string;
-    version: string;
-  };
-}
+import { CompiledContract } from "@truffle/compile-common";
 
 export interface CompilationData {
   compiler: {
