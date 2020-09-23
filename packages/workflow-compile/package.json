@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@truffle/artifactor": "^4.0.78",
+    "@truffle/compile-common": "^0.3.10",
     "@truffle/compile-solidity": "^5.0.0",
     "@truffle/compile-vyper": "^2.0.0",
     "@truffle/config": "^1.2.30",

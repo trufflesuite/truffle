@@ -478,7 +478,7 @@ const evm = createSelectorTree({
       //the following step selectors only exist for current, not next or any
       //other step
 
-      /*
+      /**
        * evm.current.step.createdAddress
        *
        * address created by the current create step
@@ -494,7 +494,9 @@ const evm = createSelectorTree({
           if (!isCreate) {
             return null;
           }
-          let address = Codec.Evm.Utils.toAddress(stack[stack.length - 1]);
+          let address = stack //may be null if the create step itself fails
+            ? Codec.Evm.Utils.toAddress(stack[stack.length - 1])
+            : Codec.Evm.Utils.ZERO_ADDRESS; //nothing got created, so...
           if (address === Codec.Evm.Utils.ZERO_ADDRESS && isCreate2) {
             return create2Address;
           }
@@ -502,6 +504,12 @@ const evm = createSelectorTree({
         }
       ),
 
+      /**
+       * evm.current.step.create2Address
+       *
+       * address created by the current create2 step
+       * (computed, not read off the return)
+       */
       create2Address: createLeaf(
         ["./isCreate2", "./createBinary", "../call", "../state/stack"],
         (isCreate2, binary, { storageAddress }, stack) =>
@@ -734,11 +742,15 @@ const evm = createSelectorTree({
      * evm.nextOfSameDepth.state
      *
      * evm state at the next step of same depth
+     * individual parts of the state will return null if there
+     * is no such step
      */
     state: Object.assign(
       {},
       ...["depth", "error", "gas", "memory", "stack", "storage"].map(param => ({
-        [param]: createLeaf([trace.nextOfSameDepth], step => step[param])
+        [param]: createLeaf([trace.nextOfSameDepth], step =>
+          step ? step[param] : null
+        )
       }))
     )
   }

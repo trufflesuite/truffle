@@ -119,7 +119,7 @@ const Compile = {
     const vyperFiles = sources.filter(path => minimatch(path, VYPER_PATTERN));
 
     // no vyper files found, no need to check vyper
-    if (sources.length === 0) {
+    if (vyperFiles.length === 0) {
       return { compilations: [] };
     }
 
