@@ -58,7 +58,7 @@ async function compile(config) {
   return { contracts, compilations };
 }
 
-const Contracts = {
+const WorkflowCompile = {
   async compile(options) {
     const config = prepareConfig(options);
 
@@ -111,4 +111,4 @@ const Contracts = {
   }
 };
 
-module.exports = Contracts;
+module.exports = WorkflowCompile;
