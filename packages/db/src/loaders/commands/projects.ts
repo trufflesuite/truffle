@@ -7,7 +7,7 @@ export function* projectLoadGenerate({
   directory: string;
 }): Generator<
   WorkspaceRequest,
-  DataModel.IProject,
+  any,
   WorkspaceResponse<"projectsAdd", DataModel.IProjectsAddPayload>
 > {
   const project = yield* generateProjectLoad(directory);

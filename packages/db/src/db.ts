@@ -53,6 +53,13 @@ export class TruffleDB {
     return await execute(this.schema, document, null, this.context, variables);
   }
 
+  async getWorkspaceResponse(generatorRequest: WorkspaceRequest) {
+    const { request, variables }: WorkspaceRequest = generatorRequest;
+
+    const response: WorkspaceResponse = await this.query(request, variables);
+
+    return response;
+  }
   async loadNames(
     project: DataModel.IProject,
     contractsByCompilation: Array<DataModel.IContract[]>
@@ -64,15 +71,7 @@ export class TruffleDB {
     let curNames = namesLoader.next();
 
     while (!curNames.done) {
-      const {
-        request,
-        variables
-      }: WorkspaceRequest = curNames.value as WorkspaceRequest;
-      const namesResponse: WorkspaceResponse = await this.query(
-        request,
-        variables
-      );
-
+      const namesResponse = await this.getWorkspaceResponse(curNames.value);
       curNames = namesLoader.next(namesResponse);
     }
   }
@@ -82,12 +81,7 @@ export class TruffleDB {
       directory: this.context.workingDirectory
     }).next();
 
-    // this gets the response using that request, the project
-    const {
-      request,
-      variables
-    }: WorkspaceRequest = projectRequest.value as WorkspaceRequest;
-    const response = await this.query(request, variables);
+    const response = await this.getWorkspaceResponse(projectRequest.value);
     const projectResponse = response.data.workspace.projectsAdd.projects[0];
 
     return projectResponse;
@@ -106,12 +100,7 @@ export class TruffleDB {
       // HACK not sure why this is necessary; TS knows we're not done, so
       // cur.value should only be WorkspaceRequest (first Generator param),
       // not the return value (second Generator param)
-      const {
-        request,
-        variables
-      }: WorkspaceRequest = cur.value as WorkspaceRequest;
-      const response = await this.query(request, variables);
-
+      const response = await this.getWorkspaceResponse(cur.value);
       cur = saga.next(response);
     }
 
