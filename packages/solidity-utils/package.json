@@ -28,5 +28,6 @@
     "debug": "^4.1.1",
     "json-pointer": "^0.6.0",
     "node-interval-tree": "^1.3.3"
-  }
+  },
+  "gitHead": "6b84be7849142588ef2e3224d8a9d7c2ceeb6e4a"
 }
