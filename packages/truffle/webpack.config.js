@@ -167,12 +167,6 @@ module.exports = {
         from: path.join(truffleLibraryDirectory, "AssertAddressArray.sol")
       },
       {
-        from: path.join(
-          truffleLibraryDirectory,
-          "AssertAddressPayableArray.sol"
-        )
-      },
-      {
         from: path.join(truffleLibraryDirectory, "AssertBalance.sol")
       },
       {
