@@ -108,5 +108,8 @@
   "_moduleAliases": {
     "@truffle/db": "db/dist/src"
   },
-  "gitHead": "6b84be7849142588ef2e3224d8a9d7c2ceeb6e4a"
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "ad57ef2ef13380c7923d5c6682540540755a0435"
 }
