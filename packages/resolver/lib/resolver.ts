@@ -9,7 +9,7 @@ export class Resolver {
   options: any;
   sources: ResolverSource[];
 
-  constructor(options: any, includeTruffleSources: boolean) {
+  constructor(options: any, includeTruffleSource: boolean) {
     expect.options(options, ["working_directory", "contracts_build_directory"]);
 
     this.options = options;
@@ -20,7 +20,7 @@ export class Resolver {
       new FS(options.working_directory, options.contracts_build_directory)
     ];
 
-    if (includeTruffleSources) {
+    if (includeTruffleSource) {
       this.sources.push(new Truffle(options));
     }
   }
