@@ -2,8 +2,7 @@ const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const web3Utils = require("web3-utils");
 const Config = require("@truffle/config");
 const Migrate = require("@truffle/migrate");
-const TestResolver = require("./TestResolver");
-const TestSource = require("./TestSource");
+const Resolver = require("@truffle/resolver");
 const expect = require("@truffle/expect");
 const util = require("util");
 const debug = require("debug")("lib:testing:testrunner");
@@ -40,14 +39,9 @@ function TestRunner(options = {}) {
   this.TEST_TIMEOUT = (options.mocha && options.mocha.timeout) || 300000;
 }
 
-TestRunner.prototype.initialize = async function() {
+TestRunner.prototype.initialize = async function () {
   debug("initializing");
-  let test_source = new TestSource(this.config);
-  this.config.resolver = new TestResolver(
-    this.initial_resolver,
-    test_source,
-    this.config.contracts_build_directory
-  );
+  this.config.resolver = new Resolver(config, true);
 
   if (this.first_snapshot) {
     debug("taking first snapshot");
@@ -69,7 +63,7 @@ TestRunner.prototype.initialize = async function() {
   });
 };
 
-TestRunner.prototype.deploy = async function() {
+TestRunner.prototype.deploy = async function () {
   await Migrate.run(
     this.config.with({
       reset: true,
@@ -78,7 +72,7 @@ TestRunner.prototype.deploy = async function() {
   );
 };
 
-TestRunner.prototype.resetState = async function() {
+TestRunner.prototype.resetState = async function () {
   if (this.can_snapshot) {
     debug("reverting...");
     await this.revert(this.initial_snapshot);
@@ -89,7 +83,7 @@ TestRunner.prototype.resetState = async function() {
   }
 };
 
-TestRunner.prototype.startTest = async function() {
+TestRunner.prototype.startTest = async function () {
   let blockNumber = await this.interfaceAdapter.getBlockNumber();
   let one = web3Utils.toBN(1);
   blockNumber = web3Utils.toBN(blockNumber);
@@ -98,7 +92,7 @@ TestRunner.prototype.startTest = async function() {
   this.currentTestStartBlock = blockNumber.add(one);
 };
 
-TestRunner.prototype.endTest = async function(mocha) {
+TestRunner.prototype.endTest = async function (mocha) {
   // Skip logging if test passes and `show-events` option is not true
   if (mocha.currentTest.state !== "failed" && !this.config["show-events"]) {
     return;
@@ -107,11 +101,10 @@ TestRunner.prototype.endTest = async function(mocha) {
   function indent(input, indentation, initialPrefix = "") {
     const unindented = typeof input === "string" ? input.split("\n") : input;
     return unindented
-      .map(
-        (line, index) =>
-          index === 0
-            ? initialPrefix + " ".repeat(indentation - initialPrefix) + line
-            : " ".repeat(indentation) + line
+      .map((line, index) =>
+        index === 0
+          ? initialPrefix + " ".repeat(indentation - initialPrefix) + line
+          : " ".repeat(indentation) + line
       )
       .join("\n");
   }
@@ -197,15 +190,15 @@ TestRunner.prototype.endTest = async function(mocha) {
   this.logger.log("\n    ---------------------------");
 };
 
-TestRunner.prototype.snapshot = async function() {
+TestRunner.prototype.snapshot = async function () {
   return (await this.rpc("evm_snapshot")).result;
 };
 
-TestRunner.prototype.revert = async function(snapshot_id) {
+TestRunner.prototype.revert = async function (snapshot_id) {
   await this.rpc("evm_revert", [snapshot_id]);
 };
 
-TestRunner.prototype.rpc = async function(method, arg) {
+TestRunner.prototype.rpc = async function (method, arg) {
   let request = {
     jsonrpc: "2.0",
     method: method,

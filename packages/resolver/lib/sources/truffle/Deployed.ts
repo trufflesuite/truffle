@@ -1,11 +1,15 @@
 const web3Utils = require("web3-utils");
-const RangeUtils = require("@truffle/compile-solidity/compilerSupplier/rangeUtils");
+import RangeUtils from "@truffle/compile-solidity/compilerSupplier/rangeUtils";
 
-var Deployed = {
+type solcOptionsArg = {
+  solc: { version: string };
+};
+
+export const Deployed = {
   makeSolidityDeployedAddressesLibrary: function (
-    mapping,
-    { solc: { version } }
-  ) {
+    mapping: { [key: string]: boolean | string },
+    { solc: { version } }: solcOptionsArg
+  ): string {
     var self = this;
 
     var source = "";
@@ -15,9 +19,9 @@ var Deployed = {
       "\n";
 
     Object.keys(mapping).forEach(function (name) {
-      var address = mapping[name];
+      let address = mapping[name];
 
-      var body = "revert();";
+      let body = "revert();";
 
       if (address) {
         address = self.toChecksumAddress(address);
@@ -49,7 +53,7 @@ var Deployed = {
   },
 
   // Pulled from ethereumjs-util, but I don't want all its dependencies at the moment.
-  toChecksumAddress: function (address) {
+  toChecksumAddress: function (address: string): string {
     address = address.toLowerCase().replace("0x", "");
     const hash = web3Utils.sha3(address).replace("0x", "");
     var ret = "0x";
@@ -65,5 +69,3 @@ var Deployed = {
     return ret;
   }
 };
-
-module.exports = Deployed;

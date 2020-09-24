@@ -9,8 +9,6 @@ const Config = require("@truffle/config");
 const WorkflowCompile = require("@truffle/workflow-compile");
 const Resolver = require("@truffle/resolver");
 const TestRunner = require("./testing/TestRunner");
-const TestResolver = require("./testing/TestResolver");
-const TestSource = require("./testing/TestSource");
 const SolidityTest = require("./testing/SolidityTest");
 const RangeUtils = require("@truffle/compile-solidity/compilerSupplier/rangeUtils");
 const expect = require("@truffle/expect");
@@ -92,15 +90,7 @@ const Test = {
 
     const accounts = await this.getAccounts(interfaceAdapter);
 
-    if (!config.resolver) config.resolver = new Resolver(config);
-
-    const testSource = new TestSource(config);
-    const testResolver = new TestResolver(
-      config.resolver,
-      testSource,
-      config.contracts_build_directory
-    );
-    testResolver.cache_on = false;
+    const testResolver = new Resolver(config, true);
 
     const { compilations } = await this.compileContractsWithTestFilesIfNeeded(
       solTests,
@@ -243,6 +233,7 @@ const Test = {
         );
       }
     }
+
     // Compile project contracts and test contracts
     const { contracts, compilations } = await WorkflowCompile.compileAndSave(
       compileConfig

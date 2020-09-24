@@ -21,6 +21,7 @@
   "types": "dist/lib/index.d.ts",
   "dependencies": {
     "@truffle/contract": "^4.2.22",
+    "@truffle/contract-sources": "^0.1.8",
     "@truffle/expect": "^0.0.15",
     "@truffle/provisioner": "^0.2.7",
     "debug": "^4.1.1",
