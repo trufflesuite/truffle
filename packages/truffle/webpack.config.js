@@ -106,6 +106,7 @@ module.exports = {
     /^original-require$/,
     /^mocha$/,
     /^@truffle\/debugger/, //no longer part of the bundle to keep size down
+    /^@truffle\/db/,
     // this is the commands portion shared by cli.js and console-child.js
     /^\.\/commands.bundled.js$/
   ],
