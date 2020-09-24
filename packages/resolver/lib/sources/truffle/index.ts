@@ -73,7 +73,6 @@ export class Truffle implements ResolverSource {
       "Assert",
       "AssertAddress",
       "AssertAddressArray",
-      //      "AssertAddressPayableArray", only compatible w/ ^0.5.0
       "AssertBalance",
       "AssertBool",
       "AssertBytes32",
