@@ -105,6 +105,7 @@ module.exports = {
     // module that's a dependency of Truffle instead.
     /^original-require$/,
     /^mocha$/,
+    /^@truffle\/db/,
     // this is the commands portion shared by cli.js and console-child.js
     /^\.\/commands.bundled.js$/
   ],
