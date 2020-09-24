@@ -4,7 +4,6 @@ const Deployer = require("@truffle/deployer");
 const { Compile } = require("@truffle/compile-solidity");
 const { Shims } = require("@truffle/compile-common");
 const RangeUtils = require("@truffle/compile-solidity/compilerSupplier/rangeUtils");
-const path = require("path");
 const debug = require("debug")("lib:testing:soliditytest");
 
 let SafeSend;
@@ -117,34 +116,25 @@ const SolidityTest = {
       : "OldSafeSend.sol";
 
     const truffleLibraries = [
-      "Assert.sol",
-      "AssertAddress.sol",
-      "AssertAddressArray.sol",
-      "AssertBalance.sol",
-      "AssertBool.sol",
-      "AssertBytes32.sol",
-      "AssertBytes32Array.sol",
-      "AssertGeneral.sol",
-      "AssertInt.sol",
-      "AssertIntArray.sol",
-      "AssertString.sol",
-      "AssertUint.sol",
-      "AssertUintArray.sol",
-      "DeployedAddresses.sol",
-      SafeSend
+      "truffle/Assert.sol",
+      "truffle/AssertAddress.sol",
+      "truffle/AssertAddressArray.sol",
+      "truffle/AssertBalance.sol",
+      "truffle/AssertBool.sol",
+      "truffle/AssertBytes32.sol",
+      "truffle/AssertBytes32Array.sol",
+      "truffle/AssertGeneral.sol",
+      "truffle/AssertInt.sol",
+      "truffle/AssertIntArray.sol",
+      "truffle/AssertString.sol",
+      "truffle/AssertUint.sol",
+      "truffle/AssertUintArray.sol",
+      "truffle/DeployedAddresses.sol",
+      `truffle/${SafeSend}`
     ];
-    const pathsToLibraryFiles = [];
-    for (const filename of truffleLibraries) {
-      const { filePath } = await config.resolver.resolve(
-        path.join("truffle", filename)
-      );
-      if (filePath) {
-        pathsToLibraryFiles.push(filePath);
-      }
-    }
 
     const { compilations } = await Compile.sourcesWithDependencies({
-      paths: pathsToLibraryFiles,
+      paths: truffleLibraries,
       options: runner.config.with({
         quiet: true
       })
