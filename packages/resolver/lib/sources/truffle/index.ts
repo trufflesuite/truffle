@@ -69,7 +69,7 @@ export class Truffle implements ResolverSource {
       return { body: addressSource, filePath: importPath };
     }
 
-    const assertLibraries = [
+    const truffleLibraries = [
       "Assert",
       "AssertAddress",
       "AssertAddressArray",
@@ -88,7 +88,7 @@ export class Truffle implements ResolverSource {
       "OldSafeSend"
     ];
 
-    for (const lib of assertLibraries) {
+    for (const lib of truffleLibraries) {
       if (importPath === `truffle/${lib}.sol`) {
         const actualImportPath =
           // @ts-ignore
