@@ -1,3 +1,4 @@
+const OS = require("os");
 const command = {
   command: "test",
   description: "Run JavaScript and Solidity tests",
@@ -46,7 +47,11 @@ const command = {
   },
   help: {
     usage:
-      "truffle test [<test_file>] [--compile-all[-debug]] [--network <name>] [--verbose-rpc] [--show-events] [--debug] [--debug-global <identifier>] [--bail] [--stacktrace[-extra]]",
+      `truffle test [<test_file>] [--compile-all[-debug]] [--compile-none] ` +
+      `[--network <name>]${OS.EOL}                             ` +
+      `[--verbose-rpc] [--show-events] [--debug] ` +
+      `[--debug-global <identifier>] [--bail]${OS.EOL}                      ` +
+      `       [--stacktrace[-extra]]`,
     options: [
       {
         option: "<test_file>",
@@ -59,6 +64,10 @@ const command = {
         description:
           "Compile all contracts instead of intelligently choosing which contracts need " +
           "to be compiled."
+      },
+      {
+        option: "--compile-none",
+        description: "Do not compile any contracts before running the tests"
       },
       {
         option: "--compile-all-debug",
