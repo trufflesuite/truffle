@@ -3,7 +3,6 @@ const debug = debugModule("codec:mapping-key:encode");
 
 import * as Format from "@truffle/codec/format";
 import * as Conversion from "@truffle/codec/conversion";
-import * as Evm from "@truffle/codec/evm";
 import * as BasicEncode from "@truffle/codec/basic/encode";
 import * as BytesEncode from "@truffle/codec/bytes/encode";
 
@@ -21,9 +20,9 @@ export function encodeMappingKey(
     input.type.typeClass === "string" ||
     (input.type.typeClass === "bytes" && input.type.kind === "dynamic")
   ) {
-    return BytesEncode.encodeBytes(<
-      Format.Values.StringValue | Format.Values.BytesDynamicValue
-    >input);
+    return BytesEncode.encodeBytes(
+      <Format.Values.StringValue | Format.Values.BytesDynamicValue>input
+    );
   } else {
     return BasicEncode.encodeBasic(input);
   }

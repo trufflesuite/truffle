@@ -10,7 +10,6 @@ const debug = debugModule("codec:format:values");
 //just intended for the future.  More optional fields may be added in the
 //future.
 
-import BN from "bn.js";
 import * as Types from "./types";
 import * as Errors from "./errors";
 import {
@@ -26,7 +25,6 @@ import {
   UfixedValue,
   EnumValue,
   ContractValue,
-  ContractValueInfo,
   ContractValueInfoKnown,
   ContractValueInfoUnknown
 } from "./elementary";

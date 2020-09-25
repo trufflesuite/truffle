@@ -129,10 +129,14 @@ export interface EventArgumentAllocation {
 }
 
 //now let's go back ands fill in returndata
-type ReturndataKind = FunctionReturndataKind | ConstructorReturndataKind;
+export type ReturndataKind = FunctionReturndataKind | ConstructorReturndataKind;
 
-type FunctionReturndataKind = "return" | "revert" | "failure" | "selfdestruct";
-type ConstructorReturndataKind = "bytecode";
+export type FunctionReturndataKind =
+  | "return"
+  | "revert"
+  | "failure"
+  | "selfdestruct";
+export type ConstructorReturndataKind = "bytecode";
 
 export type ReturndataAllocation =
   | FunctionReturndataAllocation

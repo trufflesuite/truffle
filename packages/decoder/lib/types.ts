@@ -6,7 +6,6 @@ import {
   Ast,
   Compilations,
   Contexts,
-  CalldataDecoding,
   LogDecoding,
   StateVariable
 } from "@truffle/codec";
