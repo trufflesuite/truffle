@@ -92,9 +92,8 @@ export abstract class Databases<C extends Collections> {
     // an extra index
     const fixIdSelector = selector =>
       Object.entries(selector)
-        .map(
-          ([field, predicate]) =>
-            field === "id" ? { _id: predicate } : { [field]: predicate }
+        .map(([field, predicate]) =>
+          field === "id" ? { _id: predicate } : { [field]: predicate }
         )
         .reduce((a, b) => ({ ...a, ...b }), {});
 
