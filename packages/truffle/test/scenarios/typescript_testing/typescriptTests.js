@@ -30,7 +30,9 @@ describe("Typescript Tests", () => {
         const output = logger.contents();
         assert(output.includes("3 passing"));
       } catch (error) {
-        assert.fail(`there was an error -- ${error}`);
+        console.log(`there was an error -- %o`, error);
+        console.log(`the logger contents are -- ${logger.contents()}`);
+        assert.fail();
       }
     }).timeout(70000);
 
@@ -40,7 +42,9 @@ describe("Typescript Tests", () => {
         const output = logger.contents();
         assert(output.includes("8 passing"));
       } catch (error) {
-        assert.fail(`there was an error -- ${error}`);
+        console.log(`there was an error -- %o`, error);
+        console.log(`the logger contents are -- ${logger.contents()}`);
+        assert.fail();
       }
     }).timeout(70000);
   });
