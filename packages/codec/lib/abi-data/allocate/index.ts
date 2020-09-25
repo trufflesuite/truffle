@@ -24,7 +24,6 @@ import {
   CalldataAllocations,
   CalldataAllocationTemporary,
   CalldataArgumentAllocation,
-  ReturndataArgumentAllocation,
   ContractAllocationInfo,
   EventAllocation,
   EventAllocations,
@@ -1037,9 +1036,6 @@ export function getEventAllocations(
       //we'll need *one* of these two at least
       continue;
     }
-    let contractKind = contractNode
-      ? contractNode.contractKind
-      : deployedContext.contractKind;
     let contractAllocations = getEventAllocationsForContract(
       abi,
       contractNode,

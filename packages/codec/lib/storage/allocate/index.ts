@@ -1,7 +1,6 @@
 import debugModule from "debug";
 const debug = debugModule("codec:storage:allocate");
 
-import { DecodingError } from "@truffle/codec/errors";
 import * as Compiler from "@truffle/codec/compiler";
 import * as Common from "@truffle/codec/common";
 import * as Basic from "@truffle/codec/basic";
@@ -412,8 +411,8 @@ function allocateContractState(
     let arrayToGrabFrom = isConstant(variable.definition)
       ? constantVariableAllocations
       : isImmutable(variable.definition)
-        ? immutableVariableAllocations
-        : storageVariableAllocations;
+      ? immutableVariableAllocations
+      : storageVariableAllocations;
     contractAllocation.push(arrayToGrabFrom.shift()); //note that push and shift both modify!
   }
 

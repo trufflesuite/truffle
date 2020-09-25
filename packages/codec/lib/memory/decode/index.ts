@@ -235,8 +235,7 @@ export function* decodeMemoryReferenceByAddress(
       }
       //otherwise, decode as normal
       const {
-        allocations: { memory: allocations },
-        userDefinedTypes
+        allocations: { memory: allocations }
       } = info;
 
       const typeId = dataType.id;
