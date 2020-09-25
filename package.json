@@ -13,6 +13,8 @@
     "update": "lernaupdate"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.2.0",
+    "@typescript-eslint/parser": "^4.2.0",
     "coveralls": "^3.0.2",
     "eslint": "^5.7.0",
     "husky": "^1.2.0",
@@ -42,6 +44,7 @@
     ],
     "*.ts": [
       "prettier --write",
+      "eslint --fix",
       "git add"
     ]
   }
