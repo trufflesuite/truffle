@@ -16,7 +16,7 @@
     "@typescript-eslint/eslint-plugin": "^4.2.0",
     "@typescript-eslint/parser": "^4.2.0",
     "coveralls": "^3.0.2",
-    "eslint": "^5.7.0",
+    "eslint": "^7.9.0",
     "husky": "^1.2.0",
     "lerna": "^3.16.4",
     "lerna-update-wizard": "^0.16.0",
