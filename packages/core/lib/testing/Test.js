@@ -21,7 +21,7 @@ const Debugger = require("@truffle/debugger");
 
 let Mocha; // Late init with "mocha" or "mocha-parallel-tests"
 
-chai.use(require("./assertions"));
+chai.use(require("../assertions"));
 
 const Test = {
   run: async function (options) {
@@ -305,7 +305,7 @@ const Test = {
       }
 
       // wrapped inside function so as not to load debugger on every test
-      const { CLIDebugHook } = require("./debug/mocha");
+      const { CLIDebugHook } = require("../debug/mocha");
 
       // note: this.mochaRunner will be available by the time debug()
       // is invoked
