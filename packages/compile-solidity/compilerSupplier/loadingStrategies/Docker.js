@@ -11,13 +11,8 @@ class Docker extends LoadingStrategy {
     // Set a sensible limit for maxBuffer
     // See https://github.com/nodejs/node/pull/23027
     let maxBuffer = 1024 * 1024 * 100;
-    if (
-      this.config.compilers &&
-      this.config.compilers.solc &&
-      this.config.compilers.solc.spawn &&
-      this.config.compilers.solc.spawn.maxBuffer
-    ) {
-      maxBuffer = this.config.compilers.solc.spawn.maxBuffer;
+    if (this.config.spawn && this.config.spawn.maxBuffer) {
+      maxBuffer = this.config.spawn.maxBuffer;
     }
 
     const versionString = await this.validateAndGetSolcVersion();

@@ -6,7 +6,7 @@ const { Docker, Local, Native, VersionRange } = require("./loadingStrategies");
 
 class CompilerSupplier {
   constructor({ events, solcConfig }) {
-    const { version, docker, compilerRoots, parser } = solcConfig;
+    const { version, docker, compilerRoots, parser, spawn } = solcConfig;
     const defaultSolcVersion = "0.5.16";
     this.events = events;
     this.parser = parser;
@@ -18,6 +18,7 @@ class CompilerSupplier {
     if (docker) this.strategyOptions.docker = compilerRoots;
     if (compilerRoots) this.strategyOptions.compilerRoots = compilerRoots;
     if (events) this.strategyOptions.events = events;
+    if (spawn) this.strategyOptions.spawn = spawn;
   }
 
   badInputError(userSpecification) {
