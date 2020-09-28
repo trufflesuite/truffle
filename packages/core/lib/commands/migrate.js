@@ -49,9 +49,9 @@ const command = {
     usage:
       "truffle migrate [--reset] [--f <number>] [--to <number>] [--network <name>]\n" +
       "                                " + // spacing to align with previous line
-      "[--compile-all] [--verbose-rpc] [--interactive] [--dry-run]\n" +
+      "[--compile-all] [--compile-none] [--verbose-rpc] [--interactive]\n" +
       "                                " + // spacing to align with previous line
-      "[--skip-dry-run] [--describe-json]",
+      "[--skip-dry-run] [--describe-json] [--dry-run]",
     options: [
       {
         option: "--reset",
@@ -188,7 +188,7 @@ const command = {
     const Artifactor = require("@truffle/artifactor");
     const Resolver = require("@truffle/resolver");
     const Migrate = require("@truffle/migrate");
-    const Contracts = require("@truffle/workflow-compile");
+    const WorkflowCompile = require("@truffle/workflow-compile");
     const { Environment } = require("@truffle/environment");
     const Config = require("@truffle/config");
     const { promisify } = require("util");
@@ -201,7 +201,7 @@ const command = {
       conf.compiler = "none";
     }
 
-    Contracts.compile(conf)
+    WorkflowCompile.compileAndSave(conf)
       .then(async () => {
         await Environment.detect(conf);
 

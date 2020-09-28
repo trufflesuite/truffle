@@ -12,6 +12,10 @@ contract WireTestParent {
   //no constructor
 
   event Overridden(uint);
+
+  function inheritedReturn() public pure returns (uint) {
+    return 1;
+  }
 }
 
 abstract contract WireTestAbstract {
@@ -20,6 +24,8 @@ abstract contract WireTestAbstract {
   event AbstractOverridden(uint indexed);
 
   function danger() public virtual;
+
+  function overriddenReturn() public pure virtual returns (uint);
 }
 
 struct GlobalStruct {
@@ -177,6 +183,10 @@ contract WireTest is WireTestParent, WireTestAbstract {
 
   function returnsStuff() public pure returns (Triple memory, Ternary) {
     return (Triple(-1, 0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef, hex"deadbeef"), Ternary.No);
+  }
+
+  function overriddenReturn() public pure override returns (uint) {
+    return 2;
   }
 
   receive() external payable {

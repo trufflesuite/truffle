@@ -42,7 +42,7 @@ describe("CompilerSupplier", () => {
       });
     });
 
-    describe(`when the version is set to a specific word I can't write here`, () => {
+    describe(`using the setting below (n'ative)`, () => {
       // HACK: Because of how the test script is set up, the word 'native' cannot be a
       // part of the it/describe strings above and below
       beforeEach(() => {

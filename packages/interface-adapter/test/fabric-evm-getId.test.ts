@@ -16,9 +16,7 @@ async function prepareGanache(
 ): Promise<{ server: Server; interfaceAdapter: InterfaceAdapter }> {
   return new Promise((resolve, reject) => {
     const server = Ganache.server();
-    server.listen(port, (err: Error) => {
-      if (err) reject(err);
-
+    server.listen(port, () => {
       const interfaceAdapter = createInterfaceAdapter({
         provider: new Web3.providers.HttpProvider(`http://127.0.0.1:${port}`),
         networkType: fabricEvmEnabled ? "fabric-evm" : "ethereum"

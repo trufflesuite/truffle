@@ -1,5 +1,3 @@
-import { Resolver, ResolverSource } from "@truffle/resolver";
-
 import { getImports, ResolvedSource } from "./getImports";
 
 export interface ResolveAllSourcesOptions {
@@ -24,7 +22,7 @@ export async function resolveAllSources({
   resolve,
   paths,
   shouldIncludePath,
-  parseImports,
+  parseImports
 }: ResolveAllSourcesOptions): Promise<ResolvedSourcesMapping> {
   const mapping: ResolvedSourcesMapping = {};
   const allPaths: (UnresolvedSource | string)[] = paths.slice();

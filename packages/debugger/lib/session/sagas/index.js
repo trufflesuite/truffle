@@ -159,27 +159,36 @@ function* fetchTx(txHash) {
 
   //get addresses created/called during transaction
   debug("processing trace for addresses");
-  let addresses = yield* trace.processTrace(result.trace);
+  let { calls, creations, selfdestructs } = yield* trace.processTrace(
+    result.trace
+  );
   //add in the address of the call itself (if a call)
-  if (result.address && !addresses.includes(result.address)) {
-    addresses.push(result.address);
+  if (result.address && !calls.includes(result.address)) {
+    calls.push(result.address);
   }
+
   //if a create, only add in address if it was successful
-  if (
-    result.binary &&
-    result.status &&
-    !addresses.includes(result.storageAddress)
-  ) {
-    addresses.push(result.storageAddress);
+  if (result.binary && result.status && !(result.storageAddress in creations)) {
+    creations[result.storageAddress] = result.binary;
   }
 
   let blockNumber = result.block.number.toString(); //a BN is not accepted
+  let addresses = [...calls, ...selfdestructs, ...Object.keys(creations)];
+  let nonCallStartIndex = calls.length;
   debug("obtaining binaries");
   let binaries = yield* web3.obtainBinaries(addresses, blockNumber);
 
   debug("recording instances");
   yield all(
-    addresses.map((address, i) => call(recordInstance, address, binaries[i]))
+    addresses.map((address, index) =>
+      call(
+        recordInstance,
+        address,
+        binaries[index],
+        index >= nonCallStartIndex,
+        creations[address] //may be undefined
+      )
+    )
   );
 
   debug("sending initial call");
@@ -198,8 +207,18 @@ function* recordSources(sources) {
   yield* solidity.addSources(sources);
 }
 
-function* recordInstance(address, binary) {
-  yield* evm.addInstance(address, binary);
+//creationBinary can be omitted; should only be used for creations
+function* recordInstance(
+  address,
+  binary,
+  affectedInstanceOnly,
+  creationBinary
+) {
+  yield* evm.addAffectedInstance(address, binary, creationBinary);
+  if (!affectedInstanceOnly) {
+    //add it as a real codex instance
+    yield* evm.addInstance(address, binary);
+  }
 }
 
 function* ready() {

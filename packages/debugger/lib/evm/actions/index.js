@@ -42,6 +42,24 @@ export function addInstance(address, context, binary) {
   };
 }
 
+export const ADD_AFFECTED_INSTANCE = "EVM_ADD_AFFECTED_INSTANCE";
+export function addAffectedInstance(
+  address,
+  context,
+  binary,
+  creationBinary,
+  creationContext
+) {
+  return {
+    type: ADD_AFFECTED_INSTANCE,
+    address,
+    context,
+    binary,
+    creationBinary, //may be undefined
+    creationContext
+  };
+}
+
 export const REFRESH_INSTANCE = "EVM_REFRESH_INSTANCE";
 export function refreshInstances(address, context) {
   return {

@@ -2,7 +2,6 @@ import debugModule from "debug";
 const debug = debugModule("codec:contexts:utils");
 
 import * as Evm from "@truffle/codec/evm";
-import * as Format from "@truffle/codec/format";
 import {
   DecoderContexts,
   DecoderContext,
@@ -178,8 +177,7 @@ export function normalizeContexts(contexts: Contexts): Contexts {
     .filter(context => context.externalSolidity)
     .map(context => extractCborInfo(context.binary))
     .filter(
-      cborSegment =>
-        cborSegment !== undefined && isCborWithHash(cborSegment.cbor)
+      cborSegment => cborSegment !== null && isCborWithHash(cborSegment.cbor)
     );
   const cborRegexps = externalCborInfo.map(cborInfo => ({
     input: new RegExp(cborInfo.cborSegment, "g"), //hex string so no need for escape

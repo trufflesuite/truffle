@@ -6,7 +6,6 @@ import * as Conversion from "@truffle/codec/conversion";
 import * as Format from "@truffle/codec/format";
 import read from "@truffle/codec/read";
 import * as Basic from "@truffle/codec/basic";
-import * as Bytes from "@truffle/codec/bytes";
 import * as Memory from "@truffle/codec/memory";
 import * as Storage from "@truffle/codec/storage";
 import * as Pointer from "@truffle/codec/pointer";

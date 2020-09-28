@@ -2,7 +2,12 @@ import debugModule from "debug";
 const debug = debugModule("debugger:trace:sagas");
 
 import { take, takeEvery, put, select } from "redux-saga/effects";
-import { prefixName, isCallMnemonic } from "lib/helpers";
+import {
+  prefixName,
+  isCallMnemonic,
+  isCreateMnemonic,
+  isSelfDestructMnemonic
+} from "lib/helpers";
 
 import * as Codec from "@truffle/codec";
 
@@ -70,27 +75,49 @@ export function* signalTickSagaCompletion() {
 export function* processTrace(steps) {
   yield put(actions.saveSteps(steps));
 
-  let addresses = [
-    ...new Set(
-      steps
-        .map(
-          ({ op, stack }) =>
-            isCallMnemonic(op)
-              ? //if it's a call, just fetch the address off the stack
-                Codec.Evm.Utils.toAddress(stack[stack.length - 2])
-              : //if it's not a call, just return undefined (we've gone back to
-                //skipping creates)
-                undefined
-        )
-        //filter out zero addresses from failed creates (as well as undefineds)
-        .filter(
-          address =>
-            address !== undefined && address !== Codec.Evm.Utils.ZERO_ADDRESS
-        )
-    )
-  ];
+  let callAddresses = new Set();
+  let selfDestructAddresses = new Set();
+  let createdBinaries = {};
 
-  return addresses;
+  for (let index = 0; index < steps.length; index++) {
+    const { op, depth, stack, memory } = steps[index];
+    if (isCallMnemonic(op)) {
+      callAddresses.add(Codec.Evm.Utils.toAddress(stack[stack.length - 2]));
+    } else if (isCreateMnemonic(op)) {
+      const returnStack = steps
+        .slice(index + 1)
+        .find(step => step.depth === depth).stack;
+      const address = Codec.Evm.Utils.toAddress(
+        returnStack[returnStack.length - 1]
+      );
+      if (address !== Codec.Evm.Utils.ZERO_ADDRESS) {
+        //now: extract the created binary.
+        //note we multiply by 2 because we're dealing with hex strings.
+        const offset = parseInt(stack[stack.length - 2], 16) * 2;
+        const length = parseInt(stack[stack.length - 3], 16) * 2;
+        const binary =
+          "0x" +
+          memory
+            .join("")
+            .substring(offset, offset + length)
+            .padEnd(length, "00");
+        createdBinaries[address] = binary;
+        //warning: this is a deliberately crude method!
+        //it may warrant replacement later.
+        //(but it should be good enough for most purposes)
+      }
+    } else if (isSelfDestructMnemonic(op)) {
+      selfDestructAddresses.add(
+        Codec.Evm.Utils.toAddress(stack[stack.length - 1])
+      );
+    }
+  }
+
+  return {
+    calls: [...callAddresses],
+    selfdestructs: [...selfDestructAddresses],
+    creations: createdBinaries
+  };
 }
 
 export function* reset() {

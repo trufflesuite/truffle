@@ -20,9 +20,7 @@ async function prepareGanache(
     const server = Ganache.server({
       time: genesisBlockTime
     });
-    server.listen(port, (err: Error) => {
-      if (err) reject(err);
-
+    server.listen(port, () => {
       const interfaceAdapter = createInterfaceAdapter({
         provider: new Web3.providers.HttpProvider(`http://127.0.0.1:${port}`),
         networkType: quorumEnabled ? "quorum" : "ethereum"

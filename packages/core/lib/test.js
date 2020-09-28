@@ -6,12 +6,13 @@ const {
   createInterfaceAdapter
 } = require("@truffle/interface-adapter");
 const Config = require("@truffle/config");
-const Contracts = require("@truffle/workflow-compile/new");
+const WorkflowCompile = require("@truffle/workflow-compile");
 const Resolver = require("@truffle/resolver");
-const TestRunner = require("./testing/testrunner");
-const TestResolver = require("./testing/testresolver");
-const TestSource = require("./testing/testsource");
-const SolidityTest = require("./testing/soliditytest");
+const TestRunner = require("./testing/TestRunner");
+const TestResolver = require("./testing/TestResolver");
+const TestSource = require("./testing/TestSource");
+const SolidityTest = require("./testing/SolidityTest");
+const RangeUtils = require("@truffle/compile-solidity/compilerSupplier/rangeUtils");
 const expect = require("@truffle/expect");
 const Migrate = require("@truffle/migrate");
 const Profiler = require("@truffle/compile-solidity/profiler");
@@ -19,14 +20,13 @@ const originalrequire = require("original-require");
 const Codec = require("@truffle/codec");
 const debug = require("debug")("lib:test");
 const Debugger = require("@truffle/debugger");
-const semver = require("semver");
 
 let Mocha; // Late init with "mocha" or "mocha-parallel-tests"
 
 chai.use(require("./assertions"));
 
 const Test = {
-  run: async function(options) {
+  run: async function (options) {
     expect.options(options, [
       "contracts_directory",
       "contracts_build_directory",
@@ -61,7 +61,7 @@ const Test = {
     // e.g., https://github.com/ethereum/web3.js/blob/master/lib/web3/allevents.js#L61
     // Output looks like this during tests: https://gist.github.com/tcoulter/1988349d1ec65ce6b958
     const warn = config.logger.warn;
-    config.logger.warn = function(message) {
+    config.logger.warn = function (message) {
       if (message === "cannot find event for log") {
         return;
       } else {
@@ -116,16 +116,27 @@ const Test = {
 
     await this.performInitialDeploy(config, testResolver);
 
+    const solidityCompilationOutput = compilations.reduce(
+      (a, compilation) => {
+        if (compilation.compiler && compilation.compiler.name === "solc") {
+          a.sourceIndexes = a.sourceIndexes.concat(compilation.sourceIndexes);
+          a.contracts = a.contracts.concat(compilation.contracts);
+        }
+        return a;
+      },
+      { sourceIndexes: [], contracts: [] }
+    );
+
     await this.defineSolidityTests(
       mocha,
       testContracts,
-      compilations.solc.sourceIndexes,
+      solidityCompilationOutput.sourceIndexes,
       runner
     );
 
     const debuggerCompilations = Codec.Compilations.Utils.shimArtifacts(
-      compilations.solc.contracts,
-      compilations.solc.sourceIndexes
+      solidityCompilationOutput.contracts,
+      solidityCompilationOutput.sourceIndexes
     );
 
     //for stack traces, we'll need to set up a light-mode debugger...
@@ -163,7 +174,7 @@ const Test = {
     });
   },
 
-  createMocha: function(config) {
+  createMocha: function (config) {
     // Allow people to specify config.mocha in their config.
     const mochaConfig = config.mocha || {};
 
@@ -190,11 +201,11 @@ const Test = {
     return mocha;
   },
 
-  getAccounts: function(interfaceAdapter) {
+  getAccounts: function (interfaceAdapter) {
     return interfaceAdapter.getAccounts();
   },
 
-  compileContractsWithTestFilesIfNeeded: async function(
+  compileContractsWithTestFilesIfNeeded: async function (
     solidityTestFiles,
     config,
     testResolver
@@ -202,8 +213,13 @@ const Test = {
     const updated =
       (await Profiler.updated(config.with({ resolver: testResolver }))) || [];
 
+    const compiler = (config.compileNone || config["--compile-none"])
+      ? "none"
+      : config.compiler;
+
     let compileConfig = config.with({
       all: config.compileAll === true,
+      compiler,
       files: updated.concat(solidityTestFiles),
       resolver: testResolver,
       quiet: config.runnerOutputOnly || config.quiet,
@@ -211,21 +227,8 @@ const Test = {
     });
     if (config.compileAllDebug) {
       let versionString = ((compileConfig.compilers || {}).solc || {}).version;
-      //note: I'm relying here on the fact that the current
-      //default version, 0.5.16, is <0.6.3
-      //the following line works with prereleases
-      const satisfies = semver.satisfies(versionString, ">=0.6.3", {
-        includePrerelease: true,
-        loose: true
-      });
-      //the following line doesn't, despite the flag, but does work with version ranges
-      const intersects =
-        semver.validRange(versionString) &&
-        semver.intersects(versionString, ">=0.6.3", {
-          includePrerelease: true,
-          loose: true
-        }); //intersects will throw if given undefined so must ward against
-      if (satisfies || intersects) {
+      versionString = RangeUtils.resolveToRange(versionString);
+      if (RangeUtils.rangeContainsAtLeast(versionString, "0.6.3")) {
         compileConfig = compileConfig.merge({
           compilers: {
             solc: {
@@ -246,9 +249,9 @@ const Test = {
       }
     }
     // Compile project contracts and test contracts
-    const { contracts, compilations } = await Contracts.compile(compileConfig);
-
-    await Contracts.save(compileConfig, contracts);
+    const { contracts, compilations } = await WorkflowCompile.compileAndSave(
+      compileConfig
+    );
 
     return {
       contracts,
@@ -256,7 +259,7 @@ const Test = {
     };
   },
 
-  performInitialDeploy: function(config, resolver) {
+  performInitialDeploy: function (config, resolver) {
     const migrateConfig = config.with({
       reset: true,
       resolver: resolver,
@@ -272,7 +275,7 @@ const Test = {
     }
   },
 
-  setJSTestGlobals: async function({
+  setJSTestGlobals: async function ({
     config,
     web3,
     interfaceAdapter,
@@ -292,7 +295,7 @@ const Test = {
         //HACK: both of the following should go by means
         //of the provisioner, but I'm not sure how to make
         //that work at the moment
-        contract.reloadJson = function() {
+        contract.reloadJson = function () {
           const reloaded = testResolver.require(importPath);
           this._json = reloaded._json;
         };
@@ -325,39 +328,39 @@ const Test = {
       return await hook.debug(operation);
     };
 
-    const template = function(tests) {
+    const template = function (tests) {
       this.timeout(runner.TEST_TIMEOUT);
 
-      before("prepare suite", async function() {
+      before("prepare suite", async function () {
         this.timeout(runner.BEFORE_TIMEOUT);
         await runner.initialize();
       });
 
-      beforeEach("before test", async function() {
+      beforeEach("before test", async function () {
         await runner.startTest();
       });
 
-      afterEach("after test", async function() {
+      afterEach("after test", async function () {
         await runner.endTest(this);
       });
 
       tests(accounts);
     };
 
-    global.contract = function(name, tests) {
-      Mocha.describe("Contract: " + name, function() {
+    global.contract = function (name, tests) {
+      Mocha.describe("Contract: " + name, function () {
         template.bind(this, tests)();
       });
     };
 
-    global.contract.only = function(name, tests) {
-      Mocha.describe.only("Contract: " + name, function() {
+    global.contract.only = function (name, tests) {
+      Mocha.describe.only("Contract: " + name, function () {
         template.bind(this, tests)();
       });
     };
 
-    global.contract.skip = function(name, tests) {
-      Mocha.describe.skip("Contract: " + name, function() {
+    global.contract.skip = function (name, tests) {
+      Mocha.describe.skip("Contract: " + name, function () {
         template.bind(this, tests)();
       });
     };

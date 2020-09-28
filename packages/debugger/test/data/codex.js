@@ -10,7 +10,7 @@ import { prepareContracts } from "../helpers";
 import Debugger from "lib/debugger";
 
 const __LIBTEST = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.7.0;
 
 contract MappingPointerTest {
   mapping(string => uint) surface;
@@ -28,7 +28,7 @@ library TouchLib {
 `;
 
 const __REVERT_TEST = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.7.0;
 
 contract RevertTest {
 
@@ -60,7 +60,7 @@ contract RevertTest2 {
 
   function run() public {
     x = 1;
-    address(this).call.gas(gasleft()/2)(hex"");
+    address(this).call{gas:gasleft()/2}(hex"");
   }
 }
 `;
@@ -89,17 +89,17 @@ let migrations = {
   "2_deploy_contracts.js": __MIGRATION
 };
 
-describe("Codex", function() {
+describe("Codex", function () {
   var provider;
 
   var abstractions;
   var compilations;
 
-  before("Create Provider", async function() {
+  before("Create Provider", async function () {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
-  before("Prepare contracts and artifacts", async function() {
+  before("Prepare contracts and artifacts", async function () {
     this.timeout(30000);
 
     let prepared = await prepareContracts(provider, sources, migrations);
@@ -107,7 +107,7 @@ describe("Codex", function() {
     compilations = prepared.compilations;
   });
 
-  it("Tracks storage across call boundaries", async function() {
+  it("Tracks storage across call boundaries", async function () {
     this.timeout(6000);
     let instance = await abstractions.MappingPointerTest.deployed();
     let receipt = await instance.run();
@@ -126,7 +126,7 @@ describe("Codex", function() {
     assert.equal(surface["ping"], 1);
   });
 
-  it("Reverts storage when a call reverts", async function() {
+  it("Reverts storage when a call reverts", async function () {
     this.timeout(6000);
     let instance = await abstractions.RevertTest.deployed();
     let receipt = await instance.run();
@@ -141,7 +141,7 @@ describe("Codex", function() {
     assert.equal(x, 1);
   });
 
-  it("Reverts storage when a call otherwise fails", async function() {
+  it("Reverts storage when a call otherwise fails", async function () {
     this.timeout(6000);
     let instance = await abstractions.RevertTest2.deployed();
     let receipt = await instance.run();

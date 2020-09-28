@@ -2,7 +2,8 @@
   "compilerOptions": {
     "module": "commonjs",
     "esModuleInterop": true,
-    "target": "es6",
+    "declaration": true,
+    "target": "es2016",
     "noImplicitAny": true,
     "moduleResolution": "node",
     "sourceMap": true,
@@ -12,6 +13,7 @@
     "paths": {
     },
     "rootDir": ".",
+    "types": ["mocha"],
     "typeRoots": [
       "../../node_modules/@types/fs-extra"
     ]

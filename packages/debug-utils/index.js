@@ -1,8 +1,5 @@
 var OS = require("os");
-var dir = require("node-dir");
-var path = require("path");
 var debug = require("debug")("debug-utils");
-var BN = require("bn.js");
 var util = require("util");
 var Codec = require("@truffle/codec");
 
@@ -17,7 +14,7 @@ const commandReference = {
   "u": "step out",
   "n": "step next",
   ";": "step instruction (include number to step multiple)",
-  "p": "print instruction & state (can specify locations, e.g. p mem; see docs)",
+  "p": "print instruction & state (`p [mem|cal|sto]*`; see docs for more)",
   "l": "print additional source context",
   "h": "print this help",
   "v": "print variables and values",
@@ -25,14 +22,14 @@ const commandReference = {
   "+": "add watch expression (`+:<expr>`)",
   "-": "remove watch expression (-:<expr>)",
   "?": "list existing watch expressions and breakpoints",
-  "b": "add breakpoint",
-  "B": "remove breakpoint",
+  "b": "add breakpoint (`b [[<source-file>:]<line-number>]`; see docs for more)",
+  "B": "remove breakpoint (similar to adding, or `B all` to remove all)",
   "c": "continue until breakpoint",
   "q": "quit",
   "r": "reset",
   "t": "load new transaction",
   "T": "unload transaction",
-  "s": "print stacktrace",
+  "s": "print stacktrace"
 };
 
 const shortCommandReference = {
@@ -56,7 +53,7 @@ const shortCommandReference = {
   "r": "reset",
   "t": "load",
   "T": "unload",
-  "s": "stacktrace",
+  "s": "stacktrace"
 };
 
 const truffleColors = {
@@ -70,35 +67,13 @@ const truffleColors = {
   blue: chalk.hex("#25A9E0"),
   comment: chalk.hsl(30, 20, 50),
   watermelon: chalk.hex("#E86591"),
-  periwinkle: chalk.hex("#7F9DD1"),
+  periwinkle: chalk.hex("#7F9DD1")
 };
 
 const DEFAULT_TAB_WIDTH = 8;
 
 var DebugUtils = {
   truffleColors, //make these externally available
-
-  gatherArtifacts: async function (config) {
-    // Gather all available contract artifacts
-    let files = await dir.promiseFiles(config.contracts_build_directory);
-
-    var contracts = files
-      .filter((file_path) => {
-        return path.extname(file_path) === ".json";
-      })
-      .map((file_path) => {
-        return path.basename(file_path, ".json");
-      })
-      .map((contract_name) => {
-        return config.resolver.require(contract_name);
-      });
-
-    await Promise.all(
-      contracts.map((abstraction) => abstraction.detectNetwork())
-    );
-
-    return contracts;
-  },
 
   //attempts to test whether a given compilation is a real compilation,
   //i.e., was compiled all at once.
@@ -127,7 +102,7 @@ var DebugUtils = {
     //check #3: are there any AST ID collisions?
     let astIds = new Set();
 
-    let allIDsUnseenSoFar = (node) => {
+    let allIDsUnseenSoFar = node => {
       if (Array.isArray(node)) {
         return node.every(allIDsUnseenSoFar);
       } else if (node !== null && typeof node === "object") {
@@ -145,7 +120,7 @@ var DebugUtils = {
     };
 
     //now: walk each AST
-    return compilation.sources.every((source) =>
+    return compilation.sources.every(source =>
       source ? allIDsUnseenSoFar(source.ast) : true
     );
   },
@@ -191,6 +166,10 @@ var DebugUtils = {
       return " " + address + "(UNKNOWN)";
     });
 
+    if (lines.length === 0) {
+      lines.push("No affected addresses found.");
+    }
+
     if (!hasAllSource) {
       lines.push("");
       lines.push(
@@ -209,19 +188,21 @@ var DebugUtils = {
       truffleColors.mint("(enter)") +
         " last command entered (" +
         shortCommandReference[lastCommand] +
-        ")",
+        ")"
     ];
 
     var commandSections = [
       ["o", "i", "u", "n"],
+      ["c"],
       [";"],
       ["p"],
       ["l", "s", "h"],
       ["q", "r", "t", "T"],
-      ["b", "B", "c"],
+      ["b"],
+      ["B"],
       ["+", "-"],
       ["?"],
-      ["v", ":"],
+      ["v", ":"]
     ].map(function (shortcuts) {
       return shortcuts.map(DebugUtils.formatCommandDescription).join(", ");
     });
@@ -365,7 +346,7 @@ var DebugUtils = {
           pointerStart,
           pointerEnd,
           prefixLength
-        ),
+        )
       ],
       afterLines
     );
@@ -559,7 +540,7 @@ var DebugUtils = {
       colors: true,
       depth: null,
       maxArrayLength: null,
-      breakLength: 30,
+      breakLength: 30
     };
     let valueToInspect = nativized
       ? value
@@ -599,9 +580,9 @@ var DebugUtils = {
             source: { sourcePath },
             sourceRange: {
               lines: {
-                start: { line, column },
-              },
-            },
+                start: { line, column }
+              }
+            }
           } = location;
           locationString = sourcePath
             ? `${sourcePath}:${line + 1}:${column + 1}` //add 1 to account for 0-indexing
@@ -632,7 +613,7 @@ var DebugUtils = {
     return indented.join(OS.EOL);
   },
 
-  colorize: function (code) {
+  colorize: function (code, yul = false) {
     //I'd put these outside the function
     //but then it gives me errors, because
     //you can't just define self-referential objects like that...
@@ -698,7 +679,7 @@ var DebugUtils = {
       "templateVariable": chalk,
       "template-variable": chalk,
       "addition": chalk,
-      "deletion": chalk,
+      "deletion": chalk
     };
 
     const options = {
@@ -709,69 +690,25 @@ var DebugUtils = {
       lineNumbers: false,
       stripIndent: false,
       codePad: 0,
+      tabsToSpaces: false, //we handle this ourself and don't
+      //want chromafi's padding
+      lineEndPad: false
       //NOTE: you might think you should pass highlight: true,
       //but you'd be wrong!  I don't understand this either
     };
-    return chromafi(code, options);
-  },
-
-  //HACK
-  //note that this is written in terms of mutating things
-  //rather than just using map() due to the need to handle
-  //circular objects
-  cleanConstructors: function (object, seenSoFar = new Map()) {
-    debug("object %o", object);
-    if (seenSoFar.has(object)) {
-      return seenSoFar.get(object);
+    if (!yul) {
+      //normal case: solidity
+      return chromafi(code, options);
+    } else {
+      //HACK: stick the code in an assembly block since we don't
+      //have a separate Yul language for HLJS at the moment,
+      //colorize it there, then extract it after colorization
+      const wrappedCode = "assembly {\n" + code + "\n}";
+      const colorizedWrapped = chromafi(wrappedCode, options);
+      const firstNewLine = colorizedWrapped.indexOf("\n");
+      const lastNewLine = colorizedWrapped.lastIndexOf("\n");
+      return colorizedWrapped.slice(firstNewLine + 1, lastNewLine);
     }
-
-    if (Array.isArray(object)) {
-      //array case
-      let output = object.slice(); //clone
-      //set up new seenSoFar
-      let seenNow = new Map(seenSoFar);
-      seenNow.set(object, output);
-      for (let index in output) {
-        output[index] = DebugUtils.cleanConstructors(output[index], seenNow);
-      }
-      return output;
-    }
-
-    //HACK -- due to safeEval altering things, it's possible for isBN() to
-    //throw an error here
-    try {
-      //we do not want to alter BNs!
-      //(or other special objects, but that's just BNs right now)
-      if (BN.isBN(object)) {
-        return object;
-      }
-    } catch (e) {
-      //if isBN threw an error, it's not a BN, so move on
-    }
-
-    if (object && typeof object === "object") {
-      //generic object case
-      let output = Object.assign(
-        {},
-        ...Object.entries(object)
-          .filter(
-            ([key, value]) => key !== "constructor" || value !== undefined
-          )
-          .map(([key, value]) => ({
-            [key]: value, //don't clean yet!
-          }))
-      );
-      //set up new seenSoFar
-      let seenNow = new Map(seenSoFar);
-      seenNow.set(object, output);
-      for (let field in output) {
-        output[field] = DebugUtils.cleanConstructors(output[field], seenNow);
-      }
-      return output;
-    }
-
-    //for strings, numbers, etc
-    return object;
   },
 
   //HACK
@@ -802,19 +739,21 @@ var DebugUtils = {
     const { controller } = bugger.selectors;
     while (!bugger.view(controller.current.trace.finished)) {
       const source = bugger.view(controller.current.location.source);
-      const { compilationId, id } = source;
-      if (compilationId !== undefined && id !== undefined) {
+      const { compilationId, id, internal } = source;
+      //stepInto should skip internal sources, but there still might be
+      //one at the end
+      if (!internal && compilationId !== undefined && id !== undefined) {
         sources[compilationId] = {
           ...sources[compilationId],
-          [id]: source,
+          [id]: source
         };
       }
-      await bugger.stepNext();
+      await bugger.stepInto();
     }
     await bugger.reset();
     //flatten sources before returning
     return [].concat(...Object.values(sources).map(Object.values));
-  },
+  }
 };
 
 module.exports = DebugUtils;

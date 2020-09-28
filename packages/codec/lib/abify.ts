@@ -8,7 +8,6 @@ import {
   LogDecoding,
   ReturndataDecoding
 } from "@truffle/codec/types";
-import BN from "bn.js";
 import * as Conversion from "@truffle/codec/conversion";
 
 /** @category ABIfication */
@@ -210,7 +209,6 @@ export function abifyResult(
       let uintType = <Format.Types.UintType>(
         abifyType(result.type, userDefinedTypes)
       ); //may throw exception
-      let numericValue: BN;
       switch (coercedResult.kind) {
         case "value":
           return {

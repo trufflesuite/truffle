@@ -47,8 +47,10 @@ jobs:
   slack_notification:
     needs: build
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - uses: 8398a7/action-slack@v1.1.1
+        continue-on-error: true
         with:
           type: success
         env:

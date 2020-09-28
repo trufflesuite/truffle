@@ -7,7 +7,7 @@ const assert = require("assert");
 const Server = require("../server");
 const Reporter = require("../reporter");
 
-describe("Solidity Tests", function() {
+describe("Solidity Tests", function () {
   const logger = new MemoryLogger();
   let config;
   let options;
@@ -19,7 +19,7 @@ describe("Solidity Tests", function() {
    * @param  {String}   file Solidity test target
    */
   async function initSandbox(file) {
-    options = { name: "bare", force: true };
+    options = { name: "bare-box", force: true };
     config = await Box.sandbox(options);
     config.logger = logger;
     config.network = "development";
@@ -35,12 +35,12 @@ describe("Solidity Tests", function() {
   before(done => Server.start(done));
   after(done => Server.stop(done));
 
-  describe("test with balance", function() {
+  describe("test with balance", function () {
     before(async () => {
       await initSandbox("TestWithBalance.sol");
     });
 
-    it("will run the test and have the correct balance", function() {
+    it("will run the test and have the correct balance", function () {
       this.timeout(70000);
 
       return CommandRunner.run("test", config)
@@ -54,12 +54,12 @@ describe("Solidity Tests", function() {
     });
   });
 
-  describe("tests failing", function() {
+  describe("tests failing", function () {
     before(async () => {
       await initSandbox("TestFailures.sol");
     });
 
-    it("will throw errors correctly", function() {
+    it("will throw errors correctly", function () {
       this.timeout(70000);
 
       return CommandRunner.run("test", config)

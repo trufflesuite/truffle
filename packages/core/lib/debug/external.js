@@ -108,18 +108,20 @@ class DebugExternalHandler {
             solc: options
           }
         });
-        const { contracts, sourceIndexes: files } = await new DebugCompiler(
-          externalConfig
-        ).compile(sources);
-        debug("contracts: %o", contracts);
-        debug("files: %O", files);
+        const compilations = await new DebugCompiler(externalConfig).compile(
+          sources
+        );
         //shim the result
-        const compilationId = `externalFor(${address})Via(${fetcher.fetcherName})`;
-        const newCompilations = Codec.Compilations.Utils.shimArtifacts(
-          contracts,
-          files,
-          compilationId,
-          true //mark compilation as external Solidity
+        const compilationIdBase = `externalFor(${address})Via(${fetcher.fetcherName})`;
+        const newCompilations = [].concat(
+          ...compilations.map((compilation, index) =>
+            Codec.Compilations.Utils.shimArtifacts(
+              compilation.contracts,
+              compilation.sourceIndexes,
+              `${compilationIdBase}Number(${index})`,
+              true //mark compilation as external Solidity
+            )
+          )
         );
         //add it!
         await this.bugger.addExternalCompilations(newCompilations);
