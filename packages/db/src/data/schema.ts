@@ -1,53 +1,13 @@
-import { transformSchema, FilterRootFields } from "@gnd/graphql-tools";
-
 import { scopeSchemas } from "./utils";
 
-import { abiSchema, schema as artifactsSchema } from "@truffle/db/artifacts";
 import { schema as workspaceSchema } from "@truffle/db/workspace";
 import { loaderSchema } from "@truffle/db/loaders";
 
-import { readInstructions } from "./bytecode";
-
+// current subschemas come from workspace and loaders; eventually there will be one root schema
+// which will be the schema found in workspace
 export const schema = scopeSchemas({
   subschemas: {
-    artifacts: artifactsSchema,
     workspace: workspaceSchema,
     loaders: loaderSchema
-  },
-  typeDefs: [
-    // add types from abi schema
-    transformSchema(abiSchema, [new FilterRootFields(() => false)])
-  ],
-  resolvers: {
-    Bytecode: {
-      instructions: {
-        fragment: "... on Bytecode { bytes sourceMap }",
-        resolve: ({ bytes, sourceMap }) => readInstructions(bytes, sourceMap)
-      }
-    },
-
-    AbiItem: {
-      __resolveType(obj) {
-        switch (obj.type) {
-          case "event":
-            return "Event";
-          case "constructor":
-            return "ConstructorFunction";
-          case "fallback":
-            return "FallbackFunction";
-          case "function":
-          default:
-            return "NormalFunction";
-        }
-      }
-    },
-
-    NormalFunction: {
-      type: {
-        resolve(value) {
-          return "function";
-        }
-      }
-    }
   }
 });
