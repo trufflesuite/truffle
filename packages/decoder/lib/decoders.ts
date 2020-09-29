@@ -12,7 +12,6 @@ import {
   Contexts,
   Compilations,
   Compiler,
-  Pointer,
   CalldataDecoding,
   LogDecoding,
   ReturndataDecoding,
@@ -72,7 +71,6 @@ export class WireDecoder {
         );
         let deployedContext: Contexts.DecoderContext | undefined = undefined;
         let constructorContext: Contexts.DecoderContext | undefined = undefined;
-        const compiler = compilation.compiler || contract.compiler;
         const deployedBytecode = Shims.NewToLegacy.forBytecode(
           contract.deployedBytecode
         );
@@ -1414,7 +1412,6 @@ export class ContractInstanceDecoder {
   ): Storage.Allocate.StateVariableAllocation | undefined {
     //case 1: an ID was input
     if (typeof nameOrId === "number" || nameOrId.match(/[0-9]+/)) {
-      let id: number = Number(nameOrId);
       return this.stateVariableReferences.find(
         ({ definition }) => definition.id === nameOrId
       );
@@ -1746,7 +1743,6 @@ export class ContractInstanceDecoder {
     let index: any;
     let key: Format.Values.ElementaryValue;
     let slot: Storage.Slot;
-    let definition: Ast.AstNode;
     let dataType: Format.Types.Type;
     switch (parentType.typeClass) {
       case "array":

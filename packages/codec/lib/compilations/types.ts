@@ -4,6 +4,7 @@ import {
   Abi as SchemaAbi,
   ImmutableReferences
 } from "@truffle/contract-schema/spec";
+import { Bytecode } from "@truffle/compile-common";
 
 //Note to other people passing in compilations:
 //Please include all fields you can that aren't
@@ -44,8 +45,10 @@ export interface Compilation {
   /**
    * A flag intended for internal use to indicate that this compilation is not
    * part of the user's Truffle project but rather is compiled from
-   * temporarily-downloaded external Solidity sources.  Again, this should only
-   * be used for Solidity compilations; it may cause irregularities otherwise.
+   * temporarily-downloaded external sources.  This flag was only originally
+   * intended to be used for Solidity or Yul, hence the name; but it should be
+   * OK to set this for externally-downloaded sources regardless of their
+   * language.
    */
   externalSolidity?: boolean;
 }
@@ -132,14 +135,4 @@ export interface Contract {
    * The ID of the contract's primary source.
    */
   primarySourceId?: string;
-}
-
-//defining this ourselves for now, sorry!
-export interface Bytecode {
-  bytes: string;
-  linkReferences: {
-    offsets: number[];
-    name: string;
-    length: number;
-  }[];
 }

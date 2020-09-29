@@ -18,7 +18,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
 
   static async forNetworkId(
     id: number,
-    options?: Types.FetcherOptions
+    _options?: Types.FetcherOptions
   ): Promise<SourcifyFetcher> {
     //in the future, we may add protocol and node options,
     //but these don't exist yet

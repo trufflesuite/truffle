@@ -1,6 +1,5 @@
 const debug = require("debug")("decoder:test:decoding-test");
 const assert = require("assert");
-const util = require("util"); // eslint-disable-line no-unused-vars
 
 const Decoder = require("../../..");
 const { nativizeDecoderVariables } = require("../../../dist/utils");

@@ -1,3 +1,4 @@
+const OS = require("os");
 const command = {
   command: "test",
   description: "Run JavaScript and Solidity tests",
@@ -49,11 +50,11 @@ const command = {
   },
   help: {
     usage:
-      "truffle test [<test_file>] [--compile-all[-debug]] [--network <name>] [--verbose-rpc]\n" +
-      "                                " + // spacing to align with previous line
-      "[--show-events] [--debug] [--debug-global <identifier>]\n" +
-      "                                " + // spacing to align with previous line
-      "[--bail] [--stacktrace[-extra]] [--solidity-logging]",
+      `truffle test [<test_file>] [--compile-all[-debug]] [--network <name>] [--compile-none]${OS.EOL}` +
+      `                             ` + // spacing to align with previous line
+      `[--show-events] [--debug] [--debug-global <identifier>] [--solidity-logging]${OS.EOL}` +
+      `                             ` + // spacing to align with previous line
+      `[--bail] [--stacktrace[-extra]] [--verbose-rpc]`,
     options: [
       {
         option: "<test_file>",
@@ -70,6 +71,10 @@ const command = {
       {
         option: "--solidity-logging",
         description: "Enables Solidity console logging during testing."
+      },
+      {
+        option: "--compile-none",
+        description: "Do not compile any contracts before running the tests"
       },
       {
         option: "--compile-all-debug",

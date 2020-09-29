@@ -1,4 +1,4 @@
-import { ContractObject } from "@truffle/contract-schema/spec";
+import { Abi, ImmutableReferences } from "@truffle/contract-schema/spec";
 
 export type Compilation = {
   sourceIndexes: string[];
@@ -32,7 +32,7 @@ export type CompiledContract = {
   deployedSourceMap: string;
   legacyAST: object;
   ast: object;
-  abi: object[];
+  abi: Abi;
   metadata: string;
   bytecode: Bytecode;
   deployedBytecode: Bytecode;
@@ -42,7 +42,7 @@ export type CompiledContract = {
   };
   devdoc: object;
   userdoc: object;
-  immutableReferences: object;
+  immutableReferences: ImmutableReferences;
   generatedSources: any;
   deployedGeneratedSources: any;
 };

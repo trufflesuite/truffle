@@ -1,10 +1,11 @@
-import { ResolverSource } from "@truffle/resolver";
 import { isExplicitlyRelative } from "./isExplicitlyRelative";
 
 export interface ResolvedSource {
   filePath: string;
   body: string;
-  source: ResolverSource;
+  source: {
+    resolveDependencyPath(importPath: string, dependencyPath: string): string;
+  };
 }
 
 export interface GetImportsOptions {

@@ -1,5 +1,3 @@
-import { Resolver, ResolverSource } from "@truffle/resolver";
-
 import { getImports, ResolvedSource } from "./getImports";
 
 export interface ResolveAllSourcesOptions {

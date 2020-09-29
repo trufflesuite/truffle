@@ -449,7 +449,6 @@ function* decodeAbiStructByPosition(
   options: DecoderOptions = {}
 ): Generator<DecoderRequest, Format.Values.StructResult, Uint8Array> {
   const {
-    userDefinedTypes,
     allocations: { abi: allocations }
   } = info;
 
