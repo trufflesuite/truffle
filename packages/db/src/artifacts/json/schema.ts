@@ -261,7 +261,10 @@ const translations = [
   ),
 
   // find all `^x-` patternProperties and remove
-  searchReplace(key => key === "^x-", () => ({})),
+  searchReplace(
+    key => key === "^x-",
+    () => ({})
+  ),
 
   // manually fix network object references to event
   searchReplace(

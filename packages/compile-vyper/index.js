@@ -50,8 +50,7 @@ function execVyper(options, sourcePath, callback) {
 
     const compiledContract = outputs.reduce((contract, output, index) => {
       return Object.assign(contract, { [formats[index]]: output });
-    },
-    {});
+    }, {});
 
     callback(null, compiledContract);
   });

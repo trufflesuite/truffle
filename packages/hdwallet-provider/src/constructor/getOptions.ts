@@ -65,7 +65,7 @@ const fromInputOptions = (
   } else {
     return options as Constructor.Options;
   }
-}
+};
 
 // convert legacy style positional arguments to new, single-arg options format
 const fromArguments = (

@@ -213,9 +213,8 @@ const Test = {
     const updated =
       (await Profiler.updated(config.with({ resolver: testResolver }))) || [];
 
-    const compiler = (config.compileNone || config["--compile-none"])
-      ? "none"
-      : config.compiler;
+    const compiler =
+      config.compileNone || config["--compile-none"] ? "none" : config.compiler;
 
     let compileConfig = config.with({
       all: config.compileAll === true,
