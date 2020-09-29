@@ -104,6 +104,8 @@ var properties = {
     }
   },
   immutableReferences: {},
+  generatedSources: {},
+  deployedGeneratedSources: {},
   sourceMap: {
     sources: ["sourceMap", "srcmap", "evm.bytecode.sourceMap"]
   },

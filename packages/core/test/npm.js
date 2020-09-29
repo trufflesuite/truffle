@@ -5,7 +5,7 @@ var path = require("path");
 var fse = require("fs-extra");
 var Resolver = require("@truffle/resolver");
 var Artifactor = require("@truffle/artifactor");
-var Contracts = require("@truffle/workflow-compile");
+var WorkflowCompile = require("@truffle/workflow-compile");
 
 describe("NPM integration", function () {
   var config;
@@ -88,25 +88,18 @@ describe("NPM integration", function () {
     assert.fail("Source lookup should have errored but didn't");
   });
 
-  it("contract compiliation successfully picks up modules and their dependencies", function (done) {
+  it("successfully picks up modules and their dependencies during compilation", async function () {
     this.timeout(10000);
-
-    Contracts.compile(
+    const { contracts } = await WorkflowCompile.compileAndSave(
       config.with({
         quiet: true
-      }),
-      function (err, result) {
-        if (err) return done(err);
-        let { contracts } = result;
-
-        var contractNames = Object.keys(contracts);
-
-        assert.include(contractNames, "Parent");
-        assert.include(contractNames, "Module");
-        assert.include(contractNames, "ModuleDependency");
-
-        done();
-      }
+      })
     );
+    const contractNames = contracts.reduce((a, contract) => {
+      return a.concat(contract.contractName);
+    }, []);
+    assert.include(contractNames, "Parent");
+    assert.include(contractNames, "Module");
+    assert.include(contractNames, "ModuleDependency");
   });
 }).timeout(10000);

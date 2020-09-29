@@ -252,10 +252,17 @@ export class ResultInspector {
                 );
                 switch (coercedResult.value.kind) {
                   case "function":
-                    return options.stylize(
-                      `[Function: ${coercedResult.value.definedIn.typeName}.${coercedResult.value.name}]`,
-                      "special"
-                    );
+                    if (coercedResult.value.definedIn) {
+                      return options.stylize(
+                        `[Function: ${coercedResult.value.definedIn.typeName}.${coercedResult.value.name}]`,
+                        "special"
+                      );
+                    } else {
+                      return options.stylize(
+                        `[Function: ${coercedResult.value.name}]`,
+                        "special"
+                      );
+                    }
                   case "exception":
                     return coercedResult.value.deployedProgramCounter === 0
                       ? options.stylize(`[Function: <zero>]`, "special")
@@ -378,10 +385,6 @@ function enumTypeName(enumType: Format.Types.EnumType) {
     (enumType.kind === "local" ? enumType.definingContractName + "." : "") +
     enumType.typeName
   );
-}
-
-function styleHexString(hex: string, options: InspectOptions): string {
-  return options.stylize(`hex'${hex.slice(2)}'`, "string");
 }
 
 //this function will be used in the future for displaying circular
@@ -607,7 +610,11 @@ function nativizeWithTable(
           let coercedResult = <Format.Values.FunctionInternalValue>result;
           switch (coercedResult.value.kind) {
             case "function":
-              return `${coercedResult.value.definedIn.typeName}.${coercedResult.value.name}`;
+              if (coercedResult.value.definedIn) {
+                return `${coercedResult.value.definedIn.typeName}.${coercedResult.value.name}`;
+              } else {
+                return coercedResult.value.name;
+              }
             case "exception":
               return coercedResult.value.deployedProgramCounter === 0
                 ? `<zero>`

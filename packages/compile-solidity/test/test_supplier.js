@@ -3,7 +3,7 @@ const fse = require("fs-extra");
 const path = require("path");
 const assert = require("assert");
 const Resolver = require("@truffle/resolver");
-const compile = require("@truffle/compile-solidity/new");
+const { Compile } = require("@truffle/compile-solidity");
 const Config = require("@truffle/config");
 const { findOne } = require("./helpers");
 
@@ -60,8 +60,14 @@ describe("CompilerSupplier", function () {
     it("compiles w/ default solc if no compiler specified (float)", async function () {
       const defaultOptions = Config.default().merge(options);
 
-      const { contracts } = await compile(version5PragmaSource, defaultOptions);
-      const Version5Pragma = findOne("Version5Pragma", contracts);
+      const { compilations } = await Compile.sources({
+        sources: version5PragmaSource,
+        options: defaultOptions
+      });
+      const Version5Pragma = findOne(
+        "Version5Pragma",
+        compilations[0].contracts
+      );
 
       assert(Version5Pragma.contractName === "Version5Pragma");
     });
@@ -75,8 +81,11 @@ describe("CompilerSupplier", function () {
       };
       const config = new Config().with(options);
 
-      const { contracts } = await compile(oldPragmaPinSource, config);
-      const OldPragmaPin = findOne("OldPragmaPin", contracts);
+      const { compilations } = await Compile.sources({
+        sources: oldPragmaPinSource,
+        options: config
+      });
+      const OldPragmaPin = findOne("OldPragmaPin", compilations[0].contracts);
 
       assert(OldPragmaPin.contractName === "OldPragmaPin");
     });
@@ -92,8 +101,14 @@ describe("CompilerSupplier", function () {
       };
 
       const config = Config.default().merge(options);
-      const { contracts } = await compile(oldPragmaFloatSource, config);
-      const OldPragmaFloat = findOne("OldPragmaFloat", contracts);
+      const { compilations } = await Compile.sources({
+        sources: oldPragmaFloatSource,
+        options: config
+      });
+      const OldPragmaFloat = findOne(
+        "OldPragmaFloat",
+        compilations[0].contracts
+      );
 
       assert(OldPragmaFloat.contractName === "OldPragmaFloat");
     });
@@ -112,11 +127,14 @@ describe("CompilerSupplier", function () {
 
       const localPathOptions = Config.default().merge(options);
 
-      const { contracts } = await compile(
-        version5PragmaSource,
-        localPathOptions
+      const { compilations } = await Compile.sources({
+        sources: version5PragmaSource,
+        options: localPathOptions
+      });
+      const Version5Pragma = findOne(
+        "Version5Pragma",
+        compilations[0].contracts
       );
-      const Version5Pragma = findOne("Version5Pragma", contracts);
       assert(Version5Pragma.contractName === "Version5Pragma");
     });
 
@@ -143,7 +161,10 @@ describe("CompilerSupplier", function () {
       const cachedOptions = Config.default().merge(options);
 
       // Run compiler, expecting solc to be downloaded and cached.
-      await compile(version4PragmaSource, cachedOptions);
+      await Compile.sources({
+        sources: version4PragmaSource,
+        options: cachedOptions
+      });
 
       assert(await fse.exists(expectedCache), "Should have cached compiler");
 
@@ -154,10 +175,13 @@ describe("CompilerSupplier", function () {
       // got accessed / ran ok.
       await waitSecond();
 
-      const { contracts } = await compile(version4PragmaSource, cachedOptions);
+      const { compilations } = await Compile.sources({
+        sources: version4PragmaSource,
+        options: cachedOptions
+      });
 
       finalAccessTime = (await fse.stat(expectedCache)).atime.getTime();
-      const NewPragma = findOne("NewPragma", contracts);
+      const NewPragma = findOne("NewPragma", compilations[0].contracts);
 
       assert(NewPragma.contractName === "NewPragma", "Should have compiled");
 
@@ -180,11 +204,14 @@ describe("CompilerSupplier", function () {
 
         const nativeSolcOptions = Config.default().merge(options);
 
-        const { contracts } = await compile(
-          versionLatestPragmaSource,
-          nativeSolcOptions
-        );
-        const VersionLatestPragma = findOne("Version7Pragma", contracts); //update when necessary
+        const { compilations } = await Compile.sources({
+          sources: versionLatestPragmaSource,
+          options: nativeSolcOptions
+        });
+        const VersionLatestPragma = findOne(
+          "Version7Pragma",
+          compilations[0].contracts
+        ); //update when necessary
         assert(VersionLatestPragma.compiler.version.includes("0.7.")); //update when necessary
         assert(
           VersionLatestPragma.contractName === "Version7Pragma", //update when necessary
@@ -204,11 +231,11 @@ describe("CompilerSupplier", function () {
 
         const expectedVersion = "0.4.22+commit.4cb486ee.Linux.g++";
 
-        const { contracts } = await compile(
-          version4PragmaSource,
-          dockerizedSolcOptions
-        );
-        const NewPragma = findOne("NewPragma", contracts);
+        const { compilations } = await Compile.sources({
+          sources: version4PragmaSource,
+          options: dockerizedSolcOptions
+        });
+        const NewPragma = findOne("NewPragma", compilations[0].contracts);
 
         assert(NewPragma.compiler.version === expectedVersion);
         assert(NewPragma.contractName === "NewPragma", "Should have compiled");
@@ -243,8 +270,14 @@ describe("CompilerSupplier", function () {
         options.resolver = new Resolver(options);
         options = Config.default().merge(options);
 
-        const { contracts } = await compile.with_dependencies(options);
-        const ComplexOrdered = findOne("ComplexOrdered", contracts);
+        const { compilations } = await Compile.sourcesWithDependencies({
+          paths,
+          options
+        });
+        const ComplexOrdered = findOne(
+          "ComplexOrdered",
+          compilations[0].contracts
+        );
 
         // This contract imports / inherits
         assert(
@@ -265,7 +298,10 @@ describe("CompilerSupplier", function () {
 
         let error;
         try {
-          await compile(version4PragmaSource, compileConfig);
+          await Compile.sources({
+            sources: version4PragmaSource,
+            options: compileConfig
+          });
         } catch (err) {
           error = err;
         }
@@ -288,7 +324,10 @@ describe("CompilerSupplier", function () {
 
         let error;
         try {
-          await compile(version4PragmaSource, compileConfig);
+          await Compile.sources({
+            sources: version4PragmaSource,
+            options: compileConfig
+          });
         } catch (err) {
           error = err;
         }

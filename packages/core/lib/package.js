@@ -137,7 +137,7 @@ const Package = {
         "following link for an example configuration:" +
         OS.EOL +
         OS.EOL +
-        "    http://truffleframework.com/tutorials/using-infura-custom-provider" +
+        "    http://trufflesuite.com/tutorials/using-infura-custom-provider" +
         OS.EOL;
       if (callbackPassed) {
         callback(new TruffleError(message));

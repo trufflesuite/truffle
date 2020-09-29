@@ -1,16 +1,16 @@
-var MemoryLogger = require("../memorylogger");
-var CommandRunner = require("../commandrunner");
-var fs = require("fs");
-var path = require("path");
-var assert = require("assert");
-var Server = require("../server");
-var Reporter = require("../reporter");
-var sandbox = require("../sandbox");
+const MemoryLogger = require("../memorylogger");
+const CommandRunner = require("../commandrunner");
+const fs = require("fs");
+const path = require("path");
+const assert = require("assert");
+const Server = require("../server");
+const Reporter = require("../reporter");
+const sandbox = require("../sandbox");
 
 describe("truffle exec [ @standalone ]", function () {
-  var config;
-  var project = path.join(__dirname, "../../sources/exec");
-  var logger = new MemoryLogger();
+  let config;
+  const project = path.join(__dirname, "../../sources/exec");
+  const logger = new MemoryLogger();
 
   before("set up the server", function (done) {
     Server.start(done);

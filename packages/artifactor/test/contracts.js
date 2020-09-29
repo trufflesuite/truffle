@@ -6,10 +6,10 @@ const path = require("path");
 const fs = require("fs");
 const Config = require("@truffle/config");
 const requireNoCache = require("require-nocache")(module);
-const Compile = require("@truffle/compile-solidity/legacy");
+const { Compile } = require("@truffle/compile-solidity");
 const Ganache = require("ganache-core");
 const Web3 = require("web3");
-const { promisify } = require("util");
+const { Shims } = require("@truffle/compile-common");
 const tmp = require("tmp");
 tmp.setGracefulCleanup();
 
@@ -52,7 +52,11 @@ describe("artifactor + require", () => {
     config = Config.default().with(options);
 
     // Compile first
-    const result = await promisify(Compile)(sources, config);
+    const { compilations } = await Compile.sources({
+      sources,
+      options: config
+    });
+    const { contracts } = compilations[0];
 
     // Clean up after solidity. Only remove solidity's listener,
     // which happens to be the first.
@@ -61,7 +65,12 @@ describe("artifactor + require", () => {
       process.listeners("uncaughtException")[0] || (() => {})
     );
 
-    const compiled = Schema.normalize(result["Example"]);
+    const exampleContract = contracts.find(
+      contract => contract.contractName === "Example"
+    );
+    const compiled = Schema.normalize(
+      Shims.NewToLegacy.forContract(exampleContract)
+    );
     abi = compiled.abi;
     bytecode = compiled.bytecode;
 

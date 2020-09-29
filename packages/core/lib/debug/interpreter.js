@@ -7,10 +7,10 @@ const ora = require("ora");
 
 const DebugUtils = require("@truffle/debug-utils");
 const selectors = require("@truffle/debugger").selectors;
-const { session, solidity, trace, evm, controller } = selectors;
+const { session, solidity, trace, evm, controller, stacktrace } = selectors;
 
 const analytics = require("../services/analytics");
-const ReplManager = require("../repl");
+const repl = require("repl");
 
 const { DebugPrinter } = require("./printer");
 
@@ -40,9 +40,8 @@ class DebugInterpreter {
     this.printer = new DebugPrinter(config, session);
     this.txHash = txHash;
     this.lastCommand = "n";
-
-    this.repl = config.repl || new ReplManager(config);
     this.enabledExpressions = new Set();
+    this.repl = null;
   }
 
   async setOrClearBreakpoint(args, setOrClear) {
@@ -276,21 +275,11 @@ class DebugInterpreter {
       ? DebugUtils.formatPrompt(this.network, this.txHash)
       : DebugUtils.formatPrompt(this.network);
 
-    this.repl.start({
-      prompt,
-      interpreter: util.callbackify(this.interpreter.bind(this)),
+    this.repl = repl.start({
+      prompt: prompt,
+      eval: util.callbackify(this.interpreter.bind(this)),
       ignoreUndefined: true,
       done: terminate
-    });
-  }
-
-  setPrompt(prompt) {
-    this.repl.activate.bind(this.repl)({
-      prompt,
-      context: {},
-      //this argument only *adds* things, so it's safe to set it to {}
-      ignoreUndefined: true
-      //set to true because it's set to true below :P
     });
   }
 
@@ -321,7 +310,7 @@ class DebugInterpreter {
 
     //quit if that's what we were given
     if (cmd === "q") {
-      return await util.promisify(this.repl.stop.bind(this.repl))();
+      process.exit();
     }
 
     let alreadyFinished = this.session.view(trace.finishedOrUnloaded);
@@ -404,7 +393,7 @@ class DebugInterpreter {
           if (this.session.view(selectors.session.status.success)) {
             txSpinner.succeed();
             //if successful, change prompt
-            this.setPrompt(DebugUtils.formatPrompt(this.network, cmdArgs));
+            this.repl.setPrompt(DebugUtils.formatPrompt(this.network, cmdArgs));
           } else {
             txSpinner.fail();
             loadFailed = true;
@@ -427,7 +416,7 @@ class DebugInterpreter {
         if (this.session.view(selectors.session.status.loaded)) {
           await this.session.unload();
           this.printer.print("Transaction unloaded.");
-          this.setPrompt(DebugUtils.formatPrompt(this.network));
+          this.repl.setPrompt(DebugUtils.formatPrompt(this.network));
         } else {
           this.printer.print("No transaction to unload.");
           this.printer.print("");
@@ -447,6 +436,15 @@ class DebugInterpreter {
         await this.printer.printRevertMessage();
         this.printer.print("");
         this.printer.printStacktrace(true); //final stacktrace
+        this.printer.print("");
+        this.printer.print(DebugUtils.truffleColors.red("Location of error:"));
+        const stacktraceReport = this.session.view(
+          stacktrace.current.finalReport
+        );
+        const recordedLocation =
+          stacktraceReport[stacktraceReport.length - 1].location;
+        this.printer.printFile(recordedLocation);
+        this.printer.printState(undefined, undefined, recordedLocation);
       } else {
         //case if transaction succeeded
         this.printer.print("Transaction completed successfully.");
@@ -548,11 +546,31 @@ class DebugInterpreter {
         break;
       case "s":
         if (this.session.view(selectors.session.status.loaded)) {
-          this.printer.printStacktrace(
-            //print final report if finished & failed, intermediate if not
+          //print final report if finished & failed, intermediate if not
+          if (
             this.session.view(trace.finished) &&
-              !this.session.view(evm.transaction.status)
-          );
+            !this.session.view(evm.transaction.status)
+          ) {
+            this.printer.printStacktrace(true); //print final stack trace
+            //Now: actually show the point where things went wrong
+            this.printer.print("");
+            this.printer.print(
+              DebugUtils.truffleColors.red("Location of error:")
+            );
+            const stacktraceReport = this.session.view(
+              stacktrace.current.finalReport
+            );
+            const recordedLocation =
+              stacktraceReport[stacktraceReport.length - 1].location;
+            this.printer.printFile(recordedLocation);
+            this.printer.printState(
+              LINES_BEFORE_LONG,
+              LINES_AFTER_LONG,
+              recordedLocation
+            );
+          } else {
+            this.printer.printStacktrace(false); //intermediate call stack
+          }
         }
         break;
       case "o":

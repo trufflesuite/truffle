@@ -200,12 +200,28 @@ var SolidityUtils = {
       {},
       ...instructions
         .filter(instruction => instruction.name === "JUMPDEST")
-        .filter(instruction => instruction.file !== -1)
-        //note that the designated invalid function *does* have an associated
-        //file, so it *is* safe to just filter out the ones that don't
         .map(instruction => {
           debug("instruction %O", instruction);
           let sourceId = instruction.file;
+          //first off, a special case: if the file is -1, check for designated
+          //invalid and if it's not that give up
+          //(designated invalid gets file -1 in some Solidity versions)
+          if (sourceId === -1) {
+            //yeah, this is copypasted from below
+            let nextInstruction = instructions[instruction.index + 1] || {};
+            if (nextInstruction.name === "INVALID") {
+              //designated invalid, include it
+              return {
+                [instruction.pc]: {
+                  isDesignatedInvalid: true
+                }
+              };
+            } else {
+              //not designated invalid, filter it out
+              return {};
+            }
+          }
+          //now we proceed with the normal case
           let findOverlappingRange = overlapFunctions[sourceId];
           let ast = asts[sourceId];
           if (!ast) {
@@ -244,6 +260,11 @@ var SolidityUtils = {
           //so this is easy
           let contractPointer = pointer.replace(/\/nodes\/\d+$/, "");
           let contractNode = jsonpointer.get(ast, contractPointer);
+          if (contractNode.nodeType !== "ContractDefinition") {
+            //if it's a free function, there is no contract pointer or contract node
+            contractPointer = null;
+            contractNode = null;
+          }
           return {
             [instruction.pc]: {
               sourceIndex: sourceId,
@@ -255,9 +276,12 @@ var SolidityUtils = {
               mutability: Codec.Ast.Utils.mutability(node),
               contractPointer,
               contractNode,
-              contractName: contractNode.name,
-              contractId: contractNode.id,
-              contractKind: contractNode.contractKind,
+              contractName: contractNode ? contractNode.name : null,
+              contractId: contractNode ? contractNode.id : null,
+              contractKind: contractNode ? contractNode.contractKind : null,
+              contractPayable: contractNode
+                ? Codec.Ast.Utils.isContractPayable(contractNode)
+                : null,
               isDesignatedInvalid: false
             }
           };

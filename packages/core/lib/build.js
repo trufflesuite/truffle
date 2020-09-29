@@ -1,6 +1,6 @@
 const fse = require("fs-extra");
 const del = require("del");
-const Contracts = require("@truffle/workflow-compile");
+const WorkflowCompile = require("@truffle/workflow-compile");
 const BuildError = require("./errors/builderror");
 const { spawn } = require("child_process");
 const spawnargs = require("spawn-args");
@@ -105,19 +105,19 @@ const Build = {
       if (err) return callback(err);
 
       // If necessary. This prevents errors due to the .sol.js files not existing.
-      Contracts.compile(options, function (err) {
-        if (err) return callback(err);
-
-        if (builder) {
-          builder.build(options, function (err) {
-            if (typeof err === "string") {
-              return callback(new BuildError(err));
-            }
-            return callback(err);
-          });
-        }
-        return callback();
-      });
+      WorkflowCompile.compileAndSave(options)
+        .then(() => {
+          if (builder) {
+            builder.build(options, function (err) {
+              if (typeof err === "string") {
+                return callback(new BuildError(err));
+              }
+              return callback(err);
+            });
+          }
+          return callback();
+        })
+        .catch(callback);
     });
   }
 };

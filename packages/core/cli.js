@@ -31,7 +31,12 @@ if (!semver.satisfies(process.version, ">=" + minimumNodeVersion)) {
 
 const Command = require("./lib/command");
 
-const command = new Command(require("./lib/commands"));
+// enable Truffle to run both from the bundles out of packages/dist
+// and using the raw JS directly - we inject BUNDLE_VERSION when building
+const command =
+  typeof BUNDLE_VERSION !== "undefined"
+    ? new Command(require("./commands.bundled.js"))
+    : new Command(require("./lib/commands"));
 
 // This should be removed when issue is resolved upstream:
 // https://github.com/ethereum/web3.js/issues/1648
@@ -82,7 +87,7 @@ command.run(inputArguments, options, function (err) {
         let error = err.stack || err.message || err.toString();
         //remove identifying information if error stack is passed to analytics
         if (error === err.stack) {
-          let directory = __dirname;
+          const directory = __dirname;
           //making sure users' identifying information does not get sent to
           //analytics by cutting off everything before truffle. Will not properly catch the user's info
           //here if the user has truffle in their name.

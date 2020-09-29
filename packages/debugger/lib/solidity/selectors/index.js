@@ -323,16 +323,29 @@ let solidity = createSelectorTree({
     ),
 
     /**
-     * solidity.current.nextMapped
-     * returns the next trace step after this one which is sourcemapped
+     * solidity.current.nextUserStep
+     * returns the next trace step after this one which is sourcemapped to
+     * a user source (not -1 or an internal source)
      * HACK: this assumes we're not about to change context! don't use this if
      * we are!
      * ALSO, this may return undefined, so be prepared for that
      */
-    nextMapped: createLeaf(
-      ["./instructionAtProgramCounter", trace.steps, trace.index],
-      (map, steps, index) =>
-        steps.slice(index + 1).find(({ pc }) => map[pc] && map[pc].file !== -1)
+    nextUserStep: createLeaf(
+      [
+        "./instructionAtProgramCounter",
+        "/current/sources",
+        trace.steps,
+        trace.index
+      ],
+      (map, sources, steps, index) =>
+        steps
+          .slice(index + 1)
+          .find(
+            ({ pc }) =>
+              map[pc] &&
+              map[pc].file !== -1 &&
+              !(sources[map[pc].file] && sources[map[pc].file].internal)
+          )
     )
   },
 

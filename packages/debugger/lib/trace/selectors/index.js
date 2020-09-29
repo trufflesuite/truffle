@@ -89,10 +89,25 @@ let trace = createSelectorTree({
    * next trace step that's at the same depth as this one
    * NOTE: if there is none, will return undefined
    * (should not be used in such cases)
+   * NOTE: for additional correctness, will stop searching once
+   * it hits something of *lower* depth (yes that makes the name
+   * a little misleading, but the idea is to find the return step
+   * for a given call step)
    */
   nextOfSameDepth: createLeaf(["./steps", "./index"], (steps, index) => {
     let depth = steps[index].depth;
-    return steps.slice(index + 1).find(step => step.depth === depth);
+    for (let step of steps.slice(index + 1)) {
+      //start searching after current step
+      //using a manual for loop here instead of .find in order to
+      //cut off the search early if needed
+      if (step.depth === depth) {
+        return step;
+      }
+      if (step.depth < depth) {
+        return undefined;
+      }
+    }
+    return undefined;
   }),
 
   /**

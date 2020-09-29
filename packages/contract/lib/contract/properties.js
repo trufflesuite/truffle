@@ -384,5 +384,21 @@ module.exports = {
     set: function (refs) {
       this._json.immutableReferences = refs;
     }
+  },
+  generatedSources: {
+    get: function () {
+      return this._json.generatedSources;
+    },
+    set: function (sources) {
+      this._json.generatedSources = sources;
+    }
+  },
+  deployedGeneratedSources: {
+    get: function () {
+      return this._json.deployedGeneratedSources;
+    },
+    set: function (sources) {
+      this._json.deployedGeneratedSources = sources;
+    }
   }
 };

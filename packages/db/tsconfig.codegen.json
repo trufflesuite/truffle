@@ -1,0 +1,8 @@
+{
+  "extends": "./configs/base",
+  "include": [
+    "src/**/*",
+    "test/**/*",
+    "types/stub.d.ts"
+  ]
+}

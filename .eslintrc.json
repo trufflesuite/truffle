@@ -3,17 +3,19 @@
     "es6": true,
     "node": true
   },
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"],
   "parserOptions": {
     "ecmaVersion": 9,
     "sourceType": "module"
   },
   "rules": {
-    "no-unused-vars": [
+    "@typescript-eslint/no-unused-vars": [
       "error",
       { "argsIgnorePattern": "^_", "varsIgnorePattern": "^debug$|^_" }
     ],
     "quote-props": [ "error", "consistent" ],
-    "semi": [ "error", "always" ],
+    "@typescript-eslint/semi": [ "error", "always" ],
     "no-mixed-operators": "warn",
     "no-tabs": "warn",
     "no-useless-escape": "warn"

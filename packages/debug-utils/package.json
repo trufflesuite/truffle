@@ -8,15 +8,14 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "4.2.6",
+  "version": "4.2.9",
   "main": "index.js",
   "scripts": {
-    "prepare": "exit 0",
-    "test": "mocha"
+    "prepare": "exit 0"
   },
   "dependencies": {
-    "@truffle/codec": "^0.5.14",
-    "@trufflesuite/chromafi": "^2.1.2",
+    "@truffle/codec": "^0.6.2",
+    "@trufflesuite/chromafi": "^2.2.0",
     "chalk": "^2.4.2",
     "debug": "^4.1.0",
     "highlight.js": "^9.15.8",
@@ -24,10 +23,10 @@
   },
   "devDependencies": {
     "chai": "^4.2.0",
-    "mocha": "8.1.2",
-    "safe-eval": "^0.4.1"
+    "mocha": "8.1.2"
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "gitHead": "6b84be7849142588ef2e3224d8a9d7c2ceeb6e4a"
 }
