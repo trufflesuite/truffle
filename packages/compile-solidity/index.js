@@ -37,6 +37,55 @@ const normalizeOptions = options => {
   return options;
 };
 
+const analyzeImports = async ({ paths, options }) => {
+  const dependencies = {};
+  for (const path of paths) {
+    const config = Config.default().merge(options);
+    const { allSources, compilationTargets } = await Profiler.requiredSourcesForSingleFile(
+      config.with({
+        path,
+        base_path: options.contracts_directory,
+        resolver: options.resolver
+      })
+    );
+    dependencies[path] = [allSources];
+  }
+
+  let pragmas;
+  // key is a source - value is an array of pragmas
+  for (const compilationSet of Object.keys(dependencies)) {
+    pragmas = await getPragmas(compilationSet);
+  }
+
+  let bestSolcVersions;
+  // key is source - value is best satisfying version of Solidity compiler
+  for (const pragmaSet of pragmas) {
+    bestSolcVersions = determineBestSatisfyingSolcVersion();
+  }
+
+  let compilations;
+  for (const version of bestSolcVersions) {
+    const compilation = await run(
+    // const { sourceIndexes, contracts, compiler } = await run(
+      allSources,
+      normalizeOptions(options)
+    );
+    const { name, version } = compiler;
+    // returns CompilerResult - see @truffle/compile-common
+    return contracts.length > 0
+      ? {
+          compilations: [
+            {
+              sourceIndexes,
+              contracts,
+              compiler: { name, version }
+            }
+          ]
+        }
+      : { compilations: [] };
+  }
+}
+
 const Compile = {
   // this takes an object with keys being the name and values being source
   // material as well as an options object
@@ -74,6 +123,9 @@ const Compile = {
 
   // this takes an array of paths and options
   async sourcesWithDependencies({ paths, options }) {
+    if (options.analyzeImports) {
+      await analyzeImports({ paths, options });
+    }
     options.logger = options.logger || console;
     options.contracts_directory = options.contracts_directory || process.cwd();
 
