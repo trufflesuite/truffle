@@ -19,9 +19,9 @@ export function* setSubmoduleCount(count) {
   yield put(actions.setSubmoduleCount(count));
 }
 
-export function* addSubmoduleToCount() {
+export function* addSubmoduleToCount(increment = 1) {
   let count = yield select(trace.application.submoduleCount);
-  yield put(actions.setSubmoduleCount(count + 1));
+  yield put(actions.setSubmoduleCount(count + increment));
 }
 
 export function* advance() {

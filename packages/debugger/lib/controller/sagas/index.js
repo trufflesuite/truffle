@@ -7,6 +7,7 @@ import { prefixName, isDeliberatelySkippedNodeType } from "lib/helpers";
 
 import * as trace from "lib/trace/sagas";
 import * as data from "lib/data/sagas";
+import * as txlog from "lib/txlog/sagas";
 import * as evm from "lib/evm/sagas";
 import * as solidity from "lib/solidity/sagas";
 import * as stacktrace from "lib/stacktrace/sagas";
@@ -276,4 +277,5 @@ export function* reset() {
   yield* solidity.reset();
   yield* trace.reset();
   yield* stacktrace.reset();
+  yield* txlog.reset();
 }
