@@ -13,6 +13,10 @@ const SUPPORTED_COMPILERS = {
   vyper: require("@truffle/compile-vyper").Compile,
   external: require("@truffle/external-compile").Compile
 };
+const { TruffleDB } = require("@truffle/db");
+const {
+  ArtifactsLoader
+} = require("@truffle/db/loaders/schema/artifactsLoader");
 
 async function compile(config) {
   // determine compiler(s) to use
@@ -82,6 +86,13 @@ const WorkflowCompile = {
         compilers
       });
     }
+
+    if (config.db.enabled === true) {
+      const db = new TruffleDB(config);
+      const loader = new ArtifactsLoader(db, config);
+      await loader.load({ contracts, compilations });
+    }
+
     return {
       contracts,
       compilations

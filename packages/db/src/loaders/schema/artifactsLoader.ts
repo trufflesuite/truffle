@@ -17,7 +17,6 @@ import {
   WorkflowCompileResult,
   CompiledContract
 } from "@truffle/compile-common/src/types";
-import WorkflowCompile from "@truffle/workflow-compile";
 
 type NetworkLinkObject = {
   [name: string]: string;
@@ -53,11 +52,6 @@ type BytecodeInfo = {
   bytes?: string;
 };
 
-type BytecodesObject = {
-  bytecodes: Array<BytecodeInfo>;
-  callBytecodes: Array<BytecodeInfo>;
-};
-
 type IdObject = {
   id: string;
 };
@@ -86,11 +80,7 @@ export class ArtifactsLoader {
     this.config = config;
   }
 
-  async load(): Promise<void> {
-    const result: WorkflowCompileResult = await WorkflowCompile.compile(
-      this.config
-    );
-
+  async load(result: WorkflowCompileResult): Promise<void> {
     const { project, compilations } = await this.db.loadCompilations(result);
 
     //map contracts and contract instances to compiler
@@ -107,7 +97,7 @@ export class ArtifactsLoader {
         const networks = await this.loadNetworks(
           project.id,
           result.compilations[index].contracts,
-          this.config["artifacts_directory"],
+          this.config["contracts_build_directory"],
           this.config["contracts_directory"]
         );
 
@@ -149,7 +139,7 @@ export class ArtifactsLoader {
     );
 
     //set new projectNameHeads based on name records added
-    const projectNamesResult = await this.db.query(AssignProjectNames, {
+    await this.db.query(AssignProjectNames, {
       projectNames
     });
   }
