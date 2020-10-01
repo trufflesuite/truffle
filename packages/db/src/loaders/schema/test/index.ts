@@ -34,15 +34,21 @@ afterAll(async done => {
 
 // mocking the truffle-workflow-compile to avoid jest timing issues
 // and also to keep from adding more time to Travis testing
-jest.mock("@truffle/workflow-compile", () => ({
-  compile: function (config, callback) {
-    return require(path.join(
-      __dirname,
-      "workflowCompileOutputMock",
-      "compilationOutput.json"
-    ));
-  }
-}));
+// jest.mock("@truffle/workflow-compile", () => ({
+//   compile: function (config, callback) {
+//     return require(path.join(
+//       __dirname,
+//       "workflowCompileOutputMock",
+//       "compilationOutput.json"
+//     ));
+//   }
+// }));
+
+const compilationResult = require(path.join(
+  __dirname,
+  "workflowCompileOutputMock",
+  "compilationOutput.json"
+));
 
 const fixturesDirectory = path.join(
   __dirname,
@@ -126,7 +132,6 @@ const migrationConfig = Config.detect({
 migrationConfig.network = "development";
 
 const db = new TruffleDB(config);
-const Migrations = require(path.join(fixturesDirectory, "Migrations.json"));
 
 const artifacts = [
   require(path.join(
@@ -472,7 +477,8 @@ describe("Compilation", () => {
       callBytecode: callBytecodeIds[0]
     };
 
-    let previousContractAdded = await db.query(AddContracts, {
+    //add previous contract
+    await db.query(AddContracts, {
       contracts: [previousContract]
     });
 
@@ -498,7 +504,8 @@ describe("Compilation", () => {
     contractNameRecordId =
       contractNameRecord.data.workspace.nameRecordsAdd.nameRecords[0].id;
 
-    let setContractHead = await db.query(AssignProjectNames, {
+    //set contract head
+    await db.query(AssignProjectNames, {
       projectNames: [
         {
           project: { id: projectId },
@@ -512,7 +519,7 @@ describe("Compilation", () => {
     });
 
     const loader = new ArtifactsLoader(db, compilationConfig);
-    await loader.load();
+    await loader.load(compilationResult);
   }, 10000);
 
   afterAll(async () => {

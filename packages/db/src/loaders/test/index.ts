@@ -3,19 +3,6 @@ import gql from "graphql-tag";
 import { TruffleDB } from "@truffle/db";
 import tmp from "tmp";
 
-jest.mock("@truffle/workflow-compile", () => ({
-  compile: function (config, callback) {
-    return require(path.join(
-      __dirname,
-      "..",
-      "schema",
-      "test",
-      "workflowCompileOutputMock",
-      "compilationOutput.json"
-    ));
-  }
-}));
-
 const fixturesDirectory = path.join(__dirname, "..", "schema", "test");
 
 const tempDir = tmp.dirSync({ unsafeCleanup: true });
@@ -55,7 +42,9 @@ afterAll(() => {
   tempDir.removeCallback();
 });
 
-it("loads artifacts and returns true ", async () => {
+// skipping this for now - this test doesn't make sense anymore but is there anything else
+// we should test here? should we move the schema tests out to this file?
+it.skip("loads artifacts and returns true ", async () => {
   const {
     data: {
       loaders: {
