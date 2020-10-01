@@ -41,7 +41,7 @@ const analyzeImports = async ({ paths, options }) => {
   const dependencies = {};
   for (const path of paths) {
     const config = Config.default().merge(options);
-    const { allSources, compilationTargets } = await Profiler.requiredSourcesForSingleFile(
+    const { allSources } = await Profiler.requiredSourcesForSingleFile(
       config.with({
         path,
         base_path: options.contracts_directory,
@@ -60,19 +60,17 @@ const analyzeImports = async ({ paths, options }) => {
   let bestSolcVersions;
   // key is source - value is best satisfying version of Solidity compiler
   for (const pragmaSet of pragmas) {
-    bestSolcVersions = determineBestSatisfyingSolcVersion();
+    bestSolcVersions = determineBestSatisfyingSolcVersion(pragmaSet);
   }
 
   let compilations;
   for (const version of bestSolcVersions) {
     const compilation = await run(
-    // const { sourceIndexes, contracts, compiler } = await run(
       allSources,
       normalizeOptions(options)
     );
     const { name, version } = compiler;
-    // returns CompilerResult - see @truffle/compile-common
-    return contracts.length > 0
+    return compilation.contracts.length > 0
       ? {
           compilations: [
             {
@@ -84,7 +82,7 @@ const analyzeImports = async ({ paths, options }) => {
         }
       : { compilations: [] };
   }
-}
+};
 
 const Compile = {
   // this takes an object with keys being the name and values being source
