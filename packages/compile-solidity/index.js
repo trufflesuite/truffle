@@ -6,7 +6,7 @@ const Profiler = require("./profiler");
 const CompilerSupplier = require("./compilerSupplier");
 const { run } = require("./run");
 const { normalizeOptions } = require("./normalizeOptions");
-const { analyzeImports } = require("./analyzeImports");
+const { compileWithPragmaAnalysis } = require("./compileWithPragmaAnalysis");
 const expect = require("@truffle/expect");
 
 const Compile = {
@@ -46,9 +46,10 @@ const Compile = {
 
   // this takes an array of paths and options
   async sourcesWithDependencies({ paths, options }) {
-    if (options.compilers.solc.version === "analyze-imports") {
-      return await analyzeImports({ paths, options });
+    if (options.compilers.solc.version === "analyzePragmas") {
+      return await this.sourcesWithPragmaAnalysis({ paths, options });
     }
+
     options.logger = options.logger || console;
     options.contracts_directory = options.contracts_directory || process.cwd();
 
@@ -96,6 +97,10 @@ const Compile = {
           ]
         }
       : { compilations: [] };
+  },
+
+  async sourcesWithPragmaAnalysis({ paths, options }) {
+    return await compileWithPragmaAnalysis({ paths, options });
   },
 
   display(paths, options) {

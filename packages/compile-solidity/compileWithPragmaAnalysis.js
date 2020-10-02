@@ -48,7 +48,7 @@ const findNewestSatisfyingVersion = ({ solcReleases, versionRange }) => {
   return version;
 };
 
-const analyzeImports = async ({ paths, options }) => {
+const compileWithPragmaAnalysis = async ({ paths, options }) => {
   const supplierOptions = {
     events: options.events,
     solcConfig: options.compilers.solc
@@ -127,5 +127,5 @@ const analyzeImports = async ({ paths, options }) => {
 };
 
 module.exports = {
-  analyzeImports
+  compileWithPragmaAnalysis
 };
