@@ -10,39 +10,21 @@ const getSemverExpression = source => {
 };
 
 const getSemverExpressions = sources => {
-  return sources.map(source => {
-    return getSemverExpression(source);
-  });
+  return sources.map(source => getSemverExpression(source));
 };
 
-const determineSolcVersionRange = ranges => {
-  const splitRanges = ranges.map(range => range.split("||"));
-  const singletons = splitRanges.map(list => list.map(x => [x.trim()]));
-  const tuples = singletons.reduce(
-    (list1, list2) => {
-      const pairs = [];
-      for (const l1 of list1) {
-        for (const l2 of list2) {
-          pairs.push([...l1, ...l2]);
-        }
-      }
-      return pairs;
-    },
-    [[]]
-  );
-  const disjuncts = tuples.map(tuple => tuple.join(" "));
-  return disjuncts.join(" || ");
-};
-
-const findNewestSatisfyingVersion = ({ solcReleases, versionRange }) => {
+// takes an array of versions and an array of semver expressions
+const findNewestSatisfyingVersion = ({ solcReleases, semverExpressions }) => {
   // releases are ordered from newest to oldest
-  const version = solcReleases.find(version =>
-    semver.satisfies(version, versionRange)
-  );
+  const version = solcReleases.find(version => {
+    return semverExpressions.every(expression =>
+      semver.satisfies(version, expression)
+    );
+  });
   if (typeof version === "undefined") {
     throw new Error(`
-      Could not find a version of the Solidity compiler that satisfies all
-      of the pragma statements for ${source} and its dependencies.
+      Could not find a single version of the Solidity compiler that satisfies
+      all of the pragma statements for ${source} and its dependencies.
     `);
   }
   return version;
@@ -56,15 +38,17 @@ const compileWithPragmaAnalysis = async ({ paths, options }) => {
   const compilerSupplier = new CompilerSupplier(supplierOptions);
   const { releases } = await compilerSupplier.getReleases();
 
-  const dependencies = {};
-  // for each source, collect all its dependencies
+  // for each source, collect all its dependencies and determine the newest
+  // version of the Solidity compiler to use for compilation of the group
+  const compilations = [];
   for (const path of paths) {
     const source = await fse.readFile(path, "utf8");
     const parserVersion = findNewestSatisfyingVersion({
       solcReleases: releases,
-      versionRange: getSemverExpression(source)
+      semverExpressions: [getSemverExpression(source)]
     });
 
+    // allSources is of the format { [filename]: string }
     const { allSources } = await Profiler.requiredSourcesForSingleFile(
       options.with({
         path,
@@ -77,46 +61,26 @@ const compileWithPragmaAnalysis = async ({ paths, options }) => {
         }
       })
     );
-    dependencies[path] = allSources;
-  }
 
-  const semverExpressions = {};
-  // for each group of sources, collect all the semver expression from pragmas
-  // key is a source - value is an array of pragmas
-  for (const source of Object.keys(dependencies)) {
-    const deps = Object.values(dependencies[source]);
-    semverExpressions[source] = await getSemverExpressions(deps);
-  }
-
-  const solcVersionRange = {};
-  // for each pragma group, determine the most recent satisfying version
-  // key is source - value is a version of the Solidity compiler
-  for (const source of Object.keys(semverExpressions)) {
-    solcVersionRange[source] = determineSolcVersionRange(
-      semverExpressions[source]
+    // get an array of all the semver expressions in the sources
+    const semverExpressions = await getSemverExpressions(
+      Object.values(allSources)
     );
-  }
-
-  const versionsToUse = {};
-  for (const source of Object.keys(solcVersionRange)) {
-    versionsToUse[source] = findNewestSatisfyingVersion({
+    const newestSatisfyingVersion = findNewestSatisfyingVersion({
       solcReleases: releases,
-      versionRange: solcVersionRange[source]
+      semverExpressions
     });
-  }
 
-  let compilations = [];
-  for (const source of Object.keys(versionsToUse)) {
     const compilationOptions = options.merge({
       compilers: {
         solc: {
-          version: versionsToUse[source]
+          version: newestSatisfyingVersion
         }
       }
     });
 
     const compilation = await run(
-      dependencies[source],
+      allSources,
       normalizeOptions(compilationOptions)
     );
     if (compilation.contracts.length > 0) {
