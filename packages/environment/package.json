@@ -9,17 +9,17 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.2.26",
+  "version": "0.2.27",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0"
   },
   "dependencies": {
-    "@truffle/artifactor": "^4.0.79",
+    "@truffle/artifactor": "^4.0.80",
     "@truffle/error": "^0.0.11",
     "@truffle/expect": "^0.0.15",
     "@truffle/interface-adapter": "^0.4.16",
-    "@truffle/resolver": "^6.0.20",
+    "@truffle/resolver": "^6.0.21",
     "ganache-core": "2.11.2",
     "node-ipc": "^9.1.1",
     "source-map-support": "^0.5.19",
