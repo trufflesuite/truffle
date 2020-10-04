@@ -1,6 +1,5 @@
 import {
   WorkspaceRequest,
-  IdObject,
   toIdObject,
   WorkspaceResponse
 } from "@truffle/db/loaders/types";
