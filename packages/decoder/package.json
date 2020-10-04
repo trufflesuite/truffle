@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "4.4.3",
+  "version": "4.4.4",
   "main": "dist/index.js",
   "directories": {
     "lib": "lib"
@@ -21,9 +21,9 @@
   },
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@truffle/codec": "^0.6.2",
-    "@truffle/compile-solidity": "^5.0.1",
-    "@truffle/solidity-utils": "^1.3.20",
+    "@truffle/codec": "^0.6.3",
+    "@truffle/compile-solidity": "^5.0.2",
+    "@truffle/solidity-utils": "^1.3.21",
     "bn.js": "^4.11.8",
     "debug": "^4.1.0",
     "source-map-support": "^0.5.19",

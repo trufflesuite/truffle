@@ -1,6 +1,6 @@
 {
   "name": "@truffle/db",
-  "version": "0.1.0-0",
+  "version": "0.1.0-1",
   "description": "Smart contract data aggregation",
   "keywords": [
     "truffle",
@@ -56,9 +56,9 @@
   "dependencies": {
     "@gnd/graphql-tools": "^4.0.5-fix.0",
     "@gnd/jsonschema2graphql": "^1.0.15",
-    "@truffle/artifactor": "^4.0.79",
-    "@truffle/compile-common": "^0.3.11",
-    "@truffle/workflow-compile": "^3.0.1",
+    "@truffle/artifactor": "^4.0.80",
+    "@truffle/compile-common": "^0.3.12",
+    "@truffle/workflow-compile": "^3.0.2",
     "apollo-server": "^2.3.1",
     "fse": "^4.0.1",
     "graphql": "^14.0.2",
