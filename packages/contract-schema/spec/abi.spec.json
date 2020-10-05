@@ -144,37 +144,75 @@
 
     "Parameter": {
       "type": "object",
-      "properties": {
-        "name": { "$ref": "#/definitions/Name" },
-        "type": { "$ref": "#/definitions/Type" },
-        "components": {
-          "type": "array",
-          "items": { "type": "object" }
-        },
-	"internalType": { "type": "string" }
-      },
       "if": {
         "properties": {
           "type": {
             "oneOf": [
-              { "pattern": "^tuple$" }
+              { "pattern": "^tuple" }
             ]
           }
         }
       },
-      "then": { "required": ["name", "type", "components"] },
-      "else": { "required": ["name", "type"] }
+      "then": {
+        "properties": {
+          "name": { "$ref": "#/definitions/Name" },
+          "type": { "$ref": "#/definitions/Type" },
+          "components": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/Parameter" },
+            "minItems": 1
+          },
+          "internalType": { "type": "string" }
+        },
+        "required": ["name", "type", "components"],
+        "additionalProperties": false
+      },
+      "else": {
+        "properties": {
+          "name": { "$ref": "#/definitions/Name" },
+          "type": { "$ref": "#/definitions/Type" },
+          "internalType": { "type": "string" }
+        },
+        "required": ["name", "type"],
+        "additionalProperties": false
+      }
     },
 
     "EventParameter": {
       "type": "object",
-      "properties": {
-        "name": { "$ref": "#/definitions/Name" },
-        "type": { "$ref": "#/definitions/Type" },
-        "indexed": { "type": "boolean" },
-	"internalType": { "type": "string" }
+      "if": {
+        "properties": {
+          "type": {
+            "oneOf": [
+              { "pattern": "^tuple" }
+            ]
+          }
+        }
       },
-      "required": ["name", "type", "indexed"]
+      "then": {
+        "properties": {
+          "name": { "$ref": "#/definitions/Name" },
+          "type": { "$ref": "#/definitions/Type" },
+          "components": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/Parameter" }
+          },
+          "indexed": { "type": "boolean" },
+          "internalType": { "type": "string" }
+        },
+        "required": ["name", "type", "components", "indexed"],
+        "additionalProperties": false
+      },
+      "else": {
+        "properties": {
+          "name": { "$ref": "#/definitions/Name" },
+          "type": { "$ref": "#/definitions/Type" },
+          "indexed": { "type": "boolean" },
+          "internalType": { "type": "string" }
+        },
+        "required": ["name", "type", "indexed"],
+        "additionalProperties": false
+      }
     }
   }
 }
