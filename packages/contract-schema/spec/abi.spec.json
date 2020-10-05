@@ -159,8 +159,7 @@
           "type": { "$ref": "#/definitions/Type" },
           "components": {
             "type": "array",
-            "items": { "$ref": "#/definitions/Parameter" },
-            "minItems": 1
+            "items": { "$ref": "#/definitions/Parameter" }
           },
           "internalType": { "type": "string" }
         },
