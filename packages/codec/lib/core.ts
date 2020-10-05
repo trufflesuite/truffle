@@ -4,7 +4,6 @@ const debug = debugModule("codec:core");
 import * as Ast from "@truffle/codec/ast";
 import * as AbiData from "@truffle/codec/abi-data";
 import * as Topic from "@truffle/codec/topic";
-import * as Bytes from "@truffle/codec/bytes";
 import * as Pointer from "@truffle/codec/pointer";
 import {
   DecoderRequest,
@@ -15,8 +14,7 @@ import {
   UnknownBytecodeDecoding,
   DecodingMode,
   AbiArgument,
-  LogDecoding,
-  DecoderOptions
+  LogDecoding
 } from "@truffle/codec/types";
 import { ConstructorReturndataAllocation } from "@truffle/codec/abi-data/allocate";
 import * as Evm from "@truffle/codec/evm";
@@ -72,7 +70,6 @@ export function* decodeCalldata(
       };
     }
   }
-  const compiler = context.compiler;
   const contextHash = context.context;
   const contractType = Contexts.Import.contextToType(context);
   isConstructor = context.isConstructor;

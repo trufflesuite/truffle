@@ -387,10 +387,6 @@ function enumTypeName(enumType: Format.Types.EnumType) {
   );
 }
 
-function styleHexString(hex: string, options: InspectOptions): string {
-  return options.stylize(`hex'${hex.slice(2)}'`, "string");
-}
-
 //this function will be used in the future for displaying circular
 //structures
 function formatCircular(loopLength: number, options: InspectOptions): string {

@@ -1,6 +1,6 @@
 {
   "name": "@truffle/compile-common",
-  "version": "0.3.11",
+  "version": "0.3.12",
   "description": "Common compiler integration support infrastructure for Truffle",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",

@@ -1,6 +1,5 @@
 const debug = require("debug")("decoder:test:decoding-test");
 const assert = require("assert");
-const util = require("util"); // eslint-disable-line no-unused-vars
 
 const Decoder = require("../../..");
 const { nativizeDecoderVariables } = require("../../../dist/utils");
@@ -29,7 +28,7 @@ function validateStructS2(s2, values) {
 }
 
 contract("DecodingSample", _accounts => {
-  it("should get the initial state properly", async function() {
+  it("should get the initial state properly", async function () {
     let deployedContract = await DecodingSample.deployed();
     let address = deployedContract.address;
     const decoder = await Decoder.forContractInstance(deployedContract);
@@ -145,7 +144,7 @@ contract("DecodingSample", _accounts => {
     assert.equal(variables.functionInternal, "DecodingSample.example");
   });
 
-  it("should spawn decoders based on address alone", async function() {
+  it("should spawn decoders based on address alone", async function () {
     const deployedContract = await DecodingSample.deployed();
     const address = deployedContract.address;
     const decoder = await Decoder.forAddress(
