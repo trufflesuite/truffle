@@ -64,7 +64,7 @@
           "$ref": "#/definitions/StateMutability"
         },
         "constant": { "type": "boolean" },
-        "payable": { "type": "boolean", "default": false }
+        "payable": { "type": "boolean" }
       },
       "required": ["name", "inputs", "stateMutability"],
       "additionalProperties": false
@@ -85,7 +85,7 @@
           "$ref": "#/definitions/StateMutability"
         },
         "constant": { "type": "boolean" },
-        "payable": { "type": "boolean", "default": false }
+        "payable": { "type": "boolean" }
       },
       "required": ["type", "inputs", "stateMutability"],
       "additionalProperties": false
@@ -102,7 +102,7 @@
           "$ref": "#/definitions/StateMutability"
         },
         "constant": { "type": "boolean" },
-        "payable": { "type": "boolean", "default": false }
+        "payable": { "type": "boolean" }
       },
       "required": ["type", "stateMutability"],
       "additionalProperties": false
