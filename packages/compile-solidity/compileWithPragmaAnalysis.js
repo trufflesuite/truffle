@@ -4,6 +4,7 @@ const Profiler = require("./profiler");
 const { normalizeOptions } = require("./normalizeOptions");
 const fse = require("fs-extra");
 const { run } = require("./run");
+const OS = require("os");
 
 const getSemverExpression = source => {
   return source.match(/pragma solidity(.*);/)[1].trim();
@@ -14,20 +15,23 @@ const getSemverExpressions = sources => {
 };
 
 // takes an array of versions and an array of semver expressions
+// returns a version of the compiler or undefined if none can be found
 const findNewestSatisfyingVersion = ({ solcReleases, semverExpressions }) => {
   // releases are ordered from newest to oldest
-  const version = solcReleases.find(version => {
+  return solcReleases.find(version => {
     return semverExpressions.every(expression =>
       semver.satisfies(version, expression)
     );
   });
-  if (typeof version === "undefined") {
-    throw new Error(`
-      Could not find a single version of the Solidity compiler that satisfies
-      all of the pragma statements for ${source} and its dependencies.
-    `);
-  }
-  return version;
+};
+
+const throwCompilerVersionNotFound = ({ path, semverExpressions }) => {
+  const message =
+    `Could not find a single version of the Solidity compiler that ` +
+    `satisfies the following semver expressions obtained from your source ` +
+    `files' pragma statements: ${semverExpressions.join(" - ")}. ` +
+    `${OS.EOL}Please check the pragma statements for ${path} and its imports.`;
+  throw new Error(message);
 };
 
 const compileWithPragmaAnalysis = async ({ paths, options }) => {
@@ -43,10 +47,17 @@ const compileWithPragmaAnalysis = async ({ paths, options }) => {
   const compilations = [];
   for (const path of paths) {
     const source = await fse.readFile(path, "utf8");
+
     const parserVersion = findNewestSatisfyingVersion({
       solcReleases: releases,
       semverExpressions: [getSemverExpression(source)]
     });
+    if (!parserVersion) {
+      throwCompilerVersionNotFound({
+        path,
+        semverExpressions: [getSemverExpression(source)]
+      });
+    }
 
     // allSources is of the format { [filename]: string }
     const { allSources } = await Profiler.requiredSourcesForSingleFile(
@@ -70,6 +81,12 @@ const compileWithPragmaAnalysis = async ({ paths, options }) => {
       solcReleases: releases,
       semverExpressions
     });
+    if (!newestSatisfyingVersion) {
+      throwCompilerVersionNotFound({
+        path,
+        semverExpressions
+      });
+    }
 
     const compilationOptions = options.merge({
       compilers: {
