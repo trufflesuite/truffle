@@ -116,27 +116,14 @@ const Test = {
 
     await this.performInitialDeploy(config, testResolver);
 
-    const solidityCompilationOutput = compilations.reduce(
-      (a, compilation) => {
-        if (compilation.compiler && compilation.compiler.name === "solc") {
-          a.sourceIndexes = a.sourceIndexes.concat(compilation.sourceIndexes);
-          a.contracts = a.contracts.concat(compilation.contracts);
-        }
-        return a;
-      },
-      { sourceIndexes: [], contracts: [] }
+    const sourcePaths = [].concat(
+      ...compilations.map(compilation => compilation.sourceIndexes) //we don't need the indices here, just the paths
     );
 
-    await this.defineSolidityTests(
-      mocha,
-      testContracts,
-      solidityCompilationOutput.sourceIndexes,
-      runner
-    );
+    await this.defineSolidityTests(mocha, testContracts, sourcePaths, runner);
 
-    const debuggerCompilations = Codec.Compilations.Utils.shimArtifacts(
-      solidityCompilationOutput.contracts,
-      solidityCompilationOutput.sourceIndexes
+    const debuggerCompilations = Codec.Compilations.Utils.shimCompilations(
+      compilations
     );
 
     //for stack traces, we'll need to set up a light-mode debugger...
@@ -213,9 +200,8 @@ const Test = {
     const updated =
       (await Profiler.updated(config.with({ resolver: testResolver }))) || [];
 
-    const compiler = (config.compileNone || config["--compile-none"])
-      ? "none"
-      : config.compiler;
+    const compiler =
+      config.compileNone || config["--compile-none"] ? "none" : config.compiler;
 
     let compileConfig = config.with({
       all: config.compileAll === true,

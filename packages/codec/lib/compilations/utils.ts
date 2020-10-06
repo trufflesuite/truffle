@@ -4,16 +4,54 @@ const debug = debugModule("codec:compilations:utils");
 import * as Ast from "@truffle/codec/ast";
 import * as Compiler from "@truffle/codec/compiler";
 import { ContractObject as Artifact } from "@truffle/contract-schema/spec";
-import { CompiledContract } from "@truffle/compile-common";
+import {
+  CompiledContract,
+  Compilation as CompilerCompilation
+} from "@truffle/compile-common";
 import { Compilation, Contract, Source } from "./types";
 
+export function shimCompilations(
+  inputCompilations: CompilerCompilation[],
+  shimmedCompilationIdPrefix = "shimmedcompilation",
+  externalSolidity = false
+): Compilation[] {
+  return inputCompilations.map(
+    ({ contracts, sourceIndexes }, compilationIndex) =>
+      shimContracts(
+        contracts,
+        sourceIndexes,
+        `${shimmedCompilationIdPrefix}Number(${compilationIndex})`,
+        externalSolidity
+      )
+  );
+}
+
+/**
+ * wrapper around shimArtifactsToCompilation that just returns
+ * the result in a one-element array (keeping the old name
+ * shimArtifacts for compatibility)
+ */
 export function shimArtifacts(
   artifacts: (Artifact | CompiledContract)[],
   files?: string[],
-  shimmedCompilationId = "shimmedcompilation",
-  externalSolidity = false
+  shimmedCompilationId: string = "shimmedcompilation",
+  externalSolidity: boolean = false
 ): Compilation[] {
-  //note: always returns a one-element array (a single fictional compilation)
+  return [
+    shimContracts(artifacts, files, shimmedCompilationId, externalSolidity)
+  ];
+}
+
+/**
+ * shims a bunch of contracts ("artifacts", though not necessarily)
+ * to a compilation.  usually used via one of the above two functions.
+ */
+export function shimContracts(
+  artifacts: (Artifact | CompiledContract)[],
+  files?: string[],
+  shimmedCompilationId: string = "shimmedcompilation",
+  externalSolidity: boolean = false
+): Compilation {
   let contracts: Contract[] = [];
   let sources: Source[] = [];
   let unreliableSourceOrder: boolean = false;
@@ -130,16 +168,14 @@ export function shimArtifacts(
     compiler = contracts[0].compiler;
   }
 
-  return [
-    {
-      id: shimmedCompilationId,
-      unreliableSourceOrder,
-      sources,
-      contracts,
-      compiler,
-      externalSolidity
-    }
-  ];
+  return {
+    id: shimmedCompilationId,
+    unreliableSourceOrder,
+    sources,
+    contracts,
+    compiler,
+    externalSolidity
+  };
 }
 
 function sourceIndexForAst(ast: Ast.AstNode): number | undefined {
