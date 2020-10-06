@@ -130,6 +130,13 @@ const Compile = {
     });
   },
 
+  async sourcesWithDependencies({ paths = [], options }) {
+    return await Compile.sources({
+      sources: paths,
+      options
+    });
+  },
+
   // contracts_directory: String. Directory where contract files can be found.
   // quiet: Boolean. Suppress output. Defaults to false.
   // strict: Boolean. Return compiler warnings as errors. Defaults to false.

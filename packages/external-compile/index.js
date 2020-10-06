@@ -259,9 +259,9 @@ const Compile = {
     });
   },
 
-  // the `sources` argument here is currently unused as the user is
-  // responsible for dealing with compiling their sources
-  async sources({ sources, options }) {
+  // compile-common defines object argument to include `sources`, but this is
+  // unused as the user is responsible for dealing with compiling their sources
+  async sources({ options }) {
     if (options.logger == null) {
       options.logger = console;
     }
@@ -295,6 +295,10 @@ const Compile = {
         }
       ]
     };
+  },
+
+  async sourcesWithDependencies({ options }) {
+    return await Compile.sources({ options });
   }
 };
 

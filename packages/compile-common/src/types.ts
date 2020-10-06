@@ -54,12 +54,22 @@ export interface WorkflowCompileResult {
 
 export interface Compiler {
   all: (options: object) => Promise<CompilerResult>;
+
   necessary: (options: object) => Promise<CompilerResult>;
+
   sources: ({
     sources,
     options
   }: {
     sources: object;
+    options: object;
+  }) => Promise<CompilerResult>;
+
+  sourcesWithDependencies: ({
+    paths,
+    options
+  }: {
+    paths: string[];
     options: object;
   }) => Promise<CompilerResult>;
 }
