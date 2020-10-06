@@ -42,9 +42,8 @@ const compileWithPragmaAnalysis = async ({ paths, options }) => {
   const compilerSupplier = new CompilerSupplier(supplierOptions);
   const { releases } = await compilerSupplier.getReleases();
 
-  // for each source, collect all its dependencies and determine the newest
-  // version of the Solidity compiler to use for compilation of the group
-  const compilations = [];
+  // collect sources by the version of the Solidity compiler that they require
+  const versionsAndSources = {};
   for (const path of paths) {
     const source = await fse.readFile(path, "utf8");
 
@@ -88,16 +87,29 @@ const compileWithPragmaAnalysis = async ({ paths, options }) => {
       });
     }
 
+    if (versionsAndSources[newestSatisfyingVersion]) {
+      versionsAndSources[newestSatisfyingVersion] = Object.assign(
+        {},
+        versionsAndSources[newestSatisfyingVersion],
+        allSources
+      );
+    } else {
+      versionsAndSources[newestSatisfyingVersion] = allSources;
+    }
+  }
+
+  const compilations = [];
+  for (const compilerVersion of Object.keys(versionsAndSources)) {
     const compilationOptions = options.merge({
       compilers: {
         solc: {
-          version: newestSatisfyingVersion
+          version: compilerVersion
         }
       }
     });
 
     const compilation = await run(
-      allSources,
+      versionsAndSources[compilerVersion],
       normalizeOptions(compilationOptions)
     );
     if (compilation.contracts.length > 0) {
