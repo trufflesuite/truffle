@@ -4,7 +4,7 @@ var Box = require("@truffle/box");
 var fs = require("fs-extra");
 var glob = require("glob");
 var path = require("path");
-var Contracts = require("@truffle/workflow-compile");
+var WorkflowCompile = require("@truffle/workflow-compile");
 const { EthPM } = require("ethpm");
 var PackageV3 = require("@truffle/ethpm-v3");
 const Ganache = require("ganache-core");
@@ -250,7 +250,7 @@ describe("EthPM install", function () {
       "utf8"
     );
 
-    const contracts = await Contracts.compile(
+    const contracts = await WorkflowCompile.compile(
       config.with({ all: true, quiet: true })
     );
     assert.isNotNull(contracts["ENS"]);
@@ -262,7 +262,7 @@ describe("EthPM install", function () {
   // treats the package as if it had no sources; to do so, we simply don't compile its code.
   // In addition, this package contains deployments. We need to make sure these deployments are available.
   it("successfully installs and provisions a deployed package with network artifacts from EthPM, without compiling v3", async () => {
-    await Contracts.compile(config.with({ all: true, quiet: true }));
+    await WorkflowCompile.compile(config.with({ all: true, quiet: true }));
     config.packageIdentifier = `erc1319://${registry._address}:1/ens@1.0.0`;
     await PackageV3.install(config);
 
@@ -285,7 +285,7 @@ describe("EthPM install", function () {
   });
 
   it("handles deployments", async () => {
-    await Contracts.compile(config.with({ all: true, quiet: true }));
+    await WorkflowCompile.compile(config.with({ all: true, quiet: true }));
 
     const installed_package = "ethregistrar";
     const expected_contract_name = "BaseRegistrarImplementation";
@@ -393,7 +393,7 @@ describe("ethpm publish: ", function () {
 
   it("requires valid ethpm.json to publish", async () => {
     let counter = 0;
-    await Contracts.compile(config.with({ quiet: true }));
+    await WorkflowCompile.compileAndSave(config.with({ quiet: true }));
 
     // Empty config
     fs.writeFileSync(
@@ -450,7 +450,7 @@ describe("ethpm publish: ", function () {
     const mockedLog = output => consoleOutput.push(output);
     config.logger.log = mockedLog;
 
-    await Contracts.compile(config.with({ quiet: true }));
+    await WorkflowCompile.compileAndSave(config.with({ quiet: true }));
     const ethpmJson = JSON.stringify({
       name: "pkg",
       version: "1.0.0",

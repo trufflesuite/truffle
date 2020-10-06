@@ -1,6 +1,6 @@
 const { callbackify } = require("util");
 
-var command = {
+const command = {
   command: "packages",
   description: "List available packages on connected EthPM Registry",
   builder: {},
@@ -9,21 +9,21 @@ var command = {
     options: []
   },
   run: function (options, done) {
-    var Config = require("@truffle/config");
-    var PackageV1 = require("@truffle/ethpm-v1");
-    var PackageV3 = require("@truffle/ethpm-v3");
+    const Config = require("@truffle/config");
+    const PackageV1 = require("@truffle/ethpm-v1");
+    const PackageV3 = require("@truffle/ethpm-v3");
 
-    var config = Config.detect(options);
-    let callbackFunction;
+    const config = Config.detect(options);
+    let listPackages;
 
     if (config.ethpm.version == "1") {
-      callbackFunction = callbackify(PackageV1.packages);
+      listPackages = callbackify(PackageV1.packages);
     } else if (config.ethpm.version == "3") {
-      callbackFunction = callbackify(PackageV3.packages);
+      listPackages = callbackify(PackageV3.packages);
     } else {
       done(new Error(`Unsupported ethpm version: ${config.ethpm.version}.`));
     }
-    callbackFunction(config, done);
+    listPackages(config, done);
   }
 };
 

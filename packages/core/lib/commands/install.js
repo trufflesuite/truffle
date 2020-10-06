@@ -5,11 +5,11 @@ const command = {
   description: "Install a package from the Ethereum Package Registry",
   builder: {},
   help: {
-    usage: "truffle install <package-identifier> [--alias]",
+    usage: "truffle install <packageIdentifier> [--alias]",
     options: [
       {
         option: "packageIdentifier",
-        description: `(required) Name of the package as listed in the Ethereum Package Registry. Accepted formats: packageName, packageName@version, ethpm URI, ipfs URI.`
+        description: `Name of the package as listed in the Ethereum Package Registry. Accepted formats: packageName, packageName@version, ethpm URI, ipfs URI. (required)`
       },
       {
         option: "--alias",
@@ -39,16 +39,16 @@ const command = {
     options.packageIdentifier = options._[0];
 
     const config = Config.detect(options);
-    let callbackFunction;
+    let installPackage;
 
     if (config.ethpm.version == "1") {
-      callbackFunction = callbackify(PackageV1.install);
+      installPackage = callbackify(PackageV1.install);
     } else if (config.ethpm.version == "3") {
-      callbackFunction = callbackify(PackageV3.install);
+      installPackage = callbackify(PackageV3.install);
     } else {
       done(new Error(`Unsupported ethpm version: ${config.ethpm.version}.`));
     }
-    callbackFunction(config, done);
+    installPackage(config, done);
   }
 };
 

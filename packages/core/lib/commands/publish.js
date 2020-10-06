@@ -1,6 +1,6 @@
 const { callbackify } = require("util");
 
-var command = {
+const command = {
   command: "publish",
   description: "Publish a package to the Ethereum Package Registry",
   builder: {},
@@ -9,21 +9,21 @@ var command = {
     options: []
   },
   run: function (options, done) {
-    var Config = require("@truffle/config");
-    var PackageV1 = require("@truffle/ethpm-v1");
-    var PackageV3 = require("@truffle/ethpm-v3");
+    const Config = require("@truffle/config");
+    const PackageV1 = require("@truffle/ethpm-v1");
+    const PackageV3 = require("@truffle/ethpm-v3");
 
-    var config = Config.detect(options);
-    let callbackFunction;
+    const config = Config.detect(options);
+    let publishPackage;
 
     if (config.ethpm.version == "1") {
-      callbackFunction = callbackify(PackageV1.publish);
+      publishPackage = callbackify(PackageV1.publish);
     } else if (config.ethpm.version == "3") {
-      callbackFunction = callbackify(PackageV3.publish);
+      publishPackage = callbackify(PackageV3.publish);
     } else {
       done(new Error(`Unsupported ethpm version: ${config.ethpm.version}.`));
     }
-    callbackFunction(config, done);
+    publishPackage(config, done);
   }
 };
 

@@ -39,7 +39,7 @@ async function getPublishableArtifacts(options, ethpm) {
   const sourcePaths = {};
 
   // group artifacts by network id to ensure consistency when converting networkId => blockchainUri
-  for (let file of files) {
+  for (const file of files) {
     const fileContents = JSON.parse(
       fs.readFileSync(
         path.join(options.contracts_build_directory, file),
@@ -72,9 +72,7 @@ async function getPublishableArtifacts(options, ethpm) {
     for (let provider of Object.keys(options.networks)) {
       if (options.networks[provider].network_id == networkId) {
         // handle ganache provider from tests
-        if (
-          options.networks[provider].provider.constructor.name == "Function"
-        ) {
+        if (typeof options.networks[provider].provider === "function") {
           targetProvider = options.networks[provider].provider();
         } else {
           targetProvider = options.networks[provider].provider;
@@ -115,8 +113,8 @@ async function getPublishableArtifacts(options, ethpm) {
 
 async function resolveEnsName(address, provider, options) {
   let resolvedAddress;
-  const w3 = new Web3(provider);
-  const connectedChainId = await w3.eth.net.getId();
+  const web3 = new Web3(provider);
+  const connectedChainId = await web3.eth.net.getId();
   const supportedChainIds = [1, 3, 4, 5];
   if (!supportedChainIds.includes(connectedChainId)) {
     throw new TruffleError(
@@ -143,8 +141,8 @@ async function resolveEthpmUri(options, provider) {
   let targetRegistry;
   var targetProvider = provider;
   const ethpmUri = new EthpmURI(options.packageIdentifier);
-  const w3 = new Web3(targetProvider);
-  const connectedChainId = await w3.eth.net.getId();
+  const web3 = new Web3(targetProvider);
+  const connectedChainId = await web3.eth.net.getId();
 
   // update provider if it doesn't match chain id in ethpm uri
   if (
@@ -199,7 +197,7 @@ function fetchInstalledBuildDependencies(workingDirectory) {
     return {};
   }
   const installedBuildDependencies = {};
-  Object.keys(ethpmLock).forEach(function (key, _) {
+  Object.keys(ethpmLock).forEach(key => {
     installedBuildDependencies[key] = ethpmLock[key].resolved_uri;
   });
   return installedBuildDependencies;
@@ -237,9 +235,9 @@ function convertContractTypeToContractSchema(
 }
 
 async function getBlockchainUriForProvider(provider) {
-  const w3 = new Web3(provider);
-  const genesisBlock = await w3.eth.getBlock(0);
-  const latestBlock = await w3.eth.getBlock("latest");
+  const web3 = new Web3(provider);
+  const genesisBlock = await web3.eth.getBlock(0);
+  const latestBlock = await web3.eth.getBlock("latest");
   return `blockchain://${genesisBlock.hash.replace(
     "0x",
     ""
