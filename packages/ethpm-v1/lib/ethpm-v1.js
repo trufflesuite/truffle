@@ -9,6 +9,7 @@ const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const path = require("path");
 const fs = require("fs");
 const OS = require("os");
+const contract = require("@truffle/contract");
 
 const PackageV1 = {
   packages: async options => {
@@ -36,13 +37,13 @@ const PackageV1 = {
       );
     }
     const provider = options.networks["ropsten"].provider();
-    const web3 = new Web3(provider);
     const ethpmV1RegistryAddress = "0x8011df4830b4f696cd81393997e5371b93338878";
-    var contract = new web3.eth.Contract(
-      registryAbi.abi,
-      ethpmV1RegistryAddress
-    );
-    var owner = await contract.methods.owner().call();
+    const RegistryContract = contract({
+      abi: registryAbi.abi
+    });
+    RegistryContract.setProvider(provider);
+    const registryContract = await RegistryContract.at(ethpmV1RegistryAddress);
+    const owner = await registryContract.owner.call();
 
     // Display info about connected registry
     options.logger.log(
@@ -51,16 +52,16 @@ const PackageV1 = {
     options.logger.log(`Registry controlled by : ${owner}`);
 
     // Display info about all releases on registry
-    var numPackages = await contract.methods.getNumPackages().call();
+    const numPackages = await registryContract.getNumPackages.call();
     for (var x = 0; x < numPackages; x++) {
-      let packageName = await contract.methods.getPackageName(x).call();
-      let releaseHashes = await contract.methods
-        .getAllPackageReleaseHashes(packageName)
-        .call();
+      const packageName = await registryContract.getPackageName.call(x);
+      const releaseHashes = await registryContract.getAllPackageReleaseHashes.call(
+        packageName
+      );
       options.logger.log(packageName);
-      for (let hash of releaseHashes) {
-        let releaseData = await contract.methods.getReleaseData(hash).call();
-        let version = `${releaseData.major}.${releaseData.minor}.${releaseData.patch}`;
+      for (const hash of releaseHashes) {
+        const releaseData = await registryContract.getReleaseData.call(hash);
+        const version = `${releaseData.major}.${releaseData.minor}.${releaseData.patch}`;
         options.logger.log(`- ${version} @ ${releaseData.releaseLockfileURI}`);
       }
     }
