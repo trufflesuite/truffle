@@ -64,9 +64,12 @@
           "$ref": "#/definitions/StateMutability"
         },
         "constant": { "type": "boolean" },
-        "payable": { "type": "boolean", "default": false }
+        "payable": { "type": "boolean" }
       },
-      "required": ["name", "inputs", "stateMutability"],
+      "anyOf": [
+        { "required": ["name", "inputs", "stateMutability"] },
+        { "required": ["name", "inputs", "constant", "payable"] }
+      ],
       "additionalProperties": false
     },
 
@@ -85,9 +88,12 @@
           "$ref": "#/definitions/StateMutability"
         },
         "constant": { "type": "boolean" },
-        "payable": { "type": "boolean", "default": false }
+        "payable": { "type": "boolean" }
       },
-      "required": ["type", "inputs", "stateMutability"],
+      "anyOf": [
+        { "required": ["type", "inputs", "stateMutability"] },
+        { "required": ["type", "inputs", "payable"] }
+      ],
       "additionalProperties": false
     },
 
@@ -102,9 +108,13 @@
           "$ref": "#/definitions/StateMutability"
         },
         "constant": { "type": "boolean" },
-        "payable": { "type": "boolean", "default": false }
+        "payable": { "type": "boolean" }
       },
       "required": ["type", "stateMutability"],
+      "anyOf": [
+        { "required": ["type", "stateMutability"] },
+        { "required": ["type", "payable"] }
+      ],
       "additionalProperties": false
     },
 
