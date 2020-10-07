@@ -116,9 +116,11 @@ const Test = {
 
     await this.performInitialDeploy(config, testResolver);
 
-    const sourcePaths = [].concat(
-      ...compilations.map(compilation => compilation.sourceIndexes) //we don't need the indices here, just the paths
-    );
+    const sourcePaths = []
+      .concat(
+        ...compilations.map(compilation => compilation.sourceIndexes) //we don't need the indices here, just the paths
+      )
+      .filter(path => path); //make sure we don't pass in any undefined
 
     await this.defineSolidityTests(mocha, testContracts, sourcePaths, runner);
 
