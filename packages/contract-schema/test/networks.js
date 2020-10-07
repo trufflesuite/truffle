@@ -1,6 +1,6 @@
 const contract = require("@truffle/contract");
 
-const Schema = require("../index.js");
+const Schema = require("..");
 const assert = require("assert");
 
 const MetaCoin = require("./MetaCoin.json");

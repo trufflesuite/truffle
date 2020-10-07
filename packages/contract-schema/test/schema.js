@@ -1,4 +1,4 @@
-var Schema = require("../index.js");
+var Schema = require("..");
 var assert = require("assert");
 
 var MetaCoin = require("./MetaCoin.json");

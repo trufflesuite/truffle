@@ -1,4 +1,4 @@
-var Schema = require("../index.js");
+var Schema = require("..");
 var assert = require("assert");
 
 describe("options", function() {

@@ -2,3 +2,4 @@ node_modules
 yarn.lock
 package-lock.json
 spec/index.d.ts
+dist

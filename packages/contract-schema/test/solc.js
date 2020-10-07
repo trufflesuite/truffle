@@ -1,6 +1,6 @@
 var assert = require("assert");
 var solc = require("solc");
-var Schema = require("../");
+var Schema = require("..");
 var debug = require("debug")("test:solc"); // eslint-disable-line no-unused-vars
 
 describe("solc", function() {
