@@ -9,7 +9,7 @@ export class Resolver {
   options: any;
   sources: ResolverSource[];
 
-  constructor(options: any, includeTruffleSource: boolean) {
+  constructor(options: any, includeTruffleSource: boolean = false) {
     expect.options(options, ["working_directory", "contracts_build_directory"]);
 
     this.options = options;
