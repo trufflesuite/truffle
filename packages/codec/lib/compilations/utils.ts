@@ -185,7 +185,8 @@ export function getContractNode(
     if (foundNode || !source) {
       return foundNode;
     }
-    if (!source.ast) {
+    if (!source.ast || source.ast.nodeType !== "SourceUnit") {
+      //don't search Yul sources!
       return undefined;
     }
     return source.ast.nodes.find(
