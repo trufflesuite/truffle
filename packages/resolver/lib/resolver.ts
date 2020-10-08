@@ -3,17 +3,26 @@ const expect = require("@truffle/expect");
 const provision = require("@truffle/provisioner");
 
 import { ResolverSource } from "./source";
-import { constructSources } from "./sources";
+import { EthPMv1, NPM, GlobalNPM, FS, Truffle } from "./sources";
 
 export class Resolver {
   options: any;
   sources: ResolverSource[];
 
-  constructor(options: any) {
+  constructor(options: any, includeTruffleSource: boolean = false) {
     expect.options(options, ["working_directory", "contracts_build_directory"]);
 
     this.options = options;
-    this.sources = constructSources(options);
+    this.sources = [
+      new EthPMv1(options.working_directory),
+      new NPM(options.working_directory),
+      new GlobalNPM(),
+      new FS(options.working_directory, options.contracts_build_directory)
+    ];
+
+    if (includeTruffleSource) {
+      this.sources.unshift(new Truffle(options));
+    }
   }
 
   // This function might be doing too much. If so, too bad (for now).
@@ -40,7 +49,6 @@ export class Resolver {
     let filePath: string | null = null;
     let source: ResolverSource | null = null;
 
-    // for (const index = 0; !body && index < this.sources.length; index++) {
     for (source of this.sources) {
       ({ body, filePath } = await source.resolve(importPath, importedFrom));
 

@@ -13,7 +13,7 @@ describe("Typescript Tests", () => {
   before(done => Server.start(done));
   after(done => Server.stop(done));
 
-  before("set up sandbox", async function() {
+  before("set up sandbox", async function () {
     options = { name: "default#typescript", force: true };
     config = await Box.sandbox(options);
     config.logger = logger;
@@ -25,15 +25,27 @@ describe("Typescript Tests", () => {
 
   describe("testing contract behavior", () => {
     it("will run .ts tests and have the correct behavior", async () => {
-      await CommandRunner.run("test test/metacoin.ts", config);
-      const output = logger.contents();
-      assert(output.includes("3 passing"));
+      try {
+        await CommandRunner.run("test test/metacoin.ts", config);
+        const output = logger.contents();
+        assert(output.includes("3 passing"));
+      } catch (error) {
+        console.log(`there was an error -- %o`, error);
+        console.log(`the logger contents are -- ${logger.contents()}`);
+        assert.fail();
+      }
     }).timeout(70000);
 
     it("will detect and run .sol, .ts, & .js test files", async () => {
-      await CommandRunner.run("test", config);
-      const output = logger.contents();
-      assert(output.includes("8 passing"));
+      try {
+        await CommandRunner.run("test", config);
+        const output = logger.contents();
+        assert(output.includes("8 passing"));
+      } catch (error) {
+        console.log(`there was an error -- %o`, error);
+        console.log(`the logger contents are -- ${logger.contents()}`);
+        assert.fail();
+      }
     }).timeout(70000);
   });
 }).timeout(10000);

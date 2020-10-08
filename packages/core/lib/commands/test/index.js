@@ -125,11 +125,9 @@ const command = {
   run: function (options, done) {
     const Config = require("@truffle/config");
     const { Environment, Develop } = require("@truffle/environment");
-    const {
-      copyArtifactsToTempDir,
-      determineTestFilesToRun,
-      prepareConfigAndRunTests
-    } = require("./helpers");
+    const { copyArtifactsToTempDir } = require("./copyArtifactsToTempDir");
+    const { determineTestFilesToRun } = require("./determineTestFilesToRun");
+    const { prepareConfigAndRunTests } = require("./prepareConfigAndRunTests");
 
     const config = Config.detect(options);
 
