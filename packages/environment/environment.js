@@ -7,13 +7,24 @@ const Artifactor = require("@truffle/artifactor");
 const Ganache = require("ganache-core/public-exports");
 const Provider = require("@truffle/provider");
 
-const Environment = {
+class Environment {
   // It's important config is a Config object and not a vanilla object
-  detect: async function(config) {
+  static async configure(config) {
+    if (!config.resolver) {
+      config.resolver = new Resolver(config);
+    }
+
+    if (!config.artifactor) {
+      config.artifactor = new Artifactor(config.contracts_build_directory);
+    }
+  }
+
+  // It's important config is a Config object and not a vanilla object
+  static async detect(config) {
     expect.options(config, ["networks"]);
 
-    helpers.setUpConfig(config);
-    helpers.validateNetworkConfig(config);
+    Environment.configure(config);
+    helpers.configureNetwork(config);
 
     const interfaceAdapter = createInterfaceAdapter({
       provider: config.provider,
@@ -23,10 +34,10 @@ const Environment = {
     await Provider.testConnection(config);
     await helpers.detectAndSetNetworkId(config, interfaceAdapter);
     await helpers.setFromOnConfig(config, interfaceAdapter);
-  },
+  }
 
   // Ensure you call Environment.detect() first.
-  fork: async function(config) {
+  static async fork(config) {
     expect.options(config, ["from", "provider", "networks", "network"]);
 
     const interfaceAdapter = createInterfaceAdapter({
@@ -54,9 +65,9 @@ const Environment = {
       gasPrice: upstreamConfig.gasPrice
     };
     config.network = forkedNetwork;
-  },
+  }
 
-  develop: async (config, ganacheOptions) => {
+  static async develop(config, ganacheOptions) {
     expect.options(config, ["networks"]);
 
     const network = config.network || "develop";
@@ -64,7 +75,7 @@ const Environment = {
 
     config.networks[network] = {
       network_id: ganacheOptions.network_id,
-      provider: function() {
+      provider: function () {
         return new Web3.providers.HttpProvider(url, { keepAlive: false });
       }
     };
@@ -73,7 +84,7 @@ const Environment = {
 
     return await Environment.detect(config);
   }
-};
+}
 
 const helpers = {
   setFromOnConfig: async (config, interfaceAdapter) => {
@@ -103,35 +114,7 @@ const helpers = {
     }
   },
 
-  validateNetworkConfig: config => {
-    const networkConfig = config.networks[config.network];
-
-    if (!networkConfig) {
-      throw new TruffleError(
-        `Unknown network "${config.network}` +
-          `". See your Truffle configuration file for available networks.`
-      );
-    }
-
-    const configNetworkId = config.networks[config.network].network_id;
-
-    if (configNetworkId == null) {
-      throw new Error(
-        `You must specify a network_id in your '` +
-          `${config.network}' configuration in order to use this network.`
-      );
-    }
-  },
-
-  setUpConfig: config => {
-    if (!config.resolver) {
-      config.resolver = new Resolver(config);
-    }
-
-    if (!config.artifactor) {
-      config.artifactor = new Artifactor(config.contracts_build_directory);
-    }
-
+  configureNetwork: config => {
     if (!config.network) {
       if (config.networks["development"]) {
         config.network = "development";
@@ -152,6 +135,22 @@ const helpers = {
       currentNetworkSettings.ens.registry
     ) {
       config.ens.registryAddress = currentNetworkSettings.ens.registry.address;
+    }
+
+    const networkConfig = config.networks[config.network];
+    if (!networkConfig) {
+      throw new TruffleError(
+        `Unknown network "${config.network}` +
+          `". See your Truffle configuration file for available networks.`
+      );
+    }
+
+    const configNetworkId = config.networks[config.network].network_id;
+    if (configNetworkId == null) {
+      throw new Error(
+        `You must specify a network_id in your '` +
+          `${config.network}' configuration in order to use this network.`
+      );
     }
   }
 };
