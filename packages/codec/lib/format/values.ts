@@ -29,7 +29,7 @@ import {
   ContractValueInfoUnknown
 } from "./elementary";
 import * as Common from "@truffle/codec/common";
-import * as AbiData from "@truffle/codec/abi-data/types";
+import * as Abi from "@truffle/abi-utils";
 
 export * from "./elementary";
 
@@ -410,7 +410,7 @@ export interface FunctionExternalValueInfoKnown {
    * formatted as a hex string
    */
   selector: string;
-  abi: AbiData.FunctionAbiEntry;
+  abi: Abi.FunctionEntry;
   //may have more optional fields added later, I'll leave these out for now
 }
 

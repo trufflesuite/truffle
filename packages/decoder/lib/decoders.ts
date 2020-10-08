@@ -1,6 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("decoder:decoders");
 
+import * as Abi from "@truffle/abi-utils";
 import * as Codec from "@truffle/codec";
 import {
   AbiData,
@@ -137,7 +138,7 @@ export class WireDecoder {
         deployedContext,
         constructorContext
       }) => ({
-        abi: AbiData.Utils.schemaAbiToAbi(abi),
+        abi: Abi.normalize(abi),
         compilationId,
         compiler,
         contractNode: node,
@@ -787,7 +788,7 @@ export class ContractDecoder {
         AbiData.Allocate.getCalldataAllocations(
           [
             {
-              abi: AbiData.Utils.schemaAbiToAbi(this.contract.abi),
+              abi: Abi.normalize(this.contract.abi),
               compilationId: this.compilation.id,
               compiler,
               contractNode: this.contractNode,
@@ -874,7 +875,7 @@ export class ContractDecoder {
    *   See [[ReturnOptions]] for more information.
    */
   public async decodeReturnValue(
-    abi: AbiData.FunctionAbiEntry,
+    abi: Abi.FunctionEntry,
     data: string,
     options: DecoderTypes.ReturnOptions = {}
   ): Promise<ReturndataDecoding[]> {
@@ -889,7 +890,7 @@ export class ContractDecoder {
    * @protected
    */
   public async decodeReturnValueWithAdditionalContexts(
-    abi: AbiData.FunctionAbiEntry,
+    abi: Abi.FunctionEntry,
     data: string,
     options: DecoderTypes.ReturnOptions = {},
     additionalContexts: Contexts.DecoderContexts = {}
@@ -1652,7 +1653,7 @@ export class ContractInstanceDecoder {
    * additional decoding information.
    */
   public async decodeReturnValue(
-    abi: AbiData.FunctionAbiEntry,
+    abi: Abi.FunctionEntry,
     data: string,
     options: DecoderTypes.ReturnOptions = {}
   ): Promise<ReturndataDecoding[]> {

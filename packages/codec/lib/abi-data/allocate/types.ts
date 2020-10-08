@@ -1,6 +1,7 @@
+import * as Abi from "@truffle/abi-utils";
+
 import * as Compiler from "@truffle/codec/compiler";
 import * as Ast from "@truffle/codec/ast";
-import * as AbiData from "@truffle/codec/abi-data/types";
 import * as Contexts from "@truffle/codec/contexts/types";
 import * as Pointer from "@truffle/codec/pointer";
 import { DecodingMode } from "@truffle/codec/types";
@@ -9,7 +10,7 @@ import * as Format from "@truffle/codec/format";
 
 //for passing to calldata/event/state allocation functions
 export interface ContractAllocationInfo {
-  abi?: AbiData.Abi; //needed for events & calldata
+  abi?: Abi.Abi; //needed for events & calldata
   contractNode: Ast.AstNode; //needed for all 3
   deployedContext?: Contexts.DecoderContext; //needed for events & calldata
   constructorContext?: Contexts.DecoderContext; //needed for calldata
@@ -75,7 +76,7 @@ export interface CalldataAndReturndataAllocation {
 }
 
 export interface CalldataAllocation {
-  abi: AbiData.FunctionAbiEntry | AbiData.ConstructorAbiEntry;
+  abi: Abi.FunctionEntry | Abi.ConstructorEntry;
   offset: number; //measured in bytes
   arguments: CalldataArgumentAllocation[];
   allocationMode: DecodingMode;
@@ -114,7 +115,7 @@ export interface EventAllocations {
 }
 
 export interface EventAllocation {
-  abi: AbiData.EventAbiEntry;
+  abi: Abi.EventEntry;
   contextHash: string;
   definedIn?: Format.Types.ContractType; //is omitted if we don't know
   anonymous: boolean;
