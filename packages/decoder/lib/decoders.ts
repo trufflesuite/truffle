@@ -188,7 +188,8 @@ export class WireDecoder {
           continue; //remember, sources could be empty if shimmed!
         }
         const { ast, compiler } = source;
-        if (ast) {
+        if (ast && ast.nodeType === "SourceUnit") {
+          //don't check Yul sources!
           for (const node of ast.nodes) {
             if (
               node.nodeType === "StructDefinition" ||

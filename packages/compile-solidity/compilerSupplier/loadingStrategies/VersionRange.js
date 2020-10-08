@@ -94,7 +94,10 @@ class VersionRange extends LoadingStrategy {
   }
 
   async getSolcByUrlAndCache(fileName, index = 0) {
-    const url = this.config.compilerRoots[index] + fileName;
+    const url = `${this.config.compilerRoots[index].replace(
+      /\/+$/,
+      ""
+    )}/${fileName}`;
     const { events } = this.config;
     events.emit("downloadCompiler:start", {
       attemptNumber: index + 1

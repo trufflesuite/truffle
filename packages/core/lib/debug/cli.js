@@ -94,15 +94,7 @@ class CLIDebugger {
 
     compileSpinner.succeed();
 
-    return [].concat(
-      ...compilationResult.map((compilation, index) =>
-        Codec.Compilations.Utils.shimArtifacts(
-          compilation.contracts,
-          compilation.sourceIndexes,
-          `shimmedCompilationNumber(${index})`
-        )
-      )
-    );
+    return Codec.Compilations.Utils.shimCompilations(compilationResult);
   }
 
   async startDebugger(compilations) {

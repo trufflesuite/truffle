@@ -170,8 +170,24 @@ const translations = [
                   }
                 },
 
+                // remove this and just compress into `required`
+                anyOf: undefined,
+
                 // ensure `type` is in array of required property names
-                required: Array.from(new Set([...itemType.required, "type"]))
+                required: Array.from(
+                  new Set([
+                    ...// required may be defined in `"anyOf"` - just take what's
+                    // in common amongst all the anyOf and make sure it has
+                    // `"type"`
+                    (itemType.required ||
+                      itemType.anyOf
+                        .map(option => new Set(option.required))
+                        .reduce((a, b) =>
+                          !a ? b : [...a].filter(x => b.has(x))
+                        )),
+                    "type"
+                  ])
+                )
               }
             }))
         )

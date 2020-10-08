@@ -112,19 +112,13 @@ class DebugExternalHandler {
           sources
         );
         //shim the result
-        const compilationIdBase = `externalFor(${address})Via(${fetcher.fetcherName})`;
-        const newCompilations = [].concat(
-          ...compilations.map((compilation, index) =>
-            Codec.Compilations.Utils.shimArtifacts(
-              compilation.contracts,
-              compilation.sourceIndexes,
-              `${compilationIdBase}Number(${index})`,
-              true //mark compilation as external Solidity
-            )
-          )
+        const shimmedCompilations = Codec.Compilations.Utils.shimCompilations(
+          compilations,
+          `externalFor(${address})Via(${fetcher.fetcherName})`,
+          true //mark compilations as external Solidity
         );
         //add it!
-        await this.bugger.addExternalCompilations(newCompilations);
+        await this.bugger.addExternalCompilations(shimmedCompilations);
         //check: did this actually help?
         debug("checking result");
         if (!getUnknownAddresses(this.bugger).includes(address)) {
