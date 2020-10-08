@@ -113,9 +113,7 @@ export class Truffle implements ResolverSource {
     return null;
   }
 
-  // Here we're resolving from local files to local files, all absolute.
-  resolveDependencyPath(importPath: string, dependencyPath: string) {
-    const dirname = path.dirname(importPath);
-    return path.resolve(path.join(dirname, dependencyPath));
+  resolveDependencyPath(_importPath: string, dependencyPath: string) {
+    return dependencyPath;
   }
 }
