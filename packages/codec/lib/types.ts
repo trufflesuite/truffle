@@ -1,6 +1,6 @@
 import BN from "bn.js";
 
-import * as AbiData from "@truffle/codec/abi-data/types";
+import * as Abi from "@truffle/abi-utils";
 import * as Format from "@truffle/codec/format";
 
 /**
@@ -89,7 +89,7 @@ export interface FunctionDecoding {
    * The ABI entry for the function that was called.  You can use this
    * to extract the name, for instance.
    */
-  abi: AbiData.FunctionAbiEntry;
+  abi: Abi.FunctionEntry;
   /**
    * The selector for the function that was called, as a hexadecimal string.
    */
@@ -130,7 +130,7 @@ export interface ConstructorDecoding {
    * default constructors don't actually get an ABI entry, we still return an
    * ABI entry regardless in that case.
    */
-  abi: AbiData.ConstructorAbiEntry;
+  abi: Abi.ConstructorEntry;
   /**
    * The bytecode of the constructor that was called.
    */
@@ -162,7 +162,7 @@ export interface MessageDecoding {
    * The ABI entry for the contract's fallback or receive function that would
    * handle this message; will be null if there is none.
    */
-  abi: AbiData.FallbackAbiEntry | AbiData.ReceiveAbiEntry | null;
+  abi: Abi.FallbackEntry | Abi.ReceiveEntry | null;
   /**
    * The data that was sent to the contract.
    */
@@ -248,7 +248,7 @@ export interface EventDecoding {
    * The ABI entry for the event.  You can use this to extract the name, for
    * instance.
    */
-  abi: AbiData.EventAbiEntry; //should be non-anonymous
+  abi: Abi.EventEntry; //should be non-anonymous
   /**
    * The selector for the event, as a hexadecimal string.
    */
@@ -290,7 +290,7 @@ export interface AnonymousDecoding {
    * The ABI entry for the event.  You can use this to extract the name, for
    * instance.
    */
-  abi: AbiData.EventAbiEntry; //should be anonymous
+  abi: Abi.EventEntry; //should be anonymous
   /**
    * The decoding mode that was used; [see the README](../#decoding-modes) for
    * more on these.

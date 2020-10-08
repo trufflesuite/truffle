@@ -1,0 +1,52 @@
+{
+  "name": "@truffle/abi-utils",
+  "version": "0.1.0",
+  "description": "Utilities for working with ABIs",
+  "keywords": [
+    "ethereum",
+    "solidity",
+    "abi"
+  ],
+  "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/abi-utils#readme",
+  "license": "MIT",
+  "main": "dist/lib/index.js",
+  "types": "dist/lib/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trufflesuite/truffle.git"
+  },
+  "scripts": {
+    "prepare": "tsc",
+    "test": "jest lib/**"
+  },
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "devDependencies": {
+    "@types/faker": "^5.1.2",
+    "@types/jest": "^26.0.14",
+    "@types/jest-json-schema": "^2.1.2",
+    "jest": "^26.4.2",
+    "jest-fast-check": "^0.0.1",
+    "jest-json-schema": "^2.1.0",
+    "ts-jest": "^26.4.0",
+    "ts-node": "^9.0.0",
+    "typescript": "^4.0.3"
+  },
+  "dependencies": {
+    "@truffle/codec": "^0.6.2",
+    "@truffle/contract-schema": "^3.2.5",
+    "ajv": "^6.12.5",
+    "change-case": "^4.1.1",
+    "faker": "^5.1.0",
+    "fast-check": "^2.4.0",
+    "source-map-support": "^0.5.19"
+  }
+}

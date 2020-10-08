@@ -3,44 +3,29 @@ const debug = debugModule("codec:abi-data:utils");
 
 // untyped import since no @types/web3-utils exists
 const Web3Utils = require("web3-utils");
-import { Abi as SchemaAbi } from "@truffle/contract-schema/spec";
 import * as Evm from "@truffle/codec/evm";
-import * as Common from "@truffle/codec/common";
 import * as Ast from "@truffle/codec/ast";
-import * as Abi from "./types";
+import * as Abi from "@truffle/abi-utils";
+import { FunctionAbiBySelectors } from "./types";
 
-//NOTE: SchemaAbi is kind of loose and a pain to use.
-//So we'll generally coerce things to Abi before use.
-//(we combine this with adding a "function" tag for
-//entries that lack it)
-
-export const DEFAULT_CONSTRUCTOR_ABI: Abi.ConstructorAbiEntry = {
+export const DEFAULT_CONSTRUCTOR_ABI: Abi.ConstructorEntry = {
   type: "constructor",
   inputs: [],
-  stateMutability: "nonpayable",
-  payable: false
+  stateMutability: "nonpayable"
 };
-
-export function schemaAbiToAbi(abiLoose: SchemaAbi | Abi.Abi): Abi.Abi {
-  return (abiLoose as SchemaAbi).map(entry =>
-    entry.type
-      ? <Abi.AbiEntry>entry
-      : <Abi.AbiEntry>{ type: "function", ...entry }
-  );
-}
 
 //note the return value only includes functions!
 export function computeSelectors(
   abi: Abi.Abi | undefined
-): Abi.FunctionAbiBySelectors | undefined {
+): FunctionAbiBySelectors | undefined {
   if (abi === undefined) {
     return undefined;
   }
   return Object.assign(
     {},
     ...abi
-      .filter((abiEntry: Abi.AbiEntry) => abiEntry.type === "function")
-      .map((abiEntry: Abi.FunctionAbiEntry) => ({
+      .filter((abiEntry: Abi.Entry) => abiEntry.type === "function")
+      .map((abiEntry: Abi.FunctionEntry) => ({
         [abiSelector(abiEntry)]: abiEntry
       }))
   );
@@ -56,43 +41,23 @@ export function abiHasPayableFallback(
   return abi.some(
     abiEntry =>
       (abiEntry.type === "fallback" || abiEntry.type === "receive") &&
-      abiMutability(abiEntry) === "payable"
+      abiEntry.stateMutability === "payable"
   );
-}
-
-//shim for old abi versions
-function abiMutability(
-  abiEntry:
-    | Abi.FunctionAbiEntry
-    | Abi.ConstructorAbiEntry
-    | Abi.FallbackAbiEntry
-    | Abi.ReceiveAbiEntry
-): Common.Mutability {
-  if (abiEntry.stateMutability !== undefined) {
-    return abiEntry.stateMutability;
-  }
-  if (abiEntry.payable) {
-    return "payable";
-  }
-  if (abiEntry.type === "function" && abiEntry.constant) {
-    return "view";
-  }
-  return "nonpayable";
 }
 
 //NOTE: this function returns the written out SIGNATURE, not the SELECTOR
 export function abiSignature(
-  abiEntry: Abi.FunctionAbiEntry | Abi.EventAbiEntry
+  abiEntry: Abi.FunctionEntry | Abi.EventEntry
 ): string {
   return abiEntry.name + abiTupleSignature(abiEntry.inputs);
 }
 
-export function abiTupleSignature(parameters: Abi.AbiParameter[]): string {
+export function abiTupleSignature(parameters: Abi.Parameter[]): string {
   let components = parameters.map(abiTypeSignature);
   return "(" + components.join(",") + ")";
 }
 
-function abiTypeSignature(parameter: Abi.AbiParameter): string {
+function abiTypeSignature(parameter: Abi.Parameter): string {
   let tupleMatch = parameter.type.match(/tuple(.*)/);
   if (tupleMatch === null) {
     //does not start with "tuple"
@@ -105,7 +70,7 @@ function abiTypeSignature(parameter: Abi.AbiParameter): string {
 }
 
 export function abiSelector(
-  abiEntry: Abi.FunctionAbiEntry | Abi.EventAbiEntry
+  abiEntry: Abi.FunctionEntry | Abi.EventEntry
 ): string {
   let signature = abiSignature(abiEntry);
   //NOTE: web3's soliditySha3 has a problem if the empty
@@ -121,8 +86,8 @@ export function abiSelector(
 
 //note: undefined does not match itself :P
 export function abisMatch(
-  entry1: Abi.AbiEntry | undefined,
-  entry2: Abi.AbiEntry | undefined
+  entry1: Abi.Entry | undefined,
+  entry2: Abi.Entry | undefined
 ): boolean {
   //we'll consider two abi entries to match if they have the same
   //type, name (if applicable), and inputs (if applicable).
@@ -138,12 +103,12 @@ export function abisMatch(
     case "event":
       return (
         abiSignature(entry1) ===
-        abiSignature(<Abi.FunctionAbiEntry | Abi.EventAbiEntry>entry2)
+        abiSignature(<Abi.FunctionEntry | Abi.EventEntry>entry2)
       );
     case "constructor":
       return (
         abiTupleSignature(entry1.inputs) ===
-        abiTupleSignature((<Abi.ConstructorAbiEntry>entry2).inputs)
+        abiTupleSignature((<Abi.ConstructorEntry>entry2).inputs)
       );
     case "fallback":
     case "receive":
@@ -152,7 +117,7 @@ export function abisMatch(
 }
 
 export function definitionMatchesAbi(
-  abiEntry: Abi.AbiEntry,
+  abiEntry: Abi.Entry,
   definition: Ast.AstNode,
   referenceDeclarations: Ast.AstNodes
 ): boolean {
@@ -166,14 +131,14 @@ export function definitionMatchesAbi(
   }
 }
 
-export function topicsCount(abiEntry: Abi.EventAbiEntry): number {
+export function topicsCount(abiEntry: Abi.EventEntry): number {
   let selectorCount = abiEntry.anonymous ? 0 : 1; //if the event is not anonymous, we must account for the selector
   return (
     abiEntry.inputs.filter(({ indexed }) => indexed).length + selectorCount
   );
 }
 
-export function abiEntryIsObviouslyIllTyped(abiEntry: Abi.AbiEntry): boolean {
+export function abiEntryIsObviouslyIllTyped(abiEntry: Abi.Entry): boolean {
   switch (abiEntry.type) {
     case "fallback":
     case "receive":
@@ -189,9 +154,7 @@ export function abiEntryIsObviouslyIllTyped(abiEntry: Abi.AbiEntry): boolean {
   }
 }
 
-function abiParameterIsObviouslyIllTyped(
-  abiParameter: Abi.AbiParameter
-): boolean {
+function abiParameterIsObviouslyIllTyped(abiParameter: Abi.Parameter): boolean {
   const legalBaseTypeClasses = [
     "uint",
     "int",
@@ -218,8 +181,8 @@ function abiParameterIsObviouslyIllTyped(
   }
 }
 
-export function abiEntryHasStorageParameters(abiEntry: Abi.AbiEntry): boolean {
-  const isStorage = (parameter: Abi.AbiParameter) =>
+export function abiEntryHasStorageParameters(abiEntry: Abi.Entry): boolean {
+  const isStorage = (parameter: Abi.Parameter) =>
     parameter.type.endsWith(" storage");
   return (
     abiEntry.type === "function" &&

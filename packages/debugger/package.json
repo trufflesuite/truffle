@@ -20,6 +20,7 @@
     "test:debug": "NODE_ENV=testing node --inspect ./node_modules/.bin/mocha-webpack --webpack-config webpack/webpack.config-test.js --recursive"
   },
   "dependencies": {
+    "@truffle/abi-utils": "^0.1.0",
     "@truffle/codec": "^0.6.3",
     "@truffle/compile-solidity": "^5.0.2",
     "@truffle/expect": "^0.0.15",

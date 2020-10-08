@@ -36,6 +36,7 @@
   },
   "devDependencies": {
     "@gnd/typedoc": "0.15.0-0",
+    "@truffle/abi-utils": "^0.1.0",
     "@truffle/compile-common": "^0.3.12",
     "@truffle/contract-schema": "^3.2.5",
     "@trufflesuite/typedoc-default-themes": "^0.6.1",
