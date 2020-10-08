@@ -58,24 +58,42 @@ class Console extends EventEmitter {
     });
   }
 
+  initialize() {
+    try {
+      this.interfaceAdapter.getAccounts().then(fetchedAccounts => {
+        this.repl.context.web3 = this.web3;
+        this.repl.context.interfaceAdapter = this.interfaceAdapter;
+        this.repl.context.accounts = fetchedAccounts;
+      });
+
+      this.provision();
+    } catch (error) {
+      this.options.logger.log(
+        "Unexpected error: Cannot provision contracts while instantiating the console."
+      );
+      this.options.logger.log(error.stack || error.message || error);
+    }
+  }
+
   start() {
+    // working on how to restart after .clear
+    // currrently echoing output twice
+    // could events on this.repl be firing multiple times?
     try {
       this.repl = repl.start({
         prompt: "truffle(" + this.options.network + ")> ",
         eval: this.interpret.bind(this)
       });
 
-      this.interfaceAdapter.getAccounts().then(fetchedAccounts => {
-        this.repl.context.web3 = this.web3;
-        this.repl.context.interfaceAdapter = this.interfaceAdapter;
-        this.repl.context.accounts = fetchedAccounts;
-      });
-      this.provision();
+      this.repl.on("reset", () => this.initialize());
 
       //want repl to exit when it receives an exit command
       this.repl.on("exit", () => {
+        console.log("exiting...");
         process.exit();
       });
+
+      this.initialize();
     } catch (error) {
       this.options.logger.log(
         "Unexpected error: Cannot provision contracts while instantiating the console."
