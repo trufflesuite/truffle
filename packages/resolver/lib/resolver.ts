@@ -21,7 +21,7 @@ export class Resolver {
     ];
 
     if (includeTruffleSource) {
-      this.sources.push(new Truffle(options));
+      this.sources.unshift(new Truffle(options));
     }
   }
 
