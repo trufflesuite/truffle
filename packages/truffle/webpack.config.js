@@ -10,8 +10,7 @@ const truffleLibraryDirectory = path.join(
   "../..",
   "node_modules",
   "@truffle/resolver",
-  "lib",
-  "truffleLibraries"
+  "solidity"
 );
 
 module.exports = {

@@ -93,12 +93,7 @@ export class Truffle implements ResolverSource {
           // @ts-ignore
           typeof BUNDLE_VERSION !== "undefined"
             ? path.resolve(path.join(__dirname, `${lib}.sol`))
-            : path.resolve(
-                __dirname,
-                "../../../..",
-                "lib/truffleLibraries",
-                `${lib}.sol`
-              );
+            : path.resolve(__dirname, "../../../..", "solidity", `${lib}.sol`);
         const body = fse.readFileSync(actualImportPath, { encoding: "utf8" });
         return { body, filePath: importPath };
       }
