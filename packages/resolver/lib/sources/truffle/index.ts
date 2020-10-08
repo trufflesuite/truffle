@@ -22,7 +22,7 @@ export class Truffle implements ResolverSource {
       ));
       abstractionFiles = buildDirFiles.filter(file => file.match(/^.*.json$/));
 
-      const mapping: { [key: string]: boolean | string } = {};
+      const mapping: { [key: string]: string | false } = {};
 
       const blacklist = new Set(["Assert", "DeployedAddresses"]);
 
@@ -107,7 +107,7 @@ export class Truffle implements ResolverSource {
     return { body: null, filePath: null };
   }
 
-  require(importPath: string): null {
+  require(): null {
     return null;
   }
 
