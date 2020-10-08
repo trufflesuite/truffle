@@ -108,6 +108,8 @@ export class Truffle implements ResolverSource {
   }
 
   require(): null {
+    // return null to let another source handle this behavior
+    // (will be covered by FS source)
     return null;
   }
 
