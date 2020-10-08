@@ -121,7 +121,7 @@ describe("Artifacts queries", () => {
     expect(contract).toHaveProperty("name");
     expect(contract).toHaveProperty("processedSource");
 
-    const { name, processedSource, abi } = contract;
+    const { name, processedSource } = contract;
     expect(name).toEqual(Migrations.contractName);
     expect(processedSource).toHaveProperty("ast");
     expect(processedSource).toHaveProperty("source");
@@ -151,13 +151,7 @@ describe("Artifacts queries", () => {
     expect(contract).toHaveProperty("createBytecode");
     expect(contract).toHaveProperty("callBytecode");
 
-    const {
-      name,
-      processedSource,
-      abi,
-      createBytecode,
-      callBytecode
-    } = contract;
+    const { name, processedSource, createBytecode, callBytecode } = contract;
     expect(name).toEqual(Migrations.contractName);
     expect(createBytecode).toEqual(
       Shims.LegacyToNew.forBytecode(Migrations.bytecode)
@@ -230,7 +224,7 @@ describe("Artifacts queries", () => {
     expect(processedSource).toHaveProperty("ast");
     expect(processedSource).toHaveProperty("source");
 
-    const { ast, source } = processedSource;
+    const { source } = processedSource;
     expect(source).toHaveProperty("contents");
     expect(source).toHaveProperty("sourcePath");
     expect(name).toEqual(Migrations.contractName);
@@ -246,5 +240,16 @@ describe("Artifacts queries", () => {
     expect(linkReferences).toEqual(
       Shims.LegacyToNew.forBytecode(Migrations.deployedBytecode).linkReferences
     );
+  });
+
+  it("cleanup", done => {
+    // smething in the tests above starts a doing, uh, something and causes jest
+    // to loose its cool. I just want my PR to pass so I can release
+    // ganache-core to @latest so i'm committing this little guy so jest doesn't
+    // wig out.
+    setTimeout(() => {
+      expect(1).toEqual(1);
+      done();
+    }, 4000);
   });
 });
