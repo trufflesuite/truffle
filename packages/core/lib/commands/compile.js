@@ -87,7 +87,7 @@ const command = {
         );
       }
 
-      WorkflowCompile.compile(config)
+      WorkflowCompile.compile(config, true)
         .then(async compilationOutput => {
           if (options.saveIntermediate) {
             // Get the filename the user provided to save the compilation results to
