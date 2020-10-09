@@ -53,23 +53,11 @@ export const FunctionEntry = () =>
       ),
       fc.record({
         name: FunctionName(),
-        inputs: fc.array(Parameter(), { maxLength: 10 }).filter(inputs => {
-          // names that are not blank should be unique
-          const names = inputs
-            .map(({ name }) => name)
-            .filter(name => name !== "");
-          return names.length === new Set(names).size;
-        })
+        inputs: fc.array(Parameter(), { maxLength: 10 })
       }),
       fc.record(
         {
-          outputs: fc.array(Parameter(), { maxLength: 10 }).filter(outputs => {
-            // names that are not blank should be unique
-            const names = outputs
-              .map(({ name }) => name)
-              .filter(name => name !== "");
-            return names.length === new Set(names).size;
-          })
+          outputs: fc.array(Parameter(), { maxLength: 10 })
         },
         { withDeletedKeys: true }
       ),
