@@ -1,4 +1,5 @@
-pragma solidity ^0.6.3;
+//SPDX-License-Identifier: MIT
+pragma solidity ^0.7.0;
 
 contract DecodingSample {
   enum E {
@@ -61,7 +62,7 @@ contract DecodingSample {
     functionExternal = this.example;
   }
 
-  constructor() public {
+  constructor() {
     varUint = 1;
     varString = "two";
     varBool = true;

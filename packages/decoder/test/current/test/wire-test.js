@@ -73,8 +73,6 @@ contract("WireTest", function (_accounts) {
     );
     let getterHash2 = getterTest2.tx;
 
-    let overrideTest = await deployedContract.interfaceAndOverrideTest();
-
     let constructorTx = await web3.eth.getTransaction(constructorHash);
     let emitStuffTx = await web3.eth.getTransaction(emitStuffHash);
     let moreStuffTx = await web3.eth.getTransaction(moreStuffHash);
@@ -231,7 +229,6 @@ contract("WireTest", function (_accounts) {
     let inheritedBlock = inherited.receipt.blockNumber;
     let indexTestBlock = indexTest.receipt.blockNumber;
     let libraryTestBlock = libraryTest.receipt.blockNumber;
-    let overrideBlock = overrideTest.receipt.blockNumber;
 
     try {
       //due to web3's having ethers's crappy decoder built in,
@@ -268,10 +265,6 @@ contract("WireTest", function (_accounts) {
     let libraryTestEvents = await decoder.events({
       fromBlock: libraryTestBlock,
       toBlock: libraryTestBlock
-    });
-    let overrideTestEvents = await decoder.events({
-      fromBlock: overrideBlock,
-      toBlock: overrideBlock
     });
     //HACK -- since danger was last, we can just ask for the
     //events from the latest block
@@ -488,112 +481,6 @@ contract("WireTest", function (_accounts) {
         dangerEventDecoding.arguments[0].value
       ),
       `WireTest(${address}).danger`
-    );
-
-    assert.lengthOf(overrideTestEvents, 5);
-
-    assert.lengthOf(overrideTestEvents[0].decodings, 1);
-    assert.strictEqual(overrideTestEvents[0].decodings[0].kind, "event");
-    assert.strictEqual(
-      overrideTestEvents[0].decodings[0].abi.name,
-      "AbstractEvent"
-    );
-    assert.strictEqual(
-      overrideTestEvents[0].decodings[0].class.typeName,
-      "WireTest"
-    );
-    assert.strictEqual(
-      overrideTestEvents[0].decodings[0].definedIn.typeName,
-      "WireTestAbstract"
-    );
-    assert.isEmpty(overrideTestEvents[0].decodings[0].arguments);
-
-    assert.lengthOf(overrideTestEvents[1].decodings, 1);
-    assert.strictEqual(overrideTestEvents[1].decodings[0].kind, "event");
-    assert.strictEqual(
-      overrideTestEvents[1].decodings[0].abi.name,
-      "AbstractOverridden"
-    );
-    assert.strictEqual(
-      overrideTestEvents[1].decodings[0].class.typeName,
-      "WireTest"
-    );
-    assert.strictEqual(
-      overrideTestEvents[1].decodings[0].definedIn.typeName,
-      "WireTest"
-    );
-    assert.lengthOf(overrideTestEvents[1].decodings[0].arguments, 1);
-    assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(
-        overrideTestEvents[1].decodings[0].arguments[0].value
-      ),
-      107
-    );
-
-    assert.lengthOf(overrideTestEvents[2].decodings, 1);
-    assert.strictEqual(overrideTestEvents[2].decodings[0].kind, "event");
-    assert.strictEqual(
-      overrideTestEvents[2].decodings[0].abi.name,
-      "AbstractOverridden"
-    );
-    assert.strictEqual(
-      overrideTestEvents[2].decodings[0].class.typeName,
-      "WireTest"
-    );
-    assert.strictEqual(
-      overrideTestEvents[2].decodings[0].definedIn.typeName,
-      "WireTestAbstract"
-    );
-    assert.lengthOf(overrideTestEvents[2].decodings[0].arguments, 1);
-    assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(
-        overrideTestEvents[2].decodings[0].arguments[0].value
-      ),
-      683
-    );
-
-    assert.lengthOf(overrideTestEvents[3].decodings, 1);
-    assert.strictEqual(overrideTestEvents[3].decodings[0].kind, "event");
-    assert.strictEqual(
-      overrideTestEvents[3].decodings[0].abi.name,
-      "Overridden"
-    );
-    assert.strictEqual(
-      overrideTestEvents[3].decodings[0].class.typeName,
-      "WireTest"
-    );
-    assert.strictEqual(
-      overrideTestEvents[3].decodings[0].definedIn.typeName,
-      "WireTest"
-    );
-    assert.lengthOf(overrideTestEvents[3].decodings[0].arguments, 1);
-    assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(
-        overrideTestEvents[3].decodings[0].arguments[0].value
-      ),
-      107
-    );
-
-    assert.lengthOf(overrideTestEvents[4].decodings, 1);
-    assert.strictEqual(overrideTestEvents[4].decodings[0].kind, "event");
-    assert.strictEqual(
-      overrideTestEvents[4].decodings[0].abi.name,
-      "Overridden"
-    );
-    assert.strictEqual(
-      overrideTestEvents[4].decodings[0].class.typeName,
-      "WireTest"
-    );
-    assert.strictEqual(
-      overrideTestEvents[4].decodings[0].definedIn.typeName,
-      "WireTestParent"
-    );
-    assert.lengthOf(overrideTestEvents[4].decodings[0].arguments, 1);
-    assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(
-        overrideTestEvents[4].decodings[0].arguments[0].value
-      ),
-      683
     );
   });
 
