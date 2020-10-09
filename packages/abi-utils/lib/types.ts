@@ -52,5 +52,5 @@ export interface Parameter {
 }
 
 export interface EventParameter extends Parameter {
-  indexed?: boolean; //only present for inputs
+  indexed: boolean;
 }
