@@ -40,8 +40,11 @@ const normalizeStateMutability = ({
   payable,
   constant
 }: LooseStateMutabilityFields): { stateMutability: StateMutability } => {
+  if (stateMutability) {
+    return { stateMutability };
+  }
+
   return {
-    stateMutability:
-      stateMutability || payable ? "payable" : constant ? "view" : "nonpayable"
+    stateMutability: payable ? "payable" : constant ? "view" : "nonpayable"
   };
 };

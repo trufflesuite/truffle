@@ -69,18 +69,23 @@ export const FunctionEntry = () =>
             fc.constant("nonpayable"),
             fc.constant("payable")
           ),
+          fc.boolean(),
           fc.boolean()
         )
-        .map(([stateMutability, includeOptionals]) =>
-          !includeOptionals
-            ? { stateMutability }
-            : {
-                stateMutability,
-                payable: stateMutability === "payable",
-                constant:
-                  stateMutability === "view" || stateMutability === "pure"
-              }
-        )
+        .map(([stateMutability, includeLegacy, includeModern]) => {
+          const payable = stateMutability === "payable";
+          const constant =
+            stateMutability === "view" || stateMutability === "pure";
+
+          const modern = { stateMutability };
+          const legacy = { payable, constant };
+
+          return includeLegacy && includeModern
+            ? { ...modern, ...legacy }
+            : includeModern
+            ? modern
+            : legacy;
+        })
     )
     .map(records => records.reduce((a, b) => ({ ...a, ...b }), {}))
     .filter(entry => {
@@ -107,18 +112,21 @@ export const FallbackEntry = () =>
       fc
         .tuple(
           fc.oneof(fc.constant("nonpayable"), fc.constant("payable")),
+          fc.boolean(),
           fc.boolean()
         )
-        .map(([stateMutability, includeOptionals]) =>
-          !includeOptionals
-            ? { stateMutability }
-            : {
-                stateMutability,
-                payable: stateMutability === "payable",
-                constant:
-                  stateMutability === "view" || stateMutability === "pure"
-              }
-        )
+        .map(([stateMutability, includeLegacy, includeModern]) => {
+          const payable = stateMutability === "payable";
+
+          const modern = { stateMutability };
+          const legacy = { payable };
+
+          return includeLegacy && includeModern
+            ? { ...modern, ...legacy }
+            : includeModern
+            ? modern
+            : legacy;
+        })
     )
     .map(([{ type }, mutabilityFields]) => ({ type, ...mutabilityFields }));
 
@@ -132,18 +140,21 @@ export const ConstructorEntry = () =>
       fc
         .tuple(
           fc.oneof(fc.constant("nonpayable"), fc.constant("payable")),
+          fc.boolean(),
           fc.boolean()
         )
-        .map(([stateMutability, includeOptionals]) =>
-          !includeOptionals
-            ? { stateMutability }
-            : {
-                stateMutability,
-                payable: stateMutability === "payable",
-                constant:
-                  stateMutability === "view" || stateMutability === "pure"
-              }
-        )
+        .map(([stateMutability, includeLegacy, includeModern]) => {
+          const payable = stateMutability === "payable";
+
+          const modern = { stateMutability };
+          const legacy = { payable };
+
+          return includeLegacy && includeModern
+            ? { ...modern, ...legacy }
+            : includeModern
+            ? modern
+            : legacy;
+        })
     )
     .map(([{ type, inputs }, mutabilityFields]) => ({
       type,
