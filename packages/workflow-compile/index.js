@@ -61,7 +61,7 @@ async function compile(config) {
 }
 
 const WorkflowCompile = {
-  async compile(options) {
+  async compile(options, loadDb = false) {
     const config = prepareConfig(options);
 
     if (config.events) config.events.emit("compile:start");
@@ -85,7 +85,12 @@ const WorkflowCompile = {
       });
     }
 
-    if (config.db && config.db.enabled === true && contracts.length > 0) {
+    if (
+      config.db &&
+      config.db.enabled === true &&
+      contracts.length > 0 &&
+      loadDb === true
+    ) {
       const db = new TruffleDB(config);
       await db.loadCompilations({ contracts, compilations });
     }
