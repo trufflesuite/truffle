@@ -12,7 +12,7 @@ export const Parameter = () =>
       }),
       TypeRecord()
     )
-    .map(records => records.reduce((a, b) => ({ ...a, ...b }), {}));
+    .map(([{ name }, type]) => ({ name, ...type }));
 
 export const EventParameter = () =>
   fc
@@ -23,7 +23,7 @@ export const EventParameter = () =>
       }),
       TypeRecord()
     )
-    .map(records => records.reduce((a, b) => ({ ...a, ...b }), {}));
+    .map(([{ name, indexed }, type]) => ({ name, indexed, ...type }));
 
 export const EventEntry = () =>
   fc.record({
@@ -132,7 +132,7 @@ export const FallbackEntry = () =>
               }
         )
     )
-    .map(records => records.reduce((a, b) => ({ ...a, ...b }), {}));
+    .map(([{ type }, mutabilityFields]) => ({ type, ...mutabilityFields }));
 
 export const ConstructorEntry = () =>
   fc
@@ -157,7 +157,11 @@ export const ConstructorEntry = () =>
               }
         )
     )
-    .map(records => records.reduce((a, b) => ({ ...a, ...b }), {}));
+    .map(([{ type, inputs }, mutabilityFields]) => ({
+      type,
+      inputs,
+      ...mutabilityFields
+    }));
 
 export const Abi = () =>
   fc
