@@ -556,7 +556,11 @@ export function definitionToAbi(
 function functionDefinitionToAbi(
   node: AstNode,
   referenceDeclarations: AstNodes
-): Exclude<Abi.Entry, Abi.EventEntry> {
+):
+  | Abi.FunctionEntry
+  | Abi.ConstructorEntry
+  | Abi.FallbackEntry
+  | Abi.ReceiveEntry {
   let kind = functionKind(node);
   let stateMutability = mutability(node);
   let payable = stateMutability === "payable";
