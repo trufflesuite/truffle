@@ -32,17 +32,11 @@ afterAll(async done => {
   setTimeout(() => server.close(done), 500);
 });
 
-// mocking the truffle-workflow-compile to avoid jest timing issues
-// and also to keep from adding more time to Travis testing
-jest.mock("@truffle/workflow-compile", () => ({
-  compile: function () {
-    return require(path.join(
-      __dirname,
-      "workflowCompileOutputMock",
-      "compilationOutput.json"
-    ));
-  }
-}));
+const compilationResult = require(path.join(
+  __dirname,
+  "workflowCompileOutputMock",
+  "compilationOutput.json"
+));
 
 const fixturesDirectory = path.join(
   __dirname,
@@ -511,7 +505,7 @@ describe("Compilation", () => {
     });
 
     const loader = new ArtifactsLoader(db, compilationConfig);
-    await loader.load();
+    await loader.load(compilationResult);
   }, 10000);
 
   afterAll(async () => {
