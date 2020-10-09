@@ -1,11 +1,6 @@
 import { Abi as SchemaAbi } from "@truffle/contract-schema/spec";
 import { Abi, Entry, StateMutability } from "./types";
 
-//NOTE: SchemaAbi is kind of loose and a pain to use.
-//So we'll generally coerce things to Abi before use.
-//(we combine this with adding a "function" tag for
-//entries that lack it)
-
 export const normalize = (looseAbi: SchemaAbi | Abi): Abi =>
   (looseAbi as SchemaAbi).map(normalizeEntry);
 
