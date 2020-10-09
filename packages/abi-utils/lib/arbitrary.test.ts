@@ -6,6 +6,8 @@ expect.extend(matchers);
 
 import * as Arbitrary from "./arbitrary";
 
+// helper function to ensure that, when we match against a given subschema,
+// we also include all the definitions, in case the subschema references those
 const withDefinitions = (schema: object) => ({
   definitions: abiSchema.definitions,
   ...schema
