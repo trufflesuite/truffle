@@ -216,7 +216,8 @@ const Primitive = () =>
 const Type: fc.Memo<string> = fc.memo(n =>
   n === 0
     ? Primitive()
-    : fc.oneof(Primitive(), ArrayFixed(n > 3 ? 3 : n), ArrayDynamic(n))
+    : // we cap this at 3 so that fast-check doesn't blow the stack
+      fc.oneof(Primitive(), ArrayFixed(n > 3 ? 3 : n), ArrayDynamic(n))
 );
 
 const ArrayFixed = fc.memo(n => {
