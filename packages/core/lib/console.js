@@ -87,12 +87,8 @@ class Console extends EventEmitter {
 
       this.repl.on("reset", () => this.initialize());
 
-      //want repl to exit when it receives an exit command
-      this.repl.on("exit", () => {
-        console.log("exiting...");
-        process.exit();
-      });
-
+      // bubble up exit
+      this.repl.on("exit", () => this.emit("exit"));
       this.initialize();
     } catch (error) {
       this.options.logger.log(
@@ -189,9 +185,12 @@ class Console extends EventEmitter {
 
   interpret(input, context, filename, callback) {
     const processedInput = processInput(input);
-    if (
-      this.command.getCommand(processedInput, this.options.noAliases) != null
-    ) {
+    const { noAliases } = this.options;
+
+    console.log(`[\n\n${processedInput}\n\n]`);
+
+    if (this.command.getCommand(processedInput, noAliases) != null) {
+      console.log("spawning...");
       return this.runSpawn(processedInput, this.options, error => {
         if (error) {
           // Perform error handling ourselves.
