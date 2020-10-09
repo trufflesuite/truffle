@@ -55,7 +55,8 @@ afterAll(() => {
   tempDir.removeCallback();
 });
 
-it("loads artifacts and returns true ", async () => {
+//skipping because loadersSchema subschema no longer exists
+it.skip("loads artifacts and returns true ", async () => {
   const {
     data: {
       loaders: {
