@@ -17,7 +17,6 @@ import {
   WorkflowCompileResult,
   CompiledContract
 } from "@truffle/compile-common/src/types";
-import WorkflowCompile from "@truffle/workflow-compile";
 
 type NetworkLinkObject = {
   [name: string]: string;
@@ -81,18 +80,10 @@ export class ArtifactsLoader {
     this.config = config;
   }
 
-  async load(): Promise<void> {
-    const result: WorkflowCompileResult = await WorkflowCompile.compile(
-      this.config
-    );
+  async load(result: WorkflowCompileResult): Promise<void> {
+    const { compilations } = await this.db.loadCompilations(result, { names: true });
 
     const project = await this.db.loadProject();
-
-    // third parameter in loadCompilation is for whether or not we need
-    // to update nameRecords (i.e. is this happening in test)
-    const { compilations } = await this.db.loadCompilations(result, {
-      names: true
-    });
 
     //map contracts and contract instances to compiler
     await Promise.all(
@@ -108,7 +99,7 @@ export class ArtifactsLoader {
         const networks = await this.loadNetworks(
           project.id,
           result.compilations[index].contracts,
-          this.config["artifacts_directory"],
+          this.config["contracts_build_directory"],
           this.config["contracts_directory"]
         );
 
