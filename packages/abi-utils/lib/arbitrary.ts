@@ -209,7 +209,7 @@ const Primitive = () =>
     Primitives.Fixed(),
     Primitives.Ufixed(),
     Primitives.BytesM(),
-    // Primitives.Function(), // TODO re-add
+    Primitives.Function(),
     Primitives.Bytes(),
     Primitives.String(),
     Primitives.Tuple()
