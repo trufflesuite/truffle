@@ -173,13 +173,19 @@ export const Abi = () =>
 
 namespace Numerics {
   // 0 < n <= 32
+  // use subtraction so that fast-check treats 32 as simpler than 1
   export const Bytes = () => fc.nat(31).map(k => 32 - k);
 
-  // o < n <= 256
+  // 0 < n <= 256, 8 | n
   export const Bits = () => Bytes().map(k => 8 * k);
 
-  // 0 < n < 80
-  export const DecimalPlaces = () => fc.nat(79).map(k => k + 1);
+  // 0 < n <= 80
+  // use fancy math so that fast-check treats 18 as the simplest case
+  //
+  //     0 ----------------- 79
+  //     lines up as:
+  //     18 ------ 80, 0 --- 17
+  export const DecimalPlaces = () => fc.nat(79).map(k => ((k + 17) % 80) + 1);
 
   export const Precision = () => fc.tuple(Bits(), DecimalPlaces());
 }
