@@ -269,6 +269,7 @@ const reservedWords = new Set([
   "unchecked"
 ]);
 
+// borrowed from https://runkit.com/dubzzz/faker-to-fast-check
 const fakerToArb = (template: string, transform = camelCase) => {
   return fc
     .integer()
