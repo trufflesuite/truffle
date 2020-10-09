@@ -612,14 +612,17 @@ function functionDefinitionToAbi(
   }
 }
 
+interface EventParameterNode extends AstNode {
+  indexed: boolean;
+}
+
 function eventDefinitionToAbi(
   node: AstNode,
   referenceDeclarations: AstNodes
 ): Abi.EventEntry {
-  let inputs = parametersToAbi(
-    node.parameters.parameters,
-    referenceDeclarations,
-    true
+  let inputs = parametersToAbi<EventParameterNode>(
+    node.parameters.parameters as EventParameterNode[],
+    referenceDeclarations
   );
   let name = node.name;
   let anonymous = node.anonymous;
@@ -631,14 +634,15 @@ function eventDefinitionToAbi(
   };
 }
 
-function parametersToAbi(
-  nodes: AstNode[],
-  referenceDeclarations: AstNodes,
-  checkIndexed: boolean = false
-): Abi.Parameter[] {
-  return nodes.map(node =>
-    parameterToAbi(node, referenceDeclarations, checkIndexed)
-  );
+type Parameter<N extends AstNode> = "indexed" extends keyof N
+  ? Abi.EventParameter
+  : Abi.Parameter;
+
+function parametersToAbi<N extends AstNode>(
+  nodes: N[],
+  referenceDeclarations: AstNodes
+): Parameter<N>[] {
+  return nodes.map(node => parameterToAbi(node, referenceDeclarations));
 }
 
 //NOTE: This function is only for types that could potentially go in the ABI!
@@ -648,30 +652,33 @@ function parametersToAbi(
 //this that *actually* go in the ABI
 //if you want to expand it to handle those (by throwing an exception, say),
 //you'll need to give it a way to detect circularities
-function parameterToAbi(
-  node: AstNode,
-  referenceDeclarations: AstNodes,
-  checkIndexed: boolean = false
-): Abi.EventParameter {
+function parameterToAbi<N extends AstNode>(
+  node: N,
+  referenceDeclarations: AstNodes
+): Parameter<N> {
   let name = node.name; //may be the empty string... or even undefined for a base type
   let components: Abi.Parameter[];
-  let indexed: boolean;
-  if (checkIndexed) {
-    indexed = node.indexed; //note: may be undefined for a base type
-  }
   let internalType: string = typeStringWithoutLocation(node);
   //is this an array? if so use separate logic
   if (typeClass(node) === "array") {
     let baseType = node.typeName ? node.typeName.baseType : node.baseType;
-    let baseAbi = parameterToAbi(baseType, referenceDeclarations, checkIndexed);
+    let baseAbi = parameterToAbi(baseType, referenceDeclarations);
     let arraySuffix = isDynamicArray(node) ? `[]` : `[${staticLength(node)}]`;
-    return {
+    const parameter: Abi.Parameter = {
       name,
       type: baseAbi.type + arraySuffix,
-      indexed,
       components: baseAbi.components,
       internalType
     };
+
+    if ("indexed" in node) {
+      return {
+        ...parameter,
+        indexed: node.indexed
+      } as Parameter<N>;
+    } else {
+      return parameter as Parameter<N>;
+    }
   }
   let abiTypeString = toAbiType(node, referenceDeclarations);
   //otherwise... is it a struct? if so we need to populate components
@@ -687,17 +694,25 @@ function parameterToAbi(
     }
     components = parametersToAbi(
       referenceDeclaration.members,
-      referenceDeclarations,
-      checkIndexed
+      referenceDeclarations
     );
   }
-  return {
+
+  const parameter: Abi.Parameter = {
     name, //may be empty string but should only be undefined in recursive calls
     type: abiTypeString,
-    indexed, //undefined if !checkedIndex
     components, //undefined if not a struct or (multidim) array of structs
     internalType
   };
+
+  if ("indexed" in node) {
+    return {
+      ...parameter,
+      indexed: node.indexed
+    } as Parameter<N>;
+  } else {
+    return parameter as Parameter<N>;
+  }
 }
 
 //note: this is only meant for non-array types that can go in the ABI
