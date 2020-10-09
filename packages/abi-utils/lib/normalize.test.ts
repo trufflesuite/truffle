@@ -1,3 +1,4 @@
+import "jest-extended";
 import { testProp } from "jest-fast-check";
 
 import * as Arbitrary from "./arbitrary";
@@ -11,7 +12,7 @@ describe("normalize", () => {
     looseAbi => {
       const abi = normalize(looseAbi);
 
-      expect(abi.find(entry => !entry.type)).toBeUndefined();
+      expect(abi).toSatisfyAll(entry => "type" in entry);
     }
   );
 
@@ -21,9 +22,8 @@ describe("normalize", () => {
     looseAbi => {
       const abi = normalize(looseAbi);
 
-      expect(
-        abi.find(entry => "payable" in entry || "constant" in entry)
-      ).toBeUndefined();
+      expect(abi).toSatisfyAll(entry => !("payable" in entry));
+      expect(abi).toSatisfyAll(entry => !("constant" in entry));
     }
   );
 
@@ -33,9 +33,9 @@ describe("normalize", () => {
     looseAbi => {
       const abi = normalize(looseAbi);
 
-      expect(
-        abi.find(entry => entry.type !== "event" && !entry.stateMutability)
-      ).toBeUndefined();
+      expect(abi.filter(({ type }) => type !== "event")).toSatisfyAll(
+        entry => "stateMutability" in entry
+      );
     }
   );
 
