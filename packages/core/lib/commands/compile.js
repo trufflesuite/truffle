@@ -86,7 +86,6 @@ const command = {
       if (options.saveIntermediate) {
         // Get the filename the user provided to save the compilation results to
         const compilationOutputFile = path.resolve(options.saveIntermediate);
-
         await fse.writeFile(
           compilationOutputFile,
           JSON.stringify(compilationOutput),
