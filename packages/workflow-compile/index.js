@@ -9,6 +9,8 @@ const SUPPORTED_COMPILERS = {
   external: require("@truffle/external-compile").Compile
 };
 
+const {connect, Project} = require("@truffle/db");
+
 async function compile(config) {
   // determine compiler(s) to use
   //
@@ -81,6 +83,20 @@ const WorkflowCompile = {
         compilers
       });
     }
+
+    if (config.db && config.db.enabled === true && contracts.length > 0) {
+      const db = connect(config);
+      const project = await Project.initialize({
+        db,
+        project: {
+          directory: config.working_directory
+        }
+      });
+      await project.loadCompile({
+        result: {contracts, compilations}
+      });
+    }
+
     return {
       contracts,
       sources,
