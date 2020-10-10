@@ -255,11 +255,19 @@ class Console extends EventEmitter {
 
       // Wrap the await inside an async function.
       // Strange indentation keeps column offset correct in stack traces
-      source = `(async function() { try { ${
-        assign ? `global.${RESULT} =` : "return"
-      } (
-  ${expression.trim()}
-  ); } catch(e) { global.ERROR = e; throw e; } }())`;
+      // todo: verify indentation for stack traces
+      //   - await Promise.reject() doesn't show a trace
+      //   - await Promise.reject(new Error('yikes'))
+      //   - example of expression that would throw w/ format?
+      source = `(
+        async function() {
+          try {
+            ${assign ? `global.${RESULT} =` : "return"} ( ${expression.trim()});
+          } catch(e) {
+            global.ERROR = e; throw e;
+          }
+        }()
+      )`;
 
       assignment = assign
         ? `${assign.trim()} global.${RESULT}; void delete global.${RESULT};`
