@@ -28,6 +28,19 @@ describe("normalize", () => {
   );
 
   testProp(
+    `always includes "outputs" for function entries`,
+    [Arbitrary.Abi()],
+    looseAbi => {
+      const abi = normalize(looseAbi);
+
+      expect(abi.filter(({ type }) => type === "function")).toSatisfyAll(
+        entry => "outputs" in entry
+      );
+      expect(abi).toSatisfyAll(entry => !("constant" in entry));
+    }
+  );
+
+  testProp(
     `always includes "stateMutability" for entries that aren't events`,
     [Arbitrary.Abi()],
     looseAbi => {

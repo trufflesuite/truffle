@@ -16,12 +16,16 @@ export const normalizeEntry = (looseEntry: Item<SchemaAbi> | Entry): Entry => {
     ...looseEntry,
     ...normalizeStateMutability(looseEntry as LooseStateMutabilityFields),
     type: looseEntry.type || "function"
-  };
+  } as Entry;
+
+  if (entry.type === "function") {
+    entry.outputs = entry.outputs || [];
+  }
 
   delete (entry as any).payable;
   delete (entry as any).constant;
 
-  return entry as Entry;
+  return entry;
 };
 
 interface LooseStateMutabilityFields {

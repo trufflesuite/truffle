@@ -18,6 +18,9 @@ This package contains a few different components:
 >
 > // handle:        v--- new way                           v--- old way     v--- default
 > const isPayable = entry.stateMutability === "payable" || entry.payable || false;
+>
+> // handle "outputs" possibly being undefined
+> const outputs = entry.outputs || [];
 > ```
 _^ Have you ever had to do this sort of thing?_ :scream:
 
@@ -40,6 +43,7 @@ import { normalize } from "@truffle/abi-utils";
 Specifically, this normalizes by:
 - Ensuring every ABI entry has a `type` field, since it's optional for
   `type: "function"`
+- Populating default value `[]` for function `outputs` field
 - Removing all instances of the legacy `payable` and `constant` fields
 - Replacing those two fields with the newer `stateMutability` field
 
