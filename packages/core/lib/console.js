@@ -183,13 +183,22 @@ class Console extends EventEmitter {
     this.repl.displayPrompt();
   }
 
+  isTruffleCommand(text) {
+    const trimmed = text.trim();
+    if (trimmed.length === 0) return false;
+
+    const cmd = trimmed.split(" ")[0];
+    return cmd in this.command.commands;
+  }
+
   interpret(input, context, filename, callback) {
     const processedInput = processInput(input);
     const { noAliases } = this.options;
 
-    console.log(`[\n\n${processedInput}\n\n]`);
-
-    if (this.command.getCommand(processedInput, noAliases) != null) {
+    if (
+      this.isTruffleCommand(processedInput) &&
+      this.command.getCommand(processedInput, noAliases) != null
+    ) {
       console.log("spawning...");
       return this.runSpawn(processedInput, this.options, error => {
         if (error) {
@@ -283,6 +292,7 @@ class Console extends EventEmitter {
     Promise.resolve(runScript(script))
       .then(value => {
         // If there's an assignment to run, run that.
+        //console.log(`Eval:\n\tassignment: ${assignment}\n\tvalue: ${value}` );
         if (assignment) return runScript(vm.createScript(assignment));
         return value;
       })
