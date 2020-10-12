@@ -9,7 +9,7 @@ import {
 import { WorkflowCompileResult } from "@truffle/compile-common";
 import { Workspace } from "@truffle/db/workspace";
 import {
-  projectLoadGenerate,
+  generateInitializeLoad,
   generateNamesLoad
 } from "@truffle/db/loaders/commands";
 
@@ -77,7 +77,7 @@ export class TruffleDB {
   }
 
   async loadProject(): Promise<DataModel.IProject> {
-    const projectRequest = projectLoadGenerate({
+    const projectRequest = generateInitializeLoad({
       directory: this.context.workingDirectory
     }).next();
 

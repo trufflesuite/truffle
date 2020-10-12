@@ -1,7 +1,7 @@
 import { generateProjectLoad } from "@truffle/db/loaders/resources/projects";
 import { WorkspaceRequest, WorkspaceResponse } from "@truffle/db/loaders/types";
 
-export function* projectLoadGenerate({
+export function* generateInitializeLoad({
   directory
 }: {
   directory: string;
