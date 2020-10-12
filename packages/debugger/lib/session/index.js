@@ -1,6 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:session");
 
+import * as Abi from "@truffle/abi-utils";
 import * as Codec from "@truffle/codec";
 import { keccak256 } from "lib/helpers";
 
@@ -183,7 +184,7 @@ export default class Session {
 
         let contractId = contractNode ? contractNode.id : undefined;
         let contractKind = contractNode ? contractNode.contractKind : undefined;
-        abi = Codec.AbiData.Utils.schemaAbiToAbi(abi); //let's handle this up front
+        abi = Abi.normalize(abi); //let's handle this up front
 
         debug("contractName %s", contractName);
         debug("sourceMap %o", sourceMap);
