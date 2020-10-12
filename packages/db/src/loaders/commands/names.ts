@@ -5,20 +5,20 @@ import {
 
 import { generateNameRecordsLoad } from "@truffle/db/loaders/resources/nameRecords";
 import {
-  toIdObject,
   WorkspaceRequest,
-  WorkspaceResponse
+  WorkspaceResponse,
+  IdObject
 } from "@truffle/db/loaders/types";
 
 /**
  * generator function to load nameRecords and project names into Truffle DB
  */
 export function* generateNamesLoad(
-  project: DataModel.IProject,
+  project: IdObject<DataModel.IProject>,
   contractsByCompilation: Array<DataModel.IContract[]>
 ): Generator<WorkspaceRequest, any, WorkspaceResponse<string>> {
   let getCurrent = function* (name, type) {
-    return yield* generateProjectNameResolve(toIdObject(project), name, type);
+    return yield* generateProjectNameResolve(project, name, type);
   };
 
   for (const contracts of contractsByCompilation) {
@@ -28,6 +28,6 @@ export function* generateNamesLoad(
       getCurrent
     );
 
-    yield* generateProjectNamesAssign(toIdObject(project), nameRecords);
+    yield* generateProjectNamesAssign(project, nameRecords);
   }
 }
