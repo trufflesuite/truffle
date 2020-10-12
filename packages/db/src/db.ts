@@ -84,16 +84,11 @@ export class TruffleDB {
     project: DataModel.IProject,
     contractsByCompilation: Array<DataModel.IContract[]>
   ) {
-    const namesLoader = generateNamesLoad(
+    return await this.runLoader(
+      generateNamesLoad,
       toIdObject(project),
       contractsByCompilation
     );
-    let curNames = namesLoader.next();
-
-    while (!curNames.done) {
-      const namesResponse = await this.getWorkspaceResponse(curNames.value);
-      curNames = namesLoader.next(namesResponse);
-    }
   }
 
   async loadProject(): Promise<DataModel.IProject> {
