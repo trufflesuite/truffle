@@ -57,12 +57,27 @@ export class TruffleDB {
     return await execute(this.schema, document, null, this.context, variables);
   }
 
-  async getWorkspaceResponse(generatorRequest: WorkspaceRequest) {
-    const { request, variables }: WorkspaceRequest = generatorRequest;
+  private async runLoader<
+    Request extends WorkspaceRequest,
+    Response extends WorkspaceResponse,
+    Args extends unknown[],
+    Return
+  >(
+    loader: (...args: Args) => Generator<Request, Return, Response>,
+    ...args: Args
+  ): Promise<Return> {
+    const saga = loader(...args);
+    let current = saga.next();
 
-    const response: WorkspaceResponse = await this.query(request, variables);
+    while (!current.done) {
+      const { request, variables } = current.value as Request;
 
-    return response;
+      const response: Response = await this.query(request, variables);
+
+      current = saga.next(response);
+    }
+
+    return current.value;
   }
 
   async loadNames(
