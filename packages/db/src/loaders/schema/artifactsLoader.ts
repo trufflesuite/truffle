@@ -90,7 +90,7 @@ export class ArtifactsLoader {
 
     // third parameter in loadCompilation is for whether or not we need
     // to update nameRecords (i.e. is this happening in test)
-    const { compilations } = await this.db.loadCompilations(project, result, {
+    const { compilations } = await this.db.loadCompilations(result, {
       names: true
     });
 

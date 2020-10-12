@@ -93,10 +93,11 @@ export class TruffleDB {
   }
 
   async loadCompilations(
-    project: DataModel.IProject,
     result: WorkflowCompileResult,
     options: LoaderOptions
   ) {
+    const project = await this.loadProject();
+
     const saga = generateCompileLoad(result);
 
     let cur = saga.next();
