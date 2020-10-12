@@ -231,20 +231,13 @@ const Type: fc.Memo<string> = fc.memo(n =>
       fc.oneof(Primitive(), ArrayFixed(n > 3 ? 3 : n), ArrayDynamic(n))
 );
 
-const ArrayFixed = fc.memo(n => {
-  const tuple =
-    n <= 1
-      ? fc.tuple(Primitive(), fc.integer(1, 256))
-      : fc.tuple(Type(), fc.integer(1, 256));
+const ArrayFixed = fc.memo(n =>
+  fc
+    .tuple(Type(n - 1), fc.integer(1, 256))
+    .map(([type, length]) => `${type}[${length}]`)
+);
 
-  return tuple.map(([type, length]) => `${type}[${length}]`);
-});
-
-const ArrayDynamic = fc.memo(n => {
-  const item = n <= 1 ? Primitive() : Type();
-
-  return item.map(type => `${type}[]`);
-});
+const ArrayDynamic = fc.memo(n => Type(n - 1).map(type => `${type}[]`));
 
 const reservedWords = new Set([
   "Error",
