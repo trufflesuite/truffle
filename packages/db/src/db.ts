@@ -37,6 +37,10 @@ interface ITruffleDB {
   query: (query: DocumentNode | string, variables: any) => Promise<any>;
 }
 
+type LoaderOptions = {
+  names: boolean;
+};
+
 export class TruffleDB {
   schema: GraphQLSchema;
   context: IContext;
@@ -90,7 +94,7 @@ export class TruffleDB {
   async loadCompilations(
     project: DataModel.IProject,
     result: WorkflowCompileResult,
-    names: boolean
+    options: LoaderOptions
   ) {
     const saga = generateCompileLoad(result);
 
@@ -104,7 +108,7 @@ export class TruffleDB {
       cur = saga.next(response);
     }
 
-    if (names === true) {
+    if (options && options.names === true) {
       await this.loadNames(project, cur.value.contractsByCompilation);
     }
 
