@@ -21,8 +21,8 @@ export const DEFAULT_CONSTRUCTOR_ABI: Abi.ConstructorAbiEntry = {
   payable: false
 };
 
-export function schemaAbiToAbi(abiLoose: SchemaAbi): Abi.Abi {
-  return abiLoose.map(entry =>
+export function schemaAbiToAbi(abiLoose: SchemaAbi | Abi.Abi): Abi.Abi {
+  return (abiLoose as SchemaAbi).map(entry =>
     entry.type
       ? <Abi.AbiEntry>entry
       : <Abi.AbiEntry>{ type: "function", ...entry }

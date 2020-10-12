@@ -1,37 +1,34 @@
-const Deployed = require("./Deployed");
-const path = require("path");
-const fse = require("fs-extra");
+import path from "path";
+import fse from "fs-extra";
+import { Deployed } from "./Deployed";
+import findContracts from "@truffle/contract-sources";
+import { ResolverSource } from "../../source";
 const contract = require("@truffle/contract");
-const find_contracts = require("@truffle/contract-sources");
 
-module.exports = class TestSource {
-  constructor(config) {
-    this.config = config;
+export class Truffle implements ResolverSource {
+  options: any;
+
+  constructor(options: any) {
+    this.options = options;
   }
 
-  require() {
-    return null; // FSSource will get it.
-  }
-
-  async resolve(importPath) {
-    const self = this;
-
+  async resolve(importPath: string) {
     if (importPath === "truffle/DeployedAddresses.sol") {
-      const sourceFiles = await find_contracts(this.config.contracts_directory);
+      const sourceFiles = await findContracts(this.options.contracts_directory);
 
-      let abstractionFiles;
+      let abstractionFiles: string[];
       const buildDirFiles = (abstractionFiles = fse.readdirSync(
-        self.config.contracts_build_directory
+        this.options.contracts_build_directory
       ));
       abstractionFiles = buildDirFiles.filter(file => file.match(/^.*.json$/));
 
-      const mapping = {};
+      const mapping: { [key: string]: string | false } = {};
 
       const blacklist = new Set(["Assert", "DeployedAddresses"]);
 
       // Ensure we have a mapping for source files and abstraction files
       // to prevent any compile errors in tests.
-      sourceFiles.forEach(file => {
+      sourceFiles.forEach((file: string) => {
         const name = path.basename(file, ".sol");
         if (blacklist.has(name)) return;
         mapping[name] = false;
@@ -45,14 +42,14 @@ module.exports = class TestSource {
 
       const filesData = abstractionFiles.map(file => {
         return fse.readFileSync(
-          path.join(self.config.contracts_build_directory, file),
+          path.join(this.options.contracts_build_directory, file),
           "utf8"
         );
       });
 
       const addresses = filesData.map(data => {
         const c = contract(JSON.parse(data));
-        c.setNetwork(self.config.network_id);
+        c.setNetwork(this.options.network_id);
         if (c.isDeployed()) return c.address;
         return null;
       });
@@ -67,15 +64,15 @@ module.exports = class TestSource {
 
       const addressSource = Deployed.makeSolidityDeployedAddressesLibrary(
         mapping,
-        self.config.compilers
+        this.options.compilers
       );
       return { body: addressSource, filePath: importPath };
     }
-    const assertLibraries = [
+
+    const truffleLibraries = [
       "Assert",
       "AssertAddress",
       "AssertAddressArray",
-      //      "AssertAddressPayableArray", only compatible w/ ^0.5.0
       "AssertBalance",
       "AssertBool",
       "AssertBytes32",
@@ -85,34 +82,34 @@ module.exports = class TestSource {
       "AssertIntArray",
       "AssertString",
       "AssertUint",
-      "AssertUintArray"
+      "AssertUintArray",
+      "NewSafeSend",
+      "OldSafeSend",
+      "Console"
     ];
 
-    for (const lib of assertLibraries) {
+    for (const lib of truffleLibraries) {
       if (importPath === `truffle/${lib}.sol`) {
-        const body = fse.readFileSync(
-          path.resolve(path.join(__dirname, `${lib}.sol`)),
-          { encoding: "utf8" }
-        );
-        return { body, filePath: importPath };
-      }
-    }
-
-    const loggingLibraries = ["Console"];
-
-    for (const lib of loggingLibraries) {
-      const actualImportPath =
-        typeof BUNDLE_VERSION !== "undefined"
-          ? path.resolve(__dirname, path.basename(importPath))
-          : path.resolve(__dirname, "../logging", path.basename(importPath));
-      if (importPath === `truffle/${lib}.sol`) {
+        const actualImportPath =
+          // @ts-ignore
+          typeof BUNDLE_VERSION !== "undefined"
+            ? path.resolve(path.join(__dirname, `${lib}.sol`))
+            : path.resolve(__dirname, "../../../..", "solidity", `${lib}.sol`);
         const body = fse.readFileSync(actualImportPath, { encoding: "utf8" });
         return { body, filePath: importPath };
       }
     }
+
+    return { body: null, filePath: null };
   }
 
-  resolveDependencyPath(importPath, dependencyPath) {
+  require(): null {
+    // return null to let another source handle this behavior
+    // (will be covered by FS source)
+    return null;
+  }
+
+  resolveDependencyPath(_importPath: string, dependencyPath: string) {
     return dependencyPath;
   }
-};
+}

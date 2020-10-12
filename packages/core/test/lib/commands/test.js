@@ -1,6 +1,8 @@
 const assert = require("chai").assert;
 const Box = require("@truffle/box");
-const TestHelpers = require("@truffle/core/lib/commands/test/helpers");
+const {
+  determineTestFilesToRun
+} = require("../../../lib/commands/test/determineTestFilesToRun");
 const Artifactor = require("@truffle/artifactor");
 const Resolver = require("@truffle/resolver");
 const MemoryStream = require("memorystream");
@@ -8,7 +10,7 @@ const path = require("path");
 const fs = require("fs-extra");
 const glob = require("glob");
 const WorkflowCompile = require("@truffle/workflow-compile");
-const Test = require("@truffle/core/lib/test");
+const Test = require("../../../lib/testing/Test");
 
 let config;
 output = "";
@@ -57,7 +59,7 @@ describe("test command", () => {
   afterEach("Clear MemoryStream", () => (output = ""));
 
   it("Check test with subdirectories", () => {
-    let testFiles = TestHelpers.determineTestFilesToRun({ config });
+    let testFiles = determineTestFilesToRun({ config });
     let testFilesCount = testFiles.length;
 
     let filename = path.join(
@@ -88,7 +90,7 @@ describe("test command", () => {
     // determineTestFilesTo run function can process it without crashing
     fs.ensureDirSync(dirName);
 
-    let newTestFiles = TestHelpers.determineTestFilesToRun({ config });
+    let newTestFiles = determineTestFilesToRun({ config });
     assert.equal(
       newTestFiles.length,
       testFilesCount + 3,
@@ -298,7 +300,7 @@ describe("test command", () => {
 
     // Call method used by Test to discover existing test files. Then create subdirectories and test files in these
     // subdirectories. Then run Test method again and check if number discovered increased.
-    let testFiles = TestHelpers.determineTestFilesToRun({ config });
+    let testFiles = determineTestFilesToRun({ config });
     const testFilesCount = testFiles.length;
 
     const newTestFiles = createTestSubDir(
@@ -306,7 +308,7 @@ describe("test command", () => {
       fileStructrure
     );
 
-    testFiles = TestHelpers.determineTestFilesToRun({ config });
+    testFiles = determineTestFilesToRun({ config });
     assert.equal(
       testFiles.length,
       testFilesCount + newTestFiles,

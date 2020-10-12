@@ -16,7 +16,9 @@ export function forContract(contract: CompiledContract): any {
     compiler,
     devdoc,
     userdoc,
-    immutableReferences
+    immutableReferences,
+    generatedSources,
+    deployedGeneratedSources
   } = contract;
 
   return {
@@ -35,7 +37,9 @@ export function forContract(contract: CompiledContract): any {
     compiler,
     devdoc,
     userdoc,
-    immutableReferences
+    immutableReferences,
+    generatedSources,
+    deployedGeneratedSources
   };
 }
 

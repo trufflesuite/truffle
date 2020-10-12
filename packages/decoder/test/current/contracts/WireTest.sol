@@ -1,4 +1,5 @@
-pragma solidity ^0.6.1;
+//SPDX-License-Identifier: MIT
+pragma solidity ^0.7.0;
 pragma experimental ABIEncoderV2;
 
 contract WireTestParent {
@@ -11,8 +12,6 @@ contract WireTestParent {
 
   //no constructor
 
-  event Overridden(uint);
-
   function inheritedReturn() public pure returns (uint) {
     return 1;
   }
@@ -20,8 +19,6 @@ contract WireTestParent {
 
 abstract contract WireTestAbstract {
   event AbstractEvent();
-
-  event AbstractOverridden(uint indexed);
 
   function danger() public virtual;
 
@@ -43,7 +40,7 @@ contract WireTest is WireTestParent, WireTestAbstract {
     emit Done();
   } //just a dummy function, not 
 
-  constructor(bool status, bytes memory info, Ternary whoknows) public {
+  constructor(bool status, bytes memory info, Ternary whoknows) {
     deepStruct["blornst"].push();
     deepStruct["blornst"].push();
     deepString.push();
@@ -169,17 +166,6 @@ contract WireTest is WireTestParent, WireTestAbstract {
 
   mapping(string => Triple[]) public deepStruct;
   mapping(string => string)[] public deepString;
-
-  event Overridden(uint indexed);
-  event AbstractOverridden(uint);
-
-  function interfaceAndOverrideTest() public {
-    emit AbstractEvent();
-    emit AbstractOverridden(107);
-    emit WireTestAbstract.AbstractOverridden(683);
-    emit Overridden(107);
-    emit WireTestParent.Overridden(683);
-  }
 
   function returnsStuff() public pure returns (Triple memory, Ternary) {
     return (Triple(-1, 0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef, hex"deadbeef"), Ternary.No);

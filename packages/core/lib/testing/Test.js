@@ -8,10 +8,8 @@ const {
 const Config = require("@truffle/config");
 const WorkflowCompile = require("@truffle/workflow-compile");
 const Resolver = require("@truffle/resolver");
-const TestRunner = require("./testing/TestRunner");
-const TestResolver = require("./testing/TestResolver");
-const TestSource = require("./testing/TestSource");
-const SolidityTest = require("./testing/SolidityTest");
+const TestRunner = require("./TestRunner");
+const SolidityTest = require("./SolidityTest");
 const RangeUtils = require("@truffle/compile-solidity/compilerSupplier/rangeUtils");
 const expect = require("@truffle/expect");
 const Migrate = require("@truffle/migrate");
@@ -23,7 +21,7 @@ const Debugger = require("@truffle/debugger");
 
 let Mocha; // Late init with "mocha" or "mocha-parallel-tests"
 
-chai.use(require("./assertions"));
+chai.use(require("../assertions"));
 
 const Test = {
   run: async function (options) {
@@ -92,15 +90,7 @@ const Test = {
 
     const accounts = await this.getAccounts(interfaceAdapter);
 
-    if (!config.resolver) config.resolver = new Resolver(config);
-
-    const testSource = new TestSource(config);
-    const testResolver = new TestResolver(
-      config.resolver,
-      testSource,
-      config.contracts_build_directory
-    );
-    testResolver.cache_on = false;
+    const testResolver = new Resolver(config, true);
 
     const { compilations } = await this.compileContractsWithTestFilesIfNeeded(
       solTests,
@@ -116,27 +106,16 @@ const Test = {
 
     await this.performInitialDeploy(config, testResolver);
 
-    const solidityCompilationOutput = compilations.reduce(
-      (a, compilation) => {
-        if (compilation.compiler && compilation.compiler.name === "solc") {
-          a.sourceIndexes = a.sourceIndexes.concat(compilation.sourceIndexes);
-          a.contracts = a.contracts.concat(compilation.contracts);
-        }
-        return a;
-      },
-      { sourceIndexes: [], contracts: [] }
-    );
+    const sourcePaths = []
+      .concat(
+        ...compilations.map(compilation => compilation.sourceIndexes) //we don't need the indices here, just the paths
+      )
+      .filter(path => path); //make sure we don't pass in any undefined
 
-    await this.defineSolidityTests(
-      mocha,
-      testContracts,
-      solidityCompilationOutput.sourceIndexes,
-      runner
-    );
+    await this.defineSolidityTests(mocha, testContracts, sourcePaths, runner);
 
-    const debuggerCompilations = Codec.Compilations.Utils.shimArtifacts(
-      solidityCompilationOutput.contracts,
-      solidityCompilationOutput.sourceIndexes
+    const debuggerCompilations = Codec.Compilations.Utils.shimCompilations(
+      compilations
     );
 
     //for stack traces, we'll need to set up a light-mode debugger...
@@ -247,6 +226,7 @@ const Test = {
         );
       }
     }
+
     // Compile project contracts and test contracts
     const { contracts, compilations } = await WorkflowCompile.compileAndSave(
       compileConfig
@@ -318,7 +298,7 @@ const Test = {
       }
 
       // wrapped inside function so as not to load debugger on every test
-      const { CLIDebugHook } = require("./debug/mocha");
+      const { CLIDebugHook } = require("../debug/mocha");
 
       // note: this.mochaRunner will be available by the time debug()
       // is invoked

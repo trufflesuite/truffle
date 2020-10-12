@@ -1,16 +1,5 @@
-import { EthPMv1 } from "./ethpm-v1";
-import { NPM } from "./npm";
-import { GlobalNPM } from "./globalnpm";
-import { FS } from "./fs";
-import { ResolverSource } from "../source";
-import { Truffle } from "./truffle";
-
-export function constructSources(options: any): ResolverSource[] {
-  return [
-    new Truffle(),
-    new EthPMv1(options.working_directory),
-    new NPM(options.working_directory),
-    new GlobalNPM(),
-    new FS(options.working_directory, options.contracts_build_directory)
-  ];
-}
+export { EthPMv1 } from "./ethpm-v1";
+export { NPM } from "./npm";
+export { GlobalNPM } from "./globalnpm";
+export { FS } from "./fs";
+export { Truffle } from "./truffle";

@@ -1,26 +1,26 @@
 const web3Utils = require("web3-utils");
-const RangeUtils = require("@truffle/compile-solidity/compilerSupplier/rangeUtils");
+import RangeUtils from "@truffle/compile-solidity/compilerSupplier/rangeUtils";
 
-var Deployed = {
-  makeSolidityDeployedAddressesLibrary: function (
-    mapping,
-    { solc: { version } }
-  ) {
-    var self = this;
+type solcOptionsArg = {
+  solc: { version: string };
+};
 
-    var source = "";
+export class Deployed {
+  static makeSolidityDeployedAddressesLibrary(
+    mapping: { [key: string]: string | false },
+    { solc: { version } }: solcOptionsArg
+  ): string {
+    let source = "";
     source +=
       "//SPDX-License-Identifier: MIT\n" +
       "pragma solidity >= 0.5.0 < 0.8.0; \n\n library DeployedAddresses {" +
       "\n";
 
-    Object.keys(mapping).forEach(function (name) {
-      var address = mapping[name];
-
-      var body = "revert();";
+    for (let [name, address] of Object.entries(mapping)) {
+      let body = "revert();";
 
       if (address) {
-        address = self.toChecksumAddress(address);
+        address = Deployed.toChecksumAddress(address);
 
         body = "return " + address + ";";
       }
@@ -32,7 +32,7 @@ var Deployed = {
         body +
         " }";
       source += "\n";
-    });
+    }
 
     source += "}";
 
@@ -46,10 +46,10 @@ var Deployed = {
     source = source.replace(/0\.5\.0/gm, coercedVersion);
 
     return source;
-  },
+  }
 
   // Pulled from ethereumjs-util, but I don't want all its dependencies at the moment.
-  toChecksumAddress: function (address) {
+  static toChecksumAddress(address: string): string {
     address = address.toLowerCase().replace("0x", "");
     const hash = web3Utils.sha3(address).replace("0x", "");
     var ret = "0x";
@@ -64,6 +64,4 @@ var Deployed = {
 
     return ret;
   }
-};
-
-module.exports = Deployed;
+}
