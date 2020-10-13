@@ -2,7 +2,6 @@ const path = require("path");
 const Deployer = require("@truffle/deployer");
 const Require = require("@truffle/require");
 const Emittery = require("emittery");
-const dir = require("node-dir");
 const {
   Web3Shim,
   createInterfaceAdapter
@@ -201,46 +200,6 @@ class Migration {
     });
 
     return { interfaceAdapter, resolver, context, deployer };
-  }
-
-  async deployAndLinkLogger(options, resolver) {
-    const {
-      networks,
-      network,
-      network_id,
-      provider,
-      solidityLogging
-    } = options;
-    if (solidityLogging) {
-      let Console;
-      try {
-        Console = resolver.require("Console");
-      } catch (error) {
-        return;
-      }
-
-      const loggerDeployer = new Deployer({
-        networks,
-        network,
-        network_id,
-        provider
-      });
-      await loggerDeployer.start();
-      await loggerDeployer.deploy(Console);
-
-      // Gather all available contract artifacts
-      const files = await dir.promiseFiles(options.contracts_build_directory);
-
-      const contracts = files
-        .filter(filePath => path.extname(filePath) === ".json")
-        .map(filePath => path.basename(filePath, ".json"))
-        .map(contractName => resolver.require(contractName));
-
-      for (const contract of contracts) {
-        await loggerDeployer.link(Console, contract);
-      }
-      await loggerDeployer.finish();
-    }
   }
 
   /**
