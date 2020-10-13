@@ -57,6 +57,14 @@ export class TruffleDB {
     return await execute(this.schema, document, null, this.context, variables);
   }
 
+  async getWorkspaceResponse(generatorRequest: WorkspaceRequest) {
+    const { request, variables }: WorkspaceRequest = generatorRequest;
+
+    const response: WorkspaceResponse = await this.query(request, variables);
+
+    return response;
+  }
+
   private async runLoader<
     Request extends WorkspaceRequest,
     Response extends WorkspaceResponse,
@@ -92,14 +100,9 @@ export class TruffleDB {
   }
 
   async loadProject(): Promise<DataModel.IProject> {
-    const projectRequest = generateInitializeLoad({
+    return await this.runLoader(generateInitializeLoad, {
       directory: this.context.workingDirectory
-    }).next();
-
-    const response = await this.getWorkspaceResponse(projectRequest.value);
-    const projectResponse = response.data.workspace.projectsAdd.projects[0];
-
-    return projectResponse;
+    });
   }
 
   async loadCompilations(
@@ -108,23 +111,16 @@ export class TruffleDB {
   ) {
     const project = await this.loadProject();
 
-    const saga = generateCompileLoad(result);
+    const { compilations, contractsByCompilation } = await this.runLoader(
+      generateCompileLoad,
+      result
+    );
 
-    let cur = saga.next();
-
-    while (!cur.done) {
-      // HACK not sure why this is necessary; TS knows we're not done, so
-      // cur.value should only be WorkspaceRequest (first Generator param),
-      // not the return value (second Generator param)
-      const response = await this.getWorkspaceResponse(cur.value);
-      cur = saga.next(response);
+    if (options.names === true) {
+      await this.loadNames(project, contractsByCompilation);
     }
 
-    if (options && options.names === true) {
-      await this.loadNames(project, cur.value.contractsByCompilation);
-    }
-
-    return cur.value;
+    return { compilations, contractsByCompilation };
   }
 
   createContext(config: IConfig): IContext {
