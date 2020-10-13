@@ -202,6 +202,9 @@ module.exports = {
         from: path.join(truffleLibraryDirectory, "OldSafeSend.sol")
       },
       {
+        from: path.join(truffleLibraryDirectory, "Console.sol")
+      },
+      {
         from: path.join(
           __dirname,
           "../..",
@@ -214,17 +217,6 @@ module.exports = {
         ),
         to: "templates",
         flatten: true
-      },
-      {
-        from: path.join(
-          __dirname,
-          "../..",
-          "node_modules",
-          "@truffle/core",
-          "lib",
-          "logging",
-          "Console.sol"
-        )
       }
     ]),
 
