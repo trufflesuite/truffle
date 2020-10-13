@@ -27,7 +27,20 @@ describe("testing with solidity logging", () => {
   it("successfully logs output when importing and using truffle/Console.sol", async () => {
     await CommandRunner.run("test", config);
     const output = logger.contents();
-    assert(output.includes("Contract: LogTest"));
-    assert(output.includes("No. of detected _TruffleConsoleLog events:  6"));
+    assert(output.includes("here is my boolean --"));
+    assert(output.includes("true"));
+    assert(output.includes("here is my integer --"));
+    assert(output.includes("-4321"));
+    assert(output.includes("here is my uint --"));
+    assert(output.includes("1234"));
+    assert(output.includes("here is my string --"));
+    assert(output.includes("myString"));
+    assert(output.includes("here is my bytes32 --"));
+    assert(
+      output.includes(
+        "0x6d79427974657333320000000000000000000000000000000000000000000000"
+      )
+    );
+    assert(output.includes("here is my address --"));
   }).timeout(20000);
 });
