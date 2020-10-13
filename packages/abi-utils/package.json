@@ -43,7 +43,6 @@
   },
   "dependencies": {
     "@truffle/contract-schema": "^3.2.5",
-    "ajv": "^6.12.5",
     "change-case": "^4.1.1",
     "faker": "^5.1.0",
     "fast-check": "^2.4.0",
