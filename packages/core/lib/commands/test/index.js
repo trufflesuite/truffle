@@ -8,9 +8,6 @@ const command = {
       type: "boolean",
       default: false
     },
-    "solidity-logging": {
-      describe: "Enable Solidity console logging"
-    },
     "compile-all-debug": {
       describe: "Compile in debug mode",
       type: "boolean",
@@ -52,9 +49,9 @@ const command = {
     usage:
       `truffle test [<test_file>] [--compile-all[-debug]] [--network <name>] [--compile-none]${OS.EOL}` +
       `                             ` + // spacing to align with previous line
-      `[--show-events] [--debug] [--debug-global <identifier>] [--solidity-logging]${OS.EOL}` +
+      `[--show-events] [--debug] [--debug-global <identifier>] [--verbose-rpc]${OS.EOL}` +
       `                             ` + // spacing to align with previous line
-      `[--bail] [--stacktrace[-extra]] [--verbose-rpc]`,
+      `[--bail] [--stacktrace[-extra]]`,
     options: [
       {
         option: "<test_file>",
@@ -67,10 +64,6 @@ const command = {
         description:
           "Compile all contracts instead of intelligently choosing which contracts need " +
           "to be compiled."
-      },
-      {
-        option: "--solidity-logging",
-        description: "Enables Solidity console logging during testing."
       },
       {
         option: "--compile-none",

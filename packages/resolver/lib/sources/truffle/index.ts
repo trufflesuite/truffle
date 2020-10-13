@@ -84,12 +84,9 @@ export class Truffle implements ResolverSource {
       "AssertUint",
       "AssertUintArray",
       "NewSafeSend",
-      "OldSafeSend"
+      "OldSafeSend",
+      "Console"
     ];
-
-    if (this.options.solidityLogging === true) {
-      truffleLibraries.push("Console");
-    }
 
     for (const lib of truffleLibraries) {
       if (importPath === `truffle/${lib}.sol`) {

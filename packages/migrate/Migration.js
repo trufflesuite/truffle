@@ -147,8 +147,6 @@ class Migration {
       deployer
     } = this.prepareForMigrations(options);
 
-    await this.deployAndLinkLogger(options, resolver);
-
     // Connect reporter to this migration
     if (this.reporter) {
       this.reporter.setMigration(this);
