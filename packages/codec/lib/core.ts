@@ -1,6 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:core");
 
+import * as Abi from "@truffle/abi-utils";
 import * as Ast from "@truffle/codec/ast";
 import * as AbiData from "@truffle/codec/abi-data";
 import * as Topic from "@truffle/codec/topic";
@@ -97,10 +98,7 @@ export function* decodeCalldata(
     ).input;
   }
   if (allocation === undefined) {
-    let abiEntry:
-      | AbiData.FallbackAbiEntry
-      | AbiData.ReceiveAbiEntry
-      | null = null;
+    let abiEntry: Abi.FallbackEntry | Abi.ReceiveEntry | null = null;
     if (info.state.calldata.length === 0) {
       //to hell with reads, let's just be direct
       abiEntry = context.fallbackAbi.receive || context.fallbackAbi.fallback;
@@ -177,7 +175,7 @@ export function* decodeCalldata(
       kind: "constructor" as const,
       class: contractType,
       arguments: decodedArguments,
-      abi: <AbiData.ConstructorAbiEntry>allocation.abi, //we know it's a constructor, but typescript doesn't
+      abi: <Abi.ConstructorEntry>allocation.abi, //we know it's a constructor, but typescript doesn't
       bytecode: Conversion.toHexString(
         info.state.calldata.slice(0, allocation.offset)
       ),
@@ -187,7 +185,7 @@ export function* decodeCalldata(
     return {
       kind: "function" as const,
       class: contractType,
-      abi: <AbiData.FunctionAbiEntry>allocation.abi, //we know it's a function, but typescript doesn't
+      abi: <Abi.FunctionEntry>allocation.abi, //we know it's a function, but typescript doesn't
       arguments: decodedArguments,
       selector,
       decodingMode

@@ -107,10 +107,8 @@
         "stateMutability": {
           "$ref": "#/definitions/StateMutability"
         },
-        "constant": { "type": "boolean" },
         "payable": { "type": "boolean" }
       },
-      "required": ["type", "stateMutability"],
       "anyOf": [
         { "required": ["type", "stateMutability"] },
         { "required": ["type", "payable"] }
