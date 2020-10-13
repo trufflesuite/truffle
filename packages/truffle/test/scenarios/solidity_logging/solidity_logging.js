@@ -42,5 +42,5 @@ describe("testing with solidity logging", () => {
       )
     );
     assert(output.includes("here is my address --"));
-  }).timeout(20000);
+  }).timeout(40000);
 });
