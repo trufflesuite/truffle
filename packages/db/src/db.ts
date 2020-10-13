@@ -4,7 +4,8 @@ import { generateCompileLoad } from "@truffle/db/loaders/commands";
 import {
   WorkspaceRequest,
   WorkspaceResponse,
-  toIdObject
+  toIdObject,
+  NamedResource
 } from "@truffle/db/loaders/types";
 import { WorkflowCompileResult } from "@truffle/compile-common";
 import { Workspace } from "@truffle/db/workspace";
@@ -88,14 +89,11 @@ export class TruffleDB {
     return current.value;
   }
 
-  async loadNames(
-    project: DataModel.IProject,
-    contractsByCompilation: Array<DataModel.IContract[]>
-  ) {
+  async loadNames(project: DataModel.IProject, resources: NamedResource[]) {
     return await this.runLoader(
       generateNamesLoad,
       toIdObject(project),
-      contractsByCompilation
+      resources
     );
   }
 
@@ -111,16 +109,16 @@ export class TruffleDB {
   ) {
     const project = await this.loadProject();
 
-    const { compilations, contractsByCompilation } = await this.runLoader(
+    const { compilations, contracts } = await this.runLoader(
       generateCompileLoad,
       result
     );
 
     if (options.names === true) {
-      await this.loadNames(project, contractsByCompilation);
+      await this.loadNames(project, contracts);
     }
 
-    return { compilations, contractsByCompilation };
+    return { compilations, contracts };
   }
 
   createContext(config: IConfig): IContext {

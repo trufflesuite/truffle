@@ -7,7 +7,8 @@ import { generateNameRecordsLoad } from "@truffle/db/loaders/resources/nameRecor
 import {
   WorkspaceRequest,
   WorkspaceResponse,
-  IdObject
+  IdObject,
+  NamedResource
 } from "@truffle/db/loaders/types";
 
 /**
@@ -15,19 +16,17 @@ import {
  */
 export function* generateNamesLoad(
   project: IdObject<DataModel.IProject>,
-  contractsByCompilation: Array<DataModel.IContract[]>
+  contracts: NamedResource[]
 ): Generator<WorkspaceRequest, any, WorkspaceResponse<string>> {
   let getCurrent = function* (name, type) {
     return yield* generateProjectNameResolve(project, name, type);
   };
 
-  for (const contracts of contractsByCompilation) {
-    const nameRecords = yield* generateNameRecordsLoad(
-      contracts,
-      "Contract",
-      getCurrent
-    );
+  const nameRecords = yield* generateNameRecordsLoad(
+    contracts,
+    "Contract",
+    getCurrent
+  );
 
-    yield* generateProjectNamesAssign(project, nameRecords);
-  }
+  yield* generateProjectNamesAssign(project, nameRecords);
 }

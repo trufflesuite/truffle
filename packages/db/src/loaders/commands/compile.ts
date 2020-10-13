@@ -77,11 +77,13 @@ export function* generateCompileLoad(
       }
     }
 
-    const contracts = yield* generateContractsLoad(loadableContracts);
-    contractsByCompilation.push(contracts);
+    const loadedContracts = yield* generateContractsLoad(loadableContracts);
+    contractsByCompilation.push(loadedContracts);
   }
 
-  return { compilations, contractsByCompilation };
+  const contracts = contractsByCompilation.flat();
+
+  return { compilations, contracts };
 }
 
 function processResultCompilations(
