@@ -85,4 +85,4 @@ describe("compileWithPragmaAnalysis", () => {
       }
     });
   });
-}).timeout(20000);
+});
