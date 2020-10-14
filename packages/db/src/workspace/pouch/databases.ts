@@ -145,7 +145,7 @@ export abstract class Databases<C extends Collections> {
           return resource;
         }
 
-        const resourceAdded = await this.collections[collectionName].put({
+        await this.collections[collectionName].put({
           ...resourceInput,
           _id: id
         });
@@ -174,13 +174,9 @@ export abstract class Databases<C extends Collections> {
 
         // check for existing
         const resource = await this.get(collectionName, id);
-        const {
-          _rev
-        }: {
-          _rev: PouchDB.Core.RevisionId;
-        } = resource ? resource : {};
+        const { _rev }: any = resource ? resource : {};
 
-        const resourceAdded = await this.collections[collectionName].put({
+        await this.collections[collectionName].put({
           ...resourceInput,
           _rev,
           _id: id
@@ -209,11 +205,7 @@ export abstract class Databases<C extends Collections> {
         const id = this.generateId(collectionName, resourceInput);
 
         const resource = await this.get(collectionName, id);
-        const {
-          _rev
-        }: {
-          _rev: PouchDB.Core.RevisionId;
-        } = resource ? resource : {};
+        const { _rev }: any = resource ? resource : {};
 
         if (_rev) {
           await this.collections[collectionName].put({
