@@ -16,6 +16,7 @@ export type Collections = {
   contracts: {
     resource: DataModel.IContract;
     input: DataModel.IContractsAddInput;
+    named: true;
   };
   nameRecords: {
     resource: DataModel.INameRecord;
@@ -24,6 +25,7 @@ export type Collections = {
   networks: {
     resource: DataModel.INetwork;
     input: DataModel.INetworksAddInput;
+    named: true;
   };
   sources: {
     resource: DataModel.ISource;
@@ -48,6 +50,8 @@ export type CollectionName<
 
 export type MutableCollectionName = Pouch.MutableCollectionName<Collections>;
 
+export type NamedCollectionName = Pouch.NamedCollectionName<Collections>;
+
 export type Resource<
   N extends CollectionName = CollectionName
 > = Pouch.Resource<Collections, N>;
@@ -55,6 +59,10 @@ export type Resource<
 export type MutableResource<
   N extends MutableCollectionName = MutableCollectionName
 > = Pouch.MutableResource<Collections, N>;
+
+export type NamedResource<
+  N extends NamedCollectionName = NamedCollectionName
+> = Pouch.NamedResource<Collections, N>;
 
 export const definitions: Definitions = {
   contracts: {
