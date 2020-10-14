@@ -5,6 +5,7 @@ export type Collections = {
     resource: any;
     input: any;
     mutable?: boolean;
+    named?: boolean;
   };
 };
 
@@ -20,6 +21,11 @@ export type CollectionDatabases<C extends Collections> = {
 };
 
 export type CollectionName<C extends Collections> = string & keyof C;
+
+export type NamedCollectionName<C extends Collections> = CollectionName<
+  C,
+  { is: "named" }
+>;
 
 export type Collection<
   C extends Collections = Collections,
@@ -81,6 +87,11 @@ export type MutableResource<
 export type MutableCollectionName<
   C extends Collections
 > = FilteredCollectionName<C, { is: "mutable" }>;
+
+export type NamedResource<
+  C extends Collections,
+  N extends NamedCollectionName<C> = NamedCollectionName<C>
+> = Resource<C, N>;
 
 export type Input<
   C extends Collections,
