@@ -26,21 +26,21 @@ export function* generateContractsLoad(
       compilation
     } = loadableContract;
 
-    const { createBytecode, callBytecode } = bytecodes.sources[
-      sourceIndex
-    ].contracts[contractIndex];
+      const { createBytecode, callBytecode } = bytecodes.sources[
+        sourceIndex
+      ].contracts[contractIndex];
 
-    return {
-      name,
-      abi: {
-        json: JSON.stringify(abiObject)
-      },
-      compilation,
-      processedSource: { index: sourceIndex },
-      createBytecode: createBytecode,
-      callBytecode: callBytecode
-    };
-  });
+      return {
+        name,
+        abi: {
+          json: JSON.stringify(abiObject)
+        },
+        compilation,
+        processedSource: { index: sourceIndex },
+        createBytecode: createBytecode,
+        callBytecode: callBytecode
+      };
+    });
 
   const result = yield {
     type: "graphql",
