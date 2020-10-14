@@ -42,6 +42,7 @@ export const schema = mergeSchemas({
           name: String!
           type: String!
           nameRecord: NameRecord!
+          id: ID!
         }
         `
       ]
@@ -385,7 +386,7 @@ export const schema = mergeSchemas({
         resolve: (_, { id }, { workspace }) => workspace.project({ id })
       },
       projects: {
-        resolve: (_, { id }, { workspace }) => workspace.projects()
+        resolve: (_, {}, { workspace }) => workspace.projects()
       }
     },
     Mutation: {
@@ -511,7 +512,7 @@ export const schema = mergeSchemas({
           Promise.all(sources.map(source => workspace.source(source)))
       },
       processedSources: {
-        resolve: ({ id, processedSources }, _, { workspace }) =>
+        resolve: ({ id, processedSources }, _, {}) =>
           processedSources.map((processedSource, index) => ({
             ...processedSource,
             compilation: { id },
