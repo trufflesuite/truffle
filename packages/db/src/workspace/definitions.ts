@@ -1,6 +1,6 @@
-import { Definitions } from "./pouch";
+import * as Pouch from "./pouch";
 
-export type WorkspaceCollections = {
+export type Collections = {
   bytecodes: {
     resource: DataModel.IBytecode;
     input: DataModel.IBytecodesAddInput;
@@ -40,7 +40,23 @@ export type WorkspaceCollections = {
   };
 };
 
-export const definitions: Definitions<WorkspaceCollections> = {
+export type Definitions = Pouch.Definitions<Collections>;
+
+export type CollectionName<
+  F extends Pouch.CollectionFilter<Collections> | undefined = undefined
+> = Pouch.CollectionName<Collections, F>;
+
+export type MutableCollectionName = Pouch.MutableCollectionName<Collections>;
+
+export type Resource<
+  N extends CollectionName = CollectionName
+> = Pouch.Resource<Collections, N>;
+
+export type MutableResource<
+  N extends MutableCollectionName = MutableCollectionName
+> = Pouch.MutableResource<Collections, N>;
+
+export const definitions: Definitions = {
   contracts: {
     createIndexes: [
       {

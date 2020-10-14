@@ -7,7 +7,7 @@ import {
   MemoryDatabases,
   SqliteDatabases
 } from "./pouch";
-import { WorkspaceCollections, definitions } from "./definitions";
+import { Collections, definitions } from "./definitions";
 
 export interface WorkspaceConfig {
   workingDirectory?: string;
@@ -18,7 +18,7 @@ export interface WorkspaceConfig {
 }
 
 export class Workspace {
-  public databases: Databases<WorkspaceCollections>;
+  public databases: Databases<Collections>;
 
   constructor({
     workingDirectory,
