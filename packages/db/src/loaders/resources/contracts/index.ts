@@ -23,29 +23,31 @@ export function* generateContractsLoad(
   DataModel.IContract[],
   WorkspaceResponse<"contractsAdd", DataModel.IContractsAddPayload>
 > {
-  const contracts = loadableContracts.map(loadableContract => {
-    const {
-      contract: { contractName: name, abi: abiObject },
-      path: { sourceIndex, contractIndex },
-      bytecodes,
-      compilation
-    } = loadableContract;
+  const contracts = loadableContracts
+    .filter(({ contract }) => contract.bytecode.bytes !== "")
+    .map(loadableContract => {
+      const {
+        contract: { contractName: name, abi: abiObject },
+        path: { sourceIndex, contractIndex },
+        bytecodes,
+        compilation
+      } = loadableContract;
 
-    const { createBytecode, callBytecode } = bytecodes.sources[
-      sourceIndex
-    ].contracts[contractIndex];
+      const { createBytecode, callBytecode } = bytecodes.sources[
+        sourceIndex
+      ].contracts[contractIndex];
 
-    return {
-      name,
-      abi: {
-        json: JSON.stringify(abiObject)
-      },
-      compilation,
-      processedSource: { index: sourceIndex },
-      createBytecode: createBytecode,
-      callBytecode: callBytecode
-    };
-  });
+      return {
+        name,
+        abi: {
+          json: JSON.stringify(abiObject)
+        },
+        compilation,
+        processedSource: { index: sourceIndex },
+        createBytecode: createBytecode,
+        callBytecode: callBytecode
+      };
+    });
 
   const result = yield {
     request: AddContracts,

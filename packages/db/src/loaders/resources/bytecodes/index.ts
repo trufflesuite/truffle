@@ -26,16 +26,18 @@ export function* generateBytecodesLoad(
     .flat();
 
   // now pluck all the create/call bytecodes and concat them (creates first)
-  const { createBytecodes, callBytecodes } = flattenedContracts.reduce(
-    (
-      { createBytecodes, callBytecodes },
-      { deployedBytecode: callBytecode, bytecode: createBytecode }
-    ) => ({
-      createBytecodes: [...createBytecodes, createBytecode],
-      callBytecodes: [...callBytecodes, callBytecode]
-    }),
-    { createBytecodes: [], callBytecodes: [] }
-  );
+  const { createBytecodes, callBytecodes } = flattenedContracts
+    .filter(({ bytecode }) => bytecode.bytes !== "")
+    .reduce(
+      (
+        { createBytecodes, callBytecodes },
+        { deployedBytecode: callBytecode, bytecode: createBytecode }
+      ) => ({
+        createBytecodes: [...createBytecodes, createBytecode],
+        callBytecodes: [...callBytecodes, callBytecode]
+      }),
+      { createBytecodes: [], callBytecodes: [] }
+    );
   const bytecodes = [...createBytecodes, ...callBytecodes];
 
   // submit
