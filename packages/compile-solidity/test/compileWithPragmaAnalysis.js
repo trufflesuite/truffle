@@ -68,7 +68,7 @@ describe("compileWithPragmaAnalysis", () => {
       assert(compilations[0].compiler.version.startsWith("0.6.12"));
     });
 
-    it("throws an error if it cannot find one that satisifes", async () => {
+    it("throws an error if it cannot find one that satisfies", async () => {
       try {
         await compileWithPragmaAnalysis({
           options: config,
