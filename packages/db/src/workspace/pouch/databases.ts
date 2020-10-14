@@ -115,7 +115,7 @@ export abstract class Databases<C extends Collections> {
   public async get<N extends CollectionName<C>>(
     collectionName: N,
     id: string
-  ): Promise<Resource<C, N> | null> {
+  ): Promise<Historical<Resource<C, N>> | null> {
     await this.ready;
 
     try {
@@ -123,7 +123,7 @@ export abstract class Databases<C extends Collections> {
       return {
         ...result,
         id
-      } as Resource<C, N>;
+      } as Historical<Resource<C, N>>;
     } catch (_) {
       return null;
     }
@@ -174,7 +174,7 @@ export abstract class Databases<C extends Collections> {
 
         // check for existing
         const resource = await this.get(collectionName, id);
-        const { _rev }: any = resource ? resource : {};
+        const { _rev = undefined } = resource ? resource : {};
 
         await this.collections[collectionName].put({
           ...resourceInput,
@@ -205,7 +205,7 @@ export abstract class Databases<C extends Collections> {
         const id = this.generateId(collectionName, resourceInput);
 
         const resource = await this.get(collectionName, id);
-        const { _rev }: any = resource ? resource : {};
+        const { _rev = undefined } = resource ? resource : {};
 
         if (_rev) {
           await this.collections[collectionName].put({
@@ -235,3 +235,13 @@ export abstract class Databases<C extends Collections> {
     );
   }
 }
+
+type History = PouchDB.Core.IdMeta & PouchDB.Core.GetMeta;
+
+type Historical<T> = {
+  [K in keyof T | keyof History]: K extends keyof History
+    ? History[K]
+    : K extends keyof T
+    ? T[K]
+    : never;
+};

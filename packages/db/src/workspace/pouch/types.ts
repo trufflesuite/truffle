@@ -1,12 +1,25 @@
 import PouchDB from "pouchdb";
 
 export type Collections = {
-  [collectionName: string]: {
-    resource: any;
-    input: any;
-    mutable?: boolean;
-    named?: boolean;
-  };
+  [collectionName: string]:
+    | {
+        resource: {
+          id: string;
+        };
+        input: any;
+        mutable?: boolean;
+        named?: false;
+      }
+    // definitely named, must define name property
+    | {
+        resource: {
+          id: string;
+          name: string;
+        };
+        input: any;
+        mutable?: boolean;
+        named: true;
+      };
 };
 
 export type Definitions<C extends Collections> = {
@@ -21,11 +34,6 @@ export type CollectionDatabases<C extends Collections> = {
 };
 
 export type CollectionName<C extends Collections> = string & keyof C;
-
-export type NamedCollectionName<C extends Collections> = CollectionName<
-  C,
-  { is: "named" }
->;
 
 export type Collection<
   C extends Collections = Collections,
@@ -90,8 +98,13 @@ export type MutableCollectionName<
 
 export type NamedResource<
   C extends Collections,
-  N extends NamedCollectionName<C> = NamedCollectionName<C>
-> = Resource<C, N>;
+  N extends CollectionName<C> = CollectionName<C>
+> = Resource<C, N, { is: "named" }>;
+
+export type NamedCollectionName<
+  C extends Collections
+> = FilteredCollectionName<C, { is: "named" }>;
+
 
 export type Input<
   C extends Collections,

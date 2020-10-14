@@ -44,9 +44,7 @@ export type Collections = {
 
 export type Definitions = Pouch.Definitions<Collections>;
 
-export type CollectionName<
-  F extends Pouch.CollectionFilter<Collections> | undefined = undefined
-> = Pouch.CollectionName<Collections, F>;
+export type CollectionName = Pouch.CollectionName<Collections>;
 
 export type MutableCollectionName = Pouch.MutableCollectionName<Collections>;
 
