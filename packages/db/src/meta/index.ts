@@ -70,6 +70,11 @@ export type Resource<
     : Extract<Collection<C, N>, { [K in F["is"]]: true }>["resource"]
   : CollectionProperty<"resource", C, N>;
 
+export type Input<
+  C extends Collections = Collections,
+  N extends CollectionName<C> = CollectionName<C>
+> = CollectionProperty<"input", C, N>;
+
 export type FilteredCollectionName<C extends Collections, F = undefined> = {
   [K in CollectionName<C>]: Resource<C, K, F> extends never ? never : K;
 }[CollectionName<C>];
@@ -93,11 +98,17 @@ export type NamedCollectionName<C extends Collections> = FilteredCollectionName<
   { is: "named" }
 >;
 
-export type Input<C extends Collections, N extends CollectionName<C>> = {
-  [K in N]: CollectionProperty<"input", C, N>[];
+export type MutationInput<
+  C extends Collections,
+  N extends CollectionName<C>
+> = {
+  [K in N]: Input<C, N>[];
 };
 
-export type Payload<C extends Collections, N extends CollectionName<C>> = {
+export type MutationPayload<
+  C extends Collections,
+  N extends CollectionName<C>
+> = {
   [K in N]: Resource<C, N>[];
 };
 

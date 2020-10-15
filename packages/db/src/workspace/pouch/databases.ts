@@ -7,8 +7,8 @@ import {
   CollectionName,
   CollectionResult,
   Collections,
-  Input,
-  Payload,
+  MutationInput,
+  MutationPayload,
   MutableCollectionName,
   Resource
 } from "@truffle/db/meta";
@@ -130,8 +130,8 @@ export abstract class Databases<C extends Collections> {
 
   public async add<N extends CollectionName<C>>(
     collectionName: N,
-    input: Input<C, N>
-  ): Promise<Payload<C, N>> {
+    input: MutationInput<C, N>
+  ): Promise<MutationPayload<C, N>> {
     await this.ready;
 
     const resources = await Promise.all(
@@ -158,13 +158,13 @@ export abstract class Databases<C extends Collections> {
 
     return ({
       [collectionName]: resources
-    } as unknown) as Payload<C, N>;
+    } as unknown) as MutationPayload<C, N>;
   }
 
   public async update<M extends MutableCollectionName<C>>(
     collectionName: M,
-    input: Input<C, M>
-  ): Promise<Payload<C, M>> {
+    input: MutationInput<C, M>
+  ): Promise<MutationPayload<C, M>> {
     await this.ready;
 
     const resources = await Promise.all(
@@ -190,12 +190,12 @@ export abstract class Databases<C extends Collections> {
 
     return ({
       [collectionName]: resources
-    } as unknown) as Payload<C, M>;
+    } as unknown) as MutationPayload<C, M>;
   }
 
   public async remove<M extends MutableCollectionName<C>>(
     collectionName: M,
-    input: Input<C, M>
+    input: MutationInput<C, M>
   ): Promise<void> {
     await this.ready;
 
@@ -219,7 +219,7 @@ export abstract class Databases<C extends Collections> {
 
   private generateId<N extends CollectionName<C>>(
     collectionName: N,
-    input: Input<C, N>[N][number]
+    input: MutationInput<C, N>[N][number]
   ): string {
     const { idFields } = this.definitions[collectionName];
 
