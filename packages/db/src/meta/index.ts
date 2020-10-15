@@ -4,7 +4,7 @@ export type Collections = {
         resource: {
           id: string;
         };
-        input: any;
+        input: object;
         mutable?: boolean;
         named?: false;
       }
@@ -14,7 +14,7 @@ export type Collections = {
           id: string;
           name: string;
         };
-        input: any;
+        input: object;
         mutable?: boolean;
         named: true;
       };
@@ -93,10 +93,9 @@ export type NamedCollectionName<C extends Collections> = FilteredCollectionName<
   { is: "named" }
 >;
 
-export type Input<
-  C extends Collections,
-  N extends CollectionName<C>
-> = CollectionProperty<"input", C, N>;
+export type Input<C extends Collections, N extends CollectionName<C>> = {
+  [K in N]: CollectionProperty<"input", C, N>[];
+};
 
 export type Payload<C extends Collections, N extends CollectionName<C>> = {
   [K in N]: Resource<C, N>[];

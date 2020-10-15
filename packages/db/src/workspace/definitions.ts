@@ -4,37 +4,37 @@ import * as Pouch from "./pouch";
 export type Collections = {
   bytecodes: {
     resource: DataModel.IBytecode;
-    input: DataModel.IBytecodesAddInput;
+    input: DataModel.IBytecodeInput;
   };
   compilations: {
     resource: DataModel.ICompilation;
-    input: DataModel.ICompilationsAddInput;
+    input: DataModel.ICompilationInput;
   };
   contractInstances: {
     resource: DataModel.IContractInstance;
-    input: DataModel.IContractInstancesAddInput;
+    input: DataModel.IContractInstanceInput;
   };
   contracts: {
     resource: DataModel.IContract;
-    input: DataModel.IContractsAddInput;
+    input: DataModel.IContractInput;
     named: true;
   };
   nameRecords: {
     resource: DataModel.INameRecord;
-    input: DataModel.INameRecordsAddInput;
+    input: DataModel.INameRecordInput;
   };
   networks: {
     resource: DataModel.INetwork;
-    input: DataModel.INetworksAddInput;
+    input: DataModel.INetworkInput;
     named: true;
   };
   sources: {
     resource: DataModel.ISource;
-    input: DataModel.ISourcesAddInput;
+    input: DataModel.ISourceInput;
   };
   projects: {
     resource: DataModel.IProject;
-    input: DataModel.IProjectsAddInput;
+    input: DataModel.IProjectInput;
   };
   projectNames: {
     resource: DataModel.IProjectName;
