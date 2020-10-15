@@ -4,7 +4,7 @@ import * as jsondown from "jsondown";
 import * as PouchDBUtils from "pouchdb-utils";
 import CoreLevelPouch from "pouchdb-adapter-leveldb-core";
 
-import { Collections } from "./types";
+import { Collections } from "@truffle/db/meta";
 import { Databases } from "./databases";
 
 export class FSDatabases<C extends Collections> extends Databases<C> {

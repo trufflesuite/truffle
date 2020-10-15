@@ -1,3 +1,4 @@
+import * as Meta from "@truffle/db/meta";
 import * as Pouch from "./pouch";
 
 export type Collections = {
@@ -44,23 +45,20 @@ export type Collections = {
 
 export type Definitions = Pouch.Definitions<Collections>;
 
-export type CollectionName = Pouch.CollectionName<Collections>;
+export type CollectionName = Meta.CollectionName<Collections>;
 
-export type MutableCollectionName = Pouch.MutableCollectionName<Collections>;
-
-export type NamedCollectionName = Pouch.NamedCollectionName<Collections>;
-
-export type Resource<
-  N extends CollectionName = CollectionName
-> = Pouch.Resource<Collections, N>;
+export type Resource<N extends CollectionName = CollectionName> = Meta.Resource<
+  Collections,
+  N
+>;
 
 export type MutableResource<
-  N extends MutableCollectionName = MutableCollectionName
-> = Pouch.MutableResource<Collections, N>;
+  N extends CollectionName = CollectionName
+> = Meta.MutableResource<Collections, N>;
 
 export type NamedResource<
-  N extends NamedCollectionName = NamedCollectionName
-> = Pouch.NamedResource<Collections, N>;
+  N extends CollectionName = CollectionName
+> = Meta.NamedResource<Collections, N>;
 
 export const definitions: Definitions = {
   contracts: {

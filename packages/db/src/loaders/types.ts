@@ -1,4 +1,5 @@
 import { CompiledContract } from "@truffle/compile-common";
+import { IdObject } from "@truffle/db/meta";
 
 export interface CompilationData {
   compiler: {
@@ -31,19 +32,6 @@ export interface LoadedBytecodes {
   }[];
 }
 
-type Resource = {
-  id: string;
-};
-
-export type IdObject<R extends Resource = Resource> = {
-  [N in keyof R]: N extends "id" ? string : never;
-};
-
-export const toIdObject = <R extends Resource>({ id }: R): IdObject<R> =>
-  ({
-    id
-  } as IdObject<R>);
-
 export interface WorkspaceRequest {
   request: string; // GraphQL request
   variables: {
@@ -56,8 +44,3 @@ export type WorkspaceResponse<N extends string = string, R = any> = {
     workspace: { [RequestName in N]: R };
   };
 };
-
-export interface NamedResource {
-  id: string;
-  name: string;
-}

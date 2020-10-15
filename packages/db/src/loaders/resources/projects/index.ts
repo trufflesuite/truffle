@@ -1,8 +1,5 @@
-import {
-  IdObject,
-  WorkspaceRequest,
-  WorkspaceResponse
-} from "@truffle/db/loaders/types";
+import { WorkspaceRequest, WorkspaceResponse } from "@truffle/db/loaders/types";
+import { IdObject } from "@truffle/db/meta";
 
 import { AddProjects } from "./add.graphql";
 import { AssignProjectNames } from "./assign.graphql";

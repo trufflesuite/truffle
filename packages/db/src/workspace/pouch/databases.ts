@@ -4,17 +4,16 @@ import PouchDBFind from "pouchdb-find";
 import { generateId } from "@truffle/db/helpers";
 
 import {
-  CollectionDatabases,
   CollectionName,
   CollectionResult,
   Collections,
-  Definition,
-  Definitions,
   Input,
   Payload,
   MutableCollectionName,
   Resource
-} from "./types";
+} from "@truffle/db/meta";
+
+import { CollectionDatabases, Definition, Definitions } from "./types";
 
 export interface DatabasesOptions<C extends Collections> {
   settings: any;

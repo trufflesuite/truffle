@@ -1,7 +1,6 @@
 import {
   CompilationData,
   LoadedSources,
-  IdObject,
   WorkspaceRequest,
   WorkspaceResponse
 } from "@truffle/db/loaders/types";
@@ -31,8 +30,7 @@ const compilationProcessedSourceInputs = ({
   }));
 
 const compilationSourceMapInputs = ({
-  compilation,
-  sources
+  compilation
 }: LoadableCompilation): DataModel.ICompilationSourceMapInput[] => {
   const contracts = compilation.sources
     .map(({ contracts }) => contracts)

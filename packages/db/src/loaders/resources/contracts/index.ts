@@ -1,9 +1,9 @@
 import {
   LoadedBytecodes,
-  IdObject,
   WorkspaceRequest,
   WorkspaceResponse
 } from "@truffle/db/loaders/types";
+import { IdObject } from "@truffle/db/meta";
 import { CompiledContract } from "@truffle/compile-common";
 
 import { AddContracts } from "./add.graphql";
