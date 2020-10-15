@@ -13,6 +13,7 @@ const SolidityTest = require("./SolidityTest");
 const RangeUtils = require("@truffle/compile-solidity/compilerSupplier/rangeUtils");
 const expect = require("@truffle/expect");
 const Migrate = require("@truffle/migrate");
+const Profiler = require("@truffle/compile-solidity/profiler");
 const originalrequire = require("original-require");
 const Codec = require("@truffle/codec");
 const debug = require("debug")("lib:test");
@@ -91,7 +92,7 @@ const Test = {
 
     const testResolver = new Resolver(config, true);
 
-    const { compilations } = await this.compileTestFiles(
+    const { compilations } = await this.compileContractsWithTestFilesIfNeeded(
       solTests,
       config,
       testResolver
@@ -183,14 +184,21 @@ const Test = {
     return interfaceAdapter.getAccounts();
   },
 
-  compileTestFiles: async function (solidityTestFiles, config, testResolver) {
+  compileContractsWithTestFilesIfNeeded: async function (
+    solidityTestFiles,
+    config,
+    testResolver
+  ) {
+    const updated =
+      (await Profiler.updated(config.with({ resolver: testResolver }))) || [];
+
     const compiler =
       config.compileNone || config["--compile-none"] ? "none" : config.compiler;
 
     let compileConfig = config.with({
       all: config.compileAll === true,
       compiler,
-      files: solidityTestFiles,
+      files: updated.concat(solidityTestFiles),
       resolver: testResolver,
       quiet: config.runnerOutputOnly || config.quiet,
       quietWrite: true
