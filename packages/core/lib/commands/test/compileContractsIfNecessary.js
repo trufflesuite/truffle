@@ -17,7 +17,6 @@ const compileContractsIfNecessary = async config => {
     quiet: config.runnerOutputOnly || config.quiet
   });
 
-  // Compile project contracts and test contracts
   await WorkflowCompile.compileAndSave(compileConfig);
 };
 
