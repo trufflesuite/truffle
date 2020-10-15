@@ -128,6 +128,9 @@ const command = {
     const { copyArtifactsToTempDir } = require("./copyArtifactsToTempDir");
     const { determineTestFilesToRun } = require("./determineTestFilesToRun");
     const { prepareConfigAndRunTests } = require("./prepareConfigAndRunTests");
+    const {
+      compileContractsIfNecessary
+    } = require("./compileContractsIfNecessary");
 
     const config = Config.detect(options);
 
@@ -166,6 +169,7 @@ const command = {
 
     if (config.networks[config.network]) {
       Environment.detect(config)
+        .then(() => compileContractsIfNecessary(config))
         .then(() => copyArtifactsToTempDir(config))
         .then(({ config, temporaryDirectory }) => {
           return prepareConfigAndRunTests({
@@ -202,6 +206,7 @@ const command = {
           ipcDisconnect = disconnect;
           return Environment.develop(config, ganacheOptions);
         })
+        .then(() => compileContractsIfNecessary(config))
         .then(() => copyArtifactsToTempDir(config))
         .then(({ config, temporaryDirectory }) => {
           return prepareConfigAndRunTests({
