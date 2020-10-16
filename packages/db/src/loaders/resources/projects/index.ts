@@ -20,7 +20,7 @@ export function* generateProjectLoad(
     }
   };
 
-  return result.data.workspace.projectsAdd.projects[0];
+  return result.data.projectsAdd.projects[0];
 }
 
 export function* generateProjectNameResolve(
@@ -41,7 +41,7 @@ export function* generateProjectNameResolve(
     }
   };
 
-  return result.data.workspace.project.resolve[0];
+  return result.data.project.resolve[0];
 }
 
 export function* generateProjectNamesAssign(

@@ -13,15 +13,13 @@ export const AddBytecodes = gql`
   }
 
   mutation AddBytecodes($bytecodes: [BytecodeInput!]!) {
-    workspace {
-      bytecodesAdd(input: { bytecodes: $bytecodes }) {
-        bytecodes {
-          id
-          linkReferences {
-            offsets
-            name
-            length
-          }
+    bytecodesAdd(input: { bytecodes: $bytecodes }) {
+      bytecodes {
+        id
+        linkReferences {
+          offsets
+          name
+          length
         }
       }
     }

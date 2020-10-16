@@ -61,40 +61,38 @@ export const AddContractInstances = gql`
   }
 
   mutation AddContractInstances($contractInstances: [ContractInstanceInput!]!) {
-    workspace {
-      contractInstancesAdd(input: { contractInstances: $contractInstances }) {
-        contractInstances {
-          address
-          network {
-            name
-            networkID
-            historicBlock {
-              height
-              hash
-            }
+    contractInstancesAdd(input: { contractInstances: $contractInstances }) {
+      contractInstances {
+        address
+        network {
+          name
+          networkID
+          historicBlock {
+            height
+            hash
           }
-          contract {
-            name
-          }
-          creation {
-            transactionHash
-            constructor {
-              createBytecode {
-                bytecode {
-                  bytes
-                  linkReferences {
-                    offsets
-                    name
-                    length
-                  }
+        }
+        contract {
+          name
+        }
+        creation {
+          transactionHash
+          constructor {
+            createBytecode {
+              bytecode {
+                bytes
+                linkReferences {
+                  offsets
+                  name
+                  length
                 }
-                linkValues {
-                  value
-                  linkReference {
-                    offsets
-                    name
-                    length
-                  }
+              }
+              linkValues {
+                value
+                linkReference {
+                  offsets
+                  name
+                  length
                 }
               }
             }

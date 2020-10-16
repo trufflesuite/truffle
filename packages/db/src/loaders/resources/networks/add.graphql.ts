@@ -13,15 +13,13 @@ export const AddNetworks = gql`
   }
 
   mutation AddNetworks($networks: [NetworkInput!]!) {
-    workspace {
-      networksAdd(input: { networks: $networks }) {
-        networks {
-          id
-          networkId
-          historicBlock {
-            height
-            hash
-          }
+    networksAdd(input: { networks: $networks }) {
+      networks {
+        id
+        networkId
+        historicBlock {
+          height
+          hash
         }
       }
     }

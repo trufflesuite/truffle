@@ -40,11 +40,9 @@ export const AddCompilations = gql`
   }
 
   mutation AddCompilations($compilations: [CompilationInput!]!) {
-    workspace {
-      compilationsAdd(input: { compilations: $compilations }) {
-        compilations {
-          id
-        }
+    compilationsAdd(input: { compilations: $compilations }) {
+      compilations {
+        id
       }
     }
   }

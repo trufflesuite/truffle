@@ -14,15 +14,13 @@ export const AssignProjectNames = gql`
     nameRecord: NameRecordInput!
   }
   mutation AssignProjectNames($projectNames: [ProjectNameInput!]!) {
-    workspace {
-      projectNamesAssign(input: { projectNames: $projectNames }) {
-        projectNames {
-          name
-          type
-          nameRecord {
-            resource {
-              id
-            }
+    projectNamesAssign(input: { projectNames: $projectNames }) {
+      projectNames {
+        name
+        type
+        nameRecord {
+          resource {
+            id
           }
         }
       }

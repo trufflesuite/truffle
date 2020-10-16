@@ -7,13 +7,11 @@ export const AddSources = gql`
   }
 
   mutation AddSource($sources: [SourceInput!]!) {
-    workspace {
-      sourcesAdd(input: { sources: $sources }) {
-        sources {
-          id
-          contents
-          sourcePath
-        }
+    sourcesAdd(input: { sources: $sources }) {
+      sources {
+        id
+        contents
+        sourcePath
       }
     }
   }

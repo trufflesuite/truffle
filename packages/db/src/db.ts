@@ -1,5 +1,5 @@
 import { GraphQLSchema, DocumentNode, parse, execute } from "graphql";
-import { schema } from "@truffle/db/data";
+import { schema } from "@truffle/db/workspace/schema";
 import { generateCompileLoad } from "@truffle/db/loaders/commands";
 import { WorkspaceRequest, WorkspaceResponse } from "@truffle/db/loaders/types";
 import { WorkflowCompileResult } from "@truffle/compile-common";

@@ -2,36 +2,34 @@ import gql from "graphql-tag";
 
 export const GetCompilation = gql`
   query GetCompilation($id: ID!) {
-    workspace {
-      compilation(id: $id) {
-        id
-        compiler {
-          name
+    compilation(id: $id) {
+      id
+      compiler {
+        name
+      }
+      sourceMaps {
+        json
+      }
+      processedSources {
+        source {
+          sourcePath
         }
-        sourceMaps {
-          json
-        }
-        processedSources {
-          source {
-            sourcePath
-          }
 
-          contracts {
+        contracts {
+          id
+          name
+          createBytecode {
             id
-            name
-            createBytecode {
-              id
-              bytes
-              linkReferences {
-                name
-              }
+            bytes
+            linkReferences {
+              name
             }
-            callBytecode {
-              id
-              bytes
-              linkReferences {
-                name
-              }
+          }
+          callBytecode {
+            id
+            bytes
+            linkReferences {
+              name
             }
           }
         }

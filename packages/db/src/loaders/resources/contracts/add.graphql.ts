@@ -33,15 +33,29 @@ export const AddContracts = gql`
   }
 
   mutation AddContracts($contracts: [ContractInput!]!) {
-    workspace {
-      contractsAdd(input: { contracts: $contracts }) {
-        contracts {
-          id
-          name
-          abi {
+    contractsAdd(input: { contracts: $contracts }) {
+      contracts {
+        id
+        name
+        abi {
+          json
+        }
+        processedSource {
+          source {
+            contents
+            sourcePath
+          }
+          ast {
             json
           }
-          processedSource {
+        }
+        compilation {
+          compiler {
+            name
+            version
+          }
+          contracts {
+            name
             source {
               contents
               sourcePath
@@ -50,43 +64,27 @@ export const AddContracts = gql`
               json
             }
           }
-          compilation {
-            compiler {
-              name
-              version
-            }
-            contracts {
-              name
-              source {
-                contents
-                sourcePath
-              }
-              ast {
-                json
-              }
-            }
-            sources {
-              contents
-              sourcePath
-            }
+          sources {
+            contents
+            sourcePath
           }
-          createBytecode {
-            id
-            bytes
-            linkReferences {
-              offsets
-              name
-              length
-            }
+        }
+        createBytecode {
+          id
+          bytes
+          linkReferences {
+            offsets
+            name
+            length
           }
-          callBytecode {
-            id
-            bytes
-            linkReferences {
-              offsets
-              name
-              length
-            }
+        }
+        callBytecode {
+          id
+          bytes
+          linkReferences {
+            offsets
+            name
+            length
           }
         }
       }

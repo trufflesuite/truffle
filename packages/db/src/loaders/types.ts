@@ -41,6 +41,6 @@ export interface WorkspaceRequest {
 
 export type WorkspaceResponse<N extends string = string, R = any> = {
   data: {
-    workspace: { [RequestName in N]: R };
+    [RequestName in N]: R;
   };
 };

@@ -5,12 +5,10 @@ export const AddProjects = gql`
     directory: String!
   }
   mutation AddProjects($projects: [ProjectInput!]!) {
-    workspace {
-      projectsAdd(input: { projects: $projects }) {
-        projects {
-          id
-          directory
-        }
+    projectsAdd(input: { projects: $projects }) {
+      projects {
+        id
+        directory
       }
     }
   }
