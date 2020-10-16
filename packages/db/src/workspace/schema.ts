@@ -5,13 +5,19 @@ import { definitions } from "./definitions";
 import { typeDefs, resolvers } from "./pouch";
 
 const sources = resolvers("sources", definitions.sources);
+const bytecodes = resolvers("bytecodes", definitions.bytecodes);
 
 export const schema = makeExecutableSchema({
-  typeDefs: [rootSchema, typeDefs("sources", definitions.sources)],
+  typeDefs: [
+    rootSchema,
+    typeDefs("sources", definitions.sources),
+    typeDefs("bytecodes", definitions.bytecodes)
+  ],
 
   resolvers: {
     Query: {
       ...sources.Query,
+      ...bytecodes.Query,
       contractNames: {
         resolve: (_, {}, { workspace }) => workspace.contractNames()
       },
@@ -20,12 +26,6 @@ export const schema = makeExecutableSchema({
       },
       contract: {
         resolve: (_, { id }, { workspace }) => workspace.contract({ id })
-      },
-      bytecodes: {
-        resolve: (_, {}, { workspace }) => workspace.bytecodes()
-      },
-      bytecode: {
-        resolve: (_, { id }, { workspace }) => workspace.bytecode({ id })
       },
       compilations: {
         resolve: (_, {}, { workspace }) => workspace.compilations()
@@ -61,10 +61,7 @@ export const schema = makeExecutableSchema({
     },
     Mutation: {
       ...sources.Mutation,
-      bytecodesAdd: {
-        resolve: (_, { input }, { workspace }) =>
-          workspace.bytecodesAdd({ input })
-      },
+      ...bytecodes.Mutation,
       contractsAdd: {
         resolve: (_, { input }, { workspace }) =>
           workspace.contractsAdd({ input })
@@ -191,8 +188,9 @@ export const schema = makeExecutableSchema({
     },
     Contract: {
       compilation: {
-        resolve: ({ compilation }, _, { workspace }) =>
-          workspace.compilation(compilation)
+        resolve: async ({ compilation }, _, { workspace }) => {
+          return await workspace.compilation(compilation);
+        }
       },
       processedSource: {
         fragment: `... on Contract { compilation { id } }`,
@@ -203,8 +201,8 @@ export const schema = makeExecutableSchema({
         }
       },
       createBytecode: {
-        resolve: ({ createBytecode }, _, { workspace }) =>
-          workspace.bytecode(createBytecode)
+        resolve: ({ createBytecode: { id } }, _, { workspace }) =>
+          workspace.databases.get("bytecodes", id)
       },
       callBytecode: {
         resolve: ({ callBytecode }, _, { workspace }) =>

@@ -2,9 +2,11 @@ import { Definitions } from "./types";
 export * from "./types";
 
 import { sources } from "./sources";
+import { bytecodes } from "./bytecodes";
 
 export const definitions: Definitions = {
   sources,
+  bytecodes,
   contracts: {
     createIndexes: [
       {
@@ -16,10 +18,6 @@ export const definitions: Definitions = {
   compilations: {
     createIndexes: [],
     idFields: ["compiler", "sources"]
-  },
-  bytecodes: {
-    createIndexes: [],
-    idFields: ["bytes", "linkReferences"]
   },
   networks: {
     createIndexes: [],

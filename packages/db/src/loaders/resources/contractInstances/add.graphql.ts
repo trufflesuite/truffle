@@ -1,36 +1,8 @@
 import gql from "graphql-tag";
 
 export const AddContractInstances = gql`
-  input ContractInstanceNetworkInput {
-    id: ID!
-  }
-
-  input ContractInstanceContractInput {
-    id: ID!
-  }
-
-  input ContractInstanceCreationConstructorBytecodeInput {
-    id: ID!
-  }
-
-  input LinkReferenceInput {
-    offsets: [Int]
-    name: String
-    length: Int
-  }
-
-  input LinkValueLinkReferenceInput {
-    bytecode: ID!
-    index: FileIndex
-  }
-
-  input LinkValueInput {
-    value: Address!
-    linkReference: LinkValueLinkReferenceInput!
-  }
-
   input ContractInstanceCreationConstructorLinkedBytecodeInput {
-    bytecode: ContractInstanceCreationConstructorBytecodeInput!
+    bytecode: ResourceReferenceInput!
     linkValues: [LinkValueInput]
   }
 
@@ -54,9 +26,9 @@ export const AddContractInstances = gql`
 
   input ContractInstanceInput {
     address: Address!
-    network: ContractInstanceNetworkInput!
+    network: ResourceReferenceInput!
     creation: ContractInstanceCreationInput
-    contract: ContractInstanceContractInput
+    contract: ResourceReferenceInput
     callBytecode: ContractInstanceLinkedCallBytecodeInput
   }
 

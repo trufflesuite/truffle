@@ -24,7 +24,7 @@ type NetworkLinkObject = {
 };
 
 type LinkValueLinkReferenceObject = {
-  bytecode: string;
+  bytecode: { id: string };
   index: number;
 };
 
@@ -270,7 +270,7 @@ export class ArtifactsLoader {
         let linkValue = {
           value: link[1],
           linkReference: {
-            bytecode: bytecode.id,
+            bytecode: { id: bytecode.id },
             index: linkReferenceIndexByName
           }
         };

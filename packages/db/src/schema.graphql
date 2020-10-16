@@ -2,9 +2,7 @@ scalar Address
 scalar NetworkId
 scalar TransactionHash
 scalar Value
-scalar Bytes
 scalar Object
-scalar ByteOffset
 scalar Index
 
 #
@@ -37,7 +35,6 @@ type Query {
   contractNames: [String]!
 
   # query individual resources
-  bytecode(id: ID!): Bytecode
   contract(id: ID!): Contract
   compilation(id: ID!): Compilation
   contractInstance(id: ID!): ContractInstance
@@ -47,7 +44,6 @@ type Query {
 
   # query collections
   contractInstances: [ContractInstance]
-  bytecodes: [Bytecode]
   contracts: [Contract]
   compilations: [Compilation]
   networks: [Network]
@@ -62,91 +58,11 @@ type Query {
 type Mutation {
   projectsAdd(input:ProjectsAddInput!):ProjectsAddPayload
   projectNamesAssign(input: ProjectNamesAssignInput): ProjectNamesAssignPayload
-  bytecodesAdd(input: BytecodesAddInput!): BytecodesAddPayload
   contractsAdd(input: ContractsAddInput!): ContractsAddPayload
   compilationsAdd(input: CompilationsAddInput!): CompilationsAddPayload
   contractInstancesAdd(input: ContractInstancesAddInput!): ContractInstancesAddPayload
   networksAdd(input: NetworksAddInput!): NetworksAddPayload
   nameRecordsAdd(input: NameRecordsAddInput!): NameRecordsAddPayload
-}
-
-
-#
-# Sources
-#
-
-
-#
-# Bytecodes
-#
-
-# Resource
-type Bytecode implements Resource {
-  id: ID!
-  bytes: Bytes!
-  linkReferences: [LinkReference]
-  instructions: [Instruction!],
-}
-
-type LinkReference {
-  offsets: [ByteOffset!]!
-  name: String
-  length: Int!
-}
-
-type Instruction {
-  opcode: String!,
-  programCounter: Int!,
-  meta: InstructionMeta,
-  sourceRange: SourceRange,
-  pushData: Bytes
-}
-
-type InstructionMeta {
-  cost: Int!,
-  dynamic: Boolean,
-
-  # stack operations
-  pops: Int,
-  pushes: Int
-}
-
-type SourceRange {
-  source: Source!
-  start: ByteOffset!
-  length: Int!
-  meta: SourceRangeMeta!
-}
-
-type SourceRangeMeta {
-  jump: JumpDirection
-}
-
-enum JumpDirection {
-  IN
-  OUT
-}
-
-# Resource input
-input BytecodeInput {
-  bytes: Bytes!
-  linkReferences: [BytecodeLinkReferenceInput]
-}
-
-input BytecodeLinkReferenceInput {
-  offsets: [Int!]!
-  name: String
-  length: Int!
-}
-
-# Mutation input
-input BytecodesAddInput {
-  bytecodes: [BytecodeInput!]!
-}
-
-# Mutation payload
-type BytecodesAddPayload {
-  bytecodes: [Bytecode!]
 }
 
 
@@ -326,11 +242,11 @@ input LinkedBytecodeInput {
 
 input LinkValueInput {
   value: Address!
-  linkReference: LinkReferenceInput!
+  linkReference: LinkValueLinkReferenceInput!
 }
 
-input LinkReferenceInput {
-  bytecode: ID!
+input LinkValueLinkReferenceInput {
+  bytecode: ResourceReferenceInput!
   index: Index
 }
 
