@@ -1,31 +1,17 @@
-import gql from "graphql-tag";
 import { makeExecutableSchema } from "@gnd/graphql-tools";
 
 import { schema as rootSchema } from "@truffle/db/schema";
 import { definitions } from "./definitions";
+import { typeDefs, resolvers } from "./pouch";
+
+const sources = resolvers("sources", definitions.sources);
 
 export const schema = makeExecutableSchema({
-  typeDefs: [
-    rootSchema,
-    definitions.sources.typeDefs.resource,
-    definitions.sources.typeDefs.input,
-    definitions.sources.typeDefs.query,
-    definitions.sources.typeDefs.mutation,
-    gql`
-      type SourcesAddPayload {
-        sources: [Source!]
-      }
-    `,
-    gql`
-      input SourcesAddInput {
-        sources: [SourceInput!]!
-      }
-    `
-  ],
+  typeDefs: [rootSchema, typeDefs("sources", definitions.sources)],
 
   resolvers: {
     Query: {
-      ...definitions.sources.resolvers.Query,
+      ...sources.Query,
       contractNames: {
         resolve: (_, {}, { workspace }) => workspace.contractNames()
       },
@@ -74,7 +60,7 @@ export const schema = makeExecutableSchema({
       }
     },
     Mutation: {
-      ...definitions.sources.resolvers.Mutation,
+      ...sources.Mutation,
       bytecodesAdd: {
         resolve: (_, { input }, { workspace }) =>
           workspace.bytecodesAdd({ input })
