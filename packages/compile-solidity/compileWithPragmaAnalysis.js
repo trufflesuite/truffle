@@ -88,11 +88,10 @@ const compileWithPragmaAnalysis = async ({ paths, options }) => {
     }
 
     if (versionsAndSources[newestSatisfyingVersion]) {
-      versionsAndSources[newestSatisfyingVersion] = Object.assign(
-        {},
-        versionsAndSources[newestSatisfyingVersion],
-        allSources
-      );
+      versionsAndSources[newestSatisfyingVersion] = {
+        ...versionsAndSources[newestSatisfyingVersion],
+        ...allSources
+      };
     } else {
       versionsAndSources[newestSatisfyingVersion] = allSources;
     }
