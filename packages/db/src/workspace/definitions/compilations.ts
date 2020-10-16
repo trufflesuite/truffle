@@ -62,5 +62,39 @@ export const compilations: Definition<"compilations"> = {
     input SourceMapInput {
       json: String!
     }
-  `
+  `,
+  resolvers: {
+    Compilation: {
+      sources: {
+        resolve: ({ sources }, _, { workspace }) =>
+          Promise.all(
+            sources.map(({ id }) => workspace.databases.get("sources", id))
+          )
+      },
+      processedSources: {
+        resolve: ({ id, processedSources }, _, {}) =>
+          processedSources.map((processedSource, index) => ({
+            ...processedSource,
+            compilation: { id },
+            index
+          }))
+      }
+    },
+
+    ProcessedSource: {
+      source: {
+        resolve: ({ source: { id } }, _, { workspace }) =>
+          workspace.databases.get("sources", id)
+      },
+      contracts: {
+        resolve: ({ compilation, index }, _, { workspace }) =>
+          workspace.databases.find("contracts", {
+            selector: {
+              "compilation.id": compilation.id,
+              "processedSource.index": index
+            }
+          })
+      }
+    }
+  }
 };

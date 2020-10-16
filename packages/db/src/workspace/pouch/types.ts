@@ -9,10 +9,6 @@ export type Definitions<C extends Collections> = {
   };
 };
 
-export type CollectionDatabases<C extends Collections> = {
-  [N in CollectionName<C>]: PouchDB.Database;
-};
-
 export type Definition<
   C extends Collections,
   N extends CollectionName<C>

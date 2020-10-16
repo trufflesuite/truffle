@@ -13,7 +13,7 @@ import {
   Resource
 } from "@truffle/db/meta";
 
-import { CollectionDatabases, Definition, Definitions } from "./types";
+import { Definition, Definitions } from "./types";
 
 export interface DatabasesOptions<C extends Collections> {
   settings: any;
@@ -243,4 +243,8 @@ type Historical<T> = {
     : K extends keyof T
     ? T[K]
     : never;
+};
+
+type CollectionDatabases<C extends Collections> = {
+  [N in CollectionName<C>]: PouchDB.Database;
 };
