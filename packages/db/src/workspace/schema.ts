@@ -6,18 +6,21 @@ import { typeDefs, resolvers } from "./pouch";
 
 const sources = resolvers("sources", definitions.sources);
 const bytecodes = resolvers("bytecodes", definitions.bytecodes);
+const compilations = resolvers("compilations", definitions.compilations);
 
 export const schema = makeExecutableSchema({
   typeDefs: [
     rootSchema,
     typeDefs("sources", definitions.sources),
-    typeDefs("bytecodes", definitions.bytecodes)
+    typeDefs("bytecodes", definitions.bytecodes),
+    typeDefs("compilations", definitions.compilations)
   ],
 
   resolvers: {
     Query: {
       ...sources.Query,
       ...bytecodes.Query,
+      ...compilations.Query,
       contractNames: {
         resolve: (_, {}, { workspace }) => workspace.contractNames()
       },
@@ -26,12 +29,6 @@ export const schema = makeExecutableSchema({
       },
       contract: {
         resolve: (_, { id }, { workspace }) => workspace.contract({ id })
-      },
-      compilations: {
-        resolve: (_, {}, { workspace }) => workspace.compilations()
-      },
-      compilation: {
-        resolve: (_, { id }, { workspace }) => workspace.compilation({ id })
       },
       contractInstances: {
         resolve: (_, {}, { workspace }) => workspace.contractInstances()
@@ -62,13 +59,10 @@ export const schema = makeExecutableSchema({
     Mutation: {
       ...sources.Mutation,
       ...bytecodes.Mutation,
+      ...compilations.Mutation,
       contractsAdd: {
         resolve: (_, { input }, { workspace }) =>
           workspace.contractsAdd({ input })
-      },
-      compilationsAdd: {
-        resolve: (_, { input }, { workspace }) =>
-          workspace.compilationsAdd({ input })
       },
       contractInstancesAdd: {
         resolve: (_, { input }, { workspace }) =>

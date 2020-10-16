@@ -2,7 +2,6 @@ scalar Address
 scalar NetworkId
 scalar TransactionHash
 scalar Value
-scalar Object
 scalar Index
 
 #
@@ -36,7 +35,6 @@ type Query {
 
   # query individual resources
   contract(id: ID!): Contract
-  compilation(id: ID!): Compilation
   contractInstance(id: ID!): ContractInstance
   network(id: ID!): Network
   nameRecord(id:ID!): NameRecord
@@ -45,7 +43,6 @@ type Query {
   # query collections
   contractInstances: [ContractInstance]
   contracts: [Contract]
-  compilations: [Compilation]
   networks: [Network]
   nameRecords: [NameRecord]
   projects: [Project]
@@ -59,82 +56,9 @@ type Mutation {
   projectsAdd(input:ProjectsAddInput!):ProjectsAddPayload
   projectNamesAssign(input: ProjectNamesAssignInput): ProjectNamesAssignPayload
   contractsAdd(input: ContractsAddInput!): ContractsAddPayload
-  compilationsAdd(input: CompilationsAddInput!): CompilationsAddPayload
   contractInstancesAdd(input: ContractInstancesAddInput!): ContractInstancesAddPayload
   networksAdd(input: NetworksAddInput!): NetworksAddPayload
   nameRecordsAdd(input: NameRecordsAddInput!): NameRecordsAddPayload
-}
-
-
-#
-# Compilations
-#
-
-# Resource
-type Compilation implements Resource {
-  id: ID!
-  compiler: Compiler!
-  sources: [Source]!
-  processedSources: [ProcessedSource]!
-  sourceMaps: [SourceMap]
-}
-
-type Compiler {
-  name: String!
-  version: String!
-  settings: Object
-}
-
-type ProcessedSource {
-  source: Source!
-  contracts: [Contract]!
-  ast: AST
-}
-
-type AST {
-  json: String!
-}
-
-type SourceMap {
-  json: String!
-}
-
-# Resource input
-input CompilationInput {
-  compiler: CompilerInput!
-  processedSources: [ProcessedSourceInput!]
-  sources: [ResourceReferenceInput!]!
-  sourceMaps: [SourceMapInput]
-}
-
-input CompilerInput {
-  name: String!
-  version: String!
-  settings: Object
-}
-
-input ProcessedSourceInput {
-  name: String
-  source: ResourceReferenceInput
-  ast: ASTInput
-}
-
-input ASTInput {
-  json: String!
-}
-
-input SourceMapInput {
-  json: String!
-}
-
-# Mutation input
-input CompilationsAddInput {
-  compilations: [CompilationInput!]!
-}
-
-# Mutation payload
-type CompilationsAddPayload {
-  compilations: [Compilation!]
 }
 
 

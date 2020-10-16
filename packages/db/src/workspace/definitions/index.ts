@@ -3,6 +3,7 @@ export * from "./types";
 
 import { sources } from "./sources";
 import { bytecodes } from "./bytecodes";
+import { compilations } from "./compilations";
 
 export const definitions: Definitions = {
   sources,
@@ -15,10 +16,7 @@ export const definitions: Definitions = {
     ],
     idFields: ["name", "abi", "processedSource", "compilation"]
   },
-  compilations: {
-    createIndexes: [],
-    idFields: ["compiler", "sources"]
-  },
+  compilations,
   networks: {
     createIndexes: [],
     idFields: ["networkId", "historicBlock"]
