@@ -2,7 +2,7 @@ import { makeExecutableSchema } from "@gnd/graphql-tools";
 
 import { schema as rootSchema } from "@truffle/db/schema";
 import { definitions } from "./definitions";
-import { typeDefs, resolvers } from "./pouch";
+import { typeDefs, resolvers } from "./graphql";
 
 const sources = resolvers("sources", definitions.sources);
 const bytecodes = resolvers("bytecodes", definitions.bytecodes);

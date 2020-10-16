@@ -1,5 +1,6 @@
 import * as Meta from "@truffle/db/meta";
 import * as Pouch from "../pouch";
+import * as GraphQl from "../graphql";
 
 export type Collections = {
   sources: {
@@ -43,14 +44,14 @@ export type Collections = {
   };
 };
 
-export type Definitions = Pouch.Definitions<Collections>;
-
 export type CollectionName = Meta.CollectionName<Collections>;
 
-export type Definition<N extends CollectionName> = Pouch.Definition<
-  Collections,
-  N
->;
+export type Definitions = {
+  [N in CollectionName]: Pouch.Definition<Collections, N> &
+    GraphQl.Definition<Collections, N>;
+};
+
+export type Definition<N extends CollectionName> = Definitions[N];
 
 export type Resource<N extends CollectionName = CollectionName> = Meta.Resource<
   Collections,
