@@ -1,12 +1,31 @@
+import gql from "graphql-tag";
 import { makeExecutableSchema } from "@gnd/graphql-tools";
 
 import { schema as rootSchema } from "@truffle/db/schema";
+import { definitions } from "./definitions";
 
 export const schema = makeExecutableSchema({
-  typeDefs: [rootSchema],
+  typeDefs: [
+    rootSchema,
+    definitions.sources.typeDefs.resource,
+    definitions.sources.typeDefs.input,
+    definitions.sources.typeDefs.query,
+    definitions.sources.typeDefs.mutation,
+    gql`
+      type SourcesAddPayload {
+        sources: [Source!]
+      }
+    `,
+    gql`
+      input SourcesAddInput {
+        sources: [SourceInput!]!
+      }
+    `
+  ],
 
   resolvers: {
     Query: {
+      ...definitions.sources.resolvers.Query,
       contractNames: {
         resolve: (_, {}, { workspace }) => workspace.contractNames()
       },
@@ -15,12 +34,6 @@ export const schema = makeExecutableSchema({
       },
       contract: {
         resolve: (_, { id }, { workspace }) => workspace.contract({ id })
-      },
-      sources: {
-        resolve: (_, {}, { workspace }) => workspace.sources()
-      },
-      source: {
-        resolve: (_, { id }, { workspace }) => workspace.source({ id })
       },
       bytecodes: {
         resolve: (_, {}, { workspace }) => workspace.bytecodes()
@@ -61,10 +74,7 @@ export const schema = makeExecutableSchema({
       }
     },
     Mutation: {
-      sourcesAdd: {
-        resolve: (_, { input }, { workspace }) =>
-          workspace.sourcesAdd({ input })
-      },
+      ...definitions.sources.resolvers.Mutation,
       bytecodesAdd: {
         resolve: (_, { input }, { workspace }) =>
           workspace.bytecodesAdd({ input })
@@ -180,7 +190,9 @@ export const schema = makeExecutableSchema({
     Compilation: {
       sources: {
         resolve: ({ sources }, _, { workspace }) =>
-          Promise.all(sources.map(source => workspace.source(source)))
+          Promise.all(
+            sources.map(({ id }) => workspace.databases.get("sources", id))
+          )
       },
       processedSources: {
         resolve: ({ id, processedSources }, _, {}) =>
@@ -267,7 +279,8 @@ export const schema = makeExecutableSchema({
     },
     ProcessedSource: {
       source: {
-        resolve: ({ source }, _, { workspace }) => workspace.source(source)
+        resolve: ({ source: { id } }, _, { workspace }) =>
+          workspace.databases.get("sources", id)
       },
       contracts: {
         resolve: ({ compilation, index }, _, { workspace }) =>

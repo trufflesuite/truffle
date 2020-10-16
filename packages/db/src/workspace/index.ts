@@ -126,10 +126,6 @@ export class Workspace {
     return await this.databases.get("networks", id);
   }
 
-  async source({ id }: { id: string }): Promise<DataModel.ISource | null> {
-    return await this.databases.get("sources", id);
-  }
-
   async project({ id }: { id: string }): Promise<DataModel.IProject | null> {
     return await this.databases.get("projects", id);
   }
@@ -182,10 +178,6 @@ export class Workspace {
 
   async networksAdd({ input }): Promise<{ networks: DataModel.INetwork[] }> {
     return await this.databases.add("networks", input);
-  }
-
-  async sourcesAdd({ input }): Promise<{ sources: DataModel.ISource[] }> {
-    return await this.databases.add("sources", input);
   }
 
   async projectsAdd({ input }): Promise<{ projects: DataModel.IProject[] }> {

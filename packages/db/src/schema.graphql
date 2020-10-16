@@ -37,7 +37,6 @@ type Query {
   contractNames: [String]!
 
   # query individual resources
-  source(id: ID!): Source
   bytecode(id: ID!): Bytecode
   contract(id: ID!): Contract
   compilation(id: ID!): Compilation
@@ -48,7 +47,6 @@ type Query {
 
   # query collections
   contractInstances: [ContractInstance]
-  sources: [Source]
   bytecodes: [Bytecode]
   contracts: [Contract]
   compilations: [Compilation]
@@ -64,7 +62,6 @@ type Query {
 type Mutation {
   projectsAdd(input:ProjectsAddInput!):ProjectsAddPayload
   projectNamesAssign(input: ProjectNamesAssignInput): ProjectNamesAssignPayload
-  sourcesAdd(input: SourcesAddInput!): SourcesAddPayload
   bytecodesAdd(input: BytecodesAddInput!): BytecodesAddPayload
   contractsAdd(input: ContractsAddInput!): ContractsAddPayload
   compilationsAdd(input: CompilationsAddInput!): CompilationsAddPayload
@@ -77,29 +74,6 @@ type Mutation {
 #
 # Sources
 #
-
-# Resource
-type Source implements Resource {
-  id: ID!
-  sourcePath: String
-  contents: String!
-}
-
-# Resource input
-input SourceInput {
-  contents: String!
-  sourcePath: String
-}
-
-# Mutation input
-input SourcesAddInput {
-  sources: [SourceInput!]!
-}
-
-# Mutation payload
-type SourcesAddPayload {
-  sources: [Source!]
-}
 
 
 #

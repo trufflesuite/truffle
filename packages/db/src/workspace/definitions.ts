@@ -1,7 +1,12 @@
+import gql from "graphql-tag";
 import * as Meta from "@truffle/db/meta";
 import * as Pouch from "./pouch";
 
 export type Collections = {
+  sources: {
+    resource: DataModel.ISource;
+    input: DataModel.ISourceInput;
+  };
   bytecodes: {
     resource: DataModel.IBytecode;
     input: DataModel.IBytecodeInput;
@@ -28,10 +33,6 @@ export type Collections = {
     input: DataModel.INetworkInput;
     named: true;
   };
-  sources: {
-    resource: DataModel.ISource;
-    input: DataModel.ISourceInput;
-  };
   projects: {
     resource: DataModel.IProject;
     input: DataModel.IProjectInput;
@@ -47,6 +48,11 @@ export type Definitions = Pouch.Definitions<Collections>;
 
 export type CollectionName = Meta.CollectionName<Collections>;
 
+export type Definition<N extends CollectionName> = Pouch.Definition<
+  Collections,
+  N
+>;
+
 export type Resource<N extends CollectionName = CollectionName> = Meta.Resource<
   Collections,
   N
@@ -60,7 +66,56 @@ export type NamedResource<
   N extends CollectionName = CollectionName
 > = Meta.NamedResource<Collections, N>;
 
+const sources: Definition<"sources"> = {
+  createIndexes: [],
+  idFields: ["contents", "sourcePath"],
+  typeDefs: {
+    resource: gql`
+      type Source implements Resource {
+        id: ID!
+        sourcePath: String
+        contents: String!
+      }
+    `,
+    input: gql`
+      input SourceInput {
+        contents: String!
+        sourcePath: String
+      }
+    `,
+    query: gql`
+      extend type Query {
+        source(id: ID!): Source
+        sources: [Source]
+      }
+    `,
+    mutation: gql`
+      extend type Mutation {
+        sourcesAdd(input: SourcesAddInput!): SourcesAddPayload
+      }
+    `
+  },
+  resolvers: {
+    Query: {
+      source: {
+        resolve: (_, { id }, { workspace }) =>
+          workspace.databases.get("sources", id)
+      },
+      sources: {
+        resolve: (_, {}, { workspace }) => workspace.databases.all("sources")
+      }
+    },
+    Mutation: {
+      sourcesAdd: {
+        resolve: (_, { input }, { workspace }) =>
+          workspace.databases.add("sources", input)
+      }
+    }
+  }
+};
+
 export const definitions: Definitions = {
+  sources,
   contracts: {
     createIndexes: [
       {
@@ -68,10 +123,6 @@ export const definitions: Definitions = {
       }
     ],
     idFields: ["name", "abi", "processedSource", "compilation"]
-  },
-  sources: {
-    createIndexes: [],
-    idFields: ["contents", "sourcePath"]
   },
   compilations: {
     createIndexes: [],

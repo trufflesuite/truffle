@@ -6,6 +6,8 @@ export type Definitions<C extends Collections> = {
   [N in CollectionName<C>]: {
     createIndexes: PouchDB.Find.CreateIndexOptions["index"][];
     idFields: string[];
+    typeDefs?: any;
+    resolvers?: any;
   };
 };
 
