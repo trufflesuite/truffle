@@ -1,14 +1,24 @@
 import * as graphql from "graphql";
 import { IResolvers } from "@gnd/graphql-tools";
 
-import { Collections, CollectionName } from "@truffle/db/meta";
+import {
+  Collections,
+  CollectionName,
+  MutableCollectionName
+} from "@truffle/db/meta";
 
 export type Definitions<C extends Collections> = {
-  [N in CollectionName<C>]: {
-    mutable?: boolean;
-    typeDefs?: graphql.DocumentNode;
-    resolvers?: IResolvers;
-  };
+  [N in CollectionName<C>]: N extends MutableCollectionName<C>
+    ? {
+        mutable: true;
+        typeDefs: graphql.DocumentNode;
+        resolvers?: IResolvers;
+      }
+    : {
+        mutable?: boolean;
+        typeDefs: graphql.DocumentNode;
+        resolvers?: IResolvers;
+      };
 };
 
 export type Definition<

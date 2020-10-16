@@ -10,8 +10,6 @@ import {
   MutableCollectionName
 } from "@truffle/db/meta";
 import { Definition, Definitions } from "./types";
-import { schema as rootSchema } from "@truffle/db/schema";
-import { resolvers as legacyResolvers } from "./legacy";
 
 export const forDefinitions = <C extends Collections>(
   definitions: Definitions<C>
@@ -27,11 +25,7 @@ class DefinitionsSchema<C extends Collections> {
   constructor(options: { definitions: Definitions<C> }) {
     this.definitions = options.definitions;
 
-    this.collections = Object.entries(options.definitions)
-      // TODO remove this filter+map once all the resources are setup
-      .filter(([_, definition]) => definition.typeDefs)
-      .map(([resource]) => resource)
-
+    this.collections = Object.keys(options.definitions)
       .map((resource: CollectionName<C>) => ({
         [resource]: this.createSchema(resource)
       }))
@@ -39,12 +33,58 @@ class DefinitionsSchema<C extends Collections> {
   }
 
   get typeDefs(): graphql.DocumentNode[] {
+    const common = gql`
+      interface Resource {
+        id: ID!
+      }
+
+      interface Named {
+        id: ID!
+        name: String!
+      }
+
+      input ResourceReferenceInput {
+        id: ID!
+      }
+
+      type Query {
+        contractNames: [String]!
+      }
+
+      type Mutation {
+        _: Boolean
+      }
+    `;
+
     return Object.values(this.collections)
       .map(schema => schema.typeDefs)
-      .reduce((a, b) => [...a, ...b], [rootSchema]);
+      .reduce((a, b) => [...a, ...b], [common]);
   }
 
   get resolvers() {
+    const common = {
+      Query: {
+        contractNames: {
+          resolve: (_, {}, { workspace }) => workspace.contractNames()
+        }
+      },
+
+      Mutation: {},
+
+      // HACK bit messy to put this here
+      Named: {
+        __resolveType: obj => {
+          if (obj.networkId) {
+            return "Network";
+          } else if (obj.abi) {
+            return "Contract";
+          } else {
+            return null;
+          }
+        }
+      }
+    };
+
     return Object.values(this.collections).reduce(
       (a, { resolvers: b }) => ({
         ...a,
@@ -58,7 +98,7 @@ class DefinitionsSchema<C extends Collections> {
           ...b.Mutation
         }
       }),
-      legacyResolvers
+      common
     );
   }
 
