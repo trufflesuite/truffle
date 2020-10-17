@@ -189,18 +189,6 @@ export class Workspace {
   }): Promise<{ projectNames: DataModel.IProjectName[] }> {
     return await this.databases.update("projectNames", input);
   }
-
-  /***************************************************************************
-   * Misc.
-   ***************************************************************************/
-
-  async contractNames(): Promise<DataModel.IContract["name"][]> {
-    const contracts = await this.databases.find("contracts", {
-      selector: {},
-      fields: ["name"]
-    });
-    return contracts.map(({ name }) => name);
-  }
 }
 
 const getDefaultFSAdapterSettings = workingDirectory => ({

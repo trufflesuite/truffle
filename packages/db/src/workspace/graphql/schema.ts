@@ -47,10 +47,7 @@ class DefinitionsSchema<C extends Collections> {
         id: ID!
       }
 
-      type Query {
-        contractNames: [String]!
-      }
-
+      type Query
       type Mutation
     `;
 
@@ -61,11 +58,7 @@ class DefinitionsSchema<C extends Collections> {
 
   get resolvers() {
     const common = {
-      Query: {
-        contractNames: {
-          resolve: (_, {}, { workspace }) => workspace.contractNames()
-        }
-      },
+      Query: {},
 
       Mutation: {},
 
