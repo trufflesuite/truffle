@@ -1,5 +1,5 @@
 import * as graphql from "graphql";
-import { IResolvers } from "@gnd/graphql-tools";
+import { IResolvers } from "graphql-tools";
 
 import {
   Collections,

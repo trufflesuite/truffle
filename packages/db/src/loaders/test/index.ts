@@ -158,7 +158,7 @@ const artifacts = [
   ))
 ];
 
-const GetWorkspaceBytecode: boolean = gql`
+const GetWorkspaceBytecode = gql`
   query GetWorkspaceBytecode($id: ID!) {
     bytecode(id: $id) {
       id
@@ -172,7 +172,7 @@ const GetWorkspaceBytecode: boolean = gql`
   }
 `;
 
-const GetWorkspaceSource: boolean = gql`
+const GetWorkspaceSource = gql`
   query GetWorkspaceSource($id: ID!) {
     source(id: $id) {
       id
@@ -225,7 +225,7 @@ const GetWorkspaceContract = gql`
   }
 `;
 
-const GetWorkspaceCompilation: boolean = gql`
+const GetWorkspaceCompilation = gql`
   query getWorkspaceCompilation($id: ID!) {
     compilation(id: $id) {
       compiler {
@@ -253,7 +253,7 @@ const GetWorkspaceCompilation: boolean = gql`
   }
 `;
 
-const GetWorkspaceNetwork: boolean = gql`
+const GetWorkspaceNetwork = gql`
   query GetWorkspaceNetwork($id: ID!) {
     network(id: $id) {
       networkId
@@ -267,7 +267,7 @@ const GetWorkspaceNetwork: boolean = gql`
   }
 `;
 
-const GetWorkspaceContractInstance: boolean = gql`
+const GetWorkspaceContractInstance = gql`
   query GetContractInstance($id: ID!) {
     contractInstance(id: $id) {
       address

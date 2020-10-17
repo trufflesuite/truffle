@@ -1,6 +1,6 @@
 import gql from "graphql-tag";
 import * as graphql from "graphql";
-import { makeExecutableSchema, IResolvers } from "@gnd/graphql-tools";
+import { makeExecutableSchema, IResolvers } from "graphql-tools";
 import pascalCase from "pascal-case";
 import { singular } from "pluralize";
 
@@ -51,9 +51,7 @@ class DefinitionsSchema<C extends Collections> {
         contractNames: [String]!
       }
 
-      type Mutation {
-        _: Boolean
-      }
+      type Mutation
     `;
 
     return Object.values(this.collections)
