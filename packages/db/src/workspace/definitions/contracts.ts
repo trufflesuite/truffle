@@ -45,25 +45,28 @@ export const contracts: Definition<"contracts"> = {
   resolvers: {
     Contract: {
       compilation: {
-        resolve: async ({ compilation }, _, { workspace }) => {
-          return await workspace.compilation(compilation);
-        }
+        resolve: ({ compilation: { id } }, _, { workspace }) =>
+          workspace.get("compilations", id)
       },
       processedSource: {
         fragment: `... on Contract { compilation { id } }`,
-        resolve: async ({ processedSource, compilation }, _, { workspace }) => {
-          const { processedSources } = await workspace.compilation(compilation);
+        resolve: async (
+          { processedSource, compilation: { id } },
+          _,
+          { workspace }
+        ) => {
+          const { processedSources } = await workspace.get("compilations", id);
 
           return processedSources[processedSource.index];
         }
       },
       createBytecode: {
         resolve: ({ createBytecode: { id } }, _, { workspace }) =>
-          workspace.databases.get("bytecodes", id)
+          workspace.get("bytecodes", id)
       },
       callBytecode: {
-        resolve: ({ callBytecode }, _, { workspace }) =>
-          workspace.bytecode(callBytecode)
+        resolve: ({ callBytecode: { id } }, _, { workspace }) =>
+          workspace.get("bytecodes", id)
       }
     }
   }

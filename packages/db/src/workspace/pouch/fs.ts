@@ -5,9 +5,9 @@ import * as PouchDBUtils from "pouchdb-utils";
 import CoreLevelPouch from "pouchdb-adapter-leveldb-core";
 
 import { Collections } from "@truffle/db/meta";
-import { Databases } from "./databases";
+import { AbstractDatabases } from "./databases";
 
-export class FSDatabases<C extends Collections> extends Databases<C> {
+export class FSDatabases<C extends Collections> extends AbstractDatabases<C> {
   private directory: string;
 
   setup(options) {

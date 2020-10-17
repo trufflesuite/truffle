@@ -1,9 +1,8 @@
 import { GraphQLSchema, DocumentNode, parse, execute } from "graphql";
-import { schema } from "@truffle/db/workspace/schema";
 import { generateCompileLoad } from "@truffle/db/loaders/commands";
 import { WorkspaceRequest, WorkspaceResponse } from "@truffle/db/loaders/types";
 import { WorkflowCompileResult } from "@truffle/compile-common";
-import { Workspace } from "@truffle/db/workspace";
+import { schema, connect, Databases } from "@truffle/db/workspace";
 import {
   generateInitializeLoad,
   generateNamesLoad
@@ -26,7 +25,7 @@ interface IContext {
   artifactsDirectory: string;
   workingDirectory: string;
   contractsDirectory: string;
-  workspace: Workspace;
+  workspace: Databases;
   db: ITruffleDB;
 }
 
@@ -119,7 +118,7 @@ export class TruffleDB {
 
   createContext(config: IConfig): IContext {
     return {
-      workspace: new Workspace({
+      workspace: connect({
         workingDirectory: config.working_directory,
         adapter: (config.db || {}).adapter
       }),

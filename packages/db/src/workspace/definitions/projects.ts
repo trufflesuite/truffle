@@ -24,39 +24,54 @@ export const projects: Definition<"projects"> = {
     Project: {
       resolve: {
         resolve: async ({ id }, { name, type }, { workspace }) => {
-          return await workspace.projectNames({
-            project: { id },
-            name,
-            type
+          const results = await workspace.find("projectNames", {
+            selector: { "project.id": id, name, type }
+          });
+          const nameRecordIds = results.map(({ nameRecord: { id } }) => id);
+          return await workspace.find("nameRecords", {
+            selector: {
+              id: { $in: nameRecordIds }
+            }
           });
         }
       },
       network: {
         resolve: async ({ id }, { name }, { workspace }) => {
-          const nameRecords = await workspace.projectNames({
-            project: { id },
-            type: "Network",
-            name
+          const results = await workspace.find("projectNames", {
+            selector: { "project.id": id, name, "type": "Network" }
           });
+          const nameRecordIds = results.map(({ nameRecord: { id } }) => id);
+          const nameRecords = await workspace.find("nameRecords", {
+            selector: {
+              id: { $in: nameRecordIds }
+            }
+          });
+
           if (nameRecords.length === 0) {
             return;
           }
           const { resource } = nameRecords[0];
-          return await workspace.network(resource);
+
+          return await workspace.get("networks", resource.id);
         }
       },
       contract: {
         resolve: async ({ id }, { name }, { workspace }) => {
-          const nameRecords = await workspace.projectNames({
-            project: { id },
-            type: "Contract",
-            name
+          const results = await workspace.find("projectNames", {
+            selector: { "project.id": id, name, "type": "Contract" }
           });
+          const nameRecordIds = results.map(({ nameRecord: { id } }) => id);
+          const nameRecords = await workspace.find("nameRecords", {
+            selector: {
+              id: { $in: nameRecordIds }
+            }
+          });
+
           if (nameRecords.length === 0) {
             return;
           }
           const { resource } = nameRecords[0];
-          return await workspace.contract(resource);
+          return await workspace.get("contracts", resource.id);
         }
       }
     }

@@ -7,17 +7,19 @@ import {
   MutableCollectionName
 } from "@truffle/db/meta";
 
+import { Databases } from "../pouch";
+
 export type Definitions<C extends Collections> = {
   [N in CollectionName<C>]: N extends MutableCollectionName<C>
     ? {
         mutable: true;
         typeDefs: graphql.DocumentNode;
-        resolvers?: IResolvers;
+        resolvers?: IResolvers<any, { workspace: Databases<C> }>;
       }
     : {
         mutable?: boolean;
         typeDefs: graphql.DocumentNode;
-        resolvers?: IResolvers;
+        resolvers?: IResolvers<any, { workspace: Databases<C> }>;
       };
 };
 

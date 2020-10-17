@@ -36,11 +36,11 @@ export const projectNames: Definition<"projectNames"> = {
     ProjectName: {
       project: {
         resolve: ({ project: { id } }, _, { workspace }) =>
-          workspace.project({ id })
+          workspace.get("projects", id)
       },
       nameRecord: {
         resolve: ({ nameRecord: { id } }, _, { workspace }) =>
-          workspace.nameRecord({ id })
+          workspace.get("nameRecords", id)
       }
     }
   }

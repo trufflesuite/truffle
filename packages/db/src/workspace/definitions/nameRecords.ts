@@ -1,6 +1,8 @@
 import gql from "graphql-tag";
+import camelCase from "camel-case";
+import { plural } from "pluralize";
 
-import { Definition } from "./types";
+import { Definition, CollectionName } from "./types";
 
 export const nameRecords: Definition<"nameRecords"> = {
   createIndexes: [],
@@ -21,22 +23,18 @@ export const nameRecords: Definition<"nameRecords"> = {
       previous: ResourceReferenceInput
     }
   `,
+
   resolvers: {
     NameRecord: {
       resource: {
         resolve: async ({ type, resource: { id } }, _, { workspace }) => {
-          switch (type) {
-            case "Contract":
-              return await workspace.contract({ id });
-            case "Network":
-              return await workspace.network({ id });
-            default:
-              return null;
-          }
+          const collectionName = camelCase(plural(type)) as CollectionName;
+
+          return await workspace.get(collectionName, id);
         }
       },
       previous: {
-        resolve: ({ id }, _, { workspace }) => workspace.nameRecord({ id })
+        resolve: ({ id }, _, { workspace }) => workspace.get("nameRecords", id)
       }
     }
   }

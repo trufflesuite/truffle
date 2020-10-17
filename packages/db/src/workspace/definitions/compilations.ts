@@ -67,9 +67,7 @@ export const compilations: Definition<"compilations"> = {
     Compilation: {
       sources: {
         resolve: ({ sources }, _, { workspace }) =>
-          Promise.all(
-            sources.map(({ id }) => workspace.databases.get("sources", id))
-          )
+          Promise.all(sources.map(({ id }) => workspace.get("sources", id)))
       },
       processedSources: {
         resolve: ({ id, processedSources }, _, {}) =>
@@ -84,11 +82,11 @@ export const compilations: Definition<"compilations"> = {
     ProcessedSource: {
       source: {
         resolve: ({ source: { id } }, _, { workspace }) =>
-          workspace.databases.get("sources", id)
+          workspace.get("sources", id)
       },
       contracts: {
         resolve: ({ compilation, index }, _, { workspace }) =>
-          workspace.databases.find("contracts", {
+          workspace.find("contracts", {
             selector: {
               "compilation.id": compilation.id,
               "processedSource.index": index

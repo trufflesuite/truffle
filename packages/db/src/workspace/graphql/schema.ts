@@ -9,6 +9,7 @@ import {
   CollectionName,
   MutableCollectionName
 } from "@truffle/db/meta";
+import { Databases } from "../pouch";
 import { Definition, Definitions } from "./types";
 
 export const forDefinitions = <C extends Collections>(
@@ -169,7 +170,7 @@ abstract class DefinitionSchema<
     ];
   }
 
-  get resolvers(): IResolvers {
+  get resolvers(): IResolvers<any, { workspace: Databases<C> }> {
     const { resource, resources } = this.names;
 
     const { resolvers = {} } = this.definition;
@@ -179,11 +180,10 @@ abstract class DefinitionSchema<
 
       Query: {
         [resource]: {
-          resolve: (_, { id }, { workspace }) =>
-            workspace.databases.get(resources, id)
+          resolve: (_, { id }, { workspace }) => workspace.get(resources, id)
         },
         [resources]: {
-          resolve: (_, {}, { workspace }) => workspace.databases.all(resources)
+          resolve: (_, {}, { workspace }) => workspace.all(resources)
         }
       }
     };
@@ -223,7 +223,7 @@ class ImmutableDefinitionSchema<
 
       Mutation: {
         [resourcesMutate]: (_, { input }, { workspace }) =>
-          workspace.databases.add(resources, input)
+          workspace.add(resources, input)
       }
     };
   }
@@ -262,7 +262,7 @@ class MutableDefinitionSchema<
 
       Mutation: {
         [resourcesMutate]: (_, { input }, { workspace }) =>
-          workspace.databases.update(resources, input)
+          workspace.update(resources, input)
       }
     };
   }

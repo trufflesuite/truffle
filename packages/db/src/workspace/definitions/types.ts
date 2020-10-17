@@ -65,3 +65,5 @@ export type MutableResource<
 export type NamedResource<
   N extends CollectionName = CollectionName
 > = Meta.NamedResource<Collections, N>;
+
+export type Databases = Pouch.Databases<Collections>;

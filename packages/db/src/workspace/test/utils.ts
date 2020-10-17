@@ -2,7 +2,7 @@ import path from "path";
 
 import * as graphql from "graphql";
 
-import { Workspace, schema } from "@truffle/db/workspace";
+import { Databases, connect, schema } from "@truffle/db/workspace";
 
 export { generateId } from "@truffle/db/helpers";
 
@@ -21,10 +21,10 @@ const tempDir = tmp.dirSync({ unsafeCleanup: true });
 tmp.setGracefulCleanup();
 
 export class WorkspaceClient {
-  private workspace: Workspace;
+  private workspace: Databases;
 
   constructor() {
-    this.workspace = new Workspace({
+    this.workspace = connect({
       workingDirectory: tempDir.name
     });
   }

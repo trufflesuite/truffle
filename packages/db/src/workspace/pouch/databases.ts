@@ -13,7 +13,7 @@ import {
   Resource
 } from "@truffle/db/meta";
 
-import { Definition, Definitions } from "./types";
+import { Databases, Definition, Definitions, Historical } from "./types";
 
 export interface DatabasesOptions<C extends Collections> {
   settings: any;
@@ -24,7 +24,8 @@ export interface DatabasesOptions<C extends Collections> {
  * Aggegrates logic for interacting wth a set of PouchDB databases identified
  * by resource collection name.
  */
-export abstract class Databases<C extends Collections> {
+export abstract class AbstractDatabases<C extends Collections>
+  implements Databases<C> {
   private collections: CollectionDatabases<C>;
   private definitions: Definitions<C>;
 
@@ -234,16 +235,6 @@ export abstract class Databases<C extends Collections> {
     );
   }
 }
-
-type History = PouchDB.Core.IdMeta & PouchDB.Core.GetMeta;
-
-type Historical<T> = {
-  [K in keyof T | keyof History]: K extends keyof History
-    ? History[K]
-    : K extends keyof T
-    ? T[K]
-    : never;
-};
 
 type CollectionDatabases<C extends Collections> = {
   [N in CollectionName<C>]: PouchDB.Database;

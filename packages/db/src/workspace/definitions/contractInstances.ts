@@ -76,17 +76,20 @@ export const contractInstances: Definition<"contractInstances"> = {
   resolvers: {
     ContractInstance: {
       network: {
-        resolve: async ({ network }, _, { workspace }) =>
-          await workspace.network(network)
+        resolve: ({ network: { id } }, _, { workspace }) =>
+          workspace.get("networks", id)
       },
       contract: {
-        resolve: ({ contract }, _, { workspace }) =>
-          workspace.contract(contract)
+        resolve: ({ contract: { id } }, _, { workspace }) =>
+          workspace.get("contracts", id)
       },
       callBytecode: {
         resolve: async ({ callBytecode }, _, { workspace }) => {
-          let bytecode = await workspace.bytecode(callBytecode.bytecode);
-          let linkValues = callBytecode.linkValues.map(
+          const bytecode = await workspace.get(
+            "bytecodes",
+            callBytecode.bytecode.id
+          );
+          const linkValues = callBytecode.linkValues.map(
             ({ value, linkReference }) => {
               return {
                 value: value,
@@ -102,8 +105,9 @@ export const contractInstances: Definition<"contractInstances"> = {
       },
       creation: {
         resolve: async (input, _, { workspace }) => {
-          let bytecode = await workspace.bytecode(
-            input.creation.constructor.createBytecode.bytecode
+          let bytecode = await workspace.get(
+            "bytecodes",
+            input.creation.constructor.createBytecode.bytecode.id
           );
           let transactionHash = input.creation.transactionHash;
           let linkValues = input.creation.constructor.createBytecode.linkValues.map(
