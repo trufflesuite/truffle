@@ -93,6 +93,8 @@ const command = {
         );
       }
 
+      //add flag for saving compilation results in Truffle DB
+      config.loadDb = true;
       return await WorkflowCompile.save(config, compilationOutput);
     }
   },
