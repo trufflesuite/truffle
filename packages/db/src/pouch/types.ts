@@ -2,12 +2,11 @@ import PouchDB from "pouchdb";
 
 import {
   CollectionName,
-  CollectionResult,
   Collections,
   MutationInput,
   MutationPayload,
   MutableCollectionName,
-  Resource
+  SavedInput
 } from "@truffle/db/meta";
 
 export type Definitions<C extends Collections> = {
@@ -25,17 +24,17 @@ export type Definition<
 export interface Databases<C extends Collections> {
   all<N extends CollectionName<C>>(
     collectionName: N
-  ): Promise<CollectionResult<C, N>>;
+  ): Promise<SavedInput<C, N>[]>;
 
   find<N extends CollectionName<C>>(
     collectionName: N,
     options: PouchDB.Find.FindRequest<{}>
-  ): Promise<CollectionResult<C, N>>;
+  ): Promise<SavedInput<C, N>[]>;
 
   get<N extends CollectionName<C>>(
     collectionName: N,
     id: string
-  ): Promise<Historical<Resource<C, N>> | null>;
+  ): Promise<Historical<SavedInput<C, N>> | null>;
 
   add<N extends CollectionName<C>>(
     collectionName: N,
