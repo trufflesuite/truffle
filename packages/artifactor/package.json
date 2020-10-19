@@ -35,7 +35,7 @@
     "tmp": "^0.2.1",
     "ts-node": "8.10.2",
     "typescript": "3.9.6",
-    "web3": "1.2.1"
+    "web3": "1.2.9"
   },
   "publishConfig": {
     "access": "public"
