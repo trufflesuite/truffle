@@ -146,8 +146,8 @@ async function resolveEthpmUri(options, provider) {
 
   // update provider if it doesn't match chain id in ethpm uri
   if (
-    connectedChainId != ethpmUri.chainId &&
-    options.ethpm.registry.network != "development"
+    connectedChainId !== ethpmUri.chainId &&
+    options.ethpm.registry.network !== "development"
   ) {
     const targetNetwork = SUPPORTED_CHAIN_IDS[ethpmUri.chainId];
     if (typeof targetNetwork === "undefined") {
@@ -196,11 +196,10 @@ function fetchInstalledBuildDependencies(workingDirectory) {
   } catch (err) {
     return {};
   }
-  const installedBuildDependencies = {};
-  Object.keys(ethpmLock).forEach(key => {
-    installedBuildDependencies[key] = ethpmLock[key].resolved_uri;
-  });
-  return installedBuildDependencies;
+  return Object.keys(ethpmLock).reduce((accumulator, key) => {
+    accumulator[key] = ethpmLock[key].resolved_uri;
+    return accumulator;
+  }, {});
 }
 
 function convertContractTypeToContractSchema(
