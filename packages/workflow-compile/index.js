@@ -60,7 +60,7 @@ async function compile(config) {
 }
 
 const WorkflowCompile = {
-  async compile(options, loadDb = false) {
+  async compile(options) {
     const config = prepareConfig(options);
 
     if (config.events) config.events.emit("compile:start");
@@ -84,24 +84,6 @@ const WorkflowCompile = {
       });
     }
 
-    if (
-      config.db &&
-      config.db.enabled === true &&
-      contracts.length > 0 &&
-      loadDb === true
-    ) {
-      const db = connect(config);
-      const project = await Project.initialize({
-        db,
-        project: {
-          directory: config.working_directory
-        }
-      });
-      await project.loadCompile({
-        result: {contracts, compilations}
-      });
-    }
-
     return {
       contracts,
       sources,
@@ -119,13 +101,31 @@ const WorkflowCompile = {
     };
   },
 
-  async save(options, {contracts, _compilations}) {
+  async save(options, {contracts, compilations}) {
     const config = prepareConfig(options);
 
     await fse.ensureDir(config.contracts_build_directory);
 
     const artifacts = contracts.map(Shims.NewToLegacy.forContract);
     await config.artifactor.saveAll(artifacts);
+
+    if (
+      options.db &&
+      options.db.enabled === true &&
+      contracts.length > 0 &&
+      options.loadDb === true
+    ) {
+      const db = connect(config);
+      const project = await Project.initialize({
+        db,
+        project: {
+          directory: config.working_directory
+        }
+      });
+      await project.loadCompile({
+        result: {contracts, compilations}
+      });
+    }
   }
 };
 
