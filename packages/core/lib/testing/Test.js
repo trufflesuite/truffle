@@ -188,12 +188,8 @@ const Test = {
     config,
     testResolver
   ) {
-    const compiler =
-      config.compileNone || config["--compile-none"] ? "none" : config.compiler;
-
     let compileConfig = config.with({
-      all: config.compileAll === true,
-      compiler,
+      compiler: config.compiler,
       files: solidityTestFiles,
       resolver: testResolver,
       quiet: config.runnerOutputOnly || config.quiet,
