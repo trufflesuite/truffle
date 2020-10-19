@@ -58,7 +58,7 @@ describe("truffle build [ @standalone ]", () => {
 
   describe("when there is an object in the build config", () => {
     beforeEach("set up sandbox", function () {
-      this.timeout(10000);
+      this.timeout(12000);
       project = path.join(
         __dirname,
         "../../sources/build/projectWithObjectInBuildScript"
@@ -81,6 +81,6 @@ describe("truffle build [ @standalone ]", () => {
           )
         );
       }
-    });
+    }).timeout(20000);
   });
 });
