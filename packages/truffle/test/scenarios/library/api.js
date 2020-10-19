@@ -66,7 +66,7 @@ describe("Truffle Library APIs [ @standalone ]", () => {
     assert(truffle.test.createMocha, "test.createMocha undefined");
     assert(truffle.test.getAccounts, "test.getAccounts undefined");
     assert(
-      truffle.test.compileContractsWithTestFilesIfNeeded,
+      truffle.test.compileSolidityTestFiles,
       "test.withTestFiles undefined"
     );
     assert(
