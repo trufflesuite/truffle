@@ -87,7 +87,7 @@ const command = {
         );
       }
 
-      WorkflowCompile.compile(config, true)
+      WorkflowCompile.compile(config)
         .then(async compilationOutput => {
           if (options.saveIntermediate) {
             // Get the filename the user provided to save the compilation results to
@@ -98,10 +98,11 @@ const command = {
             await fse.writeFile(
               compilationOutputFile,
               JSON.stringify(compilationOutput),
-              { encoding: "utf8" }
+              {encoding: "utf8"}
             );
           }
-
+          //add flag for saving compilation results in Truffle DB
+          config.loadDb = true;
           return WorkflowCompile.save(config, compilationOutput);
         })
         .then(() => done())
@@ -110,7 +111,7 @@ const command = {
   },
 
   listVersions: async function (options) {
-    const { CompilerSupplier } = require("@truffle/compile-solidity");
+    const {CompilerSupplier} = require("@truffle/compile-solidity");
     const supplier = new CompilerSupplier({
       solcConfig: options.compilers.solc,
       events: options.events
