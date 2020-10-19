@@ -1,9 +1,18 @@
 import { GraphQLSchema, DocumentNode, parse, execute } from "graphql";
 import { schema } from "@truffle/db/data";
 import { generateCompileLoad } from "@truffle/db/loaders/commands";
-import { WorkspaceRequest } from "@truffle/db/loaders/types";
+import {
+  WorkspaceRequest,
+  WorkspaceResponse,
+  toIdObject,
+  NamedResource
+} from "@truffle/db/loaders/types";
 import { WorkflowCompileResult } from "@truffle/compile-common";
 import { Workspace } from "@truffle/db/workspace";
+import {
+  generateInitializeLoad,
+  generateNamesLoad
+} from "@truffle/db/loaders/commands";
 
 interface IConfig {
   contracts_build_directory: string;
@@ -29,6 +38,10 @@ interface ITruffleDB {
   query: (query: DocumentNode | string, variables: any) => Promise<any>;
 }
 
+type LoaderOptions = {
+  names: boolean;
+};
+
 export class TruffleDB {
   schema: GraphQLSchema;
   context: IContext;
@@ -45,27 +58,67 @@ export class TruffleDB {
     return await execute(this.schema, document, null, this.context, variables);
   }
 
-  async loadCompilations(result: WorkflowCompileResult) {
-    const saga = generateCompileLoad(result, {
-      directory: this.context.workingDirectory
-    });
+  async getWorkspaceResponse(generatorRequest: WorkspaceRequest) {
+    const { request, variables }: WorkspaceRequest = generatorRequest;
 
-    let cur = saga.next();
+    const response: WorkspaceResponse = await this.query(request, variables);
 
-    while (!cur.done) {
-      // HACK not sure why this is necessary; TS knows we're not done, so
-      // cur.value should only be WorkspaceRequest (first Generator param),
-      // not the return value (second Generator param)
-      const {
-        request,
-        variables
-      }: WorkspaceRequest = cur.value as WorkspaceRequest;
-      const response = await this.query(request, variables);
+    return response;
+  }
 
-      cur = saga.next(response);
+  private async runLoader<
+    Request extends WorkspaceRequest,
+    Response extends WorkspaceResponse,
+    Args extends unknown[],
+    Return
+  >(
+    loader: (...args: Args) => Generator<Request, Return, Response>,
+    ...args: Args
+  ): Promise<Return> {
+    const saga = loader(...args);
+    let current = saga.next();
+
+    while (!current.done) {
+      const { request, variables } = current.value as Request;
+
+      const response: Response = await this.query(request, variables);
+
+      current = saga.next(response);
     }
 
-    return cur.value;
+    return current.value;
+  }
+
+  async loadNames(project: DataModel.IProject, resources: NamedResource[]) {
+    return await this.runLoader(
+      generateNamesLoad,
+      toIdObject(project),
+      resources
+    );
+  }
+
+  async loadProject(): Promise<DataModel.IProject> {
+    return await this.runLoader(generateInitializeLoad, {
+      directory: this.context.workingDirectory
+    });
+  }
+
+  async loadCompilations(
+    result: WorkflowCompileResult,
+    options: LoaderOptions
+  ) {
+    const project = await this.loadProject();
+
+    const { compilations, contracts } = await this.runLoader(
+      generateCompileLoad,
+      result
+    );
+
+    if (options.names === true) {
+      await this.loadNames(project, contracts);
+    }
+
+    return { compilations, contracts };
   }
 
   createContext(config: IConfig): IContext {

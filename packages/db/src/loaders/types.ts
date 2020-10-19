@@ -56,3 +56,8 @@ export type WorkspaceResponse<N extends string = string, R = any> = {
     workspace: { [RequestName in N]: R };
   };
 };
+
+export interface NamedResource {
+  id: string;
+  name: string;
+}

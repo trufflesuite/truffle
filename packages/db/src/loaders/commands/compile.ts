@@ -1,6 +1,5 @@
 import {
   CompilationData,
-  toIdObject,
   WorkspaceRequest,
   WorkspaceResponse
 } from "@truffle/db/loaders/types";
@@ -14,12 +13,6 @@ import { generateBytecodesLoad } from "@truffle/db/loaders/resources/bytecodes";
 import { generateCompilationsLoad } from "@truffle/db/loaders/resources/compilations";
 import { generateContractsLoad } from "@truffle/db/loaders/resources/contracts";
 import { generateSourcesLoad } from "@truffle/db/loaders/resources/sources";
-import {
-  generateProjectLoad,
-  generateProjectNameResolve,
-  generateProjectNamesAssign
-} from "@truffle/db/loaders/resources/projects";
-import { generateNameRecordsLoad } from "@truffle/db/loaders/resources/nameRecords";
 
 /**
  * For a compilation result from @truffle/workflow-compile/new, generate a
@@ -30,16 +23,8 @@ import { generateNameRecordsLoad } from "@truffle/db/loaders/resources/nameRecor
  * and ultimately returns nothing when complete.
  */
 export function* generateCompileLoad(
-  result: WorkflowCompileResult,
-  { directory }: { directory: string }
+  result: WorkflowCompileResult
 ): Generator<WorkspaceRequest, any, WorkspaceResponse<string>> {
-  // start by adding loading the project resource
-  const project = yield* generateProjectLoad(directory);
-
-  const getCurrent = function* (name, type) {
-    return yield* generateProjectNameResolve(toIdObject(project), name, type);
-  };
-
   const resultCompilations = processResultCompilations(result);
 
   // for each compilation returned by workflow-compile:
@@ -72,6 +57,7 @@ export function* generateCompileLoad(
   //
   // again going one compilation at a time (for impl. convenience; HACK)
   // (@cds-amal reminds that "premature optimization is the root of all evil")
+  let contractsByCompilation = [];
   for (const [compilationIndex, compilation] of compilations.entries()) {
     const resultCompilation = resultCompilations[compilationIndex];
     const bytecodes = compilationBytecodes[compilationIndex];
@@ -91,18 +77,13 @@ export function* generateCompileLoad(
       }
     }
 
-    const contracts = yield* generateContractsLoad(loadableContracts);
-
-    const nameRecords = yield* generateNameRecordsLoad(
-      contracts,
-      "Contract",
-      getCurrent
-    );
-
-    yield* generateProjectNamesAssign(toIdObject(project), nameRecords);
+    const loadedContracts = yield* generateContractsLoad(loadableContracts);
+    contractsByCompilation.push(loadedContracts);
   }
 
-  return { project, compilations };
+  const contracts = contractsByCompilation.flat();
+
+  return { compilations, contracts };
 }
 
 function processResultCompilations(

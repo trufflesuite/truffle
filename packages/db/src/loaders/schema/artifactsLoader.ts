@@ -53,11 +53,6 @@ type BytecodeInfo = {
   bytes?: string;
 };
 
-type BytecodesObject = {
-  bytecodes: Array<BytecodeInfo>;
-  callBytecodes: Array<BytecodeInfo>;
-};
-
 type IdObject = {
   id: string;
 };
@@ -91,7 +86,13 @@ export class ArtifactsLoader {
       this.config
     );
 
-    const { project, compilations } = await this.db.loadCompilations(result);
+    const project = await this.db.loadProject();
+
+    // third parameter in loadCompilation is for whether or not we need
+    // to update nameRecords (i.e. is this happening in test)
+    const { compilations } = await this.db.loadCompilations(result, {
+      names: true
+    });
 
     //map contracts and contract instances to compiler
     await Promise.all(
@@ -149,7 +150,7 @@ export class ArtifactsLoader {
     );
 
     //set new projectNameHeads based on name records added
-    const projectNamesResult = await this.db.query(AssignProjectNames, {
+    await this.db.query(AssignProjectNames, {
       projectNames
     });
   }
