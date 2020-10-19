@@ -12,7 +12,7 @@ export class EthPMv1 implements ResolverSource {
   }
 
   require(importPath: string) {
-    if (importPath.indexOf(".") === 0 || importPath.indexOf("/") === 0) {
+    if (importPath.startsWith(".") || importPath.startsWith("/")) {
       return null;
     }
 
@@ -75,7 +75,7 @@ export class EthPMv1 implements ResolverSource {
   async resolve(importPath: string) {
     var separator = importPath.indexOf("/");
     var package_name = importPath.substring(0, separator);
-    var internal_path = importPath.substring(separator + 1);
+    var internalPath = importPath.substring(separator + 1);
     var installDir = this.workingDirectory;
 
     // If nothing's found, body returns `undefined`
@@ -94,7 +94,7 @@ export class EthPMv1 implements ResolverSource {
         "installed_contracts",
         package_name,
         "contracts",
-        internal_path
+        internalPath
       );
 
       try {
@@ -119,14 +119,14 @@ export class EthPMv1 implements ResolverSource {
   // that when this path is evaluated this source is used again.
   resolveDependencyPath(importPath: string, dependencyPath: string) {
     var dirname = path.dirname(importPath);
-    var resolved_dependency_path = path.join(dirname, dependencyPath);
+    var resolvedDependencyPath = path.join(dirname, dependencyPath);
 
     // Note: We use `path.join()` here to take care of path idiosyncrasies
     // like joining "something/" and "./something_else.sol". However, this makes
     // paths OS dependent, and on Windows, makes the separator "\". Solidity
     // needs the separator to be a forward slash. Let's massage that here.
-    resolved_dependency_path = resolved_dependency_path.replace(/\\/g, "/");
+    resolvedDependencyPath = resolvedDependencyPath.replace(/\\/g, "/");
 
-    return resolved_dependency_path;
+    return resolvedDependencyPath;
   }
 }
