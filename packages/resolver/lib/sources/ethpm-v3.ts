@@ -17,7 +17,7 @@ export class EthPMv3 implements ResolverSource {
   }
 
   require(importPath: string) {
-    if (importPath.indexOf(".") === 0 || importPath.indexOf("/") === 0) {
+    if (importPath.startsWith(".") || importPath.startsWith("/")) {
       return null;
     }
 
@@ -26,12 +26,12 @@ export class EthPMv3 implements ResolverSource {
 
     // We haven't compiled our own version. Assemble from data in the manifest.
     var separator = importPath.indexOf("/");
-    var package_name = importPath.substring(0, separator);
+    var packageName = importPath.substring(0, separator);
 
-    var install_directory = path.join(this.workingDirectory, "_ethpm_packages");
+    var installDirectory = path.join(this.workingDirectory, "_ethpm_packages");
     var manifest: any = path.join(
-      install_directory,
-      package_name,
+      installDirectory,
+      packageName,
       "manifest.json"
     );
 
@@ -80,8 +80,8 @@ export class EthPMv3 implements ResolverSource {
 
   async resolve(importPath: string) {
     var separator = importPath.indexOf("/");
-    var package_name = importPath.substring(0, separator);
-    var internal_path = importPath.substring(separator + 1);
+    var packageName = importPath.substring(0, separator);
+    var internalPath = importPath.substring(separator + 1);
     var installDir = this.workingDirectory;
 
     // If nothing's found, body returns `undefined`
@@ -90,42 +90,40 @@ export class EthPMv3 implements ResolverSource {
 
     while (true) {
       // check for root level ethpm sources
-      var file_path = path.join(
+      var filePath = path.join(
         installDir,
         "_ethpm_packages",
-        package_name,
+        packageName,
         "_src",
-        internal_path
+        internalPath
       );
 
       try {
-        body = fs.readFileSync(file_path, { encoding: "utf8" });
+        body = fs.readFileSync(filePath, { encoding: "utf8" });
         break;
       } catch (err) {}
 
-      file_path = path.join(
+      filePath = path.join(
         installDir,
         "installed_contracts",
-        package_name,
+        packageName,
         "contracts",
-        internal_path
+        internalPath
       );
 
       try {
-        body = fs.readFileSync(file_path, { encoding: "utf8" });
+        body = fs.readFileSync(filePath, { encoding: "utf8" });
         break;
       } catch (err) {}
 
-      if (matches.length > 0) {
-        if (matches.length === 1) {
-          try {
-            body = fs.readFileSync(
-              path.join(installDir, "_ethpm_packages", matches[0]),
-              { encoding: "utf8" }
-            );
-            break;
-          } catch (err) {}
-        }
+      if (matches.length === 1) {
+        try {
+          body = fs.readFileSync(
+            path.join(installDir, "_ethpm_packages", matches[0]),
+            { encoding: "utf8" }
+          );
+          break;
+        } catch (err) {}
       }
 
       // Recurse outwards until impossible
@@ -145,14 +143,14 @@ export class EthPMv3 implements ResolverSource {
   // that when this path is evaluated this source is used again.
   resolveDependencyPath(importPath: string, dependencyPath: string) {
     var dirname = path.dirname(importPath);
-    var resolved_dependency_path = path.join(dirname, dependencyPath);
+    var resolvedDependencyPath = path.join(dirname, dependencyPath);
 
     // Note: We use `path.join()` here to take care of path idiosyncrasies
     // like joining "something/" and "./something_else.sol". However, this makes
     // paths OS dependent, and on Windows, makes the separator "\". Solidity
     // needs the separator to be a forward slash. Let's massage that here.
-    resolved_dependency_path = resolved_dependency_path.replace(/\\/g, "/");
+    resolvedDependencyPath = resolvedDependencyPath.replace(/\\/g, "/");
 
-    return resolved_dependency_path;
+    return resolvedDependencyPath;
   }
 }

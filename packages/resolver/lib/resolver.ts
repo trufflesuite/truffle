@@ -3,7 +3,7 @@ const expect = require("@truffle/expect");
 const provision = require("@truffle/provisioner");
 
 import { ResolverSource } from "./source";
-import { EthPMv1, NPM, GlobalNPM, FS, Truffle } from "./sources";
+import { EthPMv3, NPM, GlobalNPM, FS, Truffle } from "./sources";
 
 export class Resolver {
   options: any;
@@ -14,7 +14,8 @@ export class Resolver {
 
     this.options = options;
     this.sources = [
-      new EthPMv1(options.working_directory),
+      //new EthPMv1(options.working_directory),
+      new EthPMv3(options.working_directory),
       new NPM(options.working_directory),
       new GlobalNPM(),
       new FS(options.working_directory, options.contracts_build_directory)
@@ -70,7 +71,7 @@ export class Resolver {
     return {
       body,
       filePath,
-      source,
+      source
     };
   }
 }
