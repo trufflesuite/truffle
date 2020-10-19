@@ -51,7 +51,7 @@
     "pouchdb-find": "^7.0.0",
     "source-map-support": "^0.5.9",
     "web3": "1.2.9",
-    "web3-utils": "1.2.2"
+    "web3-utils": "1.2.9"
   },
   "devDependencies": {
     "@gql2ts/from-schema": "^2.0.0-4",
