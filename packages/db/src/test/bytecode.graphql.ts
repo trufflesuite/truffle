@@ -33,12 +33,6 @@ export const GetBytecode = gql`
 `;
 
 export const AddBytecode = gql`
-  type linkReferenceInput {
-    offsets: [Int]
-    name: String
-    length: Int
-  }
-
   mutation AddBytecode($bytes: Bytes!, $linkReferences: [LinkReferenceInput]) {
     bytecodesAdd(
       input: { bytecodes: [{ bytes: $bytes, linkReferences: $linkReferences }] }

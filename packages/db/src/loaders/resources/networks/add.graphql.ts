@@ -1,17 +1,6 @@
 import gql from "graphql-tag";
 
 export const AddNetworks = gql`
-  input HistoricBlockInput {
-    height: Int!
-    hash: String!
-  }
-
-  input NetworkInput {
-    name: String
-    networkId: NetworkId!
-    historicBlock: HistoricBlockInput!
-  }
-
   mutation AddNetworks($networks: [NetworkInput!]!) {
     networksAdd(input: { networks: $networks }) {
       networks {

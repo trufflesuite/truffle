@@ -42,37 +42,6 @@ export const GetAllContractInstances = gql`
 `;
 
 export const AddContractInstances = gql`
-  input ContractInstanceNetworkInput {
-    id: ID!
-  }
-
-  input ContractInstanceContractInput {
-    id: ID!
-  }
-
-  input BytecodeInput {
-    id: ID!
-  }
-
-  input ContractInstanceCreationConstructorBytecodeInput {
-    bytecode: BytecodeInput!
-  }
-
-  input ContractInstanceCreationConstructorInput {
-    createBytecode: ContractInstanceCreationConstructorBytecodeInput!
-  }
-
-  input ContractInstanceCreationInput {
-    transactionHash: TransactionHash!
-    constructor: ContractInstanceCreationConstructorInput!
-  }
-
-  input ContractInstanceInput {
-    address: Address!
-    network: ContractInstanceNetworkInput!
-    creation: ContractInstanceCreationInput
-    contract: ContractInstanceContractInput
-  }
   mutation AddContractInstances($contractInstances: [ContractInstanceInput!]!) {
     contractInstancesAdd(input: { contractInstances: $contractInstances }) {
       contractInstances {
