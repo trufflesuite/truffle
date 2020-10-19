@@ -43,7 +43,7 @@ describe("Compilation", () => {
     for (let compilation of compilations) {
       expect(compilation).toHaveProperty("compiler");
       expect(compilation).toHaveProperty("sources");
-      const { compiler, sources, processedSources, sourceMaps } = compilation;
+      const { compiler, sources, processedSources } = compilation;
 
       expect(compiler).toHaveProperty("name");
 

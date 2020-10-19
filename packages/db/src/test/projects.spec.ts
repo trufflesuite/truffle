@@ -116,7 +116,7 @@ describe("Project", () => {
       const projectName = projectNames[0];
       expect(projectName).toHaveProperty("project");
       expect(projectName).toHaveProperty("nameRecord");
-      const { project, nameRecord } = projectName;
+      const { nameRecord } = projectName;
       expect(nameRecord.resource.name).toEqual("ganache");
       expect(nameRecord.resource.id).toEqual(addNetworkId);
     }
@@ -132,7 +132,7 @@ describe("Project", () => {
       const projectName = projectNames[0];
       expect(projectName).toHaveProperty("project");
       expect(projectName).toHaveProperty("nameRecord");
-      const { project, nameRecord } = projectName;
+      const { nameRecord } = projectName;
       expect(nameRecord.resource.name).toEqual("Migrations");
       expect(nameRecord.resource.id).toEqual(addContractId);
     }

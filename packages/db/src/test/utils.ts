@@ -2,15 +2,16 @@ import path from "path";
 
 import * as graphql from "graphql";
 
-import { Databases, connect, schema } from "@truffle/db/workspace";
+import { schema } from "@truffle/db/schema";
+import { connect } from "@truffle/db/connect";
+import { Databases } from "@truffle/db/definitions";
 
 export { generateId } from "@truffle/db/helpers";
 
 import tmp from "tmp";
 
 export const fixturesDirectory = path.join(
-  __dirname, // db/src/db/test
-  "..", // db/src/db
+  __dirname, // db/src/test
   "..", // db/src/
   "..", // db/
   "test",

@@ -1,5 +1,5 @@
 import path from "path";
-import { connect } from "..";
+import { connect } from "@truffle/db/connect";
 import { generateId } from "./utils";
 
 import tmp from "tmp";
