@@ -16,7 +16,7 @@ const ast = createSelectorTree({
     /**
      * ast.views.sources
      */
-    sources: createLeaf([solidity.info.sources], sources => sources)
+    sources: createLeaf([solidity.views.flattenedSources], sources => sources)
   }
 });
 

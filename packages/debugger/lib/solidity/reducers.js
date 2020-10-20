@@ -21,7 +21,21 @@ function sources(state = DEFAULT_SOURCES, action) {
             {},
             ...Object.entries(action.compilations).map(([id, compilation]) => ({
               [id]: {
-                byId: compilation
+                userSources: {
+                  byId: compilation.user
+                },
+                internalSources: {
+                  byContext: Object.assign(
+                    {},
+                    ...Object.entries(compilation.internal).map(
+                      ([context, sources]) => ({
+                        [context]: {
+                          byId: sources
+                        }
+                      })
+                    )
+                  )
+                }
               }
             }))
           )

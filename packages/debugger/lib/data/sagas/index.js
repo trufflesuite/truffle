@@ -25,16 +25,30 @@ import * as Codec from "@truffle/codec";
 import BN from "bn.js";
 
 export function* scope(nodeId, pointer, parentId, sourceId, compilationId) {
-  yield put(actions.scope(nodeId, pointer, parentId, sourceId, compilationId));
+  yield put(actions.scope(nodeId, pointer, parentId, sourceId, compilationId)); //omit internalFor
 }
 
 export function* declare(node, compilationId) {
-  yield put(actions.declare(node.name, node.id, node.scope, compilationId));
+  yield put(actions.declare(node.name, node.id, node.scope, compilationId)); //omit internalFor
 }
 
-export function* yulScope(pointer, sourceId, compilationId, parentId) {
+export function* yulScope(
+  pointer,
+  sourceId,
+  compilationId,
+  internalFor,
+  parentId
+) {
   yield put(
-    actions.scope(undefined, pointer, parentId, sourceId, compilationId)
+    //node ID is always undefined
+    actions.scope(
+      undefined,
+      pointer,
+      parentId,
+      sourceId,
+      compilationId,
+      internalFor
+    )
   );
 }
 
@@ -43,14 +57,16 @@ export function* yulDeclare(
   pointer,
   scopePointer,
   sourceId,
-  compilationId
+  compilationId,
+  internalFor
 ) {
   yield put(
     actions.declare(
       node.name,
       makePath(sourceId, pointer),
       makePath(sourceId, scopePointer),
-      compilationId
+      compilationId,
+      internalFor
     )
   );
 }
@@ -74,6 +90,10 @@ export function* decode(definition, ref, compilationId) {
   const internalFunctionsTable = yield select(
     data.current.functionsByProgramCounter
   );
+
+  debug("definition: %o");
+  debug("ref: %o");
+  debug("compilationId: %s", compilationId);
 
   const ZERO_WORD = new Uint8Array(Codec.Evm.Utils.WORD_SIZE); //automatically filled with zeroes
 
@@ -941,14 +961,11 @@ export function* reset() {
 
 export function* recordAllocations() {
   const contracts = yield select(data.views.contractAllocationInfo);
-  debug("contracts %O", contracts);
   const referenceDeclarations = yield select(data.views.referenceDeclarations);
   const userDefinedTypes = yield select(data.views.userDefinedTypes);
-  debug("referenceDeclarations %O", referenceDeclarations);
   const storageAllocations = Codec.Storage.Allocate.getStorageAllocations(
     userDefinedTypes
   );
-  debug("storageAllocations %O", storageAllocations);
   const memoryAllocations = Codec.Memory.Allocate.getMemoryAllocations(
     userDefinedTypes
   );

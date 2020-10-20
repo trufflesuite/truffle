@@ -5,6 +5,7 @@ import { createSelectorTree, createLeaf } from "reselect-tree";
 import SolidityUtils from "@truffle/solidity-utils";
 
 import semver from "semver";
+import flatten from "lodash.flatten";
 
 import evm from "lib/evm/selectors";
 import trace from "lib/trace/selectors";
@@ -60,8 +61,8 @@ function createMultistepSelectors(stepSelector) {
      * HACK... you get the idea
      */
     findOverlappingRange: createLeaf(
-      ["./source", "/views/findOverlappingRange"],
-      ({ compilationId, id }, functions) => (functions[compilationId] || {})[id]
+      ["./source", "/current/overlapFunctions"],
+      ({ id }, functions) => (functions || {})[id]
     ),
 
     /**
@@ -118,6 +119,7 @@ let solidity = createSelectorTree({
     /**
      * solidity.info.sources
      * NOTE: grouped by compilation!
+     * [and then split into user and internal, and then...]
      */
     sources: createLeaf(["/state"], state => state.info.sources.byCompilationId)
   },
@@ -142,16 +144,36 @@ let solidity = createSelectorTree({
     /**
      * solidity.current.sources
      * This takes the place of the old solidity.info.sources,
-     * returning only the sources for the current compilation.
+     * returning only the sources for the current compilation and context.
      */
     sources: createLeaf(
       ["/info/sources", evm.current.context],
-      (sources, context) =>
-        context
-          ? context.compilationId !== undefined
-            ? (sources[context.compilationId] || { byId: null }).byId
-            : [] //unknown context, return no sources
-          : null //no tx loaded, return null
+      (sources, context) => {
+        if (!context) {
+          debug("no context");
+          return null; //no tx loaded, return null
+        }
+
+        const { compilationId, context: contextHash } = context;
+        debug("compilationId: %o", compilationId);
+
+        if (!compilationId || !sources[compilationId]) {
+          debug("no valid compilation");
+          return []; //unknown compilation, return no sources
+        }
+
+        const userSources = (sources[compilationId].userSources || { byId: [] })
+          .byId;
+        debug("user sources: %o", userSources);
+        const internalSources =
+          (
+            (sources[compilationId].internalSources || { byContext: {} })
+              .byContext[contextHash] || {}
+          ).byId || [];
+        debug("internal sources: %o", internalSources);
+        //we assign to [] rather than {} because we want the result to be an array
+        return Object.assign([], userSources, internalSources);
+      }
     ),
 
     /**
@@ -265,7 +287,7 @@ let solidity = createSelectorTree({
       [
         "./instructions",
         "./sources",
-        "/views/findOverlappingRange",
+        "./overlapFunctions",
         evm.current.context
       ],
       (instructions, sources, functions, { compilationId }) =>
@@ -275,7 +297,7 @@ let solidity = createSelectorTree({
         SolidityUtils.getFunctionsByProgramCounter(
           instructions,
           sources.map(({ ast }) => ast),
-          functions[compilationId],
+          functions,
           compilationId
         )
     ),
@@ -346,6 +368,33 @@ let solidity = createSelectorTree({
               map[pc].file !== -1 &&
               !(sources[map[pc].file] && sources[map[pc].file].internal)
           )
+    ),
+
+    /**
+     * solidity.current.overlapFunctions
+     * like solidity.views.overlapFunctions, but just returns
+     * an array appropriate to the current context
+     */
+    overlapFunctions: createLeaf(
+      ["/views/overlapFunctions", evm.current.context],
+      (functions, context) => {
+        //NOTE: yeah, I copypasted here from solidity.current.sources; maybe factor this
+        if (!context) {
+          return null; //no tx loaded, return null
+        }
+
+        const { compilationId, context: contextHash } = context;
+
+        if (!compilationId || !functions[compilationId]) {
+          return []; //unknown compilation, return no sources
+        }
+
+        const userFunctions = functions[compilationId].user || [];
+        const internalFunctions =
+          (functions[compilationId].internal || {})[contextHash] || [];
+        //we assign to [] rather than {} because we want the result to be an array
+        return Object.assign([], userFunctions, internalFunctions);
+      }
     )
   },
 
@@ -361,17 +410,57 @@ let solidity = createSelectorTree({
    */
   views: {
     /**
-     * solidity.views.findOverlappingRange
-     * grouped by compilation
+     * solidity.views.flattenedSources
+     * all the sources just flattened into a single array
      */
-    findOverlappingRange: createLeaf(["/info/sources"], compilations =>
+    flattenedSources: createLeaf(["/info/sources"], compilations =>
+      flatten(
+        Object.values(
+          compilations
+        ).map(
+          ({
+            userSources: { byId: userSources },
+            internalSources: { byContext: internalSources }
+          }) =>
+            userSources.concat(
+              ...Object.values(internalSources).map(
+                ({ byId: source }) => source
+              )
+            )
+        )
+      ).filter(source => source)
+    ),
+
+    /**
+     * solidity.views.overlapFunctions
+     * grouped by compilation [then by context for internal ones]
+     */
+    overlapFunctions: createLeaf(["/info/sources"], compilations =>
       Object.assign(
         {},
         ...Object.entries(compilations).map(
-          ([compilationId, { byId: sources }]) => ({
-            [compilationId]: sources.map(({ ast }) =>
-              SolidityUtils.makeOverlapFunction(ast)
-            )
+          ([
+            compilationId,
+            {
+              userSources: { byId: userSources },
+              internalSources: { byContext: internalSources }
+            }
+          ]) => ({
+            [compilationId]: {
+              user: userSources.map(({ ast }) =>
+                SolidityUtils.makeOverlapFunction(ast)
+              ),
+              internal: Object.assign(
+                {},
+                ...Object.entries(internalSources).map(
+                  ([context, { byId: contextSources }]) => ({
+                    [context]: contextSources.map(({ ast }) =>
+                      SolidityUtils.makeOverlapFunction(ast)
+                    )
+                  })
+                )
+              )
+            }
           })
         )
       )

@@ -375,7 +375,8 @@ var DebugUtils = {
       breakpoint.sourceId !== currentSourceId
     ) {
       let sourceName =
-        sourceNames[breakpoint.compilationId][breakpoint.sourceId];
+        sourceNames[breakpoint.compilationId][breakpoint.sourceId]; //note: this should be a user source
+      //(we can't create breakpoints in internal sources remotely)
       return baseMessage + ` in ${sourceName}`;
     } else {
       return baseMessage;

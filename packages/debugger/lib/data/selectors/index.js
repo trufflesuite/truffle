@@ -196,149 +196,98 @@ const data = createSelectorTree({
      * data.views.scopes (namespace)
      */
     scopes: {
-      /**
-       * data.view.scopes (selector)
-       * the raw version is below; this version accounts for inheritance
-       * NOTE: grouped by compilation
-       */
-      _: createLeaf(["./raw", "./inlined/raw"], (scopes, inlined) =>
-        Object.assign(
-          {},
-          ...Object.entries(scopes).map(([compilationId, nodes]) => ({
-            [compilationId]: Object.assign(
-              {},
-              ...Object.entries(nodes).map(([id, scope]) => {
-                let definition = inlined[compilationId][id].definition;
-                if (definition.nodeType !== "ContractDefinition") {
-                  return { [id]: scope };
-                }
-                //if we've reached this point, we should be dealing with a
-                //contract, and specifically a contract -- not an interface or
-                //library (those don't get "variables" entries in their scopes)
-                debug("contract id %d", id);
-                let newScope = { ...scope };
-                //note that Solidity gives us the linearization in order from most
-                //derived to most base, but we want most base to most derived;
-                //annoyingly, reverse() is in-place, so we clone with slice() first
-                let linearizedBaseContractsFromBase = definition.linearizedBaseContracts
-                  .slice()
-                  .reverse();
-                linearizedBaseContractsFromBase.pop(); //remove the last element, i.e.,
-                //the contract itself, because we want to treat that one specially
-                //now, we put it all together
-                newScope.variables = []
-                  .concat(
-                    //concatenate the variables lists from the base classes
-                    ...linearizedBaseContractsFromBase.map(
-                      contractId =>
-                        scopes[compilationId][contractId].variables || []
-                      //we need the || [] because contracts with no state variables
-                      //have variables undefined rather than empty like you'd expect
-                    )
-                  )
-                  .filter(
-                    variable =>
-                      inlined[compilationId][variable.astRef].definition
-                        .visibility !== "private"
-                    //filter out private variables from the base classes
-                  )
-                  //add in the variables for the contract itself -- note that here
-                  //private variables are not filtered out!
-                  .concat(scopes[compilationId][id].variables || [])
-                  .filter(variable => {
-                    //HACK: let's filter out those constants we don't know
-                    //how to read.  they'll just clutter things up.
-                    debug("variable %O", variable);
-                    let definition =
-                      inlined[compilationId][variable.astRef].definition;
-                    return (
-                      !definition.constant ||
-                      Codec.Ast.Utils.isSimpleConstant(definition.value)
-                    );
-                  });
-
-                return { [id]: newScope };
-              })
-            )
-          }))
-        )
-      ),
-
       /*
-       * data.views.scopes.raw
-       * NOTE: grouped by compilation
+       * data.views.scopes (selector)
+       * NOTE: grouped by compilation, then by user or internal
+       * and context for internal
        *
        * the raw scopes data, just with intermediate
        * layers cut out
+       * (no inheritance, no inlining)
        */
-      raw: createLeaf(["/info/scopes"], scopes =>
+      _: createLeaf(["/info/scopes"], scopes =>
         Object.assign(
           {},
-          ...Object.entries(scopes.byCompilationId).map(
-            ([compilationId, { byAstRef: nodes }]) => ({
-              [compilationId]: { ...nodes }
+          ...Object.entries(scopes).map(
+            ([
+              compilationId,
+              {
+                userNodes: { byAstRef: userNodes },
+                internalNodes: { byContext }
+              }
+            ]) => ({
+              [compilationId]: {
+                user: userNodes,
+                internal: Object.assign(
+                  {},
+                  ...Object.entries(byContext).map(
+                    ([context, { byAstRef: nodes }]) => ({
+                      [context]: nodes
+                    })
+                  )
+                )
+              }
             })
           )
         )
       ),
 
       /**
-       * data.views.scopes.inlined (namespace)
+       * data.views.scopes.inlined
+       * inlines, but still no inheritance data
        */
-      inlined: {
-        /**
-         * data.views.scopes.inlined (selector)
-         * see data.views.scopes for how this differs from the raw version
-         * NOTE: grouped by compilation
-         */
-        _: createLeaf(["../_", "./raw"], (scopes, inlined) =>
+      inlined: createLeaf(
+        ["./_", solidity.info.sources],
+
+        (scopes, sources) =>
           Object.assign(
             {},
-            ...Object.entries(inlined).map(([compilationId, nodes]) => ({
-              [compilationId]: Object.assign(
-                {},
-                ...Object.entries(nodes).map(([id, info]) => ({
-                  [id]: {
-                    ...info,
-                    variables: scopes[compilationId][id].variables
-                  }
-                }))
-              )
-            }))
-          )
-        ),
+            ...Object.entries(scopes).map(
+              ([compilationId, { user: userNodes, internal: contexts }]) => ({
+                [compilationId]: {
+                  user: Object.assign(
+                    {},
+                    ...Object.entries(userNodes).map(([id, entry]) => ({
+                      [id]: {
+                        ...entry,
 
-        /**
-         * data.views.scopes.inlined.raw
-         * NOTE: grouped by compilation
-         */
-        raw: createLeaf(
-          ["../raw", solidity.info.sources],
+                        definition: jsonpointer.get(
+                          sources[compilationId].userSources.byId[
+                            entry.sourceId
+                          ].ast,
+                          entry.pointer
+                        )
+                      }
+                    }))
+                  ),
+                  internal: Object.assign(
+                    {},
+                    ...Object.entries(contexts).map(([context, nodes]) => ({
+                      [context]: Object.assign(
+                        {},
+                        ...Object.entries(nodes).map(([id, entry]) => ({
+                          [id]: {
+                            ...entry,
 
-          (scopes, sources) =>
-            Object.assign(
-              {},
-              ...Object.entries(scopes).map(([compilationId, nodes]) => ({
-                [compilationId]: Object.assign(
-                  {},
-                  ...Object.entries(nodes).map(([id, entry]) => ({
-                    [id]: {
-                      ...entry,
-
-                      definition: jsonpointer.get(
-                        sources[compilationId].byId[entry.sourceId].ast,
-                        entry.pointer
+                            definition: jsonpointer.get(
+                              sources[compilationId].internalSources.byContext[
+                                context
+                              ].byId[entry.sourceId].ast,
+                              entry.pointer
+                            )
+                          }
+                        }))
                       )
-                    }
-                  }))
-                )
-              }))
+                    }))
+                  )
+                }
+              })
             )
-        )
-      }
+          )
+      )
     },
 
-    /*
+    /**
      * data.views.userDefinedTypes
      * user-defined types for passing to the decoder
      * NOTE: *not* grouped by compilation
@@ -356,8 +305,8 @@ const data = createSelectorTree({
                     Codec.Ast.Import.definitionToStoredType(
                       node,
                       compilationId,
-                      sources[compilationId].byId[
-                        scopes[compilationId][node.id].sourceId
+                      sources[compilationId].userSources.byId[
+                        scopes[compilationId].user[node.id].sourceId
                       ].compiler,
                       referenceDeclarations[compilationId]
                     )
@@ -369,7 +318,7 @@ const data = createSelectorTree({
       }
     ),
 
-    /*
+    /**
      * data.views.contractAllocationInfo
      */
     contractAllocationInfo: createLeaf(
@@ -383,7 +332,7 @@ const data = createSelectorTree({
         Object.values(userDefinedTypes)
           .filter(
             ({ compilationId, id }) =>
-              scopes[compilationId][id].definition.nodeType ===
+              scopes[compilationId].user[id].definition.nodeType ===
               "ContractDefinition"
           )
           .map(({ compilationId, id }) => {
@@ -405,13 +354,14 @@ const data = createSelectorTree({
               ? deployedContext.immutableReferences
               : undefined;
             return {
-              contractNode: scopes[compilationId][id].definition,
+              contractNode: scopes[compilationId].user[id].definition,
               compilationId,
               immutableReferences,
               //we don't just use deployedContext to get compiler because it might not exist!
               compiler:
-                sources[compilationId].byId[scopes[compilationId][id].sourceId]
-                  .compiler,
+                sources[compilationId].userSources.byId[
+                  scopes[compilationId].user[id].sourceId
+                ].compiler,
               //the following three are only needed for decoding return values
               abi: (deployedContext || {}).abi,
               deployedContext,
@@ -423,13 +373,14 @@ const data = createSelectorTree({
     /*
      * data.views.referenceDeclarations
      * NOTE: grouped by compilation
+     * obviously only needs to check user scopes
      */
     referenceDeclarations: createLeaf(
       ["./scopes/inlined", "/info/userDefinedTypes"],
       (scopes, userDefinedTypes) =>
         Object.assign(
           {},
-          ...Object.entries(scopes).map(([compilationId, nodes]) => ({
+          ...Object.entries(scopes).map(([compilationId, { user: nodes }]) => ({
             [compilationId]: Object.assign(
               {},
               ...userDefinedTypes.map(
@@ -508,7 +459,7 @@ const data = createSelectorTree({
     /**
      * data.info.scopes
      */
-    scopes: createLeaf(["/state"], state => state.info.scopes),
+    scopes: createLeaf(["/state"], state => state.info.scopes.byCompilationId),
 
     /*
      * data.info.allocations
@@ -694,24 +645,114 @@ const data = createSelectorTree({
       /**
        * data.current.scopes (selector)
        * Replacement for the old data.info.scopes;
-       * that one now contains multi-compilation info, this
-       * one contains only the current compilation
+       * that one now contains multi-compilation/context info, this
+       * one contains only the current compilation/context
        */
-      _: createLeaf(
-        ["/views/scopes", "../compilationId"],
-        (scopes, compilationId) => scopes[compilationId]
+      _: createLeaf(["./raw", "./inlined/raw"], (scopes, inlined) =>
+        Object.assign(
+          {},
+          ...Object.entries(scopes).map(([id, scope]) => {
+            let definition = inlined[id].definition;
+            if (definition.nodeType !== "ContractDefinition") {
+              return { [id]: scope };
+            }
+            //if we've reached this point, we should be dealing with a
+            //contract, and specifically a contract -- not an interface or
+            //library (those don't get "variables" entries in their scopes)
+            debug("contract id %d", id);
+            let newScope = { ...scope };
+            //note that Solidity gives us the linearization in order from most
+            //derived to most base, but we want most base to most derived;
+            //annoyingly, reverse() is in-place, so we clone with slice() first
+            let linearizedBaseContractsFromBase = definition.linearizedBaseContracts
+              .slice()
+              .reverse();
+            linearizedBaseContractsFromBase.pop(); //remove the last element, i.e.,
+            //the contract itself, because we want to treat that one specially
+            //now, we put it all together
+            newScope.variables = []
+              .concat(
+                //concatenate the variables lists from the base classes
+                ...linearizedBaseContractsFromBase.map(
+                  contractId => scopes[contractId].variables || []
+                  //we need the || [] because contracts with no state variables
+                  //have variables undefined rather than empty like you'd expect
+                )
+              )
+              .filter(
+                variable =>
+                  inlined[variable.astRef].definition.visibility !== "private"
+                //filter out private variables from the base classes
+              )
+              //add in the variables for the contract itself -- note that here
+              //private variables are not filtered out!
+              .concat(scopes[id].variables || [])
+              .filter(variable => {
+                //HACK: let's filter out those constants we don't know
+                //how to read.  they'll just clutter things up.
+                debug("variable %O", variable);
+                let definition = inlined[variable.astRef].definition;
+                return (
+                  !definition.constant ||
+                  Codec.Ast.Utils.isSimpleConstant(definition.value)
+                );
+              });
+
+            return { [id]: newScope };
+          })
+        )
       ),
 
       /**
-       * data.current.scopes.inlined
-       * Replacement for the old data.views.scopes.inlined;
-       * that one now contains multi-compilation info, this
-       * one contains only the current compilation
+       * data.current.scopes.raw
+       * Current scopes, with inheritance not handled and no inlining
        */
-      inlined: createLeaf(
-        ["/views/scopes/inlined", "../compilationId"],
-        (scopes, compilationId) => scopes[compilationId]
-      )
+      raw: createLeaf(
+        ["/views/scopes", "/current/compilationId", evm.current.context],
+        (scopes, compilationId, { context }) => ({
+          ...scopes[compilationId].user,
+          ...scopes[compilationId].internal[context]
+        })
+      ),
+
+      /**
+       * data.current.scopes.inlined (namespace)
+       */
+      inlined: {
+        /**
+         * data.current.scopes.inlined (selector)
+         * Replacement for the old data.views.scopes.inlined;
+         * that one now contains multi-compilation info, this
+         * one contains only the current compilation/context
+         */
+        _: createLeaf(["./raw", "../_"], (inlined, scopes) =>
+          Object.assign(
+            {},
+            ...Object.entries(inlined).map(([astRef, info]) => ({
+              [astRef]: {
+                ...info,
+                variables: scopes[astRef].variables
+              }
+            }))
+          )
+        ),
+
+        /**
+         * data.current.scopes.inlined.raw
+         * inlines definitions but does not account for inheritance
+         */
+        raw: createLeaf(
+          [
+            "/views/scopes/inlined",
+            "/current/compilationId",
+            evm.current.context
+          ],
+          (scopes, compilationId, { context }) => ({
+            ...scopes[compilationId].user,
+            ...scopes[compilationId].internal[context]
+          })
+        )
+      }
     },
 
     /*
@@ -1090,6 +1131,8 @@ const data = createSelectorTree({
               scope.id !== undefined ? scope.id : makePath(sourceId, pointer);
 
             while (cur !== null && scopes[cur]) {
+              debug("cur: %o", cur);
+              debug("scopes[cur]: %o", scopes[cur]);
               variables = Object.assign(
                 variables,
                 ...(scopes[cur].variables || [])
@@ -1099,10 +1142,6 @@ const data = createSelectorTree({
                     [variable.name]: { astRef: variable.astRef }
                   }))
               );
-              //NOTE: because these assignments are processed in order, that means
-              //that if a base class and derived class have variables with the same
-              //name, the derived version will be processed later and therefore overwrite --
-              //which is exactly what we want, so yay
 
               if (scopes[cur].definition.nodeType === "YulFunctionDefinition") {
                 //Yul functions make the outside invisible
@@ -1135,6 +1174,7 @@ const data = createSelectorTree({
               scope.nodeType === "InlineAssembly")
           ) {
             //builtins aren't visible in Yul
+            debug("no builtins in yul");
             return variables;
           }
 
@@ -1146,13 +1186,15 @@ const data = createSelectorTree({
        * data.current.identifiers.definitions (namespace)
        */
       definitions: {
-        /* data.current.identifiers.definitions (selector)
+        /**
+         * data.current.identifiers.definitions (selector)
          * definitions for current variables, by identifier
          */
         _: createLeaf(
           ["/current/scopes/inlined", "../_", "./this", "/current/compiler"],
 
           (scopes, identifiers, thisDefinition, compiler) => {
+            debug("identifiers: %O", identifiers);
             let variables = Object.assign(
               {},
               ...Object.entries(identifiers).map(([identifier, variable]) => {

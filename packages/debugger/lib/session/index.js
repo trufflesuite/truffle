@@ -119,7 +119,8 @@ export default class Session {
    */
   static normalize(compilations) {
     let contexts = [];
-    let sources = {}; //by compilation, then index
+    let sources = {}; //by compilation, then we split into
+    //by index for user sources, and by context-then-index for internal sources
 
     for (let compilation of compilations) {
       if (compilation.unreliableSourceOrder) {
@@ -128,7 +129,10 @@ export default class Session {
         );
       }
       let compiler = compilation.compiler; //note: we'll prefer one listed on contract or source
-      sources[compilation.id] = [];
+      sources[compilation.id] = {
+        user: [],
+        internal: {}
+      };
       for (let index in compilation.sources) {
         //not the recommended way to iterate over an array,
         //but the order doesn't matter here so it's safe
@@ -136,11 +140,12 @@ export default class Session {
         if (!source) {
           continue; //just for safety (in case there are gaps)
         }
-        sources[compilation.id][index] = {
+        sources[compilation.id].user[index] = {
           ...source,
           compiler: source.compiler || compiler,
           compilationId: compilation.id,
-          id: index
+          id: index,
+          internal: false
         };
       }
 
@@ -154,7 +159,9 @@ export default class Session {
           immutableReferences,
           abi,
           compiler,
-          primarySourceId
+          primarySourceId,
+          generatedSources,
+          deployedGeneratedSources
         } = contract;
 
         //hopefully we can get rid of this step eventually, but not yet
@@ -189,10 +196,28 @@ export default class Session {
         debug("contractName %s", contractName);
         debug("sourceMap %o", sourceMap);
         debug("compiler %o", compiler);
-        debug("abi %O", abi);
+        debug("abi %o", abi);
+
+        const generatedSourceToInternalSource = (source, contextHash) => ({
+          sourcePath: source.name,
+          source: source.contents,
+          ast: source.ast,
+          compiler, //taken from above!
+          compilationId: compilation.id, //also taken from above
+          id: source.id, //(i.e. index)
+          internal: true,
+          internalFor: contextHash
+        });
 
         if (binary && binary != "0x") {
+          //NOTE: we take hash as *string*, not as bytes, because the binary may
+          //contain link references!
+          const contextHash = keccak256({
+            type: "string",
+            value: binary
+          });
           contexts.push({
+            context: contextHash,
             contractName,
             binary,
             sourceMap,
@@ -205,10 +230,26 @@ export default class Session {
             externalSolidity: compilation.externalSolidity,
             isConstructor: true
           });
+          if (generatedSources) {
+            sources[compilation.id].internal[contextHash] = [];
+            for (const source of generatedSources) {
+              const index = source.id;
+              sources[compilation.id].internal[contextHash][
+                index
+              ] = generatedSourceToInternalSource(source, contextHash);
+            }
+          }
         }
 
         if (deployedBinary && deployedBinary != "0x") {
+          //NOTE: we take hash as *string*, not as bytes, because the binary may
+          //contain link references!
+          const contextHash = keccak256({
+            type: "string",
+            value: deployedBinary
+          });
           contexts.push({
+            context: contextHash,
             contractName,
             binary: deployedBinary,
             sourceMap: deployedSourceMap,
@@ -222,6 +263,15 @@ export default class Session {
             externalSolidity: compilation.externalSolidity,
             isConstructor: false
           });
+          if (deployedGeneratedSources) {
+            sources[compilation.id].internal[contextHash] = [];
+            for (const source of deployedGeneratedSources) {
+              const index = source.id;
+              sources[compilation.id].internal[contextHash][
+                index
+              ] = generatedSourceToInternalSource(source, contextHash);
+            }
+          }
         }
       }
     }
@@ -229,20 +279,11 @@ export default class Session {
     //now: turn contexts from array into object
     contexts = Object.assign(
       {},
-      ...contexts.map(context => {
-        const contextHash = keccak256({
-          type: "string",
-          value: context.binary
-        });
-        //NOTE: we take hash as *string*, not as bytes, because the binary may
-        //contain link references!
-        return {
-          [contextHash]: {
-            ...context,
-            context: contextHash
-          }
-        };
-      })
+      ...contexts.map(context => ({
+        [context.context]: {
+          ...context
+        }
+      }))
     );
 
     //normalize contexts
@@ -288,12 +329,10 @@ export default class Session {
 
         if (isStepping && !hasStarted) {
           hasStarted = true;
-          debug("heard step start");
           return;
         }
 
         if (!isStepping && hasStarted) {
-          debug("heard step stop");
           unsubscribe();
           resolve(true);
         }
@@ -384,6 +423,9 @@ export default class Session {
     const definitions = this.view(data.current.identifiers.definitions);
     const refs = this.view(data.current.identifiers.refs);
     const compilationId = this.view(data.current.compilationId);
+    debug("name: %s", name);
+    debug("refs: %O", refs);
+    debug("definitions: %o", definitions);
 
     return await this._runSaga(
       dataSagas.decode,

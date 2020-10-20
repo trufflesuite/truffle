@@ -61,6 +61,10 @@ class DebugInterpreter {
     const currentCompilationId = currentLocation.source
       ? currentLocation.source.compilationId
       : null;
+    const context =
+      currentLocation.source && currentLocation.source.internal
+        ? currentLocation.source.internalFor
+        : undefined; //note: for a breakpoint in a user source, context is undefined! only used for internal sources!
 
     let breakpoint = {};
 
@@ -74,6 +78,7 @@ class DebugInterpreter {
       breakpoint.node = currentNode;
       breakpoint.line = currentLine;
       breakpoint.sourceId = currentSourceId;
+      breakpoint.context = context;
       breakpoint.compilationId = currentCompilationId;
     }
 
@@ -107,6 +112,7 @@ class DebugInterpreter {
 
       breakpoint.sourceId = currentSourceId;
       breakpoint.compilationId = currentCompilationId;
+      breakpoint.context = context;
       breakpoint.line = currentLine + delta;
     }
 
@@ -125,10 +131,10 @@ class DebugInterpreter {
         return;
       }
 
-      //search sources for given string
+      //search sources for given string; only include user sources
       let sources = [].concat(
         ...Object.values(this.session.view(solidity.info.sources)).map(
-          ({ byId }) => byId
+          ({ userSources: { byId } }) => byId
         )
       );
 
@@ -154,6 +160,7 @@ class DebugInterpreter {
       //otherwise, we found it!
       breakpoint.sourceId = matchingSources[0].id;
       breakpoint.compilationId = matchingSources[0].compilationId;
+      breakpoint.context = undefined; //since it's a user source
       breakpoint.line = line - 1; //adjust for zero-indexing!
     }
 
@@ -174,6 +181,7 @@ class DebugInterpreter {
 
       breakpoint.sourceId = currentSourceId;
       breakpoint.compilationId = currentCompilationId;
+      breakpoint.context = context;
       breakpoint.line = line - 1; //adjust for zero-indexing!
     }
 
@@ -197,9 +205,15 @@ class DebugInterpreter {
     //user-readable message describing its location
     let sources = this.session.view(solidity.info.sources);
     let sourceNames = Object.assign(
+      //note: only include user sources
       {},
       ...Object.entries(sources).map(
-        ([compilationId, { byId: compilation }]) => ({
+        ([
+          compilationId,
+          {
+            userSources: { byId: compilation }
+          }
+        ]) => ({
           [compilationId]: Object.assign(
             {},
             ...Object.values(compilation).map(({ id, sourcePath }) => ({
@@ -222,6 +236,7 @@ class DebugInterpreter {
       breakpoints.filter(
         existingBreakpoint =>
           existingBreakpoint.compilationId === breakpoint.compilationId &&
+          existingBreakpoint.context === breakpoint.context && //may be undefined
           existingBreakpoint.sourceId === breakpoint.sourceId &&
           existingBreakpoint.line === breakpoint.line &&
           existingBreakpoint.node === breakpoint.node //may be undefined

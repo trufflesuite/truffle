@@ -1,23 +1,34 @@
 export const SCOPE = "DATA_SCOPE";
-export function scope(id, pointer, parentId, sourceId, compilationId) {
+export function scope(
+  id,
+  pointer,
+  parentId,
+  sourceId,
+  compilationId,
+  internalFor
+) {
+  //note: internalFor should be thought of as optional
   return {
     type: SCOPE,
     id,
     pointer,
     parentId,
     sourceId,
-    compilationId
+    compilationId,
+    internalFor
   };
 }
 
 export const DECLARE = "DATA_DECLARE_VARIABLE";
-export function declare(name, astRef, scopeAstRef, compilationId) {
+export function declare(name, astRef, scopeAstRef, compilationId, internalFor) {
+  //note: internalFor should be thought of as optional
   return {
     type: DECLARE,
     name,
     astRef,
     scopeAstRef,
-    compilationId
+    compilationId,
+    internalFor
   };
 }
 

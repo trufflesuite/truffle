@@ -19,7 +19,14 @@ function scopes(state = DEFAULT_SCOPES, action) {
 
   switch (action.type) {
     case actions.SCOPE: {
-      const { compilationId, id, sourceId, parentId, pointer } = action;
+      const {
+        compilationId,
+        internalFor,
+        id,
+        sourceId,
+        parentId,
+        pointer
+      } = action;
       const astRef = id !== undefined ? id : makePath(sourceId, pointer);
       //astRef is used throughout the data saga.
       //it identifies an AST node within a given compilation either by:
@@ -39,57 +46,139 @@ function scopes(state = DEFAULT_SCOPES, action) {
 
       newState.byCompilationId[compilationId] = {
         ...newState.byCompilationId[compilationId],
-        byAstRef: {
-          ...newState.byCompilationId[compilationId].byAstRef
+        userNodes: {
+          ...newState.byCompilationId[compilationId].userNodes,
+          byAstRef: {
+            ...(newState.byCompilationId[compilationId].userNodes || {})
+              .byAstRef
+          }
+        },
+        internalNodes: {
+          ...newState.byCompilationId[compilationId].internalNodes,
+          byContext: {
+            ...(newState.byCompilationId[compilationId].internalNodes || {})
+              .byContext
+          }
         }
       };
 
-      scope = newState.byCompilationId[compilationId].byAstRef[astRef];
+      //...and we're not quite done.
+      if (internalFor) {
+        newState.byCompilationId[compilationId].internalNodes.byContext[
+          internalFor
+        ] = {
+          ...newState.byCompilationId[compilationId].internalNodes.byContext[
+            internalFor
+          ],
+          byAstRef: {
+            ...(
+              newState.byCompilationId[compilationId].internalNodes.byContext[
+                internalFor
+              ] || {}
+            ).byAstRef
+          }
+        };
+      }
 
-      newState.byCompilationId[compilationId].byAstRef[astRef] = {
+      const scopes = internalFor
+        ? newState.byCompilationId[compilationId].internalNodes.byContext[
+            internalFor
+          ].byAstRef
+        : newState.byCompilationId[compilationId].userNodes.byAstRef;
+      scope = scopes[astRef];
+
+      scopes[astRef] = {
+        //note that due to all the cloning here, we are only mutating newState, not state!
         ...scope,
         id,
         sourceId,
         parentId, //may be null or undefined
         pointer,
-        compilationId
+        compilationId,
+        internalFor //will be undefined for user sources
       };
 
       return newState;
     }
 
     case actions.DECLARE: {
-      let { compilationId, name, astRef, scopeAstRef } = action;
+      let { compilationId, internalFor, name, astRef, scopeAstRef } = action;
 
-      //note: we can assume the compilation already exists!
-      scope = state.byCompilationId[compilationId].byAstRef[scopeAstRef] || {};
+      //note: we can assume the compilation/context already exists!
+      scope =
+        (internalFor
+          ? state.byCompilationId[compilationId].internalNodes.byContext[
+              internalFor
+            ].byAstRef[scopeAstRef]
+          : state.byCompilationId[compilationId].userNodes.byAstRef[
+              scopeAstRef
+            ]) || {};
       variables = scope.variables || [];
 
-      return {
-        byCompilationId: {
-          ...state.byCompilationId,
-          [compilationId]: {
-            ...state.byCompilationId[compilationId],
-            byAstRef: {
-              ...state.byCompilationId[compilationId].byAstRef,
+      if (internalFor === undefined) {
+        return {
+          byCompilationId: {
+            ...state.byCompilationId,
+            [compilationId]: {
+              ...state.byCompilationId[compilationId],
+              userNodes: {
+                byAstRef: {
+                  ...state.byCompilationId[compilationId].userNodes.byAstRef,
 
-              [scopeAstRef]: {
-                ...scope,
+                  [scopeAstRef]: {
+                    ...scope,
 
-                variables: [
-                  ...variables,
+                    variables: [
+                      ...variables,
 
-                  {
-                    name,
-                    astRef,
-                    compilationId
+                      {
+                        name,
+                        astRef,
+                        compilationId
+                      }
+                    ]
                   }
-                ]
+                }
               }
             }
           }
-        }
-      };
+        };
+      } else {
+        return {
+          byCompilationId: {
+            ...state.byCompilationId,
+            [compilationId]: {
+              ...state.byCompilationId[compilationId],
+              internalNodes: {
+                byContext: {
+                  ...state.byCompilationId[compilationId].internalNodes
+                    .byContext,
+                  [internalFor]: {
+                    byAstRef: {
+                      ...state.byCompilationId[compilationId].internalNodes
+                        .byContext[internalFor].byAstRef,
+
+                      [scopeAstRef]: {
+                        ...scope,
+
+                        variables: [
+                          ...variables,
+
+                          {
+                            name,
+                            astRef,
+                            compilationId
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        };
+      }
     }
 
     default:
@@ -103,6 +192,7 @@ function scopes(state = DEFAULT_SCOPES, action) {
 //once we eventually support having some files compiled separately from others,
 //this will become a bug you'll have to fix, and you'll have to fix it in the
 //decoder, too.  Sorry, future me! (or whoever's stuck doing this)
+//NOTE: internal sources don't declare these so we don't use internalFor
 
 function userDefinedTypes(state = [], action) {
   switch (action.type) {

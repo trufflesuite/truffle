@@ -42,18 +42,41 @@ class DebugPrinter {
       return result;
     };
 
+    const colorizeSourceObject = source => {
+      const { source: raw, internal: yul } = source;
+      //for now, we assume internal sources are Yul and
+      //user sources are Solidity
+      const detabbed = DebugUtils.tabsToSpaces(raw);
+      return DebugUtils.colorize(detabbed, yul);
+    };
+
     this.colorizedSources = {};
     for (const [compilationId, compilation] of Object.entries(
       this.session.view(solidity.info.sources)
     )) {
-      this.colorizedSources[compilationId] = {};
-      for (const source of compilation.byId) {
-        const { id, source: raw, internal: yul } = source;
-        //for now, we assume internal sources are Yul and
-        //user sources are Solidity
-        const detabbed = DebugUtils.tabsToSpaces(raw);
-        const colorized = DebugUtils.colorize(detabbed, yul);
-        this.colorizedSources[compilationId][id] = colorized;
+      debug("compilation: %o", compilation);
+      this.colorizedSources[compilationId] = {
+        user: {},
+        internal: {}
+      };
+      for (const source of compilation.userSources.byId) {
+        if (source) {
+          this.colorizedSources[compilationId].user[
+            source.id
+          ] = colorizeSourceObject(source);
+        }
+      }
+      for (const [context, { byId: internalSources }] of Object.entries(
+        compilation.internalSources.byContext
+      )) {
+        this.colorizedSources[compilationId].internal[context] = {};
+        for (const source of internalSources) {
+          if (source) {
+            this.colorizedSources[compilationId].internal[context][
+              source.id
+            ] = colorizeSourceObject(source);
+          }
+        }
       }
     }
 
@@ -138,12 +161,14 @@ class DebugPrinter {
       return;
     }
 
-    const source = this.session.view(solidity.info.sources)[compilationId].byId[
-      sourceId
-    ].source;
-    //we don't just get extract this from the location because passed-in location may be
-    //missing the soure text
-    const colorizedSource = this.colorizedSources[compilationId][sourceId];
+    const { source, internal, internalFor } = this.session.view(
+      solidity.current.sources
+    )[sourceId];
+    //we don't just get extract the source text from the location because passed-in location may be
+    //missing the source text
+    const colorizedSource = internal
+      ? this.colorizedSources[compilationId].internal[internalFor][sourceId]
+      : this.colorizedSources[compilationId].user[sourceId];
 
     debug("range: %o", range);
 
@@ -229,19 +254,27 @@ class DebugPrinter {
   }
 
   printBreakpoints() {
-    let sources = this.session.view(solidity.info.sources);
-    let sourceNames = Object.assign(
+    const sources = this.session.view(solidity.info.sources);
+    const sourceNames = Object.assign(
+      //note: only include user sources
       {},
-      ...Object.entries(sources).map(([compilationId, compilation]) => ({
-        [compilationId]: Object.assign(
-          {},
-          ...Object.values(compilation.byId).map(({ id, sourcePath }) => ({
-            [id]: path.basename(sourcePath)
-          }))
-        )
-      }))
+      ...Object.entries(sources).map(
+        ([
+          compilationId,
+          {
+            userSources: { byId: compilation }
+          }
+        ]) => ({
+          [compilationId]: Object.assign(
+            {},
+            ...Object.values(compilation).map(({ id, sourcePath }) => ({
+              [id]: path.basename(sourcePath)
+            }))
+          )
+        })
+      )
     );
-    let breakpoints = this.session.view(controller.breakpoints);
+    const breakpoints = this.session.view(controller.breakpoints);
     if (breakpoints.length > 0) {
       for (let breakpoint of this.session.view(controller.breakpoints)) {
         let currentLocation = this.session.view(controller.current.location);

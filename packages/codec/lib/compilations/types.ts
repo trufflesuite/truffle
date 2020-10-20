@@ -135,4 +135,20 @@ export interface Contract {
    * The ID of the contract's primary source.
    */
   primarySourceId?: string;
+  /**
+   * The contract's generated sources object as output by Solidity 0.7.2 or later.
+   */
+  generatedSources?: GeneratedSource[];
+  /**
+   * The contract's deployed generated sources object as output by Solidity 0.7.2 or later.
+   */
+  deployedGeneratedSources?: GeneratedSource[];
+}
+
+interface GeneratedSource {
+  id: number;
+  language: string; //currently always "Yul"
+  name: string; //currently always "#utility.yul"
+  contents: string;
+  ast: Ast.AstNode;
 }

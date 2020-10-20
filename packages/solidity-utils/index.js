@@ -125,13 +125,8 @@ var SolidityUtils = {
       });
     }
 
-    var lineAndColumnMappings = Object.assign(
-      {},
-      ...Object.entries(sources).map(([id, source]) => ({
-        [id]: SolidityUtils.getCharacterOffsetToLineAndColumnMapping(
-          source || ""
-        )
-      }))
+    const lineAndColumnMappings = sources.map(source =>
+      SolidityUtils.getCharacterOffsetToLineAndColumnMapping(source || "")
     );
 
     let primaryFile;

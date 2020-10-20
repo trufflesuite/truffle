@@ -97,6 +97,8 @@ export function shimContracts(
       deployedSourceMap,
       immutableReferences,
       abi,
+      generatedSources,
+      deployedGeneratedSources,
       compiler
     };
 
@@ -132,33 +134,20 @@ export function shimContracts(
       }
     }
 
-    //now: add internal sources
-    for (let { ast, contents, id: index, name } of [
+    contracts.push(contractObject);
+  }
+
+  //now: check for id overlap with internal sources
+  for (let artifact of artifacts) {
+    const { generatedSources, deployedGeneratedSources } = artifact;
+    for (const { id: index } of [
       ...(generatedSources || []),
       ...(deployedGeneratedSources || [])
     ]) {
-      const generatedSourceObject = {
-        sourcePath: name,
-        source: contents,
-        ast: <Ast.AstNode>ast,
-        compiler, //gotten from above
-        internal: true
-      };
-      ({ index, unreliableSourceOrder } = getIndexToAddAt(
-        generatedSourceObject,
-        index,
-        sources,
-        unreliableSourceOrder
-      ));
-      if (index !== null) {
-        sources[index] = {
-          ...generatedSourceObject,
-          id: index.toString()
-        };
+      if (index in sources) {
+        unreliableSourceOrder = true;
       }
     }
-
-    contracts.push(contractObject);
   }
 
   let compiler: Compiler.CompilerVersion;
@@ -262,8 +251,8 @@ function getIndexToAddAt(
     sources.every(
       existingSource =>
         existingSource.sourcePath !== sourceObject.sourcePath ||
-        ((!sourceObject.sourcePath || sourceObject.internal) &&
-          (!existingSource.sourcePath || existingSource.internal) &&
+        (!sourceObject.sourcePath &&
+          !existingSource.sourcePath &&
           existingSource.source !== sourceObject.source)
     )
   ) {

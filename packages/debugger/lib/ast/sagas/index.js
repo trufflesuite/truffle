@@ -7,31 +7,72 @@ import * as data from "lib/data/sagas";
 
 import ast from "../selectors";
 
-import flatten from "lodash.flatten";
 import jsonpointer from "json-pointer";
 
-function* walk(compilationId, sourceId, node, pointer = "", parentId = null) {
+function* walk(
+  compilationId,
+  internalFor,
+  sourceId,
+  node,
+  pointer = "",
+  parentId = null
+) {
   debug("walking %d %o %o", sourceId, pointer, node);
 
-  yield* handleEnter(compilationId, sourceId, node, pointer, parentId);
+  yield* handleEnter(
+    compilationId,
+    internalFor,
+    sourceId,
+    node,
+    pointer,
+    parentId
+  );
 
   if (Array.isArray(node)) {
     for (let [i, child] of node.entries()) {
-      yield* walk(compilationId, sourceId, child, `${pointer}/${i}`, parentId);
+      yield* walk(
+        compilationId,
+        internalFor,
+        sourceId,
+        child,
+        `${pointer}/${i}`,
+        parentId
+      );
     }
   } else if (node && node.nodeType === "YulBlock") {
     //defer to yul handler!
-    yield* handleYul(compilationId, sourceId, node, pointer, parentId);
+    yield* handleYul(
+      compilationId,
+      internalFor,
+      sourceId,
+      node,
+      pointer,
+      parentId
+    );
   } else if (node instanceof Object) {
     for (let [key, child] of Object.entries(node)) {
-      yield* walk(compilationId, sourceId, child, `${pointer}/${key}`, node.id);
+      yield* walk(
+        compilationId,
+        internalFor,
+        sourceId,
+        child,
+        `${pointer}/${key}`,
+        node.id
+      );
     }
   }
 
-  yield* handleExit(compilationId, sourceId, node, pointer);
+  yield* handleExit(compilationId, internalFor, sourceId, node, pointer);
 }
 
-function* handleEnter(compilationId, sourceId, node, pointer, parentId) {
+function* handleEnter(
+  compilationId,
+  internalFor,
+  sourceId,
+  node,
+  pointer,
+  parentId
+) {
   debug("entering %d %s", sourceId, pointer);
 
   if (!(node instanceof Object)) {
@@ -40,7 +81,7 @@ function* handleEnter(compilationId, sourceId, node, pointer, parentId) {
 
   if (node.id !== undefined) {
     debug("%s recording scope %s", pointer, node.id);
-    yield* data.scope(node.id, pointer, parentId, sourceId, compilationId);
+    yield* data.scope(node.id, pointer, parentId, sourceId, compilationId); //omit internalFor
   }
 
   switch (node.nodeType) {
@@ -57,31 +98,37 @@ function* handleEnter(compilationId, sourceId, node, pointer, parentId) {
   }
 }
 
-function* handleExit(compilationId, sourceId, node, pointer) {
+function* handleExit(compilationId, internalFor, sourceId, node, pointer) {
   debug("exiting %d %s", sourceId, pointer);
 
   // no-op right now
 }
 
 export function* visitAll() {
-  let compilations = yield select(ast.views.sources);
-
-  let sources = flatten(
-    Object.values(compilations).map(({ byId }) => byId)
-  ).filter(x => x);
+  const sources = yield select(ast.views.sources);
 
   yield all(
     sources
       .filter(({ ast }) => ast)
-      .map(({ ast, id, compilationId }) => call(walk, compilationId, id, ast))
+      .map(({ ast, id, compilationId, internalFor }) =>
+        call(walk, compilationId, internalFor, id, ast)
+      )
   );
 
   debug("done visiting");
 }
 
-function* handleYul(compilationId, sourceId, node, pointer, parentId) {
+function* handleYul(
+  compilationId,
+  internalFor,
+  sourceId,
+  node,
+  pointer,
+  parentId
+) {
   yield* yulWalk(
     compilationId,
+    internalFor,
     sourceId,
     node,
     pointer,
@@ -93,6 +140,7 @@ function* handleYul(compilationId, sourceId, node, pointer, parentId) {
 
 function* yulWalk(
   compilationId,
+  internalFor,
   sourceId,
   node,
   pointer,
@@ -102,6 +150,7 @@ function* yulWalk(
 ) {
   yield* handleYulEnter(
     compilationId,
+    internalFor,
     sourceId,
     node,
     pointer,
@@ -114,6 +163,7 @@ function* yulWalk(
     for (let [i, child] of node.entries()) {
       yield* yulWalk(
         compilationId,
+        internalFor,
         sourceId,
         child,
         `${pointer}/${i}`,
@@ -125,6 +175,7 @@ function* yulWalk(
     for (let [key, child] of Object.entries(node)) {
       yield* yulWalk(
         compilationId,
+        internalFor,
         sourceId,
         child,
         `${pointer}/${key}`,
@@ -136,6 +187,7 @@ function* yulWalk(
 
   yield* handleYulExit(
     compilationId,
+    internalFor,
     sourceId,
     node,
     pointer,
@@ -147,6 +199,7 @@ function* yulWalk(
 
 function* handleYulExit(
   compilationId,
+  internalFor,
   sourceId,
   node,
   pointer,
@@ -161,6 +214,7 @@ function* handleYulExit(
 
 function* handleYulEnter(
   compilationId,
+  internalFor,
   sourceId,
   node,
   pointer,
@@ -176,7 +230,13 @@ function* handleYulEnter(
 
   if (node.src !== undefined) {
     debug("scoping!");
-    yield* data.yulScope(pointer, sourceId, compilationId, parentId);
+    yield* data.yulScope(
+      pointer,
+      sourceId,
+      compilationId,
+      internalFor,
+      parentId
+    );
   }
 
   if (node.nodeType === "YulTypedName") {
@@ -186,7 +246,8 @@ function* handleYulEnter(
       pointer,
       scopePointer,
       sourceId,
-      compilationId
+      compilationId,
+      internalFor
     );
   }
 }
