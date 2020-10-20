@@ -31,6 +31,7 @@
     "start:debug": "DEBUG=pouchdb:api ts-node-dev -r tsconfig-paths/register ./bin/server",
     "start:drizzle": "ts-node-dev -r tsconfig-paths/register ./bin/server ./test/truffle-projects/drizzle-box",
     "start:drizzle:debug": "DEBUG=pouchdb:api ts-node-dev -r tsconfig-paths/register ./bin/server ./test/truffle-projects/drizzle-box",
+    "madge": "madge ./src/db.ts",
     "test": "jest --verbose --detectOpenHandles"
   },
   "bugs": {
@@ -50,6 +51,7 @@
     "ganache-core": "2.13.0",
     "jest": "26.5.2",
     "jsondown": "^1.0.0",
+    "madge": "^3.11.0",
     "ts-jest": "26.4.1",
     "ts-node-dev": "^1.0.0-pre.32",
     "tsconfig-paths": "^3.7.0",
