@@ -9,8 +9,7 @@ import {
   CollectionName,
   MutableCollectionName
 } from "@truffle/db/meta";
-import { Databases } from "../pouch";
-import { Definition, Definitions } from "./types";
+import { Context, Definition, Definitions } from "./types";
 
 export const forDefinitions = <C extends Collections>(
   definitions: Definitions<C>
@@ -170,7 +169,7 @@ abstract class DefinitionSchema<
     ];
   }
 
-  get resolvers(): IResolvers<any, { workspace: Databases<C> }> {
+  get resolvers(): IResolvers<any, Context<C>> {
     const { resource, resources } = this.names;
 
     const { resolvers = {} } = this.definition;

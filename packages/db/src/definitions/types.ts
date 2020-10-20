@@ -67,3 +67,5 @@ export type NamedResource<
 > = Meta.NamedResource<Collections, N>;
 
 export type Databases = Pouch.Databases<Collections>;
+
+export type Context = GraphQl.Context<Collections>;

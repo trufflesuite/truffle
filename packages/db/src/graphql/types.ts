@@ -14,14 +14,21 @@ export type Definitions<C extends Collections> = {
     ? {
         mutable: true;
         typeDefs: graphql.DocumentNode;
-        resolvers?: IResolvers<any, { workspace: Databases<C> }>;
+        resolvers?: IResolvers<any, Context<C>>;
       }
     : {
         mutable?: boolean;
         typeDefs: graphql.DocumentNode;
-        resolvers?: IResolvers<any, { workspace: Databases<C> }>;
+        resolvers?: IResolvers<any, Context<C>>;
       };
 };
+
+export interface Context<C extends Collections> {
+  workspace: Databases<C>;
+
+  // HACK this is a bit out of place here
+  workingDirectory: string;
+}
 
 export type Definition<
   C extends Collections,
