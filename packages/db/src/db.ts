@@ -1,18 +1,14 @@
 import { GraphQLSchema, DocumentNode, parse, execute } from "graphql";
 import { schema } from "@truffle/db/data";
 import { generateCompileLoad } from "@truffle/db/loaders/commands";
-import {
-  WorkspaceRequest,
-  WorkspaceResponse,
-  toIdObject,
-  NamedResource
-} from "@truffle/db/loaders/types";
+import { WorkspaceRequest, WorkspaceResponse } from "@truffle/db/loaders/types";
 import { WorkflowCompileResult } from "@truffle/compile-common";
 import { Workspace } from "@truffle/db/workspace";
 import {
   generateInitializeLoad,
   generateNamesLoad
 } from "@truffle/db/loaders/commands";
+import { toIdObject, NamedResource } from "@truffle/db/meta";
 
 interface IConfig {
   contracts_build_directory: string;

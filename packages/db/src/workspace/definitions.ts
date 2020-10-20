@@ -1,37 +1,40 @@
-import { Definitions } from "./pouch";
+import * as Meta from "@truffle/db/meta";
+import * as Pouch from "./pouch";
 
-export type WorkspaceCollections = {
+export type Collections = {
   bytecodes: {
     resource: DataModel.IBytecode;
-    input: DataModel.IBytecodesAddInput;
+    input: DataModel.IBytecodeInput;
   };
   compilations: {
     resource: DataModel.ICompilation;
-    input: DataModel.ICompilationsAddInput;
+    input: DataModel.ICompilationInput;
   };
   contractInstances: {
     resource: DataModel.IContractInstance;
-    input: DataModel.IContractInstancesAddInput;
+    input: DataModel.IContractInstanceInput;
   };
   contracts: {
     resource: DataModel.IContract;
-    input: DataModel.IContractsAddInput;
+    input: DataModel.IContractInput;
+    named: true;
   };
   nameRecords: {
     resource: DataModel.INameRecord;
-    input: DataModel.INameRecordsAddInput;
+    input: DataModel.INameRecordInput;
   };
   networks: {
     resource: DataModel.INetwork;
-    input: DataModel.INetworksAddInput;
+    input: DataModel.INetworkInput;
+    named: true;
   };
   sources: {
     resource: DataModel.ISource;
-    input: DataModel.ISourcesAddInput;
+    input: DataModel.ISourceInput;
   };
   projects: {
     resource: DataModel.IProject;
-    input: DataModel.IProjectsAddInput;
+    input: DataModel.IProjectInput;
   };
   projectNames: {
     resource: DataModel.IProjectName;
@@ -40,7 +43,24 @@ export type WorkspaceCollections = {
   };
 };
 
-export const definitions: Definitions<WorkspaceCollections> = {
+export type Definitions = Pouch.Definitions<Collections>;
+
+export type CollectionName = Meta.CollectionName<Collections>;
+
+export type Resource<N extends CollectionName = CollectionName> = Meta.Resource<
+  Collections,
+  N
+>;
+
+export type MutableResource<
+  N extends CollectionName = CollectionName
+> = Meta.MutableResource<Collections, N>;
+
+export type NamedResource<
+  N extends CollectionName = CollectionName
+> = Meta.NamedResource<Collections, N>;
+
+export const definitions: Definitions = {
   contracts: {
     createIndexes: [
       {
