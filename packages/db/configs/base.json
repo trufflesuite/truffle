@@ -22,6 +22,9 @@
       "jest",
       "node",
       "pouchdb"
+    ],
+    "plugins": [
+      { "transform": "@zerollup/ts-transform-paths", "exclude": "*" }
     ]
   },
   "include": [

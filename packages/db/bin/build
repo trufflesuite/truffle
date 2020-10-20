@@ -3,7 +3,6 @@
 # stop if any commands fail
 set -ex
 
-mkdir -p dist/src/
-tsc --project tsconfig.codegen.json
+ttsc --project tsconfig.codegen.json
 node ./bin/codegen.js
-tsc $@
+ttsc $@

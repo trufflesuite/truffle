@@ -46,12 +46,14 @@
     "@types/pouchdb": "^6.3.2",
     "@types/pouchdb-adapter-leveldb": "^6.1.3",
     "@types/web3": "1.0.20",
+    "@zerollup/ts-transform-paths": "^1.7.3",
     "ganache-core": "2.13.0",
     "jest": "26.5.2",
     "jsondown": "^1.0.0",
     "ts-jest": "26.4.1",
     "ts-node-dev": "^1.0.0-pre.32",
     "tsconfig-paths": "^3.7.0",
+    "ttypescript": "^1.5.7",
     "typescript": "^3.6.3"
   },
   "dependencies": {
