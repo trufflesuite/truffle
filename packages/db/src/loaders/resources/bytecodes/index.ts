@@ -43,9 +43,7 @@ export function* generateBytecodesLoad(
     request: AddBytecodes,
     variables: { bytecodes }
   };
-  const addedBytecodes = result.data.workspace.bytecodesAdd.bytecodes.map(
-    toIdObject
-  );
+  const addedBytecodes = result.data.bytecodesAdd.bytecodes.map(toIdObject);
 
   // okay, now the hard part, putting things back together the way they were!
   // we'll start by zipping the creates/calls back

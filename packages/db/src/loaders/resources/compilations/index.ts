@@ -13,13 +13,13 @@ export { GetCompilation } from "./get.graphql";
 const compilationSourceInputs = ({
   compilation,
   sources
-}: LoadableCompilation): DataModel.ICompilationSourceInput[] =>
+}: LoadableCompilation): DataModel.IResourceReferenceInput[] =>
   compilation.sources.map(({ input: { sourcePath } }) => sources[sourcePath]);
 
 const compilationProcessedSourceInputs = ({
   compilation,
   sources
-}: LoadableCompilation): DataModel.ICompilationProcessedSourceInput[] =>
+}: LoadableCompilation): DataModel.IProcessedSourceInput[] =>
   compilation.sources.map(({ input: { sourcePath }, contracts }) => ({
     source: sources[sourcePath],
     // PRECONDITION: all contracts in the same compilation with the same
@@ -31,7 +31,7 @@ const compilationProcessedSourceInputs = ({
 
 const compilationSourceMapInputs = ({
   compilation
-}: LoadableCompilation): DataModel.ICompilationSourceMapInput[] => {
+}: LoadableCompilation): DataModel.ISourceMapInput[] => {
   const contracts = compilation.sources
     .map(({ contracts }) => contracts)
     .flat();
@@ -74,5 +74,5 @@ export function* generateCompilationsLoad(
     variables: { compilations }
   };
 
-  return result.data.workspace.compilationsAdd.compilations;
+  return result.data.compilationsAdd.compilations;
 }

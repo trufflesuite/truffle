@@ -1,3 +1,5 @@
+import * as graphql from "graphql";
+
 import { CompiledContract } from "@truffle/compile-common";
 import { IdObject } from "@truffle/db/meta";
 
@@ -33,7 +35,7 @@ export interface LoadedBytecodes {
 }
 
 export interface WorkspaceRequest {
-  request: string; // GraphQL request
+  request: string | graphql.DocumentNode; // GraphQL request
   variables: {
     [name: string]: any;
   };
@@ -41,6 +43,6 @@ export interface WorkspaceRequest {
 
 export type WorkspaceResponse<N extends string = string, R = any> = {
   data: {
-    workspace: { [RequestName in N]: R };
+    [RequestName in N]: R;
   };
 };

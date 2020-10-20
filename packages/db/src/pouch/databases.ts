@@ -5,15 +5,14 @@ import { generateId } from "@truffle/db/helpers";
 
 import {
   CollectionName,
-  CollectionResult,
   Collections,
   MutationInput,
   MutationPayload,
   MutableCollectionName,
-  Resource
+  SavedInput
 } from "@truffle/db/meta";
 
-import { CollectionDatabases, Definition, Definitions } from "./types";
+import { Workspace, Definition, Definitions, Historical } from "./types";
 
 export interface DatabasesOptions<C extends Collections> {
   settings: any;
@@ -24,7 +23,7 @@ export interface DatabasesOptions<C extends Collections> {
  * Aggegrates logic for interacting wth a set of PouchDB databases identified
  * by resource collection name.
  */
-export abstract class Databases<C extends Collections> {
+export abstract class Databases<C extends Collections> implements Workspace<C> {
   private collections: CollectionDatabases<C>;
   private definitions: Definitions<C>;
 
@@ -76,14 +75,14 @@ export abstract class Databases<C extends Collections> {
 
   public async all<N extends CollectionName<C>>(
     collectionName: N
-  ): Promise<CollectionResult<C, N>> {
+  ): Promise<SavedInput<C, N>[]> {
     return await this.find<N>(collectionName, { selector: {} });
   }
 
   public async find<N extends CollectionName<C>>(
     collectionName: N,
     options: PouchDB.Find.FindRequest<{}>
-  ): Promise<CollectionResult<C, N>> {
+  ): Promise<SavedInput<C, N>[]> {
     await this.ready;
 
     // allows searching with `id` instead of pouch's internal `_id`,
@@ -107,14 +106,14 @@ export abstract class Databases<C extends Collections> {
     } catch (error) {
       console.log(`Error fetching all ${collectionName}\n`);
       console.log(error);
-      return ([] as unknown) as CollectionResult<C, N>;
+      return ([] as unknown) as SavedInput<C, N>[];
     }
   }
 
   public async get<N extends CollectionName<C>>(
     collectionName: N,
     id: string
-  ): Promise<Historical<Resource<C, N>> | null> {
+  ): Promise<Historical<SavedInput<C, N>> | null> {
     await this.ready;
 
     try {
@@ -122,7 +121,7 @@ export abstract class Databases<C extends Collections> {
       return {
         ...result,
         id
-      } as Historical<Resource<C, N>>;
+      } as Historical<SavedInput<C, N>>;
     } catch (_) {
       return null;
     }
@@ -152,7 +151,7 @@ export abstract class Databases<C extends Collections> {
         return {
           ...resourceInput,
           id
-        } as Resource<C, N>;
+        } as SavedInput<C, N>;
       })
     );
 
@@ -184,7 +183,7 @@ export abstract class Databases<C extends Collections> {
         return {
           ...resourceInput,
           id
-        } as Resource<C, M>;
+        } as SavedInput<C, M>;
       })
     );
 
@@ -235,12 +234,6 @@ export abstract class Databases<C extends Collections> {
   }
 }
 
-type History = PouchDB.Core.IdMeta & PouchDB.Core.GetMeta;
-
-type Historical<T> = {
-  [K in keyof T | keyof History]: K extends keyof History
-    ? History[K]
-    : K extends keyof T
-    ? T[K]
-    : never;
+type CollectionDatabases<C extends Collections> = {
+  [N in CollectionName<C>]: PouchDB.Database;
 };

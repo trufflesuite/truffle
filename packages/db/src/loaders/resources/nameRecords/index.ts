@@ -53,5 +53,5 @@ export function* generateNameRecordsLoad(
     variables: { nameRecords }
   };
 
-  return result.data.workspace.nameRecordsAdd.nameRecords;
+  return result.data.nameRecordsAdd.nameRecords;
 }

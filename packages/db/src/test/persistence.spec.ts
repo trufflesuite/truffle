@@ -1,6 +1,6 @@
 import path from "path";
-import { Workspace } from "..";
-import { generateId, Migrations } from "./utils";
+import { connect } from "@truffle/db/connect";
+import { generateId } from "./utils";
 
 import tmp from "tmp";
 const tempDir = tmp.dirSync({ unsafeCleanup: true });
@@ -33,62 +33,56 @@ const sqliteAdapter = {
 describe("Memory-based Workspace", () => {
   it("does not persist data", async () => {
     // create first workspace and add to it
-    const workspace1 = new Workspace({ adapter: memoryAdapter });
-    await workspace1.bytecodesAdd({
-      input: {
-        bytecodes: [bytecode]
-      }
+    const workspace1 = connect({ adapter: memoryAdapter });
+    await workspace1.add("bytecodes", {
+      bytecodes: [bytecode]
     });
 
     // make sure we can get data out of that workspace
-    expect(await workspace1.bytecode({ id })).toBeDefined();
+    expect(await workspace1.get("bytecodes", id)).toBeDefined();
 
     // create a second workspace and don't add anything
-    const workspace2 = new Workspace({ adapter: memoryAdapter });
+    const workspace2 = connect({ adapter: memoryAdapter });
 
     // and don't get data out!
-    expect(await workspace2.bytecode({ id })).toBeNull();
+    expect(await workspace2.get("bytecodes", id)).toBeNull();
   });
 });
 
 describe("FS-based Workspace", () => {
   it("does persist data", async () => {
     // create first workspace and add to it
-    const workspace1 = new Workspace({ adapter: fsAdapter });
-    await workspace1.bytecodesAdd({
-      input: {
-        bytecodes: [bytecode]
-      }
+    const workspace1 = connect({ adapter: fsAdapter });
+    await workspace1.add("bytecodes", {
+      bytecodes: [bytecode]
     });
 
     // make sure we can get data out of that workspace
-    expect(await workspace1.bytecode({ id })).toBeDefined();
+    expect(await workspace1.get("bytecodes", id)).toBeDefined();
 
     // create a second workspace and don't add anything
-    const workspace2 = new Workspace({ adapter: fsAdapter });
+    const workspace2 = connect({ adapter: fsAdapter });
 
     // but DO get data out
-    expect(await workspace2.bytecode({ id })).toBeDefined();
+    expect(await workspace2.get("bytecodes", id)).toBeDefined();
   });
 });
 
 describe("SQLite-based Workspace", () => {
   it("does persist data", async () => {
     // create first workspace and add to it
-    const workspace1 = new Workspace({ adapter: sqliteAdapter });
-    await workspace1.bytecodesAdd({
-      input: {
-        bytecodes: [bytecode]
-      }
+    const workspace1 = connect({ adapter: sqliteAdapter });
+    await workspace1.add("bytecodes", {
+      bytecodes: [bytecode]
     });
 
     // make sure we can get data out of that workspace
-    expect(await workspace1.bytecode({ id })).toBeDefined();
+    expect(await workspace1.get("bytecodes", id)).toBeDefined();
 
     // create a second workspace and don't add anything
-    const workspace2 = new Workspace({ adapter: sqliteAdapter });
+    const workspace2 = connect({ adapter: sqliteAdapter });
 
     // but DO get data out
-    expect(await workspace2.bytecode({ id })).toBeDefined();
+    expect(await workspace2.get("bytecodes", id)).toBeDefined();
   });
 });

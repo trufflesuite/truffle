@@ -31,26 +31,11 @@ export const GetAllNameRecords = gql`
 `;
 
 export const AddNameRecord = gql`
-  input ResourceInput {
-    id: ID!
-  }
-
-  input PreviousNameRecordInput {
-    id: ID!
-  }
-
-  input NameRecordInput {
-    name: String!
-    type: String!
-    resource: ResourceInput!
-    previous: PreviousNameRecordInput
-  }
-
   mutation AddNameRecord(
     $name: String!
     $type: String!
-    $resource: ResourceInput!
-    $previous: PreviousNameRecordInput
+    $resource: ResourceReferenceInput!
+    $previous: ResourceReferenceInput
   ) {
     nameRecordsAdd(
       input: {

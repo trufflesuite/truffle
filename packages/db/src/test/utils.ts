@@ -2,15 +2,16 @@ import path from "path";
 
 import * as graphql from "graphql";
 
-import { Workspace, schema } from "@truffle/db/workspace";
+import { schema } from "@truffle/db/schema";
+import { connect } from "@truffle/db/connect";
+import { Workspace } from "@truffle/db/definitions";
 
 export { generateId } from "@truffle/db/helpers";
 
 import tmp from "tmp";
 
 export const fixturesDirectory = path.join(
-  __dirname, // db/src/db/test
-  "..", // db/src/db
+  __dirname, // db/src/test
   "..", // db/src/
   "..", // db/
   "test",
@@ -24,7 +25,7 @@ export class WorkspaceClient {
   private workspace: Workspace;
 
   constructor() {
-    this.workspace = new Workspace({
+    this.workspace = connect({
       workingDirectory: tempDir.name
     });
   }

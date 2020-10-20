@@ -52,5 +52,5 @@ export function* generateContractsLoad(
     variables: { contracts }
   };
 
-  return result.data.workspace.contractsAdd.contracts;
+  return result.data.contractsAdd.contracts;
 }

@@ -1,7 +1,12 @@
 import * as Meta from "@truffle/db/meta";
-import * as Pouch from "./pouch";
+import * as Pouch from "../pouch";
+import * as GraphQl from "../graphql";
 
 export type Collections = {
+  sources: {
+    resource: DataModel.ISource;
+    input: DataModel.ISourceInput;
+  };
   bytecodes: {
     resource: DataModel.IBytecode;
     input: DataModel.IBytecodeInput;
@@ -28,10 +33,6 @@ export type Collections = {
     input: DataModel.INetworkInput;
     named: true;
   };
-  sources: {
-    resource: DataModel.ISource;
-    input: DataModel.ISourceInput;
-  };
   projects: {
     resource: DataModel.IProject;
     input: DataModel.IProjectInput;
@@ -43,9 +44,14 @@ export type Collections = {
   };
 };
 
-export type Definitions = Pouch.Definitions<Collections>;
-
 export type CollectionName = Meta.CollectionName<Collections>;
+
+export type Definitions = {
+  [N in CollectionName]: Pouch.Definition<Collections, N> &
+    GraphQl.Definition<Collections, N>;
+};
+
+export type Definition<N extends CollectionName> = Definitions[N];
 
 export type Resource<N extends CollectionName = CollectionName> = Meta.Resource<
   Collections,
@@ -60,55 +66,6 @@ export type NamedResource<
   N extends CollectionName = CollectionName
 > = Meta.NamedResource<Collections, N>;
 
-export const definitions: Definitions = {
-  contracts: {
-    createIndexes: [
-      {
-        fields: ["compilation.id", "processedSource.index"]
-      }
-    ],
-    idFields: ["name", "abi", "processedSource", "compilation"]
-  },
-  sources: {
-    createIndexes: [],
-    idFields: ["contents", "sourcePath"]
-  },
-  compilations: {
-    createIndexes: [],
-    idFields: ["compiler", "sources"]
-  },
-  bytecodes: {
-    createIndexes: [],
-    idFields: ["bytes", "linkReferences"]
-  },
-  networks: {
-    createIndexes: [],
-    idFields: ["networkId", "historicBlock"]
-  },
-  contractInstances: {
-    createIndexes: [],
-    idFields: ["address", "network"]
-  },
-  nameRecords: {
-    createIndexes: [],
-    idFields: ["name", "type", "resource", "previous"]
-  },
-  projects: {
-    createIndexes: [],
-    idFields: ["directory"]
-  },
-  projectNames: {
-    createIndexes: [
-      {
-        fields: ["project.id"]
-      },
-      {
-        fields: ["project.id", "type"]
-      },
-      {
-        fields: ["project.id", "name", "type"]
-      }
-    ],
-    idFields: ["project", "name", "type"]
-  }
-};
+export type Workspace = Pouch.Workspace<Collections>;
+
+export type Context = GraphQl.Context<Collections>;

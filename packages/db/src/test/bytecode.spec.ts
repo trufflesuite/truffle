@@ -5,7 +5,7 @@ import { Shims } from "@truffle/compile-common";
 describe("Bytecode", () => {
   let wsClient;
   let expectedId;
-  let variables, addBytecodeResult, shimmedBytecode;
+  let addBytecodeResult, shimmedBytecode;
 
   beforeEach(async () => {
     wsClient = new WorkspaceClient();

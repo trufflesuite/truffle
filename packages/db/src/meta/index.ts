@@ -51,11 +51,6 @@ export type CollectionProperty<
   N extends CollectionName<C> = CollectionName<C>
 > = Collection<C, N>[P];
 
-export type CollectionResult<
-  C extends Collections,
-  N extends CollectionName<C>
-> = Resource<C, N>[];
-
 export type ResourceFilter = {
   is: CollectionPropertyName<{ extends: boolean }>;
 };
@@ -74,6 +69,15 @@ export type Input<
   C extends Collections = Collections,
   N extends CollectionName<C> = CollectionName<C>
 > = CollectionProperty<"input", C, N>;
+
+export type SavedInput<
+  C extends Collections = Collections,
+  N extends CollectionName<C> = CollectionName<C>
+> = {
+  [K in keyof Input<C, N> | "id"]: K extends keyof Input<C, N>
+    ? Input<C, N>[K]
+    : string;
+};
 
 export type FilteredCollectionName<C extends Collections, F = undefined> = {
   [K in CollectionName<C>]: Resource<C, K, F> extends never ? never : K;

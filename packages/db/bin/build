@@ -4,7 +4,6 @@
 set -ex
 
 mkdir -p dist/src/
-cp ./src/schema.graphql ./dist/src/schema.graphql
 tsc --project tsconfig.codegen.json
 node ./bin/codegen.js
 tsc $@
