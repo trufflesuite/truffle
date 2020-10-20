@@ -23,6 +23,8 @@ export function* generateContractsLoad(
   DataModel.IContract[],
   WorkspaceResponse<"contractsAdd", DataModel.IContractsAddPayload>
 > {
+  // we filter out contracts whose bytecode bytes are empty because these are
+  // either abstract contracts or interfaces, and do not belong in the db
   const contracts = loadableContracts
     .filter(({ contract }) => contract.bytecode.bytes !== "")
     .map(loadableContract => {
