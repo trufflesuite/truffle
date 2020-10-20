@@ -12,7 +12,7 @@ import {
   SavedInput
 } from "@truffle/db/meta";
 
-import { Databases, Definition, Definitions, Historical } from "./types";
+import { Workspace, Definition, Definitions, Historical } from "./types";
 
 export interface DatabasesOptions<C extends Collections> {
   settings: any;
@@ -23,8 +23,7 @@ export interface DatabasesOptions<C extends Collections> {
  * Aggegrates logic for interacting wth a set of PouchDB databases identified
  * by resource collection name.
  */
-export abstract class AbstractDatabases<C extends Collections>
-  implements Databases<C> {
+export abstract class Databases<C extends Collections> implements Workspace<C> {
   private collections: CollectionDatabases<C>;
   private definitions: Definitions<C>;
 

@@ -4,11 +4,9 @@ import PouchDB from "pouchdb";
 import PouchDBNodeWebSQLAdapter from "pouchdb-adapter-node-websql";
 
 import { Collections } from "@truffle/db/meta";
-import { AbstractDatabases } from "./databases";
+import { Databases } from "./databases";
 
-export class SqliteDatabases<C extends Collections> extends AbstractDatabases<
-  C
-> {
+export class SqliteDatabases<C extends Collections> extends Databases<C> {
   private directory: string;
 
   setup(options) {

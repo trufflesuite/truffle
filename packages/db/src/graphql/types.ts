@@ -7,7 +7,7 @@ import {
   MutableCollectionName
 } from "@truffle/db/meta";
 
-import { Databases } from "../pouch";
+import { Workspace } from "../pouch";
 
 export type Definitions<C extends Collections> = {
   [N in CollectionName<C>]: N extends MutableCollectionName<C>
@@ -24,7 +24,7 @@ export type Definitions<C extends Collections> = {
 };
 
 export interface Context<C extends Collections> {
-  workspace: Databases<C>;
+  workspace: Workspace<C>;
 
   // HACK this is a bit out of place here
   workingDirectory: string;

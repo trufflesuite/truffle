@@ -9,7 +9,7 @@ import { MemoryDatabases } from "./memory";
 import { SqliteDatabases } from "./sqlite";
 
 import { Collections } from "@truffle/db/meta";
-import { Databases, Definitions } from "./types";
+import { Workspace, Definitions } from "./types";
 
 export interface DatabasesConfig {
   workingDirectory?: string;
@@ -21,7 +21,7 @@ export interface DatabasesConfig {
 
 export const forDefinitions = <C extends Collections>(
   definitions: Definitions<C>
-) => (config: DatabasesConfig): Databases<C> => {
+) => (config: DatabasesConfig): Workspace<C> => {
   const { constructor, settings } = concretize<C>(config);
 
   return new constructor({ definitions, settings });
@@ -30,7 +30,7 @@ export const forDefinitions = <C extends Collections>(
 const concretize = <C extends Collections>(
   config: DatabasesConfig
 ): {
-  constructor: new (options: DatabasesOptions<C>) => Databases<C>;
+  constructor: new (options: DatabasesOptions<C>) => Workspace<C>;
   settings: any;
 } => {
   const {

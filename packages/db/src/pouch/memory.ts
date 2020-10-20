@@ -2,11 +2,9 @@ import PouchDB from "pouchdb";
 import PouchDBMemoryAdapter from "pouchdb-adapter-memory";
 
 import { Collections } from "@truffle/db/meta";
-import { AbstractDatabases } from "./databases";
+import { Databases } from "./databases";
 
-export class MemoryDatabases<C extends Collections> extends AbstractDatabases<
-  C
-> {
+export class MemoryDatabases<C extends Collections> extends Databases<C> {
   static counter: number = 0;
 
   setup(options) {

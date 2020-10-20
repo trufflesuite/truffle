@@ -21,7 +21,7 @@ export type Definition<
   N extends CollectionName<C>
 > = Definitions<C>[N];
 
-export interface Databases<C extends Collections> {
+export interface Workspace<C extends Collections> {
   all<N extends CollectionName<C>>(
     collectionName: N
   ): Promise<SavedInput<C, N>[]>;
