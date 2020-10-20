@@ -11,7 +11,7 @@ import { SqliteDatabases } from "./sqlite";
 import { Collections } from "@truffle/db/meta";
 import { Databases, Definitions } from "./types";
 
-export interface WorkspaceConfig {
+export interface DatabasesConfig {
   workingDirectory?: string;
   adapter?: {
     name: string;
@@ -21,16 +21,16 @@ export interface WorkspaceConfig {
 
 export const forDefinitions = <C extends Collections>(
   definitions: Definitions<C>
-) => (config: WorkspaceConfig): Databases<C> => {
-  const { WorkspaceDatabases, settings } = concretize<C>(config);
+) => (config: DatabasesConfig): Databases<C> => {
+  const { constructor, settings } = concretize<C>(config);
 
-  return new WorkspaceDatabases({ definitions, settings });
+  return new constructor({ definitions, settings });
 };
 
 const concretize = <C extends Collections>(
-  config: WorkspaceConfig
+  config: DatabasesConfig
 ): {
-  WorkspaceDatabases: new (options: DatabasesOptions<C>) => Databases<C>;
+  constructor: new (options: DatabasesOptions<C>) => Databases<C>;
   settings: any;
 } => {
   const {
@@ -41,19 +41,19 @@ const concretize = <C extends Collections>(
   switch (name) {
     case "fs": {
       return {
-        WorkspaceDatabases: FSDatabases,
+        constructor: FSDatabases,
         settings: settings || getDefaultFSAdapterSettings(workingDirectory)
       };
     }
     case "sqlite": {
       return {
-        WorkspaceDatabases: SqliteDatabases,
+        constructor: SqliteDatabases,
         settings: settings || getDefaultSqliteAdapterSettings(workingDirectory)
       };
     }
     case "memory": {
       return {
-        WorkspaceDatabases: MemoryDatabases,
+        constructor: MemoryDatabases,
         settings: settings
       };
     }
