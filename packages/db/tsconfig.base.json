@@ -8,20 +8,23 @@
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "module": "commonjs",
-    "outDir": "../dist",
+    "outDir": "./dist",
     "strictBindCallApply": true,
     "paths": {
-      "@truffle/db": ["../src"],
-      "@truffle/db/*": ["../src/*"],
-      "test/*": ["../test/*"]
+      "@truffle/db": ["./src"],
+      "@truffle/db/*": ["./src/*"],
+      "test/*": ["./test/*"]
     },
-    "rootDir": "..",
+    "rootDir": ".",
     "baseUrl": ".",
     "types": [
       "express",
       "jest",
       "node",
       "pouchdb"
+    ],
+    "plugins": [
+      { "transform": "@zerollup/ts-transform-paths", "exclude": "*" }
     ]
   },
   "include": [
