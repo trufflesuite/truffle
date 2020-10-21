@@ -41,7 +41,7 @@ class TestRunner {
 
   async initialize() {
     debug("initializing");
-    this.config.resolver = new Resolver(config, true);
+    this.config.resolver = new Resolver(this.config, true);
 
     if (this.first_snapshot) {
       debug("taking first snapshot");
