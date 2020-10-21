@@ -16,7 +16,7 @@ export function* generateSourcesLoad(
 ): Generator<
   WorkspaceRequest,
   LoadedSources,
-  WorkspaceResponse<"sourcesAdd", DataModel.ISourcesAddPayload>
+  WorkspaceResponse<"sourcesAdd", DataModel.SourcesAddPayload>
 > {
   // for each compilation, we need to load sources for each of the contracts
   const inputs = compilation.sources.map(({ input }) => input);

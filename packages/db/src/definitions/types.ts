@@ -4,42 +4,42 @@ import * as GraphQl from "../graphql";
 
 export type Collections = {
   sources: {
-    resource: DataModel.ISource;
-    input: DataModel.ISourceInput;
+    resource: DataModel.Source;
+    input: DataModel.SourceInput;
   };
   bytecodes: {
-    resource: DataModel.IBytecode;
-    input: DataModel.IBytecodeInput;
+    resource: DataModel.Bytecode;
+    input: DataModel.BytecodeInput;
   };
   compilations: {
-    resource: DataModel.ICompilation;
-    input: DataModel.ICompilationInput;
+    resource: DataModel.Compilation;
+    input: DataModel.CompilationInput;
   };
   contractInstances: {
-    resource: DataModel.IContractInstance;
-    input: DataModel.IContractInstanceInput;
+    resource: DataModel.ContractInstance;
+    input: DataModel.ContractInstanceInput;
   };
   contracts: {
-    resource: DataModel.IContract;
-    input: DataModel.IContractInput;
+    resource: DataModel.Contract;
+    input: DataModel.ContractInput;
     named: true;
   };
   nameRecords: {
-    resource: DataModel.INameRecord;
-    input: DataModel.INameRecordInput;
+    resource: DataModel.NameRecord;
+    input: DataModel.NameRecordInput;
   };
   networks: {
-    resource: DataModel.INetwork;
-    input: DataModel.INetworkInput;
+    resource: DataModel.Network;
+    input: DataModel.NetworkInput;
     named: true;
   };
   projects: {
-    resource: DataModel.IProject;
-    input: DataModel.IProjectInput;
+    resource: DataModel.Project;
+    input: DataModel.ProjectInput;
   };
   projectNames: {
-    resource: DataModel.IProjectName;
-    input: DataModel.IProjectNameInput;
+    resource: DataModel.ProjectName;
+    input: DataModel.ProjectNameInput;
     mutable: true;
   };
 };

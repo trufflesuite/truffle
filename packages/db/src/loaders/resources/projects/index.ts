@@ -10,8 +10,8 @@ export function* generateProjectLoad(
   directory: string
 ): Generator<
   WorkspaceRequest,
-  DataModel.IProject,
-  WorkspaceResponse<"projectsAdd", DataModel.IProjectsAddPayload>
+  DataModel.Project,
+  WorkspaceResponse<"projectsAdd", DataModel.ProjectsAddPayload>
 > {
   const result = yield {
     request: AddProjects,
@@ -24,13 +24,13 @@ export function* generateProjectLoad(
 }
 
 export function* generateProjectNameResolve(
-  project: IdObject<DataModel.IProject>,
+  project: IdObject<DataModel.Project>,
   name: string,
   type: string
 ): Generator<
   WorkspaceRequest,
-  DataModel.INameRecord,
-  WorkspaceResponse<"project", { resolve: DataModel.IProject["resolve"] }>
+  DataModel.NameRecord,
+  WorkspaceResponse<"project", { resolve: DataModel.Project["resolve"] }>
 > {
   const result = yield {
     request: ResolveProjectName,
@@ -45,12 +45,12 @@ export function* generateProjectNameResolve(
 }
 
 export function* generateProjectNamesAssign(
-  project: IdObject<DataModel.IProject>,
-  nameRecords: DataModel.INameRecord[]
+  project: IdObject<DataModel.Project>,
+  nameRecords: DataModel.NameRecord[]
 ): Generator<
   WorkspaceRequest,
   void,
-  WorkspaceResponse<"projectNamesAssign", DataModel.IProjectNamesAssignPayload>
+  WorkspaceResponse<"projectNamesAssign", DataModel.ProjectNamesAssignPayload>
 > {
   const projectNames = nameRecords.map(({ id, name, type }) => ({
     project,

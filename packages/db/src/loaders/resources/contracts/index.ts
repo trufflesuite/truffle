@@ -13,15 +13,15 @@ export interface LoadableContract {
   contract: CompiledContract;
   path: { sourceIndex: number; contractIndex: number };
   bytecodes: LoadedBytecodes;
-  compilation: IdObject<DataModel.ICompilation>;
+  compilation: IdObject<DataModel.Compilation>;
 }
 
 export function* generateContractsLoad(
   loadableContracts: LoadableContract[]
 ): Generator<
   WorkspaceRequest,
-  DataModel.IContract[],
-  WorkspaceResponse<"contractsAdd", DataModel.IContractsAddPayload>
+  DataModel.Contract[],
+  WorkspaceResponse<"contractsAdd", DataModel.ContractsAddPayload>
 > {
   const contracts = loadableContracts.map(loadableContract => {
     const {

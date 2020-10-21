@@ -14,7 +14,7 @@ type ResolveFunc = (
   type: string
 ) => Generator<
   WorkspaceRequest,
-  DataModel.INameRecord | null,
+  DataModel.NameRecord | null,
   WorkspaceResponse
 >;
 
@@ -24,13 +24,13 @@ export function* generateNameRecordsLoad(
   getCurrent: ResolveFunc
 ): Generator<
   WorkspaceRequest,
-  DataModel.INameRecord[],
-  WorkspaceResponse<"nameRecordsAdd", DataModel.INameRecordsAddPayload>
+  DataModel.NameRecord[],
+  WorkspaceResponse<"nameRecordsAdd", DataModel.NameRecordsAddPayload>
 > {
   const nameRecords = [];
   for (const resource of resources) {
     const { name } = resource;
-    const current: DataModel.INameRecord = yield* getCurrent(name, type);
+    const current: DataModel.NameRecord = yield* getCurrent(name, type);
 
     if (current) {
       nameRecords.push({
