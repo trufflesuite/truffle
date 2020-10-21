@@ -109,12 +109,7 @@ const WorkflowCompile = {
     const artifacts = contracts.map(Shims.NewToLegacy.forContract);
     await config.artifactor.saveAll(artifacts);
 
-    if (
-      options.db &&
-      options.db.enabled === true &&
-      contracts.length > 0 &&
-      options.loadDb === true
-    ) {
+    if (options.db && options.db.enabled === true && contracts.length > 0) {
       const db = connect(config);
       const project = await Project.initialize({
         db,
