@@ -93,9 +93,6 @@ const command = {
         JSON.stringify(compilationOutput),
         {encoding: "utf8"}
       );
-      //add flag for saving compilation results in Truffle DB
-      config.loadDb = true;
-      return await WorkflowCompile.save(config, compilationOutput);
     }
 
     return await WorkflowCompile.save(config, compilationOutput);
