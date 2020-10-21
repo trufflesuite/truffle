@@ -358,6 +358,7 @@ var DebugUtils = {
     breakpoint,
     here,
     currentCompilationId,
+    currentInternalContext, //usually undefined
     currentSourceId,
     sourceNames
   ) {
@@ -372,11 +373,12 @@ var DebugUtils = {
     }
     if (
       breakpoint.compilationId !== currentCompilationId ||
+      breakpoint.context !== currentInternalContext ||
       breakpoint.sourceId !== currentSourceId
     ) {
       let sourceName =
-        sourceNames[breakpoint.compilationId][breakpoint.sourceId]; //note: this should be a user source
-      //(we can't create breakpoints in internal sources remotely)
+        sourceNames[breakpoint.compilationId][breakpoint.sourceId] ||
+        "an internal source";
       return baseMessage + ` in ${sourceName}`;
     } else {
       return baseMessage;

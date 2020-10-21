@@ -61,7 +61,7 @@ class DebugInterpreter {
     const currentCompilationId = currentLocation.source
       ? currentLocation.source.compilationId
       : null;
-    const context =
+    const currentInternalContext =
       currentLocation.source && currentLocation.source.internal
         ? currentLocation.source.internalFor
         : undefined; //note: for a breakpoint in a user source, context is undefined! only used for internal sources!
@@ -78,7 +78,7 @@ class DebugInterpreter {
       breakpoint.node = currentNode;
       breakpoint.line = currentLine;
       breakpoint.sourceId = currentSourceId;
-      breakpoint.context = context;
+      breakpoint.context = currentInternalContext;
       breakpoint.compilationId = currentCompilationId;
     }
 
@@ -112,7 +112,7 @@ class DebugInterpreter {
 
       breakpoint.sourceId = currentSourceId;
       breakpoint.compilationId = currentCompilationId;
-      breakpoint.context = context;
+      breakpoint.context = currentInternalContext;
       breakpoint.line = currentLine + delta;
     }
 
@@ -181,7 +181,7 @@ class DebugInterpreter {
 
       breakpoint.sourceId = currentSourceId;
       breakpoint.compilationId = currentCompilationId;
-      breakpoint.context = context;
+      breakpoint.context = currentInternalContext;
       breakpoint.line = line - 1; //adjust for zero-indexing!
     }
 
@@ -225,8 +225,9 @@ class DebugInterpreter {
     );
     let locationMessage = DebugUtils.formatBreakpointLocation(
       breakpoint,
-      true,
+      true, //only relevant for node-based breakpoints
       currentCompilationId,
+      currentInternalContext,
       currentSourceId,
       sourceNames
     );

@@ -144,7 +144,7 @@ export default class Session {
           ...source,
           compiler: source.compiler || compiler,
           compilationId: compilation.id,
-          id: index,
+          id: Number(index), //these are coming out as strings for some reason
           internal: false
         };
       }

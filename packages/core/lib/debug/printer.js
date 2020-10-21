@@ -281,8 +281,10 @@ class DebugPrinter {
         let locationMessage = DebugUtils.formatBreakpointLocation(
           breakpoint,
           currentLocation.node !== undefined &&
+            breakpoint.compilationId === currentLocation.source.compilationId &&
             breakpoint.node === currentLocation.node.id,
           currentLocation.source.compilationId,
+          currentLocation.source.internalFor,
           currentLocation.source.id,
           sourceNames
         );
