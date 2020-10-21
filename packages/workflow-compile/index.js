@@ -112,12 +112,7 @@ const WorkflowCompile = {
     const artifacts = contracts.map(Shims.NewToLegacy.forContract);
     await config.artifactor.saveAll(artifacts);
 
-    if (
-      options.db &&
-      options.db.enabled === true &&
-      contracts.length > 0 &&
-      options.loadDb === true
-    ) {
+    if (options.db && options.db.enabled === true && contracts.length > 0) {
       const db = new TruffleDB(config);
       await db.loadCompilations({ contracts, compilations }, { names: true });
     }
