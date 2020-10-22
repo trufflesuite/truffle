@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "2.0.2",
+  "version": "2.0.3",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0",
@@ -19,7 +19,7 @@
     "@truffle/expect": "^0.0.15",
     "debug": "^4.1.0",
     "glob": "^7.1.2",
-    "web3-utils": "1.2.1"
+    "web3-utils": "1.2.9"
   },
   "devDependencies": {
     "chai": "4.2.0",

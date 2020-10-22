@@ -7,7 +7,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.4.17",
+  "version": "0.4.18",
   "main": "dist/index.js",
   "directories": {
     "lib": "lib"
@@ -23,7 +23,7 @@
     "bn.js": "^4.11.8",
     "ethers": "^4.0.32",
     "source-map-support": "^0.5.19",
-    "web3": "1.2.1"
+    "web3": "1.2.9"
   },
   "devDependencies": {
     "@types/bn.js": "^4.11.4",

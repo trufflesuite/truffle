@@ -1,10 +1,12 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:loaders:resources:bytecodes");
+
 import {
   CompilationData,
-  toIdObject,
   LoadedBytecodes,
-  WorkspaceRequest,
-  WorkspaceResponse
+  Load
 } from "@truffle/db/loaders/types";
+import { toIdObject } from "@truffle/db/meta";
 import { CompiledContract } from "@truffle/compile-common";
 import { AddBytecodes } from "./add.graphql";
 export { AddBytecodes };
@@ -14,11 +16,7 @@ export { AddBytecodes };
  */
 export function* generateBytecodesLoad(
   compilation: CompilationData
-): Generator<
-  WorkspaceRequest,
-  LoadedBytecodes,
-  WorkspaceResponse<"bytecodesAdd", DataModel.IBytecodesAddPayload>
-> {
+): Load<LoadedBytecodes, { graphql: "bytecodesAdd" }> {
   // we're flattening in order to send all bytecodes in one big list
   // (it's okay, we're gonna recreate the structure before we return)
   const flattenedContracts: CompiledContract[] = compilation.sources
@@ -42,12 +40,11 @@ export function* generateBytecodesLoad(
 
   // submit
   const result = yield {
+    type: "graphql",
     request: AddBytecodes,
     variables: { bytecodes }
   };
-  const addedBytecodes = result.data.workspace.bytecodesAdd.bytecodes.map(
-    toIdObject
-  );
+  const addedBytecodes = result.data.bytecodesAdd.bytecodes.map(toIdObject);
 
   // okay, now the hard part, putting things back together the way they were!
   // we'll start by zipping the creates/calls back

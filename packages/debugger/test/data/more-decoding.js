@@ -300,17 +300,17 @@ let sources = {
   "GlobalDeclarations.sol": __GLOBALDECLS
 };
 
-describe("Further Decoding", function () {
+describe("Further Decoding", function() {
   var provider;
 
   var abstractions;
   var compilations;
 
-  before("Create Provider", async function () {
+  before("Create Provider", async function() {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
-  before("Prepare contracts and artifacts", async function () {
+  before("Prepare contracts and artifacts", async function() {
     this.timeout(30000);
 
     let prepared = await prepareContracts(provider, sources);
@@ -318,7 +318,7 @@ describe("Further Decoding", function () {
     compilations = prepared.compilations;
   });
 
-  it("Decodes various reference types correctly", async function () {
+  it("Decodes various reference types correctly", async function() {
     this.timeout(12000);
 
     let instance = await abstractions.ContainersTest.deployed();
@@ -328,11 +328,9 @@ describe("Further Decoding", function () {
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let sourceId = bugger.view(solidity.current.source).id;
-    let compilationId = bugger.view(solidity.current.source).compilationId;
     let source = bugger.view(solidity.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("break here", source)
     });
 
@@ -356,7 +354,7 @@ describe("Further Decoding", function () {
     assert.deepInclude(variables, expectedResult);
   });
 
-  it("Decodes elementary types and mappings correctly", async function () {
+  it("Decodes elementary types and mappings correctly", async function() {
     this.timeout(12000);
 
     let instance = await abstractions.ElementaryTest.deployed();
@@ -367,11 +365,9 @@ describe("Further Decoding", function () {
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let sourceId = bugger.view(solidity.current.source).id;
-    let compilationId = bugger.view(solidity.current.source).compilationId;
     let source = bugger.view(solidity.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("break here", source)
     });
 
@@ -399,7 +395,7 @@ describe("Further Decoding", function () {
     assert.deepInclude(variables, expectedResult);
   });
 
-  it("Splices locations correctly", async function () {
+  it("Splices locations correctly", async function() {
     this.timeout(12000);
 
     let instance = await abstractions.SpliceTest.deployed();
@@ -409,11 +405,9 @@ describe("Further Decoding", function () {
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let sourceId = bugger.view(solidity.current.source).id;
-    let compilationId = bugger.view(solidity.current.source).compilationId;
     let source = bugger.view(solidity.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("break here", source)
     });
 
@@ -436,7 +430,7 @@ describe("Further Decoding", function () {
     assert.deepInclude(variables, expectedResult);
   });
 
-  it("Decodes inner mappings correctly and keeps path info", async function () {
+  it("Decodes inner mappings correctly and keeps path info", async function() {
     this.timeout(12000);
 
     let instance = await abstractions.ComplexMappingTest.deployed();
@@ -488,7 +482,7 @@ describe("Further Decoding", function () {
     }
   });
 
-  it("Cleans badly-encoded booleans used as mapping keys", async function () {
+  it("Cleans badly-encoded booleans used as mapping keys", async function() {
     this.timeout(12000);
 
     let instance = await abstractions.BadBoolTest.deployed();
@@ -518,7 +512,7 @@ describe("Further Decoding", function () {
     assert.deepInclude(variables, expectedResult);
   });
 
-  it("Handles globally-declared structs and enums", async function () {
+  it("Handles globally-declared structs and enums", async function() {
     this.timeout(12000);
 
     let instance = await abstractions.GlobalDeclarationTest.deployed();
@@ -542,7 +536,7 @@ describe("Further Decoding", function () {
     assert.deepInclude(variables, expectedResult);
   });
 
-  it("Decodes circular structures", async function () {
+  it("Decodes circular structures", async function() {
     this.timeout(12000);
 
     let instance = await abstractions.CircularTest.deployed();
@@ -552,11 +546,9 @@ describe("Further Decoding", function () {
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let sourceId = bugger.view(solidity.current.source).id;
-    let compilationId = bugger.view(solidity.current.source).compilationId;
     let source = bugger.view(solidity.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("BREAK HERE", source)
     });
 
@@ -572,8 +564,8 @@ describe("Further Decoding", function () {
     assert.strictEqual(circular.children[0], circular);
   });
 
-  describe("Overflow", function () {
-    it("Discards padding on unsigned integers", async function () {
+  describe("Overflow", function() {
+    it("Discards padding on unsigned integers", async function() {
       let instance = await abstractions.OverflowTest.deployed();
       let receipt = await instance.unsignedTest();
       let txHash = receipt.tx;
@@ -581,11 +573,9 @@ describe("Further Decoding", function () {
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
       let sourceId = bugger.view(solidity.current.source).id;
-      let compilationId = bugger.view(solidity.current.source).compilationId;
       let source = bugger.view(solidity.current.source).source;
       await bugger.addBreakpoint({
         sourceId,
-        compilationId,
         line: lineOf("BREAK UNSIGNED", source)
       });
 
@@ -605,7 +595,7 @@ describe("Further Decoding", function () {
       assert.include(variables, expectedResult);
     });
 
-    it("Discards padding on signed integers", async function () {
+    it("Discards padding on signed integers", async function() {
       let instance = await abstractions.OverflowTest.deployed();
       let receipt = await instance.signedTest();
       let txHash = receipt.tx;
@@ -613,11 +603,9 @@ describe("Further Decoding", function () {
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
       let sourceId = bugger.view(solidity.current.source).id;
-      let compilationId = bugger.view(solidity.current.source).compilationId;
       let source = bugger.view(solidity.current.source).source;
       await bugger.addBreakpoint({
         sourceId,
-        compilationId,
         line: lineOf("BREAK SIGNED", source)
       });
 
@@ -637,7 +625,7 @@ describe("Further Decoding", function () {
       assert.include(variables, expectedResult);
     });
 
-    it("Discards padding on static bytestrings", async function () {
+    it("Discards padding on static bytestrings", async function() {
       let instance = await abstractions.OverflowTest.deployed();
       let receipt = await instance.rawTest();
       let txHash = receipt.tx;
@@ -645,11 +633,9 @@ describe("Further Decoding", function () {
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
       let sourceId = bugger.view(solidity.current.source).id;
-      let compilationId = bugger.view(solidity.current.source).compilationId;
       let source = bugger.view(solidity.current.source).source;
       await bugger.addBreakpoint({
         sourceId,
-        compilationId,
         line: lineOf("BREAK RAW", source)
       });
 

@@ -1,25 +1,29 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:loaders:resources:compilations");
+
+import { toIdObject, IdObject } from "@truffle/db/meta";
 import {
   CompilationData,
   LoadedSources,
-  WorkspaceRequest,
-  WorkspaceResponse
+  Load
 } from "@truffle/db/loaders/types";
 
 import { AddCompilations } from "./add.graphql";
 export { AddCompilations };
 
+import { FindCompilationContracts } from "./find.graphql";
 export { GetCompilation } from "./get.graphql";
 
 const compilationSourceInputs = ({
   compilation,
   sources
-}: LoadableCompilation): DataModel.ICompilationSourceInput[] =>
+}: LoadableCompilation): DataModel.ResourceReferenceInput[] =>
   compilation.sources.map(({ input: { sourcePath } }) => sources[sourcePath]);
 
 const compilationProcessedSourceInputs = ({
   compilation,
   sources
-}: LoadableCompilation): DataModel.ICompilationProcessedSourceInput[] =>
+}: LoadableCompilation): DataModel.ProcessedSourceInput[] =>
   compilation.sources.map(({ input: { sourcePath }, contracts }) => ({
     source: sources[sourcePath],
     // PRECONDITION: all contracts in the same compilation with the same
@@ -31,7 +35,7 @@ const compilationProcessedSourceInputs = ({
 
 const compilationSourceMapInputs = ({
   compilation
-}: LoadableCompilation): DataModel.ICompilationSourceMapInput[] => {
+}: LoadableCompilation): DataModel.SourceMapInput[] => {
   const contracts = compilation.sources
     .map(({ contracts }) => contracts)
     .flat();
@@ -48,7 +52,7 @@ const compilationSourceMapInputs = ({
 
 const compilationInput = (
   data: LoadableCompilation
-): DataModel.ICompilationInput => ({
+): DataModel.CompilationInput => ({
   compiler: data.compilation.compiler,
   processedSources: compilationProcessedSourceInputs(data),
   sources: compilationSourceInputs(data),
@@ -62,17 +66,32 @@ type LoadableCompilation = {
 
 export function* generateCompilationsLoad(
   loadableCompilations: LoadableCompilation[]
-): Generator<
-  WorkspaceRequest,
-  DataModel.ICompilation[],
-  WorkspaceResponse<"compilationsAdd", DataModel.ICompilationsAddPayload>
-> {
+): Load<DataModel.Compilation[], { graphql: "compilationsAdd" }> {
   const compilations = loadableCompilations.map(compilationInput);
 
   const result = yield {
+    type: "graphql",
     request: AddCompilations,
     variables: { compilations }
   };
 
-  return result.data.workspace.compilationsAdd.compilations;
+  return result.data.compilationsAdd.compilations;
+}
+
+export function* generateCompilationsContracts(
+  compilations: IdObject<DataModel.Compilation>[]
+): Load<IdObject<DataModel.Contract>[], { graphql: "compilations" }> {
+  const result = yield {
+    type: "graphql",
+    request: FindCompilationContracts,
+    variables: {
+      ids: compilations.map(({ id }) => id)
+    }
+  };
+
+  const contracts = result.data.compilations
+    .map(({ contracts }) => contracts)
+    .flat();
+
+  return contracts.map(toIdObject);
 }

@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.7.0",
+  "version": "0.7.1",
   "main": "dist/lib/index.js",
   "files": [
     "dist"
@@ -32,7 +32,7 @@
     "semver": "^6.3.0",
     "source-map-support": "^0.5.19",
     "utf8": "^3.0.0",
-    "web3-utils": "1.2.1"
+    "web3-utils": "1.2.9"
   },
   "devDependencies": {
     "@gnd/typedoc": "0.15.0-0",
