@@ -245,13 +245,6 @@ const DEFAULT_ASSIGNMENTS = {
   byId: Object.assign(
     {}, //we start out with all globals assigned
     ...GLOBAL_ASSIGNMENTS.map(assignment => ({ [assignment.id]: assignment }))
-  ),
-  byCompilationId: {}, //no regular variables assigned at start
-  byBuiltin: Object.assign(
-    {}, //again, all globals start assigned
-    ...GLOBAL_ASSIGNMENTS.map(assignment => ({
-      [assignment.builtin]: [assignment.id] //yes, that's a 1-element array
-    }))
   )
 };
 
@@ -261,34 +254,12 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
     case actions.MAP_PATH_AND_ASSIGN:
       debug("action.type %O", action.type);
       debug("action.assignments %O", action.assignments);
-      return Object.values(action.assignments).reduce((acc, assignment) => {
-        let { id, astRef, compilationId } = assignment;
-        //we assume for now that only ordinary variables will be assigned this
-        //way, and not globals; globals are handled in DEFAULT_ASSIGNMENTS
-        return {
-          ...acc,
-          byId: {
-            ...acc.byId,
-            [id]: assignment
-          },
-          byCompilationId: {
-            ...acc.byCompilationId,
-            [compilationId]: {
-              ...acc.byCompilationId[compilationId],
-              byAstRef: {
-                ...(acc.byCompilationId[compilationId] || {}).byAstRef,
-                [astRef]: [
-                  ...new Set([
-                    ...(((acc.byCompilationId[compilationId] || {}).byAstRef ||
-                      {})[astRef] || []),
-                    id
-                  ])
-                ]
-              }
-            }
-          }
-        };
-      }, state);
+      return {
+        byId: {
+          ...state.byId,
+          ...action.assignments
+        }
+      };
 
     case actions.RESET:
       return DEFAULT_ASSIGNMENTS;

@@ -507,12 +507,7 @@ const data = createSelectorTree({
     /**
      * data.proc.assignments
      */
-    assignments: createLeaf(
-      ["/state"],
-      state => state.proc.assignments
-      //note: this no longer fetches just the byId, but rather the whole
-      //assignments object
-    ),
+    assignments: createLeaf(["/state"], state => state.proc.assignments.byId),
 
     /*
      * data.proc.mappedPaths
@@ -632,6 +627,15 @@ const data = createSelectorTree({
      * data.current.sourceId
      */
     sourceId: createLeaf([solidity.current.source], ({ id }) => id),
+
+    /**
+     * data.current.internalSourceFor
+     * returns null if in a user source
+     */
+    internalSourceFor: createLeaf(
+      [solidity.current.source],
+      ({ internalFor }) => internalFor || null
+    ),
 
     /**
      * data.current.root
@@ -1285,20 +1289,20 @@ const data = createSelectorTree({
           "/proc/assignments",
           "./_",
           "/current/compilationId",
+          "/current/internalSourceFor", //may be null
           "/current/functionDepth", //for pruning things too deep on stack
           "/current/modifierDepth", //when it's useful
-          "/current/inModifier",
-          "/current/address" //for contract variables
+          "/current/inModifier"
         ],
 
         (
           assignments,
           identifiers,
           compilationId,
+          internalFor,
           currentDepth,
           modifierDepth,
-          inModifier,
-          address
+          inModifier
         ) =>
           Object.assign(
             {},
@@ -1310,50 +1314,38 @@ const data = createSelectorTree({
 
                 //is this an ordinary variable or a builtin?
                 if (astRef !== undefined) {
-                  //if not a builtin, first check if it's a contract var
-                  let compilationAssignments =
-                    (assignments.byCompilationId[compilationId] || {})
-                      .byAstRef || {};
-                  id = (compilationAssignments[astRef] || []).find(
-                    idHash => assignments.byId[idHash].address === address
-                  );
-                  debug("id after global: %s", id);
-
-                  //if not contract, it's local, so identify by stackframe
-                  if (id === undefined) {
-                    //if we're in a modifier, include modifierDepth
-                    if (inModifier) {
-                      id = stableKeccak256({
-                        astRef,
-                        compilationId,
-                        stackframe: currentDepth,
-                        modifierDepth
-                      });
-                    } else {
-                      id = stableKeccak256({
-                        astRef,
-                        compilationId,
-                        stackframe: currentDepth
-                      });
-                    }
+                  //ordinary variable case
+                  //first: is this a contract variable?
+                  id = stableKeccak256({
+                    astRef,
+                    compilationId,
+                    internalFor
+                  });
+                  //if not contract, it's local, so identify by stackframe (& etc)
+                  if (!(id in assignments)) {
+                    id = stableKeccak256({
+                      astRef,
+                      compilationId,
+                      internalFor,
+                      stackframe: currentDepth,
+                      modifierDepth: inModifier ? modifierDepth : null
+                    });
                   }
                   debug("id after local: %s", id);
                 } else {
-                  //otherwise, it's a builtin
-                  //NOTE: for now we assume there is only one assignment per
-                  //builtin, but this will change in the future
-                  debug("builtin: %s", builtin);
-                  id = assignments.byBuiltin[builtin][0];
+                  //it's a builtin
+                  id = stableKeccak256({
+                    builtin
+                  });
                 }
 
                 //if we still didn't find it, oh well
                 debug("id: %s", id);
 
-                let { ref } = assignments.byId[id] || {};
+                let { ref } = assignments[id] || {};
                 if (!ref) {
-                  return undefined;
+                  return {}; //don't add anything
                 }
-
                 return {
                   [identifier]: ref
                 };

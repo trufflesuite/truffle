@@ -400,22 +400,18 @@ function* variablesAndMappingsSaga() {
       assignments = {};
       let position = top; //because that's how we'll process things
       const sourceId = yield select(data.current.sourceId);
+      const internalFor = yield select(data.current.internalSourceFor); //null if user source
       for (const suffix of suffixes) {
         //we only care about the pointer, not the variable
         const sourceAndPointer = makePath(sourceId, pointer + suffix);
         const assignment = makeAssignment(
-          inModifier
-            ? {
-                compilationId,
-                astRef: sourceAndPointer,
-                stackframe: currentDepth,
-                modifierDepth
-              }
-            : {
-                compilationId,
-                astRef: sourceAndPointer,
-                stackframe: currentDepth
-              },
+          {
+            compilationId,
+            internalFor,
+            astRef: sourceAndPointer,
+            stackframe: currentDepth,
+            modifierDepth: inModifier ? modifierDepth : null
+          },
           {
             location: "stack",
             from: position, //all Yul variables are size 1
@@ -430,7 +426,6 @@ function* variablesAndMappingsSaga() {
     }
     case "ContractDefinition": {
       const allocations = yield select(data.current.allocations.state);
-      const currentAssignments = yield select(data.proc.assignments);
       const allocation = allocations[node.id];
 
       debug("Contract definition case");
@@ -439,18 +434,15 @@ function* variablesAndMappingsSaga() {
       assignments = {};
       for (let id in allocation.members) {
         id = Number(id); //not sure why we're getting them as strings, but...
-        const idObj = { compilationId, astRef: id, address };
-        const fullId = stableKeccak256(idObj);
-        //we don't use makeAssignment here as we had to compute the ID anyway
-        const assignment = {
-          ...idObj,
-          id: fullId,
-          ref: {
-            ...((currentAssignments.byId[fullId] || {}).ref || {}),
-            ...allocation.members[id].pointer
-          }
+        const idObj = {
+          compilationId,
+          internalFor: null, //generated sources are never Solidity
+          astRef: id
         };
-        assignments[fullId] = assignment;
+        //these aren't locals, so we omit stackframe and modifier info
+        const ref = allocation.members[id].pointer;
+        const assignment = makeAssignment(idObj, ref);
+        assignments[assignment.id] = assignment;
       }
       debug("assignments %O", assignments);
 
@@ -490,14 +482,13 @@ function* variablesAndMappingsSaga() {
 
       //otherwise, go ahead and make the assignment
       const assignment = makeAssignment(
-        inModifier
-          ? {
-              compilationId,
-              astRef: varId,
-              stackframe: currentDepth,
-              modifierDepth
-            }
-          : { compilationId, astRef: varId, stackframe: currentDepth },
+        {
+          compilationId,
+          internalFor: null, //generated sources are never Solidity
+          astRef: varId,
+          stackframe: currentDepth,
+          modifierDepth: inModifier ? modifierDepth : null
+        },
         {
           location: "stack",
           from: top - Codec.Ast.Utils.stackSize(node) + 1,
@@ -535,6 +526,7 @@ function* variablesAndMappingsSaga() {
     //NOTE: DELIBERATE FALL-THROUGH
     case "YulVariableDeclaration": {
       const sourceId = yield select(data.current.sourceId);
+      const internalFor = yield select(data.current.internalSourceFor);
       const sourceAndPointer = makePath(sourceId, pointer);
       debug("sourceAndPointer: %s", sourceAndPointer);
       assignments = {};
@@ -544,18 +536,13 @@ function* variablesAndMappingsSaga() {
         //we only care about the pointer, not the variable
         const variableSourceAndPointer = `${sourceAndPointer}/variables/${index}`;
         const assignment = makeAssignment(
-          inModifier
-            ? {
-                compilationId,
-                astRef: variableSourceAndPointer,
-                stackframe: currentDepth,
-                modifierDepth
-              }
-            : {
-                compilationId,
-                astRef: variableSourceAndPointer,
-                stackframe: currentDepth
-              },
+          {
+            compilationId,
+            internalFor,
+            astRef: variableSourceAndPointer,
+            stackframe: currentDepth,
+            modifierDepth: inModifier ? modifierDepth : null
+          },
           {
             location: "stack",
             from: position, //all Yul variables are size 1
@@ -824,34 +811,36 @@ function* variablesAndMappingsSaga() {
 function* decodeMappingKeySaga(indexDefinition, keyDefinition) {
   //something of a HACK -- cleans any out-of-range booleans
   //resulting from the main mapping key decoding loop
-  let indexValue = yield* decodeMappingKeyCore(indexDefinition, keyDefinition);
+  const indexValue = yield* decodeMappingKeyCore(
+    indexDefinition,
+    keyDefinition
+  );
   return indexValue ? Codec.Conversion.cleanBool(indexValue) : indexValue;
 }
 
 function* decodeMappingKeyCore(indexDefinition, keyDefinition) {
-  let scopes = yield select(data.current.scopes.inlined);
-  let compilationId = yield select(data.current.compilationId);
-  let currentAssignments = yield select(data.proc.assignments);
-  let currentDepth = yield select(data.current.functionDepth);
-  let modifierDepth = yield select(data.current.modifierDepth);
-  let inModifier = yield select(data.current.inModifier);
+  const scopes = yield select(data.current.scopes.inlined);
+  const compilationId = yield select(data.current.compilationId);
+  const currentAssignments = yield select(data.proc.assignments);
+  const currentDepth = yield select(data.current.functionDepth);
+  const modifierDepth = yield select(data.current.modifierDepth);
+  const inModifier = yield select(data.current.inModifier);
 
   //why the loop? see the end of the block it heads for an explanatory
   //comment
   while (true) {
-    let indexId = indexDefinition.id;
+    const indexId = indexDefinition.id;
     //indices need to be identified by stackframe
-    let indexIdObj = inModifier
-      ? {
-          compilationId,
-          astRef: indexId,
-          stackframe: currentDepth,
-          modifierDepth
-        }
-      : { compilationId, astRef: indexId, stackframe: currentDepth };
-    let fullIndexId = stableKeccak256(indexIdObj);
+    const indexIdObj = {
+      compilationId,
+      internalFor: null, //no mapping keys in Yul :)
+      astRef: indexId,
+      stackframe: currentDepth,
+      modifierDepth: inModifier ? modifierDepth : null
+    };
+    const fullIndexId = stableKeccak256(indexIdObj);
 
-    const indexReference = (currentAssignments.byId[fullIndexId] || {}).ref;
+    const indexReference = (currentAssignments[fullIndexId] || {}).ref;
 
     if (Codec.Ast.Utils.isSimpleConstant(indexDefinition)) {
       //while the main case is the next one, where we look for a prior
@@ -1024,14 +1013,13 @@ function literalAssignments(
   }
 
   let assignment = makeAssignment(
-    inModifier
-      ? {
-          compilationId,
-          astRef: node.id,
-          stackframe: currentDepth,
-          modifierDepth
-        }
-      : { compilationId, astRef: node.id, stackframe: currentDepth },
+    {
+      compilationId,
+      internalFor: null, //generated sources are never solidity
+      astRef: node.id,
+      stackframe: currentDepth,
+      modifierDepth: inModifier ? modifierDepth : null
+    },
     { location: "stackliteral", literal }
   );
 
@@ -1062,14 +1050,13 @@ function assignParameters(
       to: currentPosition
     };
     let assignment = makeAssignment(
-      forModifier
-        ? {
-            compilationId,
-            astRef: parameter.id,
-            stackframe: functionDepth,
-            modifierDepth
-          }
-        : { compilationId, astRef: parameter.id, stackframe: functionDepth },
+      {
+        compilationId,
+        internalFor: null, //generated sources are never Solidity
+        astRef: parameter.id,
+        stackframe: functionDepth,
+        modifierDepth: forModifier ? modifierDepth : null
+      },
       pointer
     );
     assignments[assignment.id] = assignment;
@@ -1087,27 +1074,20 @@ function fetchBasePath(
   modifierDepth,
   inModifier
 ) {
-  const fullId = stableKeccak256(
-    inModifier
-      ? {
-          compilationId,
-          astRef: baseNode.id,
-          stackframe: currentDepth,
-          modifierDepth
-        }
-      : {
-          compilationId,
-          astRef: baseNode.id,
-          stackframe: currentDepth
-        }
-  );
+  const fullId = stableKeccak256({
+    compilationId,
+    internalFor: null, //generated sources are never Solidity
+    astRef: baseNode.id,
+    stackframe: currentDepth,
+    modifierDepth: inModifier ? modifierDepth : null
+  });
   debug("astId: %d", baseNode.id);
   debug("stackframe: %d", currentDepth);
   debug("fullId: %s", fullId);
   debug("currentAssignments: %O", currentAssignments);
   //base expression is an expression, and so has a literal assigned to
   //it (unless it doesn't, in which case we have to handle that case)
-  const baseAssignment = currentAssignments.byId[fullId];
+  const baseAssignment = currentAssignments[fullId];
   if (baseAssignment) {
     const offset = Codec.Conversion.toBN(baseAssignment.ref.literal);
     return { offset };
