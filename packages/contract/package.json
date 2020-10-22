@@ -27,10 +27,10 @@
     "ethers": "^4.0.0-beta.1",
     "source-map-support": "^0.5.19",
     "web3": "1.2.9",
-    "web3-core-helpers": "1.2.1",
-    "web3-core-promievent": "1.2.1",
-    "web3-eth-abi": "1.2.1",
-    "web3-utils": "1.2.1"
+    "web3-core-helpers": "1.2.9",
+    "web3-core-promievent": "1.2.9",
+    "web3-eth-abi": "1.2.9",
+    "web3-utils": "1.2.9"
   },
   "devDependencies": {
     "browserify": "^14.0.0",
