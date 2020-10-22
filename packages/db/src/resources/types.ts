@@ -110,6 +110,10 @@ export type Collections = {
       resourcesMutate: "projectNamesAssign";
     };
   };
+  networkGenealogies: {
+    resource: DataModel.INetworkGenealogy;
+    input: DataModel.INetworkGenealogyInput;
+  };
 };
 
 export type CollectionName = Meta.CollectionName<Collections>;
