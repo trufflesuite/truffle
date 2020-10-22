@@ -1,8 +1,5 @@
-import {
-  WorkspaceRequest,
-  toIdObject,
-  WorkspaceResponse
-} from "@truffle/db/loaders/types";
+import { WorkspaceRequest, WorkspaceResponse } from "@truffle/db/loaders/types";
+import { toIdObject } from "@truffle/db/meta";
 
 import { AddNameRecords } from "./add.graphql";
 export { AddNameRecords };
@@ -56,5 +53,5 @@ export function* generateNameRecordsLoad(
     variables: { nameRecords }
   };
 
-  return result.data.workspace.nameRecordsAdd.nameRecords;
+  return result.data.nameRecordsAdd.nameRecords;
 }

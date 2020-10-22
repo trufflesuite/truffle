@@ -152,159 +152,147 @@ const artifacts = [
   ))
 ];
 
-const GetWorkspaceBytecode: boolean = gql`
+const GetWorkspaceBytecode = gql`
   query GetWorkspaceBytecode($id: ID!) {
-    workspace {
-      bytecode(id: $id) {
-        id
-        bytes
-        linkReferences {
-          offsets
-          name
-          length
-        }
+    bytecode(id: $id) {
+      id
+      bytes
+      linkReferences {
+        offsets
+        name
+        length
       }
     }
   }
 `;
 
-const GetWorkspaceSource: boolean = gql`
+const GetWorkspaceSource = gql`
   query GetWorkspaceSource($id: ID!) {
-    workspace {
-      source(id: $id) {
-        id
-        contents
-        sourcePath
-      }
+    source(id: $id) {
+      id
+      contents
+      sourcePath
     }
   }
 `;
 
 const GetWorkspaceContract = gql`
   query GetWorkspaceContract($id: ID!) {
-    workspace {
-      contract(id: $id) {
-        id
-        name
-        abi {
+    contract(id: $id) {
+      id
+      name
+      abi {
+        json
+      }
+      createBytecode {
+        bytes
+      }
+      callBytecode {
+        bytes
+      }
+      processedSource {
+        source {
+          contents
+          sourcePath
+        }
+        ast {
           json
         }
-        createBytecode {
-          bytes
-        }
-        callBytecode {
-          bytes
-        }
-        processedSource {
-          source {
-            contents
-            sourcePath
-          }
-          ast {
-            json
-          }
-        }
-        compilation {
-          compiler {
-            name
-            version
-          }
-          sources {
-            contents
-            sourcePath
-          }
-          processedSources {
-            source {
-              contents
-              sourcePath
-            }
-          }
-        }
       }
-    }
-  }
-`;
-
-const GetWorkspaceCompilation: boolean = gql`
-  query getWorkspaceCompilation($id: ID!) {
-    workspace {
-      compilation(id: $id) {
+      compilation {
         compiler {
           name
           version
+        }
+        sources {
+          contents
+          sourcePath
         }
         processedSources {
           source {
             contents
             sourcePath
           }
-          ast {
-            json
-          }
         }
-        sources {
-          id
+      }
+    }
+  }
+`;
+
+const GetWorkspaceCompilation = gql`
+  query getWorkspaceCompilation($id: ID!) {
+    compilation(id: $id) {
+      compiler {
+        name
+        version
+      }
+      processedSources {
+        source {
           contents
           sourcePath
         }
-        sourceMaps {
+        ast {
           json
         }
       }
-    }
-  }
-`;
-
-const GetWorkspaceNetwork: boolean = gql`
-  query GetWorkspaceNetwork($id: ID!) {
-    workspace {
-      network(id: $id) {
-        networkId
+      sources {
         id
-        name
-        historicBlock {
-          height
-          hash
-        }
+        contents
+        sourcePath
+      }
+      sourceMaps {
+        json
       }
     }
   }
 `;
 
-const GetWorkspaceContractInstance: boolean = gql`
+const GetWorkspaceNetwork = gql`
+  query GetWorkspaceNetwork($id: ID!) {
+    network(id: $id) {
+      networkId
+      id
+      name
+      historicBlock {
+        height
+        hash
+      }
+    }
+  }
+`;
+
+const GetWorkspaceContractInstance = gql`
   query GetContractInstance($id: ID!) {
-    workspace {
-      contractInstance(id: $id) {
-        address
-        network {
-          networkId
-        }
-        contract {
-          name
-        }
-        creation {
-          transactionHash
-          constructor {
-            createBytecode {
-              bytecode {
-                bytes
-                linkReferences {
-                  offsets
-                  name
-                  length
-                }
+    contractInstance(id: $id) {
+      address
+      network {
+        networkId
+      }
+      contract {
+        name
+      }
+      creation {
+        transactionHash
+        constructor {
+          createBytecode {
+            bytecode {
+              bytes
+              linkReferences {
+                offsets
+                name
+                length
               }
             }
           }
         }
-        callBytecode {
-          bytecode {
-            bytes
-            linkReferences {
-              offsets
-              name
-              length
-            }
+      }
+      callBytecode {
+        bytecode {
+          bytes
+          linkReferences {
+            offsets
+            name
+            length
           }
         }
       }
@@ -441,9 +429,7 @@ describe("Compilation", () => {
     // setting up a fake previous contract to test previous name record
     const {
       data: {
-        workspace: {
-          projectsAdd: { projects }
-        }
+        projectsAdd: { projects }
       }
     } = await db.query(AddProjects, {
       projects: [
@@ -489,7 +475,7 @@ describe("Compilation", () => {
     });
 
     contractNameRecordId =
-      contractNameRecord.data.workspace.nameRecordsAdd.nameRecords[0].id;
+      contractNameRecord.data.nameRecordsAdd.nameRecords[0].id;
 
     await db.query(AssignProjectNames, {
       projectNames: [
@@ -557,7 +543,7 @@ describe("Compilation", () => {
       })
     );
 
-    const solcCompilation = compilationsQuery[0].data.workspace.compilation;
+    const solcCompilation = compilationsQuery[0].data.compilation;
 
     expect(solcCompilation.compiler.version).toEqual(
       artifacts[0].compiler.version
@@ -577,7 +563,7 @@ describe("Compilation", () => {
       ).toBeDefined();
     });
 
-    const vyperCompilation = compilationsQuery[1].data.workspace.compilation;
+    const vyperCompilation = compilationsQuery[1].data.compilation;
     expect(vyperCompilation.compiler.version).toEqual(
       artifacts[3].compiler.version
     );
@@ -593,9 +579,7 @@ describe("Compilation", () => {
     for (let index in sourceIds) {
       let {
         data: {
-          workspace: {
-            source: { contents, sourcePath }
-          }
+          source: { contents, sourcePath }
         }
       } = await db.query(GetWorkspaceSource, sourceIds[index]);
 
@@ -608,9 +592,7 @@ describe("Compilation", () => {
     for (let index in bytecodeIds) {
       let {
         data: {
-          workspace: {
-            bytecode: { bytes }
-          }
+          bytecode: { bytes }
         }
       } = await db.query(GetWorkspaceBytecode, bytecodeIds[index]);
 
@@ -663,19 +645,17 @@ describe("Compilation", () => {
 
       let {
         data: {
-          workspace: {
-            contract: {
-              id,
-              name,
-              processedSource: {
-                source: { contents }
-              },
-              compilation: {
-                compiler: { version }
-              },
-              createBytecode,
-              callBytecode
-            }
+          contract: {
+            id,
+            name,
+            processedSource: {
+              source: { contents }
+            },
+            compilation: {
+              compiler: { version }
+            },
+            createBytecode,
+            callBytecode
           }
         }
       } = await db.query(GetWorkspaceContract, contractIds[index]);
@@ -697,9 +677,7 @@ describe("Compilation", () => {
 
       const {
         data: {
-          workspace: {
-            project: { resolve }
-          }
+          project: { resolve }
         }
       } = await db.query(ResolveProjectName, {
         projectId,
@@ -717,9 +695,7 @@ describe("Compilation", () => {
     for (let index in migratedArtifacts) {
       let {
         data: {
-          workspace: {
-            network: { name, networkId, historicBlock }
-          }
+          network: { name, networkId, historicBlock }
         }
       } = await db.query(GetWorkspaceNetwork, netIds[index]);
 
@@ -733,21 +709,19 @@ describe("Compilation", () => {
     for (const contractInstanceId of contractInstanceIds) {
       let {
         data: {
-          workspace: {
-            contractInstance: {
-              address,
-              network: { networkId },
-              contract: { name },
-              creation: {
-                transactionHash,
-                constructor: {
-                  createBytecode: {
-                    bytecode: { bytes, linkReferences }
-                  }
+          contractInstance: {
+            address,
+            network: { networkId },
+            contract: { name },
+            creation: {
+              transactionHash,
+              constructor: {
+                createBytecode: {
+                  bytecode: { bytes, linkReferences }
                 }
-              },
-              callBytecode: { bytecode }
-            }
+              }
+            },
+            callBytecode: { bytecode }
           }
         }
       } = await db.query(GetWorkspaceContractInstance, contractInstanceId);

@@ -3,7 +3,6 @@ packages/**/node_modules
 node_modules
 yarn-error.log
 .vscode
-bin
 .DS_Store
 
 # truffle

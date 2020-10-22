@@ -1,7 +1,8 @@
+import { toIdObject } from "@truffle/db/meta";
+
 import {
   CompilationData,
   LoadedSources,
-  toIdObject,
   WorkspaceRequest,
   WorkspaceResponse
 } from "@truffle/db/loaders/types";
@@ -25,7 +26,7 @@ export function* generateSourcesLoad(
     variables: { sources: inputs }
   };
 
-  const { sources } = result.data.workspace.sourcesAdd;
+  const { sources } = result.data.sourcesAdd;
 
   // return source IDs mapped by sourcePath
   return sources.reduce(

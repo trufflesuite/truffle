@@ -1,8 +1,5 @@
-import {
-  IdObject,
-  WorkspaceRequest,
-  WorkspaceResponse
-} from "@truffle/db/loaders/types";
+import { WorkspaceRequest, WorkspaceResponse } from "@truffle/db/loaders/types";
+import { IdObject } from "@truffle/db/meta";
 
 import { AddProjects } from "./add.graphql";
 import { AssignProjectNames } from "./assign.graphql";
@@ -23,7 +20,7 @@ export function* generateProjectLoad(
     }
   };
 
-  return result.data.workspace.projectsAdd.projects[0];
+  return result.data.projectsAdd.projects[0];
 }
 
 export function* generateProjectNameResolve(
@@ -44,7 +41,7 @@ export function* generateProjectNameResolve(
     }
   };
 
-  return result.data.workspace.project.resolve[0];
+  return result.data.project.resolve[0];
 }
 
 export function* generateProjectNamesAssign(

@@ -1,18 +1,15 @@
 import { GraphQLSchema, DocumentNode, parse, execute } from "graphql";
-import { schema } from "@truffle/db/data";
 import { generateCompileLoad } from "@truffle/db/loaders/commands";
-import {
-  WorkspaceRequest,
-  WorkspaceResponse,
-  toIdObject,
-  NamedResource
-} from "@truffle/db/loaders/types";
+import { WorkspaceRequest, WorkspaceResponse } from "@truffle/db/loaders/types";
 import { WorkflowCompileResult } from "@truffle/compile-common";
-import { Workspace } from "@truffle/db/workspace";
+import { schema } from "./schema";
+import { connect } from "./connect";
+import { Context } from "./definitions";
 import {
   generateInitializeLoad,
   generateNamesLoad
 } from "@truffle/db/loaders/commands";
+import { toIdObject, NamedResource } from "@truffle/db/meta";
 
 interface IConfig {
   contracts_build_directory: string;
@@ -26,29 +23,17 @@ interface IConfig {
   };
 }
 
-interface IContext {
-  artifactsDirectory: string;
-  workingDirectory: string;
-  contractsDirectory: string;
-  workspace: Workspace;
-  db: ITruffleDB;
-}
-
-interface ITruffleDB {
-  query: (query: DocumentNode | string, variables: any) => Promise<any>;
-}
-
 type LoaderOptions = {
   names: boolean;
 };
 
 export class TruffleDB {
   schema: GraphQLSchema;
-  context: IContext;
+  private context: Context;
 
   constructor(config: IConfig) {
-    this.context = this.createContext(config);
     this.schema = schema;
+    this.context = this.createContext(config);
   }
 
   async query(query: DocumentNode | string, variables: any = {}): Promise<any> {
@@ -121,16 +106,13 @@ export class TruffleDB {
     return { compilations, contracts };
   }
 
-  createContext(config: IConfig): IContext {
+  private createContext(config: IConfig): Context {
     return {
-      workspace: new Workspace({
+      workspace: connect({
         workingDirectory: config.working_directory,
         adapter: (config.db || {}).adapter
       }),
-      artifactsDirectory: config.contracts_build_directory,
-      workingDirectory: config.working_directory || process.cwd(),
-      contractsDirectory: config.contracts_directory,
-      db: this
+      workingDirectory: config.working_directory || process.cwd()
     };
   }
 }
