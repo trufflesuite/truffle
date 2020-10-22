@@ -1,4 +1,5 @@
 import { GraphQLSchema, DocumentNode, parse, execute } from "graphql";
+import type TruffleConfig from "@truffle/config";
 import { generateCompileLoad } from "@truffle/db/loaders/commands";
 import { WorkspaceRequest, WorkspaceResponse } from "@truffle/db/loaders/types";
 import { WorkflowCompileResult } from "@truffle/compile-common";
@@ -11,18 +12,6 @@ import {
 } from "@truffle/db/loaders/commands";
 import { toIdObject, NamedResource } from "@truffle/db/meta";
 
-interface IConfig {
-  contracts_build_directory: string;
-  contracts_directory: string;
-  working_directory?: string;
-  db?: {
-    adapter?: {
-      name: string;
-      settings?: any;
-    };
-  };
-}
-
 type LoaderOptions = {
   names: boolean;
 };
@@ -31,7 +20,7 @@ export class TruffleDB {
   schema: GraphQLSchema;
   private context: Context;
 
-  constructor(config: IConfig) {
+  constructor(config: TruffleConfig) {
     this.schema = schema;
     this.context = this.createContext(config);
   }
@@ -106,7 +95,7 @@ export class TruffleDB {
     return { compilations, contracts };
   }
 
-  private createContext(config: IConfig): Context {
+  private createContext(config: TruffleConfig): Context {
     return {
       workspace: connect({
         workingDirectory: config.working_directory,
