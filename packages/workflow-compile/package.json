@@ -23,6 +23,7 @@
     "@truffle/expect": "^0.0.15",
     "@truffle/external-compile": "^2.0.2",
     "@truffle/resolver": "^6.0.23",
+    "@truffle/db": "^0.1.0-3",
     "fs-extra": "^8.1.0"
   },
   "devDependencies": {
