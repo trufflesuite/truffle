@@ -4,7 +4,7 @@
   "license": "MIT",
   "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/box",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "main": "dist/box.js",
   "scripts": {
     "build": "tsc",
@@ -13,7 +13,7 @@
   },
   "types": "./typings/index.d.ts",
   "dependencies": {
-    "@truffle/config": "^1.2.31",
+    "@truffle/config": "^1.2.32",
     "download-git-repo": "^3.0.2",
     "fs-extra": "^8.1.0",
     "ignore": "^5.1.8",
