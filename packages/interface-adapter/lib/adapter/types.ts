@@ -3,14 +3,14 @@ import {
   BlockType as EvmBlockType,
   Tx as EvmTransaction
 } from "web3/eth/types";
-import { TransactionReceipt as EvmTransactionReceipt } from "web3/types";
+import { TransactionReceipt as EvmTransactionReceipt } from "web3-eth/types";
 
 export {
   Block as EvmBlock,
   BlockType as EvmBlockType,
   Tx as EvmTransaction
 } from "web3/eth/types";
-export { TransactionReceipt as EvmTransactionReceipt } from "web3/types";
+export { TransactionReceipt as EvmTransactionReceipt } from "web3-eth/types";
 export { Provider } from "web3/providers";
 export type NetworkId = Number | String;
 export type Block = EvmBlock | any;

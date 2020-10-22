@@ -1,32 +1,29 @@
 {
   "name": "@truffle/db",
-  "version": "0.1.0-3",
   "description": "Smart contract data aggregation",
-  "keywords": [
-    "truffle",
-    "smart-contracts",
-    "ethereum",
-    "database"
-  ],
+  "license": "MIT",
   "author": "g. nicholas d'andrea <gnidan@users.noreply.github.com>",
   "homepage": "https://github.com/trufflesuite/truffle#readme",
-  "license": "MIT",
-  "main": "dist/src/index.js",
-  "directories": {
-    "dist": "dist"
-  },
-  "files": [
-    "dist",
-    "types/schema.d.ts"
-  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/trufflesuite/truffle.git"
   },
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "version": "0.1.0-3",
+  "main": "dist/src/index.js",
+  "files": [
+    "dist",
+    "types/schema.d.ts"
+  ],
+  "directories": {
+    "dist": "dist"
+  },
   "scripts": {
+    "build": "./bin/build",
     "clean": "rm -rf ./dist ./types/schema.d.ts",
     "prepare": "yarn build",
-    "build": "./bin/build",
     "start": "ts-node-dev -r tsconfig-paths/register ./bin/server",
     "start:debug": "DEBUG=pouchdb:api ts-node-dev -r tsconfig-paths/register ./bin/server",
     "start:drizzle": "ts-node-dev -r tsconfig-paths/register ./bin/server ./test/truffle-projects/drizzle-box",
@@ -34,8 +31,27 @@
     "madge": "madge ./src/db.ts",
     "test": "jest --verbose --detectOpenHandles"
   },
-  "bugs": {
-    "url": "https://github.com/trufflesuite/truffle/issues"
+  "dependencies": {
+    "@truffle/compile-common": "^0.4.1",
+    "@truffle/workflow-compile": "^3.0.4",
+    "apollo-server": "^2.18.2",
+    "fse": "^4.0.1",
+    "graphql": "^15.3.0",
+    "graphql-tag": "^2.11.0",
+    "graphql-tools": "^6.2.4",
+    "jsondown": "^1.0.0",
+    "leveldown": "^5.2.0",
+    "module-alias": "^2.1.0",
+    "pascal-case": "^2.0.1",
+    "pluralize": "^8.0.0",
+    "pouchdb": "7.1.1",
+    "pouchdb-adapter-memory": "^7.1.1",
+    "pouchdb-adapter-node-websql": "^7.0.0",
+    "pouchdb-debug": "^7.1.1",
+    "pouchdb-find": "^7.0.0",
+    "source-map-support": "^0.5.9",
+    "web3": "1.2.9",
+    "web3-utils": "1.2.2"
   },
   "devDependencies": {
     "@gql2ts/from-schema": "^2.0.0-4",
@@ -58,28 +74,19 @@
     "ttypescript": "^1.5.7",
     "typescript": "^3.6.3"
   },
-  "dependencies": {
-    "@truffle/compile-common": "^0.4.1",
-    "@truffle/workflow-compile": "^3.0.4",
-    "apollo-server": "^2.18.2",
-    "fse": "^4.0.1",
-    "graphql": "^15.3.0",
-    "graphql-tag": "^2.11.0",
-    "graphql-tools": "^6.2.4",
-    "jsondown": "^1.0.0",
-    "leveldown": "^5.2.0",
-    "module-alias": "^2.1.0",
-    "pascal-case": "^2.0.1",
-    "pluralize": "^8.0.0",
-    "pouchdb": "7.1.1",
-    "pouchdb-adapter-memory": "^7.1.1",
-    "pouchdb-adapter-node-websql": "^7.0.0",
-    "pouchdb-debug": "^7.1.1",
-    "pouchdb-find": "^7.0.0",
-    "source-map-support": "^0.5.9",
-    "web3": "1.2.2",
-    "web3-utils": "1.2.2"
+  "keywords": [
+    "database",
+    "ethereum",
+    "smart-contracts",
+    "truffle"
+  ],
+  "publishConfig": {
+    "access": "public"
   },
+  "_moduleAliases": {
+    "@truffle/db": "db/dist/src"
+  },
+  "gitHead": "4c327e21da2e7abebcc1d78879a8d6f0eb7d802c",
   "jest": {
     "moduleFileExtensions": [
       "ts",
@@ -108,12 +115,5 @@
       "<rootDir>/src/**/test/*\\.(spec|test)\\.(ts|js)",
       "<rootDir>/test/**/test/*\\.(spec|test)\\.(ts|js)"
     ]
-  },
-  "_moduleAliases": {
-    "@truffle/db": "db/dist/src"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "gitHead": "4c327e21da2e7abebcc1d78879a8d6f0eb7d802c"
+  }
 }
