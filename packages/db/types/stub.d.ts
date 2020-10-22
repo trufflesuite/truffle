@@ -43,6 +43,8 @@ declare namespace DataModel {
   type SourceRange = any;
   type SourcesAddInput = any;
   type SourcesAddPayload = any;
+  type NetworkGenealogy = any;
+  type NetworkGenealogyInput = any;
 
   type Query = any;
   type Mutation = any;
