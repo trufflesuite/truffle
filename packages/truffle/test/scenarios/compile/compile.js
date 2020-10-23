@@ -1,14 +1,14 @@
 const MemoryLogger = require("../memorylogger");
 const CommandRunner = require("../commandrunner");
-const fs = require("fs");
 const path = require("path");
 const assert = require("assert");
 const Server = require("../server");
 const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const log = console.log;
+const fse = require("fs-extra");
 
-describe("Repeated compilation of contracts with inheritance [ @standalone ]", function() {
+describe("Repeated compilation of contracts with inheritance [ @standalone ]", function () {
   let config,
     sourcePaths,
     artifactPaths,
@@ -44,13 +44,13 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
   }
 
   function getSource(key) {
-    return fs.readFileSync(mapping[key].sourcePath);
+    return fse.readFileSync(mapping[key].sourcePath);
   }
 
   function getArtifactStats() {
     const stats = {};
     names.forEach(key => {
-      const mDate = fs.statSync(mapping[key].artifactPath).mtime.getTime();
+      const mDate = fse.statSync(mapping[key].artifactPath).mtime.getTime();
       stats[key] = mDate;
     });
     return stats;
@@ -58,26 +58,33 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
 
   function touchSource(key) {
     const source = getSource(key);
-    fs.writeFileSync(mapping[key].sourcePath, source);
+    fse.writeFileSync(mapping[key].sourcePath, source);
+  }
+
+  function checkForDb(config) {
+    const dbPath = path.join(config.working_directory, ".db/contracts");
+    const dbExists = fse.pathExistsSync(dbPath);
+    return dbExists;
   }
 
   // ----------------------- Setup -----------------------------
 
-  before("set up the server", function(done) {
+  before("set up the server", function (done) {
     Server.start(done);
   });
 
-  after("stop server", function(done) {
+  after("stop server", function (done) {
     Server.stop(done);
   });
 
-  beforeEach("set up sandbox and do initial compile", async function() {
+  beforeEach("set up sandbox and do initial compile", async function () {
     this.timeout(30000);
 
     const conf = await sandbox.create(project);
     config = conf;
     config.network = "development";
     config.logger = logger;
+    config.db = { enabled: true };
     config.mocha = {
       reporter: new Reporter(logger)
     };
@@ -119,7 +126,7 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
   //                   LeafB              |
   // ------------------------------------------------------------
 
-  it("Updates only Root when Root is touched", async function() {
+  it("Updates only Root when Root is touched", async function () {
     this.timeout(30000);
 
     touchSource("Root");
@@ -174,7 +181,7 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
   //                   LeafB              |
   // ------------------------------------------------------------
 
-  it("Updates Root and Library when Library is touched", async function() {
+  it("Updates Root and Library when Library is touched", async function () {
     this.timeout(30000);
 
     touchSource("LibraryA");
@@ -229,7 +236,7 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
   //                   LeafB              |
   // ------------------------------------------------------------
 
-  it("Updates Branch and Root when Branch is touched", async function() {
+  it("Updates Branch and Root when Branch is touched", async function () {
     this.timeout(30000);
 
     touchSource("Branch");
@@ -284,7 +291,7 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
   //                    LeafB              |
   // ------------------------------------------------------------
 
-  it("Updates LeafA, Branch and Root when LeafA is touched", async function() {
+  it("Updates LeafA, Branch and Root when LeafA is touched", async function () {
     this.timeout(30000);
 
     touchSource("LeafA");
@@ -339,7 +346,7 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
   //                   LeafB*              |
   // ------------------------------------------------------------
 
-  it("Updates everything except LibraryA when LeafC is touched", async function() {
+  it("Updates everything except LibraryA when LeafC is touched", async function () {
     this.timeout(30000);
 
     touchSource("LeafC");
@@ -383,5 +390,11 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
       err.message += "\n\n" + output;
       throw new Error(err);
     }
+  });
+
+  it("creates a .db directory when db is enabled", async () => {
+    await CommandRunner.run("compile", config);
+    const dbExists = await checkForDb(config);
+    assert(dbExists === true);
   });
 });
