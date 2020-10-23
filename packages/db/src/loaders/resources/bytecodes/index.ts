@@ -17,7 +17,7 @@ export function* generateBytecodesLoad(
 ): Generator<
   WorkspaceRequest,
   LoadedBytecodes,
-  WorkspaceResponse<"bytecodesAdd", DataModel.IBytecodesAddPayload>
+  WorkspaceResponse<"bytecodesAdd", DataModel.BytecodesAddPayload>
 > {
   // we're flattening in order to send all bytecodes in one big list
   // (it's okay, we're gonna recreate the structure before we return)

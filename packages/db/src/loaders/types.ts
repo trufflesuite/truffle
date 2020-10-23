@@ -13,12 +13,12 @@ export interface CompilationData {
 
 export interface SourceData {
   index: number;
-  input: DataModel.ISourceInput;
+  input: DataModel.SourceInput;
   contracts: CompiledContract[];
 }
 
 export interface LoadedSources {
-  [sourcePath: string]: IdObject<DataModel.ISource>;
+  [sourcePath: string]: IdObject<DataModel.Source>;
 }
 
 // we track loaded bytecodes using the same structure as CompilationData:
@@ -28,8 +28,8 @@ export interface LoadedSources {
 export interface LoadedBytecodes {
   sources: {
     contracts: {
-      createBytecode: IdObject<DataModel.IBytecode>;
-      callBytecode: IdObject<DataModel.IBytecode>;
+      createBytecode: IdObject<DataModel.Bytecode>;
+      callBytecode: IdObject<DataModel.Bytecode>;
     }[];
   }[];
 }

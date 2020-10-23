@@ -74,7 +74,7 @@ export class TruffleDB {
     return current.value;
   }
 
-  async loadNames(project: DataModel.IProject, resources: NamedResource[]) {
+  async loadNames(project: DataModel.Project, resources: NamedResource[]) {
     return await this.runLoader(
       generateNamesLoad,
       toIdObject(project),
@@ -82,7 +82,7 @@ export class TruffleDB {
     );
   }
 
-  async loadProject(): Promise<DataModel.IProject> {
+  async loadProject(): Promise<DataModel.Project> {
     return await this.runLoader(generateInitializeLoad, {
       directory: this.context.workingDirectory
     });

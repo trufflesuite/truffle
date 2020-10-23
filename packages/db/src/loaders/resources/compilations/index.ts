@@ -13,13 +13,13 @@ export { GetCompilation } from "./get.graphql";
 const compilationSourceInputs = ({
   compilation,
   sources
-}: LoadableCompilation): DataModel.IResourceReferenceInput[] =>
+}: LoadableCompilation): DataModel.ResourceReferenceInput[] =>
   compilation.sources.map(({ input: { sourcePath } }) => sources[sourcePath]);
 
 const compilationProcessedSourceInputs = ({
   compilation,
   sources
-}: LoadableCompilation): DataModel.IProcessedSourceInput[] =>
+}: LoadableCompilation): DataModel.ProcessedSourceInput[] =>
   compilation.sources.map(({ input: { sourcePath }, contracts }) => ({
     source: sources[sourcePath],
     // PRECONDITION: all contracts in the same compilation with the same
@@ -31,7 +31,7 @@ const compilationProcessedSourceInputs = ({
 
 const compilationSourceMapInputs = ({
   compilation
-}: LoadableCompilation): DataModel.ISourceMapInput[] => {
+}: LoadableCompilation): DataModel.SourceMapInput[] => {
   const contracts = compilation.sources
     .map(({ contracts }) => contracts)
     .flat();
@@ -48,7 +48,7 @@ const compilationSourceMapInputs = ({
 
 const compilationInput = (
   data: LoadableCompilation
-): DataModel.ICompilationInput => ({
+): DataModel.CompilationInput => ({
   compiler: data.compilation.compiler,
   processedSources: compilationProcessedSourceInputs(data),
   sources: compilationSourceInputs(data),
@@ -64,8 +64,8 @@ export function* generateCompilationsLoad(
   loadableCompilations: LoadableCompilation[]
 ): Generator<
   WorkspaceRequest,
-  DataModel.ICompilation[],
-  WorkspaceResponse<"compilationsAdd", DataModel.ICompilationsAddPayload>
+  DataModel.Compilation[],
+  WorkspaceResponse<"compilationsAdd", DataModel.CompilationsAddPayload>
 > {
   const compilations = loadableCompilations.map(compilationInput);
 
