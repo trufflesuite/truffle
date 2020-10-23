@@ -34,15 +34,46 @@ export interface LoadedBytecodes {
   }[];
 }
 
-export interface WorkspaceRequest {
+export interface LoadRequest<_N extends RequestName | string> {
   request: string | graphql.DocumentNode; // GraphQL request
   variables: {
     [name: string]: any;
   };
 }
 
-export type WorkspaceResponse<N extends string = string, R = any> = {
-  data: {
-    [RequestName in N]: R;
-  };
-};
+type Data<O, N extends string | keyof O> = string extends N
+  ? Partial<O>
+  : N extends keyof O
+  ? Partial<Pick<O, N>>
+  : never;
+
+export type QueryName = keyof DataModel.Query;
+export type QueryData<N extends string | QueryName> = Data<DataModel.Query, N>;
+
+export type MutationName = keyof DataModel.Mutation;
+export type MutationData<N extends string | MutationName> = Data<
+  DataModel.Mutation,
+  N
+>;
+
+export type RequestName = QueryName | MutationName;
+export type RequestData<N extends RequestName | string> = string extends N
+  ? Data<DataModel.Query & DataModel.Mutation, N>
+  : Data<DataModel.Query, N> | Data<DataModel.Mutation, N>;
+
+export interface LoadResponse<N extends RequestName | string> {
+  data: RequestData<N>;
+}
+
+export type Load<
+  T = any,
+  N extends RequestName | string = string
+> = string extends N
+  ? Generator<any, T, any> // HACK to get TS to play nice, sorry
+  : Generator<LoadRequest<N>, T, LoadResponse<N>>;
+
+export type Loader<
+  A extends unknown[],
+  T = any,
+  N extends RequestName | string = string
+> = (...args: A) => Load<T, N>;

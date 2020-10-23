@@ -1,4 +1,4 @@
-import { WorkspaceRequest, WorkspaceResponse } from "@truffle/db/loaders/types";
+import { Load } from "@truffle/db/loaders/types";
 import { toIdObject } from "@truffle/db/meta";
 
 import { AddNameRecords } from "./add.graphql";
@@ -12,21 +12,13 @@ interface Resource {
 type ResolveFunc = (
   name: string,
   type: string
-) => Generator<
-  WorkspaceRequest,
-  DataModel.NameRecord | null,
-  WorkspaceResponse
->;
+) => Load<DataModel.NameRecord | null>;
 
 export function* generateNameRecordsLoad(
   resources: Resource[],
   type: string,
   getCurrent: ResolveFunc
-): Generator<
-  WorkspaceRequest,
-  DataModel.NameRecord[],
-  WorkspaceResponse<"nameRecordsAdd", DataModel.NameRecordsAddPayload>
-> {
+): Load<DataModel.NameRecord[], "nameRecordsAdd"> {
   const nameRecords = [];
   for (const resource of resources) {
     const { name } = resource;

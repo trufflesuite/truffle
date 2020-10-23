@@ -43,6 +43,9 @@ declare namespace DataModel {
   type SourceRange = any;
   type SourcesAddInput = any;
   type SourcesAddPayload = any;
+
+  type Query = any;
+  type Mutation = any;
 }
 
 // tslint:enable

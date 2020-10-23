@@ -4,7 +4,7 @@ import {
 } from "@truffle/db/loaders/resources/projects";
 
 import { generateNameRecordsLoad } from "@truffle/db/loaders/resources/nameRecords";
-import { WorkspaceRequest, WorkspaceResponse } from "@truffle/db/loaders/types";
+import { Load } from "@truffle/db/loaders/types";
 import { IdObject, NamedResource } from "@truffle/db/meta";
 
 /**
@@ -13,7 +13,7 @@ import { IdObject, NamedResource } from "@truffle/db/meta";
 export function* generateNamesLoad(
   project: IdObject<DataModel.Project>,
   contracts: NamedResource[]
-): Generator<WorkspaceRequest, any, WorkspaceResponse<string>> {
+): Load<void> {
   let getCurrent = function*(name, type) {
     return yield* generateProjectNameResolve(project, name, type);
   };

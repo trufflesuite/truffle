@@ -1,29 +1,27 @@
-import { WorkspaceRequest, WorkspaceResponse } from "./types";
+import { Loader, LoadRequest, RequestName } from "./types";
 
 export type LoaderRunner = <
-  Request extends WorkspaceRequest,
-  Response extends WorkspaceResponse,
-  Args extends unknown[],
-  Return
+  A extends unknown[],
+  T = any,
+  N extends RequestName | string = string
 >(
-  loader: (...args: Args) => Generator<Request, Return, Response>,
-  ...args: Args
-) => Promise<Return>;
+  loader: Loader<A, T, N>,
+  ...args: A
+) => Promise<T>;
 
 export const forDb = (db): LoaderRunner => async <
-  Request extends WorkspaceRequest,
-  Response extends WorkspaceResponse,
   Args extends unknown[],
-  Return
+  Return,
+  N extends RequestName | string
 >(
-  loader: (...args: Args) => Generator<Request, Return, Response>,
+  loader: Loader<Args, Return, N>,
   ...args: Args
-): Promise<Return> => {
+) => {
   const saga = loader(...args);
   let current = saga.next();
 
   while (!current.done) {
-    const { request, variables } = current.value as Request;
+    const { request, variables } = current.value as LoadRequest<N>;
 
     const response = await db.query(request, variables);
 

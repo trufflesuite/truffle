@@ -1,8 +1,7 @@
 import {
   CompilationData,
   LoadedSources,
-  WorkspaceRequest,
-  WorkspaceResponse
+  Load
 } from "@truffle/db/loaders/types";
 
 import { AddCompilations } from "./add.graphql";
@@ -62,11 +61,7 @@ type LoadableCompilation = {
 
 export function* generateCompilationsLoad(
   loadableCompilations: LoadableCompilation[]
-): Generator<
-  WorkspaceRequest,
-  DataModel.Compilation[],
-  WorkspaceResponse<"compilationsAdd", DataModel.CompilationsAddPayload>
-> {
+): Load<DataModel.Compilation[], "compilationsAdd"> {
   const compilations = loadableCompilations.map(compilationInput);
 
   const result = yield {

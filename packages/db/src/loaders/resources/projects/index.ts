@@ -1,4 +1,4 @@
-import { WorkspaceRequest, WorkspaceResponse } from "@truffle/db/loaders/types";
+import { Load } from "@truffle/db/loaders/types";
 import { IdObject } from "@truffle/db/meta";
 
 import { AddProjects } from "./add.graphql";
@@ -8,11 +8,7 @@ export { AddProjects, AssignProjectNames, ResolveProjectName };
 
 export function* generateProjectLoad(
   directory: string
-): Generator<
-  WorkspaceRequest,
-  DataModel.Project,
-  WorkspaceResponse<"projectsAdd", DataModel.ProjectsAddPayload>
-> {
+): Load<DataModel.Project, "projectsAdd"> {
   const result = yield {
     request: AddProjects,
     variables: {
@@ -27,11 +23,7 @@ export function* generateProjectNameResolve(
   project: IdObject<DataModel.Project>,
   name: string,
   type: string
-): Generator<
-  WorkspaceRequest,
-  DataModel.NameRecord,
-  WorkspaceResponse<"project", { resolve: DataModel.Project["resolve"] }>
-> {
+): Load<DataModel.NameRecord, "project"> {
   const result = yield {
     request: ResolveProjectName,
     variables: {
@@ -41,17 +33,15 @@ export function* generateProjectNameResolve(
     }
   };
 
-  return result.data.project.resolve[0];
+  const nameRecord = result.data.project.resolve[0];
+
+  return nameRecord;
 }
 
 export function* generateProjectNamesAssign(
   project: IdObject<DataModel.Project>,
   nameRecords: DataModel.NameRecord[]
-): Generator<
-  WorkspaceRequest,
-  void,
-  WorkspaceResponse<"projectNamesAssign", DataModel.ProjectNamesAssignPayload>
-> {
+): Load<void, "projectNamesAssign"> {
   const projectNames = nameRecords.map(({ id, name, type }) => ({
     project,
     nameRecord: { id },
