@@ -77,6 +77,11 @@ export interface Source {
    */
   source?: string;
   /**
+   * The language for the source file.  For compatibility purposes, this may technicaly
+   * be left out, but please include it.
+   */
+  language?: string;
+  /**
    * The source's abstract syntax tree.
    */
   ast?: Ast.AstNode;
@@ -137,18 +142,12 @@ export interface Contract {
   primarySourceId?: string;
   /**
    * The contract's generated sources object as output by Solidity 0.7.2 or later.
+   * Note that this will be a sparse array.
    */
-  generatedSources?: GeneratedSource[];
+  generatedSources?: Source[];
   /**
    * The contract's deployed generated sources object as output by Solidity 0.7.2 or later.
+   * Note that this will be a sparse array.
    */
-  deployedGeneratedSources?: GeneratedSource[];
-}
-
-interface GeneratedSource {
-  id: number;
-  language: string; //currently always "Yul"
-  name: string; //currently always "#utility.yul"
-  contents: string;
-  ast: Ast.AstNode;
+  deployedGeneratedSources?: Source[];
 }

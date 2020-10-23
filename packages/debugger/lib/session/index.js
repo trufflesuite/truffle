@@ -144,7 +144,7 @@ export default class Session {
           ...source,
           compiler: source.compiler || compiler,
           compilationId: compilation.id,
-          id: Number(index), //these are coming out as strings for some reason
+          id: Number(index), //these are coming out as strings due to the use of in?
           internal: false
         };
       }
@@ -198,17 +198,6 @@ export default class Session {
         debug("compiler %o", compiler);
         debug("abi %o", abi);
 
-        const generatedSourceToInternalSource = (source, contextHash) => ({
-          sourcePath: source.name,
-          source: source.contents,
-          ast: source.ast,
-          compiler, //taken from above!
-          compilationId: compilation.id, //also taken from above
-          id: source.id, //(i.e. index)
-          internal: true,
-          internalFor: contextHash
-        });
-
         if (binary && binary != "0x") {
           //NOTE: we take hash as *string*, not as bytes, because the binary may
           //contain link references!
@@ -232,11 +221,17 @@ export default class Session {
           });
           if (generatedSources) {
             sources[compilation.id].internal[contextHash] = [];
-            for (const source of generatedSources) {
-              const index = source.id;
-              sources[compilation.id].internal[contextHash][
-                index
-              ] = generatedSourceToInternalSource(source, contextHash);
+            for (let index in generatedSources) {
+              //again with in
+              const source = generatedSources[index];
+              sources[compilation.id].internal[contextHash][index] = {
+                ...source,
+                compiler: source.compiler || compiler,
+                compilationId: compilation.id,
+                id: Number(index), //again due to in
+                internal: true,
+                internalFor: contextHash
+              };
             }
           }
         }
@@ -265,11 +260,17 @@ export default class Session {
           });
           if (deployedGeneratedSources) {
             sources[compilation.id].internal[contextHash] = [];
-            for (const source of deployedGeneratedSources) {
-              const index = source.id;
-              sources[compilation.id].internal[contextHash][
-                index
-              ] = generatedSourceToInternalSource(source, contextHash);
+            for (let index in deployedGeneratedSources) {
+              //again with in
+              const source = deployedGeneratedSources[index];
+              sources[compilation.id].internal[contextHash][index] = {
+                ...source,
+                compiler: source.compiler || compiler,
+                compilationId: compilation.id,
+                id: Number(index), //again due to in
+                internal: true,
+                internalFor: contextHash
+              };
             }
           }
         }

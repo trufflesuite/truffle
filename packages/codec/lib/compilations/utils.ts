@@ -3,7 +3,10 @@ const debug = debugModule("codec:compilations:utils");
 
 import * as Ast from "@truffle/codec/ast";
 import * as Compiler from "@truffle/codec/compiler";
-import { ContractObject as Artifact } from "@truffle/contract-schema/spec";
+import {
+  ContractObject as Artifact,
+  GeneratedSources
+} from "@truffle/contract-schema/spec";
 import {
   CompiledContract,
   Compilation as CompilerCompilation
@@ -85,7 +88,9 @@ export function shimContracts(
       sourcePath,
       source,
       ast: <Ast.AstNode>ast,
-      compiler
+      compiler,
+      language: inferLanguage(<Ast.AstNode>ast),
+      internal: false
     };
     //ast needs to be coerced because schema doesn't quite match our types here...
 
@@ -97,8 +102,11 @@ export function shimContracts(
       deployedSourceMap,
       immutableReferences,
       abi,
-      generatedSources,
-      deployedGeneratedSources,
+      generatedSources: normalizeGeneratedSources(generatedSources, compiler),
+      deployedGeneratedSources: normalizeGeneratedSources(
+        deployedGeneratedSources,
+        compiler
+      ),
       compiler
     };
 
@@ -138,12 +146,14 @@ export function shimContracts(
   }
 
   //now: check for id overlap with internal sources
-  for (let artifact of artifacts) {
-    const { generatedSources, deployedGeneratedSources } = artifact;
-    for (const { id: index } of [
-      ...(generatedSources || []),
-      ...(deployedGeneratedSources || [])
-    ]) {
+  for (let contract of contracts) {
+    const { generatedSources, deployedGeneratedSources } = contract;
+    for (let index in generatedSources) {
+      if (index in sources) {
+        unreliableSourceOrder = true;
+      }
+    }
+    for (let index in deployedGeneratedSources) {
       if (index in sources) {
         unreliableSourceOrder = true;
       }
@@ -210,7 +220,7 @@ export function getContractNode(
     if (foundNode || !source) {
       return foundNode;
     }
-    if (!source.ast || source.ast.nodeType !== "SourceUnit") {
+    if (!source.ast || source.language !== "Solidity") {
       //don't search Yul sources!
       return undefined;
     }
@@ -230,6 +240,61 @@ export function getContractNode(
  */
 function extractPrimarySource(sourceMap: string): number {
   return parseInt(sourceMap.match(/^[^:]+:[^:]+:([^:]+):/)[1]);
+}
+
+function normalizeGeneratedSources(
+  generatedSources: Source[] | GeneratedSources,
+  compiler: Compiler.CompilerVersion
+): Source[] {
+  if (!generatedSources) {
+    return [];
+  }
+  if (!isGeneratedSources(generatedSources)) {
+    return generatedSources; //if already normalizeed, leave alone
+  }
+  let sources = []; //output
+  for (let source of generatedSources) {
+    sources[source.id] = {
+      id: source.id.toString(), //Nick says this is fine :P
+      internal: true,
+      sourcePath: source.name,
+      source: source.contents,
+      //ast needs to be coerced because schema doesn't quite match our types here...
+      ast: <Ast.AstNode>source.ast,
+      compiler: compiler,
+      language: source.language
+    };
+  }
+  return sources;
+}
+
+//HACK
+function isGeneratedSources(
+  sources: Source[] | GeneratedSources
+): sources is GeneratedSources {
+  //note: for some reason arr.includes(undefined) returns true on sparse arrays
+  //if sources.length === 0, it's ambiguous; we'll exclude it as not needing normalization
+  return (
+    sources.length > 0 &&
+    !sources.includes(undefined) &&
+    ((<GeneratedSources>sources)[0].contents !== undefined ||
+      (<GeneratedSources>sources)[0].name !== undefined)
+  );
+}
+
+//HACK, maybe?
+function inferLanguage(ast: Ast.AstNode | undefined): string | undefined {
+  if (!ast || typeof ast.nodeType !== "string") {
+    return undefined;
+  } else if (ast.nodeType === "SourceUnit") {
+    return "Solidity";
+  } else if (ast.nodeType.startsWith("Yul")) {
+    //Every Yul source I've seen has YulBlock as the root, but
+    //I'm not sure that that's *always* the case
+    return "Yul";
+  } else {
+    return undefined;
+  }
 }
 
 function getIndexToAddAt(
