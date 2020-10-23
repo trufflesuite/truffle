@@ -14,6 +14,8 @@ const SUPPORTED_COMPILERS = {
   external: require("@truffle/external-compile").Compile
 };
 
+const { TruffleDB } = require("@truffle/db");
+
 async function compile(config) {
   // determine compiler(s) to use
   //
@@ -82,6 +84,7 @@ const WorkflowCompile = {
         compilers
       });
     }
+
     return {
       contracts,
       compilations
@@ -101,13 +104,18 @@ const WorkflowCompile = {
   reportCompilationFinished,
   reportNothingToCompile,
 
-  async save(options, { contracts, _compilations }) {
+  async save(options, { contracts, compilations }) {
     const config = prepareConfig(options);
 
     await fse.ensureDir(config.contracts_build_directory);
 
     const artifacts = contracts.map(Shims.NewToLegacy.forContract);
     await config.artifactor.saveAll(artifacts);
+
+    if (options.db && options.db.enabled === true && contracts.length > 0) {
+      const db = new TruffleDB(config);
+      await db.loadCompilations({ contracts, compilations }, { names: true });
+    }
   }
 };
 

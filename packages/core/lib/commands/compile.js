@@ -101,7 +101,6 @@ const command = {
               { encoding: "utf8" }
             );
           }
-
           return WorkflowCompile.save(config, compilationOutput);
         })
         .then(() => done())

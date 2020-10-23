@@ -9,7 +9,7 @@ describe("truffle build [ @standalone ]", () => {
   let config, project;
 
   describe("when there is no build script in config", () => {
-    beforeEach("set up sandbox", function() {
+    beforeEach("set up sandbox", function () {
       this.timeout(10000);
       project = path.join(
         __dirname,
@@ -37,7 +37,7 @@ describe("truffle build [ @standalone ]", () => {
   });
 
   describe("when there is a proper build config", () => {
-    beforeEach("set up sandbox", function() {
+    beforeEach("set up sandbox", function () {
       this.timeout(10000);
       project = path.join(
         __dirname,
@@ -56,8 +56,8 @@ describe("truffle build [ @standalone ]", () => {
   });
 
   describe("when there is an object in the build config", () => {
-    beforeEach("set up sandbox", function() {
-      this.timeout(10000);
+    beforeEach("set up sandbox", function () {
+      this.timeout(12000);
       project = path.join(
         __dirname,
         "../../sources/build/projectWithObjectInBuildScript"
@@ -79,6 +79,6 @@ describe("truffle build [ @standalone ]", () => {
           )
         );
       }
-    });
+    }).timeout(20000);
   });
 });

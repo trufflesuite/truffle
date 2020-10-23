@@ -40,29 +40,33 @@ export interface LoadableContract {
 export function* generateContractsLoad(
   loadableContracts: LoadableContract[]
 ): Load<DataModel.Contract[], { graphql: "contractsAdd" }> {
-  const contracts = loadableContracts.map(loadableContract => {
-    const {
-      contract: { contractName: name, abi: abiObject },
-      path: { sourceIndex, contractIndex },
-      bytecodes,
-      compilation
-    } = loadableContract;
+  // we filter out contracts whose bytecode bytes are empty because these are
+  // either abstract contracts or interfaces, and do not belong in the db
+  const contracts = loadableContracts
+    .filter(({ contract }) => contract.bytecode.bytes !== "")
+    .map(loadableContract => {
+      const {
+        contract: { contractName: name, abi: abiObject },
+        path: { sourceIndex, contractIndex },
+        bytecodes,
+        compilation
+      } = loadableContract;
 
-    const { createBytecode, callBytecode } = bytecodes.sources[
-      sourceIndex
-    ].contracts[contractIndex];
+      const { createBytecode, callBytecode } = bytecodes.sources[
+        sourceIndex
+      ].contracts[contractIndex];
 
-    return {
-      name,
-      abi: {
-        json: JSON.stringify(abiObject)
-      },
-      compilation,
-      processedSource: { index: sourceIndex },
-      createBytecode: createBytecode,
-      callBytecode: callBytecode
-    };
-  });
+      return {
+        name,
+        abi: {
+          json: JSON.stringify(abiObject)
+        },
+        compilation,
+        processedSource: { index: sourceIndex },
+        createBytecode: createBytecode,
+        callBytecode: callBytecode
+      };
+    });
 
   const result = yield {
     type: "graphql",

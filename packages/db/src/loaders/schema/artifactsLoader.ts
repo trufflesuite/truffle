@@ -12,7 +12,6 @@ import { ContractObject } from "@truffle/contract-schema/spec";
 import { Project } from "@truffle/db/loaders/project";
 import { FindContracts } from "@truffle/db/loaders/resources/contracts";
 import { WorkflowCompileResult } from "@truffle/compile-common/src/types";
-import WorkflowCompile from "@truffle/workflow-compile";
 
 export class ArtifactsLoader {
   private db: TruffleDB;
@@ -26,13 +25,7 @@ export class ArtifactsLoader {
     this.resolver = new TruffleResolver(config);
   }
 
-  async load(): Promise<void> {
-    debug("Compiling...");
-    const result: WorkflowCompileResult = await WorkflowCompile.compile(
-      this.compilationConfig
-    );
-    debug("Compiled.");
-
+  async load(result: WorkflowCompileResult): Promise<void> {
     debug("Initializing project...");
     const project = await Project.initialize({
       project: {
