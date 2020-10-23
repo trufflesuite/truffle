@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-
-# stop if any commands fail
-set -ex
-
-ttsc --project tsconfig.codegen.json
-node ./bin/codegen.js
-ttsc $@
