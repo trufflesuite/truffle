@@ -2,7 +2,6 @@ import { GraphQLSchema, DocumentNode, parse, execute } from "graphql";
 import type TruffleConfig from "@truffle/config";
 import { generateCompileLoad } from "@truffle/db/loaders/commands";
 import { LoaderRunner, forDb } from "@truffle/db/loaders/run";
-import { WorkspaceRequest, WorkspaceResponse } from "@truffle/db/loaders/types";
 import { WorkflowCompileResult } from "@truffle/compile-common";
 import { schema } from "./schema";
 import { connect } from "./connect";
@@ -33,14 +32,6 @@ export class TruffleDB {
       typeof query !== "string" ? query : parse(query);
 
     return await execute(this.schema, document, null, this.context, variables);
-  }
-
-  async getWorkspaceResponse(generatorRequest: WorkspaceRequest) {
-    const { request, variables }: WorkspaceRequest = generatorRequest;
-
-    const response: WorkspaceResponse = await this.query(request, variables);
-
-    return response;
   }
 
   async loadNames(project: DataModel.Project, resources: NamedResource[]) {
