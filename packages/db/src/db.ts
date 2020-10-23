@@ -1,6 +1,7 @@
 import { GraphQLSchema, DocumentNode, parse, execute } from "graphql";
 import type TruffleConfig from "@truffle/config";
 import { generateCompileLoad } from "@truffle/db/loaders/commands";
+import { LoaderRunner, forDb } from "@truffle/db/loaders/run";
 import { WorkspaceRequest, WorkspaceResponse } from "@truffle/db/loaders/types";
 import { WorkflowCompileResult } from "@truffle/compile-common";
 import { schema } from "./schema";
@@ -19,10 +20,12 @@ type LoaderOptions = {
 export class TruffleDB {
   schema: GraphQLSchema;
   private context: Context;
+  private runLoader: LoaderRunner;
 
   constructor(config: TruffleConfig) {
     this.schema = schema;
     this.context = this.createContext(config);
+    this.runLoader = forDb(this);
   }
 
   async query(query: DocumentNode | string, variables: any = {}): Promise<any> {
@@ -38,29 +41,6 @@ export class TruffleDB {
     const response: WorkspaceResponse = await this.query(request, variables);
 
     return response;
-  }
-
-  private async runLoader<
-    Request extends WorkspaceRequest,
-    Response extends WorkspaceResponse,
-    Args extends unknown[],
-    Return
-  >(
-    loader: (...args: Args) => Generator<Request, Return, Response>,
-    ...args: Args
-  ): Promise<Return> {
-    const saga = loader(...args);
-    let current = saga.next();
-
-    while (!current.done) {
-      const { request, variables } = current.value as Request;
-
-      const response: Response = await this.query(request, variables);
-
-      current = saga.next(response);
-    }
-
-    return current.value;
   }
 
   async loadNames(project: DataModel.Project, resources: NamedResource[]) {
