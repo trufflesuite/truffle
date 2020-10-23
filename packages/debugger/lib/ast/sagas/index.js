@@ -81,19 +81,26 @@ function* handleEnter(
 
   if (node.id !== undefined) {
     debug("%s recording scope %s", pointer, node.id);
-    yield* data.scope(node.id, pointer, parentId, sourceId, compilationId); //omit internalFor
+    yield* data.scope(
+      node.id,
+      pointer,
+      parentId,
+      sourceId,
+      compilationId,
+      internalFor
+    );
   }
 
   switch (node.nodeType) {
     case "VariableDeclaration":
       debug("%s recording variable %o", pointer, node);
-      yield* data.declare(node, compilationId);
+      yield* data.declare(node, compilationId, internalFor);
       break;
     case "ContractDefinition":
     case "StructDefinition":
     case "EnumDefinition":
       debug("%s recording type %o", pointer, node);
-      yield* data.defineType(node, compilationId);
+      yield* data.defineType(node, compilationId); //we assume this will not happen in a generated source
       break;
   }
 }

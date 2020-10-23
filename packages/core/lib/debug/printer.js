@@ -43,11 +43,16 @@ class DebugPrinter {
     };
 
     const colorizeSourceObject = source => {
-      const { source: raw, internal: yul } = source;
-      //for now, we assume internal sources are Yul and
-      //user sources are Solidity
+      const { source: raw, language } = source;
       const detabbed = DebugUtils.tabsToSpaces(raw);
-      return DebugUtils.colorize(detabbed, yul);
+      switch (language) {
+        case "Solidity":
+          return DebugUtils.colorize(detabbed);
+        case "Yul":
+          return DebugUtils.colorize(detabbed, true); //pass the Yul flag
+        default:
+          return detabbed; //don't highlight, I guess?
+      }
     };
 
     this.colorizedSources = {};

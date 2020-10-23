@@ -186,14 +186,9 @@ function scopes(state = DEFAULT_SCOPES, action) {
   }
 }
 
-//a note on the following reducer: solidity assigns a unique AST ID to every
-//AST node among all the files being compiled together.  thus, it is, for now,
-//safe to identify user-defined types solely by their AST ID.  In the future,
-//once we eventually support having some files compiled separately from others,
-//this will become a bug you'll have to fix, and you'll have to fix it in the
-//decoder, too.  Sorry, future me! (or whoever's stuck doing this)
-//NOTE: internal sources don't declare these so we don't use internalFor
-
+//NOTE: we assume that generated sources will never define types.
+//If this turns out to ever be false, stuff related to user-defined types
+//will need to be redone.
 function userDefinedTypes(state = [], action) {
   switch (action.type) {
     case actions.DEFINE_TYPE:

@@ -24,12 +24,33 @@ import jsonpointer from "json-pointer";
 import * as Codec from "@truffle/codec";
 import BN from "bn.js";
 
-export function* scope(nodeId, pointer, parentId, sourceId, compilationId) {
-  yield put(actions.scope(nodeId, pointer, parentId, sourceId, compilationId)); //omit internalFor
+//in the following two functions, realistically internalFor will always be undefined,
+//but I want to cover the bases here (maybe someday there will be an internal source
+//in Solidity, who knows)
+export function* scope(
+  nodeId,
+  pointer,
+  parentId,
+  sourceId,
+  compilationId,
+  internalFor
+) {
+  yield put(
+    actions.scope(
+      nodeId,
+      pointer,
+      parentId,
+      sourceId,
+      compilationId,
+      internalFor
+    )
+  );
 }
 
-export function* declare(node, compilationId) {
-  yield put(actions.declare(node.name, node.id, node.scope, compilationId)); //omit internalFor
+export function* declare(node, compilationId, internalFor) {
+  yield put(
+    actions.declare(node.name, node.id, node.scope, compilationId, internalFor)
+  );
 }
 
 export function* yulScope(
@@ -272,6 +293,8 @@ function* variablesAndMappingsSaga() {
   const inModifier = yield select(data.current.inModifier);
   const address = yield select(data.current.address); //storage address, not code address
   const compilationId = yield select(data.current.compilationId);
+  const internalFor = yield select(data.current.internalSourceFor); //we'll get this even if we're in Solidity,
+  //just in case it ever becomes possible to have a Solidity generated source
 
   let assignments, preambleAssignments;
 
@@ -292,6 +315,7 @@ function* variablesAndMappingsSaga() {
     debug("adjustment %d", adjustment);
     preambleAssignments = assignParameters(
       compilationId,
+      internalFor,
       parameters,
       top + adjustment,
       currentDepth,
@@ -327,6 +351,7 @@ function* variablesAndMappingsSaga() {
       //we can skip preambleAssignments here, that isn't used in this case
       assignments = assignParameters(
         compilationId,
+        internalFor,
         parameters,
         top,
         currentDepth,
@@ -400,7 +425,6 @@ function* variablesAndMappingsSaga() {
       assignments = {};
       let position = top; //because that's how we'll process things
       const sourceId = yield select(data.current.sourceId);
-      const internalFor = yield select(data.current.internalSourceFor); //null if user source
       for (const suffix of suffixes) {
         //we only care about the pointer, not the variable
         const sourceAndPointer = makePath(sourceId, pointer + suffix);
@@ -436,7 +460,7 @@ function* variablesAndMappingsSaga() {
         id = Number(id); //not sure why we're getting them as strings, but...
         const idObj = {
           compilationId,
-          internalFor: null, //generated sources are never Solidity
+          internalFor,
           astRef: id
         };
         //these aren't locals, so we omit stackframe and modifier info
@@ -484,7 +508,7 @@ function* variablesAndMappingsSaga() {
       const assignment = makeAssignment(
         {
           compilationId,
-          internalFor: null, //generated sources are never Solidity
+          internalFor,
           astRef: varId,
           stackframe: currentDepth,
           modifierDepth: inModifier ? modifierDepth : null
@@ -526,7 +550,6 @@ function* variablesAndMappingsSaga() {
     //NOTE: DELIBERATE FALL-THROUGH
     case "YulVariableDeclaration": {
       const sourceId = yield select(data.current.sourceId);
-      const internalFor = yield select(data.current.internalSourceFor);
       const sourceAndPointer = makePath(sourceId, pointer);
       debug("sourceAndPointer: %s", sourceAndPointer);
       assignments = {};
@@ -570,6 +593,7 @@ function* variablesAndMappingsSaga() {
         ...preambleAssignments,
         ...literalAssignments(
           compilationId,
+          internalFor,
           node,
           stack,
           currentDepth,
@@ -610,6 +634,7 @@ function* variablesAndMappingsSaga() {
 
       const path = fetchBasePath(
         compilationId,
+        internalFor,
         baseExpression,
         currentAssignments,
         allocations,
@@ -705,6 +730,7 @@ function* variablesAndMappingsSaga() {
         ...preambleAssignments,
         ...literalAssignments(
           compilationId,
+          internalFor,
           node,
           stack,
           currentDepth,
@@ -738,6 +764,7 @@ function* variablesAndMappingsSaga() {
       //but if it is a storage struct, we have to map the path as well
       const path = fetchBasePath(
         compilationId,
+        internalFor,
         baseExpression,
         currentAssignments,
         allocations,
@@ -796,6 +823,7 @@ function* variablesAndMappingsSaga() {
         ...preambleAssignments,
         ...literalAssignments(
           compilationId,
+          internalFor,
           node,
           stack,
           currentDepth,
@@ -821,6 +849,7 @@ function* decodeMappingKeySaga(indexDefinition, keyDefinition) {
 function* decodeMappingKeyCore(indexDefinition, keyDefinition) {
   const scopes = yield select(data.current.scopes.inlined);
   const compilationId = yield select(data.current.compilationId);
+  const internalFor = yield select(data.current.internalSourceFor); //should be null, but...
   const currentAssignments = yield select(data.proc.assignments);
   const currentDepth = yield select(data.current.functionDepth);
   const modifierDepth = yield select(data.current.modifierDepth);
@@ -833,7 +862,7 @@ function* decodeMappingKeyCore(indexDefinition, keyDefinition) {
     //indices need to be identified by stackframe
     const indexIdObj = {
       compilationId,
-      internalFor: null, //no mapping keys in Yul :)
+      internalFor,
       astRef: indexId,
       stackframe: currentDepth,
       modifierDepth: inModifier ? modifierDepth : null
@@ -986,6 +1015,7 @@ export function* recordAllocations() {
 
 function literalAssignments(
   compilationId,
+  internalFor,
   node,
   stack,
   currentDepth,
@@ -1015,7 +1045,7 @@ function literalAssignments(
   let assignment = makeAssignment(
     {
       compilationId,
-      internalFor: null, //generated sources are never solidity
+      internalFor,
       astRef: node.id,
       stackframe: currentDepth,
       modifierDepth: inModifier ? modifierDepth : null
@@ -1029,6 +1059,7 @@ function literalAssignments(
 //takes a parameter list as given in the AST
 function assignParameters(
   compilationId,
+  internalFor,
   parameters,
   top,
   functionDepth,
@@ -1052,7 +1083,7 @@ function assignParameters(
     let assignment = makeAssignment(
       {
         compilationId,
-        internalFor: null, //generated sources are never Solidity
+        internalFor,
         astRef: parameter.id,
         stackframe: functionDepth,
         modifierDepth: forModifier ? modifierDepth : null
@@ -1067,6 +1098,7 @@ function assignParameters(
 
 function fetchBasePath(
   compilationId,
+  internalFor,
   baseNode,
   currentAssignments,
   allocations,
@@ -1076,7 +1108,7 @@ function fetchBasePath(
 ) {
   const fullId = stableKeccak256({
     compilationId,
-    internalFor: null, //generated sources are never Solidity
+    internalFor,
     astRef: baseNode.id,
     stackframe: currentDepth,
     modifierDepth: inModifier ? modifierDepth : null
