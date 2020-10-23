@@ -1,12 +1,12 @@
 const MemoryLogger = require("../memorylogger");
 const CommandRunner = require("../commandrunner");
-const fs = require("fs");
 const path = require("path");
 const assert = require("assert");
 const Server = require("../server");
 const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const log = console.log;
+const fse = require("fs-extra");
 
 describe("Repeated compilation of contracts with inheritance [ @standalone ]", function () {
   let config, artifactPaths, initialTimes, finalTimes, output;
@@ -39,13 +39,13 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
   }
 
   function getSource(key) {
-    return fs.readFileSync(mapping[key].sourcePath);
+    return fse.readFileSync(mapping[key].sourcePath);
   }
 
   function getArtifactStats() {
     const stats = {};
     names.forEach(key => {
-      const mDate = fs.statSync(mapping[key].artifactPath).mtime.getTime();
+      const mDate = fse.statSync(mapping[key].artifactPath).mtime.getTime();
       stats[key] = mDate;
     });
     return stats;
@@ -53,7 +53,13 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
 
   function touchSource(key) {
     const source = getSource(key);
-    fs.writeFileSync(mapping[key].sourcePath, source);
+    fse.writeFileSync(mapping[key].sourcePath, source);
+  }
+
+  function checkForDb(config) {
+    const dbPath = path.join(config.working_directory, ".db/contracts");
+    const dbExists = fse.pathExistsSync(dbPath);
+    return dbExists;
   }
 
   function hasBeenUpdated(fileName) {
@@ -77,6 +83,7 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
     config = conf;
     config.network = "development";
     config.logger = logger;
+    config.db = { enabled: true };
     config.mocha = {
       reporter: new Reporter(logger)
     };
@@ -318,5 +325,11 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
       err.message += "\n\n" + output;
       throw new Error(err);
     }
+  });
+
+  it("creates a .db directory when db is enabled", async () => {
+    await CommandRunner.run("compile", config);
+    const dbExists = await checkForDb(config);
+    assert(dbExists === true);
   });
 });
