@@ -1,3 +1,6 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:loaders:commands:initialize");
+
 import { IdObject, toIdObject } from "@truffle/db/meta";
 
 import { generateProjectLoad } from "@truffle/db/loaders/resources/projects";

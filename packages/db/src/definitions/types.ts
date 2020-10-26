@@ -1,3 +1,6 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:definitions:types");
+
 import * as Meta from "@truffle/db/meta";
 import * as Pouch from "../pouch";
 import * as GraphQl from "../graphql";

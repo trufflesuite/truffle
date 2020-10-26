@@ -1,3 +1,6 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:loaders:resources:contracts");
+
 import { LoadedBytecodes, Load } from "@truffle/db/loaders/types";
 import { IdObject } from "@truffle/db/meta";
 import { CompiledContract } from "@truffle/compile-common";

@@ -1,3 +1,6 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:definitions:nameRecords");
+
 import gql from "graphql-tag";
 import camelCase from "camel-case";
 import { plural } from "pluralize";

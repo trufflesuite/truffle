@@ -1,3 +1,6 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:pouch:databases");
+
 import PouchDB from "pouchdb";
 import PouchDBDebug from "pouchdb-debug";
 import PouchDBFind from "pouchdb-find";

@@ -1,3 +1,6 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:pouch:sqlite");
+
 import path from "path";
 import fse from "fs-extra";
 import PouchDB from "pouchdb";

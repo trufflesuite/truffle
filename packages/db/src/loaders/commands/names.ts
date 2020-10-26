@@ -1,3 +1,6 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:loaders:commands:names");
+
 import {
   generateProjectNameResolve,
   generateProjectNamesAssign
@@ -14,7 +17,7 @@ export function* generateNamesLoad(
   project: IdObject<DataModel.Project>,
   contracts: NamedResource[]
 ): Load<void> {
-  let getCurrent = function*(name, type) {
+  let getCurrent = function* (name, type) {
     return yield* generateProjectNameResolve(project, name, type);
   };
 

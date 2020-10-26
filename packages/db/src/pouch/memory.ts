@@ -1,3 +1,6 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:pouch:memory");
+
 import PouchDB from "pouchdb";
 import PouchDBMemoryAdapter from "pouchdb-adapter-memory";
 

@@ -1,3 +1,5 @@
+const debug = require("debug")("db");
+
 require("source-map-support/register");
 
 const { TruffleDB } = require("./db");
