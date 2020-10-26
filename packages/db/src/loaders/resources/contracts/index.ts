@@ -1,8 +1,4 @@
-import {
-  LoadedBytecodes,
-  WorkspaceRequest,
-  WorkspaceResponse
-} from "@truffle/db/loaders/types";
+import { LoadedBytecodes, Load } from "@truffle/db/loaders/types";
 import { IdObject } from "@truffle/db/meta";
 import { CompiledContract } from "@truffle/compile-common";
 
@@ -18,11 +14,7 @@ export interface LoadableContract {
 
 export function* generateContractsLoad(
   loadableContracts: LoadableContract[]
-): Generator<
-  WorkspaceRequest,
-  DataModel.Contract[],
-  WorkspaceResponse<"contractsAdd", DataModel.ContractsAddPayload>
-> {
+): Load<DataModel.Contract[], "contractsAdd"> {
   const contracts = loadableContracts.map(loadableContract => {
     const {
       contract: { contractName: name, abi: abiObject },

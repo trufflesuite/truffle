@@ -1,8 +1,7 @@
 import {
   CompilationData,
   LoadedBytecodes,
-  WorkspaceRequest,
-  WorkspaceResponse
+  Load
 } from "@truffle/db/loaders/types";
 import { toIdObject } from "@truffle/db/meta";
 import { CompiledContract } from "@truffle/compile-common";
@@ -14,11 +13,7 @@ export { AddBytecodes };
  */
 export function* generateBytecodesLoad(
   compilation: CompilationData
-): Generator<
-  WorkspaceRequest,
-  LoadedBytecodes,
-  WorkspaceResponse<"bytecodesAdd", DataModel.BytecodesAddPayload>
-> {
+): Load<LoadedBytecodes, "bytecodesAdd"> {
   // we're flattening in order to send all bytecodes in one big list
   // (it's okay, we're gonna recreate the structure before we return)
   const flattenedContracts: CompiledContract[] = compilation.sources
