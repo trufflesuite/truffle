@@ -8,7 +8,7 @@ module.exports = {
    * Wraps an underlying web3 provider's RPC transport methods (send/sendAsync)
    * for Truffle-specific purposes, mainly for logging / request verbosity.
    */
-  wrap: function(provider, options) {
+  wrap: function (provider, options) {
     /* wrapping should be idempotent */
     if (provider._alreadyWrapped) return provider;
 
@@ -51,15 +51,12 @@ module.exports = {
    */
 
   // before send/sendAsync
-  preHook: function(options) {
-    return function(payload) {
+  preHook: function (options) {
+    return function (payload) {
       if (options.verbose) {
         // for request payload debugging
         options.logger.log(
-          "   > " +
-            JSON.stringify(payload, null, 2)
-              .split("\n")
-              .join("\n   > ")
+          "   > " + JSON.stringify(payload, null, 2).split("\n").join("\n   > ")
         );
       }
 
@@ -68,20 +65,18 @@ module.exports = {
   },
 
   // after send/sendAsync
-  postHook: function(options) {
-    return function(payload, error, result) {
-      if (error != null) {
-        // wrap errors in internal error class
+  postHook: function (options) {
+    return function (payload, error, result) {
+      // web3 websocket providers return false and web3 http providers
+      // return null when no error has occurred...kind of obnoxious
+      if (error != null && error !== false) {
         error = new ProviderError(error.message, options);
         return [payload, error, result];
       }
 
       if (options.verbose) {
         options.logger.log(
-          " <   " +
-            JSON.stringify(result, null, 2)
-              .split("\n")
-              .join("\n <   ")
+          " <   " + JSON.stringify(result, null, 2).split("\n").join("\n <   ")
         );
       }
 
@@ -99,11 +94,11 @@ module.exports = {
    *
    * Return the wrapped function matching the original function's signature.
    */
-  send: function(originalSend, preHook, postHook) {
-    return function(payload, callback) {
+  send: function (originalSend, preHook, postHook) {
+    return function (payload, callback) {
       payload = preHook(payload);
 
-      originalSend(payload, function(error, result) {
+      originalSend(payload, function (error, result) {
         var modified = postHook(payload, error, result);
         payload = modified[0];
         error = modified[1];
