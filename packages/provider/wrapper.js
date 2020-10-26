@@ -69,7 +69,7 @@ module.exports = {
     return function (payload, error, result) {
       // web3 websocket providers return false and web3 http providers
       // return null when no error has occurred...kind of obnoxious
-      if (error != null && error !== false) {
+      if (error) {
         error = new ProviderError(error.message, options);
         return [payload, error, result];
       }
