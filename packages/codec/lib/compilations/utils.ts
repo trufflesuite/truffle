@@ -89,8 +89,7 @@ export function shimContracts(
       source,
       ast: <Ast.AstNode>ast,
       compiler,
-      language: inferLanguage(<Ast.AstNode>ast),
-      internal: false
+      language: inferLanguage(<Ast.AstNode>ast)
     };
     //ast needs to be coerced because schema doesn't quite match our types here...
 
@@ -256,7 +255,6 @@ function normalizeGeneratedSources(
   for (let source of generatedSources) {
     sources[source.id] = {
       id: source.id.toString(), //Nick says this is fine :P
-      internal: true,
       sourcePath: source.name,
       source: source.contents,
       //ast needs to be coerced because schema doesn't quite match our types here...
