@@ -1,7 +1,6 @@
 const CompilerSupplier = require("./compilerSupplier");
 const semver = require("semver");
 const Profiler = require("./profiler");
-const { normalizeOptions } = require("./normalizeOptions");
 const fse = require("fs-extra");
 const { run } = require("./run");
 const OS = require("os");
@@ -109,7 +108,7 @@ const compileWithPragmaAnalysis = async ({ paths, options }) => {
 
     const compilation = await run(
       versionsAndSources[compilerVersion],
-      normalizeOptions(compilationOptions)
+      compilationOptions
     );
     if (compilation.contracts.length > 0) {
       compilations.push(compilation);
