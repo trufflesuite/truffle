@@ -1,6 +1,7 @@
 const findContracts = require("@truffle/contract-sources");
 const expect = require("@truffle/expect");
 
+import type TruffleConfig from "@truffle/config";
 import { updated } from "./updated";
 import { UnresolvedSource } from "./resolveAllSources";
 import { requiredSources, RequiredSourcesOptions } from "./requiredSources";
@@ -69,7 +70,7 @@ export class Profiler {
     });
   }
 
-  async requiredSourcesForSingleFile(options: any) {
+  async requiredSourcesForSingleFile(options: TruffleConfig) {
     expect.options(options, ["path", "base_path", "resolver"]);
 
     const { resolver, path, base_path: basePath } = options;
