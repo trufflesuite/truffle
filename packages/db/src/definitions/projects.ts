@@ -27,19 +27,28 @@ export const projects: Definition<"projects"> = {
     Project: {
       resolve: {
         resolve: async ({ id }, { name, type }, { workspace }) => {
+          debug("Resolving Project.resolve...");
+
           const results = await workspace.find("projectNames", {
             selector: { "project.id": id, name, type }
           });
+
           const nameRecordIds = results.map(({ nameRecord: { id } }) => id);
-          return await workspace.find("nameRecords", {
+
+          const result = await workspace.find("nameRecords", {
             selector: {
               id: { $in: nameRecordIds }
             }
           });
+
+          debug("Resolved Project.resolve.");
+          return result;
         }
       },
       network: {
         resolve: async ({ id }, { name }, { workspace }) => {
+          debug("Resolving Project.network...");
+
           const results = await workspace.find("projectNames", {
             selector: { "project.id": id, name, "type": "Network" }
           });
@@ -55,11 +64,16 @@ export const projects: Definition<"projects"> = {
           }
           const { resource } = nameRecords[0];
 
-          return await workspace.get("networks", resource.id);
+          const result = await workspace.get("networks", resource.id);
+
+          debug("Resolved Project.network.");
+          return result;
         }
       },
       contract: {
         resolve: async ({ id }, { name }, { workspace }) => {
+          debug("Resolving Project.contract...");
+
           const results = await workspace.find("projectNames", {
             selector: { "project.id": id, name, "type": "Contract" }
           });
@@ -74,7 +88,11 @@ export const projects: Definition<"projects"> = {
             return;
           }
           const { resource } = nameRecords[0];
-          return await workspace.get("contracts", resource.id);
+
+          const result = await workspace.get("contracts", resource.id);
+
+          debug("Resolved Project.contract.");
+          return result;
         }
       }
     }

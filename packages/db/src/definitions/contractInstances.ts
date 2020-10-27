@@ -79,15 +79,28 @@ export const contractInstances: Definition<"contractInstances"> = {
   resolvers: {
     ContractInstance: {
       network: {
-        resolve: ({ network: { id } }, _, { workspace }) =>
-          workspace.get("networks", id)
+        resolve: async ({ network: { id } }, _, { workspace }) => {
+          debug("Resolving ContractInstance.network...");
+
+          const result = await workspace.get("networks", id);
+
+          debug("Resolved ContractInstance.network.");
+          return result;
+        }
       },
       contract: {
-        resolve: ({ contract: { id } }, _, { workspace }) =>
-          workspace.get("contracts", id)
+        resolve: async ({ contract: { id } }, _, { workspace }) => {
+          debug("Resolving ContractInstance.contract...");
+          const result = await workspace.get("contracts", id);
+
+          debug("Resolved ContractInstance.contract.");
+          return result;
+        }
       },
       callBytecode: {
         resolve: async ({ callBytecode }, _, { workspace }) => {
+          debug("Resolving ContractInstance.callBytecode...");
+
           const bytecode = await workspace.get(
             "bytecodes",
             callBytecode.bytecode.id
@@ -100,6 +113,8 @@ export const contractInstances: Definition<"contractInstances"> = {
               };
             }
           );
+
+          debug("Resolved ContractInstance.callBytecode.");
           return {
             bytecode: bytecode,
             linkValues: linkValues
@@ -108,6 +123,8 @@ export const contractInstances: Definition<"contractInstances"> = {
       },
       creation: {
         resolve: async (input, _, { workspace }) => {
+          debug("Resolving ContractInstance.creation...");
+
           let bytecode = await workspace.get(
             "bytecodes",
             input.creation.constructor.createBytecode.bytecode.id
@@ -121,6 +138,8 @@ export const contractInstances: Definition<"contractInstances"> = {
               };
             }
           );
+
+          debug("Resolved ContractInstance.creation.");
           return {
             transactionHash: transactionHash,
             constructor: {

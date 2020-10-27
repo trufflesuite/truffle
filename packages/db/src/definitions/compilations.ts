@@ -69,32 +69,58 @@ export const compilations: Definition<"compilations"> = {
   resolvers: {
     Compilation: {
       sources: {
-        resolve: ({ sources }, _, { workspace }) =>
-          Promise.all(sources.map(({ id }) => workspace.get("sources", id)))
+        resolve: async ({ sources }, _, { workspace }) => {
+          debug("Resolving Compilation.sources...");
+
+          const result = await Promise.all(
+            sources.map(({ id }) => workspace.get("sources", id))
+          );
+
+          debug("Resolved Compilation.sources.");
+          return result;
+        }
       },
       processedSources: {
-        resolve: ({ id, processedSources }, _, {}) =>
-          processedSources.map((processedSource, index) => ({
+        resolve: ({ id, processedSources }, _, {}) => {
+          debug("Resolving Compilation.processedSources...");
+
+          const result = processedSources.map((processedSource, index) => ({
             ...processedSource,
             compilation: { id },
             index
-          }))
+          }));
+
+          debug("Resolved Compilation.processedSources.");
+          return result;
+        }
       }
     },
 
     ProcessedSource: {
       source: {
-        resolve: ({ source: { id } }, _, { workspace }) =>
-          workspace.get("sources", id)
+        resolve: async ({ source: { id } }, _, { workspace }) => {
+          debug("Resolving ProcessedSource.source...");
+
+          const result = await workspace.get("sources", id);
+
+          debug("Resolved ProcessedSource.source.");
+          return result;
+        }
       },
       contracts: {
-        resolve: ({ compilation, index }, _, { workspace }) =>
-          workspace.find("contracts", {
+        resolve: async ({ compilation, index }, _, { workspace }) => {
+          debug("Resolving ProcessedSource.compilation...");
+
+          const result = await workspace.find("contracts", {
             selector: {
               "compilation.id": compilation.id,
               "processedSource.index": index
             }
-          })
+          });
+
+          debug("Resolved ProcessedSource.compilation.");
+          return result;
+        }
       }
     }
   }
