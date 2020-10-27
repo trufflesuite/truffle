@@ -1,3 +1,6 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:loaders:types");
+
 import * as graphql from "graphql";
 
 import { CompiledContract } from "@truffle/compile-common";

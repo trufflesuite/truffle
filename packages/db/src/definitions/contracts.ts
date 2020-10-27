@@ -1,3 +1,6 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:definitions:contracts");
+
 import gql from "graphql-tag";
 
 import { Definition } from "./types";
@@ -45,8 +48,14 @@ export const contracts: Definition<"contracts"> = {
   resolvers: {
     Contract: {
       compilation: {
-        resolve: ({ compilation: { id } }, _, { workspace }) =>
-          workspace.get("compilations", id)
+        resolve: async ({ compilation: { id } }, _, { workspace }) => {
+          debug("Resolving Contract.compilation...");
+
+          const result = workspace.get("compilations", id);
+
+          debug("Resolved Contract.compilation.");
+          return result;
+        }
       },
       processedSource: {
         fragment: `... on Contract { compilation { id } }`,
@@ -55,18 +64,33 @@ export const contracts: Definition<"contracts"> = {
           _,
           { workspace }
         ) => {
+          debug("Resolving Contract.processedSource...");
+
           const { processedSources } = await workspace.get("compilations", id);
 
+          debug("Resolved Contract.processedSource.");
           return processedSources[processedSource.index];
         }
       },
       createBytecode: {
-        resolve: ({ createBytecode: { id } }, _, { workspace }) =>
-          workspace.get("bytecodes", id)
+        resolve: async ({ createBytecode: { id } }, _, { workspace }) => {
+          debug("Resolving Contract.createBytecode...");
+
+          const result = await workspace.get("bytecodes", id);
+
+          debug("Resolved Contract.createBytecode.");
+          return result;
+        }
       },
       callBytecode: {
-        resolve: ({ callBytecode: { id } }, _, { workspace }) =>
-          workspace.get("bytecodes", id)
+        resolve: async ({ callBytecode: { id } }, _, { workspace }) => {
+          debug("Resolving Contract.callBytecode...");
+
+          const result = await workspace.get("bytecodes", id);
+
+          debug("Resolved Contract.callBytecode.");
+          return result;
+        }
       }
     }
   }

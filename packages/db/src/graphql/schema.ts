@@ -1,3 +1,6 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:graphql:schema");
+
 import gql from "graphql-tag";
 import * as graphql from "graphql";
 import { makeExecutableSchema, IResolvers } from "graphql-tools";
@@ -33,6 +36,9 @@ class DefinitionsSchema<C extends Collections> {
   }
 
   get typeDefs(): graphql.DocumentNode[] {
+    const log = debug.extend("typeDefs");
+    log("Generating...");
+
     const common = gql`
       interface Resource {
         id: ID!
@@ -51,12 +57,18 @@ class DefinitionsSchema<C extends Collections> {
       type Mutation
     `;
 
-    return Object.values(this.collections)
+    const result = Object.values(this.collections)
       .map(schema => schema.typeDefs)
       .reduce((a, b) => [...a, ...b], [common]);
+
+    log("Generated.");
+    return result;
   }
 
   get resolvers() {
+    const log = debug.extend("resolvers");
+    log("Generating...");
+
     const common = {
       Query: {},
 
@@ -76,7 +88,7 @@ class DefinitionsSchema<C extends Collections> {
       }
     };
 
-    return Object.values(this.collections).reduce(
+    const result = Object.values(this.collections).reduce(
       (a, { resolvers: b }) => ({
         ...a,
         ...b,
@@ -91,23 +103,34 @@ class DefinitionsSchema<C extends Collections> {
       }),
       common
     );
+
+    log("Generated.");
+    return result;
   }
 
   private createSchema(
     resource: CollectionName<C>
   ): DefinitionSchema<C, CollectionName<C>> {
+    debug("Creating DefinitonSchema for %s...", resource);
+
     const definition = this.definitions[resource];
     if (definition.mutable) {
-      return new MutableDefinitionSchema({
+      const result = new MutableDefinitionSchema({
         resource: resource as MutableCollectionName<C>,
         definition
       });
+
+      debug("Created MutableDefinitonSchema for %s.", resource);
+      return result;
     }
 
-    return new ImmutableDefinitionSchema({
+    const result = new ImmutableDefinitionSchema({
       resource,
       definition
     });
+
+    debug("Created ImmutableDefinitionSchema for %s.", resource);
+    return result;
   }
 }
 
@@ -133,6 +156,9 @@ abstract class DefinitionSchema<
   }
 
   get typeDefs() {
+    const log = debug.extend(`${this.resource}:typeDefs`);
+    log("Generating...");
+
     const { typeDefs } = this.definition;
 
     const {
@@ -143,7 +169,7 @@ abstract class DefinitionSchema<
       ResourcesMutate
     } = this.names;
 
-    return [
+    const result = [
       gql`
       ${typeDefs}
 
@@ -167,25 +193,52 @@ abstract class DefinitionSchema<
       }
     `
     ];
+
+    log("Generated.");
+    return result;
   }
 
   get resolvers(): IResolvers<any, Context<C>> {
+    const log = debug.extend(`${this.resource}:resolvers`);
+    log("Generating...");
+
+    // setup loggers for specific resolvers
+    const logGet = log.extend("get");
+    const logAll = log.extend("all");
+
     const { resource, resources } = this.names;
 
     const { resolvers = {} } = this.definition;
 
-    return {
+    const result = {
       ...resolvers,
 
       Query: {
         [resource]: {
-          resolve: (_, { id }, { workspace }) => workspace.get(resources, id)
+          resolve: async (_, { id }, { workspace }) => {
+            logGet("Getting id: %s...", id);
+
+            const result = await workspace.get(resources, id);
+
+            logGet("Got id: %s.", id);
+            return result;
+          }
         },
         [resources]: {
-          resolve: (_, {}, { workspace }) => workspace.all(resources)
+          resolve: async (_, {}, { workspace }) => {
+            logAll("Fetching all...");
+
+            const result = await workspace.all(resources);
+
+            logAll("Fetched all.");
+            return result;
+          }
         }
       }
     };
+
+    log("Generated.");
+    return result;
   }
 }
 
@@ -215,16 +268,30 @@ class ImmutableDefinitionSchema<
   }
 
   get resolvers() {
+    const log = debug.extend(`${this.resource}:resolvers`);
+    log("Generating...");
+
+    const logMutate = log.extend("add");
+
     const { resources, resourcesMutate } = this.names;
 
-    return {
+    const result = {
       ...super.resolvers,
 
       Mutation: {
-        [resourcesMutate]: (_, { input }, { workspace }) =>
-          workspace.add(resources, input)
+        [resourcesMutate]: async (_, { input }, { workspace }) => {
+          logMutate("Mutating...");
+
+          const result = await workspace.add(resources, input);
+
+          logMutate("Mutated.");
+          return result;
+        }
       }
     };
+
+    log("Generated.");
+    return result;
   }
 }
 
@@ -254,16 +321,30 @@ class MutableDefinitionSchema<
   }
 
   get resolvers() {
+    const log = debug.extend(`${this.resource}:resolvers`);
+    log("Generating...");
+
+    const logMutate = log.extend("assign");
+
     const { resources, resourcesMutate } = this.names;
 
-    return {
+    const result = {
       ...super.resolvers,
 
       Mutation: {
-        [resourcesMutate]: (_, { input }, { workspace }) =>
-          workspace.update(resources, input)
+        [resourcesMutate]: async (_, { input }, { workspace }) => {
+          logMutate("Mutating...");
+
+          const result = await workspace.update(resources, input);
+
+          logMutate("Mutated.");
+          return result;
+        }
       }
     };
+
+    log("Generated.");
+    return result;
   }
 }
 

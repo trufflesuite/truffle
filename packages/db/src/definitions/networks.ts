@@ -1,3 +1,6 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:definitions:networks");
+
 import gql from "graphql-tag";
 
 import { Definition } from "./types";

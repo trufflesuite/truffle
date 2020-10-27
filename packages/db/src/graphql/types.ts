@@ -1,3 +1,6 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:graphql:types");
+
 import * as graphql from "graphql";
 import { IResolvers } from "graphql-tools";
 

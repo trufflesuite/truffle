@@ -1,3 +1,6 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:definitions");
+
 import { Definitions } from "./types";
 export * from "./types";
 

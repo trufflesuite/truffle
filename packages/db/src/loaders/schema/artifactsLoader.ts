@@ -1,3 +1,6 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:loaders:schema:artifactsLoader");
+
 import { TruffleDB } from "@truffle/db/db";
 import * as fse from "fs-extra";
 import path from "path";

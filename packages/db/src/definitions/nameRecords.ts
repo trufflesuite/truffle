@@ -1,3 +1,6 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:definitions:nameRecords");
+
 import gql from "graphql-tag";
 import camelCase from "camel-case";
 import { plural } from "pluralize";
@@ -28,13 +31,25 @@ export const nameRecords: Definition<"nameRecords"> = {
     NameRecord: {
       resource: {
         resolve: async ({ type, resource: { id } }, _, { workspace }) => {
+          debug("Resolving NameRecord.resource...");
+
           const collectionName = camelCase(plural(type)) as CollectionName;
 
-          return await workspace.get(collectionName, id);
+          const result = await workspace.get(collectionName, id);
+
+          debug("Resolved NameRecord.resource.");
+          return result;
         }
       },
       previous: {
-        resolve: ({ id }, _, { workspace }) => workspace.get("nameRecords", id)
+        resolve: async ({ id }, _, { workspace }) => {
+          debug("Resolving NameRecord.previous...");
+
+          const result = await workspace.get("nameRecords", id);
+
+          debug("Resolved NameRecord.previous.");
+          return result;
+        }
       }
     }
   }

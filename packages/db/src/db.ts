@@ -1,3 +1,6 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:db");
+
 import { GraphQLSchema, DocumentNode, parse, execute } from "graphql";
 import type TruffleConfig from "@truffle/config";
 import { generateCompileLoad } from "@truffle/db/loaders/commands";

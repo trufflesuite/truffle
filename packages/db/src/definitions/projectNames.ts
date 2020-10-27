@@ -1,3 +1,6 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:definitions:projectNames");
+
 import gql from "graphql-tag";
 
 import { Definition } from "./types";
@@ -35,12 +38,24 @@ export const projectNames: Definition<"projectNames"> = {
   resolvers: {
     ProjectName: {
       project: {
-        resolve: ({ project: { id } }, _, { workspace }) =>
-          workspace.get("projects", id)
+        resolve: async ({ project: { id } }, _, { workspace }) => {
+          debug("Resolving ProjectName.project...");
+
+          const result = await workspace.get("projects", id);
+
+          debug("Resolved ProjectName.project.");
+          return result;
+        }
       },
       nameRecord: {
-        resolve: ({ nameRecord: { id } }, _, { workspace }) =>
-          workspace.get("nameRecords", id)
+        resolve: async ({ nameRecord: { id } }, _, { workspace }) => {
+          debug("Resolving ProjectName.nameRecord...");
+
+          const result = await workspace.get("nameRecords", id);
+
+          debug("Resolved ProjectName.nameRecord.");
+          return result;
+        }
       }
     }
   }

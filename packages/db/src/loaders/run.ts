@@ -1,3 +1,6 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:loaders:run");
+
 import { Loader, LoadRequest, RequestName } from "./types";
 
 export type LoaderRunner = <

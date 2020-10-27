@@ -1,3 +1,6 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:loaders:resources:nameRecords");
+
 import { Load } from "@truffle/db/loaders/types";
 import { toIdObject } from "@truffle/db/meta";
 
