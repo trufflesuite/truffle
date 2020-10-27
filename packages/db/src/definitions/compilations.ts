@@ -15,6 +15,7 @@ export const compilations: Definition<"compilations"> = {
       sources: [Source]!
       processedSources: [ProcessedSource]!
       sourceMaps: [SourceMap]
+      contracts: [Contract]!
     }
 
     type Compiler {
@@ -91,6 +92,20 @@ export const compilations: Definition<"compilations"> = {
           }));
 
           debug("Resolved Compilation.processedSources.");
+          return result;
+        }
+      },
+      contracts: {
+        resolve: async ({ id }, _, { workspace }) => {
+          debug("Resolving Compilation.contracts...");
+
+          const result = await workspace.find("contracts", {
+            selector: {
+              "compilation.id": id
+            }
+          });
+
+          debug("Resolved Compilation.contracts.");
           return result;
         }
       }

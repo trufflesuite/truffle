@@ -8,6 +8,9 @@ import { Definition } from "./types";
 export const contracts: Definition<"contracts"> = {
   createIndexes: [
     {
+      fields: ["compilation.id"]
+    },
+    {
       fields: ["compilation.id", "processedSource.index"]
     }
   ],
