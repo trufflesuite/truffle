@@ -1,34 +1,41 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:loaders:run");
 
-import { Loader, LoadRequest, RequestName } from "./types";
+import { Loader, LoadRequest, GraphQlRequest, Web3Request, RequestType } from "./types";
 
 export type LoaderRunner = <
   A extends unknown[],
   T = any,
-  N extends RequestName | string = string
+  R extends RequestType | undefined = undefined
 >(
-  loader: Loader<A, T, N>,
+  loader: Loader<A, T, R>,
   ...args: A
 ) => Promise<T>;
 
 export const forDb = (db): LoaderRunner => async <
   Args extends unknown[],
   Return,
-  N extends RequestName | string
+  R extends RequestType | undefined
 >(
-  loader: Loader<Args, Return, N>,
+  loader: Loader<Args, Return, R>,
   ...args: Args
 ) => {
   const saga = loader(...args);
   let current = saga.next();
 
   while (!current.done) {
-    const { request, variables } = current.value as LoadRequest<N>;
+    const loadRequest = current.value as LoadRequest<R>;
+    switch (loadRequest.type) {
+      case "graphql":
+        const { request, variables } = loadRequest as GraphQlRequest;
+        const response = await db.query(request, variables);
 
-    const response = await db.query(request, variables);
+        current = saga.next(response);
 
-    current = saga.next(response);
+        break;
+      default:
+        throw new Error(`Unknown request type ${loadRequest.type}`);
+    }
   }
 
   return current.value;

@@ -17,7 +17,7 @@ export interface LoadableContract {
 
 export function* generateContractsLoad(
   loadableContracts: LoadableContract[]
-): Load<DataModel.Contract[], "contractsAdd"> {
+): Load<DataModel.Contract[], { graphql: "contractsAdd" }> {
   const contracts = loadableContracts.map(loadableContract => {
     const {
       contract: { contractName: name, abi: abiObject },
@@ -43,6 +43,7 @@ export function* generateContractsLoad(
   });
 
   const result = yield {
+    type: "graphql",
     request: AddContracts,
     variables: { contracts }
   };

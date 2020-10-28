@@ -11,8 +11,9 @@ export { AddProjects, AssignProjectNames, ResolveProjectName };
 
 export function* generateProjectLoad(
   directory: string
-): Load<DataModel.Project, "projectsAdd"> {
+): Load<DataModel.Project, { graphql: "projectsAdd" }> {
   const result = yield {
+    type: "graphql",
     request: AddProjects,
     variables: {
       projects: [{ directory }]
@@ -26,8 +27,9 @@ export function* generateProjectNameResolve(
   project: IdObject<DataModel.Project>,
   name: string,
   type: string
-): Load<DataModel.NameRecord, "project"> {
+): Load<DataModel.NameRecord, { graphql: "project" }> {
   const result = yield {
+    type: "graphql",
     request: ResolveProjectName,
     variables: {
       projectId: project.id,
@@ -44,7 +46,7 @@ export function* generateProjectNameResolve(
 export function* generateProjectNamesAssign(
   project: IdObject<DataModel.Project>,
   nameRecords: DataModel.NameRecord[]
-): Load<void, "projectNamesAssign"> {
+): Load<void, { graphql: "projectNamesAssign" }> {
   const projectNames = nameRecords.map(({ id, name, type }) => ({
     project,
     nameRecord: { id },
@@ -53,6 +55,7 @@ export function* generateProjectNamesAssign(
   }));
 
   yield {
+    type: "graphql",
     request: AssignProjectNames,
     variables: { projectNames }
   };
