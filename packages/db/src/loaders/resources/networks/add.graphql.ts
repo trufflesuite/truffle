@@ -5,6 +5,7 @@ export const AddNetworks = gql`
     networksAdd(input: { networks: $networks }) {
       networks {
         id
+        name
         networkId
         historicBlock {
           height

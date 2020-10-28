@@ -1,13 +1,18 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:loaders:project");
+
 import {DocumentNode} from "graphql";
 import type {Provider} from "web3/providers";
 import {WorkflowCompileResult} from "@truffle/compile-common";
+import {ContractObject} from "@truffle/contract-schema/spec";
 
 import {toIdObject, IdObject} from "@truffle/db/meta";
 
 import {
   generateCompileLoad,
   generateInitializeLoad,
-  generateNamesLoad
+  generateNamesLoad,
+  generateMigrateLoad
 } from "./commands";
 
 import {LoaderRunner, forDb} from "./run";
@@ -97,5 +102,18 @@ export class Project {
 }
 
 export class LiveProject extends Project {
+  async loadMigration(options: {
+    network: Omit<DataModel.NetworkInput, "networkId" | "historicBlock">;
+    artifacts: ContractObject[];
+  }): Promise<{
+    network: IdObject<DataModel.Network>,
+    contractInstances: IdObject<DataModel.ContractInstance>[]
+  }> {
+    const {
+      network,
+      contractInstances
+    } = await this.run(generateMigrateLoad, options);
 
+    return { network, contractInstances };
+  }
 }

@@ -5,9 +5,31 @@ import { LoadedBytecodes, Load } from "@truffle/db/loaders/types";
 import { IdObject } from "@truffle/db/meta";
 import { CompiledContract } from "@truffle/compile-common";
 
+import { GetContract } from "./get.graphql";
+
+export { FindContracts } from "./find.graphql";
+
 import { AddContracts } from "./add.graphql";
 export { AddContracts };
 
+export function* generateContractGet(
+  { id }: IdObject<DataModel.Contract>
+): Load<DataModel.Contract | undefined, { graphql: "contract" }> {
+  debug("Generating contract get...");
+
+  const response = yield {
+    type: "graphql",
+    request: GetContract,
+    variables: {
+      id
+    }
+  }
+
+  const contract = response.data.contract;
+
+  debug("Generated contract get.");
+  return contract;
+}
 export interface LoadableContract {
   contract: CompiledContract;
   path: { sourceIndex: number; contractIndex: number };

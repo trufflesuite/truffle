@@ -72,12 +72,6 @@ const compilationConfig = {
     "build",
     "contracts"
   ),
-  artifacts_directory: path.join(
-    __dirname,
-    "compilationSources",
-    "build",
-    "contracts"
-  ),
   working_directory: tempDir.name,
   all: true
 };
