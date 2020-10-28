@@ -1,4 +1,5 @@
 import {DocumentNode} from "graphql";
+import type {Provider} from "web3/providers";
 import {WorkflowCompileResult} from "@truffle/compile-common";
 
 import {toIdObject, IdObject} from "@truffle/db/meta";
@@ -21,17 +22,29 @@ export interface InitializeOptions {
 }
 
 export class Project {
-  private run: LoaderRunner;
+  protected run: LoaderRunner;
+  private forProvider: (provider: Provider) => { run: LoaderRunner };
   private project: IdObject<DataModel.Project>;
 
   static async initialize(options: InitializeOptions): Promise<Project> {
     const {db, project: input} = options;
 
-    const { run } = forDb(db);
+    const { run, forProvider } = forDb(db);
 
     const project = await run(generateInitializeLoad, input);
 
-    return new Project({run, project});
+    return new Project({run, forProvider, project});
+  }
+
+  async connect(options: {
+    provider: Provider
+  }): Promise<LiveProject> {
+    const { run } = this.forProvider(options.provider);
+
+    return new LiveProject({
+      run,
+      project: this.project
+    });
   }
 
   async loadCompilations(options: {
@@ -70,11 +83,19 @@ export class Project {
     };
   }
 
-  private constructor(options: {
+  protected constructor(options: {
     project: IdObject<DataModel.Project>;
     run: LoaderRunner;
+    forProvider?: (provider: Provider) => { run: LoaderRunner }
   }) {
     this.project = options.project;
     this.run = options.run;
+    if (options.forProvider) {
+      this.forProvider = options.forProvider;
+    }
   }
+}
+
+export class LiveProject extends Project {
+
 }
