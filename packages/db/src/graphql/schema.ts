@@ -53,6 +53,10 @@ class DefinitionsSchema<C extends Collections> {
         id: ID!
       }
 
+      input QueryFilter {
+        ids: [ID!]
+      }
+
       type Query
       type Mutation
     `;
@@ -174,7 +178,7 @@ abstract class DefinitionSchema<
       ${typeDefs}
 
       extend type Query {
-        ${resources}: [${Resource}]
+        ${resources}(filter: QueryFilter): [${Resource}]
         ${resource}(id: ID!): ${Resource}
       }
 
@@ -205,6 +209,7 @@ abstract class DefinitionSchema<
     // setup loggers for specific resolvers
     const logGet = log.extend("get");
     const logAll = log.extend("all");
+    const logFilter = log.extend("filter");
 
     const { resource, resources } = this.names;
 
@@ -225,13 +230,26 @@ abstract class DefinitionSchema<
           }
         },
         [resources]: {
-          resolve: async (_, {}, { workspace }) => {
-            logAll("Fetching all...");
+          resolve: async (_, { filter }, { workspace }) => {
+            if (filter) {
+              logFilter("Filtering for ids: %o...", filter.ids);
 
-            const result = await workspace.all(resources);
+              const result = await workspace.find(resources, {
+                selector: {
+                  id: { $in: filter.ids }
+                }
+              })
 
-            logAll("Fetched all.");
-            return result;
+              logFilter("Filtered for ids: %o", filter.ids);
+              return result;
+            } else {
+              logAll("Fetching all...");
+
+              const result = await workspace.all(resources);
+
+              logAll("Fetched all.");
+              return result;
+            }
           }
         }
       }
