@@ -2,7 +2,7 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:loaders:run");
 
 import { promisify } from "util";
-import type Web3 from "web3";
+import type {Provider} from "web3/providers";
 import {DocumentNode} from "graphql";
 
 import { Loader, LoadRequest, GraphQlRequest, Web3Request, RequestType } from "./types";
@@ -21,7 +21,7 @@ export type LoaderRunner = <
 ) => Promise<T>;
 
 export const forDb = (db): {
-  forProvider(provider: Web3["currentProvider"]): {
+  forProvider(provider: Provider): {
     run: LoaderRunner
   };
   run: LoaderRunner;
@@ -53,7 +53,7 @@ const run = async <
   Return,
   R extends RequestType | undefined
 >(
-  connections: { db: ITruffleDB, provider?: Web3["currentProvider"] },
+  connections: { db: ITruffleDB, provider?: Provider },
   loader: Loader<Args, Return, R>,
   ...args: Args
 ) => {
