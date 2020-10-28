@@ -3,7 +3,8 @@ import { AddSource } from "./source.graphql";
 import { AddBytecode } from "./bytecode.graphql";
 import {
   AddCompilation,
-  GetCompilationWithContracts
+  GetCompilationContracts,
+  GetCompilationProcessedSources
 } from "./compilation.graphql";
 import { AddContracts, GetContract, GetAllContracts } from "./contract.graphql";
 import { Shims } from "@truffle/compile-common";
@@ -96,7 +97,7 @@ describe("Contract", () => {
     expect(contract).toHaveProperty("abi");
   });
 
-  test("can be queried via compilation", async () => {
+  test("can be queried via compilation directly", async () => {
     expectedId = generateId({
       name: Migrations.contractName,
       abi: { json: JSON.stringify(Migrations.abi) },
@@ -104,7 +105,40 @@ describe("Contract", () => {
       compilation: { id: compilationId }
     });
 
-    const result = await wsClient.execute(GetCompilationWithContracts, {
+    const getCompilationResult = await wsClient.execute(
+      GetCompilationContracts,
+      {
+        id: compilationId
+      }
+    );
+
+    expect(getCompilationResult).toHaveProperty("compilation");
+
+    const { compilation } = getCompilationResult;
+
+    const { contracts } = compilation;
+    expect(contracts).toHaveLength(1);
+
+    const [contract] = contracts;
+
+    expect(contract).toHaveProperty("id");
+    const { id } = contract;
+    expect(id).toEqual(expectedId);
+
+    expect(contract).toHaveProperty("name");
+    const { name } = contract;
+    expect(name).toEqual("Migrations");
+  });
+
+  test("can be queried via compilation processedSources", async () => {
+    expectedId = generateId({
+      name: Migrations.contractName,
+      abi: { json: JSON.stringify(Migrations.abi) },
+      processedSource: { index: 0 },
+      compilation: { id: compilationId }
+    });
+
+    const result = await wsClient.execute(GetCompilationProcessedSources, {
       id: compilationId
     });
 

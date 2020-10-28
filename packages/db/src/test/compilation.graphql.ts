@@ -72,18 +72,19 @@ export const GetCompilation = gql`
   }
 `;
 
-export const GetCompilationWithContracts = gql`
+export const GetCompilationContracts = gql`
   query GetCompilation($id: ID!) {
     compilation(id: $id) {
-      id
-      compiler {
-        name
-        version
-      }
-      sources {
+      contracts {
         id
-        contents
+        name
       }
+    }
+  }
+`;
+export const GetCompilationProcessedSources = gql`
+  query GetCompilation($id: ID!) {
+    compilation(id: $id) {
       processedSources {
         contracts {
           id
