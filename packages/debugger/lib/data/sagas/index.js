@@ -24,52 +24,18 @@ import jsonpointer from "json-pointer";
 import * as Codec from "@truffle/codec";
 import BN from "bn.js";
 
-//in the following two functions, realistically internalFor will always be undefined,
-//but I want to cover the bases here (maybe someday there will be an internal source
-//in Solidity, who knows)
-export function* scope(
-  nodeId,
-  pointer,
-  parentId,
-  sourceId,
-  compilationId,
-  internalFor
-) {
-  yield put(
-    actions.scope(
-      nodeId,
-      pointer,
-      parentId,
-      sourceId,
-      compilationId,
-      internalFor
-    )
-  );
+export function* scope(nodeId, pointer, parentId, sourceIndex, sourceId) {
+  yield put(actions.scope(nodeId, pointer, parentId, sourceIndex, sourceId));
 }
 
-export function* declare(node, compilationId, internalFor) {
-  yield put(
-    actions.declare(node.name, node.id, node.scope, compilationId, internalFor)
-  );
+export function* declare(node, sourceId) {
+  yield put(actions.declare(node.name, node.id, node.scope, sourceId));
 }
 
-export function* yulScope(
-  pointer,
-  sourceId,
-  compilationId,
-  internalFor,
-  parentId
-) {
+export function* yulScope(pointer, sourceIndex, sourceId, parentId) {
   yield put(
     //node ID is always undefined
-    actions.scope(
-      undefined,
-      pointer,
-      parentId,
-      sourceId,
-      compilationId,
-      internalFor
-    )
+    actions.scope(undefined, pointer, parentId, sourceIndex, sourceId)
   );
 }
 
@@ -77,23 +43,21 @@ export function* yulDeclare(
   node,
   pointer,
   scopePointer,
-  sourceId,
-  compilationId,
-  internalFor
+  sourceIndex,
+  sourceId
 ) {
   yield put(
     actions.declare(
       node.name,
-      makePath(sourceId, pointer),
-      makePath(sourceId, scopePointer),
-      compilationId,
-      internalFor
+      makePath(sourceIndex, pointer),
+      makePath(sourceIndex, scopePointer),
+      sourceId
     )
   );
 }
 
-export function* defineType(node, compilationId) {
-  yield put(actions.defineType(node, compilationId));
+export function* defineType(node, sourceId) {
+  yield put(actions.defineType(node, sourceId));
 }
 
 function* tickSaga() {
@@ -293,7 +257,7 @@ function* variablesAndMappingsSaga() {
   const inModifier = yield select(data.current.inModifier);
   const address = yield select(data.current.address); //storage address, not code address
   const compilationId = yield select(data.current.compilationId);
-  const internalFor = yield select(data.current.internalSourceFor); //we'll get this even if we're in Solidity,
+  const internalFor = yield select(data.current.internalSourceFor);
   //just in case it ever becomes possible to have a Solidity generated source
 
   let assignments, preambleAssignments;
@@ -424,10 +388,10 @@ function* variablesAndMappingsSaga() {
       debug("suffixes: %O", suffixes);
       assignments = {};
       let position = top; //because that's how we'll process things
-      const sourceId = yield select(data.current.sourceId);
+      const sourceIndex = yield select(data.current.sourceIndex);
       for (const suffix of suffixes) {
         //we only care about the pointer, not the variable
-        const sourceAndPointer = makePath(sourceId, pointer + suffix);
+        const sourceAndPointer = makePath(sourceIndex, pointer + suffix);
         const assignment = makeAssignment(
           {
             compilationId,
@@ -549,8 +513,8 @@ function* variablesAndMappingsSaga() {
       pointer = parentPointer;
     //NOTE: DELIBERATE FALL-THROUGH
     case "YulVariableDeclaration": {
-      const sourceId = yield select(data.current.sourceId);
-      const sourceAndPointer = makePath(sourceId, pointer);
+      const sourceIndex = yield select(data.current.sourceIndex);
+      const sourceAndPointer = makePath(sourceIndex, pointer);
       debug("sourceAndPointer: %s", sourceAndPointer);
       assignments = {};
       //variables go on from bottom to top, so process from top to bottom

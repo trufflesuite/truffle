@@ -3,7 +3,7 @@ const debug = debugModule("debugger:data:selectors");
 
 import { createSelectorTree, createLeaf } from "reselect-tree";
 import jsonpointer from "json-pointer";
-import flatten from "lodash.flatten";
+import merge from "lodash.merge";
 import semver from "semver";
 
 import { stableKeccak256, makePath } from "lib/helpers";
@@ -198,9 +198,6 @@ const data = createSelectorTree({
     scopes: {
       /*
        * data.views.scopes (selector)
-       * NOTE: grouped by compilation, then by user or internal
-       * and context for internal
-       *
        * the raw scopes data, just with intermediate
        * layers cut out
        * (no inheritance, no inlining)
@@ -208,27 +205,9 @@ const data = createSelectorTree({
       _: createLeaf(["/info/scopes"], scopes =>
         Object.assign(
           {},
-          ...Object.entries(scopes).map(
-            ([
-              compilationId,
-              {
-                userNodes: { byAstRef: userNodes },
-                internalNodes: { byContext }
-              }
-            ]) => ({
-              [compilationId]: {
-                user: userNodes,
-                internal: Object.assign(
-                  {},
-                  ...Object.entries(byContext).map(
-                    ([context, { byAstRef: nodes }]) => ({
-                      [context]: nodes
-                    })
-                  )
-                )
-              }
-            })
-          )
+          ...Object.entries(scopes).map(([sourceId, { byAstRef: nodes }]) => ({
+            [sourceId]: nodes
+          }))
         )
       ),
 
@@ -237,52 +216,25 @@ const data = createSelectorTree({
        * inlines, but still no inheritance data
        */
       inlined: createLeaf(
-        ["./_", solidity.info.sources],
+        ["./_", solidity.views.sources],
 
         (scopes, sources) =>
           Object.assign(
             {},
-            ...Object.entries(scopes).map(
-              ([compilationId, { user: userNodes, internal: contexts }]) => ({
-                [compilationId]: {
-                  user: Object.assign(
-                    {},
-                    ...Object.entries(userNodes).map(([id, entry]) => ({
-                      [id]: {
-                        ...entry,
-
-                        definition: jsonpointer.get(
-                          sources[compilationId].userSources.byId[
-                            entry.sourceId
-                          ].ast,
-                          entry.pointer
-                        )
-                      }
-                    }))
-                  ),
-                  internal: Object.assign(
-                    {},
-                    ...Object.entries(contexts).map(([context, nodes]) => ({
-                      [context]: Object.assign(
-                        {},
-                        ...Object.entries(nodes).map(([id, entry]) => ({
-                          [id]: {
-                            ...entry,
-
-                            definition: jsonpointer.get(
-                              sources[compilationId].internalSources.byContext[
-                                context
-                              ].byId[entry.sourceId].ast,
-                              entry.pointer
-                            )
-                          }
-                        }))
-                      )
-                    }))
-                  )
-                }
-              })
-            )
+            ...Object.entries(scopes).map(([sourceId, nodes]) => ({
+              [sourceId]: Object.assign(
+                {},
+                ...Object.entries(nodes).map(([astRef, scope]) => ({
+                  [astRef]: {
+                    ...scope,
+                    definition: jsonpointer.get(
+                      sources[scope.sourceId].ast,
+                      scope.pointer
+                    )
+                  }
+                }))
+              )
+            }))
           )
       )
     },
@@ -290,32 +242,33 @@ const data = createSelectorTree({
     /**
      * data.views.userDefinedTypes
      * user-defined types for passing to the decoder
-     * NOTE: *not* grouped by compilation
+     * NOTE: *not* grouped by compilation or anything, this is flat
      */
     userDefinedTypes: createLeaf(
-      ["./referenceDeclarations", "./scopes", solidity.info.sources],
-      (referenceDeclarations, scopes, sources) => {
-        return Object.assign(
+      [
+        "./referenceDeclarations",
+        "./scopes/inlined",
+        "/info/userDefinedTypes",
+        solidity.views.sources
+      ],
+      (referenceDeclarations, scopes, userDefinedTypes, sources) =>
+        Object.assign(
           {},
-          ...flatten(
-            Object.entries(referenceDeclarations).map(
-              ([compilationId, nodes]) =>
-                Object.values(nodes)
-                  .map(node =>
-                    Codec.Ast.Import.definitionToStoredType(
-                      node,
-                      compilationId,
-                      sources[compilationId].userSources.byId[
-                        scopes[compilationId].user[node.id].sourceId
-                      ].compiler,
-                      referenceDeclarations[compilationId]
-                    )
-                  )
-                  .map(type => ({ [type.id]: type }))
-            )
-          )
-        );
-      }
+          ...userDefinedTypes.map(({ sourceId, id }) => {
+            const node = scopes[sourceId][id].definition;
+            const { compilationId, compiler, internal } = sources[sourceId];
+            if (internal) {
+              return {}; //just to be sure, we assume generated sources don't define types
+            }
+            const type = Codec.Ast.Import.definitionToStoredType(
+              node,
+              compilationId,
+              compiler,
+              referenceDeclarations[compilationId]
+            );
+            return { [type.id]: type };
+          })
+        )
     ),
 
     /**
@@ -325,18 +278,19 @@ const data = createSelectorTree({
       [
         "/info/userDefinedTypes",
         "/views/scopes/inlined",
-        solidity.info.sources,
+        solidity.views.sources,
         evm.info.contexts
       ],
       (userDefinedTypes, scopes, sources, contexts) =>
         Object.values(userDefinedTypes)
           .filter(
-            ({ compilationId, id }) =>
-              scopes[compilationId].user[id].definition.nodeType ===
-              "ContractDefinition"
+            ({ sourceId, id }) =>
+              !sources[sourceId].internal && //again, assuming internal sources don't define contracts
+              scopes[sourceId][id].definition.nodeType === "ContractDefinition"
           )
-          .map(({ compilationId, id }) => {
+          .map(({ sourceId, id }) => {
             debug("id: %O", id);
+            const compilationId = sources[sourceId].compilationId;
             debug("compilationId: %O", compilationId);
             let deployedContext = Object.values(contexts).find(
               context =>
@@ -354,14 +308,11 @@ const data = createSelectorTree({
               ? deployedContext.immutableReferences
               : undefined;
             return {
-              contractNode: scopes[compilationId].user[id].definition,
+              contractNode: scopes[sourceId][id].definition,
               compilationId,
               immutableReferences,
               //we don't just use deployedContext to get compiler because it might not exist!
-              compiler:
-                sources[compilationId].userSources.byId[
-                  scopes[compilationId].user[id].sourceId
-                ].compiler,
+              compiler: sources[sourceId].compiler,
               //the following three are only needed for decoding return values
               abi: (deployedContext || {}).abi,
               deployedContext,
@@ -370,27 +321,26 @@ const data = createSelectorTree({
           })
     ),
 
-    /*
+    /**
      * data.views.referenceDeclarations
-     * NOTE: grouped by compilation
-     * obviously only needs to check user scopes
+     * grouped by compilation because that's how codec wants it;
+     * for simplicity, we will assume that generated sources never define types!
      */
     referenceDeclarations: createLeaf(
-      ["./scopes/inlined", "/info/userDefinedTypes"],
-      (scopes, userDefinedTypes) =>
-        Object.assign(
+      ["./scopes/inlined", "/info/userDefinedTypes", solidity.views.sources],
+      (scopes, userDefinedTypes, sources) =>
+        merge(
           {},
-          ...Object.entries(scopes).map(([compilationId, { user: nodes }]) => ({
-            [compilationId]: Object.assign(
-              {},
-              ...userDefinedTypes.map(
-                ({ compilationId: compilationIdForType, id }) =>
-                  compilationIdForType === compilationId
-                    ? { [id]: nodes[id].definition }
-                    : {}
-              )
-            )
-          }))
+          ...userDefinedTypes.map(({ id, sourceId }) => {
+            const source = sources[sourceId];
+            return source.internal
+              ? {} //exclude these
+              : {
+                  [source.compilationId]: {
+                    [id]: scopes[sourceId][id].definition
+                  }
+                };
+          })
         )
     ),
 
@@ -459,7 +409,7 @@ const data = createSelectorTree({
     /**
      * data.info.scopes
      */
-    scopes: createLeaf(["/state"], state => state.info.scopes.byCompilationId),
+    scopes: createLeaf(["/state"], state => state.info.scopes.bySourceId),
 
     /*
      * data.info.allocations
@@ -624,13 +574,14 @@ const data = createSelectorTree({
     ),
 
     /**
-     * data.current.sourceId
+     * data.current.sourceIndex
      */
-    sourceId: createLeaf([solidity.current.source], ({ id }) => id),
+    sourceIndex: createLeaf([solidity.current.source], ({ index }) => index),
 
     /**
      * data.current.internalSourceFor
      * returns null if in a user source
+     * TODO
      */
     internalSourceFor: createLeaf(
       [solidity.current.source],
@@ -712,11 +663,9 @@ const data = createSelectorTree({
        * Current scopes, with inheritance not handled and no inlining
        */
       raw: createLeaf(
-        ["/views/scopes", "/current/compilationId", evm.current.context],
-        (scopes, compilationId, { context }) => ({
-          ...scopes[compilationId].user,
-          ...scopes[compilationId].internal[context]
-        })
+        ["/views/scopes", solidity.current.sourceIds],
+        (scopes, sourceIds) =>
+          Object.assign({}, ...sourceIds.map(sourceId => scopes[sourceId]))
       ),
 
       /**
@@ -746,20 +695,14 @@ const data = createSelectorTree({
          * inlines definitions but does not account for inheritance
          */
         raw: createLeaf(
-          [
-            "/views/scopes/inlined",
-            "/current/compilationId",
-            evm.current.context
-          ],
-          (scopes, compilationId, { context }) => ({
-            ...scopes[compilationId].user,
-            ...scopes[compilationId].internal[context]
-          })
+          ["/views/scopes/inlined", solidity.current.sourceIds],
+          (scopes, sourceIds) =>
+            Object.assign({}, ...sourceIds.map(sourceId => scopes[sourceId]))
         )
       }
     },
 
-    /*
+    /**
      * data.current.referenceDeclarations
      */
     referenceDeclarations: createLeaf(
@@ -767,11 +710,11 @@ const data = createSelectorTree({
       (scopes, compilationId) => scopes[compilationId]
     ),
 
-    /*
+    /**
      * data.current.allocations
      */
     allocations: {
-      /*
+      /**
        * data.current.allocations.state
        * Same as data.info.allocations.state, but uses the old allocation
        * format (more convenient for debugger) where members are stored by ID
@@ -781,18 +724,8 @@ const data = createSelectorTree({
        * memory pointers :)
        */
       state: createLeaf(
-        [
-          "/info/allocations/state",
-          "/views/userDefinedTypes",
-          "../compilationId",
-          evm.current.context
-        ],
-        (
-          allAllocations,
-          userDefinedTypes,
-          compilationId,
-          { isConstructor }
-        ) => {
+        ["/info/allocations/state", "../compilationId", evm.current.context],
+        (allAllocations, compilationId, { isConstructor }) => {
           const allocations = compilationId
             ? allAllocations[compilationId]
             : {};
@@ -880,12 +813,21 @@ const data = createSelectorTree({
     pointer: createLeaf([solidity.current.pointer], identity),
 
     /**
+     * data.current.astRef
+     */
+    astRef: createLeaf(
+      [solidity.current.node, solidity.current.pointer, "./sourceIndex"],
+      (node, pointer, sourceIndex) =>
+        node ? node.id : makePath(sourceIndex, pointer)
+    ),
+
+    /**
      * data.current.scope
      * old alias for data.current.node (deprecated)
      */
     scope: createLeaf(["./node"], identity),
 
-    /*
+    /**
      * data.current.contract
      * warning: may return null or similar, even though SourceUnit is included
      * as fallback
@@ -899,7 +841,7 @@ const data = createSelectorTree({
       }
     ),
 
-    /*
+    /**
      * data.current.function
      * may be modifier rather than function!
      */
@@ -969,7 +911,7 @@ const data = createSelectorTree({
      */
     context: createLeaf([evm.current.context], debuggerContextToDecoderContext),
 
-    /*
+    /**
      * data.current.aboutToModify
      * HACK
      * This selector is used to catch those times when we go straight from a
@@ -1050,7 +992,7 @@ const data = createSelectorTree({
       }
     ),
 
-    /*
+    /**
      * data.current.modifierInvocation
      */
     modifierInvocation: createLeaf(
@@ -1094,7 +1036,7 @@ const data = createSelectorTree({
       }
     ),
 
-    /*
+    /**
      * data.current.modifierBeingInvoked
      * gets the node corresponding to the modifier or base constructor
      * being invoked

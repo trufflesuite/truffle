@@ -64,7 +64,7 @@ async function prepareDebugger(testName, sources) {
   let source = sources[fileName(testName)];
 
   //we'll need the debugger-internal ID of this source
-  let debuggerSources = bugger.view(solidity.views.flattenedSources);
+  let debuggerSources = Object.values(bugger.view(solidity.views.sources));
   let matchingSources = debuggerSources.filter(sourceObject =>
     sourceObject.sourcePath.includes(contractName(testName))
   );
@@ -93,7 +93,7 @@ export function describeDecoding(testName, fixtures, selector, generateSource) {
     [fileName(testName)]: generateSource(contractName(testName), fixtures)
   };
 
-  describe(testName, function () {
+  describe(testName, function() {
     const testDebug = debugModule(
       `test:data:decode:${changeCase.paramCase(testName)}`
     );

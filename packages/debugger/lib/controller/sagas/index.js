@@ -97,9 +97,7 @@ function* stepNext() {
       isDeliberatelySkippedNodeType(upcoming.node) ||
       (upcoming.sourceRange.start === starting.sourceRange.start &&
         upcoming.sourceRange.length === starting.sourceRange.length &&
-        upcoming.source.id === starting.source.id &&
-        upcoming.source.internalFor === starting.source.internalFor &&
-        upcoming.source.compilationId === starting.source.compilationId))
+        upcoming.source.id === starting.source.id))
   );
 }
 
@@ -139,10 +137,6 @@ function* stepInto() {
     // the function stack has not increased,
     currentDepth <= startingDepth &&
     // we haven't changed files,
-    currentLocation.source.compilationId ===
-      startingLocation.source.compilationId &&
-    currentLocation.source.internalFor ===
-      startingLocation.source.internalFor &&
     currentLocation.source.id === startingLocation.source.id &&
     //and we haven't changed lines
     currentLocation.sourceRange.lines.start.line ===
@@ -205,10 +199,6 @@ function* stepOver() {
     // line (which may be in a new file)
     (currentDepth > startingDepth ||
       (currentLocation.source.id === startingLocation.source.id &&
-        currentLocation.source.compilationId ===
-          startingLocation.source.compilationId &&
-        currentLocation.source.internalFor ===
-          startingLocation.source.internalFor &&
         currentLocation.sourceRange.lines.start.line ===
           startingLocation.sourceRange.lines.start.line))
   );
@@ -231,8 +221,6 @@ function* continueUntilBreakpoint(action) {
   let currentLocation = yield select(controller.current.location);
   let currentLine = currentLocation.sourceRange.lines.start.line;
   let currentSourceId = currentLocation.source.id;
-  let currentCompilationId = currentLocation.source.compilationId;
-  let currentInternalContext = currentLocation.source.internalFor;
 
   do {
     yield* advance(); //note: this avoids using stepNext in order to
@@ -243,7 +231,6 @@ function* continueUntilBreakpoint(action) {
     //values.
     let previousLine = currentLine;
     let previousSourceId = currentSourceId;
-    let previousCompilationId = currentCompilationId;
 
     currentLocation = yield select(controller.current.location);
     let finished = yield select(controller.current.trace.finished);
@@ -255,30 +242,20 @@ function* continueUntilBreakpoint(action) {
     if (currentSourceId === undefined) {
       continue; //never stop on an unmapped instruction
     }
-    currentCompilationId = currentLocation.source.compilationId;
-    let currentNode = currentLocation.node.id;
+    let currentNode = currentLocation.astRef;
     currentLine = currentLocation.sourceRange.lines.start.line;
-    currentInternalContext = currentLocation.source.internalFor;
 
     breakpointHit =
-      breakpoints.filter(({ sourceId, compilationId, line, node, context }) => {
+      breakpoints.filter(({ sourceId, line, node }) => {
         if (node !== undefined) {
-          return (
-            compilationId === currentCompilationId && //can skip context check as node-based breakpoints don't currently work in Yul
-            sourceId === currentSourceId &&
-            node === currentNode
-          );
+          return sourceId === currentSourceId && node === currentNode;
         }
         //otherwise, we have a line-style breakpoint; we want to stop at the
         //*first* point on the line
         return (
-          compilationId === currentCompilationId &&
-          context === currentInternalContext &&
           sourceId === currentSourceId &&
           line === currentLine &&
-          (currentSourceId !== previousSourceId ||
-            currentCompilationId !== previousCompilationId ||
-            currentLine !== previousLine) //can skip context check as don't need to worry about external calls to internal sources
+          (currentSourceId !== previousSourceId || currentLine !== previousLine) //can skip context check as don't need to worry about external calls to internal sources
         );
       }).length > 0;
   } while (!breakpointHit);

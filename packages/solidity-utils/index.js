@@ -5,7 +5,7 @@ const jsonpointer = require("json-pointer");
 const IntervalTree = require("node-interval-tree").default;
 
 var SolidityUtils = {
-  getCharacterOffsetToLineAndColumnMapping: function (source) {
+  getCharacterOffsetToLineAndColumnMapping: function(source) {
     var mapping = [];
 
     source = source.split("");
@@ -13,7 +13,7 @@ var SolidityUtils = {
     var line = 0;
     var column = 0;
 
-    source.forEach(function (character) {
+    source.forEach(function(character) {
       if (character === "\n") {
         line += 1;
         column = -1;
@@ -35,7 +35,7 @@ var SolidityUtils = {
     return mapping;
   },
 
-  getHumanReadableSourceMap: function (sourceMap) {
+  getHumanReadableSourceMap: function(sourceMap) {
     const instructions = sourceMap.split(";");
 
     let processedInstruction = {}; //persists across instructions for when info doesn't change
@@ -90,7 +90,7 @@ var SolidityUtils = {
   //binary: raw binary to process.  should not have unresolved links.
   //sourceMap: a processed source map as output by getHumanReadableSourceMap above
   //we... attempt to muddle through.
-  getProcessedInstructionsForBinary: function (sources, binary, sourceMap) {
+  getProcessedInstructionsForBinary: function(sources, binary, sourceMap) {
     if (!sources || !binary) {
       return [];
     }
@@ -185,7 +185,7 @@ var SolidityUtils = {
   //given range, and will return an array of objects with fields node and pointer; node should
   //be the corresponding node, and pointer a jsonpointer to it (from the AST root)
   //compilationId: what it says.  the function will work fine without it.
-  getFunctionsByProgramCounter: function (
+  getFunctionsByProgramCounter: function(
     instructions,
     asts,
     overlapFunctions,
@@ -197,11 +197,11 @@ var SolidityUtils = {
         .filter(instruction => instruction.name === "JUMPDEST")
         .map(instruction => {
           debug("instruction %O", instruction);
-          let sourceId = instruction.file;
+          let sourceIndex = instruction.file;
           //first off, a special case: if the file is -1, check for designated
           //invalid and if it's not that give up
           //(designated invalid gets file -1 in some Solidity versions)
-          if (sourceId === -1) {
+          if (sourceIndex === -1) {
             //yeah, this is copypasted from below
             let nextInstruction = instructions[instruction.index + 1] || {};
             if (nextInstruction.name === "INVALID") {
@@ -217,8 +217,8 @@ var SolidityUtils = {
             }
           }
           //now we proceed with the normal case
-          let findOverlappingRange = overlapFunctions[sourceId];
-          let ast = asts[sourceId];
+          let findOverlappingRange = overlapFunctions[sourceIndex];
+          let ast = asts[sourceIndex];
           if (!ast) {
             //if we can't get the ast... filter it out I guess
             return {};
@@ -262,8 +262,9 @@ var SolidityUtils = {
           }
           return {
             [instruction.pc]: {
-              sourceIndex: sourceId,
+              sourceIndex,
               compilationId,
+              //note: we're assuming that functions in generated sources are never pointed to
               pointer,
               node,
               name: node.name,
@@ -284,7 +285,7 @@ var SolidityUtils = {
     );
   },
 
-  getSourceRange: function (instruction = {}) {
+  getSourceRange: function(instruction = {}) {
     return {
       start: instruction.start || 0,
       length: instruction.length || 0,
@@ -302,7 +303,7 @@ var SolidityUtils = {
   },
 
   //findOverlappingRange should be as described above
-  findRange: function (findOverlappingRange, sourceStart, sourceLength) {
+  findRange: function(findOverlappingRange, sourceStart, sourceLength) {
     // find nodes that fully contain requested range,
     // return one with longest pointer
     // (note: returns { range, node, pointer }
@@ -320,7 +321,7 @@ var SolidityUtils = {
   },
 
   //makes the overlap function for an AST
-  makeOverlapFunction: function (ast) {
+  makeOverlapFunction: function(ast) {
     let tree = new IntervalTree();
     let ranges = SolidityUtils.rangeNodes(ast);
     for (let { range, node, pointer } of ranges) {
@@ -332,7 +333,7 @@ var SolidityUtils = {
   },
 
   //for use by makeOverlapFunction
-  rangeNodes: function (node, pointer = "") {
+  rangeNodes: function(node, pointer = "") {
     if (node instanceof Array) {
       return [].concat(
         ...node.map((sub, i) =>
@@ -358,7 +359,7 @@ var SolidityUtils = {
     }
   },
 
-  getRange: function (node) {
+  getRange: function(node) {
     // src: "<start>:<length>:<_>"
     // returns [start, end]
     let [start, length] = node.src

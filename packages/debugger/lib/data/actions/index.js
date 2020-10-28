@@ -1,34 +1,23 @@
 export const SCOPE = "DATA_SCOPE";
-export function scope(
-  id,
-  pointer,
-  parentId,
-  sourceId,
-  compilationId,
-  internalFor
-) {
-  //note: internalFor should be thought of as optional
+export function scope(id, pointer, parentId, sourceIndex, sourceId) {
   return {
     type: SCOPE,
     id,
     pointer,
     parentId,
-    sourceId,
-    compilationId,
-    internalFor
+    sourceIndex,
+    sourceId
   };
 }
 
 export const DECLARE = "DATA_DECLARE_VARIABLE";
-export function declare(name, astRef, scopeAstRef, compilationId, internalFor) {
-  //note: internalFor should be thought of as optional
+export function declare(name, astRef, scopeAstRef, sourceId) {
   return {
     type: DECLARE,
     name,
     astRef,
     scopeAstRef,
-    compilationId,
-    internalFor
+    sourceId
   };
 }
 
@@ -64,11 +53,11 @@ export function reset() {
 }
 
 export const DEFINE_TYPE = "DATA_DEFINE_TYPE";
-export function defineType(node, compilationId) {
+export function defineType(node, sourceId) {
   return {
     type: DEFINE_TYPE,
     node,
-    compilationId
+    sourceId
   };
 }
 

@@ -48,35 +48,14 @@ class DebugPrinter {
       return DebugUtils.colorize(detabbed, language);
     };
 
-    this.colorizedSources = {};
-    for (const [compilationId, compilation] of Object.entries(
-      this.session.view(solidity.info.sources)
-    )) {
-      debug("compilation: %o", compilation);
-      this.colorizedSources[compilationId] = {
-        user: {},
-        internal: {}
-      };
-      for (const source of compilation.userSources.byId) {
-        if (source) {
-          this.colorizedSources[compilationId].user[
-            source.id
-          ] = colorizeSourceObject(source);
-        }
-      }
-      for (const [context, { byId: internalSources }] of Object.entries(
-        compilation.internalSources.byContext
-      )) {
-        this.colorizedSources[compilationId].internal[context] = {};
-        for (const source of internalSources) {
-          if (source) {
-            this.colorizedSources[compilationId].internal[context][
-              source.id
-            ] = colorizeSourceObject(source);
-          }
-        }
-      }
-    }
+    this.colorizedSources = Object.assign(
+      {},
+      ...Object.entries(this.session.view(solidity.info.sources)).map(
+        ([id, source]) => ({
+          [id]: colorizeSourceObject(source)
+        })
+      )
+    );
 
     this.printouts = new Set(["sta"]);
     this.locations = ["sto", "cal", "mem", "sta"]; //should remain constant
@@ -148,7 +127,7 @@ class DebugPrinter {
     location = this.session.view(controller.current.location)
   ) {
     const {
-      source: { id: sourceId, compilationId },
+      source: { id: sourceId },
       sourceRange: range
     } = location;
 
@@ -159,14 +138,9 @@ class DebugPrinter {
       return;
     }
 
-    const { source, internal, internalFor } = this.session.view(
-      solidity.current.sources
-    )[sourceId];
     //we don't just get extract the source text from the location because passed-in location may be
     //missing the source text
-    const colorizedSource = internal
-      ? this.colorizedSources[compilationId].internal[internalFor][sourceId]
-      : this.colorizedSources[compilationId].user[sourceId];
+    const colorizedSource = this.colorizedSources[sourceId];
 
     debug("range: %o", range);
 
@@ -252,7 +226,7 @@ class DebugPrinter {
   }
 
   printBreakpoints() {
-    const sources = this.session.view(solidity.info.sources);
+    const sources = this.session.view(solidity.views.sources);
     const sourceNames = Object.assign(
       //note: only include user sources
       {},
@@ -636,7 +610,7 @@ class DebugPrinter {
   safelyEvaluateWithSelectors(expression, context) {
     const select = this.select;
     let interpreter;
-    interpreter = new Interpreter(expression, function (
+    interpreter = new Interpreter(expression, function(
       interpreter,
       globalObject
     ) {

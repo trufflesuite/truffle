@@ -15,8 +15,11 @@ const ast = createSelectorTree({
   views: {
     /**
      * ast.views.sources
+     * let's just flatten this into an array
      */
-    sources: createLeaf([solidity.views.flattenedSources], sources => sources)
+    sources: createLeaf([solidity.views.sources], sources =>
+      Object.values(sources)
+    )
   }
 });
 

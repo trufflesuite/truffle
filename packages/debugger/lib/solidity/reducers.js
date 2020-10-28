@@ -1,42 +1,65 @@
 import { combineReducers } from "redux";
 
 import * as actions from "./actions";
+import flatten from "lodash.flatten";
 
 const DEFAULT_SOURCES = {
-  byCompilationId: {} //by compilation, then in an array
+  byCompilationId: {}, //user sources
+  byContext: {} //internal sources
 };
 
+//This piece of state is organized as follows:
+//1. byId: contains all the sources, by ID.  straightforward.
+//2. byCompilationId: contains the IDs of the user sources,
+//organized by compilation ID and then index (this last part
+//takes the form of an array).
+//3. byContext: contains the IDs of the internal sources,
+//organized by context hash and then index (again, this
+//last part takes the form of an array, although a sparse
+//array be aware).
 function sources(state = DEFAULT_SOURCES, action) {
   switch (action.type) {
     /*
      * Adding new sources
      */
     case actions.ADD_SOURCES:
-      //NOTE: this code assumes that we are only ever adding compilations
+      //NOTE: this code assumes that we are only ever adding compilations or contexts
       //wholesale, and never adding to existing ones!
       return {
         byCompilationId: {
           ...state.byCompilationId,
           ...Object.assign(
             {},
-            ...Object.entries(action.compilations).map(([id, compilation]) => ({
+            ...Object.entries(action.sources.user).map(([id, compilation]) => ({
               [id]: {
-                userSources: {
-                  byId: compilation.user
-                },
-                internalSources: {
-                  byContext: Object.assign(
-                    {},
-                    ...Object.entries(compilation.internal).map(
-                      ([context, sources]) => ({
-                        [context]: {
-                          byId: sources
-                        }
-                      })
-                    )
-                  )
-                }
+                byIndex: compilation.map(source => source.id)
               }
+            }))
+          )
+        },
+        byContext: {
+          ...state.byContext,
+          ...Object.assign(
+            {},
+            ...Object.entries(action.sources.internal).map(
+              ([hash, context]) => ({
+                [hash]: {
+                  byIndex: context.map(source => source.id)
+                }
+              })
+            )
+          )
+        },
+        byId: {
+          ...state.byId,
+          ...Object.assign(
+            {},
+            flatten(
+              Object.values(actions.sources.user).concat(
+                Object.values(actions.sources.internal)
+              )
+            ).map(source => ({
+              [source.id]: source
             }))
           )
         }

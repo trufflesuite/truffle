@@ -132,12 +132,9 @@ class DebugInterpreter {
       }
 
       //search sources for given string; only include user sources
-      let sources = [].concat(
-        ...Object.values(this.session.view(solidity.info.sources)).map(
-          ({ userSources: { byId } }) => byId
-        )
-      );
-
+      let sources = Object.values(
+        this.session.view(solidity.views.sources)
+      ).filter(source => !source.internal);
       //we will indeed need the sources here, not just IDs
       let matchingSources = sources.filter(source =>
         source.sourcePath.includes(sourceArg)
@@ -309,7 +306,10 @@ class DebugInterpreter {
     }
 
     //split arguments for commands that want that; split on runs of spaces
-    splitArgs = cmd.trim().split(/ +/).slice(1);
+    splitArgs = cmd
+      .trim()
+      .split(/ +/)
+      .slice(1);
     debug("splitArgs %O", splitArgs);
 
     //warning: this bit *alters* cmd!

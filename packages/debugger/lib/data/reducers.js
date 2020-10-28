@@ -9,176 +9,62 @@ import * as Codec from "@truffle/codec";
 import { makeAssignment, makePath } from "lib/helpers";
 
 const DEFAULT_SCOPES = {
-  byCompilationId: {}
+  bySourceId: {}
 };
 
 function scopes(state = DEFAULT_SCOPES, action) {
-  let scope;
-  let newState;
-  let variables;
-
   switch (action.type) {
     case actions.SCOPE: {
-      const {
-        compilationId,
-        internalFor,
-        id,
-        sourceId,
-        parentId,
-        pointer
-      } = action;
-      const astRef = id !== undefined ? id : makePath(sourceId, pointer);
+      const { sourceId, id, sourceIndex, parentId, pointer } = action;
+      const astRef = id !== undefined ? id : makePath(sourceIndex, pointer);
       //astRef is used throughout the data saga.
       //it identifies an AST node within a given compilation either by:
       //1. its ast ID, if it has one, or
       //2. a combination of its source index and its JSON pointer if not
 
-      newState = {
-        byCompilationId: {
-          ...state.byCompilationId,
-          [compilationId]: {
-            ...state.byCompilationId[compilationId] //just setting this up to avoid errors later
+      return {
+        bySourceId: {
+          ...state.bySourceId,
+          [sourceId]: {
+            byAstRef: {
+              ...(state.bySourceId[sourceId] || {}).byAstRef,
+              [astRef]: {
+                ...(state.bySourceId[sourceId] || { byAstRef: {} }).byAstRef[
+                  astRef
+                ],
+                id,
+                parentId,
+                sourceIndex,
+                pointer,
+                sourceId
+              }
+            }
           }
         }
       };
-
-      //apologies for this multi-stage setup, but JS is like that...
-
-      newState.byCompilationId[compilationId] = {
-        ...newState.byCompilationId[compilationId],
-        userNodes: {
-          ...newState.byCompilationId[compilationId].userNodes,
-          byAstRef: {
-            ...(newState.byCompilationId[compilationId].userNodes || {})
-              .byAstRef
-          }
-        },
-        internalNodes: {
-          ...newState.byCompilationId[compilationId].internalNodes,
-          byContext: {
-            ...(newState.byCompilationId[compilationId].internalNodes || {})
-              .byContext
-          }
-        }
-      };
-
-      //...and we're not quite done.
-      if (internalFor) {
-        newState.byCompilationId[compilationId].internalNodes.byContext[
-          internalFor
-        ] = {
-          ...newState.byCompilationId[compilationId].internalNodes.byContext[
-            internalFor
-          ],
-          byAstRef: {
-            ...(
-              newState.byCompilationId[compilationId].internalNodes.byContext[
-                internalFor
-              ] || {}
-            ).byAstRef
-          }
-        };
-      }
-
-      const scopes = internalFor
-        ? newState.byCompilationId[compilationId].internalNodes.byContext[
-            internalFor
-          ].byAstRef
-        : newState.byCompilationId[compilationId].userNodes.byAstRef;
-      scope = scopes[astRef];
-
-      scopes[astRef] = {
-        //note that due to all the cloning here, we are only mutating newState, not state!
-        ...scope,
-        id,
-        sourceId,
-        parentId, //may be null or undefined
-        pointer,
-        compilationId,
-        internalFor //will be undefined for user sources
-      };
-
-      return newState;
     }
 
     case actions.DECLARE: {
-      let { compilationId, internalFor, name, astRef, scopeAstRef } = action;
+      let { sourceId, name, astRef, scopeAstRef } = action;
 
-      //note: we can assume the compilation/context already exists!
-      scope =
-        (internalFor
-          ? state.byCompilationId[compilationId].internalNodes.byContext[
-              internalFor
-            ].byAstRef[scopeAstRef]
-          : state.byCompilationId[compilationId].userNodes.byAstRef[
-              scopeAstRef
-            ]) || {};
-      variables = scope.variables || [];
+      //note: we can assume the scope already exists!
+      let scope = state.bySourceId[sourceId].byAstRef[astRef];
+      let variables = scope.variables || [];
 
-      if (internalFor === undefined) {
-        return {
-          byCompilationId: {
-            ...state.byCompilationId,
-            [compilationId]: {
-              ...state.byCompilationId[compilationId],
-              userNodes: {
-                byAstRef: {
-                  ...state.byCompilationId[compilationId].userNodes.byAstRef,
-
-                  [scopeAstRef]: {
-                    ...scope,
-
-                    variables: [
-                      ...variables,
-
-                      {
-                        name,
-                        astRef,
-                        compilationId
-                      }
-                    ]
-                  }
-                }
+      return {
+        bySourceId: {
+          ...state.bySourceId,
+          [sourceId]: {
+            byAstRef: {
+              ...state.bySourceId[sourceId].byAstRef,
+              [scopeAstRef]: {
+                ...scope,
+                variables: [...variables, { name, astRef, sourceId }]
               }
             }
           }
-        };
-      } else {
-        return {
-          byCompilationId: {
-            ...state.byCompilationId,
-            [compilationId]: {
-              ...state.byCompilationId[compilationId],
-              internalNodes: {
-                byContext: {
-                  ...state.byCompilationId[compilationId].internalNodes
-                    .byContext,
-                  [internalFor]: {
-                    byAstRef: {
-                      ...state.byCompilationId[compilationId].internalNodes
-                        .byContext[internalFor].byAstRef,
-
-                      [scopeAstRef]: {
-                        ...scope,
-
-                        variables: [
-                          ...variables,
-
-                          {
-                            name,
-                            astRef,
-                            compilationId
-                          }
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        };
-      }
+        }
+      };
     }
 
     default:
@@ -186,16 +72,11 @@ function scopes(state = DEFAULT_SCOPES, action) {
   }
 }
 
-//NOTE: we assume that generated sources will never define types.
-//If this turns out to ever be false, stuff related to user-defined types
-//will need to be redone.
+//yes, this is just a flat array as that's what's convenient
 function userDefinedTypes(state = [], action) {
   switch (action.type) {
     case actions.DEFINE_TYPE:
-      return [
-        ...state,
-        { id: action.node.id, compilationId: action.compilationId }
-      ];
+      return [...state, { id: action.node.id, sourceId: action.sourceId }];
     default:
       return state;
   }

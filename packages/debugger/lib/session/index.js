@@ -3,7 +3,7 @@ const debug = debugModule("debugger:session");
 
 import * as Abi from "@truffle/abi-utils";
 import * as Codec from "@truffle/codec";
-import { keccak256 } from "lib/helpers";
+import { keccak256, stableKeccak256 } from "lib/helpers";
 
 import configureStore from "lib/store";
 
@@ -119,8 +119,16 @@ export default class Session {
    */
   static normalize(compilations) {
     let contexts = [];
-    let sources = {}; //by compilation, then we split into
-    //by index for user sources, and by context-then-index for internal sources
+    let sources = {
+      user: {}, //by compilation
+      internal: {} //by context
+    };
+
+    //we're actually going to ignore the passed-in IDs and make our own.
+    //note we'll set contextHash to null for user sources, and only set it
+    //for internal sources.
+    const makeSourceId = (compilationId, contextHash, index) =>
+      stableKeccak256({ compilationId, contextHash, index });
 
     for (let compilation of compilations) {
       if (compilation.unreliableSourceOrder) {
@@ -129,22 +137,21 @@ export default class Session {
         );
       }
       let compiler = compilation.compiler; //note: we'll prefer one listed on contract or source
-      sources[compilation.id] = {
-        user: [],
-        internal: {}
-      };
+      sources.user[compilation.id] = [];
       for (let index in compilation.sources) {
         //not the recommended way to iterate over an array,
         //but the order doesn't matter here so it's safe
+        index = Number(index); //however due to the use of in we must explicitly convert to number
         let source = compilation.sources[index];
         if (!source) {
           continue; //just for safety (in case there are gaps)
         }
-        sources[compilation.id].user[index] = {
+        sources.user[compilation.id][index] = {
           ...source,
           compiler: source.compiler || compiler,
           compilationId: compilation.id,
-          id: Number(index), //these are coming out as strings due to the use of in?
+          index,
+          id: makeSourceId(compilation.id, null, index),
           internal: false
         };
       }
@@ -220,15 +227,16 @@ export default class Session {
             isConstructor: true
           });
           if (generatedSources) {
-            sources[compilation.id].internal[contextHash] = [];
+            sources.internal[contextHash] = [];
             for (let index in generatedSources) {
-              //again with in
+              index = Number(index); //it comes out as a string due to in, so let's fix that
               const source = generatedSources[index];
-              sources[compilation.id].internal[contextHash][index] = {
+              sources.internal[contextHash][index] = {
                 ...source,
                 compiler: source.compiler || compiler,
                 compilationId: compilation.id,
-                id: Number(index), //again due to in
+                index,
+                id: makeSourceId(compilation.id, contextHash, index),
                 internal: true,
                 internalFor: contextHash
               };
@@ -259,15 +267,16 @@ export default class Session {
             isConstructor: false
           });
           if (deployedGeneratedSources) {
-            sources[compilation.id].internal[contextHash] = [];
+            sources.internal[contextHash] = [];
             for (let index in deployedGeneratedSources) {
-              //again with in
+              index = Number(index); //it comes out as a string due to in, so let's fix that
               const source = deployedGeneratedSources[index];
-              sources[compilation.id].internal[contextHash][index] = {
+              sources.internal[contextHash][index] = {
                 ...source,
                 compiler: source.compiler || compiler,
                 compilationId: compilation.id,
-                id: Number(index), //again due to in
+                index,
+                id: makeSourceId(compilation.id, contextHash, index),
                 internal: true,
                 internalFor: contextHash
               };

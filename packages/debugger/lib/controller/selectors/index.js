@@ -6,6 +6,7 @@ import { isSkippedNodeType } from "lib/helpers";
 
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
+import data from "lib/solidity/selectors";
 import trace from "lib/trace/selectors";
 
 /**
@@ -92,6 +93,11 @@ const controller = createSelectorTree({
         [solidity.current.node, "/current/trace/loaded"],
         (node, loaded) => (loaded ? node : null)
       ),
+
+      /**
+       * controller.current.location.astRef
+       */
+      astRef: createLeaf([data.current.astRef], identity),
 
       /**
        * controller.current.location.isMultiline
