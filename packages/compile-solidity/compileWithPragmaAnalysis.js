@@ -13,6 +13,17 @@ const getSemverExpressions = sources => {
   return sources.map(source => getSemverExpression(source));
 };
 
+const validateSemverExpressions = semverExpressions => {
+  const { validRange } = semver;
+  for (const expression of semverExpressions) {
+    if (semver.validRange(expression) === null) {
+      const message = `Invalid semver expression (${expression}) found in` +
+        `one of your contract's imports.`;
+      throw new Error(message);
+    }
+  }
+};
+
 // takes an array of versions and an array of semver expressions
 // returns a version of the compiler or undefined if none can be found
 const findNewestSatisfyingVersion = ({ solcReleases, semverExpressions }) => {
@@ -75,6 +86,11 @@ const compileWithPragmaAnalysis = async ({ paths, options }) => {
     const semverExpressions = await getSemverExpressions(
       Object.values(allSources)
     );
+
+    // this really just validates the expressions from the contracts' imports
+    // as it has already determined the parser version for each contract
+    await validateSemverExpressions(semverExpressions);
+
     const newestSatisfyingVersion = findNewestSatisfyingVersion({
       solcReleases: releases,
       semverExpressions

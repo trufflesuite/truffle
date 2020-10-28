@@ -135,4 +135,38 @@ describe("compileWithPragmaAnalysis", () => {
       }
     });
   });
+
+  describe("when there is a semver expression error", () => {
+    it("throws an error when it can't determine parser version", async () => {
+      try {
+        await compileWithPragmaAnalysis({
+          options: config,
+          paths: [path.join(sourceDirectory, "WithSemverError.sol")]
+        });
+        assert.fail("The function should have thrown.");
+      } catch (error) {
+        const expectedMessage = "$0.5.3";
+        if (error.message.includes(expectedMessage)) {
+          return "all good";
+        }
+        throw error;
+      }
+    });
+
+    it("throws an error when import has bad semver", async () => {
+      try {
+        await compileWithPragmaAnalysis({
+          options: config,
+          paths: [path.join(sourceDirectory, "withImports", "ImportsBadSemver.sol")]
+        });
+        assert.fail("The function should have thrown.");
+      } catch (error) {
+        const expectedMessage = "Invalid semver expression ($0.5.3)";
+        if (error.message.includes(expectedMessage)) {
+          return "all good";
+        }
+        throw error;
+      }
+    });
+  });
 });
