@@ -2,13 +2,18 @@ const fs = require("fs");
 const path = require("path");
 const { generateNamespace } = require("@gql2ts/from-schema");
 
-// for path setup
-require("@truffle/db");
+const { schema } = require("@truffle/db/dist/src/schema");
 
-const { schema } = require("@truffle/db/data/schema");
-
-const dataModel = generateNamespace("DataModel", schema, {
-  ignoreTypeNameDeclaration: true
-});
+const dataModel = generateNamespace(
+  "DataModel",
+  schema,
+  {
+    ignoreTypeNameDeclaration: true,
+    ignoredTypes: ["Resource", "Named"]
+  },
+  {
+    generateInterfaceName: name => name
+  }
+);
 
 fs.writeFileSync(path.join(__dirname, "..", "types", "schema.d.ts"), dataModel);

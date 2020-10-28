@@ -1,8 +1,8 @@
-import {
-  IdObject,
-  WorkspaceRequest,
-  WorkspaceResponse
-} from "@truffle/db/loaders/types";
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:loaders:resources:projects");
+
+import { Load } from "@truffle/db/loaders/types";
+import { IdObject } from "@truffle/db/meta";
 
 import { AddProjects } from "./add.graphql";
 import { AssignProjectNames } from "./assign.graphql";
@@ -11,11 +11,7 @@ export { AddProjects, AssignProjectNames, ResolveProjectName };
 
 export function* generateProjectLoad(
   directory: string
-): Generator<
-  WorkspaceRequest,
-  DataModel.IProject,
-  WorkspaceResponse<"projectsAdd", DataModel.IProjectsAddPayload>
-> {
+): Load<DataModel.Project, "projectsAdd"> {
   const result = yield {
     request: AddProjects,
     variables: {
@@ -23,18 +19,14 @@ export function* generateProjectLoad(
     }
   };
 
-  return result.data.workspace.projectsAdd.projects[0];
+  return result.data.projectsAdd.projects[0];
 }
 
 export function* generateProjectNameResolve(
-  project: IdObject<DataModel.IProject>,
+  project: IdObject<DataModel.Project>,
   name: string,
   type: string
-): Generator<
-  WorkspaceRequest,
-  DataModel.INameRecord,
-  WorkspaceResponse<"project", { resolve: DataModel.IProject["resolve"] }>
-> {
+): Load<DataModel.NameRecord, "project"> {
   const result = yield {
     request: ResolveProjectName,
     variables: {
@@ -44,17 +36,15 @@ export function* generateProjectNameResolve(
     }
   };
 
-  return result.data.workspace.project.resolve[0];
+  const nameRecord = result.data.project.resolve[0];
+
+  return nameRecord;
 }
 
 export function* generateProjectNamesAssign(
-  project: IdObject<DataModel.IProject>,
-  nameRecords: DataModel.INameRecord[]
-): Generator<
-  WorkspaceRequest,
-  void,
-  WorkspaceResponse<"projectNamesAssign", DataModel.IProjectNamesAssignPayload>
-> {
+  project: IdObject<DataModel.Project>,
+  nameRecords: DataModel.NameRecord[]
+): Load<void, "projectNamesAssign"> {
   const projectNames = nameRecords.map(({ id, name, type }) => ({
     project,
     nameRecord: { id },

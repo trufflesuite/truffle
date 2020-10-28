@@ -1,9 +1,6 @@
-require("source-map-support/register");
-require("module-alias/register");
-const path = require("path");
-const moduleAlias = require("module-alias");
+const debug = require("debug")("db");
 
-moduleAlias.addAlias("@truffle/db", path.join(__dirname));
+require("source-map-support/register");
 
 const { TruffleDB } = require("./db");
 const { ApolloServer } = require("apollo-server");

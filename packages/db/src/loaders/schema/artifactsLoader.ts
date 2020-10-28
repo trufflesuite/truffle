@@ -1,3 +1,6 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:loaders:schema:artifactsLoader");
+
 import { TruffleDB } from "@truffle/db/db";
 import * as fse from "fs-extra";
 import path from "path";
@@ -24,7 +27,7 @@ type NetworkLinkObject = {
 };
 
 type LinkValueLinkReferenceObject = {
-  bytecode: string;
+  bytecode: { id: string };
   index: number;
 };
 
@@ -51,11 +54,6 @@ type BytecodeInfo = {
   id: string;
   linkReferences: Array<LinkReferenceObject>;
   bytes?: string;
-};
-
-type BytecodesObject = {
-  bytecodes: Array<BytecodeInfo>;
-  callBytecodes: Array<BytecodeInfo>;
 };
 
 type IdObject = {
@@ -91,16 +89,20 @@ export class ArtifactsLoader {
       this.config
     );
 
-    const { project, compilations } = await this.db.loadCompilations(result);
+    const project = await this.db.loadProject();
+
+    // third parameter in loadCompilation is for whether or not we need
+    // to update nameRecords (i.e. is this happening in test)
+    const { compilations } = await this.db.loadCompilations(result, {
+      names: true
+    });
 
     //map contracts and contract instances to compiler
     await Promise.all(
       compilations.map(async ({ id }, index) => {
         const {
           data: {
-            workspace: {
-              compilation: { processedSources }
-            }
+            compilation: { processedSources }
           }
         } = await this.db.query(GetCompilation, { id });
 
@@ -134,9 +136,7 @@ export class ArtifactsLoader {
       nameRecords: nameRecords
     });
     let {
-      data: {
-        workspace: { nameRecordsAdd }
-      }
+      data: { nameRecordsAdd }
     } = nameRecordsResult;
 
     const projectNames = nameRecordsAdd.nameRecords.map(
@@ -149,7 +149,7 @@ export class ArtifactsLoader {
     );
 
     //set new projectNameHeads based on name records added
-    const projectNamesResult = await this.db.query(AssignProjectNames, {
+    await this.db.query(AssignProjectNames, {
       projectNames
     });
   }
@@ -161,9 +161,9 @@ export class ArtifactsLoader {
       name
     });
 
-    if (data.workspace.project.resolve.length > 0) {
+    if (data.project.resolve.length > 0) {
       return {
-        id: data.workspace.project.resolve[0].id
+        id: data.project.resolve[0].id
       };
     }
   }
@@ -219,8 +219,7 @@ export class ArtifactsLoader {
                   ]
                 });
 
-                const id =
-                  networksAdd.data.workspace.networksAdd.networks[0].id;
+                const id = networksAdd.data.networksAdd.networks[0].id;
                 configNetworks.push({
                   contract: contractName,
                   id: id,
@@ -274,7 +273,7 @@ export class ArtifactsLoader {
         let linkValue = {
           value: link[1],
           linkReference: {
-            bytecode: bytecode.id,
+            bytecode: { id: bytecode.id },
             index: linkReferenceIndexByName
           }
         };
@@ -287,7 +286,7 @@ export class ArtifactsLoader {
   }
 
   async loadContractInstances(
-    contracts: Array<DataModel.IContract>,
+    contracts: Array<DataModel.Contract>,
     networksArray: Array<Array<LoaderNetworkObject>>
   ) {
     // networksArray is an array of arrays of networks for each contract;

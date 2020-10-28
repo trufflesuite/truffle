@@ -1,9 +1,10 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:loaders:resources:compilations");
+
 import {
   CompilationData,
   LoadedSources,
-  IdObject,
-  WorkspaceRequest,
-  WorkspaceResponse
+  Load
 } from "@truffle/db/loaders/types";
 
 import { AddCompilations } from "./add.graphql";
@@ -14,13 +15,13 @@ export { GetCompilation } from "./get.graphql";
 const compilationSourceInputs = ({
   compilation,
   sources
-}: LoadableCompilation): DataModel.ICompilationSourceInput[] =>
+}: LoadableCompilation): DataModel.ResourceReferenceInput[] =>
   compilation.sources.map(({ input: { sourcePath } }) => sources[sourcePath]);
 
 const compilationProcessedSourceInputs = ({
   compilation,
   sources
-}: LoadableCompilation): DataModel.ICompilationProcessedSourceInput[] =>
+}: LoadableCompilation): DataModel.ProcessedSourceInput[] =>
   compilation.sources.map(({ input: { sourcePath }, contracts }) => ({
     source: sources[sourcePath],
     // PRECONDITION: all contracts in the same compilation with the same
@@ -31,9 +32,8 @@ const compilationProcessedSourceInputs = ({
   }));
 
 const compilationSourceMapInputs = ({
-  compilation,
-  sources
-}: LoadableCompilation): DataModel.ICompilationSourceMapInput[] => {
+  compilation
+}: LoadableCompilation): DataModel.SourceMapInput[] => {
   const contracts = compilation.sources
     .map(({ contracts }) => contracts)
     .flat();
@@ -50,7 +50,7 @@ const compilationSourceMapInputs = ({
 
 const compilationInput = (
   data: LoadableCompilation
-): DataModel.ICompilationInput => ({
+): DataModel.CompilationInput => ({
   compiler: data.compilation.compiler,
   processedSources: compilationProcessedSourceInputs(data),
   sources: compilationSourceInputs(data),
@@ -64,11 +64,7 @@ type LoadableCompilation = {
 
 export function* generateCompilationsLoad(
   loadableCompilations: LoadableCompilation[]
-): Generator<
-  WorkspaceRequest,
-  DataModel.ICompilation[],
-  WorkspaceResponse<"compilationsAdd", DataModel.ICompilationsAddPayload>
-> {
+): Load<DataModel.Compilation[], "compilationsAdd"> {
   const compilations = loadableCompilations.map(compilationInput);
 
   const result = yield {
@@ -76,5 +72,5 @@ export function* generateCompilationsLoad(
     variables: { compilations }
   };
 
-  return result.data.workspace.compilationsAdd.compilations;
+  return result.data.compilationsAdd.compilations;
 }

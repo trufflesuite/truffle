@@ -1,3 +1,6 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:helpers:generateId");
+
 import { soliditySha3 } from "web3-utils";
 const jsonStableStringify = require("json-stable-stringify");
 

@@ -310,7 +310,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
         assert.fail();
       } catch (e) {
         assert(
-          e.stack.includes("Error: invalid number value ("),
+          e.stack.includes("Error: invalid BigNumber string"),
           "Should keep hijacked error description"
         );
         assert(
@@ -318,11 +318,11 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
           "Should include original stack details"
         );
         assert(
-          e.hijackedStack.includes("Error: invalid number value ("),
+          e.hijackedStack.includes("Error: invalid BigNumber string"),
           "Should preserve hijacked error message"
         );
         assert(
-          e.hijackedStack.includes("/utils/abi-coder.js:"),
+          e.hijackedStack.includes("/lib/abi-coder.js:"),
           "Should preserve hijacked stack details"
         );
       }

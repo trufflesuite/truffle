@@ -1,41 +1,33 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:db");
+
 import { GraphQLSchema, DocumentNode, parse, execute } from "graphql";
-import { schema } from "@truffle/db/data";
+import type TruffleConfig from "@truffle/config";
 import { generateCompileLoad } from "@truffle/db/loaders/commands";
-import { WorkspaceRequest } from "@truffle/db/loaders/types";
+import { LoaderRunner, forDb } from "@truffle/db/loaders/run";
 import { WorkflowCompileResult } from "@truffle/compile-common";
-import { Workspace } from "@truffle/db/workspace";
+import { schema } from "./schema";
+import { connect } from "./connect";
+import { Context } from "./definitions";
+import {
+  generateInitializeLoad,
+  generateNamesLoad
+} from "@truffle/db/loaders/commands";
+import { toIdObject, NamedResource } from "@truffle/db/meta";
 
-interface IConfig {
-  contracts_build_directory: string;
-  contracts_directory: string;
-  working_directory?: string;
-  db?: {
-    adapter?: {
-      name: string;
-      settings?: any;
-    };
-  };
-}
-
-interface IContext {
-  artifactsDirectory: string;
-  workingDirectory: string;
-  contractsDirectory: string;
-  workspace: Workspace;
-  db: ITruffleDB;
-}
-
-interface ITruffleDB {
-  query: (query: DocumentNode | string, variables: any) => Promise<any>;
-}
+type LoaderOptions = {
+  names: boolean;
+};
 
 export class TruffleDB {
   schema: GraphQLSchema;
-  context: IContext;
+  private context: Context;
+  private runLoader: LoaderRunner;
 
-  constructor(config: IConfig) {
-    this.context = this.createContext(config);
+  constructor(config: TruffleConfig) {
     this.schema = schema;
+    this.context = this.createContext(config);
+    this.runLoader = forDb(this);
   }
 
   async query(query: DocumentNode | string, variables: any = {}): Promise<any> {
@@ -45,39 +37,45 @@ export class TruffleDB {
     return await execute(this.schema, document, null, this.context, variables);
   }
 
-  async loadCompilations(result: WorkflowCompileResult) {
-    const saga = generateCompileLoad(result, {
-      directory: this.context.workingDirectory
-    });
-
-    let cur = saga.next();
-
-    while (!cur.done) {
-      // HACK not sure why this is necessary; TS knows we're not done, so
-      // cur.value should only be WorkspaceRequest (first Generator param),
-      // not the return value (second Generator param)
-      const {
-        request,
-        variables
-      }: WorkspaceRequest = cur.value as WorkspaceRequest;
-      const response = await this.query(request, variables);
-
-      cur = saga.next(response);
-    }
-
-    return cur.value;
+  async loadNames(project: DataModel.Project, resources: NamedResource[]) {
+    return await this.runLoader(
+      generateNamesLoad,
+      toIdObject(project),
+      resources
+    );
   }
 
-  createContext(config: IConfig): IContext {
+  async loadProject(): Promise<DataModel.Project> {
+    return await this.runLoader(generateInitializeLoad, {
+      directory: this.context.workingDirectory
+    });
+  }
+
+  async loadCompilations(
+    result: WorkflowCompileResult,
+    options: LoaderOptions
+  ) {
+    const project = await this.loadProject();
+
+    const { compilations, contracts } = await this.runLoader(
+      generateCompileLoad,
+      result
+    );
+
+    if (options.names === true) {
+      await this.loadNames(project, contracts);
+    }
+
+    return { compilations, contracts };
+  }
+
+  private createContext(config: TruffleConfig): Context {
     return {
-      workspace: new Workspace({
+      workspace: connect({
         workingDirectory: config.working_directory,
         adapter: (config.db || {}).adapter
       }),
-      artifactsDirectory: config.contracts_build_directory,
-      workingDirectory: config.working_directory || process.cwd(),
-      contractsDirectory: config.contracts_directory,
-      db: this
+      workingDirectory: config.working_directory || process.cwd()
     };
   }
 }
