@@ -46,7 +46,7 @@ const Compile = {
 
   // this takes an array of paths and options
   async sourcesWithDependencies({ paths, options }) {
-    if (options.compilers.solc.version === "analyzePragmas") {
+    if (options.compilers.solc.version === "pragma") {
       return this.sourcesWithPragmaAnalysis({ paths, options });
     }
 
