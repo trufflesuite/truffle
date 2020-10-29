@@ -18,6 +18,7 @@ export class Resolver {
       new EthPMv3(options.working_directory),
       new NPM(options.working_directory),
       new GlobalNPM(),
+      new ABI(options.working_directory, options.contracts_build_directory),
       new FS(options.working_directory, options.contracts_build_directory)
     ];
 
