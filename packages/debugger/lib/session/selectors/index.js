@@ -55,8 +55,10 @@ const session = createSelectorTree({
               debug("sources: %o", sources);
 
               let source =
-                primarySource !== undefined
-                  ? sources[compilationId].userSources.byId[primarySource]
+                primarySource !== undefined // note this is an index, not an ID
+                  ? sources.byCompilationId[compilationId].byIndex[
+                      primarySource
+                    ]
                   : undefined;
 
               let constructorArgs;

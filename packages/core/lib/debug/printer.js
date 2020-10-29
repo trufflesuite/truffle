@@ -230,21 +230,9 @@ class DebugPrinter {
     const sourceNames = Object.assign(
       //note: only include user sources
       {},
-      ...Object.entries(sources).map(
-        ([
-          compilationId,
-          {
-            userSources: { byId: compilation }
-          }
-        ]) => ({
-          [compilationId]: Object.assign(
-            {},
-            ...Object.values(compilation).map(({ id, sourcePath }) => ({
-              [id]: path.basename(sourcePath)
-            }))
-          )
-        })
-      )
+      ...Object.entries(sources).map(([id, source]) => ({
+        [id]: path.baseName(source.sourcePath)
+      }))
     );
     const breakpoints = this.session.view(controller.breakpoints);
     if (breakpoints.length > 0) {
@@ -253,10 +241,8 @@ class DebugPrinter {
         let locationMessage = DebugUtils.formatBreakpointLocation(
           breakpoint,
           currentLocation.node !== undefined &&
-            breakpoint.compilationId === currentLocation.source.compilationId &&
-            breakpoint.node === currentLocation.node.id,
-          currentLocation.source.compilationId,
-          currentLocation.source.internalFor,
+            breakpoint.sourceId === currentLocation.source.sourceId &&
+            breakpoint.node === currentLocation.astRef,
           currentLocation.source.id,
           sourceNames
         );

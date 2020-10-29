@@ -49,7 +49,7 @@ class DebugInterpreter {
     const currentLocation = this.session.view(controller.current.location);
     const breakpoints = this.session.view(controller.breakpoints);
 
-    const currentNode = currentLocation.node ? currentLocation.node.id : null;
+    const currentNode = currentLocation.astRef;
     const currentSourceId = currentLocation.source
       ? currentLocation.source.id
       : null;
@@ -58,13 +58,6 @@ class DebugInterpreter {
         ? //sourceRange is never null, so we go by whether currentSourceId is null/undefined
           currentLocation.sourceRange.lines.start.line
         : null;
-    const currentCompilationId = currentLocation.source
-      ? currentLocation.source.compilationId
-      : null;
-    const currentInternalContext =
-      currentLocation.source && currentLocation.source.internal
-        ? currentLocation.source.internalFor
-        : undefined; //note: for a breakpoint in a user source, context is undefined! only used for internal sources!
 
     let breakpoint = {};
 
@@ -78,8 +71,6 @@ class DebugInterpreter {
       breakpoint.node = currentNode;
       breakpoint.line = currentLine;
       breakpoint.sourceId = currentSourceId;
-      breakpoint.context = currentInternalContext;
-      breakpoint.compilationId = currentCompilationId;
     }
 
     //the special case of "B all"
@@ -111,8 +102,6 @@ class DebugInterpreter {
       }
 
       breakpoint.sourceId = currentSourceId;
-      breakpoint.compilationId = currentCompilationId;
-      breakpoint.context = currentInternalContext;
       breakpoint.line = currentLine + delta;
     }
 
@@ -131,10 +120,8 @@ class DebugInterpreter {
         return;
       }
 
-      //search sources for given string; only include user sources
-      let sources = Object.values(
-        this.session.view(solidity.views.sources)
-      ).filter(source => !source.internal);
+      //search sources for given string
+      let sources = Object.values(this.session.view(solidity.views.sources));
       //we will indeed need the sources here, not just IDs
       let matchingSources = sources.filter(source =>
         source.sourcePath.includes(sourceArg)
@@ -156,8 +143,6 @@ class DebugInterpreter {
 
       //otherwise, we found it!
       breakpoint.sourceId = matchingSources[0].id;
-      breakpoint.compilationId = matchingSources[0].compilationId;
-      breakpoint.context = undefined; //since it's a user source
       breakpoint.line = line - 1; //adjust for zero-indexing!
     }
 
@@ -177,8 +162,6 @@ class DebugInterpreter {
       }
 
       breakpoint.sourceId = currentSourceId;
-      breakpoint.compilationId = currentCompilationId;
-      breakpoint.context = currentInternalContext;
       breakpoint.line = line - 1; //adjust for zero-indexing!
     }
 
@@ -200,31 +183,17 @@ class DebugInterpreter {
 
     //having constructed and adjusted breakpoint, here's now a
     //user-readable message describing its location
-    let sources = this.session.view(solidity.info.sources);
+    let sources = this.session.view(solidity.views.sources);
     let sourceNames = Object.assign(
       //note: only include user sources
       {},
-      ...Object.entries(sources).map(
-        ([
-          compilationId,
-          {
-            userSources: { byId: compilation }
-          }
-        ]) => ({
-          [compilationId]: Object.assign(
-            {},
-            ...Object.values(compilation).map(({ id, sourcePath }) => ({
-              [id]: path.basename(sourcePath)
-            }))
-          )
-        })
-      )
+      ...Object.entries(sources).map(([id, source]) => ({
+        [id]: path.baseName(source.sourcePath)
+      }))
     );
     let locationMessage = DebugUtils.formatBreakpointLocation(
       breakpoint,
       true, //only relevant for node-based breakpoints
-      currentCompilationId,
-      currentInternalContext,
       currentSourceId,
       sourceNames
     );
@@ -233,8 +202,6 @@ class DebugInterpreter {
     let alreadyExists =
       breakpoints.filter(
         existingBreakpoint =>
-          existingBreakpoint.compilationId === breakpoint.compilationId &&
-          existingBreakpoint.context === breakpoint.context && //may be undefined
           existingBreakpoint.sourceId === breakpoint.sourceId &&
           existingBreakpoint.line === breakpoint.line &&
           existingBreakpoint.node === breakpoint.node //may be undefined

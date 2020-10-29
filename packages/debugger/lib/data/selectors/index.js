@@ -581,7 +581,6 @@ const data = createSelectorTree({
     /**
      * data.current.internalSourceFor
      * returns null if in a user source
-     * TODO
      */
     internalSourceFor: createLeaf(
       [solidity.current.source],
@@ -814,11 +813,16 @@ const data = createSelectorTree({
 
     /**
      * data.current.astRef
+     * returns null when not in a mapped source
      */
     astRef: createLeaf(
       [solidity.current.node, solidity.current.pointer, "./sourceIndex"],
       (node, pointer, sourceIndex) =>
-        node ? node.id : makePath(sourceIndex, pointer)
+        node
+          ? node.id !== undefined
+            ? node.id
+            : makePath(sourceIndex, pointer)
+          : null
     ),
 
     /**

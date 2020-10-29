@@ -6,7 +6,7 @@ import { isSkippedNodeType } from "lib/helpers";
 
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
-import data from "lib/solidity/selectors";
+import data from "lib/data/selectors";
 import trace from "lib/trace/selectors";
 
 /**
@@ -142,22 +142,16 @@ const controller = createSelectorTree({
      * returns null instead.
      */
     resolver: createLeaf(
-      [solidity.info.sources, solidity.views.overlapFunctions],
+      [solidity.views.sources, solidity.views.overlapFunctions],
       (sources, functions) => breakpoint => {
         let adjustedBreakpoint;
         if (breakpoint.node === undefined) {
           let line = breakpoint.line;
-          const { context, compilationId, sourceId } = breakpoint;
+          const { sourceId } = breakpoint;
           debug("breakpoint: %O", breakpoint);
           debug("sources: %o", sources);
-          const { source, ast } = context //if context is set, that mean's it's an internal source
-            ? sources[compilationId].internalSources.byContext[context].byId[
-                sourceId
-              ]
-            : sources[compilationId].userSources.byId[sourceId];
-          const findOverlappingRange = context //same comment as above
-            ? functions[compilationId].internal[context][sourceId]
-            : functions[compilationId].user[sourceId];
+          const { source, ast } = sources[sourceId];
+          const findOverlappingRange = functions[sourceId];
           const lineLengths = source.split("\n").map(line => line.length);
           //why does neither JS nor lodash have a scan function like Haskell??
           //guess we'll have to do our scan manually
