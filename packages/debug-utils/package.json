@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "4.2.13",
+  "version": "4.2.14",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0"

@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "7.7.6",
+  "version": "7.7.7",
   "main": "dist/debugger.js",
   "scripts": {
     "build": "webpack --config webpack/webpack.config.js",
@@ -22,7 +22,7 @@
   "dependencies": {
     "@truffle/abi-utils": "^0.1.0",
     "@truffle/codec": "^0.7.1",
-    "@truffle/compile-solidity": "^5.0.5",
+    "@truffle/compile-solidity": "^5.0.6",
     "@truffle/expect": "^0.0.15",
     "@truffle/solidity-utils": "^1.3.24",
     "bn.js": "^4.11.8",
@@ -43,11 +43,11 @@
     "web3-eth-abi": "1.2.9"
   },
   "devDependencies": {
-    "@truffle/artifactor": "^4.0.83",
-    "@truffle/box": "^2.1.3",
-    "@truffle/migrate": "^3.1.44",
-    "@truffle/resolver": "^6.0.24",
-    "@truffle/workflow-compile": "^3.0.5",
+    "@truffle/artifactor": "^4.0.84",
+    "@truffle/box": "^2.1.4",
+    "@truffle/migrate": "^3.1.45",
+    "@truffle/resolver": "^6.0.25",
+    "@truffle/workflow-compile": "^3.0.6",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
