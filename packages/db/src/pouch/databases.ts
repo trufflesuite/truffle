@@ -159,10 +159,14 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
 
     await this.ready;
 
-    const resources = await Promise.all(
-      input[collectionName].map(async resourceInput => {
-        const id = this.generateId(collectionName, resourceInput);
+    const resourceInputById = input[collectionName]
+      .map(resourceInput => ({
+        [this.generateId(collectionName, resourceInput)]: resourceInput
+      }))
+      .reduce((a, b) => ({ ...a, ...b }), {});
 
+    const resources = await Promise.all(
+      Object.entries(resourceInputById).map(async ([ id, resourceInput ]) => {
         // check for existing
         const resource = await this.get(collectionName, id);
         if (resource) {
@@ -199,10 +203,14 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
 
     await this.ready;
 
-    const resources = await Promise.all(
-      input[collectionName].map(async resourceInput => {
-        const id = this.generateId(collectionName, resourceInput);
+    const resourceInputById = input[collectionName]
+      .map(resourceInput => ({
+        [this.generateId(collectionName, resourceInput)]: resourceInput
+      }))
+      .reduce((a, b) => ({ ...a, ...b }), {});
 
+    const resources = await Promise.all(
+      Object.entries(resourceInputById).map(async ([ id, resourceInput ]) => {
         // check for existing
         const resource = await this.get(collectionName, id);
         const { _rev = undefined } = resource ? resource : {};
