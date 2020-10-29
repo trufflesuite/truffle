@@ -18,7 +18,7 @@ function* walk(sourceId, sourceIndex, node, pointer = "", parentId = null) {
     for (let [i, child] of node.entries()) {
       yield* walk(sourceId, sourceIndex, child, `${pointer}/${i}`, parentId);
     }
-  } else if (node && node.nodeType.startsWith("Yul")) {
+  } else if (node && node.nodeType && node.nodeType.startsWith("Yul")) {
     //defer to yul handler!
     yield* handleYul(sourceId, sourceIndex, node, pointer, parentId);
   } else if (node instanceof Object) {

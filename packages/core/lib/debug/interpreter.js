@@ -188,7 +188,7 @@ class DebugInterpreter {
       //note: only include user sources
       {},
       ...Object.entries(sources).map(([id, source]) => ({
-        [id]: path.baseName(source.sourcePath)
+        [id]: path.basename(source.sourcePath)
       }))
     );
     let locationMessage = DebugUtils.formatBreakpointLocation(
@@ -273,10 +273,7 @@ class DebugInterpreter {
     }
 
     //split arguments for commands that want that; split on runs of spaces
-    splitArgs = cmd
-      .trim()
-      .split(/ +/)
-      .slice(1);
+    splitArgs = cmd.trim().split(/ +/).slice(1);
     debug("splitArgs %O", splitArgs);
 
     //warning: this bit *alters* cmd!

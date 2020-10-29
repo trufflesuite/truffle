@@ -48,7 +48,7 @@ function scopes(state = DEFAULT_SCOPES, action) {
       let { sourceId, name, astRef, scopeAstRef } = action;
 
       //note: we can assume the scope already exists!
-      let scope = state.bySourceId[sourceId].byAstRef[astRef];
+      let scope = state.bySourceId[sourceId].byAstRef[scopeAstRef];
       let variables = scope.variables || [];
 
       return {
@@ -76,6 +76,7 @@ function scopes(state = DEFAULT_SCOPES, action) {
 function userDefinedTypes(state = [], action) {
   switch (action.type) {
     case actions.DEFINE_TYPE:
+      debug("action: %O", action);
       return [...state, { id: action.node.id, sourceId: action.sourceId }];
     default:
       return state;
@@ -91,6 +92,7 @@ const DEFAULT_ALLOCATIONS = {
 
 function allocations(state = DEFAULT_ALLOCATIONS, action) {
   if (action.type === actions.ALLOCATE) {
+    debug("action: %O", action);
     return {
       storage: action.storage,
       memory: action.memory,

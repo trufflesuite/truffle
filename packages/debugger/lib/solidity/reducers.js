@@ -1,3 +1,6 @@
+import debugModule from "debug";
+const debug = debugModule("debugger:solidity:reducers");
+
 import { combineReducers } from "redux";
 
 import * as actions from "./actions";
@@ -54,13 +57,11 @@ function sources(state = DEFAULT_SOURCES, action) {
           ...state.byId,
           ...Object.assign(
             {},
-            flatten(
-              Object.values(actions.sources.user).concat(
-                Object.values(actions.sources.internal)
+            ...flatten(
+              Object.values(action.sources.user).concat(
+                Object.values(action.sources.internal)
               )
-            ).map(source => ({
-              [source.id]: source
-            }))
+            ).map(source => (source ? { [source.id]: source } : {}))
           )
         }
       };

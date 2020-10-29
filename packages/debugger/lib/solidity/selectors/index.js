@@ -232,8 +232,9 @@ let solidity = createSelectorTree({
           return [];
         }
 
+        debug("sources before processing: %O", sources);
         return SolidityUtils.getProcessedInstructionsForBinary(
-          (sources || []).map(({ source }) => source),
+          (sources || []).map(source => (source ? source.source : undefined)),
           context.binary,
           sourceMap
         );
@@ -380,7 +381,7 @@ let solidity = createSelectorTree({
      */
     overlapFunctions: createLeaf(
       ["/views/overlapFunctions", "/current/sourceIds"],
-      (functions, ids) => (ids ? ids.map(id => allSources[id]) : null)
+      (functions, ids) => (ids ? ids.map(id => functions[id]) : null)
     )
   },
 

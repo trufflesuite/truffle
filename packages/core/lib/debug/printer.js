@@ -50,7 +50,7 @@ class DebugPrinter {
 
     this.colorizedSources = Object.assign(
       {},
-      ...Object.entries(this.session.view(solidity.info.sources)).map(
+      ...Object.entries(this.session.view(solidity.views.sources)).map(
         ([id, source]) => ({
           [id]: colorizeSourceObject(source)
         })
@@ -140,6 +140,7 @@ class DebugPrinter {
 
     //we don't just get extract the source text from the location because passed-in location may be
     //missing the source text
+    const source = this.session.view(solidity.views.sources)[sourceId].source;
     const colorizedSource = this.colorizedSources[sourceId];
 
     debug("range: %o", range);
@@ -231,7 +232,7 @@ class DebugPrinter {
       //note: only include user sources
       {},
       ...Object.entries(sources).map(([id, source]) => ({
-        [id]: path.baseName(source.sourcePath)
+        [id]: path.basename(source.sourcePath)
       }))
     );
     const breakpoints = this.session.view(controller.breakpoints);
@@ -596,7 +597,7 @@ class DebugPrinter {
   safelyEvaluateWithSelectors(expression, context) {
     const select = this.select;
     let interpreter;
-    interpreter = new Interpreter(expression, function(
+    interpreter = new Interpreter(expression, function (
       interpreter,
       globalObject
     ) {

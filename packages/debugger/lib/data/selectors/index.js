@@ -246,17 +246,22 @@ const data = createSelectorTree({
      */
     userDefinedTypes: createLeaf(
       [
+        "/info/userDefinedTypes",
         "./referenceDeclarations",
         "./scopes/inlined",
-        "/info/userDefinedTypes",
         solidity.views.sources
       ],
-      (referenceDeclarations, scopes, userDefinedTypes, sources) =>
+      (userDefinedTypes, referenceDeclarations, scopes, sources) =>
         Object.assign(
           {},
           ...userDefinedTypes.map(({ sourceId, id }) => {
+            debug("id: %d", id);
+            debug("sourceId: %s", sourceId);
+            debug("scope: %o", scopes[sourceId][id]);
             const node = scopes[sourceId][id].definition;
+            debug("node: %o", node);
             const { compilationId, compiler, internal } = sources[sourceId];
+            debug("compilationId: %s", compilationId);
             if (internal) {
               return {}; //just to be sure, we assume generated sources don't define types
             }
@@ -266,6 +271,7 @@ const data = createSelectorTree({
               compiler,
               referenceDeclarations[compilationId]
             );
+            debug("type: %o", type);
             return { [type.id]: type };
           })
         )
@@ -725,6 +731,8 @@ const data = createSelectorTree({
       state: createLeaf(
         ["/info/allocations/state", "../compilationId", evm.current.context],
         (allAllocations, compilationId, { isConstructor }) => {
+          debug("compilationId: %s", compilationId);
+          debug("allAllocations: %o", allAllocations);
           const allocations = compilationId
             ? allAllocations[compilationId]
             : {};
@@ -1071,7 +1079,7 @@ const data = createSelectorTree({
           "/current/scopes/inlined",
           "/current/node",
           "/current/pointer",
-          "/current/sourceId"
+          "/current/sourceIndex"
         ],
 
         (scopes, scope, pointer, sourceId) => {
