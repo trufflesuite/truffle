@@ -17,6 +17,7 @@ export interface Context {
   immutableReferences?: ImmutableReferences; //never included for a constructor
   contractName?: string;
   contractId?: number;
+  linearizedBaseContracts?: number[];
   contractKind?: Common.ContractKind; //note: should never be "interface"
   abi?: AbiData.FunctionAbiBySelectors;
   payable?: boolean;
@@ -40,6 +41,7 @@ export interface DebuggerContext {
   immutableReferences?: ImmutableReferences; //never included for a constructor
   contractName?: string;
   contractId?: number;
+  linearizedBaseContracts?: number[];
   contractKind?: Common.ContractKind; //note: should never be "interface"
   abi?: Abi.Abi;
   sourceMap?: string;

@@ -58,6 +58,7 @@ export function makeContext(
     contractName: contract.contractName,
     binary,
     contractId: node ? node.id : undefined,
+    linearizedBaseContracts: node ? node.linearizedBaseContracts : undefined,
     contractKind: contractKind(contract, node),
     immutableReferences: isConstructor
       ? undefined

@@ -48,6 +48,9 @@ contract ExternalsBase {
 }
 
 contract ExternalsDerived is ExternalsBase {
+  function dummy() public {
+    //this function just distinguishes ExternalsBase from ExternalsDerived
+  }
 }
 `;
 
