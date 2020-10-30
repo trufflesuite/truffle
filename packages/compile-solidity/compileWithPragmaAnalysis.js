@@ -89,7 +89,7 @@ const compileWithPragmaAnalysis = async ({ paths, options }) => {
 
     // this really just validates the expressions from the contracts' imports
     // as it has already determined the parser version for each contract
-    await validateSemverExpressions(semverExpressions);
+    validateSemverExpressions(semverExpressions);
 
     const newestSatisfyingVersion = findNewestSatisfyingVersion({
       solcReleases: releases,
