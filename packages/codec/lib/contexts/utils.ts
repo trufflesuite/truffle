@@ -2,35 +2,18 @@ import debugModule from "debug";
 const debug = debugModule("codec:contexts:utils");
 
 import * as Evm from "@truffle/codec/evm";
-import {
-  DecoderContexts,
-  DecoderContext,
-  Context,
-  Contexts,
-  DebuggerContexts
-} from "./types";
+import { Context, Contexts } from "./types";
 import escapeRegExp from "lodash.escaperegexp";
 const cbor = require("borc"); //importing this untyped, sorry!
 
-//I split these next two apart because the type system was giving me trouble
-export function findDecoderContext(
-  contexts: DecoderContexts,
+export function findContext(
+  contexts: Contexts,
   binary: string
-): DecoderContext | null {
-  let context = Object.values(contexts).find(context =>
+): Context | null {
+  const context = Object.values(contexts).find(context =>
     matchContext(context, binary)
   );
-  return context !== undefined ? context : null;
-}
-
-export function findDebuggerContext(
-  contexts: DebuggerContexts,
-  binary: string
-): string | null {
-  let context = Object.values(contexts).find(context =>
-    matchContext(context, binary)
-  );
-  return context !== undefined ? context.context : null;
+  return context || null;
 }
 
 export function matchContext(context: Context, givenBinary: string): boolean {

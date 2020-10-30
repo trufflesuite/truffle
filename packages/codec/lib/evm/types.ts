@@ -37,8 +37,8 @@ export interface EvmInfo {
   mappingKeys?: Storage.Slot[];
   userDefinedTypes?: Format.Types.TypesById;
   allocations: AllocationInfo;
-  contexts?: Contexts.DecoderContexts;
-  currentContext?: Contexts.DecoderContext;
+  contexts?: Contexts.Contexts;
+  currentContext?: Contexts.Context;
   internalFunctionsTable?: InternalFunctions;
 }
 

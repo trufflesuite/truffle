@@ -297,6 +297,8 @@ export default class Session {
     );
 
     //normalize contexts
+    //HACK: the type of contexts doesn't actually match!!
+    //fortunately it's good enough to work
     contexts = Codec.Contexts.Utils.normalizeContexts(contexts);
 
     return { contexts, sources };
