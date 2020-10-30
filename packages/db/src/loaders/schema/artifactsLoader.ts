@@ -43,16 +43,14 @@ export class ArtifactsLoader {
     debug("Initialized project.");
 
     debug("Loading compilations...");
-    const { contracts } = await project.loadCompilations({ result });
+    const { contracts } = await project.loadCompile({ result });
     debug("Loaded compilations.");
 
     debug("Assigning contract names...");
-    await project.loadNames({ assignments: { contracts } });
+    await project.assignNames({ assignments: { contracts } });
     debug("Assigned contract names.");
 
-    const artifacts = await this.correlateContractsToArtifacts(
-      contracts
-    );
+    const artifacts = await this.collectArtifacts(contracts);
 
     const config = Config.detect({
       working_directory: this.compilationConfig["contracts_directory"]
@@ -66,14 +64,12 @@ export class ArtifactsLoader {
         config.network = name;
         await Environment.detect(config);
 
-        const liveProject = await project.connect({
-          provider: config.provider
-        });
-
-        const result = await liveProject.loadMigration({
-          network: { name },
-          artifacts
-        });
+        const result = await project
+          .connect({ provider: config.provider })
+          .loadMigrate({
+            network: { name },
+            artifacts
+          });
 
         networks.push(result.network);
       } catch (error) {
@@ -84,11 +80,11 @@ export class ArtifactsLoader {
     debug("Loaded networks.");
 
     debug("Assigning network names...");
-    await project.loadNames({ assignments: { networks } });
+    await project.assignNames({ assignments: { networks } });
     debug("Assigned network names.");
   }
 
-  async correlateContractsToArtifacts(
+  private async collectArtifacts(
     contractIdObjects: IdObject<DataModel.Contract>[]
   ): Promise<ContractObject[]> {
     // get full representation

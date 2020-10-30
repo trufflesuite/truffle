@@ -7,12 +7,7 @@ import {DocumentNode} from "graphql";
 
 import { Loader, LoadRequest, GraphQlRequest, Web3Request, RequestType } from "./types";
 
-interface ITruffleDB {
-  query: (query: DocumentNode | string, variables: any) => Promise<any>;
-}
-
-export type LoaderRunner = <
-  A extends unknown[],
+export type LoaderRunner = < A extends unknown[],
   T = any,
   R extends RequestType | undefined = undefined
 >(
@@ -20,7 +15,11 @@ export type LoaderRunner = <
   ...args: A
 ) => Promise<T>;
 
-export const forDb = (db): {
+export interface Db {
+  query: (query: DocumentNode | string, variables: any) => Promise<any>;
+}
+
+export const forDb = (db: Db): {
   forProvider(provider: Provider): {
     run: LoaderRunner
   };
@@ -53,7 +52,7 @@ const run = async <
   Return,
   R extends RequestType | undefined
 >(
-  connections: { db: ITruffleDB, provider?: Provider },
+  connections: { db: Db, provider?: Provider },
   loader: Loader<Args, Return, R>,
   ...args: Args
 ) => {
