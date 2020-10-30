@@ -7,10 +7,10 @@ const ora = require("ora");
 
 const DebugUtils = require("@truffle/debug-utils");
 const selectors = require("@truffle/debugger").selectors;
-const { session, solidity, trace, evm, controller } = selectors;
+const { session, solidity, trace, evm, controller, stacktrace } = selectors;
 
 const analytics = require("../services/analytics");
-const ReplManager = require("../repl");
+const repl = require("repl");
 
 const { DebugPrinter } = require("./printer");
 
@@ -40,9 +40,8 @@ class DebugInterpreter {
     this.printer = new DebugPrinter(config, session);
     this.txHash = txHash;
     this.lastCommand = "n";
-
-    this.repl = config.repl || new ReplManager(config);
     this.enabledExpressions = new Set();
+    this.repl = null;
   }
 
   async setOrClearBreakpoint(args, setOrClear) {
@@ -50,7 +49,7 @@ class DebugInterpreter {
     const currentLocation = this.session.view(controller.current.location);
     const breakpoints = this.session.view(controller.breakpoints);
 
-    const currentNode = currentLocation.node ? currentLocation.node.id : null;
+    const currentNode = currentLocation.astRef;
     const currentSourceId = currentLocation.source
       ? currentLocation.source.id
       : null;
@@ -59,9 +58,6 @@ class DebugInterpreter {
         ? //sourceRange is never null, so we go by whether currentSourceId is null/undefined
           currentLocation.sourceRange.lines.start.line
         : null;
-    const currentCompilationId = currentLocation.source
-      ? currentLocation.source.compilationId
-      : null;
 
     let breakpoint = {};
 
@@ -75,7 +71,6 @@ class DebugInterpreter {
       breakpoint.node = currentNode;
       breakpoint.line = currentLine;
       breakpoint.sourceId = currentSourceId;
-      breakpoint.compilationId = currentCompilationId;
     }
 
     //the special case of "B all"
@@ -107,7 +102,6 @@ class DebugInterpreter {
       }
 
       breakpoint.sourceId = currentSourceId;
-      breakpoint.compilationId = currentCompilationId;
       breakpoint.line = currentLine + delta;
     }
 
@@ -127,12 +121,7 @@ class DebugInterpreter {
       }
 
       //search sources for given string
-      let sources = [].concat(
-        ...Object.values(this.session.view(solidity.info.sources)).map(
-          ({ byId }) => byId
-        )
-      );
-
+      let sources = Object.values(this.session.view(solidity.views.sources));
       //we will indeed need the sources here, not just IDs
       let matchingSources = sources.filter(source =>
         source.sourcePath.includes(sourceArg)
@@ -154,7 +143,6 @@ class DebugInterpreter {
 
       //otherwise, we found it!
       breakpoint.sourceId = matchingSources[0].id;
-      breakpoint.compilationId = matchingSources[0].compilationId;
       breakpoint.line = line - 1; //adjust for zero-indexing!
     }
 
@@ -174,7 +162,6 @@ class DebugInterpreter {
       }
 
       breakpoint.sourceId = currentSourceId;
-      breakpoint.compilationId = currentCompilationId;
       breakpoint.line = line - 1; //adjust for zero-indexing!
     }
 
@@ -196,24 +183,17 @@ class DebugInterpreter {
 
     //having constructed and adjusted breakpoint, here's now a
     //user-readable message describing its location
-    let sources = this.session.view(solidity.info.sources);
+    let sources = this.session.view(solidity.views.sources);
     let sourceNames = Object.assign(
+      //note: only include user sources
       {},
-      ...Object.entries(sources).map(
-        ([compilationId, { byId: compilation }]) => ({
-          [compilationId]: Object.assign(
-            {},
-            ...Object.values(compilation).map(({ id, sourcePath }) => ({
-              [id]: path.basename(sourcePath)
-            }))
-          )
-        })
-      )
+      ...Object.entries(sources).map(([id, source]) => ({
+        [id]: path.basename(source.sourcePath)
+      }))
     );
     let locationMessage = DebugUtils.formatBreakpointLocation(
       breakpoint,
-      true,
-      currentCompilationId,
+      true, //only relevant for node-based breakpoints
       currentSourceId,
       sourceNames
     );
@@ -222,7 +202,6 @@ class DebugInterpreter {
     let alreadyExists =
       breakpoints.filter(
         existingBreakpoint =>
-          existingBreakpoint.compilationId === breakpoint.compilationId &&
           existingBreakpoint.sourceId === breakpoint.sourceId &&
           existingBreakpoint.line === breakpoint.line &&
           existingBreakpoint.node === breakpoint.node //may be undefined
@@ -276,21 +255,11 @@ class DebugInterpreter {
       ? DebugUtils.formatPrompt(this.network, this.txHash)
       : DebugUtils.formatPrompt(this.network);
 
-    this.repl.start({
-      prompt,
-      interpreter: util.callbackify(this.interpreter.bind(this)),
+    this.repl = repl.start({
+      prompt: prompt,
+      eval: util.callbackify(this.interpreter.bind(this)),
       ignoreUndefined: true,
       done: terminate
-    });
-  }
-
-  setPrompt(prompt) {
-    this.repl.activate.bind(this.repl)({
-      prompt,
-      context: {},
-      //this argument only *adds* things, so it's safe to set it to {}
-      ignoreUndefined: true
-      //set to true because it's set to true below :P
     });
   }
 
@@ -304,10 +273,7 @@ class DebugInterpreter {
     }
 
     //split arguments for commands that want that; split on runs of spaces
-    splitArgs = cmd
-      .trim()
-      .split(/ +/)
-      .slice(1);
+    splitArgs = cmd.trim().split(/ +/).slice(1);
     debug("splitArgs %O", splitArgs);
 
     //warning: this bit *alters* cmd!
@@ -324,7 +290,7 @@ class DebugInterpreter {
 
     //quit if that's what we were given
     if (cmd === "q") {
-      return await util.promisify(this.repl.stop.bind(this.repl))();
+      process.exit();
     }
 
     let alreadyFinished = this.session.view(trace.finishedOrUnloaded);
@@ -407,7 +373,7 @@ class DebugInterpreter {
           if (this.session.view(selectors.session.status.success)) {
             txSpinner.succeed();
             //if successful, change prompt
-            this.setPrompt(DebugUtils.formatPrompt(this.network, cmdArgs));
+            this.repl.setPrompt(DebugUtils.formatPrompt(this.network, cmdArgs));
           } else {
             txSpinner.fail();
             loadFailed = true;
@@ -430,7 +396,7 @@ class DebugInterpreter {
         if (this.session.view(selectors.session.status.loaded)) {
           await this.session.unload();
           this.printer.print("Transaction unloaded.");
-          this.setPrompt(DebugUtils.formatPrompt(this.network));
+          this.repl.setPrompt(DebugUtils.formatPrompt(this.network));
         } else {
           this.printer.print("No transaction to unload.");
           this.printer.print("");
@@ -450,6 +416,15 @@ class DebugInterpreter {
         await this.printer.printRevertMessage();
         this.printer.print("");
         this.printer.printStacktrace(true); //final stacktrace
+        this.printer.print("");
+        this.printer.print(DebugUtils.truffleColors.red("Location of error:"));
+        const stacktraceReport = this.session.view(
+          stacktrace.current.finalReport
+        );
+        const recordedLocation =
+          stacktraceReport[stacktraceReport.length - 1].location;
+        this.printer.printFile(recordedLocation);
+        this.printer.printState(undefined, undefined, recordedLocation);
       } else {
         //case if transaction succeeded
         this.printer.print("Transaction completed successfully.");
@@ -551,11 +526,31 @@ class DebugInterpreter {
         break;
       case "s":
         if (this.session.view(selectors.session.status.loaded)) {
-          this.printer.printStacktrace(
-            //print final report if finished & failed, intermediate if not
+          //print final report if finished & failed, intermediate if not
+          if (
             this.session.view(trace.finished) &&
-              !this.session.view(evm.transaction.status)
-          );
+            !this.session.view(evm.transaction.status)
+          ) {
+            this.printer.printStacktrace(true); //print final stack trace
+            //Now: actually show the point where things went wrong
+            this.printer.print("");
+            this.printer.print(
+              DebugUtils.truffleColors.red("Location of error:")
+            );
+            const stacktraceReport = this.session.view(
+              stacktrace.current.finalReport
+            );
+            const recordedLocation =
+              stacktraceReport[stacktraceReport.length - 1].location;
+            this.printer.printFile(recordedLocation);
+            this.printer.printState(
+              LINES_BEFORE_LONG,
+              LINES_AFTER_LONG,
+              recordedLocation
+            );
+          } else {
+            this.printer.printStacktrace(false); //intermediate call stack
+          }
         }
         break;
       case "o":

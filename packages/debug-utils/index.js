@@ -1,8 +1,5 @@
 var OS = require("os");
-var dir = require("node-dir");
-var path = require("path");
 var debug = require("debug")("debug-utils");
-var BN = require("bn.js");
 var util = require("util");
 var Codec = require("@truffle/codec");
 
@@ -12,51 +9,51 @@ hljsDefineSolidity(chromafi.hljs);
 var chalk = require("chalk");
 
 const commandReference = {
-  "o": "step over",
-  "i": "step into",
-  "u": "step out",
-  "n": "step next",
+  o: "step over",
+  i: "step into",
+  u: "step out",
+  n: "step next",
   ";": "step instruction (include number to step multiple)",
-  "p": "print instruction & state (can specify locations, e.g. p mem; see docs)",
-  "l": "print additional source context",
-  "h": "print this help",
-  "v": "print variables and values",
+  p: "print instruction & state (`p [mem|cal|sto]*`; see docs for more)",
+  l: "print additional source context",
+  h: "print this help",
+  v: "print variables and values",
   ":": "evaluate expression - see `v`",
   "+": "add watch expression (`+:<expr>`)",
   "-": "remove watch expression (-:<expr>)",
   "?": "list existing watch expressions and breakpoints",
-  "b": "add breakpoint",
-  "B": "remove breakpoint",
-  "c": "continue until breakpoint",
-  "q": "quit",
-  "r": "reset",
-  "t": "load new transaction",
-  "T": "unload transaction",
-  "s": "print stacktrace"
+  b: "add breakpoint (`b [[<source-file>:]<line-number>]`; see docs for more)",
+  B: "remove breakpoint (similar to adding, or `B all` to remove all)",
+  c: "continue until breakpoint",
+  q: "quit",
+  r: "reset",
+  t: "load new transaction",
+  T: "unload transaction",
+  s: "print stacktrace"
 };
 
 const shortCommandReference = {
-  "o": "step over",
-  "i": "step into",
-  "u": "step out",
-  "n": "step next",
+  o: "step over",
+  i: "step into",
+  u: "step out",
+  n: "step next",
   ";": "step instruction",
-  "p": "print state",
-  "l": "print context",
-  "h": "print help",
-  "v": "print variables",
+  p: "print state",
+  l: "print context",
+  h: "print help",
+  v: "print variables",
   ":": "evaluate",
   "+": "add watch",
   "-": "remove watch",
   "?": "list watches & breakpoints",
-  "b": "add breakpoint",
-  "B": "remove breakpoint",
-  "c": "continue",
-  "q": "quit",
-  "r": "reset",
-  "t": "load",
-  "T": "unload",
-  "s": "stacktrace"
+  b: "add breakpoint",
+  B: "remove breakpoint",
+  c: "continue",
+  q: "quit",
+  r: "reset",
+  t: "load",
+  T: "unload",
+  s: "stacktrace"
 };
 
 const truffleColors = {
@@ -77,28 +74,6 @@ const DEFAULT_TAB_WIDTH = 8;
 
 var DebugUtils = {
   truffleColors, //make these externally available
-
-  gatherArtifacts: async function (config) {
-    // Gather all available contract artifacts
-    let files = await dir.promiseFiles(config.contracts_build_directory);
-
-    var contracts = files
-      .filter(file_path => {
-        return path.extname(file_path) === ".json";
-      })
-      .map(file_path => {
-        return path.basename(file_path, ".json");
-      })
-      .map(contract_name => {
-        return config.resolver.require(contract_name);
-      });
-
-    await Promise.all(
-      contracts.map(abstraction => abstraction.detectNetwork())
-    );
-
-    return contracts;
-  },
 
   //attempts to test whether a given compilation is a real compilation,
   //i.e., was compiled all at once.
@@ -218,11 +193,13 @@ var DebugUtils = {
 
     var commandSections = [
       ["o", "i", "u", "n"],
+      ["c"],
       [";"],
       ["p"],
       ["l", "s", "h"],
       ["q", "r", "t", "T"],
-      ["b", "B", "c"],
+      ["b"],
+      ["B"],
       ["+", "-"],
       ["?"],
       ["v", ":"]
@@ -380,7 +357,6 @@ var DebugUtils = {
   formatBreakpointLocation: function (
     breakpoint,
     here,
-    currentCompilationId,
     currentSourceId,
     sourceNames
   ) {
@@ -393,12 +369,8 @@ var DebugUtils = {
     } else {
       baseMessage = `line ${breakpoint.line + 1}`;
     }
-    if (
-      breakpoint.compilationId !== currentCompilationId ||
-      breakpoint.sourceId !== currentSourceId
-    ) {
-      let sourceName =
-        sourceNames[breakpoint.compilationId][breakpoint.sourceId];
+    if (breakpoint.sourceId !== currentSourceId) {
+      const sourceName = sourceNames[breakpoint.sourceId];
       return baseMessage + ` in ${sourceName}`;
     } else {
       return baseMessage;
@@ -636,73 +608,73 @@ var DebugUtils = {
     return indented.join(OS.EOL);
   },
 
-  colorize: function (code) {
+  colorize: function (code, language = "Solidity") {
     //I'd put these outside the function
     //but then it gives me errors, because
     //you can't just define self-referential objects like that...
 
     const trufflePalette = {
       /* base (chromafi special, not hljs) */
-      "base": chalk,
-      "lineNumbers": chalk,
-      "trailingSpace": chalk,
+      base: chalk,
+      lineNumbers: chalk,
+      trailingSpace: chalk,
       /* classes hljs-solidity actually uses */
-      "keyword": truffleColors.mint,
-      "number": truffleColors.red,
-      "string": truffleColors.green,
-      "params": truffleColors.pink,
-      "builtIn": truffleColors.watermelon,
-      "built_in": truffleColors.watermelon, //just to be sure
-      "literal": truffleColors.watermelon,
-      "function": truffleColors.orange,
-      "title": truffleColors.orange,
-      "class": truffleColors.orange,
-      "comment": truffleColors.comment,
-      "doctag": truffleColors.comment,
+      keyword: truffleColors.mint,
+      number: truffleColors.red,
+      string: truffleColors.green,
+      params: truffleColors.pink,
+      builtIn: truffleColors.watermelon,
+      built_in: truffleColors.watermelon, //just to be sure
+      literal: truffleColors.watermelon,
+      function: truffleColors.orange,
+      title: truffleColors.orange,
+      class: truffleColors.orange,
+      comment: truffleColors.comment,
+      doctag: truffleColors.comment,
       /* classes it might soon use! */
-      "meta": truffleColors.pink,
-      "metaString": truffleColors.green,
+      meta: truffleColors.pink,
+      metaString: truffleColors.green,
       "meta-string": truffleColors.green, //similar
       /* classes it doesn't currently use but notionally could */
-      "type": truffleColors.orange,
-      "symbol": truffleColors.orange,
-      "metaKeyword": truffleColors.mint,
+      type: truffleColors.orange,
+      symbol: truffleColors.orange,
+      metaKeyword: truffleColors.mint,
       "meta-keyword": truffleColors.mint, //again, to be sure
       /* classes that don't make sense for Solidity */
-      "regexp": chalk, //solidity does not have regexps
-      "subst": chalk, //or string interpolation
-      "name": chalk, //or s-expressions
-      "builtInName": chalk, //or s-expressions, again
+      regexp: chalk, //solidity does not have regexps
+      subst: chalk, //or string interpolation
+      name: chalk, //or s-expressions
+      builtInName: chalk, //or s-expressions, again
       "builtin-name": chalk, //just to be sure
       /* classes for config, markup, CSS, templates, diffs (not programming) */
-      "section": chalk,
-      "tag": chalk,
-      "attr": chalk,
-      "attribute": chalk,
-      "variable": chalk,
-      "bullet": chalk,
-      "code": chalk,
-      "emphasis": chalk,
-      "strong": chalk,
-      "formula": chalk,
-      "link": chalk,
-      "quote": chalk,
-      "selectorAttr": chalk, //lotta redundancy follows
+      section: chalk,
+      tag: chalk,
+      attr: chalk,
+      attribute: chalk,
+      variable: chalk,
+      bullet: chalk,
+      code: chalk,
+      emphasis: chalk,
+      strong: chalk,
+      formula: chalk,
+      link: chalk,
+      quote: chalk,
+      selectorAttr: chalk, //lotta redundancy follows
       "selector-attr": chalk,
-      "selectorClass": chalk,
+      selectorClass: chalk,
       "selector-class": chalk,
-      "selectorId": chalk,
+      selectorId: chalk,
       "selector-id": chalk,
-      "selectorPseudo": chalk,
+      selectorPseudo: chalk,
       "selector-pseudo": chalk,
-      "selectorTag": chalk,
+      selectorTag: chalk,
       "selector-tag": chalk,
-      "templateTag": chalk,
+      templateTag: chalk,
       "template-tag": chalk,
-      "templateVariable": chalk,
+      templateVariable: chalk,
       "template-variable": chalk,
-      "addition": chalk,
-      "deletion": chalk
+      addition: chalk,
+      deletion: chalk
     };
 
     const options = {
@@ -712,70 +684,29 @@ var DebugUtils = {
       //handling padding & numbering manually
       lineNumbers: false,
       stripIndent: false,
-      codePad: 0
+      codePad: 0,
+      tabsToSpaces: false, //we handle this ourself and don't
+      //want chromafi's padding
+      lineEndPad: false
       //NOTE: you might think you should pass highlight: true,
       //but you'd be wrong!  I don't understand this either
     };
-    return chromafi(code, options);
-  },
-
-  //HACK
-  //note that this is written in terms of mutating things
-  //rather than just using map() due to the need to handle
-  //circular objects
-  cleanConstructors: function (object, seenSoFar = new Map()) {
-    debug("object %o", object);
-    if (seenSoFar.has(object)) {
-      return seenSoFar.get(object);
+    if (language === "Solidity") {
+      //normal case: solidity
+      return chromafi(code, options);
+    } else if (language === "Yul") {
+      //HACK: stick the code in an assembly block since we don't
+      //have a separate Yul language for HLJS at the moment,
+      //colorize it there, then extract it after colorization
+      const wrappedCode = "assembly {\n" + code + "\n}";
+      const colorizedWrapped = chromafi(wrappedCode, options);
+      const firstNewLine = colorizedWrapped.indexOf("\n");
+      const lastNewLine = colorizedWrapped.lastIndexOf("\n");
+      return colorizedWrapped.slice(firstNewLine + 1, lastNewLine);
+    } else {
+      //otherwise, don't highlight
+      return code;
     }
-
-    if (Array.isArray(object)) {
-      //array case
-      let output = object.slice(); //clone
-      //set up new seenSoFar
-      let seenNow = new Map(seenSoFar);
-      seenNow.set(object, output);
-      for (let index in output) {
-        output[index] = DebugUtils.cleanConstructors(output[index], seenNow);
-      }
-      return output;
-    }
-
-    //HACK -- due to safeEval altering things, it's possible for isBN() to
-    //throw an error here
-    try {
-      //we do not want to alter BNs!
-      //(or other special objects, but that's just BNs right now)
-      if (BN.isBN(object)) {
-        return object;
-      }
-    } catch (e) {
-      //if isBN threw an error, it's not a BN, so move on
-    }
-
-    if (object && typeof object === "object") {
-      //generic object case
-      let output = Object.assign(
-        {},
-        ...Object.entries(object)
-          .filter(
-            ([key, value]) => key !== "constructor" || value !== undefined
-          )
-          .map(([key, value]) => ({
-            [key]: value //don't clean yet!
-          }))
-      );
-      //set up new seenSoFar
-      let seenNow = new Map(seenSoFar);
-      seenNow.set(object, output);
-      for (let field in output) {
-        output[field] = DebugUtils.cleanConstructors(output[field], seenNow);
-      }
-      return output;
-    }
-
-    //for strings, numbers, etc
-    return object;
   },
 
   //HACK
@@ -806,14 +737,16 @@ var DebugUtils = {
     const { controller } = bugger.selectors;
     while (!bugger.view(controller.current.trace.finished)) {
       const source = bugger.view(controller.current.location.source);
-      const { compilationId, id } = source;
-      if (compilationId !== undefined && id !== undefined) {
+      const { compilationId, id, internal } = source;
+      //stepInto should skip internal sources, but there still might be
+      //one at the end
+      if (!internal && compilationId !== undefined && id !== undefined) {
         sources[compilationId] = {
           ...sources[compilationId],
           [id]: source
         };
       }
-      await bugger.stepNext();
+      await bugger.stepInto();
     }
     await bugger.reset();
     //flatten sources before returning

@@ -30,7 +30,7 @@ function makeParseImports(parser) {
           const contractSolcVer = contractSolcPragma[0];
           const configSolcVer = semver.valid(solc.version());
           err.message = err.message.concat(
-            `\n\nError: Truffle is currently using solc ${configSolcVer}, but one or more of your contracts specify "${contractSolcVer}".\nPlease update your truffle config or pragma statement(s).\n(See https://truffleframework.com/docs/truffle/reference/configuration#compiler-configuration for information on\nconfiguring Truffle to use a specific solc compiler version.)\n`
+            `\n\nError: Truffle is currently using solc ${configSolcVer}, but one or more of your contracts specify "${contractSolcVer}".\nPlease update your truffle config or pragma statement(s).\n(See https://trufflesuite.com/docs/truffle/reference/configuration#compiler-configuration for information on\nconfiguring Truffle to use a specific solc compiler version.)\n`
           );
         } else {
           err.message = `Error parsing ${currentFile}: ${err.message}`;

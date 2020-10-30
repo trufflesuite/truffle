@@ -108,20 +108,16 @@ class DebugExternalHandler {
             solc: options
           }
         });
-        const { contracts, sourceIndexes: files } = await new DebugCompiler(
-          externalConfig
-        ).compile(sources);
-        debug("contracts: %o", contracts);
-        debug("files: %O", files);
+        const compilations = await new DebugCompiler(externalConfig).compile(
+          sources
+        );
         //shim the result
-        const compilationId = `externalFor(${address})Via(${fetcher.fetcherName})`;
-        const newCompilations = Codec.Compilations.Utils.shimArtifacts(
-          contracts,
-          files,
-          compilationId
+        const shimmedCompilations = Codec.Compilations.Utils.shimCompilations(
+          compilations,
+          `externalFor(${address})Via(${fetcher.fetcherName})`
         );
         //add it!
-        await this.bugger.addExternalCompilations(newCompilations);
+        await this.bugger.addExternalCompilations(shimmedCompilations);
         //check: did this actually help?
         debug("checking result");
         if (!getUnknownAddresses(this.bugger).includes(address)) {

@@ -1,3 +1,4 @@
+const OS = require("os");
 const command = {
   command: "test",
   description: "Run JavaScript and Solidity tests",
@@ -12,7 +13,7 @@ const command = {
       type: "boolean",
       default: false
     },
-    "debug": {
+    debug: {
       describe: "Enable in-test debugging",
       type: "boolean",
       default: false
@@ -26,13 +27,13 @@ const command = {
       type: "boolean",
       default: false
     },
-    "bail": {
+    bail: {
       alias: "b",
       describe: "Bail after first test failure",
       type: "boolean",
       default: false
     },
-    "stacktrace": {
+    stacktrace: {
       alias: "t",
       describe: "Produce Solidity stacktraces",
       type: "boolean",
@@ -46,7 +47,11 @@ const command = {
   },
   help: {
     usage:
-      "truffle test [<test_file>] [--compile-all[-debug]] [--network <name>] [--verbose-rpc] [--show-events] [--debug] [--debug-global <identifier>] [--bail] [--stacktrace[-extra]]",
+      `truffle test [<test_file>] [--compile-all[-debug]] [--compile-none] ` +
+      `[--network <name>]${OS.EOL}                             ` +
+      `[--verbose-rpc] [--show-events] [--debug] ` +
+      `[--debug-global <identifier>] [--bail]${OS.EOL}                      ` +
+      `       [--stacktrace[-extra]]`,
     options: [
       {
         option: "<test_file>",
@@ -59,6 +64,10 @@ const command = {
         description:
           "Compile all contracts instead of intelligently choosing which contracts need " +
           "to be compiled."
+      },
+      {
+        option: "--compile-none",
+        description: "Do not compile any contracts before running the tests"
       },
       {
         option: "--compile-all-debug",
@@ -113,14 +122,12 @@ const command = {
       }
     ]
   },
-  run: function(options, done) {
+  run: function (options, done) {
     const Config = require("@truffle/config");
     const { Environment, Develop } = require("@truffle/environment");
-    const {
-      copyArtifactsToTempDir,
-      determineTestFilesToRun,
-      prepareConfigAndRunTests
-    } = require("./helpers");
+    const { copyArtifactsToTempDir } = require("./copyArtifactsToTempDir");
+    const { determineTestFilesToRun } = require("./determineTestFilesToRun");
+    const { prepareConfigAndRunTests } = require("./prepareConfigAndRunTests");
 
     const config = Config.detect(options);
 

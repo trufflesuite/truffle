@@ -19,5 +19,5 @@ describe("truffle install [ @standalone ]", () => {
       path.join(config.working_directory, "installed_contracts")
     );
     assert(theInstallDirExists);
-  }).timeout(20000);
+  }).timeout(30000);
 });

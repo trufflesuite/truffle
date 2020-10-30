@@ -4,7 +4,7 @@ const fs = require("fs");
 const colors = require("colors");
 const minimatch = require("minimatch");
 
-const find_contracts = require("@truffle/contract-sources");
+const findContracts = require("@truffle/contract-sources");
 const Profiler = require("@truffle/compile-solidity/profiler");
 
 const compiler = {
@@ -14,77 +14,21 @@ const compiler = {
 
 const VYPER_PATTERN = "**/*.{vy,v.py,vyper.py}";
 
-// -------- TODO: Common with @truffle/compile-solidity --------
-
-const compile = {};
-
-// contracts_directory: String. Directory where .sol files can be found.
-// quiet: Boolean. Suppress output. Defaults to false.
-// strict: Boolean. Return compiler warnings as errors. Defaults to false.
-compile.all = function(options, callback) {
-  find_contracts(options.contracts_directory, function(err, files) {
-    if (err) return callback(err);
-
-    options.paths = files;
-    compile.with_dependencies(options, callback);
-  });
-};
-
-// contracts_directory: String. Directory where .sol files can be found.
-// build_directory: String. Optional. Directory where .sol.js files can be found. Only required if `all` is false.
-// all: Boolean. Compile all sources found. Defaults to true. If false, will compare sources against built files
-//      in the build directory to see what needs to be compiled.
-// quiet: Boolean. Suppress output. Defaults to false.
-// strict: Boolean. Return compiler warnings as errors. Defaults to false.
-compile.necessary = function(options, callback) {
-  options.logger = options.logger || console;
-
-  Profiler.updated(options, function(err, updated) {
-    if (err) return callback(err);
-
-    if (updated.length === 0 && options.quiet !== true) {
-      return callback(null, [], {});
-    }
-
-    options.paths = updated;
-    compile.with_dependencies(options, callback);
-  });
-};
-
-compile.display = function(paths, options) {
-  if (!Array.isArray(paths)) {
-    paths = Object.keys(paths);
-  }
-
-  const sourceFileNames = paths.sort().map(contract => {
-    if (path.isAbsolute(contract)) {
-      return `.${path.sep}${path.relative(
-        options.working_directory,
-        contract
-      )}`;
-    }
-
-    return contract;
-  });
-  options.events.emit("compile:sourcesToCompile", sourceFileNames);
-};
-
-// -------- End of common with @truffle/compile-solidity --------
-
 // Check that vyper is available, save its version
-function checkVyper(callback) {
-  exec("vyper --version", function(err, stdout, stderr) {
-    if (err)
-      return callback(`${colors.red("Error executing vyper:")}\n${stderr}`);
-
-    compiler.version = stdout.trim();
-
-    callback(null);
+function checkVyper() {
+  return new Promise((resolve, reject) => {
+    exec("vyper --version", function (err, stdout, stderr) {
+      if (err) {
+        return reject(`${colors.red("Error executing vyper:")}\n${stderr}`);
+      }
+      compiler.version = stdout.trim();
+      resolve();
+    });
   });
 }
 
 // Execute vyper for single source file
-function execVyper(options, source_path, callback) {
+function execVyper(options, sourcePath, callback) {
   const formats = ["abi", "bytecode", "bytecode_runtime"];
   if (
     options.compilers.vyper.settings &&
@@ -92,37 +36,37 @@ function execVyper(options, source_path, callback) {
   ) {
     formats.push("source_map");
   }
-  const command = `vyper -f ${formats.join(",")} ${source_path}`;
+  const command = `vyper -f ${formats.join(",")} ${sourcePath}`;
 
-  exec(command, { maxBuffer: 600 * 1024 }, function(err, stdout, stderr) {
+  exec(command, { maxBuffer: 600 * 1024 }, function (err, stdout, stderr) {
     if (err)
       return callback(
         `${stderr}\n${colors.red(
-          `Compilation of ${source_path} failed. See above.`
+          `Compilation of ${sourcePath} failed. See above.`
         )}`
       );
 
     var outputs = stdout.split(/\r?\n/);
 
-    const compiled_contract = outputs.reduce(function(contract, output, index) {
+    const compiledContract = outputs.reduce((contract, output, index) => {
       return Object.assign(contract, { [formats[index]]: output });
     }, {});
 
-    callback(null, compiled_contract);
+    callback(null, compiledContract);
   });
 }
 
-// compile all options.paths
-function compileAll(options, callback) {
+// compile all sources
+async function compileAll({ sources, options }) {
   options.logger = options.logger || console;
 
-  compile.display(options.paths, options);
+  Compile.display(sources, options);
 
   const promises = [];
-  options.paths.forEach(sourcePath => {
+  sources.forEach(sourcePath => {
     promises.push(
       new Promise((resolve, reject) => {
-        execVyper(options, sourcePath, function(error, compiledContract) {
+        execVyper(options, sourcePath, function (error, compiledContract) {
           if (error) return reject(error);
 
           // remove first extension from filename
@@ -139,14 +83,14 @@ function compileAll(options, callback) {
           const sourceContents = sourceBuffer.toString();
 
           const contractDefinition = {
-            contract_name: contractName,
+            contractName: contractName,
             sourcePath: sourcePath,
             source: sourceContents,
             abi: compiledContract.abi,
             bytecode: compiledContract.bytecode,
             deployedBytecode: compiledContract.bytecode_runtime,
             sourceMap: compiledContract.source_map,
-            compiler: compiler
+            compiler
           };
 
           resolve(contractDefinition);
@@ -154,54 +98,103 @@ function compileAll(options, callback) {
       })
     );
   });
-  Promise.all(promises)
-    .then(contracts => {
-      const result = contracts.reduce((result, contract) => {
-        result[contract.contract_name] = contract;
+  const contracts = await Promise.all(promises);
 
-        return result;
-      }, {});
-
-      const compilerInfo = { name: "vyper", version: compiler.version };
-
-      callback(null, result, options.paths, compilerInfo);
-    })
-    .catch(callback);
+  const compilerInfo = { name: "vyper", version: compiler.version };
+  return {
+    compilations: [
+      {
+        compiler: compilerInfo,
+        contracts,
+        sourceIndexes: sources
+      }
+    ]
+  };
 }
 
-// Check that vyper is available then forward to internal compile function
-function compileVyper(options, callback) {
-  // filter out non-vyper paths
-  options.paths = options.paths.filter(function(path) {
-    return minimatch(path, VYPER_PATTERN);
-  });
+const Compile = {
+  // Check that vyper is available then forward to internal compile function
+  async sources({ sources = [], options }) {
+    // filter out non-vyper paths
+    const vyperFiles = sources.filter(path => minimatch(path, VYPER_PATTERN));
 
-  // no vyper files found, no need to check vyper
-  if (options.paths.length === 0) return callback(null, {}, []);
+    // no vyper files found, no need to check vyper
+    if (vyperFiles.length === 0) {
+      return { compilations: [] };
+    }
 
-  checkVyper(function(err) {
-    if (err) return callback(err);
+    await checkVyper();
+    return await compileAll({
+      sources: vyperFiles,
+      options
+    });
+  },
 
-    return compileAll(options, callback);
-  });
-}
+  async sourcesWithDependencies({ paths = [], options }) {
+    return await Compile.sources({
+      sources: paths,
+      options
+    });
+  },
 
-// append .vy pattern to contracts_directory in options and return updated options
-function updateContractsDirectory(options) {
-  return options.with({
-    contracts_directory: path.join(options.contracts_directory, VYPER_PATTERN)
-  });
-}
+  // contracts_directory: String. Directory where contract files can be found.
+  // quiet: Boolean. Suppress output. Defaults to false.
+  // strict: Boolean. Return compiler warnings as errors. Defaults to false.
+  async all(options) {
+    const fileSearchPattern = path.join(
+      options.contracts_directory,
+      VYPER_PATTERN
+    );
+    const files = await findContracts(fileSearchPattern);
 
-// wrapper for compile.all. only updates contracts_directory to find .vy
-compileVyper.all = function(options, callback) {
-  return compile.all(updateContractsDirectory(options), callback);
+    return await Compile.sources({
+      sources: files,
+      options
+    });
+  },
+
+  // contracts_directory: String. Directory where contract files can be found.
+  // all: Boolean. Compile all sources found. Defaults to true. If false, will compare sources against built files
+  //      in the build directory to see what needs to be compiled.
+  // quiet: Boolean. Suppress output. Defaults to false.
+  // strict: Boolean. Return compiler warnings as errors. Defaults to false.
+  async necessary(options) {
+    options.logger = options.logger || console;
+    const updated = await Profiler.updated(options);
+
+    if (updated.length === 0 && options.quiet !== true) {
+      return { compilations: [] };
+    }
+
+    // filter out only Vyper files
+    const updatedVyperPaths = updated.filter(path => {
+      return path.match(/\.vy$|\.v.py$|\.vyper.py$/);
+    });
+    return await Compile.sources({
+      sources: updatedVyperPaths,
+      options
+    });
+  },
+
+  async display(paths, options) {
+    if (!Array.isArray(paths)) {
+      paths = Object.keys(paths);
+    }
+
+    const sourceFileNames = paths.sort().map(contract => {
+      if (path.isAbsolute(contract)) {
+        return `.${path.sep}${path.relative(
+          options.working_directory,
+          contract
+        )}`;
+      }
+
+      return contract;
+    });
+    options.events.emit("compile:sourcesToCompile", { sourceFileNames });
+  }
 };
 
-// wrapper for compile.necessary. only updates contracts_directory to find .vy
-compileVyper.necessary = function(options, callback) {
-  return compile.necessary(updateContractsDirectory(options), callback);
+module.exports = {
+  Compile
 };
-
-compile.with_dependencies = compileVyper;
-module.exports = compileVyper;

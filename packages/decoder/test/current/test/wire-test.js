@@ -10,8 +10,8 @@ const WireTestParent = artifacts.require("WireTestParent");
 const WireTestLibrary = artifacts.require("WireTestLibrary");
 const WireTestAbstract = artifacts.require("WireTestAbstract");
 
-contract("WireTest", function(_accounts) {
-  it("should correctly decode transactions and events", async function() {
+contract("WireTest", function (_accounts) {
+  it("should correctly decode transactions and events", async function () {
     let deployedContract = await WireTest.new(true, "0xdeadbeef", 2);
     let address = deployedContract.address;
     let constructorHash = deployedContract.transactionHash;
@@ -72,8 +72,6 @@ contract("WireTest", function(_accounts) {
       ...getter2Args
     );
     let getterHash2 = getterTest2.tx;
-
-    let overrideTest = await deployedContract.interfaceAndOverrideTest();
 
     let constructorTx = await web3.eth.getTransaction(constructorHash);
     let emitStuffTx = await web3.eth.getTransaction(emitStuffHash);
@@ -231,7 +229,6 @@ contract("WireTest", function(_accounts) {
     let inheritedBlock = inherited.receipt.blockNumber;
     let indexTestBlock = indexTest.receipt.blockNumber;
     let libraryTestBlock = libraryTest.receipt.blockNumber;
-    let overrideBlock = overrideTest.receipt.blockNumber;
 
     try {
       //due to web3's having ethers's crappy decoder built in,
@@ -268,10 +265,6 @@ contract("WireTest", function(_accounts) {
     let libraryTestEvents = await decoder.events({
       fromBlock: libraryTestBlock,
       toBlock: libraryTestBlock
-    });
-    let overrideTestEvents = await decoder.events({
-      fromBlock: overrideBlock,
-      toBlock: overrideBlock
     });
     //HACK -- since danger was last, we can just ask for the
     //events from the latest block
@@ -489,115 +482,9 @@ contract("WireTest", function(_accounts) {
       ),
       `WireTest(${address}).danger`
     );
-
-    assert.lengthOf(overrideTestEvents, 5);
-
-    assert.lengthOf(overrideTestEvents[0].decodings, 1);
-    assert.strictEqual(overrideTestEvents[0].decodings[0].kind, "event");
-    assert.strictEqual(
-      overrideTestEvents[0].decodings[0].abi.name,
-      "AbstractEvent"
-    );
-    assert.strictEqual(
-      overrideTestEvents[0].decodings[0].class.typeName,
-      "WireTest"
-    );
-    assert.strictEqual(
-      overrideTestEvents[0].decodings[0].definedIn.typeName,
-      "WireTestAbstract"
-    );
-    assert.isEmpty(overrideTestEvents[0].decodings[0].arguments);
-
-    assert.lengthOf(overrideTestEvents[1].decodings, 1);
-    assert.strictEqual(overrideTestEvents[1].decodings[0].kind, "event");
-    assert.strictEqual(
-      overrideTestEvents[1].decodings[0].abi.name,
-      "AbstractOverridden"
-    );
-    assert.strictEqual(
-      overrideTestEvents[1].decodings[0].class.typeName,
-      "WireTest"
-    );
-    assert.strictEqual(
-      overrideTestEvents[1].decodings[0].definedIn.typeName,
-      "WireTest"
-    );
-    assert.lengthOf(overrideTestEvents[1].decodings[0].arguments, 1);
-    assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(
-        overrideTestEvents[1].decodings[0].arguments[0].value
-      ),
-      107
-    );
-
-    assert.lengthOf(overrideTestEvents[2].decodings, 1);
-    assert.strictEqual(overrideTestEvents[2].decodings[0].kind, "event");
-    assert.strictEqual(
-      overrideTestEvents[2].decodings[0].abi.name,
-      "AbstractOverridden"
-    );
-    assert.strictEqual(
-      overrideTestEvents[2].decodings[0].class.typeName,
-      "WireTest"
-    );
-    assert.strictEqual(
-      overrideTestEvents[2].decodings[0].definedIn.typeName,
-      "WireTestAbstract"
-    );
-    assert.lengthOf(overrideTestEvents[2].decodings[0].arguments, 1);
-    assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(
-        overrideTestEvents[2].decodings[0].arguments[0].value
-      ),
-      683
-    );
-
-    assert.lengthOf(overrideTestEvents[3].decodings, 1);
-    assert.strictEqual(overrideTestEvents[3].decodings[0].kind, "event");
-    assert.strictEqual(
-      overrideTestEvents[3].decodings[0].abi.name,
-      "Overridden"
-    );
-    assert.strictEqual(
-      overrideTestEvents[3].decodings[0].class.typeName,
-      "WireTest"
-    );
-    assert.strictEqual(
-      overrideTestEvents[3].decodings[0].definedIn.typeName,
-      "WireTest"
-    );
-    assert.lengthOf(overrideTestEvents[3].decodings[0].arguments, 1);
-    assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(
-        overrideTestEvents[3].decodings[0].arguments[0].value
-      ),
-      107
-    );
-
-    assert.lengthOf(overrideTestEvents[4].decodings, 1);
-    assert.strictEqual(overrideTestEvents[4].decodings[0].kind, "event");
-    assert.strictEqual(
-      overrideTestEvents[4].decodings[0].abi.name,
-      "Overridden"
-    );
-    assert.strictEqual(
-      overrideTestEvents[4].decodings[0].class.typeName,
-      "WireTest"
-    );
-    assert.strictEqual(
-      overrideTestEvents[4].decodings[0].definedIn.typeName,
-      "WireTestParent"
-    );
-    assert.lengthOf(overrideTestEvents[4].decodings[0].arguments, 1);
-    assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(
-        overrideTestEvents[4].decodings[0].arguments[0].value
-      ),
-      683
-    );
   });
 
-  it("disambiguates events when possible and not when impossible", async function() {
+  it("disambiguates events when possible and not when impossible", async function () {
     let deployedContract = await WireTest.deployed();
 
     const decoder = await Decoder.forProject(web3.currentProvider, [
@@ -742,7 +629,7 @@ contract("WireTest", function(_accounts) {
     );
   });
 
-  it("Handles anonymous events", async function() {
+  it("Handles anonymous events", async function () {
     let deployedContract = await WireTest.deployed();
 
     const decoder = await Decoder.forProject(web3.currentProvider, [
@@ -893,7 +780,7 @@ contract("WireTest", function(_accounts) {
     );
   });
 
-  it("Decodes return values", async function() {
+  it("Decodes return values", async function () {
     let deployedContract = await WireTest.deployed();
 
     const decoder = await Decoder.forContract(WireTest, [
@@ -956,5 +843,70 @@ contract("WireTest", function(_accounts) {
     assert.lengthOf(sdDecodings, 1);
     assert.strictEqual(sdDecodings[0].kind, "selfdestruct");
     assert.strictEqual(sdDecodings[0].decodingMode, "full");
+  });
+
+  it("Decodes return values when given superclass", async function () {
+    const deployedContract = await WireTest.deployed();
+
+    let decoder = await Decoder.forContractAt(
+      WireTestParent,
+      deployedContract.address,
+      [WireTest, WireTestParent, WireTestLibrary, WireTestAbstract]
+    );
+
+    let abiEntry = WireTestParent.abi.find(
+      ({ type, name }) => type === "function" && name === "inheritedReturn"
+    );
+    let selector = web3.eth.abi.encodeFunctionSignature(abiEntry);
+
+    //we need the raw return data, and contract.call() does not exist yet,
+    //so we're going to have to use web3.eth.call()
+
+    let data = await web3.eth.call({
+      to: deployedContract.address,
+      data: selector
+    });
+
+    let decodings = await decoder.decodeReturnValue(abiEntry, data);
+    assert.lengthOf(decodings, 1);
+    let decoding = decodings[0];
+    assert.strictEqual(decoding.kind, "return");
+    assert.strictEqual(decoding.decodingMode, "full");
+    assert.lengthOf(decoding.arguments, 1);
+    assert.strictEqual(
+      Codec.Format.Utils.Inspect.nativize(decoding.arguments[0].value),
+      1
+    );
+
+    //now again, but with an abstract contract
+    decoder = await Decoder.forContractAt(
+      WireTestAbstract,
+      deployedContract.address,
+      [WireTest, WireTestParent, WireTestLibrary, WireTestAbstract]
+    );
+
+    abiEntry = WireTestAbstract.abi.find(
+      ({ type, name }) => type === "function" && name === "overriddenReturn"
+    );
+    selector = web3.eth.abi.encodeFunctionSignature(abiEntry);
+
+    //we need the raw return data, and contract.call() does not exist yet,
+    //so we're going to have to use web3.eth.call()
+
+    data = await web3.eth.call({
+      to: deployedContract.address,
+      data: selector
+    });
+
+    decodings = await decoder.decodeReturnValue(abiEntry, data);
+    assert.lengthOf(decodings, 1);
+    decoding = decodings[0];
+    assert.strictEqual(decoding.kind, "return");
+    assert.strictEqual(decoding.decodingMode, "full");
+    assert.lengthOf(decoding.arguments, 1);
+    assert.strictEqual(
+      Codec.Format.Utils.Inspect.nativize(decoding.arguments[0].value),
+      2
+    );
   });
 });

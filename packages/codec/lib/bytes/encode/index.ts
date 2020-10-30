@@ -1,6 +1,5 @@
 import * as Format from "@truffle/codec/format";
 import * as Conversion from "@truffle/codec/conversion";
-import * as Evm from "@truffle/codec/evm";
 import utf8 from "utf8";
 
 //UGH -- it turns out TypeScript can't handle nested tagged unions
@@ -15,7 +14,6 @@ import utf8 from "utf8";
 export function encodeBytes(
   input: Format.Values.BytesDynamicValue | Format.Values.StringValue
 ): Uint8Array {
-  let bytes: Uint8Array;
   switch (input.type.typeClass) {
     case "bytes":
       return Conversion.toBytes((<Format.Values.BytesValue>input).value.asHex);

@@ -1,9 +1,11 @@
 {
   "name": "@truffle/solidity-utils",
-  "version": "1.3.16",
+  "version": "1.3.24",
   "description": "Utilities for Solidity contracts",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "prepare": "exit 0"
+  },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/solidity-utils",
   "keywords": [
     "ethereum",
@@ -21,10 +23,11 @@
     "access": "public"
   },
   "dependencies": {
-    "@truffle/code-utils": "^1.2.20",
-    "@truffle/codec": "^0.5.13",
+    "@truffle/code-utils": "^1.2.21",
+    "@truffle/codec": "^0.7.1",
     "debug": "^4.1.1",
     "json-pointer": "^0.6.0",
     "node-interval-tree": "^1.3.3"
-  }
+  },
+  "gitHead": "6b84be7849142588ef2e3224d8a9d7c2ceeb6e4a"
 }

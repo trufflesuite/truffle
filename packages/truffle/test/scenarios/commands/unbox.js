@@ -213,7 +213,7 @@ describe("truffle unbox [ @standalone ]", () => {
       describe("invalid box format", () => {
         it("throws an error", async () => {
           try {
-            await CommandRunner.run("unbox /bare/", config);
+            await CommandRunner.run("unbox bare//", config);
             assert(false, "This should have thrown an error.");
           } catch (_error) {
             const output = logger.contents();

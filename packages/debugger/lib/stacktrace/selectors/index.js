@@ -11,11 +11,11 @@ import zipWith from "lodash.zipwith";
 import { popNWhere } from "lib/helpers";
 import * as Codec from "@truffle/codec";
 
-const identity = (x) => x;
+const identity = x => x;
 
 function generateReport(callstack, location, status, message) {
   //step 1: shift everything over by 1 and recombine :)
-  let locations = callstack.map((frame) => frame.calledFromLocation);
+  let locations = callstack.map(frame => frame.calledFromLocation);
   //remove initial null, add final location on end
   locations.shift();
   locations.push(location);
@@ -23,12 +23,12 @@ function generateReport(callstack, location, status, message) {
   const names = callstack.map(({ functionName, contractName, address }) => ({
     functionName,
     contractName,
-    address,
+    address
   }));
   debug("names: %O", names);
   let report = zipWith(locations, names, (location, nameInfo) => ({
     ...nameInfo,
-    location,
+    location
   }));
   //finally: set the status in the top frame
   //and the message in the bottom
@@ -62,7 +62,7 @@ function createMultistepSelectors(stepSelector) {
       /**
        * .pointer
        */
-      pointer: createLeaf([stepSelector.pointer], identity),
+      pointer: createLeaf([stepSelector.pointer], identity)
     },
 
     /**
@@ -70,9 +70,9 @@ function createMultistepSelectors(stepSelector) {
      */
     strippedLocation: createLeaf(
       ["./location/source", "./location/sourceRange"],
-      ({ id, compilationId, sourcePath }, sourceRange) => ({
-        source: { id, compilationId, sourcePath },
-        sourceRange,
+      ({ id, sourcePath }, sourceRange) => ({
+        source: { id, sourcePath },
+        sourceRange
       })
     ),
 
@@ -92,7 +92,7 @@ function createMultistepSelectors(stepSelector) {
               pointer.replace(/\/nodes\/\d+$/, "") //cut off end
             )
           : ast
-    ),
+    )
   };
 }
 
@@ -100,7 +100,7 @@ let stacktrace = createSelectorTree({
   /**
    * stacktrace.state
    */
-  state: (state) => state.stacktrace,
+  state: state => state.stacktrace,
 
   /**
    * stacktrace.current
@@ -109,24 +109,24 @@ let stacktrace = createSelectorTree({
     /**
      * stacktrace.current.callstack
      */
-    callstack: createLeaf(["/state"], (state) => state.proc.callstack),
+    callstack: createLeaf(["/state"], state => state.proc.callstack),
 
     /**
      * stacktrace.current.returnCounter
      */
-    returnCounter: createLeaf(["/state"], (state) => state.proc.returnCounter),
+    returnCounter: createLeaf(["/state"], state => state.proc.returnCounter),
 
     /**
      * stacktrace.current.lastPosition
      */
-    lastPosition: createLeaf(["/state"], (state) => state.proc.lastPosition),
+    lastPosition: createLeaf(["/state"], state => state.proc.lastPosition),
 
     /**
      * stacktrace.current.innerReturnPosition
      */
     innerReturnPosition: createLeaf(
       ["/state"],
-      (state) => state.proc.innerReturnPosition
+      state => state.proc.innerReturnPosition
     ),
 
     /**
@@ -134,7 +134,7 @@ let stacktrace = createSelectorTree({
      */
     innerReturnStatus: createLeaf(
       ["/state"],
-      (state) => state.proc.innerReturnStatus
+      state => state.proc.innerReturnStatus
     ),
 
     ...createMultistepSelectors(solidity.current),
@@ -186,7 +186,7 @@ let stacktrace = createSelectorTree({
      * Initial call can't be a delegate, so we just use the storage address
      * (thus allowing us to handle both calls & creates in one)
      */
-    address: createLeaf([evm.current.call], (call) => call.storageAddress),
+    address: createLeaf([evm.current.call], call => call.storageAddress),
 
     /**
      * stacktrace.current.callAddress
@@ -202,7 +202,7 @@ let stacktrace = createSelectorTree({
         evm.current.step.isCall,
         evm.current.step.isCreate,
         evm.current.step.callAddress,
-        evm.current.step.createdAddress,
+        evm.current.step.createdAddress
       ],
       (isCall, isCreate, callAddress, createdAddress) => {
         if (isCall) {
@@ -227,7 +227,7 @@ let stacktrace = createSelectorTree({
      */
     revertString: createLeaf(
       [evm.current.step.returnValue],
-      (rawRevertMessage) => {
+      rawRevertMessage => {
         let revertDecodings = Codec.decodeRevert(
           Codec.Conversion.toBytes(rawRevertMessage)
         );
@@ -267,9 +267,7 @@ let stacktrace = createSelectorTree({
           Boolean(oldLocation) && //if there's no current or last position, we don't need this check
           Boolean(nextLocation.source) &&
           nextLocation.source.id !== undefined && //if next location is unmapped, we consider ourselves to have not moved
-          (nextLocation.source.compilationId !==
-            oldLocation.source.compilationId ||
-            nextLocation.source.id !== oldLocation.source.id ||
+          (nextLocation.source.id !== oldLocation.source.id ||
             nextLocation.sourceRange.start !== oldLocation.sourceRange.start ||
             nextLocation.sourceRange.length !== oldLocation.sourceRange.length)
         );
@@ -286,7 +284,7 @@ let stacktrace = createSelectorTree({
         "./callstack",
         "./innerReturnPosition",
         "./innerReturnStatus",
-        "./revertString",
+        "./revertString"
       ],
       generateReport
     ),
@@ -303,28 +301,28 @@ let stacktrace = createSelectorTree({
         "./callstack",
         "./returnCounter",
         "./lastPosition",
-        "/current/strippedLocation",
+        "/current/strippedLocation"
       ],
       (callstack, returnCounter, lastPosition, currentLocation) =>
         generateReport(
           popNWhere(
             callstack,
             returnCounter,
-            (frame) => frame.type === "external"
+            frame => frame.type === "external"
           ),
           currentLocation || lastPosition,
           null,
           undefined
         )
-    ),
+    )
   },
 
   /**
    * stacktrace.next
    */
   next: {
-    ...createMultistepSelectors(solidity.next),
-  },
+    ...createMultistepSelectors(solidity.next)
+  }
 });
 
 export default stacktrace;

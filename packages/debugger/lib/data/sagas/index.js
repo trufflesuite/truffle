@@ -24,17 +24,18 @@ import jsonpointer from "json-pointer";
 import * as Codec from "@truffle/codec";
 import BN from "bn.js";
 
-export function* scope(nodeId, pointer, parentId, sourceId, compilationId) {
-  yield put(actions.scope(nodeId, pointer, parentId, sourceId, compilationId));
+export function* scope(nodeId, pointer, parentId, sourceIndex, sourceId) {
+  yield put(actions.scope(nodeId, pointer, parentId, sourceIndex, sourceId));
 }
 
-export function* declare(node, compilationId) {
-  yield put(actions.declare(node.name, node.id, node.scope, compilationId));
+export function* declare(node, sourceId) {
+  yield put(actions.declare(node.name, node.id, node.scope, sourceId));
 }
 
-export function* yulScope(pointer, sourceId, compilationId, parentId) {
+export function* yulScope(pointer, sourceIndex, sourceId, parentId) {
   yield put(
-    actions.scope(undefined, pointer, parentId, sourceId, compilationId)
+    //node ID is always undefined
+    actions.scope(undefined, pointer, parentId, sourceIndex, sourceId)
   );
 }
 
@@ -42,21 +43,21 @@ export function* yulDeclare(
   node,
   pointer,
   scopePointer,
-  sourceId,
-  compilationId
+  sourceIndex,
+  sourceId
 ) {
   yield put(
     actions.declare(
       node.name,
-      makePath(sourceId, pointer),
-      makePath(sourceId, scopePointer),
-      compilationId
+      makePath(sourceIndex, pointer),
+      makePath(sourceIndex, scopePointer),
+      sourceId
     )
   );
 }
 
-export function* defineType(node, compilationId) {
-  yield put(actions.defineType(node, compilationId));
+export function* defineType(node, sourceId) {
+  yield put(actions.defineType(node, sourceId));
 }
 
 function* tickSaga() {
@@ -74,6 +75,10 @@ export function* decode(definition, ref, compilationId) {
   const internalFunctionsTable = yield select(
     data.current.functionsByProgramCounter
   );
+
+  debug("definition: %o");
+  debug("ref: %o");
+  debug("compilationId: %s", compilationId);
 
   const ZERO_WORD = new Uint8Array(Codec.Evm.Utils.WORD_SIZE); //automatically filled with zeroes
 
@@ -200,6 +205,7 @@ function* variablesAndMappingsSaga() {
   }
 
   let node = yield select(data.current.node);
+  //can mutate in FunctionTypeName, YulLiteral, and YulIdentifier cases
 
   if (!node) {
     return;
@@ -210,10 +216,10 @@ function* variablesAndMappingsSaga() {
   switch (node.nodeType) {
     case "IndexAccess":
     case "MemberAccess":
-      stack = yield select(data.nextMapped.state.stack);
+      stack = yield select(data.nextUserStep.state.stack);
       //HACK: unfortunately, in some cases, data.next.state.stack gets the wrong
-      //results due to unmapped instructions intervening.  So, we get the stack at
-      //the next *mapped* stack instead.  This is something of a hack and won't
+      //results due to unmapped/internal instructions intervening.  So, we get the stack at
+      //the next mapped-to-user-source stack instead.  This is something of a hack and won't
       //work if we're about to change context, but it should work in the cases that
       //need it.
       break;
@@ -242,50 +248,38 @@ function* variablesAndMappingsSaga() {
     return;
   }
 
-  let top = stack.length - 1;
+  const top = stack.length - 1;
 
   //set up other variables
-  let pointer = yield select(data.current.pointer);
-  let nextPointer = yield select(data.next.pointer);
-  let scopes = yield select(data.current.scopes.inlined);
-  let allocations = yield select(data.current.allocations.state);
-  let storageAllocations = yield select(data.info.allocations.storage);
-  let userDefinedTypes = yield select(data.views.userDefinedTypes);
-  let currentAssignments = yield select(data.proc.assignments);
-  let currentDepth = yield select(data.current.functionDepth);
-  let modifierDepth = yield select(data.current.modifierDepth);
-  let inModifier = yield select(data.current.inModifier);
-  let inFunctionOrModifier = yield select(data.current.inFunctionOrModifier);
-  let address = yield select(data.current.address); //storage address, not code address
-  let compilationId = yield select(data.current.compilationId);
-  let sourceId = yield select(data.current.sourceId);
-  let compiler = yield select(data.current.compiler);
+  let pointer = yield select(data.current.pointer); //can mutate in YulLiteral and YulIdentifier cases
+  const currentDepth = yield select(data.current.functionDepth);
+  const modifierDepth = yield select(data.current.modifierDepth);
+  const inModifier = yield select(data.current.inModifier);
+  const address = yield select(data.current.address); //storage address, not code address
+  const compilationId = yield select(data.current.compilationId);
+  const internalFor = yield select(data.current.internalSourceFor);
+  //just in case it ever becomes possible to have a Solidity generated source
 
-  let assignment,
-    assignments,
-    preambleAssignments,
-    baseExpression,
-    slot,
-    path,
-    position;
+  let assignments, preambleAssignments;
 
   //HACK: modifier preamble
   //modifier definitions are typically skipped (this includes constructor
   //definitions when called as a base constructor); as such I've added this
   //"modifier preamble" to catch them
   if (yield select(data.current.aboutToModify)) {
-    let modifier = yield select(data.current.modifierBeingInvoked);
+    const modifier = yield select(data.current.modifierBeingInvoked);
     //may be either a modifier or base constructor
-    let currentIndex = yield select(data.current.modifierArgumentIndex);
+    const currentIndex = yield select(data.current.modifierArgumentIndex);
     debug("currentIndex %d", currentIndex);
-    let parameters = modifier.parameters.parameters;
+    const parameters = modifier.parameters.parameters;
     //now: look at the parameters *after* the current index.  we'll need to
     //adjust for those.
-    let parametersLeft = parameters.slice(currentIndex + 1);
-    let adjustment = sum(parametersLeft.map(Codec.Ast.Utils.stackSize));
+    const parametersLeft = parameters.slice(currentIndex + 1);
+    const adjustment = sum(parametersLeft.map(Codec.Ast.Utils.stackSize));
     debug("adjustment %d", adjustment);
     preambleAssignments = assignParameters(
       compilationId,
+      internalFor,
       parameters,
       top + adjustment,
       currentDepth,
@@ -308,12 +302,12 @@ function* variablesAndMappingsSaga() {
       //modifier or base constructor, but have temporarily hit the definition
       //node for some reason.  However this obviously can have a false positive
       //in the case where a function has the same modifier twice.
-      let nextModifier = yield select(data.next.modifierBeingInvoked);
+      const nextModifier = yield select(data.next.modifierBeingInvoked);
       if (nextModifier && nextModifier.id === node.id) {
         break;
       }
 
-      let parameters = node.parameters.parameters;
+      const parameters = node.parameters.parameters;
       //note that we do *not* include return parameters, since those are
       //handled by the VariableDeclaration case (no, I don't know why it
       //works out that way)
@@ -321,6 +315,7 @@ function* variablesAndMappingsSaga() {
       //we can skip preambleAssignments here, that isn't used in this case
       assignments = assignParameters(
         compilationId,
+        internalFor,
         parameters,
         top,
         currentDepth,
@@ -334,7 +329,8 @@ function* variablesAndMappingsSaga() {
       yield put(actions.assign(assignments));
       break;
 
-    case "YulFunctionDefinition":
+    case "YulFunctionDefinition": {
+      const nextPointer = yield select(data.next.pointer);
       if (nextPointer === null || !nextPointer.startsWith(`${pointer}/body/`)) {
         //in this case, we're seeing the function
         //as it's being defined, rather than as it's
@@ -391,23 +387,19 @@ function* variablesAndMappingsSaga() {
       );
       debug("suffixes: %O", suffixes);
       assignments = {};
-      position = top; //because that's how we'll process things
+      let position = top; //because that's how we'll process things
+      const sourceIndex = yield select(data.current.sourceIndex);
       for (const suffix of suffixes) {
         //we only care about the pointer, not the variable
-        const sourceAndPointer = makePath(sourceId, pointer + suffix);
-        assignment = makeAssignment(
-          inModifier
-            ? {
-                compilationId,
-                astRef: sourceAndPointer,
-                stackframe: currentDepth,
-                modifierDepth
-              }
-            : {
-                compilationId,
-                astRef: sourceAndPointer,
-                stackframe: currentDepth
-              },
+        const sourceAndPointer = makePath(sourceIndex, pointer + suffix);
+        const assignment = makeAssignment(
+          {
+            compilationId,
+            internalFor,
+            astRef: sourceAndPointer,
+            stackframe: currentDepth,
+            modifierDepth: inModifier ? modifierDepth : null
+          },
           {
             location: "stack",
             from: position, //all Yul variables are size 1
@@ -419,9 +411,10 @@ function* variablesAndMappingsSaga() {
       }
       yield put(actions.assign(assignments));
       break;
-
-    case "ContractDefinition":
-      let allocation = allocations[node.id];
+    }
+    case "ContractDefinition": {
+      const allocations = yield select(data.current.allocations.state);
+      const allocation = allocations[node.id];
 
       debug("Contract definition case");
       debug("allocations %O", allocations);
@@ -429,43 +422,45 @@ function* variablesAndMappingsSaga() {
       assignments = {};
       for (let id in allocation.members) {
         id = Number(id); //not sure why we're getting them as strings, but...
-        let idObj = { compilationId, astRef: id, address };
-        let fullId = stableKeccak256(idObj);
-        //we don't use makeAssignment here as we had to compute the ID anyway
-        assignment = {
-          ...idObj,
-          id: fullId,
-          ref: {
-            ...((currentAssignments.byId[fullId] || {}).ref || {}),
-            ...allocation.members[id].pointer
-          }
+        const idObj = {
+          compilationId,
+          internalFor,
+          astRef: id
         };
-        assignments[fullId] = assignment;
+        //these aren't locals, so we omit stackframe and modifier info
+        const ref = allocation.members[id].pointer;
+        const assignment = makeAssignment(idObj, ref);
+        assignments[assignment.id] = assignment;
       }
       debug("assignments %O", assignments);
 
       //this case doesn't need preambleAssignments either
       yield put(actions.assign(assignments));
       break;
-
-    case "FunctionTypeName":
+    }
+    case "FunctionTypeName": {
       //HACK
       //for some reasons, for declarations of local variables of function type,
       //we land on the FunctionTypeName instead of the VariableDeclaration,
       //so we replace the node with its parent (the VariableDeclaration)
+      const scopes = yield select(data.current.scopes.inlined);
       node = scopes[scopes[node.id].parentId].definition;
       //let's do a quick check that it *is* a VariableDeclaration before
       //continuing
       if (node.nodeType !== "VariableDeclaration") {
         break;
       }
+    }
     //otherwise, deliberately fall through to the VariableDeclaration case
     //NOTE: DELIBERATE FALL-THROUGH
-    case "VariableDeclaration":
-      let varId = node.id;
+    case "VariableDeclaration": {
+      const varId = node.id;
       debug("Variable declaration case");
       debug("currentDepth %d varId %d", currentDepth, varId);
 
+      const inFunctionOrModifier = yield select(
+        data.current.inFunctionOrModifier
+      );
       if (!inFunctionOrModifier) {
         //if we're not in a function or modifier, then this is a contract
         //variable, not a local variable, and should not be included
@@ -474,15 +469,14 @@ function* variablesAndMappingsSaga() {
       }
 
       //otherwise, go ahead and make the assignment
-      assignment = makeAssignment(
-        inModifier
-          ? {
-              compilationId,
-              astRef: varId,
-              stackframe: currentDepth,
-              modifierDepth
-            }
-          : { compilationId, astRef: varId, stackframe: currentDepth },
+      const assignment = makeAssignment(
+        {
+          compilationId,
+          internalFor,
+          astRef: varId,
+          stackframe: currentDepth,
+          modifierDepth: inModifier ? modifierDepth : null
+        },
         {
           location: "stack",
           from: top - Codec.Ast.Utils.stackSize(node) + 1,
@@ -494,19 +488,21 @@ function* variablesAndMappingsSaga() {
       debug("assignments: %O", assignments);
       yield put(actions.assign(assignments));
       break;
-
-    case "YulFunctionCall":
+    }
+    case "YulFunctionCall": {
+      const nextPointer = yield select(data.next.pointer);
       if (nextPointer !== null && nextPointer.startsWith(pointer)) {
         //if we're moving inside the function call itself, ignore it
         break;
       }
+    }
     //NOTE: DELIBERATE FALL-THROUGH
     case "YulLiteral":
     case "YulIdentifier":
       //yul variable declaration, maybe
-      let parentPointer = pointer.replace(/\/[^/]*$/, ""); //chop off end
-      let root = yield select(data.current.root);
-      let parent = jsonpointer.get(root, parentPointer);
+      const parentPointer = pointer.replace(/\/[^/]*$/, ""); //chop off end
+      const root = yield select(data.current.root);
+      const parent = jsonpointer.get(root, parentPointer);
       if (
         pointer !== `${parentPointer}/value` ||
         parent.nodeType !== "YulVariableDeclaration"
@@ -516,28 +512,24 @@ function* variablesAndMappingsSaga() {
       node = parent;
       pointer = parentPointer;
     //NOTE: DELIBERATE FALL-THROUGH
-    case "YulVariableDeclaration":
-      const sourceAndPointer = makePath(sourceId, pointer);
+    case "YulVariableDeclaration": {
+      const sourceIndex = yield select(data.current.sourceIndex);
+      const sourceAndPointer = makePath(sourceIndex, pointer);
       debug("sourceAndPointer: %s", sourceAndPointer);
       assignments = {};
       //variables go on from bottom to top, so process from top to bottom
-      position = top; //NOTE: remember that which stack we use depends on our node type!
+      let position = top; //NOTE: remember that which stack we use depends on our node type!
       for (let index = node.variables.length - 1; index >= 0; index--) {
         //we only care about the pointer, not the variable
         const variableSourceAndPointer = `${sourceAndPointer}/variables/${index}`;
-        assignment = makeAssignment(
-          inModifier
-            ? {
-                compilationId,
-                astRef: variableSourceAndPointer,
-                stackframe: currentDepth,
-                modifierDepth
-              }
-            : {
-                compilationId,
-                astRef: variableSourceAndPointer,
-                stackframe: currentDepth
-              },
+        const assignment = makeAssignment(
+          {
+            compilationId,
+            internalFor,
+            astRef: variableSourceAndPointer,
+            stackframe: currentDepth,
+            modifierDepth: inModifier ? modifierDepth : null
+          },
           {
             location: "stack",
             from: position, //all Yul variables are size 1
@@ -551,12 +543,10 @@ function* variablesAndMappingsSaga() {
       //this case doesn't need preambleAssignments, obviously!
       yield put(actions.assign(assignments));
       break;
-
-    case "IndexAccess":
+    }
+    case "IndexAccess": {
       // to track `mapping` types known indices
       // (and also *some* known indices for arrays)
-
-      //HACK: we use the alternate stack in this case
 
       debug("Index access case");
 
@@ -567,6 +557,7 @@ function* variablesAndMappingsSaga() {
         ...preambleAssignments,
         ...literalAssignments(
           compilationId,
+          internalFor,
           node,
           stack,
           currentDepth,
@@ -576,7 +567,7 @@ function* variablesAndMappingsSaga() {
       };
 
       //we'll need this
-      baseExpression = node.baseExpression;
+      const baseExpression = node.baseExpression;
 
       //but first, a diversion -- is this something that could not *possibly*
       //lead to a mapping?  i.e., either a bytes, or an array of non-reference
@@ -602,8 +593,12 @@ function* variablesAndMappingsSaga() {
         break;
       }
 
-      path = fetchBasePath(
+      const allocations = yield select(data.current.allocations.state);
+      const currentAssignments = yield select(data.proc.assignments);
+
+      const path = fetchBasePath(
         compilationId,
+        internalFor,
         baseExpression,
         currentAssignments,
         allocations,
@@ -617,6 +612,8 @@ function* variablesAndMappingsSaga() {
         yield put(actions.assign(assignments));
         break;
       }
+
+      const scopes = yield select(data.current.scopes.inlined);
 
       let keyDefinition = Codec.Ast.Utils.keyDefinition(baseExpression, scopes);
       //if we're dealing with an array, this will just spoof up a uint
@@ -644,6 +641,11 @@ function* variablesAndMappingsSaga() {
         //with an array or mapping
         switch (Codec.Ast.Utils.typeClass(baseExpression)) {
           case "array":
+            const compiler = yield select(data.current.compiler);
+            const storageAllocations = yield select(
+              data.info.allocations.storage
+            );
+            const userDefinedTypes = yield select(data.views.userDefinedTypes);
             slot.hashPath = Codec.Ast.Utils.isDynamicArray(baseExpression);
             slot.offset = indexValue.value.asBN.muln(
               Codec.Storage.Allocate.storageSize(
@@ -683,10 +685,8 @@ function* variablesAndMappingsSaga() {
       }
 
       break;
-
-    case "MemberAccess":
-      //HACK: we use the alternate stack in this case
-
+    }
+    case "MemberAccess": {
       //we're going to start by doing the same thing as in the default case
       //(see below) -- getting things ready for an assignment.  Then we're
       //going to forget this for a bit while we handle the rest...
@@ -694,6 +694,7 @@ function* variablesAndMappingsSaga() {
         ...preambleAssignments,
         ...literalAssignments(
           compilationId,
+          internalFor,
           node,
           stack,
           currentDepth,
@@ -705,7 +706,7 @@ function* variablesAndMappingsSaga() {
       debug("Member access case");
 
       //MemberAccess uses expression, not baseExpression
-      baseExpression = node.expression;
+      const baseExpression = node.expression;
 
       //if this isn't a storage struct, or the element isn't of reference type,
       //we'll just do the assignment and quit out (again, note that mappings
@@ -721,9 +722,13 @@ function* variablesAndMappingsSaga() {
         break;
       }
 
+      const allocations = yield select(data.current.allocations.state);
+      const currentAssignments = yield select(data.proc.assignments);
+
       //but if it is a storage struct, we have to map the path as well
-      path = fetchBasePath(
+      const path = fetchBasePath(
         compilationId,
+        internalFor,
         baseExpression,
         currentAssignments,
         allocations,
@@ -738,17 +743,20 @@ function* variablesAndMappingsSaga() {
         break;
       }
 
-      slot = { path };
+      let slot = { path };
 
-      let structType = Codec.Ast.Import.definitionToType(
+      const compiler = yield select(data.current.compiler);
+      const structType = Codec.Ast.Import.definitionToType(
         baseExpression,
         compilationId,
         compiler
       );
-      let memberAllocations = storageAllocations[structType.id].members;
+      const storageAllocations = yield select(data.info.allocations.storage);
+      const memberAllocations = storageAllocations[structType.id].members;
+      const scopes = yield select(data.current.scopes.inlined);
       //members of a given struct have unique names so it's safe to look up the member by name
-      let memberName = scopes[node.referencedDeclaration].definition.name;
-      let memberAllocation = memberAllocations.find(
+      const memberName = scopes[node.referencedDeclaration].definition.name;
+      const memberAllocation = memberAllocations.find(
         member => member.name === memberName
       );
 
@@ -765,7 +773,7 @@ function* variablesAndMappingsSaga() {
         )
       );
       break;
-
+    }
     default:
       if (node.id === undefined || node.typeDescriptions == undefined) {
         break;
@@ -779,6 +787,7 @@ function* variablesAndMappingsSaga() {
         ...preambleAssignments,
         ...literalAssignments(
           compilationId,
+          internalFor,
           node,
           stack,
           currentDepth,
@@ -794,34 +803,37 @@ function* variablesAndMappingsSaga() {
 function* decodeMappingKeySaga(indexDefinition, keyDefinition) {
   //something of a HACK -- cleans any out-of-range booleans
   //resulting from the main mapping key decoding loop
-  let indexValue = yield* decodeMappingKeyCore(indexDefinition, keyDefinition);
+  const indexValue = yield* decodeMappingKeyCore(
+    indexDefinition,
+    keyDefinition
+  );
   return indexValue ? Codec.Conversion.cleanBool(indexValue) : indexValue;
 }
 
 function* decodeMappingKeyCore(indexDefinition, keyDefinition) {
-  let scopes = yield select(data.current.scopes.inlined);
-  let compilationId = yield select(data.current.compilationId);
-  let currentAssignments = yield select(data.proc.assignments);
-  let currentDepth = yield select(data.current.functionDepth);
-  let modifierDepth = yield select(data.current.modifierDepth);
-  let inModifier = yield select(data.current.inModifier);
+  const scopes = yield select(data.current.scopes.inlined);
+  const compilationId = yield select(data.current.compilationId);
+  const internalFor = yield select(data.current.internalSourceFor); //should be null, but...
+  const currentAssignments = yield select(data.proc.assignments);
+  const currentDepth = yield select(data.current.functionDepth);
+  const modifierDepth = yield select(data.current.modifierDepth);
+  const inModifier = yield select(data.current.inModifier);
 
   //why the loop? see the end of the block it heads for an explanatory
   //comment
   while (true) {
-    let indexId = indexDefinition.id;
+    const indexId = indexDefinition.id;
     //indices need to be identified by stackframe
-    let indexIdObj = inModifier
-      ? {
-          compilationId,
-          astRef: indexId,
-          stackframe: currentDepth,
-          modifierDepth
-        }
-      : { compilationId, astRef: indexId, stackframe: currentDepth };
-    let fullIndexId = stableKeccak256(indexIdObj);
+    const indexIdObj = {
+      compilationId,
+      internalFor,
+      astRef: indexId,
+      stackframe: currentDepth,
+      modifierDepth: inModifier ? modifierDepth : null
+    };
+    const fullIndexId = stableKeccak256(indexIdObj);
 
-    const indexReference = (currentAssignments.byId[fullIndexId] || {}).ref;
+    const indexReference = (currentAssignments[fullIndexId] || {}).ref;
 
     if (Codec.Ast.Utils.isSimpleConstant(indexDefinition)) {
       //while the main case is the next one, where we look for a prior
@@ -931,14 +943,11 @@ export function* reset() {
 
 export function* recordAllocations() {
   const contracts = yield select(data.views.contractAllocationInfo);
-  debug("contracts %O", contracts);
   const referenceDeclarations = yield select(data.views.referenceDeclarations);
   const userDefinedTypes = yield select(data.views.userDefinedTypes);
-  debug("referenceDeclarations %O", referenceDeclarations);
   const storageAllocations = Codec.Storage.Allocate.getStorageAllocations(
     userDefinedTypes
   );
-  debug("storageAllocations %O", storageAllocations);
   const memoryAllocations = Codec.Memory.Allocate.getMemoryAllocations(
     userDefinedTypes
   );
@@ -970,6 +979,7 @@ export function* recordAllocations() {
 
 function literalAssignments(
   compilationId,
+  internalFor,
   node,
   stack,
   currentDepth,
@@ -997,14 +1007,13 @@ function literalAssignments(
   }
 
   let assignment = makeAssignment(
-    inModifier
-      ? {
-          compilationId,
-          astRef: node.id,
-          stackframe: currentDepth,
-          modifierDepth
-        }
-      : { compilationId, astRef: node.id, stackframe: currentDepth },
+    {
+      compilationId,
+      internalFor,
+      astRef: node.id,
+      stackframe: currentDepth,
+      modifierDepth: inModifier ? modifierDepth : null
+    },
     { location: "stackliteral", literal }
   );
 
@@ -1014,6 +1023,7 @@ function literalAssignments(
 //takes a parameter list as given in the AST
 function assignParameters(
   compilationId,
+  internalFor,
   parameters,
   top,
   functionDepth,
@@ -1035,14 +1045,13 @@ function assignParameters(
       to: currentPosition
     };
     let assignment = makeAssignment(
-      forModifier
-        ? {
-            compilationId,
-            astRef: parameter.id,
-            stackframe: functionDepth,
-            modifierDepth
-          }
-        : { compilationId, astRef: parameter.id, stackframe: functionDepth },
+      {
+        compilationId,
+        internalFor,
+        astRef: parameter.id,
+        stackframe: functionDepth,
+        modifierDepth: forModifier ? modifierDepth : null
+      },
       pointer
     );
     assignments[assignment.id] = assignment;
@@ -1053,6 +1062,7 @@ function assignParameters(
 
 function fetchBasePath(
   compilationId,
+  internalFor,
   baseNode,
   currentAssignments,
   allocations,
@@ -1060,27 +1070,20 @@ function fetchBasePath(
   modifierDepth,
   inModifier
 ) {
-  const fullId = stableKeccak256(
-    inModifier
-      ? {
-          compilationId,
-          astRef: baseNode.id,
-          stackframe: currentDepth,
-          modifierDepth
-        }
-      : {
-          compilationId,
-          astRef: baseNode.id,
-          stackframe: currentDepth
-        }
-  );
+  const fullId = stableKeccak256({
+    compilationId,
+    internalFor,
+    astRef: baseNode.id,
+    stackframe: currentDepth,
+    modifierDepth: inModifier ? modifierDepth : null
+  });
   debug("astId: %d", baseNode.id);
   debug("stackframe: %d", currentDepth);
   debug("fullId: %s", fullId);
   debug("currentAssignments: %O", currentAssignments);
   //base expression is an expression, and so has a literal assigned to
   //it (unless it doesn't, in which case we have to handle that case)
-  const baseAssignment = currentAssignments.byId[fullId];
+  const baseAssignment = currentAssignments[fullId];
   if (baseAssignment) {
     const offset = Codec.Conversion.toBN(baseAssignment.ref.literal);
     return { offset };

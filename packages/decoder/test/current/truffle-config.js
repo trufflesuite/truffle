@@ -6,7 +6,7 @@
  *
  * More information about configuration can be found at:
  *
- * truffleframework.com/docs/advanced/configuration
+ * trufflesuite.com/docs/advanced/configuration
  *
  * To deploy via Infura you'll need a wallet provider (like @truffle/hdwallet-provider)
  * to sign your transactions before they're sent to a remote public node. Infura API
@@ -57,7 +57,7 @@ module.exports = {
   // Configure your compilers
   compilers: {
     solc: {
-      version: "0.6.6" // Fetch exact version from solc-bin (default: truffle's version)
+      version: "0.7.3" // Fetch exact version from solc-bin (default: truffle's version)
       // docker: true,        // Use "0.5.1" you've installed locally with docker (default: false)
       // settings: {          // See the solidity docs for advice about optimization and evmVersion
       //  optimizer: {

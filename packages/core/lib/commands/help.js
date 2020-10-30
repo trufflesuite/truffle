@@ -34,8 +34,9 @@ var command = {
     }
   },
   displayCommandHelp: function (selectedCommand) {
-    var commands = require("./index");
+    let commands = require("./index");
     var commandHelp = commands[selectedCommand].help;
+
     console.log(`\n  Usage:        ${commandHelp.usage}`);
     console.log(`  Description:  ${commands[selectedCommand].description}`);
 

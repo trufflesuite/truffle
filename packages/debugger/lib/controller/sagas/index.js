@@ -68,11 +68,16 @@ function* advance(action) {
  * Note: It might take multiple instructions to express the same section of code.
  * "Stepping", then, is stepping to the next logical item, not stepping to the next
  * instruction. See advance() if you'd like to advance by one instruction.
+ *
+ * Note that if you are not in an internal source, this function will not stop in one
+ * (unless it hits the end of the trace); you will need to use advance() to get into
+ * one.  However, if you are already in an internal source, this function will not
+ * automatically step all the way out of it.
  */
 function* stepNext() {
   const starting = yield select(controller.current.location);
 
-  var upcoming, finished;
+  let upcoming, finished;
 
   do {
     // advance at least once step
@@ -87,12 +92,12 @@ function* stepNext() {
   } while (
     !finished &&
     (!upcoming ||
+      (upcoming.source.internal && !starting.source.internal) ||
       !upcoming.node ||
       isDeliberatelySkippedNodeType(upcoming.node) ||
       (upcoming.sourceRange.start === starting.sourceRange.start &&
         upcoming.sourceRange.length === starting.sourceRange.length &&
-        upcoming.source.id === starting.source.id &&
-        upcoming.source.compilationId === starting.source.compilationId))
+        upcoming.source.id === starting.source.id))
   );
 }
 
@@ -132,8 +137,6 @@ function* stepInto() {
     // the function stack has not increased,
     currentDepth <= startingDepth &&
     // we haven't changed files,
-    currentLocation.source.compilationId ===
-      startingLocation.source.compilationId &&
     currentLocation.source.id === startingLocation.source.id &&
     //and we haven't changed lines
     currentLocation.sourceRange.lines.start.line ===
@@ -196,8 +199,6 @@ function* stepOver() {
     // line (which may be in a new file)
     (currentDepth > startingDepth ||
       (currentLocation.source.id === startingLocation.source.id &&
-        currentLocation.source.compilationId ===
-          startingLocation.source.compilationId &&
         currentLocation.sourceRange.lines.start.line ===
           startingLocation.sourceRange.lines.start.line))
   );
@@ -220,19 +221,18 @@ function* continueUntilBreakpoint(action) {
   let currentLocation = yield select(controller.current.location);
   let currentLine = currentLocation.sourceRange.lines.start.line;
   let currentSourceId = currentLocation.source.id;
-  let currentCompilationId = currentLocation.source.compilationId;
 
   do {
-    yield* stepNext();
+    yield* advance(); //note: this avoids using stepNext in order to
+    //allow breakpoints in internal sources to work properly
 
-    //note these two have not been updated yet; they'll be updated a
+    //note these three have not been updated yet; they'll be updated a
     //few lines down.  but at this point these are still the previous
     //values.
     let previousLine = currentLine;
     let previousSourceId = currentSourceId;
 
     currentLocation = yield select(controller.current.location);
-    debug("currentLocation: %O", currentLocation);
     let finished = yield select(controller.current.trace.finished);
     if (finished) {
       break; //can break immediately if finished
@@ -242,26 +242,20 @@ function* continueUntilBreakpoint(action) {
     if (currentSourceId === undefined) {
       continue; //never stop on an unmapped instruction
     }
-    currentCompilationId = currentLocation.source.compilationId;
-    let currentNode = currentLocation.node.id;
+    let currentNode = currentLocation.astRef;
     currentLine = currentLocation.sourceRange.lines.start.line;
 
     breakpointHit =
-      breakpoints.filter(({ sourceId, compilationId, line, node }) => {
+      breakpoints.filter(({ sourceId, line, node }) => {
         if (node !== undefined) {
-          return (
-            compilationId === currentCompilationId &&
-            sourceId === currentSourceId &&
-            node === currentNode
-          );
+          return sourceId === currentSourceId && node === currentNode;
         }
         //otherwise, we have a line-style breakpoint; we want to stop at the
         //*first* point on the line
         return (
-          compilationId === currentCompilationId &&
           sourceId === currentSourceId &&
           line === currentLine &&
-          (currentSourceId !== previousSourceId || currentLine !== previousLine)
+          (currentSourceId !== previousSourceId || currentLine !== previousLine) //can skip context check as don't need to worry about external calls to internal sources
         );
       }).length > 0;
   } while (!breakpointHit);

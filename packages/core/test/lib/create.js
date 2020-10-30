@@ -7,7 +7,7 @@ const Create = require("../../lib/commands/create/helpers");
 const Resolver = require("@truffle/resolver");
 const Artifactor = require("@truffle/artifactor");
 
-describe("create", function() {
+describe("create", function () {
   let config;
 
   before("Create a sandbox", async () => {
@@ -16,7 +16,7 @@ describe("create", function() {
     config.artifactor = new Artifactor(config.contracts_build_directory);
   });
 
-  after("Cleanup tmp files", function(done) {
+  after("Cleanup tmp files", function (done) {
     glob("tmp-*", (err, files) => {
       if (err) done(err);
       files.forEach(file => fse.removeSync(file));
@@ -24,8 +24,10 @@ describe("create", function() {
     });
   });
 
-  it("creates a new contract", function(done) {
-    Create.contract(config.contracts_directory, "MyNewContract", function(err) {
+  it("creates a new contract", function (done) {
+    Create.contract(config.contracts_directory, "MyNewContract", function (
+      err
+    ) {
       if (err) return done(err);
 
       const expectedFile = path.join(
@@ -41,15 +43,15 @@ describe("create", function() {
       assert.isNotNull(fileData, "File's data is null");
       assert.notEqual(fileData, "", "File's data is blank");
       assert.isTrue(
-        fileData.includes("pragma solidity >= 0.5.0 < 0.7.0;"),
-        "File's solidity version does not match >= 0.5.0 < 0.7.0"
+        fileData.includes("pragma solidity >=0.4.22 <0.8.0;"),
+        "File's solidity version does not match >=0.4.22 <0.8.0"
       );
       done();
     });
   });
 
-  it("will not overwrite an existing contract (by default)", function(done) {
-    Create.contract(config.contracts_directory, "MyNewContract2", function(
+  it("will not overwrite an existing contract (by default)", function (done) {
+    Create.contract(config.contracts_directory, "MyNewContract2", function (
       err
     ) {
       if (err) return done(err);
@@ -63,7 +65,7 @@ describe("create", function() {
         `Contract to be created doesns't exist, ${expectedFile}`
       );
 
-      Create.contract(config.contracts_directory, "MyNewContract2", function(
+      Create.contract(config.contracts_directory, "MyNewContract2", function (
         err
       ) {
         assert(err.message.includes("file exists"));
@@ -72,8 +74,8 @@ describe("create", function() {
     });
   });
 
-  it("will overwrite an existing contract if the force option is enabled", function(done) {
-    Create.contract(config.contracts_directory, "MyNewContract3", function(
+  it("will overwrite an existing contract if the force option is enabled", function (done) {
+    Create.contract(config.contracts_directory, "MyNewContract3", function (
       err
     ) {
       if (err) return done(err);
@@ -92,7 +94,7 @@ describe("create", function() {
         config.contracts_directory,
         "MyNewContract3",
         options,
-        function(err) {
+        function (err) {
           assert(err === null);
           done();
         }
@@ -100,8 +102,8 @@ describe("create", function() {
     });
   });
 
-  it("creates a new test", function(done) {
-    Create.test(config.test_directory, "MyNewTest", function(err) {
+  it("creates a new test", function (done) {
+    Create.test(config.test_directory, "MyNewTest", function (err) {
       if (err) return done(err);
 
       const expectedFile = path.join(config.test_directory, "my_new_test.js");
@@ -118,8 +120,8 @@ describe("create", function() {
     });
   }); // it
 
-  it("creates a new migration", function(done) {
-    Create.migration(config.migrations_directory, "MyNewMigration", function(
+  it("creates a new migration", function (done) {
+    Create.migration(config.migrations_directory, "MyNewMigration", function (
       err
     ) {
       if (err) return done(err);

@@ -5,6 +5,13 @@ const webpack = require("webpack");
 const pkg = require("./package.json");
 const rootDir = path.join(__dirname, "../..");
 const outputDir = path.join(__dirname, "build");
+const truffleLibraryDirectory = path.join(
+  __dirname,
+  "../..",
+  "node_modules",
+  "@truffle/resolver",
+  "solidity"
+);
 
 module.exports = {
   mode: "production",
@@ -40,13 +47,29 @@ module.exports = {
       "@truffle/core",
       "index.js"
     ),
+    consoleChild: path.join(
+      __dirname,
+      "../..",
+      "node_modules",
+      "@truffle/core",
+      "lib",
+      "console-child.js"
+    ),
+    commands: path.join(
+      __dirname,
+      "../..",
+      "node_modules",
+      "@truffle/core",
+      "lib",
+      "commands/index.js"
+    )
   },
 
   target: "node",
   node: {
     // For this option, see here: https://github.com/webpack/webpack/issues/1599
     __dirname: false,
-    __filename: false,
+    __filename: false
   },
   context: rootDir,
 
@@ -54,12 +77,12 @@ module.exports = {
     path: outputDir,
     filename: "[name].bundled.js",
     library: "",
-    libraryTarget: "commonjs",
+    libraryTarget: "commonjs"
   },
   devtool: "source-map",
 
   optimization: {
-    minimize: false,
+    minimize: false
   },
 
   module: {
@@ -69,11 +92,11 @@ module.exports = {
         test: /\.js$/,
         include: [
           path.resolve(__dirname, "../core"),
-          path.resolve(__dirname, "../environment"),
+          path.resolve(__dirname, "../environment")
         ],
-        use: "shebang-loader",
-      },
-    ],
+        use: "shebang-loader"
+      }
+    ]
   },
 
   externals: [
@@ -82,6 +105,8 @@ module.exports = {
     // module that's a dependency of Truffle instead.
     /^original-require$/,
     /^mocha$/,
+    // this is the commands portion shared by cli.js and console-child.js
+    /^\.\/commands.bundled.js$/
   ],
 
   resolve: {
@@ -96,12 +121,12 @@ module.exports = {
         "bn.js"
       ),
       "original-fs": path.join(__dirname, "./nil.js"),
-      "scrypt": "js-scrypt",
-    },
+      "scrypt": "js-scrypt"
+    }
   },
 
   stats: {
-    warnings: false,
+    warnings: false
   },
 
   plugins: [
@@ -110,6 +135,7 @@ module.exports = {
       BUNDLE_CHAIN_FILENAME: JSON.stringify("chain.bundled.js"),
       BUNDLE_ANALYTICS_FILENAME: JSON.stringify("analytics.bundled.js"),
       BUNDLE_LIBRARY_FILENAME: JSON.stringify("library.bundled.js"),
+      BUNDLE_CONSOLE_CHILD_FILENAME: JSON.stringify("consoleChild.bundled.js")
     }),
 
     // Put the shebang back on.
@@ -128,183 +154,52 @@ module.exports = {
           "init",
           "initSource"
         ),
-        to: "initSource",
+        to: "initSource"
       },
       {
-        from: path.join(
-          __dirname,
-          "../..",
-          "node_modules",
-          "@truffle/core",
-          "lib",
-          "testing",
-          "Assert.sol"
-        ),
+        from: path.join(truffleLibraryDirectory, "Assert.sol")
       },
       {
-        from: path.join(
-          __dirname,
-          "../..",
-          "node_modules",
-          "@truffle/core",
-          "lib",
-          "testing",
-          "AssertAddress.sol"
-        ),
+        from: path.join(truffleLibraryDirectory, "AssertAddress.sol")
       },
       {
-        from: path.join(
-          __dirname,
-          "../..",
-          "node_modules",
-          "@truffle/core",
-          "lib",
-          "testing",
-          "AssertAddressArray.sol"
-        ),
+        from: path.join(truffleLibraryDirectory, "AssertAddressArray.sol")
       },
       {
-        from: path.join(
-          __dirname,
-          "../..",
-          "node_modules",
-          "@truffle/core",
-          "lib",
-          "testing",
-          "AssertAddressPayableArray.sol"
-        ),
+        from: path.join(truffleLibraryDirectory, "AssertBalance.sol")
       },
       {
-        from: path.join(
-          __dirname,
-          "../..",
-          "node_modules",
-          "@truffle/core",
-          "lib",
-          "testing",
-          "AssertBalance.sol"
-        ),
+        from: path.join(truffleLibraryDirectory, "AssertBool.sol")
       },
       {
-        from: path.join(
-          __dirname,
-          "../..",
-          "node_modules",
-          "@truffle/core",
-          "lib",
-          "testing",
-          "AssertBool.sol"
-        ),
+        from: path.join(truffleLibraryDirectory, "AssertBytes32.sol")
       },
       {
-        from: path.join(
-          __dirname,
-          "../..",
-          "node_modules",
-          "@truffle/core",
-          "lib",
-          "testing",
-          "AssertBytes32.sol"
-        ),
+        from: path.join(truffleLibraryDirectory, "AssertBytes32Array.sol")
       },
       {
-        from: path.join(
-          __dirname,
-          "../..",
-          "node_modules",
-          "@truffle/core",
-          "lib",
-          "testing",
-          "AssertBytes32Array.sol"
-        ),
+        from: path.join(truffleLibraryDirectory, "AssertGeneral.sol")
       },
       {
-        from: path.join(
-          __dirname,
-          "../..",
-          "node_modules",
-          "@truffle/core",
-          "lib",
-          "testing",
-          "AssertGeneral.sol"
-        ),
+        from: path.join(truffleLibraryDirectory, "AssertInt.sol")
       },
       {
-        from: path.join(
-          __dirname,
-          "../..",
-          "node_modules",
-          "@truffle/core",
-          "lib",
-          "testing",
-          "AssertInt.sol"
-        ),
+        from: path.join(truffleLibraryDirectory, "AssertIntArray.sol")
       },
       {
-        from: path.join(
-          __dirname,
-          "../..",
-          "node_modules",
-          "@truffle/core",
-          "lib",
-          "testing",
-          "AssertIntArray.sol"
-        ),
+        from: path.join(truffleLibraryDirectory, "AssertString.sol")
       },
       {
-        from: path.join(
-          __dirname,
-          "../..",
-          "node_modules",
-          "@truffle/core",
-          "lib",
-          "testing",
-          "AssertString.sol"
-        ),
+        from: path.join(truffleLibraryDirectory, "AssertUint.sol")
       },
       {
-        from: path.join(
-          __dirname,
-          "../..",
-          "node_modules",
-          "@truffle/core",
-          "lib",
-          "testing",
-          "AssertUint.sol"
-        ),
+        from: path.join(truffleLibraryDirectory, "AssertUintArray.sol")
       },
       {
-        from: path.join(
-          __dirname,
-          "../..",
-          "node_modules",
-          "@truffle/core",
-          "lib",
-          "testing",
-          "AssertUintArray.sol"
-        ),
+        from: path.join(truffleLibraryDirectory, "NewSafeSend.sol")
       },
       {
-        from: path.join(
-          __dirname,
-          "../..",
-          "node_modules",
-          "@truffle/core",
-          "lib",
-          "testing",
-          "NewSafeSend.sol"
-        ),
-      },
-      {
-        from: path.join(
-          __dirname,
-          "../..",
-          "node_modules",
-          "@truffle/core",
-          "lib",
-          "testing",
-          "OldSafeSend.sol"
-        ),
+        from: path.join(truffleLibraryDirectory, "OldSafeSend.sol")
       },
       {
         from: path.join(
@@ -318,13 +213,13 @@ module.exports = {
           "templates/"
         ),
         to: "templates",
-        flatten: true,
-      },
+        flatten: true
+      }
     ]),
 
     new CleanWebpackPlugin(),
 
     // Make web3 1.0 packable
-    new webpack.IgnorePlugin(/^electron$/),
-  ],
+    new webpack.IgnorePlugin(/^electron$/)
+  ]
 };

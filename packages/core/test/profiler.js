@@ -8,7 +8,7 @@ var Artifactor = require("@truffle/artifactor");
 
 // TOOD: Move this to @truffle/compile-solidity!
 
-describe("profiler", function() {
+describe("profiler", function () {
   var config;
 
   before("Create a sandbox", async () => {
@@ -18,7 +18,7 @@ describe("profiler", function() {
     config.network = "development";
   });
 
-  after("Cleanup tmp files", function(done) {
+  after("Cleanup tmp files", function (done) {
     glob("tmp-*", (err, files) => {
       if (err) done(err);
       files.forEach(file => fs.removeSync(file));
@@ -26,19 +26,14 @@ describe("profiler", function() {
     });
   });
 
-  it("profiles example project successfully", function(done) {
-    Profiler.required_sources(
+  it("profiles example project successfully", async () => {
+    const { allSources, compilationTargets } = await Profiler.requiredSources(
       config.with({
         paths: ["./ConvertLib.sol"],
         base_path: config.contracts_directory
-      }),
-      function(err, allSources, compilationTargets) {
-        if (err) return done(err);
-
-        assert.equal(Object.keys(allSources).length, 3);
-        assert.equal(compilationTargets.length, 2);
-        done();
-      }
+      })
     );
+    assert.equal(Object.keys(allSources).length, 3);
+    assert.equal(compilationTargets.length, 2);
   });
 }).timeout(10000);

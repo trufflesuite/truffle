@@ -3,15 +3,52 @@ const debug = debugModule("codec:compilations:utils");
 
 import * as Ast from "@truffle/codec/ast";
 import * as Compiler from "@truffle/codec/compiler";
-import { ContractObject as Artifact } from "@truffle/contract-schema/spec";
+import {
+  ContractObject as Artifact,
+  GeneratedSources
+} from "@truffle/contract-schema/spec";
+import {
+  CompiledContract,
+  Compilation as CompilerCompilation
+} from "@truffle/compile-common";
 import { Compilation, Contract, Source } from "./types";
 
+export function shimCompilations(
+  inputCompilations: CompilerCompilation[],
+  shimmedCompilationIdPrefix = "shimmedcompilation"
+): Compilation[] {
+  return inputCompilations.map(
+    ({ contracts, sourceIndexes }, compilationIndex) =>
+      shimContracts(
+        contracts,
+        sourceIndexes,
+        `${shimmedCompilationIdPrefix}Number(${compilationIndex})`
+      )
+  );
+}
+
+/**
+ * wrapper around shimArtifactsToCompilation that just returns
+ * the result in a one-element array (keeping the old name
+ * shimArtifacts for compatibility)
+ */
 export function shimArtifacts(
-  artifacts: Artifact[],
+  artifacts: (Artifact | CompiledContract)[],
   files?: string[],
   shimmedCompilationId = "shimmedcompilation"
 ): Compilation[] {
-  //note: always returns a one-element array (a single fictional compilation)
+  return [shimContracts(artifacts, files, shimmedCompilationId)];
+}
+
+/**
+ * shims a bunch of contracts ("artifacts", though not necessarily)
+ * to a compilation.  usually used via one of the above two functions.
+ */
+export function shimContracts(
+  artifacts: (Artifact | CompiledContract)[],
+  files?: string[],
+  shimmedCompilationId: string = "shimmedcompilation"
+): Compilation {
   let contracts: Contract[] = [];
   let sources: Source[] = [];
   let unreliableSourceOrder: boolean = false;
@@ -19,7 +56,6 @@ export function shimArtifacts(
   for (let artifact of artifacts) {
     let {
       contractName,
-      contract_name,
       bytecode,
       sourceMap,
       deployedBytecode,
@@ -29,17 +65,25 @@ export function shimArtifacts(
       source,
       ast,
       abi,
-      compiler
+      compiler,
+      generatedSources,
+      deployedGeneratedSources
     } = artifact;
 
-    contractName = contractName || <string>contract_name;
-    //dunno what's up w/ the type of contract_name, but it needs coercing
+    if ((<Artifact>artifact).contract_name) {
+      //just in case
+      contractName = <string>(<Artifact>artifact).contract_name;
+      //dunno what's up w/ the type of contract_name, but it needs coercing
+    }
+
+    debug("contractName: %s", contractName);
 
     let sourceObject: Source = {
       sourcePath,
       source,
       ast: <Ast.AstNode>ast,
-      compiler
+      compiler,
+      language: inferLanguage(<Ast.AstNode>ast)
     };
     //ast needs to be coerced because schema doesn't quite match our types here...
 
@@ -51,12 +95,23 @@ export function shimArtifacts(
       deployedSourceMap,
       immutableReferences,
       abi,
+      generatedSources: normalizeGeneratedSources(generatedSources, compiler),
+      deployedGeneratedSources: normalizeGeneratedSources(
+        deployedGeneratedSources,
+        compiler
+      ),
       compiler
     };
 
     //if files was passed, trust that to determine the source index
     if (files) {
-      let index = files.indexOf(sourcePath);
+      const index = files.indexOf(sourcePath);
+      debug("sourcePath: %s", sourceObject.sourcePath);
+      debug("given index: %d", index);
+      debug(
+        "sources: %o",
+        sources.map(source => source.sourcePath)
+      );
       sources[index] = sourceObject;
       sourceObject.id = index.toString(); //HACK
       contractObject.primarySourceId = index.toString();
@@ -64,42 +119,38 @@ export function shimArtifacts(
       //we just trust files.  If files is bad, then, uh, too bad.
     } else {
       //if files *wasn't* passed, attempt to determine it from the ast
-      //first: is this already there? only add it if it's not.
-      //(we determine this by sourcePath if present, and the actual source
-      //contents if not)
-      if (
-        sources.every(
-          existingSource =>
-            existingSource.sourcePath !== sourcePath ||
-            (!sourcePath &&
-              !existingSource.sourcePath &&
-              existingSource.source !== source)
-        )
-      ) {
-        let index = sourceIndexForAst(sourceObject.ast); //sourceObject.ast for typing reasons
-        if (
-          !unreliableSourceOrder &&
-          index !== undefined &&
-          !(index in sources)
-        ) {
-          sources[index] = sourceObject;
-          sourceObject.id = index.toString(); //HACK
-          contractObject.primarySourceId = index.toString();
-        } else {
-          //if we fail, set the unreliable source order flag
-          unreliableSourceOrder = true;
-        }
-        if (unreliableSourceOrder) {
-          //in case of unreliable source order, we'll ignore what indices
-          //things are *supposed* to have and just append things to the end
-          sourceObject.id = sources.length.toString(); //HACK
-          contractObject.primarySourceId = sources.length.toString();
-          sources.push(sourceObject); //these lines don't commute, obviously!
-        }
+      let index = sourceIndexForAst(sourceObject.ast); //sourceObject.ast for typing reasons
+      ({ index, unreliableSourceOrder } = getIndexToAddAt(
+        sourceObject,
+        index,
+        sources,
+        unreliableSourceOrder
+      ));
+      if (index !== null) {
+        sources[index] = {
+          ...sourceObject,
+          id: index.toString()
+        };
+        contractObject.primarySourceId = index.toString();
       }
     }
 
     contracts.push(contractObject);
+  }
+
+  //now: check for id overlap with internal sources
+  for (let contract of contracts) {
+    const { generatedSources, deployedGeneratedSources } = contract;
+    for (let index in generatedSources) {
+      if (index in sources) {
+        unreliableSourceOrder = true;
+      }
+    }
+    for (let index in deployedGeneratedSources) {
+      if (index in sources) {
+        unreliableSourceOrder = true;
+      }
+    }
   }
 
   let compiler: Compiler.CompilerVersion;
@@ -163,7 +214,8 @@ export function getContractNode(
     if (foundNode || !source) {
       return foundNode;
     }
-    if (!source.ast) {
+    if (!source.ast || source.language !== "Solidity") {
+      //don't search Yul sources!
       return undefined;
     }
     return source.ast.nodes.find(
@@ -173,7 +225,7 @@ export function getContractNode(
   }, undefined);
 }
 
-/*
+/**
  * extract the primary source from a source map
  * (i.e., the source for the first instruction, found
  * between the second and third colons)
@@ -182,4 +234,109 @@ export function getContractNode(
  */
 function extractPrimarySource(sourceMap: string): number {
   return parseInt(sourceMap.match(/^[^:]+:[^:]+:([^:]+):/)[1]);
+}
+
+function normalizeGeneratedSources(
+  generatedSources: Source[] | GeneratedSources,
+  compiler: Compiler.CompilerVersion
+): Source[] {
+  if (!generatedSources) {
+    return [];
+  }
+  if (!isGeneratedSources(generatedSources)) {
+    return generatedSources; //if already normalizeed, leave alone
+  }
+  let sources = []; //output
+  for (let source of generatedSources) {
+    sources[source.id] = {
+      id: source.id.toString(), //Nick says this is fine :P
+      sourcePath: source.name,
+      source: source.contents,
+      //ast needs to be coerced because schema doesn't quite match our types here...
+      ast: <Ast.AstNode>source.ast,
+      compiler: compiler,
+      language: source.language
+    };
+  }
+  return sources;
+}
+
+//HACK
+function isGeneratedSources(
+  sources: Source[] | GeneratedSources
+): sources is GeneratedSources {
+  //note: for some reason arr.includes(undefined) returns true on sparse arrays
+  //if sources.length === 0, it's ambiguous; we'll exclude it as not needing normalization
+  return (
+    sources.length > 0 &&
+    !sources.includes(undefined) &&
+    ((<GeneratedSources>sources)[0].contents !== undefined ||
+      (<GeneratedSources>sources)[0].name !== undefined)
+  );
+}
+
+//HACK, maybe?
+function inferLanguage(ast: Ast.AstNode | undefined): string | undefined {
+  if (!ast || typeof ast.nodeType !== "string") {
+    return undefined;
+  } else if (ast.nodeType === "SourceUnit") {
+    return "Solidity";
+  } else if (ast.nodeType.startsWith("Yul")) {
+    //Every Yul source I've seen has YulBlock as the root, but
+    //I'm not sure that that's *always* the case
+    return "Yul";
+  } else {
+    return undefined;
+  }
+}
+
+function getIndexToAddAt(
+  sourceObject: Source,
+  index: number,
+  sources: Source[],
+  unreliableSourceOrder: boolean
+): { index: number | null; unreliableSourceOrder: boolean } {
+  //first: is this already there? only add it if it's not.
+  //(we determine this by sourcePath if present, and the actual source
+  //contents if not)
+  debug("sourcePath: %s", sourceObject.sourcePath);
+  debug("given index: %d", index);
+  debug(
+    "sources: %o",
+    sources.map(source => source.sourcePath)
+  );
+  if (
+    sources.every(
+      existingSource =>
+        existingSource.sourcePath !== sourceObject.sourcePath ||
+        (!sourceObject.sourcePath &&
+          !existingSource.sourcePath &&
+          existingSource.source !== sourceObject.source)
+    )
+  ) {
+    if (unreliableSourceOrder || index === undefined || index in sources) {
+      //if we can't add it at the correct spot, set the
+      //unreliable source order flag
+      debug("collision!");
+      unreliableSourceOrder = true;
+    }
+    //otherwise, just leave things alone
+    if (unreliableSourceOrder) {
+      //in case of unreliable source order, we'll ignore what indices
+      //things are *supposed* to have and just append things to the end
+      index = sources.length;
+    }
+    return {
+      index,
+      unreliableSourceOrder
+    };
+  } else {
+    //return index: null indicates don't add this because it's
+    //already present
+    debug("already present, not adding");
+    return {
+      index: null,
+      unreliableSourceOrder
+    };
+  }
 }

@@ -9,23 +9,27 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.2.20",
+  "version": "0.2.31",
   "main": "index.js",
+  "scripts": {
+    "prepare": "exit 0"
+  },
   "dependencies": {
-    "@truffle/artifactor": "^4.0.73",
-    "@truffle/error": "^0.0.9",
-    "@truffle/expect": "^0.0.14",
-    "@truffle/interface-adapter": "^0.4.15",
-    "@truffle/resolver": "^6.0.14",
-    "ganache-core": "2.11.2",
+    "@truffle/artifactor": "^4.0.84",
+    "@truffle/error": "^0.0.11",
+    "@truffle/expect": "^0.0.15",
+    "@truffle/interface-adapter": "^0.4.18",
+    "@truffle/resolver": "^6.0.25",
+    "ganache-core": "2.13.0",
     "node-ipc": "^9.1.1",
     "source-map-support": "^0.5.19",
-    "web3": "1.2.1"
+    "web3": "1.2.9"
   },
   "devDependencies": {
     "debug": "^4.1.0"
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "gitHead": "6b84be7849142588ef2e3224d8a9d7c2ceeb6e4a"
 }

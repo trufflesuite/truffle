@@ -4,6 +4,7 @@ import {
   Abi as SchemaAbi,
   ImmutableReferences
 } from "@truffle/contract-schema/spec";
+import { Bytecode } from "@truffle/compile-common";
 
 //Note to other people passing in compilations:
 //Please include all fields you can that aren't
@@ -53,13 +54,19 @@ export interface Source {
    */
   id?: string;
   /**
-   * The source's file path.
+   * The source's file path.  If internal is true, will not be a real file path but
+   * rather just an arbitrary name.
    */
   sourcePath?: string;
   /**
    * The source text.
    */
   source?: string;
+  /**
+   * The language for the source file.  For compatibility purposes, this may technicaly
+   * be left out, but please include it.
+   */
+  language?: string;
   /**
    * The source's abstract syntax tree.
    */
@@ -119,14 +126,14 @@ export interface Contract {
    * The ID of the contract's primary source.
    */
   primarySourceId?: string;
-}
-
-//defining this ourselves for now, sorry!
-export interface Bytecode {
-  bytes: string;
-  linkReferences: {
-    offsets: number[];
-    name: string;
-    length: number;
-  }[];
+  /**
+   * The contract's generated sources object as output by Solidity 0.7.2 or later.
+   * Note that this will be a sparse array.
+   */
+  generatedSources?: Source[];
+  /**
+   * The contract's deployed generated sources object as output by Solidity 0.7.2 or later.
+   * Note that this will be a sparse array.
+   */
+  deployedGeneratedSources?: Source[];
 }

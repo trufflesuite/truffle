@@ -4,10 +4,11 @@ const semver = require("semver");
 
 const { Docker, Local, Native, VersionRange } = require("./loadingStrategies");
 
+const defaultSolcVersion = "0.5.16";
+
 class CompilerSupplier {
   constructor({ events, solcConfig }) {
-    const { version, docker, compilerRoots, parser } = solcConfig;
-    const defaultSolcVersion = "0.5.16";
+    const { version, docker, compilerRoots, parser, spawn } = solcConfig;
     this.events = events;
     this.parser = parser;
     this.version = version ? version : defaultSolcVersion;
@@ -18,6 +19,7 @@ class CompilerSupplier {
     if (docker) this.strategyOptions.docker = compilerRoots;
     if (compilerRoots) this.strategyOptions.compilerRoots = compilerRoots;
     if (events) this.strategyOptions.events = events;
+    if (spawn) this.strategyOptions.spawn = spawn;
   }
 
   badInputError(userSpecification) {
@@ -118,6 +120,10 @@ class CompilerSupplier {
           latestRelease: list.latestRelease
         };
       });
+  }
+
+  static getDefaultVersion() {
+    return defaultSolcVersion;
   }
 }
 

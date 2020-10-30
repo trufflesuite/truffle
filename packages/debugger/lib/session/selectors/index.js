@@ -33,7 +33,15 @@ const session = createSelectorTree({
         Object.assign(
           {},
           ...Object.entries(instances).map(
-            ([address, { context: contextId, binary }]) => {
+            ([
+              address,
+              {
+                context: contextId,
+                binary,
+                creationBinary,
+                creationContext: creationContextId
+              }
+            ]) => {
               debug("instances %O", instances);
               debug("contexts %O", contexts);
               let context = contexts[contextId];
@@ -47,15 +55,29 @@ const session = createSelectorTree({
               debug("sources: %o", sources);
 
               let source =
-                primarySource !== undefined
-                  ? sources[compilationId].byId[primarySource]
+                primarySource !== undefined // note this is an index, not an ID
+                  ? sources.byCompilationId[compilationId].byIndex[
+                      primarySource
+                    ]
                   : undefined;
+
+              let constructorArgs;
+              if (creationBinary !== undefined) {
+                let creationContext = contexts[creationContextId];
+                if (creationContext !== null) {
+                  //slice off the bytecode part of the constructor to leave the arguments
+                  constructorArgs = creationBinary.slice(
+                    creationContext.binary.length
+                  );
+                }
+              }
 
               return {
                 [address]: {
                   contractName,
                   source,
-                  binary
+                  binary,
+                  constructorArgs //will be defined only if created by this tx
                 }
               };
             }

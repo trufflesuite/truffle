@@ -12,7 +12,7 @@ import Debugger from "lib/debugger";
 import solidity from "lib/solidity/selectors";
 
 const __SETSTHINGS = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.7.0;
 
 contract SetsThings {
   int x;
@@ -32,17 +32,17 @@ let sources = {
   "SetsThings.sol": __SETSTHINGS
 };
 
-describe("Reset Button", function() {
+describe("Reset Button", function () {
   var provider;
 
   var abstractions;
   var compilations;
 
-  before("Create Provider", async function() {
+  before("Create Provider", async function () {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
-  before("Prepare contracts and artifacts", async function() {
+  before("Prepare contracts and artifacts", async function () {
     this.timeout(30000);
 
     let prepared = await prepareContracts(provider, sources);
@@ -50,7 +50,7 @@ describe("Reset Button", function() {
     compilations = prepared.compilations;
   });
 
-  it("Correctly resets after finishing", async function() {
+  it("Correctly resets after finishing", async function () {
     let instance = await abstractions.SetsThings.deployed();
     let receipt = await instance.run();
     let txHash = receipt.tx;
@@ -61,7 +61,6 @@ describe("Reset Button", function() {
     });
 
     let sourceId = bugger.view(solidity.current.source).id;
-    let compilationId = bugger.view(solidity.current.source).compilationId;
     let source = bugger.view(solidity.current.source).source;
 
     let variables = [];
@@ -70,7 +69,6 @@ describe("Reset Button", function() {
 
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("BREAK", source)
     });
 
@@ -94,7 +92,6 @@ describe("Reset Button", function() {
     );
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("BREAK", source)
     });
     await bugger.continueUntilBreakpoint(); //advance to line 10

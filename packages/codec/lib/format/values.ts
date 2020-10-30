@@ -10,7 +10,6 @@ const debug = debugModule("codec:format:values");
 //just intended for the future.  More optional fields may be added in the
 //future.
 
-import BN from "bn.js";
 import * as Types from "./types";
 import * as Errors from "./errors";
 import {
@@ -26,12 +25,11 @@ import {
   UfixedValue,
   EnumValue,
   ContractValue,
-  ContractValueInfo,
   ContractValueInfoKnown,
   ContractValueInfoUnknown
 } from "./elementary";
 import * as Common from "@truffle/codec/common";
-import * as AbiData from "@truffle/codec/abi-data/types";
+import * as Abi from "@truffle/abi-utils";
 
 export * from "./elementary";
 
@@ -412,7 +410,7 @@ export interface FunctionExternalValueInfoKnown {
    * formatted as a hex string
    */
   selector: string;
-  abi: AbiData.FunctionAbiEntry;
+  abi: Abi.FunctionEntry;
   //may have more optional fields added later, I'll leave these out for now
 }
 
@@ -492,7 +490,14 @@ export interface FunctionInternalValueInfoKnown {
   deployedProgramCounter: number;
   constructorProgramCounter: number;
   name: string;
-  definedIn: Types.ContractType;
+  /**
+   * Is null for a free function
+   */
+  definedIn: Types.ContractType | null;
+  /**
+   * An internal opaque ID
+   */
+  id: string;
   mutability?: Common.Mutability;
   //may have more optional fields added later
 }

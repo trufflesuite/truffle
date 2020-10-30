@@ -1,8 +1,8 @@
 export const ADD_SOURCES = "SOLIDITY_ADD_SOURCES";
-export function addSources(compilations) {
+export function addSources(sources) {
   return {
     type: ADD_SOURCES,
-    compilations
+    sources
   };
 }
 

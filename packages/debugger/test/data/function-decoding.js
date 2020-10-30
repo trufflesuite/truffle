@@ -12,7 +12,7 @@ import * as Codec from "@truffle/codec";
 import solidity from "lib/solidity/selectors";
 
 const __EXTERNALS = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.7.0;
 
 contract ExternalsTester {
 
@@ -22,7 +22,7 @@ contract ExternalsTester {
 
   ExternalsBase base;
 
-  constructor() public {
+  constructor() {
     base = new ExternalsDerived();
   }
 
@@ -52,7 +52,7 @@ contract ExternalsDerived is ExternalsBase {
 `;
 
 const __INTERNALS = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.7.1;
 
 contract InternalsBase {
 
@@ -72,6 +72,10 @@ library InternalsLib {
   }
 }
 
+function freeFn() {
+  InternalsLib.libraryFn();
+}
+
 contract InternalsTest is InternalsBase {
 
   function inherited() public override {
@@ -85,27 +89,33 @@ contract InternalsTest is InternalsBase {
     function() internal derivedFn;
     function() internal baseFn;
     function() internal libFn;
+    function() internal storedFreeFn;
+    function() internal undefFn;
     function() internal readFromConstructor;
 
     plainFn = run;
     derivedFn = InternalsTest.inherited;
     baseFn = InternalsBase.inherited;
     libFn = InternalsLib.libraryFn;
+    storedFreeFn = freeFn;
     readFromConstructor = storageFn;
 
     emit Log(2); //BREAK HERE (DEPLOYED)
   }
 
-  constructor() public {
+  constructor() {
     function() internal plainFn;
     function() internal derivedFn;
     function() internal baseFn;
     function() internal libFn;
+    function() internal storedFreeFn;
+    function() internal undefFn;
 
     plainFn = run;
     derivedFn = InternalsTest.inherited;
     baseFn = InternalsBase.inherited;
     libFn = InternalsLib.libraryFn;
+    storedFreeFn = freeFn;
 
     storageFn = run;
 
@@ -119,17 +129,17 @@ let sources = {
   "InternalsTest.sol": __INTERNALS
 };
 
-describe("Function Pointer Decoding", function() {
+describe("Function Pointer Decoding", function () {
   var provider;
 
   var abstractions;
   var compilations;
 
-  before("Create Provider", async function() {
+  before("Create Provider", async function () {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
-  before("Prepare contracts and artifacts", async function() {
+  before("Prepare contracts and artifacts", async function () {
     this.timeout(30000);
 
     let prepared = await prepareContracts(provider, sources);
@@ -137,7 +147,7 @@ describe("Function Pointer Decoding", function() {
     compilations = prepared.compilations;
   });
 
-  it("Decodes external function pointers correctly", async function() {
+  it("Decodes external function pointers correctly", async function () {
     this.timeout(3000);
 
     let instance = await abstractions.ExternalsTester.deployed();
@@ -147,11 +157,9 @@ describe("Function Pointer Decoding", function() {
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let sourceId = bugger.view(solidity.current.source).id;
-    let compilationId = bugger.view(solidity.current.source).compilationId;
     let source = bugger.view(solidity.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("BREAK HERE", source)
     });
 
@@ -177,7 +185,7 @@ describe("Function Pointer Decoding", function() {
     assert.equal(variables.stackFn.value.abi.name, "doThing");
   });
 
-  it("Decodes internal function pointers correctly (deployed)", async function() {
+  it("Decodes internal function pointers correctly (deployed)", async function () {
     this.timeout(3000);
 
     let instance = await abstractions.InternalsTest.deployed();
@@ -187,11 +195,9 @@ describe("Function Pointer Decoding", function() {
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let sourceId = bugger.view(solidity.current.source).id;
-    let compilationId = bugger.view(solidity.current.source).compilationId;
     let source = bugger.view(solidity.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("BREAK HERE (DEPLOYED)", source)
     });
 
@@ -206,6 +212,8 @@ describe("Function Pointer Decoding", function() {
       derivedFn: "InternalsTest.inherited",
       baseFn: "InternalsBase.inherited",
       libFn: "InternalsLib.libraryFn",
+      storedFreeFn: "freeFn",
+      undefFn: "assert(false)",
       storageFn: "InternalsTest.run",
       readFromConstructor: "InternalsTest.run"
     };
@@ -213,7 +221,7 @@ describe("Function Pointer Decoding", function() {
     assert.include(variables, expectedResult);
   });
 
-  it("Decodes internal function pointers correctly (constructor)", async function() {
+  it("Decodes internal function pointers correctly (constructor)", async function () {
     this.timeout(3000);
 
     let receipt = await abstractions.InternalsTest.new();
@@ -222,11 +230,9 @@ describe("Function Pointer Decoding", function() {
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let sourceId = bugger.view(solidity.current.source).id;
-    let compilationId = bugger.view(solidity.current.source).compilationId;
     let source = bugger.view(solidity.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("BREAK HERE (CONSTRUCTOR)", source)
     });
 
@@ -241,6 +247,8 @@ describe("Function Pointer Decoding", function() {
       derivedFn: "InternalsTest.inherited",
       baseFn: "InternalsBase.inherited",
       libFn: "InternalsLib.libraryFn",
+      storedFreeFn: "freeFn",
+      undefFn: "assert(false)",
       storageFn: "InternalsTest.run"
     };
 

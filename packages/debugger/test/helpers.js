@@ -3,8 +3,7 @@ const debug = debugModule("test:helpers");
 
 import path from "path";
 import fs from "fs-extra";
-import Contracts from "@truffle/workflow-compile";
-import Debug from "@truffle/debug-utils";
+import WorkflowCompile from "@truffle/workflow-compile";
 import Artifactor from "@truffle/artifactor";
 import Web3 from "web3";
 import Migrate from "@truffle/migrate";
@@ -26,7 +25,7 @@ export async function prepareContracts(provider, sources = {}, migrations) {
 
   config.compilers = {
     solc: {
-      version: "0.6.11",
+      version: "0.7.1",
       settings: {
         optimizer: { enabled: false, runs: 200 },
         evmVersion: "constantinople"
@@ -35,8 +34,7 @@ export async function prepareContracts(provider, sources = {}, migrations) {
   };
 
   await addContracts(config, sources);
-  let { contracts, files } = await compile(config);
-  let contractNames = Object.keys(contracts);
+  let { contractNames, files } = await compile(config);
 
   if (!migrations) {
     migrations = await defaultMigrations(contractNames);
@@ -46,7 +44,10 @@ export async function prepareContracts(provider, sources = {}, migrations) {
   await migrate(config);
 
   let artifacts = await gatherArtifacts(config);
-  debug("artifacts: %o", artifacts.map(a => a.contractName));
+  debug(
+    "artifacts: %o",
+    artifacts.map(a => a.contractName)
+  );
 
   let abstractions = {};
   for (let name of contractNames) {
@@ -65,8 +66,8 @@ export async function prepareContracts(provider, sources = {}, migrations) {
 
 export function getAccounts(provider) {
   let web3 = new Web3(provider);
-  return new Promise(function(accept, reject) {
-    web3.eth.getAccounts(function(err, accounts) {
+  return new Promise(function (accept, reject) {
+    web3.eth.getAccounts(function (err, accounts) {
       if (err) return reject(err);
       accept(accounts);
     });
@@ -77,17 +78,11 @@ export async function createSandbox() {
   const config = await Box.sandbox({
     unsafeCleanup: true,
     setGracefulCleanup: true,
-    name: "default"
+    name: "bare-box"
   });
   config.resolver = new Resolver(config);
   config.artifactor = new Artifactor(config.contracts_build_directory);
   config.networks = {};
-
-  await fs.remove(path.join(config.contracts_directory, "MetaCoin.sol"));
-  await fs.remove(path.join(config.contracts_directory, "ConvertLib.sol"));
-  await fs.remove(
-    path.join(config.migrations_directory, "2_deploy_contracts.js")
-  );
 
   return config;
 }
@@ -139,29 +134,47 @@ export async function defaultMigrations(contractNames) {
 }
 
 export async function compile(config) {
-  return new Promise(function(accept, reject) {
-    Contracts.compile(
-      config.with({
-        all: true,
-        quiet: true
-      }),
-      function(err, result) {
-        if (err) return reject(err);
-        const { contracts, outputs } = result;
-        debug("result %O", result);
-        return accept({ contracts, files: outputs.solc });
+  const { compilations } = await WorkflowCompile.compileAndSave(
+    config.with({
+      all: true,
+      quiet: true
+    })
+  );
+  const collectedCompilationOutput = compilations.reduce(
+    (a, compilation) => {
+      if (compilation.compiler.name === "solc") {
+        for (const contract of compilation.contracts) {
+          a.contractNames = a.contractNames.concat(contract.contractName);
+        }
+        a.sourceIndexes = a.sourceIndexes.concat(compilation.sourceIndexes);
       }
-    );
-  });
+      return a;
+    },
+    { contractNames: [], sourceIndexes: [] }
+  );
+  const sourceIndexes = collectedCompilationOutput.sourceIndexes.filter(
+    (item, index) => {
+      return collectedCompilationOutput.sourceIndexes.indexOf(item) === index;
+    }
+  );
+  const contractNames = collectedCompilationOutput.contractNames.filter(
+    (item, index) => {
+      return collectedCompilationOutput.contractNames.indexOf(item) === index;
+    }
+  );
+  return {
+    contractNames,
+    files: sourceIndexes
+  };
 }
 
 export async function migrate(config) {
-  return new Promise(function(accept, reject) {
+  return new Promise(function (accept, reject) {
     Migrate.run(
       config.with({
         quiet: true
       }),
-      function(err, contracts) {
+      function (err, contracts) {
         if (err) return reject(err);
         accept(contracts);
       }
@@ -170,7 +183,23 @@ export async function migrate(config) {
 }
 
 export async function gatherArtifacts(config) {
-  return Debug.gatherArtifacts(config);
+  // Gather all available contract artifacts
+  const files = fs.readdirSync(config.contracts_build_directory);
+
+  let contracts = files
+    .filter(filePath => {
+      return path.extname(filePath) === ".json";
+    })
+    .map(filePath => {
+      return path.basename(filePath, ".json");
+    })
+    .map(contractName => {
+      return config.resolver.require(contractName);
+    });
+
+  await Promise.all(contracts.map(abstraction => abstraction.detectNetwork()));
+
+  return contracts;
 }
 
 export function lineOf(searchString, source) {

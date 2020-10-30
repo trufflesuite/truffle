@@ -13,7 +13,7 @@ import * as Codec from "@truffle/codec";
 import solidity from "lib/solidity/selectors";
 
 const __IMMUTABLE = `
-pragma solidity ^0.6.6;
+pragma solidity ^0.7.0;
 
 contract Base {
   int8 immutable base = -37;
@@ -32,7 +32,7 @@ contract ImmutableTest is Base {
 
   event Done();
 
-  constructor() public {
+  constructor() {
     background = Color.Blue;
     truth = true;
     self = address(this);
@@ -62,17 +62,17 @@ let sources = {
   "Immutable.sol": __IMMUTABLE
 };
 
-describe("Immutable state variables", function() {
+describe("Immutable state variables", function () {
   var provider;
 
   var abstractions;
   var compilations;
 
-  before("Create Provider", async function() {
+  before("Create Provider", async function () {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
-  before("Prepare contracts and artifacts", async function() {
+  before("Prepare contracts and artifacts", async function () {
     this.timeout(30000);
 
     let prepared = await prepareContracts(provider, sources);
@@ -80,7 +80,7 @@ describe("Immutable state variables", function() {
     compilations = prepared.compilations;
   });
 
-  it("Decodes immutables properly in deployed contract", async function() {
+  it("Decodes immutables properly in deployed contract", async function () {
     this.timeout(9000);
     let instance = await abstractions.ImmutableTest.deployed();
     let address = instance.address;
@@ -90,11 +90,9 @@ describe("Immutable state variables", function() {
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let sourceId = bugger.view(solidity.current.source).id;
-    let compilationId = bugger.view(solidity.current.source).compilationId;
     let source = bugger.view(solidity.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("BREAK DEPLOYED", source)
     });
 
@@ -119,7 +117,7 @@ describe("Immutable state variables", function() {
     assert.strictEqual(trulySecret.error.kind, "UnusedImmutableError");
   });
 
-  it("Decodes immutables properly in constructor", async function() {
+  it("Decodes immutables properly in constructor", async function () {
     this.timeout(9000);
     let instance = await abstractions.ImmutableTest.new();
     let address = instance.address;
@@ -128,11 +126,9 @@ describe("Immutable state variables", function() {
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let sourceId = bugger.view(solidity.current.source).id;
-    let compilationId = bugger.view(solidity.current.source).compilationId;
     let source = bugger.view(solidity.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("BREAK CONSTRUCTOR", source)
     });
 

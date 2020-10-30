@@ -13,25 +13,21 @@ import solidity from "lib/solidity/selectors";
 import * as Codec from "@truffle/codec";
 
 const __FACTORIAL = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.7.0;
 
 contract FactorialTest {
 
   uint lastResult;
 
-  function factorial(uint n) public returns(uint nbang)
-  {
+  function factorial(uint n) public returns(uint nbang) {
     uint prev;
     uint prevFac;
     nbang = n;
     prev = n - 1; //break here #1 (12)
-    if(n > 0)
-    {
+    if (n > 0) {
       prevFac = factorial(n - 1);
       nbang = n * prevFac;
-    }
-    else
-    {
+    } else {
       nbang = 1;
     }
     lastResult = nbang; //break here #2 (22)
@@ -40,7 +36,7 @@ contract FactorialTest {
 `;
 
 const __ADDRESS = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.7.0;
 
 contract AddressTest {
 
@@ -48,8 +44,7 @@ contract AddressTest {
   uint8 y;
   uint8 result;
 
-  function run() public
-  {
+  function run() public {
     SecretByte test1 = new SecretByte(107);
     SecretByte test2 = new SecretByte(46);
     x = test1.mangle();
@@ -61,13 +56,11 @@ contract SecretByte {
 
   uint8 private secret;
 
-  constructor(uint8 n) public
-  {
+  constructor(uint8 n) {
     secret = n;
   }
 
-  function mangle() public view returns (uint8)
-  {
+  function mangle() public view returns (uint8) {
     uint8 mangled;
     mangled = secret + 1;
 
@@ -78,7 +71,7 @@ contract SecretByte {
 `;
 
 const __INTERVENING = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.7.0;
 
 import "./InterveningLib.sol";
 
@@ -86,7 +79,7 @@ contract Intervening {
 
   Inner inner;
 
-  constructor(address _inner) public {
+  constructor(address _inner) {
     inner = Inner(_inner);
   }
 
@@ -113,7 +106,7 @@ contract Inner {
 
   uint8 flag;
 
-  constructor() public {
+  constructor() {
     flag = 0;
   }
 
@@ -126,7 +119,7 @@ contract Inner {
 `;
 
 const __INTERVENINGLIB = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.7.0;
 
 library InterveningLib {
 
@@ -137,7 +130,7 @@ library InterveningLib {
 `;
 
 const __MODIFIERS = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.7.0;
 
 contract ModifierTest {
 
@@ -187,17 +180,17 @@ let migrations = {
   "2_deploy_contracts.js": __MIGRATION
 };
 
-describe("Variable IDs", function() {
+describe("Variable IDs", function () {
   var provider;
 
   var abstractions;
   var compilations;
 
-  before("Create Provider", async function() {
+  before("Create Provider", async function () {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
-  before("Prepare contracts and artifacts", async function() {
+  before("Prepare contracts and artifacts", async function () {
     this.timeout(30000);
 
     let prepared = await prepareContracts(provider, sources, migrations);
@@ -205,7 +198,7 @@ describe("Variable IDs", function() {
     compilations = prepared.compilations;
   });
 
-  it("Distinguishes between stackframes", async function() {
+  it("Distinguishes between stackframes", async function () {
     this.timeout(8000);
     let instance = await abstractions.FactorialTest.deployed();
     let receipt = await instance.factorial(3);
@@ -216,16 +209,13 @@ describe("Variable IDs", function() {
     debug("sourceId %d", bugger.view(solidity.current.source).id);
 
     let sourceId = bugger.view(solidity.current.source).id;
-    let compilationId = bugger.view(solidity.current.source).compilationId;
     let source = bugger.view(solidity.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("break here #1", source)
     });
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("break here #2", source)
     });
 
@@ -242,7 +232,7 @@ describe("Variable IDs", function() {
     assert.deepEqual(values, [3, 2, 1, 0, 1, 1, 2, 6]);
   });
 
-  it("Distinguishes between modifier invocations", async function() {
+  it("Distinguishes between modifier invocations", async function () {
     this.timeout(8000);
     let instance = await abstractions.ModifierTest.deployed();
     let receipt = await instance.run();
@@ -253,16 +243,13 @@ describe("Variable IDs", function() {
     debug("sourceId %d", bugger.view(solidity.current.source).id);
 
     let sourceId = bugger.view(solidity.current.source).id;
-    let compilationId = bugger.view(solidity.current.source).compilationId;
     let source = bugger.view(solidity.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("BREAK HERE #1", source)
     });
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("BREAK HERE #2", source)
     });
 
@@ -284,7 +271,7 @@ describe("Variable IDs", function() {
     assert.deepEqual(tempValues, [4, 6, 6, 4]);
   });
 
-  it("Stays at correct stackframe after contract call", async function() {
+  it("Stays at correct stackframe after contract call", async function () {
     this.timeout(3000);
     let instance = await abstractions.Intervening.deployed();
     let receipt = await instance.run();
@@ -295,18 +282,16 @@ describe("Variable IDs", function() {
     debug("sourceId %d", bugger.view(solidity.current.source).id);
 
     let sourceId = bugger.view(solidity.current.source).id;
-    let compilationId = bugger.view(solidity.current.source).compilationId;
     let source = bugger.view(solidity.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("break here #1", source)
     });
     await bugger.continueUntilBreakpoint();
     assert.property(await bugger.variables(), "flag");
   });
 
-  it("Stays at correct stackframe after library call", async function() {
+  it("Stays at correct stackframe after library call", async function () {
     this.timeout(3000);
     let instance = await abstractions.Intervening.deployed();
     let receipt = await instance.runLib();
@@ -317,11 +302,9 @@ describe("Variable IDs", function() {
     debug("sourceId %d", bugger.view(solidity.current.source).id);
 
     let sourceId = bugger.view(solidity.current.source).id;
-    let compilationId = bugger.view(solidity.current.source).compilationId;
     let source = bugger.view(solidity.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("break here #2", source)
     });
     await bugger.continueUntilBreakpoint();

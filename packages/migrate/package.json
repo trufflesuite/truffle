@@ -8,24 +8,25 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "3.1.34",
+  "version": "3.1.45",
   "main": "index.js",
   "scripts": {
+    "prepare": "exit 0",
     "test": "mocha ./test/* ./test/**/*"
   },
   "dependencies": {
-    "@truffle/config": "^1.2.26",
-    "@truffle/deployer": "^3.1.34",
-    "@truffle/expect": "^0.0.14",
-    "@truffle/interface-adapter": "^0.4.15",
-    "@truffle/reporters": "^1.1.0",
-    "@truffle/require": "^2.0.49",
+    "@truffle/config": "^1.2.33",
+    "@truffle/deployer": "^3.1.45",
+    "@truffle/expect": "^0.0.15",
+    "@truffle/interface-adapter": "^0.4.18",
+    "@truffle/reporters": "^1.1.2",
+    "@truffle/require": "^2.0.56",
     "emittery": "^0.4.0",
     "glob": "^7.1.6",
-    "web3": "1.2.1"
+    "web3": "1.2.9"
   },
   "devDependencies": {
-    "mocha": "8.0.1",
+    "mocha": "8.1.2",
     "sinon": "9.0.2"
   },
   "keywords": [
@@ -36,5 +37,6 @@
   ],
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "gitHead": "6b84be7849142588ef2e3224d8a9d7c2ceeb6e4a"
 }
