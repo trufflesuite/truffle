@@ -12,7 +12,7 @@ export function addContext({
   contractId,
   contractKind,
   isConstructor,
-  externalSolidity
+  linearizedBaseContracts
 }) {
   return {
     type: ADD_CONTEXT,
@@ -28,7 +28,7 @@ export function addContext({
     contractId,
     contractKind,
     isConstructor,
-    externalSolidity
+    linearizedBaseContracts
   };
 }
 

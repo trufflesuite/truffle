@@ -10,8 +10,21 @@ export function findContext(
   contexts: Contexts,
   binary: string
 ): Context | null {
-  const context = Object.values(contexts).find(context =>
+  const matchingContexts = Object.values(contexts).filter(context =>
     matchContext(context, binary)
+  );
+  //rather than just pick an arbitrary matching context, we're going
+  //to pick one that isn't a descendant of any of the others.
+  //(if there are multiple of *those*, then yeah it's arbitrary.)
+  const context = matchingContexts.find(
+    descendant => !matchingContexts.some(ancestor =>
+      descendant.compilationId === ancestor.compilationId &&
+      descendant.linearizedBaseContracts &&
+      ancestor.contractId !== undefined &&
+      descendant.linearizedBaseContracts.slice(1).includes(ancestor.contractId)
+      //we do slice one because everything is an an ancestor of itself; we only
+      //care about *proper* ancestors
+    )
   );
   return context || null;
 }

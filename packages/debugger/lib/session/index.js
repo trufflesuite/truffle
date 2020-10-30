@@ -191,13 +191,18 @@ export default class Session {
         //now: we need to find the contract node.
         //note: ideally we'd hold this off till later, but that would break the
         //direction of the evm/solidity dependence, so we do it now
-        let contractNode = Codec.Compilations.Utils.getContractNode(
+        const contractNode = Codec.Compilations.Utils.getContractNode(
           contract,
           compilation
         );
 
-        let contractId = contractNode ? contractNode.id : undefined;
-        let contractKind = contractNode ? contractNode.contractKind : undefined;
+        const contractId = contractNode ? contractNode.id : undefined;
+        const contractKind = contractNode
+          ? contractNode.contractKind
+          : undefined;
+        const linearizedBaseContracts = contractNode
+          ? contractNode.linearizedBaseContracts
+          : undefined;
         abi = Abi.normalize(abi); //let's handle this up front
 
         debug("contractName %s", contractName);
@@ -223,7 +228,7 @@ export default class Session {
             compilationId: compilation.id,
             contractId,
             contractKind,
-            externalSolidity: compilation.externalSolidity,
+            linearizedBaseContracts,
             isConstructor: true
           });
           if (generatedSources) {
@@ -263,7 +268,7 @@ export default class Session {
             compilationId: compilation.id,
             contractId,
             contractKind,
-            externalSolidity: compilation.externalSolidity,
+            linearizedBaseContracts,
             isConstructor: false
           });
           if (deployedGeneratedSources) {
