@@ -74,6 +74,9 @@ async function run(rawSources, options) {
 function orderABI({ abi, contractName, ast }) {
   // AST can have multiple contract definitions, make sure we have the
   // one that matches our contract
+  if (!ast || !ast.nodes) {
+    return abi;
+  }
   const contractDefinition = ast.nodes.find(
     ({ nodeType, name }) =>
       nodeType === "ContractDefinition" && name === contractName
