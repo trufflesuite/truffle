@@ -35,7 +35,6 @@ export interface DecoderContext {
   };
   compiler?: Compiler.CompilerVersion;
   compilationId?: string;
-  externalSolidity?: boolean; //please only set for Solidity contracts!
 }
 
 export interface DebuggerContext {
@@ -54,5 +53,4 @@ export interface DebuggerContext {
   compiler?: Compiler.CompilerVersion;
   compilationId?: string;
   payable?: boolean;
-  externalSolidity?: boolean; //please only set for Solidity contracts!
 }
