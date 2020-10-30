@@ -109,6 +109,14 @@ describe("compileWithPragmaAnalysis", () => {
   });
 
   describe("solidity files with imports", () => {
+    it("compiles both files with imports and without", async () => {
+      const { compilations } = await compileWithPragmaAnalysis({
+        options: config,
+        paths: paths.concat([path.join(sourceDirectory, "withImports", "C.sol")])
+      });
+      assert.equal(compilations.length, 3);
+    });
+
     it("finds a version that satisfies all pragmas if it exists", async () => {
       const { compilations } = await compileWithPragmaAnalysis({
         options: config,
