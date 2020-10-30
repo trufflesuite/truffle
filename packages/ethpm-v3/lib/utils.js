@@ -140,7 +140,7 @@ async function resolveEnsName(address, provider, options) {
 async function resolveEthpmUri(options, provider) {
   let targetRegistry;
   var targetProvider = provider;
-  const ethpmUri = new EthpmURI(options.packageIdentifier);
+  const ethpmUri = new EthpmURI(options.package_identifier);
   const web3 = new Web3(targetProvider);
   const connectedChainId = await web3.eth.net.getId();
 

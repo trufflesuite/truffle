@@ -101,7 +101,7 @@ const PackageV3 = {
     try {
       expect.options(options, [
         "ethpm",
-        "packageIdentifier",
+        "package_identifier",
         "logger",
         "working_directory",
         "contracts_build_directory",
@@ -175,17 +175,17 @@ const PackageV3 = {
     var resolvedManifestUri = false;
 
     // Parse IPFS URI
-    if (options.packageIdentifier.startsWith("ipfs://")) {
-      manifestUri = new URL(options.packageIdentifier);
+    if (options.package_identifier.startsWith("ipfs://")) {
+      manifestUri = new URL(options.package_identifier);
       resolvedManifestUri = true;
     }
 
-    // Parse ethpm URI || packageIdentifier
+    // Parse ethpm URI || package_identifier
     if (!resolvedManifestUri) {
       // Parse ethpm uri
       if (
-        options.packageIdentifier.startsWith("ethpm://") ||
-        options.packageIdentifier.startsWith("erc1319://")
+        options.package_identifier.startsWith("ethpm://") ||
+        options.package_identifier.startsWith("erc1319://")
       ) {
         const targetInstallInfo = await utils.resolveEthpmUri(
           options,
@@ -198,11 +198,11 @@ const PackageV3 = {
         // update provider if changed via ethpm uri
         provider = targetInstallInfo.targetProvider;
       } else {
-        // Parse packageIdentifier
-        const packageData = options.packageIdentifier.split("@");
+        // Parse package_identifier
+        const packageData = options.package_identifier.split("@");
         if (packageData.length > 2) {
           throw new TruffleError(
-            `Invalid ethpm uri or package id: ${options.packageIdentifier[0]}`
+            `Invalid ethpm uri or package id: ${options.package_identifier[0]}`
           );
         }
 
@@ -268,7 +268,7 @@ const PackageV3 = {
     // Check to make sure a manifest URI was located
     if (typeof manifestUri === "undefined") {
       throw new TruffleError(
-        `Unable to find a manifest URI for package ID: ${options.packageIdentifier}`
+        `Unable to find a manifest URI for package ID: ${options.package_identifier}`
       );
     }
 
