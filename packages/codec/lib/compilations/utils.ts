@@ -160,15 +160,13 @@ export function shimContracts(
     compiler = contracts[0].compiler;
   }
 
-  return [
-    {
-      id: shimmedCompilationId,
-      unreliableSourceOrder,
-      sources,
-      contracts,
-      compiler
-    }
-  ];
+  return {
+    id: shimmedCompilationId,
+    unreliableSourceOrder,
+    sources,
+    contracts,
+    compiler
+  }
 }
 
 function sourceIndexForAst(ast: Ast.AstNode): number | undefined {
