@@ -5,10 +5,10 @@ const command = {
   description: "Install a package from the Ethereum Package Registry",
   builder: {},
   help: {
-    usage: "truffle install <packageIdentifier> [--alias]",
+    usage: "truffle install <package_identifier> [--alias]",
     options: [
       {
-        option: "packageIdentifier",
+        option: "package_identifier",
         description: `Name of the package as listed in the Ethereum Package Registry. Accepted formats: packageName, packageName@version, ethpm URI, ipfs URI. (required)`
       },
       {
@@ -36,7 +36,7 @@ const command = {
         )
       );
     }
-    options.packageIdentifier = options._[0];
+    options.package_identifier = options._[0];
 
     const config = Config.detect(options);
     let installPackage;
