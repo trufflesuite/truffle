@@ -400,5 +400,13 @@ module.exports = {
     set: function (sources) {
       this._json.deployedGeneratedSources = sources;
     }
+  },
+  "db:contract": {
+    get: function () {
+      return this._json["db:contract"];
+    },
+    set: function (contract) {
+      this._json["db:contract"] = contract;
+    }
   }
 };

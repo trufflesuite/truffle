@@ -90,6 +90,15 @@
     },
     "deployedGeneratedSources": {
       "$ref": "#/definitions/GeneratedSources"
+    },
+    "db:contract": {
+      "type": "object",
+      "description": "Reference to @truffle/db canonical ID object for correlation purposes",
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      }
     }
   },
   "required": [

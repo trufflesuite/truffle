@@ -176,7 +176,8 @@ var properties = {
   },
   networkType: {},
   devdoc: {},
-  userdoc: {}
+  userdoc: {},
+  "db:contract": {}
 };
 
 /**
