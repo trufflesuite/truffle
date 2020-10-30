@@ -55,18 +55,13 @@ export class Project {
   async loadCompilations(options: {
     result: WorkflowCompileResult;
   }): Promise<{
-    compilations: IdObject<DataModel.Compilation>[];
     contracts: IdObject<DataModel.Contract>[];
   }> {
     const {result} = options;
 
-    const {compilations, contracts} = await this.run(
-      generateCompileLoad,
-      result
-    );
+    const {contracts} = await this.run(generateCompileLoad, result);
 
     return {
-      compilations: compilations.map(toIdObject),
       contracts: contracts.map(toIdObject)
     };
   }
