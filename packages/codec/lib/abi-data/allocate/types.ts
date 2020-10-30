@@ -12,8 +12,8 @@ import * as Format from "@truffle/codec/format";
 export interface ContractAllocationInfo {
   abi?: Abi.Abi; //needed for events & calldata
   contractNode: Ast.AstNode; //needed for all 3
-  deployedContext?: Contexts.DecoderContext; //needed for events & calldata
-  constructorContext?: Contexts.DecoderContext; //needed for calldata
+  deployedContext?: Contexts.Context; //needed for events & calldata
+  constructorContext?: Contexts.Context; //needed for calldata
   immutableReferences?: ImmutableReferences; //needed for state
   compiler: Compiler.CompilerVersion; //needed for all 3
   compilationId?: string; //needed for all 3

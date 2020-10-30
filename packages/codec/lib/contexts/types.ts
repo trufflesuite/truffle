@@ -4,19 +4,11 @@ import * as Common from "@truffle/codec/common";
 import * as Compiler from "@truffle/codec/compiler";
 import { ImmutableReferences } from "@truffle/contract-schema/spec";
 
-export type Contexts = DecoderContexts | DebuggerContexts;
-
-export type Context = DecoderContext | DebuggerContext;
-
-export interface DecoderContexts {
-  [context: string]: DecoderContext;
+export interface Contexts {
+  [context: string]: Context;
 }
 
-export interface DebuggerContexts {
-  [context: string]: DebuggerContext;
-}
-
-export interface DecoderContext {
+export interface Context {
   context: string; //The context hash
   binary: string; //this should (for now) be the normalized binary, with "."s
   //in place of link references or other variable parts; this will probably
@@ -37,6 +29,8 @@ export interface DecoderContext {
   compilationId?: string;
 }
 
+//NOTE: this is being kept for reference. but we don't actually use this
+//type anywhere anymore.
 export interface DebuggerContext {
   context: string; //The context hash
   binary: string; //this should (for now) be the normalized binary, with "."s
