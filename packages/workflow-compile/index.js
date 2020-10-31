@@ -1,6 +1,6 @@
 const debug = require("debug")("workflow-compile");
 const fse = require("fs-extra");
-const { prepareConfig } = require("./utils");
+const { prepareConfig, correlateContracts } = require("./utils");
 const { Shims } = require("@truffle/compile-common");
 const {
   reportCompilationStarted,
@@ -14,7 +14,7 @@ const SUPPORTED_COMPILERS = {
   external: require("@truffle/external-compile").Compile
 };
 
-const { TruffleDB } = require("@truffle/db");
+const { TruffleDB, Project } = require("@truffle/db");
 
 async function compile(config) {
   // determine compiler(s) to use
@@ -104,18 +104,30 @@ const WorkflowCompile = {
   reportCompilationFinished,
   reportNothingToCompile,
 
-  async save(options, { contracts, compilations }) {
+  async save(options, result) {
     const config = prepareConfig(options);
 
     await fse.ensureDir(config.contracts_build_directory);
 
-    const artifacts = contracts.map(Shims.NewToLegacy.forContract);
-    await config.artifactor.saveAll(artifacts);
+    const artifacts = result.contracts.map(Shims.NewToLegacy.forContract);
 
-    if (options.db && options.db.enabled === true && contracts.length > 0) {
+    if (options.db && options.db.enabled && result.contracts.length > 0) {
       const db = new TruffleDB(config);
-      await db.loadCompilations({ contracts, compilations }, { names: true });
+      const project = await Project.initialize({
+        project: {
+          directory: config.working_directory
+        },
+        db
+      });
+
+      const { contracts } = await project.loadCompile({ result });
+
+      await project.assignNames({ assignments: { contracts } });
+
+      await correlateContracts(db, artifacts, contracts);
     }
+
+    await config.artifactor.saveAll(artifacts);
   }
 };
 
