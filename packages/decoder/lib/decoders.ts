@@ -101,9 +101,7 @@ export class WireDecoder {
     }
     debug("known contexts: %o", Object.keys(this.contexts));
 
-    this.contexts = <Contexts.Contexts>(
-      Contexts.Utils.normalizeContexts(this.contexts)
-    );
+    this.contexts = Contexts.Utils.normalizeContexts(this.contexts);
     this.deployedContexts = Object.assign(
       {},
       ...Object.values(this.contexts).map(context =>
@@ -1180,9 +1178,7 @@ export class ContractInstanceDecoder {
       //the following line only has any effect if we're dealing with a library,
       //since the code we pulled from the blockchain obviously does not have unresolved link references!
       //(it's not strictly necessary even then, but, hey, why not?)
-      this.additionalContexts = <Contexts.Contexts>(
-        Contexts.Utils.normalizeContexts(this.additionalContexts)
-      );
+      this.additionalContexts = Contexts.Utils.normalizeContexts(this.additionalContexts);
       //again, since the code did not have unresolved link references, it is safe to just
       //mash these together like I'm about to
       this.contexts = { ...this.contexts, ...this.additionalContexts };
