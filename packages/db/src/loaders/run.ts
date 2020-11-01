@@ -1,34 +1,102 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:loaders:run");
 
-import { Loader, LoadRequest, RequestName } from "./types";
+import { promisify } from "util";
+import type Web3 from "web3";
+import {DocumentNode} from "graphql";
+
+import { Loader, LoadRequest, GraphQlRequest, Web3Request, RequestType } from "./types";
+
+interface ITruffleDB {
+  query: (query: DocumentNode | string, variables: any) => Promise<any>;
+}
 
 export type LoaderRunner = <
   A extends unknown[],
   T = any,
-  N extends RequestName | string = string
+  R extends RequestType | undefined = undefined
 >(
-  loader: Loader<A, T, N>,
+  loader: Loader<A, T, R>,
   ...args: A
 ) => Promise<T>;
 
-export const forDb = (db): LoaderRunner => async <
+export const forDb = (db): {
+  forProvider(provider: Web3["currentProvider"]): {
+    run: LoaderRunner
+  };
+  run: LoaderRunner;
+} => {
+  const connections = {
+    db,
+  };
+
+  return {
+    run(loader, ...args) {
+      return run(connections, loader, ...args);
+    },
+
+    forProvider(provider) {
+      const connections = {
+        db,
+        provider
+      };
+
+      return {
+        run: (loader, ...args) => run(connections, loader, ...args)
+      }
+    }
+  };
+}
+
+const run = async <
   Args extends unknown[],
   Return,
-  N extends RequestName | string
+  R extends RequestType | undefined
 >(
-  loader: Loader<Args, Return, N>,
+  connections: { db: ITruffleDB, provider?: Web3["currentProvider"] },
+  loader: Loader<Args, Return, R>,
   ...args: Args
 ) => {
   const saga = loader(...args);
   let current = saga.next();
 
   while (!current.done) {
-    const { request, variables } = current.value as LoadRequest<N>;
+    const loadRequest = current.value as LoadRequest<R>;
+    switch (loadRequest.type) {
+      case "graphql": {
+        const { db } = connections;
+        const { request, variables } = loadRequest as GraphQlRequest;
+        const response = await db.query(request, variables);
 
-    const response = await db.query(request, variables);
+        current = saga.next(response);
 
-    current = saga.next(response);
+        break;
+      }
+      case "web3": {
+        if (!connections.provider) {
+          throw new Error("Missing provider; cannot communicate with network");
+        }
+
+        const { provider } = connections;
+
+        const { method, params } = loadRequest as Web3Request;
+
+        const payload: any = {
+          jsonrpc: "2.0",
+          method,
+          params
+        };
+
+        const response: any = await promisify(provider.send)(payload);
+
+        current = saga.next(response);
+
+        break;
+      }
+      default: {
+        throw new Error(`Unknown request type ${loadRequest.type}`);
+      }
+    }
   }
 
   return current.value;
