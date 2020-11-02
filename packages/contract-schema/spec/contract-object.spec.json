@@ -91,12 +91,17 @@
     "deployedGeneratedSources": {
       "$ref": "#/definitions/GeneratedSources"
     },
-    "db:contract": {
+    "db": {
       "type": "object",
-      "description": "Reference to @truffle/db canonical ID object for correlation purposes",
-      "properties": {
-        "id": {
-          "type": "string"
+      "patternProperties": {
+        "^[a-zA-Z0-9]+$": {
+          "type": "object",
+          "description": "Reference to @truffle/db canonical ID object for correlation purposes",
+          "properties": {
+            "id": {
+              "type": "string"
+            }
+          }
         }
       }
     }

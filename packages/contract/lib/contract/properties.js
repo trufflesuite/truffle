@@ -401,12 +401,12 @@ module.exports = {
       this._json.deployedGeneratedSources = sources;
     }
   },
-  "db:contract": {
+  db: {
     get: function () {
-      return this._json["db:contract"];
+      return this._json.db;
     },
-    set: function (contract) {
-      this._json["db:contract"] = contract;
+    set: function (db) {
+      this._json.db = db;
     }
   }
 };

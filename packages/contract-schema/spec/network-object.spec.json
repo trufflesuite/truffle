@@ -20,6 +20,20 @@
         "^[a-zA-Z_][a-zA-Z0-9_]*$": { "$ref": "#/definitions/Address" }
       },
       "additionalProperties": false
+    },
+    "db": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-zA-Z0-9]+$": {
+          "type": "object",
+          "description": "Reference to @truffle/db canonical ID object for correlation purposes",
+          "properties": {
+            "id": {
+              "type": "string"
+            }
+          }
+        }
+      }
     }
   },
   "additionalProperties": false,
