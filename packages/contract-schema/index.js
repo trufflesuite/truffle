@@ -177,7 +177,7 @@ var properties = {
   networkType: {},
   devdoc: {},
   userdoc: {},
-  "db:contract": {}
+  db: {}
 };
 
 /**
@@ -245,7 +245,6 @@ var TruffleContractSchema = {
             params,
             message,
             data,
-            schema, // eslint-disable-line no-unused-vars
             parentSchema
           }) =>
             util.format(
