@@ -54,7 +54,7 @@ class DefinitionsSchema<C extends Collections> {
       }
 
       input QueryFilter {
-        ids: [ID!]
+        ids: [ID]!
       }
 
       type Query
@@ -234,14 +234,20 @@ abstract class DefinitionSchema<
             if (filter) {
               logFilter("Filtering for ids: %o...", filter.ids);
 
-              const result = await workspace.find(resources, {
+              const results = await workspace.find(resources, {
                 selector: {
-                  id: { $in: filter.ids }
+                  id: { $in: filter.ids.filter(id => id) }
                 }
               });
 
+              const byId = results
+                .map(result => ({
+                  [result.id]: result
+                }))
+                .reduce((a, b) => ({ ...a, ...b }), {});
+
               logFilter("Filtered for ids: %o", filter.ids);
-              return result;
+              return filter.ids.map(id => (id ? byId[id] : undefined));
             } else {
               logAll("Fetching all...");
 
