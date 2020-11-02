@@ -3,32 +3,32 @@ const debug = logger("db:loaders:resources:nameRecords");
 
 import gql from "graphql-tag";
 import camelCase from "camel-case";
+import { plural } from "pluralize";
 import { IdObject, toIdObject } from "@truffle/db/meta";
+import { NamedCollectionName } from "@truffle/db/definitions";
 
 import { Load } from "@truffle/db/loaders/types";
 import { generate } from "@truffle/db/loaders/generate";
 
 export { AddNameRecords } from "./add.graphql";
-import { forType } from "./get.graphql";
 
 type ResolveFunc = (
   name: string,
   type: string
 ) => Load<DataModel.NameRecord | null>;
 
-function* getResourceName(
-  { id }: IdObject,
-  type: string
-): Load<{ name: string }> {
-  const GetResourceName = forType(type);
+function* getResourceName({ id }: IdObject, type: string): Load<string> {
+  const { name } = yield* generate.get(
+    camelCase(plural(type)) as NamedCollectionName,
+    id,
+    gql`
+    fragment Name on ${type} {
+      name
+    }
+  `
+  );
 
-  const result = yield {
-    type: "graphql",
-    request: GetResourceName,
-    variables: { id }
-  };
-
-  return result.data[camelCase(type)];
+  return name;
 }
 
 export function* generateNameRecordsLoad(
@@ -38,7 +38,7 @@ export function* generateNameRecordsLoad(
 ): Load<DataModel.NameRecord[]> {
   const inputs = [];
   for (const resource of resources) {
-    const { name } = yield* getResourceName(resource, type);
+    const name = yield* getResourceName(resource, type);
 
     const current: DataModel.NameRecord = yield* getCurrent(name, type);
 

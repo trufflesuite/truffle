@@ -69,6 +69,8 @@ export type NamedResource<
   N extends CollectionName = CollectionName
 > = Meta.NamedResource<Collections, N>;
 
+export type NamedCollectionName = Meta.NamedCollectionName<Collections>;
+
 export type Workspace = Pouch.Workspace<Collections>;
 
 export type Context = GraphQl.Context<Collections>;
