@@ -1,13 +1,12 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:loaders:resources:sources");
 
+import gql from "graphql-tag";
 import { toIdObject } from "@truffle/db/meta";
 
 import { CompilationData, LoadedSources } from "@truffle/db/loaders/types";
 import { Process } from "@truffle/db/resources";
-
-import { AddSources } from "./add.graphql";
-export { AddSources };
+import { generate } from "@truffle/db/generate";
 
 // returns list of IDs
 export function* generateSourcesLoad(
@@ -16,13 +15,17 @@ export function* generateSourcesLoad(
   // for each compilation, we need to load sources for each of the contracts
   const inputs = compilation.sources.map(({ input }) => input);
 
-  const result = yield {
-    type: "graphql",
-    request: AddSources,
-    variables: { sources: inputs }
-  };
-
-  const { sources } = result.data.sourcesAdd;
+  const ids = (yield* generate.load("sources", inputs)).map(({ id }) => id);
+  const sources = yield* generate.find(
+    "sources",
+    ids,
+    gql`
+      fragment Source on Source {
+        id
+        sourcePath
+      }
+    `
+  );
 
   // return source IDs mapped by sourcePath
   return sources.reduce(

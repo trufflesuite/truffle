@@ -1,12 +1,10 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:loaders:resources:bytecodes");
 
+import { generate } from "@truffle/db/generate";
 import { CompilationData, LoadedBytecodes } from "@truffle/db/loaders/types";
 import { Process } from "@truffle/db/resources";
-import { toIdObject } from "@truffle/db/meta";
 import { CompiledContract } from "@truffle/compile-common";
-import { AddBytecodes } from "./add.graphql";
-export { AddBytecodes };
 
 /**
  * @dev pre-condition: every contract should have both bytecodes
@@ -33,13 +31,7 @@ export function* generateBytecodesLoad(
   );
   const bytecodes = [...createBytecodes, ...callBytecodes];
 
-  // submit
-  const result = yield {
-    type: "graphql",
-    request: AddBytecodes,
-    variables: { bytecodes }
-  };
-  const addedBytecodes = result.data.bytecodesAdd.bytecodes.map(toIdObject);
+  const addedBytecodes = yield* generate.load("bytecodes", bytecodes);
 
   // okay, now the hard part, putting things back together the way they were!
   // we'll start by zipping the creates/calls back

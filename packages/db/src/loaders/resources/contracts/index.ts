@@ -1,36 +1,15 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:loaders:resources:contracts");
 
+import { generate } from "@truffle/db/generate";
 import { LoadedBytecodes } from "@truffle/db/loaders/types";
 import { IdObject } from "@truffle/db/meta";
 import { Process } from "@truffle/db/resources";
 import { CompiledContract } from "@truffle/compile-common";
 
-import { GetContract } from "./get.graphql";
-
 export { FindContracts } from "./find.graphql";
+export { AddContracts } from "./add.graphql";
 
-import { AddContracts } from "./add.graphql";
-export { AddContracts };
-
-export function* generateContractGet({
-  id
-}: IdObject<DataModel.Contract>): Process<DataModel.Contract | undefined> {
-  debug("Generating contract get...");
-
-  const response = yield {
-    type: "graphql",
-    request: GetContract,
-    variables: {
-      id
-    }
-  };
-
-  const contract = response.data.contract;
-
-  debug("Generated contract get.");
-  return contract;
-}
 export interface LoadableContract {
   contract: CompiledContract;
   path: { sourceIndex: number; contractIndex: number };
@@ -65,11 +44,5 @@ export function* generateContractsLoad(
     };
   });
 
-  const result = yield {
-    type: "graphql",
-    request: AddContracts,
-    variables: { contracts }
-  };
-
-  return result.data.contractsAdd.contracts;
+  return yield* generate.load("contracts", contracts);
 }

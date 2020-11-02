@@ -1,11 +1,10 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:loaders:resources:contractInstances");
 
+import { generate } from "@truffle/db/generate";
 import { NetworkObject } from "@truffle/contract-schema/spec";
 import { IdObject } from "@truffle/db/meta";
 import { Process } from "@truffle/db/resources";
-
-import { AddContractInstances } from "./add.graphql";
 
 export interface LoadableContractInstanceBytecode {
   bytecode: IdObject<DataModel.Bytecode>;
@@ -45,13 +44,7 @@ export function* generateContractInstancesLoad(
     })
   );
 
-  const result = yield {
-    type: "graphql",
-    request: AddContractInstances,
-    variables: { contractInstances }
-  };
-
-  return result.data.contractInstancesAdd.contractInstances;
+  return yield* generate.load("contractInstances", contractInstances);
 }
 
 function link(
