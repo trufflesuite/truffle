@@ -38,7 +38,8 @@ export const compilations: Definition<"compilations"> = {
     }
 
     type SourceMap {
-      json: String!
+      bytecode: Bytecode!
+      data: String!
     }
 
     input CompilationInput {
@@ -65,7 +66,8 @@ export const compilations: Definition<"compilations"> = {
     }
 
     input SourceMapInput {
-      json: String!
+      bytecode: ResourceReferenceInput!
+      data: String!
     }
   `,
   resolvers: {
