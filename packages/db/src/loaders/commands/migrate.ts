@@ -3,7 +3,7 @@ const debug = logger("db:loaders:commands:migrate");
 
 import { ContractObject } from "@truffle/contract-schema/spec";
 import { toIdObject, IdObject } from "@truffle/db/meta";
-import { Load } from "@truffle/db/loaders/types";
+import { Process } from "@truffle/db/resources";
 
 import { generateContractGet } from "@truffle/db/loaders/resources/contracts";
 import {
@@ -24,7 +24,7 @@ export interface GenerateMigrateLoadOptions {
 
 export function* generateMigrateLoad(
   options: GenerateMigrateLoadOptions
-): Load<{
+): Process<{
   network: IdObject<DataModel.Network>;
   contractInstances: IdObject<DataModel.ContractInstance>[];
 }> {
@@ -94,7 +94,7 @@ interface ContractNetwork {
 
 function* processContractNetworks(
   contractNetworks: ContractNetwork[]
-): Load<LoadableContractInstance[]> {
+): Process<LoadableContractInstance[]> {
   const loadableContractInstances = [];
   for (const { network, artifact } of contractNetworks) {
     // @ts-ignore

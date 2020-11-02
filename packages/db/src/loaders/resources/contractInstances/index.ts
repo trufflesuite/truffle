@@ -3,13 +3,13 @@ const debug = logger("db:loaders:resources:contractInstances");
 
 import { NetworkObject } from "@truffle/contract-schema/spec";
 import { IdObject } from "@truffle/db/meta";
-import { Load } from "@truffle/db/loaders/types";
+import { Process } from "@truffle/db/resources";
 
 import { AddContractInstances } from "./add.graphql";
 
 export interface LoadableContractInstanceBytecode {
   bytecode: IdObject<DataModel.Bytecode>;
-  linkReferences?: DataModel.LinkReference[]
+  linkReferences?: DataModel.LinkReference[];
 }
 
 export interface LoadableContractInstance {
@@ -24,30 +24,26 @@ export interface LoadableContractInstance {
 
 export function* generateContractInstancesLoad(
   loadableContractInstances: LoadableContractInstance[]
-): Load<DataModel.ContractInstance[], { graphql: "contractInstancesAdd" }> {
-  const contractInstances = loadableContractInstances.map(({
-    contract,
-    network,
-    networkObject: {
+): Process<DataModel.ContractInstance[]> {
+  const contractInstances = loadableContractInstances.map(
+    ({
+      contract,
+      network,
+      networkObject: { address, transactionHash },
+      bytecodes: { call: callBytecode, create: createBytecode }
+    }) => ({
       address,
-      transactionHash,
-    },
-    bytecodes: {
-      call: callBytecode,
-      create: createBytecode
-    }
-  }) => ({
-    address,
-    network,
-    creation: {
-      transactionHash,
-      constructor: {
-        createBytecode: link(createBytecode)
-      }
-    },
-    contract,
-    callBytecode: link(callBytecode)
-  }));
+      network,
+      creation: {
+        transactionHash,
+        constructor: {
+          createBytecode: link(createBytecode)
+        }
+      },
+      contract,
+      callBytecode: link(callBytecode)
+    })
+  );
 
   const result = yield {
     type: "graphql",
@@ -67,10 +63,10 @@ function link(
     return {
       bytecode,
       linkValues: []
-    }
+    };
   }
 
-  const linkValues = Object.entries(links).map(([ name, value ]) => ({
+  const linkValues = Object.entries(links).map(([name, value]) => ({
     value,
     linkReference: {
       bytecode,
@@ -84,5 +80,4 @@ function link(
     bytecode,
     linkValues
   };
-
 }

@@ -4,7 +4,7 @@ const debug = logger("db:loaders:resources:nameRecords");
 import camelCase from "camel-case";
 import { IdObject, toIdObject } from "@truffle/db/meta";
 
-import { Load } from "@truffle/db/loaders/types";
+import { Process } from "@truffle/db/resources";
 
 import { AddNameRecords } from "./add.graphql";
 import { forType } from "./get.graphql";
@@ -13,12 +13,12 @@ export { AddNameRecords };
 type ResolveFunc = (
   name: string,
   type: string
-) => Load<DataModel.NameRecord | null>;
+) => Process<DataModel.NameRecord | null>;
 
 function* getResourceName(
   { id }: IdObject,
   type: string
-): Load<{ name: string }> {
+): Process<{ name: string }> {
   const GetResourceName = forType(type);
 
   const result = yield {
@@ -34,7 +34,7 @@ export function* generateNameRecordsLoad(
   resources: IdObject[],
   type: string,
   getCurrent: ResolveFunc
-): Load<DataModel.NameRecord[]> {
+): Process<DataModel.NameRecord[]> {
   const nameRecords = [];
   for (const resource of resources) {
     const { name } = yield* getResourceName(resource, type);

@@ -14,7 +14,7 @@ import {
   generateMigrateLoad
 } from "./commands";
 
-import { LoaderRunner, forDb } from "./run";
+import { ProcessorRunner, forDb } from "./run";
 
 /**
  * Interface between @truffle/db and Truffle-at-large. Accepts external
@@ -100,14 +100,14 @@ export class Project {
    * internals
    */
 
-  protected run: LoaderRunner;
-  private forProvider: (provider: Provider) => { run: LoaderRunner };
+  protected run: ProcessorRunner;
+  private forProvider: (provider: Provider) => { run: ProcessorRunner };
   private project: IdObject<DataModel.Project>;
 
   protected constructor(options: {
     project: IdObject<DataModel.Project>;
-    run: LoaderRunner;
-    forProvider?: (provider: Provider) => { run: LoaderRunner };
+    run: ProcessorRunner;
+    forProvider?: (provider: Provider) => { run: ProcessorRunner };
   }) {
     this.project = options.project;
     this.run = options.run;

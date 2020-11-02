@@ -5,20 +5,19 @@ import { promisify } from "util";
 import type { Provider } from "web3/providers";
 
 import { Db } from "@truffle/db/meta";
+import { GraphQlRequest, Web3Request } from "@truffle/db/process";
 import {
-  Loader,
-  LoadRequest,
-  GraphQlRequest,
-  Web3Request,
-  RequestType
-} from "./types";
+  Processor,
+  RequestType,
+  ProcessRequest
+} from "@truffle/db/resources";
 
-export type LoaderRunner = <
+export type ProcessorRunner = <
   A extends unknown[],
   T = any,
   R extends RequestType | undefined = undefined
 >(
-  loader: Loader<A, T, R>,
+  loader: Processor<A, T, R>,
   ...args: A
 ) => Promise<T>;
 
@@ -28,9 +27,9 @@ export const forDb = (
   forProvider(
     provider: Provider
   ): {
-    run: LoaderRunner;
+    run: ProcessorRunner;
   };
-  run: LoaderRunner;
+  run: ProcessorRunner;
 } => {
   const connections = {
     db
@@ -60,14 +59,14 @@ const run = async <
   R extends RequestType | undefined
 >(
   connections: { db: Db; provider?: Provider },
-  loader: Loader<Args, Return, R>,
+  loader: Processor<Args, Return, R>,
   ...args: Args
 ) => {
   const saga = loader(...args);
   let current = saga.next();
 
   while (!current.done) {
-    const loadRequest = current.value as LoadRequest<R>;
+    const loadRequest = current.value as ProcessRequest<R>;
     switch (loadRequest.type) {
       case "graphql": {
         const { db } = connections;

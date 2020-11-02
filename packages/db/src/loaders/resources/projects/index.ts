@@ -1,7 +1,7 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:loaders:resources:projects");
 
-import { Load } from "@truffle/db/loaders/types";
+import { Process } from "@truffle/db/resources";
 import { IdObject } from "@truffle/db/meta";
 
 export { AddProjects } from "./add.graphql";
@@ -13,7 +13,7 @@ export function* generateProjectNameResolve(
   project: IdObject<DataModel.Project>,
   name: string,
   type: string
-): Load<DataModel.NameRecord, { graphql: "project" }> {
+): Process<DataModel.NameRecord> {
   const result = yield {
     type: "graphql",
     request: ResolveProjectName,
@@ -32,7 +32,7 @@ export function* generateProjectNameResolve(
 export function* generateProjectNamesAssign(
   project: IdObject<DataModel.Project>,
   nameRecords: DataModel.NameRecord[]
-): Load<void, { graphql: "projectNamesAssign" }> {
+): Process<void> {
   const projectNames = nameRecords.map(({ id, name, type }) => ({
     project,
     nameRecord: { id },
