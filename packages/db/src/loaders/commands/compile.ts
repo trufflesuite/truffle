@@ -2,7 +2,8 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:loaders:commands:compile");
 
 import { toIdObject } from "@truffle/db/meta";
-import { CompilationData, Load } from "@truffle/db/loaders/types";
+import { Process } from "@truffle/db/definitions";
+import { CompilationData } from "@truffle/db/loaders/types";
 import {
   WorkflowCompileResult,
   Compilation,
@@ -27,7 +28,7 @@ import { generateSourcesLoad } from "@truffle/db/loaders/resources/sources";
  */
 export function* generateCompileLoad(
   result: WorkflowCompileResult
-): Load<{
+): Process<{
   compilations: DataModel.Compilation[];
   contracts: DataModel.Contract[];
 }> {

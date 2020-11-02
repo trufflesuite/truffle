@@ -147,3 +147,9 @@ export type Processor<
   T = any,
   R extends Proc.RequestType<Collections> | undefined = undefined
 > = Proc.Processor<Collections, A, T, R>;
+
+export type RequestType = Proc.RequestType<Collections>;
+
+export type ProcessRequest<
+  R extends Proc.RequestType<Collections> | undefined
+> = Proc.ProcessRequest<Collections, R>;

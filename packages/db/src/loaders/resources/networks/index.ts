@@ -2,17 +2,16 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:loaders:resources:networks");
 
 import { IdObject } from "@truffle/db/meta";
-import { Load } from "@truffle/db/loaders/types";
+import { Process } from "@truffle/db/definitions";
 
 import { GetNetwork } from "./get.graphql";
 import { AddNetworks } from "./add.graphql";
 
 type TransactionHash = any;
-type NetworkId = any;
 
-export function* generateNetworkGet(
-  { id }: IdObject<DataModel.Network>
-): Load<DataModel.Network | undefined, { graphql: "network" }> {
+export function* generateNetworkGet({
+  id
+}: IdObject<DataModel.Network>): Process<DataModel.Network | undefined> {
   debug("Generating network get...");
 
   const response = yield {
@@ -21,7 +20,7 @@ export function* generateNetworkGet(
     variables: {
       id
     }
-  }
+  };
 
   const network = response.data.network;
 
@@ -36,11 +35,8 @@ export interface GenerateTransactionNetworkLoadOptions {
 
 export function* generateTranasctionNetworkLoad({
   transactionHash,
-  network: {
-    name,
-    networkId
-  }
-}: GenerateTransactionNetworkLoadOptions): Load<DataModel.Network> {
+  network: { name, networkId }
+}: GenerateTransactionNetworkLoadOptions): Process<DataModel.Network> {
   debug("Generating transaction network load...");
   const historicBlock = yield* generateHistoricBlockFetch(transactionHash);
 
@@ -54,7 +50,10 @@ export function* generateTranasctionNetworkLoad({
   return result;
 }
 
-export function* generateNetworkIdFetch(): Load<any, { web3: "net_version" }> {
+export function* generateNetworkIdFetch(): Process<
+  any,
+  { web3: "net_version" }
+> {
   debug("Generating networkId fetch...");
 
   const response = yield {
@@ -72,7 +71,7 @@ export function* generateNetworkIdFetch(): Load<any, { web3: "net_version" }> {
 
 function* generateHistoricBlockFetch(
   transactionHash: TransactionHash
-): Load<DataModel.Block, { web3: "eth_getTransactionByHash" }> {
+): Process<DataModel.Block, { web3: "eth_getTransactionByHash" }> {
   debug("Generating historic block fetch...");
 
   const response = yield {
@@ -82,10 +81,7 @@ function* generateHistoricBlockFetch(
   };
 
   const {
-    result: {
-      blockNumber,
-      blockHash: hash
-    }
+    result: { blockNumber, blockHash: hash }
   } = response;
 
   const height = parseInt(blockNumber);
@@ -98,7 +94,7 @@ function* generateHistoricBlockFetch(
 
 function* generateNetworkLoad(
   input: DataModel.NetworkInput
-): Load<DataModel.Network, { graphql: "networksAdd" }> {
+): Process<DataModel.Network> {
   debug("Generating network load...");
   const response = yield {
     type: "graphql",
@@ -106,11 +102,10 @@ function* generateNetworkLoad(
     variables: {
       networks: [input]
     }
-  }
+  };
 
   const network = response.data.networksAdd.networks[0];
 
   debug("Generated network load.");
   return network;
 }
-

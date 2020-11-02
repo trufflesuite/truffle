@@ -1,12 +1,11 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:loaders:project");
 
-import {DocumentNode} from "graphql";
-import type {Provider} from "web3/providers";
-import {WorkflowCompileResult} from "@truffle/compile-common";
-import {ContractObject} from "@truffle/contract-schema/spec";
+import type { Provider } from "web3/providers";
+import { WorkflowCompileResult } from "@truffle/compile-common";
+import { ContractObject } from "@truffle/contract-schema/spec";
 
-import {toIdObject, IdObject} from "@truffle/db/meta";
+import { toIdObject, IdObject } from "@truffle/db/meta";
 
 import {
   generateCompileLoad,
@@ -15,7 +14,7 @@ import {
   generateMigrateLoad
 } from "./commands";
 
-import {LoaderRunner, Db, forDb} from "./run";
+import { ProcessorRunner, Db, forDb } from "./run";
 
 /**
  * Interface between @truffle/db and Truffle-at-large. Accepts external
@@ -29,13 +28,13 @@ export class Project {
     db: Db;
     project: DataModel.ProjectInput;
   }): Promise<Project> {
-    const {db, project: input} = options;
+    const { db, project: input } = options;
 
     const { run, forProvider } = forDb(db);
 
     const project = await run(generateInitializeLoad, input);
 
-    return new Project({run, forProvider, project});
+    return new Project({ run, forProvider, project });
   }
 
   /**
@@ -47,9 +46,9 @@ export class Project {
   }): Promise<{
     contracts: IdObject<DataModel.Contract>[];
   }> {
-    const {result} = options;
+    const { result } = options;
 
-    const {contracts} = await this.run(generateCompileLoad, result);
+    const { contracts } = await this.run(generateCompileLoad, result);
 
     return {
       contracts: contracts.map(toIdObject)
@@ -88,9 +87,7 @@ export class Project {
    * Accept a provider to enable workflows that require communicating with the
    * underlying blockchain network.
    */
-  connect(options: {
-    provider: Provider
-  }): ConnectedProject {
+  connect(options: { provider: Provider }): ConnectedProject {
     const { run } = this.forProvider(options.provider);
 
     return new ConnectedProject({
@@ -99,19 +96,18 @@ export class Project {
     });
   }
 
-
   /*
    * internals
    */
 
-  protected run: LoaderRunner;
-  private forProvider: (provider: Provider) => { run: LoaderRunner };
+  protected run: ProcessorRunner;
+  private forProvider: (provider: Provider) => { run: ProcessorRunner };
   private project: IdObject<DataModel.Project>;
 
   protected constructor(options: {
     project: IdObject<DataModel.Project>;
-    run: LoaderRunner;
-    forProvider?: (provider: Provider) => { run: LoaderRunner }
+    run: ProcessorRunner;
+    forProvider?: (provider: Provider) => { run: ProcessorRunner };
   }) {
     this.project = options.project;
     this.run = options.run;
@@ -140,13 +136,13 @@ class ConnectedProject extends Project {
     network: Omit<DataModel.NetworkInput, "networkId" | "historicBlock">;
     artifacts: ContractObject[];
   }): Promise<{
-    network: IdObject<DataModel.Network>,
-    contractInstances: IdObject<DataModel.ContractInstance>[]
+    network: IdObject<DataModel.Network>;
+    contractInstances: IdObject<DataModel.ContractInstance>[];
   }> {
-    const {
-      network,
-      contractInstances
-    } = await this.run(generateMigrateLoad, options);
+    const { network, contractInstances } = await this.run(
+      generateMigrateLoad,
+      options
+    );
 
     return { network, contractInstances };
   }

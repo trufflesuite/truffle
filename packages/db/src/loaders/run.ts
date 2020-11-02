@@ -2,16 +2,22 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:loaders:run");
 
 import { promisify } from "util";
-import type {Provider} from "web3/providers";
-import {DocumentNode} from "graphql";
+import type { Provider } from "web3/providers";
+import { DocumentNode } from "graphql";
 
-import { Loader, LoadRequest, GraphQlRequest, Web3Request, RequestType } from "./types";
+import { GraphQlRequest, Web3Request } from "@truffle/db/process";
+import {
+  Processor,
+  RequestType,
+  ProcessRequest
+} from "@truffle/db/definitions";
 
-export type LoaderRunner = < A extends unknown[],
+export type ProcessorRunner = <
+  A extends unknown[],
   T = any,
   R extends RequestType | undefined = undefined
 >(
-  loader: Loader<A, T, R>,
+  loader: Processor<A, T, R>,
   ...args: A
 ) => Promise<T>;
 
@@ -19,14 +25,18 @@ export interface Db {
   query: (query: DocumentNode | string, variables: any) => Promise<any>;
 }
 
-export const forDb = (db: Db): {
-  forProvider(provider: Provider): {
-    run: LoaderRunner
+export const forDb = (
+  db: Db
+): {
+  forProvider(
+    provider: Provider
+  ): {
+    run: ProcessorRunner;
   };
-  run: LoaderRunner;
+  run: ProcessorRunner;
 } => {
   const connections = {
-    db,
+    db
   };
 
   return {
@@ -42,25 +52,25 @@ export const forDb = (db: Db): {
 
       return {
         run: (loader, ...args) => run(connections, loader, ...args)
-      }
+      };
     }
   };
-}
+};
 
 const run = async <
   Args extends unknown[],
   Return,
   R extends RequestType | undefined
 >(
-  connections: { db: Db, provider?: Provider },
-  loader: Loader<Args, Return, R>,
+  connections: { db: Db; provider?: Provider },
+  loader: Processor<Args, Return, R>,
   ...args: Args
 ) => {
   const saga = loader(...args);
   let current = saga.next();
 
   while (!current.done) {
-    const loadRequest = current.value as LoadRequest<R>;
+    const loadRequest = current.value as ProcessRequest<R>;
     switch (loadRequest.type) {
       case "graphql": {
         const { db } = connections;

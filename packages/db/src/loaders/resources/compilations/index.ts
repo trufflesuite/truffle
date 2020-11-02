@@ -2,11 +2,8 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:loaders:resources:compilations");
 
 import { toIdObject, IdObject } from "@truffle/db/meta";
-import {
-  CompilationData,
-  LoadedSources,
-  Load
-} from "@truffle/db/loaders/types";
+import { CompilationData, LoadedSources } from "@truffle/db/loaders/types";
+import { Process } from "@truffle/db/definitions";
 
 import { AddCompilations } from "./add.graphql";
 export { AddCompilations };
@@ -66,7 +63,7 @@ type LoadableCompilation = {
 
 export function* generateCompilationsLoad(
   loadableCompilations: LoadableCompilation[]
-): Load<DataModel.Compilation[], { graphql: "compilationsAdd" }> {
+): Process<DataModel.Compilation[]> {
   const compilations = loadableCompilations.map(compilationInput);
 
   const result = yield {
@@ -80,7 +77,7 @@ export function* generateCompilationsLoad(
 
 export function* generateCompilationsContracts(
   compilations: IdObject<DataModel.Compilation>[]
-): Load<IdObject<DataModel.Contract>[], { graphql: "compilations" }> {
+): Process<IdObject<DataModel.Contract>[]> {
   const result = yield {
     type: "graphql",
     request: FindCompilationContracts,
