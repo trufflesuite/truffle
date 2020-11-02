@@ -61,12 +61,6 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
     fse.writeFileSync(mapping[key].sourcePath, source);
   }
 
-  function checkForDb(config) {
-    const dbPath = path.join(config.working_directory, ".db/contracts");
-    const dbExists = fse.pathExistsSync(dbPath);
-    return dbExists;
-  }
-
   // ----------------------- Setup -----------------------------
 
   before("set up the server", function (done) {
@@ -84,7 +78,6 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
     config = conf;
     config.network = "development";
     config.logger = logger;
-    config.db = { enabled: true };
     config.mocha = {
       reporter: new Reporter(logger)
     };
@@ -391,10 +384,37 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
       throw new Error(err);
     }
   });
+});
+
+describe("Compilation with db enabled", async () => {
+  const logger = new MemoryLogger();
+
+  function checkForDb(config) {
+    const dbPath = path.join(config.working_directory, ".db");
+    const dbExists = fse.pathExistsSync(dbPath);
+    return dbExists;
+  }
+
+  before("set up the server", function (done) {
+    Server.start(done);
+  });
+
+  after("stop server", function (done) {
+    Server.stop(done);
+  });
 
   it("creates a .db directory when db is enabled", async () => {
-    await CommandRunner.run("compile", config);
-    const dbExists = await checkForDb(config);
+    const project = path.join(__dirname, "../../sources/contract_names");
+    const config = await sandbox.create(project);
+
+    try {
+      await CommandRunner.run("compile", config);
+    } catch (error) {
+      output = logger.contents();
+      processErr(error, output);
+    }
+
+    const dbExists = checkForDb(config);
     assert(dbExists === true);
   });
 });
