@@ -7,11 +7,7 @@ const { ApolloServer } = require("apollo-server");
 const { Project } = require("./loaders");
 
 const playgroundServer = config => {
-  const { context, schema } = new TruffleDB({
-    contracts_build_directory: config.contracts_build_directory,
-    contracts_directory: config.contracts_directory,
-    working_directory: config.working_directory
-  });
+  const { context, schema } = new TruffleDB(config);
 
   return new ApolloServer({
     tracing: true,

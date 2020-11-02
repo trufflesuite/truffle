@@ -56,11 +56,13 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
   ): PouchDB.Database;
 
   private async initialize() {
-    await Promise.all(
-      Object.entries(this.definitions).map(([collectionName, definition]) =>
-        this.initializeCollection(collectionName, definition)
-      )
-    );
+    for (const [collectionName, definition] of Object.entries(
+      this.definitions
+    )) {
+      await this.initializeCollection(collectionName, definition);
+    }
+
+    debug("Databases ready.");
   }
 
   private async initializeCollection<N extends CollectionName<C>>(
@@ -79,10 +81,10 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
   public async all<N extends CollectionName<C>>(
     collectionName: N
   ): Promise<SavedInput<C, N>[]> {
+    await this.ready;
+
     const log = debug.extend(`${collectionName}:all`);
     log("Fetching all...");
-
-    await this.ready;
 
     const result = await this.find<N>(collectionName, { selector: {} });
 
@@ -94,10 +96,10 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
     collectionName: N,
     options: PouchDB.Find.FindRequest<{}>
   ): Promise<SavedInput<C, N>[]> {
+    await this.ready;
+
     const log = debug.extend(`${collectionName}:all`);
     log("Finding...");
-
-    await this.ready;
 
     // allows searching with `id` instead of pouch's internal `_id`,
     // since we call the field `id` externally, and this approach avoids
@@ -131,10 +133,10 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
     collectionName: N,
     id: string
   ): Promise<Historical<SavedInput<C, N>> | null> {
+    await this.ready;
+
     const log = debug.extend(`${collectionName}:get`);
     log("Getting id: %s...", id);
-
-    await this.ready;
 
     try {
       const result = await this.collections[collectionName].get(id);
@@ -154,6 +156,8 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
     collectionName: N,
     input: MutationInput<C, N>
   ): Promise<MutationPayload<C, N>> {
+    await this.ready;
+
     const log = debug.extend(`${collectionName}:add`);
     log("Adding...");
 
@@ -207,6 +211,8 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
     collectionName: M,
     input: MutationInput<C, M>
   ): Promise<MutationPayload<C, M>> {
+    await this.ready;
+
     const log = debug.extend(`${collectionName}:update`);
     log("Updating...");
 
@@ -258,10 +264,10 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
     collectionName: M,
     input: MutationInput<C, M>
   ): Promise<void> {
+    await this.ready;
+
     const log = debug.extend(`${collectionName}:remove`);
     log("Removing...");
-
-    await this.ready;
 
     await Promise.all(
       input[collectionName].map(async resourceInput => {
