@@ -9,26 +9,6 @@ import { AssignProjectNames } from "./assign.graphql";
 import { ResolveProjectName } from "./resolve.graphql";
 export { AddProjects, AssignProjectNames, ResolveProjectName };
 
-export function* generateProjectNameResolve(
-  project: IdObject<DataModel.Project>,
-  name: string,
-  type: string
-): Load<DataModel.NameRecord, { graphql: "project" }> {
-  const result = yield {
-    type: "graphql",
-    request: ResolveProjectName,
-    variables: {
-      projectId: project.id,
-      name,
-      type
-    }
-  };
-
-  const nameRecord = result.data.project.resolve[0];
-
-  return nameRecord;
-}
-
 export function* generateProjectNamesAssign(
   project: IdObject<DataModel.Project>,
   nameRecords: DataModel.NameRecord[]
