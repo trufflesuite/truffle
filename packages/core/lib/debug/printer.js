@@ -479,6 +479,7 @@ class DebugPrinter {
 
     const sectionNames = {
       builtin: "Solidity built-ins",
+      global: "Global constants",
       contract: "Contract variables",
       local: "Local variables"
     };
