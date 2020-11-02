@@ -30,6 +30,7 @@ export const compilations: Definition<"compilations"> = {
       source: Source!
       contracts: [Contract]!
       ast: AST
+      index: Int!
     }
 
     type AST {
@@ -42,8 +43,8 @@ export const compilations: Definition<"compilations"> = {
 
     input CompilationInput {
       compiler: CompilerInput!
-      processedSources: [ProcessedSourceInput!]
-      sources: [ResourceReferenceInput!]!
+      processedSources: [ProcessedSourceInput]!
+      sources: [ResourceReferenceInput]!
       sourceMaps: [SourceMapInput]
     }
 
@@ -74,7 +75,15 @@ export const compilations: Definition<"compilations"> = {
           debug("Resolving Compilation.sources...");
 
           const result = await Promise.all(
-            sources.map(({ id }) => workspace.get("sources", id))
+            sources.map(source => {
+              if (!source) {
+                return;
+              }
+
+              const { id } = source;
+
+              return workspace.get("sources", id);
+            })
           );
 
           debug("Resolved Compilation.sources.");
@@ -85,11 +94,17 @@ export const compilations: Definition<"compilations"> = {
         resolve: ({ id, processedSources }, _, {}) => {
           debug("Resolving Compilation.processedSources...");
 
-          const result = processedSources.map((processedSource, index) => ({
-            ...processedSource,
-            compilation: { id },
-            index
-          }));
+          const result = processedSources.map((processedSource, index) => {
+            if (!processedSource) {
+              return;
+            }
+
+            return {
+              ...processedSource,
+              compilation: { id },
+              index
+            };
+          });
 
           debug("Resolved Compilation.processedSources.");
           return result;
@@ -124,7 +139,7 @@ export const compilations: Definition<"compilations"> = {
       },
       contracts: {
         resolve: async ({ compilation, index }, _, { workspace }) => {
-          debug("Resolving ProcessedSource.compilation...");
+          debug("Resolving ProcessedSource.contracts...");
 
           const result = await workspace.find("contracts", {
             selector: {
@@ -133,7 +148,7 @@ export const compilations: Definition<"compilations"> = {
             }
           });
 
-          debug("Resolved ProcessedSource.compilation.");
+          debug("Resolved ProcessedSource.contracts.");
           return result;
         }
       }

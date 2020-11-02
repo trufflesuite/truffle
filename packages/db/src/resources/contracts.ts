@@ -72,7 +72,11 @@ export const contracts: Definition<"contracts"> = {
           const { processedSources } = await workspace.get("compilations", id);
 
           debug("Resolved Contract.processedSource.");
-          return processedSources[processedSource.index];
+          return {
+            ...processedSources[processedSource.index],
+            index: processedSource.index,
+            compilation: { id }
+          };
         }
       },
       createBytecode: {

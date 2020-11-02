@@ -1,5 +1,5 @@
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:loaders:commands:compile:sources");
+const debug = logger("db:loaders:commands:compile:compilations");
 
 import { IdObject } from "@truffle/db/meta";
 import { Process, resources } from "@truffle/db/project/process";
@@ -124,10 +124,15 @@ function toProcessedSourceInputs(options: {
   contracts: Contract[];
   sourceIndexes: string[];
 }): DataModel.ProcessedSourceInput[] {
+  debug("options %o", options);
   return options.sourceIndexes.map(sourcePath => {
     const contract = options.contracts.find(
       contract => contract.sourcePath === sourcePath
     );
+
+    if (!contract) {
+      return;
+    }
 
     const { source } = contract.db;
 
@@ -147,9 +152,17 @@ function toSourceInputs(options: {
   sourceIndexes: string[];
 }): IdObject<DataModel.Source>[] {
   return options.sourceIndexes.map(sourcePath => {
+    const contract = options.contracts.find(
+      contract => contract.sourcePath === sourcePath
+    );
+
+    if (!contract) {
+      return;
+    }
+
     const {
       db: { source }
-    } = options.contracts.find(contract => contract.sourcePath === sourcePath);
+    } = contract;
 
     return source;
   });
