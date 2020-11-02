@@ -1,6 +1,7 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:loaders:schema:artifactsLoader");
 
+import gql from "graphql-tag";
 import { Db, IdObject, toIdObject } from "@truffle/db/meta";
 import Config from "@truffle/config";
 import TruffleResolver from "@truffle/resolver";
@@ -9,7 +10,7 @@ import { Environment } from "@truffle/environment";
 import { ContractObject } from "@truffle/contract-schema/spec";
 
 import { Project } from "@truffle/db/project";
-import { FindContracts } from "@truffle/db/loaders/resources/contracts";
+import { resources } from "@truffle/db/project/process";
 import { WorkflowCompileResult } from "@truffle/compile-common/src/types";
 import WorkflowCompile from "@truffle/workflow-compile";
 
@@ -45,14 +46,15 @@ export class ArtifactsLoader {
     const loadedResult = await project.loadCompile({ result });
     debug("Loaded compilations.");
 
-    const contracts = loadedResult.contracts
-      .map(({ db: { contract } }) => contract);
+    const contracts = loadedResult.contracts.map(
+      ({ db: { contract } }) => contract
+    );
 
     debug("Assigning contract names...");
     await project.assignNames({ assignments: { contracts } });
     debug("Assigned contract names.");
 
-    const artifacts = await this.collectArtifacts(contracts);
+    const artifacts = await this.collectArtifacts(project, contracts);
 
     const config = Config.detect({
       working_directory: this.compilationConfig["contracts_directory"]
@@ -87,22 +89,24 @@ export class ArtifactsLoader {
   }
 
   private async collectArtifacts(
+    project: Project,
     contractIdObjects: IdObject<DataModel.Contract>[]
   ): Promise<ContractObject[]> {
+    const ids = contractIdObjects.map(({ id }) => id);
     // get full representation
-    debug(
-      "Retrieving contracts, ids: %o...",
-      contractIdObjects.map(({ id }) => id)
+    debug("Retrieving contracts, ids: %o...", ids);
+    const contracts = await project.run(
+      resources.find,
+      "contracts",
+      ids,
+      gql`
+        fragment Contract on Contract {
+          id
+          name
+        }
+      `
     );
-    const {
-      data: { contracts }
-    } = await this.db.execute(FindContracts, {
-      ids: contractIdObjects.map(({ id }) => id)
-    });
-    debug(
-      "Retrieved contracts, ids: %o.",
-      contractIdObjects.map(({ id }) => id)
-    );
+    debug("Retrieved contracts, ids: %o.", ids);
 
     // and resolve artifact
     return contracts.map((contract: DataModel.Contract) => {

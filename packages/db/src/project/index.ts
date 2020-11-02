@@ -95,11 +95,12 @@ export class Project {
     });
   }
 
+  run: ProcessorRunner;
+
   /*
    * internals
    */
 
-  protected run: ProcessorRunner;
   private forProvider: (provider: Provider) => { run: ProcessorRunner };
   private project: IdObject<DataModel.Project>;
 

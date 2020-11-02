@@ -36,8 +36,8 @@ export function* generateCompilationsBytecodesLoad(
         db: {
           createBytecode: IdObject<DataModel.Bytecode>;
           callBytecode: IdObject<DataModel.Bytecode>;
-        }
-      })[]
+        };
+      })[];
     }
   >[]
 > {
@@ -55,7 +55,7 @@ const prepareBytecodesBatch: PrepareBatch<
     db: {
       createBytecode: IdObject<DataModel.Bytecode>;
       callBytecode: IdObject<DataModel.Bytecode>;
-    }
+    };
   },
   DataModel.BytecodeInput,
   IdObject<DataModel.Bytecode>
@@ -104,7 +104,7 @@ const prepareBytecodesBatch: PrepareBatch<
       if (!compilation.contracts[contractIndex]) {
         compilation.contracts[contractIndex] = {
           ...structured[compilationIndex].contracts[contractIndex],
-          db: structured[compilationIndex].contracts[contractIndex].db || {},
+          db: structured[compilationIndex].contracts[contractIndex].db || {}
         };
       }
 
@@ -112,9 +112,7 @@ const prepareBytecodesBatch: PrepareBatch<
       const contract = compilation.contracts[contractIndex];
 
       contract.db[
-        bytecodeField === "bytecode"
-          ? "createBytecode"
-          : "callBytecode"
+        bytecodeField === "bytecode" ? "createBytecode" : "callBytecode"
       ] = result;
     }
 
