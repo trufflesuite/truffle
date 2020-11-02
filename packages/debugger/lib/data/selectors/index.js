@@ -1204,34 +1204,53 @@ const data = createSelectorTree({
        * data.current.identifiers.sections
        * used for printing out the variables in sections
        */
-      sections: createLeaf(["./definitions", "./refs"], (definitions, refs) => {
-        let sections = {
-          builtin: [],
-          contract: [],
-          local: []
-        };
-        for (const [identifier, ref] of Object.entries(refs)) {
-          if (identifier in definitions) {
-            switch (ref.location) {
-              case "special":
-                sections.builtin.push(identifier);
-                break;
-              case "stack":
-                sections.local.push(identifier);
-                break;
-              case "storage":
-              case "code":
-              case "nowhere":
-              case "memory":
-              case "definition":
-                sections.contract.push(identifier);
-                break;
-              //other cases shouldn't happen
+      sections: createLeaf(
+        [
+          "./definitions",
+          "./refs",
+          "/current/scopes/inlined"
+        ],
+        (definitions, refs, scopes) => {
+          let sections = {
+            builtin: [],
+            global: [],
+            contract: [],
+            local: []
+          };
+          for (const [identifier, ref] of Object.entries(refs)) {
+            if (identifier in definitions) {
+              switch (ref.location) {
+                case "special":
+                  sections.builtin.push(identifier);
+                  break;
+                case "stack":
+                  sections.local.push(identifier);
+                  break;
+                case "storage":
+                case "code":
+                case "nowhere":
+                case "memory":
+                  sections.contract.push(identifier);
+                  break;
+                case "definition":
+                  //in this case, look up whether its scope
+                  //is a SourceUnit or a ContractDefinition
+                  const definition = definitions[identifier];
+                  const scope = scopes[definition.scope].definition;
+                  if (scope.nodeType === "SourceUnit") {
+                    sections.global.push(identifier);
+                  } else if (scope.nodeType === "ContractDefinition") {
+                    sections.contract.push(identifier);
+                  }
+                  //other cases shouldn't happen
+                  break;
+                //other cases shouldn't happen
+              }
             }
           }
+          return sections;
         }
-        return sections;
-      }),
+      ),
 
       /**
        * data.current.identifiers.refs
@@ -1242,6 +1261,8 @@ const data = createSelectorTree({
         [
           "/proc/assignments",
           "./_",
+          "./definitions",
+          "/current/scopes/inlined",
           "/current/compilationId",
           "/current/internalSourceFor", //may be null
           "/current/functionDepth", //for pruning things too deep on stack
@@ -1252,6 +1273,8 @@ const data = createSelectorTree({
         (
           assignments,
           identifiers,
+          definitions,
+          scopes,
           compilationId,
           internalFor,
           currentDepth,
@@ -1286,6 +1309,24 @@ const data = createSelectorTree({
                     });
                   }
                   debug("id after local: %s", id);
+                  //if it's not that either, but it's a constant, maybe it's a
+                  //global (if it is, whip up an assignment rather than extracting
+                  //one from assignments!)
+                  if (!(id in assignments)) {
+                    const definition = definitions[identifier];
+                    const scope = scopes[definition.scope].definition;
+                    if (scope.nodeType === "SourceUnit"
+                      && (definition.constant === true
+                      || definition.mutability === "constant")
+                    ) {
+                      return {
+                        [identifier]: {
+                          location: "definition",
+                          definition: definition.value
+                        }
+                      };
+                    }
+                  }
                 } else {
                   //it's a builtin
                   id = stableKeccak256({
