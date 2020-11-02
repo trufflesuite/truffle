@@ -30,16 +30,15 @@ interface Compilation {
 export function* generateCompilationsSourcesLoad(
   compilations: Compilation[]
 ): Process<
-  Replace<
-    Compilation, {
-      contracts: (Contract & {
-        db: {
-          source: IdObject<DataModel.Source>;
-        }
-      })[];
-    }
-  >[]
+  (Compilation & {
+    contracts: (Contract & {
+      db: {
+        source: IdObject<DataModel.Source>;
+      };
+    })[];
+  })[]
 > {
+  debug("preparing to add sources");
   const { batch, unbatch } = prepareSourcesBatch(compilations);
 
   const sources = yield* generate.load("sources", batch);
