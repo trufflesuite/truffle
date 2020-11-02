@@ -3,6 +3,7 @@
 
 declare namespace DataModel {
   type ResourceReferenceInput = any;
+  type Block = any;
   type Bytecode = any;
   type BytecodeInput = any;
   type BytecodesAddInput = any;
@@ -24,6 +25,8 @@ declare namespace DataModel {
   type ContractsAddInput = any;
   type ContractsAddPayload = any;
   type Instruction = any;
+  type LinkReference = any;
+  type LinkedBytecodeInput = any;
   type NameRecord = any;
   type NameRecordInput = any;
   type NameRecordsAddInput = any;
