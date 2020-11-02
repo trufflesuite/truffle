@@ -3,41 +3,6 @@ const debug = logger("db:loaders:types");
 
 import * as graphql from "graphql";
 
-import { CompiledContract } from "@truffle/compile-common";
-import { IdObject } from "@truffle/db/meta";
-
-export interface CompilationData {
-  compiler: {
-    name: string;
-    version: string;
-  };
-  sources: SourceData[]; // ordered by index
-}
-
-export interface SourceData {
-  index: number;
-  input: DataModel.SourceInput;
-  contracts: CompiledContract[];
-}
-
-export interface LoadedSources {
-  [sourcePath: string]: IdObject<DataModel.Source>;
-}
-
-// we track loaded bytecodes using the same structure as CompilationData:
-// - order sources
-// - order contracts for each source
-// - capture bytecodes for each contract
-export interface LoadedBytecodes {
-  sources: {
-    contracts: {
-      createBytecode: IdObject<DataModel.Bytecode>;
-      callBytecode: IdObject<DataModel.Bytecode>;
-    }[];
-  }[];
-}
-
-
 type Data<O, N extends string | keyof O> = string extends N
   ? Partial<O>
   : N extends keyof O
@@ -63,24 +28,19 @@ export interface GraphQlRequestType<
   graphql: N;
 }
 
-export interface Web3RequestType<
-  N extends MethodName | string = string
->{
-  web3: MethodName | string;
+export interface Web3RequestType<N extends MethodName | string = string> {
+  web3: N;
 }
 
-export type RequestType =
-  | GraphQlRequestType
-  | Web3RequestType;
+export type RequestType = GraphQlRequestType | Web3RequestType;
 
-export type RequestData<R extends RequestType> =
-  R extends { graphql: infer N }
-    ? N extends string
-      ? string extends N
-        ? Data<DataModel.Query & DataModel.Mutation, N>
-        : Data<DataModel.Query, N> | Data<DataModel.Mutation, N>
-      : never // shouldn't happen
-    : any;
+export type RequestData<R extends RequestType> = R extends { graphql: infer N }
+  ? N extends string
+    ? string extends N
+      ? Data<DataModel.Query & DataModel.Mutation, N>
+      : Data<DataModel.Query, N> | Data<DataModel.Mutation, N>
+    : never // shouldn't happen
+  : any;
 
 export interface GraphQlRequest {
   type: "graphql";
@@ -96,24 +56,23 @@ export interface Web3Request {
   params?: any[];
 }
 
-export type LoadRequest<R extends RequestType | undefined> =
-  "graphql" extends keyof R
-    ? GraphQlRequest
-    : "web3" extends keyof R
-      ? Web3Request
-      : GraphQlRequest | Web3Request;
+export type LoadRequest<
+  R extends RequestType | undefined
+> = "graphql" extends keyof R
+  ? GraphQlRequest
+  : "web3" extends keyof R
+  ? Web3Request
+  : GraphQlRequest | Web3Request;
 
-
-export type LoadResponse<R extends RequestType> =
-  R extends { graphql: string }
-    ? {
-        data: RequestData<R>;
-      }
-    : {
-        id: number;
-        jsonrpc: "2.0";
-        result: RequestData<R>;
-      };
+export type LoadResponse<R extends RequestType> = R extends { graphql: string }
+  ? {
+      data: RequestData<R>;
+    }
+  : {
+      id: number;
+      jsonrpc: "2.0";
+      result: RequestData<R>;
+    };
 
 export type Load<
   T = any,

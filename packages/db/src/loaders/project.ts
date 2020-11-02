@@ -9,6 +9,8 @@ import {ContractObject} from "@truffle/contract-schema/spec";
 import {toIdObject, IdObject} from "@truffle/db/meta";
 
 import {
+  Compilation,
+  Contract,
   generateCompileLoad,
   generateInitializeLoad,
   generateNamesLoad,
@@ -45,15 +47,12 @@ export class Project {
   async loadCompile(options: {
     result: WorkflowCompileResult;
   }): Promise<{
-    contracts: IdObject<DataModel.Contract>[];
+    compilations: Compilation[];
+    contracts: Contract[];
   }> {
     const {result} = options;
 
-    const {contracts} = await this.run(generateCompileLoad, result);
-
-    return {
-      contracts: contracts.map(toIdObject)
-    };
+    return await this.run(generateCompileLoad, result);
   }
 
   /**
