@@ -649,8 +649,8 @@ const data = createSelectorTree({
                   debug("variable %O", variable);
                   const definition = inlined[variable.astRef].definition;
                   return (
-                    !definition.constant ||
-                    Codec.Ast.Utils.isSimpleConstant(definition.value)
+                    !(definition.constant || definition.mutability === "constant")
+                    || Codec.Ast.Utils.isSimpleConstant(definition.value)
                   );
                 });
               return { [id]: newScope };
@@ -663,12 +663,13 @@ const data = createSelectorTree({
               newScope.variables = Object.values(definition.exportedSymbols).map(
                 array => array[0] //I don't know why these are arrays...?
               ).filter(astRef => {
-                //HACK: let's filter out those constants we don't know
-                //how to read.  they'll just clutter things up.
-                //(yeah, this is copypasted with modifications)
+                //restrict to variables, not other exported symbols!
                 const definition = inlined[astRef].definition;
                 return (
-                  !definition.constant ||
+                  definition.nodeType === "VariableDeclaration" &&
+                  (definition.constant || definition.mutability === "constant") &&
+                  //HACK: we'll also again filter out constants we don't know how
+                  //to read
                   Codec.Ast.Utils.isSimpleConstant(definition.value)
                 );
               }).map(astRef => ({
@@ -1337,17 +1338,20 @@ const data = createSelectorTree({
                   //one from assignments!)
                   if (!(id in assignments)) {
                     const definition = definitions[identifier];
-                    const scope = scopes[definition.scope].definition;
-                    if (scope.nodeType === "SourceUnit"
-                      && (definition.constant === true
-                      || definition.mutability === "constant")
-                    ) {
-                      return {
-                        [identifier]: {
-                          location: "definition",
-                          definition: definition.value
-                        }
-                      };
+                    debug("global definition: %o", definition);
+                    if (definition.scope !== undefined) {
+                      const scope = scopes[definition.scope].definition;
+                      if (scope.nodeType === "SourceUnit"
+                        && (definition.constant === true
+                        || definition.mutability === "constant")
+                      ) {
+                        return {
+                          [identifier]: {
+                            location: "definition",
+                            definition: definition.value
+                          }
+                        };
+                      }
                     }
                   }
                 } else {
