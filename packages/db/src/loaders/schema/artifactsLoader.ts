@@ -43,8 +43,11 @@ export class ArtifactsLoader {
     debug("Initialized project.");
 
     debug("Loading compilations...");
-    const { contracts } = await project.loadCompile({ result });
+    const loadedResult = await project.loadCompile({ result });
     debug("Loaded compilations.");
+
+    const contracts = loadedResult.contracts
+      .map(({ db: { contract } }) => contract);
 
     debug("Assigning contract names...");
     await project.assignNames({ assignments: { contracts } });
