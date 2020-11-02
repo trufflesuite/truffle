@@ -246,6 +246,12 @@ abstract class DefinitionSchema<
                 }))
                 .reduce((a, b) => ({ ...a, ...b }), {});
 
+              const byId = results
+                .map(result => ({
+                  [result.id]: result
+                }))
+                .reduce((a, b) => ({ ...a, ...b }), {});
+
               logFilter("Filtered for ids: %o", filter.ids);
               return filter.ids.map(id => (id ? byId[id] : undefined));
             } else {
