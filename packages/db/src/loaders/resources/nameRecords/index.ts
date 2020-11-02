@@ -1,14 +1,15 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:loaders:resources:nameRecords");
 
+import gql from "graphql-tag";
 import camelCase from "camel-case";
 import { IdObject, toIdObject } from "@truffle/db/meta";
 
 import { Process } from "@truffle/db/definitions";
+import { generate } from "@truffle/db/generate";
 
-import { AddNameRecords } from "./add.graphql";
+export { AddNameRecords } from "./add.graphql";
 import { forType } from "./get.graphql";
-export { AddNameRecords };
 
 type ResolveFunc = (
   name: string,
@@ -35,21 +36,21 @@ export function* generateNameRecordsLoad(
   type: string,
   getCurrent: ResolveFunc
 ): Process<DataModel.NameRecord[]> {
-  const nameRecords = [];
+  const inputs = [];
   for (const resource of resources) {
     const { name } = yield* getResourceName(resource, type);
 
     const current: DataModel.NameRecord = yield* getCurrent(name, type);
 
     if (current) {
-      nameRecords.push({
+      inputs.push({
         name,
         type,
         resource,
         previous: toIdObject(current)
       });
     } else {
-      nameRecords.push({
+      inputs.push({
         name,
         type,
         resource
@@ -57,11 +58,26 @@ export function* generateNameRecordsLoad(
     }
   }
 
-  const result = yield {
-    type: "graphql",
-    request: AddNameRecords,
-    variables: { nameRecords }
-  };
+  const ids = (yield* generate.load("nameRecords", inputs)).map(({ id }) => id);
 
-  return result.data.nameRecordsAdd.nameRecords;
+  const nameRecords = yield* generate.find(
+    "nameRecords",
+    ids,
+    gql`
+      fragment NameRecord on NameRecord {
+        id
+        name
+        type
+        resource {
+          name
+        }
+        previous {
+          id
+          name
+        }
+      }
+    `
+  );
+
+  return nameRecords;
 }

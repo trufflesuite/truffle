@@ -1,7 +1,7 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:loaders:commands:compile");
 
-import { toIdObject } from "@truffle/db/meta";
+import gql from "graphql-tag";
 import { Process } from "@truffle/db/definitions";
 import { CompilationData } from "@truffle/db/loaders/types";
 import {
@@ -10,11 +10,9 @@ import {
   CompiledContract
 } from "@truffle/compile-common/src/types";
 
+import { generate } from "@truffle/db/generate";
 import { generateBytecodesLoad } from "@truffle/db/loaders/resources/bytecodes";
-import {
-  generateCompilationsLoad,
-  generateCompilationsContracts
-} from "@truffle/db/loaders/resources/compilations";
+import { generateCompilationsLoad } from "@truffle/db/loaders/resources/compilations";
 import { generateContractsLoad } from "@truffle/db/loaders/resources/contracts";
 import { generateSourcesLoad } from "@truffle/db/loaders/resources/sources";
 
@@ -86,9 +84,19 @@ export function* generateCompileLoad(
     yield* generateContractsLoad(loadableContracts);
   }
 
-  const contracts = yield* generateCompilationsContracts(
-    compilations.map(toIdObject)
+  const withContracts = yield* generate.find(
+    "compilations",
+    compilations.map(({ id }) => id),
+    gql`
+      fragment Compilation on Compilation {
+        contracts {
+          id
+        }
+      }
+    `
   );
+
+  const contracts = withContracts.map(({ contracts }) => contracts).flat();
 
   return { compilations, contracts };
 }
