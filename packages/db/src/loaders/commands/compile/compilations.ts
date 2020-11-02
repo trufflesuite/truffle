@@ -177,13 +177,15 @@ function toSourceMapInputs(options: {
 
       if (contract.sourceMap) {
         sourceMaps.push({
-          json: contract.sourceMap
+          bytecode: contract.db.createBytecode,
+          data: contract.sourceMap
         });
       }
 
       if (contract.deployedSourceMap) {
         sourceMaps.push({
-          json: contract.deployedSourceMap
+          bytecode: contract.db.callBytecode,
+          data: contract.deployedSourceMap
         });
       }
 

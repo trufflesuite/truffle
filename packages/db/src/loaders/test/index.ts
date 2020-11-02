@@ -241,7 +241,7 @@ const GetWorkspaceCompilation = gql`
         sourcePath
       }
       sourceMaps {
-        json
+        data
       }
     }
   }
@@ -558,7 +558,7 @@ describe("Compilation", () => {
 
       expect(
         solcCompilation.sourceMaps.find(
-          ({ json }) => json === artifacts[index].sourceMap
+          ({ data }) => data === artifacts[index].sourceMap
         )
       ).toBeDefined();
     });
