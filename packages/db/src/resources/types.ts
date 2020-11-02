@@ -133,6 +133,8 @@ export type NamedResource<
   N extends CollectionName = CollectionName
 > = Meta.NamedResource<Collections, N>;
 
+export type NamedCollectionName = Meta.NamedCollectionName<Collections>;
+
 export type Process<
   T = any,
   R extends Proc.RequestType<Collections> | undefined = undefined
