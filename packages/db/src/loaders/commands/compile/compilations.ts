@@ -18,7 +18,7 @@ interface Contract {
     source: IdObject<DataModel.Source>;
     callBytecode: IdObject<DataModel.Bytecode>;
     createBytecode: IdObject<DataModel.Bytecode>;
-  }
+  };
 }
 
 interface Compilation {
@@ -34,9 +34,13 @@ export function* generateCompilationsInputLoad(
   compilations: Compilation[]
 ): Process<
   (Compilation & {
+    contracts: (Contract & {
+      compilation: IdObject<DataModel.Compilation>;
+    })[];
+
     db: {
       compilation: IdObject<DataModel.Compilation>;
-    }
+    };
   })[]
 > {
   const { batch, unbatch } = prepareCompilationsBatch(compilations);
@@ -49,7 +53,15 @@ export function* generateCompilationsInputLoad(
 const prepareCompilationsBatch: PrepareBatch<
   _[],
   Compilation,
-  Compilation & { db: { compilation: IdObject<DataModel.Compilation> } },
+  Compilation & {
+    contracts: (Contract & {
+      compilation: IdObject<DataModel.Compilation>;
+    })[];
+
+    db: {
+      compilation: IdObject<DataModel.Compilation>;
+    };
+  },
   DataModel.CompilationInput,
   IdObject<DataModel.Compilation>
 > = structured => {
@@ -74,6 +86,13 @@ const prepareCompilationsBatch: PrepareBatch<
 
       compilations[compilationIndex] = {
         ...structured[compilationIndex],
+        contracts: structured[compilationIndex].contracts.map(contract => ({
+          ...contract,
+          db: {
+            ...contract.db,
+            compilation: result
+          }
+        })),
         db: {
           compilation: result
         }
@@ -128,9 +147,9 @@ function toSourceInputs(options: {
   sourceIndexes: string[];
 }): IdObject<DataModel.Source>[] {
   return options.sourceIndexes.map(sourcePath => {
-    const { db: { source } } = options.contracts.find(
-      contract => contract.sourcePath === sourcePath
-    );
+    const {
+      db: { source }
+    } = options.contracts.find(contract => contract.sourcePath === sourcePath);
 
     return source;
   });
