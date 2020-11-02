@@ -10,7 +10,7 @@ import type { Resolver } from "@truffle/resolver";
 import { Environment } from "@truffle/environment";
 import { ContractObject } from "@truffle/contract-schema/spec";
 
-import { Project } from "@truffle/db/loaders/project";
+import { Project } from "@truffle/db/project";
 import { generate } from "@truffle/db/loaders/generate";
 import { WorkflowCompileResult } from "@truffle/compile-common/src/types";
 

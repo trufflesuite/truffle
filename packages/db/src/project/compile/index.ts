@@ -11,23 +11,18 @@ import { generateCompilationsBytecodesLoad } from "./bytecodes";
 import { generateCompilationsInputLoad } from "./compilations";
 import { generateCompilationsContractsLoad } from "./contracts";
 
-export type Contract =
-  & Common.CompiledContract
-  & {
-    db: {
-      contract: IdObject<DataModel.Contract>;
-    }
+export type Contract = Common.CompiledContract & {
+  db: {
+    contract: IdObject<DataModel.Contract>;
   };
+};
 
-export type Compilation =
-  & Common.Compilation
-  & {
-    contracts: Contract[];
-    db: {
-      compilation: IdObject<DataModel.Compilation>;
-    }
+export type Compilation = Common.Compilation & {
+  contracts: Contract[];
+  db: {
+    compilation: IdObject<DataModel.Compilation>;
   };
-
+};
 
 /**
  * For a compilation result from @truffle/workflow-compile/new, generate a
@@ -59,11 +54,13 @@ export function* generateCompileLoad(
     withCompilations
   );
 
-  const compilations = withContracts as unknown as Compilation[];
+  const compilations = (withContracts as unknown) as Compilation[];
 
   return {
     compilations,
-    contracts:
-      compilations.reduce((a, { contracts }) => [...a, ...contracts], [])
+    contracts: compilations.reduce(
+      (a, { contracts }) => [...a, ...contracts],
+      []
+    )
   };
 }
