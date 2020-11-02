@@ -613,52 +613,75 @@ const data = createSelectorTree({
           {},
           ...Object.entries(scopes).map(([id, scope]) => {
             let definition = inlined[id].definition;
-            if (definition.nodeType !== "ContractDefinition") {
-              return { [id]: scope };
-            }
-            //if we've reached this point, we should be dealing with a
-            //contract, and specifically a contract -- not an interface or
-            //library (those don't get "variables" entries in their scopes)
-            debug("contract id %d", id);
-            let newScope = { ...scope };
-            //note that Solidity gives us the linearization in order from most
-            //derived to most base, but we want most base to most derived;
-            //annoyingly, reverse() is in-place, so we clone with slice() first
-            let linearizedBaseContractsFromBase = definition.linearizedBaseContracts
-              .slice()
-              .reverse();
-            linearizedBaseContractsFromBase.pop(); //remove the last element, i.e.,
-            //the contract itself, because we want to treat that one specially
-            //now, we put it all together
-            newScope.variables = []
-              .concat(
-                //concatenate the variables lists from the base classes
-                ...linearizedBaseContractsFromBase.map(
-                  contractId => scopes[contractId].variables || []
-                  //we need the || [] because contracts with no state variables
-                  //have variables undefined rather than empty like you'd expect
+            if (definition.nodeType === "ContractDefinition") {
+              //contract definition case: process inheritance
+              debug("contract id %d", id);
+              let newScope = { ...scope };
+              //note that Solidity gives us the linearization in order from most
+              //derived to most base, but we want most base to most derived;
+              //annoyingly, reverse() is in-place, so we clone with slice() first
+              const linearizedBaseContractsFromBase = definition.linearizedBaseContracts
+                .slice()
+                .reverse();
+              linearizedBaseContractsFromBase.pop(); //remove the last element, i.e.,
+              //the contract itself, because we want to treat that one specially
+              //now, we put it all together
+              newScope.variables = []
+                .concat(
+                  //concatenate the variables lists from the base classes
+                  ...linearizedBaseContractsFromBase.map(
+                    contractId => scopes[contractId].variables || []
+                    //we need the || [] because contracts with no state variables
+                    //have variables undefined rather than empty like you'd expect
+                  )
                 )
-              )
-              .filter(
-                variable =>
-                  inlined[variable.astRef].definition.visibility !== "private"
-                //filter out private variables from the base classes
-              )
-              //add in the variables for the contract itself -- note that here
-              //private variables are not filtered out!
-              .concat(scopes[id].variables || [])
-              .filter(variable => {
+                .filter(
+                  variable =>
+                    inlined[variable.astRef].definition.visibility !== "private"
+                  //filter out private variables from the base classes
+                )
+                //add in the variables for the contract itself -- note that here
+                //private variables are not filtered out!
+                .concat(scopes[id].variables || [])
+                .filter(variable => {
+                  //HACK: let's filter out those constants we don't know
+                  //how to read.  they'll just clutter things up.
+                  debug("variable %O", variable);
+                  const definition = inlined[variable.astRef].definition;
+                  return (
+                    !definition.constant ||
+                    Codec.Ast.Utils.isSimpleConstant(definition.value)
+                  );
+                });
+              return { [id]: newScope };
+            } else if (definition.nodeType === "SourceUnit") {
+              //source unit case: process imports
+              let newScope = { ...scope };
+              //in this case, handling imports in some sort of tree fashion would
+              //be too much work.  we'll do this the easy way: by checking exported
+              //symbols for constants.
+              newScope.variables = Object.values(definition.exportedSymbols).map(
+                array => array[0] //I don't know why these are arrays...?
+              ).filter(astRef => {
                 //HACK: let's filter out those constants we don't know
                 //how to read.  they'll just clutter things up.
-                debug("variable %O", variable);
-                let definition = inlined[variable.astRef].definition;
+                //(yeah, this is copypasted with modifications)
+                const definition = inlined[astRef].definition;
                 return (
                   !definition.constant ||
                   Codec.Ast.Utils.isSimpleConstant(definition.value)
                 );
-              });
-
-            return { [id]: newScope };
+              }).map(astRef => ({
+                //we'll have to reconstruct the rest from just the astRef
+                astRef,
+                name: inlined[astRef].definition.name,
+                sourceId: inlined[astRef].sourceId
+              }));
+              return { [id]: newScope };
+            } else {
+              //default case, nothing to process
+              return { [id]: scope };
+            }
           })
         )
       ),
