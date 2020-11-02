@@ -7,14 +7,10 @@ import { ContractObject } from "@truffle/contract-schema/spec";
 
 import { Db, toIdObject, IdObject } from "@truffle/db/meta";
 
-import {
-  Compilation,
-  Contract,
-  generateCompileLoad,
-  generateInitializeLoad,
-  generateNamesLoad,
-  generateMigrateLoad
-} from "@truffle/db/loaders/commands";
+import { generateInitializeLoad } from "./initialize";
+import { Compilation, Contract, generateCompileLoad } from "./compile";
+import { generateNamesLoad } from "./names";
+import { generateMigrateLoad } from "./migrate";
 
 import { ProcessorRunner, forDb } from "./process";
 
