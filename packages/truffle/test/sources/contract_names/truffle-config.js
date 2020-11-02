@@ -7,5 +7,8 @@ module.exports = {
       gas: 4700000,
       gasPrice: 20000000000
     }
+  },
+  db: {
+    enabled: true
   }
 };
