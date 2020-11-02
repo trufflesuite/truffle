@@ -1,15 +1,15 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:loaders:commands:migrate");
 
+import gql from "graphql-tag";
 import { ContractObject } from "@truffle/contract-schema/spec";
 import { toIdObject, IdObject } from "@truffle/db/meta";
 import { Load } from "@truffle/db/loaders/types";
 
-import { generateContractGet } from "@truffle/db/loaders/resources/contracts";
+import { generate } from "@truffle/db/loaders/generate";
 import {
   generateTranasctionNetworkLoad,
-  generateNetworkIdFetch,
-  generateNetworkGet
+  generateNetworkIdFetch
 } from "@truffle/db/loaders/resources/networks";
 import {
   LoadableContractInstance,
@@ -95,15 +95,45 @@ interface ContractNetwork {
 function* processContractNetworks(
   contractNetworks: ContractNetwork[]
 ): Load<LoadableContractInstance[]> {
+  debug("processing contract networks");
   const loadableContractInstances = [];
   for (const { network, artifact } of contractNetworks) {
     // @ts-ignore
     const { contract }: IdObject<DataModel.Contract> = artifact.db;
-    const { createBytecode, callBytecode } = yield* generateContractGet(
-      contract
+    const { createBytecode, callBytecode } = yield* generate.get(
+      "contracts",
+      // @ts-ignore
+      contract.id,
+      gql`
+        fragment Bytecode on Bytecode {
+          id
+          bytes
+          linkReferences {
+            name
+          }
+        }
+
+        fragment Fragment on Contract {
+          callBytecode {
+            ...Bytecode
+          }
+
+          createBytecode {
+            ...Bytecode
+          }
+        }
+      `
     );
 
-    const { networkId } = yield* generateNetworkGet(network);
+    const { networkId } = yield* generate.get(
+      "networks",
+      network.id,
+      gql`
+        fragment Network on Network {
+          networkId
+        }
+      `
+    );
 
     const networkObject = artifact.networks[networkId];
     if (!networkObject) {

@@ -4,7 +4,7 @@ const debug = logger("db:loaders:commands:compile:bytecodes");
 import { IdObject } from "@truffle/db/meta";
 import { Load } from "@truffle/db/loaders/types";
 import { PrepareBatch, _, Replace } from "@truffle/db/loaders/batch";
-import { generateBytecodesLoad } from "@truffle/db/loaders/resources/bytecodes";
+import { generate } from "@truffle/db/loaders/generate";
 
 interface Contract {
   bytecode: DataModel.BytecodeInput;
@@ -37,14 +37,14 @@ export function* generateCompilationsBytecodesLoad(
         db: {
           createBytecode: IdObject<DataModel.Bytecode>;
           callBytecode: IdObject<DataModel.Bytecode>;
-        }
-      })[]
+        };
+      })[];
     }
   >[]
 > {
   const { batch, unbatch } = prepareBytecodesBatch(compilations);
 
-  const bytecodes = yield* generateBytecodesLoad(batch);
+  const bytecodes = yield* generate.load("bytecodes", batch);
 
   return unbatch(bytecodes);
 }
@@ -56,7 +56,7 @@ const prepareBytecodesBatch: PrepareBatch<
     db: {
       createBytecode: IdObject<DataModel.Bytecode>;
       callBytecode: IdObject<DataModel.Bytecode>;
-    }
+    };
   },
   DataModel.BytecodeInput,
   IdObject<DataModel.Bytecode>
@@ -105,7 +105,7 @@ const prepareBytecodesBatch: PrepareBatch<
       if (!compilation.contracts[contractIndex]) {
         compilation.contracts[contractIndex] = {
           ...structured[compilationIndex].contracts[contractIndex],
-          db: structured[compilationIndex].contracts[contractIndex].db || {},
+          db: structured[compilationIndex].contracts[contractIndex].db || {}
         };
       }
 
@@ -113,9 +113,7 @@ const prepareBytecodesBatch: PrepareBatch<
       const contract = compilation.contracts[contractIndex];
 
       contract.db[
-        bytecodeField === "bytecode"
-          ? "createBytecode"
-          : "callBytecode"
+        bytecodeField === "bytecode" ? "createBytecode" : "callBytecode"
       ] = result;
     }
 

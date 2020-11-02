@@ -1,33 +1,11 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:loaders:resources:networks");
 
-import { IdObject } from "@truffle/db/meta";
 import { Load } from "@truffle/db/loaders/types";
 
-import { GetNetwork } from "./get.graphql";
 import { AddNetworks } from "./add.graphql";
 
 type TransactionHash = any;
-type NetworkId = any;
-
-export function* generateNetworkGet(
-  { id }: IdObject<DataModel.Network>
-): Load<DataModel.Network | undefined, { graphql: "network" }> {
-  debug("Generating network get...");
-
-  const response = yield {
-    type: "graphql",
-    request: GetNetwork,
-    variables: {
-      id
-    }
-  }
-
-  const network = response.data.network;
-
-  debug("Generated network get.");
-  return network;
-}
 
 export interface GenerateTransactionNetworkLoadOptions {
   transactionHash: TransactionHash;
@@ -36,10 +14,7 @@ export interface GenerateTransactionNetworkLoadOptions {
 
 export function* generateTranasctionNetworkLoad({
   transactionHash,
-  network: {
-    name,
-    networkId
-  }
+  network: { name, networkId }
 }: GenerateTransactionNetworkLoadOptions): Load<DataModel.Network> {
   debug("Generating transaction network load...");
   const historicBlock = yield* generateHistoricBlockFetch(transactionHash);
@@ -82,10 +57,7 @@ function* generateHistoricBlockFetch(
   };
 
   const {
-    result: {
-      blockNumber,
-      blockHash: hash
-    }
+    result: { blockNumber, blockHash: hash }
   } = response;
 
   const height = parseInt(blockNumber);
@@ -106,11 +78,10 @@ function* generateNetworkLoad(
     variables: {
       networks: [input]
     }
-  }
+  };
 
   const network = response.data.networksAdd.networks[0];
 
   debug("Generated network load.");
   return network;
 }
-

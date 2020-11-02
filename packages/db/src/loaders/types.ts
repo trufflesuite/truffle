@@ -3,6 +3,8 @@ const debug = logger("db:loaders:types");
 
 import * as graphql from "graphql";
 
+export { Definitions, Definition } from "@truffle/db/graphql/types";
+
 type Data<O, N extends string | keyof O> = string extends N
   ? Partial<O>
   : N extends keyof O

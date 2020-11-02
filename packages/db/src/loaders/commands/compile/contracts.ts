@@ -4,7 +4,7 @@ const debug = logger("db:loaders:commands:compile:sources");
 import { IdObject } from "@truffle/db/meta";
 import { Load } from "@truffle/db/loaders/types";
 import { PrepareBatch, _, Replace } from "@truffle/db/loaders/batch";
-import { generateContractsLoad } from "@truffle/db/loaders/resources/contracts";
+import { generate } from "@truffle/db/loaders/generate";
 
 interface Contract {
   contractName: string;
@@ -38,7 +38,7 @@ export function* generateCompilationsContractsLoad(
 > {
   const { batch, unbatch } = prepareContractsBatch(compilations);
 
-  const contracts = yield* generateContractsLoad(batch);
+  const contracts = yield* generate.load("contracts", batch);
 
   return unbatch(contracts);
 }
