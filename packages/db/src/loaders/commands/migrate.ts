@@ -104,7 +104,7 @@ function* processContractNetworks(
       // @ts-ignore
       contract.id,
       gql`
-        fragment Contract on Contract {
+        fragment ContractFragment on Contract {
           id
           name
           createBytecode {

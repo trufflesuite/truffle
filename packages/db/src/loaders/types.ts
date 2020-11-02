@@ -4,14 +4,6 @@ const debug = logger("db:loaders:types");
 import { CompiledContract } from "@truffle/compile-common";
 import { IdObject } from "@truffle/db/meta";
 
-export interface CompilationData {
-  compiler: {
-    name: string;
-    version: string;
-  };
-  sources: SourceData[]; // ordered by index
-}
-
 export interface SourceData {
   index: number;
   input: DataModel.SourceInput;
