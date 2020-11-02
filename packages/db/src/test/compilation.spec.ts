@@ -25,6 +25,7 @@ describe("Compilation", () => {
       compilerName: Migrations.compiler.name,
       compilerVersion: Migrations.compiler.version,
       sourceId: sourceId,
+      bytecodeId: "",
       abi: JSON.stringify(Migrations.abi),
       sourceMap: JSON.stringify(Migrations.sourceMap)
     };
