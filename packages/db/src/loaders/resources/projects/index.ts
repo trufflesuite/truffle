@@ -5,29 +5,9 @@ import { Process } from "@truffle/db/resources";
 import { IdObject } from "@truffle/db/meta";
 
 export { AddProjects } from "./add.graphql";
+export { ResolveProjectName } from "./resolve.graphql";
 import { AssignProjectNames } from "./assign.graphql";
-import { ResolveProjectName } from "./resolve.graphql";
-export { AssignProjectNames, ResolveProjectName };
-
-export function* generateProjectNameResolve(
-  project: IdObject<DataModel.Project>,
-  name: string,
-  type: string
-): Process<DataModel.NameRecord> {
-  const result = yield {
-    type: "graphql",
-    request: ResolveProjectName,
-    variables: {
-      projectId: project.id,
-      name,
-      type
-    }
-  };
-
-  const nameRecord = result.data.project.resolve[0];
-
-  return nameRecord;
-}
+export { AssignProjectNames };
 
 export function* generateProjectNamesAssign(
   project: IdObject<DataModel.Project>,
