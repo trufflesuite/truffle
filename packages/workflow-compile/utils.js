@@ -35,44 +35,7 @@ function multiPromisify(func) {
     });
 }
 
-// warning: this function is a HACK
-// post-condition: mutates artifacts
-//
-// also, this queries @truffle/db explicitly - this would be better reworked
-// inside db to return pre-correlated data
-async function correlateContracts(
-  db,
-  artifacts,
-  contracts
-) {
-  const query = `
-    query contracts($ids: [ID!]!) {
-      contracts(filter: { ids: $ids }) {
-        id
-        name
-      }
-    }
-  `;
-
-  const result = await db.query(query, {
-    ids: contracts.map(({ id }) => id)
-  });
-
-  const byName = result.data.contracts
-    .map(({ name, id }) => ({ [name]: { id } }))
-    .reduce((a, b) => ({ ...a, ...b }));
-
-  for (const artifact of artifacts) {
-    console.debug("artifact %o", artifact.contract_name);
-
-    const contract = byName[artifact.contract_name];
-
-    artifact["db:contract"] = contract;
-  }
-}
-
 module.exports = {
   prepareConfig,
-  multiPromisify,
-  correlateContracts
+  multiPromisify
 };

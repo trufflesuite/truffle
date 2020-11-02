@@ -1,6 +1,6 @@
 const debug = require("debug")("workflow-compile");
 const fse = require("fs-extra");
-const { prepareConfig, correlateContracts } = require("./utils");
+const { prepareConfig } = require("./utils");
 const { Shims } = require("@truffle/compile-common");
 const {
   reportCompilationStarted,
@@ -109,8 +109,6 @@ const WorkflowCompile = {
 
     await fse.ensureDir(config.contracts_build_directory);
 
-    const artifacts = result.contracts.map(Shims.NewToLegacy.forContract);
-
     if (options.db && options.db.enabled && result.contracts.length > 0) {
       const db = new TruffleDB(config);
       const project = await Project.initialize({
@@ -120,12 +118,16 @@ const WorkflowCompile = {
         db
       });
 
-      const { contracts } = await project.loadCompile({ result });
+      result = await project.loadCompile({ result });
+
+      const contracts = result.contracts.map(
+        ({ db: { contract } }) => contract
+      );
 
       await project.assignNames({ assignments: { contracts } });
-
-      await correlateContracts(db, artifacts, contracts);
     }
+
+    const artifacts = result.contracts.map(Shims.NewToLegacy.forContract);
 
     await config.artifactor.saveAll(artifacts);
   }

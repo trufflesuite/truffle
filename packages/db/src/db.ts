@@ -20,7 +20,19 @@ export class TruffleDB {
     const document: DocumentNode =
       typeof query !== "string" ? query : parse(query);
 
-    return await execute(this.schema, document, null, this.context, variables);
+    const response = await execute(
+      this.schema,
+      document,
+      null,
+      this.context,
+      variables
+    );
+
+    if (response.errors) {
+      debug("errors %o", response.errors);
+    }
+
+    return response;
   }
 
   private createContext(config: TruffleConfig): Context {

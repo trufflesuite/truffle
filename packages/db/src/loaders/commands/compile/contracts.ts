@@ -22,21 +22,18 @@ interface Compilation {
   contracts: Contract[];
   db: {
     compilation: IdObject<DataModel.Compilation>;
-  }
+  };
 }
 
 export function* generateCompilationsContractsLoad(
   compilations: Compilation[]
 ): Load<
   (Compilation & {
-    contracts: (
-      & Contract
-      & {
-          db: {
-            contract: IdObject<DataModel.Contract>
-          }
-        }
-    )[];
+    contracts: (Contract & {
+      db: {
+        contract: IdObject<DataModel.Contract>;
+      };
+    })[];
   })[]
 > {
   const { batch, unbatch } = prepareContractsBatch(compilations);
@@ -87,6 +84,7 @@ const prepareContractsBatch: PrepareBatch<
       compilations[compilationIndex].contracts[contractIndex] = {
         ...structured[compilationIndex].contracts[contractIndex],
         db: {
+          ...structured[compilationIndex].contracts[contractIndex].db,
           contract: result
         }
       };
@@ -102,14 +100,13 @@ function toContractInput(options: {
   contract: Contract;
   compilation: Compilation;
 }): DataModel.ContractInput {
-  const { db: { compilation } } = options.compilation;
+  const {
+    db: { compilation }
+  } = options.compilation;
 
   const {
     contractName: name,
-    db: {
-      createBytecode,
-      callBytecode
-    }
+    db: { createBytecode, callBytecode }
   } = options.contract;
 
   const abi = {
