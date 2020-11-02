@@ -90,7 +90,7 @@ export class ArtifactsLoader {
     // get full representation
     debug("Retrieving contracts, ids: %o...", ids);
     const contracts = await project.run(
-      generate.find.bind(generate),
+      generate.find,
       "contracts",
       ids,
       gql`
