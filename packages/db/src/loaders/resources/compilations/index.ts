@@ -4,12 +4,7 @@ const debug = logger("db:loaders:resources:compilations");
 import {
   CompilationData,
   LoadedSources,
-<<<<<<< HEAD
   Load
-=======
-  WorkspaceRequest,
-  WorkspaceResponse
->>>>>>> Remove unneeded imports, variable
 } from "@truffle/db/loaders/types";
 
 import { AddCompilations } from "./add.graphql";
