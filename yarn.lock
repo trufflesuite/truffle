@@ -2562,6 +2562,36 @@
     utf8 "^3.0.0"
     web3-utils "1.2.9"
 
+"@truffle/db@^0.2.0-1":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@truffle/db/-/db-0.2.0.tgz#e60ea32e2dba6fd7a30bb25631db878cd2c0172f"
+  integrity sha512-0s6tobOkHWCJbQFz6C1p1ex87RB+ltyriZGWgT3YqQjhtlu87snIWENQhCSZc6W6NDQO/h3XaTIoqmOsDuwVMA==
+  dependencies:
+    "@truffle/abi-utils" "^0.1.1"
+    "@truffle/code-utils" "^1.2.22"
+    "@truffle/compile-common" "^0.5.0"
+    "@truffle/config" "^1.2.33"
+    "@truffle/workflow-compile" "^3.1.2"
+    apollo-server "^2.18.2"
+    debug "^4.2.0"
+    fse "^4.0.1"
+    graphql "^15.3.0"
+    graphql-tag "^2.11.0"
+    graphql-tools "^6.2.4"
+    jsondown "^1.0.0"
+    leveldown "^5.2.0"
+    module-alias "^2.1.0"
+    pascal-case "^2.0.1"
+    pluralize "^8.0.0"
+    pouchdb "7.1.1"
+    pouchdb-adapter-memory "^7.1.1"
+    pouchdb-adapter-node-websql "^7.0.0"
+    pouchdb-debug "^7.1.1"
+    pouchdb-find "^7.0.0"
+    source-map-support "^0.5.9"
+    web3 "1.2.9"
+    web3-utils "1.2.9"
+
 "@trufflesuite/chromafi@^2.2.2":
   version "2.2.2"
   resolved "https://registry.yarnpkg.com/@trufflesuite/chromafi/-/chromafi-2.2.2.tgz#d3fc507aa8504faffc50fb892cedcfe98ff57f77"
