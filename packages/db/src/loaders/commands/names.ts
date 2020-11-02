@@ -1,14 +1,13 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:loaders:commands:names");
 
+import gql from "graphql-tag";
 import { singular } from "pluralize";
 import pascalCase from "pascal-case";
 
-import {
-  generateProjectNameResolve,
-  generateProjectNamesAssign
-} from "@truffle/db/loaders/resources/projects";
+import { generateProjectNamesAssign } from "@truffle/db/loaders/resources/projects";
 
+import { generate } from "@truffle/db/generate";
 import { generateNameRecordsLoad } from "@truffle/db/loaders/resources/nameRecords";
 import { Process } from "@truffle/db/definitions";
 import { IdObject } from "@truffle/db/meta";
@@ -23,7 +22,25 @@ export function* generateNamesLoad(
   }
 ): Process<DataModel.NameRecord[]> {
   let getCurrent = function* (name, type) {
-    return yield* generateProjectNameResolve(project, name, type);
+    const {
+      resolve: [nameRecord]
+    } = yield* generate.get(
+      "projects",
+      project.id,
+      gql`
+      fragment Resolve_${name}_${type} on Project {
+        resolve(type: "${type}", name: "${name}") {
+          id
+          resource {
+            id
+            name
+          }
+        }
+      }
+    `
+    );
+
+    return nameRecord;
   };
 
   const loadedNameRecords = [];
