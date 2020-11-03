@@ -27,7 +27,10 @@ export const forDefinitions = <C extends Collections>(
 ) => (config: DatabasesConfig): Workspace<C> => {
   const { constructor, settings } = concretize<C>(config);
 
-  return new constructor({ definitions, settings });
+  debug("Initializing workspace...");
+  const workspace = new constructor({ definitions, settings });
+
+  return workspace;
 };
 
 const concretize = <C extends Collections>(
@@ -41,6 +44,7 @@ const concretize = <C extends Collections>(
     adapter: { name, settings } = { name: "fs" }
   } = config;
 
+  debug("Selecting %s adapter", name);
   switch (name) {
     case "fs": {
       return {
