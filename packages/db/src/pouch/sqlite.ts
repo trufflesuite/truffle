@@ -14,7 +14,7 @@ export class SqliteDatabases<C extends Collections> extends Databases<C> {
 
   setup(options) {
     this.directory = options.settings.directory;
-    fse.ensureDir(this.directory);
+    fse.ensureDirSync(this.directory);
 
     PouchDB.plugin(PouchDBNodeWebSQLAdapter);
   }

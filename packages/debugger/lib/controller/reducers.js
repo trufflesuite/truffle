@@ -12,7 +12,6 @@ function breakpoints(state = [], action) {
       if (
         state.filter(
           breakpoint =>
-            breakpoint.compilationId === action.breakpoint.compilationId &&
             breakpoint.sourceId === action.breakpoint.sourceId &&
             breakpoint.line === action.breakpoint.line &&
             breakpoint.node === action.breakpoint.node //may be undefined
@@ -29,7 +28,6 @@ function breakpoints(state = [], action) {
     case actions.REMOVE_BREAKPOINT:
       return state.filter(
         breakpoint =>
-          breakpoint.compilationId !== action.breakpoint.compilationId ||
           breakpoint.sourceId !== action.breakpoint.sourceId ||
           breakpoint.line !== action.breakpoint.line ||
           breakpoint.node !== action.breakpoint.node //may be undefined
@@ -57,8 +55,17 @@ function isStepping(state = false, action) {
   }
 }
 
+function stepIntoInternalSources(state = false, action) {
+  if (action.type === actions.SET_INTERNAL_STEPPING) {
+    return action.status;
+  } else {
+    return state;
+  }
+}
+
 const reducer = combineReducers({
   breakpoints,
+  stepIntoInternalSources,
   isStepping
 });
 

@@ -112,17 +112,21 @@ class CLIDebugger {
     //and only wake up to full mode later!
     //note: if we are in external mode, txHash had better be defined!
     //(this is ensured by commands/debug.js, so we don't check it ourselves)
-    const bugger =
-      this.txHash !== undefined
-        ? await Debugger.forTx(this.txHash, {
-            provider: this.config.provider,
-            compilations,
-            lightMode: this.config.fetchExternal
-          })
-        : await Debugger.forProject({
-            provider: this.config.provider,
-            compilations
-          });
+    const bugger = await Debugger.forProject({
+      provider: this.config.provider,
+      compilations,
+      lightMode: this.config.fetchExternal
+    });
+    if (this.txHash !== undefined) {
+      try {
+        debug("loading %s", this.txHash);
+        await bugger.load(this.txHash);
+      } catch (_) {
+        debug("loading error");
+        //on failure, stay unloaded
+        //(note we handle failing the spinner below rather than here)
+      }
+    }
 
     debug("debugger started");
 

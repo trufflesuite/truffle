@@ -45,6 +45,7 @@ export type CompiledContract = {
   immutableReferences: ImmutableReferences;
   generatedSources: any;
   deployedGeneratedSources: any;
+  db?: any;
 };
 
 export interface WorkflowCompileResult {
