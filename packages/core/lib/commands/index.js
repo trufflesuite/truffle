@@ -15,10 +15,11 @@ module.exports = {
   networks: require("./networks"),
   obtain: require("./obtain"),
   opcode: require("./opcode"),
+  packages: require("./packages"),
   publish: require("./publish"),
   run: require("./run"),
   test: require("./test"),
   unbox: require("./unbox"),
   version: require("./version"),
-  watch: require("./watch")
+  watch: require("./watch"),
 };
