@@ -4,10 +4,10 @@ const debug = logger("db:loaders:resources:projects");
 import { Process } from "@truffle/db/resources";
 import { IdObject } from "@truffle/db/meta";
 
+import { generate } from "@truffle/db/generate";
 export { AddProjects } from "./add.graphql";
 export { ResolveProjectName } from "./resolve.graphql";
-import { AssignProjectNames } from "./assign.graphql";
-export { AssignProjectNames };
+export { AssignProjectNames } from "./assign.graphql";
 
 export function* generateProjectNamesAssign(
   project: IdObject<DataModel.Project>,
@@ -20,9 +20,5 @@ export function* generateProjectNamesAssign(
     type
   }));
 
-  yield {
-    type: "graphql",
-    request: AssignProjectNames,
-    variables: { projectNames }
-  };
+  yield* generate.load("projectNames", projectNames);
 }
