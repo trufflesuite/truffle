@@ -76,6 +76,7 @@ function* advance(action) {
  */
 function* stepNext() {
   const starting = yield select(controller.current.location);
+  const allowInternal = yield select(controller.stepIntoInternalSources);
 
   let upcoming, finished;
 
@@ -92,7 +93,11 @@ function* stepNext() {
   } while (
     !finished &&
     (!upcoming ||
-      (upcoming.source.internal && !starting.source.internal) ||
+      //don't stop on an internal source unless allowInternal is on or
+      //we started in an internal source
+      (!allowInternal &&
+        upcoming.source.internal &&
+        !starting.source.internal) ||
       !upcoming.node ||
       isDeliberatelySkippedNodeType(upcoming.node) ||
       (upcoming.sourceRange.start === starting.sourceRange.start &&
