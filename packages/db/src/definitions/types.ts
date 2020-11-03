@@ -2,9 +2,9 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:definitions:types");
 
 import * as Meta from "@truffle/db/meta";
-import * as Pouch from "../pouch";
-import * as GraphQl from "../graphql";
-import * as Proc from "../process";
+import * as Pouch from "../pouch/types";
+import * as GraphQl from "../graphql/types";
+import * as Proc from "../process/types";
 
 export type Collections = {
   sources: {

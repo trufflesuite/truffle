@@ -146,7 +146,7 @@ export const forDefinitions = <C extends Collections>(
       ids: string[],
       document: graphql.DocumentNode
     ): Process<C, Resource<C, N>[]> {
-      debug("find collectionName %o", collectionName);
+      debug("find collectionName %o, ids: %o", collectionName, ids);
       const { Resource, Resources, resources } = names(collectionName);
 
       const fragments = document.definitions

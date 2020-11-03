@@ -1,61 +1,57 @@
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:loaders:commands:names");
+const debug = logger("db:project:names");
 
-import gql from "graphql-tag";
-import { singular } from "pluralize";
-import pascalCase from "pascal-case";
-
-import { generateProjectNamesAssign } from "@truffle/db/loaders/resources/projects";
-
-import { generate } from "@truffle/db/generate";
-import { generateNameRecordsLoad } from "@truffle/db/loaders/resources/nameRecords";
 import { Process } from "@truffle/db/definitions";
 import { IdObject } from "@truffle/db/meta";
+
+import { generateResourceNames } from "./resources";
+import { generateCurrentNameRecords } from "./current";
+import { generateNameRecordsLoad } from "./nameRecords";
+import { generateProjectNamesLoad } from "./projectNames";
 
 /**
  * generator function to load nameRecords and project names into Truffle DB
  */
-export function* generateNamesLoad(
-  project: IdObject<DataModel.Project>,
+export function* generateNamesLoad(options: {
+  project: IdObject<DataModel.Project>;
   assignments: {
     [collectionName: string]: IdObject[];
-  }
-): Process<DataModel.NameRecord[]> {
-  let getCurrent = function* (name, type) {
-    const {
-      resolve: [nameRecord]
-    } = yield* generate.get(
-      "projects",
-      project.id,
-      gql`
-      fragment Resolve_${name}_${type} on Project {
-        resolve(type: "${type}", name: "${name}") {
-          id
-          resource {
-            id
-            name
-          }
-        }
-      }
-    `
-    );
-
-    return nameRecord;
   };
+}): Process<{
+  project: IdObject<DataModel.Project>;
+  assignments: {
+    [collectionName: string]: {
+      resource: IdObject;
+      name: string;
+      type: string;
+      nameRecord: IdObject<DataModel.NameRecord>;
+      projectName: IdObject<DataModel.ProjectName>;
+    }[];
+  };
+}> {
+  const { project } = options;
 
-  const loadedNameRecords = [];
-  for (const [collectionName, resources] of Object.entries(assignments)) {
-    const type = singular(pascalCase(collectionName));
+  const assignments = Object.entries(options.assignments)
+    .map(([collectionName, resources]) => ({
+      [collectionName]: resources.map(resource => ({ resource }))
+    }))
+    .reduce((a, b) => ({ ...a, ...b }), {});
+  debug("assignments %o", assignments);
 
-    const nameRecords = yield* generateNameRecordsLoad(
-      resources,
-      type,
-      getCurrent
-    );
+  const withNameAndType = yield* generateResourceNames({
+    project,
+    assignments
+  });
 
-    loadedNameRecords.push(...nameRecords);
-    yield* generateProjectNamesAssign(project, nameRecords);
-  }
+  const withCurrentNameRecords = yield* generateCurrentNameRecords(
+    withNameAndType
+  );
 
-  return loadedNameRecords;
+  const withNameRecords = yield* generateNameRecordsLoad(
+    withCurrentNameRecords
+  );
+
+  const withProjectNames = yield* generateProjectNamesLoad(withNameRecords);
+
+  return withProjectNames;
 }
