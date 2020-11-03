@@ -9,8 +9,7 @@ import { Process } from "@truffle/db/definitions";
 
 import {
   generateTranasctionNetworkLoad,
-  generateNetworkIdFetch,
-  generateNetworkGet
+  generateNetworkIdFetch
 } from "@truffle/db/loaders/resources/networks";
 import {
   LoadableContractInstance,
@@ -126,7 +125,15 @@ function* processContractNetworks(
       `
     );
 
-    const { networkId } = yield* generateNetworkGet(network);
+    const { networkId } = yield* generate.get(
+      "networks",
+      network.id,
+      gql`
+        fragment NetworkId on Network {
+          networkId
+        }
+      `
+    );
 
     const networkObject = artifact.networks[networkId];
     if (!networkObject) {
