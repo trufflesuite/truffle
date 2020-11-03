@@ -64,10 +64,11 @@ type LoadableCompilation = {
 
 export function* generateCompilationsLoad(
   loadableCompilations: LoadableCompilation[]
-): Load<DataModel.Compilation[], "compilationsAdd"> {
+): Load<DataModel.Compilation[], { graphql: "compilationsAdd" }> {
   const compilations = loadableCompilations.map(compilationInput);
 
   const result = yield {
+    type: "graphql",
     request: AddCompilations,
     variables: { compilations }
   };

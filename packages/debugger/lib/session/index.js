@@ -358,17 +358,12 @@ export default class Session {
     });
   }
 
-  //returns true on success, false on already loaded, error object on failure
+  //returns true on success, false on already loaded; throws on failure
   async load(txHash) {
     if (this.view(session.status.loaded)) {
       return false;
     }
-    try {
-      return await this.readyAgainAfterLoading(actions.loadTransaction(txHash));
-    } catch (e) {
-      this._runSaga(sagas.unload);
-      return e;
-    }
+    return await this.readyAgainAfterLoading(actions.loadTransaction(txHash));
   }
 
   //returns true on success, false on already unloaded
@@ -429,6 +424,10 @@ export default class Session {
 
   async removeAllBreakpoints() {
     return await this.dispatch(controller.removeAllBreakpoints());
+  }
+
+  async setInternalStepping(active) {
+    return await this.dispatch(controller.setInternalStepping(active));
   }
 
   //deprecated -- decode is now *always* ready!

@@ -199,7 +199,12 @@ const controller = createSelectorTree({
   /**
    * controller.isStepping
    */
-  isStepping: createLeaf(["./state"], state => state.isStepping)
+  isStepping: createLeaf(["./state"], state => state.isStepping),
+
+  /**
+   * controller.stepIntoInternalSources
+   */
+  stepIntoInternalSources: createLeaf(["./state"], state => state.stepIntoInternalSources)
 });
 
 export default controller;

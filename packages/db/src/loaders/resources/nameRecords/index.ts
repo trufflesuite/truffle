@@ -21,7 +21,7 @@ export function* generateNameRecordsLoad(
   resources: Resource[],
   type: string,
   getCurrent: ResolveFunc
-): Load<DataModel.NameRecord[], "nameRecordsAdd"> {
+): Load<DataModel.NameRecord[]> {
   const nameRecords = [];
   for (const resource of resources) {
     const { name } = resource;
@@ -44,6 +44,7 @@ export function* generateNameRecordsLoad(
   }
 
   const result = yield {
+    type: "graphql",
     request: AddNameRecords,
     variables: { nameRecords }
   };

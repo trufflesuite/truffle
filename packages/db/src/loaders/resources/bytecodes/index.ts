@@ -16,7 +16,7 @@ export { AddBytecodes };
  */
 export function* generateBytecodesLoad(
   compilation: CompilationData
-): Load<LoadedBytecodes, "bytecodesAdd"> {
+): Load<LoadedBytecodes, { graphql: "bytecodesAdd" }> {
   // we're flattening in order to send all bytecodes in one big list
   // (it's okay, we're gonna recreate the structure before we return)
   const flattenedContracts: CompiledContract[] = compilation.sources
@@ -38,6 +38,7 @@ export function* generateBytecodesLoad(
 
   // submit
   const result = yield {
+    type: "graphql",
     request: AddBytecodes,
     variables: { bytecodes }
   };

@@ -76,8 +76,14 @@ export const contracts: Definition<"contracts"> = {
         }
       },
       createBytecode: {
-        resolve: async ({ createBytecode: { id } }, _, { workspace }) => {
+        resolve: async ({ createBytecode }, _, { workspace }) => {
           debug("Resolving Contract.createBytecode...");
+
+          if (!createBytecode) {
+            return;
+          }
+
+          const { id } = createBytecode;
 
           const result = await workspace.get("bytecodes", id);
 
@@ -86,8 +92,14 @@ export const contracts: Definition<"contracts"> = {
         }
       },
       callBytecode: {
-        resolve: async ({ callBytecode: { id } }, _, { workspace }) => {
+        resolve: async ({ callBytecode }, _, { workspace }) => {
           debug("Resolving Contract.callBytecode...");
+
+          if (!callBytecode) {
+            return;
+          }
+
+          const { id } = callBytecode;
 
           const result = await workspace.get("bytecodes", id);
 

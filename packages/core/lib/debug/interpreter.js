@@ -244,10 +244,13 @@ class DebugInterpreter {
     }
 
     if (this.session.view(session.status.loaded)) {
+      debug("loaded");
       this.printer.printSessionLoaded();
     } else if (this.session.view(session.status.isError)) {
+      debug("error!");
       this.printer.printSessionError();
     } else {
+      debug("didn't attempt a load");
       this.printer.printHelp();
     }
 
@@ -368,13 +371,11 @@ class DebugInterpreter {
           let txSpinner = ora(
             DebugUtils.formatTransactionStartMessage()
           ).start();
-          await this.session.load(cmdArgs);
-          //if load succeeded
-          if (this.session.view(selectors.session.status.success)) {
+          try {
+            await this.session.load(cmdArgs);
             txSpinner.succeed();
-            //if successful, change prompt
             this.repl.setPrompt(DebugUtils.formatPrompt(this.network, cmdArgs));
-          } else {
+          } catch (_) {
             txSpinner.fail();
             loadFailed = true;
           }
@@ -406,6 +407,18 @@ class DebugInterpreter {
           "Cannot change transactions in fetch-external mode.  Please quit and restart the debugger instead."
         );
       }
+    }
+    if (cmd === "g") {
+      this.session.setInternalStepping(true);
+      this.printer.print(
+        "All debugger commands can now step into generated sources."
+      );
+    }
+    if (cmd === "G") {
+      this.session.setInternalStepping(false);
+      this.printer.print(
+        "Commands other than (;) and (c) will now skip over generated sources."
+      );
     }
 
     // Check if execution has (just now) stopped.
@@ -589,6 +602,8 @@ class DebugInterpreter {
         }
         break;
       case "T":
+      case "g":
+      case "G":
         //nothing to print
         break;
       default:
@@ -610,6 +625,8 @@ class DebugInterpreter {
       cmd !== "-" &&
       cmd !== "t" &&
       cmd !== "T" &&
+      cmd !== "g" &&
+      cmd !== "G" &&
       cmd !== "s"
     ) {
       this.lastCommand = cmd;
