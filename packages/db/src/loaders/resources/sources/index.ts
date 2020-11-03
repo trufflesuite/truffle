@@ -15,11 +15,12 @@ export { AddSources };
 // returns list of IDs
 export function* generateSourcesLoad(
   compilation: CompilationData
-): Load<LoadedSources, "sourcesAdd"> {
+): Load<LoadedSources, { graphql: "sourcesAdd" }> {
   // for each compilation, we need to load sources for each of the contracts
   const inputs = compilation.sources.map(({ input }) => input);
 
   const result = yield {
+    type: "graphql",
     request: AddSources,
     variables: { sources: inputs }
   };

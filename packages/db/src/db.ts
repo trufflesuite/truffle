@@ -27,7 +27,10 @@ export class TruffleDB {
   constructor(config: TruffleConfig) {
     this.schema = schema;
     this.context = this.createContext(config);
-    this.runLoader = forDb(this);
+
+    const { run } = forDb(this);
+
+    this.runLoader = run;
   }
 
   async query(query: DocumentNode | string, variables: any = {}): Promise<any> {
