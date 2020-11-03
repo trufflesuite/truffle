@@ -1,11 +1,11 @@
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:loaders:project");
+const debug = logger("db:project");
 
 import type { Provider } from "web3/providers";
 import { WorkflowCompileResult } from "@truffle/compile-common";
 import { ContractObject } from "@truffle/contract-schema/spec";
 
-import { Db, toIdObject, IdObject } from "@truffle/db/meta";
+import { Db, IdObject } from "@truffle/db/meta";
 
 import { generateInitializeLoad } from "./initialize";
 import { Compilation, Contract, generateCompileLoad } from "./compile";
@@ -66,15 +66,22 @@ export class Project {
       [collectionName: string]: IdObject[];
     };
   }): Promise<{
-    nameRecords: IdObject<DataModel.NameRecord>[];
+    assignments: {
+      [collectionName: string]: IdObject<DataModel.NameRecord>[];
+    };
   }> {
-    const nameRecords = await this.run(
-      generateNamesLoad,
-      this.project,
-      options.assignments
-    );
+    debug("assignments %o", options.assignments);
+    const { assignments } = await this.run(generateNamesLoad, {
+      project: this.project,
+      assignments: options.assignments
+    });
+
     return {
-      nameRecords: nameRecords.map(toIdObject)
+      assignments: Object.entries(assignments)
+        .map(([collectionName, assignments]) => ({
+          [collectionName]: assignments.map(({ nameRecord }) => nameRecord)
+        }))
+        .reduce((a, b) => ({ ...a, ...b }), {})
     };
   }
 

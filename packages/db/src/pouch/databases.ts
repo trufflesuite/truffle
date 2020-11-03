@@ -98,7 +98,7 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
   ): Promise<SavedInput<C, N>[]> {
     await this.ready;
 
-    const log = debug.extend(`${collectionName}:all`);
+    const log = debug.extend(`${collectionName}:find`);
     log("Finding...");
 
     // allows searching with `id` instead of pouch's internal `_id`,
