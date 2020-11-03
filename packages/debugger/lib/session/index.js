@@ -419,6 +419,10 @@ export default class Session {
     return await this.dispatch(controller.removeAllBreakpoints());
   }
 
+  async setInternalStepping(active) {
+    return await this.dispatch(controller.setInternalStepping(active));
+  }
+
   //deprecated -- decode is now *always* ready!
   async decodeReady() {
     return true;

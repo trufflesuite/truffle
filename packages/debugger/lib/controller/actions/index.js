@@ -65,6 +65,14 @@ export function removeAllBreakpoints() {
   };
 }
 
+export const SET_INTERNAL_STEPPING = "CONTROLLER_SET_INTERNAL_STEPPING";
+export function setInternalStepping(status) {
+  return {
+    type: SET_INTERNAL_STEPPING,
+    status
+  }
+}
+
 export const START_STEPPING = "CONTROLLER_START_STEPPING";
 export function startStepping() {
   return {

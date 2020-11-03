@@ -55,8 +55,17 @@ function isStepping(state = false, action) {
   }
 }
 
+function stepIntoInternalSources(state = false, action) {
+  if (action.type === actions.SET_INTERNAL_STEPPING) {
+    return action.status;
+  } else {
+    return state;
+  }
+}
+
 const reducer = combineReducers({
   breakpoints,
+  stepIntoInternalSources,
   isStepping
 });
 

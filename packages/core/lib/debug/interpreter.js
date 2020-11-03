@@ -408,6 +408,18 @@ class DebugInterpreter {
         );
       }
     }
+    if (cmd === "g") {
+      this.session.setInternalStepping(true);
+      this.printer.print(
+        "All debugger commands can now step into generated sources."
+      );
+    }
+    if (cmd === "G") {
+      this.session.setInternalStepping(false);
+      this.printer.print(
+        "Commands other than (;) and (c) will now skip over generated sources."
+      );
+    }
 
     // Check if execution has (just now) stopped.
     if (this.session.view(trace.finished) && !alreadyFinished) {
@@ -590,6 +602,8 @@ class DebugInterpreter {
         }
         break;
       case "T":
+      case "g":
+      case "G":
         //nothing to print
         break;
       default:
@@ -611,6 +625,8 @@ class DebugInterpreter {
       cmd !== "-" &&
       cmd !== "t" &&
       cmd !== "T" &&
+      cmd !== "g" &&
+      cmd !== "G" &&
       cmd !== "s"
     ) {
       this.lastCommand = cmd;
