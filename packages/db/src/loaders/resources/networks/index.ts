@@ -1,32 +1,11 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:loaders:resources:networks");
 
-import { IdObject } from "@truffle/db/meta";
+import gql from "graphql-tag";
+import { generate } from "@truffle/db/generate";
 import { Process } from "@truffle/db/resources";
 
-import { GetNetwork } from "./get.graphql";
-import { AddNetworks } from "./add.graphql";
-
 type TransactionHash = any;
-
-export function* generateNetworkGet({
-  id
-}: IdObject<DataModel.Network>): Process<DataModel.Network | undefined> {
-  debug("Generating network get...");
-
-  const response = yield {
-    type: "graphql",
-    request: GetNetwork,
-    variables: {
-      id
-    }
-  };
-
-  const network = response.data.network;
-
-  debug("Generated network get.");
-  return network;
-}
 
 export interface GenerateTransactionNetworkLoadOptions {
   transactionHash: TransactionHash;
@@ -40,14 +19,29 @@ export function* generateTranasctionNetworkLoad({
   debug("Generating transaction network load...");
   const historicBlock = yield* generateHistoricBlockFetch(transactionHash);
 
-  const result = yield* generateNetworkLoad({
-    name,
-    networkId,
-    historicBlock
-  });
+  const [{ id }] = yield* generate.load("networks", [
+    {
+      name,
+      networkId,
+      historicBlock
+    }
+  ]);
+
+  const network = yield* generate.get(
+    "networks",
+    id,
+    gql`
+      fragment Network on Network {
+        id
+        historicBlock {
+          height
+        }
+      }
+    `
+  );
 
   debug("Generated transaction network load.");
-  return result;
+  return network;
 }
 
 export function* generateNetworkIdFetch(): Process<
@@ -90,22 +84,4 @@ function* generateHistoricBlockFetch(
 
   debug("Generated historic block fetch.");
   return historicBlock;
-}
-
-function* generateNetworkLoad(
-  input: DataModel.NetworkInput
-): Process<DataModel.Network> {
-  debug("Generating network load...");
-  const response = yield {
-    type: "graphql",
-    request: AddNetworks,
-    variables: {
-      networks: [input]
-    }
-  };
-
-  const network = response.data.networksAdd.networks[0];
-
-  debug("Generated network load.");
-  return network;
 }
