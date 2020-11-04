@@ -73,6 +73,7 @@ export class ArtifactsLoader {
           .connect({ provider: config.provider })
           .loadMigrate({
             network: { name },
+            // @ts-ignore
             artifacts
           });
 
