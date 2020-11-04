@@ -30,8 +30,8 @@ export interface Context {
   compilationId?: string;
 }
 
-//NOTE: this is being kept for reference. but we don't actually use this
-//type anywhere anymore.
+//NOTE: this is being kept for reference (the debugger is JS and can't import
+//types), but we don't actually use this type anywhere anymore.
 export interface DebuggerContext {
   context: string; //The context hash
   binary: string; //this should (for now) be the normalized binary, with "."s
