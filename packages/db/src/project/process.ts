@@ -4,8 +4,13 @@ const debug = logger("db:generate");
 import {
   Collections,
   definitions,
-  NamedCollectionName
-} from "@truffle/db/definitions";
+  NamedCollectionName,
+  IdObject,
+  toIdObject,
+  Db
+} from "@truffle/db/resources";
+
+export { Db, IdObject, toIdObject, NamedCollectionName };
 import { forDefinitions } from "@truffle/db/process";
 import * as Proc from "@truffle/db/process";
 
@@ -29,8 +34,6 @@ export type ProcessRequest<
 export type ProcessorRunner = Proc.ProcessorRunner<Collections>;
 
 export { PrepareBatch, _ } from "@truffle/db/process";
-
-export { NamedCollectionName };
 
 export const { forDb, resources: generate } = forDefinitions<Collections>(
   definitions

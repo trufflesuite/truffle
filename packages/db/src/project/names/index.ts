@@ -1,8 +1,7 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:names");
 
-import { Process } from "@truffle/db/project/process";
-import { IdObject } from "@truffle/db/meta";
+import { IdObject, Process } from "@truffle/db/project/process";
 
 import { generateResourceNames } from "./resources";
 import { generateCurrentNameRecords } from "./current";

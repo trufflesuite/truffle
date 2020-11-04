@@ -1,8 +1,8 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:loaders:commands:compile:bytecodes");
 
-import { IdObject } from "@truffle/db/meta";
 import {
+  IdObject,
   generate,
   Process,
   PrepareBatch,

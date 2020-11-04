@@ -2,8 +2,8 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:migrate:networks");
 
 import gql from "graphql-tag";
-import { IdObject } from "@truffle/db/meta";
 import {
+  IdObject,
   generate,
   Process,
   PrepareBatch,

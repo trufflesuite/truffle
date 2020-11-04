@@ -4,8 +4,8 @@ const debug = logger("db:project:names:resources");
 import gql from "graphql-tag";
 import pascalCase from "pascal-case";
 import { singular } from "pluralize";
-import { IdObject } from "@truffle/db/meta";
 import {
+  IdObject,
   generate,
   Process,
   PrepareBatch,

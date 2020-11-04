@@ -5,7 +5,7 @@ import gql from "graphql-tag";
 import { DocumentNode, ExecutionResult, execute } from "graphql";
 import type TruffleConfig from "@truffle/config";
 
-import { Db } from "./meta";
+import { Db } from "./resources";
 import { schema } from "./schema";
 import { Workspace, attach } from "./workspace";
 

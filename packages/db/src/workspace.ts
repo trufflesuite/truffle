@@ -3,7 +3,7 @@ const debug = logger("db:workspace");
 
 import { forDefinitions } from "@truffle/db/pouch";
 import * as Pouch from "@truffle/db/pouch";
-import { Collections, definitions } from "@truffle/db/definitions";
+import { Collections, definitions } from "@truffle/db/resources";
 
 export type Workspace = Pouch.Workspace<Collections>;
 
