@@ -1,153 +1,77 @@
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:loaders:commands:migrate");
+const debug = logger("db:project:migrate");
 
-import gql from "graphql-tag";
-import { ContractObject } from "@truffle/contract-schema/spec";
 import { toIdObject, IdObject } from "@truffle/db/meta";
 import { Process, resources } from "@truffle/db/project/process";
 
-import {
-  generateTranasctionNetworkLoad,
-  generateNetworkIdFetch,
-  generateNetworkGet
-} from "@truffle/db/loaders/resources/networks";
-import {
-  LoadableContractInstance,
-  generateContractInstancesLoad
-} from "@truffle/db/loaders/resources/contractInstances";
+import { generateNetworkId } from "./networkId";
+import { generateTransactionBlocks } from "./blocks";
+import { generateNetworksLoad } from "./networks";
+import { generateContracts } from "./contracts";
+import { generateContractInstancesLoad } from "./contractInstances";
 
-export interface GenerateMigrateLoadOptions {
-  // we'll need everything for this input other than what's calculated here
-  network: Omit<DataModel.NetworkInput, "networkId" | "historicBlock">;
-  artifacts: ContractObject[];
-}
-
-export function* generateMigrateLoad(
-  options: GenerateMigrateLoadOptions
-): Process<{
-  network: IdObject<DataModel.Network>;
-  contractInstances: IdObject<DataModel.ContractInstance>[];
-}> {
-  // for each artifact, first add a Network resource for the historic block
-  // when the contract was deployed
-  //
-  // one of these networks will be the latest, so that's what we'll return
-  // (for purposes of namekeeping, e.g.)
-
-  // first, get the networkId from the blockchain
-  const networkId = yield* generateNetworkIdFetch();
-
-  // start enumerating over the artifacts
-  let latestNetwork: DataModel.Network | undefined;
-  const contractNetworks: ContractNetwork[] = [];
-  for (const artifact of options.artifacts) {
-    if (!artifact.networks[networkId]) {
-      // skip over artifacts that don't contain this network
-      continue;
-    }
-
-    const { transactionHash } = artifact.networks[networkId];
-
-    // load the historical network
-    const network = yield* generateTranasctionNetworkLoad({
-      transactionHash,
-      network: {
-        name: options.network.name,
-        networkId
-      }
-    });
-
-    if (
-      latestNetwork &&
-      latestNetwork.historicBlock.height < network.historicBlock.height
-    ) {
-      latestNetwork = network;
-    }
-
-    // keep track of this new network alongside the artifact
-    contractNetworks.push({
-      network: toIdObject(network),
-      artifact
-    });
-  }
-
-  // now, let's get ready to add the contract instances
-  const loadableContractInstances = yield* processContractNetworks(
-    contractNetworks
-  );
-
-  // and do it
-  const contractInstances = yield* generateContractInstancesLoad(
-    loadableContractInstances
-  );
-
-  return {
-    network: toIdObject(latestNetwork),
-    contractInstances: contractInstances.map(toIdObject)
+export interface NetworkObject {
+  address: string;
+  transactionHash: string;
+  links?: {
+    [name: string]: string;
   };
 }
 
-interface ContractNetwork {
-  network: IdObject<DataModel.Network>;
-  artifact: ContractObject;
+export interface Artifact {
+  db: {
+    contract: IdObject<DataModel.Contract>;
+  };
+
+  networks?: {
+    [networkId: string]: NetworkObject;
+  };
 }
 
-function* processContractNetworks(
-  contractNetworks: ContractNetwork[]
-): Process<LoadableContractInstance[]> {
-  const loadableContractInstances = [];
-  for (const { network, artifact } of contractNetworks) {
-    // @ts-ignore
-    const { contract }: IdObject<DataModel.Contract> = artifact.db;
-    const { createBytecode, callBytecode } = yield* resources.get(
-      "contracts",
-      // @ts-ignore
-      contract.id,
-      gql`
-        fragment ContractFragment on Contract {
-          id
-          name
-          createBytecode {
-            id
-            bytes
-            linkReferences {
-              name
-            }
-          }
-          callBytecode {
-            id
-            bytes
-            linkReferences {
-              name
-            }
-          }
-        }
-      `
-    );
+export function* generateMigrateLoad(options: {
+  // we'll need everything for this input other than what's calculated here
+  network: Omit<DataModel.NetworkInput, "networkId" | "historicBlock">;
+  artifacts: Artifact[];
+}): Process<{
+  network: IdObject<DataModel.Network>;
+  artifacts: (Artifact & {
+    networks: {
+      [networkId: string]: {
+        db?: {
+          network: IdObject<DataModel.Network>;
+          contractInstance: IdObject<DataModel.ContractInstance>;
+        };
+      };
+    };
+  })[];
+}> {
+  const networkId = yield* generateNetworkId();
 
-    const { networkId } = yield* generateNetworkGet(network);
+  const withBlocks = yield* generateTransactionBlocks({
+    network: {
+      ...options.network,
+      networkId
+    },
+    artifacts: options.artifacts
+  });
 
-    const networkObject = artifact.networks[networkId];
-    if (!networkObject) {
-      continue;
-    }
+  const withNetworks = yield* generateNetworksLoad(withBlocks);
 
-    loadableContractInstances.push({
-      contract,
-      network,
-      networkObject,
-      bytecodes: {
-        call: {
-          bytecode: toIdObject(callBytecode),
-          linkReferences: callBytecode.linkReferences
-        },
-        create: {
-          bytecode: toIdObject(createBytecode),
-          linkReferences: createBytecode.linkReferences
-        }
-      }
-    });
-  }
+  const withContracts = yield* generateContracts(withNetworks);
 
-  return loadableContractInstances;
+  const { network, artifacts } = yield* generateContractInstancesLoad(
+    withContracts
+  );
+
+  return {
+    network: toIdObject(network),
+    artifacts: artifacts.map(artifact => ({
+      ...artifact,
+      db: {
+        ...artifact.db,
+        contract: toIdObject(artifact.db.contract)
+      },
+      networks: artifact.networks
+    }))
+  };
 }

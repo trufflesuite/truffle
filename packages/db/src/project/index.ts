@@ -3,14 +3,13 @@ const debug = logger("db:project");
 
 import type { Provider } from "web3/providers";
 import { WorkflowCompileResult } from "@truffle/compile-common";
-import { ContractObject } from "@truffle/contract-schema/spec";
 
 import { Db, IdObject } from "@truffle/db/meta";
 
 import { generateInitializeLoad } from "./initialize";
 import { Compilation, Contract, generateCompileLoad } from "./compile";
 import { generateNamesLoad } from "./names";
-import { generateMigrateLoad } from "./migrate";
+import { Artifact, NetworkObject, generateMigrateLoad } from "./migrate";
 
 import { ProcessorRunner, forDb } from "./process";
 
@@ -137,16 +136,22 @@ class ConnectedProject extends Project {
    */
   async loadMigrate(options: {
     network: Omit<DataModel.NetworkInput, "networkId" | "historicBlock">;
-    artifacts: ContractObject[];
+    artifacts: Artifact[];
   }): Promise<{
     network: IdObject<DataModel.Network>;
-    contractInstances: IdObject<DataModel.ContractInstance>[];
+    artifacts: (Artifact & {
+      networks: {
+        [networkId: string]: NetworkObject & {
+          db?: {
+            network: IdObject<DataModel.Network>;
+            contractInstance: IdObject<DataModel.ContractInstance>;
+          };
+        };
+      };
+    })[];
   }> {
-    const { network, contractInstances } = await this.run(
-      generateMigrateLoad,
-      options
-    );
+    const { network, artifacts } = await this.run(generateMigrateLoad, options);
 
-    return { network, contractInstances };
+    return { network, artifacts };
   }
 }
