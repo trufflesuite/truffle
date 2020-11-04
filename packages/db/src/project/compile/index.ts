@@ -2,8 +2,7 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:loaders:commands:compile");
 
 import * as Common from "@truffle/compile-common/src/types";
-import { Process } from "@truffle/db/project/process";
-import { IdObject } from "@truffle/db/meta";
+import { Process, IdObject } from "@truffle/db/project/process";
 
 import { generateCompilationsSourcesLoad } from "./sources";
 import { generateCompilationsBytecodesLoad } from "./bytecodes";

@@ -2,7 +2,6 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:test:artifacts");
 
 import gql from "graphql-tag";
-import { Db, IdObject, toIdObject } from "@truffle/db/meta";
 import Config from "@truffle/config";
 import TruffleResolver from "@truffle/resolver";
 import type { Resolver } from "@truffle/resolver";
@@ -10,7 +9,12 @@ import { Environment } from "@truffle/environment";
 import { ContractObject } from "@truffle/contract-schema/spec";
 
 import { Project } from "@truffle/db/project";
-import { resources } from "@truffle/db/project/process";
+import {
+  Db,
+  IdObject,
+  toIdObject,
+  resources
+} from "@truffle/db/project/process";
 import { WorkflowCompileResult } from "@truffle/compile-common/src/types";
 import WorkflowCompile from "@truffle/workflow-compile";
 

@@ -1,9 +1,10 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:migrate:networks");
 
-import { toIdObject, IdObject } from "@truffle/db/meta";
 import {
   resources,
+  toIdObject,
+  IdObject,
   Process,
   PrepareBatch,
   _
