@@ -54,10 +54,10 @@ export class EthPMv1 implements ResolverSource {
     };
 
     // Go through deployments and save all of them
-    Object.keys(lockfile.deployments || {}).forEach(function (blockchain) {
+    Object.keys(lockfile.deployments || {}).forEach(function(blockchain) {
       var deployments = lockfile.deployments[blockchain];
 
-      Object.keys(deployments).forEach(function (name) {
+      Object.keys(deployments).forEach(function(name) {
         var deployment = deployments[name];
         if (deployment.contract_type === contract_name) {
           json.networks[blockchain] = {

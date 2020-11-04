@@ -6,8 +6,8 @@ module.exports = {
   create: require("./lib/commands/create/helpers"),
   // TODO: update this to non-legacy the next breaking change
   contracts: require("@truffle/workflow-compile/legacy"),
+  package: require("./lib/package"),
   test: require("./lib/testing/Test"),
-  package: require("@truffle/ethpm-v3"),
   version: pkg.version,
   ganache: require("ganache-core/public-exports")
 };
