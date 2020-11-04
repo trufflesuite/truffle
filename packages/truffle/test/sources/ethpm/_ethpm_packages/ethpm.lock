@@ -1,0 +1,11 @@
+{
+    "tokens": {
+        "alias": "tokens",
+        "install_uri": "ipfs://QmUFjXUiz86LNhpMZV8v2rnK6vVhXHcMZqbTuQyd2RZ2ib",
+        "registry_address": null,
+        "resolved_content_hash": "QmUFjXUiz86LNhpMZV8v2rnK6vVhXHcMZqbTuQyd2RZ2ib",
+        "resolved_package_name": "tokens",
+        "resolved_uri": "ipfs://QmUFjXUiz86LNhpMZV8v2rnK6vVhXHcMZqbTuQyd2RZ2ib",
+        "resolved_version": "1.0.0"
+    }
+}

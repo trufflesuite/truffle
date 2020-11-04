@@ -1,9 +1,11 @@
+const { callbackify } = require("util");
+
 const command = {
-  command: "publish",
-  description: "Publish a package to the Ethereum Package Registry",
+  command: "packages",
+  description: "List available packages on connected EthPM Registry",
   builder: {},
   help: {
-    usage: "truffle publish",
+    usage: "truffle packages",
     options: []
   },
   run: async function (options) {
@@ -12,15 +14,16 @@ const command = {
     const PackageV3 = require("@truffle/ethpm-v3");
 
     const config = Config.detect(options);
-    let publishPackage;
+    let listPackages;
+
     if (config.ethpm.version == "1") {
-      publishPackage = PackageV1.publish;
+      listPackages = PackageV1.packages;
     } else if (config.ethpm.version == "3") {
-      publishPackage = PackageV3.publish;
+      listPackages = PackageV3.packages;
     } else {
       throw new Error(`Unsupported ethpm version: ${config.ethpm.version}.`);
     }
-    return await publishPackage(config);
+    return await listPackages(config);
   }
 };
 

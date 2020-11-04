@@ -4,60 +4,64 @@ var fs = require("fs");
 var path = require("path");
 var assert = require("assert");
 var Server = require("../server");
-var Reporter = require("../reporter");
 var sandbox = require("../sandbox");
 var log = console.log;
 
-describe("truffle publish", function() {
-  var config;
-  var project = path.join(__dirname, '../../sources/ethpm');
+function processErr(err, output) {
+  if (err) {
+    log(output);
+    throw new Error(err);
+  }
+}
+
+describe("truffle publish", () => {
+  let config, projectPath;
   var logger = new MemoryLogger();
 
-  before("set up the server", function(done) {
-    Server.start(done);
+  before("before all setup", done => {
+    projectPath = path.join(__dirname, "../../sources/ethpm");
+    sandbox
+      .create(projectPath)
+      .then(conf => {
+        config = conf;
+        config.network = "ropsten";
+        config.logger = logger;
+      })
+      .then(() => Server.start(done));
   });
 
-  after("stop server", function(done) {
-    Server.stop(done);
-  });
-
-  before("set up sandbox", function() {
-    this.timeout(10000);
-    return sandbox.create(project).then(conf => {
-      config = conf;
-      config.network = "development";
-      config.logger = logger;
-      config.mocha = {
-        reporter: new Reporter(logger)
-      };
-    });
-  });
+  after(done => Server.stop(done));
 
   // This test only validates package assembly. We expect it to run logic up to the attempt to
   // publish to the network and fail.
-  it.skip("Can locate all the sources to publish", function(done) {
-    this.timeout(30000);
+  describe("With an ethpm package installed", () => {
+    it.skip("Can locate all the sources to publish", async () => {
+      await CommandRunner.run("compile", config);
 
-    CommandRunner.run("compile", config, function(err) {
-      if (err) {
-        log(logger.contents());
-        return done(err);
-      }
-      assert(fs.existsSync(path.join(config.contracts_build_directory, "PLCRVoting.json")));
-      assert(fs.existsSync(path.join(config.contracts_build_directory, "EIP20.json")));
-      assert(fs.existsSync(path.join(config.contracts_build_directory, "Local.json")));
+      assert(
+        fs.existsSync(
+          path.join(config.contracts_build_directory, "PLCRVoting.json")
+        )
+      );
+      assert(
+        fs.existsSync(path.join(config.contracts_build_directory, "EIP20.json"))
+      );
+      assert(
+        fs.existsSync(path.join(config.contracts_build_directory, "Local.json"))
+      );
 
-      CommandRunner.run("publish", config, function(err) {
+      try {
+        await CommandRunner.run("publish", config);
+      } catch (error) {
         var output = logger.contents();
+        processErr(error, output);
+      }
 
-        // We expect publication to be rejected by the client.
-        if (!err) {
-          log(output);
-          done(err);
-        }
-        assert(output.includes('Uploading sources and publishing'), 'Should have found sources');
-        done();
-      });
-    });
+      assert(
+        output.includes("Uploading sources and publishing"),
+        "Should have found sources"
+      );
+      done();
+    }).timeout(30000);
   });
 });

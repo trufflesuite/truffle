@@ -33,11 +33,14 @@ export const getInitialConfig = ({
     resolver: null,
     artifactor: null,
     ethpm: {
-      ipfs_host: "ipfs.infura.io",
-      ipfs_protocol: "https",
-      registry: "0x8011df4830b4f696cd81393997e5371b93338878",
-      install_provider_uri:
-        "https://ropsten.infura.io/v3/26e88e46be924823983710becd929f36"
+      ipfsHost: "ipfs.infura.io",
+      ipfsProtocol: "https",
+      ipfsPort: "5001",
+      registry: {
+        address: "0x0bd0200357D26A0bB5d1D1c1Fd56C317B68d15d5",
+        network: "ropsten"
+      },
+      version: "3"
     },
     ens: {
       enabled: false,
