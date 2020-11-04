@@ -6,8 +6,7 @@ import path from "path";
 import * as graphql from "graphql";
 
 import { schema } from "@truffle/db/schema";
-import { connect } from "@truffle/db/connect";
-import { Workspace } from "@truffle/db/definitions";
+import { attach, Workspace } from "@truffle/db/workspace";
 
 export { generateId } from "@truffle/db/helpers";
 
@@ -28,7 +27,7 @@ export class WorkspaceClient {
   private workspace: Workspace;
 
   constructor() {
-    this.workspace = connect({
+    this.workspace = attach({
       workingDirectory: tempDir.name
     });
   }

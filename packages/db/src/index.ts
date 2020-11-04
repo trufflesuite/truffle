@@ -1,19 +1,9 @@
-const debug = require("debug")("db");
+import { logger } from "./logger";
+const debug = logger("db");
 
-require("source-map-support/register");
+export { definitions } from "./definitions";
+export { schema } from "./schema";
+export { connect } from "./db";
+export { serve } from "./server";
 
-const { TruffleDB } = require("./db");
-const { ApolloServer } = require("apollo-server");
-const { Project } = require("./project");
-
-const playgroundServer = config => {
-  const { context, schema } = new TruffleDB(config);
-
-  return new ApolloServer({
-    tracing: true,
-    schema: schema,
-    context: context
-  });
-};
-
-export { TruffleDB, Project, playgroundServer };
+export { Project } from "./project";

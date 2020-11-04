@@ -31,7 +31,7 @@
     "start:debug": "DEBUG=pouchdb:api ts-node-dev -r tsconfig-paths/register ./bin/server",
     "start:drizzle": "ts-node-dev -r tsconfig-paths/register ./bin/server ./test/truffle-projects/drizzle-box",
     "start:drizzle:debug": "DEBUG=pouchdb:api ts-node-dev -r tsconfig-paths/register ./bin/server ./test/truffle-projects/drizzle-box",
-    "madge": "madge ./src/db.ts ./src/project/index.ts",
+    "madge": "madge ./src/index.ts",
     "test": "jest --verbose --detectOpenHandles"
   },
   "dependencies": {
