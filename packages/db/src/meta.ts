@@ -3,6 +3,8 @@ const debug = logger("db:meta");
 
 import type { DocumentNode, ExecutionResult } from "graphql";
 import type PouchDB from "pouchdb";
+import { soliditySha3 } from "web3-utils";
+const jsonStableStringify = require("json-stable-stringify");
 
 export interface Db {
   execute(
@@ -227,4 +229,15 @@ export type Historical<T> = {
     : K extends keyof T
     ? T[K]
     : never;
+};
+
+const removeNullyValues = obj =>
+  Object.entries(obj)
+    .filter(([_, v]) => v !== null && v !== undefined)
+    .map(([k, v]) => ({ [k]: v }))
+    .reduce((a, b) => ({ ...a, ...b }), {});
+
+export const generateId = obj => {
+  const id = soliditySha3(jsonStableStringify(removeNullyValues(obj)));
+  return id;
 };

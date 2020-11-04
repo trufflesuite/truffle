@@ -4,7 +4,6 @@ const debug = logger("db:pouch:databases");
 import PouchDB from "pouchdb";
 import PouchDBDebug from "pouchdb-debug";
 import PouchDBFind from "pouchdb-find";
-import { generateId } from "@truffle/db/helpers";
 
 import {
   CollectionName,
@@ -14,7 +13,8 @@ import {
   MutableCollectionName,
   SavedInput,
   Workspace,
-  Historical
+  Historical,
+  generateId
 } from "@truffle/db/meta";
 
 import { Definition, Definitions } from "./types";

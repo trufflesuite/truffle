@@ -3,7 +3,7 @@ const debug = logger("db:graphql:schema");
 
 import gql from "graphql-tag";
 import * as graphql from "graphql";
-import { makeExecutableSchema, IResolvers } from "graphql-tools";
+import type { IResolvers } from "graphql-tools";
 import pascalCase from "pascal-case";
 import { singular } from "pluralize";
 
@@ -14,14 +14,7 @@ import {
 } from "@truffle/db/meta";
 import { Context, Definition, Definitions } from "./types";
 
-export const forDefinitions = <C extends Collections>(
-  definitions: Definitions<C>
-) => {
-  const { typeDefs, resolvers } = new DefinitionsSchema({ definitions });
-  return makeExecutableSchema({ typeDefs, resolvers });
-};
-
-class DefinitionsSchema<C extends Collections> {
+export class DefinitionsSchema<C extends Collections> {
   private definitions: Definitions<C>;
   private collections: CollectionSchemas<C>;
 
