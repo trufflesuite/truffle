@@ -13,5 +13,6 @@ export type ProviderUrl = string;
 export type ProviderOrUrl = Provider | ProviderUrl;
 export type AddressIndex = number;
 export type NumberOfAddresses = number;
+export type PollingInterval = number;
 export type ShareNonce = boolean;
 export type DerivationPath = string;
