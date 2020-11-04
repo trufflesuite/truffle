@@ -1,14 +1,7 @@
 import path from "path";
 import gql from "graphql-tag";
 import { TruffleDB } from "@truffle/db";
-import { ArtifactsLoader } from "@truffle/db/loaders/schema/artifactsLoader";
-import { AddContracts } from "@truffle/db/loaders/resources/contracts";
-import { AddNameRecords } from "@truffle/db/loaders/resources/nameRecords";
-import {
-  AddProjects,
-  AssignProjectNames,
-  ResolveProjectName
-} from "@truffle/db/loaders/resources/projects";
+import { ArtifactsLoader } from "./artifacts";
 import { generateId } from "@truffle/db/helpers";
 import Migrate from "@truffle/migrate";
 import { Environment } from "@truffle/environment";
@@ -35,7 +28,7 @@ afterAll(async done => {
 // mocking the truffle-workflow-compile to avoid jest timing issues
 // and also to keep from adding more time to Travis testing
 jest.mock("@truffle/workflow-compile", () => ({
-  compile: function() {
+  compile: function () {
     return require(path.join(
       __dirname,
       "workflowCompileOutputMock",
@@ -152,6 +145,86 @@ const artifacts = [
   ))
 ];
 
+const AddContracts = gql`
+  mutation AddContracts($contracts: [ContractInput!]!) {
+    contractsAdd(input: { contracts: $contracts }) {
+      contracts {
+        id
+        name
+        abi {
+          json
+        }
+        processedSource {
+          source {
+            contents
+            sourcePath
+          }
+          ast {
+            json
+          }
+        }
+        compilation {
+          compiler {
+            name
+            version
+          }
+          contracts {
+            name
+            source {
+              contents
+              sourcePath
+            }
+            ast {
+              json
+            }
+          }
+          sources {
+            contents
+            sourcePath
+          }
+        }
+        createBytecode {
+          id
+          bytes
+          linkReferences {
+            offsets
+            name
+            length
+          }
+        }
+        callBytecode {
+          id
+          bytes
+          linkReferences {
+            offsets
+            name
+            length
+          }
+        }
+      }
+    }
+  }
+`;
+
+const AddNameRecords = gql`
+  mutation AddNameRecords($nameRecords: [NameRecordInput!]!) {
+    nameRecordsAdd(input: { nameRecords: $nameRecords }) {
+      nameRecords {
+        id
+        name
+        type
+        resource {
+          name
+        }
+        previous {
+          id
+          name
+        }
+      }
+    }
+  }
+`;
+
 const GetWorkspaceBytecode = gql`
   query GetWorkspaceBytecode($id: ID!) {
     bytecode(id: $id) {
@@ -161,6 +234,47 @@ const GetWorkspaceBytecode = gql`
         offsets
         name
         length
+      }
+    }
+  }
+`;
+
+const AddProjects = gql`
+  mutation AddProjects($projects: [ProjectInput!]!) {
+    projectsAdd(input: { projects: $projects }) {
+      projects {
+        id
+        directory
+      }
+    }
+  }
+`;
+
+const ResolveProjectName = gql`
+  query ResolveProjectName($projectId: ID!, $type: String!, $name: String!) {
+    project(id: $projectId) {
+      resolve(type: $type, name: $name) {
+        id
+        resource {
+          id
+          name
+        }
+      }
+    }
+  }
+`;
+
+const AssignProjectNames = gql`
+  mutation AssignProjectNames($projectNames: [ProjectNameInput!]!) {
+    projectNamesAssign(input: { projectNames: $projectNames }) {
+      projectNames {
+        name
+        type
+        nameRecord {
+          resource {
+            id
+          }
+        }
       }
     }
   }

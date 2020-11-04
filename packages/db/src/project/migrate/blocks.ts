@@ -1,8 +1,7 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:migrate:networks");
 
-import { Process } from "@truffle/db/definitions";
-import { PrepareBatch, _ } from "@truffle/db/loaders/batch";
+import { Process, PrepareBatch, _ } from "@truffle/db/project/process";
 
 interface NetworkObject {
   transactionHash?: string;

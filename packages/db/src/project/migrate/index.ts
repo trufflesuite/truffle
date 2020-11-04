@@ -2,7 +2,7 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:migrate");
 
 import { toIdObject, IdObject } from "@truffle/db/meta";
-import { Process } from "@truffle/db/definitions";
+import { Process } from "@truffle/db/project/process";
 
 import { generateNetworkId } from "./networkId";
 import { generateTransactionBlocks } from "./blocks";

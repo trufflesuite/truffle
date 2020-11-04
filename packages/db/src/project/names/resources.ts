@@ -5,9 +5,13 @@ import gql from "graphql-tag";
 import pascalCase from "pascal-case";
 import { singular } from "pluralize";
 import { IdObject } from "@truffle/db/meta";
-import { generate } from "@truffle/db/generate";
-import { Process, NamedCollectionName } from "@truffle/db/definitions";
-import { PrepareBatch, _ } from "@truffle/db/loaders/batch";
+import {
+  generate,
+  Process,
+  PrepareBatch,
+  _,
+  NamedCollectionName
+} from "@truffle/db/project/process";
 
 interface Assignment {
   resource: IdObject;

@@ -4,7 +4,7 @@ require("source-map-support/register");
 
 const { TruffleDB } = require("./db");
 const { ApolloServer } = require("apollo-server");
-const { Project } = require("./loaders");
+const { Project } = require("./project");
 
 const playgroundServer = config => {
   const { context, schema } = new TruffleDB(config);

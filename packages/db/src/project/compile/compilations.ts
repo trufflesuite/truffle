@@ -1,10 +1,13 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:loaders:commands:compile:compilations");
 
-import { generate } from "@truffle/db/generate";
 import { IdObject } from "@truffle/db/meta";
-import { Process } from "@truffle/db/definitions";
-import { PrepareBatch, _ } from "@truffle/db/loaders/batch";
+import {
+  generate,
+  Process,
+  PrepareBatch,
+  _
+} from "@truffle/db/project/process";
 
 interface Contract {
   ast: any;

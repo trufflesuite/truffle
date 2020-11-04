@@ -2,9 +2,7 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:loaders:commands:initialize");
 
 import { IdObject } from "@truffle/db/meta";
-
-import { generate } from "@truffle/db/generate";
-import { Process } from "@truffle/db/definitions";
+import { generate, Process } from "@truffle/db/project/process";
 
 export function* generateInitializeLoad({
   directory

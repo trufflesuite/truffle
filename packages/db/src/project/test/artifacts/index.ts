@@ -1,5 +1,5 @@
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:loaders:schema:artifactsLoader");
+const debug = logger("db:project:test:artifacts");
 
 import gql from "graphql-tag";
 import { TruffleDB } from "@truffle/db/db";
@@ -11,7 +11,7 @@ import { Environment } from "@truffle/environment";
 import { ContractObject } from "@truffle/contract-schema/spec";
 
 import { Project } from "@truffle/db/project";
-import { generate } from "@truffle/db/generate";
+import { generate } from "@truffle/db/project/process";
 import { WorkflowCompileResult } from "@truffle/compile-common/src/types";
 import WorkflowCompile from "@truffle/workflow-compile";
 

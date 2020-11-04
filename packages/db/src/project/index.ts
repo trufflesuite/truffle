@@ -4,14 +4,14 @@ const debug = logger("db:project");
 import type { Provider } from "web3/providers";
 import { WorkflowCompileResult } from "@truffle/compile-common";
 
-import { IdObject } from "@truffle/db/meta";
+import { Db, IdObject } from "@truffle/db/meta";
 
 import { generateInitializeLoad } from "./initialize";
 import { Compilation, Contract, generateCompileLoad } from "./compile";
 import { generateNamesLoad } from "./names";
 import { Artifact, NetworkObject, generateMigrateLoad } from "./migrate";
 
-import { ProcessorRunner, Db, forDb } from "@truffle/db/loaders/run";
+import { ProcessorRunner, forDb } from "@truffle/db/project/process";
 
 /**
  * Interface between @truffle/db and Truffle-at-large. Accepts external

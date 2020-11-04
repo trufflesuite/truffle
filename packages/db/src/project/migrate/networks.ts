@@ -2,9 +2,12 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:migrate:networks");
 
 import { IdObject } from "@truffle/db/meta";
-import { generate } from "@truffle/db/generate";
-import { Process } from "@truffle/db/definitions";
-import { PrepareBatch, _ } from "@truffle/db/loaders/batch";
+import {
+  generate,
+  Process,
+  PrepareBatch,
+  _
+} from "@truffle/db/project/process";
 
 interface NetworkObject {
   block?: DataModel.Block;

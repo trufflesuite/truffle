@@ -4,7 +4,6 @@ const debug = logger("db:definitions:types");
 import * as Meta from "@truffle/db/meta";
 import * as Pouch from "../pouch/types";
 import * as GraphQl from "../graphql/types";
-import * as Proc from "../process/types";
 
 export type Collections = {
   sources: {
@@ -138,20 +137,3 @@ export type NamedCollectionName = Meta.NamedCollectionName<Collections>;
 export type Workspace = Pouch.Workspace<Collections>;
 
 export type Context = GraphQl.Context<Collections>;
-
-export type Process<
-  T = any,
-  R extends Proc.RequestType<Collections> | undefined = undefined
-> = Proc.Process<Collections, T, R>;
-
-export type Processor<
-  A extends unknown[],
-  T = any,
-  R extends Proc.RequestType<Collections> | undefined = undefined
-> = Proc.Processor<Collections, A, T, R>;
-
-export type RequestType = Proc.RequestType<Collections>;
-
-export type ProcessRequest<
-  R extends Proc.RequestType<Collections> | undefined
-> = Proc.ProcessRequest<Collections, R>;

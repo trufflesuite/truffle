@@ -1,6 +1,12 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:meta");
 
+import type { DocumentNode } from "graphql";
+
+export interface Db {
+  query: (query: DocumentNode | string, variables: any) => Promise<any>;
+}
+
 export type Collections = {
   [collectionName: string]:
     | {
