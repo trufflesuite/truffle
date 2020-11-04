@@ -6,7 +6,7 @@ var Server = require("../server");
 var Reporter = require("../reporter");
 var sandbox = require("../sandbox");
 
-describe("Solidity Imports [ @standalone ]", function () {
+describe("Solidity Imports [ @standalone ]", function() {
   var config;
   var project = path.join(__dirname, "../../sources/monorepo");
   var logger = new MemoryLogger();
@@ -23,10 +23,9 @@ describe("Solidity Imports [ @standalone ]", function () {
    * |   |-- ImportOfImport.sol # Local import for NodeImport.sol
    * |   |-- NodeImport.sol
    * |
-   * + _ethpm_packages/
+   * + installed_contracts/
    * |-- ethpmpkg/
-   * |   |-- _src/
-   * |      |-- EthPMImport.sol
+   * |   |-- EthPMImport.sol
    * |
    * + truffleproject/
    * |-- contracts/
@@ -42,8 +41,8 @@ describe("Solidity Imports [ @standalone ]", function () {
    * |
    */
 
-  describe("success", function () {
-    before(function () {
+  describe("success", function() {
+    before(function() {
       this.timeout(10000);
       return sandbox.create(project, "truffleproject").then(conf => {
         config = conf;
@@ -55,7 +54,7 @@ describe("Solidity Imports [ @standalone ]", function () {
       });
     });
 
-    it("resolves solidity imports located outside the working directory", async function () {
+    it("resolves solidity imports located outside the working directory", async function() {
       this.timeout(30000);
 
       await CommandRunner.run("compile", config);
@@ -69,8 +68,8 @@ describe("Solidity Imports [ @standalone ]", function () {
     });
   });
 
-  describe("failure", function () {
-    before(function () {
+  describe("failure", function() {
+    before(function() {
       this.timeout(10000);
       return sandbox.create(project, "errorproject").then(conf => {
         config = conf;
@@ -82,7 +81,7 @@ describe("Solidity Imports [ @standalone ]", function () {
       });
     });
 
-    it("fails gracefully if an import is not found", async function () {
+    it("fails gracefully if an import is not found", async function() {
       this.timeout(30000);
 
       try {
