@@ -3,8 +3,12 @@ const debug = logger("db:project:migrate:networks");
 
 import gql from "graphql-tag";
 import { IdObject } from "@truffle/db/meta";
-import { Process, resources } from "@truffle/db/project/process";
-import { PrepareBatch, _ } from "@truffle/db/loaders/batch";
+import {
+  resources,
+  Process,
+  PrepareBatch,
+  _
+} from "@truffle/db/project/process";
 
 interface Artifact {
   networks?: any;

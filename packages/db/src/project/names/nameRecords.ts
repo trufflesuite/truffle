@@ -2,8 +2,12 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:names:current");
 
 import { IdObject } from "@truffle/db/meta";
-import { Process, resources } from "@truffle/db/project/process";
-import { PrepareBatch, _ } from "@truffle/db/loaders/batch";
+import {
+  resources,
+  Process,
+  PrepareBatch,
+  _
+} from "@truffle/db/project/process";
 
 interface Assignment {
   resource: IdObject;

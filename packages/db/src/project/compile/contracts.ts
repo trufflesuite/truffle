@@ -2,8 +2,12 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:loaders:commands:compile:sources");
 
 import { IdObject } from "@truffle/db/meta";
-import { Process, resources } from "@truffle/db/project/process";
-import { PrepareBatch, _, Replace } from "@truffle/db/loaders/batch";
+import {
+  resources,
+  Process,
+  PrepareBatch,
+  _
+} from "@truffle/db/project/process";
 
 interface Contract {
   contractName: string;
@@ -43,7 +47,9 @@ export function* generateCompilationsContractsLoad(
 }
 
 const prepareContractsBatch: PrepareBatch<
-  Replace<Compilation, { contracts: _[] }>[],
+  (Compilation & {
+    contracts: _[];
+  })[],
   Contract,
   Contract & { db: { contract: IdObject<DataModel.Contract> } },
   DataModel.ContractInput,

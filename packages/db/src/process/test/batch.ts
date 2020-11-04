@@ -1,6 +1,4 @@
-import { _ } from "hkts/src";
-
-import { PrepareBatch } from "@truffle/db/loaders/batch";
+import { PrepareBatch, _ } from "@truffle/db/process/batch";
 
 describe("PrepareBatch", () => {
   test("supports trivial case (arrays)", () => {

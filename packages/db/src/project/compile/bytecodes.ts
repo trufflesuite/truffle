@@ -2,8 +2,12 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:loaders:commands:compile:bytecodes");
 
 import { IdObject } from "@truffle/db/meta";
-import { Process, resources } from "@truffle/db/project/process";
-import { PrepareBatch, _, Replace } from "@truffle/db/loaders/batch";
+import {
+  resources,
+  Process,
+  PrepareBatch,
+  _
+} from "@truffle/db/project/process";
 
 interface Contract {
   bytecode: DataModel.BytecodeInput;
@@ -29,17 +33,14 @@ interface Compilation {
 export function* generateCompilationsBytecodesLoad(
   compilations: Compilation[]
 ): Process<
-  Replace<
-    Compilation,
-    {
-      contracts: (Contract & {
-        db: {
-          createBytecode: IdObject<DataModel.Bytecode>;
-          callBytecode: IdObject<DataModel.Bytecode>;
-        };
-      })[];
-    }
-  >[]
+  (Compilation & {
+    contracts: (Contract & {
+      db: {
+        createBytecode: IdObject<DataModel.Bytecode>;
+        callBytecode: IdObject<DataModel.Bytecode>;
+      };
+    })[];
+  })[]
 > {
   const { batch, unbatch } = prepareBytecodesBatch(compilations);
 
@@ -49,7 +50,9 @@ export function* generateCompilationsBytecodesLoad(
 }
 
 const prepareBytecodesBatch: PrepareBatch<
-  Replace<Compilation, { contracts: _[] }>[],
+  (Compilation & {
+    contracts: _[];
+  })[],
   Contract,
   Contract & {
     db: {

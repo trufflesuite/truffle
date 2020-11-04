@@ -1,5 +1,5 @@
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:loaders:schema:artifactsLoader");
+const debug = logger("db:project:test:artifacts");
 
 import gql from "graphql-tag";
 import { Db, IdObject, toIdObject } from "@truffle/db/meta";

@@ -4,6 +4,7 @@ const debug = logger("db:process");
 import { Collections } from "@truffle/db/meta";
 
 export * from "./types";
+export * from "./batch";
 export * from "./resources";
 export * from "./run";
 
