@@ -8,7 +8,7 @@ import * as graphql from "graphql";
 import { schema } from "@truffle/db/schema";
 import { Workspace, attach } from "@truffle/db/workspace";
 
-export { generateId } from "@truffle/db/helpers";
+export { generateId } from "@truffle/db/meta";
 
 import tmp from "tmp";
 
