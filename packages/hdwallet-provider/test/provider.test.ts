@@ -222,6 +222,47 @@ describe("HD Wallet Provider", function () {
       }
     });
 
+    it("provides for a default polling interval", () => {
+      const mnemonicPhrase =
+        "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
+      provider = new HDWalletProvider({
+        mnemonic: {
+          phrase: mnemonicPhrase
+        },
+        providerOrUrl: `http://localhost:${port}`,
+        // polling interval is unspecified
+      });
+      assert.ok(provider.engine,
+        "Web3ProviderEngine instantiated");
+      assert.ok(provider.engine._blockTracker,
+        "PollingBlockTracker instantiated");
+      assert.deepEqual(
+        provider.engine._blockTracker._pollingInterval,
+        4000,
+        "PollingBlockTracker with expected pollingInterval");
+    });
+
+    it("provides for a custom polling interval", () => {
+      const mnemonicPhrase =
+        "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
+      provider = new HDWalletProvider({
+        mnemonic: {
+          phrase: mnemonicPhrase
+        },
+        providerOrUrl: `http://localhost:${port}`,
+        // double the default value, for less chatty JSON-RPC
+        pollingInterval: 8000,
+      });
+      assert.ok(provider.engine,
+        "Web3ProviderEngine instantiated");
+      assert.ok(provider.engine._blockTracker,
+        "PollingBlockTracker instantiated");
+      assert.deepEqual(
+        provider.engine._blockTracker._pollingInterval,
+        8000,
+        "PollingBlockTracker with expected pollingInterval");
+    });
+
     it("provides for an array of private keys", async () => {
       const privateKeys = [
         "3f841bf589fdf83a521e55d51afddc34fa65351161eead24f064855fc29c9580",
