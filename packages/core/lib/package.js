@@ -1,77 +1,16 @@
 const expect = require("@truffle/expect");
 const TruffleError = require("@truffle/error");
-const Networks = require("@truffle/core/lib/networks");
+const Networks = require("./networks");
 const EthPM = require("ethpm");
 const EthPMRegistry = require("ethpm-registry");
 const Web3 = require("web3");
-const registryAbi = require("./registryAbi");
 const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const path = require("path");
 const fs = require("fs");
 const OS = require("os");
-const contract = require("@truffle/contract");
 
-const PackageV1 = {
-  packages: async options => {
-    options.logger.log(
-      `ethpmV1 is deprecated. Please consider updating your packages to ethpmV3.`
-    );
-    try {
-      expect.options(options, [
-        "ethpm",
-        "logger",
-        "working_directory",
-        "contracts_build_directory",
-        "networks"
-      ]);
-    } catch (err) {
-      throw new TruffleError(
-        `Invalid ethpm configuration in truffle-config: ${err.message}`
-      );
-    }
-
-    const ethpmV1Network = "ropsten";
-    if (!options.networks[ethpmV1Network]) {
-      throw new TruffleError(
-        `Please include a provider in your networks config for the Ropsten testnet, the testnet where the ethpmV1 registry is deployed.`
-      );
-    }
-    const provider = options.networks["ropsten"].provider();
-    const ethpmV1RegistryAddress = "0x8011df4830b4f696cd81393997e5371b93338878";
-    const RegistryContract = contract({
-      abi: registryAbi.abi
-    });
-    RegistryContract.setProvider(provider);
-    const registryContract = await RegistryContract.at(ethpmV1RegistryAddress);
-    const owner = await registryContract.owner.call();
-
-    // Display info about connected registry
-    options.logger.log(
-      `Searching for packages published on registry located on the ethpm V1 registry: ${ethpmV1RegistryAddress}`
-    );
-    options.logger.log(`Registry controlled by : ${owner}`);
-
-    // Display info about all releases on registry
-    const numPackages = await registryContract.getNumPackages.call();
-    for (var x = 0; x < numPackages; x++) {
-      const packageName = await registryContract.getPackageName.call(x);
-      const releaseHashes = await registryContract.getAllPackageReleaseHashes.call(
-        packageName
-      );
-      options.logger.log(packageName);
-      for (const hash of releaseHashes) {
-        const releaseData = await registryContract.getReleaseData.call(hash);
-        const version = `${releaseData.major}.${releaseData.minor}.${releaseData.patch}`;
-        options.logger.log(`- ${version} @ ${releaseData.releaseLockfileURI}`);
-      }
-    }
-    return;
-  },
-
-  install: async function (options, callback) {
-    options.logger.log(
-      `ethpmV1 is deprecated. Please consider updating your packages to ethpmV3.`
-    );
+const Package = {
+  install: async function(options, callback) {
     const callbackPassed = typeof callback === "function";
     expect.options(options, ["working_directory", "ethpm"]);
 
@@ -173,10 +112,7 @@ const PackageV1 = {
     }
   },
 
-  publish: async function (options, callback) {
-    options.logger.log(
-      `ethpmV1 is deprecated. Please consider updating your packages to ethpmV3.`
-    );
+  publish: async function(options, callback) {
     const callbackPassed = typeof callback === "function";
     var self = this;
 
@@ -272,12 +208,12 @@ const PackageV1 = {
     }
   },
 
-  digest: function (options, callback) {
+  digest: function(options, callback) {
     callback(new Error("Not yet implemented"));
   },
 
   // Return a list of publishable artifacts
-  publishable_artifacts: async function (options, callback) {
+  publishable_artifacts: async function(options, callback) {
     const callbackPassed = typeof callback === "function";
     // Filter out "test" and "development" networks.
     const ifReservedNetworks = new Set(["test", "development"]);
@@ -414,4 +350,4 @@ const PackageV1 = {
   }
 };
 
-module.exports = PackageV1;
+module.exports = Package;
