@@ -2,8 +2,8 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:workspace");
 
 import * as Pouch from "./pouch";
-import { Collections, definitions } from "./resources";
+import { definitions } from "@truffle/db/resources";
 
-export type Workspace = Pouch.Workspace<Collections>;
+export { Workspace } from "@truffle/db/resources";
 
 export const attach = Pouch.forDefinitions(definitions);

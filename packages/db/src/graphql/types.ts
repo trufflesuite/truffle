@@ -7,10 +7,9 @@ import { IResolvers } from "graphql-tools";
 import {
   Collections,
   CollectionName,
-  MutableCollectionName
+  MutableCollectionName,
+  Workspace
 } from "@truffle/db/meta";
-
-import { Workspace } from "../pouch";
 
 export type Definitions<C extends Collections> = {
   [N in CollectionName<C>]: N extends MutableCollectionName<C>
