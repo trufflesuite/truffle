@@ -35,7 +35,7 @@ export function makeContext(
   node: Codec.Ast.AstNode | undefined,
   compilation: Codec.Compilations.Compilation,
   isConstructor = false
-): Codec.Contexts.DecoderContext {
+): Codec.Contexts.Context {
   const abi = Abi.normalize(contract.abi);
   const bytecode = isConstructor
     ? contract.bytecode
@@ -58,6 +58,7 @@ export function makeContext(
     contractName: contract.contractName,
     binary,
     contractId: node ? node.id : undefined,
+    linearizedBaseContracts: node ? node.linearizedBaseContracts : undefined,
     contractKind: contractKind(contract, node),
     immutableReferences: isConstructor
       ? undefined

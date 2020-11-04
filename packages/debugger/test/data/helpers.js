@@ -91,7 +91,7 @@ export function describeDecoding(testName, fixtures, selector, generateSource) {
     [fileName(testName)]: generateSource(contractName(testName), fixtures)
   };
 
-  describe(testName, function() {
+  describe(testName, function () {
     const testDebug = debugModule(
       `test:data:decode:${changeCase.paramCase(testName)}`
     );

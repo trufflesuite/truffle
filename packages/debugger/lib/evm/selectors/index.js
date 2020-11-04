@@ -367,7 +367,9 @@ const evm = createSelectorTree({
        * (returns null on no match)
        */
       search: createLeaf(["/info/contexts"], contexts => binary =>
-        Codec.Contexts.Utils.findDebuggerContext(contexts, binary)
+        //HACK: the type of contexts doesn't actually match!! fortunately
+        //it's good enough to work
+        (Codec.Contexts.Utils.findContext(contexts, binary) || { context: null }).context
       )
     }
   },

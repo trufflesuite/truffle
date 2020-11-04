@@ -238,7 +238,7 @@ abstract class DefinitionSchema<
                 selector: {
                   id: { $in: filter.ids }
                 }
-              })
+              });
 
               logFilter("Filtered for ids: %o", filter.ids);
               return result;

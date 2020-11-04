@@ -180,17 +180,17 @@ let migrations = {
   "2_deploy_contracts.js": __MIGRATION
 };
 
-describe("Variable IDs", function() {
+describe("Variable IDs", function () {
   var provider;
 
   var abstractions;
   var compilations;
 
-  before("Create Provider", async function() {
+  before("Create Provider", async function () {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
-  before("Prepare contracts and artifacts", async function() {
+  before("Prepare contracts and artifacts", async function () {
     this.timeout(30000);
 
     let prepared = await prepareContracts(provider, sources, migrations);
@@ -198,7 +198,7 @@ describe("Variable IDs", function() {
     compilations = prepared.compilations;
   });
 
-  it("Distinguishes between stackframes", async function() {
+  it("Distinguishes between stackframes", async function () {
     this.timeout(8000);
     let instance = await abstractions.FactorialTest.deployed();
     let receipt = await instance.factorial(3);
@@ -232,7 +232,7 @@ describe("Variable IDs", function() {
     assert.deepEqual(values, [3, 2, 1, 0, 1, 1, 2, 6]);
   });
 
-  it("Distinguishes between modifier invocations", async function() {
+  it("Distinguishes between modifier invocations", async function () {
     this.timeout(8000);
     let instance = await abstractions.ModifierTest.deployed();
     let receipt = await instance.run();
@@ -271,7 +271,7 @@ describe("Variable IDs", function() {
     assert.deepEqual(tempValues, [4, 6, 6, 4]);
   });
 
-  it("Stays at correct stackframe after contract call", async function() {
+  it("Stays at correct stackframe after contract call", async function () {
     this.timeout(3000);
     let instance = await abstractions.Intervening.deployed();
     let receipt = await instance.run();
@@ -291,7 +291,7 @@ describe("Variable IDs", function() {
     assert.property(await bugger.variables(), "flag");
   });
 
-  it("Stays at correct stackframe after library call", async function() {
+  it("Stays at correct stackframe after library call", async function () {
     this.timeout(3000);
     let instance = await abstractions.Intervening.deployed();
     let receipt = await instance.runLib();

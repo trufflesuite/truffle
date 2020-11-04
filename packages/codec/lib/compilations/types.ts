@@ -42,15 +42,6 @@ export interface Compilation {
    * specified on each source and contract, but please don't actually do that.
    */
   compiler?: Compiler.CompilerVersion;
-  /**
-   * A flag intended for internal use to indicate that this compilation is not
-   * part of the user's Truffle project but rather is compiled from
-   * temporarily-downloaded external sources.  This flag was only originally
-   * intended to be used for Solidity or Yul, hence the name; but it should be
-   * OK to set this for externally-downloaded sources regardless of their
-   * language.
-   */
-  externalSolidity?: boolean;
 }
 
 /**

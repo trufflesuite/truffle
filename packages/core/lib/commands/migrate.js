@@ -2,7 +2,7 @@ const command = {
   command: "migrate",
   description: "Run migrations to deploy contracts",
   builder: {
-    "reset": {
+    reset: {
       type: "boolean",
       default: false
     },
@@ -26,15 +26,15 @@ const command = {
       type: "boolean",
       default: false
     },
-    "f": {
+    f: {
       describe: "Specify a migration number to run from",
       type: "number"
     },
-    "to": {
+    to: {
       describe: "Specify a migration number to run to",
       type: "number"
     },
-    "interactive": {
+    interactive: {
       describe: "Manually authorize deployments after seeing a preview",
       type: "boolean",
       default: false

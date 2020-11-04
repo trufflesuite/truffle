@@ -149,17 +149,17 @@ let migrations = {
   "2_deploy_contracts.js": __MIGRATION
 };
 
-describe("Globally-available variables", function() {
+describe("Globally-available variables", function () {
   var provider;
 
   var abstractions;
   var compilations;
 
-  before("Create Provider", async function() {
+  before("Create Provider", async function () {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
-  before("Prepare contracts and artifacts", async function() {
+  before("Prepare contracts and artifacts", async function () {
     this.timeout(30000);
 
     let prepared = await prepareContracts(provider, sources, migrations);
@@ -167,7 +167,7 @@ describe("Globally-available variables", function() {
     compilations = prepared.compilations;
   });
 
-  it("Gets globals correctly in simple call", async function() {
+  it("Gets globals correctly in simple call", async function () {
     this.timeout(8000);
     let instance = await abstractions.GlobalTest.deployed();
     let receipt = await instance.run(9, { value: 100 });
@@ -187,7 +187,7 @@ describe("Globally-available variables", function() {
     assert.deepEqual(variables.block, variables._block);
   });
 
-  it("Gets globals correctly in nested call", async function() {
+  it("Gets globals correctly in nested call", async function () {
     this.timeout(12000);
     let instance = await abstractions.GlobalTest.deployed();
     let receipt = await instance.runRun(9, { value: 100 });
@@ -213,7 +213,7 @@ describe("Globally-available variables", function() {
     assert.deepEqual(variables.block, variables._block);
   });
 
-  it("Gets globals correctly in static call", async function() {
+  it("Gets globals correctly in static call", async function () {
     this.timeout(8000);
     let instance = await abstractions.GlobalTest.deployed();
     let receipt = await instance.runStatic(9);
@@ -239,7 +239,7 @@ describe("Globally-available variables", function() {
     assert.deepEqual(variables.block, variables.__block);
   });
 
-  it("Gets globals correctly in library call", async function() {
+  it("Gets globals correctly in library call", async function () {
     this.timeout(8000);
     let instance = await abstractions.GlobalTest.deployed();
     let receipt = await instance.runLib(9, { value: 100 });
@@ -264,7 +264,7 @@ describe("Globally-available variables", function() {
     assert.deepEqual(variables.block, variables.__block);
   });
 
-  it("Gets globals correctly in simple creation", async function() {
+  it("Gets globals correctly in simple creation", async function () {
     this.timeout(12000);
     let contract = await abstractions.CreationTest.new(9, { value: 100 });
     let txHash = contract.transactionHash;
@@ -283,7 +283,7 @@ describe("Globally-available variables", function() {
     assert.deepEqual(variables.block, variables._block);
   });
 
-  it("Gets globals correctly in nested creation", async function() {
+  it("Gets globals correctly in nested creation", async function () {
     this.timeout(12000);
     let instance = await abstractions.GlobalTest.deployed();
     let receipt = await instance.runCreate(9, { value: 100 });
@@ -309,7 +309,7 @@ describe("Globally-available variables", function() {
     assert.deepEqual(variables.block, variables._block);
   });
 
-  it("Gets globals correctly in failed CREATE2", async function() {
+  it("Gets globals correctly in failed CREATE2", async function () {
     this.timeout(12000);
     let instance = await abstractions.GlobalTest.deployed();
     let receipt = await instance.runFailedCreate2(9, { value: 100 });

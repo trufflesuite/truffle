@@ -265,7 +265,7 @@ export function* decodeEvent(
     address
   };
   const codeAsHex = Conversion.toHexString(codeBytes);
-  const contractContext = Contexts.Utils.findDecoderContext(
+  const contractContext = Contexts.Utils.findContext(
     info.contexts,
     codeAsHex
   );
@@ -669,7 +669,7 @@ function* decodeBytecode(
 > {
   let decodingMode: DecodingMode = "full"; //as always, degrade as necessary
   const bytecode = Conversion.toHexString(info.state.returndata);
-  const context = Contexts.Utils.findDecoderContext(info.contexts, bytecode);
+  const context = Contexts.Utils.findContext(info.contexts, bytecode);
   if (!context) {
     return {
       kind: "unknownbytecode" as const,
