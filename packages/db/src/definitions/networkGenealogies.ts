@@ -36,13 +36,13 @@ export const networkGenealogies: Definition<"networkGenealogies"> = {
   resolvers: {
     NetworkGenealogy: {
       ancestor: {
-        resolve: async ({ ancestor }, _, { workspace }) => {
+        resolve: async ({ ancestor }, __, { workspace }) => {
           const result = await workspace.get("networks", ancestor.id);
           return result;
         }
       },
       descendant: {
-        resolve: async ({ descendant }, _, { workspace }) =>
+        resolve: async ({ descendant }, __, { workspace }) =>
           await workspace.get("networks", descendant.id)
       }
     },
@@ -69,6 +69,13 @@ export const networkGenealogies: Definition<"networkGenealogies"> = {
             .filter(({ id }) => !alreadyTried.includes(id))
             .sort((a, b) => {
               return b.historicBlock.height - a.historicBlock.height;
+            })
+            .map(network => {
+              console.log("network? " + JSON.stringify(network));
+              return {
+                network,
+                alreadyTried: alreadyTried
+              };
             });
 
           return untriedNetworks;
@@ -87,7 +94,7 @@ export const networkGenealogies: Definition<"networkGenealogies"> = {
                 $nin: alreadyTried
               }
             },
-            limit: limit ? limit : 5,
+            limit: limit ? limit : 5
             // sort: [{ "historicBlock.height": "asc" }],
             // use_index: "networks-index"
           });
@@ -96,6 +103,13 @@ export const networkGenealogies: Definition<"networkGenealogies"> = {
             .filter(({ id }) => !alreadyTried.includes(id))
             .sort((a, b) => {
               return a.historicBlock.height - b.historicBlock.height;
+            })
+            .map(network => {
+              console.log("network? " + JSON.stringify(network));
+              return {
+                network,
+                alreadyTried: alreadyTried
+              };
             });
 
           return untriedNetworks;
@@ -104,13 +118,13 @@ export const networkGenealogies: Definition<"networkGenealogies"> = {
     },
     CandidateSearchResult: {
       network: {
-        resolve: async (network, _, {}) => {
-          return network;
+        resolve: async (parent, __, {}) => {
+          return parent.network;
         }
       },
       alreadyTried: {
-        resolve: ({},{ alreadyTried }, {}) => {
-          return [];
+        resolve: (parent, __, {}) => {
+          return parent.alreadyTried;
         }
       }
     }
