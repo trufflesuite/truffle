@@ -6,7 +6,10 @@ import gql from "graphql-tag";
 import { Definition } from "./types";
 
 export const networks: Definition<"networks"> = {
-  createIndexes: [],
+  createIndexes: [
+    { fields: ["historicBlock.height"] },
+    { fields: ["networkId"] }
+  ],
   idFields: ["networkId", "historicBlock"],
   typeDefs: gql`
     type Network implements Resource & Named {
