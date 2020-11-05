@@ -277,7 +277,7 @@ export class ArtifactsLoader {
   }
 
   async loadContractInstances(
-    contracts: Array<DataModel.Contract>,
+    contracts: Array<DataModel.IContract>,
     networksArray: Array<Array<LoaderNetworkObject>>
   ) {
     // networksArray is an array of arrays of networks for each contract;
