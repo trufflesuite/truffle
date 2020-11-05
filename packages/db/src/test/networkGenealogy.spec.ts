@@ -5,7 +5,6 @@ import {
   AddNetworkGenealogies
 } from "./networkGenealogy.graphql";
 import { AddNetworks } from "./network.graphql";
-import { IdObject } from "@truffle/db/meta";
 
 const returnBlockHeader = blockNumber => {
   const blockHeaders = {
@@ -37,39 +36,46 @@ const returnBlockHeader = blockNumber => {
 describe("Network Genealogy", () => {
   let wsClient;
   let loneNetworkResult,
-    firstAncestorNetworkResult,
     secondAncestorNetworkResult,
     firstDescendantNetworkResult,
-    secondDescendantNetworkResult,
     mainNetworkResourceResult;
   let genealogyCheck;
+  let ancestors, descendants, addNetworkGenealogyRecord;
 
   beforeAll(async () => {
     wsClient = new WorkspaceClient();
 
-    // in reality this function would need some more looping through if there are more than 5 results. but we probably don't need to do that in the tests?
+    // in reality this function would need some more looping through if there are more than
+    // 5 results but that logic can be handled in the loader tests
     genealogyCheck = async (
       id: string,
-      alreadyTried: [IdObject],
-      type: string
+      alreadyTried: [string],
+      type: string,
+      limit?: number
     ) => {
       let result;
       let possibleMatches;
+
+      const queryLimit = limit ? limit : 5;
       if (type === "ancestor") {
         result = await wsClient.execute(FindAncestors, {
           id: id,
-          alreadyTried: alreadyTried
+          alreadyTried: alreadyTried,
+          limit: queryLimit
         });
         possibleMatches = result.network.possibleAncestors;
       } else if (type === "descendant") {
         result = await wsClient.execute(FindDescendants, {
           id: id,
-          alreadyTried: alreadyTried
+          alreadyTried: alreadyTried,
+          limit: queryLimit
         });
         possibleMatches = result.network.possibleDescendants;
       }
 
       let matches = [];
+      // spoofing the logic that will be happening in  the loaders to check whether
+      // there's a match to make this a possible match
       for (const match of possibleMatches) {
         let header = returnBlockHeader(match.network.historicBlock.height);
         if (header.hash === match.network.historicBlock.hash) {
@@ -80,6 +86,7 @@ describe("Network Genealogy", () => {
       return matches;
     };
 
+    //add networks to test with
     loneNetworkResult = await wsClient.execute(AddNetworks, {
       name: "ganache",
       networkId: "5777",
@@ -87,7 +94,7 @@ describe("Network Genealogy", () => {
       hash: "0xcba0b90a5e65512202091c12a2e3b328f374715b9f1c8f32cb4600c726fe2aa8"
     });
 
-    firstAncestorNetworkResult = await wsClient.execute(AddNetworks, {
+    await wsClient.execute(AddNetworks, {
       name: "ganache",
       networkId: "5778",
       height: 1,
@@ -101,6 +108,7 @@ describe("Network Genealogy", () => {
       hash: "0xcba0b90a5e65512202091c12a2e3b328f374715b9f1c8f32cb4600c726fe2aa9"
     });
 
+    // this is the main network we're testing with. It has two ancestors and two decendants
     mainNetworkResourceResult = await wsClient.execute(AddNetworks, {
       name: "ganache",
       networkId: "5778",
@@ -115,12 +123,133 @@ describe("Network Genealogy", () => {
       hash: "0xcba0b90a5e65512202091c12a2e3b328f374715b9f1c8f32cb4600c726fe2aa2"
     });
 
-    secondDescendantNetworkResult = await wsClient.execute(AddNetworks, {
+    await wsClient.execute(AddNetworks, {
       name: "ganache",
       networkId: "5778",
       height: 5,
       hash: "0xcba0b90a5e65512202091c12a2e3b328f374715b9f1c8f32cb4600c726fe2aa3"
     });
+
+    // check for ancestors using main network
+    ancestors = await genealogyCheck(
+      mainNetworkResourceResult.networksAdd.networks[0].id,
+      [],
+      "ancestor"
+    );
+
+    // check for descendants using main network
+    descendants = await genealogyCheck(
+      mainNetworkResourceResult.networksAdd.networks[0].id,
+      [],
+      "descendant"
+    );
+
+    // add networkGenealogy record using ancestor and descendant results
+    addNetworkGenealogyRecord = await wsClient.execute(AddNetworkGenealogies, {
+      ancestor: ancestors[0].network.id,
+      descendant: descendants[0].network.id
+    });
+  });
+
+  test("can query for ancestors", async () => {
+    //two possible ancestors on the same network
+    expect(ancestors).toHaveLength(2);
+    //sorted by block height, descending
+    expect(ancestors[0].network.historicBlock.height).toBeGreaterThan(
+      ancestors[1].network.historicBlock.height
+    );
+    //since this is all our responses and they are sorted in descending order, the first one is the ancestor
+    const ancestorFound = ancestors[0];
+
+    expect(ancestorFound.network.id).toEqual(
+      secondAncestorNetworkResult.networksAdd.networks[0].id
+    );
+  });
+
+  test("can query for descendants", async () => {
+    // two possible descendants on the same network
+    expect(descendants).toHaveLength(2);
+    //sorted by block height, ascending
+    expect(descendants[1].network.historicBlock.height).toBeGreaterThan(
+      descendants[0].network.historicBlock.height
+    );
+    //since this is all our responses and they are sorted in ascending order, the first one is the descendent
+    const descendantFound = descendants[0];
+    // we got the network we're looking for
+    expect(descendantFound).toHaveProperty("network");
+    // it matches the id of the network that should have been found
+    expect(descendantFound.network.id).toEqual(
+      firstDescendantNetworkResult.networksAdd.networks[0].id
+    );
+  });
+
+  test("can be added", async () => {
+    //two possible ancestors on the same network
+    expect(ancestors).toHaveLength(2);
+    //sorted by block height, descending
+    expect(ancestors[0].network.historicBlock.height).toBeGreaterThan(
+      ancestors[1].network.historicBlock.height
+    );
+    //since this is all our responses and they are sorted in descending order, the first one is the ancestor
+    const ancestorFound = ancestors[0];
+
+    expect(ancestorFound.network.id).toEqual(
+      secondAncestorNetworkResult.networksAdd.networks[0].id
+    );
+
+    // two possible descendants on the same network
+    expect(descendants).toHaveLength(2);
+    //sorted by block height, ascending
+    expect(descendants[1].network.historicBlock.height).toBeGreaterThan(
+      descendants[0].network.historicBlock.height
+    );
+    //since this is all our responses and they are sorted in ascending order, the first one is the descendent
+    const descendantFound = descendants[0];
+
+    //add a networkGenealogy record!
+
+    expect(addNetworkGenealogyRecord).toHaveProperty("networkGenealogiesAdd");
+
+    // expect(addedNetworkGenealogyRecord.)
+    const networkGenealogyRecordId = generateId({
+      ancestor: { id: ancestorFound.network.id },
+      descendant: { id: descendantFound.network.id }
+    });
+
+    expect(networkGenealogyRecordId).toEqual(
+      addNetworkGenealogyRecord.networkGenealogiesAdd.networkGenealogies[0].id
+    );
+  });
+
+  test("respects limit on ancestor query", async () => {
+    let ancestorsWithLimit = await genealogyCheck(
+      mainNetworkResourceResult.networksAdd.networks[0].id,
+      [],
+      "ancestor",
+      1
+    );
+    expect(ancestorsWithLimit.length).toEqual(1);
+  });
+
+  test("respects limit on descendant query", async () => {
+    let descendantsWithLimit = await genealogyCheck(
+      mainNetworkResourceResult.networksAdd.networks[0].id,
+      [],
+      "descendant",
+      1
+    );
+    expect(descendantsWithLimit.length).toEqual(1);
+  });
+
+  test("accepts and respects alreadyTried array", async () => {
+    const ancestorAlreadyTried = ancestors[1].network.id;
+    let ancestorsWithAlreadyTried = await genealogyCheck(
+      mainNetworkResourceResult.networksAdd.networks[0].id,
+      [ancestorAlreadyTried],
+      "ancestor"
+    );
+
+    expect(ancestorsWithAlreadyTried.length).toEqual(1);
   });
 
   test("returns empty array when no network candidates are an ancestor or descendant", async () => {
@@ -140,68 +269,4 @@ describe("Network Genealogy", () => {
 
     expect(descendant).toEqual([]);
   });
-
-  test("can add NetworkGenealogy when an ancestor and a descendant exist", async () => {
-    let ancestors = await genealogyCheck(
-      mainNetworkResourceResult.networksAdd.networks[0].id,
-      [],
-      "ancestor"
-    );
-
-    //two possible ancestors on the same network
-    expect(ancestors).toHaveLength(2);
-    //sorted by block height, descending
-    expect(ancestors[0].network.historicBlock.height).toBeGreaterThan(
-      ancestors[1].network.historicBlock.height
-    );
-    //since this is all our responses and they are sorted in descending order, the first one is the ancestor
-    const ancestorFound = ancestors[0];
-    console.debug("ancestor found id " + ancestorFound.network.id);
-    expect(ancestorFound.network.id).toEqual(
-      secondAncestorNetworkResult.networksAdd.networks[0].id
-    );
-
-    let descendants = await genealogyCheck(
-      mainNetworkResourceResult.networksAdd.networks[0].id,
-      [],
-      "descendant"
-    );
-    // two possible descendants on the same network
-    expect(descendants).toHaveLength(2);
-    //sorted by block height, ascending
-    expect(descendants[1].network.historicBlock.height).toBeGreaterThan(
-      descendants[0].network.historicBlock.height
-    );
-    //since this is all our responses and they are sorted in ascending order, the first one is the descendent
-    const descendantFound = descendants[0];
-
-    //add a networkGenealogy record!
-    let addedNetworkGenealogyRecord = await wsClient.execute(
-      AddNetworkGenealogies,
-      {
-        ancestor: ancestorFound.network.id,
-        descendant: descendantFound.network.id
-      }
-    );
-
-    expect(addedNetworkGenealogyRecord).toHaveProperty("networkGenealogiesAdd");
-
-    // expect(addedNetworkGenealogyRecord.)
-    const networkGenealogyRecordId = generateId({
-      ancestor: { id: ancestorFound.network.id },
-      descendant: { id: descendantFound.network.id }
-    });
-
-    expect(networkGenealogyRecordId).toEqual(
-      addedNetworkGenealogyRecord.networkGenealogiesAdd.networkGenealogies[0].id
-    );
-  });
-
-  test("can add NetworkGenealogy when network is a descendant", async () => {});
-
-  test("can add NetworkGenealogy when network is an ancestor", async () => {});
-
-  test("when more potential ancestors than the limit exist, alreadyTried array ensures all that are necessary get tested", async () => {});
-
-  test("when more potential descendants than the limit exist, alreadyTried array ensures all that are necessary get tested", async () => {});
 });
