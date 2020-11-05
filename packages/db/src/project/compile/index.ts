@@ -27,7 +27,7 @@ export type Contract = Common.CompiledContract & {
 
 type WithSources = (Common.Compilation & {
   contracts: (Common.CompiledContract & {
-    db: {
+    db?: {
       source: IdObject<DataModel.Source>;
     };
   })[];
@@ -35,7 +35,7 @@ type WithSources = (Common.Compilation & {
 
 type WithBytecodes = {
   contracts: {
-    db: {
+    db?: {
       callBytecode: IdObject<DataModel.Bytecode>;
       createBytecode: IdObject<DataModel.Bytecode>;
     };
@@ -44,16 +44,16 @@ type WithBytecodes = {
 
 type WithCompilations = (Common.Compilation & {
   contracts: (Common.CompiledContract & {
-    db: {};
+    db?: {};
   })[];
-  db: {
+  db?: {
     compilation: IdObject<DataModel.Compilation>;
   };
 })[];
 
 type WithContracts = {
   contracts: {
-    db: {
+    db?: {
       contract: IdObject<DataModel.Contract>;
     };
   }[];
@@ -68,31 +68,19 @@ type WithContracts = {
  * and ultimately returns nothing when complete.
  */
 export function* generateCompileLoad(result: Common.WorkflowCompileResult) {
-  const withSources = yield* generateCompilationsSourcesLoad<
-    Common.Compilation[],
-    Common.Compilation[] & WithSources
-  >(result.compilations);
+  const withSources = yield* generateCompilationsSourcesLoad(result.compilations);
 
-  const withSourcesAndBytecodes = yield* generateCompilationsBytecodesLoad<
-    Common.Compilation[] & WithSources,
-    Common.Compilation[] & WithSources & WithBytecodes
-  >(withSources);
+  const withSourcesAndBytecodes = yield* generateCompilationsBytecodesLoad(withSources);
 
-  const withCompilations = yield* generateCompilationsInputLoad<
-    Common.Compilation[] & WithSources & WithBytecodes,
-    Common.Compilation[] & WithSources & WithBytecodes & WithCompilations
-  >(withSourcesAndBytecodes);
+  const withCompilations = yield* generateCompilationsInputLoad(withSourcesAndBytecodes);
 
-  const withContracts = yield* generateCompilationsContractsLoad<
-    Common.Compilation[] & WithSources & WithBytecodes & WithCompilations,
-    Common.Compilation[] &
-      WithSources &
-      WithBytecodes &
-      WithCompilations &
-      WithContracts
-  >(withCompilations);
+  const withContracts = yield* generateCompilationsContractsLoad(withCompilations);
 
-  const compilations = withContracts;
+  const compilations: Common.Compilation[] &
+    WithSources &
+    WithBytecodes &
+    WithCompilations &
+    WithContracts = withContracts;
 
   return {
     compilations,

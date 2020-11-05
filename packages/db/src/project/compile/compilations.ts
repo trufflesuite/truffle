@@ -10,7 +10,7 @@ interface Contract {
   sourceMap: string;
   deployedSourceMap: string;
 
-  db: {
+  db?: {
     source: IdObject<DataModel.Source>;
     callBytecode: IdObject<DataModel.Bytecode>;
     createBytecode: IdObject<DataModel.Bytecode>;
