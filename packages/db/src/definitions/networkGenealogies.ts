@@ -82,9 +82,12 @@ export const networkGenealogies: Definition<"networkGenealogies"> = {
               "historicBlock.height": {
                 $gt: network.historicBlock.height
               },
-              "networkId": network.networkId
+              "networkId": network.networkId,
+              "id": {
+                $nin: alreadyTried
+              }
             },
-            limit: limit ? limit : 5
+            limit: limit ? limit : 5,
             // sort: [{ "historicBlock.height": "asc" }],
             // use_index: "networks-index"
           });
@@ -102,15 +105,11 @@ export const networkGenealogies: Definition<"networkGenealogies"> = {
     CandidateSearchResult: {
       network: {
         resolve: async (network, _, {}) => {
-          console.log("in network resolver...");
           return network;
         }
       },
       alreadyTried: {
-        resolve: ({}, alreadyTried, {}) => {
-          console.debug(
-            "resolving already tried " + JSON.stringify(alreadyTried)
-          );
+        resolve: ({},{ alreadyTried }, {}) => {
           return [];
         }
       }
