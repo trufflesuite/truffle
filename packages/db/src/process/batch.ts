@@ -1,5 +1,8 @@
 import { $, _ } from "hkts/src";
 
+import { Collections } from "@truffle/db/meta";
+import { Process } from "./types";
+
 export { _ };
 
 export type PrepareBatch<S, I, O, B = I, R = O> = (
@@ -9,74 +12,118 @@ export type PrepareBatch<S, I, O, B = I, R = O> = (
   unbatch: (results: R[]) => $<S, [O]>;
 };
 
-type Extracts<I, E> = {
-  extract(options: { input: I }): E;
+type Batch = {
+  structure: any;
+  breadcrumb: any;
+  input: any;
+  entry?: any;
+  result?: any;
+  output: any;
 };
 
-type MaybeExtracts<I, E> = I extends E
-  ? E extends I
-    ? {}
-    : Extracts<I, E>
-  : Extracts<I, E>;
+type Structure<B extends Batch> = B["structure"];
 
-type Converts<S, I, O, R> = {
-  convert(options: { result: R; inputs: $<S, [I]>; input: I }): O;
+type Breadcrumb<B extends Batch> = B["breadcrumb"];
+type Breadcrumbs<B extends Batch> = {
+  [index: number]: Breadcrumb<B>;
 };
 
-type MaybeConverts<S, I, O, R> = O extends R
-  ? R extends O
-    ? {}
-    : Converts<S, I, O, R>
-  : Converts<S, I, O, R>;
+export type Input<B extends Batch> = B["input"];
+export type Inputs<B extends Batch, I extends Input<B> = Input<B>> = $<
+  Structure<B>,
+  [I]
+>;
 
-export type BatchOptions<S, C, I, O, R = O, E = I> = {
-  iterate(options: {
-    inputs: $<S, [I]>;
-  }): Iterable<{ input: I; breadcrumb: C }>;
+type Entry<B extends Batch> = B["entry"];
+type Entries<B extends Batch> = Entry<B>[];
 
-  find(options: { inputs: $<S, [I]>; breadcrumb: C }): I;
+export type Output<B extends Batch> = B["output"];
+export type Outputs<B extends Batch, O extends Output<B> = Output<B>> = $<
+  Structure<B>,
+  [O]
+>;
 
-  initialize(options: { inputs: $<S, [I]> }): $<S, [O]>;
+type Result<B extends Batch> = B["result"];
+type Results<B extends Batch> = Result<B>[];
 
-  merge(options: { outputs: $<S, [O]>; breadcrumb: C; output: O }): $<S, [O]>;
+export type Options<B extends Batch> = {
+  process(options: { batch: Entries<B> }): Process<Collections, Results<B>>;
 
-  extract?(options: { input: I }): E;
-  convert?(options: { result: R; inputs: $<S, [I]>; input: I }): O;
-} & MaybeExtracts<I, E> &
-  MaybeConverts<S, I, O, R>;
+  iterate<I extends Input<B>>(options: {
+    inputs: Inputs<B, I>;
+  }): Iterable<{
+    input: I;
+    breadcrumb: Breadcrumb<B>;
+  }>;
 
-export const configure = <S, C, I, O, R = O, E = I>(
-  options: BatchOptions<S, C, I, O, R, E>
-): PrepareBatch<S, I, O, E, R> => {
-  const { iterate, find, initialize, merge } = options;
+  find<I extends Input<B>>(options: {
+    inputs: Inputs<B, I>;
+    breadcrumb: Breadcrumb<B>;
+  }): I;
 
-  const extract = "extract" in options ? options.extract : x => x;
+  initialize<I extends Input<B>, O extends Output<B>>(options: {
+    inputs: Inputs<B, I>;
+  }): Outputs<B, O>;
 
-  const convert = "convert" in options ? options.convert : x => x;
+  merge<O extends Output<B>>(options: {
+    outputs: Outputs<B, O>;
+    breadcrumb: Breadcrumb<B>;
+    output: O;
+  }): Outputs<B, O>;
 
-  return (inputs: $<S, [I]>) => {
-    const batch: E[] = [];
-    const breadcrumbs: {
-      [index: number]: C;
-    } = {};
+  extract<I extends Input<B>>(options: {
+    input: I;
+    inputs: Inputs<B, I>;
+    breadcrumb: Breadcrumb<B>;
+  }): Entry<B>;
 
-    for (const { input, breadcrumb } of iterate({ inputs })) {
-      const entry: E = extract({ input });
+  convert<I extends Input<B>, O extends Output<B>>(options: {
+    result: Result<B>;
+    inputs: Inputs<B, I>;
+    input: I;
+  }): O;
+};
+
+export const configure = <B extends Batch>(
+  options: Options<B>
+): (<I extends Inputs<B>, O extends Outputs<B>>(
+  inputs: I
+) => Process<Collections, O>) => {
+  const {
+    process,
+    extract,
+    convert,
+    iterate,
+    find,
+    initialize,
+    merge
+  } = options;
+
+  return function* <I extends Inputs<B>, O extends Outputs<B>>(
+    inputs: I
+  ): Process<Collections, O> {
+    const batch: Entries<B> = [];
+    const breadcrumbs: Breadcrumbs<B> = {};
+
+    for (const { input, breadcrumb } of iterate<I>({ inputs })) {
+      const entry: Entry<B> = extract<I>({ input, inputs, breadcrumb });
 
       breadcrumbs[batch.length] = breadcrumb;
 
       batch.push(entry);
     }
 
-    const unbatch = (results: R[]) =>
-      results.reduce((outputs, result, index) => {
+    const results = yield* process({ batch });
+
+    return results.reduce(
+      (outputs: Outputs<B, O>, result: Result<B>, index: number) => {
         const breadcrumb = breadcrumbs[index];
-        const input = find({ inputs, breadcrumb });
-        const output = convert({ result, input, inputs });
+        const input = find<I>({ inputs, breadcrumb });
+        const output = convert<I, O>({ result, input, inputs });
 
         return merge({ outputs, output, breadcrumb });
-      }, initialize({ inputs }));
-
-    return { batch, unbatch };
+      },
+      initialize<I, O>({ inputs })
+    );
   };
 };

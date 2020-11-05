@@ -1,135 +1,75 @@
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:loaders:commands:compile:sources");
+const debug = logger("db:project:compile:contracts");
 
-import {
-  generate,
-  Process,
-  PrepareBatch,
-  _,
-  IdObject
-} from "@truffle/db/project/process";
+import { IdObject, generate } from "@truffle/db/project/process";
+import * as Batch from "./batch";
 
-interface Contract {
-  contractName: string;
-  abi: any;
-  sourcePath: string;
-  db: {
-    createBytecode: IdObject<DataModel.Bytecode>;
-    callBytecode: IdObject<DataModel.Bytecode>;
-  };
-}
-
-interface Compilation {
-  compiler: any;
-  sourceIndexes: string[];
-  contracts: Contract[];
-  db: {
-    compilation: IdObject<DataModel.Compilation>;
-  };
-}
-
-export function* generateCompilationsContractsLoad(
-  compilations: Compilation[]
-): Process<
-  (Compilation & {
-    contracts: (Contract & {
-      db: {
-        contract: IdObject<DataModel.Contract>;
-      };
-    })[];
-  })[]
-> {
-  const { batch, unbatch } = prepareContractsBatch(compilations);
-
-  const contracts = yield* generate.load("contracts", batch);
-
-  return unbatch(contracts);
-}
-
-const prepareContractsBatch: PrepareBatch<
-  (Compilation & {
-    contracts: _[];
-  })[],
-  Contract,
-  Contract & { db: { contract: IdObject<DataModel.Contract> } },
-  DataModel.ContractInput,
-  IdObject<DataModel.Contract>
-> = structured => {
-  const batch = [];
-  const breadcrumbs: {
-    [index: number]: {
-      compilationIndex: number;
-      contractIndex: number;
+export const generateCompilationsContractsLoad = Batch.Contracts.generate<{
+  compilation: {
+    db: {
+      compilation: IdObject<DataModel.Compilation>;
     };
-  } = {};
+  };
+  contract: {
+    contractName: string;
+    abi: any;
+    sourcePath: string;
+    db: {
+      callBytecode: IdObject<DataModel.Bytecode>;
+      createBytecode: IdObject<DataModel.Bytecode>;
+    };
+  };
+  resources: {
+    contract: IdObject<DataModel.Contract>;
+  };
+  entry: DataModel.ContractInput;
+  result: IdObject<DataModel.Contract>;
+}>({
+  extract({ input, inputs, breadcrumb }) {
+    debug("inputs %o", inputs);
+    debug("breadcrumb %o", breadcrumb);
+    const { compilationIndex } = breadcrumb;
 
-  for (const [compilationIndex, compilation] of structured.entries()) {
-    const { contracts } = compilation;
+    const {
+      db: { compilation }
+    } = inputs[compilationIndex];
 
-    for (const [contractIndex, contract] of contracts.entries()) {
-      breadcrumbs[batch.length] = { contractIndex, compilationIndex };
+    const {
+      contractName: name,
+      db: { createBytecode, callBytecode }
+    } = input;
 
-      batch.push(toContractInput({ contract, compilation }));
-    }
-  }
+    const abi = {
+      json: JSON.stringify(input.abi)
+    };
 
-  const unbatch = results => {
-    const compilations = [];
+    const processedSource = {
+      index: inputs[compilationIndex].sourceIndexes.findIndex(
+        sourcePath => sourcePath === input.sourcePath
+      )
+    };
 
-    for (const [index, result] of results.entries()) {
-      const { compilationIndex, contractIndex } = breadcrumbs[index];
+    return {
+      name,
+      abi,
+      compilation,
+      processedSource,
+      createBytecode,
+      callBytecode
+    };
+  },
 
-      if (!compilations[compilationIndex]) {
-        compilations[compilationIndex] = {
-          ...structured[compilationIndex],
-          contracts: []
-        };
+  *process({ batch }) {
+    return yield* generate.load("contracts", batch);
+  },
+
+  convert<_I, _O>({ result, input: contract }) {
+    return {
+      ...contract,
+      db: {
+        ...contract.db,
+        contract: result
       }
-
-      compilations[compilationIndex].contracts[contractIndex] = {
-        ...structured[compilationIndex].contracts[contractIndex],
-        db: {
-          ...structured[compilationIndex].contracts[contractIndex].db,
-          contract: result
-        }
-      };
-    }
-
-    return compilations;
-  };
-
-  return { batch, unbatch };
-};
-
-function toContractInput(options: {
-  contract: Contract;
-  compilation: Compilation;
-}): DataModel.ContractInput {
-  const {
-    db: { compilation }
-  } = options.compilation;
-
-  const {
-    contractName: name,
-    db: { createBytecode, callBytecode }
-  } = options.contract;
-
-  const abi = {
-    json: JSON.stringify(options.contract.abi)
-  };
-
-  const processedSource = {
-    index: options.compilation.sourceIndexes.findIndex(
-      sourcePath => sourcePath === options.contract.sourcePath
-    )
-  };
-
-  return {
-    name,
-    abi,
-    compilation,
-    processedSource,
-    createBytecode,
-    callBytecode
-  };
-}
+    };
+  }
+});

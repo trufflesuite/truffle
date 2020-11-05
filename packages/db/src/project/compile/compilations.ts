@@ -1,22 +1,14 @@
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:loaders:commands:compile:compilations");
+const debug = logger("db:project:compile:compilations");
 
-import {
-  IdObject,
-  generate,
-  Process,
-  PrepareBatch,
-  _
-} from "@truffle/db/project/process";
+import { IdObject, generate } from "@truffle/db/project/process";
+import * as Batch from "./batch";
 
 interface Contract {
-  ast: any;
   sourcePath: string;
-  sourceMap: any;
-  deployedSourceMap: any;
-
-  abi: any;
-  contractName: any;
+  ast: any;
+  sourceMap: string;
+  deployedSourceMap: string;
 
   db: {
     source: IdObject<DataModel.Source>;
@@ -25,89 +17,43 @@ interface Contract {
   };
 }
 
-interface Compilation {
-  compiler: {
-    name: string;
-    version: string;
+export const generateCompilationsInputLoad = Batch.Compilations.generate<{
+  compilation: {
+    compiler: {
+      name: string;
+      version: string;
+    };
+    sourceIndexes: string[];
   };
-  sourceIndexes: string[];
-  contracts: Contract[];
-}
-
-export function* generateCompilationsInputLoad(
-  compilations: Compilation[]
-): Process<
-  (Compilation & {
-    contracts: (Contract & {
-      compilation: IdObject<DataModel.Compilation>;
-    })[];
-
-    db: {
-      compilation: IdObject<DataModel.Compilation>;
-    };
-  })[]
-> {
-  const { batch, unbatch } = prepareCompilationsBatch(compilations);
-
-  const results = yield* generate.load("compilations", batch);
-
-  return unbatch(results);
-}
-
-const prepareCompilationsBatch: PrepareBatch<
-  _[],
-  Compilation,
-  Compilation & {
-    contracts: (Contract & {
-      compilation: IdObject<DataModel.Compilation>;
-    })[];
-
-    db: {
-      compilation: IdObject<DataModel.Compilation>;
-    };
+  contract: Contract;
+  resources: {
+    compilation: IdObject<DataModel.Compilation>;
+  };
+  entry: DataModel.CompilationInput;
+  result: IdObject<DataModel.Compilation>;
+}>({
+  extract({ input }) {
+    return toCompilationInput({
+      compiler: input.compiler,
+      contracts: input.contracts,
+      sourceIndexes: input.sourceIndexes
+    });
   },
-  DataModel.CompilationInput,
-  IdObject<DataModel.Compilation>
-> = structured => {
-  const batch = [];
-  const breadcrumbs: {
-    [index: number]: {
-      compilationIndex: number;
+
+  *process({ batch }) {
+    return yield* generate.load("compilations", batch);
+  },
+
+  convert<_I, _O>({ result, input: compilation }) {
+    return {
+      ...compilation,
+      db: {
+        ...(compilation.db || {}),
+        compilation: result
+      }
     };
-  } = {};
-
-  for (const [compilationIndex, compilation] of structured.entries()) {
-    breadcrumbs[batch.length] = { compilationIndex };
-
-    batch.push(toCompilationInput(compilation));
   }
-
-  const unbatch = results => {
-    const compilations = [];
-
-    for (const [index, result] of results.entries()) {
-      const { compilationIndex } = breadcrumbs[index];
-
-      compilations[compilationIndex] = {
-        ...structured[compilationIndex],
-        contracts: structured[compilationIndex].contracts.map(contract => ({
-          ...contract,
-          db: {
-            ...contract.db,
-            compilation: result
-          }
-        })),
-        db: {
-          compilation: result
-        }
-      };
-    }
-
-    return compilations;
-  };
-
-  return { batch, unbatch };
-};
+});
 
 function toCompilationInput(options: {
   compiler: DataModel.CompilerInput;
@@ -128,7 +74,6 @@ function toProcessedSourceInputs(options: {
   contracts: Contract[];
   sourceIndexes: string[];
 }): DataModel.ProcessedSourceInput[] {
-  debug("options %o", options);
   return options.sourceIndexes.map(sourcePath => {
     const contract = options.contracts.find(
       contract => contract.sourcePath === sourcePath
