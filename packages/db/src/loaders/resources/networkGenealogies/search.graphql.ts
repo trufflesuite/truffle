@@ -1,9 +1,9 @@
 import gql from "graphql-tag";
 
 export const FindAncestors = gql`
-  query findAncestorCandidates($id: ID!, $alreadyTried: [ID]!){
+  query findAncestorCandidates($id: ID!, $alreadyTried: [ID]!, $limit: Int){
     network($id) {
-      possibleAncestors(alreadyTried: $alreadyTried) {
+      possibleAncestors(alreadyTried: $alreadyTried, limit: $limit) {
         network {
           id
           historicBlock {
@@ -20,9 +20,9 @@ export const FindAncestors = gql`
 `;
 
 export const FindDescendants = gql`
-  query findDescendantCandidates($id: ID!, $alreadyTried: [ID]!){
+  query findDescendantCandidates($id: ID!, $alreadyTried: [ID]!, $limit: Int){
     network($id) {
-      possibleDescendants(alreadyTried: $alreadyTried) {
+      possibleDescendants(alreadyTried: $alreadyTried, limit: $limit) {
         network {
           id
           historicBlock {
