@@ -33,7 +33,7 @@ export type ProcessRequest<
 
 export type ProcessorRunner = Proc.ProcessorRunner<Collections>;
 
-export { PrepareBatch, _ } from "@truffle/db/process";
+export { PrepareBatch, _, configure, BatchOptions } from "@truffle/db/process";
 
 export const { forDb, resources: generate } = forDefinitions<Collections>(
   definitions

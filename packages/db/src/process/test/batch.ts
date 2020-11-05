@@ -147,3 +147,46 @@ describe("PrepareBatch", () => {
     expect(unbatch(results)).toEqual(expected);
   });
 });
+
+/*
+const options: BatchOptions<
+  _[],
+  number,
+  { i: number },
+  { o: number },
+  { r: number },
+  { e: number }
+> = {
+  *iterate({ structured }) {
+    for (const [index, input] of structured.entries()) {
+      yield {
+        input,
+        breadcrumb: index
+      }
+    }
+  },
+
+  collect({ outputs, breadcrumbs }) {
+    const structured = [];
+    for (const [index, output] of outputs.entries()) {
+      structured[breadcrumbs[index]] = output;
+    }
+    return structured;
+  },
+
+  extract(options) {
+    const {
+      input: { i }
+    } = options;
+    return { e: i };
+  },
+
+  convert(options) {
+    const {
+      result: { r }
+    } = options;
+
+    return { o: r };
+  }
+}
+*/
