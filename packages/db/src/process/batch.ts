@@ -29,16 +29,13 @@ type Breadcrumbs<B extends Batch> = {
 };
 
 export type Input<B extends Batch> = B["input"];
-export type Inputs<B extends Batch, I extends Input<B> = Input<B>> = $<
-  Structure<B>,
-  [I]
->;
+export type Inputs<B extends Batch, I extends Input<B>> = $<Structure<B>, [I]>;
 
 type Entry<B extends Batch> = B["entry"];
 type Entries<B extends Batch> = Entry<B>[];
 
 export type Output<B extends Batch> = B["output"];
-export type Outputs<B extends Batch, O extends Output<B> = Output<B>> = $<
+export type Outputs<B extends Batch, O extends Output<B>> = $<
   Structure<B>,
   [O]
 >;
@@ -86,9 +83,9 @@ export type Options<B extends Batch> = {
 
 export const configure = <B extends Batch>(
   options: Options<B>
-): (<I extends Inputs<B>, O extends Outputs<B>>(
-  inputs: I
-) => Process<Collections, O>) => {
+): (<I extends Input<B>, O extends Output<B>>(
+  inputs: Inputs<B, I>
+) => Process<Collections, Outputs<B, O>>) => {
   const {
     process,
     extract,
@@ -99,9 +96,9 @@ export const configure = <B extends Batch>(
     merge
   } = options;
 
-  return function* <I extends Inputs<B>, O extends Outputs<B>>(
-    inputs: I
-  ): Process<Collections, O> {
+  return function* <I extends Input<B>, O extends Output<B>>(
+    inputs: Inputs<B, I>
+  ): Process<Collections, Outputs<B, O>> {
     const batch: Entries<B> = [];
     const breadcrumbs: Breadcrumbs<B> = {};
 

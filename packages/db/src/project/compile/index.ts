@@ -68,20 +68,27 @@ type WithContracts = {
  * and ultimately returns nothing when complete.
  */
 export function* generateCompileLoad(result: Common.WorkflowCompileResult) {
-  const withSources = yield* generateCompilationsSourcesLoad<
-    Common.Compilation[],
-    Common.Compilation[] & WithSources
-  >(result.compilations);
+  const inputs = result.compilations.map(compilation => ({
+    ...compilation,
+    contracts: compilation.contracts.map(contract => ({
+      ...contract,
+      db: {
+        ...(contract.db || {})
+      }
+    })),
+    db: {
+      ...(compilation.db || {})
+    }
+  }));
+  const withSources = yield* generateCompilationsSourcesLoad(inputs);
 
-  const withSourcesAndBytecodes = yield* generateCompilationsBytecodesLoad<
-    Common.Compilation[] & WithSources,
-    Common.Compilation[] & WithSources & WithBytecodes
-  >(withSources);
+  const withSourcesAndBytecodes = yield* generateCompilationsBytecodesLoad(
+    withSources
+  );
 
-  const withCompilations = yield* generateCompilationsInputLoad<
-    Common.Compilation[] & WithSources & WithBytecodes,
-    Common.Compilation[] & WithSources & WithBytecodes & WithCompilations
-  >(withSourcesAndBytecodes);
+  const withCompilations = yield* generateCompilationsInputLoad(
+    withSourcesAndBytecodes
+  );
 
   const withContracts = yield* generateCompilationsContractsLoad<
     Common.Compilation[] & WithSources & WithBytecodes & WithCompilations,

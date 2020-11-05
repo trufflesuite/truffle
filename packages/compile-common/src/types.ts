@@ -7,6 +7,7 @@ export type Compilation = {
     name: string | undefined;
     version: string | undefined;
   };
+  db?: {};
 };
 
 export interface CompilerResult {
@@ -45,7 +46,7 @@ export type CompiledContract = {
   immutableReferences: ImmutableReferences;
   generatedSources: any;
   deployedGeneratedSources: any;
-  db?: any;
+  db?: {};
 };
 
 export interface WorkflowCompileResult {
