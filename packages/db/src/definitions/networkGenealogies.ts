@@ -3,7 +3,7 @@ import gql from "graphql-tag";
 import { Definition } from "./types";
 
 export const networkGenealogies: Definition<"networkGenealogies"> = {
-  createIndexes: [{ fields: ["historicBlock"] }],
+  createIndexes: [],
   idFields: ["ancestor", "descendant"],
   typeDefs: gql`
     type CandidateSearchResult {
@@ -38,7 +38,6 @@ export const networkGenealogies: Definition<"networkGenealogies"> = {
       ancestor: {
         resolve: async ({ ancestor }, _, { workspace }) => {
           const result = await workspace.get("networks", ancestor.id);
-          console.debug("result? " + JSON.stringify(result));
           return result;
         }
       },
@@ -49,24 +48,25 @@ export const networkGenealogies: Definition<"networkGenealogies"> = {
     },
     Network: {
       possibleAncestors: {
-        resolve: async ({ id, limit }, alreadyTried, { workspace }) => {
+        resolve: async ({ id }, { limit, alreadyTried }, { workspace }) => {
           const network = await workspace.get("networks", id);
           const result = await workspace.find("networks", {
             selector: {
-              "networkId": network.networkId,
               "historicBlock.height": {
                 $lt: network.historicBlock.height
+              },
+              "networkId": network.networkId,
+              "id": {
+                $nin: alreadyTried
               }
-              // "id": {
-              //   $nin: alreadyTried
-              // }
             },
+            // sort: [{ "historicBlock.height": "desc" }],
             limit: limit ? limit : 5
-            // sort: [{ "historicBlock.height": "desc" }]
+            // use_index: "networks-index"
           });
 
           let untriedNetworks = result
-            .filter(({ id }) => !alreadyTried.alreadyTried.includes(id))
+            .filter(({ id }) => !alreadyTried.includes(id))
             .sort((a, b) => {
               return b.historicBlock.height - a.historicBlock.height;
             });
@@ -75,21 +75,22 @@ export const networkGenealogies: Definition<"networkGenealogies"> = {
         }
       },
       possibleDescendants: {
-        resolve: async ({ id, limit }, alreadyTried, { workspace }) => {
+        resolve: async ({ id }, { limit, alreadyTried }, { workspace }) => {
           const network = await workspace.get("networks", id);
           const result = await workspace.find("networks", {
             selector: {
-              "networkId": network.networkId,
               "historicBlock.height": {
                 $gt: network.historicBlock.height
-              }
+              },
+              "networkId": network.networkId
             },
             limit: limit ? limit : 5
-            // sort: [{ "historicBlock.height": "desc" }]
+            // sort: [{ "historicBlock.height": "asc" }],
+            // use_index: "networks-index"
           });
 
           let untriedNetworks = result
-            .filter(({ id }) => !alreadyTried.alreadyTried.includes(id))
+            .filter(({ id }) => !alreadyTried.includes(id))
             .sort((a, b) => {
               return a.historicBlock.height - b.historicBlock.height;
             });
