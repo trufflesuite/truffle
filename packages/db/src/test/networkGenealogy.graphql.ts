@@ -34,6 +34,7 @@ export const FindAncestors = gql`
             hash
             height
           }
+          networkId
         }
         alreadyTried {
           id
@@ -53,6 +54,7 @@ export const FindDescendants = gql`
             hash
             height
           }
+          networkId
         }
         alreadyTried {
           id
