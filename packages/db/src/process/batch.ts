@@ -88,7 +88,7 @@ export const configure = <B extends Batch>(
   options: Options<B>
 ): (<I extends Inputs<B>, O extends Outputs<B>>(
   inputs: I
-) => Process<Collections, O>) => {
+) => Process<Collections, I & O>) => {
   const {
     process,
     extract,
@@ -101,7 +101,7 @@ export const configure = <B extends Batch>(
 
   return function* <I extends Inputs<B>, O extends Outputs<B>>(
     inputs: I
-  ): Process<Collections, O> {
+  ): Process<Collections, I & O> {
     const batch: Entries<B> = [];
     const breadcrumbs: Breadcrumbs<B> = {};
 

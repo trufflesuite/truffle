@@ -6,7 +6,7 @@ import * as Batch from "./batch";
 
 export const generateCompilationsContractsLoad = Batch.Contracts.generate<{
   compilation: {
-    db: {
+    db?: {
       compilation: IdObject<DataModel.Compilation>;
     };
   };
@@ -14,7 +14,7 @@ export const generateCompilationsContractsLoad = Batch.Contracts.generate<{
     contractName: string;
     abi: any;
     sourcePath: string;
-    db: {
+    db?: {
       callBytecode: IdObject<DataModel.Bytecode>;
       createBytecode: IdObject<DataModel.Bytecode>;
     };
