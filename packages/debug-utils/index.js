@@ -9,55 +9,55 @@ hljsDefineSolidity(chromafi.hljs);
 var chalk = require("chalk");
 
 const commandReference = {
-  "o": "step over",
-  "i": "step into",
-  "u": "step out",
-  "n": "step next",
+  o: "step over",
+  i: "step into",
+  u: "step out",
+  n: "step next",
   ";": "step instruction (include number to step multiple)",
-  "p": "print instruction & state (`p [mem|cal|sto]*`; see docs for more)",
-  "l": "print additional source context",
-  "h": "print this help",
-  "v": "print variables and values",
+  p: "print instruction & state (`p [mem|cal|sto]*`; see docs for more)",
+  l: "print additional source context",
+  h: "print this help",
+  v: "print variables and values",
   ":": "evaluate expression - see `v`",
   "+": "add watch expression (`+:<expr>`)",
   "-": "remove watch expression (-:<expr>)",
   "?": "list existing watch expressions and breakpoints",
-  "b": "add breakpoint (`b [[<source-file>:]<line-number>]`; see docs for more)",
-  "B": "remove breakpoint (similar to adding, or `B all` to remove all)",
-  "c": "continue until breakpoint",
-  "q": "quit",
-  "r": "reset",
-  "t": "load new transaction",
-  "T": "unload transaction",
-  "s": "print stacktrace",
-  "g": "turn on generated sources",
-  "G": "turn off generated sources except via `;`"
+  b: "add breakpoint (`b [[<source-file>:]<line-number>]`; see docs for more)",
+  B: "remove breakpoint (similar to adding, or `B all` to remove all)",
+  c: "continue until breakpoint",
+  q: "quit",
+  r: "reset",
+  t: "load new transaction",
+  T: "unload transaction",
+  s: "print stacktrace",
+  g: "turn on generated sources",
+  G: "turn off generated sources except via `;`"
 };
 
 const shortCommandReference = {
-  "o": "step over",
-  "i": "step into",
-  "u": "step out",
-  "n": "step next",
+  o: "step over",
+  i: "step into",
+  u: "step out",
+  n: "step next",
   ";": "step instruction",
-  "p": "print state",
-  "l": "print context",
-  "h": "print help",
-  "v": "print variables",
+  p: "print state",
+  l: "print context",
+  h: "print help",
+  v: "print variables",
   ":": "evaluate",
   "+": "add watch",
   "-": "remove watch",
   "?": "list watches & breakpoints",
-  "b": "add breakpoint",
-  "B": "remove breakpoint",
-  "c": "continue",
-  "q": "quit",
-  "r": "reset",
-  "t": "load",
-  "T": "unload",
-  "s": "stacktrace",
-  "g": "turn on generated sources",
-  "G": "turn off generated sources"
+  b: "add breakpoint",
+  B: "remove breakpoint",
+  c: "continue",
+  q: "quit",
+  r: "reset",
+  t: "load",
+  T: "unload",
+  s: "stacktrace",
+  g: "turn on generated sources",
+  G: "turn off generated sources"
 };
 
 const truffleColors = {
@@ -85,7 +85,7 @@ var DebugUtils = {
   //(anyway worst case failing it just results in a recompilation)
   //if it isn't real, but passes this test anyway... well, I'm hoping it should
   //still be usable all the same!
-  isUsableCompilation: function(compilation) {
+  isUsableCompilation: function (compilation) {
     //check #1: is the source order reliable?
     if (compilation.unreliableSourceOrder) {
       return false;
@@ -129,7 +129,7 @@ var DebugUtils = {
     );
   },
 
-  formatStartMessage: function(withTransaction) {
+  formatStartMessage: function (withTransaction) {
     if (withTransaction) {
       return "Gathering information about your project and the transaction...";
     } else {
@@ -137,26 +137,26 @@ var DebugUtils = {
     }
   },
 
-  formatTransactionStartMessage: function() {
+  formatTransactionStartMessage: function () {
     return "Gathering information about the transaction...";
   },
 
-  formatCommandDescription: function(commandId) {
+  formatCommandDescription: function (commandId) {
     return (
       truffleColors.mint(`(${commandId})`) + " " + commandReference[commandId]
     );
   },
 
-  formatPrompt: function(network, txHash) {
+  formatPrompt: function (network, txHash) {
     return txHash !== undefined
       ? `debug(${network}:${txHash.substring(0, 10)}...)> `
       : `debug(${network})> `;
   },
 
-  formatAffectedInstances: function(instances) {
+  formatAffectedInstances: function (instances) {
     var hasAllSource = true;
 
-    var lines = Object.keys(instances).map(function(address) {
+    var lines = Object.keys(instances).map(function (address) {
       var instance = instances[address];
 
       if (instance.contractName) {
@@ -186,7 +186,7 @@ var DebugUtils = {
     return lines.join(OS.EOL);
   },
 
-  formatHelp: function(lastCommand = "n") {
+  formatHelp: function (lastCommand = "n") {
     var prefix = [
       "Commands:",
       truffleColors.mint("(enter)") +
@@ -208,7 +208,7 @@ var DebugUtils = {
       ["+", "-"],
       ["?"],
       ["v", ":"]
-    ].map(function(shortcuts) {
+    ].map(function (shortcuts) {
       return shortcuts.map(DebugUtils.formatCommandDescription).join(", ");
     });
 
@@ -219,7 +219,7 @@ var DebugUtils = {
     return lines.join(OS.EOL);
   },
 
-  tabsToSpaces: function(inputLine, tabLength = DEFAULT_TAB_WIDTH) {
+  tabsToSpaces: function (inputLine, tabLength = DEFAULT_TAB_WIDTH) {
     //note: I'm going to assume for these purposes that everything is
     //basically ASCII and I don't have to worry about astral planes or
     //grapheme clusters.  Sorry. :-/
@@ -248,13 +248,13 @@ var DebugUtils = {
     return line;
   },
 
-  formatLineNumberPrefix: function(line, number, cols) {
+  formatLineNumberPrefix: function (line, number, cols) {
     const prefix = String(number).padStart(cols) + ": ";
 
     return prefix + line;
   },
 
-  formatLinePointer: function(
+  formatLinePointer: function (
     line,
     startCol,
     endCol,
@@ -296,7 +296,7 @@ var DebugUtils = {
   //been split into lines here, they're not the raw text
   //ALSO: assuming here that colorized source has been detabbed
   //but that uncolorized source has not
-  formatRangeLines: function(
+  formatRangeLines: function (
     source,
     range,
     uncolorizedSource,
@@ -359,7 +359,7 @@ var DebugUtils = {
     return allLines.join(OS.EOL);
   },
 
-  formatBreakpointLocation: function(
+  formatBreakpointLocation: function (
     breakpoint,
     here,
     currentSourceId,
@@ -382,7 +382,7 @@ var DebugUtils = {
     }
   },
 
-  formatInstruction: function(traceIndex, traceLength, instruction) {
+  formatInstruction: function (traceIndex, traceLength, instruction) {
     return (
       "(" +
       traceIndex +
@@ -393,7 +393,7 @@ var DebugUtils = {
     );
   },
 
-  formatPC: function(pc) {
+  formatPC: function (pc) {
     let hex = pc.toString(16);
     if (hex.length % 2 !== 0) {
       hex = "0" + hex; //ensure even length
@@ -401,7 +401,7 @@ var DebugUtils = {
     return "  PC = " + pc.toString() + " = 0x" + hex;
   },
 
-  formatStack: function(stack) {
+  formatStack: function (stack) {
     //stack here is an array of hex words (no "0x")
     var formatted = stack.map((item, index) => {
       item = truffleColors.orange(item);
@@ -424,7 +424,7 @@ var DebugUtils = {
     return formatted.join(OS.EOL);
   },
 
-  formatMemory: function(memory) {
+  formatMemory: function (memory) {
     //note memory here is an array of hex words (no "0x"),
     //not a single long hex string
 
@@ -454,14 +454,12 @@ var DebugUtils = {
     return formatted.join(OS.EOL);
   },
 
-  formatStorage: function(storage) {
+  formatStorage: function (storage) {
     //storage here is an object mapping hex words to hex words (no 0x)
 
     //first: sort the keys (slice to clone as sort is in-place)
     //note: we can use the default sort here; it will do the righ thing
-    let slots = Object.keys(storage)
-      .slice()
-      .sort();
+    let slots = Object.keys(storage).slice().sort();
 
     let formatted = slots.map((slot, index) => {
       if (
@@ -485,7 +483,7 @@ var DebugUtils = {
     return formatted.join(OS.EOL);
   },
 
-  formatCalldata: function(calldata) {
+  formatCalldata: function (calldata) {
     //takes a Uint8Array
     let selector = calldata.slice(0, Codec.Evm.Utils.SELECTOR_SIZE);
     let words = [];
@@ -537,7 +535,7 @@ var DebugUtils = {
     return formatted.join(OS.EOL);
   },
 
-  formatValue: function(value, indent = 0, nativized = false) {
+  formatValue: function (value, indent = 0, nativized = false) {
     let inspectOptions = {
       colors: true,
       depth: null,
@@ -558,7 +556,7 @@ var DebugUtils = {
       .join(OS.EOL);
   },
 
-  formatStacktrace: function(stacktrace, indent = 2) {
+  formatStacktrace: function (stacktrace, indent = 2) {
     //get message from stacktrace
     const message = stacktrace[0].message;
     //we want to print inner to outer, so first, let's
@@ -615,73 +613,73 @@ var DebugUtils = {
     return indented.join(OS.EOL);
   },
 
-  colorize: function(code, language = "Solidity") {
+  colorize: function (code, language = "Solidity") {
     //I'd put these outside the function
     //but then it gives me errors, because
     //you can't just define self-referential objects like that...
 
     const trufflePalette = {
       /* base (chromafi special, not hljs) */
-      "base": chalk,
-      "lineNumbers": chalk,
-      "trailingSpace": chalk,
+      base: chalk,
+      lineNumbers: chalk,
+      trailingSpace: chalk,
       /* classes hljs-solidity actually uses */
-      "keyword": truffleColors.mint,
-      "number": truffleColors.red,
-      "string": truffleColors.green,
-      "params": truffleColors.pink,
-      "builtIn": truffleColors.watermelon,
-      "built_in": truffleColors.watermelon, //just to be sure
-      "literal": truffleColors.watermelon,
-      "function": truffleColors.orange,
-      "title": truffleColors.orange,
-      "class": truffleColors.orange,
-      "comment": truffleColors.comment,
-      "doctag": truffleColors.comment,
+      keyword: truffleColors.mint,
+      number: truffleColors.red,
+      string: truffleColors.green,
+      params: truffleColors.pink,
+      builtIn: truffleColors.watermelon,
+      built_in: truffleColors.watermelon, //just to be sure
+      literal: truffleColors.watermelon,
+      function: truffleColors.orange,
+      title: truffleColors.orange,
+      class: truffleColors.orange,
+      comment: truffleColors.comment,
+      doctag: truffleColors.comment,
       /* classes it might soon use! */
-      "meta": truffleColors.pink,
-      "metaString": truffleColors.green,
+      meta: truffleColors.pink,
+      metaString: truffleColors.green,
       "meta-string": truffleColors.green, //similar
       /* classes it doesn't currently use but notionally could */
-      "type": truffleColors.orange,
-      "symbol": truffleColors.orange,
-      "metaKeyword": truffleColors.mint,
+      type: truffleColors.orange,
+      symbol: truffleColors.orange,
+      metaKeyword: truffleColors.mint,
       "meta-keyword": truffleColors.mint, //again, to be sure
       /* classes that don't make sense for Solidity */
-      "regexp": chalk, //solidity does not have regexps
-      "subst": chalk, //or string interpolation
-      "name": chalk, //or s-expressions
-      "builtInName": chalk, //or s-expressions, again
+      regexp: chalk, //solidity does not have regexps
+      subst: chalk, //or string interpolation
+      name: chalk, //or s-expressions
+      builtInName: chalk, //or s-expressions, again
       "builtin-name": chalk, //just to be sure
       /* classes for config, markup, CSS, templates, diffs (not programming) */
-      "section": chalk,
-      "tag": chalk,
-      "attr": chalk,
-      "attribute": chalk,
-      "variable": chalk,
-      "bullet": chalk,
-      "code": chalk,
-      "emphasis": chalk,
-      "strong": chalk,
-      "formula": chalk,
-      "link": chalk,
-      "quote": chalk,
-      "selectorAttr": chalk, //lotta redundancy follows
+      section: chalk,
+      tag: chalk,
+      attr: chalk,
+      attribute: chalk,
+      variable: chalk,
+      bullet: chalk,
+      code: chalk,
+      emphasis: chalk,
+      strong: chalk,
+      formula: chalk,
+      link: chalk,
+      quote: chalk,
+      selectorAttr: chalk, //lotta redundancy follows
       "selector-attr": chalk,
-      "selectorClass": chalk,
+      selectorClass: chalk,
       "selector-class": chalk,
-      "selectorId": chalk,
+      selectorId: chalk,
       "selector-id": chalk,
-      "selectorPseudo": chalk,
+      selectorPseudo: chalk,
       "selector-pseudo": chalk,
-      "selectorTag": chalk,
+      selectorTag: chalk,
       "selector-tag": chalk,
-      "templateTag": chalk,
+      templateTag: chalk,
       "template-tag": chalk,
-      "templateVariable": chalk,
+      templateVariable: chalk,
       "template-variable": chalk,
-      "addition": chalk,
-      "deletion": chalk
+      addition: chalk,
+      deletion: chalk
     };
 
     const options = {
@@ -717,7 +715,7 @@ var DebugUtils = {
   },
 
   //HACK
-  cleanThis: function(variables, replacement) {
+  cleanThis: function (variables, replacement) {
     return Object.assign(
       {},
       ...Object.entries(variables).map(([variable, value]) =>
@@ -738,7 +736,7 @@ var DebugUtils = {
    * way at the moment to switch back into light mode in order to re-run
    * this function.  You do *not* want to run this in full mode.
    */
-  getTransactionSourcesBeforeStarting: async function(bugger) {
+  getTransactionSourcesBeforeStarting: async function (bugger) {
     await bugger.reset();
     let sources = {};
     const { controller } = bugger.selectors;

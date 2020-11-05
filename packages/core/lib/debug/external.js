@@ -114,8 +114,7 @@ class DebugExternalHandler {
         //shim the result
         const shimmedCompilations = Codec.Compilations.Utils.shimCompilations(
           compilations,
-          `externalFor(${address})Via(${fetcher.fetcherName})`,
-          true //mark compilations as external Solidity
+          `externalFor(${address})Via(${fetcher.fetcherName})`
         );
         //add it!
         await this.bugger.addExternalCompilations(shimmedCompilations);

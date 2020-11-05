@@ -2,35 +2,31 @@ import debugModule from "debug";
 const debug = debugModule("codec:contexts:utils");
 
 import * as Evm from "@truffle/codec/evm";
-import {
-  DecoderContexts,
-  DecoderContext,
-  Context,
-  Contexts,
-  DebuggerContexts
-} from "./types";
+import { Context, Contexts } from "./types";
 import escapeRegExp from "lodash.escaperegexp";
 const cbor = require("borc"); //importing this untyped, sorry!
 
-//I split these next two apart because the type system was giving me trouble
-export function findDecoderContext(
-  contexts: DecoderContexts,
+export function findContext(
+  contexts: Contexts,
   binary: string
-): DecoderContext | null {
-  let context = Object.values(contexts).find(context =>
+): Context | null {
+  const matchingContexts = Object.values(contexts).filter(context =>
     matchContext(context, binary)
   );
-  return context !== undefined ? context : null;
-}
-
-export function findDebuggerContext(
-  contexts: DebuggerContexts,
-  binary: string
-): string | null {
-  let context = Object.values(contexts).find(context =>
-    matchContext(context, binary)
+  //rather than just pick an arbitrary matching context, we're going
+  //to pick one that isn't a descendant of any of the others.
+  //(if there are multiple of *those*, then yeah it's arbitrary.)
+  const context = matchingContexts.find(
+    descendant => !matchingContexts.some(ancestor =>
+      descendant.compilationId === ancestor.compilationId &&
+      descendant.linearizedBaseContracts &&
+      ancestor.contractId !== undefined &&
+      descendant.linearizedBaseContracts.slice(1).includes(ancestor.contractId)
+      //we do slice one because everything is an an ancestor of itself; we only
+      //care about *proper* ancestors
+    )
   );
-  return context !== undefined ? context.context : null;
+  return context || null;
 }
 
 export function matchContext(context: Context, givenBinary: string): boolean {
@@ -165,16 +161,13 @@ export function normalizeContexts(contexts: Contexts): Contexts {
 
   debug("immutables complete");
 
-  //one last step: if externalSolidity is set, we'll allow the CBOR to vary,
-  //aside from the length (note: ideally here we would *only* dot-out the
-  //metadata hash part of the CBOR, but, well, it's not worth the trouble
-  //to detect that; doing that could potentially get pretty involved)
-  //NOTE: this will cause a problem with Solidity versions 0.4.6 and earlier,
-  //but it's not worth the trouble to detect that either, because we really
-  //don't support Solidity versions that old
-  //note that the externalSolidity option should *only* be set for Solidity contracts!
+  //one last step: where there's CBOR with a metadata hash, we'll allow the
+  //CBOR to vary, aside from the length (note: ideally here we would *only*
+  //dot-out the metadata hash part of the CBOR, but, well, it's not worth the
+  //trouble to detect that; doing that could potentially get pretty involved)
+  //note that if the code isn't Solidity, that's fine -- we just won't get
+  //valid CBOR and will not end up adding to our list of regular expressions
   const externalCborInfo = Object.values(newContexts)
-    .filter(context => context.externalSolidity)
     .map(context => extractCborInfo(context.binary))
     .filter(
       cborSegment => cborSegment !== null && isCborWithHash(cborSegment.cbor)
@@ -183,14 +176,12 @@ export function normalizeContexts(contexts: Contexts): Contexts {
     input: new RegExp(cborInfo.cborSegment, "g"), //hex string so no need for escape
     output: "..".repeat(cborInfo.cborLength) + cborInfo.cborLengthHex
   }));
-  //HACK: we will replace *every* occurrence of *every* external CBOR occurring in
-  //*every* external Solidity context, in order to cover created contracts
-  //(including if there are multiple or recursive ones)
+  //HACK: we will replace *every* occurrence of *every* external CBOR occurring
+  //in *every* context, in order to cover created contracts (including if there
+  //are multiple or recursive ones)
   for (let context of Object.values(newContexts)) {
-    if (context.externalSolidity) {
-      for (let { input, output } of cborRegexps) {
-        context.binary = context.binary.replace(input, output);
-      }
+    for (let { input, output } of cborRegexps) {
+      context.binary = context.binary.replace(input, output);
     }
   }
 

@@ -50,7 +50,7 @@ export const projects: Definition<"projects"> = {
           debug("Resolving Project.network...");
 
           const results = await workspace.find("projectNames", {
-            selector: { "project.id": id, name, "type": "Network" }
+            selector: { "project.id": id, name, type: "Network" }
           });
           const nameRecordIds = results.map(({ nameRecord: { id } }) => id);
           const nameRecords = await workspace.find("nameRecords", {
@@ -75,7 +75,7 @@ export const projects: Definition<"projects"> = {
           debug("Resolving Project.contract...");
 
           const results = await workspace.find("projectNames", {
-            selector: { "project.id": id, name, "type": "Contract" }
+            selector: { "project.id": id, name, type: "Contract" }
           });
           const nameRecordIds = results.map(({ nameRecord: { id } }) => id);
           const nameRecords = await workspace.find("nameRecords", {

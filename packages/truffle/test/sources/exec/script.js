@@ -7,7 +7,7 @@ const exec = function () {
       console.log(parseInt(val));
       process.exit(0);
     })
-    .catch(err => process.exit(1));
+    .catch(() => process.exit(1));
 };
 
 module.exports = exec;

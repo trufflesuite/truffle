@@ -50,17 +50,17 @@ let sources = {
   "AssemblyTest.sol": __YUL
 };
 
-describe("Assembly decoding", function() {
+describe("Assembly decoding", function () {
   var provider;
 
   var abstractions;
   var compilations;
 
-  before("Create Provider", async function() {
+  before("Create Provider", async function () {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
-  before("Prepare contracts and artifacts", async function() {
+  before("Prepare contracts and artifacts", async function () {
     this.timeout(30000);
 
     let prepared = await prepareContracts(provider, sources);
@@ -68,7 +68,7 @@ describe("Assembly decoding", function() {
     compilations = prepared.compilations;
   });
 
-  it("Decodes assembly variables", async function() {
+  it("Decodes assembly variables", async function () {
     this.timeout(12000);
 
     let instance = await abstractions.AssemblyTest.deployed();

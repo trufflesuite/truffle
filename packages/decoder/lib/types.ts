@@ -114,8 +114,8 @@ export interface ContractAndContexts {
   compilationId: string;
   contract: Compilations.Contract;
   node: Ast.AstNode;
-  deployedContext?: Contexts.DecoderContext;
-  constructorContext?: Contexts.DecoderContext;
+  deployedContext?: Contexts.Context;
+  constructorContext?: Contexts.Context;
 }
 
 export interface ContractInfo {
