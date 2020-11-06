@@ -335,6 +335,13 @@ function logToTree(log) {
         break;
       case "callexternal": {
         debug("external call");
+        if (
+          currentNode.type === "callexternal" &&
+          currentNode.kind === "library"
+        ) {
+          //didn't identify it as function, so set it to message
+          currentNode.kind = "message";
+        }
         const {
           type,
           address,
@@ -347,12 +354,13 @@ function logToTree(log) {
           variables,
           instant,
           calldata,
-          binary
+          binary,
+          waitingForFunctionDefinition
         } = action;
         let call = {
           type,
           address,
-          contextHash: context.context,
+          contextHash: context.context || null,
           value,
           kind,
           isDelegate,
@@ -361,7 +369,7 @@ function logToTree(log) {
           arguments: variables,
           actions: []
         };
-        if (kind === "message") {
+        if (kind === "message" || kind === "library") {
           call.data = calldata;
         } else if (kind === "unknowncreate") {
           call.binary = binary;
@@ -370,6 +378,7 @@ function logToTree(log) {
           call.returnKind = action.status ? "return" : "revert";
           currentNode.actions.push(call);
         } else {
+          call.waitingForFunctionDefinition = waitingForFunctionDefinition;
           currentNode.actions.push(call);
           currentNode = call;
           nodeStack.push(call);
@@ -378,13 +387,33 @@ function logToTree(log) {
       }
       case "callinternal": {
         debug("internal call");
-        const { type, functionName, contractName, variables } = action;
+        const {
+          type,
+          functionName,
+          contractName,
+          variables,
+          waitingForFunctionDefinition
+        } = action;
+        if (
+          currentNode.type === "callexternal" &&
+          currentNode.kind !== "constructor" &&
+          currentNode.waitingForFunctionDefinition
+        ) {
+          //this is for handling post-0.5.1 initial jump-ins; don't add
+          //a separate internal call if we're sitting on an external call
+          //waiting to be identified
+          //However, note that we don't do this for constructors, because
+          //for constructors, an initializer could run first.  Fortunately
+          //constructors don't have a jump in, so it works out OK!
+          break;
+        }
         const call = {
           type,
           functionName,
           contractName,
           arguments: variables,
-          actions: []
+          actions: [],
+          waitingForFunctionDefinition
         };
         currentNode.actions.push(call);
         currentNode = call;
@@ -399,6 +428,7 @@ function logToTree(log) {
         if (currentNode.type === "callinternal") {
           currentNode.returnKind = "return";
           currentNode.returnValues = action.variables;
+          delete currentNode.waitingForFunctionDefinition;
           nodeStack.pop();
           currentNode = nodeStack[nodeStack.length - 1];
         } else if (currentNode.type === "callexternal") {
@@ -410,9 +440,37 @@ function logToTree(log) {
           debug("returninternal once tx done!");
         }
         break;
+      case "identify": {
+        currentNode.waitingForFunctionDefinition = false;
+        const { variables, functionName, contractName } = action;
+        if (!currentNode.functionName) {
+          currentNode.functionName = functionName;
+        }
+        if (!currentNode.contractName) {
+          currentNode.contractName = contractName;
+        }
+        if (!currentNode.arguments) {
+          currentNode.arguments = variables;
+        }
+        if (
+          currentNode.type === "callexternal" &&
+          currentNode.kind === "library"
+        ) {
+          currentNode.kind = "function";
+          delete currentNode.data;
+        }
+        break;
+      }
       case "returnexternal":
       case "revert":
       case "selfdestruct":
+        if (
+          currentNode.type === "callexternal" &&
+          currentNode.kind === "library"
+        ) {
+          //didn't identify it as function, so set it to message
+          currentNode.kind = "message";
+        }
         switch (action.type) {
           case "returnexternal":
             debug("external return");
@@ -445,6 +503,7 @@ function logToTree(log) {
             //reverting
             currentNode.returnKind = "unwind";
           }
+          delete currentNode.waitingForFunctionDefinition;
           debug("preliminary popping");
           nodeStack.pop();
           currentNode = nodeStack[nodeStack.length - 1];
@@ -484,6 +543,7 @@ function logToTree(log) {
           }
         }
         //finally, pop it from the stack.
+        delete currentNode.waitingForFunctionDefinition;
         nodeStack.pop();
         currentNode = nodeStack[nodeStack.length - 1];
         break;
