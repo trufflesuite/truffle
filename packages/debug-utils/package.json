@@ -8,13 +8,13 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "4.2.14",
+  "version": "5.0.0",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0"
   },
   "dependencies": {
-    "@truffle/codec": "^0.7.1",
+    "@truffle/codec": "^0.8.0",
     "@trufflesuite/chromafi": "^2.2.1",
     "chalk": "^2.4.2",
     "debug": "^4.1.0",
