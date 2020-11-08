@@ -1,7 +1,8 @@
 import { PrepareBatch, _ } from "@truffle/db/process/batch";
+import * as Batch from "@truffle/db/process/batch";
 
 describe("PrepareBatch", () => {
-  test("supports trivial case (arrays)", () => {
+  it("supports trivial case (arrays)", () => {
     type S = _[];
     type Prepare = PrepareBatch<S, number, string>;
 

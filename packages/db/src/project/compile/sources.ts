@@ -4,7 +4,7 @@ const debug = logger("db:project:compile:sources");
 import { IdObject, resources } from "@truffle/db/project/process";
 import * as Batch from "./batch";
 
-export const generateCompilationsSourcesLoad = Batch.Contracts.generate<{
+export const generateSourcesLoad = Batch.Contracts.generate<{
   compilation: {};
   contract: {
     sourcePath: string;

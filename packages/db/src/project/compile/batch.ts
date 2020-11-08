@@ -48,7 +48,11 @@ export namespace Compilations {
     "iterate" | "find" | "initialize" | "merge"
   >;
 
-  export const generate = <C extends Config>(options: Options<C>) =>
+  export const generate = <C extends Config>(
+    options: Options<C>
+  ): (<I extends Batch.Input<Batch<C>>, O extends Batch.Output<Batch<C>>>(
+    inputs: Batch.Inputs<Batch<C>, I>
+  ) => Process<Batch.Outputs<Batch<C>, I & O>>) =>
     Batch.configure<Batch<C>>({
       *iterate<_I>({ inputs }) {
         for (const [compilationIndex, compilation] of inputs.entries()) {
@@ -74,12 +78,12 @@ export namespace Compilations {
         }));
       },
 
-      merge<_O>({ outputs, breadcrumb, output }) {
+      merge<I, O>({ outputs, breadcrumb, output }) {
         debug("outputs %o", outputs);
         const { compilationIndex } = breadcrumb;
 
         const compilationsBefore = outputs.slice(0, compilationIndex);
-        const compilation = output;
+        const compilation: I & O = output;
         const compilationsAfter = outputs.slice(compilationIndex + 1);
 
         return [...compilationsBefore, compilation, ...compilationsAfter];
@@ -119,7 +123,7 @@ export namespace Contracts {
     options: Options<C>
   ): (<I extends Batch.Input<Batch<C>>, O extends Batch.Output<Batch<C>>>(
     inputs: Batch.Inputs<Batch<C>, I>
-  ) => Process<Batch.Outputs<Batch<C>, O>>) =>
+  ) => Process<Batch.Outputs<Batch<C>, I & O>>) =>
     Batch.configure<Batch<C>>({
       *iterate<_I>({ inputs }) {
         for (const [compilationIndex, { contracts }] of inputs.entries()) {
@@ -138,14 +142,14 @@ export namespace Contracts {
         return inputs[compilationIndex].contracts[contractIndex];
       },
 
-      initialize<_I, _O>({ inputs }) {
+      initialize<I, O>({ inputs }) {
         return inputs.map(compilation => ({
           ...compilation,
-          contracts: []
+          contracts: [] as (I & O)[]
         }));
       },
 
-      merge<_O>({ outputs, breadcrumb, output }) {
+      merge<I, O>({ outputs, breadcrumb, output }) {
         const { compilationIndex, contractIndex } = breadcrumb;
 
         const compilationsBefore = outputs.slice(0, compilationIndex);
@@ -153,7 +157,7 @@ export namespace Contracts {
         const compilationsAfter = outputs.slice(compilationIndex + 1);
 
         const contractsBefore = compilation.contracts.slice(0, contractIndex);
-        const contract = output;
+        const contract: I & O = output;
         const contractsAfter = compilation.contracts.slice(contractIndex + 1);
 
         return [

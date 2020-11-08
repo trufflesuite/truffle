@@ -4,7 +4,7 @@ const debug = logger("db:project:compile:contracts");
 import { IdObject, resources } from "@truffle/db/project/process";
 import * as Batch from "./batch";
 
-export const generateCompilationsContractsLoad = Batch.Contracts.generate<{
+export const generateContractsLoad = Batch.Contracts.generate<{
   compilation: {
     db: {
       compilation: IdObject<DataModel.Compilation>;

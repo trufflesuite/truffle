@@ -17,7 +17,7 @@ interface Contract {
   };
 }
 
-export const generateCompilationsInputLoad = Batch.Compilations.generate<{
+export const generateCompilationsLoad = Batch.Compilations.generate<{
   compilation: {
     compiler: {
       name: string;

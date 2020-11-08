@@ -4,7 +4,7 @@ const debug = logger("db:project:compile:bytecodes");
 import { IdObject, resources } from "@truffle/db/project/process";
 import * as Batch from "./batch";
 
-export const generateCompilationsBytecodesLoad = Batch.Contracts.generate<{
+export const generateBytecodesLoad = Batch.Contracts.generate<{
   compilation: {};
   contract: {
     bytecode: DataModel.BytecodeInput;

@@ -46,29 +46,44 @@ type Results<B extends Batch> = Result<B>[];
 export type Options<B extends Batch> = {
   process(options: { batch: Entries<B> }): Process<Collections, Results<B>>;
 
-  iterate<I extends Input<B>>(options: {
+  iterate<
+    I extends Input<B>,
+    _O extends Output<B>
+  >(options: {
     inputs: Inputs<B, I>;
   }): Iterable<{
     input: I;
     breadcrumb: Breadcrumb<B>;
   }>;
 
-  find<I extends Input<B>>(options: {
+  find<
+    I extends Input<B>,
+    _O extends Output<B>
+  >(options: {
     inputs: Inputs<B, I>;
     breadcrumb: Breadcrumb<B>;
   }): I;
 
-  initialize<I extends Input<B>, O extends Output<B>>(options: {
+  initialize<
+    I extends Input<B>,
+    O extends Output<B>
+  >(options: {
     inputs: Inputs<B, I>;
   }): Outputs<B, O>;
 
-  merge<O extends Output<B>>(options: {
+  merge<
+    _I extends Input<B>,
+    O extends Output<B>
+  >(options: {
     outputs: Outputs<B, O>;
     breadcrumb: Breadcrumb<B>;
     output: O;
   }): Outputs<B, O>;
 
-  extract<I extends Input<B>>(options: {
+  extract<
+    I extends Input<B>,
+    _O extends Output<B>
+  >(options: {
     input: I;
     inputs: Inputs<B, I>;
     breadcrumb: Breadcrumb<B>;
@@ -102,8 +117,8 @@ export const configure = <B extends Batch>(
     const batch: Entries<B> = [];
     const breadcrumbs: Breadcrumbs<B> = {};
 
-    for (const { input, breadcrumb } of iterate<I>({ inputs })) {
-      const entry: Entry<B> = extract<I>({ input, inputs, breadcrumb });
+    for (const { input, breadcrumb } of iterate<I, O>({ inputs })) {
+      const entry: Entry<B> = extract<I, O>({ input, inputs, breadcrumb });
 
       breadcrumbs[batch.length] = breadcrumb;
 
@@ -115,12 +130,12 @@ export const configure = <B extends Batch>(
     return results.reduce(
       (outputs: Outputs<B, O>, result: Result<B>, index: number) => {
         const breadcrumb = breadcrumbs[index];
-        const input = find<I>({ inputs, breadcrumb });
+        const input = find<I, O>({ inputs, breadcrumb });
         const output = convert<I, O>({ result, input, inputs });
 
         return merge({ outputs, output, breadcrumb });
       },
       initialize<I, O>({ inputs })
-    );
+    ) as Outputs<B, O>;
   };
 };
