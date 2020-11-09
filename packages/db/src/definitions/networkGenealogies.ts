@@ -1,6 +1,6 @@
 import gql from "graphql-tag";
 
-import { Definition } from "./types";
+import {Definition} from "./types";
 
 export const networkGenealogies: Definition<"networkGenealogies"> = {
   createIndexes: [],
@@ -36,81 +36,73 @@ export const networkGenealogies: Definition<"networkGenealogies"> = {
   resolvers: {
     NetworkGenealogy: {
       ancestor: {
-        resolve: async ({ ancestor }, __, { workspace }) => {
+        resolve: async ({ancestor}, __, {workspace}) => {
           const result = await workspace.get("networks", ancestor.id);
           return result;
         }
       },
       descendant: {
-        resolve: async ({ descendant }, __, { workspace }) =>
+        resolve: async ({descendant}, __, {workspace}) =>
           await workspace.get("networks", descendant.id)
       }
     },
     Network: {
       possibleAncestors: {
-        resolve: async ({ id }, { limit, alreadyTried }, { workspace }) => {
+        resolve: async ({id}, {limit, alreadyTried}, {workspace}) => {
           const network = await workspace.get("networks", id);
+          const queryLimit = limit ? limit : 5;
           const result = await workspace.find("networks", {
             selector: {
               "historicBlock.height": {
-                $lt: network.historicBlock.height
+                $gte: null,
+                $lt: network.historicBlock.height,
+                $ne: network.historicBlock.height
               },
               "networkId": network.networkId,
               "id": {
                 $nin: alreadyTried
               }
             },
-            // sort: [{ "historicBlock.height": "desc" }],
-            limit: limit ? limit : 5
-            // use_index: "networks-index"
+            sort: [{"historicBlock.height": "desc"}],
+            limit: queryLimit
           });
 
-          let untriedNetworks = result
-            .filter(({ id }) => !alreadyTried.includes(id))
-            .sort((a, b) => {
-              return b.historicBlock.height - a.historicBlock.height;
-            })
-            .map(network => {
-              console.log("network? " + JSON.stringify(network));
-              return {
-                network,
-                alreadyTried: alreadyTried
-              };
-            });
+          let untriedNetworks = result.map(network => {
+            return {
+              network,
+              alreadyTried: alreadyTried
+            };
+          });
 
           return untriedNetworks;
         }
       },
       possibleDescendants: {
-        resolve: async ({ id }, { limit, alreadyTried }, { workspace }) => {
+        resolve: async ({id}, {limit, alreadyTried}, {workspace}) => {
           const network = await workspace.get("networks", id);
+          const queryLimit = limit ? limit : 5;
           const result = await workspace.find("networks", {
             selector: {
               "historicBlock.height": {
-                $gt: network.historicBlock.height
+                $gte: null,
+                $gt: network.historicBlock.height,
+                $ne: network.historicBlock.height
               },
               "networkId": network.networkId,
               "id": {
                 $nin: alreadyTried
               }
             },
-            limit: limit ? limit : 5
-            // sort: [{ "historicBlock.height": "asc" }],
-            // use_index: "networks-index"
+            sort: [{"historicBlock.height": "asc"}],
+            limit: queryLimit
           });
 
-          let untriedNetworks = result
-            .filter(({ id }) => !alreadyTried.includes(id))
-            .sort((a, b) => {
-              return a.historicBlock.height - b.historicBlock.height;
-            })
-            .map(network => {
-              console.log("network? " + JSON.stringify(network));
-              return {
-                network,
-                alreadyTried: alreadyTried
-              };
-            });
+          let untriedNetworks = result.map(network => {
+            return {
+              network,
+              alreadyTried: alreadyTried
+            };
+          });
 
           return untriedNetworks;
         }
