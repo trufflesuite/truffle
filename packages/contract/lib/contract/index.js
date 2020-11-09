@@ -1,6 +1,6 @@
 const debug = require("debug")("contract:contract"); // eslint-disable-line no-unused-vars
 let Web3 = require("web3");
-let { Tezos } = require("@taquito/taquito");
+let { TezosToolkit } = require("@taquito/taquito");
 const loadTezosContract = require("./tezosContract");
 const loadEvmContract = require("./evmContract");
 const bootstrap = require("./bootstrap");
@@ -13,8 +13,11 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
   Web3 = global.Web3;
 }
 
-if (typeof Tezos === "object" && Object.keys(Tezos).length === 0) {
-  Tezos = global.Tezos;
+if (
+  typeof TezosToolkit === "object" &&
+  Object.keys(TezosToolkit).length === 0
+) {
+  TezosToolkit = global.Tezos;
 }
 
 (function(module) {
