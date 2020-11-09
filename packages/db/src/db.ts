@@ -28,8 +28,7 @@ export class TruffleDB {
       workspace: attach({
         workingDirectory: config.working_directory,
         adapter: (config.db || {}).adapter
-      }),
-      workingDirectory: config.working_directory || process.cwd()
+      })
     };
   }
 }

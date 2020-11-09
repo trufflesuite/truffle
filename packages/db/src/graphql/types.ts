@@ -28,9 +28,6 @@ export type Definitions<C extends Collections> = {
 
 export interface Context<C extends Collections> {
   workspace: Workspace<C>;
-
-  // HACK this is a bit out of place here
-  workingDirectory: string;
 }
 
 export type Definition<
