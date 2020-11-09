@@ -51,9 +51,11 @@ export function* generateMigrateLoad(options: {
       ...options.network,
       networkId
     },
+    // @ts-ignore
     artifacts: options.artifacts
   });
 
+  // @ts-ignore
   const withNetworks = yield* generateNetworksLoad(withBlocks);
 
   const withContracts = yield* generateContracts(withNetworks);
