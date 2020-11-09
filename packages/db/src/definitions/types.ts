@@ -1,4 +1,4 @@
-import { logger } from "@truffle/db/logger";
+import {logger} from "@truffle/db/logger";
 const debug = logger("db:definitions:types");
 
 import * as Meta from "@truffle/db/meta";
@@ -46,8 +46,8 @@ export type Collections = {
     mutable: true;
   };
   networkGenealogies: {
-    resource: DataModel.INetworkGenealogy;
-    input: DataModel.INetworkGenealogyInput;
+    resource: DataModel.NetworkGenealogy;
+    input: DataModel.NetworkGenealogyInput;
   };
 };
 
