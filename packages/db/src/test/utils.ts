@@ -4,7 +4,7 @@ import * as graphql from "graphql";
 
 import { schema } from "@truffle/db/schema";
 import { connect } from "@truffle/db/connect";
-import { Workspace } from "@truffle/db/definitions";
+import { Workspace } from "@truffle/db/resources";
 
 export { generateId } from "@truffle/db/helpers";
 

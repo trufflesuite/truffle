@@ -5,7 +5,7 @@ import { GraphQLSchema, DocumentNode, parse, execute } from "graphql";
 import type TruffleConfig from "@truffle/config";
 import { schema } from "./schema";
 import { connect } from "./connect";
-import { Context } from "./definitions";
+import { Context } from "./resources";
 
 export class TruffleDB {
   schema: GraphQLSchema;
