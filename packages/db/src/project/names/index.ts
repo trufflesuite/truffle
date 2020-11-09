@@ -41,6 +41,7 @@ export function* generateNamesLoad(options: {
     project,
     assignments
   });
+  debug("withNameAndType %o", withNameAndType);
 
   const withCurrentNameRecords = yield* generateCurrentNameRecords(
     withNameAndType

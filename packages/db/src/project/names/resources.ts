@@ -8,10 +8,9 @@ import {
   resources,
   IdObject,
   Process,
-  PrepareBatch,
-  _,
   NamedCollectionName
 } from "@truffle/db/project/process";
+import * as Batch from "./batch";
 
 interface Assignment {
   resource: IdObject;
@@ -40,17 +39,41 @@ export function* generateResourceNames(options: {
   for (const [collectionName, assignments] of Object.entries(
     options.assignments
   )) {
-    const type = pascalCase(singular(collectionName));
-
-    const { batch, unbatch } = prepareResourceNamesBatch({
+    debug("collectionName %o", collectionName);
+    const outputs = yield* generateCollectionAssignments({
       project,
-      type,
+      collectionName,
       assignments
     });
+    debug("outputs %o", outputs);
 
-    debug("batch %o", batch);
+    result.assignments[collectionName] = outputs.assignments;
+  }
+  debug("result %o", result);
 
-    const results: { name: string }[] = yield* resources.find(
+  return result;
+}
+
+const generateCollectionAssignments = Batch.generate<{
+  assignment: {};
+  properties: {
+    name: string;
+    type: string;
+  };
+  entry: IdObject;
+  result: {
+    name: string;
+    type: string;
+  };
+}>({
+  extract<_I>({ input: { resource } }) {
+    return resource;
+  },
+
+  *process({ batch, inputs: { collectionName } }) {
+    const type = pascalCase(singular(collectionName));
+
+    const results = yield* resources.find(
       collectionName as NamedCollectionName,
       batch.map(({ id }) => id),
       gql`
@@ -60,66 +83,13 @@ export function* generateResourceNames(options: {
       `
     );
 
-    result.assignments[collectionName] = unbatch(results).assignments;
-  }
-
-  return result;
-}
-
-const prepareResourceNamesBatch: PrepareBatch<
-  {
-    project: IdObject<DataModel.Project>;
-    type: string;
-    assignments: _[];
+    return results.map(({ name }) => ({ name, type }));
   },
-  Assignment,
-  Assignment & {
-    name: string;
-    type: string;
-  },
-  IdObject,
-  { name: string }
-> = structured => {
-  const batch = [];
-  const breadcrumbs: {
-    [index: number]: {
-      assignmentIndex: number;
+
+  convert<_I, _O>({ result, input }) {
+    return {
+      ...input,
+      ...result
     };
-  } = {};
-
-  const { project, type } = structured;
-
-  for (const [
-    assignmentIndex,
-    assignment
-  ] of structured.assignments.entries()) {
-    const { resource } = assignment;
-
-    breadcrumbs[batch.length] = {
-      assignmentIndex
-    };
-
-    batch.push(resource);
   }
-
-  const unbatch = (results: { name: string }[]) => {
-    const assignments: (Assignment & {
-      name: string;
-      type: string;
-    })[] = [];
-
-    for (const [index, { name }] of results.entries()) {
-      const { assignmentIndex } = breadcrumbs[index];
-
-      assignments[assignmentIndex] = {
-        ...structured.assignments[assignmentIndex],
-        name,
-        type
-      };
-    }
-
-    return { project, type, assignments };
-  };
-
-  return { batch, unbatch };
-};
+});

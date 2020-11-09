@@ -1,13 +1,8 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:names:current");
 
-import {
-  resources,
-  IdObject,
-  Process,
-  PrepareBatch,
-  _
-} from "@truffle/db/project/process";
+import { IdObject, resources, Process } from "@truffle/db/project/process";
+import * as Batch from "./batch";
 
 interface Assignment {
   resource: IdObject;
@@ -29,75 +24,54 @@ export function* generateProjectNamesLoad(options: {
     })[];
   };
 }> {
-  const { batch, unbatch } = prepareProjectNamesBatch(options);
+  const { project } = options;
 
-  const projectNames = yield* resources.load("projectNames", batch);
+  const result = {
+    project,
+    assignments: {}
+  };
+  for (const [collectionName, assignments] of Object.entries(
+    options.assignments
+  )) {
+    debug("collectionName %o", collectionName);
+    const outputs = yield* generateCollectionAssignments({
+      project,
+      collectionName,
+      assignments
+    });
+    debug("outputs %o", outputs);
 
-  return unbatch(projectNames);
+    result.assignments[collectionName] = outputs.assignments;
+  }
+  debug("result %o", result);
+
+  return result;
 }
 
-const prepareProjectNamesBatch: PrepareBatch<
-  {
-    project: IdObject<DataModel.Project>;
-    assignments: {
-      [collectionName: string]: _[];
-    };
-  },
-  Assignment,
-  Assignment & {
-    projectName: IdObject<DataModel.ProjectName>;
-  },
-  DataModel.ProjectNameInput,
-  IdObject<DataModel.ProjectName>
-> = structured => {
-  const batch = [];
-  const breadcrumbs: {
-    [index: number]: {
-      collectionName: string;
-      assignmentIndex: number;
-    };
-  } = {};
-
-  const { project } = structured;
-
-  for (const [collectionName, assignments] of Object.entries(
-    structured.assignments
-  )) {
-    for (const [assignmentIndex, assignment] of assignments.entries()) {
-      const { name, type, nameRecord } = assignment;
-
-      breadcrumbs[batch.length] = {
-        collectionName,
-        assignmentIndex
-      };
-
-      batch.push({
-        project,
-        name,
-        type,
-        nameRecord
-      });
-    }
-  }
-
-  const unbatch = (results: IdObject<DataModel.ProjectName>[]) => {
-    const assignments = {};
-
-    for (const [index, result] of results.entries()) {
-      const { collectionName, assignmentIndex } = breadcrumbs[index];
-
-      if (!assignments[collectionName]) {
-        assignments[collectionName] = [];
-      }
-
-      assignments[collectionName][assignmentIndex] = {
-        ...structured.assignments[assignmentIndex],
-        projectName: result
-      };
-    }
-
-    return { project, assignments };
+const generateCollectionAssignments = Batch.generate<{
+  assignment: {
+    name: string;
+    type: string;
+    nameRecord: IdObject<DataModel.NameRecord>;
   };
+  properties: {
+    projectName: IdObject<DataModel.ProjectName>;
+  };
+  entry: DataModel.ProjectNameInput;
+  result: IdObject<DataModel.ProjectName>;
+}>({
+  extract<_I>({ input: { name, type, nameRecord }, inputs: { project } }) {
+    return { project, name, type, nameRecord };
+  },
 
-  return { batch, unbatch };
-};
+  *process({ batch }) {
+    return yield* resources.load("projectNames", batch);
+  },
+
+  convert<_I, _O>({ result, input }) {
+    return {
+      ...input,
+      projectName: result
+    };
+  }
+});

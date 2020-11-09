@@ -44,46 +44,34 @@ type Result<B extends Batch> = B["result"];
 type Results<B extends Batch> = Result<B>[];
 
 export type Options<B extends Batch> = {
-  process(options: { batch: Entries<B> }): Process<Collections, Results<B>>;
+  process<I extends Input<B>, _O extends Output<B>>(options: {
+    batch: Entries<B>;
+    inputs: Inputs<B, I>;
+  }): Process<Collections, Results<B>>;
 
-  iterate<
-    I extends Input<B>,
-    _O extends Output<B>
-  >(options: {
+  iterate<I extends Input<B>, _O extends Output<B>>(options: {
     inputs: Inputs<B, I>;
   }): Iterable<{
     input: I;
     breadcrumb: Breadcrumb<B>;
   }>;
 
-  find<
-    I extends Input<B>,
-    _O extends Output<B>
-  >(options: {
+  find<I extends Input<B>, _O extends Output<B>>(options: {
     inputs: Inputs<B, I>;
     breadcrumb: Breadcrumb<B>;
   }): I;
 
-  initialize<
-    I extends Input<B>,
-    O extends Output<B>
-  >(options: {
+  initialize<I extends Input<B>, O extends Output<B>>(options: {
     inputs: Inputs<B, I>;
   }): Outputs<B, O>;
 
-  merge<
-    _I extends Input<B>,
-    O extends Output<B>
-  >(options: {
+  merge<_I extends Input<B>, O extends Output<B>>(options: {
     outputs: Outputs<B, O>;
     breadcrumb: Breadcrumb<B>;
     output: O;
   }): Outputs<B, O>;
 
-  extract<
-    I extends Input<B>,
-    _O extends Output<B>
-  >(options: {
+  extract<I extends Input<B>, _O extends Output<B>>(options: {
     input: I;
     inputs: Inputs<B, I>;
     breadcrumb: Breadcrumb<B>;
@@ -111,7 +99,7 @@ export const configure = <B extends Batch>(
     merge
   } = options;
 
-  return function* <I extends Input<B>, O extends Output<B>>(
+  return function*<I extends Input<B>, O extends Output<B>>(
     inputs: Inputs<B, I>
   ): Process<Collections, Outputs<B, O>> {
     const batch: Entries<B> = [];
@@ -125,7 +113,7 @@ export const configure = <B extends Batch>(
       batch.push(entry);
     }
 
-    const results = yield* process({ batch });
+    const results = yield* process({ batch, inputs });
 
     return results.reduce(
       (outputs: Outputs<B, O>, result: Result<B>, index: number) => {

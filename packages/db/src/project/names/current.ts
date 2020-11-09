@@ -6,10 +6,9 @@ import {
   resources,
   toIdObject,
   IdObject,
-  Process,
-  PrepareBatch,
-  _
+  Process
 } from "@truffle/db/project/process";
+import * as Batch from "./batch";
 
 interface Assignment {
   resource: IdObject;
@@ -32,97 +31,73 @@ export function* generateCurrentNameRecords(options: {
 }> {
   const { project } = options;
 
-  const { batch, unbatch } = prepareProjectNamesBatch(options);
-  debug("batch %o", batch);
+  const result = {
+    project,
+    assignments: {}
+  };
+  for (const [collectionName, assignments] of Object.entries(
+    options.assignments
+  )) {
+    debug("collectionName %o", collectionName);
+    const outputs = yield* generateCollectionAssignments({
+      project,
+      collectionName,
+      assignments
+    });
+    debug("outputs %o", outputs);
 
-  const nameRecords: (IdObject<DataModel.NameRecord> | undefined)[] = [];
-  for (const { name, type } of batch) {
-    const {
-      resolve: [nameRecord]
-    } = yield* resources.get(
-      "projects",
-      project.id,
-      gql`
-      fragment Resolve_${type}_${name} on Project {
-        resolve(type: "${type}", name: "${name}") {
-          id
-        }
-      }
-    `
-    );
-
-    nameRecords.push(nameRecord ? toIdObject(nameRecord) : undefined);
+    result.assignments[collectionName] = outputs.assignments;
   }
+  debug("result %o", result);
 
-  return unbatch(nameRecords);
+  return result;
 }
 
-const prepareProjectNamesBatch: PrepareBatch<
-  {
-    project: IdObject<DataModel.Project>;
-    assignments: {
-      [collectionName: string]: _[];
-    };
-  },
-  Assignment,
-  Assignment & {
-    current: IdObject<DataModel.NameRecord> | undefined;
-  },
-  {
+const generateCollectionAssignments = Batch.generate<{
+  assignment: {
     name: string;
     type: string;
-  },
-  IdObject<DataModel.NameRecord> | undefined
-> = structured => {
-  const { project } = structured;
-  const batch = [];
-  const breadcrumbs: {
-    [index: number]: {
-      collectionName: string;
-      assignmentIndex: number;
-    };
-  } = {};
-
-  debug("structured.assignments %o", structured.assignments);
-
-  for (const [collectionName, assignments] of Object.entries(
-    structured.assignments
-  )) {
-    for (const [assignmentIndex, assignment] of assignments.entries()) {
-      const { name, type } = assignment;
-
-      breadcrumbs[batch.length] = {
-        collectionName,
-        assignmentIndex
-      };
-
-      batch.push({ name, type });
-    }
-  }
-
-  const unbatch = (results: (IdObject<DataModel.NameRecord> | undefined)[]) => {
-    debug("results %o", results);
-    const assignments: {
-      [collectionName: string]: (Assignment & {
-        current: IdObject<DataModel.NameRecord> | undefined;
-      })[];
-    } = {};
-
-    for (const [index, result] of results.entries()) {
-      const { collectionName, assignmentIndex } = breadcrumbs[index];
-
-      if (!assignments[collectionName]) {
-        assignments[collectionName] = [];
-      }
-
-      assignments[collectionName][assignmentIndex] = {
-        ...structured.assignments[collectionName][assignmentIndex],
-        current: result
-      };
-    }
-
-    return { project, assignments };
   };
+  properties: {
+    current: IdObject<DataModel.NameRecord> | undefined;
+  };
+  entry: {
+    name: string;
+    type: string;
+  };
+  result: IdObject<DataModel.NameRecord> | undefined;
+}>({
+  extract<_I>({ input: { name, type } }) {
+    return { name, type };
+  },
 
-  return { batch, unbatch };
-};
+  *process({ batch, inputs: { project } }) {
+    const nameRecords: (IdObject<DataModel.NameRecord> | undefined)[] = [];
+    for (const { name, type } of batch) {
+      const {
+        resolve: [nameRecord]
+      } = yield* resources.get(
+        "projects",
+        project.id,
+        gql`
+        fragment Resolve_${type}_${name} on Project {
+          resolve(type: "${type}", name: "${name}") {
+            id
+          }
+        }
+      `
+      );
+
+      nameRecords.push(nameRecord ? toIdObject(nameRecord) : undefined);
+    }
+
+    return nameRecords;
+  },
+
+  convert<_I, _O>({ result, input }) {
+    return {
+      ...input,
+      ...result
+    };
+  }
+});
