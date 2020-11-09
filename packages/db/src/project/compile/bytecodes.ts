@@ -23,7 +23,7 @@ export const generateBytecodesLoad = Batch.Contracts.generate<{
     createBytecode: IdObject<DataModel.Bytecode>;
   };
 }>({
-  extract<_I>({
+  extract({
     input: { bytecode: createBytecode, deployedBytecode: callBytecode }
   }) {
     return {
@@ -32,15 +32,15 @@ export const generateBytecodesLoad = Batch.Contracts.generate<{
     };
   },
 
-  *process({ batch }) {
+  *process({ entries }) {
     const callBytecodes = yield* resources.load(
       "bytecodes",
-      batch.map(({ callBytecode }) => callBytecode)
+      entries.map(({ callBytecode }) => callBytecode)
     );
 
     const createBytecodes = yield* resources.load(
       "bytecodes",
-      batch.map(({ createBytecode }) => createBytecode)
+      entries.map(({ createBytecode }) => createBytecode)
     );
 
     return callBytecodes.map((callBytecode, index) => ({

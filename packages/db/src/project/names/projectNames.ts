@@ -20,8 +20,8 @@ export const generateProjectNamesLoad = Batch.generate<{
     return { project, name, type, nameRecord };
   },
 
-  *process({ batch }) {
-    return yield* resources.load("projectNames", batch);
+  *process({ entries }) {
+    return yield* resources.load("projectNames", entries);
   },
 
   convert<_I, _O>({ result, input }) {

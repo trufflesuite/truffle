@@ -23,9 +23,9 @@ export const generateCurrentNameRecords = Batch.generate<{
     return { name, type };
   },
 
-  *process({ batch, inputs: { project } }) {
+  *process({ entries, inputs: { project } }) {
     const nameRecords: (IdObject<DataModel.NameRecord> | undefined)[] = [];
-    for (const { name, type } of batch) {
+    for (const { name, type } of entries) {
       const {
         resolve: [nameRecord]
       } = yield* resources.get(

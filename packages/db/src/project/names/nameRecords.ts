@@ -20,9 +20,8 @@ export const generateNameRecordsLoad = Batch.generate<{
     return { resource, name, type, previous: current };
   },
 
-  *process({ batch }) {
-    debug("batch %o", batch);
-    return yield* resources.load("nameRecords", batch);
+  *process({ entries }) {
+    return yield* resources.load("nameRecords", entries);
   },
 
   convert<_I, _O>({ result, input }) {

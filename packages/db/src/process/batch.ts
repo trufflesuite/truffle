@@ -32,17 +32,17 @@ export type PrepareBatch<S, I, O, B = I, R = O> = (
  * The process is roughly as follows:
  *
  *
- *   ,--------.  iterate()  ,-------.  extract()  ,---------.
- *   | Inputs |     -->     | Input |     -->     | Entry[] |
- *   `--------'             `-------'             `---------'
+ *   ,--------.  iterate()  ,----------.  extract()  ,---------.
+ *   | Inputs |     -->     | Input... |     -->     | Entry[] |
+ *   `--------'             `----------'             `---------'
  *
  *       |                                            |
  *       |  initialize()                              |  process()
  *       V                                            V
  *
- *   ,---------.  merge()   ,--------.  convert() ,--------.
- *   | Outputs |    <--     | Output |     <--    | Result |
- *   `---------'            `--------'            `--------'
+ *   ,---------.  merge()   ,----------.  convert() ,----------.
+ *   | Outputs |    <--     | Output[] |     <--    | Result[] |
+ *   `---------'            `----------'            `----------'
  *
  *
  */
@@ -64,27 +64,35 @@ export const configure = <B extends Batch>(
   return function*<I extends Input<B>, O extends Output<B>>(
     inputs: Inputs<B, I>
   ): Process<Collections, Outputs<B, O>> {
-    const batch: Entries<B> = [];
+    // iterate over inputs, collect entries and breadcrumbs
+    const entries: Entries<B> = [];
     const breadcrumbs: Breadcrumbs<B> = {};
-
     for (const { input, breadcrumb } of iterate<I, O>({ inputs })) {
+      // extract entry
       const entry: Entry<B> = extract<I, O>({ input, inputs, breadcrumb });
 
-      breadcrumbs[batch.length] = breadcrumb;
+      breadcrumbs[entries.length] = breadcrumb;
 
-      batch.push(entry);
+      entries.push(entry);
     }
 
-    const results = yield* process({ batch, inputs });
+    // process entries into results
+    const results = yield* process({ entries, inputs });
 
     return results.reduce(
       (outputs: Outputs<B, O>, result: Result<B>, index: number) => {
         const breadcrumb = breadcrumbs[index];
+        // find original input based on breadcrumb
         const input = find<I, O>({ inputs, breadcrumb });
+
+        // convert result and input material to output
         const output = convert<I, O>({ result, input, inputs });
 
+        // merge in output
         return merge({ outputs, output, breadcrumb });
       },
+
+      // initialize outputs as starting point
       initialize<I, O>({ inputs })
     );
   };
@@ -124,7 +132,7 @@ export type Options<B extends Batch> = {
   /**
    */
   process<I extends Input<B>, _O extends Output<B>>(options: {
-    batch: Entries<B>;
+    entries: Entries<B>;
     inputs: Inputs<B, I>;
   }): Process<Collections, Results<B>>;
 

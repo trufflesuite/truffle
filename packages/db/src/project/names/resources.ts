@@ -27,12 +27,12 @@ export const generateResourceNames = Batch.generate<{
     return resource;
   },
 
-  *process({ batch, inputs: { collectionName } }) {
+  *process({ entries, inputs: { collectionName } }) {
     const type = pascalCase(singular(collectionName));
 
     const results = yield* resources.find(
       collectionName as NamedCollectionName,
-      batch.map(({ id }) => id),
+      entries.map(({ id }) => id),
       gql`
         fragment ${type}Name on ${type} {
           name

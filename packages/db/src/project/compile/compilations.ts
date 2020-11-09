@@ -40,8 +40,8 @@ export const generateCompilationsLoad = Batch.Compilations.generate<{
     });
   },
 
-  *process({ batch }) {
-    return yield* resources.load("compilations", batch);
+  *process({ entries }) {
+    return yield* resources.load("compilations", entries);
   },
 
   convert<_I, _O>({ result, input: compilation }) {

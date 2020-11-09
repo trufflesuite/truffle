@@ -18,8 +18,8 @@ export const generateSourcesLoad = Batch.Contracts.generate<{
     return { sourcePath, contents };
   },
 
-  *process({ batch }) {
-    return yield* resources.load("sources", batch);
+  *process({ entries }) {
+    return yield* resources.load("sources", entries);
   },
 
   convert<_I, _O>({ result: source, input: contract }) {
