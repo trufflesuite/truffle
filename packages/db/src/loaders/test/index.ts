@@ -119,7 +119,7 @@ const migrationConfig = Config.detect({
 });
 migrationConfig.network = "development";
 
-const db = new TruffleDB(config);
+const db = new TruffleDB(config as any);
 
 const artifacts = [
   require(path.join(
