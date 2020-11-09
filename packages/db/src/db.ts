@@ -4,7 +4,7 @@ const debug = logger("db:db");
 import { GraphQLSchema, DocumentNode, parse, execute } from "graphql";
 import type TruffleConfig from "@truffle/config";
 import { schema } from "./schema";
-import { connect } from "./connect";
+import { attach } from "./workspace";
 import { Context } from "./resources";
 
 export class TruffleDB {
@@ -25,7 +25,7 @@ export class TruffleDB {
 
   private createContext(config: TruffleConfig): Context {
     return {
-      workspace: connect({
+      workspace: attach({
         workingDirectory: config.working_directory,
         adapter: (config.db || {}).adapter
       }),
