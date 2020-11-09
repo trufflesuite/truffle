@@ -1,15 +1,12 @@
-import { logger } from "@truffle/db/logger";
+import {logger} from "@truffle/db/logger";
 const debug = logger("db:definitions:networks");
 
 import gql from "graphql-tag";
 
-import { Definition } from "./types";
+import {Definition} from "./types";
 
 export const networks: Definition<"networks"> = {
-  createIndexes: [
-    { fields: ["historicBlock.height"] },
-    { fields: ["networkId"] }
-  ],
+  createIndexes: [{fields: ["historicBlock.height"]}],
   idFields: ["networkId", "historicBlock"],
   typeDefs: gql`
     type Network implements Resource & Named {
