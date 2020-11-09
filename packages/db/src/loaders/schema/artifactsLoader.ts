@@ -1,17 +1,17 @@
-import { logger } from "@truffle/db/logger";
+import {logger} from "@truffle/db/logger";
 const debug = logger("db:loaders:schema:artifactsLoader");
 
-import { TruffleDB } from "@truffle/db/db";
+import {TruffleDB} from "@truffle/db/db";
 import * as fse from "fs-extra";
 import path from "path";
 import Config from "@truffle/config";
-import { Environment } from "@truffle/environment";
+import {Environment} from "@truffle/environment";
 import Web3 from "web3";
 
-import { GetCompilation } from "@truffle/db/loaders/resources/compilations";
-import { AddContractInstances } from "@truffle/db/loaders/resources/contractInstances";
-import { AddNameRecords } from "@truffle/db/loaders/resources/nameRecords";
-import { AddNetworks } from "@truffle/db/loaders/resources/networks";
+import {GetCompilation} from "@truffle/db/loaders/resources/compilations";
+import {AddContractInstances} from "@truffle/db/loaders/resources/contractInstances";
+import {AddNameRecords} from "@truffle/db/loaders/resources/nameRecords";
+import {AddNetworks} from "@truffle/db/loaders/resources/networks";
 import {
   AssignProjectNames,
   ResolveProjectName
@@ -26,7 +26,7 @@ type NetworkLinkObject = {
 };
 
 type LinkValueLinkReferenceObject = {
-  bytecode: { id: string };
+  bytecode: {id: string};
   index: number;
 };
 
@@ -84,18 +84,22 @@ export class ArtifactsLoader {
   }
 
   async load(result: WorkflowCompileResult): Promise<void> {
-    const { compilations } = await this.db.loadCompilations(result, { names: true });
-
     const project = await this.db.loadProject();
+
+    // third parameter in loadCompilation is for whether or not we need
+    // to update nameRecords (i.e. is this happening in test)
+    const {compilations} = await this.db.loadCompilations(result, {
+      names: true
+    });
 
     //map contracts and contract instances to compiler
     await Promise.all(
-      compilations.map(async ({ id }, index) => {
+      compilations.map(async ({id}, index) => {
         const {
           data: {
-            compilation: { processedSources }
+            compilation: {processedSources}
           }
-        } = await this.db.query(GetCompilation, { id });
+        } = await this.db.query(GetCompilation, {id});
 
         const networks = await this.loadNetworks(
           project.id,
@@ -109,9 +113,9 @@ export class ArtifactsLoader {
           .flat();
 
         let contracts = [];
-        result.compilations[index].contracts.map(({ contractName }) =>
+        result.compilations[index].contracts.map(({contractName}) =>
           contracts.push(
-            processedSourceContracts.find(({ name }) => name === contractName)
+            processedSourceContracts.find(({name}) => name === contractName)
           )
         );
 
@@ -127,13 +131,13 @@ export class ArtifactsLoader {
       nameRecords: nameRecords
     });
     let {
-      data: { nameRecordsAdd }
+      data: {nameRecordsAdd}
     } = nameRecordsResult;
 
     const projectNames = nameRecordsAdd.nameRecords.map(
-      ({ id: nameRecordId, name, type }) => ({
-        project: { id: projectId },
-        nameRecord: { id: nameRecordId },
+      ({id: nameRecordId, name, type}) => ({
+        project: {id: projectId},
+        nameRecord: {id: nameRecordId},
         name,
         type
       })
@@ -146,7 +150,7 @@ export class ArtifactsLoader {
   }
 
   async resolveProjectName(projectId: string, type: string, name: string) {
-    let { data } = await this.db.query(ResolveProjectName, {
+    let {data} = await this.db.query(ResolveProjectName, {
       projectId,
       type,
       name
@@ -166,7 +170,7 @@ export class ArtifactsLoader {
     workingDirectory: string
   ) {
     const networksByContract = await Promise.all(
-      contracts.map(async ({ contractName, bytecode }) => {
+      contracts.map(async ({contractName, bytecode}) => {
         const name = contractName.toString().concat(".json");
         const artifactsNetworksPath = fse.readFileSync(
           path.join(artifacts, name)
@@ -175,7 +179,7 @@ export class ArtifactsLoader {
           .networks;
         let configNetworks = [];
         if (Object.keys(artifactsNetworks).length) {
-          const config = Config.detect({ workingDirectory: workingDirectory });
+          const config = Config.detect({workingDirectory: workingDirectory});
           for (let network of Object.keys(config.networks)) {
             config.network = network;
             await Environment.detect(config);
@@ -258,13 +262,13 @@ export class ArtifactsLoader {
     if (network.links) {
       networkLink = Object.entries(network.links).map(link => {
         let linkReferenceIndexByName = bytecode.linkReferences.findIndex(
-          ({ name }) => name === link[0]
+          ({name}) => name === link[0]
         );
 
         let linkValue = {
           value: link[1],
           linkReference: {
-            bytecode: { id: bytecode.id },
+            bytecode: {id: bytecode.id},
             index: linkReferenceIndexByName
           }
         };
@@ -277,7 +281,7 @@ export class ArtifactsLoader {
   }
 
   async loadContractInstances(
-    contracts: Array<DataModel.IContract>,
+    contracts: Array<DataModel.Contract>,
     networksArray: Array<Array<LoaderNetworkObject>>
   ) {
     // networksArray is an array of arrays of networks for each contract;
@@ -306,13 +310,13 @@ export class ArtifactsLoader {
             transactionHash: network.transactionHash,
             constructor: {
               createBytecode: {
-                bytecode: { id: contracts[index].createBytecode.id },
+                bytecode: {id: contracts[index].createBytecode.id},
                 linkValues: createBytecodeLinkValues
               }
             }
           },
           callBytecode: {
-            bytecode: { id: contracts[index].callBytecode.id },
+            bytecode: {id: contracts[index].callBytecode.id},
             linkValues: callBytecodeLinkValues
           }
         };
