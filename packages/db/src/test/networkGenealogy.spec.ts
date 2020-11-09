@@ -1,11 +1,13 @@
-import { generateId, WorkspaceClient } from "./utils";
+import {generateId, WorkspaceClient} from "./utils";
 import {
   FindAncestors,
   FindDescendants,
   AddNetworkGenealogies
 } from "./networkGenealogy.graphql";
-import { AddNetworks } from "./network.graphql";
+import {AddNetworks} from "./network.graphql";
 
+// returnBlockHeader mocks the bare-bones return of a call to web3,
+// to check whether a network resource is a part of the network we're connected to
 const returnBlockHeader = blockNumber => {
   const blockHeaders = {
     1: {
@@ -159,66 +161,76 @@ describe("Network Genealogy", () => {
       ancestors[1].network.historicBlock.height
     );
     //since this is all our responses and they are sorted in descending order, the first one is the ancestor
-    const ancestorFound = ancestors[0];
+    let {
+      network: {
+        id,
+        historicBlock: {hash, height},
+        networkId
+      }
+    } = ancestors[0];
 
-    expect(ancestorFound.network.id).toEqual(
-      secondAncestorNetworkResult.networksAdd.networks[0].id
+    expect(id).toEqual(secondAncestorNetworkResult.networksAdd.networks[0].id);
+    expect(hash).toEqual(
+      secondAncestorNetworkResult.networksAdd.networks[0].historicBlock.hash
+    );
+    expect(height).toEqual(
+      secondAncestorNetworkResult.networksAdd.networks[0].historicBlock.height
+    );
+    expect(height).toBeGreaterThan(ancestors[1].network.historicBlock.height);
+    expect(networkId).toEqual(
+      secondAncestorNetworkResult.networksAdd.networks[0].networkId
     );
   });
 
   test("can query for descendants", async () => {
     // two possible descendants on the same network
     expect(descendants).toHaveLength(2);
-    //sorted by block height, ascending
-    expect(descendants[1].network.historicBlock.height).toBeGreaterThan(
-      descendants[0].network.historicBlock.height
-    );
     //since this is all our responses and they are sorted in ascending order, the first one is the descendent
-    const descendantFound = descendants[0];
-    // we got the network we're looking for
-    expect(descendantFound).toHaveProperty("network");
-    // it matches the id of the network that should have been found
-    expect(descendantFound.network.id).toEqual(
-      firstDescendantNetworkResult.networksAdd.networks[0].id
+    let {
+      network: {
+        id,
+        historicBlock: {hash, height},
+        networkId
+      }
+    } = descendants[0];
+
+    // matches the id of the network that should have been found
+    expect(id).toEqual(firstDescendantNetworkResult.networksAdd.networks[0].id);
+    expect(hash).toEqual(
+      firstDescendantNetworkResult.networksAdd.networks[0].historicBlock.hash
+    );
+    expect(height).toEqual(
+      firstDescendantNetworkResult.networksAdd.networks[0].historicBlock.height
+    );
+    expect(height).toBeLessThan(descendants[1].network.historicBlock.height);
+    expect(networkId).toEqual(
+      firstDescendantNetworkResult.networksAdd.networks[0].networkId
     );
   });
 
   test("can be added", async () => {
-    //two possible ancestors on the same network
-    expect(ancestors).toHaveLength(2);
-    //sorted by block height, descending
-    expect(ancestors[0].network.historicBlock.height).toBeGreaterThan(
-      ancestors[1].network.historicBlock.height
-    );
-    //since this is all our responses and they are sorted in descending order, the first one is the ancestor
-    const ancestorFound = ancestors[0];
-
-    expect(ancestorFound.network.id).toEqual(
-      secondAncestorNetworkResult.networksAdd.networks[0].id
-    );
-
-    // two possible descendants on the same network
-    expect(descendants).toHaveLength(2);
-    //sorted by block height, ascending
-    expect(descendants[1].network.historicBlock.height).toBeGreaterThan(
-      descendants[0].network.historicBlock.height
-    );
-    //since this is all our responses and they are sorted in ascending order, the first one is the descendent
-    const descendantFound = descendants[0];
-
     //add a networkGenealogy record!
-
     expect(addNetworkGenealogyRecord).toHaveProperty("networkGenealogiesAdd");
+    expect(addNetworkGenealogyRecord.networkGenealogiesAdd).toHaveProperty(
+      "networkGenealogies"
+    );
+    expect(
+      addNetworkGenealogyRecord.networkGenealogiesAdd.networkGenealogies.length
+    ).toEqual(1);
 
-    // expect(addedNetworkGenealogyRecord.)
     const networkGenealogyRecordId = generateId({
-      ancestor: { id: ancestorFound.network.id },
-      descendant: { id: descendantFound.network.id }
+      ancestor: {id: ancestors[0].network.id},
+      descendant: {id: descendants[0].network.id}
     });
 
-    expect(networkGenealogyRecordId).toEqual(
-      addNetworkGenealogyRecord.networkGenealogiesAdd.networkGenealogies[0].id
-    );
+    let {
+      id,
+      ancestor: {id: ancestorId},
+      descendant: {id: descendantId}
+    } = addNetworkGenealogyRecord.networkGenealogiesAdd.networkGenealogies[0];
+    expect(id).toEqual(networkGenealogyRecordId);
+    expect(ancestorId).toEqual(ancestors[0].network.id);
+    expect(descendantId).toEqual(descendants[0].network.id);
   });
 
   test("respects limit on ancestor query", async () => {
