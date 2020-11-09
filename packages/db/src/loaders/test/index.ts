@@ -1,6 +1,6 @@
 import path from "path";
 import gql from "graphql-tag";
-import { TruffleDB } from "@truffle/db";
+import { connect } from "@truffle/db";
 import { ArtifactsLoader } from "@truffle/db/loaders/schema/artifactsLoader";
 import { AddContracts } from "@truffle/db/loaders/resources/contracts";
 import { AddNameRecords } from "@truffle/db/loaders/resources/nameRecords";
@@ -119,7 +119,7 @@ const migrationConfig = Config.detect({
 });
 migrationConfig.network = "development";
 
-const db = new TruffleDB(config as any);
+const db = connect(config as any);
 
 const artifacts = [
   require(path.join(

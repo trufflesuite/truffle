@@ -1,36 +1,45 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:db");
 
-import { GraphQLSchema, DocumentNode, parse, execute } from "graphql";
+import gql from "graphql-tag";
+import { DocumentNode, ExecutionResult, execute } from "graphql";
+
 import type TruffleConfig from "@truffle/config";
-import { Context, schema } from "./schema";
-import { attach } from "./workspace";
 
-export class TruffleDB {
-  schema: GraphQLSchema;
-  private context: Context;
+import { Db } from "./meta";
+export { Db }; // rather than force src/index from touching meta
 
-  constructor(config: TruffleConfig) {
-    this.schema = schema;
-    this.context = this.createContext(config);
-  }
+import { schema } from "./schema";
+import { Workspace, attach } from "./workspace";
 
-  async execute(
-    request: DocumentNode | string,
-    variables: any = {}
-  ): Promise<any> {
-    const document: DocumentNode =
-      typeof request !== "string" ? request : parse(request);
+export const connect = (config: TruffleConfig): Db => {
+  const workspace: Workspace = attach({
+    workingDirectory: config.working_directory,
+    adapter: (config.db || {}).adapter
+  });
 
-    return await execute(this.schema, document, null, this.context, variables);
-  }
+  return {
+    async execute(
+      request: DocumentNode | string,
+      variables: any = {}
+    ): Promise<ExecutionResult> {
+      const response = await execute(
+        schema,
+        typeof request === "string"
+          ? gql`
+              ${request}
+            `
+          : request,
+        null,
+        { workspace },
+        variables
+      );
 
-  private createContext(config: TruffleConfig): Context {
-    return {
-      workspace: attach({
-        workingDirectory: config.working_directory,
-        adapter: (config.db || {}).adapter
-      })
-    };
-  }
-}
+      if (response.errors) {
+        debug("errors %o", response.errors);
+      }
+
+      return response;
+    }
+  };
+};
