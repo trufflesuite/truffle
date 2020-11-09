@@ -108,6 +108,12 @@ export class ArtifactsLoader {
         fragment Contract on Contract {
           id
           name
+          callBytecode {
+            id
+          }
+          createBytecode {
+            id
+          }
         }
       `
     );
@@ -115,7 +121,7 @@ export class ArtifactsLoader {
 
     // and resolve artifact
     return contracts.map((contract: DataModel.Contract) => {
-      const { name } = contract;
+      const { name, callBytecode, createBytecode } = contract;
 
       debug("Requiring artifact for %s...", name);
       // @ts-ignore
@@ -123,7 +129,9 @@ export class ArtifactsLoader {
       debug("Required artifact for %s.", name);
 
       artifact.db = {
-        contract: toIdObject(contract)
+        contract: toIdObject(contract),
+        callBytecode: toIdObject(callBytecode),
+        createBytecode: toIdObject(createBytecode)
       };
 
       return artifact;
