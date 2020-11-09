@@ -1,18 +1,18 @@
 import { InterfaceAdapter, BlockType } from "../types";
 import Config from "@truffle/config";
 import { Provider } from "web3/providers";
-import { TezosToolkit, Tezos, SetProviderOptions } from "@taquito/taquito";
+import { TezosToolkit, SetProviderOptions, } from "@taquito/taquito";
+import { importKey } from "@taquito/signer";
 
 export interface TezosAdapterOptions {
-  provider?: Provider;
+  provider: Provider;
   networkType?: string;
   config?: SetProviderOptions["config"];
 }
 
 export class TezosAdapter implements InterfaceAdapter {
   public tezos: TezosToolkit;
-  constructor({ provider, config }: TezosAdapterOptions) {
-    this.tezos = Tezos;
+  constructor({ provider, config}: TezosAdapterOptions) {
     this.setProvider({ provider, config });
   }
 
@@ -75,13 +75,13 @@ export class TezosAdapter implements InterfaceAdapter {
   }: TezosAdapterOptions) {
     // @ts-ignore: Property 'host' does not exist on type 'Provider'.
     const { host } = provider;
-    let currentHost;
-    if (host) {
-      currentHost = host;
-    } else {
-      currentHost = provider;
+    const currentHost = host ?? provider;
+    /**
+     * If tezos is not initialized then initialize before calling setProvider
+     */
+    if(!this.tezos) {
+      this.tezos = new TezosToolkit(currentHost)
     }
-
     return this.tezos.setProvider({ rpc: currentHost, config });
   }
 
@@ -89,8 +89,11 @@ export class TezosAdapter implements InterfaceAdapter {
     const { networks, network } = config;
     let { mnemonic, secretKey } = networks[network];
 
-    if (network === "test" && networks.test.develop) {
-      secretKey = `edsk3QoqBuvdamxouPhin7swCvkQNgq4jP5KZPbwWNnwdZpSpJiEbq`;
+    /**
+     * Inject the secretKey for test/development env only if not provided
+     */
+    if (network === "test" && networks.test.develop && !secretKey) {
+      secretKey = 'edsk3QoqBuvdamxouPhin7swCvkQNgq4jP5KZPbwWNnwdZpSpJiEbq';
     }
 
     if (mnemonic) {
@@ -98,7 +101,8 @@ export class TezosAdapter implements InterfaceAdapter {
       // email, password, mnemonic, & secret are all REQUIRED.
       if (Array.isArray(mnemonic)) mnemonic = mnemonic.join(" ");
       try {
-        return await this.tezos.importKey(
+        return await importKey(
+          this.tezos,
           networks[network].email,
           networks[network].password,
           mnemonic,
@@ -113,7 +117,7 @@ export class TezosAdapter implements InterfaceAdapter {
 
     if (secretKey) {
       try {
-        return await this.tezos.importKey(secretKey);
+        return await importKey(this.tezos, secretKey);
       } catch (error) {
         throw Error(
           `Secret key invalid or incorrectly imported in truffle config file (config.networks[${network}].secretKey).`
