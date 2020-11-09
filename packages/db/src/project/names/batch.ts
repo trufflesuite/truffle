@@ -1,7 +1,7 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:names:batch");
 
-import { _, IdObject } from "@truffle/db/project/process";
+import { Process, _, IdObject } from "@truffle/db/project/process";
 import * as Batch from "@truffle/db/process/batch";
 
 type Config = {
@@ -45,7 +45,46 @@ type Options<C extends Config> = Omit<
   "iterate" | "find" | "initialize" | "merge"
 >;
 
-export const generate = <C extends Config>(options: Options<C>) =>
+export const generate = <C extends Config>(options: Options<C>) => {
+  const generateCollectionAssignments = generateForCollection(options);
+
+  return function*<I extends Input<C>, O extends Output<C>>(options: {
+    project: IdObject<DataModel.Project>;
+    assignments: {
+      [collectionName: string]: I[];
+    };
+  }): Process<{
+    project: IdObject<DataModel.Project>;
+    assignments: {
+      [collectionName: string]: (I & O)[];
+    };
+  }> {
+    const { project } = options;
+
+    const result = {
+      project,
+      assignments: {}
+    };
+    for (const [collectionName, assignments] of Object.entries(
+      options.assignments
+    )) {
+      debug("collectionName %o", collectionName);
+      const outputs = yield* generateCollectionAssignments({
+        project,
+        collectionName,
+        assignments
+      });
+      debug("outputs %o", outputs);
+
+      result.assignments[collectionName] = outputs.assignments;
+    }
+    debug("result %o", result);
+
+    return result;
+  };
+};
+
+const generateForCollection = <C extends Config>(options: Options<C>) =>
   Batch.configure<Batch<C>>({
     *iterate<_I, _O>({ inputs }) {
       for (const [

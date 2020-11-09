@@ -35,13 +35,11 @@ export function* generateNamesLoad(options: {
       [collectionName]: resources.map(resource => ({ resource }))
     }))
     .reduce((a, b) => ({ ...a, ...b }), {});
-  debug("assignments %o", assignments);
 
   const withNameAndType = yield* generateResourceNames({
     project,
     assignments
   });
-  debug("withNameAndType %o", withNameAndType);
 
   const withCurrentNameRecords = yield* generateCurrentNameRecords(
     withNameAndType
