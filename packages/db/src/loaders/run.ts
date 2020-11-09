@@ -2,12 +2,19 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:loaders:run");
 
 import { promisify } from "util";
-import type {Provider} from "web3/providers";
-import {DocumentNode} from "graphql";
+import type { Provider } from "web3/providers";
 
-import { Loader, LoadRequest, GraphQlRequest, Web3Request, RequestType } from "./types";
+import { Db } from "@truffle/db/meta";
+import {
+  Loader,
+  LoadRequest,
+  GraphQlRequest,
+  Web3Request,
+  RequestType
+} from "./types";
 
-export type LoaderRunner = < A extends unknown[],
+export type LoaderRunner = <
+  A extends unknown[],
   T = any,
   R extends RequestType | undefined = undefined
 >(
@@ -15,18 +22,18 @@ export type LoaderRunner = < A extends unknown[],
   ...args: A
 ) => Promise<T>;
 
-export interface Db {
-  query: (query: DocumentNode | string, variables: any) => Promise<any>;
-}
-
-export const forDb = (db: Db): {
-  forProvider(provider: Provider): {
-    run: LoaderRunner
+export const forDb = (
+  db: Db
+): {
+  forProvider(
+    provider: Provider
+  ): {
+    run: LoaderRunner;
   };
   run: LoaderRunner;
 } => {
   const connections = {
-    db,
+    db
   };
 
   return {
@@ -42,17 +49,17 @@ export const forDb = (db: Db): {
 
       return {
         run: (loader, ...args) => run(connections, loader, ...args)
-      }
+      };
     }
   };
-}
+};
 
 const run = async <
   Args extends unknown[],
   Return,
   R extends RequestType | undefined
 >(
-  connections: { db: Db, provider?: Provider },
+  connections: { db: Db; provider?: Provider },
   loader: Loader<Args, Return, R>,
   ...args: Args
 ) => {
@@ -67,6 +74,7 @@ const run = async <
         const { request, variables } = loadRequest as GraphQlRequest;
         const response = await db.query(request, variables);
 
+        // @ts-ignore
         current = saga.next(response);
 
         break;
