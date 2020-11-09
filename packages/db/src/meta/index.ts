@@ -4,7 +4,7 @@ const debug = logger("db:meta");
 import { DocumentNode, ExecutionResult } from "graphql";
 
 export interface Db {
-  query: (
+  execute: (
     request: DocumentNode | string,
     variables: any
   ) => Promise<ExecutionResult>;

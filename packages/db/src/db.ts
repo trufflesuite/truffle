@@ -15,9 +15,12 @@ export class TruffleDB {
     this.context = this.createContext(config);
   }
 
-  async query(query: DocumentNode | string, variables: any = {}): Promise<any> {
+  async execute(
+    request: DocumentNode | string,
+    variables: any = {}
+  ): Promise<any> {
     const document: DocumentNode =
-      typeof query !== "string" ? query : parse(query);
+      typeof request !== "string" ? request : parse(request);
 
     return await execute(this.schema, document, null, this.context, variables);
   }

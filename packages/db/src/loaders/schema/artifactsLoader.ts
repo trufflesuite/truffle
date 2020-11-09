@@ -94,7 +94,7 @@ export class ArtifactsLoader {
     );
     const {
       data: { contracts }
-    } = await this.db.query(FindContracts, {
+    } = await this.db.execute(FindContracts, {
       ids: contractIdObjects.map(({ id }) => id)
     });
     debug(

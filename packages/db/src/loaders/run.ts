@@ -72,7 +72,7 @@ const run = async <
       case "graphql": {
         const { db } = connections;
         const { request, variables } = loadRequest as GraphQlRequest;
-        const response = await db.query(request, variables);
+        const response = await db.execute(request, variables);
 
         // @ts-ignore
         current = saga.next(response);
