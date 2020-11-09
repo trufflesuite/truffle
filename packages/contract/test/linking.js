@@ -171,7 +171,7 @@ describe("Library linking with contract objects", function() {
     library = result[libraryContractName];
     library.contractName = libraryContractName;
     ExampleLibrary = contract(library);
-    ExampleLibrary.setProvider(provider);
+    ExampleLibrary.setProvider({ provider });
 
     var consumer, consumerContractName;
     if (result["ExampleLibraryConsumer"]) {
@@ -183,7 +183,7 @@ describe("Library linking with contract objects", function() {
     consumer = result[consumerContractName];
     consumer.contractName = consumerContractName;
     ExampleLibraryConsumer = contract(consumer);
-    ExampleLibraryConsumer.setProvider(provider);
+    ExampleLibraryConsumer.setProvider({ provider });
   });
 
   before(function(done) {

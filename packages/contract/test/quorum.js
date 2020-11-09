@@ -31,7 +31,7 @@ describe("Quorum", function() {
       }
     };
 
-    Example.setProvider(hookedProvider);
+    Example.setProvider({ provider: hookedProvider });
 
     const example = await Example.new(1, {
       privateFor: [privateID]

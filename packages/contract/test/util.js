@@ -85,7 +85,7 @@ var util = {
       : (provider = ganache.provider(options));
 
     web3.setProvider(provider);
-    instance.setProvider(provider);
+    instance.setProvider({provider});
     util.web3 = web3;
 
     const accs = await web3.eth.getAccounts();

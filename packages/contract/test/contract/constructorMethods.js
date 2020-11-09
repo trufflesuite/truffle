@@ -20,7 +20,7 @@ describe("TruffleContract.new()", () => {
   it("throws if called on a contract instance with empty bytecode", () => {
     const provider = Ganache.provider();
     const freshTruffleContract = TruffleContract();
-    freshTruffleContract.setProvider(provider);
+    freshTruffleContract.setProvider({ provider });
     assert.throws(() => {
       freshTruffleContract.new();
     }, "should have thrown!");
@@ -36,7 +36,7 @@ describe("TruffleContract.at()", () => {
       },
       {
         name: "Error",
-        message: /(Invalid address passed)/
+        message: /(Invalid address passed)/,
       },
       "should have thrown!"
     );
@@ -47,7 +47,7 @@ describe("TruffleContract.at()", () => {
       },
       {
         name: "Error",
-        message: /(Invalid address passed)/
+        message: /(Invalid address passed)/,
       },
       "should have thrown!"
     );
@@ -58,7 +58,7 @@ describe("TruffleContract.at()", () => {
       },
       {
         name: "Error",
-        message: /(Invalid address passed)/
+        message: /(Invalid address passed)/,
       },
       "should have thrown!"
     );
@@ -74,7 +74,7 @@ describe("TruffleContract.deployed()", () => {
       },
       {
         name: "Error",
-        message: /(Please call setProvider\(\) first)/
+        message: /(Please call setProvider\(\) first)/,
       },
       "should have thrown!"
     );
@@ -83,7 +83,7 @@ describe("TruffleContract.deployed()", () => {
   it("throws if network & network record exists, but contract not deployed onchain", async () => {
     const provider = Ganache.provider();
     const freshTruffleContract = TruffleContract();
-    freshTruffleContract.setProvider(provider);
+    freshTruffleContract.setProvider({ provider });
     await freshTruffleContract.detectNetwork();
     freshTruffleContract.networks[freshTruffleContract.network_id] =
       "fakeNetworkRecord";
@@ -93,7 +93,7 @@ describe("TruffleContract.deployed()", () => {
       },
       {
         name: "Error",
-        message: /(Contract).*(not).*(deployed to detected network)/
+        message: /(Contract).*(not).*(deployed to detected network)/,
       },
       "should have thrown!"
     );
@@ -122,7 +122,7 @@ describe("TruffleContract.detectNetwork()", () => {
       async () => await freshTruffleContract.detectNetwork(),
       {
         name: "Error",
-        message: /(Provider not set or invalid)/
+        message: /(Provider not set or invalid)/,
       },
       "should have thrown!"
     );
@@ -136,7 +136,7 @@ describe("TruffleContract.detectNetwork()", () => {
       async () => await freshTruffleContract.detectNetwork(),
       {
         name: "Error",
-        message: /(Provider not set or invalid)/
+        message: /(Provider not set or invalid)/,
       },
       "should have thrown!"
     );
@@ -151,7 +151,7 @@ describe("TruffleContract.detectNetwork()", () => {
       async () => await freshTruffleContract.detectNetwork(),
       {
         name: "Error",
-        message: /(Provider not set or invalid)/
+        message: /(Provider not set or invalid)/,
       },
       "should have thrown!"
     );
@@ -194,7 +194,7 @@ describe("TruffleContract.resetAddress()", () => {
     const freshTruffleContract = TruffleContract();
     freshTruffleContract.network_id = 1234;
     freshTruffleContract.networks[freshTruffleContract.network_id] = {
-      address: "0x1234"
+      address: "0x1234",
     };
     assert.strictEqual(freshTruffleContract.network.address, "0x1234");
     freshTruffleContract.resetAddress();
@@ -210,7 +210,7 @@ describe("TruffleContract.link()", () => {
       freshTruffleContract.link(mockTruffleContract),
         {
           name: "Error",
-          message: /Cannot link contract without an address/
+          message: /Cannot link contract without an address/,
         },
         "should have thrown!";
     });
@@ -220,7 +220,7 @@ describe("TruffleContract.link()", () => {
     const freshTruffleContract = TruffleContract();
     freshTruffleContract.network_id = 1234;
     freshTruffleContract.networks[freshTruffleContract.network_id] = {
-      address: "0x1234"
+      address: "0x1234",
     };
     const mockLibraryObj = { Library1: "0x4321", Library2: "0x4567" };
     freshTruffleContract.link(mockLibraryObj);

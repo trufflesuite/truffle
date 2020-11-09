@@ -16,7 +16,7 @@ var contract = require("../");
 var times = require("async/times");
 
 var log = {
-  log: debug
+  log: debug,
 };
 
 function getAndSetAccounts(contract, done) {
@@ -24,7 +24,7 @@ function getAndSetAccounts(contract, done) {
     .getAccounts()
     .then(function(accs) {
       contract.defaults({
-        from: accs[0]
+        from: accs[0],
       });
 
       done();
@@ -51,19 +51,19 @@ describe("Different networks: ", function() {
     network_one = Ganache.provider({
       network_id: network_one_id,
       seed: network_one_id,
-      logger: log
+      logger: log,
     });
     network_two = Ganache.provider({
       network_id: network_two_id,
       seed: network_two_id,
-      logger: log
+      logger: log,
     });
 
     network_one.__marker = "one";
     network_two.__marker = "two";
 
-    ExampleOne.setProvider(network_one);
-    ExampleTwo.setProvider(network_two);
+    ExampleOne.setProvider({ provider: network_one });
+    ExampleTwo.setProvider({ provider: network_two });
   }),
     before("Get/set first network accounts", function(done) {
       getAndSetAccounts(ExampleOne, done);
@@ -118,7 +118,7 @@ describe("Different networks: ", function() {
     var AnotherExample = contract({
       contractName: "AnotherExample",
       abi: ExampleOne.abi,
-      binary: ExampleOne.binary
+      binary: ExampleOne.binary,
     });
 
     assert.equal(Object.keys(AnotherExample.toJSON().networks).length, 0);
@@ -130,7 +130,7 @@ describe("Different networks: ", function() {
     // provider to the second network, use the thennable version for deployed(), and
     // ensure the address that gets used is the one for the second network.
     var Example = contract(ExampleOne.toJSON());
-    Example.setProvider(network_two);
+    Example.setProvider({ provider: network_two });
 
     // Ensure preconditions
     assert.isNotNull(Example.toJSON().networks[network_one_id].address);
@@ -186,7 +186,7 @@ describe("Different networks: ", function() {
     var network_three = Ganache.provider();
 
     var Example = contract(ExampleOne.toJSON());
-    Example.setProvider(network_three);
+    Example.setProvider({ provider: network_three });
 
     Example.deployed()
       .then(function() {
@@ -211,7 +211,7 @@ describe("Different networks: ", function() {
     // provider to the second network, use the thennable version for at(), and
     // ensure the abi that gets used is the one for the second network.
     var Example = contract(ExampleOne.toJSON());
-    Example.setProvider(network_two);
+    Example.setProvider({ provider: network_two });
 
     // Ensure preconditions
     assert.isNotNull(Example.toJSON().networks[network_one_id].address);
@@ -243,7 +243,7 @@ describe("Different networks: ", function() {
 
   it("at() used as a thennable funnels errors correctly", function(done) {
     var Example = contract(ExampleOne.toJSON());
-    Example.setProvider(network_one);
+    Example.setProvider({ provider: network_one });
 
     // This address should have no code there. .at().then() should error before
     // letting you execute anything else.
@@ -270,7 +270,7 @@ describe("Different networks: ", function() {
     // provider to the second network, use the thennable version for at(), and
     // ensure the abi that gets used is the one for the second network.
     var Example = contract(ExampleOne.toJSON());
-    Example.setProvider(network_two);
+    Example.setProvider({ provider: network_two });
 
     // Ensure preconditions
     assert.isNotNull(Example.toJSON().networks[network_one_id].address);
@@ -294,8 +294,8 @@ describe("Different networks: ", function() {
     // hasn't been detected already.
     var ExampleSetup = contract(ExampleOne.toJSON());
     var ExampleDetect = ExampleSetup.clone();
-    ExampleSetup.setProvider(network_two);
-    ExampleDetect.setProvider(network_two);
+    ExampleSetup.setProvider({ provider: network_two });
+    ExampleDetect.setProvider({ provider: network_two });
 
     ExampleDetect.__marker = 12;
     ExampleSetup.__marker = "dummy";
@@ -325,8 +325,8 @@ describe("Different networks: ", function() {
     // hasn't been detected already.
     var ExampleSetup = contract(ExampleOne.toJSON());
     var ExampleDetect = ExampleSetup.clone();
-    ExampleSetup.setProvider(network_two);
-    ExampleDetect.setProvider(network_two);
+    ExampleSetup.setProvider({ provider: network_two });
+    ExampleDetect.setProvider({ provider: network_two });
 
     // Steal the from address from our other tests.
     var from = ExampleTwo.defaults().from;
@@ -352,23 +352,23 @@ describe("Different networks: ", function() {
         contractName: "NetworkExample",
         abi: ExampleOne.abi,
         bytecode: ExampleOne.binary,
-        networks: {}
+        networks: {},
       };
 
       json.networks[uri] = {
-        address: "0x1234567890123456789012345678901234567890" // fake
+        address: "0x1234567890123456789012345678901234567890", // fake
       };
 
       var NetworkExample = contract(json);
 
-      NetworkExample.setProvider(network_two);
+      NetworkExample.setProvider({ provider: network_two });
 
       NetworkExample.defaults({
-        from: ExampleTwo.defaults().from // Borrow the address from this one.
+        from: ExampleTwo.defaults().from, // Borrow the address from this one.
       });
 
       NetworkExample.deployed()
-        .then(instance => {
+        .then((instance) => {
           assert.equal(NetworkExample.network_id, uri);
           assert.equal(instance.address, json.networks[uri].address);
           done();
@@ -385,29 +385,29 @@ describe("Different networks: ", function() {
         contractName: "NetworkExampleTwo",
         abi: ExampleOne.abi,
         bytecode: ExampleOne.binary,
-        networks: {}
+        networks: {},
       };
 
       json.networks[uri] = {
-        address: "0x1234567890123456789012345678901234567890" // fake
+        address: "0x1234567890123456789012345678901234567890", // fake
       };
 
       var NetworkExample = contract(json);
 
-      NetworkExample.setProvider(network_two);
+      NetworkExample.setProvider({ provider: network_two });
 
       NetworkExample.defaults({
-        from: ExampleTwo.defaults().from // Borrow the address from this one.
+        from: ExampleTwo.defaults().from, // Borrow the address from this one.
       });
 
       // This is what makes this test different than others. We're going to set
       // the network id to a number, but we're still going to expect it to resolve
       // to the correct set of artifacts identified by the blockchain uri, even
       // when the network id has been explicitly set.
-      NetworkExample.setNetwork(network_two_id);
+      NetworkExample.setNetwork({ provider: network_two_id });
 
       NetworkExample.deployed()
-        .then(instance => {
+        .then((instance) => {
           assert.equal(NetworkExample.network_id, uri);
           assert.equal(instance.address, json.networks[uri].address);
           done();
@@ -425,11 +425,11 @@ describe("Different networks: ", function() {
         contractName: "NetworkExampleThree",
         abi: ExampleOne.abi,
         bytecode: ExampleOne.binary,
-        networks: {}
+        networks: {},
       };
 
       json.networks[uri] = {
-        address: "0x1234567890123456789012345678901234567890" // fake
+        address: "0x1234567890123456789012345678901234567890", // fake
       };
 
       var NetworkExample = contract(json);
@@ -456,10 +456,10 @@ describe("Different networks: ", function() {
             assert.notEqual(new_uri, uri);
 
             NetworkExample = contract(json);
-            NetworkExample.setProvider(network_two);
+            NetworkExample.setProvider({ provider: network_two });
 
             NetworkExample.defaults({
-              from: ExampleTwo.defaults().from // Borrow the address from this one.
+              from: ExampleTwo.defaults().from, // Borrow the address from this one.
             });
 
             // We're setting the id to a URI that matches the same network as an already set URI
@@ -468,7 +468,7 @@ describe("Different networks: ", function() {
             NetworkExample.setNetwork(new_uri);
 
             NetworkExample.deployed()
-              .then(instance => {
+              .then((instance) => {
                 assert.equal(NetworkExample.network_id, uri);
                 assert.equal(instance.address, json.networks[uri].address);
                 done();
