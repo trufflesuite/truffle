@@ -51,7 +51,7 @@ describe("Contract names", function() {
       "Contract.json"
     );
     const Contract = contract(require(contractPath));
-    Contract.setProvider(config.provider);
+    Contract.setProvider({provider: config.provider});
 
     const instance = await Contract.deployed();
     assert.notEqual(
@@ -85,7 +85,7 @@ describe("Contract names", function() {
     await CommandRunner.run("migrate", config);
 
     const RelativeImport = contract(require(contractPath));
-    RelativeImport.setProvider(config.provider);
+    RelativeImport.setProvider({ provider: config.provider });
 
     const instance = await RelativeImport.deployed();
     assert.notEqual(

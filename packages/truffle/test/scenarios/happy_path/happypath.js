@@ -71,7 +71,7 @@ describe("Happy path (truffle unbox)", function() {
     var promises = [];
 
     [MetaCoin, ConvertLib, Migrations].forEach(function(abstraction) {
-      abstraction.setProvider(config.provider);
+      abstraction.setProvider({ provider: config.provider });
 
       promises.push(
         abstraction.deployed().then(function(instance) {

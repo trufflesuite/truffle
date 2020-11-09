@@ -88,7 +88,7 @@ describe("artifactor + require", () => {
       .then(() => {
         const json = requireNoCache(expectedFilepath);
         Example = contract(json);
-        Example.setProvider(provider);
+        Example.setProvider({ provider });
       });
   });
 
@@ -288,7 +288,7 @@ describe("artifactor + require", () => {
       bytecode
     });
 
-    NewExample.setProvider(provider);
+    NewExample.setProvider({provider});
     NewExample.defaults({
       from: accounts[0]
     });
