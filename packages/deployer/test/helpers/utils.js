@@ -54,7 +54,7 @@ const utils = {
   getContract: function(name, provider, networkId, account) {
     const json = require(`../build/${name}`);
     const contract = TruffleContract(json);
-    contract.setProvider(provider);
+    contract.setProvider({provider});
     contract.setNetwork(networkId);
     contract.defaults({ from: account });
     return contract;
