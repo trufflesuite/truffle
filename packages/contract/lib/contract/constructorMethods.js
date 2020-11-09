@@ -1,4 +1,5 @@
 const { createInterfaceAdapter } = require("@truffle/interface-adapter");
+const { importKey } = require("@taquito/signer");
 const utils = require("../utils");
 const execute = require("../execute");
 const bootstrap = require("./bootstrap");
@@ -231,7 +232,7 @@ module.exports = Contract => ({
         // email, password, mnemonic, & secret are all REQUIRED.
         if (Array.isArray(mnemonic)) mnemonic = mnemonic.join(" ");
         try {
-          return await tezos.importKey(email, password, mnemonic, secret);
+          return await importKey(tezos, email, password, mnemonic, secret);
         } catch (error) {
           throw Error(`Faucet account invalid or incorrectly imported.`);
         }
@@ -239,7 +240,7 @@ module.exports = Contract => ({
 
       if (secretKey) {
         try {
-          return await tezos.importKey(secretKey);
+          return await importKey(tezos, secretKey);
         } catch (error) {
           throw Error(`Secret key invalid or incorrectly imported.`);
         }
