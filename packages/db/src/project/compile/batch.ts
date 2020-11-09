@@ -3,8 +3,7 @@ const debug = logger("db:project:compile:batch");
 
 import type * as Common from "@truffle/compile-common";
 
-import { Process, _ } from "@truffle/db/project/process";
-import * as Batch from "@truffle/db/process/batch";
+import { Process, Batch, _ } from "@truffle/db/project/process";
 
 export type Config = {
   compilation: {};

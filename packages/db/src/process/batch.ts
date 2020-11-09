@@ -1,16 +1,8 @@
 import { $, _ } from "hkts/src";
+export { _ };
 
 import { Collections } from "@truffle/db/meta";
 import { Process } from "./types";
-
-export { _ };
-
-export type PrepareBatch<S, I, O, B = I, R = O> = (
-  inputs: $<S, [I]>
-) => {
-  batch: B[];
-  unbatch: (results: R[]) => $<S, [O]>;
-};
 
 /**
  * Configure a batch process to query and/or mutate resources.
@@ -61,7 +53,7 @@ export const configure = <B extends Batch>(
     merge
   } = options;
 
-  return function*<I extends Input<B>, O extends Output<B>>(
+  return function* <I extends Input<B>, O extends Output<B>>(
     inputs: Inputs<B, I>
   ): Process<Collections, Outputs<B, O>> {
     // iterate over inputs, collect entries and breadcrumbs
@@ -89,7 +81,7 @@ export const configure = <B extends Batch>(
         const output = convert<I, O>({ result, input, inputs });
 
         // merge in output
-        return merge({ outputs, output, breadcrumb });
+        return merge<I, O>({ outputs, output, breadcrumb });
       },
 
       // initialize outputs as starting point

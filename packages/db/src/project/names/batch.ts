@@ -1,8 +1,7 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:names:batch");
 
-import { Process, _, IdObject } from "@truffle/db/project/process";
-import * as Batch from "@truffle/db/process/batch";
+import { Process, Batch, _, IdObject } from "@truffle/db/project/process";
 
 type Config = {
   assignment: {};
@@ -48,7 +47,7 @@ type Options<C extends Config> = Omit<
 export const generate = <C extends Config>(options: Options<C>) => {
   const generateCollectionAssignments = generateForCollection(options);
 
-  return function*<I extends Input<C>, O extends Output<C>>(options: {
+  return function* <I extends Input<C>, O extends Output<C>>(options: {
     project: IdObject<DataModel.Project>;
     assignments: {
       [collectionName: string]: I[];

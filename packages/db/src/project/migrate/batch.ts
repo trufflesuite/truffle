@@ -2,36 +2,56 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:migrate:batch");
 
 import { ContractObject, NetworkObject } from "@truffle/contract-schema/spec";
-import { _ } from "@truffle/db/project/process";
-import * as Batch from "@truffle/db/process/batch";
+import { Process, Batch, _, IdObject } from "@truffle/db/project/process";
 
 type Config = {
   network?: {};
   artifact?: {};
 
-  requires: {};
+  requires?: {};
   produces: {};
 
   entry?: any;
   result?: any;
 };
 
-type Network<C extends Config> = C["network"] & { networkId: string };
-type Artifact<C extends Config> = C["artifact"];
-type Requires<C extends Config> = C["requires"];
+type Network<C extends Config> = C["network"] & {
+  networkId: string;
+};
+type Requires<C extends Config> = "requires" extends keyof C
+  ? C["requires"]
+  : {};
 type Produces<C extends Config> = C["produces"];
 
 type Entry<C extends Config> = C["entry"];
 type Result<C extends Config> = C["result"];
 
-type Input<C extends Config> = NetworkObject & Requires<C>;
+type ArtifactNetwork<C extends Config> = NetworkObject & Requires<C>;
+type Artifact<C extends Config> = ContractObject &
+  C["artifact"] & {
+    db: {
+      contract: IdObject<DataModel.Contract>;
+      callBytecode: IdObject<DataModel.Bytecode>;
+      createBytecode: IdObject<DataModel.Bytecode>;
+    };
+    networks?: {
+      [networkId: string]: ArtifactNetwork<C>;
+    };
+  };
+
+type Input<C extends Config> = ArtifactNetwork<C>;
 type Output<C extends Config> = Input<C> & Produces<C>;
 
 type Structure<C extends Config> = {
   network: Network<C>;
   artifacts: (ContractObject &
     Artifact<C> & {
-      networks: {
+      db: {
+        contract: IdObject<DataModel.Contract>;
+        callBytecode: IdObject<DataModel.Bytecode>;
+        createBytecode: IdObject<DataModel.Bytecode>;
+      };
+      networks?: {
         [networkId: string]: _;
       };
     })[];
@@ -55,7 +75,11 @@ type Options<C extends Config> = Omit<
   "iterate" | "find" | "initialize" | "merge"
 >;
 
-export const generate = <C extends Config>(options: Options<C>) =>
+export const generate = <C extends Config>(
+  options: Options<C>
+): (<I extends Batch.Input<Batch<C>>, O extends Batch.Output<Batch<C>>>(
+  inputs: Batch.Inputs<Batch<C>, I>
+) => Process<Batch.Outputs<Batch<C>, I & O>>) =>
   Batch.configure<Batch<C>>({
     *iterate<_I>({
       inputs: {
@@ -95,24 +119,35 @@ export const generate = <C extends Config>(options: Options<C>) =>
     initialize<I, O>({ inputs: { artifacts, network } }) {
       return {
         network,
-        artifacts: artifacts.map(artifact => ({
-          ...artifact,
+        artifacts: artifacts.map(
+          artifact =>
+            ({
+              ...artifact,
 
-          networks: {
-            ...(artifact.networks as I & O)
-          }
-        }))
+              networks: {
+                ...artifact.networks
+              } as { [networkId: string]: I & O }
+            } as Artifact<C> & { networks?: { [networkId: string]: I & O } })
+        )
       };
     },
 
-    merge<_I, _O>({ outputs: { network, artifacts }, breadcrumb, output }) {
+    merge<I, O>({ outputs: { network, artifacts }, breadcrumb, output }) {
       debug("output %o", output);
       const { networkId } = network;
       const { artifactIndex } = breadcrumb;
-
-      const artifactsBefore = artifacts.slice(0, artifactIndex);
+      const artifactsBefore: (Artifact<C> & {
+        networks?: { [networkId: string]: I & O };
+      })[] = artifacts.slice(0, artifactIndex);
       const artifact = artifacts[artifactIndex];
-      const artifactsAfter = artifacts.slice(artifactIndex + 1);
+      const artifactsAfter: (Artifact<C> & {
+        networks?: { [networkId: string]: I & O };
+      })[] = artifacts.slice(artifactIndex + 1);
+
+      const artifactNetwork: I & O = {
+        ...artifact.networks[networkId],
+        ...output
+      };
 
       return {
         network,
@@ -123,10 +158,7 @@ export const generate = <C extends Config>(options: Options<C>) =>
             networks: {
               ...artifact.networks,
 
-              [networkId]: {
-                ...artifact.networks[networkId],
-                ...output
-              }
+              [networkId]: artifactNetwork
             }
           },
           ...artifactsAfter

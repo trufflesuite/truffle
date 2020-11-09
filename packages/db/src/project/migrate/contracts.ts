@@ -2,114 +2,66 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:migrate:networks");
 
 import gql from "graphql-tag";
-import {
-  resources,
-  IdObject,
-  Process,
-  PrepareBatch,
-  _
-} from "@truffle/db/project/process";
+import { IdObject, resources } from "@truffle/db/project/process";
+import * as Batch from "./batch";
 
-interface Artifact {
-  networks?: any;
-  db: {
-    contract: IdObject<DataModel.Contract>;
-  };
-}
-
-export function* generateContracts(options: {
-  network: any;
-  artifacts: Artifact[];
-}): Process<{
-  network: any;
-  artifacts: {
-    networks?: any;
+export const generateContracts = Batch.generate<{
+  artifact: {
     db: {
-      contract: DataModel.Contract;
-    };
-  }[];
-}> {
-  const { batch, unbatch } = prepareContractsBatch(options);
-
-  const contracts = yield* resources.find(
-    "contracts",
-    batch.map(({ id }) => id),
-    gql`
-      fragment Bytecode on Bytecode {
-        id
-        linkReferences {
-          name
-        }
-      }
-
-      fragment ContractBytecodes on Contract {
-        id
-        callBytecode {
-          ...Bytecode
-        }
-        createBytecode {
-          ...Bytecode
-        }
-      }
-    `
-  );
-
-  return unbatch(contracts);
-}
-
-const prepareContractsBatch: PrepareBatch<
-  {
-    network: any;
-    artifacts: {
-      networks?: any;
-      db: {
-        contract: _;
-      };
-    }[];
-  },
-  IdObject<DataModel.Contract>,
-  DataModel.Contract
-> = structured => {
-  const batch = [];
-  const breadcrumbs: {
-    [index: number]: {
-      artifactIndex: number;
-    };
-  } = {};
-
-  for (const [artifactIndex, artifact] of structured.artifacts.entries()) {
-    const {
-      db: { contract }
-    } = artifact;
-
-    breadcrumbs[batch.length] = {
-      artifactIndex
-    };
-
-    batch.push(contract);
-  }
-
-  const unbatch = (results: DataModel.Contract[]) => {
-    const artifacts = [...structured.artifacts];
-
-    for (const [index, result] of results.entries()) {
-      const { artifactIndex } = breadcrumbs[index];
-
-      artifacts[artifactIndex] = {
-        ...artifacts[artifactIndex],
-        db: {
-          ...artifacts[artifactIndex].db,
-          // @ts-ignore
-          contract: result
-        }
-      };
-    }
-
-    return {
-      ...structured,
-      artifacts
+      contract: IdObject<DataModel.Contract>;
+      callBytecode: IdObject<DataModel.Bytecode>;
+      createBytecode: IdObject<DataModel.Bytecode>;
     };
   };
+  produces: {
+    callBytecode?: {
+      linkReferences: { name: string }[];
+    };
+    createBytecode?: {
+      linkReferences: { name: string }[];
+    };
+  };
+  entry: IdObject<DataModel.Contract>;
+  result: {
+    callBytecode?: {
+      linkReferences: { name: string }[];
+    };
+    createBytecode?: {
+      linkReferences: { name: string }[];
+    };
+  };
+}>({
+  extract({ inputs: { artifacts }, breadcrumb: { artifactIndex } }) {
+    return artifacts[artifactIndex].db.contract;
+  },
 
-  return { batch, unbatch };
-};
+  *process({ entries }) {
+    return yield* resources.find(
+      "contracts",
+      entries.map(({ id }) => id),
+      gql`
+        fragment Bytecode on Bytecode {
+          linkReferences {
+            name
+          }
+        }
+
+        fragment ContractBytecodes on Contract {
+          callBytecode {
+            ...Bytecode
+          }
+          createBytecode {
+            ...Bytecode
+          }
+        }
+      `
+    );
+  },
+
+  convert<_I, _O>({ result, input }) {
+    return {
+      ...input,
+      ...result
+    };
+  }
+});

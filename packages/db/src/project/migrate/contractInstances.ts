@@ -1,170 +1,89 @@
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:project:migrate:networks");
+const debug = logger("db:project:migrate:contractInstances");
 
-import {
-  resources,
-  toIdObject,
-  IdObject,
-  Process,
-  PrepareBatch,
-  _
-} from "@truffle/db/project/process";
+import { IdObject, resources } from "@truffle/db/project/process";
+import * as Batch from "./batch";
 
-interface NetworkObject {
-  address: string;
-  transactionHash: string;
-  links?: {
-    [name: string]: string;
-  };
-  db?: {
-    network: IdObject<DataModel.Network>;
-  };
-}
-
-interface Artifact {
-  db: {
-    contract: DataModel.Contract;
-  };
-  networks?: {
-    [networkId: string]: NetworkObject;
-  };
-}
-
-export function* generateContractInstancesLoad(options: {
-  network: DataModel.Network | undefined;
-  artifacts: Artifact[];
-}): Process<{
-  network: DataModel.Network | undefined;
-  artifacts: (Artifact & {
-    networks?: {
-      [networkId: string]: NetworkObject & {
-        db?: {
-          contractInstance: IdObject<DataModel.ContractInstance>;
-        };
-      };
+export const generateContractInstancesLoad = Batch.generate<{
+  artifact: {
+    db: {
+      contract: IdObject<DataModel.Contract>;
+      callBytecode: IdObject<DataModel.Bytecode>;
+      createBytecode: IdObject<DataModel.Bytecode>;
     };
-  })[];
-}> {
-  const { batch, unbatch } = prepareContractInstancesBatch(options);
-
-  const contractInstances = yield* resources.load("contractInstances", batch);
-
-  return unbatch(contractInstances);
-}
-
-const prepareContractInstancesBatch: PrepareBatch<
-  {
-    network: DataModel.Network | undefined;
-    artifacts: {
-      db: {
-        contract: DataModel.Contract;
-      };
-      networks?: {
-        [networkId: string]: _;
-      };
-    }[];
-  },
-  NetworkObject,
-  NetworkObject & {
+  };
+  requires: {
+    callBytecode?: {
+      linkReferences: { name: string }[];
+    };
+    createBytecode?: {
+      linkReferences: { name: string }[];
+    };
+    db?: {
+      network: IdObject<DataModel.Network>;
+    };
+  };
+  produces: {
     db?: {
       contractInstance: IdObject<DataModel.ContractInstance>;
     };
-  },
-  DataModel.ContractInstanceInput,
-  IdObject<DataModel.ContractInstance>
-> = structured => {
-  const batch = [];
-  const breadcrumbs: {
-    [index: number]: {
-      artifactIndex: number;
-    };
-  } = {};
+  };
+  entry: DataModel.ContractInstanceInput;
+  result: IdObject<DataModel.ContractInstance>;
+}>({
+  extract({ input, inputs, breadcrumb }) {
+    const { artifacts } = inputs;
+    const { artifactIndex } = breadcrumb;
 
-  const {
-    network: { networkId }
-  } = structured;
-
-  for (const [artifactIndex, artifact] of structured.artifacts.entries()) {
-    if (!artifact.networks) {
-      continue;
-    }
-
-    const networkObject = artifact.networks[networkId];
-
-    // skip over artifacts that don't contain this network
-    if (!networkObject || !networkObject.db) {
-      continue;
-    }
+    const artifact = artifacts[artifactIndex];
 
     const {
       address,
       transactionHash,
       links,
+      callBytecode: { linkReferences: callLinkReferences },
+      createBytecode: { linkReferences: createLinkReferences },
       db: { network }
-    } = networkObject;
+    } = input;
 
     const {
-      db: { contract }
+      db: { contract, callBytecode, createBytecode }
     } = artifact;
 
-    const { callBytecode, createBytecode } = contract;
-
-    breadcrumbs[batch.length] = {
-      artifactIndex
-    };
-
-    batch.push({
+    return {
       address,
       network,
-      contract: toIdObject(contract),
-      callBytecode: link(callBytecode, links),
+      contract,
+      callBytecode: link(callBytecode, callLinkReferences, links),
       creation: {
         transactionHash,
         constructor: {
-          createBytecode: link(createBytecode, links)
+          createBytecode: link(createBytecode, createLinkReferences, links)
         }
       }
-    });
-  }
-
-  const unbatch = (results: IdObject<DataModel.ContractInstance>[]) => {
-    // @ts-ignore
-    const artifacts: (Artifact & {
-      networks?: {
-        [networkId: string]: NetworkObject & {
-          db?: {
-            contractInstance: IdObject<DataModel.ContractInstance>;
-          };
-        };
-      };
-    })[] = [...structured.artifacts];
-
-    for (const [index, result] of results.entries()) {
-      const { artifactIndex } = breadcrumbs[index];
-
-      artifacts[artifactIndex].networks[networkId] = {
-        ...artifacts[artifactIndex].networks[networkId],
-        db: {
-          ...artifacts[artifactIndex].networks[networkId].db,
-          contractInstance: result
-        }
-      };
-    }
-
-    return {
-      network: structured.network,
-      artifacts
     };
-  };
+  },
 
-  return { batch, unbatch };
-};
+  *process({ entries }) {
+    return yield* resources.load("contractInstances", entries);
+  },
+
+  convert<_I, _O>({ result, input }) {
+    return {
+      ...input,
+      db: {
+        ...(input.db || {}),
+        contractInstance: result
+      }
+    };
+  }
+});
 
 function link(
-  bytecode: DataModel.Bytecode,
-  links?: NetworkObject["links"]
+  bytecode: IdObject<DataModel.Bytecode>,
+  linkReferences: { name: string }[],
+  links?: { [name: string]: string }
 ): DataModel.LinkedBytecodeInput {
-  const { linkReferences } = bytecode;
   if (!links) {
     return {
       bytecode,
@@ -175,7 +94,7 @@ function link(
   const linkValues = Object.entries(links).map(([name, value]) => ({
     value,
     linkReference: {
-      bytecode: toIdObject(bytecode),
+      bytecode,
       index: linkReferences.findIndex(
         linkReference => name === linkReference.name
       )
@@ -183,7 +102,7 @@ function link(
   }));
 
   return {
-    bytecode: toIdObject(bytecode),
+    bytecode,
     linkValues
   };
 }

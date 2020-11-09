@@ -10,7 +10,7 @@ import { Db, IdObject, toIdObject } from "@truffle/db/meta";
 
 export { Db, IdObject, toIdObject, NamedCollectionName };
 import * as Base from "@truffle/db/process";
-export { PrepareBatch, _, configure, Options } from "@truffle/db/process";
+export { Batch, _ } from "@truffle/db/process";
 
 export type Process<
   T = any,

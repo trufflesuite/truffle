@@ -1,6 +1,7 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:migrate");
 
+import { ContractObject } from "@truffle/contract-schema/spec";
 import { toIdObject, IdObject, Process } from "@truffle/db/project/process";
 
 import { generateNetworkId } from "./networkId";
@@ -9,40 +10,30 @@ import { generateNetworksLoad } from "./networks";
 import { generateContracts } from "./contracts";
 import { generateContractInstancesLoad } from "./contractInstances";
 
-export interface NetworkObject {
-  address: string;
-  transactionHash: string;
-  links?: {
-    [name: string]: string;
-  };
-}
-
-export interface Artifact {
-  db: {
-    contract: IdObject<DataModel.Contract>;
-  };
-
+export type Artifact = ContractObject & {
   networks?: {
-    [networkId: string]: NetworkObject;
+    [networkId: string]: {
+      db?: {
+        network: IdObject<DataModel.Network>;
+        contractInstance: IdObject<DataModel.ContractInstance>;
+      };
+    };
   };
-}
+};
 
 export function* generateMigrateLoad(options: {
   // we'll need everything for this input other than what's calculated here
   network: Omit<DataModel.NetworkInput, "networkId" | "historicBlock">;
-  artifacts: Artifact[];
-}): Process<{
-  network: IdObject<DataModel.Network>;
-  artifacts: (Artifact & {
-    networks: {
-      [networkId: string]: {
-        db?: {
-          network: IdObject<DataModel.Network>;
-          contractInstance: IdObject<DataModel.ContractInstance>;
-        };
-      };
+  artifacts: (ContractObject & {
+    db: {
+      contract: IdObject<DataModel.Contract>;
+      callBytecode: IdObject<DataModel.Bytecode>;
+      createBytecode: IdObject<DataModel.Bytecode>;
     };
   })[];
+}): Process<{
+  network: IdObject<DataModel.Network>;
+  artifacts: Artifact[];
 }> {
   const networkId = yield* generateNetworkId();
 
@@ -51,27 +42,33 @@ export function* generateMigrateLoad(options: {
       ...options.network,
       networkId
     },
-    // @ts-ignore
     artifacts: options.artifacts
   });
 
   // @ts-ignore
   const withNetworks = yield* generateNetworksLoad(withBlocks);
 
+  const [
+    {
+      db: { network }
+    }
+  ] = withNetworks.artifacts
+    .map(({ networks }) => networks[networkId])
+    .filter(networkObject => networkObject && networkObject.block)
+    .sort((a, b) => b.block.height - a.block.height); // descending
+
   const withContracts = yield* generateContracts(withNetworks);
 
-  const { network, artifacts } = yield* generateContractInstancesLoad(
+  const { artifacts } = yield* generateContractInstancesLoad(
+    // @ts-ignore
     withContracts
   );
 
   return {
+    // @ts-ignore
     network: toIdObject(network),
     artifacts: artifacts.map(artifact => ({
       ...artifact,
-      db: {
-        ...artifact.db,
-        contract: toIdObject(artifact.db.contract)
-      },
       networks: artifact.networks
     }))
   };

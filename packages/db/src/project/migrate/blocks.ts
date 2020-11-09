@@ -5,12 +5,10 @@ import * as Batch from "./batch";
 
 export const generateTransactionBlocks = Batch.generate<{
   requires: {
-    transactionHash: string;
+    transactionHash?: string;
   };
   produces: {
-    artifactNetwork: {
-      block?: DataModel.Block;
-    };
+    block?: DataModel.Block;
   };
   entry: string; // transactionHash
   result: DataModel.Block;
