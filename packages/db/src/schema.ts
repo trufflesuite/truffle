@@ -1,7 +1,9 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:schema");
 
-import { definitions } from "./resources";
-import { forDefinitions } from "./graphql";
+import * as GraphQl from "./graphql";
+import { Collections, definitions } from "./resources";
 
-export const schema = forDefinitions(definitions);
+export type Context = GraphQl.Context<Collections>;
+
+export const schema = GraphQl.forDefinitions(definitions);
