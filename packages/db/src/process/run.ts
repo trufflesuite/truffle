@@ -4,33 +4,37 @@ const debug = logger("db:loaders:run");
 import { promisify } from "util";
 import type { Provider } from "web3/providers";
 
-import { Db } from "@truffle/db/meta";
+import { Collections, Db } from "@truffle/db/meta";
+
 import {
-  Loader,
-  LoadRequest,
+  Definitions,
   GraphQlRequest,
   Web3Request,
-  RequestType
+  Processor,
+  RequestType,
+  ProcessRequest
 } from "./types";
 
-export type LoaderRunner = <
+export type ProcessorRunner<C extends Collections> = <
   A extends unknown[],
   T = any,
-  R extends RequestType | undefined = undefined
+  R extends RequestType<C> | undefined = undefined
 >(
-  loader: Loader<A, T, R>,
+  loader: Processor<C, A, T, R>,
   ...args: A
 ) => Promise<T>;
 
-export const forDb = (
+export const runForDefinitions = <C extends Collections>(
+  _definitions: Definitions<C> // this is only used for type inference
+) => (
   db: Db
 ): {
   forProvider(
     provider: Provider
   ): {
-    run: LoaderRunner;
+    run: ProcessorRunner<C>;
   };
-  run: LoaderRunner;
+  run: ProcessorRunner<C>;
 } => {
   const connections = {
     db
@@ -55,19 +59,20 @@ export const forDb = (
 };
 
 const run = async <
+  C extends Collections,
   Args extends unknown[],
   Return,
-  R extends RequestType | undefined
+  R extends RequestType<C> | undefined
 >(
   connections: { db: Db; provider?: Provider },
-  loader: Loader<Args, Return, R>,
+  loader: Processor<C, Args, Return, R>,
   ...args: Args
 ) => {
   const saga = loader(...args);
   let current = saga.next();
 
   while (!current.done) {
-    const loadRequest = current.value as LoadRequest<R>;
+    const loadRequest = current.value as ProcessRequest<C, R>;
     switch (loadRequest.type) {
       case "graphql": {
         const { db } = connections;

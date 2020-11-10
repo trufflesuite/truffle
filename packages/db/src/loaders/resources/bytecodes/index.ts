@@ -1,11 +1,8 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:loaders:resources:bytecodes");
 
-import {
-  CompilationData,
-  LoadedBytecodes,
-  Load
-} from "@truffle/db/loaders/types";
+import { CompilationData, LoadedBytecodes } from "@truffle/db/loaders/types";
+import { Process } from "@truffle/db/project/process";
 import { toIdObject } from "@truffle/db/meta";
 import { CompiledContract } from "@truffle/compile-common";
 import { AddBytecodes } from "./add.graphql";
@@ -16,7 +13,7 @@ export { AddBytecodes };
  */
 export function* generateBytecodesLoad(
   compilation: CompilationData
-): Load<LoadedBytecodes, { graphql: "bytecodesAdd" }> {
+): Process<LoadedBytecodes> {
   // we're flattening in order to send all bytecodes in one big list
   // (it's okay, we're gonna recreate the structure before we return)
   const flattenedContracts: CompiledContract[] = compilation.sources

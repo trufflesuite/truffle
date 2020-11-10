@@ -8,4 +8,4 @@ export { schema } from "./schema";
 export { Db, connect } from "./db";
 export { serve } from "./server";
 
-export { Project } from "./loaders";
+export { Project } from "./project";
