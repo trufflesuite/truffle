@@ -34,7 +34,7 @@ export interface GenerateTransactionNetworkLoadOptions {
   network: Pick<DataModel.NetworkInput, "name" | "networkId">;
 }
 
-export function* generateTranasctionNetworkLoad({
+export function* generateTransactionNetworkLoad({
   transactionHash,
   network: {
     name,
@@ -113,4 +113,3 @@ function* generateNetworkLoad(
   debug("Generated network load.");
   return network;
 }
-

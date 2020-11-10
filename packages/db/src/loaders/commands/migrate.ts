@@ -7,7 +7,7 @@ import { Load } from "@truffle/db/loaders/types";
 
 import { generateContractGet } from "@truffle/db/loaders/resources/contracts";
 import {
-  generateTranasctionNetworkLoad,
+  generateTransactionNetworkLoad,
   generateNetworkIdFetch,
   generateNetworkGet
 } from "@truffle/db/loaders/resources/networks";
@@ -49,7 +49,7 @@ export function* generateMigrateLoad(
     const { transactionHash } = artifact.networks[networkId];
 
     // load the historical network
-    const network = yield* generateTranasctionNetworkLoad({
+    const network = yield* generateTransactionNetworkLoad({
       transactionHash,
       network: {
         name: options.network.name,
