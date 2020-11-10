@@ -54,7 +54,15 @@ let txlog = createSelectorTree({
     /**
      * txlog.transaction.origin
      */
-    origin: createLeaf([evm.transaction.globals.tx], tx => tx.origin)
+    origin: createLeaf([evm.transaction.globals.tx], tx => tx.origin),
+
+    /**
+     * txlog.transaction.absorbFirstInternalCall
+     */
+    absorbFirstInternalCall: createLeaf(
+      [solidity.transaction.bottomStackframeRequiresPhantomFrame],
+      identity
+    )
   },
 
   /**
@@ -88,6 +96,11 @@ let txlog = createSelectorTree({
      * This selector indicates whether there's a call (internal or external)
      * that is waiting to have its function definition identified when we hit
      * a function definition node.
+     * NOTE: if we wanted to do this properly, we'd have to compute the tree.
+     * we don't want to do that, though.  so instead we do it a faster way.
+     * this faster way will work... *except* for certain cases involving
+     * constructors.  However constructors should never need the identify
+     * mechanism in the first place.  so whatever.
      */
     waitingForFunctionDefinition: createLeaf(
       ["./lastAction"],
@@ -197,6 +210,14 @@ let txlog = createSelectorTree({
      * (i.e. decoder context, not debugger context)
      */
     callContext: createLeaf([data.current.callContext], identity),
+
+    /**
+     * txlog.current.absorbNextInternalCall
+     */
+    absorbNextInternalCall: createLeaf(
+      [solidity.current.callRequiresPhantomFrame],
+      identity
+    ),
 
     /**
      * txlog.current.callData
@@ -355,7 +376,8 @@ function logToTree(log) {
           instant,
           calldata,
           binary,
-          waitingForFunctionDefinition
+          waitingForFunctionDefinition,
+          absorbNextInternalCall
         } = action;
         let call = {
           type,
@@ -379,6 +401,7 @@ function logToTree(log) {
           currentNode.actions.push(call);
         } else {
           call.waitingForFunctionDefinition = waitingForFunctionDefinition;
+          call.absorbNextInternalCall = absorbNextInternalCall;
           currentNode.actions.push(call);
           currentNode = call;
           nodeStack.push(call);
@@ -396,15 +419,11 @@ function logToTree(log) {
         } = action;
         if (
           currentNode.type === "callexternal" &&
-          currentNode.kind !== "constructor" &&
-          currentNode.waitingForFunctionDefinition
+          currentNode.absorbNextInternalCall
         ) {
-          //this is for handling post-0.5.1 initial jump-ins; don't add
-          //a separate internal call if we're sitting on an external call
-          //waiting to be identified
-          //However, note that we don't do this for constructors, because
-          //for constructors, an initializer could run first.  Fortunately
-          //constructors don't have a jump in, so it works out OK!
+          //this is for handling post-0.5.1 initial jump-ins
+          debug("absorbing");
+          currentNode.absorbNextInternalCall = false;
           break;
         }
         const call = {
@@ -415,6 +434,7 @@ function logToTree(log) {
           actions: [],
           waitingForFunctionDefinition
         };
+        debug("adding internal call");
         currentNode.actions.push(call);
         currentNode = call;
         nodeStack.push(call);
@@ -544,6 +564,7 @@ function logToTree(log) {
         }
         //finally, pop it from the stack.
         delete currentNode.waitingForFunctionDefinition;
+        delete currentNode.absorbNextInternalCall;
         nodeStack.pop();
         currentNode = nodeStack[nodeStack.length - 1];
         break;

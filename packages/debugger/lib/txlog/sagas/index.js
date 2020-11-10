@@ -81,6 +81,7 @@ function* updateTransactionLogSaga() {
     const calldata = yield select(txlog.current.callData);
     const instant = yield select(txlog.current.isInstantCallOrCreate);
     const kind = callKind(context, calldata, instant);
+    const absorb = yield select(txlog.current.absorbNextInternalCall);
     const decoding = yield* data.decodeCall();
     if (instant) {
       const status = yield select(txlog.current.returnStatus);
@@ -93,6 +94,7 @@ function* updateTransactionLogSaga() {
           kind,
           decoding,
           calldata,
+          absorb,
           status
         )
       );
@@ -105,7 +107,8 @@ function* updateTransactionLogSaga() {
           isDelegate,
           kind,
           decoding,
-          calldata
+          calldata,
+          absorb
         )
       );
     }
@@ -137,6 +140,7 @@ function* updateTransactionLogSaga() {
     }
   }
   //we process this last in case jump & function def on same step
+  //(which is in fact how it typically goes!)
   if (yield select(txlog.current.onFunctionDefinition)) {
     if (yield select(txlog.current.waitingForFunctionDefinition)) {
       debug("identifying");
@@ -200,9 +204,13 @@ export function* begin() {
   const origin = yield select(txlog.transaction.origin);
   debug("origin: %s", origin);
   yield put(actions.recordOrigin(origin));
-  const { address, storageAddress, value, data: calldata } = yield select(
-    txlog.current.call
-  );
+  const {
+    address,
+    binary,
+    storageAddress,
+    value,
+    data: calldata
+  } = yield select(txlog.current.call);
   const context = yield select(txlog.current.context);
   //note: there was an instant check here (based on checking if there are no
   //trace steps) but I took it out, because even though having no trace steps
@@ -212,11 +220,26 @@ export function* begin() {
   debug("decoding: %O", decoding);
   if (address) {
     const kind = callKind(context, calldata, false); //no insta-calls here!
-    yield put(
-      actions.externalCall(address, context, value, false, kind, decoding)
-    ); //initial call is never delegate
+    const absorb = yield select(txlog.transaction.absorbFirstInternalCall);
+    yield put(actions.externalCall(
+      address,
+      context,
+      value,
+      false, //initial call is never delegate
+      kind,
+      decoding,
+      calldata,
+      absorb
+    ));
   } else {
-    yield put(actions.create(storageAddress, context, value, null, decoding)); //initial create never has salt
+    yield put(actions.create(
+      storageAddress,
+      context,
+      value,
+      null, //initial create never has salt
+      decoding,
+      binary
+    ));
   }
 }
 

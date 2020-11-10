@@ -21,7 +21,8 @@ export function externalCall(
   isDelegate,
   kind,
   decoding,
-  calldata
+  calldata,
+  absorbNextInternalCall
 ) {
   return {
     type: EXTERNAL_CALL,
@@ -31,7 +32,8 @@ export function externalCall(
     isDelegate,
     kind,
     decoding,
-    calldata
+    calldata,
+    absorbNextInternalCall
   };
 }
 
@@ -44,6 +46,7 @@ export function instantExternalCall(
   kind,
   decoding,
   calldata,
+  absorbNextInternalCall,
   status
 ) {
   return {
@@ -55,6 +58,7 @@ export function instantExternalCall(
     kind,
     decoding,
     calldata,
+    absorbNextInternalCall,
     status
   };
 }

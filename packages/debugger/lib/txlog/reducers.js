@@ -31,6 +31,7 @@ function transactionLog(state = [], action) {
         kind,
         decoding,
         calldata,
+        absorbNextInternalCall,
         status
       } = action;
       const contractName = context ? context.contractName : undefined;
@@ -57,6 +58,11 @@ function transactionLog(state = [], action) {
         //one we hit would instead be a function *called* from the fallback
         //function, which is not what we want.
         waitingForFunctionDefinition: kind !== "message",
+        //if kind is message or constructor, we don't want to absorb.
+        //but, for constructors absorb will already be false, so we don't need to
+        //explicitly disallow that.
+        //(so: absorb for function & library only)
+        absorbNextInternalCall: absorbNextInternalCall && kind !== "message",
         instant: action.type === actions.INSTANT_EXTERNAL_CALL,
         status //will be undefined if not instant!
       };
@@ -89,6 +95,7 @@ function transactionLog(state = [], action) {
         variables,
         binary,
         waitingForFunctionDefinition: true,
+        absorbNextInternalCall: false,
         instant: action.type === actions.INSTANT_CREATE,
         status //will be undefined if not instant!
       };
