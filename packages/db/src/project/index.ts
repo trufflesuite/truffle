@@ -10,8 +10,7 @@ import { Db, IdObject } from "@truffle/db/meta";
 import { generateInitializeLoad } from "./initialize";
 import { generateNamesLoad } from "./names";
 import { Compilation, Contract, generateCompileLoad } from "./compile";
-
-import { generateMigrateLoad } from "@truffle/db/loaders/commands";
+import { Artifact, generateMigrateLoad } from "./migrate";
 
 import { ProcessorRunner, forDb } from "./process";
 
@@ -139,13 +138,8 @@ class ConnectedProject extends Project {
     artifacts: ContractObject[];
   }): Promise<{
     network: IdObject<DataModel.Network>;
-    contractInstances: IdObject<DataModel.ContractInstance>[];
+    artifacts: Artifact[];
   }> {
-    const { network, contractInstances } = await this.run(
-      generateMigrateLoad,
-      options
-    );
-
-    return { network, contractInstances };
+    return await this.run(generateMigrateLoad, options);
   }
 }
