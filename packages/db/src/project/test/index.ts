@@ -1,7 +1,7 @@
 import path from "path";
 import gql from "graphql-tag";
 import { connect } from "@truffle/db";
-import { ArtifactsLoader } from "@truffle/db/loaders/schema/artifactsLoader";
+import { ArtifactsLoader } from "./artifacts";
 import { generateId } from "@truffle/db/helpers";
 import Migrate from "@truffle/migrate";
 import { Environment } from "@truffle/environment";
