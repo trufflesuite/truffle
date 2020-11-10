@@ -2,7 +2,6 @@ import path from "path";
 import gql from "graphql-tag";
 import { connect } from "@truffle/db";
 import { ArtifactsLoader } from "@truffle/db/loaders/schema/artifactsLoader";
-import { AddContracts } from "@truffle/db/loaders/resources/contracts";
 import { generateId } from "@truffle/db/helpers";
 import Migrate from "@truffle/migrate";
 import { Environment } from "@truffle/environment";
@@ -206,6 +205,67 @@ const ResolveProjectName = gql`
   }
 `;
 
+const AddContracts = gql`
+  mutation AddContracts($contracts: [ContractInput!]!) {
+    contractsAdd(input: { contracts: $contracts }) {
+      contracts {
+        id
+        name
+        abi {
+          json
+        }
+        processedSource {
+          source {
+            contents
+            sourcePath
+          }
+          ast {
+            json
+          }
+        }
+        compilation {
+          compiler {
+            name
+            version
+          }
+          contracts {
+            name
+            source {
+              contents
+              sourcePath
+            }
+            ast {
+              json
+            }
+          }
+          sources {
+            contents
+            sourcePath
+          }
+        }
+        createBytecode {
+          id
+          bytes
+          linkReferences {
+            offsets
+            name
+            length
+          }
+        }
+        callBytecode {
+          id
+          bytes
+          linkReferences {
+            offsets
+            name
+            length
+          }
+        }
+      }
+    }
+  }
+`;
+
 const GetWorkspaceBytecode = gql`
   query GetWorkspaceBytecode($id: ID!) {
     bytecode(id: $id) {
@@ -295,7 +355,7 @@ const GetWorkspaceCompilation = gql`
         sourcePath
       }
       sourceMaps {
-        json
+        data
       }
     }
   }
@@ -612,7 +672,7 @@ describe("Compilation", () => {
 
       expect(
         solcCompilation.sourceMaps.find(
-          ({ json }) => json === artifacts[index].sourceMap
+          ({ data }) => data === artifacts[index].sourceMap
         )
       ).toBeDefined();
     });

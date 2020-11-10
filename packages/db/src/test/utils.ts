@@ -1,3 +1,6 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:test:utils");
+
 import path from "path";
 
 import * as graphql from "graphql";
@@ -37,6 +40,10 @@ export class WorkspaceClient {
       { workspace: this.workspace }, // context vars
       variables
     );
+
+    if (result.errors) {
+      debug("errors %o", result.errors);
+    }
 
     return result.data;
   }
