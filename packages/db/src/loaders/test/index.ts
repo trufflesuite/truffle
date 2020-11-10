@@ -3,11 +3,6 @@ import gql from "graphql-tag";
 import { connect } from "@truffle/db";
 import { ArtifactsLoader } from "@truffle/db/loaders/schema/artifactsLoader";
 import { AddContracts } from "@truffle/db/loaders/resources/contracts";
-import { AddNameRecords } from "@truffle/db/loaders/resources/nameRecords";
-import {
-  AssignProjectNames,
-  ResolveProjectName
-} from "@truffle/db/loaders/resources/projects";
 import { generateId } from "@truffle/db/helpers";
 import Migrate from "@truffle/migrate";
 import { Environment } from "@truffle/environment";
@@ -157,6 +152,55 @@ const AddProjects = gql`
       projects {
         id
         directory
+      }
+    }
+  }
+`;
+
+const AddNameRecords = gql`
+  mutation AddNameRecords($nameRecords: [NameRecordInput!]!) {
+    nameRecordsAdd(input: { nameRecords: $nameRecords }) {
+      nameRecords {
+        id
+        name
+        type
+        resource {
+          name
+        }
+        previous {
+          id
+          name
+        }
+      }
+    }
+  }
+`;
+
+const AssignProjectNames = gql`
+  mutation AssignProjectNames($projectNames: [ProjectNameInput!]!) {
+    projectNamesAssign(input: { projectNames: $projectNames }) {
+      projectNames {
+        name
+        type
+        nameRecord {
+          resource {
+            id
+          }
+        }
+      }
+    }
+  }
+`;
+
+const ResolveProjectName = gql`
+  query ResolveProjectName($projectId: ID!, $type: String!, $name: String!) {
+    project(id: $projectId) {
+      resolve(type: $type, name: $name) {
+        id
+        resource {
+          id
+          name
+        }
       }
     }
   }

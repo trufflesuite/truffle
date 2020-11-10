@@ -8,10 +8,10 @@ import { ContractObject } from "@truffle/contract-schema/spec";
 import { Db, toIdObject, IdObject } from "@truffle/db/meta";
 
 import { generateInitializeLoad } from "./initialize";
+import { generateNamesLoad } from "./names";
 
 import {
   generateCompileLoad,
-  generateNamesLoad,
   generateMigrateLoad
 } from "@truffle/db/loaders/commands";
 
@@ -72,15 +72,20 @@ export class Project {
       [collectionName: string]: IdObject[];
     };
   }): Promise<{
-    nameRecords: IdObject<DataModel.NameRecord>[];
+    assignments: {
+      [collectionName: string]: IdObject<DataModel.NameRecord>[];
+    };
   }> {
-    const nameRecords = await this.run(
-      generateNamesLoad,
-      this.project,
-      options.assignments
-    );
+    const { assignments } = await this.run(generateNamesLoad, {
+      project: this.project,
+      assignments: options.assignments
+    });
     return {
-      nameRecords: nameRecords.map(toIdObject)
+      assignments: Object.entries(assignments)
+        .map(([collectionName, assignments]) => ({
+          [collectionName]: assignments.map(({ nameRecord }) => nameRecord)
+        }))
+        .reduce((a, b) => ({ ...a, ...b }), {})
     };
   }
 
