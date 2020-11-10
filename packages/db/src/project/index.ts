@@ -1,5 +1,5 @@
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:loaders:project");
+const debug = logger("db:project");
 
 import type { Provider } from "web3/providers";
 import { WorkflowCompileResult } from "@truffle/compile-common";

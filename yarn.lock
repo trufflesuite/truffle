@@ -11702,6 +11702,11 @@ highlightjs-solidity@^1.0.18:
   resolved "https://registry.yarnpkg.com/highlightjs-solidity/-/highlightjs-solidity-1.0.18.tgz#3deb0593689a26fbadf98e631bf2cd305a6417c9"
   integrity sha512-k15h0br4oCRT0F0jTRuZbimerVt5V4n0k25h7oWi0kVqlBNeXPbSr5ddw02/2ukJmYfB8jauFDmxSauJjwM7Eg==
 
+hkts@^0.3.1:
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/hkts/-/hkts-0.3.1.tgz#444e33ae89138b46cbdd669d4cfed358ec0dd7db"
+  integrity sha512-mwyHknnq1d7dRZVu1easa4CZc4tRqSQ9RtliJS9Wh3vl4PCHxDHZIuztSeZX7focK2jI7rpiYyKRLnE285kdBw==
+
 hmac-drbg@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/hmac-drbg/-/hmac-drbg-1.0.1.tgz#d2745701025a6c775a6c545793ed502fc0c649a1"
