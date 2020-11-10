@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "app-module-path": "^2.2.0",
-    "ganache-core": "^2.11.0-tezos.2",
+    "ganache-core": "2.11.0-tezos.2",
     "mocha": "5.2.0",
     "original-require": "1.0.1"
   },
@@ -41,7 +41,6 @@
     "copy-webpack-plugin": "^4.0.1",
     "eslint": "^5.7.0",
     "fs-extra": "^8.1.0",
-    "ganache-core": "^2.11.0-tezos.2",
     "glob": "^7.1.2",
     "js-scrypt": "^0.2.0",
     "meta-npm": "^0.0.22",
