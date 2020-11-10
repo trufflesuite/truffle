@@ -32,30 +32,27 @@ const command = {
       }
     ]
   },
-  run: function(options, done) {
+  run: async function (options) {
+    const {promisify} = require("util");
     const debugModule = require("debug");
     const debug = debugModule("lib:commands:debug");
 
-    const { Environment } = require("@truffle/environment");
+    const {Environment} = require("@truffle/environment");
     const Config = require("@truffle/config");
 
-    const { CLIDebugger } = require("../debug");
+    const {CLIDebugger} = require("../debug");
 
-    Promise.resolve()
-      .then(async () => {
-        const config = Config.detect(options);
-        await Environment.detect(config);
+    const config = Config.detect(options);
+    await Environment.detect(config);
 
-        const txHash = config._[0]; //may be undefined
-        if (config.fetchExternal && txHash === undefined) {
-          throw new Error(
-            "Fetch-external mode requires a specific transaction to debug"
-          );
-        }
-        return await new CLIDebugger(config, { txHash }).run();
-      })
-      .then(interpreter => interpreter.start(done))
-      .catch(done);
+    const txHash = config._[0]; //may be undefined
+    if (config.fetchExternal && txHash === undefined) {
+      throw new Error(
+        "Fetch-external mode requires a specific transaction to debug"
+      );
+    }
+    const interpreter = await new CLIDebugger(config, {txHash}).run();
+    return promisify(interpreter.start)();
   }
 };
 

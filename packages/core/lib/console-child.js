@@ -9,7 +9,7 @@ const inputStrings = input[1];
 
 //detect config so we can get the provider and resolver without having to serialize
 //and deserialize them
-const detectedConfig = Config.detect({ network: yargs(input[0]).argv.network });
+const detectedConfig = Config.detect({network: yargs(input[0]).argv.network});
 const customConfig = detectedConfig.networks.develop || {};
 
 //need host and port for provider url
@@ -25,7 +25,7 @@ detectedConfig.networks.develop = {
   port: customConfig.port || 9545,
   network_id: customConfig.network_id || 5777,
   provider: function () {
-    return new Web3.providers.HttpProvider(url, { keepAlive: false });
+    return new Web3.providers.HttpProvider(url, {keepAlive: false});
   }
 };
 
@@ -36,8 +36,10 @@ const command =
     ? new Command(require("./commands.bundled.js"))
     : new Command(require("./commands"));
 
-command.run(inputStrings, detectedConfig, error => {
-  if (error) {
+command
+  .run(inputStrings, detectedConfig)
+  .then(() => process.exit(0))
+  .catch(error => {
     // Perform error handling ourselves.
     if (error instanceof TruffleError) {
       console.log(error.message);
@@ -46,6 +48,4 @@ command.run(inputStrings, detectedConfig, error => {
       console.log(error.stack || error.toString());
     }
     process.exit(1);
-  }
-  process.exit(0);
-});
+  });
