@@ -5,7 +5,6 @@ import { ArtifactsLoader } from "@truffle/db/loaders/schema/artifactsLoader";
 import { AddContracts } from "@truffle/db/loaders/resources/contracts";
 import { AddNameRecords } from "@truffle/db/loaders/resources/nameRecords";
 import {
-  AddProjects,
   AssignProjectNames,
   ResolveProjectName
 } from "@truffle/db/loaders/resources/projects";
@@ -151,6 +150,17 @@ const artifacts = [
     "VyperStorage.json"
   ))
 ];
+
+const AddProjects = gql`
+  mutation AddProjects($projects: [ProjectInput!]!) {
+    projectsAdd(input: { projects: $projects }) {
+      projects {
+        id
+        directory
+      }
+    }
+  }
+`;
 
 const GetWorkspaceBytecode = gql`
   query GetWorkspaceBytecode($id: ID!) {
