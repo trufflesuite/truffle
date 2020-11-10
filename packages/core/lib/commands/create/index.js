@@ -75,13 +75,13 @@ const command = {
 
     if (type === "all") {
       for (const key of Object.keys(destinations)) {
-        await promisify(create[type])(destinations[type], name, options);
+        await create[key](destinations[key], name, options);
       }
       return;
     } else if (fn == null) {
       throw new ConfigurationError(`Cannot find creation type: ${type}`);
     } else {
-      return promisify(create[type])(destinations[type], name, options);
+      return create[type](destinations[type], name, options);
     }
   }
 };
