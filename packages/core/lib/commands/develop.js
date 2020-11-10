@@ -22,38 +22,32 @@ const command = {
       }
     ]
   },
-  runConsole: (config, ganacheOptions, done) => {
+  runConsole: async (config, ganacheOptions) => {
     const Console = require("../console");
-    const { Environment } = require("@truffle/environment");
+    const {Environment} = require("@truffle/environment");
 
     const commands = require("./index");
     const excluded = new Set(["console", "develop", "unbox", "init"]);
 
     const consoleCommands = Object.keys(commands).reduce((acc, name) => {
       return !excluded.has(name)
-        ? Object.assign(acc, { [name]: commands[name] })
+        ? Object.assign(acc, {[name]: commands[name]})
         : acc;
     }, {});
 
-    Environment.develop(config, ganacheOptions)
-      .then(() => {
-        const c = new Console(
-          consoleCommands,
-          config.with({ noAliases: true })
-        );
-        c.start(done);
-        c.on("exit", () => process.exit());
-      })
-      .catch(err => done(err));
+    await Environment.develop(config, ganacheOptions);
+    const c = new Console(consoleCommands, config.with({noAliases: true}));
+    c.on("exit", () => process.exit());
+    return c.start();
   },
-  run: (options, done) => {
-    const { Develop } = require("@truffle/environment");
+  run: async options => {
+    const {Develop} = require("@truffle/environment");
     const Config = require("@truffle/config");
 
     const config = Config.detect(options);
     const customConfig = config.networks.develop || {};
 
-    const { mnemonic, accounts, privateKeys } = mnemonicInfo.getAccountsInfo(
+    const {mnemonic, accounts, privateKeys} = mnemonicInfo.getAccountsInfo(
       customConfig.accounts || 10
     );
 
@@ -64,7 +58,7 @@ const command = {
       "This mnemonic was created for you by Truffle. It is not secure.\n" +
       "Ensure you do not use it on production blockchains, or else you risk losing funds.";
 
-    const ipcOptions = { log: options.log };
+    const ipcOptions = {log: options.log};
 
     const ganacheOptions = {
       host: customConfig.host || "127.0.0.1",
@@ -103,36 +97,35 @@ const command = {
 
     ganacheOptions.network_id = sanitizeNetworkID(ganacheOptions.network_id);
 
-    Develop.connectOrStart(ipcOptions, ganacheOptions).then(({ started }) => {
-      const url = `http://${ganacheOptions.host}:${ganacheOptions.port}/`;
+    const {started} = await Develop.connectOrStart(ipcOptions, ganacheOptions);
+    const url = `http://${ganacheOptions.host}:${ganacheOptions.port}/`;
 
-      if (started) {
-        config.logger.log(`Truffle Develop started at ${url}`);
-        config.logger.log();
+    if (started) {
+      config.logger.log(`Truffle Develop started at ${url}`);
+      config.logger.log();
 
-        config.logger.log(`Accounts:`);
-        accounts.forEach((acct, idx) => config.logger.log(`(${idx}) ${acct}`));
-        config.logger.log();
+      config.logger.log(`Accounts:`);
+      accounts.forEach((acct, idx) => config.logger.log(`(${idx}) ${acct}`));
+      config.logger.log();
 
-        config.logger.log(`Private Keys:`);
-        privateKeys.forEach((key, idx) => config.logger.log(`(${idx}) ${key}`));
-        config.logger.log();
+      config.logger.log(`Private Keys:`);
+      privateKeys.forEach((key, idx) => config.logger.log(`(${idx}) ${key}`));
+      config.logger.log();
 
-        config.logger.log(`Mnemonic: ${mnemonic}`);
-        config.logger.log();
-        config.logger.log(emoji.emojify(warning, onMissing));
-        config.logger.log();
-      } else {
-        config.logger.log(
-          `Connected to existing Truffle Develop session at ${url}`
-        );
-        config.logger.log();
-      }
+      config.logger.log(`Mnemonic: ${mnemonic}`);
+      config.logger.log();
+      config.logger.log(emoji.emojify(warning, onMissing));
+      config.logger.log();
+    } else {
+      config.logger.log(
+        `Connected to existing Truffle Develop session at ${url}`
+      );
+      config.logger.log();
+    }
 
-      if (!options.log) {
-        command.runConsole(config, ganacheOptions, done);
-      }
-    });
+    if (!options.log) {
+      return command.runConsole(config, ganacheOptions);
+    }
   }
 };
 

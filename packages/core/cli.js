@@ -43,7 +43,7 @@ const command =
 const listeners = process.listeners("warning");
 listeners.forEach(listener => process.removeListener("warning", listener));
 
-let options = { logger: console };
+let options = {logger: console};
 
 const inputArguments = process.argv.slice(2);
 const userWantsGeneralHelp =
@@ -54,9 +54,13 @@ if (userWantsGeneralHelp) {
   process.exit(0);
 }
 
-command.run(inputArguments, options, function (err) {
-  if (err) {
-    if (err instanceof TaskError) {
+command
+  .run(inputArguments, options)
+  .then(() => {
+    process.exit(0);
+  })
+  .catch(error => {
+    if (error instanceof TaskError) {
       analytics.send({
         exception: "TaskError - display general help message",
         version: versionInfo.bundle
@@ -65,28 +69,28 @@ command.run(inputArguments, options, function (err) {
       });
       command.displayGeneralHelp();
     } else {
-      if (err instanceof TruffleError) {
+      if (error instanceof TruffleError) {
         analytics.send({
           exception: "TruffleError - missing configuration file",
           version: versionInfo.bundle
             ? versionInfo.bundle
             : "(unbundled) " + versionInfo.core
         });
-        console.log(err.message);
+        console.log(error.message);
         version.logTruffleAndNode(options.logger);
-      } else if (typeof err === "number") {
+      } else if (typeof error === "number") {
         analytics.send({
-          exception: "Numbered Error - " + err,
+          exception: "Numbered Error - " + error,
           version: versionInfo.bundle
             ? versionInfo.bundle
             : "(unbundled) " + versionInfo.core
         });
         // If a number is returned, exit with that number.
-        process.exit(err);
+        process.exit(error);
       } else {
-        let error = err.stack || err.message || err.toString();
+        let error = error.stack || error.message || error.toString();
         //remove identifying information if error stack is passed to analytics
-        if (error === err.stack) {
+        if (error === error.stack) {
           const directory = __dirname;
           //making sure users' identifying information does not get sent to
           //analytics by cutting off everything before truffle. Will not properly catch the user's info
@@ -102,11 +106,9 @@ command.run(inputArguments, options, function (err) {
             : "(unbundled) " + versionInfo.core
         });
         // Bubble up all other unexpected errors.
-        console.log(err.stack || err.message || err.toString());
+        console.log(error.stack || error.message || error.toString());
         version.logTruffleAndNode(options.logger);
       }
     }
     process.exit(1);
-  }
-  process.exit(0);
-});
+  });
