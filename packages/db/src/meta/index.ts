@@ -2,6 +2,8 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:meta");
 
 import { DocumentNode, ExecutionResult } from "graphql";
+import { soliditySha3 } from "web3-utils";
+const jsonStableStringify = require("json-stable-stringify");
 
 export interface Db {
   execute: (
@@ -186,3 +188,14 @@ export type Mutation<C extends Collections> = {
     [M in MutationName<C, N>]: MutationPayload<C, N> | null;
   };
 }[CollectionName<C>];
+
+const removeNullyValues = obj =>
+  Object.entries(obj)
+    .filter(([_, v]) => v !== null && v !== undefined)
+    .map(([k, v]) => ({ [k]: v }))
+    .reduce((a, b) => ({ ...a, ...b }), {});
+
+export const generateId = obj => {
+  const id = soliditySha3(jsonStableStringify(removeNullyValues(obj)));
+  return id;
+};
