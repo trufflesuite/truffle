@@ -1,8 +1,8 @@
 import path from "path";
 import fs from "fs";
 
-import { ContractObject } from "@truffle/contract-schema/spec";
-import { ResolverSource } from "../source";
+import {ContractObject} from "@truffle/contract-schema/spec";
+import {ResolverSource} from "../source";
 
 export class EthPMv1 implements ResolverSource {
   workingDirectory: string;
@@ -12,7 +12,7 @@ export class EthPMv1 implements ResolverSource {
   }
 
   require(importPath: string) {
-    if (importPath.startsWith(".") || importPath.startsWith("/")) {
+    if (importPath.indexOf(".") === 0 || importPath.indexOf("/") === 0) {
       return null;
     }
 
@@ -54,10 +54,10 @@ export class EthPMv1 implements ResolverSource {
     };
 
     // Go through deployments and save all of them
-    Object.keys(lockfile.deployments || {}).forEach(function(blockchain) {
+    Object.keys(lockfile.deployments || {}).forEach(function (blockchain) {
       var deployments = lockfile.deployments[blockchain];
 
-      Object.keys(deployments).forEach(function(name) {
+      Object.keys(deployments).forEach(function (name) {
         var deployment = deployments[name];
         if (deployment.contract_type === contract_name) {
           json.networks[blockchain] = {
@@ -75,7 +75,7 @@ export class EthPMv1 implements ResolverSource {
   async resolve(importPath: string) {
     var separator = importPath.indexOf("/");
     var package_name = importPath.substring(0, separator);
-    var internalPath = importPath.substring(separator + 1);
+    var internal_path = importPath.substring(separator + 1);
     var installDir = this.workingDirectory;
 
     // If nothing's found, body returns `undefined`
@@ -85,7 +85,7 @@ export class EthPMv1 implements ResolverSource {
       var file_path = path.join(installDir, "installed_contracts", importPath);
 
       try {
-        body = fs.readFileSync(file_path, { encoding: "utf8" });
+        body = fs.readFileSync(file_path, {encoding: "utf8"});
         break;
       } catch (err) {}
 
@@ -94,11 +94,11 @@ export class EthPMv1 implements ResolverSource {
         "installed_contracts",
         package_name,
         "contracts",
-        internalPath
+        internal_path
       );
 
       try {
-        body = fs.readFileSync(file_path, { encoding: "utf8" });
+        body = fs.readFileSync(file_path, {encoding: "utf8"});
         break;
       } catch (err) {}
 
@@ -109,7 +109,7 @@ export class EthPMv1 implements ResolverSource {
         break;
       }
     }
-    return { body, filePath: importPath };
+    return {body, filePath: importPath};
   }
 
   // We're resolving package paths to other package paths, not absolute paths.
@@ -119,14 +119,14 @@ export class EthPMv1 implements ResolverSource {
   // that when this path is evaluated this source is used again.
   resolveDependencyPath(importPath: string, dependencyPath: string) {
     var dirname = path.dirname(importPath);
-    var resolvedDependencyPath = path.join(dirname, dependencyPath);
+    var resolved_dependency_path = path.join(dirname, dependencyPath);
 
     // Note: We use `path.join()` here to take care of path idiosyncrasies
     // like joining "something/" and "./something_else.sol". However, this makes
     // paths OS dependent, and on Windows, makes the separator "\". Solidity
     // needs the separator to be a forward slash. Let's massage that here.
-    resolvedDependencyPath = resolvedDependencyPath.replace(/\\/g, "/");
+    resolved_dependency_path = resolved_dependency_path.replace(/\\/g, "/");
 
-    return resolvedDependencyPath;
+    return resolved_dependency_path;
   }
 }

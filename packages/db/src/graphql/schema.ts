@@ -1,38 +1,38 @@
-import { logger } from "@truffle/db/logger";
+import {logger} from "@truffle/db/logger";
 const debug = logger("db:graphql:schema");
 
 import gql from "graphql-tag";
 import * as graphql from "graphql";
-import { makeExecutableSchema, IResolvers } from "graphql-tools";
+import {makeExecutableSchema, IResolvers} from "graphql-tools";
 import pascalCase from "pascal-case";
-import { singular } from "pluralize";
+import {singular} from "pluralize";
 
 import {
   Collections,
   CollectionName,
   MutableCollectionName
 } from "@truffle/db/meta";
-import { Context, Definition, Definitions } from "./types";
+import {Context, Definition, Definitions} from "./types";
 
 export const forDefinitions = <C extends Collections>(
   definitions: Definitions<C>
 ) => {
-  const { typeDefs, resolvers } = new DefinitionsSchema({ definitions });
-  return makeExecutableSchema({ typeDefs, resolvers });
+  const {typeDefs, resolvers} = new DefinitionsSchema({definitions});
+  return makeExecutableSchema({typeDefs, resolvers});
 };
 
 class DefinitionsSchema<C extends Collections> {
   private definitions: Definitions<C>;
   private collections: CollectionSchemas<C>;
 
-  constructor(options: { definitions: Definitions<C> }) {
+  constructor(options: {definitions: Definitions<C>}) {
     this.definitions = options.definitions;
 
     this.collections = Object.keys(options.definitions)
       .map((resource: CollectionName<C>) => ({
         [resource]: this.createSchema(resource)
       }))
-      .reduce((a, b) => ({ ...a, ...b }), {}) as CollectionSchemas<C>;
+      .reduce((a, b) => ({...a, ...b}), {}) as CollectionSchemas<C>;
   }
 
   get typeDefs(): graphql.DocumentNode[] {
@@ -93,7 +93,7 @@ class DefinitionsSchema<C extends Collections> {
     };
 
     const result = Object.values(this.collections).reduce(
-      (a, { resolvers: b }) => ({
+      (a, {resolvers: b}) => ({
         ...a,
         ...b,
         Query: {
@@ -154,7 +154,7 @@ abstract class DefinitionSchema<
     ResourcesMutate: string;
   };
 
-  constructor(options: { resource: N; definition: Definition<C, N> }) {
+  constructor(options: {resource: N; definition: Definition<C, N>}) {
     this.resource = options.resource;
     this.definition = options.definition;
   }
@@ -163,7 +163,7 @@ abstract class DefinitionSchema<
     const log = debug.extend(`${this.resource}:typeDefs`);
     log("Generating...");
 
-    const { typeDefs } = this.definition;
+    const {typeDefs} = this.definition;
 
     const {
       resource,
@@ -211,16 +211,16 @@ abstract class DefinitionSchema<
     const logAll = log.extend("all");
     const logFilter = log.extend("filter");
 
-    const { resource, resources } = this.names;
+    const {resource, resources} = this.names;
 
-    const { resolvers = {} } = this.definition;
+    const {resolvers = {}} = this.definition;
 
     const result = {
       ...resolvers,
 
       Query: {
         [resource]: {
-          resolve: async (_, { id }, { workspace }) => {
+          resolve: async (_, {id}, {workspace}) => {
             logGet("Getting id: %s...", id);
 
             const result = await workspace.get(resources, id);
@@ -230,13 +230,13 @@ abstract class DefinitionSchema<
           }
         },
         [resources]: {
-          resolve: async (_, { filter }, { workspace }) => {
+          resolve: async (_, {filter}, {workspace}) => {
             if (filter) {
               logFilter("Filtering for ids: %o...", filter.ids);
 
               const results = await workspace.find(resources, {
                 selector: {
-                  id: { $in: filter.ids.filter(id => id) }
+                  id: {$in: filter.ids.filter(id => id)}
                 }
               })
 
@@ -244,13 +244,7 @@ abstract class DefinitionSchema<
                 .map(result => ({
                   [result.id]: result
                 }))
-                .reduce((a, b) => ({ ...a, ...b }), {});
-
-              const byId = results
-                .map(result => ({
-                  [result.id]: result
-                }))
-                .reduce((a, b) => ({ ...a, ...b }), {});
+                .reduce((a, b) => ({...a, ...b}), {});
 
               logFilter("Filtered for ids: %o", filter.ids);
               return filter.ids.map(id => (id ? byId[id] : undefined));
@@ -303,13 +297,13 @@ class ImmutableDefinitionSchema<
 
     const logMutate = log.extend("add");
 
-    const { resources, resourcesMutate } = this.names;
+    const {resources, resourcesMutate} = this.names;
 
     const result = {
       ...super.resolvers,
 
       Mutation: {
-        [resourcesMutate]: async (_, { input }, { workspace }) => {
+        [resourcesMutate]: async (_, {input}, {workspace}) => {
           logMutate("Mutating...");
 
           const result = await workspace.add(resources, input);
@@ -356,13 +350,13 @@ class MutableDefinitionSchema<
 
     const logMutate = log.extend("assign");
 
-    const { resources, resourcesMutate } = this.names;
+    const {resources, resourcesMutate} = this.names;
 
     const result = {
       ...super.resolvers,
 
       Mutation: {
-        [resourcesMutate]: async (_, { input }, { workspace }) => {
+        [resourcesMutate]: async (_, {input}, {workspace}) => {
           logMutate("Mutating...");
 
           const result = await workspace.update(resources, input);
