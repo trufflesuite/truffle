@@ -8,7 +8,7 @@ import type { Resolver } from "@truffle/resolver";
 import { Environment } from "@truffle/environment";
 import { ContractObject } from "@truffle/contract-schema/spec";
 
-import { Project } from "@truffle/db/loaders/project";
+import { Project } from "@truffle/db/project";
 import { FindContracts } from "@truffle/db/loaders/resources/contracts";
 import { WorkflowCompileResult } from "@truffle/compile-common/src/types";
 import WorkflowCompile from "@truffle/workflow-compile";
