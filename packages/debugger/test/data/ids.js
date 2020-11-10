@@ -209,16 +209,13 @@ describe("Variable IDs", function () {
     debug("sourceId %d", bugger.view(solidity.current.source).id);
 
     let sourceId = bugger.view(solidity.current.source).id;
-    let compilationId = bugger.view(solidity.current.source).compilationId;
     let source = bugger.view(solidity.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("break here #1", source)
     });
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("break here #2", source)
     });
 
@@ -246,16 +243,13 @@ describe("Variable IDs", function () {
     debug("sourceId %d", bugger.view(solidity.current.source).id);
 
     let sourceId = bugger.view(solidity.current.source).id;
-    let compilationId = bugger.view(solidity.current.source).compilationId;
     let source = bugger.view(solidity.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("BREAK HERE #1", source)
     });
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("BREAK HERE #2", source)
     });
 
@@ -288,11 +282,9 @@ describe("Variable IDs", function () {
     debug("sourceId %d", bugger.view(solidity.current.source).id);
 
     let sourceId = bugger.view(solidity.current.source).id;
-    let compilationId = bugger.view(solidity.current.source).compilationId;
     let source = bugger.view(solidity.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("break here #1", source)
     });
     await bugger.continueUntilBreakpoint();
@@ -310,11 +302,9 @@ describe("Variable IDs", function () {
     debug("sourceId %d", bugger.view(solidity.current.source).id);
 
     let sourceId = bugger.view(solidity.current.source).id;
-    let compilationId = bugger.view(solidity.current.source).compilationId;
     let source = bugger.view(solidity.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("break here #2", source)
     });
     await bugger.continueUntilBreakpoint();

@@ -13,7 +13,7 @@ const command = {
       type: "boolean",
       default: false
     },
-    "debug": {
+    debug: {
       describe: "Enable in-test debugging",
       type: "boolean",
       default: false
@@ -27,13 +27,13 @@ const command = {
       type: "boolean",
       default: false
     },
-    "bail": {
+    bail: {
       alias: "b",
       describe: "Bail after first test failure",
       type: "boolean",
       default: false
     },
-    "stacktrace": {
+    stacktrace: {
       alias: "t",
       describe: "Produce Solidity stacktraces",
       type: "boolean",

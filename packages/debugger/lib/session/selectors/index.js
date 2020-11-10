@@ -55,8 +55,10 @@ const session = createSelectorTree({
               debug("sources: %o", sources);
 
               let source =
-                primarySource !== undefined
-                  ? sources[compilationId].byId[primarySource]
+                primarySource !== undefined // note this is an index, not an ID
+                  ? sources.byCompilationId[compilationId].byIndex[
+                      primarySource
+                    ]
                   : undefined;
 
               let constructorArgs;
@@ -107,16 +109,16 @@ const session = createSelectorTree({
     block: createLeaf(["/state"], state => state.block)
   },
 
-  /*
+  /**
    * session.status (namespace)
    */
   status: {
-    /*
+    /**
      * session.status.readyOrError
      */
     readyOrError: createLeaf(["/state"], state => state.ready),
 
-    /*
+    /**
      * session.status.ready
      */
     ready: createLeaf(
@@ -124,27 +126,27 @@ const session = createSelectorTree({
       (readyOrError, error) => readyOrError && !error
     ),
 
-    /*
+    /**
      * session.status.waiting
      */
     waiting: createLeaf(["/state"], state => !state.ready),
 
-    /*
+    /**
      * session.status.error
      */
     error: createLeaf(["/state"], state => state.lastLoadingError),
 
-    /*
+    /**
      * session.status.isError
      */
     isError: createLeaf(["./error"], error => error !== null),
 
-    /*
+    /**
      * session.status.success
      */
     success: createLeaf(["./error"], error => error === null),
 
-    /*
+    /**
      * session.status.errored
      */
     errored: createLeaf(
@@ -152,7 +154,7 @@ const session = createSelectorTree({
       (readyOrError, error) => readyOrError && error
     ),
 
-    /*
+    /**
      * session.status.loaded
      */
     loaded: createLeaf([trace.loaded], loaded => loaded),

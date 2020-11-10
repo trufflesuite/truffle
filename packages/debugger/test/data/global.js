@@ -196,11 +196,9 @@ describe("Globally-available variables", function () {
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let sourceId = bugger.view(solidity.current.source).id;
-    let compilationId = bugger.view(solidity.current.source).compilationId;
     let source = bugger.view(solidity.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("BREAK SIMPLE", source)
     });
     await bugger.continueUntilBreakpoint();
@@ -224,11 +222,9 @@ describe("Globally-available variables", function () {
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let sourceId = bugger.view(solidity.current.source).id;
-    let compilationId = bugger.view(solidity.current.source).compilationId;
     let source = bugger.view(solidity.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("BREAK STATIC", source)
     });
     await bugger.continueUntilBreakpoint();
@@ -252,11 +248,9 @@ describe("Globally-available variables", function () {
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let sourceId = bugger.view(solidity.current.source).id;
-    let compilationId = bugger.view(solidity.current.source).compilationId;
     let source = bugger.view(solidity.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("BREAK LIBRARY", source)
     });
     await bugger.continueUntilBreakpoint();
@@ -298,11 +292,9 @@ describe("Globally-available variables", function () {
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let sourceId = bugger.view(solidity.current.source).id;
-    let compilationId = bugger.view(solidity.current.source).compilationId;
     let source = bugger.view(solidity.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("BREAK CREATE", source)
     });
     await bugger.continueUntilBreakpoint();
@@ -326,11 +318,9 @@ describe("Globally-available variables", function () {
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let sourceId = bugger.view(solidity.current.source).id;
-    let compilationId = bugger.view(solidity.current.source).compilationId;
     let source = bugger.view(solidity.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("BREAK CREATE", source)
     });
     await bugger.continueUntilBreakpoint();

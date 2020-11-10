@@ -333,8 +333,8 @@ function allocateCalldataAndReturndata(
   abiAllocations: AbiAllocations,
   compilationId: string,
   compiler: Compiler.CompilerVersion | undefined,
-  constructorContext?: Contexts.DecoderContext,
-  deployedContext?: Contexts.DecoderContext
+  constructorContext?: Contexts.Context,
+  deployedContext?: Contexts.Context
 ): CalldataAndReturndataAllocation | undefined {
   //first: determine the corresponding function node
   //(simultaneously: determine the offset)
@@ -723,8 +723,8 @@ function allocateEvent(
 function getCalldataAllocationsForContract(
   abi: Abi.Abi,
   contractNode: Ast.AstNode,
-  constructorContext: Contexts.DecoderContext,
-  deployedContext: Contexts.DecoderContext,
+  constructorContext: Contexts.Context,
+  deployedContext: Contexts.Context,
   referenceDeclarations: Ast.AstNodes,
   userDefinedTypes: Format.Types.TypesById,
   abiAllocations: AbiAllocations,
@@ -806,10 +806,10 @@ function getCalldataAllocationsForContract(
 }
 
 function defaultConstructorAllocation(
-  constructorContext: Contexts.DecoderContext,
+  constructorContext: Contexts.Context,
   contractNode: Ast.AstNode | undefined,
   referenceDeclarations: Ast.AstNodes,
-  deployedContext?: Contexts.DecoderContext
+  deployedContext?: Contexts.Context
 ): CalldataAndReturndataAllocation | undefined {
   if (!constructorContext) {
     return undefined;
@@ -833,7 +833,7 @@ function defaultConstructorAllocation(
 
 //note: context should be deployed context!
 function constructorOutputAllocation(
-  context: Contexts.DecoderContext | undefined,
+  context: Contexts.Context | undefined,
   contractNode: Ast.AstNode | undefined,
   referenceDeclarations: Ast.AstNodes,
   allocationMode: DecodingMode
@@ -1009,7 +1009,7 @@ export function getEventAllocations(
   let individualAllocations: {
     [contractKey: string]: {
       [selector: string]: {
-        context: Contexts.DecoderContext;
+        context: Contexts.Context;
         contractNode: Ast.AstNode;
         allocationTemporary: EventAllocationTemporary;
         compilationId: string;
@@ -1019,7 +1019,7 @@ export function getEventAllocations(
   let groupedAllocations: {
     [contractKey: string]: {
       [selector: string]: {
-        context: Contexts.DecoderContext;
+        context: Contexts.Context;
         contractNode: Ast.AstNode;
         allocationsTemporary: EventAllocationTemporary[];
       };
@@ -1261,7 +1261,7 @@ function findNodeAndContract(
 }
 
 function makeContractKey(
-  context: Contexts.DecoderContext | undefined,
+  context: Contexts.Context | undefined,
   id: number,
   compilationId: string
 ): string {

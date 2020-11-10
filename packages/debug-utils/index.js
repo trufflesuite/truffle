@@ -9,51 +9,55 @@ hljsDefineSolidity(chromafi.hljs);
 var chalk = require("chalk");
 
 const commandReference = {
-  "o": "step over",
-  "i": "step into",
-  "u": "step out",
-  "n": "step next",
+  o: "step over",
+  i: "step into",
+  u: "step out",
+  n: "step next",
   ";": "step instruction (include number to step multiple)",
-  "p": "print instruction & state (`p [mem|cal|sto]*`; see docs for more)",
-  "l": "print additional source context",
-  "h": "print this help",
-  "v": "print variables and values",
+  p: "print instruction & state (`p [mem|cal|sto]*`; see docs for more)",
+  l: "print additional source context",
+  h: "print this help",
+  v: "print variables and values",
   ":": "evaluate expression - see `v`",
   "+": "add watch expression (`+:<expr>`)",
   "-": "remove watch expression (-:<expr>)",
   "?": "list existing watch expressions and breakpoints",
-  "b": "add breakpoint (`b [[<source-file>:]<line-number>]`; see docs for more)",
-  "B": "remove breakpoint (similar to adding, or `B all` to remove all)",
-  "c": "continue until breakpoint",
-  "q": "quit",
-  "r": "reset",
-  "t": "load new transaction",
-  "T": "unload transaction",
-  "s": "print stacktrace"
+  b: "add breakpoint (`b [[<source-file>:]<line-number>]`; see docs for more)",
+  B: "remove breakpoint (similar to adding, or `B all` to remove all)",
+  c: "continue until breakpoint",
+  q: "quit",
+  r: "reset",
+  t: "load new transaction",
+  T: "unload transaction",
+  s: "print stacktrace",
+  g: "turn on generated sources",
+  G: "turn off generated sources except via `;`"
 };
 
 const shortCommandReference = {
-  "o": "step over",
-  "i": "step into",
-  "u": "step out",
-  "n": "step next",
+  o: "step over",
+  i: "step into",
+  u: "step out",
+  n: "step next",
   ";": "step instruction",
-  "p": "print state",
-  "l": "print context",
-  "h": "print help",
-  "v": "print variables",
+  p: "print state",
+  l: "print context",
+  h: "print help",
+  v: "print variables",
   ":": "evaluate",
   "+": "add watch",
   "-": "remove watch",
   "?": "list watches & breakpoints",
-  "b": "add breakpoint",
-  "B": "remove breakpoint",
-  "c": "continue",
-  "q": "quit",
-  "r": "reset",
-  "t": "load",
-  "T": "unload",
-  "s": "stacktrace"
+  b: "add breakpoint",
+  B: "remove breakpoint",
+  c: "continue",
+  q: "quit",
+  r: "reset",
+  t: "load",
+  T: "unload",
+  s: "stacktrace",
+  g: "turn on generated sources",
+  G: "turn off generated sources"
 };
 
 const truffleColors = {
@@ -195,6 +199,7 @@ var DebugUtils = {
       ["o", "i", "u", "n"],
       ["c"],
       [";"],
+      ["g", "G"],
       ["p"],
       ["l", "s", "h"],
       ["q", "r", "t", "T"],
@@ -357,7 +362,6 @@ var DebugUtils = {
   formatBreakpointLocation: function (
     breakpoint,
     here,
-    currentCompilationId,
     currentSourceId,
     sourceNames
   ) {
@@ -370,12 +374,8 @@ var DebugUtils = {
     } else {
       baseMessage = `line ${breakpoint.line + 1}`;
     }
-    if (
-      breakpoint.compilationId !== currentCompilationId ||
-      breakpoint.sourceId !== currentSourceId
-    ) {
-      let sourceName =
-        sourceNames[breakpoint.compilationId][breakpoint.sourceId];
+    if (breakpoint.sourceId !== currentSourceId) {
+      const sourceName = sourceNames[breakpoint.sourceId];
       return baseMessage + ` in ${sourceName}`;
     } else {
       return baseMessage;
@@ -613,73 +613,73 @@ var DebugUtils = {
     return indented.join(OS.EOL);
   },
 
-  colorize: function (code, yul = false) {
+  colorize: function (code, language = "Solidity") {
     //I'd put these outside the function
     //but then it gives me errors, because
     //you can't just define self-referential objects like that...
 
     const trufflePalette = {
       /* base (chromafi special, not hljs) */
-      "base": chalk,
-      "lineNumbers": chalk,
-      "trailingSpace": chalk,
+      base: chalk,
+      lineNumbers: chalk,
+      trailingSpace: chalk,
       /* classes hljs-solidity actually uses */
-      "keyword": truffleColors.mint,
-      "number": truffleColors.red,
-      "string": truffleColors.green,
-      "params": truffleColors.pink,
-      "builtIn": truffleColors.watermelon,
-      "built_in": truffleColors.watermelon, //just to be sure
-      "literal": truffleColors.watermelon,
-      "function": truffleColors.orange,
-      "title": truffleColors.orange,
-      "class": truffleColors.orange,
-      "comment": truffleColors.comment,
-      "doctag": truffleColors.comment,
+      keyword: truffleColors.mint,
+      number: truffleColors.red,
+      string: truffleColors.green,
+      params: truffleColors.pink,
+      builtIn: truffleColors.watermelon,
+      built_in: truffleColors.watermelon, //just to be sure
+      literal: truffleColors.watermelon,
+      function: truffleColors.orange,
+      title: truffleColors.orange,
+      class: truffleColors.orange,
+      comment: truffleColors.comment,
+      doctag: truffleColors.comment,
       /* classes it might soon use! */
-      "meta": truffleColors.pink,
-      "metaString": truffleColors.green,
+      meta: truffleColors.pink,
+      metaString: truffleColors.green,
       "meta-string": truffleColors.green, //similar
       /* classes it doesn't currently use but notionally could */
-      "type": truffleColors.orange,
-      "symbol": truffleColors.orange,
-      "metaKeyword": truffleColors.mint,
+      type: truffleColors.orange,
+      symbol: truffleColors.orange,
+      metaKeyword: truffleColors.mint,
       "meta-keyword": truffleColors.mint, //again, to be sure
       /* classes that don't make sense for Solidity */
-      "regexp": chalk, //solidity does not have regexps
-      "subst": chalk, //or string interpolation
-      "name": chalk, //or s-expressions
-      "builtInName": chalk, //or s-expressions, again
+      regexp: chalk, //solidity does not have regexps
+      subst: chalk, //or string interpolation
+      name: chalk, //or s-expressions
+      builtInName: chalk, //or s-expressions, again
       "builtin-name": chalk, //just to be sure
       /* classes for config, markup, CSS, templates, diffs (not programming) */
-      "section": chalk,
-      "tag": chalk,
-      "attr": chalk,
-      "attribute": chalk,
-      "variable": chalk,
-      "bullet": chalk,
-      "code": chalk,
-      "emphasis": chalk,
-      "strong": chalk,
-      "formula": chalk,
-      "link": chalk,
-      "quote": chalk,
-      "selectorAttr": chalk, //lotta redundancy follows
+      section: chalk,
+      tag: chalk,
+      attr: chalk,
+      attribute: chalk,
+      variable: chalk,
+      bullet: chalk,
+      code: chalk,
+      emphasis: chalk,
+      strong: chalk,
+      formula: chalk,
+      link: chalk,
+      quote: chalk,
+      selectorAttr: chalk, //lotta redundancy follows
       "selector-attr": chalk,
-      "selectorClass": chalk,
+      selectorClass: chalk,
       "selector-class": chalk,
-      "selectorId": chalk,
+      selectorId: chalk,
       "selector-id": chalk,
-      "selectorPseudo": chalk,
+      selectorPseudo: chalk,
       "selector-pseudo": chalk,
-      "selectorTag": chalk,
+      selectorTag: chalk,
       "selector-tag": chalk,
-      "templateTag": chalk,
+      templateTag: chalk,
       "template-tag": chalk,
-      "templateVariable": chalk,
+      templateVariable: chalk,
       "template-variable": chalk,
-      "addition": chalk,
-      "deletion": chalk
+      addition: chalk,
+      deletion: chalk
     };
 
     const options = {
@@ -696,10 +696,10 @@ var DebugUtils = {
       //NOTE: you might think you should pass highlight: true,
       //but you'd be wrong!  I don't understand this either
     };
-    if (!yul) {
+    if (language === "Solidity") {
       //normal case: solidity
       return chromafi(code, options);
-    } else {
+    } else if (language === "Yul") {
       //HACK: stick the code in an assembly block since we don't
       //have a separate Yul language for HLJS at the moment,
       //colorize it there, then extract it after colorization
@@ -708,6 +708,9 @@ var DebugUtils = {
       const firstNewLine = colorizedWrapped.indexOf("\n");
       const lastNewLine = colorizedWrapped.lastIndexOf("\n");
       return colorizedWrapped.slice(firstNewLine + 1, lastNewLine);
+    } else {
+      //otherwise, don't highlight
+      return code;
     }
   },
 

@@ -328,11 +328,9 @@ describe("Further Decoding", function () {
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let sourceId = bugger.view(solidity.current.source).id;
-    let compilationId = bugger.view(solidity.current.source).compilationId;
     let source = bugger.view(solidity.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("break here", source)
     });
 
@@ -367,11 +365,9 @@ describe("Further Decoding", function () {
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let sourceId = bugger.view(solidity.current.source).id;
-    let compilationId = bugger.view(solidity.current.source).compilationId;
     let source = bugger.view(solidity.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("break here", source)
     });
 
@@ -409,11 +405,9 @@ describe("Further Decoding", function () {
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let sourceId = bugger.view(solidity.current.source).id;
-    let compilationId = bugger.view(solidity.current.source).compilationId;
     let source = bugger.view(solidity.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("break here", source)
     });
 
@@ -552,11 +546,9 @@ describe("Further Decoding", function () {
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let sourceId = bugger.view(solidity.current.source).id;
-    let compilationId = bugger.view(solidity.current.source).compilationId;
     let source = bugger.view(solidity.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("BREAK HERE", source)
     });
 
@@ -581,11 +573,9 @@ describe("Further Decoding", function () {
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
       let sourceId = bugger.view(solidity.current.source).id;
-      let compilationId = bugger.view(solidity.current.source).compilationId;
       let source = bugger.view(solidity.current.source).source;
       await bugger.addBreakpoint({
         sourceId,
-        compilationId,
         line: lineOf("BREAK UNSIGNED", source)
       });
 
@@ -613,11 +603,9 @@ describe("Further Decoding", function () {
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
       let sourceId = bugger.view(solidity.current.source).id;
-      let compilationId = bugger.view(solidity.current.source).compilationId;
       let source = bugger.view(solidity.current.source).source;
       await bugger.addBreakpoint({
         sourceId,
-        compilationId,
         line: lineOf("BREAK SIGNED", source)
       });
 
@@ -645,11 +633,9 @@ describe("Further Decoding", function () {
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
       let sourceId = bugger.view(solidity.current.source).id;
-      let compilationId = bugger.view(solidity.current.source).compilationId;
       let source = bugger.view(solidity.current.source).source;
       await bugger.addBreakpoint({
         sourceId,
-        compilationId,
         line: lineOf("BREAK RAW", source)
       });
 

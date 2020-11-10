@@ -189,7 +189,6 @@ describe("Stack tracing", function () {
     let callLine = lineOf("CALL", source.source);
     let breakpoint = {
       sourceId: source.id,
-      compilationId: source.compilationId,
       line: breakLine
     };
     await bugger.addBreakpoint(breakpoint);

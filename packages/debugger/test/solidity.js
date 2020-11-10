@@ -180,7 +180,6 @@ describe("Solidity Debugging", function () {
     let breakLine = lineOf("BREAK", source.source);
     let breakpoint = {
       sourceId: source.id,
-      compilationId: source.compilationId,
       line: breakLine
     };
 
@@ -246,7 +245,6 @@ describe("Solidity Debugging", function () {
     for (let i = 0; i < NUM_TESTS; i++) {
       let inputLine = lineOf("input " + i, source.source);
       breakpoints.push({
-        compilationId: source.compilationId,
         sourceId: source.id,
         line: inputLine
       });
@@ -254,7 +252,6 @@ describe("Solidity Debugging", function () {
       expectedResolutions.push(
         outputLine !== -1 //lineOf will return -1 if no such line exists
           ? {
-              compilationId: source.compilationId,
               sourceId: source.id,
               line: outputLine
             }
@@ -393,14 +390,12 @@ describe("Solidity Debugging", function () {
       let breakLine1 = lineOf("BREAK #1", source.source);
       let breakpoint1 = {
         sourceId: source.id,
-        compilationId: source.compilationId,
         line: breakLine1
       };
       await bugger.addBreakpoint(breakpoint1);
       let breakLine2 = lineOf("BREAK #2", source.source);
       let breakpoint2 = {
         sourceId: source.id,
-        compilationId: source.compilationId,
         line: breakLine2
       };
       await bugger.addBreakpoint(breakpoint2);

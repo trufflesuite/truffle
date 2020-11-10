@@ -70,8 +70,8 @@ function createMultistepSelectors(stepSelector) {
      */
     strippedLocation: createLeaf(
       ["./location/source", "./location/sourceRange"],
-      ({ id, compilationId, sourcePath }, sourceRange) => ({
-        source: { id, compilationId, sourcePath },
+      ({ id, sourcePath }, sourceRange) => ({
+        source: { id, sourcePath },
         sourceRange
       })
     ),
@@ -267,9 +267,7 @@ let stacktrace = createSelectorTree({
           Boolean(oldLocation) && //if there's no current or last position, we don't need this check
           Boolean(nextLocation.source) &&
           nextLocation.source.id !== undefined && //if next location is unmapped, we consider ourselves to have not moved
-          (nextLocation.source.compilationId !==
-            oldLocation.source.compilationId ||
-            nextLocation.source.id !== oldLocation.source.id ||
+          (nextLocation.source.id !== oldLocation.source.id ||
             nextLocation.sourceRange.start !== oldLocation.sourceRange.start ||
             nextLocation.sourceRange.length !== oldLocation.sourceRange.length)
         );

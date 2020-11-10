@@ -125,13 +125,8 @@ var SolidityUtils = {
       });
     }
 
-    var lineAndColumnMappings = Object.assign(
-      {},
-      ...Object.entries(sources).map(([id, source]) => ({
-        [id]: SolidityUtils.getCharacterOffsetToLineAndColumnMapping(
-          source || ""
-        )
-      }))
+    const lineAndColumnMappings = sources.map(source =>
+      SolidityUtils.getCharacterOffsetToLineAndColumnMapping(source || "")
     );
 
     let primaryFile;
@@ -202,11 +197,11 @@ var SolidityUtils = {
         .filter(instruction => instruction.name === "JUMPDEST")
         .map(instruction => {
           debug("instruction %O", instruction);
-          let sourceId = instruction.file;
+          let sourceIndex = instruction.file;
           //first off, a special case: if the file is -1, check for designated
           //invalid and if it's not that give up
           //(designated invalid gets file -1 in some Solidity versions)
-          if (sourceId === -1) {
+          if (sourceIndex === -1) {
             //yeah, this is copypasted from below
             let nextInstruction = instructions[instruction.index + 1] || {};
             if (nextInstruction.name === "INVALID") {
@@ -222,8 +217,8 @@ var SolidityUtils = {
             }
           }
           //now we proceed with the normal case
-          let findOverlappingRange = overlapFunctions[sourceId];
-          let ast = asts[sourceId];
+          let findOverlappingRange = overlapFunctions[sourceIndex];
+          let ast = asts[sourceIndex];
           if (!ast) {
             //if we can't get the ast... filter it out I guess
             return {};
@@ -267,8 +262,9 @@ var SolidityUtils = {
           }
           return {
             [instruction.pc]: {
-              sourceIndex: sourceId,
+              sourceIndex,
               compilationId,
+              //note: we're assuming that functions in generated sources are never pointed to
               pointer,
               node,
               name: node.name,

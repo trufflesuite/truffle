@@ -483,7 +483,7 @@ function* decodeContractAndContext(
     address
   };
   let code = Conversion.toHexString(codeBytes);
-  let context = Contexts.Utils.findDecoderContext(info.contexts, code);
+  let context = Contexts.Utils.findContext(info.contexts, code);
   if (context !== null) {
     return {
       context,
@@ -779,5 +779,5 @@ function checkPaddingSigned(bytes: Uint8Array, length: number): boolean {
  */
 export interface ContractInfoAndContext {
   contractInfo: Format.Values.ContractValueInfo;
-  context?: Contexts.DecoderContext;
+  context?: Contexts.Context;
 }

@@ -101,50 +101,48 @@ class CLIDebugger {
     const startMessage = DebugUtils.formatStartMessage(
       this.txHash !== undefined
     );
-    debug("starting debugger");
-    let startSpinner;
+    let bugger;
     if (!this.config.fetchExternal) {
-      //in external mode spinner is handled below
+      //ordinary case, not doing fetch-external
+      let startSpinner;
       startSpinner = ora(startMessage).start();
-    }
-
-    //note that in external mode we start in light mode
-    //and only wake up to full mode later!
-    //note: if we are in external mode, txHash had better be defined!
-    //(this is ensured by commands/debug.js, so we don't check it ourselves)
-    const bugger =
-      this.txHash !== undefined
-        ? await Debugger.forTx(this.txHash, {
-            provider: this.config.provider,
-            compilations,
-            lightMode: this.config.fetchExternal
-          })
-        : await Debugger.forProject({
-            provider: this.config.provider,
-            compilations
-          });
-
-    debug("debugger started");
-
-    if (!this.config.fetchExternal) {
-      // check for error
-      if (bugger.view(Debugger.selectors.session.status.isError)) {
-        startSpinner.fail();
+      bugger = await Debugger.forProject({
+        provider: this.config.provider,
+        compilations
+      });
+      if (this.txHash !== undefined) {
+        try {
+          debug("loading %s", this.txHash);
+          await bugger.load(this.txHash);
+          startSpinner.succeed();
+        } catch (_) {
+          debug("loading error");
+          startSpinner.fail();
+          //just start up unloaded
+        }
       } else {
         startSpinner.succeed();
       }
     } else {
-      debug("about to fetch external sources");
+      //fetch-external case
+      //note that in this case we start in light mode
+      //and only wake up to full mode later!
+      //also, in this case, we can be sure that txHash is defined
+      bugger = await Debugger.forTx(
+        this.txHash,
+        {
+          provider: this.config.provider,
+          compilations,
+          lightMode: this.config.fetchExternal
+        }
+      ); //note: may throw!
       await this.fetchExternalSources(bugger); //note: mutates bugger!
-      startSpinner = ora(startMessage).start();
+      let startSpinner = ora(startMessage).start();
       await bugger.startFullMode();
-      if (bugger.view(Debugger.selectors.session.status.isError)) {
-        startSpinner.fail();
-      } else {
-        startSpinner.succeed();
-      }
+      //I'm removing the failure check here because I don't think that can
+      //actually happen
+      startSpinner.succeed();
     }
-
     return bugger;
   }
 
