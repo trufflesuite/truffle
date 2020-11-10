@@ -5,15 +5,13 @@ import type { Provider } from "web3/providers";
 import { WorkflowCompileResult } from "@truffle/compile-common";
 import { ContractObject } from "@truffle/contract-schema/spec";
 
-import { Db, toIdObject, IdObject } from "@truffle/db/meta";
+import { Db, IdObject } from "@truffle/db/meta";
 
 import { generateInitializeLoad } from "./initialize";
 import { generateNamesLoad } from "./names";
+import { Compilation, Contract, generateCompileLoad } from "./compile";
 
-import {
-  generateCompileLoad,
-  generateMigrateLoad
-} from "@truffle/db/loaders/commands";
+import { generateMigrateLoad } from "@truffle/db/loaders/commands";
 
 import { ProcessorRunner, forDb } from "./process";
 
@@ -45,15 +43,12 @@ export class Project {
   async loadCompile(options: {
     result: WorkflowCompileResult;
   }): Promise<{
-    contracts: IdObject<DataModel.Contract>[];
+    compilations: Compilation[];
+    contracts: Contract[];
   }> {
     const { result } = options;
 
-    const { contracts } = await this.run(generateCompileLoad, result);
-
-    return {
-      contracts: contracts.map(toIdObject)
-    };
+    return await this.run(generateCompileLoad, result);
   }
 
   /**
@@ -102,11 +97,12 @@ export class Project {
     });
   }
 
+  run: ProcessorRunner;
+
   /*
    * internals
    */
 
-  protected run: ProcessorRunner;
   private forProvider: (provider: Provider) => { run: ProcessorRunner };
   private project: IdObject<DataModel.Project>;
 

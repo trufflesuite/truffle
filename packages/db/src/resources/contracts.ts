@@ -19,7 +19,6 @@ export const contracts: Definition<"contracts"> = {
     type Contract implements Resource & Named {
       id: ID!
       name: String!
-      source: Source
       abi: ABI
       compilation: Compilation
       processedSource: ProcessedSource
