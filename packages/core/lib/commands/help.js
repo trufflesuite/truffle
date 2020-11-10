@@ -1,4 +1,4 @@
-var command = {
+const command = {
   command: "help",
   description:
     "List all commands or provide information about a specific command",
@@ -12,17 +12,17 @@ var command = {
     ]
   },
   builder: {},
-  run: function (options, callback) {
-    var commands = require("./index");
+  run: async function (options) {
+    const commands = require("./index");
     if (options._.length === 0) {
       this.displayCommandHelp("help");
-      return callback();
+      return;
     }
-    var selectedCommand = options._[0];
+    const selectedCommand = options._[0];
 
     if (commands[selectedCommand]) {
       this.displayCommandHelp(selectedCommand);
-      return callback();
+      return;
     } else {
       console.log(`\n  Cannot find the given command '${selectedCommand}'`);
       console.log("  Please ensure your command is one of the following: ");
@@ -30,7 +30,7 @@ var command = {
         .sort()
         .forEach(command => console.log(`      ${command}`));
       console.log("");
-      return callback();
+      return;
     }
   },
   displayCommandHelp: function (selectedCommand) {

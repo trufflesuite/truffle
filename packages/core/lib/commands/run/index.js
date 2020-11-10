@@ -11,7 +11,8 @@ const command = {
       }
     ]
   },
-  run(options, done) {
+  async run(options) {
+    const {promisify} = require("util");
     const Config = require("@truffle/config");
     const Plugin = require("./plugin");
     const Run = require("./run");
@@ -20,19 +21,19 @@ const command = {
     if (options._.length === 0) {
       const help = require("../help");
       help.displayCommandHelp("run");
-      return done();
+      return;
     }
 
     const customCommand = options._[0];
 
     if (config.plugins) {
       let pluginConfigs = Plugin.load(config);
-      Run.run(pluginConfigs, customCommand, config, done);
+      return promisify(Run.run)(pluginConfigs, customCommand, config);
     } else {
       console.error(
         "\nError: No plugins detected in the configuration file.\n"
       );
-      done();
+      return;
     }
   }
 };
