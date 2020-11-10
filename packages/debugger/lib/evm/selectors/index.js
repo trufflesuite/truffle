@@ -563,7 +563,7 @@ const evm = createSelectorTree({
       ),
 
       /**
-       * evm.current.step.isInstantCallOrReturn
+       * evm.current.step.isInstantCallOrCreate
        *
        * are we doing a call or create for which there are no trace steps?
        * This can happen if:
@@ -618,19 +618,20 @@ const evm = createSelectorTree({
 
       /**
        * evm.current.step.returnStatus
-       * checks the return status of the *current* halting instruction
-       * returns null if not halting
+       * checks the return status of the *current* halting instruction or insta-call
+       * returns null if not halting & not an insta-call
        * (returns a boolean -- true for success, false for failure)
        */
       returnStatus: createLeaf(
         [
           "./isHalting",
+          "./isInstantCallOrCreate",
           "/next/state",
           trace.stepsRemaining,
           "/transaction/status"
         ],
-        (isHalting, { stack }, remaining, finalStatus) => {
-          if (!isHalting) {
+        (isHalting, isInstaCall, { stack }, remaining, finalStatus) => {
+          if (!isHalting && !isInstaCall) {
             return null; //not clear this'll do much good since this may get
             //read as false, but, oh well, may as well
           }
