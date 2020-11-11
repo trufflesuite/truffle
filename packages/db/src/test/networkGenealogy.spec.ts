@@ -6,9 +6,9 @@ import {
 } from "./networkGenealogy.graphql";
 import {AddNetworks} from "./network.graphql";
 
-// returnBlockHeader mocks the bare-bones return of a call to web3,
+// findBlockByNumber mocks the bare-bones return of a call to web3,
 // to check whether a network resource is a part of the network we're connected to
-const returnBlockHeader = blockNumber => {
+const findBlockByNumber = blockNumber => {
   const blockHeaders = {
     1: {
       number: 1,
@@ -79,7 +79,7 @@ describe("Network Genealogy", () => {
       // spoofing the logic that will be happening in  the loaders to check whether
       // there's a match to make this a possible match
       for (const match of possibleMatches) {
-        let header = returnBlockHeader(match.network.historicBlock.height);
+        let header = findBlockByNumber(match.network.historicBlock.height);
         if (header.hash === match.network.historicBlock.hash) {
           matches.push(match);
         }
