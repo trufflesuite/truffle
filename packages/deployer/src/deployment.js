@@ -10,12 +10,13 @@ class Deployment {
    * @param  {Number} confirmations   confirmations needed to resolve an instance
    */
   constructor(emitter, options) {
+    const networkConfig = options.networks[options.network] || {};
     this.confirmations = options.confirmations || 0;
     this.timeoutBlocks = options.timeoutBlocks || 0;
+    this.pollingInterval = networkConfig.deploymentPollingInterval || 4000;
     this.emitter = emitter;
     this.promiEventEmitters = [];
     this.confirmationsMap = {};
-    this.pollingInterval = 4000;
     this.blockPoll;
   }
 
