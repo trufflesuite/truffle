@@ -94,6 +94,37 @@ describe("Deployer (sync)", function() {
   // in this describe block, `setUpWithConfig` is **not** called in a `beforeEach`
   // as each test is expected to vary the truffle config passed to `Deployer`
   describe('custom config', () => {
+    it("deployment with default polling interval", async function() {
+      const customConfig = {
+        ...options,
+        networks: {
+          test: {
+            // deploymentPollingInterval value not set
+          }
+        }
+      };
+      deployer = new Deployer(customConfig);
+      assert.strictEqual(
+        deployer.pollingInterval,
+        4000,
+        "default value of config.networks.test.deploymentPollingInterval expected");
+    });
+
+    it("deployment configurable with custom polling interval", async function() {
+      const customConfig = {
+        ...options,
+        networks: {
+          test: {
+            deploymentPollingInterval: 8000
+          }
+        }
+      };
+      deployer = new Deployer(customConfig);
+      assert.strictEqual(
+        deployer.pollingInterval,
+        8000,
+        "custom value from config.networks.test.deploymentPollingInterval expected");
+    });
   });
 
   // in this describe block, `setUpWithConfig` **is** called in a `beforeEach`
