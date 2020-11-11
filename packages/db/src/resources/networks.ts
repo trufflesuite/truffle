@@ -69,7 +69,7 @@ export const networks: Definition<"networks"> = {
             limit
           });
 
-          let untriedNetworks = result.map(network => {
+          const untriedNetworks = result.map(network => {
             return {
               network,
               alreadyTried: alreadyTried
@@ -98,7 +98,7 @@ export const networks: Definition<"networks"> = {
             limit
           });
 
-          let untriedNetworks = result.map(network => {
+          const untriedNetworks = result.map(network => {
             return {
               network,
               alreadyTried: alreadyTried
