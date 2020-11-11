@@ -184,7 +184,7 @@ export function* decodeCall(decodeCurrent = false) {
     //is a creation, we had better pass in the code, not the calldata
     state = {
       ...state,
-      calldata: yield select(data.current.state.code)
+      calldata: state.code
     };
   }
   const allocations = yield select(data.info.allocations);
