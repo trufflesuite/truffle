@@ -100,11 +100,6 @@ export type NamedResource<
   N extends CollectionName<C> = CollectionName<C>
 > = Resource<C, N, { is: "named" }>;
 
-export type NamedCollectionName<C extends Collections> = FilteredCollectionName<
-  C,
-  { is: "named" }
->;
-
 export type MutationInput<
   C extends Collections,
   N extends CollectionName<C>
