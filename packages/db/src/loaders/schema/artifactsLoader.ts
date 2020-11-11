@@ -1,8 +1,7 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:loaders:schema:artifactsLoader");
 
-import { TruffleDB } from "@truffle/db/db";
-import { IdObject, toIdObject } from "@truffle/db/meta";
+import { Db, IdObject, toIdObject } from "@truffle/db/meta";
 import Config from "@truffle/config";
 import TruffleResolver from "@truffle/resolver";
 import type { Resolver } from "@truffle/resolver";
@@ -15,11 +14,11 @@ import { WorkflowCompileResult } from "@truffle/compile-common/src/types";
 import WorkflowCompile from "@truffle/workflow-compile";
 
 export class ArtifactsLoader {
-  private db: TruffleDB;
+  private db: Db;
   private compilationConfig: Partial<Config>;
   private resolver: Resolver;
 
-  constructor(db: TruffleDB, config?: Partial<Config>) {
+  constructor(db: Db, config?: Partial<Config>) {
     this.db = db;
     this.compilationConfig = config;
     // @ts-ignore
@@ -94,7 +93,7 @@ export class ArtifactsLoader {
     );
     const {
       data: { contracts }
-    } = await this.db.query(FindContracts, {
+    } = await this.db.execute(FindContracts, {
       ids: contractIdObjects.map(({ id }) => id)
     });
     debug(

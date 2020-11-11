@@ -1,6 +1,6 @@
 import path from "path";
 import gql from "graphql-tag";
-import { TruffleDB } from "@truffle/db";
+import { connect } from "@truffle/db";
 import { ArtifactsLoader } from "@truffle/db/loaders/schema/artifactsLoader";
 import { AddContracts } from "@truffle/db/loaders/resources/contracts";
 import { AddNameRecords } from "@truffle/db/loaders/resources/nameRecords";
@@ -35,7 +35,7 @@ afterAll(async done => {
 // mocking the truffle-workflow-compile to avoid jest timing issues
 // and also to keep from adding more time to Travis testing
 jest.mock("@truffle/workflow-compile", () => ({
-  compile: function() {
+  compile: function () {
     return require(path.join(
       __dirname,
       "workflowCompileOutputMock",
@@ -119,7 +119,7 @@ const migrationConfig = Config.detect({
 });
 migrationConfig.network = "development";
 
-const db = new TruffleDB(config);
+const db = connect(config as any);
 
 const artifacts = [
   require(path.join(
@@ -431,7 +431,7 @@ describe("Compilation", () => {
       data: {
         projectsAdd: { projects }
       }
-    } = await db.query(AddProjects, {
+    } = await db.execute(AddProjects, {
       projects: [
         {
           directory: compilationConfig["working_directory"]
@@ -451,7 +451,7 @@ describe("Compilation", () => {
       callBytecode: callBytecodeIds[0]
     };
 
-    await db.query(AddContracts, {
+    await db.execute(AddContracts, {
       contracts: [previousContract]
     });
 
@@ -470,14 +470,14 @@ describe("Compilation", () => {
 
     // add this fake name record, which differs in its abi, so that a previous contract
     // with this name exists for testing; also adding as a name head here
-    const contractNameRecord = await db.query(AddNameRecords, {
+    const contractNameRecord = await db.execute(AddNameRecords, {
       nameRecords: [previousContractNameRecord]
     });
 
     contractNameRecordId =
       contractNameRecord.data.nameRecordsAdd.nameRecords[0].id;
 
-    await db.query(AssignProjectNames, {
+    await db.execute(AssignProjectNames, {
       projectNames: [
         {
           project: { id: projectId },
@@ -538,7 +538,7 @@ describe("Compilation", () => {
   it("loads compilations", async () => {
     const compilationsQuery = await Promise.all(
       compilationIds.map(compilationId => {
-        let compilation = db.query(GetWorkspaceCompilation, compilationId);
+        let compilation = db.execute(GetWorkspaceCompilation, compilationId);
         return compilation;
       })
     );
@@ -581,7 +581,7 @@ describe("Compilation", () => {
         data: {
           source: { contents, sourcePath }
         }
-      } = await db.query(GetWorkspaceSource, sourceIds[index]);
+      } = await db.execute(GetWorkspaceSource, sourceIds[index]);
 
       expect(contents).toEqual(artifacts[index].source);
       expect(sourcePath).toEqual(artifacts[index].sourcePath);
@@ -594,7 +594,7 @@ describe("Compilation", () => {
         data: {
           bytecode: { bytes }
         }
-      } = await db.query(GetWorkspaceBytecode, bytecodeIds[index]);
+      } = await db.execute(GetWorkspaceBytecode, bytecodeIds[index]);
 
       let shimmedBytecode = Shims.LegacyToNew.forBytecode(
         artifacts[index].bytecode
@@ -658,7 +658,7 @@ describe("Compilation", () => {
             callBytecode
           }
         }
-      } = await db.query(GetWorkspaceContract, contractIds[index]);
+      } = await db.execute(GetWorkspaceContract, contractIds[index]);
 
       const artifactsCreateBytecode = Shims.LegacyToNew.forBytecode(
         artifacts[index].bytecode
@@ -679,7 +679,7 @@ describe("Compilation", () => {
         data: {
           project: { resolve }
         }
-      } = await db.query(ResolveProjectName, {
+      } = await db.execute(ResolveProjectName, {
         projectId,
         name: artifacts[index].contractName,
         type: "Contract"
@@ -697,7 +697,7 @@ describe("Compilation", () => {
         data: {
           network: { name, networkId, historicBlock }
         }
-      } = await db.query(GetWorkspaceNetwork, netIds[index]);
+      } = await db.execute(GetWorkspaceNetwork, netIds[index]);
 
       expect(name).toEqual("development");
       expect(networkId).toEqual(migratedNetworks[index]["networkId"]);
@@ -724,7 +724,7 @@ describe("Compilation", () => {
             callBytecode: { bytecode }
           }
         }
-      } = await db.query(GetWorkspaceContractInstance, contractInstanceId);
+      } = await db.execute(GetWorkspaceContractInstance, contractInstanceId);
 
       const contractInstance = contractInstances.find(
         contractInstance => name === contractInstance.contract.name
