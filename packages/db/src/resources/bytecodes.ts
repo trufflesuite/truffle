@@ -30,34 +30,7 @@ export const bytecodes: Definition<"bytecodes"> = {
     type Instruction {
       opcode: String!
       programCounter: Int!
-      meta: InstructionMeta
-      sourceRange: SourceRange
       pushData: Bytes
-    }
-
-    type InstructionMeta {
-      cost: Int!
-      dynamic: Boolean
-
-      # stack operations
-      pops: Int
-      pushes: Int
-    }
-
-    type SourceRange {
-      source: Source!
-      start: ByteOffset!
-      length: Int!
-      meta: SourceRangeMeta!
-    }
-
-    type SourceRangeMeta {
-      jump: JumpDirection
-    }
-
-    enum JumpDirection {
-      IN
-      OUT
     }
 
     input BytecodeInput {
