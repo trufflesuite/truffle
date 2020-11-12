@@ -88,19 +88,19 @@ command
         // If a number is returned, exit with that number.
         process.exit(error);
       } else {
-        let error = error.stack || error.message || error.toString();
+        let errorData = error.stack || error.message || error.toString();
         //remove identifying information if error stack is passed to analytics
-        if (error === error.stack) {
+        if (errorData === error.stack) {
           const directory = __dirname;
           //making sure users' identifying information does not get sent to
           //analytics by cutting off everything before truffle. Will not properly catch the user's info
           //here if the user has truffle in their name.
           let identifyingInfo = String.raw`${directory.split("truffle")[0]}`;
           let removedInfo = new XRegExp(XRegExp.escape(identifyingInfo), "g");
-          error = error.replace(removedInfo, "");
+          errorData = errorData.replace(removedInfo, "");
         }
         analytics.send({
-          exception: "Other Error - " + error,
+          exception: "Other Error - " + errorData,
           version: versionInfo.bundle
             ? versionInfo.bundle
             : "(unbundled) " + versionInfo.core
