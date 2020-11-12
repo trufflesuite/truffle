@@ -16,14 +16,14 @@ const copyArtifactsToTempDir = async config => {
   try {
     fs.statSync(config.contracts_build_directory);
   } catch (_error) {
-    return {config, temporaryDirectory};
+    return {temporaryDirectory};
   }
 
   await promisify(copy)(config.contracts_build_directory, temporaryDirectory);
   if (config.runnerOutputOnly !== true) {
     config.logger.log("Using network '" + config.network + "'." + OS.EOL);
   }
-  return {updatedConfig: config, temporaryDirectory};
+  return {temporaryDirectory};
 };
 
 module.exports = {

@@ -161,11 +161,9 @@ const command = {
 
     if (config.networks[config.network]) {
       await Environment.detect(config);
-      const {updatedConfig, temporaryDirectory} = await copyArtifactsToTempDir(
-        config
-      );
+      const {temporaryDirectory} = await copyArtifactsToTempDir(config);
       const numberOfFailures = await prepareConfigAndRunTests({
-        config: updatedConfig,
+        config,
         files,
         temporaryDirectory
       });
@@ -190,11 +188,9 @@ const command = {
       );
       const ipcDisconnect = disconnect;
       await Environment.develop(config, ganacheOptions);
-      const { updatedConfig, temporaryDirectory } = await copyArtifactsToTempDir(
-        config
-      );
+      const { temporaryDirectory } = await copyArtifactsToTempDir(config);
       const numberOfFailures = await prepareConfigAndRunTests({
-        config: updatedConfig,
+        config,
         files,
         temporaryDirectory
       });
