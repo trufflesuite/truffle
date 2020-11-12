@@ -7,7 +7,6 @@ const command = {
     options: []
   },
   run: async function (options) {
-    const { promisify } = require("util");
     const OS = require("os");
     const colors = require("colors");
     const deprecationMessage = colors.yellow(
@@ -21,7 +20,7 @@ const command = {
     const Build = require("../build");
     const config = Config.detect(options);
 
-    return promisify(Build.build)(config);
+    return await Build.build(config);
   }
 };
 
