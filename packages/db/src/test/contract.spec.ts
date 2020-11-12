@@ -39,6 +39,7 @@ describe("Contract", () => {
       compilerName: Migrations.compiler.name,
       compilerVersion: Migrations.compiler.version,
       sourceId: sourceId,
+      bytecodeId,
       abi: JSON.stringify(Migrations.abi),
       sourceMap: JSON.stringify(Migrations.sourceMap)
     };
@@ -73,7 +74,6 @@ describe("Contract", () => {
     expect(contract).toHaveProperty("processedSource");
 
     const { processedSource } = contract;
-    expect(processedSource).toHaveProperty("source");
     expect(processedSource).toHaveProperty("ast");
   });
 
