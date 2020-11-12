@@ -2,6 +2,7 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:definitions:bytecodes");
 
 import gql from "graphql-tag";
+import CodeUtils from "@truffle/code-utils";
 
 import { Definition } from "./types";
 
@@ -13,7 +14,7 @@ export const bytecodes: Definition<"bytecodes"> = {
       id: ID!
       bytes: Bytes!
       linkReferences: [LinkReference]
-      instructions: [Instruction!]
+      instructions(count: Int): [Instruction!]
     }
 
     scalar Bytes
@@ -69,5 +70,22 @@ export const bytecodes: Definition<"bytecodes"> = {
       name: String
       length: Int!
     }
-  `
+  `,
+  resolvers: {
+    Bytecode: {
+      instructions: {
+        async resolve({ bytes }, { count = null }) {
+          const parsed = CodeUtils.parseCode(`0x${bytes}`, count);
+
+          return parsed.map(
+            ({ name: opcode, pc: programCounter, pushData }) => ({
+              opcode,
+              programCounter,
+              pushData
+            })
+          );
+        }
+      }
+    }
+  }
 };
