@@ -28,7 +28,7 @@ const command = {
 
     if (config.plugins) {
       let pluginConfigs = Plugin.load(config);
-      return promisify(Run.run)(pluginConfigs, customCommand, config);
+      return promisify(Run.run).bind(Run)(pluginConfigs, customCommand, config);
     } else {
       console.error(
         "\nError: No plugins detected in the configuration file.\n"
