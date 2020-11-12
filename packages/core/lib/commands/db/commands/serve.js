@@ -20,8 +20,9 @@ const command = {
 
     const config = Config.detect(argv);
     const port = (config.db && config.db.port) || 4444;
+    const host = (config.db && config.db.host) || "127.0.0.1";
 
-    const {url} = await serve(config).listen({port});
+    const {url} = await serve(config).listen({host, port});
 
     console.log(`🚀 Playground listening at ${url}`);
     console.log(`ℹ  Press Ctrl-C to exit`);
