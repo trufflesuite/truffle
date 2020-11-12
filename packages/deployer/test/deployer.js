@@ -75,11 +75,6 @@ describe("Deployer (sync)", function() {
         }
       }
     };
-    deployer = new Deployer(options);
-    reporter = new Reporter();
-    reporter.setDeployer(deployer);
-    reporter.setMigration(mockMigration);
-    reporter.listen();
   });
 
   afterEach(() => {
@@ -88,195 +83,248 @@ describe("Deployer (sync)", function() {
     deployer.finish();
   });
 
-  it("deploy()", async function() {
-    const migrate = function() {
-      deployer.deploy(Example);
-    };
+  async function setUpWithConfig(config) {
+    deployer = new Deployer(config);
+    reporter = new Reporter();
+    reporter.setDeployer(deployer);
+    reporter.setMigration(mockMigration);
+    reporter.listen();
+  }
 
-    migrate();
+  // in this describe block, `setUpWithConfig` is **not** called in a `beforeEach`
+  // as each test is expected to vary the truffle config passed to `Deployer`
+  describe('custom config', () => {
+    it("deployment with default polling interval", async function() {
+      const customConfig = {
+        ...options,
+        networks: {
+          test: {
+            // deploymentPollingInterval value not set
+          }
+        }
+      };
+      deployer = new Deployer(customConfig);
+      assert.strictEqual(
+        deployer.pollingInterval,
+        4000,
+        "default value of config.networks.test.deploymentPollingInterval expected");
+    });
 
-    await deployer.start();
-
-    assert(Example.address !== null);
-    assert(Example.transactionHash !== null);
-
-    const example = await Example.deployed();
-    const id = await example.id();
-
-    assert(id === "Example");
-    assert(output.includes("Example"));
-    assert(output.includes("Deploying"));
-    assert(output.includes("transaction hash"));
-    assert(output.includes("address"));
-    assert(output.includes("gas used"));
+    it("deployment configurable with custom polling interval", async function() {
+      const customConfig = {
+        ...options,
+        networks: {
+          test: {
+            deploymentPollingInterval: 8000
+          }
+        }
+      };
+      deployer = new Deployer(customConfig);
+      assert.strictEqual(
+        deployer.pollingInterval,
+        8000,
+        "custom value from config.networks.test.deploymentPollingInterval expected");
+    });
   });
 
-  it("deploy().then", async function() {
-    function migrate() {
-      deployer
-        .deploy(Example)
-        .then(() => deployer.deploy(UsesExample, Example.address));
-    }
+  // in this describe block, `setUpWithConfig` **is** called in a `beforeEach`
+  // as each test is expected to pass the default truffle config into `Deployer`
+  describe('default config', () => {
+    beforeEach(async function beforeEachWithDefaultConfig() {
+      // simply pass default options
+      await setUpWithConfig(options);
+    });
 
-    migrate();
-    await deployer.start();
+    it("deploy()", async function() {
+      const migrate = function() {
+        deployer.deploy(Example);
+      };
 
-    const example = await Example.deployed();
-    const usesExample = await UsesExample.deployed();
-    const exampleId = await example.id();
-    const usesExampleId = await usesExample.id();
-    const other = await usesExample.other();
+      migrate();
 
-    assert(Example.address !== null);
-    assert(exampleId === "Example");
-    assert(usesExampleId === "UsesExample");
-    assert(other === Example.address);
+      await deployer.start();
 
-    assert(output.includes("Replacing"));
-    assert(output.includes("Deploying"));
-    assert(output.includes("Example"));
-    assert(output.includes("UsesExample"));
-  });
+      assert(Example.address !== null);
+      assert(Example.transactionHash !== null);
 
-  it("deployer.then", async function() {
-    function migrate() {
-      deployer.then(async function() {
-        const example = await deployer.deploy(Example);
-        await deployer.deploy(UsesExample, example.address);
-      });
-    }
+      const example = await Example.deployed();
+      const id = await example.id();
 
-    migrate();
-    await deployer.start();
+      assert(id === "Example");
+      assert(output.includes("Example"));
+      assert(output.includes("Deploying"));
+      assert(output.includes("transaction hash"));
+      assert(output.includes("address"));
+      assert(output.includes("gas used"));
+    });
 
-    const example = await Example.deployed();
-    const usesExample = await UsesExample.deployed();
-    const exampleId = await example.id();
-    const usesExampleId = await usesExample.id();
-    const other = await usesExample.other();
+    it("deploy().then", async function() {
+      function migrate() {
+        deployer
+          .deploy(Example)
+          .then(() => deployer.deploy(UsesExample, Example.address));
+      }
 
-    assert(Example.address !== null);
-    assert(exampleId === "Example");
-    assert(usesExampleId === "UsesExample");
-    assert(other === Example.address);
+      migrate();
+      await deployer.start();
 
-    assert(output.includes("Replacing"));
-    assert(output.includes("Example"));
-    assert(output.includes("UsesExample"));
-  });
+      const example = await Example.deployed();
+      const usesExample = await UsesExample.deployed();
+      const exampleId = await example.id();
+      const usesExampleId = await usesExample.id();
+      const other = await usesExample.other();
 
-  it("deployer.link", async function() {
-    const migrate = function() {
-      deployer.deploy(IsLibrary);
-      deployer.link(IsLibrary, UsesLibrary);
-      deployer.deploy(UsesLibrary);
-    };
+      assert(Example.address !== null);
+      assert(exampleId === "Example");
+      assert(usesExampleId === "UsesExample");
+      assert(other === Example.address);
 
-    migrate();
+      assert(output.includes("Replacing"));
+      assert(output.includes("Deploying"));
+      assert(output.includes("Example"));
+      assert(output.includes("UsesExample"));
+    });
 
-    await deployer.start();
-
-    assert(UsesLibrary.address !== null);
-    assert(IsLibrary.address !== null);
-
-    const usesLibrary = await UsesLibrary.deployed();
-    await usesLibrary.fireIsLibraryEvent(5);
-    await usesLibrary.fireUsesLibraryEvent(7);
-
-    eventOptions = { fromBlock: 0, toBlock: "latest" };
-    const events = await usesLibrary.getPastEvents("allEvents", eventOptions);
-
-    assert(events[0].args.eventID.toNumber() === 5);
-    assert(events[1].args.eventID.toNumber() === 7);
-
-    assert(output.includes("Deploying"));
-    assert(output.includes("Linking"));
-    assert(output.includes("IsLibrary"));
-    assert(output.includes("UsesLibrary"));
-  });
-
-  // There's a chain like this in the @truffle/core solidity-tests
-  it("deployer.deploy().then()", async function() {
-    const migrate = function() {
-      deployer
-        .deploy(Example)
-        .then(function() {
-          return Example.deployed();
-        })
-        .then(function(instance) {
-          return instance.id();
-        })
-        .then(function() {
-          return deployer
-            .deploy(UsesExample, utils.zeroAddress)
-            .then(function() {
-              return UsesExample.deployed();
-            })
-            .then(function(usesExample) {
-              return usesExample.id();
-            });
+    it("deployer.then", async function() {
+      function migrate() {
+        deployer.then(async function() {
+          const example = await deployer.deploy(Example);
+          await deployer.deploy(UsesExample, example.address);
         });
-    };
-    migrate();
+      }
 
-    await deployer.start();
-    assert(output.includes("Example"));
-    assert(output.includes("UsesExample"));
-  });
+      migrate();
+      await deployer.start();
 
-  it("waits for confirmations", async function() {
-    this.timeout(15000);
-    const startBlock = await web3.eth.getBlockNumber();
+      const example = await Example.deployed();
+      const usesExample = await UsesExample.deployed();
+      const exampleId = await example.id();
+      const usesExampleId = await usesExample.id();
+      const other = await usesExample.other();
 
-    utils.startAutoMine(web3, 1500);
+      assert(Example.address !== null);
+      assert(exampleId === "Example");
+      assert(usesExampleId === "UsesExample");
+      assert(other === Example.address);
 
-    const migrate = function() {
-      deployer.deploy(IsLibrary);
-      deployer.deploy(Example);
-    };
+      assert(output.includes("Replacing"));
+      assert(output.includes("Example"));
+      assert(output.includes("UsesExample"));
+    });
 
-    migrate();
+    it("deployer.link", async function() {
+      const migrate = function() {
+        deployer.deploy(IsLibrary);
+        deployer.link(IsLibrary, UsesLibrary);
+        deployer.deploy(UsesLibrary);
+      };
 
-    deployer.confirmations = 2;
-    await deployer.start();
+      migrate();
 
-    utils.stopAutoMine();
+      await deployer.start();
 
-    const libReceipt = await web3.eth.getTransactionReceipt(
-      IsLibrary.transactionHash
-    );
-    const exampleReceipt = await web3.eth.getTransactionReceipt(
-      Example.transactionHash
-    );
+      assert(UsesLibrary.address !== null);
+      assert(IsLibrary.address !== null);
 
-    // The first confirmation is the block that accepts the tx. Then we wait two more.
-    // Then Example is deployed in the consequent block.
-    assert(libReceipt.blockNumber === startBlock + 1);
-    assert(exampleReceipt.blockNumber === libReceipt.blockNumber + 3);
+      const usesLibrary = await UsesLibrary.deployed();
+      await usesLibrary.fireIsLibraryEvent(5);
+      await usesLibrary.fireUsesLibraryEvent(7);
 
-    deployer.confirmationsRequired = 0;
-  });
+      eventOptions = { fromBlock: 0, toBlock: "latest" };
+      const events = await usesLibrary.getPastEvents("allEvents", eventOptions);
 
-  it("emits block events while waiting for a tx to mine", async function() {
-    this.timeout(15000);
+      assert(events[0].args.eventID.toNumber() === 5);
+      assert(events[1].args.eventID.toNumber() === 7);
 
-    utils.startAutoMine(web3, 4000);
+      assert(output.includes("Deploying"));
+      assert(output.includes("Linking"));
+      assert(output.includes("IsLibrary"));
+      assert(output.includes("UsesLibrary"));
+    });
 
-    const interfaceAdapter = createInterfaceAdapter({ provider });
+    // There's a chain like this in the @truffle/core solidity-tests
+    it("deployer.deploy().then()", async function() {
+      const migrate = function() {
+        deployer
+          .deploy(Example)
+          .then(function() {
+            return Example.deployed();
+          })
+          .then(function(instance) {
+            return instance.id();
+          })
+          .then(function() {
+            return deployer
+              .deploy(UsesExample, utils.zeroAddress)
+              .then(function() {
+                return UsesExample.deployed();
+              })
+              .then(function(usesExample) {
+                return usesExample.id();
+              });
+          });
+      };
+      migrate();
 
-    const migrate = function() {
-      deployer.then(async function() {
-        await deployer._startBlockPolling(interfaceAdapter);
-        await utils.waitMS(9000);
-        await deployer._startBlockPolling(interfaceAdapter);
-      });
-    };
+      await deployer.start();
+      assert(output.includes("Example"));
+      assert(output.includes("UsesExample"));
+    });
 
-    migrate();
-    await deployer.start();
-    utils.stopAutoMine();
+    it("waits for confirmations", async function() {
+      this.timeout(15000);
+      const startBlock = await web3.eth.getBlockNumber();
 
-    // We used to test output here but the ora spinner doesn't use the logger
-    // Keeping this test just to run the logic, make sure it's not crashing.
+      utils.startAutoMine(web3, 1500);
+
+      const migrate = function() {
+        deployer.deploy(IsLibrary);
+        deployer.deploy(Example);
+      };
+
+      migrate();
+
+      deployer.confirmations = 2;
+      await deployer.start();
+
+      utils.stopAutoMine();
+
+      const libReceipt = await web3.eth.getTransactionReceipt(
+        IsLibrary.transactionHash
+      );
+      const exampleReceipt = await web3.eth.getTransactionReceipt(
+        Example.transactionHash
+      );
+
+      // The first confirmation is the block that accepts the tx. Then we wait two more.
+      // Then Example is deployed in the consequent block.
+      assert(libReceipt.blockNumber === startBlock + 1);
+      assert(exampleReceipt.blockNumber === libReceipt.blockNumber + 3);
+
+      deployer.confirmationsRequired = 0;
+    });
+
+    it("emits block events while waiting for a tx to mine", async function() {
+      this.timeout(15000);
+
+      utils.startAutoMine(web3, 4000);
+
+      const interfaceAdapter = createInterfaceAdapter({ provider });
+
+      const migrate = function() {
+        deployer.then(async function() {
+          await deployer._startBlockPolling(interfaceAdapter);
+          await utils.waitMS(9000);
+          await deployer._startBlockPolling(interfaceAdapter);
+        });
+      };
+
+      migrate();
+      await deployer.start();
+      utils.stopAutoMine();
+
+      // We used to test output here but the ora spinner doesn't use the logger
+      // Keeping this test just to run the logic, make sure it's not crashing.
+    });
   });
 });
