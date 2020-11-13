@@ -59,7 +59,7 @@ describe("Globally-defined constants", function() {
     compilations = prepared.compilations;
   });
 
-  it("Gets globally-definedd constants, including imports", async function() {
+  it("Gets globally-defined constants, including imports", async function() {
     this.timeout(8000);
     let instance = await abstractions.ConstTest.deployed();
     let receipt = await instance.run();
