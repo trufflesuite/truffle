@@ -1,7 +1,7 @@
 const debug = require("debug")("workflow-compile");
 const fse = require("fs-extra");
-const {prepareConfig} = require("./utils");
-const {Shims} = require("@truffle/compile-common");
+const { prepareConfig } = require("./utils");
+const { Shims } = require("@truffle/compile-common");
 const {
   reportCompilationStarted,
   reportNothingToCompile,
@@ -13,8 +13,6 @@ const SUPPORTED_COMPILERS = {
   vyper: require("@truffle/compile-vyper").Compile,
   external: require("@truffle/external-compile").Compile
 };
-
-const {connect, Project} = require("@truffle/db");
 
 async function compile(config) {
   // determine compiler(s) to use
@@ -57,7 +55,7 @@ async function compile(config) {
   }, []);
 
   // return WorkflowCompileResult
-  return {contracts, compilations};
+  return { contracts, compilations };
 }
 
 const WorkflowCompile = {
@@ -66,7 +64,7 @@ const WorkflowCompile = {
 
     if (config.events) config.events.emit("compile:start");
 
-    const {contracts, compilations} = await compile(config);
+    const { contracts, compilations } = await compile(config);
 
     const compilers = compilations
       .reduce((a, compilation) => {
@@ -84,7 +82,6 @@ const WorkflowCompile = {
         compilers
       });
     }
-
     return {
       contracts,
       compilations
@@ -92,8 +89,8 @@ const WorkflowCompile = {
   },
 
   async compileAndSave(options) {
-    const {contracts, compilations} = await this.compile(options);
-    await this.save(options, {contracts, compilations});
+    const { contracts, compilations } = await this.compile(options);
+    await this.save(options, { contracts, compilations });
     return {
       contracts,
       compilations
@@ -104,26 +101,13 @@ const WorkflowCompile = {
   reportCompilationFinished,
   reportNothingToCompile,
 
-  async save(options, {contracts, compilations}) {
+  async save(options, { contracts, _compilations }) {
     const config = prepareConfig(options);
 
     await fse.ensureDir(config.contracts_build_directory);
 
     const artifacts = contracts.map(Shims.NewToLegacy.forContract);
     await config.artifactor.saveAll(artifacts);
-
-    if (options.db && options.db.enabled === true && contracts.length > 0) {
-      const db = connect(config);
-      const project = await Project.initialize({
-        db,
-        project: {
-          directory: config.working_directory
-        }
-      });
-      await project.loadCompile({
-        result: {contracts, compilations}
-      });
-    }
   }
 };
 
