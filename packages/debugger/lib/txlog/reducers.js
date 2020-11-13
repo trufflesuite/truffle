@@ -195,7 +195,7 @@ function transactionLog(state = DEFAULT_TX_LOG, action) {
           break;
         case actions.REVERT:
           modifiedNode.returnKind = "revert";
-          modifiedNode.message = action.message;
+          modifiedNode.error = action.error;
           break;
         case actions.SELFDESTRUCT:
           modifiedNode.returnKind = "selfdestruct";

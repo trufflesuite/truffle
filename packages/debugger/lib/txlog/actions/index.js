@@ -154,12 +154,12 @@ export function selfdestruct(pointer, newPointer, beneficiary) {
 }
 
 export const REVERT = "TXLOG_REVERT";
-export function revert(pointer, newPointer, message) {
+export function revert(pointer, newPointer, error) {
   return {
     type: REVERT,
     pointer,
     newPointer,
-    message
+    error
   };
 }
 

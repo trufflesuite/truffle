@@ -35,9 +35,9 @@ function* updateTransactionLogSaga() {
         yield put(actions.externalReturn(pointer, newPointer, decodings));
       }
     } else {
-      const message = yield* data.decodeReturnValue();
+      const error = (yield* data.decodeReturnValue())[0]; //NOTE: we will do this a better way in the future!
       debug("revert: %o %o", pointer, newPointer);
-      yield put(actions.revert(pointer, newPointer, message));
+      yield put(actions.revert(pointer, newPointer, error));
     }
   } else if (yield select(txlog.current.isJump)) {
     const jumpDirection = yield select(txlog.current.jumpDirection);

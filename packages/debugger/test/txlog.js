@@ -404,12 +404,10 @@ describe("Transaction log (visualizer)", function () {
     assert.equal(call.contractName, "VizTest");
     assert.equal(call.returnKind, "revert");
     assert.lengthOf(call.arguments, 0);
-    assert.lengthOf(call.message, 1);
-    const message = call.message[0];
-    assert.equal(message.kind, "revert");
-    assert.lengthOf(message.arguments, 1);
+    assert.equal(call.error.kind, "revert");
+    assert.lengthOf(call.error.arguments, 1);
     assert.equal(
-      Codec.Format.Utils.Inspect.nativize(message.arguments[0].value),
+      Codec.Format.Utils.Inspect.nativize(call.error.arguments[0].value),
       "Oops!"
     );
   });
