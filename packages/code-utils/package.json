@@ -13,6 +13,7 @@
   },
   "types": "./typings/index.d.ts",
   "dependencies": {
+    "borc": "^2.1.2",
     "source-map-support": "^0.5.19"
   },
   "devDependencies": {
