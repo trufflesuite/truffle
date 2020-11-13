@@ -9,11 +9,6 @@ export const networks: Definition<"networks"> = {
   createIndexes: [{fields: ["historicBlock.height"]}],
   idFields: ["networkId", "historicBlock"],
   typeDefs: gql`
-    type CandidateSearchResult {
-      network: Network!
-      alreadyTried: [ID]! #will include all networks returned
-    }
-
     type Network implements Resource & Named {
       id: ID!
       name: String!
@@ -47,6 +42,11 @@ export const networks: Definition<"networks"> = {
       height: Int!
       hash: String!
     }
+
+    type CandidateSearchResult {
+      network: Network!
+      alreadyTried: [ID]! #will include all networks returned
+    }
   `,
   resolvers: {
     Network: {
@@ -56,7 +56,6 @@ export const networks: Definition<"networks"> = {
           const result = await workspace.find("networks", {
             selector: {
               "historicBlock.height": {
-                $gte: null,
                 $lt: network.historicBlock.height,
                 $ne: network.historicBlock.height
               },
@@ -85,7 +84,6 @@ export const networks: Definition<"networks"> = {
           const result = await workspace.find("networks", {
             selector: {
               "historicBlock.height": {
-                $gte: null,
                 $gt: network.historicBlock.height,
                 $ne: network.historicBlock.height
               },
