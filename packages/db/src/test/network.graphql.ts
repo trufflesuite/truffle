@@ -31,7 +31,7 @@ export const AddNetworks = gql`
           {
             name: $name
             networkId: $networkId
-            historicBlock: { height: $height, hash: $hash }
+            historicBlock: {height: $height, hash: $hash}
           }
         ]
       }
@@ -39,6 +39,10 @@ export const AddNetworks = gql`
       networks {
         networkId
         id
+        historicBlock {
+          hash
+          height
+        }
       }
     }
   }
