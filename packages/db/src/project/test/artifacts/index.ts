@@ -26,7 +26,13 @@ export class ArtifactsLoader {
     this.resolver = new TruffleResolver(config);
   }
 
-  async load(result: WorkflowCompileResult): Promise<void> {
+  async load(): Promise<void> {
+    debug("Compiling...");
+    const result: WorkflowCompileResult = await WorkflowCompile.compile(
+      this.compilationConfig
+    );
+    debug("Compiled.");
+
     debug("Initializing project...");
     const project = await Project.initialize({
       project: {

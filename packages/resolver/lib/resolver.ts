@@ -45,13 +45,13 @@ export class Resolver {
   async resolve(
     importPath: string,
     importedFrom: string
-  ): Promise<{body: string; filePath: string; source: ResolverSource}> {
+  ): Promise<{ body: string; filePath: string; source: ResolverSource }> {
     let body: string | null = null;
     let filePath: string | null = null;
     let source: ResolverSource | null = null;
 
     for (source of this.sources) {
-      ({body, filePath} = await source.resolve(importPath, importedFrom));
+      ({ body, filePath } = await source.resolve(importPath, importedFrom));
 
       if (body) {
         break;

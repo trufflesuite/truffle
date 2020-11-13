@@ -58,7 +58,7 @@ describe("truffle build [ @standalone ]", () => {
 
   describe("when there is an object in the build config", () => {
     beforeEach("set up sandbox", function () {
-      this.timeout(12000);
+      this.timeout(10000);
       project = path.join(
         __dirname,
         "../../sources/build/projectWithObjectInBuildScript"
@@ -69,7 +69,7 @@ describe("truffle build [ @standalone ]", () => {
       });
     });
     it("tells the user it shouldn't use an object", async function () {
-      this.timeout(12000);
+      this.timeout(10000);
       try {
         await CommandRunner.run("build", config);
         assert(false, "The process should have exited with code 1");
@@ -81,6 +81,6 @@ describe("truffle build [ @standalone ]", () => {
           )
         );
       }
-    }).timeout(20000);
+    });
   });
 });

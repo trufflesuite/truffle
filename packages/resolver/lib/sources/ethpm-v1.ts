@@ -1,8 +1,8 @@
 import path from "path";
 import fs from "fs";
 
-import {ContractObject} from "@truffle/contract-schema/spec";
-import {ResolverSource} from "../source";
+import { ContractObject } from "@truffle/contract-schema/spec";
+import { ResolverSource } from "../source";
 
 export class EthPMv1 implements ResolverSource {
   workingDirectory: string;
@@ -54,10 +54,10 @@ export class EthPMv1 implements ResolverSource {
     };
 
     // Go through deployments and save all of them
-    Object.keys(lockfile.deployments || {}).forEach(function (blockchain) {
+    Object.keys(lockfile.deployments || {}).forEach(function(blockchain) {
       var deployments = lockfile.deployments[blockchain];
 
-      Object.keys(deployments).forEach(function (name) {
+      Object.keys(deployments).forEach(function(name) {
         var deployment = deployments[name];
         if (deployment.contract_type === contract_name) {
           json.networks[blockchain] = {
@@ -85,7 +85,7 @@ export class EthPMv1 implements ResolverSource {
       var file_path = path.join(installDir, "installed_contracts", importPath);
 
       try {
-        body = fs.readFileSync(file_path, {encoding: "utf8"});
+        body = fs.readFileSync(file_path, { encoding: "utf8" });
         break;
       } catch (err) {}
 
@@ -98,7 +98,7 @@ export class EthPMv1 implements ResolverSource {
       );
 
       try {
-        body = fs.readFileSync(file_path, {encoding: "utf8"});
+        body = fs.readFileSync(file_path, { encoding: "utf8" });
         break;
       } catch (err) {}
 
@@ -109,7 +109,7 @@ export class EthPMv1 implements ResolverSource {
         break;
       }
     }
-    return {body, filePath: importPath};
+    return { body, filePath: importPath };
   }
 
   // We're resolving package paths to other package paths, not absolute paths.
