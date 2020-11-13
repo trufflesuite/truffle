@@ -18,21 +18,26 @@ function* tickSaga() {
 }
 
 function* updateTransactionLogSaga() {
+  const pointer = yield select(txlog.current.pointer); //log pointer, not AST pointer
   if (yield select(txlog.current.isHalting)) {
     //note that we process this case first so that it overrides the others!
+    const newPointer = yield select(txlog.current.externalReturnPointer);
     const status = yield select(txlog.current.returnStatus);
     if (status) {
       if (yield select(txlog.current.isSelfDestruct)) {
         const beneficiary = yield select(txlog.current.beneficiary);
         //note: this selector returns null for a value-destroying selfdestruct
-        yield put(actions.selfdestruct(beneficiary));
+        debug("sd: %o %o", pointer, newPointer);
+        yield put(actions.selfdestruct(pointer, newPointer, beneficiary));
       } else {
         const decodings = yield* data.decodeReturnValue();
-        yield put(actions.externalReturn(decodings));
+        debug("external return: %o %o", pointer, newPointer);
+        yield put(actions.externalReturn(pointer, newPointer, decodings));
       }
     } else {
       const message = yield* data.decodeReturnValue();
-      yield put(actions.revert(message));
+      debug("revert: %o %o", pointer, newPointer);
+      yield put(actions.revert(pointer, newPointer, message));
     }
   } else if (yield select(txlog.current.isJump)) {
     const jumpDirection = yield select(txlog.current.jumpDirection);
@@ -40,13 +45,21 @@ function* updateTransactionLogSaga() {
       const internal = yield select(txlog.next.inInternalSourceOrYul); //don't log jumps into internal sources or Yul
       if (!internal) {
         //we don't do any decoding/fn identification here because that's handled by
-        //the function definition case
-        yield put(actions.internalCall());
+        //the function identification case
+        if (!(yield select(txlog.current.waitingForInternalCallToAbsorb))) {
+          const newPointer = yield select(txlog.current.nextCallPointer);
+          debug("internal call: %o %o", pointer, newPointer);
+          yield put(actions.internalCall(pointer, newPointer));
+        } else {
+          debug("absorbed call: %o", pointer);
+          yield put(actions.absorbedCall(pointer));
+        }
       }
     } else if (jumpDirection === "o") {
       const internal = yield select(txlog.current.inInternalSourceOrYul); //don't log jumps out of internal sources or Yul
       if (!internal) {
         //in this case, we have to do decoding & fn identification
+        const newPointer = yield select(txlog.current.internalReturnPointer);
         const outputAllocations = yield select(
           txlog.current.outputParameterAllocations
         );
@@ -63,13 +76,16 @@ function* updateTransactionLogSaga() {
             );
             variables.push({ name, value: decodedValue });
           }
-          yield put(actions.internalReturn(variables));
+          debug("internal return: %o %o", pointer, newPointer);
+          yield put(actions.internalReturn(pointer, newPointer, variables));
         } else {
-          yield put(actions.internalReturn(null));
+          debug("internal return: %o %o", pointer, newPointer);
+          yield put(actions.internalReturn(pointer, newPointer, undefined)); //I guess?
         }
       }
     }
   } else if (yield select(txlog.current.isCall)) {
+    const newPointer = yield select(txlog.current.nextCallPointer);
     const address = yield select(txlog.current.callAddress);
     const value = yield select(txlog.current.callValue);
     //distinguishing DELEGATECALL vs CALLCODE seems unnecessary here
@@ -85,8 +101,11 @@ function* updateTransactionLogSaga() {
     const decoding = yield* data.decodeCall();
     if (instant) {
       const status = yield select(txlog.current.returnStatus);
+      debug("instacall: %o %o", pointer, newPointer);
       yield put(
         actions.instantExternalCall(
+          pointer,
+          newPointer, //note: doesn't actually change the current pointer
           address,
           context,
           value,
@@ -99,8 +118,11 @@ function* updateTransactionLogSaga() {
         )
       );
     } else {
+      debug("external call: %o %o", pointer, newPointer);
       yield put(
         actions.externalCall(
+          pointer,
+          newPointer,
           address,
           context,
           value,
@@ -113,6 +135,7 @@ function* updateTransactionLogSaga() {
       );
     }
   } else if (yield select(txlog.current.isCreate)) {
+    const newPointer = yield select(txlog.current.nextCallPointer);
     const address = yield select(txlog.current.createdAddress);
     const context = yield select(txlog.current.callContext);
     const value = yield select(txlog.current.createValue);
@@ -122,8 +145,11 @@ function* updateTransactionLogSaga() {
     const decoding = yield* data.decodeCall();
     if (instant) {
       const status = yield select(txlog.current.returnStatus);
+      debug("instacreate: %o %o", pointer, newPointer);
       yield put(
         actions.instantCreate(
+          pointer,
+          newPointer, //note: doesn't actually change the current pointer
           address,
           context,
           value,
@@ -134,8 +160,18 @@ function* updateTransactionLogSaga() {
         )
       );
     } else {
+      debug("create: %o %o", pointer, newPointer);
       yield put(
-        actions.create(address, context, value, salt, decoding, binary)
+        actions.create(
+          pointer,
+          newPointer,
+          address,
+          context,
+          value,
+          salt,
+          decoding,
+          binary
+        )
       );
     }
   }
@@ -149,7 +185,7 @@ function* updateTransactionLogSaga() {
       );
       debug("inputAllocations: %O", inputAllocations);
       if (inputAllocations) {
-        const functionNode = yield select(txlog.current.node);
+        const functionNode = yield select(txlog.current.astNode);
         const contractNode = yield select(txlog.current.contract);
         const compilationId = yield select(txlog.current.compilationId);
         //can't do a yield* inside a map, have to do this loop manually
@@ -162,8 +198,14 @@ function* updateTransactionLogSaga() {
           );
           variables.push({ name, value: decodedValue });
         }
+        debug("identify: %o", pointer);
         yield put(
-          actions.identifyFunctionCall(functionNode, contractNode, variables)
+          actions.identifyFunctionCall(
+            pointer,
+            functionNode,
+            contractNode,
+            variables
+          )
         );
       }
     }
@@ -179,7 +221,6 @@ function callKind(context, calldata, instant) {
       //of message by our criteria)
     } else {
       const abi = context.abi;
-      debug("abi: %O", abi);
       const selector = calldata
         .slice(0, 2 + 2 * Codec.Evm.Utils.SELECTOR_SIZE)
         .padEnd("00", 2 + 2 * Codec.Evm.Utils.SELECTOR_SIZE);
@@ -201,9 +242,11 @@ export function* unload() {
 }
 
 export function* begin() {
+  const pointer = yield select(txlog.current.pointer);
+  const newPointer = yield select(txlog.current.nextCallPointer);
   const origin = yield select(txlog.transaction.origin);
-  debug("origin: %s", origin);
-  yield put(actions.recordOrigin(origin));
+  debug("origin: %o", pointer);
+  yield put(actions.recordOrigin(pointer, origin));
   const {
     address,
     binary,
@@ -217,11 +260,13 @@ export function* begin() {
   //is essentially an insta-call, the debugger doesn't treat it that way (it
   //will see the return later), so we shouldn't here either
   const decoding = yield* data.decodeCall(true); //pass flag to decode *current* call
-  debug("decoding: %O", decoding);
   if (address) {
     const kind = callKind(context, calldata, false); //no insta-calls here!
     const absorb = yield select(txlog.transaction.absorbFirstInternalCall);
+    debug("initial call: %o %o", pointer, newPointer);
     yield put(actions.externalCall(
+      pointer,
+      newPointer,
       address,
       context,
       value,
@@ -232,7 +277,10 @@ export function* begin() {
       absorb
     ));
   } else {
+    debug("initial create: %o %o", pointer, newPointer);
     yield put(actions.create(
+      pointer,
+      newPointer,
       storageAddress,
       context,
       value,

@@ -21,17 +21,17 @@ function createMultistepSelectors(stepSelector) {
     source: createLeaf([stepSelector.source], identity),
 
     /**
-     * .node
+     * .astNode
      * HACK: see notes in solidity selectors about cases
      * where this won't work
      */
-    node: createLeaf([stepSelector.node], identity),
+    astNode: createLeaf([stepSelector.node], identity),
 
     /**
      * .inInternalSourceOrYul
      */
     inInternalSourceOrYul: createLeaf(
-      ["./source", "./node"],
+      ["./source", "./astNode"],
       //note: the first of these won't actually happen atm, as source id
       //of -1 would instead result in source.id === undefined, but I figure
       //I'll include that condition in case I end up changing this later
@@ -46,6 +46,16 @@ let txlog = createSelectorTree({
    * txlog.state
    */
   state: state => state.txlog,
+
+  /**
+   * txlog.proc
+   */
+  proc: {
+    /**
+     * txlog.proc.transactionLog
+     */
+    transactionLog: createLeaf(["/state"], state => state.proc.transactionLog.byPointer),
+  },
 
   /**
    * txlog.transaction
@@ -77,37 +87,82 @@ let txlog = createSelectorTree({
     state: createLeaf([evm.current.state], identity),
 
     /**
-     * txlog.current.transactionLog
+     * txlog.current.pointer
+     * NOTE: transaction log pointer; NOT the AST pointer!
      */
-    transactionLog: createLeaf(["/state"], state => state.proc.transactionLog),
+    pointer: createLeaf(["/state"], state => state.proc.currentNodePointer),
 
     /**
-     * txlog.current.transactionTree
+     * txlog.current.pointerStack
      */
-    transactionTree: createLeaf(["./transactionLog"], logToTree),
+    pointerStack: createLeaf(["/state"], state => state.proc.pointerStack),
 
     /**
-     * txlog.current.lastAction
+     * txlog.current.node
+     * NOTE: transaction log node; NOT the AST node!
      */
-    lastAction: createLeaf(["./transactionLog"], log => log[log.length - 1]),
+    node: createLeaf(
+      ["./pointer", "/proc/transactionLog"],
+      (pointer, log) => log[pointer]
+    ),
 
     /**
      * txlog.current.waitingForFunctionDefinition
      * This selector indicates whether there's a call (internal or external)
      * that is waiting to have its function definition identified when we hit
      * a function definition node.
-     * NOTE: if we wanted to do this properly, we'd have to compute the tree.
-     * we don't want to do that, though.  so instead we do it a faster way.
-     * this faster way will work... *except* for certain cases involving
-     * constructors.  However constructors should never need the identify
-     * mechanism in the first place.  so whatever.
      */
     waitingForFunctionDefinition: createLeaf(
-      ["./lastAction"],
-      lastAction =>
-        (lastAction.type === "callinternal" ||
-          lastAction.type === "callexternal") &&
-        lastAction.waitingForFunctionDefinition
+      ["./node"],
+      node =>
+        (node.type === "callinternal" ||
+          node.type === "callexternal") &&
+        node.waitingForFunctionDefinition
+    ),
+
+    /**
+     * txlog.current.waitingForInternalCallToAbsorb
+     */
+    waitingForInternalCallToAbsorb: createLeaf(
+      ["./node"],
+      node =>
+        node.type === "callexternal" &&
+        node.absorbNextInternalCall
+    ),
+
+    /**
+     * txlog.current.nextCallPointer
+     * the pointer where a new call will be added
+     */
+    nextCallPointer: createLeaf(
+      ["./pointer", "./node"],
+      (pointer, node) => `${pointer}/actions/${node.actions.length}`
+    ),
+
+    /**
+     * txlog.current.internalReturnPointer
+     * the pointer where we'll end up after an internal return
+     * (if we're on an internal call, it returns; if we're not,
+     * we stay put and just absorb the info)
+     */
+    internalReturnPointer: createLeaf(
+      ["./pointer", "./node"],
+      (pointer, node) =>
+        node.type === "callinternal"
+          ? pointer.replace(/\/actions\/\d+$/, "")
+          : pointer
+    ),
+
+    /**
+     * txlog.current.externalReturnPointer
+     * the pointer where we'll end up after an external return
+     * (take the top stack entry, then go up one more)
+     * (there should always be something on the stack when this
+     * selector is used)
+     */
+    externalReturnPointer: createLeaf(
+      ["./pointerStack"],
+      stack => stack[stack.length - 1].replace(/\/actions\/\d+$/, "")
     ),
 
     /**
@@ -139,7 +194,7 @@ let txlog = createSelectorTree({
      * txlog.current.onFunctionDefinition
      */
     onFunctionDefinition: createLeaf(
-      ["./node", "./isSourceRangeFinal"],
+      ["./astNode", "./isSourceRangeFinal"],
       (node, ready) => ready && node && node.nodeType === "FunctionDefinition"
     ),
 
@@ -258,7 +313,7 @@ let txlog = createSelectorTree({
      * txlog.current.inputParameterAllocations
      */
     inputParameterAllocations: createLeaf(
-      ["./node", "./state"],
+      ["./astNode", "./state"],
       (functionDefinition, { stack }) => {
         if (
           !functionDefinition ||
@@ -277,7 +332,7 @@ let txlog = createSelectorTree({
      * txlog.current.outputParameterAllocations
      */
     outputParameterAllocations: createLeaf(
-      ["./node", "./state"],
+      ["./astNode", "./state"],
       (functionDefinition, { stack }) => {
         if (
           !functionDefinition ||
@@ -300,7 +355,33 @@ let txlog = createSelectorTree({
    */
   next: {
     ...createMultistepSelectors(solidity.next)
+  },
+
+  /**
+   * txlog.views
+   */
+  views: {
+    /**
+     * txlog.views.transactionLog
+     * contains the actual transformed transaction log ready for use!
+     */
+    transactionLog: createLeaf(
+      ["/proc/transactionLog"],
+      log => {
+        const tie = node =>
+          node.actions
+            ? {
+              ...node,
+              actions: node.actions.map(
+                pointer => tie(log[pointer])
+              )
+            }
+            : node;
+        return tie(log[""]); //"" is always the root node
+      }
+    )
   }
+
 });
 
 function locateParameters(parameters, top) {
@@ -325,257 +406,6 @@ function locateParameters(parameters, top) {
     currentPosition -= words;
   }
   return results;
-}
-
-//this function turns the log array into a tree object.
-function logToTree(log) {
-  let tree = { type: "origin", actions: [] };
-  let currentNode = tree; //this variable will act as a pointer; we will make writes through it
-  let nodeStack = [tree]; //the entries here should similarly be thought of as pointers
-  for (let action of log) {
-    debug(
-      "stack info: %o",
-      nodeStack.map(node => ({ type: node.type, name: node.functionName }))
-    );
-    debug("currentNode: %o", {
-      type: currentNode.type,
-      name: currentNode.functionName
-    });
-    if (currentNode !== nodeStack[nodeStack.length - 1]) {
-      debug("node stack desynchronized!!");
-    }
-    switch (action.type) {
-      case "origin":
-        debug("setting origin");
-        debug("address: %s", action.address);
-        if (currentNode.type === "origin") {
-          currentNode.address = action.address;
-        } else {
-          debug("attempt to set origin of bad node type!");
-        }
-        break;
-      case "callexternal": {
-        debug("external call");
-        if (
-          currentNode.type === "callexternal" &&
-          currentNode.kind === "library"
-        ) {
-          //didn't identify it as function, so set it to message
-          currentNode.kind = "message";
-        }
-        const {
-          type,
-          address,
-          context,
-          value,
-          kind,
-          isDelegate,
-          functionName,
-          contractName,
-          variables,
-          instant,
-          calldata,
-          binary,
-          waitingForFunctionDefinition,
-          absorbNextInternalCall
-        } = action;
-        let call = {
-          type,
-          address,
-          contextHash: context.context || null,
-          value,
-          kind,
-          isDelegate,
-          functionName,
-          contractName,
-          arguments: variables,
-          actions: []
-        };
-        if (kind === "message" || kind === "library") {
-          call.data = calldata;
-        } else if (kind === "unknowncreate") {
-          call.binary = binary;
-        }
-        if (instant) {
-          call.returnKind = action.status ? "return" : "revert";
-          currentNode.actions.push(call);
-        } else {
-          call.waitingForFunctionDefinition = waitingForFunctionDefinition;
-          call.absorbNextInternalCall = absorbNextInternalCall;
-          currentNode.actions.push(call);
-          currentNode = call;
-          nodeStack.push(call);
-        }
-        break;
-      }
-      case "callinternal": {
-        debug("internal call");
-        const {
-          type,
-          functionName,
-          contractName,
-          variables,
-          waitingForFunctionDefinition
-        } = action;
-        if (
-          currentNode.type === "callexternal" &&
-          currentNode.absorbNextInternalCall
-        ) {
-          //this is for handling post-0.5.1 initial jump-ins
-          debug("absorbing");
-          currentNode.absorbNextInternalCall = false;
-          break;
-        }
-        const call = {
-          type,
-          functionName,
-          contractName,
-          arguments: variables,
-          actions: [],
-          waitingForFunctionDefinition
-        };
-        debug("adding internal call");
-        currentNode.actions.push(call);
-        currentNode = call;
-        nodeStack.push(call);
-        break;
-      }
-      case "returninternal":
-        debug("internal return");
-        //pop the top call from the stack if it's internal (and set its return values)
-        //if the top call is instead external, just set its return values if appropriate.
-        //(this is how we handle internal/external return absorption)
-        if (currentNode.type === "callinternal") {
-          currentNode.returnKind = "return";
-          currentNode.returnValues = action.variables;
-          delete currentNode.waitingForFunctionDefinition;
-          nodeStack.pop();
-          currentNode = nodeStack[nodeStack.length - 1];
-        } else if (currentNode.type === "callexternal") {
-          if (currentNode.kind === "function") {
-            //don't set return variables for non-function external calls
-            currentNode.returnValues = action.variables;
-          }
-        } else {
-          debug("returninternal once tx done!");
-        }
-        break;
-      case "identify": {
-        currentNode.waitingForFunctionDefinition = false;
-        const { variables, functionName, contractName } = action;
-        if (!currentNode.functionName) {
-          currentNode.functionName = functionName;
-        }
-        if (!currentNode.contractName) {
-          currentNode.contractName = contractName;
-        }
-        if (!currentNode.arguments) {
-          currentNode.arguments = variables;
-        }
-        if (
-          currentNode.type === "callexternal" &&
-          currentNode.kind === "library"
-        ) {
-          currentNode.kind = "function";
-          delete currentNode.data;
-        }
-        break;
-      }
-      case "returnexternal":
-      case "revert":
-      case "selfdestruct":
-        if (
-          currentNode.type === "callexternal" &&
-          currentNode.kind === "library"
-        ) {
-          //didn't identify it as function, so set it to message
-          currentNode.kind = "message";
-        }
-        switch (action.type) {
-          case "returnexternal":
-            debug("external return");
-            if (!currentNode.returnKind) {
-              currentNode.returnKind = "return";
-            }
-            break;
-          case "revert":
-            debug("revert");
-            currentNode.returnKind = "revert";
-            currentNode.message = action.message;
-            break;
-          case "selfdestruct":
-            debug("selfdestruct");
-            currentNode.returnKind = "selfdestruct";
-            currentNode.beneficiary = action.beneficiary;
-            break;
-        }
-        //pop all calls from stack until we pop an external call.
-        //we don't handle return values here since those are handled
-        //in returninternal (yay absorption)
-        debug("currentNode: %o", currentNode);
-        while (currentNode.type !== "callexternal") {
-          if (nodeStack.length === 0 || currentNode.type !== "callinternal") {
-            debug("problem handling external return");
-          }
-          if (!currentNode.returnKind) {
-            //set the return kind on any nodes popped along the way that don't have
-            //one already to note that they failed to return due to a call they made
-            //reverting
-            currentNode.returnKind = "unwind";
-          }
-          delete currentNode.waitingForFunctionDefinition;
-          debug("preliminary popping");
-          nodeStack.pop();
-          currentNode = nodeStack[nodeStack.length - 1];
-        }
-        //now handle the external call.  first let's set the returnKind if there
-        //isn't one already (in which case we can infer it was unwound).
-        if (!currentNode.returnKind) {
-          currentNode.returnKind = "unwind";
-        }
-        //now let's set its return variables if applicable.
-        if (
-          currentNode.kind === "function" &&
-          action.type === "returnexternal" &&
-          action.decodings
-        ) {
-          const decoding = action.decodings.find(
-            decoding => decoding.kind === "return"
-          );
-          if (decoding) {
-            //we'll trust this method over the method resulting from an internal return,
-            //*if* it produces a valid return-value decoding.  if it doesn't, we ignore it.
-            currentNode.returnValues = decoding.arguments;
-          }
-        }
-        //also, set immutables if applicable -- note that we do *not* attempt to set
-        //these the internal way, as we don't have a reliable way of doing that
-        if (
-          currentNode.kind === "constructor" &&
-          action.type === "returnexternal" &&
-          action.decodings
-        ) {
-          const decoding = action.decodings.find(
-            decoding => decoding.kind === "bytecode"
-          );
-          if (decoding && decoding.immutables) {
-            currentNode.returnImmutables = decoding.immutables;
-          }
-        }
-        //finally, pop it from the stack.
-        delete currentNode.waitingForFunctionDefinition;
-        delete currentNode.absorbNextInternalCall;
-        nodeStack.pop();
-        currentNode = nodeStack[nodeStack.length - 1];
-        break;
-      default:
-        //nothing goes here at the moment, but this will possibly
-        //handle other generic actions in the future
-        debug("generic action");
-        currentNode.actions.push(action);
-    }
-  }
-  return tree;
 }
 
 export default txlog;

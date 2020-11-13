@@ -1,20 +1,34 @@
 export const INTERNAL_CALL = "TXLOG_INTERNAL_CALL";
-export function internalCall() {
+export function internalCall(pointer, newPointer) {
   return {
-    type: INTERNAL_CALL
+    type: INTERNAL_CALL,
+    pointer,
+    newPointer
+  };
+}
+
+export const ABSORBED_CALL = "TXLOG_ABSORBED_CALL";
+export function absorbedCall(pointer) {
+  return {
+    type: ABSORBED_CALL,
+    pointer
   };
 }
 
 export const INTERNAL_RETURN = "TXLOG_INTERNAL_RETURN";
-export function internalReturn(variables) {
+export function internalReturn(pointer, newPointer, variables) {
   return {
     type: INTERNAL_RETURN,
+    pointer,
+    newPointer,
     variables
   };
 }
 
 export const EXTERNAL_CALL = "TXLOG_EXTERNAL_CALL";
 export function externalCall(
+  pointer,
+  newPointer,
   address,
   context,
   value,
@@ -26,6 +40,8 @@ export function externalCall(
 ) {
   return {
     type: EXTERNAL_CALL,
+    pointer,
+    newPointer,
     address,
     context,
     value,
@@ -39,6 +55,8 @@ export function externalCall(
 
 export const INSTANT_EXTERNAL_CALL = "TXLOG_INSTANT_EXTERNAL_CALL";
 export function instantExternalCall(
+  pointer,
+  newPointer, //does not actually affect the current pointer!
   address,
   context,
   value,
@@ -51,6 +69,8 @@ export function instantExternalCall(
 ) {
   return {
     type: INSTANT_EXTERNAL_CALL,
+    pointer,
+    newPointer,
     address,
     context,
     value,
@@ -64,9 +84,20 @@ export function instantExternalCall(
 }
 
 export const CREATE = "TXLOG_CREATE";
-export function create(address, context, value, salt, decoding, binary) {
+export function create(
+  pointer,
+  newPointer,
+  address,
+  context,
+  value,
+  salt,
+  decoding,
+  binary
+) {
   return {
     type: CREATE,
+    pointer,
+    newPointer,
     address,
     context,
     value,
@@ -78,6 +109,8 @@ export function create(address, context, value, salt, decoding, binary) {
 
 export const INSTANT_CREATE = "TXLOG_INSTANT_CREATE";
 export function instantCreate(
+  pointer,
+  newPointer, //does not actually affect the current pointer!
   address,
   context,
   value,
@@ -88,6 +121,8 @@ export function instantCreate(
 ) {
   return {
     type: INSTANT_CREATE,
+    pointer,
+    newPointer,
     address,
     context,
     value,
@@ -99,33 +134,45 @@ export function instantCreate(
 }
 
 export const EXTERNAL_RETURN = "TXLOG_EXTERNAL_RETURN";
-export function externalReturn(decodings) {
+export function externalReturn(pointer, newPointer, decodings) {
   return {
     type: EXTERNAL_RETURN,
+    pointer,
+    newPointer,
     decodings
   };
 }
 
 export const SELFDESTRUCT = "TXLOG_SELFDESTRUCT";
-export function selfdestruct(beneficiary) {
+export function selfdestruct(pointer, newPointer, beneficiary) {
   return {
     type: SELFDESTRUCT,
+    pointer,
+    newPointer,
     beneficiary
   };
 }
 
 export const REVERT = "TXLOG_REVERT";
-export function revert(message) {
+export function revert(pointer, newPointer, message) {
   return {
     type: REVERT,
+    pointer,
+    newPointer,
     message
   };
 }
 
 export const IDENTIFY_FUNCTION_CALL = "TXLOG_IDENTIFY_FUNCTION_CALL";
-export function identifyFunctionCall(functionNode, contractNode, variables) {
+export function identifyFunctionCall(
+  pointer,
+  functionNode,
+  contractNode,
+  variables
+) {
   return {
     type: IDENTIFY_FUNCTION_CALL,
+    pointer,
     functionNode,
     contractNode,
     variables
@@ -133,9 +180,10 @@ export function identifyFunctionCall(functionNode, contractNode, variables) {
 }
 
 export const RECORD_ORIGIN = "TXLOG_RECORD_ORIGIN";
-export function recordOrigin(address) {
+export function recordOrigin(pointer, address) {
   return {
     type: RECORD_ORIGIN,
+    pointer,
     address
   };
 }

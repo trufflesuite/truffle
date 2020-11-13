@@ -144,7 +144,7 @@ describe("Transaction log (visualizer)", function () {
 
     await bugger.continueUntilBreakpoint(); //run till end
 
-    const root = bugger.view(txlog.current.transactionTree);
+    const root = bugger.view(txlog.views.transactionLog);
     assert.equal(root.type, "origin");
     assert.lengthOf(root.actions, 1);
     let call = root.actions[0];
@@ -200,7 +200,7 @@ describe("Transaction log (visualizer)", function () {
 
     await bugger.continueUntilBreakpoint(); //run till end
 
-    const root = bugger.view(txlog.current.transactionTree);
+    const root = bugger.view(txlog.views.transactionLog);
     assert.equal(root.type, "origin");
     assert.lengthOf(root.actions, 1);
     let call = root.actions[0];
@@ -253,7 +253,7 @@ describe("Transaction log (visualizer)", function () {
 
     await bugger.continueUntilBreakpoint(); //run till end
 
-    const root = bugger.view(txlog.current.transactionTree);
+    const root = bugger.view(txlog.views.transactionLog);
     assert.equal(root.type, "origin");
     assert.lengthOf(root.actions, 1);
     let call = root.actions[0];
@@ -301,7 +301,7 @@ describe("Transaction log (visualizer)", function () {
 
     await bugger.continueUntilBreakpoint(); //run till end
 
-    const root = bugger.view(txlog.current.transactionTree);
+    const root = bugger.view(txlog.views.transactionLog);
     assert.equal(root.type, "origin");
     let origin = root.address;
     assert.lengthOf(root.actions, 1);
@@ -336,7 +336,7 @@ describe("Transaction log (visualizer)", function () {
 
     await bugger.continueUntilBreakpoint(); //run till end
 
-    const root = bugger.view(txlog.current.transactionTree);
+    const root = bugger.view(txlog.views.transactionLog);
     assert.equal(root.type, "origin");
     assert.lengthOf(root.actions, 1);
     let call = root.actions[0];
@@ -386,7 +386,7 @@ describe("Transaction log (visualizer)", function () {
 
     await bugger.continueUntilBreakpoint(); //run till end
 
-    const root = bugger.view(txlog.current.transactionTree);
+    const root = bugger.view(txlog.views.transactionLog);
     assert.equal(root.type, "origin");
     assert.lengthOf(root.actions, 1);
     let call = root.actions[0];
