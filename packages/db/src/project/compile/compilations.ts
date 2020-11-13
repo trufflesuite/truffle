@@ -41,6 +41,7 @@ export const generateCompilationsLoad = Batch.Compilations.generate<{
   },
 
   *process({ entries }) {
+    debug("entries %o", entries);
     return yield* resources.load("compilations", entries);
   },
 
