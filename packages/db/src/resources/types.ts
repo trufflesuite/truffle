@@ -5,7 +5,7 @@ import * as Meta from "@truffle/db/meta";
 import * as Pouch from "@truffle/db/pouch";
 import * as GraphQl from "@truffle/db/graphql";
 
-export { Db, IdObject, toIdObject } from "@truffle/db/meta";
+export {Db, IdObject, toIdObject} from "@truffle/db/meta";
 
 export type Collections = {
   sources: {
@@ -113,6 +113,13 @@ export type Collections = {
   networkGenealogies: {
     resource: DataModel.NetworkGenealogy;
     input: DataModel.NetworkGenealogyInput;
+    names: {
+      resource: "networkGenealogy";
+      Resource: "NetworkGenealogy";
+      resources: "networkGenealogies";
+      Resources: "NetworkGenealogies";
+      resourcesMutate: "networkGenealogiesAdd";
+    };
   };
 };
 
