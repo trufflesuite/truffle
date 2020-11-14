@@ -254,6 +254,14 @@ class DebugPrinter {
     }
   }
 
+  printGeneratedSourcesState() {
+    if(this.session.view(controller.stepIntoInternalSources)) {
+      this.config.logger.log("Generated sources are turned on.");
+    } else {
+      this.config.logger.log("Generated sources are turned off.");
+    }
+  }
+
   //this doesn't really *need* to be async as we could use codec directly, but, eh
   async printRevertMessage() {
     this.config.logger.log(

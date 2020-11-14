@@ -409,16 +409,24 @@ class DebugInterpreter {
       }
     }
     if (cmd === "g") {
-      this.session.setInternalStepping(true);
-      this.printer.print(
-        "All debugger commands can now step into generated sources."
-      );
+      if (!(this.session.view(controller.stepIntoInternalSources))) {
+        this.session.setInternalStepping(true);
+        this.printer.print(
+          "All debugger commands can now step into generated sources."
+        );
+      } else {
+        this.printer.print("Generated sources already activated.");
+      }
     }
     if (cmd === "G") {
-      this.session.setInternalStepping(false);
-      this.printer.print(
-        "Commands other than (;) and (c) will now skip over generated sources."
-      );
+      if (this.session.view(controller.stepIntoInternalSources)) {
+        this.session.setInternalStepping(false);
+        this.printer.print(
+          "Commands other than (;) and (c) will now skip over generated sources."
+        );
+      } else {
+        this.printer.print("Generated sources already off.");
+      }
     }
 
     // Check if execution has (just now) stopped.
@@ -464,6 +472,7 @@ class DebugInterpreter {
       case "?":
         this.printer.printWatchExpressions(this.enabledExpressions);
         this.printer.printBreakpoints();
+        this.printer.printGeneratedSourcesState();
         break;
       case "v":
         await this.printer.printVariables();
