@@ -469,16 +469,6 @@ const data = createSelectorTree({
      * data.proc.mappedPaths
      */
     mappedPaths: createLeaf(["/state"], state => state.proc.mappedPaths),
-
-    /**
-     * data.proc.decodingKeys
-     *
-     * number of keys that are still decoding
-     */
-    decodingKeys: createLeaf(
-      ["./mappedPaths"],
-      mappedPaths => mappedPaths.decodingStarted
-    )
   },
 
   /**
