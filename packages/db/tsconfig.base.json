@@ -16,7 +16,7 @@
       "test/*": ["./test/*"]
     },
     "rootDir": ".",
-    "baseUrl": ".",
+    "baseUrl": "./",
     "types": [
       "express",
       "jest",
