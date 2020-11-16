@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@truffle/error": "^0.0.10",
-    "ethpm": "0.1.0-next.30",
+    "ethpm": "0.1.0-next.31",
     "ethpm-spec": "^3.0.0",
     "ethereum-ens": "^0.8.0",
     "semver": "^7.3.2"

@@ -19,7 +19,7 @@ const command = {
     } else if (config.ethpm.version == "3") {
       publishPackage = PackageV3.publish;
     } else {
-      throw new Error(`Unsupported ethpm version: ${config.ethpm.version}.`));
+      throw new Error(`Unsupported ethpm version: ${config.ethpm.version}.`);
     }
     return publishPackage(config);
   }
