@@ -95,7 +95,9 @@ const command = {
       );
     }
 
-    return await WorkflowCompile.save(config, compilationOutput);
+    const result = await WorkflowCompile.save(config, compilationOutput);
+    await WorkflowCompile.assignNames(config, result);
+    return result;
   },
 
   listVersions: async function (options) {
