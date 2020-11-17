@@ -7,6 +7,7 @@ import { toIdObject, IdObject, Process } from "@truffle/db/project/process";
 import { generateNetworkId } from "./networkId";
 import { generateTransactionBlocks } from "./blocks";
 import { generateNetworksLoad } from "./networks";
+import { generateNetworkGenealogiesLoad } from "./networkGenealogies";
 import { generateContracts } from "./contracts";
 import { generateContractInstancesLoad } from "./contractInstances";
 
@@ -47,6 +48,8 @@ export function* generateMigrateLoad(options: {
 
   // @ts-ignore
   const withNetworks = yield* generateNetworksLoad(withBlocks);
+
+  yield* generateNetworkGenealogiesLoad(withNetworks);
 
   const [
     {

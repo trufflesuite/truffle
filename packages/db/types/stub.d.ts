@@ -48,6 +48,7 @@ declare namespace DataModel {
   type SourcesAddPayload = any;
   type NetworkGenealogy = any;
   type NetworkGenealogyInput = any;
+  type CandidateSearchResult = any;
 
   type Query = any;
   type Mutation = any;
