@@ -201,7 +201,8 @@ const command = {
       conf.compiler = "none";
     }
 
-    await WorkflowCompile.compileAndSave(conf);
+    const result = await WorkflowCompile.compileAndSave(conf);
+    await WorkflowCompile.assignNames(conf, result);
     await Environment.detect(conf);
 
     const {dryRunOnly, dryRunAndMigrations} = command.determineDryRunSettings(
