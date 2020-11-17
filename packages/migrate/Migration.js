@@ -118,14 +118,22 @@ class Migration {
           }
         });
 
-        ({artifacts} = await project
+        const result = await project
           .connect({provider: this.config.provider})
           .loadMigrate({
             network: {
               name: this.config.network
             },
             artifacts
-          }));
+          });
+
+        ({ artifacts } = result);
+
+        await project.assignNames({
+          assignments: {
+            networks: [result.network]
+          }
+        });
       }
 
       // Save artifacts to local filesystem
