@@ -246,6 +246,7 @@ function* continueUntilBreakpoint(action) {
     //few lines down.  but at this point these are still the previous
     //values.
     let previousLine = currentLine;
+    let previousNode = currentNode;
     let previousSourceId = currentSourceId;
     if (!currentLocation.source.internal) {
       lastUserSourceId = currentSourceId;
@@ -273,6 +274,8 @@ function* continueUntilBreakpoint(action) {
           return (
             sourceId === currentSourceId &&
             node === currentNode &&
+            (currentSourceId !== previousSourceId ||
+              currentNode !== previousNode) &&
             //if we started in a user source (& allow internal is off),
             //we need to make sure we've moved from a user-source POV
             (!startedInUserSource ||
