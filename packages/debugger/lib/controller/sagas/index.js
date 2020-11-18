@@ -1,9 +1,9 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:controller:sagas");
 
-import { put, call, race, take, select } from "redux-saga/effects";
+import {put, call, race, take, select} from "redux-saga/effects";
 
-import { prefixName, isDeliberatelySkippedNodeType } from "lib/helpers";
+import {prefixName, isDeliberatelySkippedNodeType} from "lib/helpers";
 
 import * as trace from "lib/trace/sagas";
 import * as data from "lib/data/sagas";
@@ -45,7 +45,7 @@ export function* saga() {
 
 export default prefixName("controller", saga);
 
-/*
+/**
  * Advance the state by the given number of instructions (but not past the end)
  * (if no count given, advance 1)
  */
@@ -224,8 +224,19 @@ function* continueUntilBreakpoint(action) {
   let breakpointHit = false;
 
   let currentLocation = yield select(controller.current.location);
-  let currentLine = currentLocation.sourceRange.lines.start.line;
   let currentSourceId = currentLocation.source.id;
+  let currentLine = currentLocation.sourceRange.lines.start.line;
+  let currentNode = currentLocation.astRef;
+  //note that if allow internal is on, we don't turn on the special treatment
+  //of user sources even if we started in one
+  const startedInUserSource =
+    !(yield select(controller.stepIntoInternalSources)) &&
+    currentLocation.source.id !== undefined &&
+    !currentLocation.source.internal;
+  //the following are set regardless, but only used if startedInUserSource
+  let lastUserSourceId = currentSourceId;
+  let lastUserLine = currentLine;
+  let lastUserNode = currentNode;
 
   do {
     yield* advance(); //note: this avoids using stepNext in order to
@@ -235,7 +246,13 @@ function* continueUntilBreakpoint(action) {
     //few lines down.  but at this point these are still the previous
     //values.
     let previousLine = currentLine;
+    let previousNode = currentNode;
     let previousSourceId = currentSourceId;
+    if (!currentLocation.source.internal) {
+      lastUserSourceId = currentSourceId;
+      lastUserLine = currentLine;
+      lastUserNode = currentNode;
+    }
 
     currentLocation = yield select(controller.current.location);
     let finished = yield select(controller.current.trace.finished);
@@ -247,20 +264,37 @@ function* continueUntilBreakpoint(action) {
     if (currentSourceId === undefined) {
       continue; //never stop on an unmapped instruction
     }
-    let currentNode = currentLocation.astRef;
     currentLine = currentLocation.sourceRange.lines.start.line;
+    currentNode = currentLocation.astRef;
 
     breakpointHit =
-      breakpoints.filter(({ sourceId, line, node }) => {
+      breakpoints.filter(({sourceId, line, node}) => {
         if (node !== undefined) {
-          return sourceId === currentSourceId && node === currentNode;
+          //node-based breakpoint
+          return (
+            sourceId === currentSourceId &&
+            node === currentNode &&
+            (currentSourceId !== previousSourceId ||
+              currentNode !== previousNode) &&
+            //if we started in a user source (& allow internal is off),
+            //we need to make sure we've moved from a user-source POV
+            (!startedInUserSource ||
+              currentSourceId !== lastUserSourceId ||
+              currentNode !== lastUserNode)
+          );
         }
         //otherwise, we have a line-style breakpoint; we want to stop at the
         //*first* point on the line
         return (
           sourceId === currentSourceId &&
           line === currentLine &&
-          (currentSourceId !== previousSourceId || currentLine !== previousLine) //can skip context check as don't need to worry about external calls to internal sources
+          (currentSourceId !== previousSourceId ||
+            currentLine !== previousLine) &&
+          //again, if started in a user source w/ allow internal off,
+          //need to make sure we've moved from a *user*-source POV
+          (!startedInUserSource ||
+            currentSourceId !== lastUserSourceId ||
+            currentLine !== lastUserLine)
         );
       }).length > 0;
   } while (!breakpointHit);
