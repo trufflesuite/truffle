@@ -16,6 +16,8 @@ jobs:
   yarncheck:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
       - run: npm install -g yarn
       - run: yarn bootstrap
       - run: test -z "$(git diff)"
