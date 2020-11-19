@@ -13,6 +13,13 @@ on:
       - "*"
 
 jobs:
+  yarncheck:
+    runs-on: ubuntu-latest
+    steps:
+      - run: yarn bootstrap
+      - run: test -z "$(git diff)"
+
+
   build:
     strategy:
       matrix:
@@ -42,7 +49,7 @@ jobs:
       if: failure()
 
   slack_notification:
-    needs: build
+    needs: [yarncheck, build]
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
