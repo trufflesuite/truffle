@@ -8,9 +8,6 @@ on:
     - develop
     - next
 
-    # other targets
-    - truffle-db
-
   pull_request:
     branches:
       - "*"
