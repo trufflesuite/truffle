@@ -11,7 +11,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.2.0-2",
+  "version": "0.2.0-3",
   "main": "dist/src/index.js",
   "files": [
     "dist",
@@ -35,10 +35,10 @@
     "test": "jest --verbose --detectOpenHandles"
   },
   "dependencies": {
-    "@truffle/code-utils": "^1.2.21",
+    "@truffle/code-utils": "^1.2.22",
     "@truffle/compile-common": "^0.4.3",
     "@truffle/config": "^1.2.33",
-    "@truffle/workflow-compile": "^3.0.8",
+    "@truffle/workflow-compile": "^3.0.9",
     "apollo-server": "^2.18.2",
     "debug": "^4.2.0",
     "fse": "^4.0.1",
