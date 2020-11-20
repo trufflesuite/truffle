@@ -71,11 +71,16 @@ function readSource(sourcePath) {
  */
 function processAllSources(sources) {
   if (!sources.length) return [];
-  return sources.map(sourcePath => ({
-    sourcePath: sourcePath,
-    contents: readSource(sourcePath),
-    language: "vyper"
-  }));
+
+  return sources.map(sourcePath => {
+    let source = {
+      sourcePath: sourcePath,
+      contents: readSource(sourcePath),
+      language: "vyper"
+    };
+
+    return source;
+  });
 }
 
 // compile all sources
@@ -123,9 +128,9 @@ async function compileAll({sources, options}) {
 
   const compilerInfo = {name: "vyper", version: compiler.version};
   return {
-    sources: processAllSources(sources),
     compilations: [
       {
+        sources: processAllSources(sources),
         compiler: compilerInfo,
         contracts,
         sourceIndexes: sources

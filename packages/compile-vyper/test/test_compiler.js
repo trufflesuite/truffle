@@ -1,7 +1,8 @@
 const path = require("path");
 const assert = require("assert");
 const Config = require("@truffle/config");
-const { Compile } = require("../index");
+const {Compile} = require("../index");
+const fs = require("fs");
 
 describe("vyper compiler", function () {
   this.timeout(20000);
@@ -14,8 +15,8 @@ describe("vyper compiler", function () {
   const config = new Config().merge(defaultSettings);
 
   it("compiles vyper contracts", async function () {
-    const { compilations } = await Compile.all(config);
-    const { contracts, sourceIndexes } = compilations[0];
+    const {compilations} = await Compile.all(config);
+    const {contracts, sourceIndexes} = compilations[0];
     sourceIndexes.forEach(path => {
       assert(
         [".vy", ".v.py", ".vyper.py"].some(
@@ -63,8 +64,8 @@ describe("vyper compiler", function () {
   });
 
   it("skips solidity contracts", async function () {
-    const { compilations } = await Compile.all(config);
-    const { contracts, sourceIndexes } = compilations[0];
+    const {compilations} = await Compile.all(config);
+    const {contracts, sourceIndexes} = compilations[0];
 
     sourceIndexes.forEach(path => {
       assert.equal(path.indexOf(".sol"), -1, "Paths have no .sol files");
@@ -87,14 +88,34 @@ describe("vyper compiler", function () {
     });
 
     it("compiles when sourceMap option set true", async () => {
-      const { compilations } = await Compile.all(configWithSourceMap);
-      const { contracts } = compilations[0];
+      const {compilations} = await Compile.all(configWithSourceMap);
+      const {contracts} = compilations[0];
       contracts.forEach((contract, index) => {
         assert(
           contract.sourceMap,
           `source map have to not be empty. ${index + 1}`
         );
       });
+    });
+  });
+
+  describe("compilation sources array", async () => {
+    it("returns an array of sources reflecting sources in project", async () => {
+      const {compilations} = await Compile.all(config);
+      const {sources} = compilations[0];
+
+      assert(sources.length === 3);
+      assert(
+        sources[0].sourcePath ===
+          path.join(__dirname, "sources/VyperContract1.vy")
+      );
+      assert(
+        sources[0].contents ===
+          fs
+            .readFileSync(path.join(__dirname, "sources/VyperContract1.vy"))
+            .toString()
+      );
+      assert(sources[0].language === "vyper");
     });
   });
 });
