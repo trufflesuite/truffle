@@ -5,7 +5,7 @@ const findContracts = require("@truffle/contract-sources");
 const Config = require("@truffle/config");
 const Profiler = require("./profiler");
 const CompilerSupplier = require("./compilerSupplier");
-const { run } = require("./run");
+const {run} = require("./run");
 
 const normalizeOptions = options => {
   if (options.logger === undefined) options.logger = console;
@@ -40,11 +40,11 @@ const normalizeOptions = options => {
 const Compile = {
   // this takes an object with keys being the name and values being source
   // material as well as an options object
-  async sources({ sources, options }) {
+  async sources({sources, options}) {
     const compilation = await run(sources, normalizeOptions(options));
     return compilation.contracts.length > 0
-      ? { compilations: [compilation] }
-      : { compilations: [] };
+      ? {compilations: [compilation]}
+      : {compilations: []};
   },
 
   async all(options) {
@@ -73,7 +73,7 @@ const Compile = {
   },
 
   // this takes an array of paths and options
-  async sourcesWithDependencies({ paths, options }) {
+  async sourcesWithDependencies({paths, options}) {
     options.logger = options.logger || console;
     options.contracts_directory = options.contracts_directory || process.cwd();
 
@@ -84,7 +84,7 @@ const Compile = {
     ]);
 
     const config = Config.default().merge(options);
-    const { allSources, compilationTargets } = await Profiler.requiredSources(
+    const {allSources, compilationTargets} = await Profiler.requiredSources(
       config.with({
         paths,
         base_path: options.contracts_directory,
@@ -100,27 +100,28 @@ const Compile = {
 
     // when there are no sources, don't call run
     if (Object.keys(allSources).length === 0) {
-      return { compilations: [] };
+      return {compilations: []};
     }
 
     options.compilationTargets = compilationTargets;
-    const { sourceIndexes, contracts, compiler } = await run(
+    const {sourceIndexes, sources, contracts, compiler} = await run(
       allSources,
       normalizeOptions(options)
     );
-    const { name, version } = compiler;
+    const {name, version} = compiler;
     // returns CompilerResult - see @truffle/compile-common
     return contracts.length > 0
       ? {
           compilations: [
             {
               sourceIndexes,
+              sources,
               contracts,
-              compiler: { name, version }
+              compiler: {name, version}
             }
           ]
         }
-      : { compilations: [] };
+      : {compilations: []};
   },
 
   display(paths, options) {
