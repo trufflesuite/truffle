@@ -74,7 +74,7 @@ function processAllSources(sources) {
   return sources.map(sourcePath => ({
     sourcePath: sourcePath,
     contents: readSource(sourcePath),
-    language: sourcePath.split(".").pop()
+    language: sourcePath.substr(sourcePath.indexOf("."))
   }));
 }
 
