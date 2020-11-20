@@ -70,7 +70,7 @@ function readSource(sourcePath) {
  * this can include sources that are not contracts
  */
 function processAllSources(sources) {
-  if (!sourcePaths.length) return [];
+  if (!sources.length) return [];
   return sources.map(sourcePath => ({
     sourcePath: sourcePath,
     contents: readSource(sourcePath),
