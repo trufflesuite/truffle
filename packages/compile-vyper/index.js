@@ -38,7 +38,7 @@ function execVyper(options, sourcePath, callback) {
   }
   const command = `vyper -f ${formats.join(",")} ${sourcePath}`;
 
-  exec(command, { maxBuffer: 600 * 1024 }, function (err, stdout, stderr) {
+  exec(command, {maxBuffer: 600 * 1024}, function (err, stdout, stderr) {
     if (err)
       return callback(
         `${stderr}\n${colors.red(
@@ -49,15 +49,37 @@ function execVyper(options, sourcePath, callback) {
     var outputs = stdout.split(/\r?\n/);
 
     const compiledContract = outputs.reduce((contract, output, index) => {
-      return Object.assign(contract, { [formats[index]]: output });
+      return Object.assign(contract, {[formats[index]]: output});
     }, {});
 
     callback(null, compiledContract);
   });
 }
 
+/**
+ *
+ * read source contents from sourcePath
+ */
+function readSource(sourcePath) {
+  const sourceBuffer = fs.readFileSync(sourcePath);
+  return sourceBuffer.toString();
+}
+
+/**
+ * aggregate source information based on compiled output;
+ * this can include sources that are not contracts
+ */
+function processAllSources(sources) {
+  if (!sourcePaths.length) return [];
+  return sources.map(sourcePath => ({
+    sourcePath: sourcePath,
+    contents: readSource(sourcePath),
+    language: sourcePath.split(".").pop()
+  }));
+}
+
 // compile all sources
-async function compileAll({ sources, options }) {
+async function compileAll({sources, options}) {
   options.logger = options.logger || console;
 
   Compile.display(sources, options);
@@ -79,8 +101,7 @@ async function compileAll({ sources, options }) {
               ? basename
               : path.basename(basename, path.extname(basename));
 
-          const sourceBuffer = fs.readFileSync(sourcePath);
-          const sourceContents = sourceBuffer.toString();
+          const sourceContents = readSource(sourcePath);
 
           const contractDefinition = {
             contractName: contractName,
@@ -100,8 +121,9 @@ async function compileAll({ sources, options }) {
   });
   const contracts = await Promise.all(promises);
 
-  const compilerInfo = { name: "vyper", version: compiler.version };
+  const compilerInfo = {name: "vyper", version: compiler.version};
   return {
+    sources: processAllSources(sources),
     compilations: [
       {
         compiler: compilerInfo,
@@ -114,13 +136,13 @@ async function compileAll({ sources, options }) {
 
 const Compile = {
   // Check that vyper is available then forward to internal compile function
-  async sources({ sources = [], options }) {
+  async sources({sources = [], options}) {
     // filter out non-vyper paths
     const vyperFiles = sources.filter(path => minimatch(path, VYPER_PATTERN));
 
     // no vyper files found, no need to check vyper
     if (vyperFiles.length === 0) {
-      return { compilations: [] };
+      return {compilations: []};
     }
 
     await checkVyper();
@@ -130,7 +152,7 @@ const Compile = {
     });
   },
 
-  async sourcesWithDependencies({ paths = [], options }) {
+  async sourcesWithDependencies({paths = [], options}) {
     return await Compile.sources({
       sources: paths,
       options
@@ -163,7 +185,7 @@ const Compile = {
     const updated = await Profiler.updated(options);
 
     if (updated.length === 0 && options.quiet !== true) {
-      return { compilations: [] };
+      return {compilations: []};
     }
 
     // filter out only Vyper files
@@ -191,7 +213,7 @@ const Compile = {
 
       return contract;
     });
-    options.events.emit("compile:sourcesToCompile", { sourceFileNames });
+    options.events.emit("compile:sourcesToCompile", {sourceFileNames});
   }
 };
 
