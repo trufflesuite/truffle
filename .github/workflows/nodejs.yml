@@ -66,7 +66,6 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - run: npm install -g yarn
     - run: yarn bootstrap
-    - run: truffle obtain --solc=0.5.16
     - run: ${{ matrix.env }} yarn ci
       env:
         CI: true
