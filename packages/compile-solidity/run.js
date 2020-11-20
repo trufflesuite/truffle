@@ -330,7 +330,7 @@ function processAllSources({sources, compilerOutput}) {
       contents: sources[sourcePath],
       ast: ast,
       legacyAST: legacyAST,
-      language: sourcePath.split(".").pop()
+      language: "solidity"
     })
   );
 }
