@@ -1,7 +1,7 @@
 const debug = require("debug")("workflow-compile");
 const fse = require("fs-extra");
-const { prepareConfig } = require("./utils");
-const { Shims } = require("@truffle/compile-common");
+const {prepareConfig} = require("./utils");
+const {Shims} = require("@truffle/compile-common");
 const {
   reportCompilationStarted,
   reportNothingToCompile,
@@ -54,8 +54,12 @@ async function compile(config) {
     return a.concat(compilation.contracts);
   }, []);
 
+  const sources = compilations.reduce((a, compilation) => {
+    return a.concat(compilation.sources);
+  }, []);
+
   // return WorkflowCompileResult
-  return { contracts, compilations };
+  return {contracts, sources, compilations};
 }
 
 const WorkflowCompile = {
@@ -64,7 +68,7 @@ const WorkflowCompile = {
 
     if (config.events) config.events.emit("compile:start");
 
-    const { contracts, compilations } = await compile(config);
+    const {contracts, sources, compilations} = await compile(config);
 
     const compilers = compilations
       .reduce((a, compilation) => {
@@ -84,15 +88,17 @@ const WorkflowCompile = {
     }
     return {
       contracts,
+      sources,
       compilations
     };
   },
 
   async compileAndSave(options) {
-    const { contracts, compilations } = await this.compile(options);
-    await this.save(options, { contracts, compilations });
+    const {contracts, sources, compilations} = await this.compile(options);
+    await this.save(options, {contracts, compilations});
     return {
       contracts,
+      sources,
       compilations
     };
   },
@@ -101,7 +107,7 @@ const WorkflowCompile = {
   reportCompilationFinished,
   reportNothingToCompile,
 
-  async save(options, { contracts, _compilations }) {
+  async save(options, {contracts, _compilations}) {
     const config = prepareConfig(options);
 
     await fse.ensureDir(config.contracts_build_directory);
