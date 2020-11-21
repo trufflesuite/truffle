@@ -13,6 +13,8 @@ contract Example {
   event SpecialEvent();
   event NumberEvent(int numA, int indexed numB, address addrC, uint numD, uint);
 
+  enum ExampleEnum { ExampleZero, ExampleOne, ExampleTwo }
+
   constructor(uint val) public {
     // Constructor revert
     require(val != 13);
