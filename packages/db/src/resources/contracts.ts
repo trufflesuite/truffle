@@ -8,6 +8,7 @@ import { normalize } from "@truffle/abi-utils";
 import {Definition} from "./types";
 
 export const contracts: Definition<"contracts"> = {
+  named: true,
   createIndexes: [
     {
       fields: ["compilation.id"]
@@ -19,6 +20,7 @@ export const contracts: Definition<"contracts"> = {
   idFields: ["name", "abi", "processedSource", "compilation"],
   typeDefs: gql`
     type Contract implements Resource & Named {
+      type: String!
       id: ID!
       name: String!
       abi: ABI
@@ -109,6 +111,11 @@ export const contracts: Definition<"contracts"> = {
   `,
   resolvers: {
     Contract: {
+      type: {
+        resolve() {
+          return "Contract";
+        }
+      },
       compilation: {
         resolve: async ({compilation: {id}}, _, {workspace}) => {
           debug("Resolving Contract.compilation...");

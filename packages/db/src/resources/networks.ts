@@ -6,10 +6,12 @@ import gql from "graphql-tag";
 import {Definition} from "./types";
 
 export const networks: Definition<"networks"> = {
+  named: true,
   createIndexes: [{fields: ["historicBlock.height"]}],
   idFields: ["networkId", "historicBlock"],
   typeDefs: gql`
     type Network implements Resource & Named {
+      type: String!
       id: ID!
       name: String!
       networkId: NetworkId!
@@ -50,6 +52,11 @@ export const networks: Definition<"networks"> = {
   `,
   resolvers: {
     Network: {
+      type: {
+        resolve() {
+          return "Network";
+        }
+      },
       possibleAncestors: {
         resolve: async ({id}, {limit = 5, alreadyTried}, {workspace}) => {
           const network = await workspace.get("networks", id);

@@ -1,16 +1,16 @@
 import path from "path";
 import gql from "graphql-tag";
-import { connect } from "@truffle/db";
-import { ArtifactsLoader } from "./artifacts";
-import { generateId } from "@truffle/db/meta";
+import {connect} from "@truffle/db";
+import {ArtifactsLoader} from "./artifacts";
+import {generateId} from "@truffle/db/meta";
 import Migrate from "@truffle/migrate";
-import { Environment } from "@truffle/environment";
+import {Environment} from "@truffle/environment";
 import Config from "@truffle/config";
 import Ganache from "ganache-core";
 import Web3 from "web3";
 import * as fse from "fs-extra";
 import * as tmp from "tmp";
-import { Shims } from "@truffle/compile-common";
+import {Shims} from "@truffle/compile-common";
 
 let server;
 const port = 8545;
@@ -43,7 +43,7 @@ const fixturesDirectory = path.join(
   "build",
   "contracts"
 );
-const tempDir = tmp.dirSync({ unsafeCleanup: true });
+const tempDir = tmp.dirSync({unsafeCleanup: true});
 tmp.setGracefulCleanup();
 
 // minimal config
@@ -147,7 +147,7 @@ const artifacts = [
 
 const AddProjects = gql`
   mutation AddProjects($projects: [ProjectInput!]!) {
-    projectsAdd(input: { projects: $projects }) {
+    projectsAdd(input: {projects: $projects}) {
       projects {
         id
         directory
@@ -158,17 +158,14 @@ const AddProjects = gql`
 
 const AddNameRecords = gql`
   mutation AddNameRecords($nameRecords: [NameRecordInput!]!) {
-    nameRecordsAdd(input: { nameRecords: $nameRecords }) {
+    nameRecordsAdd(input: {nameRecords: $nameRecords}) {
       nameRecords {
         id
-        name
-        type
         resource {
           name
         }
         previous {
           id
-          name
         }
       }
     }
@@ -177,7 +174,7 @@ const AddNameRecords = gql`
 
 const AssignProjectNames = gql`
   mutation AssignProjectNames($projectNames: [ProjectNameInput!]!) {
-    projectNamesAssign(input: { projectNames: $projectNames }) {
+    projectNamesAssign(input: {projectNames: $projectNames}) {
       projectNames {
         name
         type
@@ -207,7 +204,7 @@ const ResolveProjectName = gql`
 
 const AddContracts = gql`
   mutation AddContracts($contracts: [ContractInput!]!) {
-    contractsAdd(input: { contracts: $contracts }) {
+    contractsAdd(input: {contracts: $contracts}) {
       contracts {
         id
         name
@@ -443,7 +440,7 @@ describe("Compilation", () => {
           contents: contract["source"],
           sourcePath: contract["sourcePath"]
         });
-        sourceIds.push({ id: sourceId });
+        sourceIds.push({id: sourceId});
         const shimBytecodeObject = Shims.LegacyToNew.forBytecode(
           contract["bytecode"]
         );
@@ -451,9 +448,9 @@ describe("Compilation", () => {
           contract["deployedBytecode"]
         );
         let bytecodeId = generateId(shimBytecodeObject);
-        bytecodeIds.push({ id: bytecodeId });
+        bytecodeIds.push({id: bytecodeId});
         let callBytecodeId = generateId(shimCallBytecodeObject);
-        callBytecodeIds.push({ id: callBytecodeId });
+        callBytecodeIds.push({id: callBytecodeId});
 
         const networksPath = fse
           .readFileSync(
@@ -483,7 +480,7 @@ describe("Compilation", () => {
             networkId: networkId,
             historicBlock: historicBlock
           });
-          netIds.push({ id: netId });
+          netIds.push({id: netId});
           migratedNetworks.push({
             networkId: networkId,
             historicBlock: historicBlock,
@@ -495,7 +492,7 @@ describe("Compilation", () => {
             },
             address: networksArray[networksArray.length - 1][1]["address"]
           });
-          contractInstanceIds.push({ id: contractInstanceId });
+          contractInstanceIds.push({id: contractInstanceId});
           contractInstances.push({
             address: networksArray[networksArray.length - 1][1]["address"],
             network: {
@@ -532,8 +529,8 @@ describe("Compilation", () => {
       sources: [sourceIds[3]]
     });
     compilationIds.push(
-      { id: expectedSolcCompilationId },
-      { id: expectedVyperCompilationId }
+      {id: expectedSolcCompilationId},
+      {id: expectedVyperCompilationId}
     );
 
     expectedProjectId = generateId({
@@ -543,7 +540,7 @@ describe("Compilation", () => {
     // setting up a fake previous contract to test previous name record
     const {
       data: {
-        projectsAdd: { projects }
+        projectsAdd: {projects}
       }
     } = await db.execute(AddProjects, {
       projects: [
@@ -560,7 +557,7 @@ describe("Compilation", () => {
 
     let previousContract = {
       name: "Migrations",
-      abi: { json: JSON.stringify(artifacts[1].abi) },
+      abi: {json: JSON.stringify(artifacts[1].abi)},
       createBytecode: bytecodeIds[0],
       callBytecode: callBytecodeIds[0]
     };
@@ -571,13 +568,12 @@ describe("Compilation", () => {
 
     previousContractExpectedId = generateId({
       name: "Migrations",
-      abi: { json: JSON.stringify(artifacts[1].abi) }
+      abi: {json: JSON.stringify(artifacts[1].abi)}
     });
 
     previousContractNameRecord = {
-      name: "Migrations",
-      type: "Contract",
       resource: {
+        type: "Contract",
         id: previousContractExpectedId
       }
     };
@@ -594,7 +590,7 @@ describe("Compilation", () => {
     await db.execute(AssignProjectNames, {
       projectNames: [
         {
-          project: { id: projectId },
+          project: {id: projectId},
           name: "Migrations",
           type: "Contract",
           nameRecord: {
@@ -672,7 +668,7 @@ describe("Compilation", () => {
 
       expect(
         solcCompilation.sourceMaps.find(
-          ({ data }) => data === artifacts[index].sourceMap
+          ({data}) => data === artifacts[index].sourceMap
         )
       ).toBeDefined();
     });
@@ -693,7 +689,7 @@ describe("Compilation", () => {
     for (let index in sourceIds) {
       let {
         data: {
-          source: { contents, sourcePath }
+          source: {contents, sourcePath}
         }
       } = await db.execute(GetWorkspaceSource, sourceIds[index]);
 
@@ -706,7 +702,7 @@ describe("Compilation", () => {
     for (let index in bytecodeIds) {
       let {
         data: {
-          bytecode: { bytes }
+          bytecode: {bytes}
         }
       } = await db.execute(GetWorkspaceBytecode, bytecodeIds[index]);
 
@@ -723,7 +719,7 @@ describe("Compilation", () => {
     for (let index in artifacts) {
       let expectedId = generateId({
         name: artifacts[index].contractName,
-        abi: { json: JSON.stringify(artifacts[index].abi) },
+        abi: {json: JSON.stringify(artifacts[index].abi)},
         processedSource: {
           index: artifacts[index].compiler.name === "solc" ? +index : 0
         },
@@ -735,27 +731,7 @@ describe("Compilation", () => {
         }
       });
 
-      contractNameRecordId =
-        artifacts[index].contractName === previousContractNameRecord.name
-          ? generateId({
-              name: artifacts[index].contractName,
-              type: "Contract",
-              resource: {
-                id: expectedId
-              },
-              previous: {
-                id: previousContractExpectedId
-              }
-            })
-          : generateId({
-              name: artifacts[index].contractName,
-              type: "Contract",
-              resource: {
-                id: expectedId
-              }
-            });
-
-      contractIds.push({ id: expectedId });
+      contractIds.push({id: expectedId});
 
       let {
         data: {
@@ -763,10 +739,10 @@ describe("Compilation", () => {
             id,
             name,
             processedSource: {
-              source: { contents }
+              source: {contents}
             },
             compilation: {
-              compiler: { version }
+              compiler: {version}
             },
             createBytecode,
             callBytecode
@@ -791,7 +767,7 @@ describe("Compilation", () => {
 
       const {
         data: {
-          project: { resolve }
+          project: {resolve}
         }
       } = await db.execute(ResolveProjectName, {
         projectId,
@@ -809,7 +785,7 @@ describe("Compilation", () => {
     for (let index in migratedArtifacts) {
       let {
         data: {
-          network: { name, networkId, historicBlock }
+          network: {name, networkId, historicBlock}
         }
       } = await db.execute(GetWorkspaceNetwork, netIds[index]);
 
@@ -825,17 +801,17 @@ describe("Compilation", () => {
         data: {
           contractInstance: {
             address,
-            network: { networkId },
-            contract: { name },
+            network: {networkId},
+            contract: {name},
             creation: {
               transactionHash,
               constructor: {
                 createBytecode: {
-                  bytecode: { bytes, linkReferences }
+                  bytecode: {bytes, linkReferences}
                 }
               }
             },
-            callBytecode: { bytecode }
+            callBytecode: {bytecode}
           }
         }
       } = await db.execute(GetWorkspaceContractInstance, contractInstanceId);

@@ -1,13 +1,13 @@
-import { generateId, Migrations, WorkspaceClient } from "./utils";
+import {generateId, Migrations, WorkspaceClient} from "./utils";
 import {
   GetProject,
   LookupNames,
   AddProject,
   AssignProjectName
 } from "./projects.graphql";
-import { AddNetworks } from "./network.graphql";
-import { AddNameRecord } from "./nameRecord.graphql";
-import { AddContracts } from "./contract.graphql";
+import {AddNetworks} from "./network.graphql";
+import {AddNameRecord} from "./nameRecord.graphql";
+import {AddContracts} from "./contract.graphql";
 
 describe("Project", () => {
   let wsClient;
@@ -38,9 +38,8 @@ describe("Project", () => {
     addNetworkId = addNetworkResult.networksAdd.networks[0].id;
 
     let addNetworkNameRecordResult = await wsClient.execute(AddNameRecord, {
-      name: "ganache",
-      type: "Network",
       resource: {
+        type: "Network",
         id: addNetworkId
       }
     });
@@ -72,9 +71,8 @@ describe("Project", () => {
     addContractId = addContractResult.contractsAdd.contracts[0].id;
 
     let addContractNameRecordResult = await wsClient.execute(AddNameRecord, {
-      name: "Migrations",
-      type: "Contract",
       resource: {
+        type: "Contract",
         id: addContractId
       }
     });
@@ -98,7 +96,7 @@ describe("Project", () => {
   test("can be added", async () => {
     expect(addProjectResult).toHaveProperty("projectsAdd");
     expect(addProjectResult.projectsAdd).toHaveProperty("projects");
-    const { projects } = addProjectResult.projectsAdd;
+    const {projects} = addProjectResult.projectsAdd;
     expect(projects).toHaveLength(1);
     const project = projects[0];
     expect(project.directory).toEqual("test/path");
@@ -110,13 +108,13 @@ describe("Project", () => {
       expect(projectNamesAssignNetworkResult).toHaveProperty(
         "projectNamesAssign"
       );
-      const { projectNamesAssign } = projectNamesAssignNetworkResult;
+      const {projectNamesAssign} = projectNamesAssignNetworkResult;
       expect(projectNamesAssign).toHaveProperty("projectNames");
-      const { projectNames } = projectNamesAssign;
+      const {projectNames} = projectNamesAssign;
       const projectName = projectNames[0];
       expect(projectName).toHaveProperty("project");
       expect(projectName).toHaveProperty("nameRecord");
-      const { nameRecord } = projectName;
+      const {nameRecord} = projectName;
       expect(nameRecord.resource.name).toEqual("ganache");
       expect(nameRecord.resource.id).toEqual(addNetworkId);
     }
@@ -126,13 +124,13 @@ describe("Project", () => {
       expect(projectNamesAssignContractResult).toHaveProperty(
         "projectNamesAssign"
       );
-      const { projectNamesAssign } = projectNamesAssignContractResult;
+      const {projectNamesAssign} = projectNamesAssignContractResult;
       expect(projectNamesAssign).toHaveProperty("projectNames");
-      const { projectNames } = projectNamesAssign;
+      const {projectNames} = projectNamesAssign;
       const projectName = projectNames[0];
       expect(projectName).toHaveProperty("project");
       expect(projectName).toHaveProperty("nameRecord");
-      const { nameRecord } = projectName;
+      const {nameRecord} = projectName;
       expect(nameRecord.resource.name).toEqual("Migrations");
       expect(nameRecord.resource.id).toEqual(addContractId);
     }
@@ -148,7 +146,7 @@ describe("Project", () => {
     });
 
     expect(executionResult).toHaveProperty("project");
-    const { project } = executionResult;
+    const {project} = executionResult;
 
     expect(project.id).toEqual(expectedId);
     expect(project.directory).toEqual("test/path");
@@ -162,11 +160,11 @@ describe("Project", () => {
     });
 
     expect(executionResult).toHaveProperty("project");
-    const { project } = executionResult;
+    const {project} = executionResult;
 
     expect(project).toHaveProperty("network");
     expect(project).toHaveProperty("contract");
-    const { network, contract } = project;
+    const {network, contract} = project;
 
     expect(network.name).toEqual("ganache");
     expect(contract.name).toEqual("Migrations");

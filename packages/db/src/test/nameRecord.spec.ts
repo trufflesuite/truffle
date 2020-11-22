@@ -1,10 +1,10 @@
-import { generateId, Migrations, WorkspaceClient } from "./utils";
+import {generateId, Migrations, WorkspaceClient} from "./utils";
 import {
   AddNameRecord,
   GetAllNameRecords,
   GetNameRecord
 } from "./nameRecord.graphql";
-import { AddNetworks } from "./network.graphql";
+import {AddNetworks} from "./network.graphql";
 
 describe("Name Record", () => {
   let wsClient;
@@ -24,10 +24,9 @@ describe("Name Record", () => {
     let addNetworkId = addNetworkResult.networksAdd.networks[0].id;
 
     variables = {
-      name: "ganache",
-      type: "Network",
       resource: {
-        id: addNetworkId
+        id: addNetworkId,
+        type: "Network"
       }
     };
 
@@ -39,16 +38,16 @@ describe("Name Record", () => {
   test("can be added", async () => {
     expect(addNameRecordResult).toHaveProperty("nameRecordsAdd");
 
-    const { nameRecordsAdd } = addNameRecordResult;
+    const {nameRecordsAdd} = addNameRecordResult;
     expect(nameRecordsAdd).toHaveProperty("nameRecords");
 
-    const { nameRecords } = nameRecordsAdd;
+    const {nameRecords} = nameRecordsAdd;
     expect(nameRecords).toHaveLength(1);
 
     const nameRecord = nameRecords[0];
     expect(nameRecord).toHaveProperty("id");
 
-    const { id } = nameRecord;
+    const {id} = nameRecord;
     expect(id).toEqual(expectedId);
   });
 
@@ -58,10 +57,10 @@ describe("Name Record", () => {
     });
     expect(executionResult).toHaveProperty("nameRecord");
 
-    const { nameRecord } = executionResult;
+    const {nameRecord} = executionResult;
     expect(nameRecord).toHaveProperty("id");
 
-    const { id, resource } = nameRecord;
+    const {id, resource} = nameRecord;
     expect(id).toEqual(expectedId);
     expect(resource).toHaveProperty("networkId");
     expect(resource.id).toEqual(variables.resource.id);
@@ -71,7 +70,7 @@ describe("Name Record", () => {
     const executionResult = await wsClient.execute(GetAllNameRecords);
     expect(executionResult).toHaveProperty("nameRecords");
 
-    const { nameRecords } = executionResult;
+    const {nameRecords} = executionResult;
 
     expect(nameRecords).toHaveProperty("length");
 
