@@ -98,10 +98,9 @@ const command = {
             await fse.writeFile(
               compilationOutputFile,
               JSON.stringify(compilationOutput),
-              { encoding: "utf8" }
+              {encoding: "utf8"}
             );
           }
-
           return WorkflowCompile.save(config, compilationOutput);
         })
         .then(() => done())
@@ -110,7 +109,7 @@ const command = {
   },
 
   listVersions: async function (options) {
-    const { CompilerSupplier } = require("@truffle/compile-solidity");
+    const {CompilerSupplier} = require("@truffle/compile-solidity");
     const supplier = new CompilerSupplier({
       solcConfig: options.compilers.solc,
       events: options.events
