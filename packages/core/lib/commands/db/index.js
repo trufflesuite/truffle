@@ -1,5 +1,6 @@
 const OS = require("os");
 const serveCommand = require("./commands/serve");
+const fetchCommand = require("./commands/fetch");
 
 const usage =
   "truffle db <sub-command> [options]" +
@@ -9,25 +10,34 @@ const usage =
   OS.EOL +
   OS.EOL +
   "  serve \tStart the GraphQL server" +
+  OS.EOL +
+  "  fetch \tFetch verified contracts from Etherscan and/or Sourcify" +
   OS.EOL;
 
 const command = {
   command: "db",
   description: "Database interface commands",
   builder: function (yargs) {
-    return yargs.command(serveCommand).demandCommand();
+    return yargs
+      .command(serveCommand)
+      .command(fetchCommand)
+      .demandCommand();
   },
 
   subCommands: {
     serve: {
       help: serveCommand.help,
       description: serveCommand.description
+    },
+    fetch: {
+      help: fetchCommand.help,
+      description: fetchCommand.description
     }
   },
 
   help: {
     usage,
-    options: []
+    options: [...serveCommand.help.options, ...fetchCommand.help.options]
   },
 
   run: async function (args) {
@@ -35,6 +45,10 @@ const command = {
     switch (subCommand) {
       case "serve":
         await serveCommand.run(args);
+        break;
+
+      case "fetch":
+        fetchCommand.run(args, done);
         break;
 
       default:
