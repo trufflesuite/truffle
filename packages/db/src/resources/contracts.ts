@@ -2,6 +2,8 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:definitions:contracts");
 
 import gql from "graphql-tag";
+import { pascalCase } from "change-case";
+import { normalize } from "@truffle/abi-utils";
 
 import { Definition } from "./types";
 
@@ -28,6 +30,7 @@ export const contracts: Definition<"contracts"> = {
 
     type ABI {
       json: String!
+      entries: [Entry]
     }
 
     input ContractInput {
@@ -45,6 +48,63 @@ export const contracts: Definition<"contracts"> = {
 
     input ABIInput {
       json: String!
+    }
+
+    interface Entry {
+      type: String!
+    }
+
+    enum StateMutability {
+      pure
+      view
+      nonpayable
+      payable
+    }
+
+    type FunctionEntry implements Entry {
+      type: String!
+      name: String!
+      inputs: [Parameter]!
+      outputs: [Parameter]!
+      stateMutability: StateMutability!
+    }
+
+    type ConstructorEntry implements Entry {
+      type: String!
+      inputs: [Parameter]!
+      stateMutability: StateMutability!
+    }
+
+    type FallbackEntry implements Entry {
+      type: String!
+      stateMutability: StateMutability!
+    }
+
+    type ReceiveEntry implements Entry {
+      type: String!
+      stateMutability: StateMutability!
+    }
+
+    type EventEntry implements Entry {
+      type: String!
+      name: String!
+      inputs: [EventParameter]!
+      anonymous: Boolean!
+    }
+
+    type Parameter {
+      name: String!
+      type: String!
+      components: [Parameter]
+      internalType: String
+    }
+
+    type EventParameter {
+      name: String!
+      type: String!
+      components: [Parameter]
+      internalType: String
+      indexed: Boolean!
     }
   `,
   resolvers: {
@@ -105,6 +165,18 @@ export const contracts: Definition<"contracts"> = {
           debug("Resolved Contract.callBytecode.");
           return result;
         }
+      }
+    },
+    ABI: {
+      entries: {
+        resolve({ json }) {
+          return normalize(JSON.parse(json));
+        }
+      }
+    },
+    Entry: {
+      __resolveType(obj) {
+        return `${pascalCase(obj.type)}Entry`;
       }
     }
   }

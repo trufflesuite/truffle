@@ -9,7 +9,7 @@ const dataModel = generateNamespace(
   schema,
   {
     ignoreTypeNameDeclaration: true,
-    ignoredTypes: ["Resource", "Named"]
+    ignoredTypes: ["Resource", "Named", "Entry"]
   },
   {
     generateInterfaceName: name => name
