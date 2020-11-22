@@ -1,9 +1,9 @@
-import { logger } from "@truffle/db/logger";
-const debug = logger("db:definitions:contracts");
+import {logger} from "@truffle/db/logger";
+const debug = logger("db:resources:contracts");
 
 import gql from "graphql-tag";
 
-import { Definition } from "./types";
+import {Definition} from "./types";
 
 export const contracts: Definition<"contracts"> = {
   createIndexes: [
@@ -50,7 +50,7 @@ export const contracts: Definition<"contracts"> = {
   resolvers: {
     Contract: {
       compilation: {
-        resolve: async ({ compilation: { id } }, _, { workspace }) => {
+        resolve: async ({compilation: {id}}, _, {workspace}) => {
           debug("Resolving Contract.compilation...");
 
           const result = workspace.get("compilations", id);
@@ -62,27 +62,27 @@ export const contracts: Definition<"contracts"> = {
       processedSource: {
         fragment: `... on Contract { compilation { id } }`,
         resolve: async (
-          { processedSource, compilation: { id } },
+          {processedSource, compilation: {id}},
           _,
-          { workspace }
+          {workspace}
         ) => {
           debug("Resolving Contract.processedSource...");
 
-          const { processedSources } = await workspace.get("compilations", id);
+          const {processedSources} = await workspace.get("compilations", id);
 
           debug("Resolved Contract.processedSource.");
           return processedSources[processedSource.index];
         }
       },
       createBytecode: {
-        resolve: async ({ createBytecode }, _, { workspace }) => {
+        resolve: async ({createBytecode}, _, {workspace}) => {
           debug("Resolving Contract.createBytecode...");
 
           if (!createBytecode) {
             return;
           }
 
-          const { id } = createBytecode;
+          const {id} = createBytecode;
 
           const result = await workspace.get("bytecodes", id);
 
@@ -91,14 +91,14 @@ export const contracts: Definition<"contracts"> = {
         }
       },
       callBytecode: {
-        resolve: async ({ callBytecode }, _, { workspace }) => {
+        resolve: async ({callBytecode}, _, {workspace}) => {
           debug("Resolving Contract.callBytecode...");
 
           if (!callBytecode) {
             return;
           }
 
-          const { id } = callBytecode;
+          const {id} = callBytecode;
 
           const result = await workspace.get("bytecodes", id);
 
