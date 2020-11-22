@@ -10001,6 +10001,13 @@ faker@^5.1.0:
   resolved "https://registry.yarnpkg.com/faker/-/faker-5.1.0.tgz#e10fa1dec4502551aee0eb771617a7e7b94692e8"
   integrity sha512-RrWKFSSA/aNLP0g3o2WW1Zez7/MnMr7xkiZmoCfAGZmdkDQZ6l2KtuXHN5XjdvpRjDl8+3vf+Rrtl06Z352+Mw==
 
+fast-check@^2.10.0:
+  version "2.10.0"
+  resolved "https://registry.yarnpkg.com/fast-check/-/fast-check-2.10.0.tgz#92c8f8a07fbe12f150d0e44a7804c2585c2fc878"
+  integrity sha512-nzpt+BkNpCuNVi431a2a8Cq4X3Y1mTceUE1PaZaIwTIgMuV5j+XsLul00swaS2Yh1oB+LZDnTf0zYdogw8KXfg==
+  dependencies:
+    pure-rand "^4.1.1"
+
 fast-check@^2.4.0:
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/fast-check/-/fast-check-2.4.0.tgz#8142ad724103e378f3afefeeb165c5dd6a9b2949"
@@ -13208,6 +13215,11 @@ jest-fast-check@^0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/jest-fast-check/-/jest-fast-check-0.0.1.tgz#7be5962eb1739bb6492c4b93fe55098ee662faac"
   integrity sha512-eAMASGowHwWZ9IeeGvBED4h2UUCpHAGHFRTxs/URARxyS2aszvpnW3f5AE6bKZTIZnhqry1x5LjM7ldGnThV7A==
+
+jest-fast-check@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/jest-fast-check/-/jest-fast-check-1.0.0.tgz#986803fb4c8a00b64fbae3cc37be0c46effe2dd1"
+  integrity sha512-N+vGUqMErCrblWXWrF2JNgmEdq7IA9pswuO4rM3TnKdu+n8YVO1IYo0acg2oICDRnCi/l5lVX0wGDvtq/lG55g==
 
 jest-get-type@^22.4.3:
   version "22.4.3"
@@ -18126,6 +18138,11 @@ pure-rand@^3.0.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/pure-rand/-/pure-rand-3.1.0.tgz#646b812635cbac86105c46b0b03aa5dac1c759b3"
   integrity sha512-xkCSMNjEnLG/A8iTH9M5ayXN4SCWRP+ih3rxi09Q7Fu0b9jAP6V9H59pOtcB37IsVt3eHxf1FMy9n7YrqdDdSA==
+
+pure-rand@^4.1.1:
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/pure-rand/-/pure-rand-4.1.1.tgz#9fca2d4af5c4e870bac337ed860977426ed17bf6"
+  integrity sha512-cZw4AL/KI6aDTdqHEbJPe2ZoHM3kSdpJRLJetv8c3tfq9o+PvQDXrHNEpB0AWukAGFx4fmeOerAGwkA4rtUgdA==
 
 q@^1.5.1:
   version "1.5.1"

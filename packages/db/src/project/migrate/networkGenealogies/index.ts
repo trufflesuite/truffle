@@ -2,6 +2,7 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:migrate:networkGenealogies");
 
 import gql from "graphql-tag";
+
 import {
   IdObject,
   toIdObject,
@@ -35,17 +36,12 @@ import {
  *      Networks from the earlier/later item in the pair, respectively.
  *
  *   4. Connect this series of network genealogy records with existing
- *      genealogy records in the system by querying for:
- *        (a) the closest known ancestor to our earliest given network, and
- *            (the "ancestor ancestor")
- *        (b) the closest known descendant to our latest given network
- *            ("the descendant descandant")
+ *      genealogy records in the system by querying our input networks one at a
+ *      time, looking for any known ancestor and/or any known descendant. If
+ *      either or both of these relations exist, add corresponding genealogy
+ *      inputs to our list.
  *
- *   5. If either/both relations exist from step 4, extend our collection of
- *      NetworkGenealogyInputs from step 3 with a corresponding
- *      NetworkGenealogyInput for each such relation
- *
- *   6. Load all inputs as NetworkGenealogy resources
+ *   5. Load all inputs as NetworkGenealogy resources
  *
  * Note: unlike other process functions in the larger Project.loadMigrate flow,
  * this does not use the batch abstraction, and thus does not return structured
@@ -79,56 +75,48 @@ export function* generateNetworkGenealogiesLoad<
     .filter(({ networks }) => networks && networks[networkId])
     .map(({ networks }) => networks[networkId]);
 
-  // for all such artifact networks, find the earliest/latest and generate
-  // NetworkGenealogyInputs for all pairs.
+  if (!artifactNetworks.length) {
+    return;
+  }
+
+  // for all such artifact networks, order the networks by height and collect
+  // NetworkGenealogyInputs for all sequential pairs in this list.
   const {
-    ancestor,
-    descendant,
+    networks,
     networkGenealogies
   } = collectArtifactNetworks(artifactNetworks);
-  debug("networkGenealogies %o", networkGenealogies);
 
-  // look for possible ancestor of the earliest network, convert to
-  // NetworkGenealogyInput if it exists
-  const ancestorAncestor = yield* findRelation("ancestor", ancestor);
-  debug("ancestorAncestor %o", ancestorAncestor);
-  if (ancestorAncestor) {
-    networkGenealogies.push({
-      ancestor: ancestorAncestor,
-      descendant: ancestor
-    });
+  // for each network in order
+  for (const network of networks) {
+    // look for known ancestor
+    const ancestor = yield* findRelation("ancestor", network);
+    if (ancestor) {
+      networkGenealogies.push({
+        ancestor,
+        descendant: network
+      });
+    }
+
+    // look for known descendant
+    const descendant = yield* findRelation("descendant", network);
+    if (descendant) {
+      networkGenealogies.push({
+        ancestor: network,
+        descendant
+      });
+    }
   }
 
-  // look for possible descendant of the latest network, convert to
-  // NetworkGenealogyInput if it exists
-  const descendantDescendant = yield* findRelation("descendant", descendant);
-  debug("descendantDescendant %o", descendantDescendant);
-  if (descendantDescendant) {
-    networkGenealogies.push({
-      ancestor: descendant,
-      descendant: descendantDescendant
-    });
-  }
-
-  // load all NetworkGenealogyInputs
+  // load all NetworkGenealogyInputs, both pairwise inputs from artifact
+  // networks, as well as genealogy inputs for relationships to
+  // previously-known networks
   return yield* resources.load("networkGenealogies", networkGenealogies);
-}
-
-interface CollectArtifactNetworksResult {
-  ancestor: IdObject<DataModel.Network>;
-  descendant: IdObject<DataModel.Network>;
-  networkGenealogies: DataModel.NetworkGenealogyInput[];
 }
 
 /**
  * Given a sparsely-populated list of artifact networks from the same
- * blockchain, find the earliest/latest Network from this list (as ancestor/
- * descendant, respectively) and create pairwise NetworkGenealogyInputs
- * for all Networks in between.
- *
- * Returns undefined for a list with no non-null inputs.
- *
- * Returns ancestor === descendant for a list with only one unique input
+ * blockchain, sort networks by block height and build a NetworkGenealogyInput
+ * for each pair of sequential networks.
  */
 function collectArtifactNetworks<
   ArtifactNetwork extends {
@@ -139,7 +127,10 @@ function collectArtifactNetworks<
   }
 >(
   artifactNetworks: (ArtifactNetwork | undefined)[]
-): CollectArtifactNetworksResult | undefined {
+): {
+  networks: IdObject<DataModel.Network>[];
+  networkGenealogies: DataModel.NetworkGenealogyInput[];
+} {
   // start by ordering non-null networks by block height
   // map to reference to Network itself
   const networks: IdObject<DataModel.Network>[] = artifactNetworks
@@ -151,12 +142,18 @@ function collectArtifactNetworks<
 
   // handle all-null case
   if (networks.length < 1) {
-    return;
+    return {
+      networks: [],
+      networkGenealogies: []
+    };
   }
 
   // for our reduction, we'll need to keep track of the current ancestor for
   // each pair as we step over the descendants for each pair.
-  type ResultAccumulator = Omit<CollectArtifactNetworksResult, "descendant">;
+  type ResultAccumulator = {
+    ancestor: IdObject<DataModel.Network>;
+    networkGenealogies: DataModel.NetworkGenealogyInput[];
+  }
 
   const initialAccumulator: ResultAccumulator = {
     ancestor: networks[0],
@@ -171,16 +168,16 @@ function collectArtifactNetworks<
       descendant: IdObject<DataModel.Network>
     ): ResultAccumulator => ({
       ancestor: descendant,
-      networkGenealogies: [...networkGenealogies, { ancestor, descendant }]
+      networkGenealogies: ancestor.id === descendant.id
+        ? networkGenealogies
+        : [...networkGenealogies, { ancestor, descendant }]
     }),
     initialAccumulator
   );
 
-  // and finally return these inputs alongside the known ancestor/descendant
-  // (these may be the same)
+  // return sorted networks and pairwise genealogies
   return {
-    ancestor: networks[0], // first
-    descendant: networks.slice(-1)[0], //last
+    networks,
     networkGenealogies
   };
 };

@@ -155,6 +155,11 @@ function resolveRelationship(
     ? "descendant"
     : "ancestor";
 
+  const heightOrder = relationship === "ancestor"
+    ? "desc"
+    : "asc";
+
+
   const superlativeOption = relationship === "ancestor"
     ? "onlyEarliest"
     : "onlyLatest";
@@ -217,7 +222,11 @@ function resolveRelationship(
       : [...relations];
 
     return await workspace.find("networks", {
-      selector: { "id": { $in: ids } }
+      selector: {
+        "historicBlock.height": { $gte: 0 },
+        "id": { $in: ids }
+      },
+      sort: [{ "historicBlock.height": heightOrder }],
     });
   };
 }
