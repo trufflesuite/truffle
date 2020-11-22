@@ -21,6 +21,7 @@ export interface FetcherOptions {
 }
 
 export interface SourceInfo {
+  contractName?: string;
   sources: SourcesByPath;
   options: CompilerOptions;
 }
