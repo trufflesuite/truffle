@@ -22,6 +22,8 @@ export const nameRecords: Definition<"nameRecords"> = {
     type NameRecord implements Resource {
       resource: Named!
       previous: NameRecord
+
+      history(limit: Int, includeSelf: Boolean): [NameRecord]!
     }
 
     input NameRecordInput {
@@ -58,6 +60,37 @@ export const nameRecords: Definition<"nameRecords"> = {
 
           debug("Resolved NameRecord.previous.");
           return result;
+        }
+      },
+      history: {
+        async resolve(
+          {id, resource, previous},
+          {limit, includeSelf = false},
+          {workspace}
+        ) {
+          debug(
+            "Resolving NameRecord.history with limit: %s...",
+            typeof limit === "number" ? `${limit}` : "none"
+          );
+
+          let depth = 0;
+          const nameRecords = includeSelf ? [{id, resource, previous}] : [];
+
+          debug("previous %o", previous);
+          while (previous && (typeof limit !== "number" || depth < limit)) {
+            const nameRecord = await workspace.get("nameRecords", previous.id);
+            // @ts-ignore
+            nameRecords.push(nameRecord);
+
+            previous = nameRecord.previous;
+            depth++;
+          }
+
+          debug(
+            "Resolved NameRecord.history with limit: %s.",
+            typeof limit === "number" ? `${limit}` : "none"
+          );
+          return nameRecords;
         }
       }
     }
