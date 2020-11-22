@@ -1,7 +1,7 @@
-import { logger } from "@truffle/db/logger";
+import {logger} from "@truffle/db/logger";
 const debug = logger("db:project:names:batch");
 
-import { Process, Batch, _, IdObject } from "@truffle/db/project/process";
+import {Process, Batch, _, IdObject} from "@truffle/db/project/process";
 
 type Config = {
   assignment: {};
@@ -10,7 +10,7 @@ type Config = {
   result?: any;
 };
 
-type Assignment<C extends Config> = { resource: IdObject } & C["assignment"];
+type Assignment<C extends Config> = {resource: IdObject} & C["assignment"];
 type Properties<C extends Config> = C["properties"];
 
 type Structure<_C extends Config> = {
@@ -58,7 +58,7 @@ export const generate = <C extends Config>(options: Options<C>) => {
       [collectionName: string]: (I & O)[];
     };
   }> {
-    const { project } = options;
+    const {project} = options;
 
     const result = {
       project,
@@ -77,7 +77,7 @@ export const generate = <C extends Config>(options: Options<C>) => {
 
       result.assignments[collectionName] = outputs.assignments;
     }
-    debug("result %o", result);
+    debug("result.assignments %o", result.assignments);
 
     return result;
   };
@@ -85,7 +85,7 @@ export const generate = <C extends Config>(options: Options<C>) => {
 
 const generateForCollection = <C extends Config>(options: Options<C>) =>
   Batch.configure<Batch<C>>({
-    *iterate<_I, _O>({ inputs }) {
+    *iterate<_I, _O>({inputs}) {
       for (const [
         assignmentIndex,
         assignment
@@ -99,13 +99,13 @@ const generateForCollection = <C extends Config>(options: Options<C>) =>
       }
     },
 
-    find<_I, _O>({ inputs, breadcrumb }) {
-      const { assignmentIndex } = breadcrumb;
+    find<_I, _O>({inputs, breadcrumb}) {
+      const {assignmentIndex} = breadcrumb;
 
       return inputs.assignments[assignmentIndex];
     },
 
-    initialize<I, O>({ inputs }) {
+    initialize<I, O>({inputs}) {
       return {
         project: inputs.project,
         collectionName: inputs.collectionName,
@@ -113,8 +113,8 @@ const generateForCollection = <C extends Config>(options: Options<C>) =>
       };
     },
 
-    merge<I, O>({ outputs, breadcrumb, output }) {
-      const { assignmentIndex } = breadcrumb;
+    merge<I, O>({outputs, breadcrumb, output}) {
+      const {assignmentIndex} = breadcrumb;
 
       const assignmentsBefore = outputs.assignments.slice(0, assignmentIndex);
       const assignment: I & O = output;

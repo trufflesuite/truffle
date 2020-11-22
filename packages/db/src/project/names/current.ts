@@ -1,8 +1,8 @@
-import { logger } from "@truffle/db/logger";
+import {logger} from "@truffle/db/logger";
 const debug = logger("db:project:names:current");
 
 import gql from "graphql-tag";
-import { toIdObject, IdObject, resources } from "@truffle/db/project/process";
+import {resources} from "@truffle/db/project/process";
 import * as Batch from "./batch";
 
 export const generateCurrentNameRecords = Batch.generate<{
@@ -11,21 +11,21 @@ export const generateCurrentNameRecords = Batch.generate<{
     type: string;
   };
   properties: {
-    current: IdObject<DataModel.NameRecord> | undefined;
+    current: DataModel.NameRecord | undefined;
   };
   entry: {
     name: string;
     type: string;
   };
-  result: IdObject<DataModel.NameRecord> | undefined;
+  result: DataModel.NameRecord | undefined;
 }>({
-  extract<_I>({ input: { name, type } }) {
-    return { name, type };
+  extract<_I>({input: {name, type}}) {
+    return {name, type};
   },
 
-  *process({ entries, inputs: { project } }) {
-    const nameRecords: (IdObject<DataModel.NameRecord> | undefined)[] = [];
-    for (const { name, type } of entries) {
+  *process({entries, inputs: {project}}) {
+    const nameRecords: (DataModel.NameRecord | undefined)[] = [];
+    for (const {name, type} of entries) {
       const {
         resolve: [nameRecord]
       } = yield* resources.get(
@@ -35,21 +35,30 @@ export const generateCurrentNameRecords = Batch.generate<{
         fragment Resolve_${type}_${name} on Project {
           resolve(type: "${type}", name: "${name}") {
             id
+            resource {
+              id
+              type
+            }
+            previous {
+              id
+            }
           }
         }
       `
       );
+      debug("nameRecord %o", nameRecord);
 
-      nameRecords.push(nameRecord ? toIdObject(nameRecord) : undefined);
+      nameRecords.push(nameRecord);
     }
 
     return nameRecords;
   },
 
-  convert<_I, _O>({ result, input }) {
+  convert<_I, _O>({result, input}) {
+    debug("result %o", result);
     return {
       ...input,
-      ...result
+      current: result
     };
   }
 });

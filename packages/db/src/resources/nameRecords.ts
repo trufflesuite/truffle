@@ -1,28 +1,24 @@
-import { logger } from "@truffle/db/logger";
-const debug = logger("db:definitions:nameRecords");
+import {logger} from "@truffle/db/logger";
+const debug = logger("db:resources:nameRecords");
 
 import gql from "graphql-tag";
 import camelCase from "camel-case";
-import { plural } from "pluralize";
+import {plural} from "pluralize";
 
-import { Definition, CollectionName } from "./types";
+import {Definition, CollectionName} from "./types";
 
 export const nameRecords: Definition<"nameRecords"> = {
   createIndexes: [],
-  idFields: ["name", "type", "resource", "previous"],
+  idFields: ["resource", "previous"],
   typeDefs: gql`
     type NameRecord implements Resource {
       id: ID!
-      name: String!
-      type: String!
       resource: Named!
       previous: NameRecord
     }
 
     input NameRecordInput {
-      name: String!
-      type: String!
-      resource: ResourceReferenceInput!
+      resource: TypedResourceReferenceInput!
       previous: ResourceReferenceInput
     }
   `,
@@ -30,8 +26,9 @@ export const nameRecords: Definition<"nameRecords"> = {
   resolvers: {
     NameRecord: {
       resource: {
-        resolve: async ({ type, resource: { id } }, _, { workspace }) => {
+        resolve: async ({resource: {type, id}}, _, {workspace}) => {
           debug("Resolving NameRecord.resource...");
+          debug("type %o", type);
 
           const collectionName = camelCase(plural(type)) as CollectionName;
 
@@ -42,8 +39,14 @@ export const nameRecords: Definition<"nameRecords"> = {
         }
       },
       previous: {
-        resolve: async ({ id }, _, { workspace }) => {
+        resolve: async ({previous}, _, {workspace}) => {
           debug("Resolving NameRecord.previous...");
+
+          if (!previous) {
+            return;
+          }
+
+          const {id} = previous;
 
           const result = await workspace.get("nameRecords", id);
 
