@@ -1,10 +1,10 @@
-import { logger } from "@truffle/db/logger";
-const debug = logger("db:definitions:bytecodes");
+import {logger} from "@truffle/db/logger";
+const debug = logger("db:resources:bytecodes");
 
 import gql from "graphql-tag";
 import CodeUtils from "@truffle/code-utils";
 
-import { Definition } from "./types";
+import {Definition} from "./types";
 
 export const bytecodes: Definition<"bytecodes"> = {
   createIndexes: [],
@@ -47,16 +47,14 @@ export const bytecodes: Definition<"bytecodes"> = {
   resolvers: {
     Bytecode: {
       instructions: {
-        async resolve({ bytes }, { count = null }) {
+        async resolve({bytes}, {count = null}) {
           const parsed = CodeUtils.parseCode(`0x${bytes}`, count);
 
-          return parsed.map(
-            ({ name: opcode, pc: programCounter, pushData }) => ({
-              opcode,
-              programCounter,
-              pushData
-            })
-          );
+          return parsed.map(({name: opcode, pc: programCounter, pushData}) => ({
+            opcode,
+            programCounter,
+            pushData
+          }));
         }
       }
     }

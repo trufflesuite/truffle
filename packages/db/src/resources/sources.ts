@@ -1,9 +1,9 @@
-import { logger } from "@truffle/db/logger";
-const debug = logger("db:definitions:sources");
+import {logger} from "@truffle/db/logger";
+const debug = logger("db:resources:sources");
 
 import gql from "graphql-tag";
 
-import { Definition } from "./types";
+import {Definition} from "./types";
 
 export const sources: Definition<"sources"> = {
   createIndexes: [],

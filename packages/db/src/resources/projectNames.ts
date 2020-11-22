@@ -1,9 +1,9 @@
-import { logger } from "@truffle/db/logger";
-const debug = logger("db:definitions:projectNames");
+import {logger} from "@truffle/db/logger";
+const debug = logger("db:resources:projectNames");
 
 import gql from "graphql-tag";
 
-import { Definition } from "./types";
+import {Definition} from "./types";
 
 export const projectNames: Definition<"projectNames"> = {
   createIndexes: [
@@ -38,7 +38,7 @@ export const projectNames: Definition<"projectNames"> = {
   resolvers: {
     ProjectName: {
       project: {
-        resolve: async ({ project: { id } }, _, { workspace }) => {
+        resolve: async ({project: {id}}, _, {workspace}) => {
           debug("Resolving ProjectName.project...");
 
           const result = await workspace.get("projects", id);
@@ -48,7 +48,7 @@ export const projectNames: Definition<"projectNames"> = {
         }
       },
       nameRecord: {
-        resolve: async ({ nameRecord: { id } }, _, { workspace }) => {
+        resolve: async ({nameRecord: {id}}, _, {workspace}) => {
           debug("Resolving ProjectName.nameRecord...");
 
           const result = await workspace.get("nameRecords", id);
