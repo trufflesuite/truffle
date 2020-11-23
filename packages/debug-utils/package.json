@@ -18,7 +18,7 @@
     "@trufflesuite/chromafi": "^2.2.1",
     "chalk": "^2.4.2",
     "debug": "^4.1.0",
-    "highlight.js": "^9.15.8",
+    "highlight.js": "^10.4.0",
     "highlightjs-solidity": "^1.0.19"
   },
   "devDependencies": {
