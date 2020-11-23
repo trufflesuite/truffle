@@ -1,11 +1,11 @@
 import debugModule from "debug";
 const debug = debugModule("test:txlog"); // eslint-disable-line no-unused-vars
 
-import { assert } from "chai";
+import {assert} from "chai";
 
 import Ganache from "ganache-core";
 
-import { prepareContracts, lineOf } from "./helpers";
+import {prepareContracts} from "./helpers";
 import Debugger from "lib/debugger";
 import * as Codec from "@truffle/codec";
 
@@ -105,11 +105,9 @@ let migrations = {
 function byName(variables) {
   return Object.assign(
     {},
-    ...variables.map(
-      variable => ({
-        [variable.name]: variable.value
-      })
-    )
+    ...variables.map(variable => ({
+      [variable.name]: variable.value
+    }))
   );
 }
 
@@ -120,7 +118,7 @@ describe("Transaction log (visualizer)", function () {
   var compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
+    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
   });
 
   before("Prepare contracts and artifacts", async function () {
@@ -145,7 +143,7 @@ describe("Transaction log (visualizer)", function () {
     await bugger.continueUntilBreakpoint(); //run till end
 
     const root = bugger.view(txlog.views.transactionLog);
-    assert.equal(root.type, "origin");
+    assert.equal(root.type, "transaction");
     assert.lengthOf(root.actions, 1);
     let call = root.actions[0];
     assert.equal(call.type, "callexternal");
@@ -201,7 +199,7 @@ describe("Transaction log (visualizer)", function () {
     await bugger.continueUntilBreakpoint(); //run till end
 
     const root = bugger.view(txlog.views.transactionLog);
-    assert.equal(root.type, "origin");
+    assert.equal(root.type, "transaction");
     assert.lengthOf(root.actions, 1);
     let call = root.actions[0];
     assert.equal(call.type, "callexternal");
@@ -254,7 +252,7 @@ describe("Transaction log (visualizer)", function () {
     await bugger.continueUntilBreakpoint(); //run till end
 
     const root = bugger.view(txlog.views.transactionLog);
-    assert.equal(root.type, "origin");
+    assert.equal(root.type, "transaction");
     assert.lengthOf(root.actions, 1);
     let call = root.actions[0];
     assert.equal(call.type, "callexternal");
@@ -302,8 +300,8 @@ describe("Transaction log (visualizer)", function () {
     await bugger.continueUntilBreakpoint(); //run till end
 
     const root = bugger.view(txlog.views.transactionLog);
-    assert.equal(root.type, "origin");
-    let origin = root.address;
+    assert.equal(root.type, "transaction");
+    let origin = root.origin;
     assert.lengthOf(root.actions, 1);
     let call = root.actions[0];
     assert.equal(call.type, "callexternal");
@@ -337,7 +335,7 @@ describe("Transaction log (visualizer)", function () {
     await bugger.continueUntilBreakpoint(); //run till end
 
     const root = bugger.view(txlog.views.transactionLog);
-    assert.equal(root.type, "origin");
+    assert.equal(root.type, "transaction");
     assert.lengthOf(root.actions, 1);
     let call = root.actions[0];
     assert.equal(call.type, "callexternal");
@@ -387,7 +385,7 @@ describe("Transaction log (visualizer)", function () {
     await bugger.continueUntilBreakpoint(); //run till end
 
     const root = bugger.view(txlog.views.transactionLog);
-    assert.equal(root.type, "origin");
+    assert.equal(root.type, "transaction");
     assert.lengthOf(root.actions, 1);
     let call = root.actions[0];
     assert.equal(call.type, "callexternal");
@@ -411,5 +409,4 @@ describe("Transaction log (visualizer)", function () {
       "Oops!"
     );
   });
-
 });

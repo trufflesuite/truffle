@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:txlog:reducers");
 
-import { combineReducers } from "redux";
+import {combineReducers} from "redux";
 
 import * as actions from "./actions";
 
@@ -13,25 +13,26 @@ import * as actions from "./actions";
 //json-pointer here or anywhere else in this submodule)
 const DEFAULT_TX_LOG = {
   byPointer: {
-    "": { // "" is the root node
-      type: "origin",
+    "": {
+      // "" is the root node
+      type: "transaction",
       actions: []
     }
   }
 };
 
 function transactionLog(state = DEFAULT_TX_LOG, action) {
-  const { pointer, newPointer } = action;
+  const {pointer, newPointer} = action;
   const node = state.byPointer[pointer];
   switch (action.type) {
     case actions.RECORD_ORIGIN:
-      if (node.type === "origin") {
+      if (node.type === "transaction") {
         return {
           byPointer: {
             ...state.byPointer,
             [pointer]: {
               ...node,
-              address: action.address
+              origin: action.address
             }
           }
         };
@@ -68,7 +69,7 @@ function transactionLog(state = DEFAULT_TX_LOG, action) {
       //pop the top call from the stack if it's internal (and set its return values)
       //if the top call is instead external, just set its return values if appropriate.
       //(this is how we handle internal/external return absorption)
-      const modifiedNode = { ...node };
+      const modifiedNode = {...node};
       if (modifiedNode.type === "callinternal") {
         modifiedNode.returnKind = "return";
         modifiedNode.returnValues = action.variables;
@@ -165,8 +166,8 @@ function transactionLog(state = DEFAULT_TX_LOG, action) {
         //if kind is message or constructor, we don't want to absorb.
         call.absorbNextInternalCall =
           (kind === "function" || kind === "library") &&
-          action.absorbNextInternalCall
-      };
+          action.absorbNextInternalCall;
+      }
       return {
         byPointer: {
           ...state.byPointer,
@@ -179,7 +180,7 @@ function transactionLog(state = DEFAULT_TX_LOG, action) {
     case actions.REVERT:
     case actions.SELFDESTRUCT: {
       //first: set the returnKind and other info
-      let modifiedNode = { ...node };
+      let modifiedNode = {...node};
       if (
         modifiedNode.type === "callexternal" &&
         modifiedNode.kind === "library"
@@ -218,7 +219,7 @@ function transactionLog(state = DEFAULT_TX_LOG, action) {
         currentPointer = currentPointer.replace(/\/actions\/\d+$/, "") //cut off end
       ) {
         debug("currentNode!");
-        let currentNode = { ...newState.byPointer[currentPointer] }; //clone
+        let currentNode = {...newState.byPointer[currentPointer]}; //clone
         if (!currentNode.returnKind) {
           //set the return kind on any nodes popped along the way that don't have
           //one already to note that they failed to return due to a call they made
@@ -232,7 +233,7 @@ function transactionLog(state = DEFAULT_TX_LOG, action) {
       //now handle the external call.
       //note that currentPointer now points to it.
       debug("finalNode!");
-      let finalNode = { ...newState.byPointer[currentPointer] }; //clone
+      let finalNode = {...newState.byPointer[currentPointer]}; //clone
       //first let's set the returnKind if there isn't one already
       //(in which case we can infer it was unwound).
       if (!finalNode.returnKind) {
@@ -275,7 +276,7 @@ function transactionLog(state = DEFAULT_TX_LOG, action) {
       return newState;
     }
     case actions.IDENTIFY_FUNCTION_CALL: {
-      const { functionNode, contractNode, variables } = action;
+      const {functionNode, contractNode, variables} = action;
       const functionName = functionNode.name || undefined; //replace "" with undefined
       const contractName =
         contractNode && contractNode.nodeType === "ContractDefinition"
