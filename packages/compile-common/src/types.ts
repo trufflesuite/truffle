@@ -2,7 +2,7 @@ import {Abi, ImmutableReferences} from "@truffle/contract-schema/spec";
 
 export type Compilation = {
   sourceIndexes: string[]; //note: does not include internal sources
-  sources: Source[];
+  sources: Source[]; //note: does not include internal sources
   contracts: CompiledContract[];
   compiler: {
     name: string | undefined;

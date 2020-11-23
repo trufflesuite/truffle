@@ -320,7 +320,7 @@ function detectErrors({
 
 /**
  * aggregate source information based on compiled output;
- * this can include sources that are not contracts
+ * this can include sources that do not define any contracts
  */
 function processAllSources({sources, compilerOutput}) {
   if (!compilerOutput.contracts) return [];
