@@ -36,9 +36,11 @@ export function removeLibraries(
 
 export class InvalidNetworkError extends Error {
   public networkId: number;
-  constructor(networkId: number) {
-    super(`Invalid network ID ${networkId}`);
+  public fetcherName: string;
+  constructor(networkId: number, fetcherName: string) {
+    super(`Invalid network ID ${networkId} for fetcher ${fetcherName}`);
     this.networkId = networkId;
+    this.fetcherName = fetcherName;
     this.name = "InvalidNetworkError";
   }
 }

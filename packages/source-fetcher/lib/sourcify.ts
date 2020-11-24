@@ -45,7 +45,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
       this.networkName === undefined ||
       !supportedNetworks.includes(this.networkName)
     ) {
-      throw new InvalidNetworkError(networkId);
+      throw new InvalidNetworkError(networkId, "sourcify");
     }
   }
 
