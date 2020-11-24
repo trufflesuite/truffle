@@ -106,15 +106,15 @@ var DebugUtils = {
     const lowestInternalIndex = Math.min(
       ...compilation.contracts.map(contract => {
         //find first defined index
-        let lowestConstructor = contract.generatedSources.findIndex(
+        let lowestConstructor = (contract.generatedSources || []).findIndex(
           x => x !== undefined
         );
         if (lowestConstructor === -1) {
           lowestConstructor = Infinity;
         }
-        let lowestDeployed = contract.deployedGeneratedSources.findIndex(
-          x => x !== undefined
-        );
+        let lowestDeployed = (
+          contract.deployedGeneratedSources || []
+        ).findIndex(x => x !== undefined);
         if (lowestDeployed === -1) {
           lowestDeployed = Infinity;
         }
@@ -123,7 +123,7 @@ var DebugUtils = {
     );
     if (lowestInternalIndex !== Infinity) {
       //Infinity would mean there were none
-      if (lowestInternalIndex > compilation.sources.length) {
+      if (lowestInternalIndex !== compilation.sources.length) {
         //if it's a usable compilation, these should be equal,
         //as length = 1 + last user source
         return false;
