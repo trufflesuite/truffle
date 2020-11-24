@@ -24,7 +24,7 @@ class DebugExternalHandler {
     let sortedFetchers = [];
     if (userFetcherNames) {
       for (let name of userFetcherNames) {
-        let Fetcher = allFetchers.find(Fetcher => Fetcher.fetcherName === name);
+        let Fetcher = Fetchers.find(Fetcher => Fetcher.fetcherName === name);
         if (Fetcher) {
           sortedFetchers.push(Fetcher);
         } else {
@@ -49,7 +49,7 @@ class DebugExternalHandler {
           } catch (error) {
             if (!(error instanceof InvalidNetworkError)) {
               //if it's *not* just an invalid network, log the error.
-              badFetchers.push(fetcher.fetcherName);
+              badFetchers.push(Fetcher.fetcherName);
             }
             //either way, filter this fetcher out
             return null;
