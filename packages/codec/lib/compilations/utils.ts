@@ -247,7 +247,7 @@ export function getContractNode(
     if (foundNode || !source) {
       return foundNode;
     }
-    if (!source.ast || source.language !== "Solidity") {
+    if (!source.ast || source.language !== "solidity") {
       //don't search Yul sources!
       return undefined;
     }
@@ -313,11 +313,11 @@ function inferLanguage(ast: Ast.AstNode | undefined): string | undefined {
   if (!ast || typeof ast.nodeType !== "string") {
     return undefined;
   } else if (ast.nodeType === "SourceUnit") {
-    return "Solidity";
+    return "solidity";
   } else if (ast.nodeType.startsWith("Yul")) {
     //Every Yul source I've seen has YulBlock as the root, but
     //I'm not sure that that's *always* the case
-    return "Yul";
+    return "yul";
   } else {
     return undefined;
   }

@@ -640,7 +640,7 @@ var DebugUtils = {
     return indented.join(OS.EOL);
   },
 
-  colorize: function (code, language = "Solidity") {
+  colorize: function (code, language = "solidity") {
     //I'd put these outside the function
     //but then it gives me errors, because
     //you can't just define self-referential objects like that...
@@ -723,10 +723,10 @@ var DebugUtils = {
       //NOTE: you might think you should pass highlight: true,
       //but you'd be wrong!  I don't understand this either
     };
-    if (language === "Solidity") {
+    if (language === "solidity") {
       //normal case: solidity
       return chromafi(code, options);
-    } else if (language === "Yul") {
+    } else if (language === "yul") {
       //HACK: stick the code in an assembly block since we don't
       //have a separate Yul language for HLJS at the moment,
       //colorize it there, then extract it after colorization
