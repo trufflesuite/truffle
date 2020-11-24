@@ -1,11 +1,11 @@
 import debugModule from "debug";
-const debug = debugModule("test:data:decode");
+const debug = debugModule("debugger:test:data:decode");
 
 import faker from "faker";
 
 import evm from "lib/evm/selectors";
 
-import { generateUints, describeDecoding } from "./helpers";
+import {generateUints, describeDecoding} from "./helpers";
 
 const uints = generateUints();
 
@@ -56,7 +56,7 @@ const mappingFixtures = [
     value: {
       ...Object.assign(
         {},
-        ...generateArray(5).map((value, idx) => ({ [idx]: value }))
+        ...generateArray(5).map((value, idx) => ({[idx]: value}))
       )
     }
   },
@@ -111,11 +111,11 @@ contract ${contractName} {
   event Done();
 
   // declarations
-  ${fixtures.map(({ type, name }) => `${type} ${name};`).join("\n  ")}
+  ${fixtures.map(({type, name}) => `${type} ${name};`).join("\n  ")}
 
   function run() public {
     ${fixtures
-      .map(({ name, value }) => `${name} = ${JSON.stringify(value)};`)
+      .map(({name, value}) => `${name} = ${JSON.stringify(value)};`)
       .join("\n    ")}
 
     emit Done();
@@ -138,14 +138,12 @@ contract ${contractName} {
 
   // declarations
   ${fixtures
-    .map(
-      ({ name, type: { from, to } }) => `mapping (${from} => ${to}) ${name};`
-    )
+    .map(({name, type: {from, to}}) => `mapping (${from} => ${to}) ${name};`)
     .join("\n  ")}
 
   function run() public {
     ${fixtures
-      .map(({ name, type: { from }, value }) =>
+      .map(({name, type: {from}, value}) =>
         Object.entries(value)
           .map(([k, v]) =>
             from === "string"
@@ -174,7 +172,7 @@ contract ${contractName} {
     (contractName, fixtures) => {
       const separator = ";\n    ";
 
-      function declareAssign({ name, type, value }) {
+      function declareAssign({name, type, value}) {
         if (type.indexOf("[]") != -1) {
           // array, must `new`
           let declare = `${type} memory ${name} = new ${type}(${value.length})`;

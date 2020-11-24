@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("test:helpers");
+const debug = debugModule("debugger:test:helpers");
 
 import path from "path";
 import fs from "fs-extra";
@@ -27,14 +27,14 @@ export async function prepareContracts(provider, sources = {}, migrations) {
     solc: {
       version: "0.7.4",
       settings: {
-        optimizer: { enabled: false, runs: 200 },
+        optimizer: {enabled: false, runs: 200},
         evmVersion: "constantinople"
       }
     }
   };
 
   await addContracts(config, sources);
-  let { contractNames, files } = await compile(config);
+  let {contractNames, files} = await compile(config);
 
   if (!migrations) {
     migrations = await defaultMigrations(contractNames);
@@ -134,7 +134,7 @@ export async function defaultMigrations(contractNames) {
 }
 
 export async function compile(config) {
-  const { compilations } = await WorkflowCompile.compileAndSave(
+  const {compilations} = await WorkflowCompile.compileAndSave(
     config.with({
       all: true,
       quiet: true
@@ -150,7 +150,7 @@ export async function compile(config) {
       }
       return a;
     },
-    { contractNames: [], sourceIndexes: [] }
+    {contractNames: [], sourceIndexes: []}
   );
   const sourceIndexes = collectedCompilationOutput.sourceIndexes.filter(
     (item, index) => {
