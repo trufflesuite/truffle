@@ -3,7 +3,13 @@ const debug = debugModule("source-fetcher:etherscan");
 
 import {Fetcher, FetcherConstructor} from "./types";
 import * as Types from "./types";
-import {networksById, makeFilename, makeTimer, removeLibraries} from "./common";
+import {
+  networksById,
+  makeFilename,
+  makeTimer,
+  removeLibraries,
+  InvalidNetworkError
+} from "./common";
 import request from "request-promise-native";
 
 //this looks awkward but the TS docs actually suggest this :P
@@ -40,11 +46,9 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       "goerli"
     ];
     if (networkName === undefined || !supportedNetworks.includes(networkName)) {
-      this.validNetwork = false;
-    } else {
-      this.validNetwork = true;
-      this.suffix = networkName === "mainnet" ? "" : `-${networkName}`;
+      throw new InvalidNetworkError(networkId);
     }
+    this.suffix = networkName === "mainnet" ? "" : `-${networkName}`;
     debug("apiKey: %s", apiKey);
     this.apiKey = apiKey;
     const baseDelay = this.apiKey ? 200 : 3000; //etherscan permits 5 requests/sec w/a key, 1/3sec w/o
@@ -53,12 +57,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
     this.ready = makeTimer(0); //at start, it's ready to go immediately
   }
 
-  private readonly validNetwork: boolean;
   private readonly suffix: string;
-
-  async isNetworkValid(): Promise<boolean> {
-    return this.validNetwork;
-  }
 
   async fetchSourcesForAddress(
     address: string

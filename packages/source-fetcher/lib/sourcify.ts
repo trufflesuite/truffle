@@ -1,9 +1,9 @@
 import debugModule from "debug";
 const debug = debugModule("source-fetcher:sourcify");
 
-import { Fetcher, FetcherConstructor } from "./types";
+import {Fetcher, FetcherConstructor} from "./types";
 import * as Types from "./types";
-import { networksById, removeLibraries } from "./common";
+import {networksById, removeLibraries, InvalidNetworkError} from "./common";
 import request from "request-promise-native";
 
 //this looks awkward but the TS docs actually suggest this :P
@@ -28,7 +28,6 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
   private readonly networkId: number;
   private readonly networkName: string; //not really used as a class member atm
   //but may be in the future
-  private readonly validNetwork: boolean;
 
   private readonly domain: string = "contractrepo.komputing.org";
 
@@ -42,13 +41,12 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
       "rinkeby",
       "goerli"
     ];
-    this.validNetwork =
-      this.networkName !== undefined &&
-      supportedNetworks.includes(this.networkName);
-  }
-
-  async isNetworkValid(): Promise<boolean> {
-    return this.validNetwork;
+    if (
+      this.networkName === undefined ||
+      !supportedNetworks.includes(this.networkName)
+    ) {
+      throw new InvalidNetworkError(networkId);
+    }
   }
 
   async fetchSourcesForAddress(
@@ -64,7 +62,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
         {},
         ...(await Promise.all(
           Object.entries(metadata.sources).map(
-            async ([sourcePath, { content: source }]) => ({
+            async ([sourcePath, {content: source}]) => ({
               [sourcePath]:
                 source !== undefined
                   ? source //sourcify doesn't support this yet but they're planning it

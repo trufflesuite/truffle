@@ -8,7 +8,6 @@ export interface Fetcher {
    * should have same name as the static version
    */
   readonly fetcherName: string;
-  isNetworkValid(): Promise<boolean>;
   /**
    * returns null if no Solidity sources for address
    * (address not in system, sources are Vyper, whatever)
