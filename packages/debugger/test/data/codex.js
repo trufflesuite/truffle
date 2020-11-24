@@ -4,7 +4,7 @@ const debug = debugModule("test:data:codex");
 import { assert } from "chai";
 import * as Codec from "@truffle/codec";
 
-import Ganache from "ganache-core";
+import Ganache from "ganache";
 
 import { prepareContracts } from "../helpers";
 import Debugger from "lib/debugger";

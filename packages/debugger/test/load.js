@@ -3,7 +3,7 @@ const debug = debugModule("test:load"); // eslint-disable-line no-unused-vars
 
 import { assert } from "chai";
 
-import Ganache from "ganache-core";
+import Ganache from "ganache";
 
 import { prepareContracts } from "./helpers";
 import * as Codec from "@truffle/codec";

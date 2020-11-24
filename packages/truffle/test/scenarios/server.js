@@ -1,4 +1,4 @@
-var Ganache = require("ganache-core");
+var Ganache = require("ganache");
 var fs = require("fs-extra");
 var glob = require("glob");
 
