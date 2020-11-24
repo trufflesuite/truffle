@@ -41,7 +41,7 @@ const concretize = <C extends Collections>(
 } => {
   const {
     workingDirectory,
-    adapter: { name, settings } = { name: "fs" }
+    adapter: { name, settings } = { name: "sqlite" }
   } = config;
 
   debug("Selecting %s adapter", name);
