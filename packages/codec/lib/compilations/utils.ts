@@ -9,22 +9,36 @@ import {
 } from "@truffle/contract-schema/spec";
 import {
   CompiledContract,
-  Compilation as CompilerCompilation
+  Compilation as CompilerCompilation,
+  Source as CompilerSource
 } from "@truffle/compile-common";
-import { Compilation, Contract, Source } from "./types";
+import {Compilation, Contract, Source} from "./types";
 
 export function shimCompilations(
   inputCompilations: CompilerCompilation[],
   shimmedCompilationIdPrefix = "shimmedcompilation"
 ): Compilation[] {
-  return inputCompilations.map(
-    ({ contracts, sourceIndexes }, compilationIndex) =>
-      shimContracts(
-        contracts,
-        sourceIndexes,
-        `${shimmedCompilationIdPrefix}Number(${compilationIndex})`
-      )
+  return inputCompilations.map((compilation, compilationIndex) =>
+    shimCompilation(
+      compilation,
+      `${shimmedCompilationIdPrefix}Number(${compilationIndex})`
+    )
   );
+}
+
+export function shimCompilation(
+  inputCompilation: CompilerCompilation,
+  shimmedCompilationId = "shimmedcompilation"
+): Compilation {
+  return {
+    ...shimContracts(
+      inputCompilation.contracts,
+      inputCompilation.sourceIndexes,
+      shimmedCompilationId,
+      inputCompilation.sources
+    ),
+    compiler: inputCompilation.compiler
+  };
 }
 
 /**
@@ -42,12 +56,16 @@ export function shimArtifacts(
 
 /**
  * shims a bunch of contracts ("artifacts", though not necessarily)
- * to a compilation.  usually used via one of the above two functions.
+ * to a compilation.  usually used via one of the above functions.
+ * Note: if you pass in inputSources, sources will not have
+ * compiler set, so you should set that up separately, as in
+ * shimCompilation().
  */
 export function shimContracts(
   artifacts: (Artifact | CompiledContract)[],
   files?: string[],
-  shimmedCompilationId: string = "shimmedcompilation"
+  shimmedCompilationId: string = "shimmedcompilation",
+  inputSources?: CompilerSource[]
 ): Compilation {
   let contracts: Contract[] = [];
   let sources: Source[] = [];
@@ -78,15 +96,6 @@ export function shimContracts(
 
     debug("contractName: %s", contractName);
 
-    let sourceObject: Source = {
-      sourcePath,
-      source,
-      ast: <Ast.AstNode>ast,
-      compiler,
-      language: inferLanguage(<Ast.AstNode>ast)
-    };
-    //ast needs to be coerced because schema doesn't quite match our types here...
-
     let contractObject: Contract = {
       contractName,
       bytecode,
@@ -103,30 +112,39 @@ export function shimContracts(
       compiler
     };
 
-    //if files was passed, trust that to determine the source index
-    if (files) {
-      const index = files.indexOf(sourcePath);
-      debug("sourcePath: %s", sourceObject.sourcePath);
-      debug("given index: %d", index);
-      debug(
-        "sources: %o",
-        sources.map(source => source.sourcePath)
-      );
-      sources[index] = sourceObject;
+    let sourceObject: Source = {
+      sourcePath,
+      source,
+      ast: <Ast.AstNode>ast,
+      compiler,
+      language: inferLanguage(<Ast.AstNode>ast)
+    };
+    //ast needs to be coerced because schema doesn't quite match our types here...
+
+    //if files or sources was passed, trust that to determine the source index
+    if (files || inputSources) {
+      //note: we never set the unreliableSourceOrder flag in this branch;
+      //we just trust files/sources.  If this info is bad, then, uh, too bad.
+      const index = inputSources
+        ? inputSources.findIndex(source => source.sourcePath === sourcePath)
+        : files.indexOf(sourcePath);
+      if (!inputSources) {
+        //if inputSources was passed, we'll handle this separately below
+        sources[index] = sourceObject;
+      }
       sourceObject.id = index.toString(); //HACK
       contractObject.primarySourceId = index.toString();
-      //note: we never set the unreliableSourceOrder flag in this branch;
-      //we just trust files.  If files is bad, then, uh, too bad.
     } else {
-      //if files *wasn't* passed, attempt to determine it from the ast
+      //if neither was passed, attempt to determine it from the ast
       let index = sourceIndexForAst(sourceObject.ast); //sourceObject.ast for typing reasons
-      ({ index, unreliableSourceOrder } = getIndexToAddAt(
+      ({index, unreliableSourceOrder} = getIndexToAddAt(
         sourceObject,
         index,
         sources,
         unreliableSourceOrder
       ));
       if (index !== null) {
+        //if we're in this case, inputSources was not passed
         sources[index] = {
           ...sourceObject,
           id: index.toString()
@@ -138,17 +156,34 @@ export function shimContracts(
     contracts.push(contractObject);
   }
 
+  if (inputSources) {
+    //if input sources was passed, set up the sources object directly :)
+    sources = inputSources.map(
+      ({sourcePath, contents: source, ast, language}) => ({
+        sourcePath,
+        source,
+        ast: <Ast.AstNode>ast,
+        language
+        //we'll omit compiler, as if inputSources was passed, presumably
+        //we're using shimCompilation(), which sets that up separately
+      })
+    );
+  }
+
   //now: check for id overlap with internal sources
-  for (let contract of contracts) {
-    const { generatedSources, deployedGeneratedSources } = contract;
-    for (let index in generatedSources) {
-      if (index in sources) {
-        unreliableSourceOrder = true;
+  //(don't bother if inputSources or files was passed)
+  if (!inputSources && !files) {
+    for (let contract of contracts) {
+      const {generatedSources, deployedGeneratedSources} = contract;
+      for (let index in generatedSources) {
+        if (index in sources) {
+          unreliableSourceOrder = true;
+        }
       }
-    }
-    for (let index in deployedGeneratedSources) {
-      if (index in sources) {
-        unreliableSourceOrder = true;
+      for (let index in deployedGeneratedSources) {
+        if (index in sources) {
+          unreliableSourceOrder = true;
+        }
       }
     }
   }
@@ -166,7 +201,7 @@ export function shimContracts(
     sources,
     contracts,
     compiler
-  }
+  };
 }
 
 function sourceIndexForAst(ast: Ast.AstNode): number | undefined {
@@ -188,7 +223,7 @@ export function getContractNode(
     deployedSourceMap,
     primarySourceId
   } = contract;
-  const { unreliableSourceOrder, sources } = compilation;
+  const {unreliableSourceOrder, sources} = compilation;
 
   let sourcesToCheck: Source[];
 
@@ -293,7 +328,7 @@ function getIndexToAddAt(
   index: number,
   sources: Source[],
   unreliableSourceOrder: boolean
-): { index: number | null; unreliableSourceOrder: boolean } {
+): {index: number | null; unreliableSourceOrder: boolean} {
   //first: is this already there? only add it if it's not.
   //(we determine this by sourcePath if present, and the actual source
   //contents if not)
