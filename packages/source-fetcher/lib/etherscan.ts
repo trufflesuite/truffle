@@ -46,7 +46,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       "goerli"
     ];
     if (networkName === undefined || !supportedNetworks.includes(networkName)) {
-      throw new InvalidNetworkError(networkId);
+      throw new InvalidNetworkError(networkId, "etherscan");
     }
     this.suffix = networkName === "mainnet" ? "" : `-${networkName}`;
     debug("apiKey: %s", apiKey);
