@@ -4,7 +4,7 @@ const expect = require("@truffle/expect");
 const TruffleError = require("@truffle/error");
 const Resolver = require("@truffle/resolver");
 const Artifactor = require("@truffle/artifactor");
-const Ganache = require("ganache-core/public-exports");
+const Ganache = require("ganache");
 const Provider = require("@truffle/provider");
 
 const Environment = {
