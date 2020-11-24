@@ -1,9 +1,9 @@
-import { logger } from "@truffle/db/logger";
-const debug = logger("db:definitions:contractInstances");
+import {logger} from "@truffle/db/logger";
+const debug = logger("db:resources:contractInstances");
 
 import gql from "graphql-tag";
 
-import { Definition } from "./types";
+import {Definition} from "./types";
 
 export const contractInstances: Definition<"contractInstances"> = {
   createIndexes: [],
@@ -79,7 +79,7 @@ export const contractInstances: Definition<"contractInstances"> = {
   resolvers: {
     ContractInstance: {
       network: {
-        resolve: async ({ network: { id } }, _, { workspace }) => {
+        resolve: async ({network: {id}}, _, {workspace}) => {
           debug("Resolving ContractInstance.network...");
 
           const result = await workspace.get("networks", id);
@@ -89,7 +89,7 @@ export const contractInstances: Definition<"contractInstances"> = {
         }
       },
       contract: {
-        resolve: async ({ contract: { id } }, _, { workspace }) => {
+        resolve: async ({contract: {id}}, _, {workspace}) => {
           debug("Resolving ContractInstance.contract...");
           const result = await workspace.get("contracts", id);
 
@@ -98,7 +98,7 @@ export const contractInstances: Definition<"contractInstances"> = {
         }
       },
       callBytecode: {
-        resolve: async ({ callBytecode }, _, { workspace }) => {
+        resolve: async ({callBytecode}, _, {workspace}) => {
           debug("Resolving ContractInstance.callBytecode...");
 
           const bytecode = await workspace.get(
@@ -106,7 +106,7 @@ export const contractInstances: Definition<"contractInstances"> = {
             callBytecode.bytecode.id
           );
           const linkValues = callBytecode.linkValues.map(
-            ({ value, linkReference }) => {
+            ({value, linkReference}) => {
               return {
                 value: value,
                 linkReference: bytecode.linkReferences[linkReference.index]
@@ -122,7 +122,7 @@ export const contractInstances: Definition<"contractInstances"> = {
         }
       },
       creation: {
-        resolve: async (input, _, { workspace }) => {
+        resolve: async (input, _, {workspace}) => {
           debug("Resolving ContractInstance.creation...");
 
           let bytecode = await workspace.get(
@@ -131,7 +131,7 @@ export const contractInstances: Definition<"contractInstances"> = {
           );
           let transactionHash = input.creation.transactionHash;
           let linkValues = input.creation.constructor.createBytecode.linkValues.map(
-            ({ value, linkReference }) => {
+            ({value, linkReference}) => {
               return {
                 value: value,
                 linkReference: bytecode.linkReferences[linkReference.index]

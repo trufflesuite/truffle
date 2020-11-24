@@ -1,5 +1,5 @@
 import {logger} from "@truffle/db/logger";
-const debug = logger("db:definitions:types");
+const debug = logger("db:resources:types");
 
 import * as Meta from "@truffle/db/meta";
 import * as Pouch from "@truffle/db/pouch";
