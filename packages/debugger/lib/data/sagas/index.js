@@ -131,6 +131,7 @@ export function* decodeReturnValue() {
   const contexts = yield select(data.views.contexts);
   const status = yield select(data.current.returnStatus); //may be undefined
   const returnAllocation = yield select(data.current.returnAllocation); //may be null
+  debug("returnAllocation: %O", returnAllocation);
 
   const decoder = Codec.decodeReturndata(
     {
@@ -141,6 +142,70 @@ export function* decodeReturnValue() {
     },
     returnAllocation,
     status
+  );
+
+  debug("beginning decoding");
+  let result = decoder.next();
+  while (!result.done) {
+    debug("request received");
+    let request = result.value;
+    let response;
+    switch (request.type) {
+      //skip storage case, it won't happen here
+      case "code":
+        response = yield* requestCode(request.address);
+        break;
+      default:
+        debug("unrecognized request type!");
+    }
+    debug("sending response");
+    result = decoder.next(response);
+  }
+  //at this point, result.value holds the final value
+  debug("done decoding");
+  return result.value;
+}
+
+//by default, decodes the call being made at the current step;
+//if the flag is passed, instead decodes the call you're currently in
+export function* decodeCall(decodeCurrent = false) {
+  const isCall = yield select(data.current.isCall);
+  const isCreate = yield select(data.current.isCreate);
+  if (!isCall && !isCreate && !decodeCurrent) {
+    return null;
+  }
+  const currentCallIsCreate = yield select(data.current.currentCallIsCreate);
+  const userDefinedTypes = yield select(data.views.userDefinedTypes);
+  let state = decodeCurrent
+    ? yield select(data.current.state)
+    : yield select(data.next.state);
+  if (decodeCurrent && currentCallIsCreate) {
+    //if we want to decode the *current* call, but the current call
+    //is a creation, we had better pass in the code, not the calldata
+    state = {
+      ...state,
+      calldata: state.code
+    };
+  }
+  const allocations = yield select(data.info.allocations);
+  debug("allocations: %O", allocations);
+  const contexts = yield select(data.views.contexts);
+  const context = decodeCurrent
+    ? yield select(data.current.context)
+    : yield select(data.current.callContext);
+  const isConstructor = decodeCurrent
+    ? yield select(data.current.currentCallIsCreate)
+    : isCreate;
+
+  const decoder = Codec.decodeCalldata(
+    {
+      state,
+      userDefinedTypes,
+      allocations,
+      contexts,
+      currentContext: context
+    },
+    isConstructor
   );
 
   debug("beginning decoding");

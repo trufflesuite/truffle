@@ -6,6 +6,7 @@ import Session from "./session";
 import { createNestedSelector } from "reselect-tree";
 
 import dataSelector from "./data/selectors";
+import txlogSelector from "./txlog/selectors";
 import astSelector from "./ast/selectors";
 import traceSelector from "./trace/selectors";
 import evmSelector from "./evm/selectors";
@@ -26,7 +27,7 @@ const Debugger = {
    * @param {{contracts: Array<Artifact>, files: Array<String>, provider: Web3Provider, compilations: Array<Compilation>}} options -
    * @return {Debugger} instance
    */
-  forTx: async function(txHash, options = {}) {
+  forTx: async function (txHash, options = {}) {
     let { contracts, files, provider, compilations, lightMode } = options;
     if (!compilations) {
       compilations = Compilations.Utils.shimArtifacts(contracts, files);
@@ -44,7 +45,7 @@ const Debugger = {
    * @param {{contracts: Array<Artifact>, files: Array<String>, provider: Web3Provider, compilations: Array<Compilation>}} options -
    * @return {Debugger} instance
    */
-  forProject: async function(options = {}) {
+  forProject: async function (options = {}) {
     let { contracts, files, provider, compilations, lightMode } = options;
     if (!compilations) {
       compilations = Compilations.Utils.shimArtifacts(contracts, files);
@@ -74,6 +75,7 @@ const Debugger = {
     return createNestedSelector({
       ast: astSelector,
       data: dataSelector,
+      txlog: txlogSelector,
       trace: traceSelector,
       evm: evmSelector,
       solidity: soliditySelector,

@@ -10,6 +10,7 @@ import configureStore from "lib/store";
 import * as controller from "lib/controller/actions";
 import * as actions from "./actions";
 import data from "lib/data/selectors";
+import txlog from "lib/txlog/selectors";
 import stacktrace from "lib/stacktrace/selectors";
 import session from "lib/session/selectors";
 import * as dataSagas from "lib/data/sagas";
@@ -513,6 +514,7 @@ export default class Session {
     return createNestedSelector({
       ast,
       data,
+      txlog,
       trace,
       evm,
       solidity,
