@@ -1,12 +1,11 @@
 const debugModule = require("debug");
 const debug = debugModule("lib:debug:external");
 
-const Web3 = require("web3");
-
 const Codec = require("@truffle/codec");
 const Fetchers = require("@truffle/source-fetcher").default;
+const {InvalidNetworkError} = require("@truffle/source-fetcher");
 
-const { DebugCompiler } = require("./compiler");
+const {DebugCompiler} = require("./compiler");
 
 class DebugExternalHandler {
   constructor(bugger, config) {
@@ -20,24 +19,12 @@ class DebugExternalHandler {
     let addressesToSkip = new Set(); //addresses we know we can't get source for
     //note: this should always be a subset of unknownAddresses! [see below]
     //get the network id
-    const networkId = await new Web3(this.config.provider).eth.net.getId(); //note: this is a number
-    //make fetcher instances
-    debug("Fetchers: %o", Fetchers);
-    const allFetchers = await Promise.all(
-      Fetchers.map(
-        async Fetcher =>
-          await Fetcher.forNetworkId(
-            networkId,
-            this.config[Fetcher.fetcherName]
-          )
-      )
-    );
     const userFetcherNames = this.config.sourceFetchers;
     //sort/filter fetchers by user's order, if given; otherwise use default order
     let sortedFetchers = [];
     if (userFetcherNames) {
       for (let name of userFetcherNames) {
-        let Fetcher = allFetchers.find(Fetcher => Fetcher.fetcherName === name);
+        let Fetcher = Fetchers.find(Fetcher => Fetcher.fetcherName === name);
         if (Fetcher) {
           sortedFetchers.push(Fetcher);
         } else {
@@ -45,27 +32,31 @@ class DebugExternalHandler {
         }
       }
     } else {
-      sortedFetchers = allFetchers;
+      sortedFetchers = Fetchers;
     }
-    //to get the final list, we'll filter out ones that don't support this
+    const networkId = this.config.network_id; //note: this is a number
+    //make fetcher instances. we'll filter out ones that don't support this
     //network (and note ones that yielded errors)
-    let fetchers = [];
-    for (const fetcher of sortedFetchers) {
-      let isValid;
-      let failure = false;
-      try {
-        isValid = await fetcher.isNetworkValid();
-      } catch (_) {
-        isValid = false;
-        failure = true;
-      }
-      if (isValid) {
-        fetchers.push(fetcher);
-      }
-      if (failure) {
-        badFetchers.push(fetcher.fetcherName);
-      }
-    }
+    debug("Fetchers: %o", Fetchers);
+    const fetchers = (
+      await Promise.all(
+        Fetchers.map(async Fetcher => {
+          try {
+            return await Fetcher.forNetworkId(
+              networkId,
+              this.config[Fetcher.fetcherName]
+            );
+          } catch (error) {
+            if (!(error instanceof InvalidNetworkError)) {
+              //if it's *not* just an invalid network, log the error.
+              badFetchers.push(Fetcher.fetcherName);
+            }
+            //either way, filter this fetcher out
+            return null;
+          }
+        })
+      )
+    ).filter(fetcher => fetcher !== null);
     //now: the main loop!
     let address;
     while (
@@ -94,7 +85,7 @@ class DebugExternalHandler {
         }
         //if we do have it, extract sources & options
         debug("got sources!");
-        const { sources, options } = result;
+        const {sources, options} = result;
         if (options.language !== "Solidity") {
           //if it's not Solidity, bail out now
           debug("not Solidity, bailing out!");
@@ -142,7 +133,7 @@ class DebugExternalHandler {
         }
       }
     }
-    return { badAddresses, badFetchers }; //main result is that we've mutated bugger,
+    return {badAddresses, badFetchers}; //main result is that we've mutated bugger,
     //not the return value!
   }
 }
@@ -154,7 +145,7 @@ function getUnknownAddresses(bugger) {
   );
   debug("got instances");
   return Object.entries(instances)
-    .filter(([_, { contractName }]) => contractName === undefined)
+    .filter(([_, {contractName}]) => contractName === undefined)
     .map(([address, _]) => address);
 }
 
