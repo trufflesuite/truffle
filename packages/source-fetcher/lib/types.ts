@@ -39,6 +39,8 @@ export interface SolcOptions {
 
 export interface VyperOptions {
   language: "Vyper";
+  version: string;
+  settings: VyperSettings;
 }
 
 //only including settings that would alter compiled result
@@ -49,6 +51,10 @@ export interface SolcSettings {
   debug?: DebugSettings;
   metadata?: MetadataSettings;
   libraries?: LibrarySettings; //note: we don't actually want to pass this!
+}
+
+export interface VyperSettings {
+  evmVersion?: string; //not gonna enumerate these
 }
 
 export interface SolcSources {

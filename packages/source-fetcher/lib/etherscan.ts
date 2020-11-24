@@ -117,15 +117,8 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       return null;
     }
     //case 2: it's a Vyper contract
-    if (result.CompilerVersion.startsWith("vyper")) {
-      //return nothing useful, just something saying it's
-      //vyper so we can't do anything
-      return {
-        sources: {}, //not even going to bother processing the single source
-        options: {
-          language: "Vyper"
-        }
-      };
+    if (result.CompilerVersion.startsWith("vyper:")) {
+      return this.processVyperResult(result);
     }
     let multifileJson: Types.SolcSources;
     try {
@@ -206,6 +199,21 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
     };
   }
 
+  private static processVyperResult(result: EtherscanResult): Types.SourceInfo {
+    const filename = makeFilename(result.ContractName, ".vy");
+    //note: this means filename will always be Vyper_contract.vy
+    return {
+      sources: {
+        [filename]: result.SourceCode
+      },
+      options: {
+        language: "Vyper",
+        version: result.CompilerVersion.replace(/^vyper:/, ""),
+        settings: this.extractVyperSettings(result)
+      }
+    };
+  }
+
   private static processSources(
     sources: Types.SolcSources
   ): Types.SourcesByPath {
@@ -234,6 +242,18 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       return {
         optimizer
       };
+    }
+  }
+
+  private static extractVyperSettings(
+    result: EtherscanResult
+  ): Types.VyperSettings {
+    const evmVersion: string =
+      result.EVMVersion === "Default" ? undefined : result.EVMVersion;
+    if (evmVersion !== undefined) {
+      return {evmVersion};
+    } else {
+      return {};
     }
   }
 };
