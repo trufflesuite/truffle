@@ -390,7 +390,10 @@ describe("Compilation with db enabled", async () => {
   const logger = new MemoryLogger();
 
   function checkForDb(config) {
-    const dbPath = path.join(config.working_directory, ".db");
+    const dbPath = path.join(
+      config.working_directory,
+      ".db/json/contracts/data.json"
+    );
     const dbExists = fse.pathExistsSync(dbPath);
     return dbExists;
   }
@@ -403,7 +406,7 @@ describe("Compilation with db enabled", async () => {
     Server.stop(done);
   });
 
-  it("creates a .db directory when db is enabled", async function () {
+  it.only("creates a .db directory when db is enabled", async function () {
     this.timeout(12000);
     const project = path.join(__dirname, "../../sources/contract_names");
     const config = await sandbox.create(project);
