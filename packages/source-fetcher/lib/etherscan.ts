@@ -1,14 +1,9 @@
 import debugModule from "debug";
 const debug = debugModule("source-fetcher:etherscan");
 
-import { Fetcher, FetcherConstructor } from "./types";
+import {Fetcher, FetcherConstructor} from "./types";
 import * as Types from "./types";
-import {
-  networksById,
-  makeFilename,
-  makeTimer,
-  removeLibraries
-} from "./common";
+import {networksById, makeFilename, makeTimer, removeLibraries} from "./common";
 import request from "request-promise-native";
 
 //this looks awkward but the TS docs actually suggest this :P
@@ -123,15 +118,8 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       return null;
     }
     //case 2: it's a Vyper contract
-    if (result.CompilerVersion.startsWith("vyper")) {
-      //return nothing useful, just something saying it's
-      //vyper so we can't do anything
-      return {
-        sources: {}, //not even going to bother processing the single source
-        options: {
-          language: "Vyper"
-        }
-      };
+    if (result.CompilerVersion.startsWith("vyper:")) {
+      return this.processVyperResult(result);
     }
     let multifileJson: Types.SolcSources;
     try {
@@ -212,12 +200,26 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
     };
   }
 
+  private static processVyperResult(result: EtherscanResult): Types.SourceInfo {
+    const filename = makeFilename(result.ContractName, ".vy");
+    //note: this means filename will always be Vyper_contract.vy
+    return {
+      sources: {
+        [filename]: result.SourceCode
+      },
+      options: {
+        language: "Vyper",
+        version: result.CompilerVersion.replace(/^vyper:/, "")
+      }
+    };
+  }
+
   private static processSources(
     sources: Types.SolcSources
   ): Types.SourcesByPath {
     return Object.assign(
       {},
-      ...Object.entries(sources).map(([path, { content: source }]) => ({
+      ...Object.entries(sources).map(([path, {content: source}]) => ({
         [makeFilename(path)]: source
       }))
     );

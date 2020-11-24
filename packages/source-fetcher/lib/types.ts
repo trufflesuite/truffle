@@ -40,6 +40,7 @@ export interface SolcOptions {
 
 export interface VyperOptions {
   language: "Vyper";
+  version: string;
 }
 
 //only including settings that would alter compiled result
