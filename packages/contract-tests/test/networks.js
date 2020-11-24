@@ -8,8 +8,8 @@ process.removeListener(
   process.listeners("uncaughtException")[0] || function () {}
 );
 
-var debug = require("debug")("ganache-core");
-var Ganache = require("ganache-core");
+var debug = require("debug")("ganache");
+var Ganache = require("ganache");
 var BlockchainUtils = require("@truffle/blockchain-utils");
 var contract = require("@truffle/contract");
 
