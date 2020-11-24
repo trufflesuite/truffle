@@ -14,7 +14,7 @@ async function run(rawSources, options) {
 
   // Ensure sources have operating system independent paths
   // i.e., convert backslashes to forward slashes; things like C: are left intact.
-  const { sources, targets, originalSourcePaths } = collectSources(
+  const {sources, targets, originalSourcePaths} = collectSources(
     rawSources,
     options.compilationTargets
   );
@@ -27,20 +27,20 @@ async function run(rawSources, options) {
   });
 
   // perform compilation
-  const { compilerOutput, solcVersion } = await invokeCompiler({
+  const {compilerOutput, solcVersion} = await invokeCompiler({
     compilerInput,
     options
   });
 
   // handle warnings as errors if options.strict
   // log if not options.quiet
-  const { warnings, errors } = detectErrors({
+  const {warnings, errors} = detectErrors({
     compilerOutput,
     options,
     solcVersion
   });
   if (warnings.length > 0) {
-    options.events.emit("compile:warnings", { warnings });
+    options.events.emit("compile:warnings", {warnings});
   }
 
   if (errors.length > 0) {
@@ -64,6 +64,10 @@ async function run(rawSources, options) {
       solcVersion,
       originalSourcePaths
     }),
+    sources: processAllSources({
+      sources,
+      compilerOutput
+    }),
     compiler: {
       name: "solc",
       version: solcVersion
@@ -71,14 +75,14 @@ async function run(rawSources, options) {
   };
 }
 
-function orderABI({ abi, contractName, ast }) {
+function orderABI({abi, contractName, ast}) {
   // AST can have multiple contract definitions, make sure we have the
   // one that matches our contract
   if (!ast || !ast.nodes) {
     return abi;
   }
   const contractDefinition = ast.nodes.find(
-    ({ nodeType, name }) =>
+    ({nodeType, name}) =>
       nodeType === "ContractDefinition" && name === contractName
   );
 
@@ -88,24 +92,22 @@ function orderABI({ abi, contractName, ast }) {
 
   // Find all function definitions
   const orderedFunctionNames = contractDefinition.nodes
-    .filter(({ nodeType }) => nodeType === "FunctionDefinition")
-    .map(({ name: functionName }) => functionName);
+    .filter(({nodeType}) => nodeType === "FunctionDefinition")
+    .map(({name: functionName}) => functionName);
 
   // Put function names in a hash with their order, lowest first, for speed.
   const functionIndexes = orderedFunctionNames
-    .map((functionName, index) => ({ [functionName]: index }))
+    .map((functionName, index) => ({[functionName]: index}))
     .reduce((a, b) => Object.assign({}, a, b), {});
 
   // Construct new ABI with functions at the end in source order
   return [
-    ...abi.filter(({ name }) => functionIndexes[name] === undefined),
+    ...abi.filter(({name}) => functionIndexes[name] === undefined),
 
     // followed by the functions in the source order
     ...abi
-      .filter(({ name }) => functionIndexes[name] !== undefined)
-      .sort(
-        ({ name: a }, { name: b }) => functionIndexes[a] - functionIndexes[b]
-      )
+      .filter(({name}) => functionIndexes[name] !== undefined)
+      .sort(({name: a}, {name: b}) => functionIndexes[a] - functionIndexes[b])
   ];
 }
 
@@ -124,7 +126,7 @@ function collectSources(originalSources, originalTargets = []) {
       contents,
       sourcePath: getPortableSourcePath(originalSourcePath)
     }))
-    .map(({ originalSourcePath, sourcePath, contents }) => ({
+    .map(({originalSourcePath, sourcePath, contents}) => ({
       sources: {
         [sourcePath]: contents
       },
@@ -181,10 +183,10 @@ function getPortableSourcePath(sourcePath) {
  * @param setings - subset of Solidity settings
  * @return solc compiler input JSON
  */
-function prepareCompilerInput({ sources, targets, settings }) {
+function prepareCompilerInput({sources, targets, settings}) {
   return {
     language: "Solidity",
-    sources: prepareSources({ sources }),
+    sources: prepareSources({sources}),
     settings: {
       evmVersion: settings.evmVersion,
       optimizer: settings.optimizer,
@@ -194,7 +196,7 @@ function prepareCompilerInput({ sources, targets, settings }) {
       libraries: settings.libraries,
       // Specify compilation targets. Each target uses defaultSelectors,
       // defaulting to single target `*` if targets are unspecified
-      outputSelection: prepareOutputSelection({ targets })
+      outputSelection: prepareOutputSelection({targets})
     }
   };
 }
@@ -204,9 +206,9 @@ function prepareCompilerInput({ sources, targets, settings }) {
  * @param sources - { [sourcePath]: string }
  * @return { [sourcePath]: { content: string } }
  */
-function prepareSources({ sources }) {
+function prepareSources({sources}) {
   return Object.entries(sources)
-    .map(([sourcePath, content]) => ({ [sourcePath]: { content } }))
+    .map(([sourcePath, content]) => ({[sourcePath]: {content}}))
     .reduce((a, b) => Object.assign({}, a, b), {});
 }
 
@@ -215,7 +217,7 @@ function prepareSources({ sources }) {
  * Otherwise, just use "*" selector
  * @param targets - sourcePath[] | undefined
  */
-function prepareOutputSelection({ targets = [] }) {
+function prepareOutputSelection({targets = []}) {
   const defaultSelectors = {
     "": ["legacyAST", "ast"],
     "*": [
@@ -242,21 +244,21 @@ function prepareOutputSelection({ targets = [] }) {
   }
 
   return targets
-    .map(target => ({ [target]: defaultSelectors }))
+    .map(target => ({[target]: defaultSelectors}))
     .reduce((a, b) => Object.assign({}, a, b), {});
 }
 
 /**
  * Load solc and perform compilation
  */
-async function invokeCompiler({ compilerInput, options }) {
+async function invokeCompiler({compilerInput, options}) {
   const supplierOptions = {
     parser: options.parser,
     events: options.events,
     solcConfig: options.compilers.solc
   };
   const supplier = new CompilerSupplier(supplierOptions);
-  const { solc } = await supplier.load();
+  const {solc} = await supplier.load();
   const solcVersion = solc.version();
 
   // perform compilation
@@ -275,22 +277,22 @@ async function invokeCompiler({ compilerInput, options }) {
  * @return { errors: string, warnings: string }
  */
 function detectErrors({
-  compilerOutput: { errors: outputErrors },
+  compilerOutput: {errors: outputErrors},
   options,
   solcVersion
 }) {
   outputErrors = outputErrors || [];
   const rawErrors = options.strict
     ? outputErrors
-    : outputErrors.filter(({ severity }) => severity !== "warning");
+    : outputErrors.filter(({severity}) => severity !== "warning");
 
   const rawWarnings = options.strict
     ? [] // none of those in strict mode
-    : outputErrors.filter(({ severity }) => severity === "warning");
+    : outputErrors.filter(({severity}) => severity === "warning");
 
   // extract messages
-  let errors = rawErrors.map(({ formattedMessage }) => formattedMessage).join();
-  const warnings = rawWarnings.map(({ formattedMessage }) => formattedMessage);
+  let errors = rawErrors.map(({formattedMessage}) => formattedMessage).join();
+  const warnings = rawWarnings.map(({formattedMessage}) => formattedMessage);
 
   if (errors.includes("requires different compiler version")) {
     const contractSolcVer = errors.match(/pragma solidity[^;]*/gm)[0];
@@ -313,17 +315,34 @@ function detectErrors({
     );
   }
 
-  return { warnings, errors };
+  return {warnings, errors};
+}
+
+/**
+ * aggregate source information based on compiled output;
+ * this can include sources that do not define any contracts
+ */
+function processAllSources({sources, compilerOutput}) {
+  if (!compilerOutput.contracts) return [];
+  return Object.entries(compilerOutput.sources).map(
+    ([sourcePath, {ast, legacyAST}]) => ({
+      sourcePath: sourcePath,
+      contents: sources[sourcePath],
+      ast: ast,
+      legacyAST: legacyAST,
+      language: "solidity"
+    })
+  );
 }
 
 /**
  * Aggregate list of sources based on reported source index
  * Returns list transformed to use original source paths
  */
-function processSources({ compilerOutput, originalSourcePaths }) {
+function processSources({compilerOutput, originalSourcePaths}) {
   let files = [];
 
-  for (let [sourcePath, { id }] of Object.entries(compilerOutput.sources)) {
+  for (let [sourcePath, {id}] of Object.entries(compilerOutput.sources)) {
     files[id] = originalSourcePaths[sourcePath];
   }
 
@@ -361,7 +380,7 @@ function processContracts({
 
       // All source will have a key, but only the compiled source will have
       // the evm output.
-      .filter(({ contract: { evm } }) => Object.keys(evm).length > 0)
+      .filter(({contract: {evm}}) => Object.keys(evm).length > 0)
 
       // convert to output format
       .map(
@@ -396,7 +415,7 @@ function processContracts({
           }
         }) => ({
           contractName,
-          abi: orderABI({ abi, contractName, ast }),
+          abi: orderABI({abi, contractName, ast}),
           metadata,
           devdoc,
           userdoc,
@@ -439,26 +458,26 @@ function formatLinkReferences(linkReferences) {
     .reduce((a, b) => [...a, ...b], []);
 
   // convert to { offsets, length, name } format
-  return libraryLinkReferences.map(({ name, links }) => ({
-    offsets: links.map(({ start }) => start),
+  return libraryLinkReferences.map(({name, links}) => ({
+    offsets: links.map(({start}) => start),
     length: links[0].length, // HACK just assume they're going to be the same
     name
   }));
 }
 
 // takes linkReferences in output format (not Solidity's format)
-function zeroLinkReferences({ bytes, linkReferences }) {
+function zeroLinkReferences({bytes, linkReferences}) {
   // inline link references - start by flattening the offsets
   const flattenedLinkReferences = linkReferences
     // map each link ref to array of link refs with only one offset
-    .map(({ offsets, length, name }) =>
-      offsets.map(offset => ({ offset, length, name }))
+    .map(({offsets, length, name}) =>
+      offsets.map(offset => ({offset, length, name}))
     )
     // flatten
     .reduce((a, b) => [...a, ...b], []);
 
   // then overwite bytes with zeroes
-  bytes = flattenedLinkReferences.reduce((bytes, { offset, length }) => {
+  bytes = flattenedLinkReferences.reduce((bytes, {offset, length}) => {
     // length is a byte offset
     const characterLength = length * 2;
     const start = offset * 2;
@@ -470,7 +489,7 @@ function zeroLinkReferences({ bytes, linkReferences }) {
     )}`;
   }, bytes);
 
-  return { bytes, linkReferences };
+  return {bytes, linkReferences};
 }
 
-module.exports = { run };
+module.exports = {run};
