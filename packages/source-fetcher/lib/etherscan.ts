@@ -209,7 +209,8 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       },
       options: {
         language: "Vyper",
-        version: result.CompilerVersion.replace(/^vyper:/, "")
+        version: result.CompilerVersion.replace(/^vyper:/, ""),
+        settings: this.extractVyperSettings(result)
       }
     };
   }
@@ -242,6 +243,18 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       return {
         optimizer
       };
+    }
+  }
+
+  private static extractVyperSettings(
+    result: EtherscanResult
+  ): Types.VyperSettings {
+    const evmVersion: string =
+      result.EVMVersion === "Default" ? undefined : result.EVMVersion;
+    if (evmVersion !== undefined) {
+      return {evmVersion};
+    } else {
+      return {};
     }
   }
 };
