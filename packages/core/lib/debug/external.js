@@ -1,8 +1,6 @@
 const debugModule = require("debug");
 const debug = debugModule("lib:debug:external");
 
-const Web3 = require("web3");
-
 const Codec = require("@truffle/codec");
 const Fetchers = require("@truffle/source-fetcher").default;
 const {InvalidNetworkError} = require("@truffle/source-fetcher");
@@ -36,7 +34,7 @@ class DebugExternalHandler {
     } else {
       sortedFetchers = Fetchers;
     }
-    const networkId = await new Web3(this.config.provider).eth.net.getId(); //note: this is a number
+    const networkId = this.config.network_id; //note: this is a number
     //make fetcher instances. we'll filter out ones that don't support this
     //network (and note ones that yielded errors)
     debug("Fetchers: %o", Fetchers);
