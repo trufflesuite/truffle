@@ -69,7 +69,7 @@ describe("truffle build [ @standalone ]", () => {
       });
     });
     it("tells the user it shouldn't use an object", async function () {
-      this.timeout(10000);
+      this.timeout(12000);
       try {
         await CommandRunner.run("build", config);
         assert(false, "The process should have exited with code 1");
