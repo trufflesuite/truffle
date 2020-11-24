@@ -1,11 +1,11 @@
 import debugModule from "debug";
-const debug = debugModule("test:precompiles"); // eslint-disable-line no-unused-vars
+const debug = debugModule("debugger:test:precompiles");
 
-import { assert } from "chai";
+import {assert} from "chai";
 
 import Ganache from "ganache-core";
 
-import { prepareContracts } from "./helpers";
+import {prepareContracts} from "./helpers";
 import Debugger from "lib/debugger";
 
 import evm from "lib/evm/selectors";
@@ -55,7 +55,7 @@ describe("Precompiled Contracts", function () {
   let results = {};
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
+    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
   });
 
   before("Prepare contracts and artifacts", async function () {
@@ -68,7 +68,7 @@ describe("Precompiled Contracts", function () {
 
   before("Initialize results", function () {
     // initialize results as mapping of selector to step results list
-    for (let { name } of TEST_CASES) {
+    for (let {name} of TEST_CASES) {
       results[name] = [];
     }
   });
@@ -87,13 +87,13 @@ describe("Precompiled Contracts", function () {
     var finished; // is the trace finished?
 
     do {
-      for (let { name, selector } of TEST_CASES) {
+      for (let {name, selector} of TEST_CASES) {
         let stepResult;
 
         try {
-          stepResult = { value: bugger.view(selector) };
+          stepResult = {value: bugger.view(selector)};
         } catch (e) {
-          stepResult = { error: e };
+          stepResult = {error: e};
         }
 
         results[name].push(stepResult);
@@ -106,7 +106,7 @@ describe("Precompiled Contracts", function () {
 
   before("remove final step results", function () {
     // since these include one step past end of trace
-    for (let { name } of TEST_CASES) {
+    for (let {name} of TEST_CASES) {
       results[name].pop();
     }
   });

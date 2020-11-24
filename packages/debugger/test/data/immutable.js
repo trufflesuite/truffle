@@ -1,11 +1,11 @@
 import debugModule from "debug";
-const debug = debugModule("test:data:immutable");
+const debug = debugModule("debugger:test:data:immutable");
 
-import { assert } from "chai";
+import {assert} from "chai";
 
 import Ganache from "ganache-core";
 
-import { prepareContracts, lineOf } from "../helpers";
+import {prepareContracts, lineOf} from "../helpers";
 import Debugger from "lib/debugger";
 
 import * as Codec from "@truffle/codec";
@@ -69,7 +69,7 @@ describe("Immutable state variables", function () {
   var compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
+    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
   });
 
   before("Prepare contracts and artifacts", async function () {
@@ -87,7 +87,7 @@ describe("Immutable state variables", function () {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+    let bugger = await Debugger.forTx(txHash, {provider, compilations});
 
     let sourceId = bugger.view(solidity.current.source).id;
     let source = bugger.view(solidity.current.source).source;
@@ -123,7 +123,7 @@ describe("Immutable state variables", function () {
     let address = instance.address;
     let txHash = instance.transactionHash;
 
-    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+    let bugger = await Debugger.forTx(txHash, {provider, compilations});
 
     let sourceId = bugger.view(solidity.current.source).id;
     let source = bugger.view(solidity.current.source).source;

@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("test:data:global");
+const debug = debugModule("debugger:test:data:global");
 
 import {assert} from "chai";
 

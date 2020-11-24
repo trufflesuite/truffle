@@ -1,11 +1,11 @@
 import debugModule from "debug";
-const debug = debugModule("test:reset"); // eslint-disable-line no-unused-vars
+const debug = debugModule("debugger:test:reset");
 
-import { assert } from "chai";
+import {assert} from "chai";
 
 import Ganache from "ganache-core";
 
-import { prepareContracts, lineOf } from "./helpers";
+import {prepareContracts, lineOf} from "./helpers";
 import * as Codec from "@truffle/codec";
 import Debugger from "lib/debugger";
 
@@ -39,7 +39,7 @@ describe("Reset Button", function () {
   var compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
+    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
   });
 
   before("Prepare contracts and artifacts", async function () {

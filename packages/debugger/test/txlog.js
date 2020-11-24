@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("test:txlog"); // eslint-disable-line no-unused-vars
+const debug = debugModule("debugger:test:txlog");
 
 import {assert} from "chai";
 
