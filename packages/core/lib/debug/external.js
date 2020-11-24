@@ -5,6 +5,7 @@ const Web3 = require("web3");
 
 const Codec = require("@truffle/codec");
 const Fetchers = require("@truffle/source-fetcher").default;
+const {InvalidNetworkError} = require("@truffle/source-fetcher");
 
 const {DebugCompiler} = require("./compiler");
 
@@ -48,8 +49,7 @@ class DebugExternalHandler {
               this.config[Fetcher.fetcherName]
             );
           } catch (error) {
-            if (error.name !== "InvalidNetworkError") {
-              //HACK?
+            if (!(error instanceof InvalidNetworkError)) {
               //if it's *not* just an invalid network, log the error.
               badFetchers.push(fetcher.fetcherName);
             }
