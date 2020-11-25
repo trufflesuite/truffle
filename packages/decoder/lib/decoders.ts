@@ -23,9 +23,9 @@ import {
 import * as Utils from "./utils";
 import * as DecoderTypes from "./types";
 import Web3 from "web3";
-import { ContractObject as Artifact } from "@truffle/contract-schema/spec";
+import {ContractObject as Artifact} from "@truffle/contract-schema/spec";
 import BN from "bn.js";
-import { Provider } from "web3/providers";
+import {Provider} from "web3/providers";
 import {
   ContractBeingDecodedHasNoNodeError,
   ContractAllocationFailedError,
@@ -34,7 +34,7 @@ import {
   VariableNotFoundError
 } from "./errors";
 //sorry for the untyped imports, but...
-const { Shims } = require("@truffle/compile-common");
+const {Shims} = require("@truffle/compile-common");
 const SolidityUtils = require("@truffle/solidity-utils");
 
 /**
@@ -51,7 +51,7 @@ export class WireDecoder {
   private deployedContexts: Contexts.Contexts = {};
   private contractsAndContexts: DecoderTypes.ContractAndContexts[] = [];
 
-  private referenceDeclarations: { [compilationId: string]: Ast.AstNodes };
+  private referenceDeclarations: {[compilationId: string]: Ast.AstNodes};
   private userDefinedTypes: Format.Types.TypesById;
   private allocations: Evm.AllocationInfo;
 
@@ -105,7 +105,7 @@ export class WireDecoder {
     this.deployedContexts = Object.assign(
       {},
       ...Object.values(this.contexts).map(context =>
-        !context.isConstructor ? { [context.context]: context } : {}
+        !context.isConstructor ? {[context.context]: context} : {}
       )
     );
 
@@ -130,7 +130,7 @@ export class WireDecoder {
 
     const allocationInfo: AbiData.Allocate.ContractAllocationInfo[] = this.contractsAndContexts.map(
       ({
-        contract: { abi, compiler, immutableReferences },
+        contract: {abi, compiler, immutableReferences},
         compilationId,
         node,
         deployedContext,
@@ -175,10 +175,10 @@ export class WireDecoder {
   }
 
   private collectUserDefinedTypes(): {
-    definitions: { [compilationId: string]: Ast.AstNodes };
+    definitions: {[compilationId: string]: Ast.AstNodes};
     types: Format.Types.TypesById;
   } {
-    let references: { [compilationId: string]: Ast.AstNodes } = {};
+    let references: {[compilationId: string]: Ast.AstNodes} = {};
     let types: Format.Types.TypesById = {};
     for (const compilation of this.compilations) {
       references[compilation.id] = {};
@@ -186,8 +186,8 @@ export class WireDecoder {
         if (!source) {
           continue; //remember, sources could be empty if shimmed!
         }
-        const { ast, compiler, language } = source;
-        if (language === "Solidity" && ast) {
+        const {ast, compiler, language} = source;
+        if (language === "solidity" && ast) {
           //don't check Yul sources!
           for (const node of ast.nodes) {
             if (
@@ -228,7 +228,7 @@ export class WireDecoder {
         }
       }
     }
-    return { definitions: references, types };
+    return {definitions: references, types};
   }
 
   /**
@@ -315,7 +315,7 @@ export class WireDecoder {
       },
       userDefinedTypes: this.userDefinedTypes,
       allocations: this.allocations,
-      contexts: { ...this.deployedContexts, ...additionalContexts },
+      contexts: {...this.deployedContexts, ...additionalContexts},
       currentContext: context
     };
     const decoder = decodeCalldata(info, isConstructor);
@@ -388,7 +388,7 @@ export class WireDecoder {
       },
       userDefinedTypes: this.userDefinedTypes,
       allocations: this.allocations,
-      contexts: { ...this.deployedContexts, ...additionalContexts }
+      contexts: {...this.deployedContexts, ...additionalContexts}
     };
     const decoder = decodeEvent(info, log.address, options.name);
 
@@ -436,7 +436,7 @@ export class WireDecoder {
     options: DecoderTypes.EventOptions = {},
     additionalContexts: Contexts.Contexts = {}
   ): Promise<DecoderTypes.DecodedLog[]> {
-    let { address, name, fromBlock, toBlock } = options;
+    let {address, name, fromBlock, toBlock} = options;
     if (fromBlock === undefined) {
       fromBlock = "latest";
     }
@@ -515,7 +515,7 @@ export class WireDecoder {
       code = constructorBinary;
     }
     //if neither of these hold... we have a problem
-    let contexts = { ...this.contexts, ...additionalContexts };
+    let contexts = {...this.contexts, ...additionalContexts};
     return Contexts.Utils.findContext(contexts, code);
   }
 
@@ -540,7 +540,7 @@ export class WireDecoder {
     );
     const bytecode = Shims.NewToLegacy.forBytecode(artifact.bytecode);
 
-    const { compilation, contract } = this.compilations.reduce(
+    const {compilation, contract} = this.compilations.reduce(
       (foundSoFar: DecoderTypes.CompilationAndContract, compilation) => {
         if (foundSoFar) {
           return foundSoFar;
@@ -570,7 +570,7 @@ export class WireDecoder {
           }
         });
         if (contractFound) {
-          return { compilation, contract: contractFound };
+          return {compilation, contract: contractFound};
         } else {
           return undefined;
         }
@@ -646,7 +646,7 @@ export class WireDecoder {
       await this.getCode(address, blockNumber)
     );
     const contractAndContexts = this.contractsAndContexts.find(
-      ({ deployedContext }) =>
+      ({deployedContext}) =>
         deployedContext &&
         Contexts.Utils.matchContext(deployedContext, deployedBytecode)
     );
@@ -658,7 +658,7 @@ export class WireDecoder {
         address
       );
     }
-    const { contract, compilationId } = contractAndContexts;
+    const {contract, compilationId} = contractAndContexts;
     const compilation = this.compilations.find(
       compilation => compilation.id === compilationId
     );
@@ -674,7 +674,7 @@ export class WireDecoder {
   /**
    * @protected
    */
-  public getReferenceDeclarations(): { [compilationId: string]: Ast.AstNodes } {
+  public getReferenceDeclarations(): {[compilationId: string]: Ast.AstNodes} {
     return this.referenceDeclarations;
   }
 
@@ -919,7 +919,7 @@ export class ContractDecoder {
       },
       userDefinedTypes: this.userDefinedTypes,
       allocations: this.allocations,
-      contexts: { ...this.contexts, ...additionalContexts }
+      contexts: {...this.contexts, ...additionalContexts}
     };
 
     const decoder = decodeReturndata(info, allocation, status);
@@ -1086,7 +1086,7 @@ export class ContractInstanceDecoder {
   private contexts: Contexts.Contexts = {}; //deployed contexts only
   private additionalContexts: Contexts.Contexts = {}; //for passing to wire decoder when contract has no deployedBytecode
 
-  private referenceDeclarations: { [compilationId: string]: Ast.AstNodes };
+  private referenceDeclarations: {[compilationId: string]: Ast.AstNodes};
   private userDefinedTypes: Format.Types.TypesById;
   private allocations: Codec.Evm.AllocationInfo;
 
@@ -1174,14 +1174,16 @@ export class ContractInstanceDecoder {
         this.compilation
       );
       this.contextHash = extraContext.context;
-      this.additionalContexts = { [extraContext.context]: extraContext };
+      this.additionalContexts = {[extraContext.context]: extraContext};
       //the following line only has any effect if we're dealing with a library,
       //since the code we pulled from the blockchain obviously does not have unresolved link references!
       //(it's not strictly necessary even then, but, hey, why not?)
-      this.additionalContexts = Contexts.Utils.normalizeContexts(this.additionalContexts);
+      this.additionalContexts = Contexts.Utils.normalizeContexts(
+        this.additionalContexts
+      );
       //again, since the code did not have unresolved link references, it is safe to just
       //mash these together like I'm about to
-      this.contexts = { ...this.contexts, ...this.additionalContexts };
+      this.contexts = {...this.contexts, ...this.additionalContexts};
     }
 
     //finally: set up internal functions table (only if source order is reliable;
@@ -1411,7 +1413,7 @@ export class ContractInstanceDecoder {
     //case 1: an ID was input
     if (typeof nameOrId === "number" || nameOrId.match(/[0-9]+/)) {
       return this.stateVariableReferences.find(
-        ({ definition }) => definition.id === nameOrId
+        ({definition}) => definition.id === nameOrId
       );
       //there should be exactly one; returns undefined if none
     }
@@ -1422,7 +1424,7 @@ export class ContractInstanceDecoder {
       return this.stateVariableReferences
         .slice()
         .reverse()
-        .find(({ definition }) => definition.name === nameOrId);
+        .find(({definition}) => definition.name === nameOrId);
     }
     //case 3: a qualified name was input
     else {
@@ -1432,7 +1434,7 @@ export class ContractInstanceDecoder {
         .slice()
         .reverse()
         .find(
-          ({ definition, definedIn }) =>
+          ({definition, definedIn}) =>
             definition.name === variableName && definedIn.name === className
         );
     }
@@ -1688,7 +1690,7 @@ export class ContractInstanceDecoder {
     options: DecoderTypes.EventOptions = {}
   ): Promise<DecoderTypes.DecodedLog[]> {
     return await this.wireDecoder.eventsWithAdditionalContexts(
-      { address: this.contractAddress, ...options },
+      {address: this.contractAddress, ...options},
       this.additionalContexts
     );
   }
@@ -1784,7 +1786,7 @@ export class ContractInstanceDecoder {
         //we don't need to use fullType or what have you
         let allocation: Storage.Allocate.StorageMemberAllocation = this.allocations.storage[
           parentType.id
-        ].members.find(({ name }) => name === rawIndex); //there should be exactly one
+        ].members.find(({name}) => name === rawIndex); //there should be exactly one
         slot = {
           path: parentSlot,
           //need type coercion here -- we know structs don't contain constants but the compiler doesn't
