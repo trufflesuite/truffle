@@ -27,18 +27,17 @@ export function shimCompilation(
   shimmedCompilationId = "shimmedcompilation"
 ): Compilation {
   return {
-    ...shimContracts(
-      inputCompilation.contracts,
-      inputCompilation.sourceIndexes,
-      shimmedCompilationId,
-      inputCompilation.sources
-    ),
+    ...shimContracts(inputCompilation.contracts, {
+      files: inputCompilation.sourceIndexes,
+      sources: inputCompilation.sources,
+      shimmedCompilationId
+    }),
     compiler: inputCompilation.compiler
   };
 }
 
 /**
- * wrapper around shimArtifactsToCompilation that just returns
+ * wrapper around shimContracts that just returns
  * the result in a one-element array (keeping the old name
  * shimArtifacts for compatibility)
  */
@@ -47,22 +46,30 @@ export function shimArtifacts(
   files?: string[],
   shimmedCompilationId = "shimmedcompilation"
 ): Compilation[] {
-  return [shimContracts(artifacts, files, shimmedCompilationId)];
+  return [shimContracts(artifacts, {files, shimmedCompilationId})];
+}
+
+interface CompilationOptions {
+  files?: string[];
+  sources?: Common.Source[];
+  shimmedCompilationId?: string;
 }
 
 /**
  * shims a bunch of contracts ("artifacts", though not necessarily)
  * to a compilation.  usually used via one of the above functions.
- * Note: if you pass in inputSources, sources will not have
+ * Note: if you pass in options.sources, options.files will be ignored.
+ * Note: if you pass in options.sources, sources will not have
  * compiler set, so you should set that up separately, as in
  * shimCompilation().
  */
 export function shimContracts(
   artifacts: (Artifact | Common.CompiledContract)[],
-  files?: string[],
-  shimmedCompilationId: string = "shimmedcompilation",
-  inputSources?: Common.Source[]
+  options: CompilationOptions = {}
 ): Compilation {
+  const {files, sources: inputSources} = options;
+  const shimmedCompilationId =
+    options.shimmedCompilationId || "shimmedcompilation";
   let contracts: Contract[] = [];
   let sources: Source[] = [];
   let unreliableSourceOrder: boolean = false;
