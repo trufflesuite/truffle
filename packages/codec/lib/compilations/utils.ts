@@ -7,15 +7,11 @@ import {
   ContractObject as Artifact,
   GeneratedSources
 } from "@truffle/contract-schema/spec";
-import {
-  CompiledContract,
-  Compilation as CompilerCompilation,
-  Source as CompilerSource
-} from "@truffle/compile-common";
+import * as Common from "@truffle/compile-common";
 import {Compilation, Contract, Source} from "./types";
 
 export function shimCompilations(
-  inputCompilations: CompilerCompilation[],
+  inputCompilations: Common.Compilation[],
   shimmedCompilationIdPrefix = "shimmedcompilation"
 ): Compilation[] {
   return inputCompilations.map((compilation, compilationIndex) =>
@@ -27,7 +23,7 @@ export function shimCompilations(
 }
 
 export function shimCompilation(
-  inputCompilation: CompilerCompilation,
+  inputCompilation: Common.Compilation,
   shimmedCompilationId = "shimmedcompilation"
 ): Compilation {
   return {
@@ -47,7 +43,7 @@ export function shimCompilation(
  * shimArtifacts for compatibility)
  */
 export function shimArtifacts(
-  artifacts: (Artifact | CompiledContract)[],
+  artifacts: (Artifact | Common.CompiledContract)[],
   files?: string[],
   shimmedCompilationId = "shimmedcompilation"
 ): Compilation[] {
@@ -62,10 +58,10 @@ export function shimArtifacts(
  * shimCompilation().
  */
 export function shimContracts(
-  artifacts: (Artifact | CompiledContract)[],
+  artifacts: (Artifact | Common.CompiledContract)[],
   files?: string[],
   shimmedCompilationId: string = "shimmedcompilation",
-  inputSources?: CompilerSource[]
+  inputSources?: Common.Source[]
 ): Compilation {
   let contracts: Contract[] = [];
   let sources: Source[] = [];
