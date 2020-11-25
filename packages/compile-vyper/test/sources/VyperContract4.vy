@@ -1,3 +1,3 @@
 @external
-def get_balance() -> uint256:
+def vyper_action() -> uint256:
     return self.balance
