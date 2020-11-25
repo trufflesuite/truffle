@@ -228,8 +228,8 @@ describe("Deployments", function () {
     });
   });
 
-  describe("web3 timeout overrides", function () {
-    it("should override 50 blocks err / return a usable instance", async function () {
+  describe.skip("web3 timeout overrides", function() {
+    it("should override 50 blocks err / return a usable instance", async function() {
       this.timeout(50000);
 
       // Mock web3 non-response, fire error @ block 50, resolve receipt @ block 52.
