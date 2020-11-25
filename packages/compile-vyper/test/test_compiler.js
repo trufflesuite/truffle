@@ -98,6 +98,16 @@ describe("vyper compiler", function () {
       }
     });
 
+    const configWithInstabul = new Config().merge(defaultSettings).merge({
+      compilers: {
+        vyper: {
+          settings: {
+            evmVersion: "instabul"
+          }
+        }
+      }
+    });
+
     it("compiles when sourceMap option set true", async () => {
       const {compilations} = await Compile.all(configWithSourceMap);
       const {contracts} = compilations[0];
@@ -109,14 +119,12 @@ describe("vyper compiler", function () {
       });
     });
 
-    it("compiles with specified EVM version", async () => {
+    it("compiles with specified EVM version (petersburg)", async () => {
       const {compilations} = await Compile.all(configWithPetersburg);
       const {contracts} = compilations[0];
       //the SELFBALANCE opcode was introduced in Istanbul.
       //we're specifying that it should compile for Petersburg, which was earlier.
       //Therefore, the result should not contain the SELFBALANCE opcode.
-      //(Vyper *will* use the selfbalance opcode if it's compiling for
-      //Istanbul or later)
       contracts.forEach((contract, index) => {
         const instructions = CodeUtils.parseCode(contract.bytecode);
         const deployedInstructions = CodeUtils.parseCode(contract.deployedBytecode);
@@ -133,6 +141,22 @@ describe("vyper compiler", function () {
           );
         }
       });
+    });
+
+    it("compiles with specified EVM version (istanbul)", async () => {
+      const {compilations} = await Compile.all(configWithPetersburg);
+      const {contracts} = compilations[0];
+      //the SELFBALANCE opcode was introduced in Istanbul.
+      //Vyper *will* use the selfbalance opcode for self.balance
+      //if it's compiling for Istanbul or later, and we use that in VyperContract4
+      const contract = contracts[3];
+      const deployedInstructions = CodeUtils.parseCode(contract.deployedBytecode);
+      assert(
+        deployedInstructions.some(
+          instruction => instruction.name === "SELFBALANCE"
+        ),
+        `VyperContract4 should use SELFBALANCE opcode`
+      );
     });
   });
 
