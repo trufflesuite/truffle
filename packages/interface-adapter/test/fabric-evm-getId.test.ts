@@ -31,34 +31,23 @@ async function prepareGanache(
 
 describe("fabric-evm getId Overload", function() {
   it("returns networkID as valid string instead of number w/ fabric-evm=true", async function() {
-    return new Promise(async (resolve, reject) => {
-      let preparedGanache;
-      try {
-        preparedGanache = await prepareGanache(true);
-        const networkID = await preparedGanache.interfaceAdapter.getNetworkId();
-        assert(typeof networkID === "string");
-        preparedGanache.server.close(resolve);
-      } catch (e) {
-        preparedGanache.server.close(() => {
-          reject(e);
-        });
-      }
-    });
+    const preparedGanache = await prepareGanache(true) as any;
+    try {
+      const networkID = await preparedGanache.interfaceAdapter.getNetworkId();
+      assert(typeof networkID === "string");
+    } finally {
+      await preparedGanache.server.close();
+    }
   });
 
   it("returns networkID as number w/ fabric-evm=false", async function() {
-    return new Promise(async (resolve, reject) => {
-      let preparedGanache;
-      try {
-        preparedGanache = await prepareGanache(false);
-        const networkID = await preparedGanache.interfaceAdapter.getNetworkId();
-        assert(typeof networkID === "number");
-        preparedGanache.server.close(resolve);
-      } catch (e) {
-        preparedGanache.server.close(() => {
-          reject(e);
-        });
-      }
-    });
+    const preparedGanache = await prepareGanache(false) as any;
+    try{
+      const networkID = await preparedGanache.interfaceAdapter.getNetworkId();
+      assert(typeof networkID === "number");
+      
+    } finally {
+      await preparedGanache.server.close();
+    }
   });
 });

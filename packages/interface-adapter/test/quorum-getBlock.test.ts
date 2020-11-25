@@ -35,39 +35,27 @@ async function prepareGanache(
 
 describe("Quorum getBlock Overload", function() {
   it("recovers block timestamp as hexstring instead of number w/ quorum=true", async function() {
-    return new Promise(async (resolve, reject) => {
-      let preparedGanache;
-      try {
-        preparedGanache = await prepareGanache(true);
-        const block = await preparedGanache.interfaceAdapter.getBlock(0);
-        const expectedBlockTime = new BN(genesisBlockTime.getTime()).divn(1000);
-        assert.strictEqual(
-          block.timestamp,
-          "0x" + expectedBlockTime.toString(16)
-        );
-        preparedGanache.server.close(resolve);
-      } catch (e) {
-        preparedGanache.server.close(() => {
-          reject(e);
-        });
-      }
-    });
+    const preparedGanache = await prepareGanache(true);
+    try {
+      const block = await preparedGanache.interfaceAdapter.getBlock(0);
+      const expectedBlockTime = new BN(genesisBlockTime.getTime()).divn(1000);
+      assert.strictEqual(
+        block.timestamp,
+        "0x" + expectedBlockTime.toString(16)
+      );
+    } finally {
+      await preparedGanache.server.close()
+    }
   });
 
   it("recovers block timestamp as number w/ quorum=false", async function() {
-    return new Promise(async (resolve, reject) => {
-      let preparedGanache;
-      try {
-        preparedGanache = await prepareGanache(false);
-        const block = await preparedGanache.interfaceAdapter.getBlock(0);
-        const expectedBlockTime = new BN(genesisBlockTime.getTime()).divn(1000);
-        assert.strictEqual(block.timestamp, expectedBlockTime.toNumber());
-        preparedGanache.server.close(resolve);
-      } catch (e) {
-        preparedGanache.server.close(() => {
-          reject(e);
-        });
-      }
-    });
+    const preparedGanache = await prepareGanache(false) as any;
+    try {
+      const block = await preparedGanache.interfaceAdapter.getBlock(0);
+      const expectedBlockTime = new BN(genesisBlockTime.getTime()).divn(1000);
+      assert.strictEqual(block.timestamp, expectedBlockTime.toNumber());
+    } finally {
+      await preparedGanache.server.close();
+    }
   });
 });

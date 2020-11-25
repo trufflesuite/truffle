@@ -16,8 +16,8 @@ describe("HD Wallet Provider", function () {
     server.listen(port, done);
   });
 
-  after(done => {
-    setTimeout(() => server.close(done), 100);
+  after(async () => {
+    await server.close();
   });
 
   afterEach(() => {
