@@ -166,14 +166,13 @@ class Console extends EventEmitter {
     this.repl.displayPrompt();
   }
 
-  async interpret(input, context, filename) {
+  interpret(input, context, filename, callback) {
     const processedInput = processInput(input);
     if (
       this.command.getCommand(processedInput, this.options.noAliases) != null
     ) {
       try {
         this.runSpawn(processedInput, this.options);
-        return;
       } catch (error) {
         // Perform error handling ourselves.
         if (error instanceof TruffleError) {
@@ -182,9 +181,18 @@ class Console extends EventEmitter {
           // Bubble up all other unexpected errors.
           console.log(error.stack || error.toString());
         }
+        return callback();
       }
+
       // Reprovision after each command as it may change contracts.
-      this.provision();
+      try {
+        this.provision();
+        return callback();
+      } catch (error) {
+        // Don't pass abstractions to the callback if they're there or else
+        // they'll get printed in the repl.
+        return callback(error);
+      }
     }
 
     // Much of the following code is from here, though spruced up:
@@ -240,16 +248,29 @@ class Console extends EventEmitter {
       return script.runInContext(context, options);
     };
 
-    const options = {displayErrors: true, lineOffset: -1};
-    const script = vm.createScript(source, options);
+    let script;
+    try {
+      const options = { displayErrors: true, lineOffset: -1 };
+      script = vm.createScript(source, options);
+    } catch (error) {
+      // If syntax error, or similar, bail.
+      return callback(error);
+    }
 
     // Ensure our script returns a promise whether we're using an
     // async function or not. If our script is an async function,
     // this will ensure the console waits until that await is finished.
-    const value = await Promise.resolve(runScript(script));
-    // If there's an assignment to run, run that.
-    if (assignment) return runScript(vm.createScript(assignment));
-    return value;
+    Promise.resolve(runScript(script))
+      .then(value => {
+        // If there's an assignment to run, run that.
+        if (assignment) return runScript(vm.createScript(assignment));
+        return value;
+      })
+      .then(value => {
+        // All good? Return the value (e.g., eval'd script or assignment)
+        callback(null, value);
+      })
+      .catch(callback);
   }
 }
 
