@@ -9,55 +9,55 @@ hljsDefineSolidity(chromafi.hljs);
 var chalk = require("chalk");
 
 const commandReference = {
-  o: "step over",
-  i: "step into",
-  u: "step out",
-  n: "step next",
+  "o": "step over",
+  "i": "step into",
+  "u": "step out",
+  "n": "step next",
   ";": "step instruction (include number to step multiple)",
-  p: "print instruction & state (`p [mem|cal|sto]*`; see docs for more)",
-  l: "print additional source context",
-  h: "print this help",
-  v: "print variables and values",
+  "p": "print instruction & state (`p [mem|cal|sto]*`; see docs for more)",
+  "l": "print additional source context",
+  "h": "print this help",
+  "v": "print variables and values",
   ":": "evaluate expression - see `v`",
   "+": "add watch expression (`+:<expr>`)",
   "-": "remove watch expression (-:<expr>)",
   "?": "list existing watch expressions and breakpoints",
-  b: "add breakpoint (`b [[<source-file>:]<line-number>]`; see docs for more)",
-  B: "remove breakpoint (similar to adding, or `B all` to remove all)",
-  c: "continue until breakpoint",
-  q: "quit",
-  r: "reset",
-  t: "load new transaction",
-  T: "unload transaction",
-  s: "print stacktrace",
-  g: "turn on generated sources",
-  G: "turn off generated sources except via `;`"
+  "b": "add breakpoint (`b [[<source-file>:]<line-number>]`; see docs for more)",
+  "B": "remove breakpoint (similar to adding, or `B all` to remove all)",
+  "c": "continue until breakpoint",
+  "q": "quit",
+  "r": "reset",
+  "t": "load new transaction",
+  "T": "unload transaction",
+  "s": "print stacktrace",
+  "g": "turn on generated sources",
+  "G": "turn off generated sources except via `;`"
 };
 
 const shortCommandReference = {
-  o: "step over",
-  i: "step into",
-  u: "step out",
-  n: "step next",
+  "o": "step over",
+  "i": "step into",
+  "u": "step out",
+  "n": "step next",
   ";": "step instruction",
-  p: "print state",
-  l: "print context",
-  h: "print help",
-  v: "print variables",
+  "p": "print state",
+  "l": "print context",
+  "h": "print help",
+  "v": "print variables",
   ":": "evaluate",
   "+": "add watch",
   "-": "remove watch",
   "?": "list watches & breakpoints",
-  b: "add breakpoint",
-  B: "remove breakpoint",
-  c: "continue",
-  q: "quit",
-  r: "reset",
-  t: "load",
-  T: "unload",
-  s: "stacktrace",
-  g: "turn on generated sources",
-  G: "turn off generated sources"
+  "b": "add breakpoint",
+  "B": "remove breakpoint",
+  "c": "continue",
+  "q": "quit",
+  "r": "reset",
+  "t": "load",
+  "T": "unload",
+  "s": "stacktrace",
+  "g": "turn on generated sources",
+  "G": "turn off generated sources"
 };
 
 const truffleColors = {
@@ -91,7 +91,7 @@ var DebugUtils = {
       return false;
     }
 
-    //check #2: are source indices consecutive?
+    //check #2: are (user) source indices consecutive?
     //(while nonconsecutivity should not be a problem by itself, this probably
     //indicates a name collision of a sort that will be fatal for other
     //reasons)
@@ -103,7 +103,34 @@ var DebugUtils = {
       return false;
     }
 
-    //check #3: are there any AST ID collisions?
+    const lowestInternalIndex = Math.min(
+      ...compilation.contracts.map(contract => {
+        //find first defined index
+        let lowestConstructor = (contract.generatedSources || []).findIndex(
+          x => x !== undefined
+        );
+        if (lowestConstructor === -1) {
+          lowestConstructor = Infinity;
+        }
+        let lowestDeployed = (
+          contract.deployedGeneratedSources || []
+        ).findIndex(x => x !== undefined);
+        if (lowestDeployed === -1) {
+          lowestDeployed = Infinity;
+        }
+        return Math.min(lowestConstructor, lowestDeployed);
+      })
+    );
+    if (lowestInternalIndex !== Infinity) {
+      //Infinity would mean there were none
+      if (lowestInternalIndex !== compilation.sources.length) {
+        //if it's a usable compilation, these should be equal,
+        //as length = 1 + last user source
+        return false;
+      }
+    }
+
+    //check #4: are there any AST ID collisions?
     let astIds = new Set();
 
     let allIDsUnseenSoFar = node => {
@@ -563,7 +590,7 @@ var DebugUtils = {
     //reverse
     stacktrace = stacktrace.slice().reverse(); //reverse is in-place so clone first
     let lines = stacktrace.map(
-      ({ functionName, contractName, address, location }) => {
+      ({functionName, contractName, address, location}) => {
         let name;
         if (contractName && functionName) {
           name = `${contractName}.${functionName}`;
@@ -577,10 +604,10 @@ var DebugUtils = {
         let locationString;
         if (location) {
           let {
-            source: { sourcePath },
+            source: {sourcePath},
             sourceRange: {
               lines: {
-                start: { line, column }
+                start: {line, column}
               }
             }
           } = location;
@@ -613,73 +640,73 @@ var DebugUtils = {
     return indented.join(OS.EOL);
   },
 
-  colorize: function (code, language = "Solidity") {
+  colorize: function (code, language = "solidity") {
     //I'd put these outside the function
     //but then it gives me errors, because
     //you can't just define self-referential objects like that...
 
     const trufflePalette = {
       /* base (chromafi special, not hljs) */
-      base: chalk,
-      lineNumbers: chalk,
-      trailingSpace: chalk,
+      "base": chalk,
+      "lineNumbers": chalk,
+      "trailingSpace": chalk,
       /* classes hljs-solidity actually uses */
-      keyword: truffleColors.mint,
-      number: truffleColors.red,
-      string: truffleColors.green,
-      params: truffleColors.pink,
-      builtIn: truffleColors.watermelon,
-      built_in: truffleColors.watermelon, //just to be sure
-      literal: truffleColors.watermelon,
-      function: truffleColors.orange,
-      title: truffleColors.orange,
-      class: truffleColors.orange,
-      comment: truffleColors.comment,
-      doctag: truffleColors.comment,
+      "keyword": truffleColors.mint,
+      "number": truffleColors.red,
+      "string": truffleColors.green,
+      "params": truffleColors.pink,
+      "builtIn": truffleColors.watermelon,
+      "built_in": truffleColors.watermelon, //just to be sure
+      "literal": truffleColors.watermelon,
+      "function": truffleColors.orange,
+      "title": truffleColors.orange,
+      "class": truffleColors.orange,
+      "comment": truffleColors.comment,
+      "doctag": truffleColors.comment,
       /* classes it might soon use! */
-      meta: truffleColors.pink,
-      metaString: truffleColors.green,
+      "meta": truffleColors.pink,
+      "metaString": truffleColors.green,
       "meta-string": truffleColors.green, //similar
       /* classes it doesn't currently use but notionally could */
-      type: truffleColors.orange,
-      symbol: truffleColors.orange,
-      metaKeyword: truffleColors.mint,
+      "type": truffleColors.orange,
+      "symbol": truffleColors.orange,
+      "metaKeyword": truffleColors.mint,
       "meta-keyword": truffleColors.mint, //again, to be sure
       /* classes that don't make sense for Solidity */
-      regexp: chalk, //solidity does not have regexps
-      subst: chalk, //or string interpolation
-      name: chalk, //or s-expressions
-      builtInName: chalk, //or s-expressions, again
+      "regexp": chalk, //solidity does not have regexps
+      "subst": chalk, //or string interpolation
+      "name": chalk, //or s-expressions
+      "builtInName": chalk, //or s-expressions, again
       "builtin-name": chalk, //just to be sure
       /* classes for config, markup, CSS, templates, diffs (not programming) */
-      section: chalk,
-      tag: chalk,
-      attr: chalk,
-      attribute: chalk,
-      variable: chalk,
-      bullet: chalk,
-      code: chalk,
-      emphasis: chalk,
-      strong: chalk,
-      formula: chalk,
-      link: chalk,
-      quote: chalk,
-      selectorAttr: chalk, //lotta redundancy follows
+      "section": chalk,
+      "tag": chalk,
+      "attr": chalk,
+      "attribute": chalk,
+      "variable": chalk,
+      "bullet": chalk,
+      "code": chalk,
+      "emphasis": chalk,
+      "strong": chalk,
+      "formula": chalk,
+      "link": chalk,
+      "quote": chalk,
+      "selectorAttr": chalk, //lotta redundancy follows
       "selector-attr": chalk,
-      selectorClass: chalk,
+      "selectorClass": chalk,
       "selector-class": chalk,
-      selectorId: chalk,
+      "selectorId": chalk,
       "selector-id": chalk,
-      selectorPseudo: chalk,
+      "selectorPseudo": chalk,
       "selector-pseudo": chalk,
-      selectorTag: chalk,
+      "selectorTag": chalk,
       "selector-tag": chalk,
-      templateTag: chalk,
+      "templateTag": chalk,
       "template-tag": chalk,
-      templateVariable: chalk,
+      "templateVariable": chalk,
       "template-variable": chalk,
-      addition: chalk,
-      deletion: chalk
+      "addition": chalk,
+      "deletion": chalk
     };
 
     const options = {
@@ -696,10 +723,10 @@ var DebugUtils = {
       //NOTE: you might think you should pass highlight: true,
       //but you'd be wrong!  I don't understand this either
     };
-    if (language === "Solidity") {
+    if (language === "solidity") {
       //normal case: solidity
       return chromafi(code, options);
-    } else if (language === "Yul") {
+    } else if (language === "yul") {
       //HACK: stick the code in an assembly block since we don't
       //have a separate Yul language for HLJS at the moment,
       //colorize it there, then extract it after colorization
@@ -719,7 +746,7 @@ var DebugUtils = {
     return Object.assign(
       {},
       ...Object.entries(variables).map(([variable, value]) =>
-        variable === "this" ? { [replacement]: value } : { [variable]: value }
+        variable === "this" ? {[replacement]: value} : {[variable]: value}
       )
     );
   },
@@ -739,10 +766,10 @@ var DebugUtils = {
   getTransactionSourcesBeforeStarting: async function (bugger) {
     await bugger.reset();
     let sources = {};
-    const { controller } = bugger.selectors;
+    const {controller} = bugger.selectors;
     while (!bugger.view(controller.current.trace.finished)) {
       const source = bugger.view(controller.current.location.source);
-      const { compilationId, id, internal } = source;
+      const {compilationId, id, internal} = source;
       //stepInto should skip internal sources, but there still might be
       //one at the end
       if (!internal && compilationId !== undefined && id !== undefined) {

@@ -4,7 +4,7 @@ import {
   Abi as SchemaAbi,
   ImmutableReferences
 } from "@truffle/contract-schema/spec";
-import { Bytecode } from "@truffle/compile-common";
+import * as Common from "@truffle/compile-common";
 
 //Note to other people passing in compilations:
 //Please include all fields you can that aren't
@@ -92,13 +92,13 @@ export interface Contract {
    * in the old artifacts format, or as a bytecode object in the new
    * compilation format.
    */
-  bytecode?: string | Bytecode;
+  bytecode?: string | Common.Bytecode;
   /**
    * The contract's deployed bytecode; may be given either as a string
    * in the old artifacts format, or as a bytecode object in the new
    * compilation format.
    */
-  deployedBytecode?: string | Bytecode;
+  deployedBytecode?: string | Common.Bytecode;
   /**
    * The contract's constructor source map.
    */
