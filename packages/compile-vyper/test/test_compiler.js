@@ -1,6 +1,7 @@
 const path = require("path");
 const assert = require("assert");
 const Config = require("@truffle/config");
+const CodeUtils = require("@truffle/code-utils");
 const {Compile} = require("../index");
 const fs = require("fs");
 
@@ -87,6 +88,16 @@ describe("vyper compiler", function () {
       }
     });
 
+    const configWithPetersburg = new Config().merge(defaultSettings).merge({
+      compilers: {
+        vyper: {
+          settings: {
+            evmVersion: "petersburg"
+          }
+        }
+      }
+    });
+
     it("compiles when sourceMap option set true", async () => {
       const {compilations} = await Compile.all(configWithSourceMap);
       const {contracts} = compilations[0];
@@ -95,6 +106,32 @@ describe("vyper compiler", function () {
           contract.sourceMap,
           `source map have to not be empty. ${index + 1}`
         );
+      });
+    });
+
+    it("compiles with specified EVM version", async () => {
+      const {compilations} = await Compile.all(configWithPetersburg);
+      const {contracts} = compilations[0];
+      //the SELFBALANCE opcode was introduced in Istanbul.
+      //we're specifying that it should compile for Petersburg, which was earlier.
+      //Therefore, the result should not contain the SELFBALANCE opcode.
+      //(Vyper *will* use the selfbalance opcode if it's compiling for
+      //Istanbul or later)
+      contracts.forEach((contract, index) => {
+        const instructions = CodeUtils.parseCode(contract.bytecode);
+        const deployedInstructions = CodeUtils.parseCode(contract.deployedBytecode);
+        for (const instruction of instructions) {
+          assert(
+            instruction.name !== "SELFBALANCE",
+            `constructor instruction at PC ${instruction.pc} in contract #${index} should not be SELFBALANCE`
+          );
+        }
+        for (const instruction of deployedInstructions) {
+          assert(
+            instruction.name !== "SELFBALANCE",
+            `deployed instruction at PC ${instruction.pc} in contract #${index} should not be SELFBALANCE`
+          );
+        }
       });
     });
   });
