@@ -10383,42 +10383,15 @@ ganache-cli@^6.1.0:
     source-map-support "0.5.12"
     yargs "13.2.4"
 
-ganache-core@2.13.0:
-  version "2.13.0"
-  resolved "https://registry.yarnpkg.com/ganache-core/-/ganache-core-2.13.0.tgz#e211d995eb806a1cd792096a989cf624417f0f7c"
-  integrity sha512-yTSsesDBwPh+34ZN2w5SZoPNVbR0Gn75InvQc2D1zUdy9prED6R2sVbefSyiXFR/uwZK9NrIVS1+HcEtgQVb9Q==
+ganache@3.0.0-internal.7:
+  version "3.0.0-internal.7"
+  resolved "https://registry.yarnpkg.com/ganache/-/ganache-3.0.0-internal.7.tgz#bd80cce8a59f07a02971dca4a35a751f806f3780"
+  integrity sha512-0RUp+96D+YjHLfraH9pVEMq1NoUJqn5lmAlyMpxEeSD3vKypEin5CaLMGtLqTzu7XAyfHjSapWhhjWwY6HXk4g==
   dependencies:
-    abstract-leveldown "3.0.0"
-    async "2.6.2"
-    bip39 "2.5.0"
-    cachedown "1.0.0"
-    clone "2.1.2"
-    debug "3.2.6"
-    encoding-down "5.0.4"
-    eth-sig-util "2.3.0"
-    ethereumjs-abi "0.6.7"
-    ethereumjs-account "3.0.0"
-    ethereumjs-block "2.2.2"
-    ethereumjs-common "1.5.0"
-    ethereumjs-tx "2.1.2"
-    ethereumjs-util "6.2.1"
-    ethereumjs-vm "4.2.0"
-    heap "0.2.6"
+    bigint-buffer "1.1.5"
     keccak "3.0.1"
-    level-sublevel "6.6.4"
-    levelup "3.1.1"
-    lodash "4.17.20"
-    lru-cache "5.1.1"
-    merkle-patricia-tree "3.0.0"
-    patch-package "6.2.2"
-    seedrandom "3.0.1"
-    source-map-support "0.5.12"
-    tmp "0.1.0"
-    web3-provider-engine "14.2.1"
-    websocket "1.0.32"
-  optionalDependencies:
-    ethereumjs-wallet "0.6.5"
-    web3 "1.2.11"
+    leveldown "5.6.0"
+    secp256k1 "4.0.2"
 
 gauge@~2.7.3:
   version "2.7.4"

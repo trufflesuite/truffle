@@ -4,7 +4,7 @@ var util = require("./util");
 describe("Deployments", function () {
   var Example;
   var web3;
-  var providerOptions = { vmErrorsOnRPCResponse: false };
+  var providerOptions = { vmErrorsOnRPCResponse: false, gasLimit: 0x6691b7};
 
   before(async function () {
     this.timeout(20000);
@@ -85,7 +85,6 @@ describe("Deployments", function () {
         assert.fail();
       } catch (error) {
         const errorCorrect =
-          error.message.includes("exceeds gas limit") ||
           error.message.includes("intrinsic gas too low");
 
         assert(errorCorrect, "Should OOG");
@@ -96,7 +95,6 @@ describe("Deployments", function () {
       Example.new(1, { gas: 10 })
         .on("error", error => {
           const errorCorrect =
-            error.message.includes("exceeds gas limit") ||
             error.message.includes("intrinsic gas too low");
 
           assert(errorCorrect, "Should OOG");
@@ -150,8 +148,7 @@ describe("Deployments", function () {
         await Example.new(2001); // Triggers error with a normal reason string
         assert.fail();
       } catch (error) {
-        assert(error.message.includes("exceeds gas limit"));
-        assert(error.message.includes("reasonstring"));
+        assert(error.message.includes("intrinsic gas too low"));
         assert(error.receipt === undefined, "Expected no receipt");
         assert(error.reason === "reasonstring");
       }
@@ -162,7 +159,7 @@ describe("Deployments", function () {
         await Example.new(20001); // Triggers error with a long reason string
         assert.fail();
       } catch (error) {
-        assert(error.message.includes("exceeds gas limit"));
+        assert(error.message.includes("intrinsic gas too low"));
         assert(
           error.message.includes(
             "solidity storage is a fun lesson in endianness"
@@ -194,7 +191,7 @@ describe("Deployments", function () {
         await Example.new(1);
         assert.fail();
       } catch (err) {
-        assert(err.message.includes("exceeds gas limit"), "Should OOG");
+        assert(err.message.includes("intrinsic gas too low"), "Should OOG");
       }
 
       Example.autoGas = true;
@@ -228,8 +225,8 @@ describe("Deployments", function () {
     });
   });
 
-  describe("web3 timeout overrides", function () {
-    it("should override 50 blocks err / return a usable instance", async function () {
+  describe("web3 timeout overrides", function() {
+    it("should override 50 blocks err / return a usable instance", async function() {
       this.timeout(50000);
 
       // Mock web3 non-response, fire error @ block 50, resolve receipt @ block 52.
