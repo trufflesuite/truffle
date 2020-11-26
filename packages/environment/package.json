@@ -20,7 +20,7 @@
     "@truffle/expect": "^0.0.15",
     "@truffle/interface-adapter": "^0.4.18",
     "@truffle/resolver": "^6.1.4",
-    "ganache": "3.0.0-internal.5",
+    "ganache": "3.0.0-internal.7",
     "node-ipc": "^9.1.1",
     "source-map-support": "^0.5.19",
     "web3": "1.2.9"
