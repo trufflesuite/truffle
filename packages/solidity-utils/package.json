@@ -1,6 +1,6 @@
 {
   "name": "@truffle/solidity-utils",
-  "version": "1.3.27",
+  "version": "1.3.28",
   "description": "Utilities for Solidity contracts",
   "main": "index.js",
   "scripts": {
@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@truffle/code-utils": "^1.2.22",
-    "@truffle/codec": "^0.8.1",
+    "@truffle/codec": "^0.9.0",
     "debug": "^4.1.1",
     "json-pointer": "^0.6.0",
     "node-interval-tree": "^1.3.3"
