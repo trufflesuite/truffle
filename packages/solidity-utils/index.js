@@ -58,7 +58,12 @@ var SolidityUtils = {
       }
 
       if (splitInstruction[2]) {
-        processedInstruction.file = parseInt(splitInstruction[2]);
+        if (splitInstruction[0] === "-1" && splitInstruction[1] === "-1") {
+          //convert Vyper-style -1:-1:0 to Solidity-style -1:-1:-1
+          processedInstruction.file = -1;
+        } else {
+          processedInstruction.file = parseInt(splitInstruction[2]);
+        }
       }
 
       if (splitInstruction[3]) {

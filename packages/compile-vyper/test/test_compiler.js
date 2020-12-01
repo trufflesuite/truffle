@@ -115,7 +115,7 @@ describe("vyper compiler", function () {
       const { contracts } = compilations[0];
       contracts.forEach((contract, index) => {
         assert(
-          contract.sourceMap,
+          contract.deployedSourceMap,
           `source map have to not be empty. ${index + 1}`
         );
       });

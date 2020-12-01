@@ -128,7 +128,7 @@ async function compileAll({ sources, options }) {
             abi: compiledContract.abi,
             bytecode: compiledContract.bytecode,
             deployedBytecode: compiledContract.bytecode_runtime,
-            sourceMap: compiledContract.source_map,
+            deployedSourceMap: compiledContract.source_map, //there is no constructor source map
             compiler
           };
 
