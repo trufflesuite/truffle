@@ -104,7 +104,7 @@ describe("vyper compiler", function () {
       compilers: {
         vyper: {
           settings: {
-            evmVersion: "instabul"
+            evmVersion: "istanbul"
           }
         }
       }
