@@ -7,6 +7,9 @@ const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const log = console.log;
 const fse = require("fs-extra");
+const { connect } = require("@truffle/db");
+const gql = require("graphql-tag");
+const pascalCase = require("pascal-case");
 
 describe("Repeated compilation of contracts with inheritance [ @standalone ]", function () {
   let config,
@@ -387,13 +390,12 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
 });
 
 describe("Compilation with db enabled", async () => {
+  let config, project;
   const logger = new MemoryLogger();
 
   function checkForDb(config) {
-    const dbPath = path.join(
-      config.working_directory,
-      ".db/json/contracts/data.json"
-    );
+    const dbPath = path.join(config.working_directory, ".db");
+
     const dbExists = fse.pathExistsSync(dbPath);
     return dbExists;
   }
@@ -406,10 +408,11 @@ describe("Compilation with db enabled", async () => {
     Server.stop(done);
   });
 
-  it.only("creates a .db directory when db is enabled", async function () {
-    this.timeout(12000);
-    const project = path.join(__dirname, "../../sources/contract_names");
-    const config = await sandbox.create(project);
+  beforeEach("set up sandbox and do initial compile", async function () {
+    this.timeout(30000);
+
+    project = path.join(__dirname, "../../sources/contract_names");
+    config = await sandbox.create(project);
 
     try {
       await CommandRunner.run("compile", config);
@@ -418,8 +421,42 @@ describe("Compilation with db enabled", async () => {
       log(output);
       throw new Error(error);
     }
+  });
+
+  it("creates a populated .db directory when db is enabled", async function () {
+    this.timeout(12000);
 
     const dbExists = checkForDb(config);
+
     assert(dbExists === true);
+  });
+
+  it("adds contracts to the db", async function () {
+    this.timeout(12000);
+
+    const GetAllContracts = gql`
+      query getAllContracts {
+        contracts {
+          name
+        }
+      }
+    `;
+
+    // connect to DB
+    const db = connect(config);
+    const results = await db.execute(GetAllContracts, {});
+
+    // number of contracts matches number of contracts in the project directory
+    // (plus one library in this one)
+    assert(results.data.contracts.length === 4);
+
+    // contract names in project exist in new .db contracts file
+    const resultsNames = results.data.contracts.map(a => a.name);
+
+    const contractNames = fse.readdirSync(path.join(project, "contracts"));
+    contractNames.map(name => {
+      const processedName = pascalCase(name.split(".")[0]);
+      assert(resultsNames.includes(processedName));
+    });
   });
 });
