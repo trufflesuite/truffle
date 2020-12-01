@@ -36,7 +36,20 @@ function execVyper(options, sourcePath, callback) {
   ) {
     formats.push("source_map");
   }
-  const command = `vyper -f ${formats.join(",")} ${sourcePath}`;
+  let evmVersionOption = "";
+  if (
+    options.compilers.vyper.settings &&
+    options.compilers.vyper.settings.evmVersion
+  ) {
+    const evmVersion = options.compilers.vyper.settings.evmVersion;
+    if (evmVersion.includes("'")) {
+      throw new Error("Invalid EVM version");
+    }
+    evmVersionOption = `--evm-version '${evmVersion}'`;
+  }
+  const command = `vyper -f ${formats.join(
+    ","
+  )} ${evmVersionOption} ${sourcePath}`;
 
   exec(command, { maxBuffer: 600 * 1024 }, function (err, stdout, stderr) {
     if (err)
