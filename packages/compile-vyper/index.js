@@ -29,13 +29,7 @@ function checkVyper() {
 
 // Execute vyper for single source file
 function execVyper(options, sourcePath, callback) {
-  const formats = ["abi", "bytecode", "bytecode_runtime"];
-  if (
-    options.compilers.vyper.settings &&
-    options.compilers.vyper.settings.sourceMap
-  ) {
-    formats.push("source_map");
-  }
+  const formats = ["abi", "bytecode", "bytecode_runtime", "source_map"];
   let evmVersionOption = "";
   if (
     options.compilers.vyper.settings &&
