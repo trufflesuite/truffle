@@ -281,9 +281,7 @@ export function* decodeStorageReference(
           info
         );
       } else {
-        let lengthAsBN: BN = Conversion.toBN(data)
-          .subn(1)
-          .divn(2);
+        let lengthAsBN: BN = Conversion.toBN(data).subn(1).divn(2);
         try {
           length = lengthAsBN.toNumber();
         } catch (_) {

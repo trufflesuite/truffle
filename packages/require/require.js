@@ -16,7 +16,7 @@ const Config = require("@truffle/config");
 // options.context: Object containing any global variables you'd like set when this
 //   function is run.
 const Require = {
-  file: function(options) {
+  file: function (options) {
     let source;
     const file = options.file;
     const config = options.config;
@@ -98,7 +98,7 @@ const Require = {
     return m.exports;
   },
 
-  exec: function(options, done) {
+  exec: function (options, done) {
     expect.options(options, [
       "contracts_build_directory",
       "file",

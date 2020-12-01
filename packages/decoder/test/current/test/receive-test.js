@@ -6,8 +6,8 @@ const Decoder = require("../../..");
 const ReceiveTest = artifacts.require("ReceiveTest");
 const FallbackTest = artifacts.require("FallbackTest");
 
-contract("ReceiveTest", function(accounts) {
-  it("should decode transactions that invoke fallback or receive", async function() {
+contract("ReceiveTest", function (accounts) {
+  it("should decode transactions that invoke fallback or receive", async function () {
     let receiveTest = await ReceiveTest.deployed();
     let fallbackTest = await FallbackTest.deployed();
 
@@ -18,11 +18,13 @@ contract("ReceiveTest", function(accounts) {
 
     let receiveHash = (await receiveTest.send(1)).tx;
     let fallbackNoDataHash = (await fallbackTest.send(1)).tx;
-    let fallbackDataHash = (await receiveTest.sendTransaction({
-      from: accounts[0],
-      to: receiveTest.address,
-      data: "0xdeadbeef"
-    })).tx;
+    let fallbackDataHash = (
+      await receiveTest.sendTransaction({
+        from: accounts[0],
+        to: receiveTest.address,
+        data: "0xdeadbeef"
+      })
+    ).tx;
 
     let receiveTx = await web3.eth.getTransaction(receiveHash);
     let fallbackNoDataTx = await web3.eth.getTransaction(fallbackNoDataHash);

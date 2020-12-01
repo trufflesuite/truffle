@@ -11,7 +11,7 @@ describe("truffle init [ @standalone ]", () => {
     tempDir = tmp.dirSync({ unsafeCleanup: true });
     config = {
       working_directory: tempDir.name,
-      logger: { log: () => {} },
+      logger: { log: () => {} }
     };
   });
   afterEach(() => {

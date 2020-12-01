@@ -8,7 +8,7 @@ var Server = require("../server");
 var Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 
-describe("Contract names", function() {
+describe("Contract names", function () {
   let config;
   const logger = new MemoryLogger();
   const project = path.join(__dirname, "../../sources/contract_names");
@@ -16,7 +16,7 @@ describe("Contract names", function() {
   before(done => Server.start(done));
   after(done => Server.stop(done));
 
-  before(async function() {
+  before(async function () {
     this.timeout(10000);
     config = await sandbox.create(project);
     config.network = "development";
@@ -26,7 +26,7 @@ describe("Contract names", function() {
     };
   });
 
-  it("will compile if file names do not match contract names", async function() {
+  it("will compile if file names do not match contract names", async function () {
     this.timeout(40000);
 
     await CommandRunner.run("compile", config);
@@ -41,7 +41,7 @@ describe("Contract names", function() {
     );
   });
 
-  it("will migrate when artifacts.require() doesn't have an extension and names do not match", async function() {
+  it("will migrate when artifacts.require() doesn't have an extension and names do not match", async function () {
     this.timeout(50000);
 
     await CommandRunner.run("migrate", config);
@@ -70,7 +70,7 @@ describe("Contract names", function() {
     );
   });
 
-  it("will compile and migrate with relative imports (using filename)", async function() {
+  it("will compile and migrate with relative imports (using filename)", async function () {
     this.timeout(50000);
 
     const contractPath = path.join(

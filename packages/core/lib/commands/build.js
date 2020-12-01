@@ -6,7 +6,7 @@ const command = {
     usage: "truffle build",
     options: []
   },
-  run: function(options, done) {
+  run: function (options, done) {
     const OS = require("os");
     const colors = require("colors");
     const deprecationMessage = colors.yellow(

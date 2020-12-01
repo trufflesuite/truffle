@@ -14,9 +14,7 @@ export function message(error: Format.Errors.ErrorForThrowing): string {
       let typeName = Format.Types.isContractDefinedType(error.type)
         ? error.type.definingContractName + "." + error.type.typeName
         : error.type.typeName;
-      return `Unknown ${error.type.typeClass} type ${typeName} of id ${
-        error.type.id
-      }`;
+      return `Unknown ${error.type.typeClass} type ${typeName} of id ${error.type.id}`;
     case "UnsupportedConstantError":
       return `Unsupported constant type ${Ast.Utils.typeClass(
         error.definition
@@ -26,9 +24,7 @@ export function message(error: Format.Errors.ErrorForThrowing): string {
     case "ReadErrorStack":
       return `Can't read stack from position ${error.from} to ${error.to}`;
     case "ReadErrorBytes":
-      return `Can't read ${error.length} bytes from ${
-        error.location
-      } starting at ${error.start}`;
+      return `Can't read ${error.length} bytes from ${error.location} starting at ${error.start}`;
     case "ReadErrorStorage":
       if (error.range.length) {
         return `Can't read ${

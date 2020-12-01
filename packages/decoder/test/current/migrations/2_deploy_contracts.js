@@ -6,7 +6,7 @@ const ReceiveTest = artifacts.require("ReceiveTest");
 const FallbackTest = artifacts.require("FallbackTest");
 const DecodingSample = artifacts.require("DecodingSample");
 
-module.exports = function(deployer) {
+module.exports = function (deployer) {
   deployer.deploy(DecoyLibrary);
   deployer.link(DecoyLibrary, DowngradeTest);
   deployer.deploy(WireTestLibrary);

@@ -130,7 +130,8 @@ const SolidityTest = {
       "truffle/AssertUint.sol",
       "truffle/AssertUintArray.sol",
       "truffle/DeployedAddresses.sol",
-      `truffle/${SafeSend}`
+      `truffle/${SafeSend}`,
+      "truffle/Console.sol"
     ];
 
     const { compilations } = await Compile.sourcesWithDependencies({
@@ -180,7 +181,8 @@ const SolidityTest = {
       "AssertString",
       "AssertUint",
       "AssertUintArray",
-      "DeployedAddresses"
+      "DeployedAddresses",
+      "Console"
     ];
 
     const testAbstractions = testLibraries.map(name =>

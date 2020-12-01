@@ -1,7 +1,7 @@
 const Config = require("@truffle/config");
 
 const analytics = {
-  send: function(eventObject) {
+  send: function (eventObject) {
     const userConfig = Config.getUserConfig();
 
     if (!userConfig.get("enableAnalytics")) {

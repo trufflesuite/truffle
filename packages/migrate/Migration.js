@@ -4,7 +4,7 @@ const Require = require("@truffle/require");
 const Emittery = require("emittery");
 const {
   Web3Shim,
-  createInterfaceAdapter,
+  createInterfaceAdapter
 } = require("@truffle/interface-adapter");
 
 const ResolverIntercept = require("./ResolverIntercept");
@@ -37,7 +37,7 @@ class Migration {
       file: this.file,
       context: context,
       resolver: resolver,
-      args: [deployer],
+      args: [deployer]
     };
 
     const fn = Require.file(requireOptions);
@@ -123,7 +123,7 @@ class Migration {
     } catch (error) {
       const payload = {
         type: "migrateErr",
-        error: error,
+        error: error
       };
 
       await this.emitter.emit("error", payload);
@@ -143,7 +143,7 @@ class Migration {
       interfaceAdapter,
       resolver,
       context,
-      deployer,
+      deployer
     } = this.prepareForMigrations(options);
 
     // Connect reporter to this migration
@@ -164,7 +164,7 @@ class Migration {
       isFirst: this.isFirst,
       network: options.network,
       networkId: options.network_id,
-      blockLimit: block.gasLimit,
+      blockLimit: block.gasLimit
     };
 
     await this.emitter.emit("preMigrate", preMigrationsData);
@@ -175,11 +175,11 @@ class Migration {
     const logger = options.logger;
     const interfaceAdapter = createInterfaceAdapter({
       provider: options.provider,
-      networkType: options.networks[options.network].type,
+      networkType: options.networks[options.network].type
     });
     const web3 = new Web3Shim({
       provider: options.provider,
-      networkType: options.networks[options.network].type,
+      networkType: options.networks[options.network].type
     });
 
     const resolver = new ResolverIntercept(options.resolver);
@@ -196,7 +196,7 @@ class Migration {
       network_id: options.network_id,
       provider: options.provider,
       basePath: path.dirname(this.file),
-      ens: options.ens,
+      ens: options.ens
     });
 
     return { interfaceAdapter, resolver, context, deployer };
@@ -213,7 +213,7 @@ class Migration {
       isFirst: this.isFirst,
       isLast: this.isLast,
       dryRun: this.dryRun,
-      interactive: this.interactive,
+      interactive: this.interactive
     };
   }
 }

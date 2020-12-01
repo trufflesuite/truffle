@@ -2,7 +2,7 @@ const exec = require("child_process").exec;
 const path = require("path");
 
 module.exports = {
-  run: function(command, config) {
+  run: function (command, config) {
     let execString;
 
     process.env.NO_BUILD
