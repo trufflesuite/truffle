@@ -42,6 +42,9 @@ function execVyper(options, sourcePath, callback) {
     options.compilers.vyper.settings.evmVersion
   ) {
     const evmVersion = options.compilers.vyper.settings.evmVersion;
+    if (evmVersion.includes("'")) {
+      throw new Error("Invalid EVM version");
+    }
     evmVersionOption = `--evm-version '${evmVersion}'`;
   }
   const command = `vyper -f ${formats.join(
