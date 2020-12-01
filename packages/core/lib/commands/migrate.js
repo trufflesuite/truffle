@@ -2,7 +2,7 @@ const command = {
   command: "migrate",
   description: "Run migrations to deploy contracts",
   builder: {
-    reset: {
+    "reset": {
       type: "boolean",
       default: false
     },
@@ -26,15 +26,15 @@ const command = {
       type: "boolean",
       default: false
     },
-    f: {
+    "f": {
       describe: "Specify a migration number to run from",
       type: "number"
     },
-    to: {
+    "to": {
       describe: "Specify a migration number to run to",
       type: "number"
     },
-    interactive: {
+    "interactive": {
       describe: "Manually authorize deployments after seeing a preview",
       type: "boolean",
       default: false
@@ -148,14 +148,14 @@ const command = {
       networkWhitelist.includes(parseInt(config.network_id)) ||
       config.production;
     const dryRunAndMigrations = production && !skipDryRun;
-    return { dryRunOnly, dryRunAndMigrations };
+    return {dryRunOnly, dryRunAndMigrations};
   },
 
   prepareConfigForRealMigrations: async function (buildDir, options) {
     const Artifactor = require("@truffle/artifactor");
     const Resolver = require("@truffle/resolver");
     const Migrate = require("@truffle/migrate");
-    const { Environment } = require("@truffle/environment");
+    const {Environment} = require("@truffle/environment");
     const Config = require("@truffle/config");
 
     let accept = true;
@@ -178,20 +178,20 @@ const command = {
       }
 
       config.dryRun = false;
-      return { config, proceed: true };
+      return {config, proceed: true};
     } else {
-      return { proceed: false };
+      return {proceed: false};
     }
   },
 
-  run: function (options, done) {
+  run: async function (options) {
     const Artifactor = require("@truffle/artifactor");
     const Resolver = require("@truffle/resolver");
     const Migrate = require("@truffle/migrate");
     const WorkflowCompile = require("@truffle/workflow-compile");
-    const { Environment } = require("@truffle/environment");
+    const {Environment} = require("@truffle/environment");
     const Config = require("@truffle/config");
-    const { promisify } = require("util");
+    const {promisify} = require("util");
     const promisifiedCopy = promisify(require("../copy"));
     const tmp = require("tmp");
     tmp.setGracefulCleanup();
@@ -201,38 +201,31 @@ const command = {
       conf.compiler = "none";
     }
 
-    WorkflowCompile.compileAndSave(conf)
-      .then(async () => {
-        await Environment.detect(conf);
+    await WorkflowCompile.compileAndSave(conf);
+    await Environment.detect(conf);
 
-        const {
-          dryRunOnly,
-          dryRunAndMigrations
-        } = command.determineDryRunSettings(conf, options);
+    const {dryRunOnly, dryRunAndMigrations} = command.determineDryRunSettings(
+      conf,
+      options
+    );
 
-        if (dryRunOnly) {
-          conf.dryRun = true;
-          await setupDryRunEnvironmentThenRunMigrations(conf);
-        } else if (dryRunAndMigrations) {
-          const currentBuild = conf.contracts_build_directory;
-          conf.dryRun = true;
+    if (dryRunOnly) {
+      conf.dryRun = true;
+      await setupDryRunEnvironmentThenRunMigrations(conf);
+    } else if (dryRunAndMigrations) {
+      const currentBuild = conf.contracts_build_directory;
+      conf.dryRun = true;
 
-          await setupDryRunEnvironmentThenRunMigrations(conf);
+      await setupDryRunEnvironmentThenRunMigrations(conf);
 
-          let {
-            config,
-            proceed
-          } = await command.prepareConfigForRealMigrations(
-            currentBuild,
-            options
-          );
-          if (proceed) await runMigrations(config);
-        } else {
-          await runMigrations(conf);
-        }
-        done();
-      })
-      .catch(done);
+      let {config, proceed} = await command.prepareConfigForRealMigrations(
+        currentBuild,
+        options
+      );
+      if (proceed) await runMigrations(config);
+    } else {
+      await runMigrations(conf);
+    }
 
     async function setupDryRunEnvironmentThenRunMigrations(config) {
       await Environment.fork(config);
@@ -261,14 +254,15 @@ const command = {
       Migrate.launchReporter(config);
 
       if (options.f) {
-        await Migrate.runFrom(options.f, config);
+        return Migrate.runFrom(options.f, config);
       } else {
         const needsMigrating = await Migrate.needsMigrating(config);
 
         if (needsMigrating) {
-          await Migrate.run(config);
+          return Migrate.run(config);
         } else {
           config.logger.log("Network up to date.");
+          return;
         }
       }
     }

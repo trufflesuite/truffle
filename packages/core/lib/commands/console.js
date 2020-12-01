@@ -18,7 +18,8 @@ const command = {
       }
     ]
   },
-  run: function (options, done) {
+  run: async function (options) {
+    const { promisify } = require("util");
     const Config = require("@truffle/config");
     const Console = require("../console");
     const { Environment } = require("@truffle/environment");
@@ -31,21 +32,13 @@ const command = {
 
     const consoleCommands = Object.keys(commands).reduce((acc, name) => {
       return !excluded.has(name)
-        ? Object.assign(acc, { [name]: commands[name] })
+        ? Object.assign(acc, {[name]: commands[name]})
         : acc;
     }, {});
 
-    Environment.detect(config)
-      .then(() => {
-        const c = new Console(
-          consoleCommands,
-          config.with({ noAliases: true })
-        );
-        c.start(done);
-      })
-      .catch(error => {
-        done(error);
-      });
+    await Environment.detect(config);
+    const c = new Console(consoleCommands, config.with({noAliases: true}));
+    return promisify(c.start)();
   }
 };
 
