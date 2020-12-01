@@ -211,6 +211,18 @@ export default class Session {
         debug("compiler %o", compiler);
         debug("abi %o", abi);
 
+        //convert Vyper source maps to solidity ones
+        //(note we won't bother handling the case where the compressed
+        //version doesn't exist)
+        try {
+          let vyperSourceMap = JSON.parse(sourceMap);
+          sourceMap = vyperSourceMap.pc_pos_map_compressed;
+        } catch (_) {}
+        try {
+          let vyperDeployedSourceMap = JSON.parse(deployedSourceMap);
+          deployedSourceMap = vyperDeployedSourceMap.pc_pos_map_compressed;
+        } catch (_) {}
+
         if (binary && binary != "0x") {
           //NOTE: we take hash as *string*, not as bytes, because the binary may
           //contain link references!
