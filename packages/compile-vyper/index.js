@@ -36,9 +36,22 @@ function execVyper(options, sourcePath, callback) {
   ) {
     formats.push("source_map");
   }
-  const command = `vyper -f ${formats.join(",")} ${sourcePath}`;
+  let evmVersionOption = "";
+  if (
+    options.compilers.vyper.settings &&
+    options.compilers.vyper.settings.evmVersion
+  ) {
+    const evmVersion = options.compilers.vyper.settings.evmVersion;
+    if (evmVersion.includes("'")) {
+      throw new Error("Invalid EVM version");
+    }
+    evmVersionOption = `--evm-version '${evmVersion}'`;
+  }
+  const command = `vyper -f ${formats.join(
+    ","
+  )} ${evmVersionOption} ${sourcePath}`;
 
-  exec(command, {maxBuffer: 600 * 1024}, function (err, stdout, stderr) {
+  exec(command, { maxBuffer: 600 * 1024 }, function (err, stdout, stderr) {
     if (err)
       return callback(
         `${stderr}\n${colors.red(
@@ -49,7 +62,7 @@ function execVyper(options, sourcePath, callback) {
     var outputs = stdout.split(/\r?\n/);
 
     const compiledContract = outputs.reduce((contract, output, index) => {
-      return Object.assign(contract, {[formats[index]]: output});
+      return Object.assign(contract, { [formats[index]]: output });
     }, {});
 
     callback(null, compiledContract);
@@ -84,7 +97,7 @@ function processAllSources(sources) {
 }
 
 // compile all sources
-async function compileAll({sources, options}) {
+async function compileAll({ sources, options }) {
   options.logger = options.logger || console;
 
   Compile.display(sources, options);
@@ -126,7 +139,7 @@ async function compileAll({sources, options}) {
   });
   const contracts = await Promise.all(promises);
 
-  const compilerInfo = {name: "vyper", version: compiler.version};
+  const compilerInfo = { name: "vyper", version: compiler.version };
   return {
     compilations: [
       {
@@ -141,13 +154,13 @@ async function compileAll({sources, options}) {
 
 const Compile = {
   // Check that vyper is available then forward to internal compile function
-  async sources({sources = [], options}) {
+  async sources({ sources = [], options }) {
     // filter out non-vyper paths
     const vyperFiles = sources.filter(path => minimatch(path, VYPER_PATTERN));
 
     // no vyper files found, no need to check vyper
     if (vyperFiles.length === 0) {
-      return {compilations: []};
+      return { compilations: [] };
     }
 
     await checkVyper();
@@ -157,7 +170,7 @@ const Compile = {
     });
   },
 
-  async sourcesWithDependencies({paths = [], options}) {
+  async sourcesWithDependencies({ paths = [], options }) {
     return await Compile.sources({
       sources: paths,
       options
@@ -190,7 +203,7 @@ const Compile = {
     const updated = await Profiler.updated(options);
 
     if (updated.length === 0 && options.quiet !== true) {
-      return {compilations: []};
+      return { compilations: [] };
     }
 
     // filter out only Vyper files
@@ -218,7 +231,7 @@ const Compile = {
 
       return contract;
     });
-    options.events.emit("compile:sourcesToCompile", {sourceFileNames});
+    options.events.emit("compile:sourcesToCompile", { sourceFileNames });
   }
 };
 
