@@ -79,17 +79,19 @@ describe("vyper compiler", function () {
     assert(noSolidityContract, "Compiled contracts have no SolidityContract");
   });
 
-  describe("with external options set", function () {
-    const configWithSourceMap = new Config().merge(defaultSettings).merge({
-      compilers: {
-        vyper: {
-          settings: {
-            sourceMap: true
-          }
-        }
-      }
+  it("outputs source maps", async () => {
+    const { compilations } = await Compile.all(config);
+    const { contracts } = compilations[0];
+    contracts.forEach((contract, index) => {
+      assert(
+        contract.deployedSourceMap,
+        `source map has to not be empty. ${index + 1}`
+      );
     });
+  });
 
+
+  describe("with external options set", function () {
     const configWithPetersburg = new Config().merge(defaultSettings).merge({
       compilers: {
         vyper: {
@@ -108,17 +110,6 @@ describe("vyper compiler", function () {
           }
         }
       }
-    });
-
-    it("compiles when sourceMap option set true", async () => {
-      const { compilations } = await Compile.all(configWithSourceMap);
-      const { contracts } = compilations[0];
-      contracts.forEach((contract, index) => {
-        assert(
-          contract.deployedSourceMap,
-          `source map have to not be empty. ${index + 1}`
-        );
-      });
     });
 
     it("compiles with specified EVM version (petersburg)", async () => {
