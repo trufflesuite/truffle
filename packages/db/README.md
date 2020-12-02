@@ -30,14 +30,15 @@ Truffle DB is built with:
 ## Configuration to enable Truffle DB
 
 Add the following to your `truffle-config.js` file in order to enable Truffle DB
-(enabling Truffle DB does not affect Artifacts, but will produce a new `.db`
-directory when you compile or migrate your project)
 
 ```
 db: {
   enabled: true
 }
 ```
+Note: Enabling Truffle DB does not affect artifacts, but will produce a new `.db`
+directory when you compile or migrate your project.
+
 
 It will soon be possible to load and access Truffle DB data via `truffle compile` and `truffle migrate`.
 Stay tuned!
