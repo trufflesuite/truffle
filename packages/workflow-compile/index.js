@@ -115,9 +115,6 @@ const WorkflowCompile = {
 
     await fse.ensureDir(config.contracts_build_directory);
 
-    const artifacts = contracts.map(Shims.NewToLegacy.forContract);
-    await config.artifactor.saveAll(artifacts);
-
     if (options.db && options.db.enabled === true && contracts.length > 0) {
       const db = connect(config);
       const project = await Project.initialize({
@@ -126,10 +123,13 @@ const WorkflowCompile = {
           directory: config.working_directory
         }
       });
-      await project.loadCompile({
+      ({contracts} = await project.loadCompile({
         result: {contracts, compilations}
-      });
+      }));
     }
+
+    const artifacts = contracts.map(Shims.NewToLegacy.forContract);
+    await config.artifactor.saveAll(artifacts);
   }
 };
 
