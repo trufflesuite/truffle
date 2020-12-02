@@ -23,7 +23,8 @@ async function run(rawSources, options) {
   const compilerInput = prepareCompilerInput({
     sources,
     targets,
-    settings: options.compilers.solc.settings
+    settings: options.compilers.solc.settings,
+    modelCheckerSettings: options.compilers.solc.modelCheckerSettings
   });
 
   // perform compilation
@@ -183,7 +184,7 @@ function getPortableSourcePath(sourcePath) {
  * @param setings - subset of Solidity settings
  * @return solc compiler input JSON
  */
-function prepareCompilerInput({sources, targets, settings}) {
+function prepareCompilerInput({sources, targets, settings, modelCheckerSettings}) {
   return {
     language: "Solidity",
     sources: prepareSources({sources}),
@@ -194,10 +195,12 @@ function prepareCompilerInput({sources, targets, settings}) {
       debug: settings.debug,
       metadata: settings.metadata,
       libraries: settings.libraries,
+      viaIR: settings.viaIR,
       // Specify compilation targets. Each target uses defaultSelectors,
       // defaulting to single target `*` if targets are unspecified
       outputSelection: prepareOutputSelection({targets})
-    }
+    },
+    modelCheckerSettings
   };
 }
 
