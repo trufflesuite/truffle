@@ -1,25 +1,11 @@
+import debugModule from "debug";
+const debug = debugModule("db");
+
 require("source-map-support/register");
-require("module-alias/register");
-const path = require("path");
-const moduleAlias = require("module-alias");
 
-moduleAlias.addAlias("@truffle/db", path.join(__dirname));
+export { Collections, definitions } from "./resources";
+export { schema } from "./schema";
+export { Db, connect } from "./db";
+export { serve } from "./server";
 
-const { TruffleDB } = require("./db");
-const { ApolloServer } = require("apollo-server");
-
-const playgroundServer = config => {
-  const { context, schema } = new TruffleDB({
-    contracts_build_directory: config.contracts_build_directory,
-    contracts_directory: config.contracts_directory,
-    working_directory: config.working_directory
-  });
-
-  return new ApolloServer({
-    tracing: true,
-    schema: schema,
-    context: context
-  });
-};
-
-export { TruffleDB, playgroundServer };
+export { Project } from "./project";

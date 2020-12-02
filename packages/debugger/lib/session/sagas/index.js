@@ -12,6 +12,7 @@ import * as stacktrace from "lib/stacktrace/sagas";
 import * as evm from "lib/evm/sagas";
 import * as trace from "lib/trace/sagas";
 import * as data from "lib/data/sagas";
+import * as txlog from "lib/txlog/sagas";
 import * as web3 from "lib/web3/sagas";
 
 import * as actions from "../actions";
@@ -107,8 +108,11 @@ function* startFullMode() {
     //better not start this twice!
     return;
   }
-  debug("turning on data listener");
-  yield fork(data.saga);
+  debug("turning on data & txlog listeners");
+  const listenersToActivate = [data.saga, txlog.saga];
+  for (let listener of listenersToActivate) {
+    yield fork(listener);
+  }
 
   debug("visiting ASTs");
   // visit asts
@@ -118,7 +122,10 @@ function* startFullMode() {
   debug("saving allocation table");
   yield* data.recordAllocations();
 
-  yield* trace.addSubmoduleToCount();
+  yield* trace.addSubmoduleToCount(listenersToActivate.length);
+
+  //begin any full-mode modules that need beginning
+  yield* txlog.begin();
 
   yield put(actions.setFullMode());
 }
@@ -141,6 +148,7 @@ function* forkListeners(moduleOptions) {
   let mainApps = [evm, solidity, stacktrace];
   if (!moduleOptions.lightMode) {
     mainApps.push(data);
+    mainApps.push(txlog);
   }
   let otherApps = [trace, controller, web3];
   const submoduleCount = mainApps.length;
@@ -192,9 +200,13 @@ function* fetchTx(txHash) {
   );
 
   debug("sending initial call");
-  yield* evm.begin(result); //note: this must occur *before* the other two
+  yield* evm.begin(result); //note: this must occur *before* the other ones!
   yield* solidity.begin();
   yield* stacktrace.begin();
+  if (!(yield select(session.status.lightMode))) {
+    //full-mode-only modules
+    yield* txlog.begin();
+  }
 }
 
 function* recordContexts(contexts) {
@@ -237,6 +249,7 @@ export function* unload() {
   yield* evm.unload();
   yield* trace.unload();
   yield* stacktrace.unload();
+  yield* txlog.unload();
   yield put(actions.unloadTransaction());
 }
 

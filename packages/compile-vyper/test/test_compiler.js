@@ -1,7 +1,11 @@
+const debug = require("debug")("compile-vyper:test");
+
 const path = require("path");
 const assert = require("assert");
 const Config = require("@truffle/config");
+const CodeUtils = require("@truffle/code-utils");
 const { Compile } = require("../index");
+const fs = require("fs");
 
 describe("vyper compiler", function () {
   this.timeout(20000);
@@ -75,26 +79,101 @@ describe("vyper compiler", function () {
     assert(noSolidityContract, "Compiled contracts have no SolidityContract");
   });
 
+  it("outputs source maps", async () => {
+    const { compilations } = await Compile.all(config);
+    const { contracts } = compilations[0];
+    contracts.forEach((contract, index) => {
+      assert(
+        contract.deployedSourceMap,
+        `source map has to not be empty. ${index + 1}`
+      );
+    });
+  });
+
+
   describe("with external options set", function () {
-    const configWithSourceMap = new Config().merge(defaultSettings).merge({
+    const configWithPetersburg = new Config().merge(defaultSettings).merge({
       compilers: {
         vyper: {
           settings: {
-            sourceMap: true
+            evmVersion: "petersburg"
           }
         }
       }
     });
 
-    it("compiles when sourceMap option set true", async () => {
-      const { compilations } = await Compile.all(configWithSourceMap);
+    const configWithIstanbul = new Config().merge(defaultSettings).merge({
+      compilers: {
+        vyper: {
+          settings: {
+            evmVersion: "istanbul"
+          }
+        }
+      }
+    });
+
+    it("compiles with specified EVM version (petersburg)", async () => {
+      const { compilations } = await Compile.all(configWithPetersburg);
       const { contracts } = compilations[0];
+      //the SELFBALANCE opcode was introduced in Istanbul.
+      //we're specifying that it should compile for Petersburg, which was earlier.
+      //Therefore, the result should not contain the SELFBALANCE opcode.
       contracts.forEach((contract, index) => {
-        assert(
-          contract.sourceMap,
-          `source map have to not be empty. ${index + 1}`
+        const instructions = CodeUtils.parseCode(contract.bytecode);
+        const deployedInstructions = CodeUtils.parseCode(
+          contract.deployedBytecode
         );
+        for (const instruction of instructions) {
+          assert(
+            instruction.name !== "SELFBALANCE",
+            `constructor instruction at PC ${instruction.pc} in contract #${index} should not be SELFBALANCE`
+          );
+        }
+        for (const instruction of deployedInstructions) {
+          assert(
+            instruction.name !== "SELFBALANCE",
+            `deployed instruction at PC ${instruction.pc} in contract #${index} should not be SELFBALANCE`
+          );
+        }
       });
+    });
+
+    it("compiles with specified EVM version (istanbul)", async () => {
+      const { compilations } = await Compile.all(configWithIstanbul);
+      const { contracts } = compilations[0];
+      //the SELFBALANCE opcode was introduced in Istanbul.
+      //Vyper *will* use the selfbalance opcode for self.balance
+      //if it's compiling for Istanbul or later, and we use that in VyperContract4
+      const contract = contracts[3];
+      const deployedInstructions = CodeUtils.parseCode(
+        contract.deployedBytecode
+      );
+      assert(
+        deployedInstructions.some(
+          instruction => instruction.name === "SELFBALANCE"
+        ),
+        `VyperContract4 should use SELFBALANCE opcode`
+      );
+    });
+  });
+
+  describe("compilation sources array", async () => {
+    it("returns an array of sources reflecting sources in project", async () => {
+      const { compilations } = await Compile.all(config);
+      const { sources } = compilations[0];
+
+      assert(sources.length === 4);
+      assert(
+        sources[0].sourcePath ===
+          path.join(__dirname, "sources/VyperContract1.vy")
+      );
+      assert(
+        sources[0].contents ===
+          fs
+            .readFileSync(path.join(__dirname, "sources/VyperContract1.vy"))
+            .toString()
+      );
+      assert(sources[0].language === "vyper");
     });
   });
 });

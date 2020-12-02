@@ -94,7 +94,10 @@ class VersionRange extends LoadingStrategy {
   }
 
   async getSolcByUrlAndCache(fileName, index = 0) {
-    const url = this.config.compilerRoots[index] + fileName;
+    const url = `${this.config.compilerRoots[index].replace(
+      /\/+$/,
+      ""
+    )}/${fileName}`;
     const { events } = this.config;
     events.emit("downloadCompiler:start", {
       attemptNumber: index + 1
@@ -142,10 +145,9 @@ class VersionRange extends LoadingStrategy {
       throw this.errors("noUrl");
     }
     const { compilerRoots } = this.config;
-    const url =
-      compilerRoots[compilerRoots.length] === "/"
-        ? `${compilerRoots[index]}list.json`
-        : `${compilerRoots[index]}/list.json`;
+
+    // trim trailing slashes from compilerRoot
+    const url = `${compilerRoots[index].replace(/\/+$/, "")}/list.json`;
     return request(url, { gzip: true, timeout: 30000 })
       .then(list => {
         events.emit("fetchSolcList:succeed");

@@ -6,6 +6,7 @@ import { isSkippedNodeType } from "lib/helpers";
 
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
+import data from "lib/data/selectors";
 import trace from "lib/trace/selectors";
 
 /**
@@ -94,6 +95,11 @@ const controller = createSelectorTree({
       ),
 
       /**
+       * controller.current.location.astRef
+       */
+      astRef: createLeaf([data.current.astRef], identity),
+
+      /**
        * controller.current.location.isMultiline
        */
       isMultiline: createLeaf(
@@ -136,19 +142,17 @@ const controller = createSelectorTree({
      * returns null instead.
      */
     resolver: createLeaf(
-      [solidity.info.sources, solidity.views.findOverlappingRange],
+      [solidity.views.sources, solidity.views.overlapFunctions],
       (sources, functions) => breakpoint => {
         let adjustedBreakpoint;
         if (breakpoint.node === undefined) {
           let line = breakpoint.line;
+          const { sourceId } = breakpoint;
           debug("breakpoint: %O", breakpoint);
           debug("sources: %o", sources);
-          let { source, ast } = sources[breakpoint.compilationId].byId[
-            breakpoint.sourceId
-          ];
-          let findOverlappingRange =
-            functions[breakpoint.compilationId][breakpoint.sourceId];
-          let lineLengths = source.split("\n").map(line => line.length);
+          const { source, ast } = sources[sourceId];
+          const findOverlappingRange = functions[sourceId];
+          const lineLengths = source.split("\n").map(line => line.length);
           //why does neither JS nor lodash have a scan function like Haskell??
           //guess we'll have to do our scan manually
           let lineStarts = [0];
@@ -195,7 +199,12 @@ const controller = createSelectorTree({
   /**
    * controller.isStepping
    */
-  isStepping: createLeaf(["./state"], state => state.isStepping)
+  isStepping: createLeaf(["./state"], state => state.isStepping),
+
+  /**
+   * controller.stepIntoInternalSources
+   */
+  stepIntoInternalSources: createLeaf(["./state"], state => state.stepIntoInternalSources)
 });
 
 export default controller;

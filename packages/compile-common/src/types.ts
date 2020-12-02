@@ -1,12 +1,22 @@
-import { Abi, ImmutableReferences } from "@truffle/contract-schema/spec";
+import {Abi, ImmutableReferences} from "@truffle/contract-schema/spec";
 
 export type Compilation = {
-  sourceIndexes: string[];
+  sourceIndexes: string[]; //note: does not include internal sources
+  sources: Source[]; //note: does not include internal sources
   contracts: CompiledContract[];
   compiler: {
     name: string | undefined;
     version: string | undefined;
   };
+  db?: {};
+};
+
+export type Source = {
+  sourcePath: string;
+  contents: string;
+  ast?: object;
+  legacyAST?: object;
+  language: string;
 };
 
 export interface CompilerResult {
@@ -45,6 +55,7 @@ export type CompiledContract = {
   immutableReferences: ImmutableReferences;
   generatedSources: any;
   deployedGeneratedSources: any;
+  db?: {};
 };
 
 export interface WorkflowCompileResult {
@@ -54,12 +65,22 @@ export interface WorkflowCompileResult {
 
 export interface Compiler {
   all: (options: object) => Promise<CompilerResult>;
+
   necessary: (options: object) => Promise<CompilerResult>;
+
   sources: ({
     sources,
     options
   }: {
     sources: object;
+    options: object;
+  }) => Promise<CompilerResult>;
+
+  sourcesWithDependencies: ({
+    paths,
+    options
+  }: {
+    paths: string[];
     options: object;
   }) => Promise<CompilerResult>;
 }

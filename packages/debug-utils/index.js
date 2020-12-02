@@ -29,7 +29,9 @@ const commandReference = {
   "r": "reset",
   "t": "load new transaction",
   "T": "unload transaction",
-  "s": "print stacktrace"
+  "s": "print stacktrace",
+  "g": "turn on generated sources",
+  "G": "turn off generated sources except via `;`"
 };
 
 const shortCommandReference = {
@@ -53,7 +55,9 @@ const shortCommandReference = {
   "r": "reset",
   "t": "load",
   "T": "unload",
-  "s": "stacktrace"
+  "s": "stacktrace",
+  "g": "turn on generated sources",
+  "G": "turn off generated sources"
 };
 
 const truffleColors = {
@@ -87,7 +91,7 @@ var DebugUtils = {
       return false;
     }
 
-    //check #2: are source indices consecutive?
+    //check #2: are (user) source indices consecutive?
     //(while nonconsecutivity should not be a problem by itself, this probably
     //indicates a name collision of a sort that will be fatal for other
     //reasons)
@@ -99,7 +103,34 @@ var DebugUtils = {
       return false;
     }
 
-    //check #3: are there any AST ID collisions?
+    const lowestInternalIndex = Math.min(
+      ...compilation.contracts.map(contract => {
+        //find first defined index
+        let lowestConstructor = (contract.generatedSources || []).findIndex(
+          x => x !== undefined
+        );
+        if (lowestConstructor === -1) {
+          lowestConstructor = Infinity;
+        }
+        let lowestDeployed = (
+          contract.deployedGeneratedSources || []
+        ).findIndex(x => x !== undefined);
+        if (lowestDeployed === -1) {
+          lowestDeployed = Infinity;
+        }
+        return Math.min(lowestConstructor, lowestDeployed);
+      })
+    );
+    if (lowestInternalIndex !== Infinity) {
+      //Infinity would mean there were none
+      if (lowestInternalIndex !== compilation.sources.length) {
+        //if it's a usable compilation, these should be equal,
+        //as length = 1 + last user source
+        return false;
+      }
+    }
+
+    //check #4: are there any AST ID collisions?
     let astIds = new Set();
 
     let allIDsUnseenSoFar = node => {
@@ -195,6 +226,7 @@ var DebugUtils = {
       ["o", "i", "u", "n"],
       ["c"],
       [";"],
+      ["g", "G"],
       ["p"],
       ["l", "s", "h"],
       ["q", "r", "t", "T"],
@@ -357,7 +389,6 @@ var DebugUtils = {
   formatBreakpointLocation: function (
     breakpoint,
     here,
-    currentCompilationId,
     currentSourceId,
     sourceNames
   ) {
@@ -370,12 +401,8 @@ var DebugUtils = {
     } else {
       baseMessage = `line ${breakpoint.line + 1}`;
     }
-    if (
-      breakpoint.compilationId !== currentCompilationId ||
-      breakpoint.sourceId !== currentSourceId
-    ) {
-      let sourceName =
-        sourceNames[breakpoint.compilationId][breakpoint.sourceId];
+    if (breakpoint.sourceId !== currentSourceId) {
+      const sourceName = sourceNames[breakpoint.sourceId];
       return baseMessage + ` in ${sourceName}`;
     } else {
       return baseMessage;
@@ -563,7 +590,7 @@ var DebugUtils = {
     //reverse
     stacktrace = stacktrace.slice().reverse(); //reverse is in-place so clone first
     let lines = stacktrace.map(
-      ({ functionName, contractName, address, location }) => {
+      ({functionName, contractName, address, location}) => {
         let name;
         if (contractName && functionName) {
           name = `${contractName}.${functionName}`;
@@ -577,10 +604,10 @@ var DebugUtils = {
         let locationString;
         if (location) {
           let {
-            source: { sourcePath },
+            source: {sourcePath},
             sourceRange: {
               lines: {
-                start: { line, column }
+                start: {line, column}
               }
             }
           } = location;
@@ -613,7 +640,7 @@ var DebugUtils = {
     return indented.join(OS.EOL);
   },
 
-  colorize: function (code, yul = false) {
+  colorize: function (code, language = "solidity") {
     //I'd put these outside the function
     //but then it gives me errors, because
     //you can't just define self-referential objects like that...
@@ -696,10 +723,10 @@ var DebugUtils = {
       //NOTE: you might think you should pass highlight: true,
       //but you'd be wrong!  I don't understand this either
     };
-    if (!yul) {
+    if (language === "solidity") {
       //normal case: solidity
       return chromafi(code, options);
-    } else {
+    } else if (language === "yul") {
       //HACK: stick the code in an assembly block since we don't
       //have a separate Yul language for HLJS at the moment,
       //colorize it there, then extract it after colorization
@@ -708,6 +735,9 @@ var DebugUtils = {
       const firstNewLine = colorizedWrapped.indexOf("\n");
       const lastNewLine = colorizedWrapped.lastIndexOf("\n");
       return colorizedWrapped.slice(firstNewLine + 1, lastNewLine);
+    } else {
+      //otherwise, don't highlight
+      return code;
     }
   },
 
@@ -716,7 +746,7 @@ var DebugUtils = {
     return Object.assign(
       {},
       ...Object.entries(variables).map(([variable, value]) =>
-        variable === "this" ? { [replacement]: value } : { [variable]: value }
+        variable === "this" ? {[replacement]: value} : {[variable]: value}
       )
     );
   },
@@ -736,10 +766,10 @@ var DebugUtils = {
   getTransactionSourcesBeforeStarting: async function (bugger) {
     await bugger.reset();
     let sources = {};
-    const { controller } = bugger.selectors;
+    const {controller} = bugger.selectors;
     while (!bugger.view(controller.current.trace.finished)) {
       const source = bugger.view(controller.current.location.source);
-      const { compilationId, id, internal } = source;
+      const {compilationId, id, internal} = source;
       //stepInto should skip internal sources, but there still might be
       //one at the end
       if (!internal && compilationId !== undefined && id !== undefined) {

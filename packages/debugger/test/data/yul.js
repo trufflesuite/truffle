@@ -1,11 +1,11 @@
 import debugModule from "debug";
-const debug = debugModule("test:data:more-decoding");
+const debug = debugModule("debugger:test:data:yul");
 
-import { assert } from "chai";
+import {assert} from "chai";
 
 import Ganache from "ganache-core";
 
-import { prepareContracts, lineOf } from "../helpers";
+import {prepareContracts, lineOf} from "../helpers";
 import Debugger from "lib/debugger";
 
 import solidity from "lib/solidity/selectors";
@@ -57,7 +57,7 @@ describe("Assembly decoding", function () {
   var compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
+    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
   });
 
   before("Prepare contracts and artifacts", async function () {
@@ -75,24 +75,20 @@ describe("Assembly decoding", function () {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+    let bugger = await Debugger.forTx(txHash, {provider, compilations});
 
     let sourceId = bugger.view(solidity.current.source).id;
-    let compilationId = bugger.view(solidity.current.source).compilationId;
     let source = bugger.view(solidity.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("BREAK #1", source)
     });
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("BREAK #2", source)
     });
     await bugger.addBreakpoint({
       sourceId,
-      compilationId,
       line: lineOf("BREAK #3", source)
     });
 
@@ -101,7 +97,7 @@ describe("Assembly decoding", function () {
     const numberize = obj =>
       Object.assign(
         {},
-        ...Object.entries(obj).map(([key, value]) => ({ [key]: Number(value) }))
+        ...Object.entries(obj).map(([key, value]) => ({[key]: Number(value)}))
       );
 
     let variables = numberize(

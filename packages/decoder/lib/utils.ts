@@ -5,6 +5,7 @@ import Web3 from "web3";
 import BN from "bn.js";
 
 import * as Codec from "@truffle/codec";
+import * as Abi from "@truffle/abi-utils";
 
 import * as Types from "./types";
 
@@ -34,8 +35,8 @@ export function makeContext(
   node: Codec.Ast.AstNode | undefined,
   compilation: Codec.Compilations.Compilation,
   isConstructor = false
-): Codec.Contexts.DecoderContext {
-  const abi = Codec.AbiData.Utils.schemaAbiToAbi(contract.abi);
+): Codec.Contexts.Context {
+  const abi = Abi.normalize(contract.abi);
   const bytecode = isConstructor
     ? contract.bytecode
     : contract.deployedBytecode;
@@ -48,18 +49,16 @@ export function makeContext(
   );
   debug("hash: %s", hash);
   const fallback =
-    <Codec.AbiData.FallbackAbiEntry>(
-      abi.find(abiEntry => abiEntry.type === "fallback")
-    ) || null; //TS is failing at inference here
+    <Abi.FallbackEntry>abi.find(abiEntry => abiEntry.type === "fallback") ||
+    null; //TS is failing at inference here
   const receive =
-    <Codec.AbiData.ReceiveAbiEntry>(
-      abi.find(abiEntry => abiEntry.type === "receive")
-    ) || null; //and here
+    <Abi.ReceiveEntry>abi.find(abiEntry => abiEntry.type === "receive") || null; //and here
   return {
     context: hash,
     contractName: contract.contractName,
     binary,
     contractId: node ? node.id : undefined,
+    linearizedBaseContracts: node ? node.linearizedBaseContracts : undefined,
     contractKind: contractKind(contract, node),
     immutableReferences: isConstructor
       ? undefined

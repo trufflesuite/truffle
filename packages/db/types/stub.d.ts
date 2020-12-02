@@ -2,57 +2,55 @@
 // graphql typescript definitions
 
 declare namespace DataModel {
-  type IBytecode = any;
-  type IBytecodeInput = any;
-  type IBytecodesAddInput = any;
-  type IBytecodesAddPayload = any;
-  type ICompilation = any;
-  type ICompilationInput = any;
-  type ICompilationProcessedSourceInput = any;
-  type ICompilationSourceMapInput = any;
-  type ICompilationSourceInput = any;
-  type ICompilationsAddInput = any;
-  type ICompilationsAddPayload = any;
-  type ICompiler = any;
-  type ICompilerInput = any;
-  type IContract = any;
-  type IContractInput = any;
-  type IContractInstance = any;
-  type IContractInstanceInput = any;
-  type IContractInstancesAddInput = any;
-  type IContractInstancesAddPayload = any;
-  type IContractsAddInput = any;
-  type IContractsAddPayload = any;
-  type IInstruction = any;
-  type INameRecord = any;
-  type INameRecordsAddInput = any;
-  type INameRecordsAddPayload = any;
-  type INetwork = any;
-  type INetworkInput = any;
-  type INetworksAddInput = any;
-  type IProject = any;
-  type IProjectsAddInput = any;
-  type IProjectsAddPayload = any;
-  type IProjectName = any;
-  type IProjectNameInput = any;
-  type IProjectNamesAssignPayload = any;
-  type ISource = any;
-  type ISourceInput = any;
-  type ISourceRange = any;
-  type ISourcesAddInput = any;
-  type ISourcesAddPayload = any;
+  type ResourceReferenceInput = any;
+  type Block = any;
+  type Bytecode = any;
+  type BytecodeInput = any;
+  type BytecodesAddInput = any;
+  type BytecodesAddPayload = any;
+  type Compilation = any;
+  type CompilationInput = any;
+  type ProcessedSourceInput = any;
+  type SourceMapInput = any;
+  type CompilationsAddInput = any;
+  type CompilationsAddPayload = any;
+  type Compiler = any;
+  type CompilerInput = any;
+  type Contract = any;
+  type ContractInput = any;
+  type ContractInstance = any;
+  type ContractInstanceInput = any;
+  type ContractInstancesAddInput = any;
+  type ContractInstancesAddPayload = any;
+  type ContractsAddInput = any;
+  type ContractsAddPayload = any;
+  type Instruction = any;
+  type LinkReference = any;
+  type LinkedBytecodeInput = any;
+  type NameRecord = any;
+  type NameRecordInput = any;
+  type NameRecordsAddInput = any;
+  type NameRecordsAddPayload = any;
+  type Network = any;
+  type NetworkInput = any;
+  type NetworksAddInput = any;
+  type Project = any;
+  type ProjectInput = any;
+  type ProjectsAddInput = any;
+  type ProjectsAddPayload = any;
+  type ProjectName = any;
+  type ProjectNameInput = any;
+  type ProjectNamesAssignPayload = any;
+  type Source = any;
+  type SourceInput = any;
+  type SourceRange = any;
+  type SourcesAddInput = any;
+  type SourcesAddPayload = any;
+  type NetworkGenealogy = any;
+  type NetworkGenealogyInput = any;
 
-  interface IWorkspaceQuery {
-    [key: string]: any;
-  }
-
-  interface IWorkspaceMutation {
-    [key: string]: any;
-  }
-
-  interface INamed {
-    name: string;
-  }
+  type Query = any;
+  type Mutation = any;
 }
 
 // tslint:enable

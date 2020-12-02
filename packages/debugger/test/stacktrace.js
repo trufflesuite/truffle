@@ -1,11 +1,11 @@
 import debugModule from "debug";
-const debug = debugModule("test:stacktrace"); // eslint-disable-line no-unused-vars
+const debug = debugModule("debugger:test:stacktrace");
 
-import { assert } from "chai";
+import {assert} from "chai";
 
 import Ganache from "ganache-core";
 
-import { prepareContracts, lineOf } from "./helpers";
+import {prepareContracts, lineOf} from "./helpers";
 import Debugger from "lib/debugger";
 
 import solidity from "lib/solidity/selectors";
@@ -105,7 +105,7 @@ describe("Stack tracing", function () {
   var compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
+    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
   });
 
   before("Prepare contracts and artifacts", async function () {
@@ -142,7 +142,7 @@ describe("Stack tracing", function () {
     await bugger.continueUntilBreakpoint(); //run till end
 
     let report = bugger.view(stacktrace.current.finalReport);
-    let functionNames = report.map(({ functionName }) => functionName);
+    let functionNames = report.map(({functionName}) => functionName);
     assert.deepEqual(functionNames, [
       undefined,
       "run",
@@ -153,9 +153,9 @@ describe("Stack tracing", function () {
       "run1",
       "runRequire"
     ]);
-    let contractNames = report.map(({ contractName }) => contractName);
+    let contractNames = report.map(({contractName}) => contractName);
     assert(contractNames.every(name => name === "StacktraceTest"));
-    let addresses = report.map(({ address }) => address);
+    let addresses = report.map(({address}) => address);
     assert(addresses.every(address => address === instance.address));
     let status = report[report.length - 1].status;
     assert.isFalse(status);
@@ -189,14 +189,13 @@ describe("Stack tracing", function () {
     let callLine = lineOf("CALL", source.source);
     let breakpoint = {
       sourceId: source.id,
-      compilationId: source.compilationId,
       line: breakLine
     };
     await bugger.addBreakpoint(breakpoint);
     await bugger.continueUntilBreakpoint(); //run till EMIT
 
     let report = bugger.view(stacktrace.current.report);
-    let functionNames = report.map(({ functionName }) => functionName);
+    let functionNames = report.map(({functionName}) => functionName);
     assert.deepEqual(functionNames, [
       undefined,
       "run",
@@ -206,9 +205,9 @@ describe("Stack tracing", function () {
       "run1",
       "runRequire"
     ]);
-    let contractNames = report.map(({ contractName }) => contractName);
+    let contractNames = report.map(({contractName}) => contractName);
     assert(contractNames.every(name => name === "StacktraceTest"));
-    let addresses = report.map(({ address }) => address);
+    let addresses = report.map(({address}) => address);
     assert(addresses.every(address => address === instance.address));
     let status = report[report.length - 1].status;
     assert.isUndefined(status);
@@ -220,7 +219,7 @@ describe("Stack tracing", function () {
     await bugger.continueUntilBreakpoint(); //run till EMIT again
 
     report = bugger.view(stacktrace.current.report);
-    functionNames = report.map(({ functionName }) => functionName);
+    functionNames = report.map(({functionName}) => functionName);
     assert.deepEqual(functionNames, [
       undefined,
       "run",
@@ -231,9 +230,9 @@ describe("Stack tracing", function () {
       "run1",
       "runRequire"
     ]);
-    contractNames = report.map(({ contractName }) => contractName);
+    contractNames = report.map(({contractName}) => contractName);
     assert(contractNames.every(name => name === "StacktraceTest"));
-    addresses = report.map(({ address }) => address);
+    addresses = report.map(({address}) => address);
     assert(addresses.every(address => address === instance.address));
     status = report[report.length - 1].status;
     assert.isUndefined(status);
@@ -269,7 +268,7 @@ describe("Stack tracing", function () {
     await bugger.continueUntilBreakpoint(); //run till end
 
     let report = bugger.view(stacktrace.current.finalReport);
-    let functionNames = report.map(({ functionName }) => functionName);
+    let functionNames = report.map(({functionName}) => functionName);
     assert.deepEqual(functionNames, [
       undefined,
       "run",
@@ -281,9 +280,9 @@ describe("Stack tracing", function () {
       "runPay",
       undefined
     ]);
-    let contractNames = report.map(({ contractName }) => contractName);
+    let contractNames = report.map(({contractName}) => contractName);
     assert(contractNames.every(name => name === "StacktraceTest"));
-    let addresses = report.map(({ address }) => address);
+    let addresses = report.map(({address}) => address);
     assert(addresses.every(address => address === instance.address));
     let status = report[report.length - 1].status;
     assert.isFalse(status);
@@ -319,7 +318,7 @@ describe("Stack tracing", function () {
     await bugger.continueUntilBreakpoint(); //run till end
 
     let report = bugger.view(stacktrace.current.finalReport);
-    let functionNames = report.map(({ functionName }) => functionName);
+    let functionNames = report.map(({functionName}) => functionName);
     assert.deepEqual(functionNames, [
       undefined,
       "run",
@@ -331,11 +330,11 @@ describe("Stack tracing", function () {
       "runInternal",
       undefined
     ]);
-    let contractNames = report.map(({ contractName }) => contractName);
+    let contractNames = report.map(({contractName}) => contractName);
     assert.isUndefined(contractNames[contractNames.length - 1]);
     contractNames.pop();
     assert(contractNames.every(name => name === "StacktraceTest"));
-    let addresses = report.map(({ address }) => address);
+    let addresses = report.map(({address}) => address);
     assert(addresses.every(address => address === instance.address));
     let status = report[report.length - 1].status;
     assert.isFalse(status);
@@ -372,7 +371,7 @@ describe("Stack tracing", function () {
     await bugger.continueUntilBreakpoint(); //run till end
 
     let report = bugger.view(stacktrace.current.finalReport);
-    let functionNames = report.map(({ functionName }) => functionName);
+    let functionNames = report.map(({functionName}) => functionName);
     assert.deepEqual(functionNames, [
       undefined,
       "run",
@@ -385,13 +384,13 @@ describe("Stack tracing", function () {
       undefined,
       "boom"
     ]);
-    let contractNames = report.map(({ contractName }) => contractName);
+    let contractNames = report.map(({contractName}) => contractName);
     assert.strictEqual(contractNames[contractNames.length - 1], "Boom");
     contractNames.pop(); //top frame
     assert.strictEqual(contractNames[contractNames.length - 1], "Boom");
     contractNames.pop(); //second-top frame
     assert(contractNames.every(name => name === "StacktraceTest"));
-    let addresses = report.map(({ address }) => address);
+    let addresses = report.map(({address}) => address);
     assert.strictEqual(
       addresses[addresses.length - 1],
       addresses[addresses.length - 2]

@@ -8,7 +8,6 @@ export interface Fetcher {
    * should have same name as the static version
    */
   readonly fetcherName: string;
-  isNetworkValid(): Promise<boolean>;
   /**
    * returns null if no Solidity sources for address
    * (address not in system, sources are Vyper, whatever)
@@ -40,6 +39,8 @@ export interface SolcOptions {
 
 export interface VyperOptions {
   language: "Vyper";
+  version: string;
+  settings: VyperSettings;
 }
 
 //only including settings that would alter compiled result
@@ -50,6 +51,10 @@ export interface SolcSettings {
   debug?: DebugSettings;
   metadata?: MetadataSettings;
   libraries?: LibrarySettings; //note: we don't actually want to pass this!
+}
+
+export interface VyperSettings {
+  evmVersion?: string; //not gonna enumerate these
 }
 
 export interface SolcSources {

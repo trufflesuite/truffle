@@ -1,6 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("decoder:decoders");
 
+import * as Abi from "@truffle/abi-utils";
 import * as Codec from "@truffle/codec";
 import {
   AbiData,
@@ -46,8 +47,8 @@ export class WireDecoder {
   private network: string;
 
   private compilations: Compilations.Compilation[];
-  private contexts: Contexts.DecoderContexts = {}; //all contexts
-  private deployedContexts: Contexts.DecoderContexts = {};
+  private contexts: Contexts.Contexts = {}; //all contexts
+  private deployedContexts: Contexts.Contexts = {};
   private contractsAndContexts: DecoderTypes.ContractAndContexts[] = [];
 
   private referenceDeclarations: { [compilationId: string]: Ast.AstNodes };
@@ -69,8 +70,8 @@ export class WireDecoder {
           contract,
           compilation
         );
-        let deployedContext: Contexts.DecoderContext | undefined = undefined;
-        let constructorContext: Contexts.DecoderContext | undefined = undefined;
+        let deployedContext: Contexts.Context | undefined = undefined;
+        let constructorContext: Contexts.Context | undefined = undefined;
         const deployedBytecode = Shims.NewToLegacy.forBytecode(
           contract.deployedBytecode
         );
@@ -100,9 +101,7 @@ export class WireDecoder {
     }
     debug("known contexts: %o", Object.keys(this.contexts));
 
-    this.contexts = <Contexts.DecoderContexts>(
-      Contexts.Utils.normalizeContexts(this.contexts)
-    );
+    this.contexts = Contexts.Utils.normalizeContexts(this.contexts);
     this.deployedContexts = Object.assign(
       {},
       ...Object.values(this.contexts).map(context =>
@@ -137,7 +136,7 @@ export class WireDecoder {
         deployedContext,
         constructorContext
       }) => ({
-        abi: AbiData.Utils.schemaAbiToAbi(abi),
+        abi: Abi.normalize(abi),
         compilationId,
         compiler,
         contractNode: node,
@@ -187,8 +186,9 @@ export class WireDecoder {
         if (!source) {
           continue; //remember, sources could be empty if shimmed!
         }
-        const { ast, compiler } = source;
-        if (ast) {
+        const { ast, compiler, language } = source;
+        if (language === "solidity" && ast) {
+          //don't check Yul sources!
           for (const node of ast.nodes) {
             if (
               node.nodeType === "StructDefinition" ||
@@ -295,7 +295,7 @@ export class WireDecoder {
    */
   public async decodeTransactionWithAdditionalContexts(
     transaction: DecoderTypes.Transaction,
-    additionalContexts: Contexts.DecoderContexts = {}
+    additionalContexts: Contexts.Contexts = {}
   ): Promise<CalldataDecoding> {
     const block = transaction.blockNumber;
     const blockNumber = await this.regularizeBlock(block);
@@ -374,7 +374,7 @@ export class WireDecoder {
   public async decodeLogWithAdditionalOptions(
     log: DecoderTypes.Log,
     options: DecoderTypes.EventOptions = {},
-    additionalContexts: Contexts.DecoderContexts = {}
+    additionalContexts: Contexts.Contexts = {}
   ): Promise<LogDecoding[]> {
     const block = log.blockNumber;
     const blockNumber = await this.regularizeBlock(block);
@@ -434,7 +434,7 @@ export class WireDecoder {
    */
   public async eventsWithAdditionalContexts(
     options: DecoderTypes.EventOptions = {},
-    additionalContexts: Contexts.DecoderContexts = {}
+    additionalContexts: Contexts.Contexts = {}
   ): Promise<DecoderTypes.DecodedLog[]> {
     let { address, name, fromBlock, toBlock } = options;
     if (fromBlock === undefined) {
@@ -506,8 +506,8 @@ export class WireDecoder {
     address: string,
     block: DecoderTypes.RegularizedBlockSpecifier,
     constructorBinary?: string,
-    additionalContexts: Contexts.DecoderContexts = {}
-  ): Promise<Contexts.DecoderContext | null> {
+    additionalContexts: Contexts.Contexts = {}
+  ): Promise<Contexts.Context | null> {
     let code: string;
     if (address !== null) {
       code = Conversion.toHexString(await this.getCode(address, block));
@@ -516,7 +516,7 @@ export class WireDecoder {
     }
     //if neither of these hold... we have a problem
     let contexts = { ...this.contexts, ...additionalContexts };
-    return Contexts.Utils.findDecoderContext(contexts, code);
+    return Contexts.Utils.findContext(contexts, code);
   }
 
   //finally: the spawners!
@@ -707,7 +707,7 @@ export class WireDecoder {
   /**
    * @protected
    */
-  public getDeployedContexts(): Contexts.DecoderContexts {
+  public getDeployedContexts(): Contexts.Contexts {
     return this.deployedContexts;
   }
 }
@@ -720,7 +720,7 @@ export class WireDecoder {
 export class ContractDecoder {
   private web3: Web3;
 
-  private contexts: Contexts.DecoderContexts; //note: this is deployed contexts only!
+  private contexts: Contexts.Contexts; //note: this is deployed contexts only!
 
   private compilation: Compilations.Compilation;
   private contract: Compilations.Contract;
@@ -786,7 +786,7 @@ export class ContractDecoder {
         AbiData.Allocate.getCalldataAllocations(
           [
             {
-              abi: AbiData.Utils.schemaAbiToAbi(this.contract.abi),
+              abi: Abi.normalize(this.contract.abi),
               compilationId: this.compilation.id,
               compiler,
               contractNode: this.contractNode,
@@ -836,7 +836,7 @@ export class ContractDecoder {
     this.contractNetwork = (await this.web3.eth.net.getId()).toString();
   }
 
-  private get context(): Contexts.DecoderContext {
+  private get context(): Contexts.Context {
     return this.contexts[this.contextHash];
   }
 
@@ -873,7 +873,7 @@ export class ContractDecoder {
    *   See [[ReturnOptions]] for more information.
    */
   public async decodeReturnValue(
-    abi: AbiData.FunctionAbiEntry,
+    abi: Abi.FunctionEntry,
     data: string,
     options: DecoderTypes.ReturnOptions = {}
   ): Promise<ReturndataDecoding[]> {
@@ -888,10 +888,10 @@ export class ContractDecoder {
    * @protected
    */
   public async decodeReturnValueWithAdditionalContexts(
-    abi: AbiData.FunctionAbiEntry,
+    abi: Abi.FunctionEntry,
     data: string,
     options: DecoderTypes.ReturnOptions = {},
-    additionalContexts: Contexts.DecoderContexts = {}
+    additionalContexts: Contexts.Contexts = {}
   ): Promise<ReturndataDecoding[]> {
     abi = {
       type: "function",
@@ -1083,8 +1083,8 @@ export class ContractInstanceDecoder {
   private contextHash: string;
   private compiler: Compiler.CompilerVersion;
 
-  private contexts: Contexts.DecoderContexts = {}; //deployed contexts only
-  private additionalContexts: Contexts.DecoderContexts = {}; //for passing to wire decoder when contract has no deployedBytecode
+  private contexts: Contexts.Contexts = {}; //deployed contexts only
+  private additionalContexts: Contexts.Contexts = {}; //for passing to wire decoder when contract has no deployedBytecode
 
   private referenceDeclarations: { [compilationId: string]: Ast.AstNodes };
   private userDefinedTypes: Format.Types.TypesById;
@@ -1178,8 +1178,8 @@ export class ContractInstanceDecoder {
       //the following line only has any effect if we're dealing with a library,
       //since the code we pulled from the blockchain obviously does not have unresolved link references!
       //(it's not strictly necessary even then, but, hey, why not?)
-      this.additionalContexts = <Contexts.DecoderContexts>(
-        Contexts.Utils.normalizeContexts(this.additionalContexts)
+      this.additionalContexts = Contexts.Utils.normalizeContexts(
+        this.additionalContexts
       );
       //again, since the code did not have unresolved link references, it is safe to just
       //mash these together like I'm about to
@@ -1191,9 +1191,12 @@ export class ContractInstanceDecoder {
     //unlike the debugger, we don't *demand* an answer, so we won't set up
     //some sort of fake table if we don't have a source map, or if any ASTs are missing
     //(if a whole *source* is missing, we'll consider that OK)
+    //note: we don't attempt to handle Vyper source maps!
+    const compiler = this.compilation.compiler || this.contract.compiler;
     if (
       !this.compilation.unreliableSourceOrder &&
       this.contract.deployedSourceMap &&
+      compiler.name === "solc" &&
       this.compilation.sources.every(source => !source || source.ast)
     ) {
       //WARNING: untyped code in this block!
@@ -1221,7 +1224,7 @@ export class ContractInstanceDecoder {
     }
   }
 
-  private get context(): Contexts.DecoderContext {
+  private get context(): Contexts.Context {
     return this.contexts[this.contextHash];
   }
 
@@ -1651,7 +1654,7 @@ export class ContractInstanceDecoder {
    * additional decoding information.
    */
   public async decodeReturnValue(
-    abi: AbiData.FunctionAbiEntry,
+    abi: Abi.FunctionEntry,
     data: string,
     options: DecoderTypes.ReturnOptions = {}
   ): Promise<ReturndataDecoding[]> {

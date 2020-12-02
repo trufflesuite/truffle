@@ -4,7 +4,7 @@
   "license": "MIT",
   "author": "",
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/reporters",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0"
@@ -12,7 +12,7 @@
   "dependencies": {
     "node-emoji": "^1.8.1",
     "ora": "^3.4.0",
-    "web3-utils": "1.2.1"
+    "web3-utils": "1.2.9"
   },
   "publishConfig": {
     "access": "public"

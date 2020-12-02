@@ -35,6 +35,7 @@ Parameters:
 | `numberOfAddresses` | `number` | `1` | [ ] | If specified, will create `numberOfAddresses` addresses when instantiated |
 | `shareNonce` | `boolean` | `true` | [ ] | If `false`, a new WalletProvider will track its own nonce-state |
 | `derivationPath` | `string` | `"m/44'/60'/0'/0/"` | [ ] | If specified, will tell the wallet engine what derivation path should use to derive addresses. |
+| `pollingInterval` | `number` | `4000` | [ ] | If specified, will tell the wallet engine to use a custom interval when polling to track blocks. Specified in milliseconds. |
 
 Some examples can be found below:
 
@@ -63,6 +64,16 @@ provider = new HDWalletProvider({
   numberOfAddresses: 1,
   shareNonce: true,
   derivationPath: "m/44'/137'/0'/0/"
+});
+
+// To make HDWallet less "chatty" over JSON-RPC,
+// configure a higher value for the polling interval.
+provider = new HDWalletProvider({
+  mnemonic: {
+    phrase: mnemonicPhrase
+  },
+  providerOrUrl: "http://localhost:8545",
+  pollingInterval: 8000
 });
 
 // HDWalletProvider is compatible with Web3. Use it at Web3 constructor, just like any other Web3 Provider

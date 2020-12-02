@@ -48,7 +48,8 @@ describe("truffle build [ @standalone ]", () => {
         config.logger = logger;
       });
     });
-    it("runs the build script", async () => {
+    it("runs the build script", async function () {
+      this.timeout(10000);
       await CommandRunner.run("build", config);
       const output = logger.contents();
       assert(output.includes("'this is the build script'"));
@@ -67,7 +68,8 @@ describe("truffle build [ @standalone ]", () => {
         config.logger = logger;
       });
     });
-    it("tells the user it shouldn't use an object", async () => {
+    it("tells the user it shouldn't use an object", async function () {
+      this.timeout(12000);
       try {
         await CommandRunner.run("build", config);
         assert(false, "The process should have exited with code 1");

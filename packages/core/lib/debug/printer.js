@@ -42,20 +42,20 @@ class DebugPrinter {
       return result;
     };
 
-    this.colorizedSources = {};
-    for (const [compilationId, compilation] of Object.entries(
-      this.session.view(solidity.info.sources)
-    )) {
-      this.colorizedSources[compilationId] = {};
-      for (const source of compilation.byId) {
-        const { id, source: raw, internal: yul } = source;
-        //for now, we assume internal sources are Yul and
-        //user sources are Solidity
-        const detabbed = DebugUtils.tabsToSpaces(raw);
-        const colorized = DebugUtils.colorize(detabbed, yul);
-        this.colorizedSources[compilationId][id] = colorized;
-      }
-    }
+    const colorizeSourceObject = source => {
+      const { source: raw, language } = source;
+      const detabbed = DebugUtils.tabsToSpaces(raw);
+      return DebugUtils.colorize(detabbed, language);
+    };
+
+    this.colorizedSources = Object.assign(
+      {},
+      ...Object.entries(this.session.view(solidity.views.sources)).map(
+        ([id, source]) => ({
+          [id]: colorizeSourceObject(source)
+        })
+      )
+    );
 
     this.printouts = new Set(["sta"]);
     this.locations = ["sto", "cal", "mem", "sta"]; //should remain constant
@@ -127,7 +127,7 @@ class DebugPrinter {
     location = this.session.view(controller.current.location)
   ) {
     const {
-      source: { id: sourceId, compilationId },
+      source: { id: sourceId },
       sourceRange: range
     } = location;
 
@@ -138,12 +138,10 @@ class DebugPrinter {
       return;
     }
 
-    const source = this.session.view(solidity.info.sources)[compilationId].byId[
-      sourceId
-    ].source;
-    //we don't just get extract this from the location because passed-in location may be
-    //missing the soure text
-    const colorizedSource = this.colorizedSources[compilationId][sourceId];
+    //we don't just get extract the source text from the location because passed-in location may be
+    //missing the source text
+    const source = this.session.view(solidity.views.sources)[sourceId].source;
+    const colorizedSource = this.colorizedSources[sourceId];
 
     debug("range: %o", range);
 
@@ -229,27 +227,23 @@ class DebugPrinter {
   }
 
   printBreakpoints() {
-    let sources = this.session.view(solidity.info.sources);
-    let sourceNames = Object.assign(
+    const sources = this.session.view(solidity.views.sources);
+    const sourceNames = Object.assign(
+      //note: only include user sources
       {},
-      ...Object.entries(sources).map(([compilationId, compilation]) => ({
-        [compilationId]: Object.assign(
-          {},
-          ...Object.values(compilation.byId).map(({ id, sourcePath }) => ({
-            [id]: path.basename(sourcePath)
-          }))
-        )
+      ...Object.entries(sources).map(([id, source]) => ({
+        [id]: path.basename(source.sourcePath)
       }))
     );
-    let breakpoints = this.session.view(controller.breakpoints);
+    const breakpoints = this.session.view(controller.breakpoints);
     if (breakpoints.length > 0) {
       for (let breakpoint of this.session.view(controller.breakpoints)) {
         let currentLocation = this.session.view(controller.current.location);
         let locationMessage = DebugUtils.formatBreakpointLocation(
           breakpoint,
           currentLocation.node !== undefined &&
-            breakpoint.node === currentLocation.node.id,
-          currentLocation.source.compilationId,
+            breakpoint.sourceId === currentLocation.source.sourceId &&
+            breakpoint.node === currentLocation.astRef,
           currentLocation.source.id,
           sourceNames
         );
@@ -257,6 +251,14 @@ class DebugPrinter {
       }
     } else {
       this.config.logger.log("No breakpoints added.");
+    }
+  }
+
+  printGeneratedSourcesState() {
+    if(this.session.view(controller.stepIntoInternalSources)) {
+      this.config.logger.log("Generated sources are turned on.");
+    } else {
+      this.config.logger.log("Generated sources are turned off.");
     }
   }
 
@@ -485,6 +487,7 @@ class DebugPrinter {
 
     const sectionNames = {
       builtin: "Solidity built-ins",
+      global: "Global constants",
       contract: "Contract variables",
       local: "Local variables"
     };

@@ -13,7 +13,7 @@ const command = {
       type: "boolean",
       default: false
     },
-    "debug": {
+    debug: {
       describe: "Enable in-test debugging",
       type: "boolean",
       default: false
@@ -27,13 +27,13 @@ const command = {
       type: "boolean",
       default: false
     },
-    "bail": {
+    bail: {
       alias: "b",
       describe: "Bail after first test failure",
       type: "boolean",
       default: false
     },
-    "stacktrace": {
+    stacktrace: {
       alias: "t",
       describe: "Produce Solidity stacktraces",
       type: "boolean",
@@ -125,11 +125,9 @@ const command = {
   run: function (options, done) {
     const Config = require("@truffle/config");
     const { Environment, Develop } = require("@truffle/environment");
-    const {
-      copyArtifactsToTempDir,
-      determineTestFilesToRun,
-      prepareConfigAndRunTests
-    } = require("./helpers");
+    const { copyArtifactsToTempDir } = require("./copyArtifactsToTempDir");
+    const { determineTestFilesToRun } = require("./determineTestFilesToRun");
+    const { prepareConfigAndRunTests } = require("./prepareConfigAndRunTests");
 
     const config = Config.detect(options);
 

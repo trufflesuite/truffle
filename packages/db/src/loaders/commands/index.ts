@@ -1,1 +1,0 @@
-export { generateCompileLoad } from "./compile";

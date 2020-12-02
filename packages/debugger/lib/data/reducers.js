@@ -9,82 +9,57 @@ import * as Codec from "@truffle/codec";
 import { makeAssignment, makePath } from "lib/helpers";
 
 const DEFAULT_SCOPES = {
-  byCompilationId: {}
+  bySourceId: {}
 };
 
 function scopes(state = DEFAULT_SCOPES, action) {
-  let scope;
-  let newState;
-  let variables;
-
   switch (action.type) {
     case actions.SCOPE: {
-      const { compilationId, id, sourceId, parentId, pointer } = action;
-      const astRef = id !== undefined ? id : makePath(sourceId, pointer);
+      const { sourceId, id, sourceIndex, parentId, pointer } = action;
+      const astRef = id !== undefined ? id : makePath(sourceIndex, pointer);
       //astRef is used throughout the data saga.
       //it identifies an AST node within a given compilation either by:
       //1. its ast ID, if it has one, or
       //2. a combination of its source index and its JSON pointer if not
 
-      newState = {
-        byCompilationId: {
-          ...state.byCompilationId,
-          [compilationId]: {
-            ...state.byCompilationId[compilationId] //just setting this up to avoid errors later
+      return {
+        bySourceId: {
+          ...state.bySourceId,
+          [sourceId]: {
+            byAstRef: {
+              ...(state.bySourceId[sourceId] || {}).byAstRef,
+              [astRef]: {
+                ...(state.bySourceId[sourceId] || { byAstRef: {} }).byAstRef[
+                  astRef
+                ],
+                id,
+                parentId,
+                sourceIndex,
+                pointer,
+                sourceId
+              }
+            }
           }
         }
       };
-
-      //apologies for this multi-stage setup, but JS is like that...
-
-      newState.byCompilationId[compilationId] = {
-        ...newState.byCompilationId[compilationId],
-        byAstRef: {
-          ...newState.byCompilationId[compilationId].byAstRef
-        }
-      };
-
-      scope = newState.byCompilationId[compilationId].byAstRef[astRef];
-
-      newState.byCompilationId[compilationId].byAstRef[astRef] = {
-        ...scope,
-        id,
-        sourceId,
-        parentId, //may be null or undefined
-        pointer,
-        compilationId
-      };
-
-      return newState;
     }
 
     case actions.DECLARE: {
-      let { compilationId, name, astRef, scopeAstRef } = action;
+      let { sourceId, name, astRef, scopeAstRef } = action;
 
-      //note: we can assume the compilation already exists!
-      scope = state.byCompilationId[compilationId].byAstRef[scopeAstRef] || {};
-      variables = scope.variables || [];
+      //note: we can assume the scope already exists!
+      let scope = state.bySourceId[sourceId].byAstRef[scopeAstRef];
+      let variables = scope.variables || [];
 
       return {
-        byCompilationId: {
-          ...state.byCompilationId,
-          [compilationId]: {
-            ...state.byCompilationId[compilationId],
+        bySourceId: {
+          ...state.bySourceId,
+          [sourceId]: {
             byAstRef: {
-              ...state.byCompilationId[compilationId].byAstRef,
-
+              ...state.bySourceId[sourceId].byAstRef,
               [scopeAstRef]: {
                 ...scope,
-
-                variables: [
-                  ...variables,
-
-                  {
-                    name,
-                    astRef,
-                    compilationId
-                  }
-                ]
+                variables: [...variables, { name, astRef, sourceId }]
               }
             }
           }
@@ -97,20 +72,12 @@ function scopes(state = DEFAULT_SCOPES, action) {
   }
 }
 
-//a note on the following reducer: solidity assigns a unique AST ID to every
-//AST node among all the files being compiled together.  thus, it is, for now,
-//safe to identify user-defined types solely by their AST ID.  In the future,
-//once we eventually support having some files compiled separately from others,
-//this will become a bug you'll have to fix, and you'll have to fix it in the
-//decoder, too.  Sorry, future me! (or whoever's stuck doing this)
-
+//yes, this is just a flat array as that's what's convenient
 function userDefinedTypes(state = [], action) {
   switch (action.type) {
     case actions.DEFINE_TYPE:
-      return [
-        ...state,
-        { id: action.node.id, compilationId: action.compilationId }
-      ];
+      debug("action: %O", action);
+      return [...state, { id: action.node.id, sourceId: action.sourceId }];
     default:
       return state;
   }
@@ -125,6 +92,7 @@ const DEFAULT_ALLOCATIONS = {
 
 function allocations(state = DEFAULT_ALLOCATIONS, action) {
   if (action.type === actions.ALLOCATE) {
+    debug("action: %O", action);
     return {
       storage: action.storage,
       memory: action.memory,
@@ -155,13 +123,6 @@ const DEFAULT_ASSIGNMENTS = {
   byId: Object.assign(
     {}, //we start out with all globals assigned
     ...GLOBAL_ASSIGNMENTS.map(assignment => ({ [assignment.id]: assignment }))
-  ),
-  byCompilationId: {}, //no regular variables assigned at start
-  byBuiltin: Object.assign(
-    {}, //again, all globals start assigned
-    ...GLOBAL_ASSIGNMENTS.map(assignment => ({
-      [assignment.builtin]: [assignment.id] //yes, that's a 1-element array
-    }))
   )
 };
 
@@ -171,34 +132,12 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
     case actions.MAP_PATH_AND_ASSIGN:
       debug("action.type %O", action.type);
       debug("action.assignments %O", action.assignments);
-      return Object.values(action.assignments).reduce((acc, assignment) => {
-        let { id, astRef, compilationId } = assignment;
-        //we assume for now that only ordinary variables will be assigned this
-        //way, and not globals; globals are handled in DEFAULT_ASSIGNMENTS
-        return {
-          ...acc,
-          byId: {
-            ...acc.byId,
-            [id]: assignment
-          },
-          byCompilationId: {
-            ...acc.byCompilationId,
-            [compilationId]: {
-              ...acc.byCompilationId[compilationId],
-              byAstRef: {
-                ...(acc.byCompilationId[compilationId] || {}).byAstRef,
-                [astRef]: [
-                  ...new Set([
-                    ...(((acc.byCompilationId[compilationId] || {}).byAstRef ||
-                      {})[astRef] || []),
-                    id
-                  ])
-                ]
-              }
-            }
-          }
-        };
-      }, state);
+      return {
+        byId: {
+          ...state.byId,
+          ...action.assignments
+        }
+      };
 
     case actions.RESET:
       return DEFAULT_ASSIGNMENTS;

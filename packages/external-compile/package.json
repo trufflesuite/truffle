@@ -8,18 +8,18 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "2.0.0",
+  "version": "2.0.5",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0",
     "test": "mocha"
   },
   "dependencies": {
-    "@truffle/contract-schema": "^3.2.5",
+    "@truffle/contract-schema": "^3.3.2",
     "@truffle/expect": "^0.0.15",
     "debug": "^4.1.0",
     "glob": "^7.1.2",
-    "web3-utils": "1.2.1"
+    "web3-utils": "1.2.9"
   },
   "devDependencies": {
     "chai": "4.2.0",

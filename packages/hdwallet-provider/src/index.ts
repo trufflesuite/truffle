@@ -47,6 +47,7 @@ class HDWalletProvider {
       numberOfAddresses = 10,
       shareNonce = true,
       derivationPath = `m/44'/60'/0'/0/`,
+      pollingInterval = 4000,
 
       // what's left is either a mnemonic or a list of private keys
       ...signingAuthority
@@ -58,7 +59,9 @@ class HDWalletProvider {
     this.walletHdpath = derivationPath;
     this.wallets = {};
     this.addresses = [];
-    this.engine = new ProviderEngine();
+    this.engine = new ProviderEngine({
+      pollingInterval
+    });
 
     if (!HDWalletProvider.isValidProvider(providerOrUrl)) {
       throw new Error(

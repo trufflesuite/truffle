@@ -9,6 +9,7 @@ import solidity from "lib/solidity/reducers";
 import trace from "lib/trace/reducers";
 import controller from "lib/controller/reducers";
 import stacktrace from "lib/stacktrace/reducers";
+import txlog from "lib/txlog/reducers";
 
 import * as actions from "./actions";
 
@@ -96,6 +97,7 @@ const session = combineReducers({
 const reduceState = combineReducers({
   session,
   data,
+  txlog,
   evm,
   solidity,
   stacktrace,

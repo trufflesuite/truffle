@@ -8,19 +8,26 @@ on:
     - develop
     - next
 
-    # other targets
-    - truffle-db
-
   pull_request:
     branches:
       - "*"
 
 jobs:
+  yarncheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+      - run: npm install -g yarn
+      - run: yarn bootstrap
+      - run: test -z "$(git diff)"
+
+
   build:
     strategy:
       matrix:
         platform: [ubuntu-latest]
-        node-version: [10.x, 12.x]
+        node-version: [10.x, 12.x, 14.x]
         env: [GETH=true, PACKAGES=true, INTEGRATION=true]
     runs-on: ${{ matrix.platform }}
 
@@ -45,7 +52,7 @@ jobs:
       if: failure()
 
   slack_notification:
-    needs: build
+    needs: [yarncheck, build]
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:

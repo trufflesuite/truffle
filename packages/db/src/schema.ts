@@ -1,26 +1,9 @@
-import * as fse from "fs-extra";
-import path from "path";
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:schema");
 
-import { makeExecutableSchema } from "@gnd/graphql-tools";
+import * as GraphQl from "./graphql";
+import { Collections, definitions } from "./resources";
 
-export function readSchema() {
-  const schemaFile = path.join(__dirname, "schema.graphql");
-  const typeDefs = fse.readFileSync(schemaFile).toString();
+export type Context = GraphQl.Context<Collections>;
 
-  return makeExecutableSchema({
-    typeDefs,
-    resolvers: {
-      Named: {
-        __resolveType: obj => {
-          if (obj.networkId) {
-            return "Network";
-          } else {
-            return "Contract";
-          }
-        }
-      }
-    }
-  });
-}
-
-export const schema = readSchema();
+export const schema = GraphQl.forDefinitions(definitions);

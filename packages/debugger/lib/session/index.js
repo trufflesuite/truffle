@@ -1,14 +1,16 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:session");
 
+import * as Abi from "@truffle/abi-utils";
 import * as Codec from "@truffle/codec";
-import { keccak256 } from "lib/helpers";
+import { keccak256, stableKeccak256 } from "lib/helpers";
 
 import configureStore from "lib/store";
 
 import * as controller from "lib/controller/actions";
 import * as actions from "./actions";
 import data from "lib/data/selectors";
+import txlog from "lib/txlog/selectors";
 import stacktrace from "lib/stacktrace/selectors";
 import session from "lib/session/selectors";
 import * as dataSagas from "lib/data/sagas";
@@ -118,7 +120,16 @@ export default class Session {
    */
   static normalize(compilations) {
     let contexts = [];
-    let sources = {}; //by compilation, then index
+    let sources = {
+      user: {}, //by compilation
+      internal: {} //by context
+    };
+
+    //we're actually going to ignore the passed-in IDs and make our own.
+    //note we'll set contextHash to null for user sources, and only set it
+    //for internal sources.
+    const makeSourceId = (compilationId, contextHash, index) =>
+      stableKeccak256({ compilationId, contextHash, index });
 
     for (let compilation of compilations) {
       if (compilation.unreliableSourceOrder) {
@@ -127,19 +138,22 @@ export default class Session {
         );
       }
       let compiler = compilation.compiler; //note: we'll prefer one listed on contract or source
-      sources[compilation.id] = [];
+      sources.user[compilation.id] = [];
       for (let index in compilation.sources) {
         //not the recommended way to iterate over an array,
         //but the order doesn't matter here so it's safe
+        index = Number(index); //however due to the use of in we must explicitly convert to number
         let source = compilation.sources[index];
         if (!source) {
           continue; //just for safety (in case there are gaps)
         }
-        sources[compilation.id][index] = {
+        sources.user[compilation.id][index] = {
           ...source,
           compiler: source.compiler || compiler,
           compilationId: compilation.id,
-          id: index
+          index,
+          id: makeSourceId(compilation.id, null, index),
+          internal: false
         };
       }
 
@@ -153,7 +167,9 @@ export default class Session {
           immutableReferences,
           abi,
           compiler,
-          primarySourceId
+          primarySourceId,
+          generatedSources,
+          deployedGeneratedSources
         } = contract;
 
         //hopefully we can get rid of this step eventually, but not yet
@@ -176,22 +192,46 @@ export default class Session {
         //now: we need to find the contract node.
         //note: ideally we'd hold this off till later, but that would break the
         //direction of the evm/solidity dependence, so we do it now
-        let contractNode = Codec.Compilations.Utils.getContractNode(
+        const contractNode = Codec.Compilations.Utils.getContractNode(
           contract,
           compilation
         );
 
-        let contractId = contractNode ? contractNode.id : undefined;
-        let contractKind = contractNode ? contractNode.contractKind : undefined;
-        abi = Codec.AbiData.Utils.schemaAbiToAbi(abi); //let's handle this up front
+        const contractId = contractNode ? contractNode.id : undefined;
+        const contractKind = contractNode
+          ? contractNode.contractKind
+          : undefined;
+        const linearizedBaseContracts = contractNode
+          ? contractNode.linearizedBaseContracts
+          : undefined;
+        abi = Abi.normalize(abi); //let's handle this up front
 
         debug("contractName %s", contractName);
         debug("sourceMap %o", sourceMap);
         debug("compiler %o", compiler);
-        debug("abi %O", abi);
+        debug("abi %o", abi);
+
+        //convert Vyper source maps to solidity ones
+        //(note we won't bother handling the case where the compressed
+        //version doesn't exist)
+        try {
+          let vyperSourceMap = JSON.parse(sourceMap);
+          sourceMap = vyperSourceMap.pc_pos_map_compressed;
+        } catch (_) {}
+        try {
+          let vyperDeployedSourceMap = JSON.parse(deployedSourceMap);
+          deployedSourceMap = vyperDeployedSourceMap.pc_pos_map_compressed;
+        } catch (_) {}
 
         if (binary && binary != "0x") {
+          //NOTE: we take hash as *string*, not as bytes, because the binary may
+          //contain link references!
+          const contextHash = keccak256({
+            type: "string",
+            value: binary
+          });
           contexts.push({
+            context: contextHash,
             contractName,
             binary,
             sourceMap,
@@ -201,13 +241,36 @@ export default class Session {
             compilationId: compilation.id,
             contractId,
             contractKind,
-            externalSolidity: compilation.externalSolidity,
+            linearizedBaseContracts,
             isConstructor: true
           });
+          if (generatedSources) {
+            sources.internal[contextHash] = [];
+            for (let index in generatedSources) {
+              index = Number(index); //it comes out as a string due to in, so let's fix that
+              const source = generatedSources[index];
+              sources.internal[contextHash][index] = {
+                ...source,
+                compiler: source.compiler || compiler,
+                compilationId: compilation.id,
+                index,
+                id: makeSourceId(compilation.id, contextHash, index),
+                internal: true,
+                internalFor: contextHash
+              };
+            }
+          }
         }
 
         if (deployedBinary && deployedBinary != "0x") {
+          //NOTE: we take hash as *string*, not as bytes, because the binary may
+          //contain link references!
+          const contextHash = keccak256({
+            type: "string",
+            value: deployedBinary
+          });
           contexts.push({
+            context: contextHash,
             contractName,
             binary: deployedBinary,
             sourceMap: deployedSourceMap,
@@ -218,9 +281,25 @@ export default class Session {
             compilationId: compilation.id,
             contractId,
             contractKind,
-            externalSolidity: compilation.externalSolidity,
+            linearizedBaseContracts,
             isConstructor: false
           });
+          if (deployedGeneratedSources) {
+            sources.internal[contextHash] = [];
+            for (let index in deployedGeneratedSources) {
+              index = Number(index); //it comes out as a string due to in, so let's fix that
+              const source = deployedGeneratedSources[index];
+              sources.internal[contextHash][index] = {
+                ...source,
+                compiler: source.compiler || compiler,
+                compilationId: compilation.id,
+                index,
+                id: makeSourceId(compilation.id, contextHash, index),
+                internal: true,
+                internalFor: contextHash
+              };
+            }
+          }
         }
       }
     }
@@ -228,23 +307,16 @@ export default class Session {
     //now: turn contexts from array into object
     contexts = Object.assign(
       {},
-      ...contexts.map(context => {
-        const contextHash = keccak256({
-          type: "string",
-          value: context.binary
-        });
-        //NOTE: we take hash as *string*, not as bytes, because the binary may
-        //contain link references!
-        return {
-          [contextHash]: {
-            ...context,
-            context: contextHash
-          }
-        };
-      })
+      ...contexts.map(context => ({
+        [context.context]: {
+          ...context
+        }
+      }))
     );
 
     //normalize contexts
+    //HACK: the type of contexts doesn't actually match!!
+    //fortunately it's good enough to work
     contexts = Codec.Contexts.Utils.normalizeContexts(contexts);
 
     return { contexts, sources };
@@ -287,12 +359,10 @@ export default class Session {
 
         if (isStepping && !hasStarted) {
           hasStarted = true;
-          debug("heard step start");
           return;
         }
 
         if (!isStepping && hasStarted) {
-          debug("heard step stop");
           unsubscribe();
           resolve(true);
         }
@@ -301,17 +371,12 @@ export default class Session {
     });
   }
 
-  //returns true on success, false on already loaded, error object on failure
+  //returns true on success, false on already loaded; throws on failure
   async load(txHash) {
     if (this.view(session.status.loaded)) {
       return false;
     }
-    try {
-      return await this.readyAgainAfterLoading(actions.loadTransaction(txHash));
-    } catch (e) {
-      this._runSaga(sagas.unload);
-      return e;
-    }
+    return await this.readyAgainAfterLoading(actions.loadTransaction(txHash));
   }
 
   //returns true on success, false on already unloaded
@@ -374,6 +439,10 @@ export default class Session {
     return await this.dispatch(controller.removeAllBreakpoints());
   }
 
+  async setInternalStepping(active) {
+    return await this.dispatch(controller.setInternalStepping(active));
+  }
+
   //deprecated -- decode is now *always* ready!
   async decodeReady() {
     return true;
@@ -383,6 +452,9 @@ export default class Session {
     const definitions = this.view(data.current.identifiers.definitions);
     const refs = this.view(data.current.identifiers.refs);
     const compilationId = this.view(data.current.compilationId);
+    debug("name: %s", name);
+    debug("refs: %O", refs);
+    debug("definitions: %o", definitions);
 
     return await this._runSaga(
       dataSagas.decode,
@@ -454,6 +526,7 @@ export default class Session {
     return createNestedSelector({
       ast,
       data,
+      txlog,
       trace,
       evm,
       solidity,

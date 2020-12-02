@@ -1,4 +1,4 @@
-const debug = require("debug")("contract:contract"); // eslint-disable-line no-unused-vars
+const debug = require("debug")("contract:contract");
 let Web3 = require("web3");
 const webUtils = require("web3-utils");
 const execute = require("../execute");
@@ -127,7 +127,7 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
     // Prefer user defined `send`
     if (!instance.send) {
       instance.send = (value, txParams = {}) => {
-        const packet = Object.assign({ value: value }, txParams);
+        const packet = Object.assign({value: value}, txParams);
         return instance.sendTransaction(packet);
       };
     }
