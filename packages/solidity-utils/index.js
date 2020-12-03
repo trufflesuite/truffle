@@ -49,21 +49,16 @@ var SolidityUtils = {
       //at least that many fields, and that that particular field
       //is nonempty
 
-      if (splitInstruction[0] && splitInstruction[0] !== "-1") {
+      if (splitInstruction[0]) {
         processedInstruction.start = parseInt(splitInstruction[0]);
       }
 
-      if (splitInstruction[1] && splitInstruction[1] !== "-1") {
+      if (splitInstruction[1]) {
         processedInstruction.length = parseInt(splitInstruction[1]);
       }
 
       if (splitInstruction[2]) {
-        if (splitInstruction[0] === "-1" && splitInstruction[1] === "-1") {
-          //convert Vyper-style -1:-1:0 to Solidity-style -1:-1:-1
-          processedInstruction.file = -1;
-        } else {
-          processedInstruction.file = parseInt(splitInstruction[2]);
-        }
+        processedInstruction.file = parseInt(splitInstruction[2]);
       }
 
       if (splitInstruction[3]) {
@@ -166,6 +161,10 @@ var SolidityUtils = {
           file: instruction.file = primaryFile,
           modifierDepth: instruction.modifierDepth = 0
         } = instructionSourceMap);
+        if (instruction.start === -1 && instruction.length === -1) {
+          instruction.start = 0;
+          instruction.length = 0;
+        }
         const lineAndColumnMapping =
           lineAndColumnMappings[instruction.file] || {};
         instruction.range = {
