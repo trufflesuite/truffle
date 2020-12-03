@@ -99,10 +99,6 @@ var SolidityUtils = {
     let numInstructions;
     if (sourceMap) {
       numInstructions = sourceMap.length;
-    } else {
-      //HACK
-      numInstructions = (binary.length - 2) / 2;
-      //this is actually an overestimate, but that's OK
     }
 
     //because we might be dealing with a constructor with arguments, we do
