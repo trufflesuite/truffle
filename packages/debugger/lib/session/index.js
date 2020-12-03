@@ -171,6 +171,7 @@ export default class Session {
           generatedSources,
           deployedGeneratedSources
         } = contract;
+        debug("contractName: %s", contractName);
 
         //hopefully we can get rid of this step eventually, but not yet
         if (typeof binary === "object") {

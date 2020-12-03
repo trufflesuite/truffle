@@ -133,10 +133,10 @@ export function shimContracts(
         : files.indexOf(sourcePath);
       if (!inputSources) {
         //if inputSources was passed, we'll handle this separately below
+        sourceObject.id = index.toString(); //HACK
         sources[index] = sourceObject;
       }
-      sourceObject.id = index.toString(); //HACK
-      contractObject.primarySourceId = index.toString();
+      contractObject.primarySourceId = index.toString(); //HACK
     } else {
       //if neither was passed, attempt to determine it from the ast
       let index = sourceIndexForAst(sourceObject.ast); //sourceObject.ast for typing reasons
@@ -148,10 +148,8 @@ export function shimContracts(
       ));
       if (index !== null) {
         //if we're in this case, inputSources was not passed
-        sources[index] = {
-          ...sourceObject,
-          id: index.toString()
-        };
+        sourceObject.id = index.toString(); //HACK
+        sources[index] = sourceObject;
         contractObject.primarySourceId = index.toString();
       }
     }
@@ -162,11 +160,12 @@ export function shimContracts(
   if (inputSources) {
     //if input sources was passed, set up the sources object directly :)
     sources = inputSources.map(
-      ({sourcePath, contents: source, ast, language}) => ({
+      ({sourcePath, contents: source, ast, language}, index) => ({
         sourcePath,
         source,
         ast: <Ast.AstNode>ast,
-        language
+        language,
+        id: index.toString() //HACK
         //we'll omit compiler, as if inputSources was passed, presumably
         //we're using shimCompilation(), which sets that up separately
       })
