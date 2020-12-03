@@ -12,7 +12,7 @@
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0",
-    "test": "mocha ./test/* ./test/**/*"
+    "test": "mocha ./test --recursive"
   },
   "dependencies": {
     "@truffle/config": "^1.2.33",
