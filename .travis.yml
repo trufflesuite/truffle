@@ -1,5 +1,4 @@
-dist: xenial
-sudo: required
+os: linux
 language: node_js
 
 # configure Travis to run on-push builds only on PR-recipient branches
@@ -9,29 +8,61 @@ branches:
     - master
     - develop
     - next
-
     # other targets
     - truffle-db
 
 before_install:
   - npm install -g yarn
+install:
+  - yarn bootstrap
+  - truffle obtain --solc=0.5.16
 
-matrix:
+script: yarn ci
+
+
+jobs:
   fast_finish: true
   include:
     - node_js: 10
       env: FABRICEVM=true
+      install:
+        - yarn bootstrap
+        - truffle obtain --solc=0.5.16
+    # WINDOWS -- BEGINNING --
     - node_js: 10
-      env: COVERAGE=true
+      os: windows
+      env:
+        # Use YARN_GPG=no so Travis doesn't freeze after finished build
+        - YARN_GPG=no WINDOWS=true
+      before_install:
+        - powershell Set-ExecutionPolicy -ExecutionPolicy unrestricted
+        # We hav to use powershell to install geth on windows environment. Git Bash doesn't have package manager.
+        - powershell ./scripts/install_geth.ps1
+        - npm install -g yarn
+      install:
+        - yarn bootstrap
+    # WINDOWS -- END --
+    # WINDOWS -- BEGINNING --
+    - node_js: 10
+      os: windows
+      env:
+        # Use YARN_GPG=no so Travis doesn't freeze after finished build. Run test with GETH
+        - YARN_GPG=no WINDOWS=true GETH=true
+      before_install:
+        - powershell Set-ExecutionPolicy -ExecutionPolicy unrestricted
+        # We hav to use powershell to install geth on windows environment. Git Bash doesn't have package manager.
+        - powershell ./scripts/install_geth.ps1
+        - npm install -g yarn
+      install:
+        - yarn bootstrap
+    # WINDOWS -- END --
   allow_failures:
     - node_js: 10
       env: FABRICEVM=true
     - node_js: 10
       env: COVERAGE=true
-
-install:
-  - yarn bootstrap
-  - truffle obtain --solc=0.5.16
+      - os: windows
+      - env: COVERAGE=true
 
 cache:
   directories:
@@ -39,8 +70,6 @@ cache:
     - $(npm config get prefix)/lib/node_modules # globally installed stuff (i.e. lerna)
     - ~/.config/truffle/compilers
 
-script:
-  - yarn ci
 
 notifications:
   slack:
