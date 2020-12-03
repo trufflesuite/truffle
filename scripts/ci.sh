@@ -3,40 +3,69 @@
 # Exit script as soon as a command fails.
 set -o errexit
 
+GETH_OPTIONS="--rpc \
+      --rpcaddr 0.0.0.0 \
+      --rpcport 8545 \
+      --rpccorsdomain '*' \
+      --ws \
+      --wsaddr 0.0.0.0 \
+      --wsorigins '*' \
+      --nodiscover \
+      --dev \
+      --dev.period 0 \
+      --allow-insecure-unlock \
+      --miner.gastarget 7000000 \
+      --nousb \
+      --verbosity 1 \
+      --override.istanbul 0 \
+      js ./scripts/geth-accounts.js"
+
+#We don't redirect to /dev/null because verbosity is set to 1. This will show errors, but nothing else.
 run_geth() {
-  docker run \
+  if [ "$WINDOWS" = true ]; then
+    export PATH=$PATH:"/C/Program Files/Geth"
+    geth $GETH_OPTIONS   > /dev/null &
+    GETH_PID=$!
+  else
+    sudo apt install -y jq
+    docker pull ethereum/client-go:stable
+    docker run \
     -v /$PWD/scripts:/scripts \
     -d \
     -p 8545:8545 \
     -p 8546:8546 \
     -p 30303:30303 \
     ethereum/client-go:stable \
-    --rpc \
-    --rpcaddr '0.0.0.0' \
-    --rpcport 8545 \
-    --rpccorsdomain '*' \
-    --ws \
-    --wsaddr '0.0.0.0' \
-    --wsorigins '*' \
-    --nodiscover \
-    --dev \
-    --dev.period 0 \
-    --allow-insecure-unlock \
-    --targetgaslimit '7000000' \
-    js ./scripts/geth-accounts.js \
-    > /dev/null &
+    $GETH_OPTIONS > /dev/null
+  fi
 }
 
-if [ "$INTEGRATION" = true ]; then
+if [ "$WINDOWS" = true ]; then
+  if [ "$GETH" = true ]; then
+    # Do not quit if first test fails because we still have to run other test and then KILL!!! Geth.
+    set +o errexit
+    run_geth
+    sleep 30
+    lerna run --scope truffle test --stream -- --exit
+    EXIT_CODE=$?
+    lerna run --scope @truffle/contract test --stream -- --exit
+    EXIT_CODE=$(($EXIT_CODE|$?))
+    kill -9 $GETH_PID
+    exit $EXIT_CODE
+  else
+    lerna run --scope truffle test --stream -- --exit
+    lerna run --scope @truffle/contract test --stream -- --exit
+  fi
+  ps auxf
+
+elif [ "$INTEGRATION" = true ]; then
 
   sudo apt install -y jq
   lerna run --scope truffle test --stream
 
 elif [ "$GETH" = true ]; then
 
-  sudo apt install -y jq
-  docker pull ethereum/client-go:stable
-  run_geth
+  run_geth &
   sleep 30
   lerna run --scope truffle test --stream -- --exit
   lerna run --scope @truffle/contract test --stream -- --exit
@@ -97,5 +126,4 @@ elif [ "$COVERAGE" = true ]; then
   cd ../../ && nyc lerna run --ignore debugger test && \
   cat ./packages/debugger/coverage/lcov.info >> ./coverage/lcov.info && \
   cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
-
 fi
