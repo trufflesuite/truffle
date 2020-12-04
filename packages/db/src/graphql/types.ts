@@ -7,6 +7,8 @@ import { IResolvers } from "graphql-tools";
 import {
   Collections,
   CollectionName,
+  CollectionNameStyle,
+  CollectionNameStyledAs,
   MutableCollectionName
 } from "@truffle/db/meta";
 
@@ -16,6 +18,9 @@ export type Definitions<C extends Collections> = {
   [N in CollectionName<C>]: {
     typeDefs: graphql.DocumentNode;
     resolvers?: IResolvers<any, Context<C>>;
+    names: {
+      [S in CollectionNameStyle]: CollectionNameStyledAs<S, C, N>;
+    };
   } & (N extends MutableCollectionName<C>
     ? { mutable: true }
     : { mutable?: false });

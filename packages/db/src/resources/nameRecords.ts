@@ -8,6 +8,13 @@ import { plural } from "pluralize";
 import { Definition, CollectionName } from "./types";
 
 export const nameRecords: Definition<"nameRecords"> = {
+  names: {
+    resource: "nameRecord",
+    Resource: "NameRecord",
+    resources: "nameRecords",
+    Resources: "NameRecords",
+    resourcesMutate: "nameRecordsAdd"
+  },
   createIndexes: [],
   idFields: ["name", "type", "resource", "previous"],
   typeDefs: gql`
