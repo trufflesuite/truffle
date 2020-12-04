@@ -1,4 +1,5 @@
-os: linux
+dist: xenial
+sudo: required
 language: node_js
 
 # configure Travis to run on-push builds only on PR-recipient branches
@@ -20,14 +21,11 @@ install:
 script: yarn ci
 
 
-jobs:
+matrix:
   fast_finish: true
   include:
     - node_js: 10
       env: FABRICEVM=true
-      install:
-        - yarn bootstrap
-        - truffle obtain --solc=0.5.16
     # WINDOWS -- BEGINNING --
     - node_js: 10
       os: windows
