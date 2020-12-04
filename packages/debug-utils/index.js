@@ -735,6 +735,9 @@ var DebugUtils = {
       const firstNewLine = colorizedWrapped.indexOf("\n");
       const lastNewLine = colorizedWrapped.lastIndexOf("\n");
       return colorizedWrapped.slice(firstNewLine + 1, lastNewLine);
+    } else if (language === "vyper") {
+      options.lang = "python"; //HACK -- close enough for now!
+      return chromafi(code, options);
     } else {
       //otherwise, don't highlight
       return code;
