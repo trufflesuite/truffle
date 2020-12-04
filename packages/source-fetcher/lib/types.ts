@@ -35,12 +35,14 @@ export interface SolcOptions {
   language: "Solidity" | "Yul"; //again, only Solidity really supported atm
   version: string;
   settings: SolcSettings;
+  specializations: SolcSpecializations;
 }
 
 export interface VyperOptions {
   language: "Vyper";
   version: string;
   settings: VyperSettings;
+  specializations: VyperSpecializations;
 }
 
 //only including settings that would alter compiled result
@@ -50,11 +52,20 @@ export interface SolcSettings {
   evmVersion?: string; //not gonna enumerate these
   debug?: DebugSettings;
   metadata?: MetadataSettings;
-  libraries?: LibrarySettings; //note: we don't actually want to pass this!
+  libraries?: LibrarySettings; //note: we don't actually want to return this!
 }
 
 export interface VyperSettings {
   evmVersion?: string; //not gonna enumerate these
+}
+
+export interface SolcSpecializations {
+  libraries?: LibrarySettings;
+  constructorArguments?: string; //encoded, as hex string, w/o 0x in front
+}
+
+export interface VyperSpecializations {
+  constructorArguments?: string; //encoded, as hex string, w/o 0x in front
 }
 
 export interface SolcSources {

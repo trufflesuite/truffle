@@ -80,7 +80,10 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
       options: {
         language: metadata.language,
         version: metadata.compiler.version,
-        settings: removeLibraries(metadata.settings)
+        settings: removeLibraries(metadata.settings),
+        specializations: {
+          libraries: metadata.settings.libraries
+        }
       }
     };
   }

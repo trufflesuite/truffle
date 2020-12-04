@@ -166,7 +166,11 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       options: {
         language: "Solidity",
         version: result.CompilerVersion,
-        settings: this.extractSettings(result)
+        settings: this.extractSettings(result),
+        specializations: {
+          libraries: this.processLibraries(result.Library),
+          constructorArguments: result.ConstructorArguments
+        }
       }
     };
   }
@@ -180,7 +184,11 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       options: {
         language: "Solidity",
         version: result.CompilerVersion,
-        settings: this.extractSettings(result)
+        settings: this.extractSettings(result),
+        specializations: {
+          libraries: this.processLibraries(result.Library),
+          constructorArguments: result.ConstructorArguments
+        }
       }
     };
   }
@@ -194,7 +202,11 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       options: {
         language: jsonInput.language,
         version: result.CompilerVersion,
-        settings: removeLibraries(jsonInput.settings) //we *don't* want to pass library info!  unlinked bytecode is better!
+        settings: removeLibraries(jsonInput.settings), //we *don't* want to pass library info!  unlinked bytecode is better!
+        specializations: {
+          libraries: jsonInput.settings.libraries,
+          constructorArguments: result.ConstructorArguments
+        }
       }
     };
   }
@@ -209,7 +221,10 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       options: {
         language: "Vyper",
         version: result.CompilerVersion.replace(/^vyper:/, ""),
-        settings: this.extractVyperSettings(result)
+        settings: this.extractVyperSettings(result),
+        specializations: {
+          constructorArguments: result.ConstructorArguments
+        }
       }
     };
   }
@@ -243,6 +258,24 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
         optimizer
       };
     }
+
+  }
+
+  private static processLibraries(librariesString: string): Types.LibrarySettings {
+    let libraries: Types.Libraries;
+    if (librariesString === "") {
+      libraries = {};
+    } else {
+      libraries = Object.assign({},
+        ...librariesString.split(";").map(
+          pair => {
+            const [name, address] = pair.split(":");
+            return { [name]: "0x" + address };
+          }
+        )
+      );
+    }
+    return { "": libraries }; //empty string as key means it applies to all contracts
   }
 
   private static extractVyperSettings(
@@ -281,9 +314,9 @@ interface EtherscanResult {
   CompilerVersion: string;
   OptimizationUsed: string; //really: a number used as a boolean
   Runs: string; //really: a number
-  ConstructorArguments: string; //ignored
+  ConstructorArguments: string; //encoded as hex string, no 0x in front
   EVMVersion: string;
-  Library: string; //represents an object but not in JSON (we'll actually ignore this)
+  Library: string; //semicolon-delimited list of colon-delimited name-address pairs (addresses lack 0x in front)
   LicenseType: string; //ignored
   Proxy: string; //no clue what this is [ignored]
   Implementation: string; //or this [ignored]
