@@ -1,7 +1,9 @@
 import debugModule from "debug";
 const debug = debugModule("source-fetcher:etherscan");
+// untyped import since no @types/web3-utils exists
+const Web3Utils = require("web3-utils");
 
-import {Fetcher, FetcherConstructor} from "./types";
+import { Fetcher, FetcherConstructor } from "./types";
 import * as Types from "./types";
 import {
   networksById,
@@ -234,7 +236,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
   ): Types.SourcesByPath {
     return Object.assign(
       {},
-      ...Object.entries(sources).map(([path, {content: source}]) => ({
+      ...Object.entries(sources).map(([path, { content: source }]) => ({
         [makeFilename(path)]: source
       }))
     );
@@ -258,21 +260,21 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
         optimizer
       };
     }
-
   }
 
-  private static processLibraries(librariesString: string): Types.LibrarySettings {
+  private static processLibraries(
+    librariesString: string
+  ): Types.LibrarySettings {
     let libraries: Types.Libraries;
     if (librariesString === "") {
       libraries = {};
     } else {
-      libraries = Object.assign({},
-        ...librariesString.split(";").map(
-          pair => {
-            const [name, address] = pair.split(":");
-            return { [name]: "0x" + address };
-          }
-        )
+      libraries = Object.assign(
+        {},
+        ...librariesString.split(";").map(pair => {
+          const [name, address] = pair.split(":");
+          return { [name]: Web3Utils.toChecksumAddress(address) };
+        })
       );
     }
     return { "": libraries }; //empty string as key means it applies to all contracts
@@ -284,7 +286,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
     const evmVersion: string =
       result.EVMVersion === "Default" ? undefined : result.EVMVersion;
     if (evmVersion !== undefined) {
-      return {evmVersion};
+      return { evmVersion };
     } else {
       return {};
     }

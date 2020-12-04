@@ -24,7 +24,8 @@
   "dependencies": {
     "debug": "^4.1.1",
     "request-promise-native": "^1.0.8",
-    "source-map-support": "^0.5.19"
+    "source-map-support": "^0.5.19",
+    "web3-utils": "^1.3.0"
   },
   "devDependencies": {
     "@types/debug": "^4.1.5",
