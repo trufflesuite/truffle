@@ -76,19 +76,6 @@ function readSource(sourcePath) {
  * aggregate source information based on compiled output;
  * this can include sources that are not contracts
  */
-function processAllSources(sources) {
-  if (!sources.length) return [];
-
-  return sources.map(sourcePath => {
-    let source = {
-      sourcePath: sourcePath,
-      contents: readSource(sourcePath),
-      language: "vyper"
-    };
-
-    return source;
-  });
-}
 
 // compile all sources
 async function compileAll({ sources, options }) {
@@ -96,6 +83,7 @@ async function compileAll({ sources, options }) {
 
   Compile.display(sources, options);
 
+  const compilerInfo = { name: "vyper", version: compiler.version };
   const promises = [];
   sources.forEach(sourcePath => {
     promises.push(
@@ -126,24 +114,25 @@ async function compileAll({ sources, options }) {
             compiler
           };
 
-          resolve(contractDefinition);
+          const compilation = {
+            sources: [{
+              sourcePath,
+              contents: sourceContents,
+              language: "vyper"
+            }],
+            contracts: [contractDefinition],
+            compiler: compilerInfo,
+            sourceIndexes: [sourcePath],
+          };
+
+          resolve(compilation);
         });
       })
     );
   });
-  const contracts = await Promise.all(promises);
+  const compilations = await Promise.all(promises);
 
-  const compilerInfo = { name: "vyper", version: compiler.version };
-  return {
-    compilations: [
-      {
-        sources: processAllSources(sources),
-        compiler: compilerInfo,
-        contracts,
-        sourceIndexes: sources
-      }
-    ]
-  };
+  return { compilations };
 }
 
 const Compile = {
