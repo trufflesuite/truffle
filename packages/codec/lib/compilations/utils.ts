@@ -141,7 +141,14 @@ export function shimContracts(
       contractObject.primarySourceId = index.toString(); //HACK
     } else {
       //if neither was passed, attempt to determine it from the ast
-      let index = sourceIndexForAst(sourceObject.ast); //sourceObject.ast for typing reasons
+      let index;
+      if (compiler.name === "vyper") {
+        index = 0; //HACK!! relies on us currently compiling Vyper contracts one at a time
+        //this will need to be changed once we change to using vyper-json
+        //(presumably we'll then be able to use the ast or source map)
+      } else {
+        index = sourceIndexForAst(sourceObject.ast); //sourceObject.ast for typing reasons
+      }
       ({index, unreliableSourceOrder} = getIndexToAddAt(
         sourceObject,
         index,
