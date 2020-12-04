@@ -151,6 +151,10 @@ const controller = createSelectorTree({
           debug("breakpoint: %O", breakpoint);
           debug("sources: %o", sources);
           const { source, ast } = sources[sourceId];
+          if (!ast) {
+            //if no ast, don't attempt to adjust
+            return breakpoint;
+          }
           const findOverlappingRange = functions[sourceId];
           const lineLengths = source.split("\n").map(line => line.length);
           //why does neither JS nor lodash have a scan function like Haskell??
