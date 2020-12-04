@@ -579,6 +579,11 @@ const data = createSelectorTree({
     sourceIndex: createLeaf([solidity.current.source], ({ index }) => index),
 
     /**
+     * data.current.language
+     */
+    sourceIndex: createLeaf([solidity.current.source], ({ language }) => language),
+
+    /**
      * data.current.internalSourceFor
      * returns null if in a user source
      */
@@ -1097,10 +1102,11 @@ const data = createSelectorTree({
           "/current/scopes/inlined",
           "/current/node",
           "/current/pointer",
-          "/current/sourceIndex"
+          "/current/sourceIndex",
+          "/current/language"
         ],
 
-        (scopes, scope, pointer, sourceId) => {
+        (scopes, scope, pointer, sourceId, language) => {
           let variables = {};
           if (scope !== undefined) {
             let cur =
@@ -1145,12 +1151,12 @@ const data = createSelectorTree({
           };
 
           if (
-            scope &&
-            (scope.nodeType.startsWith("Yul") ||
-              scope.nodeType === "InlineAssembly")
+            language !== "Solidity" ||
+            (scope &&
+              (scope.nodeType.startsWith("Yul") ||
+              scope.nodeType === "InlineAssembly"))
           ) {
-            //builtins aren't visible in Yul
-            debug("no builtins in yul");
+            //Solidity builtins are for Solidity only!
             return variables;
           }
 
