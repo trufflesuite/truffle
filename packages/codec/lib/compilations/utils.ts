@@ -122,7 +122,7 @@ export function shimContracts(
       source,
       ast: <Ast.AstNode>ast,
       compiler,
-      language: inferLanguage(<Ast.AstNode>ast)
+      language: inferLanguage(<Ast.AstNode>ast, compiler)
     };
     //ast needs to be coerced because schema doesn't quite match our types here...
 
@@ -314,8 +314,10 @@ function isGeneratedSources(
 }
 
 //HACK, maybe?
-function inferLanguage(ast: Ast.AstNode | undefined): string | undefined {
-  if (!ast || typeof ast.nodeType !== "string") {
+function inferLanguage(ast: Ast.AstNode | undefined, compiler: Compiler.CompilerVersion): string | undefined {
+  if (compiler.name === "vyper") {
+    return "vyper";
+  } else if (!ast || typeof ast.nodeType !== "string") {
     return undefined;
   } else if (ast.nodeType === "SourceUnit") {
     return "solidity";
