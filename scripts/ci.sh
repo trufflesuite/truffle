@@ -58,9 +58,9 @@ elif [ "$TEZOS" = true ]; then
 
   truffle version
   mkdir tezos-ligo-box && cd tezos-ligo-box && truffle unbox tezos-example
-  truffle compile && truffle test --networks.development=""
+  truffle compile && truffle test""
   mkdir ../tezos-smartpy-box && cd ../tezos-smartpy-box && truffle unbox tezos-smartpy-example
-  truffle compile && truffle test --networks.development=""
+  truffle compile && truffle test""
 
 elif [ "$COLONY" = true ]; then
 
