@@ -1,11 +1,18 @@
-import {logger} from "@truffle/db/logger";
+import { logger } from "@truffle/db/logger";
 const debug = logger("db:resources:compilations");
 
 import gql from "graphql-tag";
 
-import {Definition} from "./types";
+import { Definition } from "./types";
 
 export const compilations: Definition<"compilations"> = {
+  names: {
+    resource: "compilation",
+    Resource: "Compilation",
+    resources: "compilations",
+    Resources: "Compilations",
+    resourcesMutate: "compilationsAdd"
+  },
   createIndexes: [],
   idFields: ["compiler", "sources"],
   typeDefs: gql`
@@ -72,11 +79,11 @@ export const compilations: Definition<"compilations"> = {
   resolvers: {
     Compilation: {
       sources: {
-        resolve: async ({sources}, _, {workspace}) => {
+        resolve: async ({ sources }, _, { workspace }) => {
           debug("Resolving Compilation.sources...");
 
           const result = await Promise.all(
-            sources.map(({id}) => workspace.get("sources", id))
+            sources.map(({ id }) => workspace.get("sources", id))
           );
 
           debug("Resolved Compilation.sources.");
@@ -84,12 +91,12 @@ export const compilations: Definition<"compilations"> = {
         }
       },
       processedSources: {
-        resolve: ({id, processedSources}, _, {}) => {
+        resolve: ({ id, processedSources }, _, {}) => {
           debug("Resolving Compilation.processedSources...");
 
           const result = processedSources.map((processedSource, index) => ({
             ...processedSource,
-            compilation: {id},
+            compilation: { id },
             index
           }));
 
@@ -98,7 +105,7 @@ export const compilations: Definition<"compilations"> = {
         }
       },
       contracts: {
-        resolve: async ({id}, _, {workspace}) => {
+        resolve: async ({ id }, _, { workspace }) => {
           debug("Resolving Compilation.contracts...");
 
           const result = await workspace.find("contracts", {
@@ -115,7 +122,7 @@ export const compilations: Definition<"compilations"> = {
 
     SourceMap: {
       bytecode: {
-        async resolve({bytecode: {id}}, _, {workspace}) {
+        async resolve({ bytecode: { id } }, _, { workspace }) {
           debug("Resolving SourceMap.bytecode...");
 
           const result = await workspace.get("bytecodes", id);
@@ -128,7 +135,7 @@ export const compilations: Definition<"compilations"> = {
 
     ProcessedSource: {
       source: {
-        resolve: async ({source: {id}}, _, {workspace}) => {
+        resolve: async ({ source: { id } }, _, { workspace }) => {
           debug("Resolving ProcessedSource.source...");
 
           const result = await workspace.get("sources", id);
@@ -138,7 +145,7 @@ export const compilations: Definition<"compilations"> = {
         }
       },
       contracts: {
-        resolve: async ({compilation, index}, _, {workspace}) => {
+        resolve: async ({ compilation, index }, _, { workspace }) => {
           debug("Resolving ProcessedSource.compilation...");
 
           const result = await workspace.find("contracts", {
