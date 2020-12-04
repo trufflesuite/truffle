@@ -1,7 +1,9 @@
 import debugModule from "debug";
 const debug = debugModule("source-fetcher:etherscan");
+// untyped import since no @types/web3-utils exists
+const Web3Utils = require("web3-utils");
 
-import {Fetcher, FetcherConstructor} from "./types";
+import { Fetcher, FetcherConstructor } from "./types";
 import * as Types from "./types";
 import {
   networksById,
@@ -166,7 +168,11 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       options: {
         language: "Solidity",
         version: result.CompilerVersion,
-        settings: this.extractSettings(result)
+        settings: this.extractSettings(result),
+        specializations: {
+          libraries: this.processLibraries(result.Library),
+          constructorArguments: result.ConstructorArguments
+        }
       }
     };
   }
@@ -180,7 +186,11 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       options: {
         language: "Solidity",
         version: result.CompilerVersion,
-        settings: this.extractSettings(result)
+        settings: this.extractSettings(result),
+        specializations: {
+          libraries: this.processLibraries(result.Library),
+          constructorArguments: result.ConstructorArguments
+        }
       }
     };
   }
@@ -194,7 +204,11 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       options: {
         language: jsonInput.language,
         version: result.CompilerVersion,
-        settings: removeLibraries(jsonInput.settings) //we *don't* want to pass library info!  unlinked bytecode is better!
+        settings: removeLibraries(jsonInput.settings), //we *don't* want to pass library info!  unlinked bytecode is better!
+        specializations: {
+          libraries: jsonInput.settings.libraries,
+          constructorArguments: result.ConstructorArguments
+        }
       }
     };
   }
@@ -209,7 +223,10 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       options: {
         language: "Vyper",
         version: result.CompilerVersion.replace(/^vyper:/, ""),
-        settings: this.extractVyperSettings(result)
+        settings: this.extractVyperSettings(result),
+        specializations: {
+          constructorArguments: result.ConstructorArguments
+        }
       }
     };
   }
@@ -219,7 +236,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
   ): Types.SourcesByPath {
     return Object.assign(
       {},
-      ...Object.entries(sources).map(([path, {content: source}]) => ({
+      ...Object.entries(sources).map(([path, { content: source }]) => ({
         [makeFilename(path)]: source
       }))
     );
@@ -245,13 +262,31 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
     }
   }
 
+  private static processLibraries(
+    librariesString: string
+  ): Types.LibrarySettings {
+    let libraries: Types.Libraries;
+    if (librariesString === "") {
+      libraries = {};
+    } else {
+      libraries = Object.assign(
+        {},
+        ...librariesString.split(";").map(pair => {
+          const [name, address] = pair.split(":");
+          return { [name]: Web3Utils.toChecksumAddress(address) };
+        })
+      );
+    }
+    return { "": libraries }; //empty string as key means it applies to all contracts
+  }
+
   private static extractVyperSettings(
     result: EtherscanResult
   ): Types.VyperSettings {
     const evmVersion: string =
       result.EVMVersion === "Default" ? undefined : result.EVMVersion;
     if (evmVersion !== undefined) {
-      return {evmVersion};
+      return { evmVersion };
     } else {
       return {};
     }
@@ -281,9 +316,9 @@ interface EtherscanResult {
   CompilerVersion: string;
   OptimizationUsed: string; //really: a number used as a boolean
   Runs: string; //really: a number
-  ConstructorArguments: string; //ignored
+  ConstructorArguments: string; //encoded as hex string, no 0x in front
   EVMVersion: string;
-  Library: string; //represents an object but not in JSON (we'll actually ignore this)
+  Library: string; //semicolon-delimited list of colon-delimited name-address pairs (addresses lack 0x in front)
   LicenseType: string; //ignored
   Proxy: string; //no clue what this is [ignored]
   Implementation: string; //or this [ignored]
