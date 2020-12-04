@@ -119,7 +119,7 @@ async function compileAll({ sources, options }) {
             contractName: contractName,
             sourcePath: sourcePath,
             source: sourceContents,
-            abi: compiledContract.abi,
+            abi: JSON.parse(compiledContract.abi),
             bytecode: compiledContract.bytecode,
             deployedBytecode: compiledContract.bytecode_runtime,
             deployedSourceMap: compiledContract.source_map, //there is no constructor source map
