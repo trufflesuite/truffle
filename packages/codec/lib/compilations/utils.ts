@@ -30,7 +30,8 @@ export function shimCompilation(
     ...shimContracts(inputCompilation.contracts, {
       files: inputCompilation.sourceIndexes,
       sources: inputCompilation.sources,
-      shimmedCompilationId
+      shimmedCompilationId,
+      compiler: inputCompilation.compiler
     }),
     compiler: inputCompilation.compiler
   };
@@ -53,6 +54,7 @@ interface CompilationOptions {
   files?: string[];
   sources?: Common.Source[];
   shimmedCompilationId?: string;
+  compiler?: Compiler.CompilerVersion;
 }
 
 /**
@@ -60,8 +62,8 @@ interface CompilationOptions {
  * to a compilation.  usually used via one of the above functions.
  * Note: if you pass in options.sources, options.files will be ignored.
  * Note: if you pass in options.sources, sources will not have
- * compiler set, so you should set that up separately, as in
- * shimCompilation().
+ * compiler set unless you also pass in options.compiler; in this case
+ * you should set that up separately, as in shimCompilation().
  */
 export function shimContracts(
   artifacts: (Artifact | Common.CompiledContract)[],
@@ -157,21 +159,6 @@ export function shimContracts(
     contracts.push(contractObject);
   }
 
-  if (inputSources) {
-    //if input sources was passed, set up the sources object directly :)
-    sources = inputSources.map(
-      ({sourcePath, contents: source, ast, language}, index) => ({
-        sourcePath,
-        source,
-        ast: <Ast.AstNode>ast,
-        language,
-        id: index.toString() //HACK
-        //we'll omit compiler, as if inputSources was passed, presumably
-        //we're using shimCompilation(), which sets that up separately
-      })
-    );
-  }
-
   //now: check for id overlap with internal sources
   //(don't bother if inputSources or files was passed)
   if (!inputSources && !files) {
@@ -191,10 +178,26 @@ export function shimContracts(
   }
 
   let compiler: Compiler.CompilerVersion;
-  if (!unreliableSourceOrder && contracts.length > 0) {
+  if (options.compiler) {
+    compiler = options.compiler;
+  } else if (!unreliableSourceOrder && contracts.length > 0) {
     //if things were actually compiled together, we should just be able
     //to pick an arbitrary one
     compiler = contracts[0].compiler;
+  }
+
+  //if input sources was passed, set up the sources object directly :)
+  if (inputSources) {
+    sources = inputSources.map(
+      ({sourcePath, contents: source, ast, language}, index) => ({
+        sourcePath,
+        source,
+        ast: <Ast.AstNode>ast,
+        language,
+        id: index.toString(), //HACK
+        compiler //redundant but let's include it
+      })
+    );
   }
 
   return {
