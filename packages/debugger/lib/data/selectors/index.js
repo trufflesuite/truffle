@@ -1151,7 +1151,7 @@ const data = createSelectorTree({
           };
 
           if (
-            language !== "Solidity" ||
+            language !== "solidity" ||
             (scope &&
               (scope.nodeType.startsWith("Yul") ||
               scope.nodeType === "InlineAssembly"))
