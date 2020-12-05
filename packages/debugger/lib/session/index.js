@@ -212,25 +212,10 @@ export default class Session {
         debug("compiler %o", compiler);
         debug("abi %o", abi);
 
-        //convert Vyper source maps to solidity ones
-        //(note we won't bother handling the case where the compressed
-        //version doesn't exist; that will have to wait for a later version)
-        const shimSourceMap = sourceMap => {
-          if (!sourceMap) {
-            return sourceMap; //undefined case
-          } else if (typeof sourceMap === "object") {
-            return sourceMap.pc_pos_map_compressed; //Vyper object case
-          } else {
-            try {
-              return JSON.parse(sourceMap).pc_pos_map_compressed; //Vyper JSON case
-            } catch (_) {
-              return sourceMap; //Solidity case
-            }
-          }
-        };
-
-        sourceMap = shimSourceMap(sourceMap);
-        deployedSourceMap = shimSourceMap(deployedSourceMap);
+        //note: simpleShimSourceMap does not handle the case where we can't just extract
+        //the Solidity-style source map
+        sourceMap = Codec.Compilations.Utils.simpleShimSourceMap(sourceMap);
+        deployedSourceMap = Codec.Compilations.Utils.simpleShimSourceMap(deployedSourceMap);
 
         if (binary && binary != "0x") {
           //NOTE: we take hash as *string*, not as bytes, because the binary may

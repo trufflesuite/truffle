@@ -8,7 +8,7 @@ import {
   GeneratedSources
 } from "@truffle/contract-schema/spec";
 import * as Common from "@truffle/compile-common";
-import {Compilation, Contract, Source} from "./types";
+import {Compilation, Contract, Source, VyperSourceMap} from "./types";
 
 export function shimCompilations(
   inputCompilations: Common.Compilation[],
@@ -247,7 +247,8 @@ export function getContractNode(
       sources.find(source => source && source.id === primarySourceId)
     ];
   } else if (!unreliableSourceOrder && (deployedSourceMap || sourceMap)) {
-    let sourceId = extractPrimarySource(deployedSourceMap || sourceMap);
+    const sourceMapString = simpleShimSourceMap(deployedSourceMap || sourceMap);
+    let sourceId = extractPrimarySource(sourceMapString);
     sourcesToCheck = [sources[sourceId]];
   } else {
     //WARNING: if we end up in this case, we could get the wrong contract!
@@ -387,3 +388,22 @@ function getIndexToAddAt(
     };
   }
 }
+
+/**
+ * convert Vyper source maps to solidity ones
+ * (note we won't bother handling the case where the compressed
+ * version doesn't exist; that will have to wait for a later version)
+ */
+export function simpleShimSourceMap(sourceMap: string | VyperSourceMap): string {
+  if (sourceMap === undefined) {
+    return undefined; //undefined case
+  } else if (typeof sourceMap === "object") {
+    return sourceMap.pc_pos_map_compressed; //Vyper object case
+  } else {
+    try {
+      return JSON.parse(sourceMap).pc_pos_map_compressed; //Vyper JSON case
+    } catch (_) {
+      return sourceMap; //Solidity case
+    }
+  }
+};
