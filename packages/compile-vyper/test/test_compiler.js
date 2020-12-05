@@ -43,9 +43,8 @@ describe("vyper compiler", function () {
         "Contract name is set correctly"
       );
 
-      assert.notEqual(
-        contract.abi.indexOf("vyper_action"),
-        -1,
+      assert(
+        contract.abi.map(item => item.name).includes("vyper_action"),
         "ABI has function from contract present"
       );
 
