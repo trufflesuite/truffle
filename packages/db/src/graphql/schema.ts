@@ -40,6 +40,7 @@ class DefinitionsSchema<C extends Collections> {
     const common = gql`
       interface Resource {
         id: ID!
+        kind: String!
       }
 
       interface Named {
@@ -168,6 +169,7 @@ abstract class DefinitionSchema<
 
       extend type ${Resource} {
         id: ID!
+        kind: String!
       }
 
       extend type Query {
@@ -204,12 +206,18 @@ abstract class DefinitionSchema<
     const logAll = log.extend("all");
     const logFilter = log.extend("filter");
 
-    const { resource, resources } = this.definition.names;
+    const { resource, resources, Resource } = this.definition.names;
 
     const { resolvers = {} } = this.definition;
 
     const result = {
       ...resolvers,
+
+      [Resource]: {
+        ...(resolvers[Resource] as any),
+
+        kind: () => Resource
+      },
 
       Query: {
         [resource]: {
