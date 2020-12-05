@@ -19,12 +19,7 @@ describe("vyper compiler", function () {
 
   it("compiles vyper contracts", async function () {
     const { compilations } = await Compile.all(config);
-    const contracts = [].concat(
-      ...compilations.map(compilation => compilation.contracts)
-    );
-    const sourceIndexes = [].concat(
-      ...compilations.map(compilation => compilation.sourceIndexes)
-    );
+    const { contracts, sourceIndexes } = compilations[0];
     sourceIndexes.forEach(path => {
       assert(
         [".vy", ".v.py", ".vyper.py"].some(
@@ -48,8 +43,9 @@ describe("vyper compiler", function () {
         "Contract name is set correctly"
       );
 
-      assert(
-        contract.abi.map(item => item.name).includes("vyper_action"),
+      assert.notEqual(
+        contract.abi.indexOf("vyper_action"),
+        -1,
         "ABI has function from contract present"
       );
 
@@ -118,9 +114,7 @@ describe("vyper compiler", function () {
 
     it("compiles with specified EVM version (petersburg)", async () => {
       const { compilations } = await Compile.all(configWithPetersburg);
-      const contracts = [].concat(
-        ...compilations.map(compilation => compilation.contracts)
-      );
+      const { contracts } = compilations[0];
       //the SELFBALANCE opcode was introduced in Istanbul.
       //we're specifying that it should compile for Petersburg, which was earlier.
       //Therefore, the result should not contain the SELFBALANCE opcode.
@@ -146,10 +140,11 @@ describe("vyper compiler", function () {
 
     it("compiles with specified EVM version (istanbul)", async () => {
       const { compilations } = await Compile.all(configWithIstanbul);
+      const { contracts } = compilations[0];
       //the SELFBALANCE opcode was introduced in Istanbul.
       //Vyper *will* use the selfbalance opcode for self.balance
       //if it's compiling for Istanbul or later, and we use that in VyperContract4
-      const contract = compilations[3].contracts[0];
+      const contract = contracts[3];
       const deployedInstructions = CodeUtils.parseCode(
         contract.deployedBytecode
       );
@@ -165,11 +160,9 @@ describe("vyper compiler", function () {
   describe("compilation sources array", async () => {
     it("returns an array of sources reflecting sources in project", async () => {
       const { compilations } = await Compile.all(config);
-      assert(compilations.length === 4);
-      const compilation = compilations[0];
-      const { sources } = compilation;
+      const { sources } = compilations[0];
 
-      assert(sources.length === 1);
+      assert(sources.length === 4);
       assert(
         sources[0].sourcePath ===
           path.join(__dirname, "sources/VyperContract1.vy")
