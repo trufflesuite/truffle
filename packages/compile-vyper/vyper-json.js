@@ -1,9 +1,9 @@
 const execSync = require("child_process").execSync;
 const path = require("path");
 const fs = require("fs");
-const colors = require("colors");
 const semver = require("semver");
 const debug = require("debug")("compile-vyper:vyper-json");
+const CompileError = require("./compileerror");
 
 //NOTE: Much of this file is copypasted (w/modifications) from
 //compile-solidity/run.js, so be warned...
@@ -54,7 +54,7 @@ function compileAllJson({ sources: sourcePaths, options, version }) {
       options.logger.log("");
     }
 
-    throw new Error(colors.red(errors.trim())); //I guess?
+    throw new CompileError(errors);
   }
 
   const compilerOutput = correctPaths(rawCompilerOutput);
