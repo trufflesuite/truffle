@@ -581,7 +581,7 @@ const data = createSelectorTree({
     /**
      * data.current.language
      */
-    sourceIndex: createLeaf([solidity.current.source], ({ language }) => language),
+    language: createLeaf([solidity.current.source], ({ language }) => language),
 
     /**
      * data.current.internalSourceFor
