@@ -18,7 +18,6 @@ export const networks: Definition<"networks"> = {
   idFields: ["networkId", "historicBlock"],
   typeDefs: gql`
     type Network implements Resource & Named {
-      id: ID!
       name: String!
       networkId: NetworkId!
       historicBlock: Block!

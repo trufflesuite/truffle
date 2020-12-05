@@ -20,7 +20,6 @@ export const nameRecords: Definition<"nameRecords"> = {
   idFields: ["name", "type", "resource", "previous"],
   typeDefs: gql`
     type NameRecord implements Resource {
-      id: ID!
       name: String!
       type: String!
       resource: Named!

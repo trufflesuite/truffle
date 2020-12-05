@@ -18,7 +18,6 @@ export const sources: Definition<"sources"> = {
   idFields: ["contents", "sourcePath"],
   typeDefs: gql`
     type Source implements Resource {
-      id: ID!
       sourcePath: String
       contents: String!
     }
