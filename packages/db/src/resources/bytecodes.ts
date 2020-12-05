@@ -12,7 +12,8 @@ export const bytecodes: Definition<"bytecodes"> = {
     Resource: "Bytecode",
     resources: "bytecodes",
     Resources: "Bytecodes",
-    resourcesMutate: "bytecodesAdd"
+    resourcesMutate: "bytecodesAdd",
+    ResourcesMutate: "BytecodesAdd"
   },
   createIndexes: [],
   idFields: ["bytes", "linkReferences"],

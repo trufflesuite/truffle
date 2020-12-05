@@ -11,7 +11,8 @@ export const sources: Definition<"sources"> = {
     Resource: "Source",
     resources: "sources",
     Resources: "Sources",
-    resourcesMutate: "sourcesAdd"
+    resourcesMutate: "sourcesAdd",
+    ResourcesMutate: "SourcesAdd"
   },
   createIndexes: [],
   idFields: ["contents", "sourcePath"],

@@ -11,7 +11,8 @@ export const projects: Definition<"projects"> = {
     Resource: "Project",
     resources: "projects",
     Resources: "Projects",
-    resourcesMutate: "projectsAdd"
+    resourcesMutate: "projectsAdd",
+    ResourcesMutate: "ProjectsAdd"
   },
   createIndexes: [],
   idFields: ["directory"],
