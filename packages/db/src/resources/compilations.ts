@@ -18,7 +18,6 @@ export const compilations: Definition<"compilations"> = {
   idFields: ["compiler", "sources"],
   typeDefs: gql`
     type Compilation implements Resource {
-      id: ID!
       compiler: Compiler!
       sources: [Source]!
       processedSources: [ProcessedSource]!
