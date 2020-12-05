@@ -68,7 +68,7 @@ var properties = {
       if (typeof value === "string") {
         try {
           value = JSON.parse(value);
-        } catch (e) {
+        } catch (_) {
           value = undefined;
         }
       }
@@ -107,9 +107,31 @@ var properties = {
   generatedSources: {},
   deployedGeneratedSources: {},
   sourceMap: {
+    transform: function (value) {
+      if (typeof value === "string") {
+        try {
+          return JSON.parse(value);
+        } catch (_) {
+          return value;
+        }
+      } else {
+        return value;
+      }
+    },
     sources: ["sourceMap", "srcmap", "evm.bytecode.sourceMap"]
   },
   deployedSourceMap: {
+    transform: function (value) {
+      if (typeof value === "string") {
+        try {
+          return JSON.parse(value);
+        } catch (_) {
+          return value;
+        }
+      } else {
+        return value;
+      }
+    },
     sources: [
       "deployedSourceMap",
       "srcmapRuntime",
@@ -196,7 +218,7 @@ function getter(key, transform) {
   return function (obj) {
     try {
       return transform(obj[key]);
-    } catch (e) {
+    } catch (_) {
       return undefined;
     }
   };
