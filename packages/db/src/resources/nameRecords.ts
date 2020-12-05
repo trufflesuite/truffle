@@ -13,7 +13,8 @@ export const nameRecords: Definition<"nameRecords"> = {
     Resource: "NameRecord",
     resources: "nameRecords",
     Resources: "NameRecords",
-    resourcesMutate: "nameRecordsAdd"
+    resourcesMutate: "nameRecordsAdd",
+    ResourcesMutate: "NameRecordsAdd"
   },
   createIndexes: [],
   idFields: ["name", "type", "resource", "previous"],

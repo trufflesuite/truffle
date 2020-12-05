@@ -13,7 +13,8 @@ export const contracts: Definition<"contracts"> = {
     Resource: "Contract",
     resources: "contracts",
     Resources: "Contracts",
-    resourcesMutate: "contractsAdd"
+    resourcesMutate: "contractsAdd",
+    ResourcesMutate: "ContractsAdd"
   },
   createIndexes: [
     {

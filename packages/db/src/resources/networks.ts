@@ -11,7 +11,8 @@ export const networks: Definition<"networks"> = {
     Resource: "Network",
     resources: "networks",
     Resources: "Networks",
-    resourcesMutate: "networksAdd"
+    resourcesMutate: "networksAdd",
+    ResourcesMutate: "NetworksAdd"
   },
   createIndexes: [{ fields: ["historicBlock.height"] }],
   idFields: ["networkId", "historicBlock"],
