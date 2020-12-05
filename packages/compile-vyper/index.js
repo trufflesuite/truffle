@@ -7,22 +7,26 @@ const minimatch = require("minimatch");
 const findContracts = require("@truffle/contract-sources");
 const Profiler = require("@truffle/compile-solidity/profiler");
 
-const compiler = {
-  name: "vyper",
-  version: null
-};
+const { compileAllJson } = require("./vyper-json");
 
 const VYPER_PATTERN = "**/*.{vy,v.py,vyper.py}";
 
-// Check that vyper is available, save its version
+// Check that vyper is available, return its version
 function checkVyper() {
   return new Promise((resolve, reject) => {
-    exec("vyper --version", function (err, stdout, stderr) {
+    exec("vyper-json --version", function (err, stdout, _stderr) {
       if (err) {
-        return reject(`${colors.red("Error executing vyper:")}\n${stderr}`);
+        exec("vyper --version", function (err, stdout, stderr) {
+          if (err) {
+            return reject(`${colors.red("Error executing vyper:")}\n${stderr}`);
+          }
+          const version = stdout.trim();
+          resolve({ version, json: false });
+        });
+      } else {
+        const version = stdout.trim();
+        resolve({ version, json: true });
       }
-      compiler.version = stdout.trim();
-      resolve();
     });
   });
 }
@@ -78,14 +82,25 @@ function readSource(sourcePath) {
  */
 
 // compile all sources
-async function compileAll({ sources, options }) {
+async function compileAll({ sources, options, version, useJson }) {
   options.logger = options.logger || console;
-
   Compile.display(sources, options);
+  if (useJson) {
+    return compileAllJson({ sources, options, version });
+  } else {
+    return await compileAllNoJson({ sources, options, version });
+  }
+}
 
-  const compilerInfo = { name: "vyper", version: compiler.version };
+async function compileAllNoJson({ sources, options, version }) {
+  const compiler = { name: "vyper", version };
   const promises = [];
-  sources.forEach(sourcePath => {
+  const targets = options.compilationTargets
+    ? sources.filter(sourcePath =>
+        options.compilationTargets.includes(sourcePath)
+      )
+    : sources;
+  targets.forEach(sourcePath => {
     promises.push(
       new Promise((resolve, reject) => {
         execVyper(options, sourcePath, function (error, compiledContract) {
@@ -115,14 +130,16 @@ async function compileAll({ sources, options }) {
           };
 
           const compilation = {
-            sources: [{
-              sourcePath,
-              contents: sourceContents,
-              language: "vyper"
-            }],
+            sources: [
+              {
+                sourcePath,
+                contents: sourceContents,
+                language: "vyper"
+              }
+            ],
             contracts: [contractDefinition],
-            compiler: compilerInfo,
-            sourceIndexes: [sourcePath],
+            compiler,
+            sourceIndexes: [sourcePath]
           };
 
           resolve(compilation);
@@ -146,10 +163,12 @@ const Compile = {
       return { compilations: [] };
     }
 
-    await checkVyper();
+    const { version, json } = await checkVyper();
     return await compileAll({
       sources: vyperFiles,
-      options
+      options,
+      version,
+      useJson: json
     });
   },
 
