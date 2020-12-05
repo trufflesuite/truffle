@@ -11,7 +11,8 @@ export const contractInstances: Definition<"contractInstances"> = {
     Resource: "ContractInstance",
     resources: "contractInstances",
     Resources: "ContractInstances",
-    resourcesMutate: "contractInstancesAdd"
+    resourcesMutate: "contractInstancesAdd",
+    ResourcesMutate: "ContractInstancesAdd"
   },
   createIndexes: [],
   idFields: ["address", "network"],

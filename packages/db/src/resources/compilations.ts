@@ -11,7 +11,8 @@ export const compilations: Definition<"compilations"> = {
     Resource: "Compilation",
     resources: "compilations",
     Resources: "Compilations",
-    resourcesMutate: "compilationsAdd"
+    resourcesMutate: "compilationsAdd",
+    ResourcesMutate: "CompilationsAdd"
   },
   createIndexes: [],
   idFields: ["compiler", "sources"],

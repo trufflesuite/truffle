@@ -11,7 +11,8 @@ export const projectNames: Definition<"projectNames"> = {
     Resource: "ProjectName",
     resources: "projectNames",
     Resources: "ProjectNames",
-    resourcesMutate: "projectNamesAssign"
+    resourcesMutate: "projectNamesAssign",
+    ResourcesMutate: "ProjectNamesAssign"
   },
   createIndexes: [
     {

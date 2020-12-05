@@ -8,7 +8,8 @@ export const networkGenealogies: Definition<"networkGenealogies"> = {
     Resource: "NetworkGenealogy",
     resources: "networkGenealogies",
     Resources: "NetworkGenealogies",
-    resourcesMutate: "networkGenealogiesAdd"
+    resourcesMutate: "networkGenealogiesAdd",
+    ResourcesMutate: "NetworkGenealogiesAdd"
   },
   createIndexes: [],
   idFields: ["ancestor", "descendant"],

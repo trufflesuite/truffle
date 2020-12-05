@@ -76,7 +76,8 @@ export type CollectionNameStyle =
   | "Resource"
   | "resources"
   | "Resources"
-  | "resourcesMutate";
+  | "resourcesMutate"
+  | "ResourcesMutate";
 
 export type CollectionNameStyledAs<
   S extends CollectionNameStyle,
