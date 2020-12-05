@@ -29,7 +29,6 @@ export const projectNames: Definition<"projectNames"> = {
   mutable: true,
   typeDefs: gql`
     type ProjectName implements Resource {
-      id: ID!
       project: Project!
       name: String!
       type: String!

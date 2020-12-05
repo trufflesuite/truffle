@@ -166,6 +166,10 @@ abstract class DefinitionSchema<
       gql`
       ${typeDefs}
 
+      extend type ${Resource} {
+        id: ID!
+      }
+
       extend type Query {
         ${resources}(filter: QueryFilter): [${Resource}]
         ${resource}(id: ID!): ${Resource}

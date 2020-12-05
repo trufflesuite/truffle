@@ -18,8 +18,6 @@ export const projects: Definition<"projects"> = {
   idFields: ["directory"],
   typeDefs: gql`
     type Project implements Resource {
-      id: ID!
-
       directory: String!
 
       contract(name: String!): Contract

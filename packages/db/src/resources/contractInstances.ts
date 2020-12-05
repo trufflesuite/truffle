@@ -18,7 +18,6 @@ export const contractInstances: Definition<"contractInstances"> = {
   idFields: ["address", "network"],
   typeDefs: gql`
     type ContractInstance implements Resource {
-      id: ID!
       address: Address!
       network: Network!
       creation: ContractInstanceCreation

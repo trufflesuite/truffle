@@ -15,7 +15,6 @@ export const networkGenealogies: Definition<"networkGenealogies"> = {
   idFields: ["ancestor", "descendant"],
   typeDefs: gql`
     type NetworkGenealogy implements Resource {
-      id: ID!
       ancestor: Network
       descendant: Network
     }

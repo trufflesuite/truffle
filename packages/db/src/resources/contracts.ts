@@ -27,7 +27,6 @@ export const contracts: Definition<"contracts"> = {
   idFields: ["name", "abi", "processedSource", "compilation"],
   typeDefs: gql`
     type Contract implements Resource & Named {
-      id: ID!
       name: String!
       abi: ABI
       compilation: Compilation

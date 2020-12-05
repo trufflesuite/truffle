@@ -19,7 +19,6 @@ export const bytecodes: Definition<"bytecodes"> = {
   idFields: ["bytes", "linkReferences"],
   typeDefs: gql`
     type Bytecode implements Resource {
-      id: ID!
       bytes: Bytes!
       linkReferences: [LinkReference]
       instructions(count: Int): [Instruction!]
