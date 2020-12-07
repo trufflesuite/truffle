@@ -32,17 +32,11 @@ export const GetAllNameRecords = gql`
 
 export const AddNameRecord = gql`
   mutation AddNameRecord(
-    $name: String!
-    $type: String!
-    $resource: ResourceReferenceInput!
+    $resource: TypedResourceReferenceInput!
     $previous: ResourceReferenceInput
   ) {
     nameRecordsAdd(
-      input: {
-        nameRecords: [
-          { name: $name, type: $type, resource: $resource, previous: $previous }
-        ]
-      }
+      input: { nameRecords: [{ resource: $resource, previous: $previous }] }
     ) {
       nameRecords {
         id

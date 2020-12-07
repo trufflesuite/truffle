@@ -49,8 +49,7 @@ export const AssignProjectName = gql`
         projectNames: [
           {
             project: { id: $projectId }
-            name: $name
-            type: $type
+            key: { name: $name, type: $type }
             nameRecord: { id: $nameRecordId }
           }
         ]

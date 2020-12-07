@@ -1,3 +1,6 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:test:projects");
+
 import { generateId, Migrations, WorkspaceClient } from "./utils";
 import {
   GetProject,
@@ -38,12 +41,16 @@ describe("Project", () => {
     addNetworkId = addNetworkResult.networksAdd.networks[0].id;
 
     let addNetworkNameRecordResult = await wsClient.execute(AddNameRecord, {
-      name: "ganache",
-      type: "Network",
       resource: {
-        id: addNetworkId
+        id: addNetworkId,
+        type: "Network"
       }
     });
+
+    debug(
+      "addNetworkNameRecordResult %O",
+      addNetworkNameRecordResult.nameRecordsAdd.nameRecords
+    );
 
     let addNetworkNameRecordId =
       addNetworkNameRecordResult.nameRecordsAdd.nameRecords[0].id;
@@ -61,6 +68,11 @@ describe("Project", () => {
       networkVariables
     );
 
+    debug(
+      "projectNamesAssignNetworkResult %O",
+      projectNamesAssignNetworkResult.projectNamesAssign
+    );
+
     // add contract and contract name record
     let addContractResult = await wsClient.execute(AddContracts, {
       contractName: "Migrations",
@@ -69,13 +81,14 @@ describe("Project", () => {
       abi: JSON.stringify(Migrations.abi)
     });
 
+    debug("addContractResult %O", addContractResult.contractsAdd.contracts);
+
     addContractId = addContractResult.contractsAdd.contracts[0].id;
 
     let addContractNameRecordResult = await wsClient.execute(AddNameRecord, {
-      name: "Migrations",
-      type: "Contract",
       resource: {
-        id: addContractId
+        id: addContractId,
+        type: "Contract"
       }
     });
 
@@ -163,6 +176,8 @@ describe("Project", () => {
 
     expect(executionResult).toHaveProperty("project");
     const { project } = executionResult;
+
+    debug("project %O", project);
 
     expect(project).toHaveProperty("network");
     expect(project).toHaveProperty("contract");
