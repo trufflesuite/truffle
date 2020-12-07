@@ -49,11 +49,11 @@ describe("vyper compiler", function () {
       );
 
       assert(
-        hex_regex.test(contract.bytecode),
+        hex_regex.test(contract.bytecode.bytes),
         "Bytecode has only hex characters"
       );
       assert(
-        hex_regex.test(contract.deployedBytecode),
+        hex_regex.test(contract.deployedBytecode.bytes),
         "Deployed bytecode has only hex characters"
       );
 
@@ -89,7 +89,6 @@ describe("vyper compiler", function () {
     });
   });
 
-
   describe("with external options set", function () {
     const configWithPetersburg = new Config().merge(defaultSettings).merge({
       compilers: {
@@ -118,9 +117,9 @@ describe("vyper compiler", function () {
       //we're specifying that it should compile for Petersburg, which was earlier.
       //Therefore, the result should not contain the SELFBALANCE opcode.
       contracts.forEach((contract, index) => {
-        const instructions = CodeUtils.parseCode(contract.bytecode);
+        const instructions = CodeUtils.parseCode(contract.bytecode.bytes);
         const deployedInstructions = CodeUtils.parseCode(
-          contract.deployedBytecode
+          contract.deployedBytecode.bytes
         );
         for (const instruction of instructions) {
           assert(
@@ -145,7 +144,7 @@ describe("vyper compiler", function () {
       //if it's compiling for Istanbul or later, and we use that in VyperContract4
       const contract = contracts[3];
       const deployedInstructions = CodeUtils.parseCode(
-        contract.deployedBytecode
+        contract.deployedBytecode.bytes
       );
       assert(
         deployedInstructions.some(
