@@ -145,7 +145,7 @@ export function shimContracts(
       if (sourceObject.ast) {
         //note: this works for both Solidity and Vyper
         index = sourceIndexForAst(sourceObject.ast); //sourceObject.ast for typing reasons
-      } else if (compiler.name === "vyper") {
+      } else if (compiler && compiler.name === "vyper") {
         index = 0; //if it's Vyper but there's no AST, we can
         //assume that it was compiled alone and therefore has index 0
       }
@@ -331,16 +331,25 @@ function inferLanguage(
   ast: Ast.AstNode | undefined,
   compiler: Compiler.CompilerVersion
 ): string | undefined {
-  if (compiler.name === "vyper") {
-    return "vyper";
-  } else if (!ast || typeof ast.nodeType !== "string") {
-    return undefined;
-  } else if (ast.nodeType === "SourceUnit") {
-    return "solidity";
-  } else if (ast.nodeType.startsWith("Yul")) {
-    //Every Yul source I've seen has YulBlock as the root, but
-    //I'm not sure that that's *always* the case
-    return "yul";
+  if (ast) {
+    if (ast.nodeType === "SourceUnit") {
+      return "solidity";
+    } else if (ast.nodeType && ast.nodeType.startsWith("Yul")) {
+      //Every Yul source I've seen has YulBlock as the root, but
+      //I'm not sure that that's *always* the case
+      return "yul";
+    } else if (ast.ast_type === "Module") {
+      return "vyper";
+    }
+  } else if (compiler) {
+    if (compiler.name === "vyper") {
+      return "vyper";
+    } else if (compiler.name === "solc") {
+      //if it's solc but no AST, just assume it's Solidity
+      return "solidity";
+    } else {
+      return undefined;
+    }
   } else {
     return undefined;
   }
