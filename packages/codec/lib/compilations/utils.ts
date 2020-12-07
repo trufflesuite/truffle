@@ -263,7 +263,7 @@ export function getContractNode(
       return foundNode;
     }
     if (!source.ast || source.language !== "solidity") {
-      //don't search Yul sources!
+      //ignore non-Solidity ASTs for now, we don't support them yet
       return undefined;
     }
     return source.ast.nodes.find(

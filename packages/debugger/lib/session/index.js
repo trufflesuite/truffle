@@ -149,6 +149,7 @@ export default class Session {
         }
         sources.user[compilation.id][index] = {
           ...source,
+          ast: source.ast.nodeType ? source.ast : undefined, //HACK: remove Vyper asts for now
           compiler: source.compiler || compiler,
           compilationId: compilation.id,
           index,
@@ -215,7 +216,9 @@ export default class Session {
         //note: simpleShimSourceMap does not handle the case where we can't just extract
         //the Solidity-style source map
         sourceMap = Codec.Compilations.Utils.simpleShimSourceMap(sourceMap);
-        deployedSourceMap = Codec.Compilations.Utils.simpleShimSourceMap(deployedSourceMap);
+        deployedSourceMap = Codec.Compilations.Utils.simpleShimSourceMap(
+          deployedSourceMap
+        );
 
         if (binary && binary != "0x") {
           //NOTE: we take hash as *string*, not as bytes, because the binary may

@@ -188,7 +188,7 @@ export class WireDecoder {
         }
         const { ast, compiler, language } = source;
         if (language === "solidity" && ast) {
-          //don't check Yul sources!
+          //don't check Yul or Vyper sources!
           for (const node of ast.nodes) {
             if (
               node.nodeType === "StructDefinition" ||
