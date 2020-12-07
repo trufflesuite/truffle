@@ -3,6 +3,7 @@ const exec = require("child_process").exec;
 const fs = require("fs");
 const colors = require("colors");
 const minimatch = require("minimatch");
+const semver = require("semver");
 
 const findContracts = require("@truffle/contract-sources");
 const Profiler = require("@truffle/compile-solidity/profiler");
@@ -34,6 +35,16 @@ function checkVyper() {
 // Execute vyper for single source file
 function execVyper(options, sourcePath, callback) {
   const formats = ["abi", "bytecode", "bytecode_runtime", "source_map"];
+  if (
+    semver.satisfies(version, ">=0.1.0-beta.7", {
+      loose: true,
+      includePrerelase: true
+    })
+  ) {
+    //Vyper chokes on unknown formats, so only include this for
+    //ones that support it (they were introduced in 0.1.0b7)
+    formats.push("source_map");
+  }
   let evmVersionOption = "";
   if (
     options.compilers.vyper.settings &&
