@@ -22,6 +22,7 @@ const identity = x => x;
 function solidityVersionHasNoNow(compiler) {
   return (
     compiler &&
+    compiler.name === "solc" &&
     //want to include prerelease versions of 0.7.0
     semver.satisfies(compiler.version, "~0.7 || >=0.7.0", {
       includePrerelease: true
@@ -472,7 +473,7 @@ const data = createSelectorTree({
     /*
      * data.proc.mappedPaths
      */
-    mappedPaths: createLeaf(["/state"], state => state.proc.mappedPaths),
+    mappedPaths: createLeaf(["/state"], state => state.proc.mappedPaths)
   },
 
   /**
@@ -648,8 +649,10 @@ const data = createSelectorTree({
                   debug("variable %O", variable);
                   const definition = inlined[variable.astRef].definition;
                   return (
-                    !(definition.constant || definition.mutability === "constant")
-                    || Codec.Ast.Utils.isSimpleConstant(definition.value)
+                    !(
+                      definition.constant ||
+                      definition.mutability === "constant"
+                    ) || Codec.Ast.Utils.isSimpleConstant(definition.value)
                   );
                 });
               return { [id]: newScope };
@@ -659,24 +662,28 @@ const data = createSelectorTree({
               //in this case, handling imports in some sort of tree fashion would
               //be too much work.  we'll do this the easy way: by checking exported
               //symbols for constants.
-              newScope.variables = Object.values(definition.exportedSymbols).map(
-                array => array[0] //I don't know why these are arrays...?
-              ).filter(astRef => {
-                //restrict to variables, not other exported symbols!
-                const definition = inlined[astRef].definition;
-                return (
-                  definition.nodeType === "VariableDeclaration" &&
-                  (definition.constant || definition.mutability === "constant") &&
-                  //HACK: we'll also again filter out constants we don't know how
-                  //to read
-                  Codec.Ast.Utils.isSimpleConstant(definition.value)
-                );
-              }).map(astRef => ({
-                //we'll have to reconstruct the rest from just the astRef
-                astRef,
-                name: inlined[astRef].definition.name,
-                sourceId: inlined[astRef].sourceId
-              }));
+              newScope.variables = Object.values(definition.exportedSymbols)
+                .map(
+                  array => array[0] //I don't know why these are arrays...?
+                )
+                .filter(astRef => {
+                  //restrict to variables, not other exported symbols!
+                  const definition = inlined[astRef].definition;
+                  return (
+                    definition.nodeType === "VariableDeclaration" &&
+                    (definition.constant ||
+                      definition.mutability === "constant") &&
+                    //HACK: we'll also again filter out constants we don't know how
+                    //to read
+                    Codec.Ast.Utils.isSimpleConstant(definition.value)
+                  );
+                })
+                .map(astRef => ({
+                  //we'll have to reconstruct the rest from just the astRef
+                  astRef,
+                  name: inlined[astRef].definition.name,
+                  sourceId: inlined[astRef].sourceId
+                }));
               return { [id]: newScope };
             } else {
               //default case, nothing to process
@@ -827,6 +834,7 @@ const data = createSelectorTree({
       ["./compiler"],
       compiler =>
         compiler !== undefined && //if no compiler we'll assume the old way I guess??
+        compiler.name === "solc" &&
         semver.satisfies(compiler.version, ">=0.6.8", {
           includePrerelease: true
         })
@@ -1154,7 +1162,7 @@ const data = createSelectorTree({
             language !== "solidity" ||
             (scope &&
               (scope.nodeType.startsWith("Yul") ||
-              scope.nodeType === "InlineAssembly"))
+                scope.nodeType === "InlineAssembly"))
           ) {
             //Solidity builtins are for Solidity only!
             return variables;
@@ -1229,11 +1237,7 @@ const data = createSelectorTree({
        * used for printing out the variables in sections
        */
       sections: createLeaf(
-        [
-          "./definitions",
-          "./refs",
-          "/current/scopes/inlined"
-        ],
+        ["./definitions", "./refs", "/current/scopes/inlined"],
         (definitions, refs, scopes) => {
           let sections = {
             builtin: [],
@@ -1341,9 +1345,10 @@ const data = createSelectorTree({
                     debug("global definition: %o", definition);
                     if (definition.scope !== undefined) {
                       const scope = scopes[definition.scope].definition;
-                      if (scope.nodeType === "SourceUnit"
-                        && (definition.constant === true
-                        || definition.mutability === "constant")
+                      if (
+                        scope.nodeType === "SourceUnit" &&
+                        (definition.constant === true ||
+                          definition.mutability === "constant")
                       ) {
                         return {
                           [identifier]: {
