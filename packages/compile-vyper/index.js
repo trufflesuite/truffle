@@ -11,6 +11,9 @@ const Profiler = require("@truffle/compile-solidity/profiler");
 const { compileAllJson } = require("./vyper-json");
 
 const VYPER_PATTERN = "**/*.{vy,v.py,vyper.py}";
+//
+//NOTE: the compilationTargets stuff currently does nothing
+//because I didn't hook up the profiler, but someone can later I guess?
 
 // Check that vyper is available, return its version
 function checkVyper() {

@@ -7,6 +7,9 @@ const CompileError = require("./compileerror");
 
 //NOTE: Much of this file is copypasted (w/modifications) from
 //compile-solidity/run.js, so be warned...
+//
+//NOTE: the compilationTargets stuff currently does nothing
+//because I didn't hook up the profiler, but someone can later I guess?
 
 function compileAllJson({ sources: sourcePaths, options, version }) {
   const compiler = { name: "vyper", version };
@@ -59,7 +62,6 @@ function compileAllJson({ sources: sourcePaths, options, version }) {
 
   const compilerOutput = correctPaths(rawCompilerOutput);
 
-  //Note: I don't *think* I need originalSourcePaths here...?
   const compilation = {
     sourceIndexes: processSources({
       compilerOutput,
