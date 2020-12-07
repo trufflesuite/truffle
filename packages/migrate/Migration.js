@@ -1,11 +1,13 @@
+const debug = require("debug")("migrate:Migration");
 const path = require("path");
 const Deployer = require("@truffle/deployer");
 const Require = require("@truffle/require");
 const Emittery = require("emittery");
 const {
   Web3Shim,
-  createInterfaceAdapter,
+  createInterfaceAdapter
 } = require("@truffle/interface-adapter");
+const {connect, Project} = require("@truffle/db");
 
 const ResolverIntercept = require("./ResolverIntercept");
 
@@ -37,7 +39,7 @@ class Migration {
       file: this.file,
       context: context,
       resolver: resolver,
-      args: [deployer],
+      args: [deployer]
     };
 
     const fn = Require.file(requireOptions);
@@ -89,7 +91,7 @@ class Migration {
         const message = `Saving migration to chain.`;
 
         if (!this.dryRun) {
-          const data = { message: message };
+          const data = {message: message};
           await this.emitter.emit("startTransaction", data);
         }
 
@@ -97,15 +99,37 @@ class Migration {
         const receipt = await migrations.setCompleted(this.number);
 
         if (!this.dryRun) {
-          const data = { receipt: receipt, message: message };
+          const data = {receipt: receipt, message: message};
           await this.emitter.emit("endTransaction", data);
         }
       }
 
       await this.emitter.emit("postMigrate", this.isLast);
 
+      let artifacts = resolver
+        .contracts()
+        .map(abstraction => abstraction._json);
+      if (this.config.db && this.config.db.enabled && artifacts.length > 0) {
+        const db = connect(this.config);
+        const project = await Project.initialize({
+          db,
+          project: {
+            directory: this.config.working_directory
+          }
+        });
+
+        ({artifacts} = await project
+          .connect({provider: this.config.provider})
+          .loadMigrate({
+            network: {
+              name: this.config.network
+            },
+            artifacts
+          }));
+      }
+
       // Save artifacts to local filesystem
-      await options.artifactor.saveAll(resolver.contracts());
+      await options.artifactor.saveAll(artifacts);
 
       deployer.finish();
 
@@ -123,7 +147,7 @@ class Migration {
     } catch (error) {
       const payload = {
         type: "migrateErr",
-        error: error,
+        error: error
       };
 
       await this.emitter.emit("error", payload);
@@ -143,7 +167,7 @@ class Migration {
       interfaceAdapter,
       resolver,
       context,
-      deployer,
+      deployer
     } = this.prepareForMigrations(options);
 
     // Connect reporter to this migration
@@ -164,7 +188,7 @@ class Migration {
       isFirst: this.isFirst,
       network: options.network,
       networkId: options.network_id,
-      blockLimit: block.gasLimit,
+      blockLimit: block.gasLimit
     };
 
     await this.emitter.emit("preMigrate", preMigrationsData);
@@ -175,17 +199,17 @@ class Migration {
     const logger = options.logger;
     const interfaceAdapter = createInterfaceAdapter({
       provider: options.provider,
-      networkType: options.networks[options.network].type,
+      networkType: options.networks[options.network].type
     });
     const web3 = new Web3Shim({
       provider: options.provider,
-      networkType: options.networks[options.network].type,
+      networkType: options.networks[options.network].type
     });
 
     const resolver = new ResolverIntercept(options.resolver);
 
     // Initial context.
-    const context = { web3, interfaceAdapter, config: this.config };
+    const context = {web3, interfaceAdapter, config: this.config};
 
     const deployer = new Deployer({
       logger,
@@ -196,10 +220,10 @@ class Migration {
       network_id: options.network_id,
       provider: options.provider,
       basePath: path.dirname(this.file),
-      ens: options.ens,
+      ens: options.ens
     });
 
-    return { interfaceAdapter, resolver, context, deployer };
+    return {interfaceAdapter, resolver, context, deployer};
   }
 
   /**
@@ -213,7 +237,7 @@ class Migration {
       isFirst: this.isFirst,
       isLast: this.isLast,
       dryRun: this.dryRun,
-      interactive: this.interactive,
+      interactive: this.interactive
     };
   }
 }
