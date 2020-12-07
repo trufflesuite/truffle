@@ -21,11 +21,11 @@ const Utils = {
     return web3Utils.isBN(val) || web3Utils.isBigNumber(val);
   },
 
-  is_tx_params(val) {
+  isTxParams(val) {
     if (!Utils.is_object(val)) return false;
     if (Utils.is_big_number(val)) return false;
 
-    const allowed_fields = {
+    const allowedFields = {
       from: true,
       to: true,
       gas: true,
@@ -36,8 +36,8 @@ const Utils = {
       privateFor: true
     };
 
-    for (let field_name of Object.keys(val)) {
-      if (allowed_fields[field_name]) return true;
+    for (let fieldName of Object.keys(val)) {
+      if (allowedFields[fieldName]) return true;
     }
 
     return false;
@@ -143,7 +143,7 @@ const Utils = {
 
     if (
       args.length === expected_arg_count + 1 &&
-      Utils.is_tx_params(last_arg)
+      Utils.isTxParams(last_arg)
     ) {
       tx_params = args.pop();
     }
