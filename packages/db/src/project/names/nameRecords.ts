@@ -8,7 +8,7 @@ export const generateNameRecordsLoad = Batch.generate<{
   assignment: {
     name: string;
     type: string;
-    current: IdObject<DataModel.NameRecord> | undefined;
+    current: DataModel.NameRecord | undefined;
   };
   properties: {
     nameRecord: IdObject<DataModel.NameRecord>;
@@ -16,8 +16,28 @@ export const generateNameRecordsLoad = Batch.generate<{
   entry: DataModel.NameRecordInput;
   result: IdObject<DataModel.NameRecord>;
 }>({
-  extract<_I>({ input: { resource, name, type, current } }) {
-    return { resource, name, type, previous: current };
+  extract<_I>({
+    input: {
+      resource: { id },
+      type,
+      current
+    }
+  }) {
+    if (!current) {
+      debug("no previous");
+      return { resource: { id, type } };
+    }
+
+    if (current.resource.id === id) {
+      debug("re-assigning same resource");
+      return { resource: { id, type }, previous: current.previous };
+    }
+
+    debug("including previous");
+    debug("previous id %o", current.resource.id);
+    debug("id %o", id);
+
+    return { resource: { id, type }, previous: { id: current.id } };
   },
 
   *process({ entries }) {

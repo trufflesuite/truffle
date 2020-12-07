@@ -19,27 +19,35 @@ export const projectNames: Definition<"projectNames"> = {
       fields: ["project.id"]
     },
     {
-      fields: ["project.id", "type"]
+      fields: ["project.id", "key.type"]
     },
     {
-      fields: ["project.id", "name", "type"]
+      fields: ["project.id", "key.name", "key.type"]
     }
   ],
-  idFields: ["project", "name", "type"],
+  idFields: ["project", "key"],
   mutable: true,
   typeDefs: gql`
     type ProjectName implements Resource {
       project: Project!
+      key: ProjectNameKey!
+      nameRecord: NameRecord!
+    }
+
+    type ProjectNameKey {
       name: String!
       type: String!
-      nameRecord: NameRecord!
     }
 
     input ProjectNameInput {
       project: ResourceReferenceInput!
+      key: ProjectNameKeyInput!
+      nameRecord: ResourceReferenceInput!
+    }
+
+    input ProjectNameKeyInput {
       name: String!
       type: String!
-      nameRecord: ResourceReferenceInput!
     }
   `,
   resolvers: {
