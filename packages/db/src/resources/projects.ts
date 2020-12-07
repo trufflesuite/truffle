@@ -36,7 +36,11 @@ export const projects: Definition<"projects"> = {
           debug("Resolving Project.resolve...");
 
           const results = await workspace.find("projectNames", {
-            selector: { "project.id": id, name, type }
+            selector: {
+              "project.id": id,
+              "key.name": name,
+              "key.type": type
+            }
           });
 
           const nameRecordIds = results.map(({ nameRecord: { id } }) => id);
@@ -54,10 +58,24 @@ export const projects: Definition<"projects"> = {
       network: {
         resolve: async ({ id }, { name }, { workspace }) => {
           debug("Resolving Project.network...");
+          debug("name %o", name);
+          debug("project id %o", id);
+
+          const testResults = await workspace.find("projectNames", {
+            selector: {
+              "project.id": id
+            }
+          });
+          debug("test results %O", testResults);
 
           const results = await workspace.find("projectNames", {
-            selector: { "project.id": id, name, "type": "Network" }
+            selector: {
+              "project.id": id,
+              "key.name": name,
+              "key.type": "Network"
+            }
           });
+          debug("network results %O", results);
           const nameRecordIds = results.map(({ nameRecord: { id } }) => id);
           const nameRecords = await workspace.find("nameRecords", {
             selector: {
@@ -81,7 +99,11 @@ export const projects: Definition<"projects"> = {
           debug("Resolving Project.contract...");
 
           const results = await workspace.find("projectNames", {
-            selector: { "project.id": id, name, "type": "Contract" }
+            selector: {
+              "project.id": id,
+              "key.name": name,
+              "key.type": "Contract"
+            }
           });
           const nameRecordIds = results.map(({ nameRecord: { id } }) => id);
           const nameRecords = await workspace.find("nameRecords", {

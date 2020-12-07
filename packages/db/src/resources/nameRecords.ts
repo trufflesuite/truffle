@@ -17,19 +17,15 @@ export const nameRecords: Definition<"nameRecords"> = {
     ResourcesMutate: "NameRecordsAdd"
   },
   createIndexes: [],
-  idFields: ["name", "type", "resource", "previous"],
+  idFields: ["resource", "previous"],
   typeDefs: gql`
     type NameRecord implements Resource {
-      name: String!
-      type: String!
       resource: Named!
       previous: NameRecord
     }
 
     input NameRecordInput {
-      name: String!
-      type: String!
-      resource: ResourceReferenceInput!
+      resource: TypedResourceReferenceInput!
       previous: ResourceReferenceInput
     }
   `,
@@ -37,7 +33,7 @@ export const nameRecords: Definition<"nameRecords"> = {
   resolvers: {
     NameRecord: {
       resource: {
-        resolve: async ({ type, resource: { id } }, _, { workspace }) => {
+        resolve: async ({ resource: { id, type } }, _, { workspace }) => {
           debug("Resolving NameRecord.resource...");
 
           const collectionName = camelCase(plural(type)) as CollectionName;
@@ -49,8 +45,14 @@ export const nameRecords: Definition<"nameRecords"> = {
         }
       },
       previous: {
-        resolve: async ({ id }, _, { workspace }) => {
+        resolve: async ({ previous }, _, { workspace }) => {
           debug("Resolving NameRecord.previous...");
+
+          if (!previous) {
+            return;
+          }
+
+          const { id } = previous;
 
           const result = await workspace.get("nameRecords", id);
 

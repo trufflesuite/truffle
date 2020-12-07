@@ -40,16 +40,22 @@ class DefinitionsSchema<C extends Collections> {
     const common = gql`
       interface Resource {
         id: ID!
-        kind: String!
+        type: String!
       }
 
       interface Named {
         id: ID!
+        type: String!
         name: String!
       }
 
       input ResourceReferenceInput {
         id: ID!
+      }
+
+      input TypedResourceReferenceInput {
+        id: ID!
+        type: String!
       }
 
       input QueryFilter {
@@ -169,7 +175,7 @@ abstract class DefinitionSchema<
 
       extend type ${Resource} {
         id: ID!
-        kind: String!
+        type: String!
       }
 
       extend type Query {
@@ -216,7 +222,7 @@ abstract class DefinitionSchema<
       [Resource]: {
         ...(resolvers[Resource] as any),
 
-        kind: () => Resource
+        type: () => Resource
       },
 
       Query: {
