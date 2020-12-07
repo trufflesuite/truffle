@@ -25,22 +25,27 @@ const Utils = {
     if (!Utils.is_object(val)) return false;
     if (Utils.is_big_number(val)) return false;
 
-    const allowedFields = {
-      from: true,
-      to: true,
-      gas: true,
-      gasPrice: true,
-      value: true,
-      data: true,
-      nonce: true,
-      privateFor: true
-    };
+    const allowedFields = new Set([
+      "from",
+      "to",
+      "gas",
+      "gasPrice",
+      "value",
+      "data",
+      "nonce",
+      "privateFor",
+      "overwrite"
+    ]);
 
+    // if an unrecognized parameter is present, then assume
+    // it is the last arg and not the tx params
     for (let fieldName of Object.keys(val)) {
-      if (allowedFields[fieldName]) return true;
+      if (!allowedFields.has(fieldName)) {
+        return false;
+      }
     }
 
-    return false;
+    return true;
   },
 
   decodeLogs(_logs, isSingle) {
