@@ -267,8 +267,14 @@ function processContracts({
           source,
           deployedSourceMap,
           ast,
-          bytecode,
-          deployedBytecode,
+          bytecode: {
+            bytes: bytecode,
+            linkReferences: [] //no libraries in Vyper
+          },
+          deployedBytecode: {
+            bytes: deployedBytecode,
+            linkReferences: [] //no libraries in Vyper
+          },
           compiler: {
             name: "vyper",
             version

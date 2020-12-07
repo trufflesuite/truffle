@@ -134,8 +134,14 @@ async function compileAllNoJson({ sources, options, version }) {
             sourcePath: sourcePath,
             source: sourceContents,
             abi: JSON.parse(compiledContract.abi),
-            bytecode: compiledContract.bytecode,
-            deployedBytecode: compiledContract.bytecode_runtime,
+            bytecode: {
+              bytes: compiledContract.bytecode,
+              linkReferences: [] //no libraries in Vyper
+            },
+            deployedBytecode: {
+              bytes: compiledContract.bytecode_runtime,
+              linkReferences: [] //no libraries in Vyper
+            },
             deployedSourceMap: JSON.parse(compiledContract.source_map), //there is no constructor source map
             compiler
           };
