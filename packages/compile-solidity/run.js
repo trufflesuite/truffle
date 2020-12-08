@@ -1,7 +1,7 @@
-const debug = require("debug")("compile:run"); // eslint-disable-line no-unused-vars
+const debug = require("debug")("compile:run");
 const OS = require("os");
 const semver = require("semver");
-const CompileError = require("./compileerror");
+const Common = require("@truffle/compile-common");
 const CompilerSupplier = require("./compilerSupplier");
 
 // this function returns a Compilation - legacy/index.js and ./index.js
@@ -14,10 +14,11 @@ async function run(rawSources, options) {
 
   // Ensure sources have operating system independent paths
   // i.e., convert backslashes to forward slashes; things like C: are left intact.
-  const { sources, targets, originalSourcePaths } = collectSources(
-    rawSources,
-    options.compilationTargets
-  );
+  const {
+    sources,
+    targets,
+    originalSourcePaths
+  } = Common.Sources.collectSources(rawSources, options.compilationTargets);
 
   // construct solc compiler input
   const compilerInput = prepareCompilerInput({
@@ -49,7 +50,7 @@ async function run(rawSources, options) {
       options.logger.log("");
     }
 
-    throw new CompileError(errors);
+    throw new Common.Errors.CompileError(errors);
   }
 
   // success case
@@ -112,72 +113,6 @@ function orderABI({ abi, contractName, ast }) {
         ({ name: a }, { name: b }) => functionIndexes[a] - functionIndexes[b]
       )
   ];
-}
-
-/**
- * Collects sources, targets into collections with OS-independent paths,
- * along with a reverse mapping to the original path (for post-processing)
- *
- * @param originalSources - { [originalSourcePath]: contents }
- * @param originalTargets - originalSourcePath[]
- * @return { sources, targets, originalSourcePaths }
- */
-function collectSources(originalSources, originalTargets = []) {
-  const mappedResults = Object.entries(originalSources)
-    .map(([originalSourcePath, contents]) => ({
-      originalSourcePath,
-      contents,
-      sourcePath: getPortableSourcePath(originalSourcePath)
-    }))
-    .map(({ originalSourcePath, sourcePath, contents }) => ({
-      sources: {
-        [sourcePath]: contents
-      },
-
-      // include transformed form as target if original is a target
-      targets: originalTargets.includes(originalSourcePath) ? [sourcePath] : [],
-
-      originalSourcePaths: {
-        [sourcePath]: originalSourcePath
-      }
-    }));
-
-  const defaultAccumulator = {
-    sources: {},
-    targets: [],
-    originalSourcePaths: {}
-  };
-
-  return mappedResults.reduce(
-    (accumulator, result) => ({
-      sources: Object.assign({}, accumulator.sources, result.sources),
-      targets: [...accumulator.targets, ...result.targets],
-      originalSourcePaths: Object.assign(
-        {},
-        accumulator.originalSourcePaths,
-        result.originalSourcePaths
-      )
-    }),
-    defaultAccumulator
-  );
-}
-
-/**
- * @param sourcePath - string
- * @return string - operating system independent path
- * @private
- */
-function getPortableSourcePath(sourcePath) {
-  // Turn all backslashes into forward slashes
-  var replacement = sourcePath.replace(/\\/g, "/");
-
-  // Turn G:/.../ into /G/.../ for Windows
-  if (replacement.length >= 2 && replacement[1] === ":") {
-    replacement = "/" + replacement;
-    replacement = replacement.replace(":", "");
-  }
-
-  return replacement;
 }
 
 /**
@@ -335,7 +270,9 @@ function detectErrors({
 function processAllSources({ sources, compilerOutput, originalSourcePaths }) {
   if (!compilerOutput.sources) return [];
   let outputSources = [];
-  for (const [sourcePath, { id, ast, legacyAST }] of Object.entries(compilerOutput.sources)) {
+  for (const [sourcePath, { id, ast, legacyAST }] of Object.entries(
+    compilerOutput.sources
+  )) {
     outputSources[id] = {
       sourcePath: originalSourcePaths[sourcePath],
       contents: sources[sourcePath],
@@ -346,7 +283,6 @@ function processAllSources({ sources, compilerOutput, originalSourcePaths }) {
   }
   return outputSources;
 }
-
 
 /**
  * Converts compiler-output contracts into @truffle/compile-solidity's return format

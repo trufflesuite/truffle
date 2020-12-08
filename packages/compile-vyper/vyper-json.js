@@ -1,12 +1,13 @@
+const debug = require("debug")("compile-vyper:vyper-json");
 const execSync = require("child_process").execSync;
 const path = require("path");
 const fs = require("fs");
 const semver = require("semver");
-const debug = require("debug")("compile-vyper:vyper-json");
-const CompileError = require("./compileerror");
+const Common = require("@truffle/compile-common");
 
 //NOTE: this file has a fair bit of copypaste-with-modifications
 //from compile-solidity/run.js, so be warned...
+//(some has since been factored into compile-common, but not all)
 
 function compileAllJson({ sources: sourcePaths, options, version }) {
   const compiler = { name: "vyper", version };
@@ -18,10 +19,11 @@ function compileAllJson({ sources: sourcePaths, options, version }) {
     }))
   );
 
-  const { sources, targets, originalSourcePaths } = collectSources(
-    rawSources,
-    options.compilationTargets
-  );
+  const {
+    sources,
+    targets,
+    originalSourcePaths
+  } = Common.Sources.collectSources(rawSources, options.compilationTargets);
 
   // construct compiler input
   const compilerInput = prepareCompilerInput({
@@ -54,7 +56,7 @@ function compileAllJson({ sources: sourcePaths, options, version }) {
       options.logger.log("");
     }
 
-    throw new CompileError(errors);
+    throw new Common.Errors.CompileError(errors);
   }
 
   const compilerOutput = correctPaths(rawCompilerOutput);
@@ -186,7 +188,9 @@ function detectErrors({ compilerOutput: { errors: outputErrors }, options }) {
 function processAllSources({ sources, compilerOutput, originalSourcePaths }) {
   if (!compilerOutput.sources) return [];
   let outputSources = [];
-  for (const [sourcePath, { id, ast }] of Object.entries(compilerOutput.sources)) {
+  for (const [sourcePath, { id, ast }] of Object.entries(
+    compilerOutput.sources
+  )) {
     outputSources[id] = {
       sourcePath: originalSourcePaths[sourcePath],
       contents: sources[sourcePath],
@@ -270,74 +274,6 @@ function processContracts({
         })
       )
   );
-}
-
-/**
- * Collects sources, targets into collections with OS-independent paths,
- * along with a reverse mapping to the original path (for post-processing)
- * WARNING: copypasted from compile-solidity
- *
- * @param originalSources - { [originalSourcePath]: contents }
- * @param originalTargets - originalSourcePath[]
- * @return { sources, targets, originalSourcePaths }
- */
-function collectSources(originalSources, originalTargets = []) {
-  const mappedResults = Object.entries(originalSources)
-    .map(([originalSourcePath, contents]) => ({
-      originalSourcePath,
-      contents,
-      sourcePath: getPortableSourcePath(originalSourcePath)
-    }))
-    .map(({ originalSourcePath, sourcePath, contents }) => ({
-      sources: {
-        [sourcePath]: contents
-      },
-
-      // include transformed form as target if original is a target
-      targets: originalTargets.includes(originalSourcePath) ? [sourcePath] : [],
-
-      originalSourcePaths: {
-        [sourcePath]: originalSourcePath
-      }
-    }));
-
-  const defaultAccumulator = {
-    sources: {},
-    targets: [],
-    originalSourcePaths: {}
-  };
-
-  return mappedResults.reduce(
-    (accumulator, result) => ({
-      sources: Object.assign({}, accumulator.sources, result.sources),
-      targets: [...accumulator.targets, ...result.targets],
-      originalSourcePaths: Object.assign(
-        {},
-        accumulator.originalSourcePaths,
-        result.originalSourcePaths
-      )
-    }),
-    defaultAccumulator
-  );
-}
-
-/**
- * @param sourcePath - string
- * @return string - operating system independent path
- * @private
- * warning: more copypaste!
- */
-function getPortableSourcePath(sourcePath) {
-  // Turn all backslashes into forward slashes
-  var replacement = sourcePath.replace(/\\/g, "/");
-
-  // Turn G:/.../ into /G/.../ for Windows
-  if (replacement.length >= 2 && replacement[1] === ":") {
-    replacement = "/" + replacement;
-    replacement = replacement.replace(":", "");
-  }
-
-  return replacement;
 }
 
 function correctPaths(compilerOutput) {
