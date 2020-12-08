@@ -6,6 +6,7 @@ import Session from "./session";
 import { createNestedSelector } from "reselect-tree";
 
 import dataSelector from "./data/selectors";
+import txlogSelector from "./txlog/selectors";
 import astSelector from "./ast/selectors";
 import traceSelector from "./trace/selectors";
 import evmSelector from "./evm/selectors";
@@ -74,6 +75,7 @@ const Debugger = {
     return createNestedSelector({
       ast: astSelector,
       data: dataSelector,
+      txlog: txlogSelector,
       trace: traceSelector,
       evm: evmSelector,
       solidity: soliditySelector,

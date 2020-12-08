@@ -64,7 +64,7 @@ const session = createSelectorTree({
               let constructorArgs;
               if (creationBinary !== undefined) {
                 let creationContext = contexts[creationContextId];
-                if (creationContext !== null) {
+                if (creationContext) {
                   //slice off the bytecode part of the constructor to leave the arguments
                   constructorArgs = creationBinary.slice(
                     creationContext.binary.length

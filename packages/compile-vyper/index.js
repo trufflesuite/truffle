@@ -29,14 +29,21 @@ function checkVyper() {
 
 // Execute vyper for single source file
 function execVyper(options, sourcePath, callback) {
-  const formats = ["abi", "bytecode", "bytecode_runtime"];
+  const formats = ["abi", "bytecode", "bytecode_runtime", "source_map"];
+  let evmVersionOption = "";
   if (
     options.compilers.vyper.settings &&
-    options.compilers.vyper.settings.sourceMap
+    options.compilers.vyper.settings.evmVersion
   ) {
-    formats.push("source_map");
+    const evmVersion = options.compilers.vyper.settings.evmVersion;
+    if (evmVersion.includes("'")) {
+      throw new Error("Invalid EVM version");
+    }
+    evmVersionOption = `--evm-version '${evmVersion}'`;
   }
-  const command = `vyper -f ${formats.join(",")} ${sourcePath}`;
+  const command = `vyper -f ${formats.join(
+    ","
+  )} ${evmVersionOption} ${sourcePath}`;
 
   exec(command, { maxBuffer: 600 * 1024 }, function (err, stdout, stderr) {
     if (err)
@@ -53,6 +60,33 @@ function execVyper(options, sourcePath, callback) {
     }, {});
 
     callback(null, compiledContract);
+  });
+}
+
+/**
+ *
+ * read source contents from sourcePath
+ */
+function readSource(sourcePath) {
+  const sourceBuffer = fs.readFileSync(sourcePath);
+  return sourceBuffer.toString();
+}
+
+/**
+ * aggregate source information based on compiled output;
+ * this can include sources that are not contracts
+ */
+function processAllSources(sources) {
+  if (!sources.length) return [];
+
+  return sources.map(sourcePath => {
+    let source = {
+      sourcePath: sourcePath,
+      contents: readSource(sourcePath),
+      language: "vyper"
+    };
+
+    return source;
   });
 }
 
@@ -79,8 +113,7 @@ async function compileAll({ sources, options }) {
               ? basename
               : path.basename(basename, path.extname(basename));
 
-          const sourceBuffer = fs.readFileSync(sourcePath);
-          const sourceContents = sourceBuffer.toString();
+          const sourceContents = readSource(sourcePath);
 
           const contractDefinition = {
             contractName: contractName,
@@ -89,7 +122,7 @@ async function compileAll({ sources, options }) {
             abi: compiledContract.abi,
             bytecode: compiledContract.bytecode,
             deployedBytecode: compiledContract.bytecode_runtime,
-            sourceMap: compiledContract.source_map,
+            deployedSourceMap: compiledContract.source_map, //there is no constructor source map
             compiler
           };
 
@@ -104,6 +137,7 @@ async function compileAll({ sources, options }) {
   return {
     compilations: [
       {
+        sources: processAllSources(sources),
         compiler: compilerInfo,
         contracts,
         sourceIndexes: sources

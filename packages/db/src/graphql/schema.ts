@@ -145,7 +145,7 @@ abstract class DefinitionSchema<
   protected resource: N;
   protected definition: Definition<C, N>;
 
-  protected names: {
+  protected abstract get names(): {
     resource: string;
     Resource: string;
     resources: N; // sure why not

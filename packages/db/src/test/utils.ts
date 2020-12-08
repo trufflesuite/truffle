@@ -1,12 +1,13 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:test:utils");
+
 import path from "path";
 
 import * as graphql from "graphql";
 
 import { schema } from "@truffle/db/schema";
-import { connect } from "@truffle/db/connect";
-import { Workspace } from "@truffle/db/definitions";
-
-export { generateId } from "@truffle/db/helpers";
+import { Workspace, attach } from "@truffle/db/workspace";
+export { generateId } from "@truffle/db/meta";
 
 import tmp from "tmp";
 
@@ -25,7 +26,7 @@ export class WorkspaceClient {
   private workspace: Workspace;
 
   constructor() {
-    this.workspace = connect({
+    this.workspace = attach({
       workingDirectory: tempDir.name
     });
   }
@@ -38,6 +39,10 @@ export class WorkspaceClient {
       { workspace: this.workspace }, // context vars
       variables
     );
+
+    if (result.errors) {
+      debug("errors %o", result.errors);
+    }
 
     return result.data;
   }

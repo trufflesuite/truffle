@@ -14,7 +14,8 @@ import {
   isShortCallMnemonic,
   isDelegateCallMnemonicBroad,
   isDelegateCallMnemonicStrict,
-  isStaticCallMnemonic
+  isStaticCallMnemonic,
+  isSelfDestructMnemonic
 } from "lib/helpers";
 
 const ZERO_WORD = "00".repeat(Codec.Evm.Utils.WORD_SIZE);
@@ -125,6 +126,13 @@ function createStepSelectors(step, state = null) {
      * (includes CREATE2)
      */
     isCreate: createLeaf(["./trace"], step => isCreateMnemonic(step.op)),
+
+    /**
+     * .isSelfDestruct
+     */
+    isSelfDestruct: createLeaf(["./trace"], step =>
+      isSelfDestructMnemonic(step.op)
+    ),
 
     /**
      * .isCreate2
@@ -316,6 +324,21 @@ function createStepSelectors(step, state = null) {
           }
 
           return stack[stack.length - 1];
+        }
+      ),
+
+      /**
+       * .salt
+       */
+      salt: createLeaf(
+        ["./isCreate2", state],
+
+        (isCreate2, { stack }) => {
+          if (!isCreate2) {
+            return null;
+          }
+
+          return "0x" + stack[stack.length - 4];
         }
       ),
 
@@ -540,7 +563,7 @@ const evm = createSelectorTree({
       ),
 
       /**
-       * evm.current.step.isInstantCallOrReturn
+       * evm.current.step.isInstantCallOrCreate
        *
        * are we doing a call or create for which there are no trace steps?
        * This can happen if:
@@ -564,7 +587,7 @@ const evm = createSelectorTree({
       ),
 
       /**
-       * .isNormalHalting
+       * evm.current.step.isNormalHalting
        */
       isNormalHalting: createLeaf(
         ["./isHalting", "./returnStatus"],
@@ -572,7 +595,7 @@ const evm = createSelectorTree({
       ),
 
       /**
-       * .isHalting
+       * evm.current.step.isHalting
        *
        * whether the instruction halts or returns from a calling context
        * HACK: the check for stepsRemainining === 0 is a hack to cover
@@ -595,19 +618,20 @@ const evm = createSelectorTree({
 
       /**
        * evm.current.step.returnStatus
-       * checks the return status of the *current* halting instruction
-       * returns null if not halting
+       * checks the return status of the *current* halting instruction or insta-call
+       * returns null if not halting & not an insta-call
        * (returns a boolean -- true for success, false for failure)
        */
       returnStatus: createLeaf(
         [
           "./isHalting",
+          "./isInstantCallOrCreate",
           "/next/state",
           trace.stepsRemaining,
           "/transaction/status"
         ],
-        (isHalting, { stack }, remaining, finalStatus) => {
-          if (!isHalting) {
+        (isHalting, isInstaCall, { stack }, remaining, finalStatus) => {
+          if (!isHalting && !isInstaCall) {
             return null; //not clear this'll do much good since this may get
             //read as false, but, oh well, may as well
           }
@@ -669,6 +693,24 @@ const evm = createSelectorTree({
             return null;
           }
           return stack[stack.length - 1];
+        }
+      ),
+
+      /**
+       * evm.current.step.beneficiary
+       * NOTE: for a value-destroying selfdestruct, returns null
+       */
+      beneficiary: createLeaf(
+        ["./isSelfDestruct", "../state", "../call"],
+
+        (isSelfDestruct, { stack }, { storageAddress: currentAddress }) => {
+          if (!isSelfDestruct) {
+            return null;
+          }
+          const beneficiary = Codec.Evm.Utils.toAddress(
+            stack[stack.length - 1]
+          );
+          return beneficiary !== currentAddress ? beneficiary : null;
         }
       )
     },

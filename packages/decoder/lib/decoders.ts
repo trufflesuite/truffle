@@ -187,7 +187,7 @@ export class WireDecoder {
           continue; //remember, sources could be empty if shimmed!
         }
         const { ast, compiler, language } = source;
-        if (language === "Solidity" && ast) {
+        if (language === "solidity" && ast) {
           //don't check Yul sources!
           for (const node of ast.nodes) {
             if (
@@ -1178,7 +1178,9 @@ export class ContractInstanceDecoder {
       //the following line only has any effect if we're dealing with a library,
       //since the code we pulled from the blockchain obviously does not have unresolved link references!
       //(it's not strictly necessary even then, but, hey, why not?)
-      this.additionalContexts = Contexts.Utils.normalizeContexts(this.additionalContexts);
+      this.additionalContexts = Contexts.Utils.normalizeContexts(
+        this.additionalContexts
+      );
       //again, since the code did not have unresolved link references, it is safe to just
       //mash these together like I'm about to
       this.contexts = { ...this.contexts, ...this.additionalContexts };
@@ -1189,9 +1191,12 @@ export class ContractInstanceDecoder {
     //unlike the debugger, we don't *demand* an answer, so we won't set up
     //some sort of fake table if we don't have a source map, or if any ASTs are missing
     //(if a whole *source* is missing, we'll consider that OK)
+    //note: we don't attempt to handle Vyper source maps!
+    const compiler = this.compilation.compiler || this.contract.compiler;
     if (
       !this.compilation.unreliableSourceOrder &&
       this.contract.deployedSourceMap &&
+      compiler.name === "solc" &&
       this.compilation.sources.every(source => !source || source.ast)
     ) {
       //WARNING: untyped code in this block!

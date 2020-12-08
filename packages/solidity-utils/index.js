@@ -49,11 +49,11 @@ var SolidityUtils = {
       //at least that many fields, and that that particular field
       //is nonempty
 
-      if (splitInstruction[0] && splitInstruction[0] !== "-1") {
+      if (splitInstruction[0]) {
         processedInstruction.start = parseInt(splitInstruction[0]);
       }
 
-      if (splitInstruction[1] && splitInstruction[1] !== "-1") {
+      if (splitInstruction[1]) {
         processedInstruction.length = parseInt(splitInstruction[1]);
       }
 
@@ -99,10 +99,6 @@ var SolidityUtils = {
     let numInstructions;
     if (sourceMap) {
       numInstructions = sourceMap.length;
-    } else {
-      //HACK
-      numInstructions = (binary.length - 2) / 2;
-      //this is actually an overestimate, but that's OK
     }
 
     //because we might be dealing with a constructor with arguments, we do
@@ -161,6 +157,10 @@ var SolidityUtils = {
           file: instruction.file = primaryFile,
           modifierDepth: instruction.modifierDepth = 0
         } = instructionSourceMap);
+        if (instruction.start === -1 && instruction.length === -1) {
+          instruction.start = 0;
+          instruction.length = 0;
+        }
         const lineAndColumnMapping =
           lineAndColumnMappings[instruction.file] || {};
         instruction.range = {

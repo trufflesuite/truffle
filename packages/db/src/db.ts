@@ -1,84 +1,45 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:db");
 
-import { GraphQLSchema, DocumentNode, parse, execute } from "graphql";
+import gql from "graphql-tag";
+import { DocumentNode, ExecutionResult, execute } from "graphql";
+
 import type TruffleConfig from "@truffle/config";
-import { generateCompileLoad } from "@truffle/db/loaders/commands";
-import { LoaderRunner, forDb } from "@truffle/db/loaders/run";
-import { WorkflowCompileResult } from "@truffle/compile-common";
+
+import { Db } from "./meta";
+export { Db }; // rather than force src/index from touching meta
+
 import { schema } from "./schema";
-import { connect } from "./connect";
-import { Context } from "./definitions";
-import {
-  generateInitializeLoad,
-  generateNamesLoad
-} from "@truffle/db/loaders/commands";
-import { toIdObject, NamedResource } from "@truffle/db/meta";
+import { Workspace, attach } from "./workspace";
 
-type LoaderOptions = {
-  names: boolean;
-};
+export const connect = (config: TruffleConfig): Db => {
+  const workspace: Workspace = attach({
+    workingDirectory: config.working_directory,
+    adapter: (config.db || {}).adapter
+  });
 
-export class TruffleDB {
-  schema: GraphQLSchema;
-  private context: Context;
-  private runLoader: LoaderRunner;
+  return {
+    async execute(
+      request: DocumentNode | string,
+      variables: any = {}
+    ): Promise<ExecutionResult> {
+      const response = await execute(
+        schema,
+        typeof request === "string"
+          ? gql`
+              ${request}
+            `
+          : request,
+        null,
+        { workspace },
+        variables
+      );
 
-  constructor(config: TruffleConfig) {
-    this.schema = schema;
-    this.context = this.createContext(config);
+      if (response.errors) {
+        debug("errors %o", response.errors);
+      }
 
-    const { run } = forDb(this);
-
-    this.runLoader = run;
-  }
-
-  async query(query: DocumentNode | string, variables: any = {}): Promise<any> {
-    const document: DocumentNode =
-      typeof query !== "string" ? query : parse(query);
-
-    return await execute(this.schema, document, null, this.context, variables);
-  }
-
-  async loadNames(project: DataModel.Project, resources: NamedResource[]) {
-    return await this.runLoader(
-      generateNamesLoad,
-      toIdObject(project),
-      resources
-    );
-  }
-
-  async loadProject(): Promise<DataModel.Project> {
-    return await this.runLoader(generateInitializeLoad, {
-      directory: this.context.workingDirectory
-    });
-  }
-
-  async loadCompilations(
-    result: WorkflowCompileResult,
-    options: LoaderOptions
-  ) {
-    const project = await this.loadProject();
-
-    const { compilations, contracts } = await this.runLoader(
-      generateCompileLoad,
-      result
-    );
-
-    if (options.names === true) {
-      await this.loadNames(project, contracts);
+      return response;
     }
-
-    return { compilations, contracts };
-  }
-
-  private createContext(config: TruffleConfig): Context {
-    return {
-      workspace: connect({
-        workingDirectory: config.working_directory,
-        adapter: (config.db || {}).adapter
-      }),
-      workingDirectory: config.working_directory || process.cwd()
-    };
-  }
-}
+  };
+};
