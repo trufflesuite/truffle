@@ -37,15 +37,13 @@ const Utils = {
       "overwrite"
     ]);
 
-    // if an unrecognized parameter is present, then assume
-    // it is the last arg and not the tx params
     for (let fieldName of Object.keys(val)) {
-      if (!allowedFields.has(fieldName)) {
-        return false;
+      if (allowedFields.has(fieldName)) {
+        return true;
       }
     }
 
-    return true;
+    return false;
   },
 
   decodeLogs(_logs, isSingle) {
