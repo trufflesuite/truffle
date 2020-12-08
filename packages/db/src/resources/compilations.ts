@@ -43,8 +43,8 @@ export const compilations: Definition<"compilations"> = {
 
     input CompilationInput {
       compiler: CompilerInput!
-      processedSources: [ProcessedSourceInput!]
-      sources: [ResourceReferenceInput!]!
+      processedSources: [ProcessedSourceInput]
+      sources: [ResourceReferenceInput]!
       sourceMaps: [SourceMapInput]
     }
 
@@ -76,7 +76,7 @@ export const compilations: Definition<"compilations"> = {
           debug("Resolving Compilation.sources...");
 
           const result = await Promise.all(
-            sources.map(({id}) => workspace.get("sources", id))
+            sources.map(source => source && workspace.get("sources", source.id))
           );
 
           debug("Resolved Compilation.sources.");
@@ -87,11 +87,14 @@ export const compilations: Definition<"compilations"> = {
         resolve: ({id, processedSources}, _, {}) => {
           debug("Resolving Compilation.processedSources...");
 
-          const result = processedSources.map((processedSource, index) => ({
-            ...processedSource,
-            compilation: {id},
-            index
-          }));
+          const result = processedSources.map(
+            (processedSource, index) =>
+              processedSource && {
+                ...processedSource,
+                compilation: {id},
+                index
+              }
+          );
 
           debug("Resolved Compilation.processedSources.");
           return result;
