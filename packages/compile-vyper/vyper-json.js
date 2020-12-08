@@ -5,11 +5,8 @@ const semver = require("semver");
 const debug = require("debug")("compile-vyper:vyper-json");
 const CompileError = require("./compileerror");
 
-//NOTE: Much of this file is copypasted (w/modifications) from
-//compile-solidity/run.js, so be warned...
-//
-//NOTE: the compilationTargets stuff currently does nothing
-//because I didn't hook up the profiler, but someone can later I guess?
+//NOTE: this file has a fair bit of copypaste-with-modifications
+//from compile-solidity/run.js, so be warned...
 
 function compileAllJson({ sources: sourcePaths, options, version }) {
   const compiler = { name: "vyper", version };

@@ -11,9 +11,6 @@ const Profiler = require("@truffle/compile-solidity/profiler");
 const { compileAllJson } = require("./vyper-json");
 
 const VYPER_PATTERN = "**/*.{vy,v.py,vyper.py}";
-//
-//NOTE: the compilationTargets stuff currently does nothing
-//because I didn't hook up the profiler, but someone can later I guess?
 
 // Check that vyper is available, return its version
 function checkVyper() {
@@ -192,11 +189,11 @@ const Compile = {
     });
   },
 
+  //since we don't have an imports analyzer for Vyper
+  //yet, we'll just treat this the same as all; this will
+  //need to be revisited once we have an import parser for Vyper
   async sourcesWithDependencies({ paths = [], options }) {
-    return await Compile.sources({
-      sources: paths,
-      options
-    });
+    return await Compile.all({ options });
   },
 
   // contracts_directory: String. Directory where contract files can be found.
@@ -222,38 +219,47 @@ const Compile = {
   // strict: Boolean. Return compiler warnings as errors. Defaults to false.
   async necessary(options) {
     options.logger = options.logger || console;
-    const updated = await Profiler.updated(options);
 
-    if (updated.length === 0 && options.quiet !== true) {
+    const fileSearchPattern = path.join(
+      options.contracts_directory,
+      VYPER_PATTERN
+    );
+    const files = await findContracts(fileSearchPattern);
+
+    const updated = await Profiler.updated(options);
+    if (updated.length === 0) {
       return { compilations: [] };
     }
-
-    // filter out only Vyper files
+    // select only Vyper files
     const updatedVyperPaths = updated.filter(path => {
       return path.match(/\.vy$|\.v.py$|\.vyper.py$/);
     });
     return await Compile.sources({
-      sources: updatedVyperPaths,
-      options
+      sources: files,
+      options: options.with({
+        compilationTargets: updatedVyperPaths
+      })
     });
   },
 
   async display(paths, options) {
-    if (!Array.isArray(paths)) {
-      paths = Object.keys(paths);
-    }
-
-    const sourceFileNames = paths.sort().map(contract => {
-      if (path.isAbsolute(contract)) {
-        return `.${path.sep}${path.relative(
-          options.working_directory,
-          contract
-        )}`;
+    if (options.quiet !== true) {
+      if (!Array.isArray(paths)) {
+        paths = Object.keys(paths);
       }
-
-      return contract;
-    });
-    options.events.emit("compile:sourcesToCompile", { sourceFileNames });
+  
+      const sourceFileNames = paths.sort().map(contract => {
+        if (path.isAbsolute(contract)) {
+          return `.${path.sep}${path.relative(
+            options.working_directory,
+            contract
+          )}`;
+        }
+  
+        return contract;
+      });
+      options.events.emit("compile:sourcesToCompile", { sourceFileNames });
+    }
   }
 };
 
