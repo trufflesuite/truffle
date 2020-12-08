@@ -59,22 +59,21 @@ function compileAllJson({ sources: sourcePaths, options, version }) {
 
   const compilerOutput = correctPaths(rawCompilerOutput);
 
+  const outputSources = processAllSources({
+    sources,
+    compilerOutput,
+    originalSourcePaths
+  });
+  const sourceIndexes = outputSources.map(source => source.sourcePath);
   const compilation = {
-    sourceIndexes: processSources({
-      compilerOutput,
-      originalSourcePaths
-    }),
+    sourceIndexes,
     contracts: processContracts({
       sources,
       compilerOutput,
       version,
       originalSourcePaths
     }),
-    sources: processAllSources({
-      sources,
-      compilerOutput,
-      originalSourcePaths
-    }),
+    sources: outputSources,
     compiler
   };
 
@@ -116,7 +115,6 @@ function prepareCompilerInput({
   };
 }
 
-//this function is copypasted from compile-solidity
 function prepareSources({ sources }) {
   return Object.entries(sources)
     .map(([sourcePath, content]) => ({ [sourcePath]: { content } }))
@@ -184,28 +182,19 @@ function detectErrors({ compilerOutput: { errors: outputErrors }, options }) {
   return { warnings, errors };
 }
 
-function processSources({ compilerOutput, originalSourcePaths }) {
-  let files = [];
-
-  debug("originalSourcePaths: %O", originalSourcePaths);
-
-  for (let [sourcePath, { id }] of Object.entries(compilerOutput.sources)) {
-    files[id] = originalSourcePaths[sourcePath];
-  }
-
-  return files;
-}
-
+//warning: copypaste
 function processAllSources({ sources, compilerOutput, originalSourcePaths }) {
   if (!compilerOutput.sources) return [];
-  return Object.entries(compilerOutput.sources).map(
-    ([sourcePath, { ast }]) => ({
+  let outputSources = [];
+  for (const [sourcePath, { id, ast }] of Object.entries(compilerOutput.sources)) {
+    outputSources[id] = {
       sourcePath: originalSourcePaths[sourcePath],
       contents: sources[sourcePath],
-      ast: ast,
+      ast,
       language: "vyper"
-    })
-  );
+    };
+  }
+  return outputSources;
 }
 
 function processContracts({

@@ -54,22 +54,21 @@ async function run(rawSources, options) {
 
   // success case
   // returns Compilation - see @truffle/compile-common
+  const outputSources = processAllSources({
+    sources,
+    compilerOutput,
+    originalSourcePaths
+  });
+  const sourceIndexes = outputSources.map(source => source.sourcePath);
   return {
-    sourceIndexes: processSources({
-      compilerOutput,
-      originalSourcePaths
-    }),
+    sourceIndexes,
     contracts: processContracts({
       sources,
       compilerOutput,
       solcVersion,
       originalSourcePaths
     }),
-    sources: processAllSources({
-      sources,
-      compilerOutput,
-      originalSourcePaths
-    }),
+    sources: outputSources,
     compiler: {
       name: "solc",
       version: solcVersion
@@ -335,30 +334,19 @@ function detectErrors({
  */
 function processAllSources({ sources, compilerOutput, originalSourcePaths }) {
   if (!compilerOutput.sources) return [];
-  return Object.entries(compilerOutput.sources).map(
-    ([sourcePath, { ast, legacyAST }]) => ({
+  let outputSources = [];
+  for (const [sourcePath, { id, ast, legacyAST }] of Object.entries(compilerOutput.sources)) {
+    outputSources[id] = {
       sourcePath: originalSourcePaths[sourcePath],
       contents: sources[sourcePath],
-      ast: ast,
-      legacyAST: legacyAST,
+      ast,
+      legacyAST,
       language: "solidity"
-    })
-  );
-}
-
-/**
- * Aggregate list of sources based on reported source index
- * Returns list transformed to use original source paths
- */
-function processSources({ compilerOutput, originalSourcePaths }) {
-  let files = [];
-
-  for (let [sourcePath, { id }] of Object.entries(compilerOutput.sources)) {
-    files[id] = originalSourcePaths[sourcePath];
+    };
   }
-
-  return files;
+  return outputSources;
 }
+
 
 /**
  * Converts compiler-output contracts into @truffle/compile-solidity's return format
