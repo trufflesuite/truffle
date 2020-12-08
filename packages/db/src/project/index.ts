@@ -35,6 +35,10 @@ export class Project {
     return new Project({ run, forProvider, project });
   }
 
+  get id() {
+    return this.project.id;
+  }
+
   /**
    * Accept a compilation result and process it to save all relevant resources
    * (Source, Bytecode, Compilation, Contract)

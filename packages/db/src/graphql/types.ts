@@ -7,23 +7,23 @@ import { IResolvers } from "graphql-tools";
 import {
   Collections,
   CollectionName,
+  CollectionNameStyle,
+  CollectionNameStyledAs,
   MutableCollectionName
 } from "@truffle/db/meta";
 
 import { Workspace } from "../pouch";
 
 export type Definitions<C extends Collections> = {
-  [N in CollectionName<C>]: N extends MutableCollectionName<C>
-    ? {
-        mutable: true;
-        typeDefs: graphql.DocumentNode;
-        resolvers?: IResolvers<any, Context<C>>;
-      }
-    : {
-        mutable?: boolean;
-        typeDefs: graphql.DocumentNode;
-        resolvers?: IResolvers<any, Context<C>>;
-      };
+  [N in CollectionName<C>]: {
+    typeDefs: graphql.DocumentNode;
+    resolvers?: IResolvers<any, Context<C>>;
+    names: {
+      [S in CollectionNameStyle]: CollectionNameStyledAs<S, C, N>;
+    };
+  } & (N extends MutableCollectionName<C>
+    ? { mutable: true }
+    : { mutable?: false });
 };
 
 export interface Context<C extends Collections> {

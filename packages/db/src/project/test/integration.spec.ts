@@ -161,14 +161,11 @@ const AddNameRecords = gql`
     nameRecordsAdd(input: { nameRecords: $nameRecords }) {
       nameRecords {
         id
-        name
-        type
         resource {
           name
         }
         previous {
           id
-          name
         }
       }
     }
@@ -179,8 +176,10 @@ const AssignProjectNames = gql`
   mutation AssignProjectNames($projectNames: [ProjectNameInput!]!) {
     projectNamesAssign(input: { projectNames: $projectNames }) {
       projectNames {
-        name
-        type
+        key {
+          name
+          type
+        }
         nameRecord {
           resource {
             id
@@ -575,10 +574,9 @@ describe("Compilation", () => {
     });
 
     previousContractNameRecord = {
-      name: "Migrations",
-      type: "Contract",
       resource: {
-        id: previousContractExpectedId
+        id: previousContractExpectedId,
+        type: "Contract"
       }
     };
 
@@ -595,8 +593,10 @@ describe("Compilation", () => {
       projectNames: [
         {
           project: { id: projectId },
-          name: "Migrations",
-          type: "Contract",
+          key: {
+            name: "Migrations",
+            type: "Contract"
+          },
           nameRecord: {
             id: contractNameRecordId
           }
@@ -734,26 +734,6 @@ describe("Compilation", () => {
               : expectedVyperCompilationId
         }
       });
-
-      contractNameRecordId =
-        artifacts[index].contractName === previousContractNameRecord.name
-          ? generateId({
-              name: artifacts[index].contractName,
-              type: "Contract",
-              resource: {
-                id: expectedId
-              },
-              previous: {
-                id: previousContractExpectedId
-              }
-            })
-          : generateId({
-              name: artifacts[index].contractName,
-              type: "Contract",
-              resource: {
-                id: expectedId
-              }
-            });
 
       contractIds.push({ id: expectedId });
 

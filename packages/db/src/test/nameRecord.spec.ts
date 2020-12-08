@@ -1,3 +1,6 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:test:nameRecord");
+
 import { generateId, Migrations, WorkspaceClient } from "./utils";
 import {
   AddNameRecord,
@@ -24,10 +27,9 @@ describe("Name Record", () => {
     let addNetworkId = addNetworkResult.networksAdd.networks[0].id;
 
     variables = {
-      name: "ganache",
-      type: "Network",
       resource: {
-        id: addNetworkId
+        id: addNetworkId,
+        type: "Network"
       }
     };
 

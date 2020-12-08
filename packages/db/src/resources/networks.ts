@@ -1,16 +1,23 @@
-import {logger} from "@truffle/db/logger";
+import { logger } from "@truffle/db/logger";
 const debug = logger("db:definitions:networks");
 
 import gql from "graphql-tag";
 
-import {Definition} from "./types";
+import { Definition } from "./types";
 
 export const networks: Definition<"networks"> = {
-  createIndexes: [{fields: ["historicBlock.height"]}],
+  names: {
+    resource: "network",
+    Resource: "Network",
+    resources: "networks",
+    Resources: "Networks",
+    resourcesMutate: "networksAdd",
+    ResourcesMutate: "NetworksAdd"
+  },
+  createIndexes: [{ fields: ["historicBlock.height"] }],
   idFields: ["networkId", "historicBlock"],
   typeDefs: gql`
     type Network implements Resource & Named {
-      id: ID!
       name: String!
       networkId: NetworkId!
       historicBlock: Block!
@@ -51,7 +58,7 @@ export const networks: Definition<"networks"> = {
   resolvers: {
     Network: {
       possibleAncestors: {
-        resolve: async ({id}, {limit = 5, alreadyTried}, {workspace}) => {
+        resolve: async ({ id }, { limit = 5, alreadyTried }, { workspace }) => {
           const network = await workspace.get("networks", id);
           const result = await workspace.find("networks", {
             selector: {
@@ -64,7 +71,7 @@ export const networks: Definition<"networks"> = {
                 $nin: alreadyTried
               }
             },
-            sort: [{"historicBlock.height": "desc"}],
+            sort: [{ "historicBlock.height": "desc" }],
             limit
           });
 
@@ -79,7 +86,7 @@ export const networks: Definition<"networks"> = {
         }
       },
       possibleDescendants: {
-        resolve: async ({id}, {limit = 5, alreadyTried}, {workspace}) => {
+        resolve: async ({ id }, { limit = 5, alreadyTried }, { workspace }) => {
           const network = await workspace.get("networks", id);
           const result = await workspace.find("networks", {
             selector: {
@@ -92,7 +99,7 @@ export const networks: Definition<"networks"> = {
                 $nin: alreadyTried
               }
             },
-            sort: [{"historicBlock.height": "asc"}],
+            sort: [{ "historicBlock.height": "asc" }],
             limit
           });
 

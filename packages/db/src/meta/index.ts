@@ -22,11 +22,7 @@ export type Collections = {
         mutable?: boolean;
         named?: false;
         names: {
-          resource: string;
-          Resource: string;
-          resources: string;
-          Resources: string;
-          resourcesMutate: string;
+          [S in CollectionNameStyle]: string;
         };
       }
     // definitely named, must define name property
@@ -39,11 +35,7 @@ export type Collections = {
         mutable?: boolean;
         named: true;
         names: {
-          resource: string;
-          Resource: string;
-          resources: string;
-          Resources: string;
-          resourcesMutate: string;
+          [S in CollectionNameStyle]: string;
         };
       };
 };
@@ -78,6 +70,20 @@ export type CollectionProperty<
   C extends Collections = Collections,
   N extends CollectionName<C> = CollectionName<C>
 > = Collection<C, N>[P];
+
+export type CollectionNameStyle =
+  | "resource"
+  | "Resource"
+  | "resources"
+  | "Resources"
+  | "resourcesMutate"
+  | "ResourcesMutate";
+
+export type CollectionNameStyledAs<
+  S extends CollectionNameStyle,
+  C extends Collections,
+  N extends CollectionName<C>
+> = CollectionProperty<"names", C, N>[S];
 
 export type ResourceFilter = {
   is: CollectionPropertyName<{ extends: boolean }>;

@@ -17,7 +17,7 @@ export const generateProjectNamesLoad = Batch.generate<{
   result: IdObject<DataModel.ProjectName>;
 }>({
   extract<_I>({ input: { name, type, nameRecord }, inputs: { project } }) {
-    return { project, name, type, nameRecord };
+    return { project, key: { name, type }, nameRecord };
   },
 
   *process({ entries }) {
