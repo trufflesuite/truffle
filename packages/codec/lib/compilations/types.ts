@@ -147,5 +147,5 @@ export interface VyperSourceMap {
   pc_pos_map: {
     [pc: number]: [number, number, number, number];
   };
-  pc_pos_map_compressed: string;
+  pc_pos_map_compressed?: string;
 }
