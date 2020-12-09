@@ -4,6 +4,7 @@ const path = require("path");
 const fs = require("fs");
 const semver = require("semver");
 const Common = require("@truffle/compile-common");
+const partition = require("lodash.partition");
 
 //NOTE: this file has a fair bit of copypaste-with-modifications
 //from compile-solidity/run.js, so be warned...
@@ -11,6 +12,8 @@ const Common = require("@truffle/compile-common");
 
 function compileAllJson({ sources: sourcePaths, options, version }) {
   const compiler = { name: "vyper", version };
+
+  debug("sourcePaths: %O", sourcePaths);
 
   const rawSources = Object.assign(
     {},
@@ -25,14 +28,37 @@ function compileAllJson({ sources: sourcePaths, options, version }) {
     originalSourcePaths
   } = Common.Sources.collectSources(rawSources, options.compilationTargets);
 
+  debug("sources: %O", sources);
+
+  const [interfacePaths, properSourcePaths] = partition(
+    Object.keys(sources),
+    sourcePath => sourcePath.endsWith(".json")
+  );
+
+  const properSources = Object.assign(
+    {},
+    ...properSourcePaths.map(sourcePath => ({
+      [sourcePath]: sources[sourcePath]
+    }))
+  );
+
+  const interfaces = Object.assign(
+    {},
+    ...interfacePaths.map(sourcePath => ({
+      [sourcePath]: sources[sourcePath]
+    }))
+  );
+
   // construct compiler input
   const compilerInput = prepareCompilerInput({
-    sources,
+    sources: properSources,
+    interfaces,
     targets,
     settings: options.compilers.vyper.settings || {},
-    interfaces: options.compilers.vyper.interfaces,
     version
   });
+
+  debug("compilerInput: %O", compilerInput);
 
   // perform compilation
   const rawCompilerOutput = invokeCompiler({
@@ -106,11 +132,11 @@ function prepareCompilerInput({
   return {
     language: "Vyper",
     sources: prepareSources({ sources }),
+    interfaces: prepareInterfaces({ interfaces }),
     settings: {
       evmVersion: settings.evmVersion,
       outputSelection
     },
-    interfaces,
     //older versions of vyper require outputSelection *outside* of settings.
     //we'll put it in both places for compatibility.
     outputSelection
@@ -120,6 +146,12 @@ function prepareCompilerInput({
 function prepareSources({ sources }) {
   return Object.entries(sources)
     .map(([sourcePath, content]) => ({ [sourcePath]: { content } }))
+    .reduce((a, b) => Object.assign({}, a, b), {});
+}
+
+function prepareInterfaces({ interfaces }) {
+  return Object.entries(interfaces)
+    .map(([sourcePath, abi]) => ({ [sourcePath]: { abi: JSON.parse(abi) } })) //note the parse!
     .reduce((a, b) => Object.assign({}, a, b), {});
 }
 

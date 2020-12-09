@@ -1,3 +1,4 @@
+const debug = require("debug")("compile-vyper");
 const path = require("path");
 const exec = require("child_process").exec;
 const fs = require("fs");
@@ -10,7 +11,7 @@ const Common = require("@truffle/compile-common");
 
 const { compileAllJson } = require("./vyper-json");
 
-const VYPER_PATTERN = "**/*.{vy,v.py,vyper.py}";
+const VYPER_PATTERN = "**/*.{vy,v.py,vyper.py,json}"; //include JSON for interfaces
 
 // Check that vyper is available, return its version
 function checkVyper() {
@@ -106,15 +107,19 @@ async function compileAll({ sources, options, version, useJson }) {
 async function compileAllNoJson({ sources, options, version }) {
   const compiler = { name: "vyper", version };
   const promises = [];
+  const properSources = sources.filter(source => !source.endsWith(".json")); //filter out JSON interfaces
   const targets = options.compilationTargets
-    ? sources.filter(sourcePath =>
+    ? properSources.filter(sourcePath =>
         options.compilationTargets.includes(sourcePath)
       )
-    : sources;
+    : properSources;
   targets.forEach(sourcePath => {
     promises.push(
       new Promise((resolve, reject) => {
-        execVyper(options, sourcePath, version, function (error, compiledContract) {
+        execVyper(options, sourcePath, version, function (
+          error,
+          compiledContract
+        ) {
           if (error) return reject(error);
 
           // remove first extension from filename
@@ -192,7 +197,7 @@ const Compile = {
   //since we don't have an imports analyzer for Vyper
   //yet, we'll just treat this the same as all; this will
   //need to be revisited once we have an import parser for Vyper
-  async sourcesWithDependencies({ paths = [], options }) {
+  async sourcesWithDependencies({ paths: _paths = [], options }) {
     return await Compile.all({ options });
   },
 
@@ -204,7 +209,9 @@ const Compile = {
       options.contracts_directory,
       VYPER_PATTERN
     );
+    debug("fileSearchPattern: %O", fileSearchPattern);
     const files = await findContracts(fileSearchPattern);
+    debug("files: %O", files);
 
     return await Compile.sources({
       sources: files,
@@ -248,7 +255,7 @@ const Compile = {
       if (!Array.isArray(paths)) {
         paths = Object.keys(paths);
       }
-  
+
       const sourceFileNames = paths.sort().map(contract => {
         if (path.isAbsolute(contract)) {
           return `.${path.sep}${path.relative(
@@ -256,7 +263,7 @@ const Compile = {
             contract
           )}`;
         }
-  
+
         return contract;
       });
       options.events.emit("compile:sourcesToCompile", { sourceFileNames });

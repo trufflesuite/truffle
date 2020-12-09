@@ -15,6 +15,7 @@
     "colors": "^1.1.2",
     "debug": "^4.3.1",
     "eslint": "^5.5.0",
+    "lodash.partition": "^4.6.0",
     "minimatch": "^3.0.4",
     "semver": "^7.3.4"
   },
