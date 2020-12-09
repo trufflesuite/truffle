@@ -2,11 +2,6 @@ const debug = require("debug")("workflow-compile");
 const fse = require("fs-extra");
 const {prepareConfig} = require("./utils");
 const {Shims} = require("@truffle/compile-common");
-const {
-  reportCompilationStarted,
-  reportNothingToCompile,
-  reportCompilationFinished
-} = require("./reports");
 
 const SUPPORTED_COMPILERS = {
   solc: require("@truffle/compile-solidity").Compile,
@@ -102,10 +97,6 @@ const WorkflowCompile = {
       compilations
     };
   },
-
-  reportCompilationStarted,
-  reportCompilationFinished,
-  reportNothingToCompile,
 
   async save(options, {contracts, _compilations}) {
     const config = prepareConfig(options);
