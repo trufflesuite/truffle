@@ -80,6 +80,60 @@ const Utils = {
       .filter(log => log != null);
   },
 
+  consoleLog(receiptLogs) {
+    const logEvents = receiptLogs.filter(x => x.event === "_TruffleConsoleLog");
+    logEvents.forEach(event => {
+      const result = event.args;
+
+      // A mapping to show how to output into our console
+      const outputMap = {
+        num: result[0].toString(),
+        boolean: result[0],
+        str: result[0],
+        b32: result[0],
+        addr: result[0]
+      };
+
+      // A list of all "supported" types: ["num", "boolean", "str", ...]
+      const types = Object.keys(outputMap);
+
+      // Find out what type our result is, and log it out if it matches
+      types.forEach(type => {
+        if (result.hasOwnProperty(type)) {
+          console.log(outputMap[type]);
+        }
+      });
+    });
+
+    const namedLogEvents = receiptLogs.filter(
+      x => x.event === "_TruffleConsoleLogNamed"
+    );
+    namedLogEvents.forEach(event => {
+      const result = event.args;
+
+      // A mapping to show how to output into our console
+      const outputMap = {
+        num: result[1].toString(),
+        boolean: result[1],
+        str: result[1],
+        b32: result[1],
+        addr: result[1]
+      };
+
+      // A list of all "supported" types: ["num", "boolean", "str", ...]
+      const types = Object.keys(outputMap);
+
+      // Find out what type our result is, and log it out if it matches
+      types.forEach(type => {
+        if (result.hasOwnProperty(type)) {
+          const label = web3Utils.toAscii(result[0]);
+          const value = outputMap[type];
+          console.log(label, value);
+        }
+      });
+    });
+  },
+
   toTruffleLog(events, isSingle) {
     // Transform singletons (from event listeners) to the kind of
     // object we find on the receipt
@@ -174,11 +228,7 @@ const Utils = {
         })
         .join(", ");
 
-      const error = `${
-        constructor.contractName
-      } contains unresolved libraries. You must deploy and link the following libraries before you can deploy a new version of ${
-        constructor.contractName
-      }: ${unlinked_libraries}`;
+      const error = `${constructor.contractName} contains unresolved libraries. You must deploy and link the following libraries before you can deploy a new version of ${constructor.contractName}: ${unlinked_libraries}`;
 
       throw new Error(error);
     }

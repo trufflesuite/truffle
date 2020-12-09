@@ -11,12 +11,12 @@ describe("Artifactor.save", () => {
         "abi": [],
         "bytecode": "0xabcdef",
         "networks": {
-          3: { address: "0xe6e1652a0397e078f434d6dda181b218cfd42e01" },
+          3: { address: "0xe6e1652a0397e078f434d6dda181b218cfd42e01" }
         },
-        "x-from-dependency": "somedep",
+        "x-from-dependency": "somedep"
       })
       .then(() => assert(false, "didn't throw!"))
-      .catch((e) => assert(e.message.includes("must specify a contract name")));
+      .catch(e => assert(e.message.includes("must specify a contract name")));
   });
 });
 
@@ -32,19 +32,19 @@ describe("Artifactor.saveAll", () => {
           "abi": [],
           "bytecode": "0xabcdef",
           "networks": {
-            3: { address: "0xe6e1652a0397e078f434d6dda181b218cfd42e01" },
+            3: { address: "0xe6e1652a0397e078f434d6dda181b218cfd42e01" }
           },
-          "x-from-dependency": "somedep",
+          "x-from-dependency": "somedep"
         },
         {
           "contractName": "Example",
           "abi": [],
           "bytecode": "0xdeadbeef",
           "networks": {
-            3: { address: "0xe6e1652a0397e078f434d6dda181b218cfd42e01" },
+            3: { address: "0xe6e1652a0397e078f434d6dda181b218cfd42e01" }
           },
-          "x-from-dependency": "somedep",
-        },
+          "x-from-dependency": "somedep"
+        }
       ])
       .then(() => {
         assert.isTrue(consoleWarnSpy.called, "No warning emitted");
@@ -64,12 +64,12 @@ describe("Artifactor.saveAll", () => {
         "abi": [],
         "bytecode": "0xabcdef",
         "networks": {
-          3: { address: "0xe6e1652a0397e078f434d6dda181b218cfd42e01" },
+          3: { address: "0xe6e1652a0397e078f434d6dda181b218cfd42e01" }
         },
-        "x-from-dependency": "somedep",
+        "x-from-dependency": "somedep"
       })
       .then(() => assert(false, "didn't throw!"))
-      .catch((e) => {
+      .catch(e => {
         assert(e.message.includes("doesn't exist!"));
       });
   });
@@ -84,10 +84,10 @@ describe("Artifactor.saveAll", () => {
           "abi": [],
           "bytecode": "0xabcdef",
           "networks": {
-            3: { address: "0xe6e1652a0397e078f434d6dda181b218cfd42e01" },
+            3: { address: "0xe6e1652a0397e078f434d6dda181b218cfd42e01" }
           },
-          "x-from-dependency": "somedep",
-        },
+          "x-from-dependency": "somedep"
+        }
       ])
       .then(() => assert(false, "didn't throw!"))
       .catch(e => {

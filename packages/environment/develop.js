@@ -4,7 +4,7 @@ const { spawn } = require("child_process");
 const debug = require("debug");
 
 const Develop = {
-  start: async function(ipcNetwork, options = {}) {
+  start: async function (ipcNetwork, options = {}) {
     let chainPath;
 
     // The path to the dev env process depends on whether or not
@@ -39,7 +39,7 @@ const Develop = {
     });
   },
 
-  connect: function(options) {
+  connect: function (options) {
     const debugServer = debug("develop:ipc:server");
     const debugClient = debug("develop:ipc:client");
     const debugRPC = debug("develop:ganache");
@@ -69,7 +69,7 @@ const Develop = {
     if (options.log) {
       debugRPC.enabled = true;
 
-      loggers.ganache = function() {
+      loggers.ganache = function () {
         // HACK-y: replace `{}` that is getting logged instead of ""
         var args = Array.prototype.slice.call(arguments);
         if (
@@ -88,21 +88,21 @@ const Develop = {
       ipc.config.maxRetries = 0;
     }
 
-    var disconnect = function() {
+    var disconnect = function () {
       ipc.disconnect(ipcNetwork);
     };
 
     return new Promise((resolve, reject) => {
-      ipc.connectTo(ipcNetwork, connectPath, function() {
-        ipc.of[ipcNetwork].on("destroy", function() {
+      ipc.connectTo(ipcNetwork, connectPath, function () {
+        ipc.of[ipcNetwork].on("destroy", function () {
           reject(new Error("IPC connection destroyed"));
         });
 
-        ipc.of[ipcNetwork].on("truffle.ready", function() {
+        ipc.of[ipcNetwork].on("truffle.ready", function () {
           resolve(disconnect);
         });
 
-        Object.keys(loggers).forEach(function(key) {
+        Object.keys(loggers).forEach(function (key) {
           var log = loggers[key];
           if (log) {
             var message = `truffle.${key}.log`;
@@ -113,7 +113,7 @@ const Develop = {
     });
   },
 
-  connectOrStart: async function(options, ganacheOptions) {
+  connectOrStart: async function (options, ganacheOptions) {
     options.retry = false;
 
     const ipcNetwork = options.network || "develop";

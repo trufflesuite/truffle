@@ -6,7 +6,7 @@ const Provider = require("@truffle/provider");
 const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 
 const Networks = {
-  deployed: async function(options) {
+  deployed: async function (options) {
     let files;
     try {
       // Only read JSON files in directory
@@ -53,7 +53,7 @@ const Networks = {
     return networks;
   },
 
-  display: async function(config) {
+  display: async function (config) {
     const networks = await this.deployed(config);
     const { networkNames, starNetworks } = Object.keys(networks)
       .sort()
@@ -150,7 +150,7 @@ const Networks = {
     config.logger.log("");
   },
 
-  clean: async function(config) {
+  clean: async function (config) {
     // Only read JSON files in directory
     let files = fs
       .readdirSync(config.contracts_build_directory)
@@ -198,7 +198,7 @@ const Networks = {
   },
 
   // Try to connect to every named network except for "test" and "development"
-  asURIs: async function(options, networks) {
+  asURIs: async function (options, networks) {
     const result = {
       uris: {},
       failed: []
@@ -217,7 +217,7 @@ const Networks = {
     return result;
   },
 
-  matchesNetwork: async function(network_id, network_options) {
+  matchesNetwork: async function (network_id, network_options) {
     const provider = Provider.create(network_options);
 
     const first = network_id + "";

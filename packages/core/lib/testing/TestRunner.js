@@ -156,8 +156,11 @@ class TestRunner {
       fromBlock: this.currentTestStartBlock.toNumber()
     });
 
+    // we need to filter out internally used Truffle events
     const userDefinedEventLogs = logs.filter(log => {
-      return log.decodings.every(decoding => decoding.abi.name !== "TestEvent");
+      return log.decodings.every(
+        decoding => decoding.abi.name !== "TestEvent" && decoding.abi.name !== "_TruffleConsoleLogNamed"
+      );
     });
 
     if (userDefinedEventLogs.length === 0) {

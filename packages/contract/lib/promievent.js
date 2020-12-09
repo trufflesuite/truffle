@@ -29,7 +29,7 @@ function PromiEvent(justPromise, bugger = undefined, isDeploy = false) {
       getSolidityStackTrace = async () => undefined;
     }
 
-    getSolidityStackTrace().then((solidityStackTrace) => {
+    getSolidityStackTrace().then(solidityStackTrace => {
       debug("e.stack: %s", e.stack);
       debug("originalStackTrace: %s", originalStackTrace);
       debug("solidityStackTrace: %s", solidityStackTrace);
@@ -49,7 +49,7 @@ function PromiEvent(justPromise, bugger = undefined, isDeploy = false) {
           let [
             _,
             solidityFirstLine,
-            solidityRemaining,
+            solidityRemaining
           ] = solidityStackTrace.match(/^(.*?)\r?\n((.|\r|\n)*)$/);
 
           stackTrace = stackTrace.replace(

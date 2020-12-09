@@ -45,9 +45,7 @@ module.exports = Contract => ({
 
     if (!this.bytecode || this.bytecode === "0x") {
       throw new Error(
-        `${
-          this.contractName
-        } error: contract binary not set. Can't deploy new instance.\n` +
+        `${this.contractName} error: contract binary not set. Can't deploy new instance.\n` +
           `This contract may be abstract, not implement an abstract parent's methods completely\n` +
           `or not invoke an inherited contract's constructor correctly\n`
       );

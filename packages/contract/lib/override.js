@@ -35,7 +35,7 @@ const override = {
    * @param  {Object} context execution state
    * @param  {Object} err     error
    */
-  start: async function(context, web3Error) {
+  start: async function (context, web3Error) {
     const constructor = this;
     let currentBlock = override.defaultMaxBlocks;
 
@@ -66,7 +66,7 @@ const override = {
     }
 
     // This will run every block from now until contract.timeoutBlocks
-    const listener = function(pollID) {
+    const listener = function (pollID) {
       currentBlock++;
 
       if (currentBlock > constructor.timeoutBlocks) {

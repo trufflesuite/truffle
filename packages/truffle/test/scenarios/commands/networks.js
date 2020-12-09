@@ -7,7 +7,7 @@ const path = require("path");
 describe("truffle networks", () => {
   let config, projectPath;
 
-  before("before all setup", function(done) {
+  before("before all setup", function (done) {
     this.timeout(10000);
     projectPath = path.join(__dirname, "../../sources/networks/metacoin");
     sandbox

@@ -6,7 +6,7 @@ var command = {
     usage: "truffle publish",
     options: []
   },
-  run: function(options, done) {
+  run: function (options, done) {
     var Config = require("@truffle/config");
     var Package = require("../package");
 

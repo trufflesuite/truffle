@@ -17,8 +17,8 @@ const templates = {
   }
 };
 
-var processFile = function(file_path, processfn, callback) {
-  fs.readFile(file_path, { encoding: "utf8" }, function(err, data) {
+var processFile = function (file_path, processfn, callback) {
+  fs.readFile(file_path, { encoding: "utf8" }, function (err, data) {
     if (err != null) {
       callback(err);
       return;
@@ -29,10 +29,10 @@ var processFile = function(file_path, processfn, callback) {
   });
 };
 
-var replaceContents = function(file_path, find, replacement, callback) {
+var replaceContents = function (file_path, find, replacement, callback) {
   processFile(
     file_path,
-    function(data) {
+    function (data) {
       if (typeof find === "string") {
         find = new RegExp(find, "g");
       }
@@ -42,8 +42,8 @@ var replaceContents = function(file_path, find, replacement, callback) {
   );
 };
 
-var toUnderscoreFromCamel = function(string) {
-  string = string.replace(/([A-Z])/g, function($1) {
+var toUnderscoreFromCamel = function (string) {
+  string = string.replace(/([A-Z])/g, function ($1) {
     return "_" + $1.toLowerCase();
   });
 
@@ -55,7 +55,7 @@ var toUnderscoreFromCamel = function(string) {
 };
 
 var Create = {
-  contract: function(directory, name, options, callback) {
+  contract: function (directory, name, options, callback) {
     if (typeof options === "function") {
       callback = options;
     }
@@ -69,14 +69,14 @@ var Create = {
       );
     }
 
-    copy.file(from, to, function(err) {
+    copy.file(from, to, function (err) {
       if (err) return callback(err);
 
       replaceContents(to, templates.contract.name, name, callback);
     });
   },
 
-  test: function(directory, name, options, callback) {
+  test: function (directory, name, options, callback) {
     if (typeof options === "function") {
       callback = options;
     }
@@ -92,17 +92,17 @@ var Create = {
       );
     }
 
-    copy.file(from, to, function(err) {
+    copy.file(from, to, function (err) {
       if (err) return callback(err);
 
-      replaceContents(to, templates.contract.name, name, function(err) {
+      replaceContents(to, templates.contract.name, name, function (err) {
         if (err) return callback(err);
         replaceContents(to, templates.contract.variable, underscored, callback);
       });
     });
   },
 
-  migration: function(directory, name, options, callback) {
+  migration: function (directory, name, options, callback) {
     if (typeof options === "function") {
       callback = options;
     }

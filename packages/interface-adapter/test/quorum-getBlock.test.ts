@@ -33,8 +33,8 @@ async function prepareGanache(
   });
 }
 
-describe("Quorum getBlock Overload", function() {
-  it("recovers block timestamp as hexstring instead of number w/ quorum=true", async function() {
+describe("Quorum getBlock Overload", function () {
+  it("recovers block timestamp as hexstring instead of number w/ quorum=true", async function () {
     return new Promise(async (resolve, reject) => {
       let preparedGanache;
       try {
@@ -54,7 +54,7 @@ describe("Quorum getBlock Overload", function() {
     });
   });
 
-  it("recovers block timestamp as number w/ quorum=false", async function() {
+  it("recovers block timestamp as number w/ quorum=false", async function () {
     return new Promise(async (resolve, reject) => {
       let preparedGanache;
       try {
