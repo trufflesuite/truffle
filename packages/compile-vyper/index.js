@@ -6,7 +6,7 @@ const minimatch = require("minimatch");
 const semver = require("semver");
 
 const findContracts = require("@truffle/contract-sources");
-const Profiler = require("@truffle/compile-solidity/profiler");
+const Common = require("@truffle/compile-common");
 
 const { compileAllJson } = require("./vyper-json");
 
@@ -226,7 +226,8 @@ const Compile = {
     );
     const files = await findContracts(fileSearchPattern);
 
-    const updated = await Profiler.updated(options);
+    const profiler = await new Common.Profiler({});
+    const updated = await profiler.updated(options);
     if (updated.length === 0) {
       return { compilations: [] };
     }
