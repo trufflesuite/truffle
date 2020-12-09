@@ -4,30 +4,28 @@ const debug = logger("db:project:compile:sources");
 import { IdObject, resources } from "@truffle/db/project/process";
 import * as Batch from "./batch";
 
-export const generateSourcesLoad = Batch.Contracts.generate<{
+export const generateSourcesLoad = Batch.Sources.generate<{
   compilation: {};
-  contract: {
-    sourcePath: string;
-    source: string;
-  };
+  contract: {};
+  source: {};
   resources: { source: IdObject<DataModel.Source> };
   entry: DataModel.SourceInput;
   result: IdObject<DataModel.Source>;
 }>({
-  extract<_I>({ input: { sourcePath, source: contents } }) {
-    return { sourcePath, contents };
+  extract<_I>({ input: { sourcePath, contents } }) {
+    return { contents, sourcePath };
   },
 
   *process({ entries }) {
     return yield* resources.load("sources", entries);
   },
 
-  convert<_I, _O>({ result: source, input: contract }) {
+  convert<_I, _O>({ result, input: source }) {
     return {
-      ...contract,
+      ...source,
       db: {
-        ...contract.db,
-        source
+        ...source.db,
+        source: result
       }
     };
   }

@@ -37,6 +37,7 @@ export const compilations: Definition<"compilations"> = {
       source: Source!
       contracts: [Contract]!
       ast: AST
+      language: String!
     }
 
     type AST {
@@ -65,6 +66,7 @@ export const compilations: Definition<"compilations"> = {
       name: String
       source: ResourceReferenceInput
       ast: ASTInput
+      language: String
     }
 
     input ASTInput {

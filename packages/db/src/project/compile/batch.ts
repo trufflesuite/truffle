@@ -8,6 +8,7 @@ import { Process, Batch, _ } from "@truffle/db/project/process";
 export type Config = {
   compilation: {};
   contract: {};
+  source: {};
   resources: {};
   entry?: any;
   result?: any;
@@ -16,10 +17,12 @@ export type Config = {
 type Resources<C extends Config> = C["resources"];
 type Entry<C extends Config> = C["entry"];
 type Result<C extends Config> = C["result"];
+type Source<C extends Config> = Common.Source & C["source"];
 type Contract<C extends Config> = Common.CompiledContract & C["contract"];
 type Compilation<C extends Config> = Common.Compilation &
   C["compilation"] & {
     contracts: Contract<C>[];
+    sources: Source<C>[];
   };
 
 export namespace Compilations {
@@ -164,6 +167,86 @@ export namespace Contracts {
           {
             ...compilation,
             contracts: [...contractsBefore, contract, ...contractsAfter]
+          },
+          ...compilationsAfter
+        ];
+      },
+
+      ...options
+    });
+}
+export namespace Sources {
+  type Structure<C extends Config> = (Omit<Compilation<C>, "sources"> & {
+    sources: _[];
+  })[];
+
+  type Breadcrumb<_C extends Config> = {
+    compilationIndex: number;
+    sourceIndex: number;
+  };
+
+  type Batch<C extends Config> = {
+    structure: Structure<C>;
+    breadcrumb: Breadcrumb<C>;
+
+    input: Source<C>;
+    output: Source<C> & { db: Resources<C> };
+
+    entry?: Entry<C>;
+    result?: Result<C>;
+  };
+
+  type Options<C extends Config> = Omit<
+    Batch.Options<Batch<C>>,
+    "iterate" | "find" | "initialize" | "find" | "merge"
+  >;
+
+  export const generate = <C extends Config>(
+    options: Options<C>
+  ): (<I extends Batch.Input<Batch<C>>, O extends Batch.Output<Batch<C>>>(
+    inputs: Batch.Inputs<Batch<C>, I>
+  ) => Process<Batch.Outputs<Batch<C>, I & O>>) =>
+    Batch.configure<Batch<C>>({
+      *iterate<_I>({ inputs }) {
+        for (const [compilationIndex, { sources }] of inputs.entries()) {
+          for (const [sourceIndex, source] of sources.entries()) {
+            yield {
+              input: source,
+              breadcrumb: { sourceIndex, compilationIndex }
+            };
+          }
+        }
+      },
+
+      find<_I>({ inputs, breadcrumb }) {
+        const { compilationIndex, sourceIndex } = breadcrumb;
+
+        return inputs[compilationIndex].sources[sourceIndex];
+      },
+
+      initialize<I, O>({ inputs }) {
+        return inputs.map(compilation => ({
+          ...compilation,
+          sources: [] as (I & O)[]
+        }));
+      },
+
+      merge<I, O>({ outputs, breadcrumb, output }) {
+        const { compilationIndex, sourceIndex } = breadcrumb;
+
+        const compilationsBefore = outputs.slice(0, compilationIndex);
+        const compilation = outputs[compilationIndex];
+        const compilationsAfter = outputs.slice(compilationIndex + 1);
+
+        const sourcesBefore = compilation.sources.slice(0, sourceIndex);
+        const source: I & O = output;
+        const sourcesAfter = compilation.sources.slice(sourceIndex + 1);
+
+        return [
+          ...compilationsBefore,
+          {
+            ...compilation,
+            sources: [...sourcesBefore, source, ...sourcesAfter]
           },
           ...compilationsAfter
         ];

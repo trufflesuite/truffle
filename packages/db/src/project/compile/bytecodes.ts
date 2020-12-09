@@ -10,6 +10,7 @@ export const generateBytecodesLoad = Batch.Contracts.generate<{
     bytecode: DataModel.BytecodeInput;
     deployedBytecode: DataModel.BytecodeInput;
   };
+  source: {};
   resources: {
     callBytecode: IdObject<DataModel.Bytecode>;
     createBytecode: IdObject<DataModel.Bytecode>;
