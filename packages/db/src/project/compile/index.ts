@@ -11,9 +11,20 @@ import { generateContractsLoad } from "./contracts";
 
 export type Compilation = Common.Compilation & {
   contracts: Contract[];
+  sources: Source[];
+  compiler: { name: string; version: string };
   db: {
     compilation: IdObject<DataModel.Compilation>;
   };
+};
+
+export type Source = Common.Source & {
+  // sourcePath: string;
+  // contents: string;
+  language: string;
+  // ast: any;
+  // legacyAST: any;
+  db: { source: IdObject<DataModel.Source> };
 };
 
 export type Contract = Common.CompiledContract & {
@@ -41,13 +52,19 @@ export function* generateCompileLoad(
 }> {
   const withSources = yield* generateSourcesLoad(result.compilations);
 
+  // const withSourcesMore = withSources.map(({ sources } ) => sources);
+
   const withSourcesAndBytecodes = yield* generateBytecodesLoad(withSources);
 
   const withCompilations = yield* generateCompilationsLoad(
     withSourcesAndBytecodes
   );
 
+  // const withSourcesAndBytecodesMore = withSourcesAndBytecodes.map(({ sources } ) => sources);
+
   const withContracts = yield* generateContractsLoad(withCompilations);
+
+  // const withContractsMore = withSources.map(({ contracts } ) => contracts);
 
   const compilations = withContracts;
 

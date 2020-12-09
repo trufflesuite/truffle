@@ -10,6 +10,7 @@ export const generateContractsLoad = Batch.Contracts.generate<{
       compilation: IdObject<DataModel.Compilation>;
     };
   };
+  source: {};
   contract: {
     contractName: string;
     abi: any;
