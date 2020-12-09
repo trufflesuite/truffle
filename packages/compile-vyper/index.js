@@ -33,7 +33,7 @@ function checkVyper() {
 }
 
 // Execute vyper for single source file
-function execVyper(options, sourcePath, callback) {
+function execVyper(options, sourcePath, version, callback) {
   const formats = ["abi", "bytecode", "bytecode_runtime", "source_map"];
   if (
     semver.satisfies(version, ">=0.1.0-beta.7", {
@@ -114,7 +114,7 @@ async function compileAllNoJson({ sources, options, version }) {
   targets.forEach(sourcePath => {
     promises.push(
       new Promise((resolve, reject) => {
-        execVyper(options, sourcePath, function (error, compiledContract) {
+        execVyper(options, sourcePath, version, function (error, compiledContract) {
           if (error) return reject(error);
 
           // remove first extension from filename
