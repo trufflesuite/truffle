@@ -160,7 +160,7 @@ describe("vyper compiler", function () {
       const { compilations } = await Compile.all(config);
       const { sources } = compilations[0];
 
-      assert(sources.length === 4);
+      assert(sources.length === 5);
       assert(
         sources[0].sourcePath ===
           path.join(__dirname, "sources/VyperContract1.vy")
