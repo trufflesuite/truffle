@@ -34,18 +34,6 @@ describe("Truffle Library APIs [ @standalone ]", () => {
       "contracts.compileSources undefined"
     );
     assert(
-      truffle.contracts.reportCompilationStarted,
-      "contracts.reportCompilationStarted undefined"
-    );
-    assert(
-      truffle.contracts.reportCompilationFinished,
-      "contracts.reportCompilationFinished undefined"
-    );
-    assert(
-      truffle.contracts.reportNothingToCompile,
-      "contracts.reportNothingToCompile undefined"
-    );
-    assert(
       truffle.contracts.writeContracts,
       "contracts.writeContracts undefined"
     );
