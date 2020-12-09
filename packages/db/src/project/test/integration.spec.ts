@@ -221,6 +221,7 @@ const AddContracts = gql`
           ast {
             json
           }
+          language
         }
         compilation {
           compiler {
@@ -326,6 +327,7 @@ const GetWorkspaceContract = gql`
             contents
             sourcePath
           }
+          language
         }
       }
     }
@@ -347,6 +349,7 @@ const GetWorkspaceCompilation = gql`
         ast {
           json
         }
+        language
       }
       sources {
         id
@@ -668,6 +671,9 @@ describe("Compilation", () => {
       expect(source["contents"]).toEqual(artifacts[index].source);
       expect(solcCompilation.processedSources[index].source.contents).toEqual(
         artifacts[index].source
+      );
+      expect(solcCompilation.processedSources[index].language).toEqual(
+        "solidity"
       );
 
       expect(
