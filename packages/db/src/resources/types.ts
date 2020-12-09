@@ -1,11 +1,11 @@
-import {logger} from "@truffle/db/logger";
+import { logger } from "@truffle/db/logger";
 const debug = logger("db:resources:types");
 
 import * as Meta from "@truffle/db/meta";
 import * as Pouch from "@truffle/db/pouch";
 import * as GraphQl from "@truffle/db/graphql";
 
-export {Db, IdObject, toIdObject} from "@truffle/db/meta";
+export { Db, IdObject, toIdObject } from "@truffle/db/meta";
 
 export type Collections = {
   sources: {
@@ -17,6 +17,7 @@ export type Collections = {
       resources: "sources";
       Resources: "Sources";
       resourcesMutate: "sourcesAdd";
+      ResourcesMutate: "SourcesAdd";
     };
   };
   bytecodes: {
@@ -28,6 +29,7 @@ export type Collections = {
       resources: "bytecodes";
       Resources: "Bytecodes";
       resourcesMutate: "bytecodesAdd";
+      ResourcesMutate: "BytecodesAdd";
     };
   };
   compilations: {
@@ -39,6 +41,7 @@ export type Collections = {
       resources: "compilations";
       Resources: "Compilations";
       resourcesMutate: "compilationsAdd";
+      ResourcesMutate: "CompilationsAdd";
     };
   };
   contractInstances: {
@@ -50,6 +53,7 @@ export type Collections = {
       resources: "contractInstances";
       Resources: "ContractInstances";
       resourcesMutate: "contractInstancesAdd";
+      ResourcesMutate: "ContractInstancesAdd";
     };
   };
   contracts: {
@@ -62,6 +66,7 @@ export type Collections = {
       resources: "contracts";
       Resources: "Contracts";
       resourcesMutate: "contractsAdd";
+      ResourcesMutate: "ContractsAdd";
     };
   };
   nameRecords: {
@@ -73,6 +78,7 @@ export type Collections = {
       resources: "nameRecords";
       Resources: "NameRecords";
       resourcesMutate: "nameRecordsAdd";
+      ResourcesMutate: "NameRecordsAdd";
     };
   };
   networks: {
@@ -85,6 +91,7 @@ export type Collections = {
       resources: "networks";
       Resources: "Networks";
       resourcesMutate: "networksAdd";
+      ResourcesMutate: "NetworksAdd";
     };
   };
   projects: {
@@ -96,6 +103,7 @@ export type Collections = {
       resources: "projects";
       Resources: "Projects";
       resourcesMutate: "projectsAdd";
+      ResourcesMutate: "ProjectsAdd";
     };
   };
   projectNames: {
@@ -108,6 +116,7 @@ export type Collections = {
       resources: "projectNames";
       Resources: "ProjectNames";
       resourcesMutate: "projectNamesAssign";
+      ResourcesMutate: "ProjectNamesAssign";
     };
   };
   networkGenealogies: {
@@ -119,6 +128,7 @@ export type Collections = {
       resources: "networkGenealogies";
       Resources: "NetworkGenealogies";
       resourcesMutate: "networkGenealogiesAdd";
+      ResourcesMutate: "NetworkGenealogiesAdd";
     };
   };
 };
