@@ -17,16 +17,21 @@ module.exports = {
           this.logger.log(`> Artifacts written to ${contractsBuildDirectory}`);
           this.logger.log(`> Compiled successfully using:`);
 
+          const versionReports = new Set();
+
           const maxLength = compilers
             .map(({ name }) => name.length)
             .reduce((max, length) => (length > max ? length : max), 0);
 
           for (const compiler of compilers) {
             const padding = " ".repeat(maxLength - compiler.name.length);
+            const versionReport =
+              `   - ${compiler.name}:${padding} ${compiler.version}`;
 
-            this.logger.log(
-              `   - ${compiler.name}:${padding} ${compiler.version}`
-            );
+            if (!versionReports.has(versionReport)) {
+              this.logger.log(versionReport);
+              versionReports.add(versionReport);
+            }
           }
         }
         this.logger.log();
