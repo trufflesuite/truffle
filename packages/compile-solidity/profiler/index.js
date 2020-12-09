@@ -26,5 +26,16 @@ module.exports = {
 
     // invoke profiler
     return await profiler.requiredSources(options);
+  },
+
+  requiredSourcesForSingleFile: async options => {
+    const parseImports = await loadParser(options);
+
+    const profiler = new Common.Profiler({
+      parseImports,
+      shouldIncludePath
+    });
+
+    return profiler.requiredSourcesForSingleFile(options);
   }
 };
