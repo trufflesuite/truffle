@@ -10,6 +10,7 @@ import configureStore from "lib/store";
 import * as controller from "lib/controller/actions";
 import * as actions from "./actions";
 import data from "lib/data/selectors";
+import txlog from "lib/txlog/selectors";
 import stacktrace from "lib/stacktrace/selectors";
 import session from "lib/session/selectors";
 import * as dataSagas from "lib/data/sagas";
@@ -170,6 +171,7 @@ export default class Session {
           generatedSources,
           deployedGeneratedSources
         } = contract;
+        debug("contractName: %s", contractName);
 
         //hopefully we can get rid of this step eventually, but not yet
         if (typeof binary === "object") {
@@ -191,19 +193,36 @@ export default class Session {
         //now: we need to find the contract node.
         //note: ideally we'd hold this off till later, but that would break the
         //direction of the evm/solidity dependence, so we do it now
-        let contractNode = Codec.Compilations.Utils.getContractNode(
+        const contractNode = Codec.Compilations.Utils.getContractNode(
           contract,
           compilation
         );
 
-        let contractId = contractNode ? contractNode.id : undefined;
-        let contractKind = contractNode ? contractNode.contractKind : undefined;
+        const contractId = contractNode ? contractNode.id : undefined;
+        const contractKind = contractNode
+          ? contractNode.contractKind
+          : undefined;
+        const linearizedBaseContracts = contractNode
+          ? contractNode.linearizedBaseContracts
+          : undefined;
         abi = Abi.normalize(abi); //let's handle this up front
 
         debug("contractName %s", contractName);
         debug("sourceMap %o", sourceMap);
         debug("compiler %o", compiler);
         debug("abi %o", abi);
+
+        //convert Vyper source maps to solidity ones
+        //(note we won't bother handling the case where the compressed
+        //version doesn't exist)
+        try {
+          let vyperSourceMap = JSON.parse(sourceMap);
+          sourceMap = vyperSourceMap.pc_pos_map_compressed;
+        } catch (_) {}
+        try {
+          let vyperDeployedSourceMap = JSON.parse(deployedSourceMap);
+          deployedSourceMap = vyperDeployedSourceMap.pc_pos_map_compressed;
+        } catch (_) {}
 
         if (binary && binary != "0x") {
           //NOTE: we take hash as *string*, not as bytes, because the binary may
@@ -223,7 +242,7 @@ export default class Session {
             compilationId: compilation.id,
             contractId,
             contractKind,
-            externalSolidity: compilation.externalSolidity,
+            linearizedBaseContracts,
             isConstructor: true
           });
           if (generatedSources) {
@@ -263,7 +282,7 @@ export default class Session {
             compilationId: compilation.id,
             contractId,
             contractKind,
-            externalSolidity: compilation.externalSolidity,
+            linearizedBaseContracts,
             isConstructor: false
           });
           if (deployedGeneratedSources) {
@@ -297,6 +316,8 @@ export default class Session {
     );
 
     //normalize contexts
+    //HACK: the type of contexts doesn't actually match!!
+    //fortunately it's good enough to work
     contexts = Codec.Contexts.Utils.normalizeContexts(contexts);
 
     return { contexts, sources };
@@ -506,6 +527,7 @@ export default class Session {
     return createNestedSelector({
       ast,
       data,
+      txlog,
       trace,
       evm,
       solidity,

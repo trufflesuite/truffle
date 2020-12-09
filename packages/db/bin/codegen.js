@@ -2,14 +2,14 @@ const fs = require("fs");
 const path = require("path");
 const { generateNamespace } = require("@gql2ts/from-schema");
 
-const { schema } = require("@truffle/db/dist/src/schema");
+const { schema } = require("@truffle/db");
 
 const dataModel = generateNamespace(
   "DataModel",
   schema,
   {
     ignoreTypeNameDeclaration: true,
-    ignoredTypes: ["Resource", "Named"]
+    ignoredTypes: ["Resource", "Named", "Entry"]
   },
   {
     generateInterfaceName: name => name

@@ -1,11 +1,11 @@
 import debugModule from "debug";
-const debug = debugModule("test:data:more-decoding");
+const debug = debugModule("debugger:test:data:yul");
 
-import { assert } from "chai";
+import {assert} from "chai";
 
 import Ganache from "ganache-core";
 
-import { prepareContracts, lineOf } from "../helpers";
+import {prepareContracts, lineOf} from "../helpers";
 import Debugger from "lib/debugger";
 
 import solidity from "lib/solidity/selectors";
@@ -50,17 +50,17 @@ let sources = {
   "AssemblyTest.sol": __YUL
 };
 
-describe("Assembly decoding", function() {
+describe("Assembly decoding", function () {
   var provider;
 
   var abstractions;
   var compilations;
 
-  before("Create Provider", async function() {
-    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
+  before("Create Provider", async function () {
+    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
   });
 
-  before("Prepare contracts and artifacts", async function() {
+  before("Prepare contracts and artifacts", async function () {
     this.timeout(30000);
 
     let prepared = await prepareContracts(provider, sources);
@@ -68,14 +68,14 @@ describe("Assembly decoding", function() {
     compilations = prepared.compilations;
   });
 
-  it("Decodes assembly variables", async function() {
+  it("Decodes assembly variables", async function () {
     this.timeout(12000);
 
     let instance = await abstractions.AssemblyTest.deployed();
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+    let bugger = await Debugger.forTx(txHash, {provider, compilations});
 
     let sourceId = bugger.view(solidity.current.source).id;
     let source = bugger.view(solidity.current.source).source;
@@ -97,7 +97,7 @@ describe("Assembly decoding", function() {
     const numberize = obj =>
       Object.assign(
         {},
-        ...Object.entries(obj).map(([key, value]) => ({ [key]: Number(value) }))
+        ...Object.entries(obj).map(([key, value]) => ({[key]: Number(value)}))
       );
 
     let variables = numberize(

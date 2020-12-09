@@ -5,6 +5,7 @@ export const AddCompilation = gql`
     $compilerName: String!
     $compilerVersion: String!
     $sourceId: ID!
+    $bytecodeId: ID!
     $abi: String!
     $sourceMap: String!
   ) {
@@ -13,7 +14,7 @@ export const AddCompilation = gql`
         compilations: [
           {
             compiler: { name: $compilerName, version: $compilerVersion }
-            sourceMaps: [{ json: $sourceMap }]
+            sourceMaps: [{ bytecode: { id: $bytecodeId }, data: $sourceMap }]
             processedSources: [
               {
                 name: "testing"
@@ -35,7 +36,7 @@ export const AddCompilation = gql`
           contents
         }
         sourceMaps {
-          json
+          data
         }
         processedSources {
           source {

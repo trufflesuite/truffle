@@ -107,6 +107,10 @@ function debuggerContextToDecoderContext(context) {
     contractKind,
     isConstructor,
     abi: Codec.AbiData.Utils.computeSelectors(abi),
+    fallbackAbi: {
+      fallback: (abi || []).find(item => item.type === "fallback") || null,
+      receive: (abi || []).find(item => item.type === "receive") || null
+    },
     payable,
     compiler,
     compilationId
@@ -469,16 +473,6 @@ const data = createSelectorTree({
      * data.proc.mappedPaths
      */
     mappedPaths: createLeaf(["/state"], state => state.proc.mappedPaths),
-
-    /**
-     * data.proc.decodingKeys
-     *
-     * number of keys that are still decoding
-     */
-    decodingKeys: createLeaf(
-      ["./mappedPaths"],
-      mappedPaths => mappedPaths.decodingStarted
-    )
   },
 
   /**
@@ -895,7 +889,7 @@ const data = createSelectorTree({
       }
     ),
 
-    /*
+    /**
      * data.current.inModifier
      */
     inModifier: createLeaf(
@@ -903,7 +897,7 @@ const data = createSelectorTree({
       node => node && node.nodeType === "ModifierDefinition"
     ),
 
-    /*
+    /**
      * data.current.inFunctionOrModifier
      */
     inFunctionOrModifier: createLeaf(
@@ -1414,6 +1408,33 @@ const data = createSelectorTree({
           return allocation.output;
         }
       }
+    ),
+
+    /**
+     * data.current.isCall
+     */
+    isCall: createLeaf([evm.current.step.isCall], identity),
+
+    /**
+     * data.current.isCreate
+     */
+    isCreate: createLeaf([evm.current.step.isCreate], identity),
+
+    /**
+     * data.current.currentCallIsCreate
+     */
+    currentCallIsCreate: createLeaf(
+      [evm.current.call],
+      call => call.binary !== undefined
+    ),
+
+    /**
+     * data.current.callContext
+     * note that we convert to decoder context!
+     */
+    callContext: createLeaf(
+      [evm.current.step.callContext],
+      debuggerContextToDecoderContext
     )
   },
 
@@ -1438,12 +1459,32 @@ const data = createSelectorTree({
 
       /**
        * data.next.state.returndata
-       * NOTE: this is only for use by returnValue(); this is *not*
+       * NOTE: this is only for use by decodeReturnValue(); this is *not*
        * an accurate reflection of the current contents of returndata!
        * we don't track that at the moment
        */
       returndata: createLeaf([evm.current.step.returnValue], data =>
         Codec.Conversion.toBytes(data)
+      ),
+
+      /**
+       * data.next.state.calldata
+       * NOTE: this is only for use by decodeCall(); this is *not*
+       * necessarily the actual next contents of calldata!
+       */
+      calldata: createLeaf(
+        [
+          evm.current.step.isCall,
+          evm.current.step.isCreate,
+          evm.current.step.callData,
+          evm.current.step.createBinary
+        ],
+        (isCall, isCreate, data, binary) => {
+          if (!isCall && !isCreate) {
+            return null;
+          }
+          return Codec.Conversion.toBytes(isCall ? data : binary);
+        }
       )
     },
 
@@ -1485,7 +1526,7 @@ const data = createSelectorTree({
       }
     ),
 
-    /*
+    /**
      * data.next.modifierBeingInvoked
      */
     modifierBeingInvoked: createLeaf(

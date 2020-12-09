@@ -1,5 +1,9 @@
 {
-  "excludeRegExp": ["\\.\\.", "test", "logger.ts"],
+  "excludeRegExp": [
+    "\\.\\.",
+    "test",
+    "logger.ts"
+  ],
   "fileExtensions": ["ts"],
   "tsConfig": "./tsconfig.base.json"
 }

@@ -1,6 +1,7 @@
 import "source-map-support/register";
 import opcodes from "./opcodes";
 import { opcodeObject } from "typings";
+const cbor = require("borc"); //importing this untyped, sorry!
 
 export = {
   /**
@@ -21,17 +22,24 @@ export = {
    */
   parseCode(hexString: string, numInstructions: number = null) {
     // Convert to an array of bytes
-    let code: Array<number> = (hexString.slice(2).match(/(..?)/g) || []).map(
-      hex => parseInt(hex, 16)
+    let code = new Uint8Array(
+      (hexString.slice(2).match(/(..?)/g) || []).map(hex => parseInt(hex, 16))
     );
 
-    let stripMetadata = numInstructions === null;
+    const stripMetadata = numInstructions === null;
 
-    if (stripMetadata) {
+    if (stripMetadata && code.length >= 2) {
       // Remove the contract metadata; last two bytes encode its length (not
       // including those two bytes)
-      let metadataLength = (code[code.length - 2] << 8) + code[code.length - 1];
-      code.splice(-(metadataLength + 2));
+      const metadataLength =
+        (code[code.length - 2] << 8) + code[code.length - 1];
+      //check: is this actually valid CBOR?
+      if (metadataLength + 2 <= code.length) {
+        const metadata = code.subarray(-(metadataLength + 2), -2);
+        if (isValidCBOR(metadata)) {
+          code = code.subarray(0, -(metadataLength + 2));
+        }
+      }
     }
 
     let instructions = [];
@@ -46,7 +54,7 @@ export = {
       opcode.name = opcodes(code[pc]);
       if (opcode.name.slice(0, 4) === "PUSH") {
         const length = code[pc] - 0x60 + 1; //0x60 is code for PUSH1
-        opcode.pushData = code.slice(pc + 1, pc + length + 1);
+        opcode.pushData = Array.from(code.slice(pc + 1, pc + length + 1));
         if (opcode.pushData.length < length) {
           opcode.pushData = opcode.pushData.concat(
             new Array(length - opcode.pushData.length).fill(0)
@@ -63,3 +71,13 @@ export = {
     return instructions;
   }
 };
+
+function isValidCBOR(metadata: Uint8Array) {
+  let decodedMultiple: any[];
+  try {
+    decodedMultiple = cbor.decodeAll(metadata);
+  } catch (_) {
+    return false;
+  }
+  return decodedMultiple.length === 1; //should be CBOR for one thing, not multiple
+}

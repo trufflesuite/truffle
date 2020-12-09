@@ -346,7 +346,7 @@ class DebugInterpreter {
         case ";":
           //are we "finished" because we've reached the end, or because
           //nothing is loaded?
-          if (this.session.view(selectors.session.status.loaded)) {
+          if (this.session.view(session.status.loaded)) {
             this.printer.print("Transaction has halted; cannot advance.");
             this.printer.print("");
           } else {
@@ -358,7 +358,7 @@ class DebugInterpreter {
     if (cmd === "r") {
       //reset if given the reset command
       //(but not if nothing is loaded)
-      if (this.session.view(selectors.session.status.loaded)) {
+      if (this.session.view(session.status.loaded)) {
         await this.session.reset();
       } else {
         this.printer.print("No transaction loaded.");
@@ -367,7 +367,7 @@ class DebugInterpreter {
     }
     if (cmd === "t") {
       if (!this.fetchExternal) {
-        if (!this.session.view(selectors.session.status.loaded)) {
+        if (!this.session.view(session.status.loaded)) {
           let txSpinner = ora(
             DebugUtils.formatTransactionStartMessage()
           ).start();
@@ -394,7 +394,7 @@ class DebugInterpreter {
     }
     if (cmd === "T") {
       if (!this.fetchExternal) {
-        if (this.session.view(selectors.session.status.loaded)) {
+        if (this.session.view(session.status.loaded)) {
           await this.session.unload();
           this.printer.print("Transaction unloaded.");
           this.repl.setPrompt(DebugUtils.formatPrompt(this.network));
@@ -409,16 +409,24 @@ class DebugInterpreter {
       }
     }
     if (cmd === "g") {
-      this.session.setInternalStepping(true);
-      this.printer.print(
-        "All debugger commands can now step into generated sources."
-      );
+      if (!(this.session.view(controller.stepIntoInternalSources))) {
+        this.session.setInternalStepping(true);
+        this.printer.print(
+          "All debugger commands can now step into generated sources."
+        );
+      } else {
+        this.printer.print("Generated sources already activated.");
+      }
     }
     if (cmd === "G") {
-      this.session.setInternalStepping(false);
-      this.printer.print(
-        "Commands other than (;) and (c) will now skip over generated sources."
-      );
+      if (this.session.view(controller.stepIntoInternalSources)) {
+        this.session.setInternalStepping(false);
+        this.printer.print(
+          "Commands other than (;) and (c) will now skip over generated sources."
+        );
+      } else {
+        this.printer.print("Generated sources already off.");
+      }
     }
 
     // Check if execution has (just now) stopped.
@@ -464,6 +472,7 @@ class DebugInterpreter {
       case "?":
         this.printer.printWatchExpressions(this.enabledExpressions);
         this.printer.printBreakpoints();
+        this.printer.printGeneratedSourcesState();
         break;
       case "v":
         await this.printer.printVariables();
@@ -506,7 +515,7 @@ class DebugInterpreter {
           debug("location: %s", location);
           temporaryPrintouts.add(location);
         }
-        if (this.session.view(selectors.session.status.loaded)) {
+        if (this.session.view(session.status.loaded)) {
           if (this.session.view(trace.steps).length > 0) {
             this.printer.printInstruction(temporaryPrintouts);
             this.printer.printFile();
@@ -522,7 +531,7 @@ class DebugInterpreter {
         );
         break;
       case "l":
-        if (this.session.view(selectors.session.status.loaded)) {
+        if (this.session.view(session.status.loaded)) {
           this.printer.printFile();
           this.printer.printState(LINES_BEFORE_LONG, LINES_AFTER_LONG);
         }
@@ -538,7 +547,7 @@ class DebugInterpreter {
         );
         break;
       case "s":
-        if (this.session.view(selectors.session.status.loaded)) {
+        if (this.session.view(session.status.loaded)) {
           //print final report if finished & failed, intermediate if not
           if (
             this.session.view(trace.finished) &&
@@ -583,7 +592,7 @@ class DebugInterpreter {
         );
         break;
       case "r":
-        if (this.session.view(selectors.session.status.loaded)) {
+        if (this.session.view(session.status.loaded)) {
           this.printer.printAddressesAffected();
           this.printer.warnIfNoSteps();
           this.printer.printFile();
@@ -596,8 +605,8 @@ class DebugInterpreter {
           this.printer.warnIfNoSteps();
           this.printer.printFile();
           this.printer.printState();
-        } else if (this.session.view(selectors.session.status.isError)) {
-          let loadError = this.session.view(selectors.session.status.error);
+        } else if (this.session.view(session.status.isError)) {
+          let loadError = this.session.view(session.status.error);
           this.printer.print(loadError);
         }
         break;

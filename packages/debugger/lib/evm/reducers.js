@@ -31,7 +31,7 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
         contractId,
         contractKind,
         isConstructor,
-        externalSolidity
+        linearizedBaseContracts
       } = action;
       debug("action %O", action);
 
@@ -53,7 +53,7 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
             contractId,
             contractKind,
             isConstructor,
-            externalSolidity,
+            linearizedBaseContracts,
             payable: Codec.AbiData.Utils.abiHasPayableFallback(abi)
           }
         }

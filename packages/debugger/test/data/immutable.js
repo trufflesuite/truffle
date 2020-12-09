@@ -1,11 +1,11 @@
 import debugModule from "debug";
-const debug = debugModule("test:data:immutable");
+const debug = debugModule("debugger:test:data:immutable");
 
-import { assert } from "chai";
+import {assert} from "chai";
 
 import Ganache from "ganache-core";
 
-import { prepareContracts, lineOf } from "../helpers";
+import {prepareContracts, lineOf} from "../helpers";
 import Debugger from "lib/debugger";
 
 import * as Codec from "@truffle/codec";
@@ -62,17 +62,17 @@ let sources = {
   "Immutable.sol": __IMMUTABLE
 };
 
-describe("Immutable state variables", function() {
+describe("Immutable state variables", function () {
   var provider;
 
   var abstractions;
   var compilations;
 
-  before("Create Provider", async function() {
-    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
+  before("Create Provider", async function () {
+    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
   });
 
-  before("Prepare contracts and artifacts", async function() {
+  before("Prepare contracts and artifacts", async function () {
     this.timeout(30000);
 
     let prepared = await prepareContracts(provider, sources);
@@ -80,14 +80,14 @@ describe("Immutable state variables", function() {
     compilations = prepared.compilations;
   });
 
-  it("Decodes immutables properly in deployed contract", async function() {
+  it("Decodes immutables properly in deployed contract", async function () {
     this.timeout(9000);
     let instance = await abstractions.ImmutableTest.deployed();
     let address = instance.address;
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+    let bugger = await Debugger.forTx(txHash, {provider, compilations});
 
     let sourceId = bugger.view(solidity.current.source).id;
     let source = bugger.view(solidity.current.source).source;
@@ -117,13 +117,13 @@ describe("Immutable state variables", function() {
     assert.strictEqual(trulySecret.error.kind, "UnusedImmutableError");
   });
 
-  it("Decodes immutables properly in constructor", async function() {
+  it("Decodes immutables properly in constructor", async function () {
     this.timeout(9000);
     let instance = await abstractions.ImmutableTest.new();
     let address = instance.address;
     let txHash = instance.transactionHash;
 
-    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+    let bugger = await Debugger.forTx(txHash, {provider, compilations});
 
     let sourceId = bugger.view(solidity.current.source).id;
     let source = bugger.view(solidity.current.source).source;

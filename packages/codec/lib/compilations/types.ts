@@ -4,7 +4,7 @@ import {
   Abi as SchemaAbi,
   ImmutableReferences
 } from "@truffle/contract-schema/spec";
-import { Bytecode } from "@truffle/compile-common";
+import * as Common from "@truffle/compile-common";
 
 //Note to other people passing in compilations:
 //Please include all fields you can that aren't
@@ -42,15 +42,6 @@ export interface Compilation {
    * specified on each source and contract, but please don't actually do that.
    */
   compiler?: Compiler.CompilerVersion;
-  /**
-   * A flag intended for internal use to indicate that this compilation is not
-   * part of the user's Truffle project but rather is compiled from
-   * temporarily-downloaded external sources.  This flag was only originally
-   * intended to be used for Solidity or Yul, hence the name; but it should be
-   * OK to set this for externally-downloaded sources regardless of their
-   * language.
-   */
-  externalSolidity?: boolean;
 }
 
 /**
@@ -101,13 +92,13 @@ export interface Contract {
    * in the old artifacts format, or as a bytecode object in the new
    * compilation format.
    */
-  bytecode?: string | Bytecode;
+  bytecode?: string | Common.Bytecode;
   /**
    * The contract's deployed bytecode; may be given either as a string
    * in the old artifacts format, or as a bytecode object in the new
    * compilation format.
    */
-  deployedBytecode?: string | Bytecode;
+  deployedBytecode?: string | Common.Bytecode;
   /**
    * The contract's constructor source map.
    */

@@ -79,7 +79,9 @@ export function* decodeCalldata(
   let selector: string;
   //first: is this a creation call?
   if (isConstructor) {
-    allocation = allocations.constructorAllocations[contextHash].input;
+    allocation = (
+      allocations.constructorAllocations[contextHash] || { input: undefined }
+    ).input;
   } else {
     //skipping any error-handling on this read, as a calldata read can't throw anyway
     let rawSelector = yield* read(
@@ -92,7 +94,7 @@ export function* decodeCalldata(
     );
     selector = Conversion.toHexString(rawSelector);
     allocation = (
-      allocations.functionAllocations[contextHash][selector] || {
+      (allocations.functionAllocations[contextHash] || {})[selector] || {
         input: undefined
       }
     ).input;
@@ -265,7 +267,7 @@ export function* decodeEvent(
     address
   };
   const codeAsHex = Conversion.toHexString(codeBytes);
-  const contractContext = Contexts.Utils.findDecoderContext(
+  const contractContext = Contexts.Utils.findContext(
     info.contexts,
     codeAsHex
   );
@@ -669,7 +671,7 @@ function* decodeBytecode(
 > {
   let decodingMode: DecodingMode = "full"; //as always, degrade as necessary
   const bytecode = Conversion.toHexString(info.state.returndata);
-  const context = Contexts.Utils.findDecoderContext(info.contexts, bytecode);
+  const context = Contexts.Utils.findContext(info.contexts, bytecode);
   if (!context) {
     return {
       kind: "unknownbytecode" as const,

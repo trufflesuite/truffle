@@ -4,7 +4,6 @@ const debug = logger("db:pouch:databases");
 import PouchDB from "pouchdb";
 import PouchDBDebug from "pouchdb-debug";
 import PouchDBFind from "pouchdb-find";
-import { generateId } from "@truffle/db/helpers";
 
 import {
   CollectionName,
@@ -12,7 +11,8 @@ import {
   MutationInput,
   MutationPayload,
   MutableCollectionName,
-  SavedInput
+  SavedInput,
+  generateId
 } from "@truffle/db/meta";
 
 import { Workspace, Definition, Definitions, Historical } from "./types";
@@ -56,9 +56,11 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
   ): PouchDB.Database;
 
   private async initialize() {
-    for (const [collectionName, definition] of Object.entries(this.definitions)) {
-      await this.initializeCollection(collectionName, definition)
-    };
+    for (const [collectionName, definition] of Object.entries(
+      this.definitions
+    )) {
+      await this.initializeCollection(collectionName, definition);
+    }
 
     debug("Databases ready.");
   }
@@ -74,7 +76,6 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
     for (let index of createIndexes || []) {
       await collection.createIndex({ index });
     }
-
   }
 
   public async all<N extends CollectionName<C>>(
@@ -97,7 +98,7 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
   ): Promise<SavedInput<C, N>[]> {
     await this.ready;
 
-    const log = debug.extend(`${collectionName}:all`);
+    const log = debug.extend(`${collectionName}:find`);
     log("Finding...");
 
     // allows searching with `id` instead of pouch's internal `_id`,
@@ -160,15 +161,18 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
     const log = debug.extend(`${collectionName}:add`);
     log("Adding...");
 
+    const resourceInputIds = input[collectionName].map(resourceInput =>
+      this.generateId(collectionName, resourceInput)
+    );
 
     const resourceInputById = input[collectionName]
-      .map(resourceInput => ({
-        [this.generateId(collectionName, resourceInput)]: resourceInput
+      .map((resourceInput, index) => ({
+        [resourceInputIds[index]]: resourceInput
       }))
       .reduce((a, b) => ({ ...a, ...b }), {});
 
     const resources = await Promise.all(
-      Object.entries(resourceInputById).map(async ([ id, resourceInput ]) => {
+      Object.entries(resourceInputById).map(async ([id, resourceInput]) => {
         // check for existing
         const resource = await this.get(collectionName, id);
         if (resource) {
@@ -187,12 +191,19 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
       })
     );
 
+    const resourcesById = resources
+      .map(resource => ({
+        [resource.id as string]: resource
+      }))
+      .reduce((a, b) => ({ ...a, ...b }), {});
+
     log(
       "Added ids: %o",
       resources.map(({ id }) => id)
     );
+
     return ({
-      [collectionName]: resources
+      [collectionName]: resourceInputIds.map(id => resourcesById[id])
     } as unknown) as MutationPayload<C, N>;
   }
 
@@ -205,14 +216,18 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
     const log = debug.extend(`${collectionName}:update`);
     log("Updating...");
 
+    const resourceInputIds = input[collectionName].map(resourceInput =>
+      this.generateId(collectionName, resourceInput)
+    );
+
     const resourceInputById = input[collectionName]
-      .map(resourceInput => ({
-        [this.generateId(collectionName, resourceInput)]: resourceInput
+      .map((resourceInput, index) => ({
+        [resourceInputIds[index]]: resourceInput
       }))
       .reduce((a, b) => ({ ...a, ...b }), {});
 
     const resources = await Promise.all(
-      Object.entries(resourceInputById).map(async ([ id, resourceInput ]) => {
+      Object.entries(resourceInputById).map(async ([id, resourceInput]) => {
         // check for existing
         const resource = await this.get(collectionName, id);
         const { _rev = undefined } = resource ? resource : {};
@@ -230,12 +245,18 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
       })
     );
 
+    const resourcesById = resources
+      .map(resource => ({
+        [resource.id as string]: resource
+      }))
+      .reduce((a, b) => ({ ...a, ...b }), {});
+
     log(
       "Updated ids: %o",
       resources.map(({ id }) => id)
     );
     return ({
-      [collectionName]: resources
+      [collectionName]: resourceInputIds.map(id => resourcesById[id])
     } as unknown) as MutationPayload<C, M>;
   }
 

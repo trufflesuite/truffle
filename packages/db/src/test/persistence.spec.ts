@@ -1,5 +1,5 @@
 import path from "path";
-import { connect } from "@truffle/db/connect";
+import { attach } from "@truffle/db/workspace";
 import { generateId } from "./utils";
 
 import tmp from "tmp";
@@ -33,7 +33,7 @@ const sqliteAdapter = {
 describe("Memory-based Workspace", () => {
   it("does not persist data", async () => {
     // create first workspace and add to it
-    const workspace1 = connect({ adapter: memoryAdapter });
+    const workspace1 = attach({ adapter: memoryAdapter });
     await workspace1.add("bytecodes", {
       bytecodes: [bytecode]
     });
@@ -42,7 +42,7 @@ describe("Memory-based Workspace", () => {
     expect(await workspace1.get("bytecodes", id)).toBeDefined();
 
     // create a second workspace and don't add anything
-    const workspace2 = connect({ adapter: memoryAdapter });
+    const workspace2 = attach({ adapter: memoryAdapter });
 
     // and don't get data out!
     expect(await workspace2.get("bytecodes", id)).toBeNull();
@@ -52,7 +52,7 @@ describe("Memory-based Workspace", () => {
 describe("FS-based Workspace", () => {
   it("does persist data", async () => {
     // create first workspace and add to it
-    const workspace1 = connect({ adapter: fsAdapter });
+    const workspace1 = attach({ adapter: fsAdapter });
     await workspace1.add("bytecodes", {
       bytecodes: [bytecode]
     });
@@ -61,7 +61,7 @@ describe("FS-based Workspace", () => {
     expect(await workspace1.get("bytecodes", id)).toBeDefined();
 
     // create a second workspace and don't add anything
-    const workspace2 = connect({ adapter: fsAdapter });
+    const workspace2 = attach({ adapter: fsAdapter });
 
     // but DO get data out
     expect(await workspace2.get("bytecodes", id)).toBeDefined();
@@ -71,7 +71,7 @@ describe("FS-based Workspace", () => {
 describe("SQLite-based Workspace", () => {
   it("does persist data", async () => {
     // create first workspace and add to it
-    const workspace1 = connect({ adapter: sqliteAdapter });
+    const workspace1 = attach({ adapter: sqliteAdapter });
     await workspace1.add("bytecodes", {
       bytecodes: [bytecode]
     });
@@ -80,7 +80,7 @@ describe("SQLite-based Workspace", () => {
     expect(await workspace1.get("bytecodes", id)).toBeDefined();
 
     // create a second workspace and don't add anything
-    const workspace2 = connect({ adapter: sqliteAdapter });
+    const workspace2 = attach({ adapter: sqliteAdapter });
 
     // but DO get data out
     expect(await workspace2.get("bytecodes", id)).toBeDefined();

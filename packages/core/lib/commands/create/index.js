@@ -18,8 +18,8 @@ const command = {
         option: "<artifact_type>",
         description:
           "Create a new artifact where artifact_type is one of the following: " +
-          "contract, migration\n                    or test. The new artifact is created " +
-          "along with one of the following files:\n                    `contracts/ArtifactName.sol`, " +
+          "contract, migration,\n                    test or all. The new artifact is created " +
+          "along with one (or all) of the following\n                    files: `contracts/ArtifactName.sol`, " +
           "`migrations/####_artifact_name.js` or\n                    `tests/artifact_name.js`. (required)"
       },
       {
@@ -28,7 +28,7 @@ const command = {
       }
     ]
   },
-  run: function(options, done) {
+  run: function (options, done) {
     const Config = require("@truffle/config");
     const ConfigurationError = require("../../errors/configurationerror");
     const create = require("./helpers");
@@ -75,16 +75,19 @@ const command = {
 
     const fn = create[type];
 
-    if (fn == null)
-      return done(new ConfigurationError("Cannot find creation type: " + type));
-
     const destinations = {
       contract: config.contracts_directory,
       migration: config.migrations_directory,
       test: config.test_directory
     };
 
-    create[type](destinations[type], name, options, done);
+    if (type === "all")
+      Object.keys(destinations).forEach((type, _) =>
+        create[type](destinations[type], name, options, done)
+      );
+    else if (fn == null)
+      return done(new ConfigurationError("Cannot find creation type: " + type));
+    else create[type](destinations[type], name, options, done);
   }
 };
 

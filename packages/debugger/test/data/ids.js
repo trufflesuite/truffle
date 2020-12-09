@@ -1,11 +1,11 @@
 import debugModule from "debug";
-const debug = debugModule("test:data:ids");
+const debug = debugModule("debugger:test:data:ids");
 
-import { assert } from "chai";
+import {assert} from "chai";
 
 import Ganache from "ganache-core";
 
-import { prepareContracts, lineOf } from "../helpers";
+import {prepareContracts, lineOf} from "../helpers";
 import Debugger from "lib/debugger";
 
 import trace from "lib/trace/selectors";
@@ -180,17 +180,17 @@ let migrations = {
   "2_deploy_contracts.js": __MIGRATION
 };
 
-describe("Variable IDs", function() {
+describe("Variable IDs", function () {
   var provider;
 
   var abstractions;
   var compilations;
 
-  before("Create Provider", async function() {
-    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
+  before("Create Provider", async function () {
+    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
   });
 
-  before("Prepare contracts and artifacts", async function() {
+  before("Prepare contracts and artifacts", async function () {
     this.timeout(30000);
 
     let prepared = await prepareContracts(provider, sources, migrations);
@@ -198,13 +198,13 @@ describe("Variable IDs", function() {
     compilations = prepared.compilations;
   });
 
-  it("Distinguishes between stackframes", async function() {
+  it("Distinguishes between stackframes", async function () {
     this.timeout(8000);
     let instance = await abstractions.FactorialTest.deployed();
     let receipt = await instance.factorial(3);
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+    let bugger = await Debugger.forTx(txHash, {provider, compilations});
 
     debug("sourceId %d", bugger.view(solidity.current.source).id);
 
@@ -232,13 +232,13 @@ describe("Variable IDs", function() {
     assert.deepEqual(values, [3, 2, 1, 0, 1, 1, 2, 6]);
   });
 
-  it("Distinguishes between modifier invocations", async function() {
+  it("Distinguishes between modifier invocations", async function () {
     this.timeout(8000);
     let instance = await abstractions.ModifierTest.deployed();
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+    let bugger = await Debugger.forTx(txHash, {provider, compilations});
 
     debug("sourceId %d", bugger.view(solidity.current.source).id);
 
@@ -271,13 +271,13 @@ describe("Variable IDs", function() {
     assert.deepEqual(tempValues, [4, 6, 6, 4]);
   });
 
-  it("Stays at correct stackframe after contract call", async function() {
+  it("Stays at correct stackframe after contract call", async function () {
     this.timeout(3000);
     let instance = await abstractions.Intervening.deployed();
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+    let bugger = await Debugger.forTx(txHash, {provider, compilations});
 
     debug("sourceId %d", bugger.view(solidity.current.source).id);
 
@@ -291,13 +291,13 @@ describe("Variable IDs", function() {
     assert.property(await bugger.variables(), "flag");
   });
 
-  it("Stays at correct stackframe after library call", async function() {
+  it("Stays at correct stackframe after library call", async function () {
     this.timeout(3000);
     let instance = await abstractions.Intervening.deployed();
     let receipt = await instance.runLib();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+    let bugger = await Debugger.forTx(txHash, {provider, compilations});
 
     debug("sourceId %d", bugger.view(solidity.current.source).id);
 

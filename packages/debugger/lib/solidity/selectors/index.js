@@ -265,11 +265,12 @@ let solidity = createSelectorTree({
       [
         "./instructionAtProgramCounter",
         evm.current.step.programCounter,
-        evm.next.step.programCounter
+        evm.next.step.programCounter,
+        evm.current.step.isContextChange
       ],
 
-      (map, current, next) => {
-        if (!map[next]) {
+      (map, current, next, changesContext) => {
+        if (changesContext || !map[next]) {
           return true;
         }
 

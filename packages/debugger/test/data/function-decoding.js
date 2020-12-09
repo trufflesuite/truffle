@@ -1,11 +1,11 @@
 import debugModule from "debug";
-const debug = debugModule("test:data:function-decoding");
+const debug = debugModule("debugger:test:data:function-decoding");
 
-import { assert } from "chai";
+import {assert} from "chai";
 
 import Ganache from "ganache-core";
 
-import { prepareContracts, lineOf } from "../helpers";
+import {prepareContracts, lineOf} from "../helpers";
 import Debugger from "lib/debugger";
 import * as Codec from "@truffle/codec";
 
@@ -48,6 +48,9 @@ contract ExternalsBase {
 }
 
 contract ExternalsDerived is ExternalsBase {
+  function dummy() public {
+    //this function just distinguishes ExternalsBase from ExternalsDerived
+  }
 }
 `;
 
@@ -129,17 +132,17 @@ let sources = {
   "InternalsTest.sol": __INTERNALS
 };
 
-describe("Function Pointer Decoding", function() {
+describe("Function Pointer Decoding", function () {
   var provider;
 
   var abstractions;
   var compilations;
 
-  before("Create Provider", async function() {
-    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
+  before("Create Provider", async function () {
+    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
   });
 
-  before("Prepare contracts and artifacts", async function() {
+  before("Prepare contracts and artifacts", async function () {
     this.timeout(30000);
 
     let prepared = await prepareContracts(provider, sources);
@@ -147,14 +150,14 @@ describe("Function Pointer Decoding", function() {
     compilations = prepared.compilations;
   });
 
-  it("Decodes external function pointers correctly", async function() {
+  it("Decodes external function pointers correctly", async function () {
     this.timeout(3000);
 
     let instance = await abstractions.ExternalsTester.deployed();
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+    let bugger = await Debugger.forTx(txHash, {provider, compilations});
 
     let sourceId = bugger.view(solidity.current.source).id;
     let source = bugger.view(solidity.current.source).source;
@@ -185,14 +188,14 @@ describe("Function Pointer Decoding", function() {
     assert.equal(variables.stackFn.value.abi.name, "doThing");
   });
 
-  it("Decodes internal function pointers correctly (deployed)", async function() {
+  it("Decodes internal function pointers correctly (deployed)", async function () {
     this.timeout(3000);
 
     let instance = await abstractions.InternalsTest.deployed();
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+    let bugger = await Debugger.forTx(txHash, {provider, compilations});
 
     let sourceId = bugger.view(solidity.current.source).id;
     let source = bugger.view(solidity.current.source).source;
@@ -221,13 +224,13 @@ describe("Function Pointer Decoding", function() {
     assert.include(variables, expectedResult);
   });
 
-  it("Decodes internal function pointers correctly (constructor)", async function() {
+  it("Decodes internal function pointers correctly (constructor)", async function () {
     this.timeout(3000);
 
     let receipt = await abstractions.InternalsTest.new();
     let txHash = receipt.transactionHash;
 
-    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+    let bugger = await Debugger.forTx(txHash, {provider, compilations});
 
     let sourceId = bugger.view(solidity.current.source).id;
     let source = bugger.view(solidity.current.source).source;
