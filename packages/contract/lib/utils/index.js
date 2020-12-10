@@ -36,14 +36,7 @@ const Utils = {
   isTxParams(val) {
     if (!Utils.is_object(val)) return false;
     if (Utils.is_big_number(val)) return false;
-
-    for (let fieldName of Object.keys(val)) {
-      if (allowedTxParams.has(fieldName)) {
-        return true;
-      }
-    }
-
-    return false;
+    return Object.keys(val).some(fieldName => allowedTxParams.has(fieldName));
   },
 
   decodeLogs(_logs, isSingle) {
