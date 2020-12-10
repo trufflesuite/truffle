@@ -154,51 +154,60 @@ module.exports = Contract => ({
     delete this.network.address;
   },
 
+  // accepts 4 input formats
+  //  - (<name>, <address>)
+  //  - (<contractType>) - must have a deployed instance with an address
+  //  - (<contractInstance>)
+  //  - ({ <libName>: <address>, <libName2>: <address2>, ... })
   link(name, address) {
-    // Case: Contract.link(<contractType>)
-    if (typeof name === "function") {
-      const contract = name;
+    switch (typeof name) {
+      case "string":
+        // Case: Contract.link(<libraryName>, <address>)
+        if (this._json.networks[this.network_id] == null) {
+          this._json.networks[this.network_id] = {
+            events: {},
+            links: {}
+          };
+        }
 
-      if (contract.isDeployed() === false) {
-        throw new Error("Cannot link contract without an address.");
-      }
+        this.network.links[name] = address;
+        return;
+      case "function":
+        // Case: Contract.link(<contractType>)
+        const contract = name;
 
-      this.link(contract.contractName, contract.address);
+        if (contract.isDeployed() === false) {
+          throw new Error("Cannot link contract without an address.");
+        }
 
-      // Merge events so this contract knows about library's events
-      Object.keys(contract.events).forEach(topic => {
-        this.network.events[topic] = contract.events[topic];
-      });
-      return;
-    }
+        this.link(contract.contractName, contract.address);
 
-    // 2 Cases:
-    //   - Contract.link({<libraryName>: <address>, ... })
-    //   - Contract.link(<instance>)
-    if (typeof name === "object") {
-      const obj = name;
-      if (obj._json && obj._json.contractName && obj.address) {
-        // obj is a Truffle contract instance
-        this.link(obj._json.contractName, obj.address);
-      } else {
-        // objc is of the form { <libraryName>: <address>, ... }
-        Object.keys(obj).forEach(name => {
-          const a = obj[name];
-          this.link(name, a);
+        // Merge events so this contract knows about library's events
+        Object.keys(contract.events).forEach(topic => {
+          this.network.events[topic] = contract.events[topic];
         });
-      }
-      return;
+        return;
+      case "object":
+        // 2 Cases:
+        //   - Contract.link({<libraryName>: <address>, ... })
+        //   - Contract.link(<instance>)
+        const obj = name;
+        if (obj.constructor && obj.constructor.contractName && obj.address) {
+          // obj is a Truffle contract instance
+          console.log('about to link %o -- %o', obj.constructor.contractName, obj.address);
+          this.link(obj.constructor.contractName, obj.address);
+        } else {
+          // obj is of the form { <libraryName>: <address>, ... }
+          Object.keys(obj).forEach(name => {
+            const a = obj[name];
+            this.link(name, a);
+          });
+        }
+        return;
+      default:
+        const message = "Input to the link method is in the incorrect format.";
+        throw new Error(message);
     }
-
-    // Case: Contract.link(<libraryName>, <address>)
-    if (this._json.networks[this.network_id] == null) {
-      this._json.networks[this.network_id] = {
-        events: {},
-        links: {}
-      };
-    }
-
-    this.network.links[name] = address;
   },
 
   // Note, this function can be called with two input types:
