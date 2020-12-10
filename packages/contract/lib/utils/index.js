@@ -6,6 +6,18 @@ const BlockchainUtils = require("@truffle/blockchain-utils");
 const reformat = require("../reformat");
 const ens = require("./ens");
 
+const allowedTxParams = new Set([
+  "from",
+  "to",
+  "gas",
+  "gasPrice",
+  "value",
+  "data",
+  "nonce",
+  "privateFor",
+  "overwrite"
+]);
+
 const Utils = {
   is_object(val) {
     return typeof val === "object" && !Array.isArray(val);
@@ -25,20 +37,8 @@ const Utils = {
     if (!Utils.is_object(val)) return false;
     if (Utils.is_big_number(val)) return false;
 
-    const allowedFields = new Set([
-      "from",
-      "to",
-      "gas",
-      "gasPrice",
-      "value",
-      "data",
-      "nonce",
-      "privateFor",
-      "overwrite"
-    ]);
-
     for (let fieldName of Object.keys(val)) {
-      if (allowedFields.has(fieldName)) {
+      if (allowedTxParams.has(fieldName)) {
         return true;
       }
     }
