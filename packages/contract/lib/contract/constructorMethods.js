@@ -155,7 +155,7 @@ module.exports = Contract => ({
   },
 
   link(name, address) {
-    // Case: Contract.link(instance)
+    // Case: Contract.link(<contractType>)
     if (typeof name === "function") {
       const contract = name;
 
@@ -169,17 +169,24 @@ module.exports = Contract => ({
       Object.keys(contract.events).forEach(topic => {
         this.network.events[topic] = contract.events[topic];
       });
-
       return;
     }
 
-    // Case: Contract.link({<libraryName>: <address>, ... })
+    // 2 Cases:
+    //   - Contract.link({<libraryName>: <address>, ... })
+    //   - Contract.link(<instance>)
     if (typeof name === "object") {
       const obj = name;
-      Object.keys(obj).forEach(name => {
-        const a = obj[name];
-        this.link(name, a);
-      });
+      if (obj._json && obj._json.contractName && obj.address) {
+        // obj is a Truffle contract instance
+        this.link(obj._json.contractName, obj.address);
+      } else {
+        // objc is of the form { <libraryName>: <address>, ... }
+        Object.keys(obj).forEach(name => {
+          const a = obj[name];
+          this.link(name, a);
+        });
+      }
       return;
     }
 
