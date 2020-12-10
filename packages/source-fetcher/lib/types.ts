@@ -46,12 +46,14 @@ export interface VyperOptions {
 }
 
 //only including settings that would alter compiled result
+//(no outputSelection, no modelChecker once that exists, no stopAfter)
 export interface SolcSettings {
   remappings?: string[];
   optimizer?: OptimizerSettings;
   evmVersion?: string; //not gonna enumerate these
   debug?: DebugSettings;
   metadata?: MetadataSettings;
+  viaIR?: boolean;
   libraries?: LibrarySettings; //note: we don't actually want to return this!
 }
 
@@ -80,7 +82,6 @@ export interface SolcInput {
   language: "Solidity";
   sources: SolcSources;
   settings: SolcSettings;
-  //there's also outputSelection, but, frankly, we don't care about this
 }
 
 export interface SolcMetadata {
