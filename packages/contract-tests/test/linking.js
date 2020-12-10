@@ -22,30 +22,27 @@ var log = {
 };
 
 describe("Library linking", function () {
-  var LibraryExample;
-  var provider = Ganache.provider({ logger: log });
-  var network_id;
-  var web3 = new Web3();
+  let LibraryExample;
+  let provider = Ganache.provider({ logger: log });
+  let networkId;
+  let web3 = new Web3();
   web3.setProvider(provider);
 
-  before(function () {
-    return web3.eth.net.getId().then(function (id) {
-      network_id = id;
-    });
+  before(async () => {
+    networkId = await web3.eth.net.getId();
   });
 
-  before(function () {
+  before(() => {
     LibraryExample = contract({
       contractName: "LibraryExample",
       abi: [],
       binary:
         "606060405260ea8060106000396000f3606060405260e060020a600035046335b09a6e8114601a575b005b601860e160020a631ad84d3702606090815273__A_____________________________________906335b09a6e906064906020906004818660325a03f415600257506040805160e160020a631ad84d37028152905173__B_____________________________________9350600482810192602092919082900301818660325a03f415600257506040805160e160020a631ad84d37028152905173821735ac2129bdfb20b560de2718783caf61ad1c9350600482810192602092919082900301818660325a03f41560025750505056"
     });
-
-    LibraryExample.setNetwork(network_id);
+    LibraryExample.setNetwork(networkId);
   });
 
-  it("leaves binary unlinked initially", function () {
+  it("leaves binary unlinked initially", () => {
     assert(
       LibraryExample.binary.indexOf(
         "__A_____________________________________"
@@ -53,7 +50,7 @@ describe("Library linking", function () {
     );
   });
 
-  it("links first library properly", function () {
+  it("links first library properly", () => {
     LibraryExample.link("A", "0x1234567890123456789012345678901234567890");
 
     assert(
@@ -66,7 +63,7 @@ describe("Library linking", function () {
     );
   });
 
-  it("links second library properly", function () {
+  it("links second library properly", () => {
     LibraryExample.link("B", "0x1111111111111111111111111111111111111111");
 
     assert(
@@ -79,7 +76,7 @@ describe("Library linking", function () {
     );
   });
 
-  it("allows for selective relinking", function () {
+  it("allows for selective relinking", () => {
     assert(
       LibraryExample.binary.indexOf("__A_____________________________________"),
       -1
@@ -99,19 +96,17 @@ describe("Library linking", function () {
 });
 
 describe("Library linking with contract objects", function () {
-  var ExampleLibrary;
-  var ExampleLibraryConsumer;
-  var accounts;
-  var web3;
-  var network_id;
-  var provider = Ganache.provider({ logger: log });
+  let ExampleLibrary;
+  let ExampleLibraryConsumer;
+  let accounts;
+  let web3;
+  let networkId;
+  let provider = Ganache.provider({ logger: log });
   web3 = new Web3();
   web3.setProvider(provider);
 
-  before(function () {
-    return web3.eth.net.getId().then(function (id) {
-      network_id = id;
-    });
+  before(async () => {
+    networkId = await web3.eth.net.getId();
   });
 
   before(async function () {
@@ -127,7 +122,7 @@ describe("Library linking with contract objects", function () {
       "sources",
       "ExampleLibraryConsumer.sol"
     );
-    var sources = {
+    const sources = {
       "ExampleLibrary.sol": fs.readFileSync(exampleLibraryPath, {
         encoding: "utf8"
       }),
@@ -176,51 +171,34 @@ describe("Library linking with contract objects", function () {
     ExampleLibraryConsumer.setProvider(provider);
   });
 
-  before(function (done) {
-    web3.eth.getAccounts(function (err, accs) {
-      accounts = accs;
-
-      ExampleLibrary.defaults({
-        from: accounts[0]
-      });
-
-      ExampleLibraryConsumer.defaults({
-        from: accounts[0]
-      });
-
-      ExampleLibrary.setNetwork(network_id);
-      ExampleLibraryConsumer.setNetwork(network_id);
-
-      done(err);
+  before(async () => {
+    accounts = await web3.eth.getAccounts();
+    ExampleLibrary.defaults({
+      from: accounts[0]
     });
+    ExampleLibraryConsumer.defaults({
+      from: accounts[0]
+    });
+    ExampleLibrary.setNetwork(networkId);
+    ExampleLibraryConsumer.setNetwork(networkId);
   });
 
-  before("deploy library", function (done) {
-    ExampleLibrary.new({ gas: 3141592 })
-      .then(function (instance) {
-        ExampleLibrary.address = instance.address;
-      })
-      .then(done)
-      .catch(done);
+  before("deploy library", async () => {
+    const instance = await ExampleLibrary.new({ gas: 3141592 });
+    ExampleLibrary.address = instance.address;
   });
 
-  it("should consume library's events when linked", function (done) {
+  it("should consume library's events when linked", async () => {
     ExampleLibraryConsumer.link(ExampleLibrary);
-
     assert.equal(Object.keys(ExampleLibraryConsumer.events || {}).length, 1);
 
-    ExampleLibraryConsumer.new({ gas: 3141592 })
-      .then(function (consumer) {
-        return consumer.triggerLibraryEvent();
-      })
-      .then(function (result) {
-        assert.equal(result.logs.length, 1);
-        var log = result.logs[0];
-        assert.equal(log.event, "LibraryEvent");
-        assert.equal(accounts[0], log.args._from);
-        assert.equal(8, log.args.num); // 8 is a magic number inside ExampleLibrary.sol
-      })
-      .then(done)
-      .catch(done);
+    const consumer = await ExampleLibraryConsumer.new({ gas: 3141592 });
+    const result = await consumer.triggerLibraryEvent();
+    assert.equal(result.logs.length, 1);
+
+    const log = result.logs[0];
+    assert.equal(log.event, "LibraryEvent");
+    assert.equal(accounts[0], log.args._from);
+    assert.equal(8, log.args.num); // 8 is a magic number inside ExampleLibrary.sol
   });
 });
