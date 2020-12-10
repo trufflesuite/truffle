@@ -20,7 +20,7 @@ jobs:
       - uses: actions/setup-node@v1
       - run: npm install -g yarn
       - run: yarn bootstrap
-      - run: test -z "$(git diff)"
+      - run: test -z "$(git diff)" || (echo 'Please run yarn and commit all changes to yarn.lock'; false)
 
 
   build:
