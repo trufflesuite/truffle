@@ -14,14 +14,14 @@ const { Shims } = require("@truffle/compile-common");
 // which happens to be the first.
 process.removeListener(
   "uncaughtException",
-  process.listeners("uncaughtException")[0] || function () {}
+  process.listeners("uncaughtException")[0] || (() => {})
 );
 
-var log = {
+const log = {
   log: debug
 };
 
-describe("Library linking", function () {
+describe("Library linking", () => {
   let LibraryExample;
   let provider = Ganache.provider({ logger: log });
   let networkId;
@@ -95,7 +95,7 @@ describe("Library linking", function () {
   });
 });
 
-describe("Library linking with contract objects", function () {
+describe("Library linking with contract objects", () => {
   let ExampleLibrary;
   let ExampleLibraryConsumer;
   let accounts;
