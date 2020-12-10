@@ -61,17 +61,14 @@ const command = {
       }
     ]
   },
-  run: function (options, done) {
+  run: async function (options) {
     const TruffleError = require("@truffle/error");
     const WorkflowCompile = require("@truffle/workflow-compile");
     const Config = require("@truffle/config");
     const config = Config.detect(options);
 
     if (config.list !== undefined) {
-      command
-        .listVersions(config)
-        .then(() => done())
-        .catch(done);
+      return command.listVersions(config);
     } else {
       if (
         options.saveIntermediate === true ||
@@ -80,37 +77,29 @@ const command = {
       ) {
         // user asked to save the intermediate compilation results
         // but didn't provide the file to save the results to
-        return done(
-          new TruffleError(
-            "You must provide a file to save compilation results to."
-          )
+        throw new TruffleError(
+          "You must provide a file to save compilation results to."
         );
       }
 
-      WorkflowCompile.compile(config)
-        .then(async compilationOutput => {
-          if (options.saveIntermediate) {
-            // Get the filename the user provided to save the compilation results to
-            const compilationOutputFile = path.resolve(
-              options.saveIntermediate
-            );
+      const compilationOutput = await WorkflowCompile.compile(config);
+      if (options.saveIntermediate) {
+        // Get the filename the user provided to save the compilation results to
+        const compilationOutputFile = path.resolve(options.saveIntermediate);
 
-            await fse.writeFile(
-              compilationOutputFile,
-              JSON.stringify(compilationOutput),
-              { encoding: "utf8" }
-            );
-          }
+        await fse.writeFile(
+          compilationOutputFile,
+          JSON.stringify(compilationOutput),
+          {encoding: "utf8"}
+        );
+      }
 
-          return WorkflowCompile.save(config, compilationOutput);
-        })
-        .then(() => done())
-        .catch(done);
+      return WorkflowCompile.save(config, compilationOutput);
     }
   },
 
   listVersions: async function (options) {
-    const { CompilerSupplier } = require("@truffle/compile-solidity");
+    const {CompilerSupplier} = require("@truffle/compile-solidity");
     const supplier = new CompilerSupplier({
       solcConfig: options.compilers.solc,
       events: options.events

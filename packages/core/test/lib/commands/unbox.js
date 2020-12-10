@@ -26,13 +26,13 @@ describe("commands/unbox.js", () => {
         unsafeCleanup: true
       });
       mockConfig = Config.default().with({
-        logger: { log: () => {} },
+        logger: {log: () => {}},
         working_directory: tempDir.name
       });
       mockConfig.events = {
         emit: () => {}
       };
-      sinon.stub(Config, "default").returns({ with: () => mockConfig });
+      sinon.stub(Config, "default").returns({with: () => mockConfig});
     });
     afterEach(() => {
       Config.default.restore();
@@ -43,13 +43,10 @@ describe("commands/unbox.js", () => {
         const promises = [];
         for (const path of invalidBoxFormats) {
           promises.push(
-            new Promise(resolve => {
-              const callback = error => {
-                error ? assert(true) : assert(false);
-                resolve();
-              };
-              unbox.run({ _: [`${path}`] }, callback);
-            })
+            unbox
+              .run({_: [`${path}`]})
+              .then(() => assert.fail())
+              .catch(_error => assert(true))
           );
         }
         return Promise.all(promises);
@@ -57,16 +54,17 @@ describe("commands/unbox.js", () => {
     });
 
     describe("successful unboxes", () => {
-      it("runs when passed valid box input", done => {
+      it("runs when passed valid box input", async () => {
         let promises = [];
         validBoxInput.forEach(val => {
           promises.push(
-            new Promise(resolve => {
-              unbox.run({ _: [`${val}`], force: true }, () => resolve());
-            })
+            unbox
+              .run({_: [`${val}`], force: true})
+              .then(() => assert(true))
+              .catch(_error => assert.fail())
           );
         });
-        Promise.all(promises).then(() => done());
+        return Promise.all(promises);
       }).timeout(10000);
     });
   });
