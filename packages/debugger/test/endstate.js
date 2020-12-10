@@ -1,11 +1,11 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:test:endstate");
 
-import {assert} from "chai";
+import { assert } from "chai";
 
 import Ganache from "ganache";
 
-import {prepareContracts} from "./helpers";
+import { prepareContracts } from "./helpers";
 import Debugger from "lib/debugger";
 
 import evm from "lib/evm/selectors";
@@ -45,7 +45,12 @@ describe("End State", function () {
   var compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({vmErrorsOnRPCResponse: true, legacyInstamine: true, seed: "debugger", gasLimit: 7000000});
+    provider = Ganache.provider({
+      vmErrorsOnRPCResponse: true,
+      legacyInstamine: true,
+      seed: "debugger",
+      gasLimit: 7000000
+    });
   });
 
   before("Prepare contracts and artifacts", async function () {
@@ -65,7 +70,7 @@ describe("End State", function () {
     try {
       await instance.run(); //this will throw because of the revert
     } catch (error) {
-      txHash = error.data.hash; //it's the only hash involved
+      txHash = error.data.hash;
     }
 
     let bugger = await Debugger.forTx(txHash, {
@@ -93,6 +98,6 @@ describe("End State", function () {
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
       await bugger.variables()
     );
-    assert.include(variables, {x: 107});
+    assert.include(variables, { x: 107 });
   });
 });
