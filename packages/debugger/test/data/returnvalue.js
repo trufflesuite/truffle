@@ -199,7 +199,7 @@ describe("Return value decoding", function () {
     try {
       await instance.fail(); //web3 throws on failure
     } catch (error) {
-      txHash = error.hashes[0]; //it's the only hash involved
+      txHash = error.data.hash; //it's the only hash involved
     }
 
     let bugger = await Debugger.forTx(txHash, {provider, compilations});
@@ -223,7 +223,7 @@ describe("Return value decoding", function () {
     try {
       await instance.failNoisy(); //web3 throws on failure
     } catch (error) {
-      txHash = error.hashes[0]; //it's the only hash involved
+      txHash = error.data.hash; //it's the only hash involved
     }
 
     let bugger = await Debugger.forTx(txHash, {provider, compilations});
