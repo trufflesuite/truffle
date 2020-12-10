@@ -1,6 +1,6 @@
 const path = require("path");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
-const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const {CleanWebpackPlugin} = require("clean-webpack-plugin");
 const webpack = require("webpack");
 const pkg = require("./package.json");
 const rootDir = path.join(__dirname, "../..");
@@ -104,6 +104,7 @@ module.exports = {
     // Here, we leave it as an external, and use the original-require
     // module that's a dependency of Truffle instead.
     /^original-require$/,
+    /^ganache$/,
     /^mocha$/,
     // this is the commands portion shared by cli.js and console-child.js
     /^\.\/commands.bundled.js$/
@@ -139,7 +140,7 @@ module.exports = {
     }),
 
     // Put the shebang back on.
-    new webpack.BannerPlugin({ banner: "#!/usr/bin/env node\n", raw: true }),
+    new webpack.BannerPlugin({banner: "#!/usr/bin/env node\n", raw: true}),
 
     // `truffle test`
     new CopyWebpackPlugin([
