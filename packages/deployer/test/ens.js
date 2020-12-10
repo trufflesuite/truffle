@@ -31,7 +31,7 @@ describe("ENS class", () => {
       port: "8545",
       host: "127.0.0.1"
     });
-    provider = new Ganache.provider(providerOptions);
+    provider = Ganache.provider(providerOptions);
   });
   after(async () => {
     if (server) {
