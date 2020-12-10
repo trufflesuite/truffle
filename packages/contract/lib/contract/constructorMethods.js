@@ -194,7 +194,6 @@ module.exports = Contract => ({
         const obj = name;
         if (obj.constructor && obj.constructor.contractName && obj.address) {
           // obj is a Truffle contract instance
-          console.log('about to link %o -- %o', obj.constructor.contractName, obj.address);
           this.link(obj.constructor.contractName, obj.address);
         } else {
           // obj is of the form { <libraryName>: <address>, ... }
