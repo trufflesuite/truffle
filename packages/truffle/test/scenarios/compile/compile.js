@@ -411,7 +411,7 @@ describe("Compilation with db enabled", async () => {
   beforeEach("set up sandbox and do initial compile", async function () {
     this.timeout(30000);
 
-    project = path.join(__dirname, "../../sources/contract_names");
+    project = path.join(__dirname, "../../sources/db_enabled");
     config = await sandbox.create(project);
 
     try {
