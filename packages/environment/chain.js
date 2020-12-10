@@ -35,6 +35,10 @@ try {
 
 options.time = options.time ? new Date(options.time) : new Date();
 
+options.vmErrorsOnRPCResponse = "vmErrorsOnRPCResponse" in options ? options.vmErrorsOnRPCResponse : true;
+
+options.legacyInstamine = "legacyInstamine" in options ? options.legacyInstamine : true;
+
 /*
  * Logging
  */
