@@ -20,9 +20,9 @@ beforeAll(async done => {
   server.listen(port, done);
 });
 
-afterAll(async done => {
+afterAll(async () => {
   tempDir.removeCallback();
-  setTimeout(() => server.close(done), 500);
+  await server.close();
 });
 
 // mocking the truffle-workflow-compile to avoid jest timing issues
