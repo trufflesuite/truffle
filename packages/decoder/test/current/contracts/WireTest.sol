@@ -182,6 +182,18 @@ contract WireTest is WireTestParent, WireTestAbstract {
     selfdestruct(address(this));
   }
 
+  event SemiAmbiguousEvent(uint indexed, uint);
+
+  function extrasTestSome() public {
+    emit SemiAmbiguousEvent(1, 2);
+  }
+
+  function extrasTestNone(address test) public returns (bool, bytes memory) {
+    return test.delegatecall(
+      abi.encodeWithSignature("run()")
+    );
+  }
+
 }
 
 library WireTestLibrary {
@@ -201,4 +213,13 @@ library WireTestLibrary {
   }
 
   event AnonUint8s(uint8 indexed, uint8 indexed, uint8 indexed, uint8 indexed) anonymous;
+}
+
+contract WireTestRedHerring {
+  event SemiAmbiguousEvent(uint, uint indexed);
+  event NonAmbiguousEvent();
+
+  function run() public {
+    emit NonAmbiguousEvent();
+  }
 }
