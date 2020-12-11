@@ -6,6 +6,7 @@ const utils = require("../utils");
 const execute = require("../execute");
 const bootstrap = require("./bootstrap");
 const debug = require("debug")("contract:contract:constructorMethods");
+const OS = require("os");
 
 module.exports = Contract => ({
   configureNetwork({ networkType, provider } = {}) {
@@ -192,20 +193,30 @@ module.exports = Contract => ({
         //   - Contract.link({<libraryName>: <address>, ... })
         //   - Contract.link(<instance>)
         const obj = name;
-        if (obj.constructor && obj.constructor.contractName && obj.address) {
+        if (
+          obj.constructor &&
+          typeof obj.constructor.contractName === "string" &&
+          obj.address
+        ) {
           // obj is a Truffle contract instance
           this.link(obj.constructor.contractName, obj.address);
         } else {
           // obj is of the form { <libraryName>: <address>, ... }
-          Object.keys(obj).forEach(name => {
-            const a = obj[name];
-            this.link(name, a);
-          });
+          Object.keys(obj).forEach(name => this.link(name, obj[name]));
         }
         return;
       default:
-        const message = "Input to the link method is in the incorrect format.";
-        throw new Error(message);
+        const invalidInput = `Input to the link method is in the incorrect` +
+          ` format. Input must be one of the following:${OS.EOL}` +
+          `    - a library name and address                 > ("MyLibrary", ` +
+            `"0x123456789...")${OS.EOL}` +
+          `    - a contract type                            > ` +
+            `(MyContract)${OS.EOL}` +
+          `    - a contract instance                        > ` +
+            `(myContract)${OS.EOL}` +
+          `    - an object with library names and addresses > ({ <libName>: ` +
+            `<address>, <libName2>: <address2>, ... })${OS.EOL}`;
+        throw new Error(invalidInput);
     }
   },
 
