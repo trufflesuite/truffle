@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "app-module-path": "^2.2.0",
-    "ganache": "3.0.0-internal.8",
+    "ganache": "3.0.0-internal.10",
     "mocha": "8.1.2",
     "original-require": "1.0.1"
   },
