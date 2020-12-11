@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.1.1",
+  "version": "5.1.2",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0",
@@ -32,7 +32,7 @@
     "solc": "^0.6.0"
   },
   "devDependencies": {
-    "@truffle/resolver": "^6.1.4",
+    "@truffle/resolver": "^6.1.5",
     "babel-core": "^6.26.0",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
