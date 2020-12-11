@@ -101,7 +101,7 @@ export class ArtifactsLoader {
       "contracts",
       ids,
       gql`
-        fragment Contract on Contract {
+        fragment ContractNameAndBytecodes on Contract {
           id
           name
           callBytecode {

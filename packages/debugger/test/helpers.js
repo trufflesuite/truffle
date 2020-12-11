@@ -10,6 +10,7 @@ import Migrate from "@truffle/migrate";
 import Box from "@truffle/box";
 import Resolver from "@truffle/resolver";
 import * as Codec from "@truffle/codec";
+import flatten from "lodash.flatten";
 
 export async function prepareContracts(provider, sources = {}, migrations) {
   let config = await createSandbox();
@@ -27,14 +28,14 @@ export async function prepareContracts(provider, sources = {}, migrations) {
     solc: {
       version: "0.7.4",
       settings: {
-        optimizer: {enabled: false, runs: 200},
+        optimizer: { enabled: false, runs: 200 },
         evmVersion: "constantinople"
       }
     }
   };
 
   await addContracts(config, sources);
-  let {contractNames, files} = await compile(config);
+  let { contractNames, compilations: rawCompilations } = await compile(config);
 
   if (!migrations) {
     migrations = await defaultMigrations(contractNames);
@@ -43,21 +44,14 @@ export async function prepareContracts(provider, sources = {}, migrations) {
   await addMigrations(config, migrations);
   await migrate(config);
 
-  let artifacts = await gatherArtifacts(config);
-  debug(
-    "artifacts: %o",
-    artifacts.map(a => a.contractName)
-  );
-
   let abstractions = {};
   for (let name of contractNames) {
     abstractions[name] = config.resolver.require(name);
   }
 
-  let compilations = Codec.Compilations.Utils.shimArtifacts(artifacts, files);
+  let compilations = Codec.Compilations.Utils.shimCompilations(rawCompilations);
 
   return {
-    files,
     abstractions,
     compilations,
     config
@@ -134,38 +128,18 @@ export async function defaultMigrations(contractNames) {
 }
 
 export async function compile(config) {
-  const {compilations} = await WorkflowCompile.compileAndSave(
+  const { compilations } = await WorkflowCompile.compileAndSave(
     config.with({
       all: true,
       quiet: true
     })
   );
-  const collectedCompilationOutput = compilations.reduce(
-    (a, compilation) => {
-      if (compilation.compiler.name === "solc") {
-        for (const contract of compilation.contracts) {
-          a.contractNames = a.contractNames.concat(contract.contractName);
-        }
-        a.sourceIndexes = a.sourceIndexes.concat(compilation.sourceIndexes);
-      }
-      return a;
-    },
-    {contractNames: [], sourceIndexes: []}
+  const contractNames = flatten(
+    compilations.map(compilation =>
+      compilation.contracts.map(contract => contract.contractName)
+    )
   );
-  const sourceIndexes = collectedCompilationOutput.sourceIndexes.filter(
-    (item, index) => {
-      return collectedCompilationOutput.sourceIndexes.indexOf(item) === index;
-    }
-  );
-  const contractNames = collectedCompilationOutput.contractNames.filter(
-    (item, index) => {
-      return collectedCompilationOutput.contractNames.indexOf(item) === index;
-    }
-  );
-  return {
-    contractNames,
-    files: sourceIndexes
-  };
+  return { compilations, contractNames };
 }
 
 export async function migrate(config) {
@@ -180,26 +154,6 @@ export async function migrate(config) {
       }
     );
   });
-}
-
-export async function gatherArtifacts(config) {
-  // Gather all available contract artifacts
-  const files = fs.readdirSync(config.contracts_build_directory);
-
-  let contracts = files
-    .filter(filePath => {
-      return path.extname(filePath) === ".json";
-    })
-    .map(filePath => {
-      return path.basename(filePath, ".json");
-    })
-    .map(contractName => {
-      return config.resolver.require(contractName);
-    });
-
-  await Promise.all(contracts.map(abstraction => abstraction.detectNetwork()));
-
-  return contracts;
 }
 
 export function lineOf(searchString, source) {

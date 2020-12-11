@@ -5,11 +5,6 @@ const solcCompile = require("@truffle/compile-solidity");
 const vyperCompile = require("@truffle/compile-vyper");
 const { prepareConfig } = require("../utils");
 const { Shims } = require("@truffle/compile-common");
-const {
-  reportCompilationStarted,
-  reportNothingToCompile,
-  reportCompilationFinished
-} = require("../reports");
 
 const SUPPORTED_COMPILERS = {
   solc: solcCompile,
@@ -137,10 +132,6 @@ const WorkflowCompile = {
       })
     );
   },
-
-  reportCompilationStarted,
-  reportCompilationFinished,
-  reportNothingToCompile,
 
   writeContracts: async (contracts, options) => {
     fse.ensureDirSync(options.contracts_build_directory);

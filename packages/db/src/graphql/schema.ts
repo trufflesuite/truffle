@@ -4,8 +4,6 @@ const debug = logger("db:graphql:schema");
 import gql from "graphql-tag";
 import * as graphql from "graphql";
 import { makeExecutableSchema, IResolvers } from "graphql-tools";
-import pascalCase from "pascal-case";
-import { singular } from "pluralize";
 
 import {
   Collections,
@@ -42,15 +40,22 @@ class DefinitionsSchema<C extends Collections> {
     const common = gql`
       interface Resource {
         id: ID!
+        type: String!
       }
 
       interface Named {
         id: ID!
+        type: String!
         name: String!
       }
 
       input ResourceReferenceInput {
         id: ID!
+      }
+
+      input TypedResourceReferenceInput {
+        id: ID!
+        type: String!
       }
 
       input QueryFilter {
@@ -145,15 +150,6 @@ abstract class DefinitionSchema<
   protected resource: N;
   protected definition: Definition<C, N>;
 
-  protected abstract get names(): {
-    resource: string;
-    Resource: string;
-    resources: N; // sure why not
-    Resources: string;
-    resourcesMutate: string;
-    ResourcesMutate: string;
-  };
-
   constructor(options: { resource: N; definition: Definition<C, N> }) {
     this.resource = options.resource;
     this.definition = options.definition;
@@ -171,11 +167,16 @@ abstract class DefinitionSchema<
       Resource,
       resourcesMutate,
       ResourcesMutate
-    } = this.names;
+    } = this.definition.names;
 
     const result = [
       gql`
       ${typeDefs}
+
+      extend type ${Resource} {
+        id: ID!
+        type: String!
+      }
 
       extend type Query {
         ${resources}(filter: QueryFilter): [${Resource}]
@@ -211,12 +212,18 @@ abstract class DefinitionSchema<
     const logAll = log.extend("all");
     const logFilter = log.extend("filter");
 
-    const { resource, resources } = this.names;
+    const { resource, resources, Resource } = this.definition.names;
 
     const { resolvers = {} } = this.definition;
 
     const result = {
       ...resolvers,
+
+      [Resource]: {
+        ...(resolvers[Resource] as any),
+
+        type: () => Resource
+      },
 
       Query: {
         [resource]: {
@@ -270,34 +277,13 @@ class ImmutableDefinitionSchema<
   C extends Collections,
   N extends CollectionName<C>
 > extends DefinitionSchema<C, N> {
-  get names() {
-    const resources = this.resource;
-    const Resources = pascalCase(resources);
-
-    const resource = singular(resources);
-    const Resource = pascalCase(resource);
-
-    const resourcesMutate = `${resources}Add`;
-
-    const ResourcesMutate = pascalCase(resourcesMutate);
-
-    return {
-      resource,
-      resources,
-      Resource,
-      Resources,
-      resourcesMutate,
-      ResourcesMutate
-    };
-  }
-
   get resolvers() {
     const log = debug.extend(`${this.resource}:resolvers`);
     log("Generating...");
 
     const logMutate = log.extend("add");
 
-    const { resources, resourcesMutate } = this.names;
+    const { resources, resourcesMutate } = this.definition.names;
 
     const result = {
       ...super.resolvers,
@@ -323,34 +309,13 @@ class MutableDefinitionSchema<
   C extends Collections,
   M extends MutableCollectionName<C>
 > extends DefinitionSchema<C, M> {
-  get names() {
-    const resources = this.resource;
-    const Resources = pascalCase(resources);
-
-    const resource = singular(resources);
-    const Resource = pascalCase(resource);
-
-    const resourcesMutate = `${resources}Assign`;
-
-    const ResourcesMutate = pascalCase(resourcesMutate);
-
-    return {
-      resource,
-      resources,
-      Resource,
-      Resources,
-      resourcesMutate,
-      ResourcesMutate
-    };
-  }
-
   get resolvers() {
     const log = debug.extend(`${this.resource}:resolvers`);
     log("Generating...");
 
     const logMutate = log.extend("assign");
 
-    const { resources, resourcesMutate } = this.names;
+    const { resources, resourcesMutate } = this.definition.names;
 
     const result = {
       ...super.resolvers,
