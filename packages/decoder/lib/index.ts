@@ -161,6 +161,8 @@ export {
   DecodedLog,
   EventOptions,
   ReturnOptions,
+  DecodeLogOptions,
+  ExtrasAllowed,
   Transaction,
   Log,
   BlockSpecifier

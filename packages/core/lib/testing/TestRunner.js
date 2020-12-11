@@ -153,7 +153,8 @@ class TestRunner {
       //NOTE: block numbers shouldn't be over 2^53 so this
       //should be fine, but should change this once decoder
       //accepts more general types for blocks
-      fromBlock: this.currentTestStartBlock.toNumber()
+      fromBlock: this.currentTestStartBlock.toNumber(),
+      extras: "necessary" //include weird decodings if usual ones fail :P
     });
 
     const userDefinedEventLogs = logs.filter(log => {

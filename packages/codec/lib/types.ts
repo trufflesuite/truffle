@@ -532,3 +532,37 @@ export interface DecoderOptions {
   memoryVisited?: number[]; //for circularity detection
   lengthOverride?: BN; //if present, causes the ABI decoder to use this length instead of reading it from the data
 }
+
+/**
+ * Used to indicate whether "extra" event decodings -- event decodings from
+ * non-library contracts other than the one that appears to have emitted
+ * the event -- should be returned.
+ *
+ * * `"off"`: Exclude extra decodings (the default).
+ * * `"on"`: Include extra decodings.
+ * * `"necessary"`: Include extra decodings only if there are no others.
+ *
+ * Extra decodings will always be returned after other decodings.
+ *
+ * @Category Inputs
+ */
+export type ExtrasAllowed = "off" | "on" | "necessary";
+
+/**
+ * The type of the options parameter to [[decodeEvent]].  This type will be expanded in the future
+ * as more filtering options are added.
+ *
+ * @Category Inputs
+ */
+export interface LogOptions {
+  /**
+   * If passed, restricts to events with the given name.
+   */
+  name?: string;
+  /**
+   * Used to indicate whether "extra" event decodings -- event decodings from
+   * non-library contracts other than the one that appears to have emitted
+   * the event -- should be returned.  Defaults to `"off"`.
+   */
+  extras?: ExtrasAllowed;
+}

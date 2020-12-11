@@ -15,7 +15,8 @@ import {
   UnknownBytecodeDecoding,
   DecodingMode,
   AbiArgument,
-  LogDecoding
+  LogDecoding,
+  LogOptions
 } from "@truffle/codec/types";
 import { ConstructorReturndataAllocation } from "@truffle/codec/abi-data/allocate";
 import * as Evm from "@truffle/codec/evm";
@@ -195,19 +196,16 @@ export function* decodeCalldata(
   }
 }
 
-//note: this will likely change in the future to take options rather than targetName, but I'm
-//leaving it alone for now, as I'm not sure what form those options will take
-//(and this is something we're a bit more OK with breaking since it's primarily
-//for internal use :) )
 /**
  * @Category Decoding
  */
 export function* decodeEvent(
   info: Evm.EvmInfo,
   address: string,
-  targetName?: string
+  options: LogOptions = {}
 ): Generator<DecoderRequest, LogDecoding[], Uint8Array> {
   const allocations = info.allocations.event;
+  const extras = options.extras || "off";
   let rawSelector: Uint8Array;
   let selector: string;
   let contractAllocations: {
@@ -267,25 +265,42 @@ export function* decodeEvent(
     address
   };
   const codeAsHex = Conversion.toHexString(codeBytes);
-  const contractContext = Contexts.Utils.findContext(
-    info.contexts,
-    codeAsHex
-  );
+  const contractContext = Contexts.Utils.findContext(info.contexts, codeAsHex);
   let possibleContractAllocations: AbiData.Allocate.EventAllocation[]; //excludes anonymous events
   let possibleContractAnonymousAllocations: AbiData.Allocate.EventAllocation[];
-  if (contractContext) {
+  let possibleExtraAllocations: AbiData.Allocate.EventAllocation[]; //excludes anonymous events
+  let possibleExtraAnonymousAllocations: AbiData.Allocate.EventAllocation[];
+  const emittingContextHash = (contractContext || { context: undefined })
+    .context;
+  if (emittingContextHash) {
     //if we found the contract, maybe it's from that contract
-    const contextHash = contractContext.context;
-    const contractAllocation = contractAllocations[contextHash];
+    const contractAllocation = contractAllocations[emittingContextHash];
     const contractAnonymousAllocation =
-      contractAnonymousAllocations[contextHash];
+      contractAnonymousAllocations[emittingContextHash];
     possibleContractAllocations = contractAllocation || [];
     possibleContractAnonymousAllocations = contractAnonymousAllocation || [];
+    //also, we need to set up the extras (everything that's from a
+    //non-library contract but *not* this one)
+    possibleExtraAllocations = [].concat(
+      ...Object.entries(contractAllocations)
+        .filter(([key, _]) => key !== emittingContextHash)
+        .map(([_, value]) => value)
+    );
+    possibleExtraAnonymousAllocations = [].concat(
+      ...Object.entries(contractAnonymousAllocations)
+        .filter(([key, _]) => key !== emittingContextHash)
+        .map(([_, value]) => value)
+    );
   } else {
     //if we couldn't determine the contract, well, we have to assume it's from a library
     debug("couldn't find context");
     possibleContractAllocations = [];
     possibleContractAnonymousAllocations = [];
+    //or it's an extra, which could be any of the contracts
+    possibleExtraAllocations = [].concat(...Object.values(contractAllocations));
+    possibleExtraAnonymousAllocations = [].concat(
+      ...Object.values(contractAnonymousAllocations)
+    );
   }
   //now we get all the library allocations!
   const possibleLibraryAllocations = [].concat(
@@ -301,16 +316,43 @@ export function* decodeEvent(
   const possibleAnonymousAllocations = possibleContractAnonymousAllocations.concat(
     possibleLibraryAnonymousAllocations
   );
-  const possibleAllocationsTotal = possibleAllocations.concat(
+  const possibleAllocationsTotalMinusExtras = possibleAllocations.concat(
     possibleAnonymousAllocations
   );
+  //...and also there's the extras
+  const possibleExtraAllocationsTotal = possibleExtraAllocations.concat(
+    possibleExtraAnonymousAllocations
+  );
+  const possibleAllocationsTotal = possibleAllocationsTotalMinusExtras.concat(
+    [null], //HACK: add sentinel value before the extras
+    possibleExtraAllocationsTotal
+  );
+  //whew!
   let decodings: LogDecoding[] = [];
   allocationAttempts: for (const allocation of possibleAllocationsTotal) {
-    //first: do a name check so we can skip decoding if name is wrong
     debug("trying allocation: %O", allocation);
-    if (targetName !== undefined && allocation.abi.name !== targetName) {
+    //first: check for our sentinel value for extras (yeah, kind of HACKy)
+    if (allocation === null) {
+      switch (extras) {
+        case "on":
+          continue allocationAttempts; //ignore the sentinel and continue
+        case "off":
+          break allocationAttempts; //don't include extras; stop here
+        case "necessary":
+          //stop on the sentinel and exclude extras *unless* there are no decodings yet
+          if (decodings.length > 0) {
+            break allocationAttempts;
+          } else {
+            continue allocationAttempts;
+          }
+      }
+    }
+    //second: do a name check so we can skip decoding if name is wrong
+    //(this will likely be a more detailed check in the future)
+    if (options.name !== undefined && allocation.abi.name !== options.name) {
       continue;
     }
+    //now: the main part!
     let decodingMode: DecodingMode = allocation.allocationMode; //starts out here; degrades to abi if necessary
     const contextHash = allocation.contextHash;
     const attemptContext = info.contexts[contextHash];

@@ -362,10 +362,17 @@ export class WireDecoder {
    *
    * Note that different decodings may use different decoding modes.
    *
+   * Changing `options.extras = "on"` or `options.extras = "necessary"` will change the
+   * above behavior; see the documentation on [[ExtrasAllowed]] for more.
+   *
    * @param log The log to be decoded.
+   * @param options Options for controlling decoding.
    */
-  public async decodeLog(log: DecoderTypes.Log): Promise<LogDecoding[]> {
-    return await this.decodeLogWithAdditionalOptions(log);
+  public async decodeLog(
+    log: DecoderTypes.Log,
+    options: DecoderTypes.DecodeLogOptions = {}
+  ): Promise<LogDecoding[]> {
+    return await this.decodeLogWithAdditionalOptions(log, options);
   }
 
   /**
@@ -390,7 +397,7 @@ export class WireDecoder {
       allocations: this.allocations,
       contexts: { ...this.deployedContexts, ...additionalContexts }
     };
-    const decoder = decodeEvent(info, log.address, options.name);
+    const decoder = decodeEvent(info, log.address, options);
 
     let result = decoder.next();
     while (result.done === false) {
@@ -414,8 +421,8 @@ export class WireDecoder {
    * Gets all events meeting certain conditions and decodes them.
    * This function is fairly rudimentary at the moment but more functionality
    * will be added in the future.
-   * @param options Used to determine what events to fetch; see the documentation
-   *   on the [[EventOptions]] type for more.
+   * @param options Used to determine what events to fetch and how to decode
+   *   them; see the documentation on the [[EventOptions]] type for more.
    * @return An array of [[DecodedLog|DecodedLogs]].
    *   These consist of a log together with its possible decodings; see that
    *   type for more info.  And see [[decodeLog]] for more info on how log
@@ -984,15 +991,19 @@ export class ContractDecoder {
    * See [[WireDecoder.decodeLog]].
    * @param log The log to be decoded.
    */
-  public async decodeLog(log: DecoderTypes.Log): Promise<LogDecoding[]> {
-    return await this.wireDecoder.decodeLog(log);
+  public async decodeLog(
+    log: DecoderTypes.Log,
+    options: DecoderTypes.DecodeLogOptions = {}
+  ): Promise<LogDecoding[]> {
+    return await this.wireDecoder.decodeLog(log, options);
   }
 
   /**
    * **This method is asynchronous.**
    *
    * See [[WireDecoder.events]].
-   * @param options Used to determine what events to fetch; see the documentation on the EventOptions type for more.
+   * @param options Used to determine what events to fetch and how to decode them;
+   *   see the documentation on the EventOptions type for more.
    */
   public async events(
     options: DecoderTypes.EventOptions = {}
@@ -1636,10 +1647,13 @@ export class ContractInstanceDecoder {
    *
    * See [[WireDecoder.decodeLog]].
    */
-  public async decodeLog(log: DecoderTypes.Log): Promise<LogDecoding[]> {
+  public async decodeLog(
+    log: DecoderTypes.Log,
+    options: DecoderTypes.DecodeLogOptions = {}
+  ): Promise<LogDecoding[]> {
     return await this.wireDecoder.decodeLogWithAdditionalOptions(
       log,
-      {},
+      options,
       this.additionalContexts
     );
   }
