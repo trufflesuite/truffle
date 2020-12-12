@@ -1,8 +1,9 @@
-var colors = require("colors");
-var TruffleError = require("@truffle/error");
+import colors from "colors";
+import TruffleError from "@truffle/error";
 
-class CompileError extends TruffleError {
-  constructor(message) {
+export class CompileError extends TruffleError {
+  public message: string;
+  constructor(message: string) {
     // Note we trim() because solc likes to add extra whitespace.
     var fancy_message =
       message.trim() + "\n\n" + colors.red("Compilation failed. See above.");
@@ -12,5 +13,3 @@ class CompileError extends TruffleError {
     this.message = fancy_message; //?? I don't understand this, I just found it here
   }
 }
-
-module.exports = CompileError;

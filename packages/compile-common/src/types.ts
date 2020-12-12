@@ -1,4 +1,4 @@
-import {Abi, ImmutableReferences} from "@truffle/contract-schema/spec";
+import { Abi, ImmutableReferences } from "@truffle/contract-schema/spec";
 
 export type Compilation = {
   sourceIndexes: string[]; //note: does not include internal sources
@@ -18,6 +18,22 @@ export type Source = {
   legacyAST?: object;
   language: string;
 };
+
+//source content by path
+export interface Sources {
+  [sourcePath: string]: string;
+}
+
+//original paths by transformed path
+export interface PathMapping {
+  [sourcePath: string]: string;
+}
+
+export interface CollectedSources {
+  sources: Sources;
+  targets: string[];
+  originalSourcePaths: PathMapping;
+}
 
 export interface CompilerResult {
   compilations: Compilation[];

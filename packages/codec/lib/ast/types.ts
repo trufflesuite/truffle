@@ -15,6 +15,7 @@ export interface AstNode {
   members?: AstNode[];
   nodes?: AstNode[];
   nodeType: string;
+  ast_type?: string; //HACK: Vyper equivalent of nodeType
   scope?: number;
   src: string;
   stateVariable?: boolean;
