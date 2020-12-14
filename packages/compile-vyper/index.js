@@ -156,7 +156,7 @@ async function compileAllNoJson({ sources, options, version }) {
               {
                 sourcePath,
                 contents: sourceContents,
-                language: "vyper"
+                language: "Vyper"
               }
             ],
             contracts: [contractDefinition],
