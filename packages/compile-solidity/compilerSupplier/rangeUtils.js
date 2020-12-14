@@ -9,7 +9,7 @@ const RangeUtils = {
   //takes a version string which may be native or local, and resolves
   //it to one which is (presumably) either a version or a version range
   resolveToRange: function (version) {
-    if (!version) {
+    if (!version || version === "pragma") {
       return CompilerSupplier.getDefaultVersion();
     }
     //if version was native or local, must determine what version that
