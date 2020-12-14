@@ -1,24 +1,25 @@
 {
-  "name": "@truffle/solidity-utils",
+  "name": "@truffle/source-map-utils",
   "version": "1.3.29",
-  "description": "Utilities for Solidity contracts",
+  "description": "Utilities for Solidity (and other) source maps",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/solidity-utils",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/source-map-utils",
   "keywords": [
     "ethereum",
     "truffle",
     "solidity",
-    "contracts"
+    "contracts",
+    "source map"
   ],
   "author": "Tim Coulter <tim@trufflesuite.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/solidity-utils#readme",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/source-map-utils#readme",
   "publishConfig": {
     "access": "public"
   },
