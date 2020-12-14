@@ -11,7 +11,7 @@ import * as Storage from "@truffle/codec/storage";
 import * as Pointer from "@truffle/codec/pointer";
 import { DecoderRequest } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
-import { DecodingError } from "@truffle/codec/errors";
+import { handleDecodingError } from "@truffle/codec/errors";
 
 export function* decodeStack(
   dataType: Format.Types.Type,
@@ -22,16 +22,7 @@ export function* decodeStack(
   try {
     rawValue = yield* read(pointer, info.state);
   } catch (error) {
-    if (error instanceof DecodingError) {
-      return <Format.Errors.ErrorResult>{
-        //no idea why TS is failing here
-        type: dataType,
-        kind: "error" as const,
-        error: error.error
-      };
-    } else {
-      throw error;
-    }
+    return handleDecodingError(dataType, error);
   }
   const literalPointer: Pointer.StackLiteralPointer = {
     location: "stackliteral" as const,

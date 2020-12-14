@@ -13,7 +13,7 @@ import { DecoderRequest } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
 import { storageSize } from "@truffle/codec/storage/allocate";
 import BN from "bn.js";
-import { DecodingError } from "@truffle/codec/errors";
+import { handleDecodingError } from "@truffle/codec/errors";
 
 export function* decodeStorage(
   dataType: Format.Types.Type,
@@ -41,33 +41,14 @@ export function* decodeStorageReferenceByAddress(
   try {
     rawValue = yield* read(pointer, info.state);
   } catch (error) {
-    if (error instanceof DecodingError) {
-      return <Format.Errors.ErrorResult>{
-        //no idea why TS is failing here
-        type: dataType,
-        kind: "error" as const,
-        error: error.error
-      };
-    } else {
-      throw error;
-    }
+    return handleDecodingError(dataType, error);
   }
   const startOffset = Conversion.toBN(rawValue);
   let rawSize: Storage.StorageLength;
   try {
     rawSize = storageSize(dataType, info.userDefinedTypes, allocations);
   } catch (error) {
-    //error: DecodingError
-    if (error instanceof DecodingError) {
-      return <Format.Errors.ErrorResult>{
-        //no idea why TS is failing here
-        type: dataType,
-        kind: "error" as const,
-        error: error.error
-      };
-    } else {
-      throw error;
-    }
+    return handleDecodingError(dataType, error);
   }
   //we *know* the type being decoded must be sized in words, because it's a
   //reference type, but TypeScript doesn't, so we'll have to use a type
@@ -117,16 +98,7 @@ export function* decodeStorageReference(
           try {
             data = yield* read(pointer, state);
           } catch (error) {
-            if (error instanceof DecodingError) {
-              return <Format.Errors.ErrorResult>{
-                //no idea why TS is failing here
-                type: dataType,
-                kind: "error" as const,
-                error: error.error
-              };
-            } else {
-              throw error;
-            }
+            return handleDecodingError(dataType, error);
           }
           lengthAsBN = Conversion.toBN(data);
           break;
@@ -137,7 +109,7 @@ export function* decodeStorageReference(
       }
       try {
         length = lengthAsBN.toNumber();
-      } catch (_) {
+      } catch {
         return {
           type: dataType,
           kind: "error" as const,
@@ -158,16 +130,7 @@ export function* decodeStorageReference(
           allocations
         );
       } catch (error) {
-        //error: DecodingError
-        if (error instanceof DecodingError) {
-          return {
-            type: dataType,
-            kind: "error" as const,
-            error: error.error
-          };
-        } else {
-          throw error;
-        }
+        return handleDecodingError(dataType, error);
       }
       debug("baseSize %o", baseSize);
 
@@ -270,16 +233,7 @@ export function* decodeStorageReference(
       try {
         data = yield* read(pointer, state);
       } catch (error) {
-        if (error instanceof DecodingError) {
-          return <Format.Errors.ErrorResult>{
-            //no idea why TS is failing here
-            type: dataType,
-            kind: "error" as const,
-            error: (<DecodingError>error).error
-          };
-        } else {
-          throw error;
-        }
+        return handleDecodingError(dataType, error);
       }
 
       let lengthByte = data[Evm.Utils.WORD_SIZE - 1];
@@ -306,7 +260,7 @@ export function* decodeStorageReference(
           .divn(2);
         try {
           length = lengthAsBN.toNumber();
-        } catch (_) {
+        } catch {
           return <
             | Format.Errors.BytesDynamicErrorResult
             | Format.Errors.StringErrorResult
@@ -428,17 +382,7 @@ export function* decodeStorageReference(
       try {
         valueSize = storageSize(valueType, info.userDefinedTypes, allocations);
       } catch (error) {
-        //error: DecodingError
-        debug("couldn't get value size! error: %o", error);
-        if (error instanceof DecodingError) {
-          return {
-            type: dataType,
-            kind: "error" as const,
-            error: (<DecodingError>error).error
-          };
-        } else {
-          throw error;
-        }
+        return handleDecodingError(dataType, error);
       }
 
       let decodedEntries: Format.Values.KeyValuePair[] = [];
