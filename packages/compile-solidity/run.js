@@ -278,7 +278,7 @@ function processAllSources({ sources, compilerOutput, originalSourcePaths }) {
       contents: sources[sourcePath],
       ast,
       legacyAST,
-      language: "solidity"
+      language: "Solidity"
     };
   }
   return outputSources;

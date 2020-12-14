@@ -227,7 +227,7 @@ function processAllSources({ sources, compilerOutput, originalSourcePaths }) {
       sourcePath: originalSourcePaths[sourcePath],
       contents: sources[sourcePath],
       ast,
-      language: "vyper"
+      language: "Vyper"
     };
   }
   return outputSources;

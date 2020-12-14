@@ -171,7 +171,7 @@ describe("vyper compiler", function () {
             .readFileSync(path.join(__dirname, "sources/VyperContract1.vy"))
             .toString()
       );
-      assert(sources[0].language === "vyper");
+      assert(sources[0].language === "Vyper");
     });
   });
 });
