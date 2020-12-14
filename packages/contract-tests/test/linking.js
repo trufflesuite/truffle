@@ -9,6 +9,7 @@ const path = require("path");
 const fs = require("fs");
 const { Compile } = require("@truffle/compile-solidity");
 const { Shims } = require("@truffle/compile-common");
+const sinon = require("sinon");
 
 // Clean up after solidity. Only remove solidity's listener,
 // which happens to be the first.
@@ -21,18 +22,16 @@ const log = {
   log: debug
 };
 
+let provider = Ganache.provider({ logger: log });
+let web3 = new Web3();
+web3.setProvider(provider);
+
 describe("Library linking", () => {
   let LibraryExample;
-  let provider = Ganache.provider({ logger: log });
   let networkId;
-  let web3 = new Web3();
-  web3.setProvider(provider);
 
   before(async () => {
     networkId = await web3.eth.net.getId();
-  });
-
-  before(() => {
     LibraryExample = contract({
       contractName: "LibraryExample",
       abi: [],
@@ -105,13 +104,10 @@ describe("Library linking with contract objects", () => {
   web3 = new Web3();
   web3.setProvider(provider);
 
-  before(async () => {
-    networkId = await web3.eth.net.getId();
-  });
-
   before(async function () {
     this.timeout(10000);
 
+    networkId = await web3.eth.net.getId();
     const exampleLibraryPath = path.join(
       __dirname,
       "sources",
@@ -188,7 +184,7 @@ describe("Library linking with contract objects", () => {
     ExampleLibrary.address = instance.address;
   });
 
-  it("should consume library's events when linked", async () => {
+  it("consumes library's events when linked", async () => {
     ExampleLibraryConsumer.link(ExampleLibrary);
     assert.equal(Object.keys(ExampleLibraryConsumer.events || {}).length, 1);
 
@@ -200,5 +196,58 @@ describe("Library linking with contract objects", () => {
     assert.equal(log.event, "LibraryEvent");
     assert.equal(accounts[0], log.args._from);
     assert.equal(8, log.args.num); // 8 is a magic number inside ExampleLibrary.sol
+  });
+});
+
+describe(".link(name, address)", () => {
+  let instance;
+  beforeEach(async () => {
+    accounts = await web3.eth.getAccounts();
+    networkId = await web3.eth.net.getId();
+    ExampleContract = contract({
+      contractName: "ExampleContract",
+      abi: [],
+    });
+    LibraryExample = contract({
+      contractName: "A",
+      abi: [],
+      binary: "606060405260ea8060106000396000f3606060405a03f41560025750505056"
+    });
+    LibraryExample.setProvider(provider);
+    ExampleContract.setNetwork(networkId);
+    LibraryExample.setNetwork(networkId);
+    instance = await LibraryExample.new({ from: accounts[0] });
+    LibraryExample.address = "0x1234567890123456789012345678901234567890";
+    sinon.stub(LibraryExample, "isDeployed").returns(true);
+  });
+
+  afterEach(() => {
+    LibraryExample.isDeployed.restore();
+  });
+
+  it("will accept a contract type", () => {
+    ExampleContract.link(LibraryExample);
+    assert(ExampleContract.links["A"], instance.address);
+  });
+
+  it("will accept a name and address", () => {
+    const address = "0x1234567890";
+    ExampleContract.link("HamburgerConversionLib", address);
+    assert(ExampleContract.links["HamburgerConversionLib"], address);
+  });
+
+  it("will accept a contract instance", () => {
+    ExampleContract.link(instance);
+    assert(ExampleContract.links["A"], instance.address);
+  });
+
+  it("will error with improper input", () => {
+    const expectedMessageSnippet = "Input to the link method is in the " +
+      "incorrect format.";
+    try {
+      ExampleContract.link(1);
+    } catch (error) {
+      assert(error.message.includes(expectedMessageSnippet));
+    }
   });
 });
