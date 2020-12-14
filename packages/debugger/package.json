@@ -22,8 +22,6 @@
   "dependencies": {
     "@truffle/abi-utils": "^0.1.1",
     "@truffle/codec": "^0.9.1",
-    "@truffle/compile-solidity": "^5.1.2",
-    "@truffle/expect": "^0.0.15",
     "@truffle/solidity-utils": "^1.3.29",
     "bn.js": "^4.11.8",
     "debug": "^4.1.0",
