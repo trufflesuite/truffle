@@ -262,7 +262,7 @@ export function getContractNode(
     if (foundNode || !source) {
       return foundNode;
     }
-    if (!source.ast || source.language !== "solidity") {
+    if (!source.ast || source.language !== "Solidity") {
       //ignore non-Solidity ASTs for now, we don't support them yet
       return undefined;
     }
@@ -333,20 +333,20 @@ function inferLanguage(
 ): string | undefined {
   if (ast) {
     if (ast.nodeType === "SourceUnit") {
-      return "solidity";
+      return "Solidity";
     } else if (ast.nodeType && ast.nodeType.startsWith("Yul")) {
       //Every Yul source I've seen has YulBlock as the root, but
       //I'm not sure that that's *always* the case
-      return "yul";
+      return "Yul";
     } else if (ast.ast_type === "Module") {
-      return "vyper";
+      return "Vyper";
     }
   } else if (compiler) {
     if (compiler.name === "vyper") {
-      return "vyper";
+      return "Vyper";
     } else if (compiler.name === "solc") {
       //if it's solc but no AST, just assume it's Solidity
-      return "solidity";
+      return "Solidity";
     } else {
       return undefined;
     }

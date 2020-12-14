@@ -449,7 +449,7 @@ class DebugInterpreter {
       } else {
         //case if transaction succeeded
         this.printer.print("Transaction completed successfully.");
-        if (this.session.view(solidity.current.source).language !== "vyper") {
+        if (this.session.view(solidity.current.source).language !== "Vyper") {
           //HACK: not supported for vyper yet
           await this.printer.printReturnValue();
         }
@@ -478,7 +478,7 @@ class DebugInterpreter {
         this.printer.printGeneratedSourcesState();
         break;
       case "v":
-        if (this.session.view(solidity.current.source).language === "vyper") {
+        if (this.session.view(solidity.current.source).language === "Vyper") {
           this.printer.print("Decoding of variables is not currently supported for Vyper.");
           break;
         }
