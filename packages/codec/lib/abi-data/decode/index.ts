@@ -31,15 +31,19 @@ export function* decodeAbi(
     try {
       dynamic = abiSizeInfo(dataType, info.allocations.abi).dynamic;
     } catch (error) {
-      if (options.strictAbiMode) {
-        throw new StopDecodingError((<DecodingError>error).error);
+      if (error instanceof DecodingError) {
+        if (options.strictAbiMode) {
+          throw new StopDecodingError(error.error);
+        }
+        return <Format.Errors.ErrorResult>{
+          //dunno why TS is failing at this inference
+          type: dataType,
+          kind: "error" as const,
+          error: error.error
+        };
+      } else {
+        throw error;
       }
-      return <Format.Errors.ErrorResult>{
-        //dunno why TS is failing at this inference
-        type: dataType,
-        kind: "error" as const,
-        error: (<DecodingError>error).error
-      };
     }
     if (dynamic) {
       return yield* decodeAbiReferenceByAddress(
@@ -86,15 +90,19 @@ export function* decodeAbiReferenceByAddress(
   try {
     rawValue = yield* read(pointer, state);
   } catch (error) {
-    if (strict) {
-      throw new StopDecodingError((<DecodingError>error).error);
+    if (error instanceof DecodingError) {
+      if (strict) {
+        throw new StopDecodingError(error.error);
+      }
+      return <Format.Errors.ErrorResult>{
+        //dunno why TS is failing here
+        type: dataType,
+        kind: "error" as const,
+        error: error.error
+      };
+    } else {
+      throw error;
     }
-    return <Format.Errors.ErrorResult>{
-      //dunno why TS is failing here
-      type: dataType,
-      kind: "error" as const,
-      error: (<DecodingError>error).error
-    };
   }
 
   let rawValueAsBN = Conversion.toBN(rawValue);
@@ -126,15 +134,19 @@ export function* decodeAbiReferenceByAddress(
   try {
     ({ dynamic, size } = abiSizeInfo(dataType, allocations));
   } catch (error) {
-    if (strict) {
-      throw new StopDecodingError((<DecodingError>error).error);
+    if (error instanceof DecodingError) {
+      if (strict) {
+        throw new StopDecodingError(error.error);
+      }
+      return <Format.Errors.ErrorResult>{
+        //dunno why TS is failing here
+        type: dataType,
+        kind: "error" as const,
+        error: error.error
+      };
+    } else {
+      throw error;
     }
-    return <Format.Errors.ErrorResult>{
-      //dunno why TS is failing here
-      type: dataType,
-      kind: "error" as const,
-      error: (<DecodingError>error).error
-    };
   }
   if (!dynamic) {
     //this will only come up when called from stack.ts
@@ -173,15 +185,19 @@ export function* decodeAbiReferenceByAddress(
             state
           );
         } catch (error) {
-          if (strict) {
-            throw new StopDecodingError((<DecodingError>error).error);
+          if (error instanceof DecodingError) {
+            if (strict) {
+              throw new StopDecodingError(error.error);
+            }
+            return <Format.Errors.ErrorResult>{
+              //dunno why TS is failing here
+              type: dataType,
+              kind: "error" as const,
+              error: error.error
+            };
+          } else {
+            throw error;
           }
-          return <Format.Errors.ErrorResult>{
-            //dunno why TS is failing here
-            type: dataType,
-            kind: "error" as const,
-            error: (<DecodingError>error).error
-          };
         }
         lengthAsBN = Conversion.toBN(rawLength);
         startPosition += Evm.Utils.WORD_SIZE; //increment start position after reading length
@@ -255,14 +271,18 @@ export function* decodeAbiReferenceByAddress(
           );
         } catch (error) {
           //error: DecodingError
-          if (strict) {
-            throw new StopDecodingError((<DecodingError>error).error);
+          if (error instanceof DecodingError) {
+            if (strict) {
+              throw new StopDecodingError(error.error);
+            }
+            return {
+              type: dataType,
+              kind: "error" as const,
+              error: error.error
+            };
+          } else {
+            throw error;
           }
-          return {
-            type: dataType,
-            kind: "error" as const,
-            error: (<DecodingError>error).error
-          };
         }
         lengthAsBN = Conversion.toBN(rawLength);
         startPosition += Evm.Utils.WORD_SIZE; //increment startPosition
@@ -300,14 +320,18 @@ export function* decodeAbiReferenceByAddress(
       try {
         baseSize = abiSizeInfo(dataType.baseType, allocations).size;
       } catch (error) {
-        if (strict) {
-          throw new StopDecodingError((<DecodingError>error).error);
+        if (error instanceof DecodingError) {
+          if (strict) {
+            throw new StopDecodingError(error.error);
+          }
+          return {
+            type: dataType,
+            kind: "error" as const,
+            error: error.error
+          };
+        } else {
+          throw error;
         }
-        return {
-          type: dataType,
-          kind: "error" as const,
-          error: (<DecodingError>error).error
-        };
       }
 
       let decodedChildren: Format.Values.Result[] = [];
@@ -390,14 +414,18 @@ export function* decodeAbiReferenceStatic(
         baseSize = abiSizeInfo(dataType.baseType, info.allocations.abi).size;
       } catch (error) {
         //error: DecodingError
-        if (options.strictAbiMode) {
-          throw new StopDecodingError((<DecodingError>error).error);
+        if (error instanceof DecodingError) {
+          if (options.strictAbiMode) {
+            throw new StopDecodingError(error.error);
+          }
+          return {
+            type: dataType,
+            kind: "error" as const,
+            error: error.error
+          };
+        } else {
+          throw error;
         }
-        return {
-          type: dataType,
-          kind: "error" as const,
-          error: (<DecodingError>error).error
-        };
       }
 
       let decodedChildren: Format.Values.Result[] = [];

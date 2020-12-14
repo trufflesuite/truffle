@@ -22,12 +22,16 @@ export function* decodeStack(
   try {
     rawValue = yield* read(pointer, info.state);
   } catch (error) {
-    return <Format.Errors.ErrorResult>{
-      //no idea why TS is failing here
-      type: dataType,
-      kind: "error" as const,
-      error: (<DecodingError>error).error
-    };
+    if (error instanceof DecodingError) {
+      return <Format.Errors.ErrorResult>{
+        //no idea why TS is failing here
+        type: dataType,
+        kind: "error" as const,
+        error: error.error
+      };
+    } else {
+      throw error;
+    }
   }
   const literalPointer: Pointer.StackLiteralPointer = {
     location: "stackliteral" as const,

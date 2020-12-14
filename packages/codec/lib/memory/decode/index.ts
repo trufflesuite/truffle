@@ -69,12 +69,16 @@ export function* decodeMemoryReferenceByAddress(
   try {
     rawValue = yield* read(pointer, state);
   } catch (error) {
-    return <Format.Errors.ErrorResult>{
-      //dunno why TS is failing here
-      type: dataType,
-      kind: "error" as const,
-      error: (<DecodingError>error).error
-    };
+    if (error instanceof DecodingError) {
+      return <Format.Errors.ErrorResult>{
+        //dunno why TS is failing here
+        type: dataType,
+        kind: "error" as const,
+        error: error.error
+      };
+    } else {
+      throw error;
+    }
   }
 
   let startPositionAsBN = Conversion.toBN(rawValue);
@@ -114,12 +118,16 @@ export function* decodeMemoryReferenceByAddress(
           state
         );
       } catch (error) {
-        return <Format.Errors.ErrorResult>{
-          //dunno why TS is failing here
-          type: dataType,
-          kind: "error" as const,
-          error: (<DecodingError>error).error
-        };
+        if (error instanceof DecodingError) {
+          return <Format.Errors.ErrorResult>{
+            //dunno why TS is failing here
+            type: dataType,
+            kind: "error" as const,
+            error: error.error
+          };
+        } else {
+          throw error;
+        }
       }
       lengthAsBN = Conversion.toBN(rawLength);
       try {
@@ -171,11 +179,15 @@ export function* decodeMemoryReferenceByAddress(
             state
           );
         } catch (error) {
-          return {
-            type: dataType,
-            kind: "error" as const,
-            error: (<DecodingError>error).error
-          };
+          if (error instanceof DecodingError) {
+            return {
+              type: dataType,
+              kind: "error" as const,
+              error: error.error
+            };
+          } else {
+            throw error;
+          }
         }
         lengthAsBN = Conversion.toBN(rawLength);
         startPosition += Evm.Utils.WORD_SIZE; //increment startPosition

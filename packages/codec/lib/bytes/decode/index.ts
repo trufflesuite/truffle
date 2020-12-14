@@ -25,15 +25,19 @@ export function* decodeBytes(
   } catch (error) {
     //error: DecodingError
     debug("segfault, pointer %o, state: %O", pointer, state);
-    if (strict) {
-      throw new StopDecodingError((<DecodingError>error).error);
+    if (error instanceof DecodingError) {
+      if (strict) {
+        throw new StopDecodingError(error.error);
+      }
+      return <Format.Errors.ErrorResult>{
+        //no idea why TS is failing here
+        type: dataType,
+        kind: "error" as const,
+        error: error.error
+      };
+    } else {
+      throw error;
     }
-    return <Format.Errors.ErrorResult>{
-      //no idea why TS is failing here
-      type: dataType,
-      kind: "error" as const,
-      error: (<DecodingError>error).error
-    };
   }
 
   debug("type %O", dataType);

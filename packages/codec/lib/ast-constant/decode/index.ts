@@ -30,11 +30,15 @@ export function* decodeConstant(
     try {
       word = yield* read(pointer, info.state);
     } catch (error) {
-      return {
-        type: dataType,
-        kind: "error" as const,
-        error: (<DecodingError>error).error
-      };
+      if (error instanceof DecodingError) {
+        return {
+          type: dataType,
+          kind: "error" as const,
+          error: error.error
+        };
+      } else {
+        throw error;
+      }
     }
     //not bothering to check padding; shouldn't be necessary
     let bytes = word.slice(Evm.Utils.WORD_SIZE - size);
