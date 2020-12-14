@@ -1,5 +1,5 @@
 const web3Utils = require("web3-utils");
-import RangeUtils from "@truffle/compile-solidity/compilerSupplier/rangeUtils";
+const RangeUtils = require("@truffle/compile-solidity/compilerSupplier/rangeUtils");
 
 type solcOptionsArg = {
   solc: { version: string };
