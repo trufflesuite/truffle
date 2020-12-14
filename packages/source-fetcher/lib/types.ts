@@ -9,8 +9,9 @@ export interface Fetcher {
    */
   readonly fetcherName: string;
   /**
-   * returns null if no Solidity sources for address
-   * (address not in system, sources are Vyper, whatever)
+   * returns null if no sources for address
+   * (also may return null if the sources fall under an unsupported
+   * case, although currently there are no such cases)
    */
   fetchSourcesForAddress(address: string): Promise<SourceInfo | null>;
 }

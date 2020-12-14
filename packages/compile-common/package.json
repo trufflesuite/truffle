@@ -13,12 +13,12 @@
     "watch": "tsc -w"
   },
   "devDependencies": {
+    "@truffle/contract-schema": "^3.3.2",
     "@types/fs-extra": "^8.1.0",
     "@types/mocha": "^5.2.7",
     "typescript": "3.9.6"
   },
   "dependencies": {
-    "@truffle/contract-schema": "^3.3.2",
     "@truffle/error": "^0.0.11",
     "colors": "^1.4.0",
     "fs-extra": "^8.1.0",

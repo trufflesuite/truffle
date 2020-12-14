@@ -30,6 +30,7 @@
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "devDependencies": {
+    "@truffle/contract-schema": "^3.3.2",
     "@types/faker": "^5.1.2",
     "@types/jest": "^26.0.14",
     "@types/jest-json-schema": "^2.1.2",
@@ -42,7 +43,6 @@
     "typescript": "^4.0.3"
   },
   "dependencies": {
-    "@truffle/contract-schema": "^3.3.2",
     "change-case": "^4.1.1",
     "faker": "^5.1.0",
     "fast-check": "^2.4.0",
