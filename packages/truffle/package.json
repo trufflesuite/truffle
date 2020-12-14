@@ -1,5 +1,6 @@
 {
   "name": "truffle",
+  "license": "MIT",
   "description": "Truffle - Simple development framework for Ethereum",
   "author": "consensys.net",
   "homepage": "https://github.com/trufflesuite/truffle/",
