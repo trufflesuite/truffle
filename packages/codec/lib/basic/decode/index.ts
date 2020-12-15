@@ -13,7 +13,7 @@ import {
   PaddingType
 } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
-import { DecodingError, StopDecodingError } from "@truffle/codec/errors";
+import { handleDecodingError, StopDecodingError } from "@truffle/codec/errors";
 import { byteLength } from "@truffle/codec/basic/allocate";
 
 export function* decodeBasic(
@@ -31,17 +31,8 @@ export function* decodeBasic(
   try {
     bytes = yield* read(pointer, state);
   } catch (error) {
-    //error: DecodingError
     debug("segfault, pointer %o, state: %O", pointer, state);
-    if (strict) {
-      throw new StopDecodingError((<DecodingError>error).error);
-    }
-    return <Format.Errors.ErrorResult>{
-      //no idea why TS is failing here
-      type: dataType,
-      kind: "error" as const,
-      error: (<DecodingError>error).error
-    };
+    return handleDecodingError(dataType, error, strict);
   }
   rawBytes = bytes;
 
