@@ -23,9 +23,10 @@ describe("Solidity Imports [ @standalone ]", function () {
    * |   |-- ImportOfImport.sol # Local import for NodeImport.sol
    * |   |-- NodeImport.sol
    * |
-   * + installed_contracts/
+   * + _ethpm_packages/
    * |-- ethpmpkg/
-   * |   |-- EthPMImport.sol
+   * |   |-- _src/
+   * |      |-- EthPMImport.sol
    * |
    * + truffleproject/
    * |-- contracts/
