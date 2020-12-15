@@ -98,6 +98,13 @@ class DebugExternalHandler {
           compilers: {
             solc: options
           }
+        }).merge({
+          //turn on docker if the original config has docker
+          compilers: {
+            solc: {
+              docker: ((this.config.compilers || {}).solc || {}).docker
+            }
+          }
         });
         const compilations = await new DebugCompiler(externalConfig).compile(
           sources
