@@ -10,6 +10,7 @@ const templates = {
   contract: {
     filename: path.join(__dirname, "templates", "Example.sol"),
     name: "Example",
+    license: "MIT",
     variable: "example"
   },
   migration: {
@@ -17,22 +18,22 @@ const templates = {
   }
 };
 
-var processFile = function(file_path, processfn, callback) {
-  fs.readFile(file_path, { encoding: "utf8" }, function(err, data) {
+var processFile = function (file_path, processfn, callback) {
+  fs.readFile(file_path, {encoding: "utf8"}, function (err, data) {
     if (err != null) {
       callback(err);
       return;
     }
 
     var result = processfn(data);
-    fs.writeFile(file_path, result, { encoding: "utf8" }, callback);
+    fs.writeFile(file_path, result, {encoding: "utf8"}, callback);
   });
 };
 
-var replaceContents = function(file_path, find, replacement, callback) {
+var replaceContents = function (file_path, find, replacement, callback) {
   processFile(
     file_path,
-    function(data) {
+    function (data) {
       if (typeof find === "string") {
         find = new RegExp(find, "g");
       }
@@ -42,8 +43,8 @@ var replaceContents = function(file_path, find, replacement, callback) {
   );
 };
 
-var toUnderscoreFromCamel = function(string) {
-  string = string.replace(/([A-Z])/g, function($1) {
+var toUnderscoreFromCamel = function (string) {
+  string = string.replace(/([A-Z])/g, function ($1) {
     return "_" + $1.toLowerCase();
   });
 
@@ -54,8 +55,23 @@ var toUnderscoreFromCamel = function(string) {
   return string;
 };
 
+// getLicense return the license property value from Truffle config first and
+// in case that the file doesn't exist it will fallback to package.json
+function getLicense(options) {
+  try {
+    if ((license = require("@truffle/config").detect(options).license))
+      return license;
+  } catch (err) {
+    console.log(err);
+  }
+
+  try {
+    return require(path.join(process.cwd(), "package.json")).license;
+  } catch {}
+}
+
 var Create = {
-  contract: function(directory, name, options, callback) {
+  contract: function (directory, name, options, callback) {
     if (typeof options === "function") {
       callback = options;
     }
@@ -69,14 +85,17 @@ var Create = {
       );
     }
 
-    copy.file(from, to, function(err) {
+    copy.file(from, to, function (err) {
       if (err) return callback(err);
 
       replaceContents(to, templates.contract.name, name, callback);
+
+      if ((license = getLicense(options)))
+        replaceContents(to, templates.contract.license, license, callback);
     });
   },
 
-  test: function(directory, name, options, callback) {
+  test: function (directory, name, options, callback) {
     if (typeof options === "function") {
       callback = options;
     }
@@ -92,17 +111,17 @@ var Create = {
       );
     }
 
-    copy.file(from, to, function(err) {
+    copy.file(from, to, function (err) {
       if (err) return callback(err);
 
-      replaceContents(to, templates.contract.name, name, function(err) {
+      replaceContents(to, templates.contract.name, name, function (err) {
         if (err) return callback(err);
         replaceContents(to, templates.contract.variable, underscored, callback);
       });
     });
   },
 
-  migration: function(directory, name, options, callback) {
+  migration: function (directory, name, options, callback) {
     if (typeof options === "function") {
       callback = options;
     }
