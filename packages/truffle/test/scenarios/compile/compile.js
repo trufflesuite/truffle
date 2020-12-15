@@ -1,14 +1,17 @@
 const MemoryLogger = require("../memorylogger");
 const CommandRunner = require("../commandrunner");
-const fs = require("fs");
 const path = require("path");
 const assert = require("assert");
 const Server = require("../server");
 const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const log = console.log;
+const fse = require("fs-extra");
+const { connect } = require("@truffle/db");
+const gql = require("graphql-tag");
+const pascalCase = require("pascal-case");
 
-describe("Repeated compilation of contracts with inheritance [ @standalone ]", function() {
+describe("Repeated compilation of contracts with inheritance [ @standalone ]", function () {
   let config,
     sourcePaths,
     artifactPaths,
@@ -44,13 +47,13 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
   }
 
   function getSource(key) {
-    return fs.readFileSync(mapping[key].sourcePath);
+    return fse.readFileSync(mapping[key].sourcePath);
   }
 
   function getArtifactStats() {
     const stats = {};
     names.forEach(key => {
-      const mDate = fs.statSync(mapping[key].artifactPath).mtime.getTime();
+      const mDate = fse.statSync(mapping[key].artifactPath).mtime.getTime();
       stats[key] = mDate;
     });
     return stats;
@@ -58,20 +61,20 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
 
   function touchSource(key) {
     const source = getSource(key);
-    fs.writeFileSync(mapping[key].sourcePath, source);
+    fse.writeFileSync(mapping[key].sourcePath, source);
   }
 
   // ----------------------- Setup -----------------------------
 
-  before("set up the server", function(done) {
+  before("set up the server", function (done) {
     Server.start(done);
   });
 
-  after("stop server", function(done) {
+  after("stop server", function (done) {
     Server.stop(done);
   });
 
-  beforeEach("set up sandbox and do initial compile", async function() {
+  beforeEach("set up sandbox and do initial compile", async function () {
     this.timeout(30000);
 
     const conf = await sandbox.create(project);
@@ -119,7 +122,7 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
   //                   LeafB              |
   // ------------------------------------------------------------
 
-  it("Updates only Root when Root is touched", async function() {
+  it("Updates only Root when Root is touched", async function () {
     this.timeout(30000);
 
     touchSource("Root");
@@ -174,7 +177,7 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
   //                   LeafB              |
   // ------------------------------------------------------------
 
-  it("Updates Root and Library when Library is touched", async function() {
+  it("Updates Root and Library when Library is touched", async function () {
     this.timeout(30000);
 
     touchSource("LibraryA");
@@ -229,7 +232,7 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
   //                   LeafB              |
   // ------------------------------------------------------------
 
-  it("Updates Branch and Root when Branch is touched", async function() {
+  it("Updates Branch and Root when Branch is touched", async function () {
     this.timeout(30000);
 
     touchSource("Branch");
@@ -284,7 +287,7 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
   //                    LeafB              |
   // ------------------------------------------------------------
 
-  it("Updates LeafA, Branch and Root when LeafA is touched", async function() {
+  it("Updates LeafA, Branch and Root when LeafA is touched", async function () {
     this.timeout(30000);
 
     touchSource("LeafA");
@@ -339,7 +342,7 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
   //                   LeafB*              |
   // ------------------------------------------------------------
 
-  it("Updates everything except LibraryA when LeafC is touched", async function() {
+  it("Updates everything except LibraryA when LeafC is touched", async function () {
     this.timeout(30000);
 
     touchSource("LeafC");
@@ -383,5 +386,77 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
       err.message += "\n\n" + output;
       throw new Error(err);
     }
+  });
+});
+
+describe("Compilation with db enabled", async () => {
+  let config, project;
+  const logger = new MemoryLogger();
+
+  function checkForDb(config) {
+    const dbPath = path.join(config.working_directory, ".db");
+
+    const dbExists = fse.pathExistsSync(dbPath);
+    return dbExists;
+  }
+
+  before("set up the server", function (done) {
+    Server.start(done);
+  });
+
+  after("stop server", function (done) {
+    Server.stop(done);
+  });
+
+  beforeEach("set up sandbox and do initial compile", async function () {
+    this.timeout(30000);
+
+    project = path.join(__dirname, "../../sources/db_enabled");
+    config = await sandbox.create(project);
+
+    try {
+      await CommandRunner.run("compile", config);
+    } catch (error) {
+      output = logger.contents();
+      log(output);
+      throw new Error(error);
+    }
+  });
+
+  it("creates a populated .db directory when db is enabled", async function () {
+    this.timeout(12000);
+
+    const dbExists = checkForDb(config);
+
+    assert(dbExists === true);
+  });
+
+  it("adds contracts to the db", async function () {
+    this.timeout(12000);
+
+    const GetAllContracts = gql`
+      query getAllContracts {
+        contracts {
+          name
+        }
+      }
+    `;
+
+    // connect to DB
+    const db = connect(config);
+    const results = await db.execute(GetAllContracts, {});
+
+    // number of contracts matches number of contracts in the project directory
+    // (plus one library in this one)
+    assert(results.data.contracts.length === 4);
+
+    // contract names in project exist in new .db contracts file
+    const resultsNames = results.data.contracts.map(a => a.name);
+
+    const contractNames = fse.readdirSync(path.join(project, "contracts"));
+    contractNames.map(name => {
+      const processedName = pascalCase(name.split(".")[0]);
+      assert(resultsNames.includes(processedName));
+    });
   });
 });
