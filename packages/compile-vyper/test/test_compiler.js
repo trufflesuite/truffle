@@ -43,18 +43,17 @@ describe("vyper compiler", function () {
         "Contract name is set correctly"
       );
 
-      assert.notEqual(
-        contract.abi.indexOf("vyper_action"),
-        -1,
+      assert(
+        contract.abi.map(item => item.name).includes("vyper_action"),
         "ABI has function from contract present"
       );
 
       assert(
-        hex_regex.test(contract.bytecode),
+        hex_regex.test(contract.bytecode.bytes),
         "Bytecode has only hex characters"
       );
       assert(
-        hex_regex.test(contract.deployedBytecode),
+        hex_regex.test(contract.deployedBytecode.bytes),
         "Deployed bytecode has only hex characters"
       );
 
@@ -90,7 +89,6 @@ describe("vyper compiler", function () {
     });
   });
 
-
   describe("with external options set", function () {
     const configWithPetersburg = new Config().merge(defaultSettings).merge({
       compilers: {
@@ -119,9 +117,9 @@ describe("vyper compiler", function () {
       //we're specifying that it should compile for Petersburg, which was earlier.
       //Therefore, the result should not contain the SELFBALANCE opcode.
       contracts.forEach((contract, index) => {
-        const instructions = CodeUtils.parseCode(contract.bytecode);
+        const instructions = CodeUtils.parseCode(contract.bytecode.bytes);
         const deployedInstructions = CodeUtils.parseCode(
-          contract.deployedBytecode
+          contract.deployedBytecode.bytes
         );
         for (const instruction of instructions) {
           assert(
@@ -146,7 +144,7 @@ describe("vyper compiler", function () {
       //if it's compiling for Istanbul or later, and we use that in VyperContract4
       const contract = contracts[3];
       const deployedInstructions = CodeUtils.parseCode(
-        contract.deployedBytecode
+        contract.deployedBytecode.bytes
       );
       assert(
         deployedInstructions.some(
@@ -162,7 +160,7 @@ describe("vyper compiler", function () {
       const { compilations } = await Compile.all(config);
       const { sources } = compilations[0];
 
-      assert(sources.length === 4);
+      assert(sources.length === 5);
       assert(
         sources[0].sourcePath ===
           path.join(__dirname, "sources/VyperContract1.vy")
@@ -173,7 +171,7 @@ describe("vyper compiler", function () {
             .readFileSync(path.join(__dirname, "sources/VyperContract1.vy"))
             .toString()
       );
-      assert(sources[0].language === "vyper");
+      assert(sources[0].language === "Vyper");
     });
   });
 });

@@ -9,7 +9,7 @@ import * as Basic from "@truffle/codec/basic";
 import * as Bytes from "@truffle/codec/bytes";
 import { DecoderRequest } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
-import { DecodingError } from "@truffle/codec/errors";
+import { handleDecodingError } from "@truffle/codec/errors";
 
 export function* decodeConstant(
   dataType: Format.Types.Type,
@@ -30,11 +30,7 @@ export function* decodeConstant(
     try {
       word = yield* read(pointer, info.state);
     } catch (error) {
-      return {
-        type: dataType,
-        kind: "error" as const,
-        error: (<DecodingError>error).error
-      };
+      return handleDecodingError(dataType, error);
     }
     //not bothering to check padding; shouldn't be necessary
     let bytes = word.slice(Evm.Utils.WORD_SIZE - size);

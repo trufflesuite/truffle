@@ -1,10 +1,10 @@
-const debug = require("debug")("solidity-utils");
+const debug = require("debug")("source-map-utils");
 const CodeUtils = require("@truffle/code-utils");
 const Codec = require("@truffle/codec");
 const jsonpointer = require("json-pointer");
 const IntervalTree = require("node-interval-tree").default;
 
-var SolidityUtils = {
+var SourceMapUtils = {
   getCharacterOffsetToLineAndColumnMapping: function (source) {
     var mapping = [];
 
@@ -122,7 +122,7 @@ var SolidityUtils = {
     }
 
     const lineAndColumnMappings = sources.map(source =>
-      SolidityUtils.getCharacterOffsetToLineAndColumnMapping(source || "")
+      SourceMapUtils.getCharacterOffsetToLineAndColumnMapping(source || "")
     );
 
     let primaryFile;
@@ -223,8 +223,8 @@ var SolidityUtils = {
             //if we can't get the ast... filter it out I guess
             return {};
           }
-          let range = SolidityUtils.getSourceRange(instruction);
-          let { node, pointer } = SolidityUtils.findRange(
+          let range = SourceMapUtils.getSourceRange(instruction);
+          let { node, pointer } = SourceMapUtils.findRange(
             findOverlappingRange,
             range.start,
             range.length
@@ -323,7 +323,7 @@ var SolidityUtils = {
   //makes the overlap function for an AST
   makeOverlapFunction: function (ast) {
     let tree = new IntervalTree();
-    let ranges = SolidityUtils.rangeNodes(ast);
+    let ranges = SourceMapUtils.rangeNodes(ast);
     for (let { range, node, pointer } of ranges) {
       let [start, end] = range;
       tree.insert(start, end, { range, node, pointer });
@@ -337,7 +337,7 @@ var SolidityUtils = {
     if (node instanceof Array) {
       return [].concat(
         ...node.map((sub, i) =>
-          SolidityUtils.rangeNodes(sub, `${pointer}/${i}`)
+          SourceMapUtils.rangeNodes(sub, `${pointer}/${i}`)
         )
       );
     } else if (node instanceof Object) {
@@ -346,12 +346,12 @@ var SolidityUtils = {
       if (node.src !== undefined && node.nodeType !== undefined) {
         //don't add "pseudo-nodes" (i.e.: outside variable references
         //in assembly) with no nodeType
-        results.push({ pointer, node, range: SolidityUtils.getRange(node) });
+        results.push({ pointer, node, range: SourceMapUtils.getRange(node) });
       }
 
       return results.concat(
         ...Object.keys(node).map(key =>
-          SolidityUtils.rangeNodes(node[key], `${pointer}/${key}`)
+          SourceMapUtils.rangeNodes(node[key], `${pointer}/${key}`)
         )
       );
     } else {
@@ -371,4 +371,4 @@ var SolidityUtils = {
   }
 };
 
-module.exports = SolidityUtils;
+module.exports = SourceMapUtils;

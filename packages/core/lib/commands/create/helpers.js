@@ -11,6 +11,7 @@ const templates = {
   contract: {
     filename: path.join(__dirname, "templates", "Example.sol"),
     name: "Example",
+    license: "MIT",
     variable: "example"
   },
   migration: {
@@ -39,6 +40,21 @@ const toUnderscoreFromCamel = function (string) {
   return string;
 };
 
+// getLicense return the license property value from Truffle config first and
+// in case that the file doesn't exist it will fallback to package.json
+function getLicense(options) {
+  try {
+    if ((license = require("@truffle/config").detect(options).license))
+      return license;
+  } catch (err) {
+    console.log(err);
+  }
+
+  try {
+    return require(path.join(process.cwd(), "package.json")).license;
+  } catch {}
+}
+
 const Create = {
   contract: async function (directory, name, options) {
     const from = templates.contract.filename;
@@ -51,6 +67,9 @@ const Create = {
     await promisify(copy.file)(from, to);
 
     replaceContents(to, templates.contract.name, name);
+
+    if ((license = getLicense(options)))
+      replaceContents(to, templates.contract.license, license);
   },
 
   test: async function (directory, name, options) {

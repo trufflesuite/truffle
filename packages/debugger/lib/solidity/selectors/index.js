@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("debugger:solidity:selectors");
 
 import { createSelectorTree, createLeaf } from "reselect-tree";
-import SolidityUtils from "@truffle/solidity-utils";
+import SourceMapUtils from "@truffle/source-map-utils";
 
 import semver from "semver";
 
@@ -14,6 +14,7 @@ function contextRequiresPhantomStackframes(context) {
   return (
     context.compiler !== undefined && //(do NOT just put context.compiler here,
     //we need this to be a boolean, not undefined, because it gets put in the state)
+    context.compiler.name === "solc" &&
     semver.satisfies(context.compiler.version, ">=0.5.1", {
       includePrerelease: true
     }) &&
@@ -67,7 +68,7 @@ function createMultistepSelectors(stepSelector) {
     /**
      * .sourceRange
      */
-    sourceRange: createLeaf(["./instruction"], SolidityUtils.getSourceRange),
+    sourceRange: createLeaf(["./instruction"], SourceMapUtils.getSourceRange),
 
     /**
      * .pointerAndNode
@@ -77,7 +78,7 @@ function createMultistepSelectors(stepSelector) {
 
       (findOverlappingRange, range) =>
         findOverlappingRange
-          ? SolidityUtils.findRange(
+          ? SourceMapUtils.findRange(
               findOverlappingRange,
               range.start,
               range.length
@@ -192,7 +193,7 @@ let solidity = createSelectorTree({
      * solidity.current.humanReadableSourceMap
      */
     humanReadableSourceMap: createLeaf(["./sourceMap"], sourceMap =>
-      sourceMap ? SolidityUtils.getHumanReadableSourceMap(sourceMap) : null
+      sourceMap ? SourceMapUtils.getHumanReadableSourceMap(sourceMap) : null
     ),
 
     /**
@@ -233,7 +234,7 @@ let solidity = createSelectorTree({
         }
 
         debug("sources before processing: %O", sources);
-        return SolidityUtils.getProcessedInstructionsForBinary(
+        return SourceMapUtils.getProcessedInstructionsForBinary(
           (sources || []).map(source => (source ? source.source : undefined)),
           context.binary,
           sourceMap
@@ -299,7 +300,7 @@ let solidity = createSelectorTree({
         //note: we can skip an explicit null check on sources here because
         //if sources is null then instructions = [] so the problematic map
         //never occurs
-        SolidityUtils.getFunctionsByProgramCounter(
+        SourceMapUtils.getFunctionsByProgramCounter(
           instructions,
           sources.map(({ ast }) => ast),
           functions,
@@ -412,7 +413,7 @@ let solidity = createSelectorTree({
       Object.assign(
         {},
         ...Object.entries(sources).map(([id, { ast }]) => ({
-          [id]: SolidityUtils.makeOverlapFunction(ast)
+          [id]: SourceMapUtils.makeOverlapFunction(ast)
         }))
       )
     )

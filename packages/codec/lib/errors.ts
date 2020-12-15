@@ -36,3 +36,31 @@ export class StopDecodingError extends Error {
     this.allowRetry = Boolean(allowRetry);
   }
 }
+
+/**
+ * @hidden
+ */
+export function handleDecodingError(
+  dataType: Format.Types.Type,
+  error: any,
+  strict: boolean = false
+): Format.Errors.ErrorResult {
+  if (error instanceof DecodingError) {
+    //expected error
+    if (strict) {
+      //strict mode -- stop decoding on errors
+      throw new StopDecodingError(error.error);
+    } else {
+      //nonstrict mode -- return an error result
+      return <Format.Errors.ErrorResult>{
+        //I don't know why TS's inference is failing here and needs the coercion
+        type: dataType,
+        kind: "error" as const,
+        error: error.error
+      };
+    }
+  } else {
+    //if it's *not* an expected error, we better not swallow it -- rethrow!
+    throw error;
+  }
+}

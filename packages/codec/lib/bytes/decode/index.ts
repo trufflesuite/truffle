@@ -7,7 +7,7 @@ import * as Format from "@truffle/codec/format";
 import * as Pointer from "@truffle/codec/pointer";
 import { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
-import { DecodingError, StopDecodingError } from "@truffle/codec/errors";
+import { handleDecodingError } from "@truffle/codec/errors";
 import utf8 from "utf8";
 
 export function* decodeBytes(
@@ -23,17 +23,8 @@ export function* decodeBytes(
   try {
     bytes = yield* read(pointer, state);
   } catch (error) {
-    //error: DecodingError
     debug("segfault, pointer %o, state: %O", pointer, state);
-    if (strict) {
-      throw new StopDecodingError((<DecodingError>error).error);
-    }
-    return <Format.Errors.ErrorResult>{
-      //no idea why TS is failing here
-      type: dataType,
-      kind: "error" as const,
-      error: (<DecodingError>error).error
-    };
+    return handleDecodingError(dataType, error, strict);
   }
 
   debug("type %O", dataType);
@@ -77,7 +68,7 @@ export function decodeString(bytes: Uint8Array): Format.Values.StringValueInfo {
       kind: "valid" as const,
       asString: correctlyEncodedString
     };
-  } catch (_) {
+  } catch {
     //we're going to ignore the precise error and just assume it's because
     //the string was malformed (what else could it be?)
     let hexString = Conversion.toHexString(bytes);
