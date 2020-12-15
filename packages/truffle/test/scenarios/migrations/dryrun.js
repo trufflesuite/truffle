@@ -7,7 +7,7 @@ const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const Web3 = require("web3");
 
-describe("migrate (dry-run)", function() {
+describe.skip("migrate (dry-run)", function () {
   let config;
   let web3;
   const project = path.join(__dirname, "../../sources/migrations/success");
@@ -16,7 +16,7 @@ describe("migrate (dry-run)", function() {
   before(done => Server.start(done));
   after(done => Server.stop(done));
 
-  before(async function() {
+  before(async function () {
     this.timeout(10000);
     config = await sandbox.create(project);
     config.network = "development";
@@ -32,7 +32,7 @@ describe("migrate (dry-run)", function() {
     networkId = await web3.eth.net.getId();
   });
 
-  it("uses the dry-run option", async function() {
+  it("uses the dry-run option", async function () {
     this.timeout(70000);
 
     await CommandRunner.run("migrate --dry-run", config);
