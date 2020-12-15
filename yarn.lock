@@ -10383,10 +10383,10 @@ ganache-cli@^6.1.0:
     source-map-support "0.5.12"
     yargs "13.2.4"
 
-ganache@3.0.0-internal.10:
-  version "3.0.0-internal.10"
-  resolved "https://registry.yarnpkg.com/ganache/-/ganache-3.0.0-internal.10.tgz#6eaf64d8f6dd29df136a3fe49e76f0ca44a578cf"
-  integrity sha512-AuNMDz5wmT2Z9Z1i0XtZPOxYbek0WisaDdanNUBr5kAb9bgvk4lm0M+bX2pQs7gxxkagRqOMvubfcjz3LwKDfg==
+ganache@3.0.0-internal.11:
+  version "3.0.0-internal.11"
+  resolved "https://registry.yarnpkg.com/ganache/-/ganache-3.0.0-internal.11.tgz#0427b0b08f6dff8fee3aa83955104dffc4545dd1"
+  integrity sha512-vwFECPA34OfzngkEOEpolRBVD6+60X2TttTxIo8Dr2sXailQdxegMBMarzG7fOGdAFoUkT/40BLo5gA4pGxf6A==
   dependencies:
     bigint-buffer "1.1.5"
     keccak "3.0.1"
@@ -14432,6 +14432,13 @@ lru-cache@^4.0.1:
   dependencies:
     pseudomap "^1.0.2"
     yallist "^2.1.2"
+
+lru-cache@^5.0.0, lru-cache@^5.1.1:
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-5.1.1.tgz#1da27e6710271947695daf6848e847f01d84b920"
+  integrity sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==
+  dependencies:
+    yallist "^3.0.2"
 
 lru-cache@^6.0.0:
   version "6.0.0"

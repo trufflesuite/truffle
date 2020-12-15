@@ -63,7 +63,7 @@
     "express": "^4.16.2",
     "faker": "^4.1.0",
     "fs-extra": "^8.1.0",
-    "ganache": "3.0.0-internal.10",
+    "ganache": "3.0.0-internal.11",
     "istanbul-instrumenter-loader": "^3.0.1",
     "mocha": "5.2.0",
     "mocha-webpack": "2.0.0-beta.0",
