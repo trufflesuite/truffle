@@ -2,134 +2,48 @@ const debug = require("debug")("decoder:test:downgrade-test");
 const assert = require("chai").assert;
 const Big = require("big.js");
 const clonedeep = require("lodash.clonedeep");
+const Ganache = require("ganache-core");
+const path = require("path");
+const Web3 = require("web3");
 
 const Decoder = require("../../..");
 const Codec = require("@truffle/codec");
 
-const DowngradeTest = artifacts.require("DowngradeTest");
-const DowngradeTestParent = artifacts.require("DowngradeTestParent");
-const DecoyLibrary = artifacts.require("DecoyLibrary");
-const Contracts = [DowngradeTest, DowngradeTestParent, DecoyLibrary];
-const compilations = Codec.Compilations.Utils.shimArtifacts(Contracts);
+const { prepareContracts } = require("../../helpers");
 
-//verify the decoding for run
-function verifyAbiDecoding(decoding, address) {
-  assert.strictEqual(decoding.decodingMode, "abi");
-  //we'll skip verifying the kind and name for once
-  assert.lengthOf(decoding.arguments, 4);
-  //we'll skip verifying the names as well
+let web3; //sorry!
+let abstractions; //sorry!
 
-  //first argument: {{x: 7, y: 5}, z: 3}
-  assert.strictEqual(decoding.arguments[0].value.type.typeClass, "tuple");
-  assert.deepEqual(
-    Codec.Format.Utils.Inspect.nativize(decoding.arguments[0].value),
-    [[7, 5], 3]
-  );
-  //second argument: No (i.e. 1)
-  assert.strictEqual(decoding.arguments[1].value.type.typeClass, "uint");
-  assert.strictEqual(decoding.arguments[1].value.type.bits, 8);
-  assert.deepEqual(
-    Codec.Format.Utils.Inspect.nativize(decoding.arguments[1].value),
-    1
-  );
-  //third argument: the contract (i.e. its address)
-  assert.strictEqual(decoding.arguments[2].value.type.typeClass, "address");
-  assert.strictEqual(decoding.arguments[2].value.type.kind, "general");
-  assert.deepEqual(
-    Codec.Format.Utils.Inspect.nativize(decoding.arguments[2].value),
-    address
-  );
-  //fourth argument: the same thing
-  assert.strictEqual(decoding.arguments[3].value.type.typeClass, "address");
-  assert.strictEqual(decoding.arguments[3].value.type.kind, "general");
-  assert.deepEqual(
-    Codec.Format.Utils.Inspect.nativize(decoding.arguments[3].value),
-    address
-  );
-}
+describe("Graceful degradation when information is missing", function() {
 
-function verifyAbiFunctionDecoding(decoding, address) {
-  assert.strictEqual(decoding.decodingMode, "abi");
-  assert.strictEqual(decoding.kind, "event");
-  assert.strictEqual(decoding.abi.name, "CauseTrouble");
-  assert.lengthOf(decoding.arguments, 1);
-  assert.isUndefined(decoding.arguments[0].name);
-  assert.strictEqual(decoding.arguments[0].value.type.typeClass, "function");
-  assert.strictEqual(decoding.arguments[0].value.type.visibility, "external");
-  assert.strictEqual(decoding.arguments[0].value.type.kind, "general");
-  assert.strictEqual(decoding.arguments[0].value.kind, "value");
-  //NOTE: we only messed with the node, not the bytecode, so, even abified,
-  //external function decoding should still work properly!
-  assert.strictEqual(decoding.arguments[0].value.value.kind, "known");
-  assert.strictEqual(decoding.arguments[0].value.value.contract.kind, "known");
-  assert.strictEqual(
-    decoding.arguments[0].value.value.contract.class.typeName,
-    "DowngradeTest"
-  );
-  assert.strictEqual(
-    decoding.arguments[0].value.value.contract.address,
-    address
-  );
-  let selector = web3.eth.abi.encodeFunctionSignature("causeTrouble()");
-  assert.strictEqual(decoding.arguments[0].value.value.selector, selector);
-}
+  let provider;
+  let rawCompilations;
+  let accounts;
 
-async function runTestBody(
-  mangledCompilations,
-  skipFunctionTests = false,
-  fullMode = false
-) {
-  let decoder = await Decoder.forProject(web3.currentProvider, {
-    compilations: mangledCompilations
+  let Contracts;
+  let compilations;
+
+  before("Create Provider", async function () {
+    provider = Ganache.provider({seed: "decoder", gasLimit: 7000000});
+    web3 = new Web3(provider);
+    accounts = await web3.eth.getAccounts();
   });
-  let deployedContract = await DowngradeTest.new();
-  let address = deployedContract.address;
 
-  let result = await deployedContract.run([[7, 5], 3], 1, address, address);
-  let resultHash = result.tx;
-  let resultTx = await web3.eth.getTransaction(resultHash);
-  let resultLog = result.receipt.rawLogs[0];
+  before("Prepare contracts and artifacts", async function () {
+    this.timeout(30000);
 
-  let txDecoding = await decoder.decodeTransaction(resultTx);
-  let logDecodings = await decoder.decodeLog(resultLog);
+    const prepared = await prepareContracts(provider, path.resolve(__dirname, ".."));
+    abstractions = prepared.abstractions;
+    rawCompilations = prepared.compilations;
 
-  if (fullMode) {
-    assert.strictEqual(txDecoding.decodingMode, "full");
-    txDecoding = decoder.abifyCalldataDecoding(txDecoding);
-  }
-  verifyAbiDecoding(txDecoding, address);
+    Contracts = [
+      abstractions.DowngradeTest,
+      abstractions.DowngradeTestParent,
+      abstractions.DecoyLibrary
+    ];
+    compilations = Codec.Compilations.Utils.shimArtifacts(Contracts);
+  });
 
-  assert.lengthOf(logDecodings, 1);
-  let logDecoding = logDecodings[0];
-  if (fullMode) {
-    assert.strictEqual(logDecoding.decodingMode, "full");
-    logDecoding = decoder.abifyLogDecoding(logDecoding);
-  }
-  verifyAbiDecoding(logDecoding, address);
-
-  if (!skipFunctionTests) {
-    //huh -- I thought I'd eliminated that exception, but I'm
-    //still getting it.  weird.  well, whatever...
-    try {
-      await deployedContract.causeTrouble();
-    } catch (_) {
-      //do nothing, get the result a different way
-    }
-    //HACK
-    let fnEvents = await decoder.events();
-    assert.lengthOf(fnEvents, 1);
-    let fnDecodings = fnEvents[0].decodings;
-    assert.lengthOf(fnDecodings, 1);
-    let fnDecoding = fnDecodings[0];
-    if (fullMode) {
-      assert.strictEqual(fnDecoding.decodingMode, "full");
-      fnDecoding = decoder.abifyLogDecoding(fnDecoding);
-    }
-    verifyAbiFunctionDecoding(fnDecoding, address);
-  }
-}
-
-contract("DowngradeTest", function(accounts) {
   it("Correctly degrades on allocation when no node", async function() {
     let mangledCompilations = clonedeep(compilations);
     let source = mangledCompilations[0].sources.find(x => x); //find defined source
@@ -220,7 +134,7 @@ contract("DowngradeTest", function(accounts) {
     );
     const data = selector + hexTau.slice(2); //(cut off initial 0x)
 
-    let deployedContract = await DowngradeTest.new();
+    let deployedContract = await abstractions.DowngradeTest.new();
     let address = deployedContract.address;
     let decimalResult = await web3.eth.sendTransaction({
       from: accounts[0],
@@ -260,7 +174,7 @@ contract("DowngradeTest", function(accounts) {
       compilations: mangledCompilations
     });
 
-    let deployedContract = await DowngradeTest.new();
+    let deployedContract = await abstractions.DowngradeTest.new();
 
     let result = await deployedContract.emitParent();
     let resultLog = result.receipt.rawLogs[0];
@@ -283,7 +197,7 @@ contract("DowngradeTest", function(accounts) {
         web3.currentProvider,
         { compilations } //not modifying for once!
       );
-      let deployedContract = await DowngradeTest.new();
+      let deployedContract = await abstractions.DowngradeTest.new();
 
       let txArguments = [9, 9, 1, 1]; //note: 1 is in range; 9 is not
 
@@ -345,7 +259,7 @@ contract("DowngradeTest", function(accounts) {
     );
     downgradeTest.deployedBytecode = undefined;
 
-    let deployedContract = await DowngradeTest.new();
+    let deployedContract = await abstractions.DowngradeTest.new();
     let address = deployedContract.address;
     let decoder = await Decoder.forContractInstance(deployedContract, {
       compilations: mangledCompilations
@@ -374,7 +288,7 @@ contract("DowngradeTest", function(accounts) {
     let mangledCompilations = clonedeep(compilations);
     mangledCompilations[0].unreliableSourceOrder = true;
 
-    let deployedContract = await DowngradeTest.new();
+    let deployedContract = await abstractions.DowngradeTest.new();
     let decoder = await Decoder.forContractInstance(deployedContract, {
       compilations: mangledCompilations
     });
@@ -393,6 +307,7 @@ contract("DowngradeTest", function(accounts) {
 
   it("Decodes return values even with no deployedBytecode", async function() {
     let mangledCompilations = clonedeep(compilations);
+    const { DowngradeTest } = abstractions;
     let downgradeTest = mangledCompilations[0].contracts.find(
       contract => contract.contractName === "DowngradeTest"
     );
@@ -436,11 +351,129 @@ contract("DowngradeTest", function(accounts) {
   });
 });
 
+//verify the decoding for run
+function verifyAbiDecoding(decoding, address) {
+  assert.strictEqual(decoding.decodingMode, "abi");
+  //we'll skip verifying the kind and name for once
+  assert.lengthOf(decoding.arguments, 4);
+  //we'll skip verifying the names as well
+
+  //first argument: {{x: 7, y: 5}, z: 3}
+  assert.strictEqual(decoding.arguments[0].value.type.typeClass, "tuple");
+  assert.deepEqual(
+    Codec.Format.Utils.Inspect.nativize(decoding.arguments[0].value),
+    [[7, 5], 3]
+  );
+  //second argument: No (i.e. 1)
+  assert.strictEqual(decoding.arguments[1].value.type.typeClass, "uint");
+  assert.strictEqual(decoding.arguments[1].value.type.bits, 8);
+  assert.deepEqual(
+    Codec.Format.Utils.Inspect.nativize(decoding.arguments[1].value),
+    1
+  );
+  //third argument: the contract (i.e. its address)
+  assert.strictEqual(decoding.arguments[2].value.type.typeClass, "address");
+  assert.strictEqual(decoding.arguments[2].value.type.kind, "general");
+  assert.deepEqual(
+    Codec.Format.Utils.Inspect.nativize(decoding.arguments[2].value),
+    address
+  );
+  //fourth argument: the same thing
+  assert.strictEqual(decoding.arguments[3].value.type.typeClass, "address");
+  assert.strictEqual(decoding.arguments[3].value.type.kind, "general");
+  assert.deepEqual(
+    Codec.Format.Utils.Inspect.nativize(decoding.arguments[3].value),
+    address
+  );
+}
+
+function verifyAbiFunctionDecoding(decoding, address) {
+  assert.strictEqual(decoding.decodingMode, "abi");
+  assert.strictEqual(decoding.kind, "event");
+  assert.strictEqual(decoding.abi.name, "CauseTrouble");
+  assert.lengthOf(decoding.arguments, 1);
+  assert.isUndefined(decoding.arguments[0].name);
+  assert.strictEqual(decoding.arguments[0].value.type.typeClass, "function");
+  assert.strictEqual(decoding.arguments[0].value.type.visibility, "external");
+  assert.strictEqual(decoding.arguments[0].value.type.kind, "general");
+  assert.strictEqual(decoding.arguments[0].value.kind, "value");
+  //NOTE: we only messed with the node, not the bytecode, so, even abified,
+  //external function decoding should still work properly!
+  assert.strictEqual(decoding.arguments[0].value.value.kind, "known");
+  assert.strictEqual(decoding.arguments[0].value.value.contract.kind, "known");
+  assert.strictEqual(
+    decoding.arguments[0].value.value.contract.class.typeName,
+    "DowngradeTest"
+  );
+  assert.strictEqual(
+    decoding.arguments[0].value.value.contract.address,
+    address
+  );
+  let selector = web3.eth.abi.encodeFunctionSignature("causeTrouble()");
+  assert.strictEqual(decoding.arguments[0].value.value.selector, selector);
+}
+
+async function runTestBody(
+  mangledCompilations,
+  skipFunctionTests = false,
+  fullMode = false
+) {
+  let decoder = await Decoder.forProject(web3.currentProvider, {
+    compilations: mangledCompilations
+  });
+  let deployedContract = await abstractions.DowngradeTest.new();
+  let address = deployedContract.address;
+
+  let result = await deployedContract.run([[7, 5], 3], 1, address, address);
+  let resultHash = result.tx;
+  let resultTx = await web3.eth.getTransaction(resultHash);
+  let resultLog = result.receipt.rawLogs[0];
+
+  let txDecoding = await decoder.decodeTransaction(resultTx);
+  let logDecodings = await decoder.decodeLog(resultLog);
+
+  if (fullMode) {
+    assert.strictEqual(txDecoding.decodingMode, "full");
+    txDecoding = decoder.abifyCalldataDecoding(txDecoding);
+  }
+  verifyAbiDecoding(txDecoding, address);
+
+  assert.lengthOf(logDecodings, 1);
+  let logDecoding = logDecodings[0];
+  if (fullMode) {
+    assert.strictEqual(logDecoding.decodingMode, "full");
+    logDecoding = decoder.abifyLogDecoding(logDecoding);
+  }
+  verifyAbiDecoding(logDecoding, address);
+
+  if (!skipFunctionTests) {
+    //huh -- I thought I'd eliminated that exception, but I'm
+    //still getting it.  weird.  well, whatever...
+    try {
+      await deployedContract.causeTrouble();
+    } catch (_) {
+      //do nothing, get the result a different way
+    }
+    //HACK
+    let fnEvents = await decoder.events();
+    assert.lengthOf(fnEvents, 1);
+    let fnDecodings = fnEvents[0].decodings;
+    assert.lengthOf(fnDecodings, 1);
+    let fnDecoding = fnDecodings[0];
+    if (fullMode) {
+      assert.strictEqual(fnDecoding.decodingMode, "full");
+      fnDecoding = decoder.abifyLogDecoding(fnDecoding);
+    }
+    verifyAbiFunctionDecoding(fnDecoding, address);
+  }
+}
+
+
 async function runEnumTestBody(mangledCompilations) {
   let decoder = await Decoder.forProject(web3.currentProvider, {
     compilations: mangledCompilations
   });
-  let deployedContract = await DowngradeTest.new();
+  let deployedContract = await abstractions.DowngradeTest.new();
 
   let txArguments = [9, 9, 1, 1]; //note: 1 is in range; 9 is not
   //the decoy reading swaps the first two arguments with the second two
