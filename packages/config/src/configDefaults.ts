@@ -53,7 +53,9 @@ export const getInitialConfig = ({
           remappings: []
         }
       },
-      vyper: {}
+      vyper: {
+        settings: {}
+      }
     },
     logger: console
   };

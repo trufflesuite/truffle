@@ -15,6 +15,7 @@
     "test": "mocha"
   },
   "dependencies": {
+    "@truffle/config": "^1.2.33",
     "@truffle/contract-schema": "^3.3.2",
     "@truffle/expect": "^0.0.15",
     "debug": "^4.1.0",
