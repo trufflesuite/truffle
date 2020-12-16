@@ -16,8 +16,6 @@ jobs:
   yarncheck:
     runs-on: ubuntu-latest
     steps:
-      - run: sudo apt-get update
-      - run: sudo apt-get upgrade libc6
       - uses: actions/checkout@v1
       - uses: actions/setup-node@v1
       - run: npm install -g yarn
@@ -34,8 +32,6 @@ jobs:
     runs-on: ${{ matrix.platform }}
 
     steps:
-    - run: sudo apt-get update
-    - run: sudo apt-get upgrade libc6
     - uses: actions/checkout@v1
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
