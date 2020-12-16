@@ -1,35 +1,32 @@
 const debug = require("debug")("decoder:test:decoding-test");
 const assert = require("assert");
+const Ganache = require("ganache-core");
+const path = require("path");
 
 const Decoder = require("../../..");
 const { nativizeDecoderVariables } = require("../../../dist/utils");
+const { prepareContracts } = require("../../helpers");
 
-const DecodingSample = artifacts.require("DecodingSample");
+describe("State variable decoding", function() {
 
-function validateStructS(struct, values) {
-  assert.equal(typeof struct, "object");
-  assert.equal(struct.structInt.toString(), values[0]);
-  assert.equal(struct.structString, values[1]);
-  assert.equal(struct.structBool, values[2]);
-  assert.equal(struct.structAddress, values[3]);
+  let provider;
+  let abstractions;
+  let compilations;
 
-  const s2 = struct.structS2;
-  validateStructS2(s2, values[4]);
-}
+  before("Create Provider", async function () {
+    provider = Ganache.provider({seed: "decoder", gasLimit: 7000000});
+  });
 
-function validateStructS2(s2, values) {
-  assert.equal(typeof s2, "object");
-  assert.equal(s2.structTwoFixedArrayUint[0].toString(), values[0]);
-  assert.equal(s2.structTwoFixedArrayUint[1].toString(), values[1]);
-  assert.equal(s2.structTwoDynamicArrayUint.length, values[2]);
-  for (let i = 0; i < values[2]; i++) {
-    assert.equal(s2.structTwoDynamicArrayUint[i].toString(), values[3 + i]);
-  }
-}
+  before("Prepare contracts and artifacts", async function () {
+    this.timeout(30000);
 
-contract("DecodingSample", _accounts => {
+    const prepared = await prepareContracts(provider, path.resolve(__dirname, ".."));
+    abstractions = prepared.abstractions;
+    compilations = prepared.compilations;
+  });
+
   it("should get the initial state properly", async function () {
-    let deployedContract = await DecodingSample.deployed();
+    let deployedContract = await abstractions.DecodingSample.deployed();
     let address = deployedContract.address;
     const decoder = await Decoder.forContractInstance(deployedContract);
 
@@ -145,6 +142,7 @@ contract("DecodingSample", _accounts => {
   });
 
   it("should spawn decoders based on address alone", async function () {
+    const { DecodingSample } = abstractions;
     const deployedContract = await DecodingSample.deployed();
     const address = deployedContract.address;
     const decoder = await Decoder.forAddress(
@@ -159,3 +157,24 @@ contract("DecodingSample", _accounts => {
     assert.equal(variables.varString, "two");
   });
 });
+
+function validateStructS(struct, values) {
+  assert.equal(typeof struct, "object");
+  assert.equal(struct.structInt.toString(), values[0]);
+  assert.equal(struct.structString, values[1]);
+  assert.equal(struct.structBool, values[2]);
+  assert.equal(struct.structAddress, values[3]);
+
+  const s2 = struct.structS2;
+  validateStructS2(s2, values[4]);
+}
+
+function validateStructS2(s2, values) {
+  assert.equal(typeof s2, "object");
+  assert.equal(s2.structTwoFixedArrayUint[0].toString(), values[0]);
+  assert.equal(s2.structTwoFixedArrayUint[1].toString(), values[1]);
+  assert.equal(s2.structTwoDynamicArrayUint.length, values[2]);
+  for (let i = 0; i < values[2]; i++) {
+    assert.equal(s2.structTwoDynamicArrayUint[i].toString(), values[3 + i]);
+  }
+}

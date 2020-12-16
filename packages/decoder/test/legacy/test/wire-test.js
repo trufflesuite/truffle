@@ -1,22 +1,46 @@
 const debug = require("debug")("decoder:test:wire-test");
 const assert = require("chai").assert;
+const Ganache = require("ganache-core");
+const path = require("path");
+const Web3 = require("web3");
 
 const Decoder = require("../../..");
 const Codec = require("@truffle/codec");
 
-const LegacyWireTest = artifacts.require("LegacyWireTest");
-const LegacyWireTestParent = artifacts.require("LegacyWireTestParent");
-const LegacyWireTestAbstract = artifacts.require("LegacyWireTestAbstract");
+const { prepareContracts } = require("../../helpers");
 
-contract("LegacyWireTest", function (_accounts) {
+describe("Over-the-wire decoding (legacy features)", function () {
+
+  let provider;
+  let abstractions;
+  let compilations;
+  let web3;
+
+  let Contracts;
+
+  before("Create Provider", async function () {
+    provider = Ganache.provider({seed: "decoder", gasLimit: 7000000});
+    web3 = new Web3(provider);
+  });
+
+  before("Prepare contracts and artifacts", async function () {
+    this.timeout(30000);
+
+    const prepared = await prepareContracts(provider, path.resolve(__dirname, ".."));
+    abstractions = prepared.abstractions;
+    compilations = prepared.compilations;
+
+    Contracts = [
+      abstractions.LegacyWireTest,
+      abstractions.LegacyWireTestParent,
+      abstractions.LegacyWireTestAbstract
+    ];
+  });
+
   it("should decode overridden events & events inherited from abstract contracts", async function () {
-    const deployedContract = await LegacyWireTest.new();
+    const deployedContract = await abstractions.LegacyWireTest.new();
 
-    const decoder = await Decoder.forProject(web3.currentProvider, [
-      LegacyWireTest,
-      LegacyWireTestParent,
-      LegacyWireTestAbstract
-    ]);
+    const decoder = await Decoder.forProject(web3.currentProvider, Contracts);
 
     const overrideTest = await deployedContract.interfaceAndOverrideTest();
 

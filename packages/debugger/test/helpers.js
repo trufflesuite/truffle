@@ -15,7 +15,7 @@ import flatten from "lodash.flatten";
 export async function prepareContracts(provider, sources = {}, migrations) {
   let config = await createSandbox();
 
-  let accounts = await getAccounts(provider);
+  const accounts = await new Web3(provider).eth.getAccounts();
 
   config.networks["debugger"] = {
     provider: provider,
@@ -56,16 +56,6 @@ export async function prepareContracts(provider, sources = {}, migrations) {
     compilations,
     config
   };
-}
-
-export function getAccounts(provider) {
-  let web3 = new Web3(provider);
-  return new Promise(function (accept, reject) {
-    web3.eth.getAccounts(function (err, accounts) {
-      if (err) return reject(err);
-      accept(accounts);
-    });
-  });
 }
 
 export async function createSandbox() {
