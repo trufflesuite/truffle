@@ -1,25 +1,49 @@
 const debug = require("debug")("decoder:test:receive-test");
 const assert = require("chai").assert;
+const Ganache = require("ganache-core");
+const path = require("path");
+const Web3 = require("web3");
 
 const Decoder = require("../../..");
 
-const ReceiveTest = artifacts.require("ReceiveTest");
-const FallbackTest = artifacts.require("FallbackTest");
+const { prepareContracts } = require("../../helpers");
 
-contract("ReceiveTest", function(accounts) {
+describe("Non-function transactions", function() {
+
+  let provider;
+  let abstractions;
+  let compilations;
+  let web3;
+
+  let Contracts;
+
+  before("Create Provider", async function () {
+    provider = Ganache.provider({seed: "decoder", gasLimit: 7000000});
+    web3 = new Web3(provider);
+  });
+
+  before("Prepare contracts and artifacts", async function () {
+    this.timeout(30000);
+
+    const prepared = await prepareContracts(provider, path.resolve(__dirname, ".."));
+    abstractions = prepared.abstractions;
+    compilations = prepared.compilations;
+
+    Contracts = [
+      abstractions.ReceiveTest,
+      abstractions.FallbackTest,
+    ];
+  });
+
   it("should decode transactions that invoke fallback or receive", async function() {
-    let receiveTest = await ReceiveTest.deployed();
-    let fallbackTest = await FallbackTest.deployed();
+    let receiveTest = await abstractions.ReceiveTest.deployed();
+    let fallbackTest = await abstractions.FallbackTest.deployed();
 
-    const decoder = await Decoder.forProject(web3.currentProvider, [
-      FallbackTest,
-      ReceiveTest
-    ]);
+    const decoder = await Decoder.forProject(web3.currentProvider, Contracts);
 
     let receiveHash = (await receiveTest.send(1)).tx;
     let fallbackNoDataHash = (await fallbackTest.send(1)).tx;
     let fallbackDataHash = (await receiveTest.sendTransaction({
-      from: accounts[0],
       to: receiveTest.address,
       data: "0xdeadbeef"
     })).tx;

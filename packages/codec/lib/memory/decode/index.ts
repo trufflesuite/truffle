@@ -11,7 +11,7 @@ import * as Pointer from "@truffle/codec/pointer";
 import { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
 import { isSkippedInMemoryStructs } from "@truffle/codec/memory/allocate";
-import { DecodingError } from "@truffle/codec/errors";
+import { handleDecodingError } from "@truffle/codec/errors";
 
 export function* decodeMemory(
   dataType: Format.Types.Type,
@@ -69,19 +69,14 @@ export function* decodeMemoryReferenceByAddress(
   try {
     rawValue = yield* read(pointer, state);
   } catch (error) {
-    return <Format.Errors.ErrorResult>{
-      //dunno why TS is failing here
-      type: dataType,
-      kind: "error" as const,
-      error: (<DecodingError>error).error
-    };
+    return handleDecodingError(dataType, error);
   }
 
   let startPositionAsBN = Conversion.toBN(rawValue);
   let startPosition: number;
   try {
     startPosition = startPositionAsBN.toNumber();
-  } catch (_) {
+  } catch {
     return <Format.Errors.ErrorResult>{
       //again with the TS failures...
       type: dataType,
@@ -114,17 +109,12 @@ export function* decodeMemoryReferenceByAddress(
           state
         );
       } catch (error) {
-        return <Format.Errors.ErrorResult>{
-          //dunno why TS is failing here
-          type: dataType,
-          kind: "error" as const,
-          error: (<DecodingError>error).error
-        };
+        return handleDecodingError(dataType, error);
       }
       lengthAsBN = Conversion.toBN(rawLength);
       try {
         length = lengthAsBN.toNumber();
-      } catch (_) {
+      } catch {
         return <
           | Format.Errors.BytesDynamicErrorResult
           | Format.Errors.StringErrorResult
@@ -171,11 +161,7 @@ export function* decodeMemoryReferenceByAddress(
             state
           );
         } catch (error) {
-          return {
-            type: dataType,
-            kind: "error" as const,
-            error: (<DecodingError>error).error
-          };
+          return handleDecodingError(dataType, error);
         }
         lengthAsBN = Conversion.toBN(rawLength);
         startPosition += Evm.Utils.WORD_SIZE; //increment startPosition
@@ -185,7 +171,7 @@ export function* decodeMemoryReferenceByAddress(
       }
       try {
         length = lengthAsBN.toNumber();
-      } catch (_) {
+      } catch {
         return {
           type: dataType,
           kind: "error" as const,

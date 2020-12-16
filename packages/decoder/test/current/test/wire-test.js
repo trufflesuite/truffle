@@ -1,36 +1,53 @@
 const debug = require("debug")("decoder:test:wire-test");
 const assert = require("chai").assert;
 const BN = require("bn.js");
+const Ganache = require("ganache-core");
+const path = require("path");
+const Web3 = require("web3");
 
 const Decoder = require("../../..");
 const Codec = require("@truffle/codec");
 
-const WireTest = artifacts.require("WireTest");
-const WireTestParent = artifacts.require("WireTestParent");
-const WireTestLibrary = artifacts.require("WireTestLibrary");
-const WireTestAbstract = artifacts.require("WireTestAbstract");
-const WireTestRedHerring = artifacts.require("WireTestRedHerring");
+const { prepareContracts } = require("../../helpers");
 
-const Contracts = [
-  WireTest,
-  WireTestParent,
-  WireTestLibrary,
-  WireTestAbstract,
-  WireTestRedHerring
-];
-const compilations = Codec.Compilations.Utils.shimArtifacts(Contracts);
+describe("Over-the-wire decoding", function () {
 
-contract("WireTest", function (_accounts) {
+  let provider;
+  let abstractions;
+  let compilations;
+  let web3;
+
+  let Contracts;
+
+  before("Create Provider", async function () {
+    provider = Ganache.provider({seed: "decoder", gasLimit: 7000000});
+    web3 = new Web3(provider);
+  });
+
+  before("Prepare contracts and artifacts", async function () {
+    this.timeout(30000);
+
+    const prepared = await prepareContracts(provider, path.resolve(__dirname, ".."));
+    abstractions = prepared.abstractions;
+    compilations = prepared.compilations;
+
+    Contracts = [
+      abstractions.WireTest,
+      abstractions.WireTestParent,
+      abstractions.WireTestLibrary,
+      abstractions.WireTestAbstract,
+      abstractions.WireTestRedHerring
+    ];
+  });
+
   it("should correctly decode transactions and events", async function () {
-    let deployedContract = await WireTest.new(true, "0xdeadbeef", 2);
+    let deployedContract = await abstractions.WireTest.new(true, "0xdeadbeef", 2);
     let address = deployedContract.address;
     let constructorHash = deployedContract.transactionHash;
 
-    const decoder = await Decoder.forProject(web3.currentProvider, {
-      compilations
-    });
+    const decoder = await Decoder.forProject(web3.currentProvider, Contracts);
 
-    let deployedContractNoConstructor = await WireTestParent.new();
+    let deployedContractNoConstructor = await abstractions.WireTestParent.new();
     let defaultConstructorHash = deployedContractNoConstructor.transactionHash;
 
     let emitStuffArgs = [
@@ -492,11 +509,9 @@ contract("WireTest", function (_accounts) {
   });
 
   it("disambiguates events when possible and not when impossible", async function () {
-    let deployedContract = await WireTest.deployed();
+    let deployedContract = await abstractions.WireTest.deployed();
 
-    const decoder = await Decoder.forProject(web3.currentProvider, {
-      compilations
-    });
+    const decoder = await Decoder.forProject(web3.currentProvider, Contracts);
 
     //HACK HACK -- we're going to repeatedly apply the hack from above
     //because ethers also can't handle ambiguous events
@@ -634,11 +649,9 @@ contract("WireTest", function (_accounts) {
   });
 
   it("Handles anonymous events", async function () {
-    let deployedContract = await WireTest.deployed();
+    let deployedContract = await abstractions.WireTest.deployed();
 
-    const decoder = await Decoder.forProject(web3.currentProvider, {
-      compilations
-    });
+    const decoder = await Decoder.forProject(web3.currentProvider, Contracts);
 
     //thankfully, ethers ignores anonymous events,
     //so we don't need to use that hack here
@@ -785,9 +798,9 @@ contract("WireTest", function (_accounts) {
     const deployedContract = await WireTest.deployed();
     const delegate = await WireTestRedHerring.deployed();
 
-    const decoder = await Decoder.forProject(web3.currentProvider, {
-      compilations
-    });
+    const decoder = await Decoder.forProject(web3.currentProvider,
+      Contracts
+    );
 
     const extrasTestNone = await deployedContract.extrasTestNone(
       delegate.address
@@ -853,13 +866,75 @@ contract("WireTest", function (_accounts) {
     testSomeWithoutExtras(someDecodingsMaybe); //there are no ordinary interpretations, so no extras
   });
 
+  it("Decodes return values", async function () {
+    const { WireTest } = abstractions;
+    let deployedContract = await WireTest.deployed();
+
+    const decoder = await Decoder.forContract(WireTest, Contracts);
+
+    let abiEntry = WireTest.abi.find(
+      ({ type, name }) => type === "function" && name === "returnsStuff"
+    );
+    let selector = web3.eth.abi.encodeFunctionSignature(abiEntry);
+
+    //we need the raw return data, and contract.call() does not exist yet,
+    //so we're going to have to use web3.eth.call()
+
+    let data = await web3.eth.call({
+      to: deployedContract.address,
+      data: selector
+    });
+
+    let decodings = await decoder.decodeReturnValue(abiEntry, data);
+    assert.lengthOf(decodings, 1);
+    let decoding = decodings[0];
+    assert.strictEqual(decoding.kind, "return");
+    assert.strictEqual(decoding.decodingMode, "full");
+    assert.lengthOf(decoding.arguments, 2);
+    assert.deepEqual(
+      Codec.Format.Utils.Inspect.nativize(decoding.arguments[0].value),
+      {
+        x: -1,
+        y: "0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+        z: "0xdeadbeef"
+      }
+    );
+    assert.strictEqual(
+      Codec.Format.Utils.Inspect.nativize(decoding.arguments[1].value),
+      "WireTest.Ternary.No"
+    );
+
+    //now: let's try decoding a self-destruct :D
+    let sdAbiEntry = WireTest.abi.find(
+      ({ type, name }) => type === "function" && name === "boom"
+    );
+    let sdSelector = web3.eth.abi.encodeFunctionSignature(sdAbiEntry);
+
+    //we need the raw return data, and contract.call() does not exist yet,
+    //so we're going to have to use web3.eth.call()
+
+    let sdData = await web3.eth.call({
+      to: deployedContract.address,
+      data: sdSelector
+    });
+
+    let sdDecodings = await decoder.decodeReturnValue(sdAbiEntry, sdData, {
+      status: true
+    });
+
+    assert.lengthOf(sdDecodings, 1);
+    assert.strictEqual(sdDecodings[0].kind, "selfdestruct");
+    assert.strictEqual(sdDecodings[0].decodingMode, "full");
+  });
+
   it("Decodes return values when given superclass", async function () {
+    const { WireTest, WireTestParent, WireTestAbstract } = abstractions;
     const deployedContract = await WireTest.deployed();
 
     let decoder = await Decoder.forContractAt(
       WireTestParent,
       deployedContract.address,
-      { compilations }
+      Contracts
     );
 
     let abiEntry = WireTestParent.abi.find(
@@ -890,7 +965,7 @@ contract("WireTest", function (_accounts) {
     decoder = await Decoder.forContractAt(
       WireTestAbstract,
       deployedContract.address,
-      { compilations }
+      Contracts
     );
 
     abiEntry = WireTestAbstract.abi.find(

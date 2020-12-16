@@ -35,7 +35,7 @@ import {
 } from "./errors";
 //sorry for the untyped imports, but...
 const { Shims } = require("@truffle/compile-common");
-const SolidityUtils = require("@truffle/solidity-utils");
+const SourceMapUtils = require("@truffle/source-map-utils");
 
 /**
  * The WireDecoder class.  Decodes transactions and logs.  See below for a method listing.
@@ -187,8 +187,8 @@ export class WireDecoder {
           continue; //remember, sources could be empty if shimmed!
         }
         const { ast, compiler, language } = source;
-        if (language === "solidity" && ast) {
-          //don't check Yul sources!
+        if (language === "Solidity" && ast) {
+          //don't check Yul or Vyper sources!
           for (const node of ast.nodes) {
             if (
               node.nodeType === "StructDefinition" ||
@@ -1214,19 +1214,19 @@ export class ContractInstanceDecoder {
       let asts: Ast.AstNode[] = this.compilation.sources.map(source =>
         source ? source.ast : undefined
       );
-      let instructions = SolidityUtils.getProcessedInstructionsForBinary(
+      let instructions = SourceMapUtils.getProcessedInstructionsForBinary(
         this.compilation.sources.map(source =>
           source ? source.source : undefined
         ),
         this.contractCode,
-        SolidityUtils.getHumanReadableSourceMap(this.contract.deployedSourceMap)
+        SourceMapUtils.getHumanReadableSourceMap(this.contract.deployedSourceMap)
       );
       try {
         //this can fail if some of the source files are missing :(
-        this.internalFunctionsTable = SolidityUtils.getFunctionsByProgramCounter(
+        this.internalFunctionsTable = SourceMapUtils.getFunctionsByProgramCounter(
           instructions,
           asts,
-          asts.map(SolidityUtils.makeOverlapFunction),
+          asts.map(SourceMapUtils.makeOverlapFunction),
           this.compilation.id
         );
       } catch (_) {

@@ -1,35 +1,51 @@
+const debug = require("debug")("compile-vyper");
 const path = require("path");
 const exec = require("child_process").exec;
 const fs = require("fs");
 const colors = require("colors");
 const minimatch = require("minimatch");
+const semver = require("semver");
 
 const findContracts = require("@truffle/contract-sources");
-const Profiler = require("@truffle/compile-solidity/profiler");
+const Common = require("@truffle/compile-common");
 
-const compiler = {
-  name: "vyper",
-  version: null
-};
+const { compileAllJson } = require("./vyper-json");
 
-const VYPER_PATTERN = "**/*.{vy,v.py,vyper.py}";
+const VYPER_PATTERN = "**/*.{vy,v.py,vyper.py,json}"; //include JSON for interfaces
 
-// Check that vyper is available, save its version
+// Check that vyper is available, return its version
 function checkVyper() {
   return new Promise((resolve, reject) => {
-    exec("vyper --version", function (err, stdout, stderr) {
+    exec("vyper-json --version", function (err, stdout, _stderr) {
       if (err) {
-        return reject(`${colors.red("Error executing vyper:")}\n${stderr}`);
+        exec("vyper --version", function (err, stdout, stderr) {
+          if (err) {
+            return reject(`${colors.red("Error executing vyper:")}\n${stderr}`);
+          }
+          const version = stdout.trim();
+          resolve({ version, json: false });
+        });
+      } else {
+        const version = stdout.trim();
+        resolve({ version, json: true });
       }
-      compiler.version = stdout.trim();
-      resolve();
     });
   });
 }
 
 // Execute vyper for single source file
-function execVyper(options, sourcePath, callback) {
+function execVyper(options, sourcePath, version, callback) {
   const formats = ["abi", "bytecode", "bytecode_runtime", "source_map"];
+  if (
+    semver.satisfies(version, ">=0.1.0-beta.7", {
+      loose: true,
+      includePrerelase: true
+    })
+  ) {
+    //Vyper chokes on unknown formats, so only include this for
+    //ones that support it (they were introduced in 0.1.0b7)
+    formats.push("source_map");
+  }
   let evmVersionOption = "";
   if (
     options.compilers.vyper.settings &&
@@ -76,31 +92,34 @@ function readSource(sourcePath) {
  * aggregate source information based on compiled output;
  * this can include sources that are not contracts
  */
-function processAllSources(sources) {
-  if (!sources.length) return [];
-
-  return sources.map(sourcePath => {
-    let source = {
-      sourcePath: sourcePath,
-      contents: readSource(sourcePath),
-      language: "vyper"
-    };
-
-    return source;
-  });
-}
 
 // compile all sources
-async function compileAll({ sources, options }) {
+async function compileAll({ sources, options, version, useJson }) {
   options.logger = options.logger || console;
-
   Compile.display(sources, options);
+  if (useJson) {
+    return compileAllJson({ sources, options, version });
+  } else {
+    return await compileAllNoJson({ sources, options, version });
+  }
+}
 
+async function compileAllNoJson({ sources, options, version }) {
+  const compiler = { name: "vyper", version };
   const promises = [];
-  sources.forEach(sourcePath => {
+  const properSources = sources.filter(source => !source.endsWith(".json")); //filter out JSON interfaces
+  const targets = options.compilationTargets
+    ? properSources.filter(sourcePath =>
+        options.compilationTargets.includes(sourcePath)
+      )
+    : properSources;
+  targets.forEach(sourcePath => {
     promises.push(
       new Promise((resolve, reject) => {
-        execVyper(options, sourcePath, function (error, compiledContract) {
+        execVyper(options, sourcePath, version, function (
+          error,
+          compiledContract
+        ) {
           if (error) return reject(error);
 
           // remove first extension from filename
@@ -119,31 +138,40 @@ async function compileAll({ sources, options }) {
             contractName: contractName,
             sourcePath: sourcePath,
             source: sourceContents,
-            abi: compiledContract.abi,
-            bytecode: compiledContract.bytecode,
-            deployedBytecode: compiledContract.bytecode_runtime,
-            deployedSourceMap: compiledContract.source_map, //there is no constructor source map
+            abi: JSON.parse(compiledContract.abi),
+            bytecode: {
+              bytes: compiledContract.bytecode,
+              linkReferences: [] //no libraries in Vyper
+            },
+            deployedBytecode: {
+              bytes: compiledContract.bytecode_runtime,
+              linkReferences: [] //no libraries in Vyper
+            },
+            deployedSourceMap: JSON.parse(compiledContract.source_map), //there is no constructor source map
             compiler
           };
 
-          resolve(contractDefinition);
+          const compilation = {
+            sources: [
+              {
+                sourcePath,
+                contents: sourceContents,
+                language: "Vyper"
+              }
+            ],
+            contracts: [contractDefinition],
+            compiler,
+            sourceIndexes: [sourcePath]
+          };
+
+          resolve(compilation);
         });
       })
     );
   });
-  const contracts = await Promise.all(promises);
+  const compilations = await Promise.all(promises);
 
-  const compilerInfo = { name: "vyper", version: compiler.version };
-  return {
-    compilations: [
-      {
-        sources: processAllSources(sources),
-        compiler: compilerInfo,
-        contracts,
-        sourceIndexes: sources
-      }
-    ]
-  };
+  return { compilations };
 }
 
 const Compile = {
@@ -157,18 +185,20 @@ const Compile = {
       return { compilations: [] };
     }
 
-    await checkVyper();
+    const { version, json } = await checkVyper();
     return await compileAll({
       sources: vyperFiles,
-      options
+      options,
+      version,
+      useJson: json
     });
   },
 
-  async sourcesWithDependencies({ paths = [], options }) {
-    return await Compile.sources({
-      sources: paths,
-      options
-    });
+  //since we don't have an imports analyzer for Vyper
+  //yet, we'll just treat this the same as all; this will
+  //need to be revisited once we have an import parser for Vyper
+  async sourcesWithDependencies({ paths: _paths = [], options }) {
+    return await Compile.all({ options });
   },
 
   // contracts_directory: String. Directory where contract files can be found.
@@ -179,7 +209,9 @@ const Compile = {
       options.contracts_directory,
       VYPER_PATTERN
     );
+    debug("fileSearchPattern: %O", fileSearchPattern);
     const files = await findContracts(fileSearchPattern);
+    debug("files: %O", files);
 
     return await Compile.sources({
       sources: files,
@@ -194,38 +226,48 @@ const Compile = {
   // strict: Boolean. Return compiler warnings as errors. Defaults to false.
   async necessary(options) {
     options.logger = options.logger || console;
-    const updated = await Profiler.updated(options);
 
-    if (updated.length === 0 && options.quiet !== true) {
+    const fileSearchPattern = path.join(
+      options.contracts_directory,
+      VYPER_PATTERN
+    );
+    const files = await findContracts(fileSearchPattern);
+
+    const profiler = await new Common.Profiler({});
+    const updated = await profiler.updated(options);
+    if (updated.length === 0) {
       return { compilations: [] };
     }
-
-    // filter out only Vyper files
+    // select only Vyper files
     const updatedVyperPaths = updated.filter(path => {
       return path.match(/\.vy$|\.v.py$|\.vyper.py$/);
     });
     return await Compile.sources({
-      sources: updatedVyperPaths,
-      options
+      sources: files,
+      options: options.with({
+        compilationTargets: updatedVyperPaths
+      })
     });
   },
 
   async display(paths, options) {
-    if (!Array.isArray(paths)) {
-      paths = Object.keys(paths);
-    }
-
-    const sourceFileNames = paths.sort().map(contract => {
-      if (path.isAbsolute(contract)) {
-        return `.${path.sep}${path.relative(
-          options.working_directory,
-          contract
-        )}`;
+    if (options.quiet !== true) {
+      if (!Array.isArray(paths)) {
+        paths = Object.keys(paths);
       }
 
-      return contract;
-    });
-    options.events.emit("compile:sourcesToCompile", { sourceFileNames });
+      const sourceFileNames = paths.sort().map(contract => {
+        if (path.isAbsolute(contract)) {
+          return `.${path.sep}${path.relative(
+            options.working_directory,
+            contract
+          )}`;
+        }
+
+        return contract;
+      });
+      options.events.emit("compile:sourcesToCompile", { sourceFileNames });
+    }
   }
 };
 

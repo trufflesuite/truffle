@@ -8,7 +8,7 @@ import {
   GeneratedSources
 } from "@truffle/contract-schema/spec";
 import * as Common from "@truffle/compile-common";
-import {Compilation, Contract, Source} from "./types";
+import { Compilation, Contract, Source, VyperSourceMap } from "./types";
 
 export function shimCompilations(
   inputCompilations: Common.Compilation[],
@@ -30,7 +30,8 @@ export function shimCompilation(
     ...shimContracts(inputCompilation.contracts, {
       files: inputCompilation.sourceIndexes,
       sources: inputCompilation.sources,
-      shimmedCompilationId
+      shimmedCompilationId,
+      compiler: inputCompilation.compiler
     }),
     compiler: inputCompilation.compiler
   };
@@ -46,13 +47,14 @@ export function shimArtifacts(
   files?: string[],
   shimmedCompilationId = "shimmedcompilation"
 ): Compilation[] {
-  return [shimContracts(artifacts, {files, shimmedCompilationId})];
+  return [shimContracts(artifacts, { files, shimmedCompilationId })];
 }
 
 interface CompilationOptions {
   files?: string[];
   sources?: Common.Source[];
   shimmedCompilationId?: string;
+  compiler?: Compiler.CompilerVersion;
 }
 
 /**
@@ -60,14 +62,14 @@ interface CompilationOptions {
  * to a compilation.  usually used via one of the above functions.
  * Note: if you pass in options.sources, options.files will be ignored.
  * Note: if you pass in options.sources, sources will not have
- * compiler set, so you should set that up separately, as in
- * shimCompilation().
+ * compiler set unless you also pass in options.compiler; in this case
+ * you should set that up separately, as in shimCompilation().
  */
 export function shimContracts(
   artifacts: (Artifact | Common.CompiledContract)[],
   options: CompilationOptions = {}
 ): Compilation {
-  const {files, sources: inputSources} = options;
+  const { files, sources: inputSources } = options;
   const shimmedCompilationId =
     options.shimmedCompilationId || "shimmedcompilation";
   let contracts: Contract[] = [];
@@ -120,7 +122,7 @@ export function shimContracts(
       source,
       ast: <Ast.AstNode>ast,
       compiler,
-      language: inferLanguage(<Ast.AstNode>ast)
+      language: inferLanguage(<Ast.AstNode>ast, compiler)
     };
     //ast needs to be coerced because schema doesn't quite match our types here...
 
@@ -139,8 +141,16 @@ export function shimContracts(
       contractObject.primarySourceId = index.toString(); //HACK
     } else {
       //if neither was passed, attempt to determine it from the ast
-      let index = sourceIndexForAst(sourceObject.ast); //sourceObject.ast for typing reasons
-      ({index, unreliableSourceOrder} = getIndexToAddAt(
+      let index;
+      if (sourceObject.ast) {
+        //note: this works for both Solidity and Vyper
+        index = sourceIndexForAst(sourceObject.ast); //sourceObject.ast for typing reasons
+      } else if (compiler && compiler.name === "vyper") {
+        index = 0; //if it's Vyper but there's no AST, we can
+        //assume that it was compiled alone and therefore has index 0
+      }
+      //else leave undefined for now
+      ({ index, unreliableSourceOrder } = getIndexToAddAt(
         sourceObject,
         index,
         sources,
@@ -157,26 +167,11 @@ export function shimContracts(
     contracts.push(contractObject);
   }
 
-  if (inputSources) {
-    //if input sources was passed, set up the sources object directly :)
-    sources = inputSources.map(
-      ({sourcePath, contents: source, ast, language}, index) => ({
-        sourcePath,
-        source,
-        ast: <Ast.AstNode>ast,
-        language,
-        id: index.toString() //HACK
-        //we'll omit compiler, as if inputSources was passed, presumably
-        //we're using shimCompilation(), which sets that up separately
-      })
-    );
-  }
-
   //now: check for id overlap with internal sources
   //(don't bother if inputSources or files was passed)
   if (!inputSources && !files) {
     for (let contract of contracts) {
-      const {generatedSources, deployedGeneratedSources} = contract;
+      const { generatedSources, deployedGeneratedSources } = contract;
       for (let index in generatedSources) {
         if (index in sources) {
           unreliableSourceOrder = true;
@@ -191,10 +186,26 @@ export function shimContracts(
   }
 
   let compiler: Compiler.CompilerVersion;
-  if (!unreliableSourceOrder && contracts.length > 0) {
+  if (options.compiler) {
+    compiler = options.compiler;
+  } else if (!unreliableSourceOrder && contracts.length > 0) {
     //if things were actually compiled together, we should just be able
     //to pick an arbitrary one
     compiler = contracts[0].compiler;
+  }
+
+  //if input sources was passed, set up the sources object directly :)
+  if (inputSources) {
+    sources = inputSources.map(
+      ({ sourcePath, contents: source, ast, language }, index) => ({
+        sourcePath,
+        source,
+        ast: <Ast.AstNode>ast,
+        language,
+        id: index.toString(), //HACK
+        compiler //redundant but let's include it
+      })
+    );
   }
 
   return {
@@ -206,6 +217,7 @@ export function shimContracts(
   };
 }
 
+//note: this works for Vyper too!
 function sourceIndexForAst(ast: Ast.AstNode): number | undefined {
   if (!ast) {
     return undefined;
@@ -225,7 +237,7 @@ export function getContractNode(
     deployedSourceMap,
     primarySourceId
   } = contract;
-  const {unreliableSourceOrder, sources} = compilation;
+  const { unreliableSourceOrder, sources } = compilation;
 
   let sourcesToCheck: Source[];
 
@@ -237,7 +249,8 @@ export function getContractNode(
       sources.find(source => source && source.id === primarySourceId)
     ];
   } else if (!unreliableSourceOrder && (deployedSourceMap || sourceMap)) {
-    let sourceId = extractPrimarySource(deployedSourceMap || sourceMap);
+    const sourceMapString = simpleShimSourceMap(deployedSourceMap || sourceMap);
+    let sourceId = extractPrimarySource(sourceMapString);
     sourcesToCheck = [sources[sourceId]];
   } else {
     //WARNING: if we end up in this case, we could get the wrong contract!
@@ -249,8 +262,8 @@ export function getContractNode(
     if (foundNode || !source) {
       return foundNode;
     }
-    if (!source.ast || source.language !== "solidity") {
-      //don't search Yul sources!
+    if (!source.ast || source.language !== "Solidity") {
+      //ignore non-Solidity ASTs for now, we don't support them yet
       return undefined;
     }
     return source.ast.nodes.find(
@@ -264,10 +277,13 @@ export function getContractNode(
  * extract the primary source from a source map
  * (i.e., the source for the first instruction, found
  * between the second and third colons)
- * (this is something of a HACK)
- * NOTE: duplicated from debugger, sorry
  */
-function extractPrimarySource(sourceMap: string): number {
+function extractPrimarySource(sourceMap: string | undefined): number {
+  if (!sourceMap) {
+    //HACK?
+    return 0; //in this case (e.g. a Vyper contract with an old-style
+    //source map) we infer that it was compiled by itself
+  }
   return parseInt(sourceMap.match(/^[^:]+:[^:]+:([^:]+):/)[1]);
 }
 
@@ -311,15 +327,29 @@ function isGeneratedSources(
 }
 
 //HACK, maybe?
-function inferLanguage(ast: Ast.AstNode | undefined): string | undefined {
-  if (!ast || typeof ast.nodeType !== "string") {
-    return undefined;
-  } else if (ast.nodeType === "SourceUnit") {
-    return "solidity";
-  } else if (ast.nodeType.startsWith("Yul")) {
-    //Every Yul source I've seen has YulBlock as the root, but
-    //I'm not sure that that's *always* the case
-    return "yul";
+function inferLanguage(
+  ast: Ast.AstNode | undefined,
+  compiler: Compiler.CompilerVersion
+): string | undefined {
+  if (ast) {
+    if (ast.nodeType === "SourceUnit") {
+      return "Solidity";
+    } else if (ast.nodeType && ast.nodeType.startsWith("Yul")) {
+      //Every Yul source I've seen has YulBlock as the root, but
+      //I'm not sure that that's *always* the case
+      return "Yul";
+    } else if (ast.ast_type === "Module") {
+      return "Vyper";
+    }
+  } else if (compiler) {
+    if (compiler.name === "vyper") {
+      return "Vyper";
+    } else if (compiler.name === "solc") {
+      //if it's solc but no AST, just assume it's Solidity
+      return "Solidity";
+    } else {
+      return undefined;
+    }
   } else {
     return undefined;
   }
@@ -330,7 +360,7 @@ function getIndexToAddAt(
   index: number,
   sources: Source[],
   unreliableSourceOrder: boolean
-): {index: number | null; unreliableSourceOrder: boolean} {
+): { index: number | null; unreliableSourceOrder: boolean } {
   //first: is this already there? only add it if it's not.
   //(we determine this by sourcePath if present, and the actual source
   //contents if not)
@@ -373,5 +403,26 @@ function getIndexToAddAt(
       index: null,
       unreliableSourceOrder
     };
+  }
+}
+
+/**
+ * convert Vyper source maps to solidity ones
+ * (note we won't bother handling the case where the compressed
+ * version doesn't exist; that will have to wait for a later version)
+ */
+export function simpleShimSourceMap(
+  sourceMap: string | VyperSourceMap
+): string {
+  if (sourceMap === undefined) {
+    return undefined; //undefined case
+  } else if (typeof sourceMap === "object") {
+    return sourceMap.pc_pos_map_compressed; //Vyper object case
+  } else {
+    try {
+      return JSON.parse(sourceMap).pc_pos_map_compressed; //Vyper JSON case
+    } catch (_) {
+      return sourceMap; //Solidity case
+    }
   }
 }

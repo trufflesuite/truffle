@@ -1,0 +1,9 @@
+[
+  {
+    "type": "function",
+    "name": "test",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  }
+]

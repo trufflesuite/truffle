@@ -102,11 +102,11 @@ export interface Contract {
   /**
    * The contract's constructor source map.
    */
-  sourceMap?: string;
+  sourceMap?: string | VyperSourceMap;
   /**
    * The contract's deployed source map.
    */
-  deployedSourceMap?: string;
+  deployedSourceMap?: string | VyperSourceMap;
   /**
    * The contract's ABI.
    */
@@ -136,4 +136,16 @@ export interface Contract {
    * Note that this will be a sparse array.
    */
   deployedGeneratedSources?: Source[];
+}
+
+export interface VyperSourceMap {
+  //breakpoints field is omitted because I don't understand it
+  //pc_breakpoints field is omitted because I don't understand it
+  pc_jump_map: {
+    [pc: number]: "-" | "i" | "o";
+  };
+  pc_pos_map: {
+    [pc: number]: [number, number, number, number];
+  };
+  pc_pos_map_compressed?: string;
 }

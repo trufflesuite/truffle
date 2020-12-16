@@ -76,6 +76,71 @@ const truffleColors = {
 
 const DEFAULT_TAB_WIDTH = 8;
 
+const trufflePalette = {
+  /* base (chromafi special, not hljs) */
+  "base": chalk,
+  "lineNumbers": chalk,
+  "trailingSpace": chalk,
+  /* classes hljs-solidity actually uses */
+  "keyword": truffleColors.mint,
+  "number": truffleColors.red,
+  "string": truffleColors.green,
+  "params": truffleColors.pink,
+  "builtIn": truffleColors.watermelon,
+  "built_in": truffleColors.watermelon, //just to be sure
+  "literal": truffleColors.watermelon,
+  "function": truffleColors.orange,
+  "title": truffleColors.orange,
+  "class": truffleColors.orange,
+  "comment": truffleColors.comment,
+  "doctag": truffleColors.comment,
+  /* classes it might soon use! */
+  "meta": truffleColors.pink,
+  "metaString": truffleColors.green,
+  "meta-string": truffleColors.green, //similar
+  /* classes it doesn't currently use but notionally could */
+  "type": truffleColors.orange,
+  "symbol": truffleColors.orange,
+  "metaKeyword": truffleColors.mint,
+  "meta-keyword": truffleColors.mint, //again, to be sure
+  /* classes that don't make sense for Solidity */
+  "regexp": chalk, //solidity does not have regexps
+  "subst": chalk, //or string interpolation
+  "name": chalk, //or s-expressions
+  "builtInName": chalk, //or s-expressions, again
+  "builtin-name": chalk, //just to be sure
+  /* classes for config, markup, CSS, templates, diffs (not programming) */
+  "section": chalk,
+  "tag": chalk,
+  "attr": chalk,
+  "attribute": chalk,
+  "variable": chalk,
+  "bullet": chalk,
+  "code": chalk,
+  "emphasis": chalk,
+  "strong": chalk,
+  "formula": chalk,
+  "link": chalk,
+  "quote": chalk,
+  "selectorAttr": chalk, //lotta redundancy follows
+  "selector-attr": chalk,
+  "selectorClass": chalk,
+  "selector-class": chalk,
+  "selectorId": chalk,
+  "selector-id": chalk,
+  "selectorPseudo": chalk,
+  "selector-pseudo": chalk,
+  "selectorTag": chalk,
+  "selector-tag": chalk,
+  "templateTag": chalk,
+  "template-tag": chalk,
+  "templateVariable": chalk,
+  "template-variable": chalk,
+  "addition": chalk,
+  "deletion": chalk
+};
+
+
 var DebugUtils = {
   truffleColors, //make these externally available
 
@@ -640,74 +705,7 @@ var DebugUtils = {
     return indented.join(OS.EOL);
   },
 
-  colorize: function (code, language = "solidity") {
-    //I'd put these outside the function
-    //but then it gives me errors, because
-    //you can't just define self-referential objects like that...
-
-    const trufflePalette = {
-      /* base (chromafi special, not hljs) */
-      "base": chalk,
-      "lineNumbers": chalk,
-      "trailingSpace": chalk,
-      /* classes hljs-solidity actually uses */
-      "keyword": truffleColors.mint,
-      "number": truffleColors.red,
-      "string": truffleColors.green,
-      "params": truffleColors.pink,
-      "builtIn": truffleColors.watermelon,
-      "built_in": truffleColors.watermelon, //just to be sure
-      "literal": truffleColors.watermelon,
-      "function": truffleColors.orange,
-      "title": truffleColors.orange,
-      "class": truffleColors.orange,
-      "comment": truffleColors.comment,
-      "doctag": truffleColors.comment,
-      /* classes it might soon use! */
-      "meta": truffleColors.pink,
-      "metaString": truffleColors.green,
-      "meta-string": truffleColors.green, //similar
-      /* classes it doesn't currently use but notionally could */
-      "type": truffleColors.orange,
-      "symbol": truffleColors.orange,
-      "metaKeyword": truffleColors.mint,
-      "meta-keyword": truffleColors.mint, //again, to be sure
-      /* classes that don't make sense for Solidity */
-      "regexp": chalk, //solidity does not have regexps
-      "subst": chalk, //or string interpolation
-      "name": chalk, //or s-expressions
-      "builtInName": chalk, //or s-expressions, again
-      "builtin-name": chalk, //just to be sure
-      /* classes for config, markup, CSS, templates, diffs (not programming) */
-      "section": chalk,
-      "tag": chalk,
-      "attr": chalk,
-      "attribute": chalk,
-      "variable": chalk,
-      "bullet": chalk,
-      "code": chalk,
-      "emphasis": chalk,
-      "strong": chalk,
-      "formula": chalk,
-      "link": chalk,
-      "quote": chalk,
-      "selectorAttr": chalk, //lotta redundancy follows
-      "selector-attr": chalk,
-      "selectorClass": chalk,
-      "selector-class": chalk,
-      "selectorId": chalk,
-      "selector-id": chalk,
-      "selectorPseudo": chalk,
-      "selector-pseudo": chalk,
-      "selectorTag": chalk,
-      "selector-tag": chalk,
-      "templateTag": chalk,
-      "template-tag": chalk,
-      "templateVariable": chalk,
-      "template-variable": chalk,
-      "addition": chalk,
-      "deletion": chalk
-    };
+  colorize: function (code, language = "Solidity") {
 
     const options = {
       lang: "solidity",
@@ -723,21 +721,24 @@ var DebugUtils = {
       //NOTE: you might think you should pass highlight: true,
       //but you'd be wrong!  I don't understand this either
     };
-    if (language === "solidity") {
-      //normal case: solidity
-      return chromafi(code, options);
-    } else if (language === "yul") {
-      //HACK: stick the code in an assembly block since we don't
-      //have a separate Yul language for HLJS at the moment,
-      //colorize it there, then extract it after colorization
-      const wrappedCode = "assembly {\n" + code + "\n}";
-      const colorizedWrapped = chromafi(wrappedCode, options);
-      const firstNewLine = colorizedWrapped.indexOf("\n");
-      const lastNewLine = colorizedWrapped.lastIndexOf("\n");
-      return colorizedWrapped.slice(firstNewLine + 1, lastNewLine);
-    } else {
-      //otherwise, don't highlight
-      return code;
+    switch (language) {
+      case "Solidity":
+        return chromafi(code, options);
+      case "Yul":
+        //HACK: stick the code in an assembly block since we don't
+        //have a separate Yul language for HLJS at the moment,
+        //colorize it there, then extract it after colorization
+        const wrappedCode = "assembly {\n" + code + "\n}";
+        const colorizedWrapped = chromafi(wrappedCode, options);
+        const firstNewLine = colorizedWrapped.indexOf("\n");
+        const lastNewLine = colorizedWrapped.lastIndexOf("\n");
+        return colorizedWrapped.slice(firstNewLine + 1, lastNewLine);
+      case "Vyper":
+        options.lang = "python"; //HACK -- close enough for now!
+        return chromafi(code, options);
+      default:
+        //don't highlight
+        return code;
     }
   },
 

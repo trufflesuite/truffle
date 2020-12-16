@@ -99,8 +99,9 @@ function* stepNext() {
       (!allowInternal &&
         upcoming.source.internal &&
         !starting.source.internal) ||
-      !upcoming.node ||
-      isDeliberatelySkippedNodeType(upcoming.node) ||
+      upcoming.sourceRange.length === 0 ||
+      upcoming.source.id === undefined ||
+      (upcoming.node && isDeliberatelySkippedNodeType(upcoming.node)) ||
       (upcoming.sourceRange.start === starting.sourceRange.start &&
         upcoming.sourceRange.length === starting.sourceRange.length &&
         upcoming.source.id === starting.source.id))
