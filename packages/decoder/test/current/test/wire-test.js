@@ -795,8 +795,8 @@ describe("Over-the-wire decoding", function () {
   });
 
   it("respects the extras option", async function () {
-    const deployedContract = await WireTest.deployed();
-    const delegate = await WireTestRedHerring.deployed();
+    const deployedContract = await abstractions.WireTest.deployed();
+    const delegate = await abstractions.WireTestRedHerring.deployed();
 
     const decoder = await Decoder.forProject(web3.currentProvider,
       Contracts
