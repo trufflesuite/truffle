@@ -6,6 +6,18 @@ const BlockchainUtils = require("@truffle/blockchain-utils");
 const reformat = require("../reformat");
 const ens = require("./ens");
 
+const allowedTxParams = new Set([
+  "from",
+  "to",
+  "gas",
+  "gasPrice",
+  "value",
+  "data",
+  "nonce",
+  "privateFor",
+  "overwrite"
+]);
+
 const Utils = {
   is_object(val) {
     return typeof val === "object" && !Array.isArray(val);
@@ -21,26 +33,10 @@ const Utils = {
     return web3Utils.isBN(val) || web3Utils.isBigNumber(val);
   },
 
-  is_tx_params(val) {
+  isTxParams(val) {
     if (!Utils.is_object(val)) return false;
     if (Utils.is_big_number(val)) return false;
-
-    const allowed_fields = {
-      from: true,
-      to: true,
-      gas: true,
-      gasPrice: true,
-      value: true,
-      data: true,
-      nonce: true,
-      privateFor: true
-    };
-
-    for (let field_name of Object.keys(val)) {
-      if (allowed_fields[field_name]) return true;
-    }
-
-    return false;
+    return Object.keys(val).some(fieldName => allowedTxParams.has(fieldName));
   },
 
   decodeLogs(_logs, isSingle) {
@@ -143,7 +139,7 @@ const Utils = {
 
     if (
       args.length === expected_arg_count + 1 &&
-      Utils.is_tx_params(last_arg)
+      Utils.isTxParams(last_arg)
     ) {
       tx_params = args.pop();
     }
