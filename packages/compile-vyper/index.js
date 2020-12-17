@@ -8,6 +8,7 @@ const semver = require("semver");
 
 const findContracts = require("@truffle/contract-sources");
 const Common = require("@truffle/compile-common");
+const Config = require("@truffle/config");
 
 const { compileAllJson } = require("./vyper-json");
 
@@ -177,6 +178,7 @@ async function compileAllNoJson({ sources, options, version }) {
 const Compile = {
   // Check that vyper is available then forward to internal compile function
   async sources({ sources = [], options }) {
+    options = Config.default().merge(options);
     // filter out non-vyper paths
     const vyperFiles = sources.filter(path => minimatch(path, VYPER_PATTERN));
 
