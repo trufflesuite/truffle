@@ -74,6 +74,11 @@ contract CalldataTest {
     emit Done(); //break slice
   }
 
+  fallback(bytes calldata input) external returns (bytes memory output) {
+    output = input;
+    emit Done(); //break fallback
+  }
+
 }
 
 library CalldataLibrary {
@@ -299,6 +304,38 @@ describe("Calldata Decoding", function () {
 
     const expectedResult = {
       sliced: [21, 22, 23]
+    };
+
+    assert.deepInclude(variables, expectedResult);
+  });
+
+  it("Decodes fallback function input and output", async function () {
+    this.timeout(6000);
+    let instance = await abstractions.CalldataTest.deployed();
+    let receipt = await instance.sendTransaction({ data: "0xdeadbeef" });
+    let txHash = receipt.tx;
+
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      compilations
+    });
+
+    let sourceId = bugger.view(solidity.current.source).id;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
+      sourceId,
+      line: lineOf("break fallback", source)
+    });
+
+    await bugger.continueUntilBreakpoint();
+
+    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
+      await bugger.variables()
+    );
+
+    const expectedResult = {
+      input: "0xdeadbeef",
+      output: "0xdeadbeef"
     };
 
     assert.deepInclude(variables, expectedResult);
