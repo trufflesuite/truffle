@@ -25,13 +25,15 @@ const RangeUtils = {
   //parameter range may be either an individual version or a range
   rangeContainsAtLeast: function (range, comparisonVersion) {
     //the following line works with prereleases
-    const individualAtLeast = semver.gte(range, comparisonVersion, {
-      includePrerelease: true,
-      loose: true
-    });
+    const individualAtLeast =
+      semver.valid(range, { loose: true }) &&
+      semver.gte(range, comparisonVersion, {
+        includePrerelease: true,
+        loose: true
+      });
     //the following line doesn't, despite the flag, but does work with version ranges
     const rangeAtLeast =
-      semver.validRange(range) &&
+      semver.validRange(range, { loose: true }) &&
       !semver.ltr(comparisonVersion, range, {
         includePrerelease: true,
         loose: true
@@ -42,7 +44,8 @@ const RangeUtils = {
   //parameter version may be either an individual version or a range
   //first case is there to handle ranges, second to handle anything else
   coerce: function (version) {
-    return semver.validRange(version) || semver.coerce(version).toString();
+    return semver.validRange(version, { loose: true }) ||
+      semver.coerce(version, { loose: true }).toString();
   }
 };
 
