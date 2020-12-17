@@ -1,6 +1,6 @@
 {
   "name": "@truffle/abi-utils",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Utilities for working with ABIs",
   "keywords": [
     "ethereum",
@@ -30,7 +30,7 @@
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "devDependencies": {
-    "@truffle/contract-schema": "^3.3.2",
+    "@truffle/contract-schema": "^3.3.3",
     "@types/faker": "^5.1.2",
     "@types/jest": "^26.0.14",
     "@types/jest-json-schema": "^2.1.2",
