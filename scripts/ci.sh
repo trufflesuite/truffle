@@ -77,7 +77,7 @@ elif [ "$PACKAGES" = true ]; then
   sudo add-apt-repository -y ppa:deadsnakes/ppa
   sudo add-apt-repository -y ppa:ethereum/ethereum
   sudo apt update
-  sudo apt install -y python3.6 python3.6-dev python3.6-venv 'solc=1:0.7.0-0ubuntu1~eoan' #please unpin once possible
+  sudo apt install -y python3.6 python3.6-dev python3.6-venv 'solc=1:0.7.0-0ubuntu1' #please unpin once possible
   wget https://bootstrap.pypa.io/get-pip.py
   sudo python3.6 get-pip.py
   sudo pip3 install vyper
@@ -89,7 +89,7 @@ elif [ "$COVERAGE" = true ]; then
   sudo add-apt-repository -y ppa:deadsnakes/ppa
   sudo add-apt-repository -y ppa:ethereum/ethereum
   sudo apt update
-  sudo apt install -y jq python3.6 python3.6-dev python3.6-venv 'solc=1:0.7.0-0ubuntu1~eoan' #please unpin once possible
+  sudo apt install -y jq python3.6 python3.6-dev python3.6-venv 'solc=1:0.7.0-0ubuntu1' #please unpin once possible
   wget https://bootstrap.pypa.io/get-pip.py
   sudo python3.6 get-pip.py
   sudo pip3 install vyper
