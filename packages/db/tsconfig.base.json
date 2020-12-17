@@ -24,7 +24,8 @@
       "pouchdb"
     ],
     "plugins": [
-      { "transform": "@zerollup/ts-transform-paths", "exclude": "*" }
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
     ]
   },
   "include": [
