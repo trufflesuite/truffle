@@ -18,7 +18,7 @@ describe("CompilerSupplier", function () {
     let oldPragmaFloatSource; // ^0.4.15
     let version4PragmaSource; // ^0.4.21
     let version5PragmaSource; // ^0.5.0
-    let versionLatestPragmaSource; // Currently: ^0.7.0
+    let versionLatestPragmaSource; // Currently: ^0.8.0
     let compileConfig;
 
     const options = {
@@ -46,7 +46,7 @@ describe("CompilerSupplier", function () {
       );
 
       const versionLatestPragma = await fse.readFile(
-        path.join(__dirname, "./sources/v0.7.x/Version7Pragma.sol"), //update when necessary
+        path.join(__dirname, "./sources/v0.8.x/Version8Pragma.sol"), //update when necessary
         "utf-8"
       );
 
@@ -54,7 +54,7 @@ describe("CompilerSupplier", function () {
       oldPragmaFloatSource = { "OldPragmaFloat.sol": oldPragmaFloat };
       version4PragmaSource = { "NewPragma.sol": version4Pragma };
       version5PragmaSource = { "Version5Pragma.sol": version5Pragma };
-      versionLatestPragmaSource = { "Version7Pragma.sol": versionLatestPragma }; //update when necessary
+      versionLatestPragmaSource = { "Version8Pragma.sol": versionLatestPragma }; //update when necessary
     });
 
     it("compiles w/ default solc if no compiler specified (float)", async function () {
@@ -209,12 +209,12 @@ describe("CompilerSupplier", function () {
           options: nativeSolcOptions
         });
         const VersionLatestPragma = findOne(
-          "Version7Pragma",
+          "Version8Pragma",
           compilations[0].contracts
         ); //update when necessary
-        assert(VersionLatestPragma.compiler.version.includes("0.7.")); //update when necessary
+        assert(VersionLatestPragma.compiler.version.includes("0.8.")); //update when necessary
         assert(
-          VersionLatestPragma.contractName === "Version7Pragma", //update when necessary
+          VersionLatestPragma.contractName === "Version8Pragma", //update when necessary
           "Should have compiled"
         );
       });
