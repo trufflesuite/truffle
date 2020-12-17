@@ -44,8 +44,10 @@ const RangeUtils = {
   //parameter version may be either an individual version or a range
   //first case is there to handle ranges, second to handle anything else
   coerce: function (version) {
-    return semver.validRange(version, { loose: true }) ||
-      semver.coerce(version, { loose: true }).toString();
+    return (
+      semver.validRange(version, { loose: true }) ||
+      semver.coerce(version, { loose: true }).toString()
+    );
   }
 };
 

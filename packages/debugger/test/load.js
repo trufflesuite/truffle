@@ -1,11 +1,11 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:test:load");
 
-import {assert} from "chai";
+import { assert } from "chai";
 
 import Ganache from "ganache-core";
 
-import {prepareContracts} from "./helpers";
+import { prepareContracts } from "./helpers";
 import * as Codec from "@truffle/codec";
 import Debugger from "lib/debugger";
 
@@ -41,7 +41,7 @@ describe("Loading and unloading transactions", function () {
   var compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
+    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
   before("Prepare contracts and artifacts", async function () {
@@ -69,7 +69,7 @@ describe("Loading and unloading transactions", function () {
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
       await bugger.variables()
     );
-    const expected = {x: 1};
+    const expected = { x: 1 };
     assert.deepInclude(variables, expected);
   });
 
@@ -92,7 +92,7 @@ describe("Loading and unloading transactions", function () {
     let variables = Codec.Format.Utils.Inspect.nativizeVariables(
       await bugger.variables()
     );
-    let expected = {x: 1};
+    let expected = { x: 1 };
     assert.deepInclude(variables, expected);
     await bugger.unload();
     assert.isFalse(bugger.view(trace.loaded));
@@ -102,7 +102,7 @@ describe("Loading and unloading transactions", function () {
     variables = Codec.Format.Utils.Inspect.nativizeVariables(
       await bugger.variables()
     );
-    expected = {y: 2};
+    expected = { y: 2 };
     assert.deepInclude(variables, expected);
   });
 

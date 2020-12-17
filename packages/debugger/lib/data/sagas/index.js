@@ -486,7 +486,7 @@ function* variablesAndMappingsSaga() {
       debug("allocation %O", allocation);
       assignments = {};
       for (let id in allocation.members) {
-        id = Number(id); //not sure why we're getting them as strings, but...
+        id = Number(id); //used for .. in loop so get them as strings
         const idObj = {
           compilationId,
           internalFor,
@@ -496,6 +496,34 @@ function* variablesAndMappingsSaga() {
         const ref = allocation.members[id].pointer;
         const assignment = makeAssignment(idObj, ref);
         assignments[assignment.id] = assignment;
+      }
+      //one more: add in the fallback input assignment here
+      const fallbackDefinition = node.nodes.find(
+        subNode => subNode.nodeType === "FunctionDefinition" &&
+          Codec.Ast.Utils.functionKind(subNode) === "fallback"
+      );
+      if (fallbackDefinition) {
+        const fallbackInputDefinition = fallbackDefinition.parameters.parameters[0]; //may be undefined
+        if (fallbackInputDefinition) {
+          const base = yield select(data.current.fallbackBase);
+          const ref = { 
+            location: "stack",
+            from: base,
+            to: base + Codec.Ast.Utils.stackSize(fallbackInputDefinition) - 1
+            //note: we will always have to===from+1, since it's always bytes calldata, but
+            //we'll do it this way just to be safe
+          }; //fallback input is always at the very bottom
+          const idObj = {
+            compilationId,
+            internalFor,
+            astRef: fallbackInputDefinition.id,
+            stackframe: currentDepth, //note the lack of a jump into fallbacks
+            modifierDepth: null //it's a function body variable
+          };
+          const assignment =
+            makeAssignment(idObj, ref);
+          assignments[assignment.id] = assignment;
+        }
       }
       debug("assignments %O", assignments);
 

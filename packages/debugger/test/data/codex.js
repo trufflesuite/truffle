@@ -1,12 +1,12 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:test:data:codex");
 
-import {assert} from "chai";
+import { assert } from "chai";
 import * as Codec from "@truffle/codec";
 
 import Ganache from "ganache-core";
 
-import {prepareContracts} from "../helpers";
+import { prepareContracts } from "../helpers";
 import Debugger from "lib/debugger";
 
 const __LIBTEST = `
@@ -96,7 +96,7 @@ describe("Codex", function () {
   var compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
+    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
   before("Prepare contracts and artifacts", async function () {
@@ -113,7 +113,7 @@ describe("Codex", function () {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     debug("starting stepping");
     await bugger.continueUntilBreakpoint(); //run till end
@@ -132,7 +132,7 @@ describe("Codex", function () {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     await bugger.continueUntilBreakpoint(); //run till end
 
@@ -147,7 +147,7 @@ describe("Codex", function () {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     await bugger.continueUntilBreakpoint(); //run till end
 

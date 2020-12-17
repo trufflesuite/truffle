@@ -1,11 +1,11 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:test:data:global");
 
-import {assert} from "chai";
+import { assert } from "chai";
 
 import Ganache from "ganache-core";
 
-import {prepareContracts, lineOf} from "../helpers";
+import { prepareContracts, lineOf } from "../helpers";
 import Debugger from "lib/debugger";
 
 import * as Codec from "@truffle/codec";
@@ -156,7 +156,7 @@ describe("Globally-available variables", function () {
   var compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
+    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
   before("Prepare contracts and artifacts", async function () {
@@ -170,10 +170,10 @@ describe("Globally-available variables", function () {
   it("Gets globals correctly in simple call", async function () {
     this.timeout(8000);
     let instance = await abstractions.GlobalTest.deployed();
-    let receipt = await instance.run(9, {value: 100});
+    let receipt = await instance.run(9, { value: 100 });
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     await bugger.continueUntilBreakpoint(); //run till end
 
@@ -190,10 +190,10 @@ describe("Globally-available variables", function () {
   it("Gets globals correctly in nested call", async function () {
     this.timeout(12000);
     let instance = await abstractions.GlobalTest.deployed();
-    let receipt = await instance.runRun(9, {value: 100});
+    let receipt = await instance.runRun(9, { value: 100 });
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let sourceId = bugger.view(solidity.current.source).id;
     let source = bugger.view(solidity.current.source).source;
@@ -219,7 +219,7 @@ describe("Globally-available variables", function () {
     let receipt = await instance.runStatic(9);
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let sourceId = bugger.view(solidity.current.source).id;
     let source = bugger.view(solidity.current.source).source;
@@ -242,10 +242,10 @@ describe("Globally-available variables", function () {
   it("Gets globals correctly in library call", async function () {
     this.timeout(8000);
     let instance = await abstractions.GlobalTest.deployed();
-    let receipt = await instance.runLib(9, {value: 100});
+    let receipt = await instance.runLib(9, { value: 100 });
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let sourceId = bugger.view(solidity.current.source).id;
     let source = bugger.view(solidity.current.source).source;
@@ -266,10 +266,10 @@ describe("Globally-available variables", function () {
 
   it("Gets globals correctly in simple creation", async function () {
     this.timeout(12000);
-    let contract = await abstractions.CreationTest.new(9, {value: 100});
+    let contract = await abstractions.CreationTest.new(9, { value: 100 });
     let txHash = contract.transactionHash;
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     await bugger.continueUntilBreakpoint(); //run till end
 
@@ -286,10 +286,10 @@ describe("Globally-available variables", function () {
   it("Gets globals correctly in nested creation", async function () {
     this.timeout(12000);
     let instance = await abstractions.GlobalTest.deployed();
-    let receipt = await instance.runCreate(9, {value: 100});
+    let receipt = await instance.runCreate(9, { value: 100 });
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let sourceId = bugger.view(solidity.current.source).id;
     let source = bugger.view(solidity.current.source).source;
@@ -312,10 +312,10 @@ describe("Globally-available variables", function () {
   it("Gets globals correctly in failed CREATE2", async function () {
     this.timeout(12000);
     let instance = await abstractions.GlobalTest.deployed();
-    let receipt = await instance.runFailedCreate2(9, {value: 100});
+    let receipt = await instance.runFailedCreate2(9, { value: 100 });
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let sourceId = bugger.view(solidity.current.source).id;
     let source = bugger.view(solidity.current.source).source;

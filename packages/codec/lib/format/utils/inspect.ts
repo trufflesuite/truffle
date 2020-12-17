@@ -266,7 +266,10 @@ export class ResultInspector {
                   case "exception":
                     return coercedResult.value.deployedProgramCounter === 0
                       ? options.stylize(`[Function: <zero>]`, "special")
-                      : options.stylize(`[Function: <uninitialized>]`, "special");
+                      : options.stylize(
+                          `[Function: <uninitialized>]`,
+                          "special"
+                        );
                   case "unknown":
                     let firstLine = `[Function: decoding not supported (raw info:`;
                     let secondLine = `deployed PC=${coercedResult.value.deployedProgramCounter}, constructor PC=${coercedResult.value.constructorProgramCounter})]`;

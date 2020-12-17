@@ -955,6 +955,17 @@ const data = createSelectorTree({
     context: createLeaf([evm.current.context], debuggerContextToDecoderContext),
 
     /**
+     * data.current.fallbackBase
+     * gives the stack position where a fallback input would start
+     * this is 0 if there are no public or external functions, and 1 if there are
+     */
+    fallbackBase: createLeaf(
+      ["./context"],
+      ({ abi }) => Object.keys(abi).length > 0 ? 1 : 0
+      //note ABI here has been transformed to include functions only
+    ),
+
+    /**
      * data.current.aboutToModify
      * HACK
      * This selector is used to catch those times when we go straight from a

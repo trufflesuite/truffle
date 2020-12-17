@@ -1,11 +1,11 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:test:data:calldata");
 
-import {assert} from "chai";
+import { assert } from "chai";
 
 import Ganache from "ganache-core";
 
-import {prepareContracts, lineOf} from "../helpers";
+import { prepareContracts, lineOf } from "../helpers";
 import Debugger from "lib/debugger";
 
 import * as Codec from "@truffle/codec";
@@ -73,6 +73,11 @@ contract CalldataTest {
     emit Done(); //break slice
   }
 
+  fallback(bytes calldata input) external returns (bytes memory output) {
+    output = input;
+    emit Done(); //break fallback
+  }
+
 }
 
 library CalldataLibrary {
@@ -111,7 +116,7 @@ describe("Calldata Decoding", function () {
   var compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
+    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
   before("Prepare contracts and artifacts", async function () {
@@ -128,7 +133,7 @@ describe("Calldata Decoding", function () {
     let receipt = await instance.multiTester();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let sourceId = bugger.view(solidity.current.source).id;
     let source = bugger.view(solidity.current.source).source;
@@ -146,7 +151,7 @@ describe("Calldata Decoding", function () {
     const expectedResult = {
       hello: "hello",
       someInts: [41, 42],
-      pair: {x: 321, y: 2049}
+      pair: { x: 321, y: 2049 }
     };
 
     assert.deepInclude(variables, expectedResult);
@@ -158,7 +163,7 @@ describe("Calldata Decoding", function () {
     let receipt = await instance.simpleTest("hello world");
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let sourceId = bugger.view(solidity.current.source).id;
     let source = bugger.view(solidity.current.source).source;
@@ -183,10 +188,10 @@ describe("Calldata Decoding", function () {
   it("Decodes dynamic structs correctly", async function () {
     this.timeout(6000);
     let instance = await abstractions.CalldataTest.deployed();
-    let receipt = await instance.stringBoxTest({it: "hello world"});
+    let receipt = await instance.stringBoxTest({ it: "hello world" });
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let sourceId = bugger.view(solidity.current.source).id;
     let source = bugger.view(solidity.current.source).source;
@@ -298,6 +303,40 @@ describe("Calldata Decoding", function () {
 
     const expectedResult = {
       sliced: [21, 22, 23]
+    };
+
+    assert.deepInclude(variables, expectedResult);
+  });
+
+  it("Decodes fallback function input and output", async function () {
+    this.timeout(6000);
+    let instance = await abstractions.CalldataTest.deployed();
+    let receipt = await instance.sendTransaction({ data: "0xdeadbeef" });
+    let txHash = receipt.tx;
+
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      compilations
+    });
+
+    let sourceId = bugger.view(solidity.current.source).id;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
+      sourceId,
+      line: lineOf("break fallback", source)
+    });
+
+    await bugger.continueUntilBreakpoint();
+
+    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
+      await bugger.variables()
+    );
+
+    debug("variables: %O", variables);
+
+    const expectedResult = {
+      input: "0xdeadbeef",
+      output: "0xdeadbeef"
     };
 
     assert.deepInclude(variables, expectedResult);

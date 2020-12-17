@@ -301,7 +301,10 @@ let solidity = createSelectorTree({
       ],
 
       (isFinal, currentSource, nextSource, changesContext) => {
-        return changesContext || (isFinal && (currentSource.internal || !nextSource.internal))
+        return (
+          changesContext ||
+          (isFinal && (currentSource.internal || !nextSource.internal))
+        );
       }
     ),
 

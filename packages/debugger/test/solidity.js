@@ -1,11 +1,11 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:test:solidity");
 
-import {assert} from "chai";
+import { assert } from "chai";
 
 import Ganache from "ganache-core";
 
-import {prepareContracts, lineOf} from "./helpers";
+import { prepareContracts, lineOf } from "./helpers";
 import Debugger from "lib/debugger";
 
 import solidity from "lib/solidity/selectors";
@@ -152,7 +152,7 @@ describe("Solidity Debugging", function () {
   var compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
+    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
   before("Prepare contracts and artifacts", async function () {
@@ -210,7 +210,7 @@ describe("Solidity Debugging", function () {
     // at `second();`
     let source = bugger.view(solidity.current.source);
     let breakLine = lineOf("BREAK", source.source);
-    let breakpoint = {sourceId: source.id, line: breakLine};
+    let breakpoint = { sourceId: source.id, line: breakLine };
 
     do {
       await bugger.continueUntilBreakpoint([breakpoint]);

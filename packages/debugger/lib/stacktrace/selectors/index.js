@@ -261,7 +261,8 @@ let stacktrace = createSelectorTree({
       ["/next/location", "/current/location", "./lastPosition"],
       (nextLocation, currentLocation, lastLocation) => {
         let oldLocation =
-          currentLocation.source.id !== undefined && !currentLocation.source.internal
+          currentLocation.source.id !== undefined &&
+          !currentLocation.source.internal
             ? currentLocation
             : lastLocation;
         return (
