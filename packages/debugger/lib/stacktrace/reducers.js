@@ -86,8 +86,8 @@ function lastPosition(state = null, action) {
     case actions.UPDATE_POSITION:
     case actions.EXECUTE_RETURN:
       const { location } = action;
-      if (location.source.id === undefined) {
-        //don't update for unmapped!
+      if (location.source.id === undefined || location.source.internal) {
+        //don't update for unmapped or internal!
         return state;
       }
       return location;

@@ -13,7 +13,7 @@ import solidity from "lib/solidity/selectors";
 import * as Codec from "@truffle/codec";
 
 const __YUL = `
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 contract AssemblyTest {
   function run() public {

@@ -12,7 +12,7 @@ import solidity from "lib/solidity/selectors";
 import stacktrace from "lib/stacktrace/selectors";
 
 const __STACKTRACE = `
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 contract StacktraceTest {
 
@@ -74,7 +74,7 @@ contract StacktraceTest {
 
 contract Boom {
   function boom() public returns (uint) {
-    selfdestruct(address(this)); //BOOM
+    selfdestruct(payable(address(this))); //BOOM
   }
 
   receive() external payable{

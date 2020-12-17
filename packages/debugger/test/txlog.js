@@ -13,7 +13,7 @@ import txlog from "lib/txlog/selectors";
 
 const __TXLOG = `
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 contract VizTest {
 
@@ -33,7 +33,7 @@ contract VizTest {
   }
 
   function testTransfer() public {
-    tx.origin.transfer(1);
+    payable(tx.origin).transfer(1);
   }
 
   fallback() external {

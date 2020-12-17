@@ -13,7 +13,7 @@ import * as Codec from "@truffle/codec";
 import solidity from "lib/solidity/selectors";
 
 const __IMMUTABLE = `
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 contract Base {
   int8 immutable base = -37;
@@ -27,7 +27,7 @@ contract ImmutableTest is Base {
   Color immutable background;
   bool immutable truth;
   address immutable self;
-  byte immutable secret;
+  bytes1 immutable secret;
   uint8 immutable trulySecret;
 
   event Done();
@@ -45,7 +45,7 @@ contract ImmutableTest is Base {
   event Enum(Color);
   event Bool(bool);
   event Address(address);
-  event Byte(byte);
+  event Byte(bytes1);
 
   function run() public {
     emit Number(base);

@@ -13,7 +13,7 @@ import trace from "lib/trace/selectors";
 import controller from "lib/controller/selectors";
 
 const __TWOCONTRACTS = `
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 contract Contract1 {
   uint x;
