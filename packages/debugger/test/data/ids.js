@@ -1,11 +1,11 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:test:data:ids");
 
-import {assert} from "chai";
+import { assert } from "chai";
 
 import Ganache from "ganache-core";
 
-import {prepareContracts, lineOf} from "../helpers";
+import { prepareContracts, lineOf } from "../helpers";
 import Debugger from "lib/debugger";
 
 import trace from "lib/trace/selectors";
@@ -13,30 +13,30 @@ import solidity from "lib/solidity/selectors";
 import * as Codec from "@truffle/codec";
 
 const __FACTORIAL = `
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 contract FactorialTest {
 
   uint lastResult;
 
   function factorial(uint n) public returns(uint nbang) {
-    uint prev;
     uint prevFac;
     nbang = n;
-    prev = n - 1; //break here #1 (12)
+    lastResult = nbang; //break here #1
     if (n > 0) {
+      uint prev = n - 1;
       prevFac = factorial(n - 1);
       nbang = n * prevFac;
     } else {
       nbang = 1;
     }
-    lastResult = nbang; //break here #2 (22)
+    lastResult = nbang; //break here #2
   }
 }
 `;
 
 const __ADDRESS = `
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 contract AddressTest {
 
@@ -71,7 +71,7 @@ contract SecretByte {
 `;
 
 const __INTERVENING = `
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 import "./InterveningLib.sol";
 
@@ -119,7 +119,7 @@ contract Inner {
 `;
 
 const __INTERVENINGLIB = `
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 library InterveningLib {
 
@@ -130,7 +130,7 @@ library InterveningLib {
 `;
 
 const __MODIFIERS = `
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 contract ModifierTest {
 
@@ -187,7 +187,7 @@ describe("Variable IDs", function () {
   var compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
+    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
   before("Prepare contracts and artifacts", async function () {
@@ -204,7 +204,7 @@ describe("Variable IDs", function () {
     let receipt = await instance.factorial(3);
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     debug("sourceId %d", bugger.view(solidity.current.source).id);
 
@@ -238,7 +238,7 @@ describe("Variable IDs", function () {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     debug("sourceId %d", bugger.view(solidity.current.source).id);
 
@@ -277,7 +277,7 @@ describe("Variable IDs", function () {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     debug("sourceId %d", bugger.view(solidity.current.source).id);
 
@@ -297,7 +297,7 @@ describe("Variable IDs", function () {
     let receipt = await instance.runLib();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     debug("sourceId %d", bugger.view(solidity.current.source).id);
 

@@ -138,6 +138,7 @@ function prepareCompilerInput({
       metadata: settings.metadata,
       libraries: settings.libraries,
       viaIR: settings.viaIR,
+      modelChecker: settings.modelChecker,
       // Specify compilation targets. Each target uses defaultSelectors,
       // defaulting to single target `*` if targets are unspecified
       outputSelection: prepareOutputSelection({ targets })

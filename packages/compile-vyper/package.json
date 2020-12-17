@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@truffle/compile-common": "^0.5.0",
+    "@truffle/config": "^1.2.33",
     "colors": "^1.1.2",
     "debug": "^4.3.1",
     "eslint": "^5.5.0",

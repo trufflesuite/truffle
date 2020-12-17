@@ -1,17 +1,17 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:test:data:returnvalue");
 
-import {assert} from "chai";
+import { assert } from "chai";
 
 import Ganache from "ganache-core";
 
-import {prepareContracts} from "../helpers";
+import { prepareContracts } from "../helpers";
 import Debugger from "lib/debugger";
 
 import * as Codec from "@truffle/codec";
 
 const __RETURNVALUES = `
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 contract ReturnValues {
 
@@ -19,7 +19,7 @@ contract ReturnValues {
 
   constructor(bool fail) {
     if(fail) {
-      selfdestruct(tx.origin);
+      selfdestruct(payable(tx.origin));
     }
   }
 
@@ -75,7 +75,7 @@ describe("Return value decoding", function () {
   var compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
+    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
   before("Prepare contracts and artifacts", async function () {
@@ -93,7 +93,7 @@ describe("Return value decoding", function () {
     let receipt = await instance.pair();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     await bugger.continueUntilBreakpoint(); //run till end
 
@@ -105,7 +105,7 @@ describe("Return value decoding", function () {
     assert.lengthOf(outputs, 2);
     assert.strictEqual(outputs[0].name, "x");
     assert.isUndefined(outputs[1].name);
-    const values = outputs.map(({value}) =>
+    const values = outputs.map(({ value }) =>
       Codec.Format.Utils.Inspect.nativize(value)
     );
     assert.deepEqual(values, [-1, -2]);
@@ -118,7 +118,7 @@ describe("Return value decoding", function () {
     let txHash = instance.transactionHash;
     debug("txHash: %s", txHash);
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     debug("about to run!");
     await bugger.continueUntilBreakpoint(); //run till end
@@ -146,7 +146,7 @@ describe("Return value decoding", function () {
     let txHash = instance.transactionHash;
     debug("txHash: %s", txHash);
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     debug("about to run!");
     await bugger.continueUntilBreakpoint(); //run till end
@@ -167,7 +167,7 @@ describe("Return value decoding", function () {
     let txHash = instance.transactionHash;
     debug("txHash: %s", txHash);
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     debug("about to run!");
     await bugger.continueUntilBreakpoint(); //run till end
@@ -202,7 +202,7 @@ describe("Return value decoding", function () {
       txHash = error.hashes[0]; //it's the only hash involved
     }
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     await bugger.continueUntilBreakpoint(); //run till end
 
@@ -226,7 +226,7 @@ describe("Return value decoding", function () {
       txHash = error.hashes[0]; //it's the only hash involved
     }
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     await bugger.continueUntilBreakpoint(); //run till end
 

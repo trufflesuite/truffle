@@ -255,18 +255,21 @@ let stacktrace = createSelectorTree({
 
     /**
      * stacktrace.current.positionWillChange
+     * note: we disregard internal sources here!
      */
     positionWillChange: createLeaf(
       ["/next/location", "/current/location", "./lastPosition"],
       (nextLocation, currentLocation, lastLocation) => {
         let oldLocation =
-          currentLocation.source.id !== undefined
+          currentLocation.source.id !== undefined &&
+          !currentLocation.source.internal
             ? currentLocation
             : lastLocation;
         return (
           Boolean(oldLocation) && //if there's no current or last position, we don't need this check
           Boolean(nextLocation.source) &&
           nextLocation.source.id !== undefined && //if next location is unmapped, we consider ourselves to have not moved
+          !nextLocation.source.internal && //similarly if it's internal
           (nextLocation.source.id !== oldLocation.source.id ||
             nextLocation.sourceRange.start !== oldLocation.sourceRange.start ||
             nextLocation.sourceRange.length !== oldLocation.sourceRange.length)
