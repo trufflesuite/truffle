@@ -266,7 +266,7 @@ export class ResultInspector {
                   case "exception":
                     return coercedResult.value.deployedProgramCounter === 0
                       ? options.stylize(`[Function: <zero>]`, "special")
-                      : options.stylize(`[Function: assert(false)]`, "special");
+                      : options.stylize(`[Function: <uninitialized>]`, "special");
                   case "unknown":
                     let firstLine = `[Function: decoding not supported (raw info:`;
                     let secondLine = `deployed PC=${coercedResult.value.deployedProgramCounter}, constructor PC=${coercedResult.value.constructorProgramCounter})]`;
@@ -618,7 +618,7 @@ function nativizeWithTable(
             case "exception":
               return coercedResult.value.deployedProgramCounter === 0
                 ? `<zero>`
-                : `assert(false)`;
+                : `<uninitialized>`;
             case "unknown":
               return `<decoding not supported>`;
           }

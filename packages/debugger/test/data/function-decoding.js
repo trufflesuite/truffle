@@ -216,7 +216,7 @@ describe("Function Pointer Decoding", function () {
       baseFn: "InternalsBase.inherited",
       libFn: "InternalsLib.libraryFn",
       storedFreeFn: "freeFn",
-      undefFn: "assert(false)",
+      undefFn: "<uninitialized>",
       storageFn: "InternalsTest.run",
       readFromConstructor: "InternalsTest.run"
     };
@@ -251,7 +251,7 @@ describe("Function Pointer Decoding", function () {
       baseFn: "InternalsBase.inherited",
       libFn: "InternalsLib.libraryFn",
       storedFreeFn: "freeFn",
-      undefFn: "assert(false)",
+      undefFn: "<uninitialized>",
       storageFn: "InternalsTest.run"
     };
 
