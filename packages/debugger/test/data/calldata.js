@@ -13,7 +13,7 @@ import * as Codec from "@truffle/codec";
 import solidity from "lib/solidity/selectors";
 
 const __CALLDATA = `
-pragma solidity ^0.7.0;
+pragma solidity ^0.7.6;
 pragma experimental ABIEncoderV2;
 
 contract CalldataTest {
@@ -332,6 +332,8 @@ describe("Calldata Decoding", function () {
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
       await bugger.variables()
     );
+
+    debug("variables: %O", variables);
 
     const expectedResult = {
       input: "0xdeadbeef",
