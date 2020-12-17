@@ -12,7 +12,7 @@ import * as Codec from "@truffle/codec";
 import solidity from "lib/solidity/selectors";
 
 const __EXTERNALS = `
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 contract ExternalsTester {
 
@@ -55,7 +55,7 @@ contract ExternalsDerived is ExternalsBase {
 `;
 
 const __INTERNALS = `
-pragma solidity ^0.7.1;
+pragma solidity ^0.8.0;
 
 contract InternalsBase {
 

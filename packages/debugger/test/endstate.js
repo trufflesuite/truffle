@@ -13,7 +13,7 @@ import evm from "lib/evm/selectors";
 import * as Codec from "@truffle/codec";
 
 const __FAILURE = `
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 contract FailureTest {
   function run() public {
@@ -23,7 +23,7 @@ contract FailureTest {
 `;
 
 const __SUCCESS = `
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 contract SuccessTest {
 uint x;

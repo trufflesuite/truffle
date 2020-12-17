@@ -11,7 +11,7 @@ import Debugger from "lib/debugger";
 import * as Codec from "@truffle/codec";
 
 const __RETURNVALUES = `
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 contract ReturnValues {
 
@@ -19,7 +19,7 @@ contract ReturnValues {
 
   constructor(bool fail) {
     if(fail) {
-      selfdestruct(tx.origin);
+      selfdestruct(payable(tx.origin));
     }
   }
 

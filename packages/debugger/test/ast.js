@@ -14,7 +14,7 @@ import trace from "lib/trace/selectors";
 import SourceMapUtils from "@truffle/source-map-utils";
 
 const __VARIABLES = `
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 contract Variables {
   event Result(uint256 result);

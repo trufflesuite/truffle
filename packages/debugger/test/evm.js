@@ -12,7 +12,7 @@ import evm from "lib/evm/selectors";
 import trace from "lib/trace/selectors";
 
 const __OUTER = `
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 import "./Inner.sol";
 
@@ -35,7 +35,7 @@ contract Outer {
 `;
 
 const __INNER = `
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 contract Inner {
   function run() public {

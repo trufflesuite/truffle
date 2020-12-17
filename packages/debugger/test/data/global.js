@@ -13,7 +13,7 @@ import * as Codec from "@truffle/codec";
 import solidity from "lib/solidity/selectors";
 
 const __GLOBAL = `
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 contract GlobalTest {
 
@@ -21,13 +21,13 @@ contract GlobalTest {
 
   struct Msg {
     bytes data;
-    address payable sender;
+    address sender;
     bytes4 sig;
     uint value;
   }
 
   struct Tx {
-    address payable origin;
+    address origin;
     uint gasprice;
   }
 
@@ -67,7 +67,7 @@ contract GlobalTest {
     __tx = Tx(tx.origin, tx.gasprice);
     __block = Block(block.coinbase, block.difficulty,
       block.gaslimit, block.number, block.timestamp);
-    return x + uint(address(__this)) //BREAK STATIC
+    return x + uint160(address(__this)) //BREAK STATIC
       + __msg.value + __tx.gasprice + __block.number;
   }
 

@@ -12,7 +12,7 @@ import * as Codec from "@truffle/codec";
 
 const __TESTER = `
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.7.4;
+pragma solidity ^0.8.0;
 
 import "./Constants.sol";
 
@@ -26,7 +26,7 @@ contract ConstTest {
 
 const __CONSTANTS = `
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.7.4;
+pragma solidity ^0.8.0;
 
 uint constant secret = 77;
 
