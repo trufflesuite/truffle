@@ -43,8 +43,8 @@ describe("create", function () {
       assert.isNotNull(fileData, "File's data is null");
       assert.notEqual(fileData, "", "File's data is blank");
       assert.isTrue(
-        fileData.includes("pragma solidity >=0.4.22 <0.8.0;"),
-        "File's solidity version does not match >=0.4.22 <0.8.0"
+        fileData.includes("pragma solidity >=0.4.22 <0.9.0;"),
+        "File's solidity version does not match >=0.4.22 <0.9.0"
       );
       done();
     });

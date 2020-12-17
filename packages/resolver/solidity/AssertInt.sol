@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity >= 0.4.15 < 0.8.0;
+pragma solidity >= 0.4.15 < 0.9.0;
 
 library AssertInt {
 

@@ -13,7 +13,7 @@ export class Deployed {
     let source = "";
     source +=
       "//SPDX-License-Identifier: MIT\n" +
-      "pragma solidity >= 0.5.0 < 0.8.0; \n\n library DeployedAddresses {" +
+      "pragma solidity >= 0.5.0 < 0.9.0; \n\n library DeployedAddresses {" +
       "\n";
 
     for (let [name, address] of Object.entries(mapping)) {
