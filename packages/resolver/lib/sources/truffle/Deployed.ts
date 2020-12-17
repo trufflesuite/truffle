@@ -1,4 +1,5 @@
 const web3Utils = require("web3-utils");
+import semver from "semver";
 import RangeUtils from "@truffle/compile-solidity/compilerSupplier/rangeUtils";
 
 type solcOptionsArg = {
@@ -43,7 +44,12 @@ export class Deployed {
     }
     //regardless of version, replace all pragmas with the new version
     const coercedVersion = RangeUtils.coerce(version);
-    source = source.replace(/0\.5\.0/gm, coercedVersion);
+
+    // we need to update the pragma expression differently depending on whether
+    // a single version or range is suppplied
+    source = semver.valid(coercedVersion) ?
+      source.replace(/0\.5\.0/gm, coercedVersion) :
+      source.replace(/>= 0.5.0 < 0.9.0/gm, coercedVersion);
 
     return source;
   }
