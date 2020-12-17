@@ -1,6 +1,7 @@
 const debug = require("debug")("source-map-utils");
 const CodeUtils = require("@truffle/code-utils");
 const Codec = require("@truffle/codec");
+const Web3Utils = require("web3-utils");
 const jsonpointer = require("json-pointer");
 const IntervalTree = require("node-interval-tree").default;
 
@@ -202,9 +203,11 @@ var SourceMapUtils = {
           //invalid and if it's not that give up
           //(designated invalid gets file -1 in some Solidity versions)
           if (sourceIndex === -1) {
-            //yeah, this is copypasted from below
-            let nextInstruction = instructions[instruction.index + 1] || {};
-            if (nextInstruction.name === "INVALID") {
+            if (
+              SourceMapUtils.isDesignatedInvalid(
+                instructions.slice(instruction.index)
+              )
+            ) {
               //designated invalid, include it
               return {
                 [instruction.pc]: {
@@ -235,8 +238,11 @@ var SourceMapUtils = {
           if (!node || node.nodeType !== "FunctionDefinition") {
             //filter out JUMPDESTs that aren't function definitions...
             //except for the designated invalid function
-            let nextInstruction = instructions[instruction.index + 1] || {};
-            if (nextInstruction.name === "INVALID") {
+            if (
+              SourceMapUtils.isDesignatedInvalid(
+                instructions.slice(instruction.index)
+              )
+            ) {
               //designated invalid, include it
               return {
                 [instruction.pc]: {
@@ -368,6 +374,57 @@ var SourceMapUtils = {
       .map(i => parseInt(i));
 
     return [start, start + length];
+  },
+
+  //takes an array of instructions (as returned by parseCode)
+  //and asks: is the start of this instruction array the
+  //start of a Solidity designated invalid function?
+  //i.e. what an uninitialized internal function pointer jumps to?
+  isDesignatedInvalid: function (instructions) {
+    const oldSequence = [{ name: "JUMPDEST" }, { name: "INVALID" }];
+    const panicSelector = Web3Utils.soliditySha3({
+      type: "string",
+      value: "Panic(uint256)"
+    }).slice(0, 2 + 2 * Codec.Evm.Utils.SELECTOR_SIZE);
+    const paddedSelector = panicSelector.padEnd(
+      2 + 2 * Codec.Evm.Utils.WORD_SIZE,
+      "00"
+    );
+    //we double and add 2 because we're using hex strings...
+    const newSequence = [
+      { name: "JUMPDEST" },
+      { name: "PUSH32", pushData: paddedSelector },
+      { name: "PUSH1", pushData: "0x00" },
+      { name: "MSTORE" },
+      { name: "PUSH1", pushData: "0x51" },
+      { name: "PUSH1", pushData: "0x04" },
+      { name: "MSTORE" },
+      { name: "PUSH1", pushData: "0x24" },
+      { name: "PUSH1", pushData: "0x00" },
+      { name: "REVERT" }
+    ];
+
+    const checkAgainstTemplate = (instructions, template) => {
+      for (let index = 0; index < template.length; index++) {
+        const instruction = instructions[index];
+        const comparison = template[index];
+        if (!instruction || instruction.name !== comparison.name) {
+          return false;
+        }
+        if (
+          comparison.pushData &&
+          instruction.pushData !== comparison.pushData
+        ) {
+          return false;
+        }
+      }
+      return true;
+    };
+
+    return (
+      checkAgainstTemplate(instructions, oldSequence) ||
+      checkAgainstTemplate(instructions, newSequence)
+    );
   }
 };
 
