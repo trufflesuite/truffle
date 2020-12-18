@@ -19,11 +19,6 @@ export type Compilation = Common.Compilation & {
 };
 
 export type Source = Common.Source & {
-  // sourcePath: string;
-  // contents: string;
-  // language: string;
-  // ast: any;
-  // legacyAST: any;
   db: { source: IdObject<DataModel.Source> };
 };
 
@@ -56,8 +51,7 @@ export function* generateCompileLoad(
   const withSourcesAndBytecodes = yield* generateBytecodesLoad(withSources);
 
   // @ts-ignore
-  const withCompilations = yield* generateCompilationsLoad(
-    withSourcesAndBytecodes
+  const withCompilations = yield* generateCompilationsLoad(withSourcesAndBytecodes
   );
 
   const withContracts = yield* generateContractsLoad(withCompilations);
@@ -65,8 +59,7 @@ export function* generateCompileLoad(
   const compilations = withContracts;
 
   // @ts-ignore
-  return {
-    compilations,
+  return {compilations,
     contracts: compilations.reduce(
       (a, { contracts }) => [...a, ...contracts],
       []
