@@ -129,7 +129,7 @@ export interface EventArgumentAllocation {
   pointer: Pointer.EventDataPointer | Pointer.EventTopicPointer;
 }
 
-//now let's go back ands fill in returndata
+//now let's go back and fill in returndata
 export type ReturndataKind = FunctionReturndataKind | ConstructorReturndataKind;
 
 export type FunctionReturndataKind =
@@ -146,6 +146,8 @@ export type ReturndataAllocation =
 export interface FunctionReturndataAllocation {
   kind: FunctionReturndataKind;
   selector: Uint8Array;
+  abi?: Abi.ErrorEntry; //only included when kind === "revert", but
+  //I'm not going to bother putting that in the type system
   arguments: ReturndataArgumentAllocation[];
   allocationMode: DecodingMode;
 }

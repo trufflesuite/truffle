@@ -446,11 +446,27 @@ const errorSelector: Uint8Array = Conversion.toBytes(
   })
 ).subarray(0, Evm.Utils.SELECTOR_SIZE);
 
+const panicSelector: Uint8Array = Conversion.toBytes(
+  Web3Utils.soliditySha3({
+    type: "string",
+    value: "Panic(uint256)"
+  })
+).subarray(0, Evm.Utils.SELECTOR_SIZE);
+
 const defaultReturnAllocations: AbiData.Allocate.ReturndataAllocation[] = [
   {
     kind: "revert" as const,
     allocationMode: "full" as const,
     selector: errorSelector,
+    abi: {
+      name: "Error",
+      type: "error",
+      inputs: [{
+        name: "",
+        type: "string",
+        internalType: "string"
+      }]
+    },
     arguments: [
       {
         name: "",
@@ -462,6 +478,35 @@ const defaultReturnAllocations: AbiData.Allocate.ReturndataAllocation[] = [
         type: {
           typeClass: "string" as const,
           typeHint: "string"
+        }
+      }
+    ]
+  },
+  {
+    kind: "revert" as const,
+    allocationMode: "full" as const,
+    selector: panicSelector,
+    abi: {
+      name: "Panic",
+      type: "error",
+      inputs: [{
+        name: "",
+        type: "uint256",
+        internalType: "uint256"
+      }]
+    },
+    arguments: [
+      {
+        name: "",
+        pointer: {
+          location: "returndata" as const,
+          start: panicSelector.length,
+          length: Evm.Utils.WORD_SIZE
+        },
+        type: {
+          typeClass: "uint" as const,
+          bits: Evm.Utils.WORD_SIZE * 8, // :)
+          typeHint: "uint256"
         }
       }
     ]
@@ -636,6 +681,7 @@ export function* decodeReturndata(
       case "revert":
         decoding = {
           kind,
+          abi: allocation.abi,
           status: false as const,
           arguments: decodedArguments,
           decodingMode

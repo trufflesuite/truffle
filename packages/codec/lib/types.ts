@@ -30,6 +30,7 @@ export type LogDecoding = EventDecoding | AnonymousDecoding;
  */
 export type ReturndataDecoding =
   | ReturnDecoding
+  | RawReturnDecoding
   | BytecodeDecoding
   | UnknownBytecodeDecoding
   | SelfDestructDecoding
@@ -324,6 +325,31 @@ export interface ReturnDecoding {
 }
 
 /**
+ * This type represents a decoding of the return data as a raw bytestring
+ * (as might be returned from a fallback function).
+ * @Category Output
+ */
+export interface RawReturnDecoding {
+  /**
+   * The kind of decoding; indicates that this is a RawReturnDecoding.
+   */
+  kind: "returnmessage";
+  /**
+   * Indicates that this kind of decoding indicates a successful return.
+   */
+  status: true;
+  /**
+   * The returned bytestring, as a hex string.
+   */
+  data: string;
+  /**
+   * The decoding mode that was used; [see the README](../#decoding-modes) for
+   * more on these.
+   */
+  decodingMode: DecodingMode;
+}
+
+/**
  * This type represents a decoding of unexpectedly empty return data from a
  * successful call, indicating that the contract self-destructed.
  * @Category Output
@@ -376,6 +402,12 @@ export interface RevertMessageDecoding {
    * The kind of decoding; indicates that this is a RevertMessageDecoding.
    */
   kind: "revert";
+  /**
+   * The ABI entry for the error that was thrown.  You can use this
+   * to extract the name, for instance.  This may be spoofed for built-in
+   * types of errors.
+   */
+  abi: Abi.ErrorEntry;
   /**
    * Indicates that this kind of decoding indicates an unsuccessful return.
    */
