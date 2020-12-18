@@ -27,7 +27,8 @@ describe("Compilation", () => {
       sourceId: sourceId,
       bytecodeId: "",
       abi: JSON.stringify(Migrations.abi),
-      sourceMap: JSON.stringify(Migrations.sourceMap)
+      sourceMap: JSON.stringify(Migrations.sourceMap),
+      language: "Solidity"
     };
     addCompilationResult = await wsClient.execute(AddCompilation, variables);
   });
@@ -58,6 +59,7 @@ describe("Compilation", () => {
       for (let processedSource of processedSources) {
         expect(processedSource).toHaveProperty("source");
         expect(processedSource).toHaveProperty("ast");
+        expect(processedSource).toHaveProperty("language");
       }
     }
   });

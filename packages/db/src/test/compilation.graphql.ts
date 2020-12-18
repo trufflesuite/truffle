@@ -8,6 +8,7 @@ export const AddCompilation = gql`
     $bytecodeId: ID!
     $abi: String!
     $sourceMap: String!
+    $language: String!
   ) {
     compilationsAdd(
       input: {
@@ -20,6 +21,7 @@ export const AddCompilation = gql`
                 name: "testing"
                 ast: { json: $abi }
                 source: { id: $sourceId }
+                language: $language
               }
             ]
             sources: [{ id: $sourceId }]
@@ -46,6 +48,7 @@ export const AddCompilation = gql`
           ast {
             json
           }
+          language
         }
       }
     }
@@ -68,6 +71,7 @@ export const GetCompilation = gql`
         source {
           contents
         }
+        language
       }
     }
   }
@@ -93,6 +97,7 @@ export const GetCompilationProcessedSources = gql`
         source {
           contents
         }
+        language
       }
     }
   }
