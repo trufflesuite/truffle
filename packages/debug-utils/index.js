@@ -1,12 +1,13 @@
-var OS = require("os");
-var debug = require("debug")("debug-utils");
-var util = require("util");
-var Codec = require("@truffle/codec");
+const OS = require("os");
+const debug = require("debug")("debug-utils");
+const util = require("util");
+const Codec = require("@truffle/codec");
+const BN = require("bn.js");
 
-var chromafi = require("@trufflesuite/chromafi");
-var hljsDefineSolidity = require("highlightjs-solidity");
+const chromafi = require("@trufflesuite/chromafi");
+const hljsDefineSolidity = require("highlightjs-solidity");
 hljsDefineSolidity(chromafi.hljs);
-var chalk = require("chalk");
+const chalk = require("chalk");
 
 const panicTable = {
   0x01: "Failed assertion",
@@ -164,11 +165,24 @@ const trufflePalette = {
   "deletion": chalk
 };
 
-
 var DebugUtils = {
   truffleColors, //make these externally available
-  panicTable,
-  verbosePanicTable,
+
+  //panicCode may be either a number or a BN
+  panicString: function (panicCode, verbose = false) {
+    const unknownString = "Unknown panic";
+    const verboseUnknownString = "A panic occurred of unrecognized type.";
+    if (BN.isBN(panicCode)) {
+      try {
+        panicCode = panicCode.toNumber();
+      } catch (_) {
+        return verbose ? verboseUnknownString : unknownString;
+      }
+    }
+    return verbose
+      ? verbosePanicTable[panicCode] || verboseUnknownString
+      : panicTable[panicCode] || unknownString;
+  },
 
   //attempts to test whether a given compilation is a real compilation,
   //i.e., was compiled all at once.
@@ -675,13 +689,13 @@ var DebugUtils = {
   },
 
   formatStacktrace: function (stacktrace, indent = 2) {
-    //get message from stacktrace
-    const message = stacktrace[0].message;
+    //get message or panic code from stacktrace
+    const { message, panic } = stacktrace[0];
     //we want to print inner to outer, so first, let's
     //reverse
     stacktrace = stacktrace.slice().reverse(); //reverse is in-place so clone first
     let lines = stacktrace.map(
-      ({functionName, contractName, address, location}) => {
+      ({ functionName, contractName, address, location }) => {
         let name;
         if (contractName && functionName) {
           name = `${contractName}.${functionName}`;
@@ -695,10 +709,10 @@ var DebugUtils = {
         let locationString;
         if (location) {
           let {
-            source: {sourcePath},
+            source: { sourcePath },
             sourceRange: {
               lines: {
-                start: {line, column}
+                start: { line, column }
               }
             }
           } = location;
@@ -715,15 +729,25 @@ var DebugUtils = {
     );
     let status = stacktrace[0].status;
     if (status != undefined) {
-      lines.unshift(
-        status
-          ? message !== undefined
-            ? `Error: Improper return (caused message: ${message})`
-            : "Error: Improper return (may be an unexpected self-destruct)"
-          : message !== undefined
-          ? `Error: Revert (message: ${message})`
-          : "Error: Revert or exceptional halt"
-      );
+      let statusLine;
+      if (message !== undefined) {
+        statusLine = status
+          ? `Error: Improper return (caused message: ${message})`
+          : `Error: Revert (message: ${message})`;
+      } else if (panic !== undefined) {
+        statusLine = status
+          ? `Panic: Improper return (caused ${DebugUtils.panicString(
+              panic
+            ).toLowerCase()} (code 0x${panic.toString(16)}))`
+          : `Panic: ${DebugUtils.panicString(panic)} (code 0x${panic.toString(
+              16
+            )})`;
+      } else {
+        statusLine = status
+          ? "Error: Improper return (may be an unexpected self-destruct)"
+          : "Error: Revert or exceptional halt";
+      }
+      lines.unshift(statusLine);
     }
     let indented = lines.map((line, index) =>
       index === 0 ? line : " ".repeat(indent) + line
@@ -732,7 +756,6 @@ var DebugUtils = {
   },
 
   colorize: function (code, language = "Solidity") {
-
     const options = {
       lang: "solidity",
       colors: trufflePalette,
@@ -773,7 +796,7 @@ var DebugUtils = {
     return Object.assign(
       {},
       ...Object.entries(variables).map(([variable, value]) =>
-        variable === "this" ? {[replacement]: value} : {[variable]: value}
+        variable === "this" ? { [replacement]: value } : { [variable]: value }
       )
     );
   },
@@ -793,10 +816,10 @@ var DebugUtils = {
   getTransactionSourcesBeforeStarting: async function (bugger) {
     await bugger.reset();
     let sources = {};
-    const {controller} = bugger.selectors;
+    const { controller } = bugger.selectors;
     while (!bugger.view(controller.current.trace.finished)) {
       const source = bugger.view(controller.current.location.source);
-      const {compilationId, id, internal} = source;
+      const { compilationId, id, internal } = source;
       //stepInto should skip internal sources, but there still might be
       //one at the end
       if (!internal && compilationId !== undefined && id !== undefined) {

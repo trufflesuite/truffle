@@ -36,7 +36,11 @@ function generateReport(callstack, location, status, message) {
     report[report.length - 1].status = status;
   }
   if (message !== undefined) {
-    report[0].message = message;
+    if (message.Error !== undefined) {
+      report[0].message = message.Error;
+    } else if (message.Panic !== undefined) {
+      report[0].panic = message.Panic;
+    }
   }
   return report;
 }
@@ -221,9 +225,12 @@ let stacktrace = createSelectorTree({
 
     /**
      * stacktrace.current.revertString
-     * Crudely decodes the current revert string.
+     * Crudely decodes the current revert string, OR the current panic.
+     * Returns { Error: <string> } or { Panic: <BN> }
      * Not meant to account for crazy things, just there to produce
-     * a simple string.
+     * a simple string or number.
+     * NOTE: if panic code is overlarge, we'll use -1 instead to indicate
+     * an unknown type of panic.
      */
     revertString: createLeaf(
       [evm.current.step.returnValue],
@@ -235,17 +242,28 @@ let stacktrace = createSelectorTree({
           revertDecodings.length === 1 &&
           revertDecodings[0].kind === "revert"
         ) {
-          let revertStringInfo = revertDecodings[0].arguments[0].value.value;
-          switch (revertStringInfo.kind) {
-            case "valid":
-              return revertStringInfo.asString;
-            case "malformed":
-              //turn into a JS string while smoothing over invalid UTF-8
-              //slice 2 to remove 0x prefix
-              return Buffer.from(
-                revertStringInfo.asHex.slice(2),
-                "hex"
-              ).toString();
+          const decoding = revertDecodings[0];
+          switch (decoding.abi.name) {
+            case "Error":
+              const revertStringInfo = decoding.arguments[0].value.value;
+              switch (revertStringInfo.kind) {
+                case "valid":
+                  return { Error: revertStringInfo.asString };
+                case "malformed":
+                  //turn into a JS string while smoothing over invalid UTF-8
+                  //slice 2 to remove 0x prefix
+                  return {
+                    Error: Buffer.from(
+                      revertStringInfo.asHex.slice(2),
+                      "hex"
+                    ).toString()
+                  };
+              }
+            case "Panic":
+              const panicCode = decoding.arguments[0].value.value.asBN;
+              return { Panic: panicCode };
+            default:
+              return undefined;
           }
         } else {
           return undefined;
