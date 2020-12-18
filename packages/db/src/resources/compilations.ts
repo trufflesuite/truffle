@@ -63,10 +63,9 @@ export const compilations: Definition<"compilations"> = {
     }
 
     input ProcessedSourceInput {
-      name: String
       source: ResourceReferenceInput
       ast: ASTInput
-      language: String
+      language: String!
     }
 
     input ASTInput {
