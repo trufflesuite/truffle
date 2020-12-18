@@ -20,11 +20,14 @@ function generateReport(callstack, location, status, message) {
   locations.shift();
   locations.push(location);
   debug("locations: %O", locations);
-  const names = callstack.map(({ functionName, contractName, address }) => ({
-    functionName,
-    contractName,
-    address
-  }));
+  const names = callstack.map(
+    ({ functionName, contractName, address, type }) => ({
+      functionName,
+      contractName,
+      address,
+      type
+    })
+  );
   debug("names: %O", names);
   let report = zipWith(locations, names, (location, nameInfo) => ({
     ...nameInfo,

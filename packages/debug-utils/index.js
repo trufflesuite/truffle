@@ -695,7 +695,7 @@ var DebugUtils = {
     //reverse
     stacktrace = stacktrace.slice().reverse(); //reverse is in-place so clone first
     let lines = stacktrace.map(
-      ({ functionName, contractName, address, location }) => {
+      ({ functionName, contractName, address, location, type }) => {
         let name;
         if (contractName && functionName) {
           name = `${contractName}.${functionName}`;
@@ -723,8 +723,12 @@ var DebugUtils = {
           locationString = "unknown location";
         }
         let addressString =
-          address !== undefined ? `address ${address}` : "unknown address";
-        return `at ${name} [${addressString}] (${locationString})`;
+          type === "external"
+            ? address !== undefined
+              ? ` [address ${address}]`
+              : " [unknown address]"
+            : "";
+        return `at ${name}${addressString} (${locationString})`;
       }
     );
     let status = stacktrace[0].status;
