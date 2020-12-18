@@ -8,7 +8,6 @@ interface Source {
   sourcePath: string;
   contents: string;
   language: string;
-  //check typing
   ast: any;
   legacyAST: any;
 

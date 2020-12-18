@@ -71,7 +71,6 @@ export const generateCompilationsLoad = Batch.Compilations.generate<{
 
 function toCompilationInput(options: {
   compiler: DataModel.CompilerInput;
-  //need contracts for toSourceMapInputs()
   contracts: Contract[];
   sourceIndexes: string[];
   sources: Source[];
