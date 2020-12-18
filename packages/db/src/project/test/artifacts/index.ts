@@ -12,7 +12,6 @@ import { ContractObject } from "@truffle/contract-schema/spec";
 import { Project } from "@truffle/db/project";
 import { resources } from "@truffle/db/project/process";
 import { WorkflowCompileResult } from "@truffle/compile-common/src/types";
-import WorkflowCompile from "@truffle/workflow-compile";
 
 export class ArtifactsLoader {
   private db: Db;
