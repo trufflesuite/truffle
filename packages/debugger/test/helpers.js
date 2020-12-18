@@ -29,7 +29,7 @@ export async function prepareContracts(provider, sources = {}, migrations) {
       version: "0.8.0",
       settings: {
         optimizer: { enabled: false, runs: 200 },
-        evmVersion: "constantinople"
+        evmVersion: "istanbul"
       }
     }
   };

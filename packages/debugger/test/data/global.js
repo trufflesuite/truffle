@@ -37,6 +37,7 @@ contract GlobalTest {
     uint gaslimit;
     uint number;
     uint timestamp;
+    uint chainid;
   }
 
   Msg _msg;
@@ -49,7 +50,7 @@ contract GlobalTest {
     _msg = Msg(msg.data, msg.sender, msg.sig, msg.value);
     _tx = Tx(tx.origin, tx.gasprice);
     _block = Block(block.coinbase, block.difficulty,
-      block.gaslimit, block.number, block.timestamp);
+      block.gaslimit, block.number, block.timestamp, block.chainid);
     emit Done(x); //BREAK SIMPLE
   }
 
@@ -66,7 +67,7 @@ contract GlobalTest {
     __msg = Msg(msg.data, msg.sender, msg.sig, 0);
     __tx = Tx(tx.origin, tx.gasprice);
     __block = Block(block.coinbase, block.difficulty,
-      block.gaslimit, block.number, block.timestamp);
+      block.gaslimit, block.number, block.timestamp, block.chainid);
     return x + uint160(address(__this)) //BREAK STATIC
       + __msg.value + __tx.gasprice + __block.number;
   }
@@ -106,7 +107,7 @@ contract CreationTest {
     _msg = GlobalTest.Msg(msg.data, msg.sender, msg.sig, msg.value);
     _tx = GlobalTest.Tx(tx.origin, tx.gasprice);
     _block = GlobalTest.Block(block.coinbase, block.difficulty,
-      block.gaslimit, block.number, block.timestamp);
+      block.gaslimit, block.number, block.timestamp, block.chainid);
     require(succeed); //BREAK CREATE
     emit Done(x);
   }
@@ -123,7 +124,7 @@ library GlobalTestLib {
     __msg = GlobalTest.Msg(msg.data, msg.sender, msg.sig, msg.value);
     __tx = GlobalTest.Tx(tx.origin, tx.gasprice);
     __block = GlobalTest.Block(block.coinbase, block.difficulty,
-      block.gaslimit, block.number, block.timestamp);
+      block.gaslimit, block.number, block.timestamp, block.chainid);
     emit Done(x + __msg.value + __tx.gasprice + __block.number); //BREAK LIBRARY
   }
 }
@@ -156,7 +157,11 @@ describe("Globally-available variables", function () {
   var compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
+    provider = Ganache.provider({
+      seed: "debugger",
+      gasLimit: 7000000,
+      _chainId: 1337 //temporary until Ganache v3!
+    });
   });
 
   before("Prepare contracts and artifacts", async function () {
