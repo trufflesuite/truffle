@@ -4,10 +4,21 @@ const debug = logger("db:project:compile:sources");
 import { IdObject, resources } from "@truffle/db/project/process";
 import * as Batch from "./batch";
 
+interface Source {
+  sourcePath: string;
+  contents: string;
+  language: string;
+  //check typing
+  ast: any;
+  legacyAST: any;
+
+  db: { source: IdObject<DataModel.Source> };
+}
+
 export const generateSourcesLoad = Batch.Sources.generate<{
   compilation: {};
   contract: {};
-  source: {};
+  source: Source;
   resources: { source: IdObject<DataModel.Source> };
   entry: DataModel.SourceInput;
   result: IdObject<DataModel.Source>;
