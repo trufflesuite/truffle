@@ -255,7 +255,7 @@ class DebugPrinter {
   }
 
   printGeneratedSourcesState() {
-    if(this.session.view(controller.stepIntoInternalSources)) {
+    if (this.session.view(controller.stepIntoInternalSources)) {
       this.config.logger.log("Generated sources are turned on.");
     } else {
       this.config.logger.log("Generated sources are turned off.");
@@ -285,27 +285,45 @@ class DebugPrinter {
             );
             break;
           case "revert":
-            const revertStringInfo = revertDecoding.arguments[0].value.value;
-            let revertString;
-            switch (revertStringInfo.kind) {
-              case "valid":
-                revertString = revertStringInfo.asString;
-                this.config.logger.log(`Revert message: ${revertString}`);
+            switch (revertDecoding.abi.name) {
+              case "Error":
+                const revertStringInfo =
+                  revertDecoding.arguments[0].value.value;
+                let revertString;
+                switch (revertStringInfo.kind) {
+                  case "valid":
+                    revertString = revertStringInfo.asString;
+                    this.config.logger.log(`Revert message: ${revertString}`);
+                    break;
+                  case "malformed":
+                    //turn into a JS string while smoothing over invalid UTF-8
+                    //slice 2 to remove 0x prefix
+                    revertString = Buffer.from(
+                      revertStringInfo.asHex.slice(2),
+                      "hex"
+                    ).toString();
+                    this.config.logger.log(`Revert message: ${revertString}`);
+                    this.config.logger.log(
+                      `${colors.bold(
+                        "Warning:"
+                      )} This message contained invalid UTF-8.`
+                    );
+                    break;
+                }
                 break;
-              case "malformed":
-                //turn into a JS string while smoothing over invalid UTF-8
-                //slice 2 to remove 0x prefix
-                revertString = Buffer.from(
-                  revertStringInfo.asHex.slice(2),
-                  "hex"
-                ).toString();
-                this.config.logger.log(`Revert message: ${revertString}`);
+              case "Panic":
+                const panicCode = revertDecoding.arguments[0].value.value.asBN;
+                const panicString = DebugUtils.panicString(panicCode, true); //get verbose panic string :)
                 this.config.logger.log(
-                  `${colors.bold(
-                    "Warning:"
-                  )} This message contained invalid UTF-8.`
+                  `Panic: Code 0x${panicCode.toString(
+                    16
+                  )}. This code indicates that ${panicString.toLowerCase()}`
                 );
                 break;
+              default:
+                this.config.logger.log(
+                  "There was a revert message, but it was of an unrecognized type."
+                );
             }
             break;
         }
@@ -407,11 +425,31 @@ class DebugPrinter {
       this.config.logger.log("");
     } else if (decodings[0].kind === "revert") {
       //case 9: revert (with message)
+      const decoding = decodings[0];
       this.config.logger.log("");
-      const prefix = "Revert string: ";
-      const value = decodings[0].arguments[0].value;
-      const formatted = DebugUtils.formatValue(value, prefix.length);
-      this.config.logger.log(prefix + formatted);
+      switch (decoding.abi.name) {
+        case "Error": {
+          //case 9a: revert string
+          const prefix = "Revert string: ";
+          const value = decodings[0].arguments[0].value;
+          const formatted = DebugUtils.formatValue(value, prefix.length);
+          this.config.logger.log(prefix + formatted);
+          break;
+        case "Panic": {
+          //case 9b: panic code
+          const prefix = "Panic code: ";
+          const value = decodings[0].arguments[0].value;
+          const formatted = DebugUtils.formatValue(value, prefix.length);
+          const meaning = DebugUtils.panicString(value.value.asBN);
+          this.config.logger.log(`${prefix} ${formatted} (${meaning})`);
+          break;
+        }
+        default:
+          //case 9c: ???
+          this.config.logger.log(
+            "There was a revert message, but it was not of a recognized type."
+          );
+      }
       this.config.logger.log("");
     } else if (
       decodings[0].kind === "return" &&
