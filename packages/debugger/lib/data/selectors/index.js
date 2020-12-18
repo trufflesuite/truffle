@@ -896,14 +896,14 @@ const data = createSelectorTree({
     ),
 
     /**
-     * data.current.contractHasFallbackOutput
-     * does the executing contract's fallback function have a return value?
+     * data.current.fallbackOutputForContext
+     * returns null if none
      */
-    contractHasFallbackOutput: createLeaf(
+    fallbackOutputForContext: createLeaf(
       ["./contractForBytecode"],
       contract => {
         if (!contract) {
-          return false;
+          return null;
         }
         const fallbackDefinition = contract.nodes.find(
           node =>
@@ -911,9 +911,9 @@ const data = createSelectorTree({
             Codec.Ast.Utils.functionKind(node) === "fallback"
         );
         if (!fallbackDefinition) {
-          return false;
+          return null;
         }
-        return fallbackDefinition.returnParameters.parameters.length > 0;
+        return fallbackDefinition.returnParameters.parameters[0] || null;
       }
     ),
 
@@ -1442,13 +1442,13 @@ const data = createSelectorTree({
         evm.current.call,
         "/current/context",
         "/info/allocations/calldata",
-        "./contractHasFallbackOutput"
+        "./fallbackOutputForContext"
       ],
       (
         { data: calldata },
         { context, isConstructor, fallbackAbi },
         { constructorAllocations, functionAllocations },
-        contractHasFallbackOutput
+        contractHasFallbackOutput //just using truthiness here
       ) => {
         if (isConstructor) {
           //we're in a constructor call

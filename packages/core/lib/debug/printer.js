@@ -374,18 +374,13 @@ class DebugPrinter {
         "No value was returned even though one was expected.  This may indicate a self-destruct."
       );
       this.config.logger.log("");
-    } else if (decodings[0].kind === "returnmessage") {
-      //case 5: raw binary data
-      this.config.logger.log("");
-      this.config.logger.log(`Data returned: ${decodings[0].data}`);
-      this.config.logger.log("");
     } else if (decodings[0].kind === "failure") {
-      //case 6: revert (no message)
+      //case 5: revert (no message)
       this.config.logger.log("");
       this.config.logger.log("There was no revert message.");
       this.config.logger.log("");
     } else if (decodings[0].kind === "unknownbytecode") {
-      //case 7: unknown bytecode
+      //case 6: unknown bytecode
       this.config.logger.log("");
       this.config.logger.log(
         "Bytecode was returned, but it could not be identified."
@@ -395,10 +390,10 @@ class DebugPrinter {
       decodings[0].kind === "return" &&
       decodings[0].arguments.length === 0
     ) {
-      //case 8: return values but with no content
+      //case 7: return values but with no content
       //do nothing
     } else if (decodings[0].kind === "bytecode") {
-      //case 9: known bytecode
+      //case 8: known bytecode
       this.config.logger.log("");
       const decoding = decodings[0];
       const contractKind = decoding.contractKind || "contract";
@@ -429,12 +424,12 @@ class DebugPrinter {
       }
       this.config.logger.log("");
     } else if (decodings[0].kind === "revert") {
-      //case 10: revert (with message)
+      //case 9: revert (with message)
       const decoding = decodings[0];
       this.config.logger.log("");
       switch (decoding.abi.name) {
         case "Error": {
-          //case 10a: revert string
+          //case 9a: revert string
           const prefix = "Revert string: ";
           const value = decodings[0].arguments[0].value;
           const formatted = DebugUtils.formatValue(value, prefix.length);
@@ -442,7 +437,7 @@ class DebugPrinter {
           break;
         }
         case "Panic": {
-          //case 10b: panic code
+          //case 9b: panic code
           const prefix = "Panic code: ";
           const value = decodings[0].arguments[0].value;
           const formatted = DebugUtils.formatValue(value, prefix.length);
@@ -451,7 +446,7 @@ class DebugPrinter {
           break;
         }
         default:
-          //case 10c: ??? this shouldn't happen
+          //case 9c: ??? this shouldn't happen
           this.config.logger.log(
             "There was a revert message, but it was not of a recognized type."
           );
@@ -461,17 +456,17 @@ class DebugPrinter {
       decodings[0].kind === "return" &&
       decodings[0].arguments.length > 0
     ) {
-      //case 11: actual return values to print!
+      //case 10: actual return values to print!
       this.config.logger.log("");
       const values = decodings[0].arguments;
       if (values.length === 1 && !values[0].name) {
-        //case 11a: if there's only one value and it's unnamed
+        //case 10a: if there's only one value and it's unnamed
         const value = values[0].value;
         const prefix = "Returned value: ";
         const formatted = DebugUtils.formatValue(value, prefix.length);
         this.config.logger.log(prefix + formatted);
       } else {
-        //case 11b: otherwise
+        //case 10b: otherwise
         this.config.logger.log("Returned values:");
         const prefixes = values.map(({ name }, index) =>
           name ? `${name}: ` : `Component #${index + 1}: `
@@ -487,6 +482,31 @@ class DebugPrinter {
           this.config.logger.log(prefix + formatted);
         }
       }
+      this.config.logger.log("");
+    } else if (decodings[0].kind === "returnmessage") {
+      //case 11: raw binary data
+      this.config.logger.log("");
+      const fallbackOutputDefinition = this.session.view(
+        data.current.fallbackOutputForContext
+      );
+      const name = (fallbackOutputDefinition || {}).name;
+      const prettyData = `${colors.green("hex")}${DebugUtils.formatValue(
+        decodings[0].data.slice(2), //remove '0x'
+        0,
+        true
+      )}`;
+      if (name) {
+        //case 11a: it has a name
+        this.config.logger.log("Returned values:");
+        this.config.logger.log(`${name}: ${prettyData}`);
+      } else {
+        //case 11b: it doesn't
+        this.config.logger.log(`Returned value: ${prettyData}`);
+      }
+      //it's already a string, so we'll pass the nativized parameter
+      //and hack this together :)
+      //also, since we only have one thing and it's a string, we'll skip
+      //fancy indent processing
       this.config.logger.log("");
     }
   }
