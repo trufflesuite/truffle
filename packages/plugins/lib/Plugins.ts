@@ -3,7 +3,7 @@ const originalRequire = require("original-require");
 import path from "path";
 import { PluginConfig, PluginDefinitions, TruffleConfig } from "./interfaces";
 import { Plugin } from "./Plugin";
-import { normalizeConfigPlugins } from "./util";
+import { normalizeConfigPlugins } from "./utils";
 
 export class Plugins {
   /**
