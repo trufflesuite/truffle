@@ -885,6 +885,39 @@ const data = createSelectorTree({
     ),
 
     /**
+     * data.current.contractForBytecode
+     * contract node for the executing bytecode -- *not* the current position!
+     * probably not what you usually want
+     */
+    contractForBytecode: createLeaf(
+      [evm.current.context, "./scopes/inlined"],
+      ({ contractId }, scopes) =>
+        (scopes[contractId] || { definition: null }).definition
+    ),
+
+    /**
+     * data.current.contractHasFallbackOutput
+     * does the executing contract's fallback function have a return value?
+     */
+    contractHasFallbackOutput: createLeaf(
+      ["./contractForBytecode"],
+      contract => {
+        if (!contract) {
+          return false;
+        }
+        const fallbackDefinition = contract.nodes.find(
+          node =>
+            node.nodeType === "FunctionDefinition" &&
+            Codec.Ast.Utils.functionKind(node) === "fallback"
+        );
+        if (!fallbackDefinition) {
+          return false;
+        }
+        return fallbackDefinition.returnParameters.parameters.length > 0;
+      }
+    ),
+
+    /**
      * data.current.function
      * may be modifier rather than function!
      */
@@ -961,7 +994,7 @@ const data = createSelectorTree({
      */
     fallbackBase: createLeaf(
       ["./context"],
-      ({ abi }) => Object.keys(abi).length > 0 ? 1 : 0
+      ({ abi }) => (Object.keys(abi).length > 0 ? 1 : 0)
       //note ABI here has been transformed to include functions only
     ),
 

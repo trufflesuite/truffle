@@ -346,6 +346,9 @@ class DebugPrinter {
     const allocationFound = Boolean(
       this.session.view(data.current.returnAllocation)
     );
+    const fallbackOutputExpected = this.session.view(
+      data.current.contractHasFallbackOutput
+    );
     const decodings = await this.session.returnValue();
     debug("decodings: %o", decodings);
     if (!allocationFound && decodings.length === 0) {
@@ -445,7 +448,7 @@ class DebugPrinter {
           break;
         }
         default:
-          //case 9c: ???
+          //case 9c: ??? this shouldn't happen
           this.config.logger.log(
             "There was a revert message, but it was not of a recognized type."
           );
@@ -481,6 +484,30 @@ class DebugPrinter {
           this.config.logger.log(prefix + formatted);
         }
       }
+      this.config.logger.log("");
+    } else if (
+      decodings[0].kind === "returnmessage" &&
+      fallbackOutputExpected
+    ) {
+      //case 11: raw binary data was returned and was expected
+      this.config.logger.log("");
+      this.config.logger.log(`Data returned: ${decodings[0].data}`);
+      this.config.logger.log("");
+    } else if (
+      decodings[0].kind === "returnmessage" &&
+      !fallbackOutputExpected &&
+      decodings[0].data === "0x"
+    ) {
+      //case 12: empty binary data was returned, which is what was expected
+      //do nothing
+    } else if (
+      decodings[0].kind === "returnmessage" &&
+      !fallbackOutputExpected &&
+      decodings[0].data !== "0x"
+    ) {
+      //case 13: nonempty binary data retunred, even though none expected
+      this.config.logger.log("");
+      this.config.logger.log(`Unexpected data return: ${decodings[0].data}`);
       this.config.logger.log("");
     }
   }
