@@ -5,7 +5,7 @@ export interface CompilerVersion {
   //but they need to be optional for compilation reasons
 }
 
-//Note: 0.5.x should really be 0.5.x or 0.6.x, but for the sake
-//of not breaking things, I'm going to avoid changing this until
-//there's a need (which might happen when 0.7.x hits)
-export type SolidityFamily = "unknown" | "pre-0.5.0" | "0.5.x";
+//NOTE: Families 0.5.0 and up will be named by the lowest version that
+//fits in the given family.  So e.g. 0.5.x covers 0.5.x-0.7.x;
+//0.8.x covers 0.8.x-current (as I write this)
+export type SolidityFamily = "unknown" | "pre-0.5.0" | "0.5.x" | "0.8.x";
