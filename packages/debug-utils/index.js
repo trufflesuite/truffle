@@ -8,6 +8,30 @@ var hljsDefineSolidity = require("highlightjs-solidity");
 hljsDefineSolidity(chromafi.hljs);
 var chalk = require("chalk");
 
+const panicTable = {
+  0x01: "Failed assertion",
+  0x11: "Arithmetic overflow",
+  0x12: "Division by zero",
+  0x21: "Enum value out of bounds",
+  0x22: "Malformed string",
+  0x31: "Array underflow",
+  0x32: "Index out of bounds",
+  0x41: "Oversized array or out of memory",
+  0x51: "Call to invalid function"
+};
+
+const verbosePanicTable = {
+  0x01: "An assert() check was not satisfied.",
+  0x11: "An arithmetic overflow occurred outside an unchecked { ... } block.",
+  0x12: "A division by zero occurred.",
+  0x21: "An integer was cast to an enum type that cannot hold it.",
+  0x22: "There was an attempt to read an incorrectly-encoded string or bytestring.",
+  0x31: "An empty array's pop() method was called.",
+  0x32: "An array or bytestring was indexed or sliced with an out-of-bounds index.",
+  0x41: "An oversized array was created, or the contract ran out of memory.",
+  0x51: "An uninitialized internal function pointer was called."
+};
+
 const commandReference = {
   "o": "step over",
   "i": "step into",
@@ -143,6 +167,8 @@ const trufflePalette = {
 
 var DebugUtils = {
   truffleColors, //make these externally available
+  panicTable,
+  verbosePanicTable,
 
   //attempts to test whether a given compilation is a real compilation,
   //i.e., was compiled all at once.
