@@ -893,10 +893,7 @@ export class ContractDecoder {
     options: DecoderTypes.ReturnOptions = {},
     additionalContexts: Contexts.Contexts = {}
   ): Promise<ReturndataDecoding[]> {
-    abi = {
-      type: "function",
-      ...abi
-    }; //just to be absolutely certain!
+    abi = <Abi.FunctionEntry>Abi.normalizeEntry(abi); //just to be absolutely certain!
     const block = options.block !== undefined ? options.block : "latest";
     const blockNumber = await this.regularizeBlock(block);
     const status = options.status; //true, false, or undefined
@@ -1208,7 +1205,9 @@ export class ContractInstanceDecoder {
           source ? source.source : undefined
         ),
         this.contractCode,
-        SourceMapUtils.getHumanReadableSourceMap(this.contract.deployedSourceMap)
+        SourceMapUtils.getHumanReadableSourceMap(
+          this.contract.deployedSourceMap
+        )
       );
       try {
         //this can fail if some of the source files are missing :(

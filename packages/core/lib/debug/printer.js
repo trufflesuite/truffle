@@ -346,9 +346,6 @@ class DebugPrinter {
     const allocationFound = Boolean(
       this.session.view(data.current.returnAllocation)
     );
-    const fallbackOutputExpected = this.session.view(
-      data.current.contractHasFallbackOutput
-    );
     const decodings = await this.session.returnValue();
     debug("decodings: %o", decodings);
     if (!allocationFound && decodings.length === 0) {
@@ -377,13 +374,18 @@ class DebugPrinter {
         "No value was returned even though one was expected.  This may indicate a self-destruct."
       );
       this.config.logger.log("");
+    } else if (decodings[0].kind === "returnmessage") {
+      //case 5: raw binary data
+      this.config.logger.log("");
+      this.config.logger.log(`Data returned: ${decodings[0].data}`);
+      this.config.logger.log("");
     } else if (decodings[0].kind === "failure") {
-      //case 5: revert (no message)
+      //case 6: revert (no message)
       this.config.logger.log("");
       this.config.logger.log("There was no revert message.");
       this.config.logger.log("");
     } else if (decodings[0].kind === "unknownbytecode") {
-      //case 6: unknown bytecode
+      //case 7: unknown bytecode
       this.config.logger.log("");
       this.config.logger.log(
         "Bytecode was returned, but it could not be identified."
@@ -393,10 +395,10 @@ class DebugPrinter {
       decodings[0].kind === "return" &&
       decodings[0].arguments.length === 0
     ) {
-      //case 7: return values but with no content
+      //case 8: return values but with no content
       //do nothing
     } else if (decodings[0].kind === "bytecode") {
-      //case 8: known bytecode
+      //case 9: known bytecode
       this.config.logger.log("");
       const decoding = decodings[0];
       const contractKind = decoding.contractKind || "contract";
@@ -427,19 +429,20 @@ class DebugPrinter {
       }
       this.config.logger.log("");
     } else if (decodings[0].kind === "revert") {
-      //case 9: revert (with message)
+      //case 10: revert (with message)
       const decoding = decodings[0];
       this.config.logger.log("");
       switch (decoding.abi.name) {
         case "Error": {
-          //case 9a: revert string
+          //case 10a: revert string
           const prefix = "Revert string: ";
           const value = decodings[0].arguments[0].value;
           const formatted = DebugUtils.formatValue(value, prefix.length);
           this.config.logger.log(prefix + formatted);
           break;
+        }
         case "Panic": {
-          //case 9b: panic code
+          //case 10b: panic code
           const prefix = "Panic code: ";
           const value = decodings[0].arguments[0].value;
           const formatted = DebugUtils.formatValue(value, prefix.length);
@@ -448,7 +451,7 @@ class DebugPrinter {
           break;
         }
         default:
-          //case 9c: ??? this shouldn't happen
+          //case 10c: ??? this shouldn't happen
           this.config.logger.log(
             "There was a revert message, but it was not of a recognized type."
           );
@@ -458,17 +461,17 @@ class DebugPrinter {
       decodings[0].kind === "return" &&
       decodings[0].arguments.length > 0
     ) {
-      //case 10: actual return values to print!
+      //case 11: actual return values to print!
       this.config.logger.log("");
       const values = decodings[0].arguments;
       if (values.length === 1 && !values[0].name) {
-        //case 10a: if there's only one value and it's unnamed
+        //case 11a: if there's only one value and it's unnamed
         const value = values[0].value;
         const prefix = "Returned value: ";
         const formatted = DebugUtils.formatValue(value, prefix.length);
         this.config.logger.log(prefix + formatted);
       } else {
-        //case 10b: otherwise
+        //case 11b: otherwise
         this.config.logger.log("Returned values:");
         const prefixes = values.map(({ name }, index) =>
           name ? `${name}: ` : `Component #${index + 1}: `
@@ -484,30 +487,6 @@ class DebugPrinter {
           this.config.logger.log(prefix + formatted);
         }
       }
-      this.config.logger.log("");
-    } else if (
-      decodings[0].kind === "returnmessage" &&
-      fallbackOutputExpected
-    ) {
-      //case 11: raw binary data was returned and was expected
-      this.config.logger.log("");
-      this.config.logger.log(`Data returned: ${decodings[0].data}`);
-      this.config.logger.log("");
-    } else if (
-      decodings[0].kind === "returnmessage" &&
-      !fallbackOutputExpected &&
-      decodings[0].data === "0x"
-    ) {
-      //case 12: empty binary data was returned, which is what was expected
-      //do nothing
-    } else if (
-      decodings[0].kind === "returnmessage" &&
-      !fallbackOutputExpected &&
-      decodings[0].data !== "0x"
-    ) {
-      //case 13: nonempty binary data retunred, even though none expected
-      this.config.logger.log("");
-      this.config.logger.log(`Unexpected data return: ${decodings[0].data}`);
       this.config.logger.log("");
     }
   }

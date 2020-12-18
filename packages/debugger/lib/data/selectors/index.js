@@ -1438,11 +1438,17 @@ const data = createSelectorTree({
      * data.current.returnAllocation
      */
     returnAllocation: createLeaf(
-      [evm.current.call, "/current/context", "/info/allocations/calldata"],
+      [
+        evm.current.call,
+        "/current/context",
+        "/info/allocations/calldata",
+        "./contractHasFallbackOutput"
+      ],
       (
         { data: calldata },
-        { context, isConstructor },
-        { constructorAllocations, functionAllocations }
+        { context, isConstructor, fallbackAbi },
+        { constructorAllocations, functionAllocations },
+        contractHasFallbackOutput
       ) => {
         if (isConstructor) {
           //we're in a constructor call
@@ -1457,10 +1463,21 @@ const data = createSelectorTree({
           debug("selector: %s", selector);
           debug("bySelector: %o", functionAllocations[context]);
           let allocation = (functionAllocations[context] || {})[selector];
-          if (!allocation) {
-            return null;
+          if (allocation) {
+            return allocation.output;
+          } else {
+            //we're in a fallback or receive, presumably.
+            //so is it a fallback, and does it have output?
+            if (
+              (calldata !== "0x" || fallbackAbi.receive === null) &&
+              fallbackAbi.fallback !== null && //this check is redundant, but let's include it
+              contractHasFallbackOutput
+            ) {
+              return Codec.AbiData.Allocate.FallbackOutputAllocation;
+            } else {
+              return null;
+            }
           }
-          return allocation.output;
         }
       }
     ),
