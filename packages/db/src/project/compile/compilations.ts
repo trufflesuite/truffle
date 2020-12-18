@@ -3,7 +3,6 @@ const debug = logger("db:project:compile:compilations");
 
 import { IdObject, resources } from "@truffle/db/project/process";
 import * as Batch from "./batch";
-import * as Common from "@truffle/compile-common/src/types";
 
 interface Contract {
   sourcePath: string;
@@ -22,7 +21,6 @@ interface Source {
   sourcePath: string;
   contents: string;
   language: string;
-  //check typing
   ast: any;
   legacyAST: any;
 
@@ -35,10 +33,10 @@ export const generateCompilationsLoad = Batch.Compilations.generate<{
       name: string;
       version: string;
     };
-    // sources: Source[];
+    sources: {};
     sourceIndexes: string[];
   };
-  source: Common.Source & Source;
+  source: Source;
   contract: Contract;
   resources: {
     compilation: IdObject<DataModel.Compilation>;
@@ -102,10 +100,12 @@ function toProcessedSourceInputs(options: {
     }
 
     const ast = source.ast ? { json: JSON.stringify(source.ast) } : undefined;
-    //return language here too
+    const language = source.language;
+
     return {
       source: source.db.source,
-      ast
+      ast,
+      language
     };
   });
 }
