@@ -12,7 +12,7 @@
     "prepare": "yarn build",
     "test": "jest --verbose --detectOpenHandles"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/preserve-to-ipfs",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/plugins",
   "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
   "license": "MIT",
   "publishConfig": {
