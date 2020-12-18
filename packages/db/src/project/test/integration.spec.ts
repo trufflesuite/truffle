@@ -45,6 +45,7 @@ const config = {
   contracts_build_directory: fixturesDirectory,
   working_directory: tempDir.name,
   db: {
+    enabled: true,
     adapter: {
       name: "memory"
     }
@@ -667,7 +668,7 @@ describe("Compilation", () => {
         artifacts[index].source
       );
       expect(solcCompilation.processedSources[index].language).toEqual(
-        "solidity"
+        "Solidity"
       );
 
       expect(
@@ -687,6 +688,7 @@ describe("Compilation", () => {
     expect(vyperCompilation.processedSources[0].source.contents).toEqual(
       artifacts[3].source
     );
+    expect(vyperCompilation.processedSources[0].language).toEqual("Vyper");
   });
 
   it("loads contract sources", async () => {
