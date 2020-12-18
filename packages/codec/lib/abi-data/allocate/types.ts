@@ -138,10 +138,12 @@ export type FunctionReturndataKind =
   | "failure"
   | "selfdestruct";
 export type ConstructorReturndataKind = "bytecode";
+export type AdditionalReturndataKind = "returnmessage";
 
 export type ReturndataAllocation =
   | FunctionReturndataAllocation
-  | ConstructorReturndataAllocation;
+  | ConstructorReturndataAllocation
+  | AdditionalReturndataAllocation;
 
 export interface FunctionReturndataAllocation {
   kind: FunctionReturndataKind;
@@ -157,6 +159,12 @@ export interface ConstructorReturndataAllocation {
   selector: Uint8Array; //must be empty, but is required for type niceness
   immutables?: ReturnImmutableAllocation[];
   delegatecallGuard: boolean;
+  allocationMode: DecodingMode;
+}
+
+export interface AdditionalReturndataAllocation {
+  kind: AdditionalReturndataKind;
+  selector: Uint8Array; //must be empty, but is required for type niceness
   allocationMode: DecodingMode;
 }
 

@@ -267,10 +267,7 @@ export function* decodeEvent(
     address
   };
   const codeAsHex = Conversion.toHexString(codeBytes);
-  const contractContext = Contexts.Utils.findContext(
-    info.contexts,
-    codeAsHex
-  );
+  const contractContext = Contexts.Utils.findContext(info.contexts, codeAsHex);
   let possibleContractAllocations: AbiData.Allocate.EventAllocation[]; //excludes anonymous events
   let possibleContractAnonymousAllocations: AbiData.Allocate.EventAllocation[];
   if (contractContext) {
@@ -461,11 +458,13 @@ const defaultReturnAllocations: AbiData.Allocate.ReturndataAllocation[] = [
     abi: {
       name: "Error",
       type: "error",
-      inputs: [{
-        name: "",
-        type: "string",
-        internalType: "string"
-      }]
+      inputs: [
+        {
+          name: "",
+          type: "string",
+          internalType: "string"
+        }
+      ]
     },
     arguments: [
       {
@@ -489,11 +488,13 @@ const defaultReturnAllocations: AbiData.Allocate.ReturndataAllocation[] = [
     abi: {
       name: "Panic",
       type: "error",
-      inputs: [{
-        name: "",
-        type: "uint256",
-        internalType: "uint256"
-      }]
+      inputs: [
+        {
+          name: "",
+          type: "uint256",
+          internalType: "uint256"
+        }
+      ]
     },
     arguments: [
       {
@@ -544,6 +545,7 @@ export function* decodeReturndata(
         possibleAllocations = [successAllocation, ...defaultReturnAllocations];
         break;
       case "bytecode":
+      case "returnmessage":
         possibleAllocations = [...defaultReturnAllocations, successAllocation];
         break;
       //Other cases shouldn't happen so I'm leaving them to cause errors!
@@ -561,7 +563,12 @@ export function* decodeReturndata(
     encodedData = encodedData.subarray(allocation.selector.length); //slice off the selector for later
     //also we check, does the status match?
     if (status !== undefined) {
-      const successKinds = ["return", "selfdestruct", "bytecode"];
+      const successKinds = [
+        "return",
+        "selfdestruct",
+        "bytecode",
+        "returnmessage"
+      ];
       const failKinds = ["failure", "revert"];
       if (status) {
         if (!successKinds.includes(allocation.kind)) {
@@ -580,6 +587,17 @@ export function* decodeReturndata(
       if (decoding) {
         decodings.push(decoding);
       }
+      continue;
+    }
+    if (allocation.kind === "returnmessage") {
+      //this kind is also special, though thankfully it's easier
+      const decoding = {
+        kind: "returnmessage" as const,
+        status: true as const,
+        data: Conversion.toHexString(info.state.returndata),
+        decodingMode: allocation.allocationMode
+      };
+      decodings.push(decoding);
       continue;
     }
     let decodingMode: DecodingMode = allocation.allocationMode; //starts out here; degrades to abi if necessary
