@@ -47,7 +47,7 @@ export function abiHasPayableFallback(
 
 //NOTE: this function returns the written out SIGNATURE, not the SELECTOR
 export function abiSignature(
-  abiEntry: Abi.FunctionEntry | Abi.EventEntry
+  abiEntry: Abi.FunctionEntry | Abi.EventEntry | Abi.ErrorEntry
 ): string {
   return abiEntry.name + abiTupleSignature(abiEntry.inputs);
 }
@@ -70,7 +70,7 @@ function abiTypeSignature(parameter: Abi.Parameter): string {
 }
 
 export function abiSelector(
-  abiEntry: Abi.FunctionEntry | Abi.EventEntry
+  abiEntry: Abi.FunctionEntry | Abi.EventEntry | Abi.ErrorEntry
 ): string {
   let signature = abiSignature(abiEntry);
   //NOTE: web3's soliditySha3 has a problem if the empty
@@ -80,6 +80,7 @@ export function abiSelector(
     case "event":
       return hash;
     case "function":
+    case "error":
       return hash.slice(0, 2 + 2 * Evm.Utils.SELECTOR_SIZE); //arithmetic to account for hex string
   }
 }
@@ -101,6 +102,7 @@ export function abisMatch(
   switch (entry1.type) {
     case "function":
     case "event":
+    case "error":
       return (
         abiSignature(entry1) ===
         abiSignature(<Abi.FunctionEntry | Abi.EventEntry>entry2)
@@ -145,6 +147,7 @@ export function abiEntryIsObviouslyIllTyped(abiEntry: Abi.Entry): boolean {
       return false;
     case "constructor":
     case "event":
+    case "error":
       return abiEntry.inputs.some(abiParameterIsObviouslyIllTyped);
     case "function":
       return (
