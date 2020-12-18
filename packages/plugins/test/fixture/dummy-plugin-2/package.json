@@ -1,0 +1,7 @@
+{
+  "name": "dummy-plugin-2",
+  "version": "0.1.0",
+  "description": "Dummy plugin for testing",
+  "main": "index.js",
+  "license": "MIT"
+}

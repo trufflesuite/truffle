@@ -1,0 +1,5 @@
+{
+  "commands": {
+    "dummy-command-1": "index.js"
+  }
+}

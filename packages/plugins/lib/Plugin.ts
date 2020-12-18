@@ -20,13 +20,13 @@ export class Plugin {
   }
 
   definesCommand(commandName: string): boolean {
-    const set = new Set(Object.keys(this.commands));
-    return set.has(commandName);
+    return this.commands.includes(commandName);
   }
 
   loadCommand(commandName: string) {
     const commandLocalPath =
       this.definition.commands && this.definition.commands[commandName];
+
     if (!commandLocalPath) {
       throw new TruffleError(
         `Plugin ${this.module} does not define command ${commandName}`

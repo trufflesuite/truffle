@@ -3,12 +3,6 @@ import path from "path";
 
 describe("Plugin utilities", () => {
   describe("resolves()", () => {
-    it.skip("should return true when relative path module resolves successfully", () => {
-      const moduleResolved = resolves("../lib");
-
-      expect(moduleResolved).toBeTruthy();
-    });
-
     it("should return true when absolute path module resolves successfully", () => {
       const absolutePath = path.resolve(__dirname, "../lib");
 
@@ -21,6 +15,12 @@ describe("Plugin utilities", () => {
       const moduleResolved = resolves("jest");
 
       expect(moduleResolved).toBeTruthy();
+    });
+
+    it("should return false when using any relative path", () => {
+      const moduleResolved = resolves("../lib");
+
+      expect(moduleResolved).toBeFalsy();
     });
 
     it("should return false when relative path module does not resolve successfully", () => {
