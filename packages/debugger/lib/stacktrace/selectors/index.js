@@ -74,8 +74,8 @@ function createMultistepSelectors(stepSelector) {
      */
     strippedLocation: createLeaf(
       ["./location/source", "./location/sourceRange"],
-      ({ id, sourcePath }, sourceRange) => ({
-        source: { id, sourcePath },
+      ({ id, sourcePath, internal }, sourceRange) => ({
+        source: { id, sourcePath, internal },
         sourceRange
       })
     ),

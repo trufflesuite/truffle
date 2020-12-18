@@ -7,7 +7,7 @@ const ora = require("ora");
 
 const DebugUtils = require("@truffle/debug-utils");
 const selectors = require("@truffle/debugger").selectors;
-const { session, solidity, trace, evm, controller, stacktrace } = selectors;
+const { session, solidity, trace, evm, controller } = selectors;
 
 const analytics = require("../services/analytics");
 const repl = require("repl");
@@ -409,7 +409,7 @@ class DebugInterpreter {
       }
     }
     if (cmd === "g") {
-      if (!(this.session.view(controller.stepIntoInternalSources))) {
+      if (!this.session.view(controller.stepIntoInternalSources)) {
         this.session.setInternalStepping(true);
         this.printer.print(
           "All debugger commands can now step into generated sources."
@@ -438,14 +438,7 @@ class DebugInterpreter {
         this.printer.print("");
         this.printer.printStacktrace(true); //final stacktrace
         this.printer.print("");
-        this.printer.print(DebugUtils.truffleColors.red("Location of error:"));
-        const stacktraceReport = this.session.view(
-          stacktrace.current.finalReport
-        );
-        const recordedLocation =
-          stacktraceReport[stacktraceReport.length - 1].location;
-        this.printer.printFile(recordedLocation);
-        this.printer.printState(undefined, undefined, recordedLocation);
+        this.printer.printErrorLocation();
       } else {
         //case if transaction succeeded
         this.printer.print("Transaction completed successfully.");
@@ -479,7 +472,9 @@ class DebugInterpreter {
         break;
       case "v":
         if (this.session.view(solidity.current.source).language === "Vyper") {
-          this.printer.print("Decoding of variables is not currently supported for Vyper.");
+          this.printer.print(
+            "Decoding of variables is not currently supported for Vyper."
+          );
           break;
         }
         await this.printer.printVariables();
@@ -562,20 +557,9 @@ class DebugInterpreter {
           ) {
             this.printer.printStacktrace(true); //print final stack trace
             //Now: actually show the point where things went wrong
-            this.printer.print("");
-            this.printer.print(
-              DebugUtils.truffleColors.red("Location of error:")
-            );
-            const stacktraceReport = this.session.view(
-              stacktrace.current.finalReport
-            );
-            const recordedLocation =
-              stacktraceReport[stacktraceReport.length - 1].location;
-            this.printer.printFile(recordedLocation);
-            this.printer.printState(
+            this.printer.printErrorLocation(
               LINES_BEFORE_LONG,
-              LINES_AFTER_LONG,
-              recordedLocation
+              LINES_AFTER_LONG
             );
           } else {
             this.printer.printStacktrace(false); //intermediate call stack

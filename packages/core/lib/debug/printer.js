@@ -499,6 +499,22 @@ class DebugPrinter {
     this.config.logger.log(DebugUtils.formatStacktrace(report));
   }
 
+  printErrorLocation(linesBefore, linesAfter) {
+    const stacktraceReport = this.session.view(stacktrace.current.finalReport);
+    const lastUserFrame = stacktraceReport
+      .slice()
+      .reverse() //clone before reversing, reverse is in-place!
+      .find(frame => !frame.location.internal);
+    if (lastUserFrame) {
+      this.config.logger.log("");
+      this.config.logger.log(
+        DebugUtils.truffleColors.red("Location of error:")
+      );
+      this.printFile(lastUserFrame.location);
+      this.printState(linesBefore, linesAfter, lastUserFrame.location);
+    }
+  }
+
   async printWatchExpressionsResults(expressions) {
     debug("expressions %o", expressions);
     for (let expression of expressions) {
