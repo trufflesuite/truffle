@@ -5,6 +5,8 @@ import PouchDB from "pouchdb";
 import PouchDBDebug from "pouchdb-debug";
 import PouchDBFind from "pouchdb-find";
 
+import * as lodash from "lodash";
+
 import {
   CollectionName,
   Collections,
@@ -176,7 +178,8 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
         // check for existing
         const resource = await this.get(collectionName, id);
         if (resource) {
-          return resource;
+          const mergedResource = lodash.merge(resource, resourceInput);
+          return mergedResource;
         }
 
         await this.collections[collectionName].put({
