@@ -1,26 +1,48 @@
 import { Plugin, Plugins } from "../lib";
+import path from "path";
+const originalRequire = require("original-require");
 
 describe("Plugins", () => {
+  // Add fixture folder to require path so dummy plugins can be found
+  originalRequire("app-module-path").addPath(
+    path.resolve(__dirname, "fixture")
+  );
+
   describe("listAll()", () => {
     it("should list all plugins defined in a Truffle config object", () => {
       const config = {
         working_directory: __dirname,
-        plugins: [
-          `${__dirname}/fixture/dummy-plugin-1`,
-          { module: `${__dirname}/fixture/dummy-plugin-2` }
-        ]
+        plugins: ["dummy-plugin-1", "dummy-plugin-2"]
       };
 
       const allPlugins = Plugins.listAll(config);
 
       const expectedPlugins = [
         new Plugin({
-          module: `${__dirname}/fixture/dummy-plugin-1`,
+          module: "dummy-plugin-1",
           definition: { commands: { "dummy-command-1": "index.js" } }
         }),
         new Plugin({
-          module: `${__dirname}/fixture/dummy-plugin-2`,
+          module: "dummy-plugin-2",
           definition: { commands: { "dummy-command-2": "index.js" } }
+        })
+      ];
+
+      expect(allPlugins).toEqual(expectedPlugins);
+    });
+
+    it("should filter duplicate plugins", () => {
+      const config = {
+        working_directory: __dirname,
+        plugins: ["dummy-plugin-1", "dummy-plugin-1"]
+      };
+
+      const allPlugins = Plugins.listAll(config);
+
+      const expectedPlugins = [
+        new Plugin({
+          module: `dummy-plugin-1`,
+          definition: { commands: { "dummy-command-1": "index.js" } }
         })
       ];
 
@@ -30,7 +52,7 @@ describe("Plugins", () => {
     it("should throw an error when a listed plugin cannot be found", () => {
       const config = {
         working_directory: __dirname,
-        plugins: [`${__dirname}/fixture/non-existent-plugin`]
+        plugins: ["non-existent-plugin"]
       };
 
       const expectedError = /listed as a plugin, but not found in global or local node modules/;
@@ -41,7 +63,7 @@ describe("Plugins", () => {
     it("should throw an error when a listed plugin does not contain a truffle-plugin.json file", () => {
       const config = {
         working_directory: __dirname,
-        plugins: [`${__dirname}/../lib`]
+        plugins: ["jest"]
       };
 
       const expectedError = /truffle-plugin\.json not found/;
@@ -54,11 +76,7 @@ describe("Plugins", () => {
     it("should find all plugins that implement a given command", () => {
       const config = {
         working_directory: __dirname,
-        plugins: [
-          `${__dirname}/fixture/dummy-plugin-1`,
-          `${__dirname}/fixture/dummy-plugin-2`,
-          `${__dirname}/fixture/dummy-plugin-2-copy`
-        ]
+        plugins: ["dummy-plugin-1", "dummy-plugin-2", "dummy-plugin-2-copy"]
       };
 
       const foundPlugins = Plugins.findPluginsForCommand(
@@ -68,11 +86,11 @@ describe("Plugins", () => {
 
       const expectedPlugins = [
         new Plugin({
-          module: `${__dirname}/fixture/dummy-plugin-2`,
+          module: "dummy-plugin-2",
           definition: { commands: { "dummy-command-2": "index.js" } }
         }),
         new Plugin({
-          module: `${__dirname}/fixture/dummy-plugin-2-copy`,
+          module: "dummy-plugin-2-copy",
           definition: { commands: { "dummy-command-2": "index.js" } }
         })
       ];

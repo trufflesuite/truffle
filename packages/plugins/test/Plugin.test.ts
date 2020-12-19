@@ -1,10 +1,17 @@
 import { Plugin } from "../lib";
+import path from "path";
+const originalRequire = require("original-require");
 
 describe("Plugin", () => {
+  // Add fixture folder to require path so dummy plugins can be found
+  originalRequire("app-module-path").addPath(
+    path.resolve(__dirname, "fixture")
+  );
+
   describe("get commands()", () => {
     it("should list all commands defined in the plugin definition", () => {
       const plugin = new Plugin({
-        module: `${__dirname}/fixture/dummy-plugin-1`,
+        module: "dummy-plugin-1",
         definition: { commands: { "dummy-command-1": "index.js" } }
       });
 
@@ -15,7 +22,7 @@ describe("Plugin", () => {
   describe("definesCommand()", () => {
     it("should return true if the plugin definition defines the requested command", () => {
       const plugin = new Plugin({
-        module: `${__dirname}/fixture/dummy-plugin-1`,
+        module: "dummy-plugin-1",
         definition: { commands: { "dummy-command-1": "index.js" } }
       });
 
@@ -26,7 +33,7 @@ describe("Plugin", () => {
 
     it("should return false if the plugin definition does not define the requested command", () => {
       const plugin = new Plugin({
-        module: `${__dirname}/fixture/dummy-plugin-1`,
+        module: "dummy-plugin-1",
         definition: { commands: { "dummy-command-1": "index.js" } }
       });
 
@@ -39,7 +46,7 @@ describe("Plugin", () => {
   describe("loadCommand()", () => {
     it("should load command defined in the plugin definition", () => {
       const plugin = new Plugin({
-        module: `${__dirname}/fixture/dummy-plugin-1`,
+        module: "dummy-plugin-1",
         definition: { commands: { "dummy-command-1": "index.js" } }
       });
 
@@ -54,7 +61,7 @@ describe("Plugin", () => {
 
     it("should throw when requested command is not defined in the plugin definition", () => {
       const plugin = new Plugin({
-        module: `${__dirname}/fixture/dummy-plugin-1`,
+        module: "dummy-plugin-1",
         definition: { commands: { "dummy-command-1": "index.js" } }
       });
 
@@ -65,12 +72,10 @@ describe("Plugin", () => {
     });
 
     it("should throw when command's source module is an absolute path", () => {
-      const absoluteModulePath = `${__dirname}/fixture/dummy-plugin-1/index.js`;
-
       const plugin = new Plugin({
-        module: absoluteModulePath,
+        module: __dirname,
         definition: {
-          commands: { "dummy-command-1": `${absoluteModulePath}/index.js` }
+          commands: { "dummy-command-1": "/index.js" }
         }
       });
 
