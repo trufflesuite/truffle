@@ -34,6 +34,10 @@ contract ReturnValues {
   function pair() public returns (int x, int) {
     return (minus, -2);
   }
+
+  function panic() public {
+    assert(false);
+  }
 }
 
 library ReturnLibrary {
@@ -234,9 +238,39 @@ describe("Return value decoding", function () {
     assert.lengthOf(decodings, 1);
     const decoding = decodings[0];
     assert.strictEqual(decoding.kind, "revert");
+    assert.strictEqual(decoding.abi.name, "Error");
     const outputs = decoding.arguments;
     assert.lengthOf(outputs, 1);
     const message = Codec.Format.Utils.Inspect.nativize(outputs[0].value);
     assert.strictEqual(message, "Noise!");
+  });
+
+  it("Decodes panic code", async function () {
+    this.timeout(9000);
+
+    //HACK: because this transaction makes web3 throw, we have to extract the hash from
+    //the resulting exception (there is supposed to be a non-hacky way but it
+    //does not presently work)
+    let instance = await abstractions.ReturnValues.deployed();
+    let txHash;
+    try {
+      await instance.panic(); //web3 throws on failure
+    } catch (error) {
+      txHash = error.hashes[0]; //it's the only hash involved
+    }
+
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+
+    await bugger.continueUntilBreakpoint(); //run till end
+
+    const decodings = await bugger.returnValue();
+    assert.lengthOf(decodings, 1);
+    const decoding = decodings[0];
+    assert.strictEqual(decoding.kind, "revert");
+    assert.strictEqual(decoding.abi.name, "Panic");
+    const outputs = decoding.arguments;
+    assert.lengthOf(outputs, 1);
+    const panicCode = Codec.Format.Utils.Inspect.nativize(outputs[0].value);
+    assert.strictEqual(panicCode, 1);
   });
 });
