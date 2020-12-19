@@ -33,7 +33,7 @@ export const normalizeConfigPlugins = (
     // fatal error if we can't load a plugin listed in truffle-config.js
     if (!resolves(plugin.module)) {
       throw new TruffleError(
-        `\nError: ${module} listed as a plugin, but not found in global or local node modules!\n`
+        `\nError: ${plugin.module} listed as a plugin, but not found in global or local node modules!\n`
       );
     }
 

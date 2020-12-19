@@ -18,6 +18,22 @@ export class Plugins {
     );
   }
 
+  /**
+   * Given a truffle-config-like and command, find and return all plugins that define the command
+   */
+  static findPluginsForCommand(
+    config: TruffleConfig,
+    command: string
+  ): Plugin[] {
+    const allPlugins = Plugins.listAll(config);
+
+    const pluginsForCommand = allPlugins.filter(plugin =>
+      plugin.definesCommand(command)
+    );
+
+    return pluginsForCommand;
+  }
+
   /*
    * internals
    */
