@@ -1,6 +1,6 @@
 {
   "name": "@truffle/plugins",
-  "version": "0.1.0-preserves.8",
+  "version": "0.1.0",
   "description": "Truffle plugin support",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",

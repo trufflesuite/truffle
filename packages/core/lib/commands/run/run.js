@@ -1,17 +1,14 @@
 const TruffleError = require("@truffle/error");
-const { Plugin } = require("@truffle/plugins");
+const { Plugins } = require("@truffle/plugins");
 
 const Run = {
   // initiates running the third-party command
   initializeCommand(customCommand, plugins) {
-    // look for plugin defining customCommand
     for (const plugin of plugins) {
-      if (plugin.definesCommand(customCommand)) {
-        try {
-          return plugin.loadCommand(customCommand);
-        } catch (_) {
-          // loading fails; try next one
-        }
+      try {
+        return plugin.loadCommand(customCommand);
+      } catch (_) {
+        // loading fails; try next one
       }
     }
 
@@ -25,7 +22,7 @@ const Run = {
 
   // executes command or throws user helpful error
   run(customCommand, config, done) {
-    const plugins = Plugin.list(config);
+    const plugins = Plugins.findPluginsForCommand(config, customCommand);
 
     const runCommand = this.initializeCommand(customCommand, plugins);
     const commandResult = runCommand(config, done);
