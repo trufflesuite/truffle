@@ -450,7 +450,7 @@ const panicSelector: Uint8Array = Conversion.toBytes(
   })
 ).subarray(0, Evm.Utils.SELECTOR_SIZE);
 
-const defaultReturnAllocations: AbiData.Allocate.ReturndataAllocation[] = [
+const defaultReturnAllocationsHighPriority: AbiData.Allocate.ReturndataAllocation[] = [
   {
     kind: "revert" as const,
     allocationMode: "full" as const,
@@ -511,7 +511,10 @@ const defaultReturnAllocations: AbiData.Allocate.ReturndataAllocation[] = [
         }
       }
     ]
-  },
+  }
+];
+
+const defaultReturnAllocationsLowPriority: AbiData.Allocate.ReturndataAllocation[] = [
   {
     kind: "failure" as const,
     allocationMode: "full" as const,
@@ -526,9 +529,14 @@ const defaultReturnAllocations: AbiData.Allocate.ReturndataAllocation[] = [
   }
 ];
 
+const defaultReturnAllocations = [
+  ...defaultReturnAllocationsHighPriority,
+  ...defaultReturnAllocationsLowPriority
+];
+
 /**
  * If there are multiple possibilities, they're always returned in
- * the order: return, revert, failure, empty, bytecode, unknownbytecode
+ * the order: return, revert, returnmessage, failure, empty, bytecode, unknownbytecode
  * @Category Decoding
  */
 export function* decodeReturndata(
@@ -545,8 +553,14 @@ export function* decodeReturndata(
         possibleAllocations = [successAllocation, ...defaultReturnAllocations];
         break;
       case "bytecode":
-      case "returnmessage":
         possibleAllocations = [...defaultReturnAllocations, successAllocation];
+        break;
+      case "returnmessage":
+        possibleAllocations = [
+          ...defaultReturnAllocationsHighPriority,
+          successAllocation,
+          ...defaultReturnAllocationsLowPriority
+        ];
         break;
       //Other cases shouldn't happen so I'm leaving them to cause errors!
     }
