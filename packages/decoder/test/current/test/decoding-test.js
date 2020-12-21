@@ -18,7 +18,7 @@ describe("State variable decoding", function() {
   });
 
   before("Prepare contracts and artifacts", async function () {
-    this.timeout(30000);
+    this.timeout(50000);
 
     const prepared = await prepareContracts(provider, path.resolve(__dirname, ".."));
     abstractions = prepared.abstractions;
