@@ -180,7 +180,7 @@ const Compile = {
   async sources({ sources = [], options }) {
     options = Config.default().merge(options);
     // filter out non-vyper paths
-    const vyperFiles = sources.filter(path => minimatch(path, VYPER_PATTERN));
+    const vyperFiles = sources.filter(path => minimatch(path, VYPER_PATTERN, { dot: true }));
 
     // no vyper files found, no need to check vyper
     if (vyperFiles.length === 0) {
