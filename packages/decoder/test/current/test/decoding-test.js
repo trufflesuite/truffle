@@ -7,22 +7,22 @@ const Decoder = require("../../..");
 const { nativizeDecoderVariables } = require("../../../dist/utils");
 const { prepareContracts } = require("../../helpers");
 
-describe("State variable decoding", function() {
-
+describe("State variable decoding", function () {
   let provider;
   let abstractions;
-  let compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({seed: "decoder", gasLimit: 7000000});
+    provider = Ganache.provider({ seed: "decoder", gasLimit: 7000000 });
   });
 
   before("Prepare contracts and artifacts", async function () {
-    this.timeout(30000);
+    this.timeout(50000);
 
-    const prepared = await prepareContracts(provider, path.resolve(__dirname, ".."));
+    const prepared = await prepareContracts(
+      provider,
+      path.resolve(__dirname, "..")
+    );
     abstractions = prepared.abstractions;
-    compilations = prepared.compilations;
   });
 
   it("should get the initial state properly", async function () {
