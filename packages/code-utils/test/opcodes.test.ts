@@ -1,4 +1,4 @@
-import opcodes from "../opcodes";
+import opcodes from "../src/opcodes";
 import assert from "assert";
 import { describe, it } from "mocha";
 
