@@ -193,6 +193,7 @@ var DebugUtils = {
   isUsableCompilation: function (compilation) {
     //check #1: is the source order reliable?
     if (compilation.unreliableSourceOrder) {
+      debug("unreliable source order");
       return false;
     }
 
@@ -205,6 +206,7 @@ var DebugUtils = {
     //(since the real concern is empty spots, not undefined, yet this turns
     //this up anyhow)
     if (compilation.sources.includes(undefined)) {
+      debug("nonconsecutive sources");
       return false;
     }
 
@@ -231,6 +233,7 @@ var DebugUtils = {
       if (lowestInternalIndex !== compilation.sources.length) {
         //if it's a usable compilation, these should be equal,
         //as length = 1 + last user source
+        debug("gap before internal sources");
         return false;
       }
     }
@@ -244,6 +247,7 @@ var DebugUtils = {
       } else if (node !== null && typeof node === "object") {
         if (node.id !== undefined) {
           if (astIds.has(node.id)) {
+            debug("id occured twice: %o", node.id);
             return false;
           } else {
             astIds.add(node.id);
@@ -255,9 +259,12 @@ var DebugUtils = {
       }
     };
 
-    //now: walk each AST
+    //now: walk each Solidity AST
+    //(and don't bother checking generated sources as they're
+    //never Solidity)
+    debug("checking Solidity ASTs for collisions");
     return compilation.sources.every(source =>
-      source ? allIDsUnseenSoFar(source.ast) : true
+      !source || source.language !== "Solidity" || allIDsUnseenSoFar(source.ast)
     );
   },
 
