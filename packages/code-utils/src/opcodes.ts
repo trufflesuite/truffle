@@ -1,6 +1,6 @@
-import { opcodes } from "typings";
+import { OpcodeTable } from "./types";
 
-const codes: opcodes = {
+const codes: OpcodeTable = {
   0x00: "STOP",
   0x01: "ADD",
   0x02: "MUL",
