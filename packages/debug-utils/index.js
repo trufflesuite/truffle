@@ -1,12 +1,37 @@
-var OS = require("os");
-var debug = require("debug")("debug-utils");
-var util = require("util");
-var Codec = require("@truffle/codec");
+const OS = require("os");
+const debug = require("debug")("debug-utils");
+const util = require("util");
+const Codec = require("@truffle/codec");
+const BN = require("bn.js");
 
-var chromafi = require("@trufflesuite/chromafi");
-var hljsDefineSolidity = require("highlightjs-solidity");
+const chromafi = require("@trufflesuite/chromafi");
+const hljsDefineSolidity = require("highlightjs-solidity");
 hljsDefineSolidity(chromafi.hljs);
-var chalk = require("chalk");
+const chalk = require("chalk");
+
+const panicTable = {
+  0x01: "Failed assertion",
+  0x11: "Arithmetic overflow",
+  0x12: "Division by zero",
+  0x21: "Enum value out of bounds",
+  0x22: "Malformed string",
+  0x31: "Array underflow",
+  0x32: "Index out of bounds",
+  0x41: "Oversized array or out of memory",
+  0x51: "Call to invalid function"
+};
+
+const verbosePanicTable = {
+  0x01: "An assert() check was not satisfied.",
+  0x11: "An arithmetic overflow occurred outside an unchecked { ... } block.",
+  0x12: "A division by zero occurred.",
+  0x21: "An integer was cast to an enum type that cannot hold it.",
+  0x22: "There was an attempt to read an incorrectly-encoded string or bytestring.",
+  0x31: "An empty array's pop() method was called.",
+  0x32: "An array or bytestring was indexed or sliced with an out-of-bounds index.",
+  0x41: "An oversized array was created, or the contract ran out of memory.",
+  0x51: "An uninitialized internal function pointer was called."
+};
 
 const commandReference = {
   "o": "step over",
@@ -140,9 +165,24 @@ const trufflePalette = {
   "deletion": chalk
 };
 
-
 var DebugUtils = {
   truffleColors, //make these externally available
+
+  //panicCode may be either a number or a BN
+  panicString: function (panicCode, verbose = false) {
+    const unknownString = "Unknown panic";
+    const verboseUnknownString = "A panic occurred of unrecognized type.";
+    if (BN.isBN(panicCode)) {
+      try {
+        panicCode = panicCode.toNumber();
+      } catch (_) {
+        return verbose ? verboseUnknownString : unknownString;
+      }
+    }
+    return verbose
+      ? verbosePanicTable[panicCode] || verboseUnknownString
+      : panicTable[panicCode] || unknownString;
+  },
 
   //attempts to test whether a given compilation is a real compilation,
   //i.e., was compiled all at once.
@@ -649,13 +689,13 @@ var DebugUtils = {
   },
 
   formatStacktrace: function (stacktrace, indent = 2) {
-    //get message from stacktrace
-    const message = stacktrace[0].message;
+    //get message or panic code from stacktrace
+    const { message, panic } = stacktrace[0];
     //we want to print inner to outer, so first, let's
     //reverse
     stacktrace = stacktrace.slice().reverse(); //reverse is in-place so clone first
     let lines = stacktrace.map(
-      ({functionName, contractName, address, location}) => {
+      ({ functionName, contractName, address, location, type }) => {
         let name;
         if (contractName && functionName) {
           name = `${contractName}.${functionName}`;
@@ -669,10 +709,10 @@ var DebugUtils = {
         let locationString;
         if (location) {
           let {
-            source: {sourcePath},
+            source: { sourcePath },
             sourceRange: {
               lines: {
-                start: {line, column}
+                start: { line, column }
               }
             }
           } = location;
@@ -683,21 +723,35 @@ var DebugUtils = {
           locationString = "unknown location";
         }
         let addressString =
-          address !== undefined ? `address ${address}` : "unknown address";
-        return `at ${name} [${addressString}] (${locationString})`;
+          type === "external"
+            ? address !== undefined
+              ? ` [address ${address}]`
+              : " [unknown address]"
+            : "";
+        return `at ${name}${addressString} (${locationString})`;
       }
     );
     let status = stacktrace[0].status;
     if (status != undefined) {
-      lines.unshift(
-        status
-          ? message !== undefined
-            ? `Error: Improper return (caused message: ${message})`
-            : "Error: Improper return (may be an unexpected self-destruct)"
-          : message !== undefined
-          ? `Error: Revert (message: ${message})`
-          : "Error: Revert or exceptional halt"
-      );
+      let statusLine;
+      if (message !== undefined) {
+        statusLine = status
+          ? `Error: Improper return (caused message: ${message})`
+          : `Error: Revert (message: ${message})`;
+      } else if (panic !== undefined) {
+        statusLine = status
+          ? `Panic: Improper return (caused ${DebugUtils.panicString(
+              panic
+            ).toLowerCase()} (code 0x${panic.toString(16)}))`
+          : `Panic: ${DebugUtils.panicString(panic)} (code 0x${panic.toString(
+              16
+            )})`;
+      } else {
+        statusLine = status
+          ? "Error: Improper return (may be an unexpected self-destruct)"
+          : "Error: Revert or exceptional halt";
+      }
+      lines.unshift(statusLine);
     }
     let indented = lines.map((line, index) =>
       index === 0 ? line : " ".repeat(indent) + line
@@ -706,7 +760,6 @@ var DebugUtils = {
   },
 
   colorize: function (code, language = "Solidity") {
-
     const options = {
       lang: "solidity",
       colors: trufflePalette,
@@ -747,7 +800,7 @@ var DebugUtils = {
     return Object.assign(
       {},
       ...Object.entries(variables).map(([variable, value]) =>
-        variable === "this" ? {[replacement]: value} : {[variable]: value}
+        variable === "this" ? { [replacement]: value } : { [variable]: value }
       )
     );
   },
@@ -767,10 +820,10 @@ var DebugUtils = {
   getTransactionSourcesBeforeStarting: async function (bugger) {
     await bugger.reset();
     let sources = {};
-    const {controller} = bugger.selectors;
+    const { controller } = bugger.selectors;
     while (!bugger.view(controller.current.trace.finished)) {
       const source = bugger.view(controller.current.location.source);
-      const {compilationId, id, internal} = source;
+      const { compilationId, id, internal } = source;
       //stepInto should skip internal sources, but there still might be
       //one at the end
       if (!internal && compilationId !== undefined && id !== undefined) {

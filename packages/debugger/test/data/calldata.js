@@ -340,5 +340,14 @@ describe("Calldata Decoding", function () {
     };
 
     assert.deepInclude(variables, expectedResult);
+
+    await bugger.continueUntilBreakpoint(); //continue to end
+
+    const decodings = await bugger.returnValue();
+
+    assert.lengthOf(decodings, 1);
+    const decoding = decodings[0];
+    assert.equal(decoding.kind, "returnmessage");
+    assert.equal(decoding.data, "0xdeadbeef");
   });
 });
