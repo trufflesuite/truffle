@@ -66,6 +66,13 @@ class CLIDebugger {
           )}.`
         );
       }
+      if (badCompilationAddresses.length > 0) {
+        warningStrings.push(
+          `Errors occurred while compiling sources for addresses ${badCompilations.join(
+            ", "
+          )}.`
+        );
+      }
       fetchSpinner.warn(warningStrings.join("  "));
     }
   }
