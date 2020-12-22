@@ -26,6 +26,9 @@ export const projectNames: Definition<"projectNames"> = {
     }
   ],
   idFields: ["project", "key"],
+  merge: (resource: any, input: any) => {
+    return { ...resource, ...input };
+  },
   mutable: true,
   typeDefs: gql`
     type ProjectName implements Resource {

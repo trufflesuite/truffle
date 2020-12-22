@@ -17,6 +17,13 @@ export const bytecodes: Definition<"bytecodes"> = {
   },
   createIndexes: [],
   idFields: ["bytes", "linkReferences"],
+  merge: (resource: any, input: any) => {
+    return {
+      ...resource,
+      ...input,
+      linkReferences: [...resource.linkReferences, ...input.linkReferences]
+    };
+  },
   typeDefs: gql`
     type Bytecode implements Resource {
       bytes: Bytes!

@@ -5,8 +5,6 @@ import PouchDB from "pouchdb";
 import PouchDBDebug from "pouchdb-debug";
 import PouchDBFind from "pouchdb-find";
 
-import * as lodash from "lodash";
-
 import {
   CollectionName,
   Collections,
@@ -154,6 +152,24 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
     }
   }
 
+  public async merge<N extends CollectionName<C>>(
+    collectionName: N,
+    input: any,
+    resource: any
+  ): Promise<SavedInput<C, N>> {
+    await this.ready;
+
+    const log = debug.extend(`${collectionName}:merge`);
+    log("Merging...");
+
+    const mergedResource = this.definitions[collectionName].merge(
+      resource,
+      input
+    );
+
+    return mergedResource as SavedInput<C, N>;
+  }
+
   public async add<N extends CollectionName<C>>(
     collectionName: N,
     input: MutationInput<C, N>
@@ -178,8 +194,7 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
         // check for existing
         const resource = await this.get(collectionName, id);
         if (resource) {
-          const mergedResource = lodash.merge(resource, resourceInput);
-          return mergedResource;
+          return this.merge(collectionName, resource, resourceInput);
         }
 
         await this.collections[collectionName].put({

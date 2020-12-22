@@ -16,6 +16,9 @@ export const sources: Definition<"sources"> = {
   },
   createIndexes: [],
   idFields: ["contents", "sourcePath"],
+  merge: (resource: any, input: any) => {
+    return { ...resource, ...input };
+  },
   typeDefs: gql`
     type Source implements Resource {
       sourcePath: String

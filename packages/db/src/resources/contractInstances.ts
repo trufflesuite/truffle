@@ -16,6 +16,9 @@ export const contractInstances: Definition<"contractInstances"> = {
   },
   createIndexes: [],
   idFields: ["address", "network"],
+  merge: (resource: any, input: any) => {
+    return { ...resource, ...input };
+  },
   typeDefs: gql`
     type ContractInstance implements Resource {
       address: Address!

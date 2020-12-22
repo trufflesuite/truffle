@@ -25,6 +25,9 @@ export const contracts: Definition<"contracts"> = {
     }
   ],
   idFields: ["name", "abi", "processedSource", "compilation"],
+  merge: (resource: any, input: any) => {
+    return { ...resource, ...input };
+  },
   typeDefs: gql`
     type Contract implements Resource & Named {
       name: String!

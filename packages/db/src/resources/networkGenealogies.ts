@@ -13,6 +13,9 @@ export const networkGenealogies: Definition<"networkGenealogies"> = {
   },
   createIndexes: [],
   idFields: ["ancestor", "descendant"],
+  merge: (resource: any, input: any) => {
+    return { ...resource, ...input };
+  },
   typeDefs: gql`
     type NetworkGenealogy implements Resource {
       ancestor: Network

@@ -16,6 +16,7 @@ export type Definitions<C extends Collections> = {
   [N in CollectionName<C>]: {
     createIndexes: PouchDB.Find.CreateIndexOptions["index"][];
     idFields: string[];
+    merge: (resource: any, input: any) => any;
   };
 };
 
@@ -48,6 +49,12 @@ export interface Workspace<C extends Collections> {
     collectionName: M,
     input: MutationInput<C, M>
   ): Promise<MutationPayload<C, M>>;
+
+  merge<N extends CollectionName<C>>(
+    collectionName: N,
+    input: SavedInput<C, N>,
+    resource: Historical<SavedInput<C, N>>
+  ): Promise<SavedInput<C, N>>;
 
   remove<M extends MutableCollectionName<C>>(
     collectionName: M,

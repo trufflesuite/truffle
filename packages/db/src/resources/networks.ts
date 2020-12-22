@@ -16,6 +16,9 @@ export const networks: Definition<"networks"> = {
   },
   createIndexes: [{ fields: ["historicBlock.height"] }],
   idFields: ["networkId", "historicBlock"],
+  merge: (resource: any, input: any) => {
+    return { ...resource, ...input };
+  },
   typeDefs: gql`
     type Network implements Resource & Named {
       name: String!

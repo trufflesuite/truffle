@@ -16,6 +16,18 @@ export const compilations: Definition<"compilations"> = {
   },
   createIndexes: [],
   idFields: ["compiler", "sources"],
+  merge: (input: any, resource: any) => {
+    return {
+      ...resource,
+      ...input,
+      sources: [...resource.sources, ...input.sources],
+      processedSources: [
+        ...resource.processedSources,
+        ...input.processedSources
+      ],
+      sourceMaps: [...resource.sourceMaps, ...input.sourceMaps]
+    };
+  },
   typeDefs: gql`
     type Compilation implements Resource {
       compiler: Compiler!

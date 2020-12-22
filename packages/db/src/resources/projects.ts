@@ -16,6 +16,9 @@ export const projects: Definition<"projects"> = {
   },
   createIndexes: [],
   idFields: ["directory"],
+  merge: (resource: any, input: any) => {
+    return { ...resource, ...input };
+  },
   typeDefs: gql`
     type Project implements Resource {
       directory: String!
