@@ -86,8 +86,10 @@ class CLIDebugger {
       );
       //if they were compiled simultaneously, yay, we can use it!
       if (shimmedCompilations.every(DebugUtils.isUsableCompilation)) {
+        debug("shimmed compilations usable")
         return shimmedCompilations;
       }
+      debug("shimmed compilations unusable")
     }
     //if not, or if build directory doens't exist, we have to recompile
     return await this.compileSources();
