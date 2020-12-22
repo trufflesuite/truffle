@@ -4,7 +4,7 @@ const debug = debugModule("codec:contexts:utils");
 import * as Evm from "@truffle/codec/evm";
 import { Context, Contexts } from "./types";
 import escapeRegExp from "lodash.escaperegexp";
-const cbor = require("borc"); //importing this untyped, sorry!
+import * as cbor from "cbor";
 
 export function findContext(
   contexts: Contexts,
@@ -17,14 +17,18 @@ export function findContext(
   //to pick one that isn't a descendant of any of the others.
   //(if there are multiple of *those*, then yeah it's arbitrary.)
   const context = matchingContexts.find(
-    descendant => !matchingContexts.some(ancestor =>
-      descendant.compilationId === ancestor.compilationId &&
-      descendant.linearizedBaseContracts &&
-      ancestor.contractId !== undefined &&
-      descendant.linearizedBaseContracts.slice(1).includes(ancestor.contractId)
-      //we do slice one because everything is an an ancestor of itself; we only
-      //care about *proper* ancestors
-    )
+    descendant =>
+      !matchingContexts.some(
+        ancestor =>
+          descendant.compilationId === ancestor.compilationId &&
+          descendant.linearizedBaseContracts &&
+          ancestor.contractId !== undefined &&
+          descendant.linearizedBaseContracts
+            .slice(1)
+            .includes(ancestor.contractId)
+        //we do slice one because everything is an an ancestor of itself; we only
+        //care about *proper* ancestors
+      )
   );
   return context || null;
 }
@@ -201,6 +205,7 @@ interface CborInfo {
 }
 
 function extractCborInfo(binary: string): CborInfo | null {
+  debug("extracting cbor segement of %s", binary);
   const lastTwoBytes = binary.slice(2).slice(-2 * 2); //2 bytes * 2 for hex
   //the slice(2) there may seem unnecessary; it's to handle the possibility that the contract
   //has less than two bytes in its bytecode (that won't happen with Solidity, but let's be
@@ -228,19 +233,17 @@ function extractCborInfo(binary: string): CborInfo | null {
 }
 
 function isCborWithHash(encoded: string): boolean {
-  debug("checking cbor");
-  let decodedMultiple: any[];
+  debug("checking cbor, encoed: %s", encoded);
+  let decoded: any;
   try {
-    decodedMultiple = cbor.decodeAll(encoded);
-  } catch (_) {
+    //note this *will* throw if there's data left over,
+    //which is what we want it to do
+    decoded = cbor.decodeFirstSync(encoded);
+  } catch {
     debug("invalid cbor!");
     return false;
   }
-  debug("all decoded: %O", decodedMultiple);
-  if (decodedMultiple.length !== 1) {
-    return false;
-  }
-  let decoded = decodedMultiple[0];
+  debug("decoded: %O", decoded);
   if (typeof decoded !== "object") {
     return false;
   }
