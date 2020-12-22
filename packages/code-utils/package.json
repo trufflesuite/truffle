@@ -13,10 +13,11 @@
   },
   "types": "./dist/src/index.d.ts",
   "dependencies": {
-    "borc": "^2.1.2",
+    "cbor": "^5.1.0",
     "source-map-support": "^0.5.19"
   },
   "devDependencies": {
+    "@types/cbor": "^5.0.1",
     "@types/mocha": "^5.2.7",
     "@types/node": "^12.6.8",
     "mocha": "8.1.2",

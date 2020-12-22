@@ -2,7 +2,7 @@ import "source-map-support/register";
 import parseOpcode from "./opcodes";
 import { Instruction, OpcodeTable, opcodeObject, opcodes } from "./types";
 export { Instruction, OpcodeTable, opcodeObject, opcodes };
-const cbor = require("borc"); //importing this untyped, sorry!
+import * as cbor from "cbor";
 
 /**
  * parseCode - return a list of instructions given a 0x-prefixed code string.
@@ -20,7 +20,10 @@ const cbor = require("borc"); //importing this untyped, sorry!
  * @param  {String} hexString Hex string representing the code
  * @return Array               Array of instructions
  */
-export function parseCode(hexString: string, numInstructions: number = null): Instruction[] {
+export function parseCode(
+  hexString: string,
+  numInstructions: number = null
+): Instruction[] {
   // Convert to an array of bytes
   let code = new Uint8Array(
     (hexString.slice(2).match(/(..?)/g) || []).map(hex => parseInt(hex, 16))
@@ -31,8 +34,7 @@ export function parseCode(hexString: string, numInstructions: number = null): In
   if (stripMetadata && code.length >= 2) {
     // Remove the contract metadata; last two bytes encode its length (not
     // including those two bytes)
-    const metadataLength =
-      (code[code.length - 2] << 8) + code[code.length - 1];
+    const metadataLength = (code[code.length - 2] << 8) + code[code.length - 1];
     //check: is this actually valid CBOR?
     if (metadataLength + 2 <= code.length) {
       const metadata = code.subarray(-(metadataLength + 2), -2);
@@ -52,7 +54,7 @@ export function parseCode(hexString: string, numInstructions: number = null): In
     let opcode: Instruction = {
       pc,
       name: parseOpcode(code[pc])
-    }
+    };
     if (opcode.name.slice(0, 4) === "PUSH") {
       const length = code[pc] - 0x60 + 1; //0x60 is code for PUSH1
       let pushData = code.subarray(pc + 1, pc + length + 1);
@@ -75,16 +77,19 @@ export function parseCode(hexString: string, numInstructions: number = null): In
   return instructions;
 }
 
-export default { //for compatibility
+export default {
+  //for compatibility
   parseCode
-}
+};
 
 function isValidCBOR(metadata: Uint8Array) {
-  let decodedMultiple: any[];
   try {
-    decodedMultiple = cbor.decodeAll(metadata);
-  } catch (_) {
+    //attempt to decode but discard the value
+    //note this *will* throw if there's data left over,
+    //which is what we want it to do
+    cbor.decodeFirstSync(metadata);
+  } catch {
     return false;
   }
-  return decodedMultiple.length === 1; //should be CBOR for one thing, not multiple
+  return true;
 }
