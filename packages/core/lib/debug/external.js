@@ -112,7 +112,7 @@ class DebugExternalHandler {
         let compilations;
         try {
           compilations = await new DebugCompiler(externalConfig).compile(
-            sources
+            { sources }
           );
         } catch (error) {
           debug("compile error: %O", error);
