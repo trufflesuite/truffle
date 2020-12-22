@@ -63,7 +63,7 @@ export function parseCode(
         //with zeroes
         pushData = Uint8Array.from([
           ...pushData,
-          ...new Uint8Array(length - opcode.pushData.length)
+          ...new Uint8Array(length - pushData.length)
         ]);
       }
 
