@@ -14,7 +14,8 @@ module.exports = (pattern, callback) => {
   }
 
   const globOptions = {
-    follow: true // follow symlinks
+    follow: true, // follow symlinks
+    dot: true //check hidden files and directories
   };
 
   return promisify(glob)(pattern, globOptions)
