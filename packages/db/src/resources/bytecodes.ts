@@ -17,7 +17,7 @@ export const bytecodes: Definition<"bytecodes"> = {
   },
   createIndexes: [],
   idFields: ["bytes", "linkReferences"],
-  merge: (resource: any, input: any) => {
+  merge: (resource, input) => {
     return {
       ...resource,
       ...input,

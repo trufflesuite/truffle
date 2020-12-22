@@ -12,6 +12,7 @@ import {
   MutationPayload,
   MutableCollectionName,
   SavedInput,
+  Input,
   generateId
 } from "@truffle/db/meta";
 
@@ -154,8 +155,8 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
 
   public async merge<N extends CollectionName<C>>(
     collectionName: N,
-    input: any,
-    resource: any
+    resource: Historical<SavedInput<C, N>>,
+    input: Input<C, N>
   ): Promise<SavedInput<C, N>> {
     await this.ready;
 

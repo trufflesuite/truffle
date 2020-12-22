@@ -16,7 +16,7 @@ export const compilations: Definition<"compilations"> = {
   },
   createIndexes: [],
   idFields: ["compiler", "sources"],
-  merge: (input: any, resource: any) => {
+  merge: (input, resource) => {
     return {
       ...resource,
       ...input,

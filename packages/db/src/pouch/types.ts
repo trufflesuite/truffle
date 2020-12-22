@@ -9,14 +9,18 @@ import {
   MutationInput,
   MutationPayload,
   MutableCollectionName,
-  SavedInput
+  SavedInput,
+  Input
 } from "@truffle/db/meta";
 
 export type Definitions<C extends Collections> = {
   [N in CollectionName<C>]: {
     createIndexes: PouchDB.Find.CreateIndexOptions["index"][];
     idFields: string[];
-    merge: (resource: any, input: any) => any;
+    merge: (
+      resource: Historical<SavedInput<C, N>>,
+      input: Input<C, N>
+    ) => SavedInput<C, N>;
   };
 };
 
@@ -52,8 +56,8 @@ export interface Workspace<C extends Collections> {
 
   merge<N extends CollectionName<C>>(
     collectionName: N,
-    input: SavedInput<C, N>,
-    resource: Historical<SavedInput<C, N>>
+    resource: Historical<SavedInput<C, N>>,
+    input: Input<C, N>
   ): Promise<SavedInput<C, N>>;
 
   remove<M extends MutableCollectionName<C>>(

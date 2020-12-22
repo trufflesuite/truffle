@@ -13,7 +13,7 @@ export const networkGenealogies: Definition<"networkGenealogies"> = {
   },
   createIndexes: [],
   idFields: ["ancestor", "descendant"],
-  merge: (resource: any, input: any) => {
+  merge: (resource, input) => {
     return { ...resource, ...input };
   },
   typeDefs: gql`

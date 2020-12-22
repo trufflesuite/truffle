@@ -18,7 +18,7 @@ export const nameRecords: Definition<"nameRecords"> = {
   },
   createIndexes: [],
   idFields: ["resource", "previous"],
-  merge: (resource: any, input: any) => {
+  merge: (resource, input) => {
     return { ...resource, ...input };
   },
   typeDefs: gql`

@@ -26,7 +26,7 @@ export const projectNames: Definition<"projectNames"> = {
     }
   ],
   idFields: ["project", "key"],
-  merge: (resource: any, input: any) => {
+  merge: (resource, input) => {
     return { ...resource, ...input };
   },
   mutable: true,

@@ -16,7 +16,7 @@ export const projects: Definition<"projects"> = {
   },
   createIndexes: [],
   idFields: ["directory"],
-  merge: (resource: any, input: any) => {
+  merge: (resource, input) => {
     return { ...resource, ...input };
   },
   typeDefs: gql`
