@@ -3,7 +3,7 @@ import * as bip39 from "ethereum-cryptography/bip39";
 import { wordlist } from "ethereum-cryptography/bip39/wordlists/english";
 import * as EthUtil from "ethereumjs-util";
 import ethJSWallet from "ethereumjs-wallet";
-import EthereumHDKey from "ethereumjs-wallet/hdkey";
+import { hdkey as EthereumHDKey } from "ethereumjs-wallet";
 import Transaction from "ethereumjs-tx";
 // @ts-ignore
 import ProviderEngine from "@trufflesuite/web3-provider-engine";
