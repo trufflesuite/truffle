@@ -231,6 +231,8 @@ function* findRelation(
   // otherwise we got nothin'
 }
 
+let fragmentIndex = 0;
+
 /**
  * Issue GraphQL queries for possibly-related networks.
  *
@@ -256,7 +258,7 @@ function* queryNextPossiblyRelatedNetworks(
       "networks",
       network.id,
       gql`
-        fragment Possible_${relation}s on Network {
+        fragment Possible_${relation}s_${fragmentIndex++} on Network {
           ${query}(alreadyTried: ${JSON.stringify(alreadyTried)}) {
             networks {
               id
