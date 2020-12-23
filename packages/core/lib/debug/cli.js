@@ -90,8 +90,10 @@ class CLIDebugger {
         this.config.forceNoRecompile ||
         shimmedCompilations.every(DebugUtils.isUsableCompilation)
       ) {
+        debug("shimmed compilations usable")
         return shimmedCompilations;
       }
+      debug("shimmed compilations unusable")
     }
     //if not, or if build directory doesn't exist, we have to recompile
     return await this.compileSources();
