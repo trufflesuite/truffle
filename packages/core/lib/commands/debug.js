@@ -1,3 +1,4 @@
+const OS = require("os");
 const command = {
   command: "debug",
   description: "Interactively debug any transaction on the blockchain",
@@ -29,8 +30,14 @@ const command = {
   },
   help: {
     usage:
-      "truffle debug [--network <network>] [--fetch-external] [--compile-tests] [--force-[no-]recompile] [<transaction_hash>]",
+      "truffle debug [<transaction_hash>] [--network <network>] [--fetch-external] [--compile-tests]" + OS.EOL +
+      "                             [--force-[no-]recompile]",
     options: [
+      {
+        option: "<transaction_hash>",
+        description:
+          "Transaction ID to use for debugging.  Mandatory if --fetch-external is passed."
+      },
       {
         option: "--network",
         description: "Network to connect to."
@@ -39,11 +46,6 @@ const command = {
         option: "--fetch-external",
         description:
           "Allows debugging of external contracts with verified sources.  Alias: -x"
-      },
-      {
-        option: "<transaction_hash>",
-        description:
-          "Transaction ID to use for debugging.  Mandatory if --fetch-external is passed."
       },
       {
         option: "--compile-tests",
