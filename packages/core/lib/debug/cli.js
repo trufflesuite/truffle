@@ -80,14 +80,14 @@ class CLIDebugger {
   async getCompilations() {
     let artifacts;
     artifacts = await this.gatherArtifacts();
-    if ((artifacts && !this.config.forceRecompile) || this.config.forceNoRecompile) {
+    if ((artifacts && !this.config.compileAll) || this.config.compileNone) {
       let shimmedCompilations = Codec.Compilations.Utils.shimArtifacts(
         artifacts
       );
       //if they were compiled simultaneously, yay, we can use it!
       //(or if we *force* it to...)
       if (
-        this.config.forceNoRecompile ||
+        this.config.compileNone ||
         shimmedCompilations.every(DebugUtils.isUsableCompilation)
       ) {
         debug("shimmed compilations usable")
