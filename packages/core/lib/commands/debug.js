@@ -17,12 +17,12 @@ const command = {
       type: "boolean",
       default: false
     },
-    "force-recompile": {
+    "compile-all": {
       describe: "Force debugger to compile all contracts for extra safety",
       type: "boolean",
       default: false
     },
-    "force-no-recompile": {
+    "compile-none": {
       describe: "Force debugger to skip compilation (dangerous!)",
       type: "boolean",
       default: false
@@ -30,8 +30,8 @@ const command = {
   },
   help: {
     usage:
-      "truffle debug [<transaction_hash>] [--network <network>] [--fetch-external] [--compile-tests]" + OS.EOL +
-      "                             [--force-[no-]recompile]",
+      "truffle debug [<transaction_hash>] [--network <network>] [--fetch-external]" + OS.EOL +
+      "                             [--compile-tests|--compile-all|--compile-none]",
     options: [
       {
         option: "<transaction_hash>",
@@ -50,15 +50,15 @@ const command = {
       {
         option: "--compile-tests",
         description:
-          "Allows debugging of Solidity test contracts from the test directory.  Forces a recompile."
+          "Allows debugging of Solidity test contracts from the test directory.  Implies --compile-all."
       },
       {
-        option: "--force-recompile",
+        option: "--compile-all",
         description:
           "Forces the debugger to recompile all contracts even if it detects that it can use the artifacts."
       },
       {
-        option: "--force-no-recompile",
+        option: "--compile-none",
         description:
           "Forces the debugger to use artifacts even if it detects a problem.  Dangerous; may cause errors."
       }
@@ -85,11 +85,11 @@ const command = {
           );
         }
         if (config.compileTests) {
-          config.forceRecompile = true;
+          config.compileAll = true;
         }
-        if (config.forceRecompile && config.forceNoRecompile) {
+        if (config.compileAll && config.compileNone) {
           throw new Error(
-            "Incompatible options passed regarding whether to recompile"
+            "Incompatible options passed regarding what to compile"
           );
         }
         return await new CLIDebugger(config, { txHash }).run();
