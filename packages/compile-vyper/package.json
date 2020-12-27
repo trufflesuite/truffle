@@ -4,7 +4,7 @@
   "license": "MIT",
   "author": "Evgeniy Filatov <evgeniyfilatov@gmail.com>",
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/compile-vyper",
-  "version": "2.2.3",
+  "version": "2.2.4",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0",
@@ -21,7 +21,7 @@
     "semver": "^7.3.4"
   },
   "devDependencies": {
-    "@truffle/code-utils": "^1.2.22",
+    "@truffle/code-utils": "^1.2.23",
     "mocha": "8.1.2"
   },
   "keywords": [
