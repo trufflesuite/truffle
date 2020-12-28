@@ -15,7 +15,7 @@ const command = {
   command: "db",
   description: "Database interface commands",
   builder: function (yargs) {
-    return yargs.commandDir("commands").demandCommand();
+    return yargs.command(serveCommand).demandCommand();
   },
 
   subCommands: {
