@@ -95,6 +95,7 @@ const run = async <
 
         const payload: any = {
           jsonrpc: "2.0",
+          id: new Date().getTime(),
           method,
           params
         };
