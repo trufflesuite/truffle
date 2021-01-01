@@ -3,8 +3,8 @@ pragma solidity >= 0.4.15 < 0.9.0;
 
 library AssertUintArray {
 
-    uint8 constant ZERO = uint8(byte('0'));
-    uint8 constant A = uint8(byte('a'));
+    uint8 constant ZERO = uint8(bytes1('0'));
+    uint8 constant A = uint8(bytes1('a'));
 
     /*
         Event: TestEvent
@@ -189,11 +189,11 @@ library AssertUintArray {
         Returns:
             result (string) - The ASCII byte.
     */
-    function _utoa(uint8 u) internal pure returns (byte) {
+    function _utoa(uint8 u) internal pure returns (bytes1) {
         if (u < 10)
-            return byte(u + ZERO);
+            return bytes1(u + ZERO);
         else if (u < 16)
-            return byte(u - 10 + A);
+            return bytes1(u - 10 + A);
         else
             return 0;
     }
