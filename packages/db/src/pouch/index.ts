@@ -7,6 +7,7 @@ export * from "./types";
 
 import { DatabasesOptions } from "./databases";
 
+import { CouchDatabases } from "./couch";
 import { FSDatabases } from "./fs";
 import { MemoryDatabases } from "./memory";
 import { SqliteDatabases } from "./sqlite";
@@ -46,6 +47,12 @@ const concretize = <C extends Collections>(
 
   debug("Selecting %s adapter", name);
   switch (name) {
+    case "couch": {
+      return {
+        constructor: CouchDatabases,
+        settings: settings || getDefaultCouchAdapterSettings()
+      };
+    }
     case "fs": {
       return {
         constructor: FSDatabases,
@@ -69,6 +76,10 @@ const concretize = <C extends Collections>(
     }
   }
 };
+
+const getDefaultCouchAdapterSettings = () => ({
+  url: "http://localhost:5984"
+});
 
 const getDefaultFSAdapterSettings = workingDirectory => ({
   directory: path.join(workingDirectory, ".db", "json")
