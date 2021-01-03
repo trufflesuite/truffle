@@ -11,7 +11,14 @@ export const networkGenealogies: Definition<"networkGenealogies"> = {
     resourcesMutate: "networkGenealogiesAdd",
     ResourcesMutate: "NetworkGenealogiesAdd"
   },
-  createIndexes: [],
+  createIndexes: [
+    {
+      fields: ["ancestor.id"]
+    },
+    {
+      fields: ["descendant.id"]
+    }
+  ],
   idFields: ["ancestor", "descendant"],
   typeDefs: gql`
     type NetworkGenealogy implements Resource {
