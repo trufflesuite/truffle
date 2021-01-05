@@ -24,7 +24,14 @@ class TruffleConfig {
     workingDirectory?: string,
     network?: any
   ) {
-    this._deepCopy = ["compilers"];
+    this._deepCopy = [
+      "compilers",
+      "solc", //for old versions
+      "networks",
+      "db",
+      "ens",
+      "ethpm"
+    ];
     this._values = getInitialConfig({
       truffleDirectory,
       workingDirectory,
