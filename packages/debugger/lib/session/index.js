@@ -147,9 +147,13 @@ export default class Session {
         if (!source) {
           continue; //just for safety (in case there are gaps)
         }
+        let ast = source.ast;
+        if (ast && !ast.nodeType) {
+          ast = undefined; //HACK: remove Vyper asts for now
+        }
         sources.user[compilation.id][index] = {
           ...source,
-          ast: source.ast.nodeType ? source.ast : undefined, //HACK: remove Vyper asts for now
+          ast,
           compiler: source.compiler || compiler,
           compilationId: compilation.id,
           index,

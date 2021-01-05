@@ -149,6 +149,11 @@ export function shimContracts(
         index = 0; //if it's Vyper but there's no AST, we can
         //assume that it was compiled alone and therefore has index 0
       }
+      //if that didn't work, try the source map
+      if (index === undefined && (sourceMap || deployedSourceMap)) {
+        const sourceMapString = simpleShimSourceMap(deployedSourceMap || sourceMap);
+        index = extractPrimarySource(sourceMapString);
+      }
       //else leave undefined for now
       ({ index, unreliableSourceOrder } = getIndexToAddAt(
         sourceObject,
@@ -219,6 +224,10 @@ export function shimContracts(
 
 //note: this works for Vyper too!
 function sourceIndexForAst(ast: Ast.AstNode): number | undefined {
+  if (Array.isArray(ast)) {
+    //special handling for old Vyper versions
+    ast = ast[0];
+  }
   if (!ast) {
     return undefined;
   }
@@ -338,7 +347,7 @@ function inferLanguage(
       //Every Yul source I've seen has YulBlock as the root, but
       //I'm not sure that that's *always* the case
       return "Yul";
-    } else if (ast.ast_type === "Module") {
+    } else if (Array.isArray(ast) || ast.ast_type === "Module") {
       return "Vyper";
     }
   } else if (compiler) {
