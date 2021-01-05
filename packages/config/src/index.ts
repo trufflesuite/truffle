@@ -115,9 +115,13 @@ class TruffleConfig {
     );
   }
 
+  public clone(): TruffleConfig {
+    return this.with({});
+  }
+
   public merge(obj: any): TruffleConfig {
     const clone = this.normalize(obj);
-    const current = this.with({}); //clone current so we don't modfiy it
+    const current = this.clone(); //clone current so we don't modfiy it
 
     // Only set keys for values that don't throw.
     const propertyNames = Object.keys(obj);
