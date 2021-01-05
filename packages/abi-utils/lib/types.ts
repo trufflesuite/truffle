@@ -5,7 +5,8 @@ export type Entry =
   | ConstructorEntry
   | FallbackEntry
   | ReceiveEntry
-  | EventEntry;
+  | EventEntry
+  | ErrorEntry;
 
 export type StateMutability = "pure" | "view" | "nonpayable" | "payable";
 
@@ -38,6 +39,12 @@ export interface EventEntry {
   name: string;
   inputs: EventParameter[];
   anonymous: boolean;
+}
+
+export interface ErrorEntry {
+  type: "error";
+  name: string;
+  inputs: Parameter[];
 }
 
 export interface Parameter {

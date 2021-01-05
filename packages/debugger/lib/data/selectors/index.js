@@ -885,6 +885,39 @@ const data = createSelectorTree({
     ),
 
     /**
+     * data.current.contractForBytecode
+     * contract node for the executing bytecode -- *not* the current position!
+     * probably not what you usually want
+     */
+    contractForBytecode: createLeaf(
+      [evm.current.context, "./scopes/inlined"],
+      ({ contractId }, scopes) =>
+        (scopes[contractId] || { definition: null }).definition
+    ),
+
+    /**
+     * data.current.fallbackOutputForContext
+     * returns null if none
+     */
+    fallbackOutputForContext: createLeaf(
+      ["./contractForBytecode"],
+      contract => {
+        if (!contract) {
+          return null;
+        }
+        const fallbackDefinition = contract.nodes.find(
+          node =>
+            node.nodeType === "FunctionDefinition" &&
+            Codec.Ast.Utils.functionKind(node) === "fallback"
+        );
+        if (!fallbackDefinition) {
+          return null;
+        }
+        return fallbackDefinition.returnParameters.parameters[0] || null;
+      }
+    ),
+
+    /**
      * data.current.function
      * may be modifier rather than function!
      */
@@ -953,6 +986,17 @@ const data = createSelectorTree({
      * data.current.context
      */
     context: createLeaf([evm.current.context], debuggerContextToDecoderContext),
+
+    /**
+     * data.current.fallbackBase
+     * gives the stack position where a fallback input would start
+     * this is 0 if there are no public or external functions, and 1 if there are
+     */
+    fallbackBase: createLeaf(
+      ["./context"],
+      ({ abi }) => (Object.keys(abi).length > 0 ? 1 : 0)
+      //note ABI here has been transformed to include functions only
+    ),
 
     /**
      * data.current.aboutToModify
@@ -1394,11 +1438,17 @@ const data = createSelectorTree({
      * data.current.returnAllocation
      */
     returnAllocation: createLeaf(
-      [evm.current.call, "/current/context", "/info/allocations/calldata"],
+      [
+        evm.current.call,
+        "/current/context",
+        "/info/allocations/calldata",
+        "./fallbackOutputForContext"
+      ],
       (
         { data: calldata },
-        { context, isConstructor },
-        { constructorAllocations, functionAllocations }
+        { context, isConstructor, fallbackAbi },
+        { constructorAllocations, functionAllocations },
+        contractHasFallbackOutput //just using truthiness here
       ) => {
         if (isConstructor) {
           //we're in a constructor call
@@ -1413,10 +1463,21 @@ const data = createSelectorTree({
           debug("selector: %s", selector);
           debug("bySelector: %o", functionAllocations[context]);
           let allocation = (functionAllocations[context] || {})[selector];
-          if (!allocation) {
-            return null;
+          if (allocation) {
+            return allocation.output;
+          } else {
+            //we're in a fallback or receive, presumably.
+            //so is it a fallback, and does it have output?
+            if (
+              (calldata !== "0x" || fallbackAbi.receive === null) &&
+              fallbackAbi.fallback !== null && //this check is redundant, but let's include it
+              contractHasFallbackOutput
+            ) {
+              return Codec.AbiData.Allocate.FallbackOutputAllocation;
+            } else {
+              return null;
+            }
           }
-          return allocation.output;
         }
       }
     ),

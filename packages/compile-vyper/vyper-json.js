@@ -292,11 +292,11 @@ function processContracts({
           deployedSourceMap,
           ast,
           bytecode: {
-            bytes: bytecode,
+            bytes: bytecode.slice(2), //Vyper uses a "0x" prefix
             linkReferences: [] //no libraries in Vyper
           },
           deployedBytecode: {
-            bytes: deployedBytecode,
+            bytes: deployedBytecode.slice(2), //Vyper uses a "0x" prefix
             linkReferences: [] //no libraries in Vyper
           },
           compiler: {

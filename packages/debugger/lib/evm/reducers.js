@@ -93,7 +93,8 @@ const DEFAULT_BLOCK = {
   difficulty: new BN(0),
   gaslimit: new BN(0),
   number: new BN(0),
-  timestamp: new BN(0)
+  timestamp: new BN(0),
+  chainid: new BN(0)
 };
 
 function block(state = DEFAULT_BLOCK, action) {

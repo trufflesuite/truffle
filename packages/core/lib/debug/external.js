@@ -16,6 +16,7 @@ class DebugExternalHandler {
   async fetch() {
     let badAddresses = []; //for reporting errors back
     let badFetchers = []; //similar
+    let badCompilationAddresses = []; //similar
     let addressesToSkip = new Set(); //addresses we know we can't get source for
     //note: this should always be a subset of unknownAddresses! [see below]
     //get the network id
@@ -65,6 +66,7 @@ class DebugExternalHandler {
     ) {
       let found = false;
       let failure = false; //set in case something goes wrong while getting source
+      let failureReason; 
       //(not set if there is no source)
       for (const fetcher of fetchers) {
         //now comes all the hard parts!
@@ -76,6 +78,7 @@ class DebugExternalHandler {
         } catch (error) {
           debug("error in getting sources! %o", error);
           failure = true;
+          failureReason = "fetch";
           continue;
         }
         if (result === null) {
@@ -106,9 +109,17 @@ class DebugExternalHandler {
             }
           }
         });
-        const compilations = await new DebugCompiler(externalConfig).compile(
-          sources
-        );
+        let compilations;
+        try {
+          compilations = await new DebugCompiler(externalConfig).compile(
+            { sources }
+          );
+        } catch (error) {
+          debug("compile error: %O", error);
+          failure = true;
+          failureReason = "compile";
+          continue; //try again with a different fetcher, I guess?
+        }
         //shim the result
         const shimmedCompilations = Codec.Compilations.Utils.shimCompilations(
           compilations,
@@ -116,6 +127,7 @@ class DebugExternalHandler {
         );
         //add it!
         await this.bugger.addExternalCompilations(shimmedCompilations);
+        failure = false; //mark as *not* failed in case a previous fetcher failed
         //check: did this actually help?
         debug("checking result");
         if (!getUnknownAddresses(this.bugger).includes(address)) {
@@ -133,14 +145,25 @@ class DebugExternalHandler {
       if (found === false) {
         //if we couldn't find it, add it to the list of addresses to skip
         addressesToSkip.add(address);
-        //if we couldn't find it *and* there was a network problem, add it to
-        //the failures list
+        //if we couldn't find it *and* there was a network or compile problem,
+        //add it to the failures list
         if (failure === true) {
-          badAddresses.push(address);
+          switch (failureReason) {
+            case "fetch":
+              badAddresses.push(address);
+              break;
+            case "compile":
+              badCompilationAddresses.push(address);
+              break;
+          }
         }
       }
     }
-    return {badAddresses, badFetchers}; //main result is that we've mutated bugger,
+    return {
+      badAddresses,
+      badFetchers,
+      badCompilationAddresses
+    }; //main result is that we've mutated bugger,
     //not the return value!
   }
 }

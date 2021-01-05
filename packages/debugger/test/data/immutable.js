@@ -1,11 +1,11 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:test:data:immutable");
 
-import {assert} from "chai";
+import { assert } from "chai";
 
 import Ganache from "ganache-core";
 
-import {prepareContracts, lineOf} from "../helpers";
+import { prepareContracts, lineOf } from "../helpers";
 import Debugger from "lib/debugger";
 
 import * as Codec from "@truffle/codec";
@@ -13,7 +13,7 @@ import * as Codec from "@truffle/codec";
 import solidity from "lib/solidity/selectors";
 
 const __IMMUTABLE = `
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 contract Base {
   int8 immutable base = -37;
@@ -27,7 +27,7 @@ contract ImmutableTest is Base {
   Color immutable background;
   bool immutable truth;
   address immutable self;
-  byte immutable secret;
+  bytes1 immutable secret;
   uint8 immutable trulySecret;
 
   event Done();
@@ -45,7 +45,7 @@ contract ImmutableTest is Base {
   event Enum(Color);
   event Bool(bool);
   event Address(address);
-  event Byte(byte);
+  event Byte(bytes1);
 
   function run() public {
     emit Number(base);
@@ -69,7 +69,7 @@ describe("Immutable state variables", function () {
   var compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
+    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
   before("Prepare contracts and artifacts", async function () {
@@ -87,7 +87,7 @@ describe("Immutable state variables", function () {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let sourceId = bugger.view(solidity.current.source).id;
     let source = bugger.view(solidity.current.source).source;
@@ -123,7 +123,7 @@ describe("Immutable state variables", function () {
     let address = instance.address;
     let txHash = instance.transactionHash;
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let sourceId = bugger.view(solidity.current.source).id;
     let source = bugger.view(solidity.current.source).source;

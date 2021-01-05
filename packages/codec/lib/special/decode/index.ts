@@ -81,7 +81,7 @@ export function* decodeMagic(
         kind: "value" as const,
         value: {
           origin: yield* Basic.Decode.decodeBasic(
-            externalAddressType(info.currentContext.compiler),
+            senderType(info.currentContext.compiler),
             { location: "special" as const, special: "origin" },
             info
           ),
@@ -98,7 +98,7 @@ export function* decodeMagic(
     case "block":
       let block: { [field: string]: Format.Values.Result } = {
         coinbase: yield* Basic.Decode.decodeBasic(
-          externalAddressType(info.currentContext.compiler),
+          coinbaseType(info.currentContext.compiler),
           { location: "special" as const, special: "coinbase" },
           info
         )
@@ -106,6 +106,9 @@ export function* decodeMagic(
       //the other ones are all uint's, so let's handle them all at once; due to
       //the lack of generator arrow functions, we do it by mutating block
       const variables = ["difficulty", "gaslimit", "number", "timestamp"];
+      if (solidityVersionHasChainId(info.currentContext.compiler)) {
+        variables.push("chainid");
+      }
       for (let variable of variables) {
         block[variable] = yield* Basic.Decode.decodeBasic(
           {
@@ -124,7 +127,6 @@ export function* decodeMagic(
   }
 }
 
-//NOTE: this is likely going to change again in 0.7.x!  be ready!
 function senderType(
   compiler: Compiler.CompilerVersion
 ): Format.Types.AddressType {
@@ -141,10 +143,16 @@ function senderType(
         kind: "specific",
         payable: true
       };
+    case "0.8.x":
+      return {
+        typeClass: "address",
+        kind: "specific",
+        payable: false
+      };
   }
 }
 
-function externalAddressType(
+function coinbaseType(
   compiler: Compiler.CompilerVersion
 ): Format.Types.AddressType {
   switch (Compiler.Utils.solidityFamily(compiler)) {
@@ -155,10 +163,24 @@ function externalAddressType(
         kind: "general"
       };
     case "0.5.x":
+    case "0.8.x":
       return {
         typeClass: "address",
         kind: "specific",
         payable: true
       };
+  }
+}
+
+function solidityVersionHasChainId(
+  compiler: Compiler.CompilerVersion
+): boolean {
+  switch (Compiler.Utils.solidityFamily(compiler)) {
+    case "unknown":
+    case "pre-0.5.0":
+    case "0.5.x":
+      return false;
+    case "0.8.x":
+      return true;
   }
 }

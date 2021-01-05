@@ -30,15 +30,15 @@ describe("create", function () {
     );
     assert.isTrue(
       fse.existsSync(expectedFile),
-      `Contract to be created doesns't exist, ${expectedFile}`
+      `Contract to be created doesn't exist, ${expectedFile}`
     );
 
     const fileData = fse.readFileSync(expectedFile, {encoding: "utf8"});
     assert.isNotNull(fileData, "File's data is null");
     assert.notEqual(fileData, "", "File's data is blank");
     assert.isTrue(
-      fileData.includes("pragma solidity >=0.4.22 <0.8.0;"),
-      "File's solidity version does not match >=0.4.22 <0.8.0"
+      fileData.includes("pragma solidity >=0.4.22 <0.9.0;"),
+      "File's solidity version does not match >=0.4.22 <0.9.0"
     );
   });
 

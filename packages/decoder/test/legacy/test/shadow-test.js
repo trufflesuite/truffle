@@ -1,17 +1,35 @@
 const debug = require("debug")("decoder:test:shadow-test");
 const assert = require("chai").assert;
+const Ganache = require("ganache-core");
+const path = require("path");
 
 const Decoder = require("../../..");
 const Codec = require("@truffle/codec");
 
-const ShadowBase = artifacts.require("ShadowBase");
-const ShadowDerived = artifacts.require("ShadowDerived");
+const { prepareContracts } = require("../../helpers");
 
-contract("ShadowDerived", function (_accounts) {
-  it("Includes shadowed storage variables in variables", async function () {
-    let deployedContract = await ShadowDerived.deployed();
+describe("Shadowed storage variables", function() {
+
+  let provider;
+  let abstractions;
+  let compilations;
+
+  before("Create Provider", async function () {
+    provider = Ganache.provider({seed: "decoder", gasLimit: 7000000});
+  });
+
+  before("Prepare contracts and artifacts", async function () {
+    this.timeout(30000);
+
+    const prepared = await prepareContracts(provider, path.resolve(__dirname, ".."));
+    abstractions = prepared.abstractions;
+    compilations = prepared.compilations;
+  });
+
+  it("Includes shadowed storage variables in variables", async function() {
+    let deployedContract = await abstractions.ShadowDerived.deployed();
     let decoder = await Decoder.forContractInstance(deployedContract, [
-      ShadowBase
+      abstractions.ShadowBase
     ]);
 
     let variables = await decoder.variables();
@@ -22,10 +40,10 @@ contract("ShadowDerived", function (_accounts) {
     assert.equal(variables[3].class.typeName, "ShadowDerived");
   });
 
-  it("Fetches variables by name or qualified name", async function () {
-    let deployedContract = await ShadowDerived.deployed();
+  it("Fetches variables by name or qualified name", async function() {
+    let deployedContract = await abstractions.ShadowDerived.deployed();
     let decoder = await Decoder.forContractInstance(deployedContract, [
-      ShadowBase
+      abstractions.ShadowBase
     ]);
 
     const expectedBaseX = 1;

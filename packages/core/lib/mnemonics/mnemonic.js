@@ -11,7 +11,7 @@ const Config = require("@truffle/config");
 const defaultUserConfig = Config.getUserConfig();
 const bip39 = require("ethereum-cryptography/bip39");
 const { wordlist } = require("ethereum-cryptography/bip39/wordlists/english");
-const hdkey = require("ethereumjs-wallet/hdkey");
+const { hdkey } = require("ethereumjs-wallet");
 const crypto = require("crypto");
 
 const mnemonic = {

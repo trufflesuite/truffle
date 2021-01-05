@@ -1,11 +1,11 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:test:endstate");
 
-import {assert} from "chai";
+import { assert } from "chai";
 
 import Ganache from "ganache-core";
 
-import {prepareContracts} from "./helpers";
+import { prepareContracts } from "./helpers";
 import Debugger from "lib/debugger";
 
 import evm from "lib/evm/selectors";
@@ -13,7 +13,7 @@ import evm from "lib/evm/selectors";
 import * as Codec from "@truffle/codec";
 
 const __FAILURE = `
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 contract FailureTest {
   function run() public {
@@ -23,7 +23,7 @@ contract FailureTest {
 `;
 
 const __SUCCESS = `
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 contract SuccessTest {
 uint x;
@@ -45,7 +45,7 @@ describe("End State", function () {
   var compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
+    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
   before("Prepare contracts and artifacts", async function () {
@@ -93,6 +93,6 @@ describe("End State", function () {
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
       await bugger.variables()
     );
-    assert.include(variables, {x: 107});
+    assert.include(variables, { x: 107 });
   });
 });

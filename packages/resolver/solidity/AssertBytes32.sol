@@ -1,6 +1,6 @@
 //SPDX-License-Identifier: MIT
 
-pragma solidity >= 0.4.15 < 0.8.0;
+pragma solidity >= 0.4.15 < 0.9.0;
 
 library AssertBytes32 {
 
@@ -8,7 +8,7 @@ library AssertBytes32 {
     // The null bytes32: 0
     bytes32 constant BYTES32_NULL = 0x0;
 
-    byte constant MINUS = byte('-');
+    bytes1 constant MINUS = bytes1('-');
 
     /*
         Event: TestEvent

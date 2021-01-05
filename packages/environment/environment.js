@@ -42,7 +42,8 @@ const Environment = {
     const forkedNetwork = config.network + "-fork";
     const ganacheOptions = {
       fork: config.provider,
-      gasLimit: block.gasLimit
+      gasLimit: block.gasLimit,
+      _chainId: 1337 //temporary until Ganache v3!
     };
     if (accounts.length > 0) ganacheOptions.unlocked_accounts = accounts;
 

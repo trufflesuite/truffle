@@ -1,5 +1,6 @@
 const web3Utils = require("web3-utils");
-const RangeUtils = require("@truffle/compile-solidity/compilerSupplier/rangeUtils");
+import semver from "semver";
+import RangeUtils from "@truffle/compile-solidity/compilerSupplier/rangeUtils";
 
 type solcOptionsArg = {
   solc: { version: string };
@@ -13,7 +14,7 @@ export class Deployed {
     let source = "";
     source +=
       "//SPDX-License-Identifier: MIT\n" +
-      "pragma solidity >= 0.5.0 < 0.8.0; \n\n library DeployedAddresses {" +
+      "pragma solidity >= 0.5.0 < 0.9.0; \n\n library DeployedAddresses {" +
       "\n";
 
     for (let [name, address] of Object.entries(mapping)) {
@@ -43,7 +44,12 @@ export class Deployed {
     }
     //regardless of version, replace all pragmas with the new version
     const coercedVersion = RangeUtils.coerce(version);
-    source = source.replace(/0\.5\.0/gm, coercedVersion);
+
+    // we need to update the pragma expression differently depending on whether
+    // a single version or range is suppplied
+    source = semver.valid(coercedVersion) ?
+      source.replace(/0\.5\.0/gm, coercedVersion) :
+      source.replace(/>= 0.5.0 < 0.9.0/gm, coercedVersion);
 
     return source;
   }

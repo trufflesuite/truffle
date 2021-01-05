@@ -1,4 +1,4 @@
-const debug = require("debug")("compile"); // eslint-disable-line no-unused-vars
+const debug = require("debug")("compile");
 const path = require("path");
 const findContracts = require("@truffle/contract-sources");
 const Config = require("@truffle/config");
@@ -12,11 +12,12 @@ const expect = require("@truffle/expect");
 const Compile = {
   // this takes an object with keys being the name and values being source
   // material as well as an options object
-  async sources({sources, options}) {
+  async sources({ sources, options }) {
+    options = Config.default().merge(options);
     const compilation = await run(sources, normalizeOptions(options));
     return compilation.contracts.length > 0
-      ? {compilations: [compilation]}
-      : {compilations: []};
+      ? { compilations: [compilation] }
+      : { compilations: [] };
   },
 
   async all(options) {
@@ -29,7 +30,7 @@ const Compile = {
 
     return await Compile.sourcesWithDependencies({
       paths,
-      options: Config.default().merge(options)
+      options
     });
   },
 
@@ -40,7 +41,7 @@ const Compile = {
 
     return await Compile.sourcesWithDependencies({
       paths,
-      options: Config.default().merge(options)
+      options
     });
   },
 
@@ -59,9 +60,9 @@ const Compile = {
       "resolver"
     ]);
 
-    const config = Config.default().merge(options);
-    const {allSources, compilationTargets} = await Profiler.requiredSources(
-      config.with({
+    options = Config.default().merge(options);
+    const { allSources, compilationTargets } = await Profiler.requiredSources(
+      options.with({
         paths,
         base_path: options.contracts_directory,
         resolver: options.resolver
@@ -76,15 +77,15 @@ const Compile = {
 
     // when there are no sources, don't call run
     if (Object.keys(allSources).length === 0) {
-      return {compilations: []};
+      return { compilations: [] };
     }
 
     options.compilationTargets = compilationTargets;
-    const {sourceIndexes, sources, contracts, compiler} = await run(
+    const { sourceIndexes, sources, contracts, compiler } = await run(
       allSources,
       normalizeOptions(options)
     );
-    const {name, version} = compiler;
+    const { name, version } = compiler;
     // returns CompilerResult - see @truffle/compile-common
     return contracts.length > 0
       ? {
@@ -93,11 +94,11 @@ const Compile = {
               sourceIndexes,
               sources,
               contracts,
-              compiler: {name, version}
+              compiler: { name, version }
             }
           ]
         }
-      : {compilations: []};
+      : { compilations: [] };
   },
 
   async sourcesWithPragmaAnalysis({ paths, options }) {

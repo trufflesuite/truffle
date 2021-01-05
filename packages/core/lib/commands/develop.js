@@ -72,7 +72,8 @@ const command = {
       gasLimit: customConfig.gas || 0x6691b7,
       gasPrice: customConfig.gasPrice || 0x77359400,
       noVMErrorsOnRPCResponse: true,
-      time: config.genesis_time
+      time: config.genesis_time,
+      _chainId: 1337 //temporary until Ganache v3!
     };
 
     if (customConfig.hardfork !== null && customConfig.hardfork !== undefined) {

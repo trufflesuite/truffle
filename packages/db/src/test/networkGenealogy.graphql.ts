@@ -28,7 +28,7 @@ export const FindAncestors = gql`
   query findAncestorCandidates($id: ID!, $alreadyTried: [ID]!, $limit: Int) {
     network(id: $id) {
       possibleAncestors(alreadyTried: $alreadyTried, limit: $limit) {
-        network {
+        networks {
           id
           historicBlock {
             hash
@@ -48,7 +48,7 @@ export const FindDescendants = gql`
   query findDescendantCandidates($id: ID!, $alreadyTried: [ID]!, $limit: Int) {
     network(id: $id) {
       possibleDescendants(alreadyTried: $alreadyTried, limit: $limit) {
-        network {
+        networks {
           id
           historicBlock {
             hash

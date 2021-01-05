@@ -129,7 +129,7 @@ export interface EventArgumentAllocation {
   pointer: Pointer.EventDataPointer | Pointer.EventTopicPointer;
 }
 
-//now let's go back ands fill in returndata
+//now let's go back and fill in returndata
 export type ReturndataKind = FunctionReturndataKind | ConstructorReturndataKind;
 
 export type FunctionReturndataKind =
@@ -138,14 +138,18 @@ export type FunctionReturndataKind =
   | "failure"
   | "selfdestruct";
 export type ConstructorReturndataKind = "bytecode";
+export type AdditionalReturndataKind = "returnmessage";
 
 export type ReturndataAllocation =
   | FunctionReturndataAllocation
-  | ConstructorReturndataAllocation;
+  | ConstructorReturndataAllocation
+  | AdditionalReturndataAllocation;
 
 export interface FunctionReturndataAllocation {
   kind: FunctionReturndataKind;
   selector: Uint8Array;
+  abi?: Abi.ErrorEntry; //only included when kind === "revert", but
+  //I'm not going to bother putting that in the type system
   arguments: ReturndataArgumentAllocation[];
   allocationMode: DecodingMode;
 }
@@ -155,6 +159,12 @@ export interface ConstructorReturndataAllocation {
   selector: Uint8Array; //must be empty, but is required for type niceness
   immutables?: ReturnImmutableAllocation[];
   delegatecallGuard: boolean;
+  allocationMode: DecodingMode;
+}
+
+export interface AdditionalReturndataAllocation {
+  kind: AdditionalReturndataKind;
+  selector: Uint8Array; //must be empty, but is required for type niceness
   allocationMode: DecodingMode;
 }
 

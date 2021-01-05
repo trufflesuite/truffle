@@ -267,10 +267,7 @@ export function* decodeEvent(
     address
   };
   const codeAsHex = Conversion.toHexString(codeBytes);
-  const contractContext = Contexts.Utils.findContext(
-    info.contexts,
-    codeAsHex
-  );
+  const contractContext = Contexts.Utils.findContext(info.contexts, codeAsHex);
   let possibleContractAllocations: AbiData.Allocate.EventAllocation[]; //excludes anonymous events
   let possibleContractAnonymousAllocations: AbiData.Allocate.EventAllocation[];
   if (contractContext) {
@@ -446,11 +443,29 @@ const errorSelector: Uint8Array = Conversion.toBytes(
   })
 ).subarray(0, Evm.Utils.SELECTOR_SIZE);
 
-const defaultReturnAllocations: AbiData.Allocate.ReturndataAllocation[] = [
+const panicSelector: Uint8Array = Conversion.toBytes(
+  Web3Utils.soliditySha3({
+    type: "string",
+    value: "Panic(uint256)"
+  })
+).subarray(0, Evm.Utils.SELECTOR_SIZE);
+
+const defaultReturnAllocationsHighPriority: AbiData.Allocate.ReturndataAllocation[] = [
   {
     kind: "revert" as const,
     allocationMode: "full" as const,
     selector: errorSelector,
+    abi: {
+      name: "Error",
+      type: "error",
+      inputs: [
+        {
+          name: "",
+          type: "string",
+          internalType: "string"
+        }
+      ]
+    },
     arguments: [
       {
         name: "",
@@ -467,6 +482,40 @@ const defaultReturnAllocations: AbiData.Allocate.ReturndataAllocation[] = [
     ]
   },
   {
+    kind: "revert" as const,
+    allocationMode: "full" as const,
+    selector: panicSelector,
+    abi: {
+      name: "Panic",
+      type: "error",
+      inputs: [
+        {
+          name: "",
+          type: "uint256",
+          internalType: "uint256"
+        }
+      ]
+    },
+    arguments: [
+      {
+        name: "",
+        pointer: {
+          location: "returndata" as const,
+          start: panicSelector.length,
+          length: Evm.Utils.WORD_SIZE
+        },
+        type: {
+          typeClass: "uint" as const,
+          bits: Evm.Utils.WORD_SIZE * 8, // :)
+          typeHint: "uint256"
+        }
+      }
+    ]
+  }
+];
+
+const defaultReturnAllocationsLowPriority: AbiData.Allocate.ReturndataAllocation[] = [
+  {
     kind: "failure" as const,
     allocationMode: "full" as const,
     selector: new Uint8Array(), //empty by default
@@ -480,9 +529,14 @@ const defaultReturnAllocations: AbiData.Allocate.ReturndataAllocation[] = [
   }
 ];
 
+const defaultReturnAllocations = [
+  ...defaultReturnAllocationsHighPriority,
+  ...defaultReturnAllocationsLowPriority
+];
+
 /**
  * If there are multiple possibilities, they're always returned in
- * the order: return, revert, failure, empty, bytecode, unknownbytecode
+ * the order: return, revert, returnmessage, failure, empty, bytecode, unknownbytecode
  * @Category Decoding
  */
 export function* decodeReturndata(
@@ -501,6 +555,13 @@ export function* decodeReturndata(
       case "bytecode":
         possibleAllocations = [...defaultReturnAllocations, successAllocation];
         break;
+      case "returnmessage":
+        possibleAllocations = [
+          ...defaultReturnAllocationsHighPriority,
+          successAllocation,
+          ...defaultReturnAllocationsLowPriority
+        ];
+        break;
       //Other cases shouldn't happen so I'm leaving them to cause errors!
     }
   }
@@ -516,7 +577,12 @@ export function* decodeReturndata(
     encodedData = encodedData.subarray(allocation.selector.length); //slice off the selector for later
     //also we check, does the status match?
     if (status !== undefined) {
-      const successKinds = ["return", "selfdestruct", "bytecode"];
+      const successKinds = [
+        "return",
+        "selfdestruct",
+        "bytecode",
+        "returnmessage"
+      ];
       const failKinds = ["failure", "revert"];
       if (status) {
         if (!successKinds.includes(allocation.kind)) {
@@ -535,6 +601,17 @@ export function* decodeReturndata(
       if (decoding) {
         decodings.push(decoding);
       }
+      continue;
+    }
+    if (allocation.kind === "returnmessage") {
+      //this kind is also special, though thankfully it's easier
+      const decoding = {
+        kind: "returnmessage" as const,
+        status: true as const,
+        data: Conversion.toHexString(info.state.returndata),
+        decodingMode: allocation.allocationMode
+      };
+      decodings.push(decoding);
       continue;
     }
     let decodingMode: DecodingMode = allocation.allocationMode; //starts out here; degrades to abi if necessary
@@ -636,6 +713,7 @@ export function* decodeReturndata(
       case "revert":
         decoding = {
           kind,
+          abi: allocation.abi,
           status: false as const,
           arguments: decodedArguments,
           decodingMode
