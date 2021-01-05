@@ -219,7 +219,7 @@ function* findRelation(
       alreadyTried
     ));
 
-    // check blockchain to first a matching network
+    // check blockchain to find a matching network
     const matchingCandidate: IdObject<DataModel.Network> | undefined =
       yield* findMatchingCandidateOnChain(candidates);
 
