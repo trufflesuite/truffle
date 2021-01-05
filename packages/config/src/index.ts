@@ -117,6 +117,7 @@ class TruffleConfig {
 
   public merge(obj: any): TruffleConfig {
     const clone = this.normalize(obj);
+    const current = this.with({}); //clone current so we don't modfiy it
 
     // Only set keys for values that don't throw.
     const propertyNames = Object.keys(obj);
@@ -124,11 +125,11 @@ class TruffleConfig {
     propertyNames.forEach(key => {
       try {
         if (typeof clone[key] === "object" && this._deepCopy.includes(key)) {
-          this[key] = merge(this[key], clone[key]);
+          current[key] = merge(current[key], clone[key]);
         } else {
-          this[key] = clone[key];
+          current[key] = clone[key];
         }
-      } catch (e) {
+      } catch {
         // ignore
       }
     });
@@ -136,7 +137,7 @@ class TruffleConfig {
     const eventsOptions = this.eventManagerOptions(this);
     this.events.updateSubscriberOptions(eventsOptions);
 
-    return this;
+    return current;
   }
 
   public static default(): TruffleConfig {
