@@ -27,7 +27,7 @@ class TruffleConfig {
     this._deepCopy = [
       "compilers",
       "solc", //for old versions
-      "networks",
+      //networks excluded as deepcloning providers may be unsafe
       "db",
       "ens",
       "ethpm"
