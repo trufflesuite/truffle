@@ -18,7 +18,7 @@ export class Truffle implements ResolverSource {
 
       let abstractionFiles: string[] =
         fse.existsSync(this.options.contracts_build_directory)
-          ? fse.readdirSync(this.options.contract_build_directory)
+          ? fse.readdirSync(this.options.contracts_build_directory)
           : [];
       const buildDirFiles = abstractionFiles;
       abstractionFiles = buildDirFiles.filter(file => file.match(/^.*.json$/));
