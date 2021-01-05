@@ -16,11 +16,11 @@ export class Truffle implements ResolverSource {
     if (importPath === "truffle/DeployedAddresses.sol") {
       const sourceFiles = await findContracts(this.options.contracts_directory);
 
-      let abstractionFiles: string[];
-      const buildDirFiles = (abstractionFiles = fse.readdirSync(
-        this.options.contracts_build_directory
-      ));
-      abstractionFiles = buildDirFiles.filter(file => file.match(/^.*.json$/));
+      const buildDirFiles: string[] =
+        fse.existsSync(this.options.contracts_build_directory)
+          ? fse.readdirSync(this.options.contracts_build_directory)
+          : [];
+      const abstractionFiles = buildDirFiles.filter(file => file.match(/^.*.json$/));
 
       const mapping: { [key: string]: string | false } = {};
 
