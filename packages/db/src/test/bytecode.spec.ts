@@ -10,8 +10,12 @@ describe("Bytecode", () => {
   beforeEach(async () => {
     wsClient = new WorkspaceClient();
     shimmedBytecode = Shims.LegacyToNew.forBytecode(Migrations.bytecode);
-    expectedId = generateId(shimmedBytecode);
-    addBytecodeResult = await wsClient.execute(AddBytecode, shimmedBytecode);
+    shimmedBytecode.immutableReferences = {};
+    expectedId = generateId({ ...shimmedBytecode, immutableReferences: [] });
+    addBytecodeResult = await wsClient.execute(AddBytecode, {
+      ...shimmedBytecode,
+      immutableReferences: []
+    });
   });
 
   test("can be added", async () => {
@@ -40,10 +44,11 @@ describe("Bytecode", () => {
     expect(bytecode).toHaveProperty("id");
     expect(bytecode).toHaveProperty("bytes");
 
-    const { id, bytes, linkReferences } = bytecode;
+    const { id, bytes, linkReferences, immutableReferences } = bytecode;
     expect(id).toEqual(expectedId);
     expect(bytes).toEqual(shimmedBytecode.bytes);
     expect(linkReferences).toEqual(shimmedBytecode.linkReferences);
+    expect(immutableReferences).toEqual([]);
   });
 
   test("can retrieve all bytecodes", async () => {

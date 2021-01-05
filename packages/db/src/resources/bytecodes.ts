@@ -16,12 +16,13 @@ export const bytecodes: Definition<"bytecodes"> = {
     ResourcesMutate: "BytecodesAdd"
   },
   createIndexes: [],
-  idFields: ["bytes", "linkReferences"],
+  idFields: ["bytes", "linkReferences", "immutableReferences"],
   typeDefs: gql`
     type Bytecode implements Resource {
       bytes: Bytes!
       linkReferences: [LinkReference]
       instructions(count: Int): [Instruction!]
+      immutableReferences: [ImmutableReferences]
     }
 
     scalar Bytes
@@ -29,6 +30,16 @@ export const bytecodes: Definition<"bytecodes"> = {
     type LinkReference {
       offsets: [ByteOffset!]!
       name: String
+      length: Int!
+    }
+
+    type ImmutableReferences {
+      ASTId: String!
+      references: [ImmutableReference]
+    }
+
+    type ImmutableReference {
+      start: Int!
       length: Int!
     }
 
@@ -43,6 +54,17 @@ export const bytecodes: Definition<"bytecodes"> = {
     input BytecodeInput {
       bytes: Bytes!
       linkReferences: [LinkReferenceInput]
+      immutableReferences: [ImmutableReferencesInput]
+    }
+
+    input ImmutableReferencesInput {
+      ASTId: String!
+      references: [ImmutableReferenceInput]
+    }
+
+    input ImmutableReferenceInput {
+      length: Int!
+      start: Int!
     }
 
     input LinkReferenceInput {
@@ -64,6 +86,24 @@ export const bytecodes: Definition<"bytecodes"> = {
               pushData
             })
           );
+        }
+      },
+      immutableReferences: {
+        async resolve({ immutableReferences }, {}, {}) {
+          let referencesArray = [];
+
+          if (
+            immutableReferences &&
+            Object.keys(immutableReferences).length > 0
+          ) {
+            Object.entries(immutableReferences).map(immutableReference => {
+              referencesArray.push({
+                ASTId: immutableReference[1]["ASTId"],
+                references: immutableReference[1]["references"]
+              });
+            });
+          }
+          return referencesArray;
         }
       }
     }
