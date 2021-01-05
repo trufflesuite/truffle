@@ -20,7 +20,7 @@ export class ABI extends FS {
     }
 
     const resolution = await super.resolve(importPath, importedFrom);
-    if (!resolution) {
+    if (!resolution.body) {
       return { filePath, body };
     }
 
