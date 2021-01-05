@@ -24,7 +24,7 @@ function callstack(state = [], action) {
         contractName:
           contractNode && contractNode.nodeType === "ContractDefinition"
             ? contractNode.name
-            : undefined,
+            : undefined
         //note we don't currently account for getters because currently
         //we can't; fallback, receive, constructors, & modifiers also remain
         //unaccounted for at present
@@ -44,14 +44,14 @@ function callstack(state = [], action) {
         address: action.address,
         calledFromLocation: action.location,
         functionName: undefined,
-        contractName: action.context.contractName,
+        contractName: action.context.contractName
       };
       return [...state, newFrame];
     case actions.EXECUTE_RETURN:
       return popNWhere(
         state,
         action.counter,
-        (frame) => frame.type === "external"
+        frame => frame.type === "external"
       );
     case actions.RESET:
       return [state[0]];
@@ -86,8 +86,8 @@ function lastPosition(state = null, action) {
     case actions.UPDATE_POSITION:
     case actions.EXECUTE_RETURN:
       const { location } = action;
-      if (location.source.id === undefined) {
-        //don't update for unmapped!
+      if (location.source.id === undefined || location.source.internal) {
+        //don't update for unmapped or internal!
         return state;
       }
       return location;
@@ -134,11 +134,11 @@ const proc = combineReducers({
   returnCounter,
   lastPosition,
   innerReturnPosition,
-  innerReturnStatus,
+  innerReturnStatus
 });
 
 const reducer = combineReducers({
-  proc,
+  proc
 });
 
 export default reducer;

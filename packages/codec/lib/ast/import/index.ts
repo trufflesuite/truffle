@@ -34,6 +34,7 @@ export function definitionToType(
       };
     case "address": {
       switch (Compiler.Utils.solidityFamily(compiler)) {
+        case "unknown": //I guess?
         case "pre-0.5.0":
           return {
             typeClass,
@@ -41,6 +42,7 @@ export function definitionToType(
             typeHint
           };
         case "0.5.x":
+        case "0.8.x":
           return {
             typeClass,
             kind: "specific",

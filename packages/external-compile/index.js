@@ -1,15 +1,16 @@
 "use strict";
 
 const debug = require("debug")("external-compile");
-const {exec, execSync} = require("child_process");
+const { exec, execSync } = require("child_process");
 const resolve = require("path").resolve;
-const {promisify} = require("util");
+const { promisify } = require("util");
 const glob = promisify(require("glob"));
 const fs = require("fs");
 const expect = require("@truffle/expect");
 const Schema = require("@truffle/contract-schema");
 const web3Utils = require("web3-utils");
-const {Shims} = require("@truffle/compile-common");
+const { Shims } = require("@truffle/compile-common");
+const Config = require("@truffle/config");
 
 const DEFAULT_ABI = [
   {
@@ -86,8 +87,8 @@ function* bufferLines() {
  * invokes callback when process exits, error on nonzero exit code.
  */
 const runCommand = promisify(function (command, options, callback) {
-  const {cwd, logger, input} = options;
-  const child = exec(command, {cwd, input});
+  const { cwd, logger, input } = options;
+  const child = exec(command, { cwd, input });
 
   // wrap buffer generator for easy use
   const buffer = func => {
@@ -96,7 +97,7 @@ const runCommand = promisify(function (command, options, callback) {
     return data => {
       gen.next();
 
-      let {value: lines} = gen.next(data);
+      let { value: lines } = gen.next(data);
       for (let line of lines) {
         func(line);
       }
@@ -179,9 +180,9 @@ async function processTarget(target, cwd, logger) {
 
   if (usesCommand && !usesPath) {
     // just run command
-    const output = execSync(target.command, {cwd});
+    const output = execSync(target.command, { cwd });
     const contract = JSON.parse(output);
-    return {[contract.contractName]: contract};
+    return { [contract.contractName]: contract };
   }
 
   if (usesPath && !glob.hasMagic(target.path)) {
@@ -191,23 +192,23 @@ async function processTarget(target, cwd, logger) {
     if (usesStdin) {
       input = fs.readFileSync(filename).toString();
       command = target.command;
-      execOptions = {cwd, input};
+      execOptions = { cwd, input };
     } else {
       command = `${target.command} ${filename}`;
-      execOptions = {cwd};
+      execOptions = { cwd };
     }
 
     const output = usesCommand ? execSync(command, execOptions) : input;
 
     const contract = JSON.parse(output);
-    return {[contract.contractName]: contract};
+    return { [contract.contractName]: contract };
   }
 
   if (usesPath && glob.hasMagic(target.path)) {
     // glob expression, recurse after expansion
-    let paths = await glob(target.path, {cwd, follow: true});
+    let paths = await glob(target.path, { cwd, follow: true });
     // copy target properties, overriding path with expanded form
-    let targets = paths.map(path => Object.assign({}, target, {path}));
+    let targets = paths.map(path => Object.assign({}, target, { path }));
     return await processTargets(targets, cwd, logger);
   }
 
@@ -238,7 +239,7 @@ async function processTarget(target, cwd, logger) {
       );
     }
 
-    return {[contract.contractName]: contract};
+    return { [contract.contractName]: contract };
   }
 }
 
@@ -261,7 +262,8 @@ const Compile = {
 
   // compile-common defines object argument to include `sources`, but this is
   // unused as the user is responsible for dealing with compiling their sources
-  async sources({options}) {
+  async sources({ options }) {
+    options = Config.default().merge(options);
     if (options.logger == null) {
       options.logger = console;
     }
@@ -270,7 +272,7 @@ const Compile = {
     expect.options(options.compilers, ["external"]);
     expect.options(options.compilers.external, ["command", "targets"]);
 
-    const {command, targets} = options.compilers.external;
+    const { command, targets } = options.compilers.external;
     const cwd =
       options.compilers.external.workingDirectory ||
       options.compilers.external.working_directory || // just in case
@@ -278,7 +280,7 @@ const Compile = {
     const logger = options.logger;
 
     debug("running compile command: %s", command);
-    await runCommand(command, {cwd, logger});
+    await runCommand(command, { cwd, logger });
 
     const contracts = await processTargets(targets, cwd, logger);
     return {
@@ -300,8 +302,8 @@ const Compile = {
     };
   },
 
-  async sourcesWithDependencies({options}) {
-    return await Compile.sources({options});
+  async sourcesWithDependencies({ options }) {
+    return await Compile.sources({ options });
   }
 };
 

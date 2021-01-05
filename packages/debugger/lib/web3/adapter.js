@@ -44,6 +44,10 @@ export default class Web3Adapter {
     return await this.web3.eth.getBlock(blockNumberOrHash);
   }
 
+  async getChainId() {
+    return await this.web3.eth.getChainId();
+  }
+
   /**
    * getDeployedCode - get the deployed code for an address from the client
    * NOTE: the block argument is optional

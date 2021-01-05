@@ -1,11 +1,11 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:test:ast");
 
-import {assert} from "chai";
+import { assert } from "chai";
 
 import Ganache from "ganache-core";
 
-import {prepareContracts} from "./helpers";
+import { prepareContracts } from "./helpers";
 import Debugger from "lib/debugger";
 
 import solidity from "lib/solidity/selectors";
@@ -14,7 +14,7 @@ import trace from "lib/trace/selectors";
 import SourceMapUtils from "@truffle/source-map-utils";
 
 const __VARIABLES = `
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 contract Variables {
   event Result(uint256 result);
@@ -53,7 +53,7 @@ describe("AST", function () {
   var compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
+    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
   before("Prepare contracts and artifacts", async function () {
@@ -78,7 +78,7 @@ describe("AST", function () {
       });
 
       do {
-        let {start, length} = bugger.view(solidity.current.sourceRange);
+        let { start, length } = bugger.view(solidity.current.sourceRange);
         let end = start + length;
 
         let node = bugger.view(solidity.current.node);

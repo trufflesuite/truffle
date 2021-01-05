@@ -11,7 +11,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.2.0",
+  "version": "0.3.0-0",
   "main": "dist/src/index.js",
   "files": [
     "dist",
@@ -35,11 +35,11 @@
     "test": "jest --verbose --detectOpenHandles"
   },
   "dependencies": {
-    "@truffle/abi-utils": "^0.1.1",
+    "@truffle/abi-utils": "^0.1.2",
     "@truffle/code-utils": "^1.2.22",
-    "@truffle/compile-common": "^0.5.0",
-    "@truffle/config": "^1.2.33",
-    "@truffle/workflow-compile": "^3.1.2",
+    "@truffle/compile-common": "^0.5.1",
+    "@truffle/config": "^1.2.34",
+    "@truffle/workflow-compile": "^3.1.3",
     "apollo-server": "^2.18.2",
     "debug": "^4.2.0",
     "fse": "^4.0.1",
@@ -71,7 +71,6 @@
     "@types/pouchdb": "^6.3.2",
     "@types/pouchdb-adapter-leveldb": "^6.1.3",
     "@types/web3": "1.0.20",
-    "@zerollup/ts-transform-paths": "^1.7.3",
     "ganache-core": "2.13.0",
     "hkts": "^0.3.1",
     "jest": "26.5.2",
@@ -81,7 +80,8 @@
     "ts-node-dev": "^1.0.0-pre.32",
     "tsconfig-paths": "^3.7.0",
     "ttypescript": "^1.5.7",
-    "typescript": "^3.6.3"
+    "typescript": "^4.1.3",
+    "typescript-transform-paths": "^2.1.0"
   },
   "keywords": [
     "database",

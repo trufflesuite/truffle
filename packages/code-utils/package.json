@@ -5,18 +5,19 @@
   "author": "",
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/code-utils",
   "version": "1.2.22",
-  "main": "dist/index.js",
+  "main": "dist/src/index.js",
   "scripts": {
     "build": "tsc",
     "prepare": "yarn build",
     "test": "mocha --exit -r ts-node/register test/**/*.test.ts"
   },
-  "types": "./typings/index.d.ts",
+  "types": "./dist/src/index.d.ts",
   "dependencies": {
-    "borc": "^2.1.2",
+    "cbor": "^5.1.0",
     "source-map-support": "^0.5.19"
   },
   "devDependencies": {
+    "@types/cbor": "^5.0.1",
     "@types/mocha": "^5.2.7",
     "@types/node": "^12.6.8",
     "mocha": "8.1.2",

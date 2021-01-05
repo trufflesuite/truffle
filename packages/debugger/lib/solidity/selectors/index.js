@@ -260,9 +260,10 @@ let solidity = createSelectorTree({
     ...createMultistepSelectors(evm.current.step),
 
     /**
-     * solidity.current.isSourceRangeFinal
+     * solidity.current.isSourceRangeFinalRaw
+     * the old version; doesn't account for internal-source problems
      */
-    isSourceRangeFinal: createLeaf(
+    isSourceRangeFinalRaw: createLeaf(
       [
         "./instructionAtProgramCounter",
         evm.current.step.programCounter,
@@ -282,6 +283,27 @@ let solidity = createSelectorTree({
           current.start != next.start ||
           current.length != next.length ||
           current.file != next.file
+        );
+      }
+    ),
+
+    /**
+     * solidity.current.isSourceRangeFinal
+     * if there's no context change, then don't return final
+     * on jumping from a user source to an internal source
+     */
+    isSourceRangeFinal: createLeaf(
+      [
+        "./isSourceRangeFinalRaw",
+        "./source",
+        "/next/source",
+        evm.current.step.isContextChange
+      ],
+
+      (isFinal, currentSource, nextSource, changesContext) => {
+        return (
+          changesContext ||
+          (isFinal && (currentSource.internal || !nextSource.internal))
         );
       }
     ),

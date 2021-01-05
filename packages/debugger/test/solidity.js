@@ -1,11 +1,11 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:test:solidity");
 
-import {assert} from "chai";
+import { assert } from "chai";
 
 import Ganache from "ganache-core";
 
-import {prepareContracts, lineOf} from "./helpers";
+import { prepareContracts, lineOf } from "./helpers";
 import Debugger from "lib/debugger";
 
 import solidity from "lib/solidity/selectors";
@@ -13,7 +13,7 @@ import controller from "lib/controller/selectors";
 import trace from "lib/trace/selectors";
 
 const __SINGLE_CALL = `
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 contract SingleCall {
   event Called();
@@ -32,7 +32,7 @@ contract SingleCall {
 `;
 
 const __NESTED_CALL = `
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 contract NestedCall {
   event First();
@@ -66,7 +66,7 @@ contract NestedCall {
 `;
 
 const __FAILED_CALL = `
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 contract RevertTest {
 
@@ -94,7 +94,7 @@ contract RevertTest {
 `;
 
 const __OVER_TRANSFER = `
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 contract BadTransferTest {
 
@@ -112,7 +112,7 @@ contract Recipient {
 `;
 
 const __ADJUSTMENT = `
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 contract AdjustTest {
 
@@ -152,7 +152,7 @@ describe("Solidity Debugging", function () {
   var compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
+    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
   before("Prepare contracts and artifacts", async function () {
@@ -210,7 +210,7 @@ describe("Solidity Debugging", function () {
     // at `second();`
     let source = bugger.view(solidity.current.source);
     let breakLine = lineOf("BREAK", source.source);
-    let breakpoint = {sourceId: source.id, line: breakLine};
+    let breakpoint = { sourceId: source.id, line: breakLine };
 
     do {
       await bugger.continueUntilBreakpoint([breakpoint]);

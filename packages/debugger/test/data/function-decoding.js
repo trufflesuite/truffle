@@ -1,18 +1,18 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:test:data:function-decoding");
 
-import {assert} from "chai";
+import { assert } from "chai";
 
 import Ganache from "ganache-core";
 
-import {prepareContracts, lineOf} from "../helpers";
+import { prepareContracts, lineOf } from "../helpers";
 import Debugger from "lib/debugger";
 import * as Codec from "@truffle/codec";
 
 import solidity from "lib/solidity/selectors";
 
 const __EXTERNALS = `
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 contract ExternalsTester {
 
@@ -55,7 +55,7 @@ contract ExternalsDerived is ExternalsBase {
 `;
 
 const __INTERNALS = `
-pragma solidity ^0.7.1;
+pragma solidity ^0.8.0;
 
 contract InternalsBase {
 
@@ -139,7 +139,7 @@ describe("Function Pointer Decoding", function () {
   var compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
+    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
   before("Prepare contracts and artifacts", async function () {
@@ -157,7 +157,7 @@ describe("Function Pointer Decoding", function () {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let sourceId = bugger.view(solidity.current.source).id;
     let source = bugger.view(solidity.current.source).source;
@@ -195,7 +195,7 @@ describe("Function Pointer Decoding", function () {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let sourceId = bugger.view(solidity.current.source).id;
     let source = bugger.view(solidity.current.source).source;
@@ -216,7 +216,7 @@ describe("Function Pointer Decoding", function () {
       baseFn: "InternalsBase.inherited",
       libFn: "InternalsLib.libraryFn",
       storedFreeFn: "freeFn",
-      undefFn: "assert(false)",
+      undefFn: "<uninitialized>",
       storageFn: "InternalsTest.run",
       readFromConstructor: "InternalsTest.run"
     };
@@ -230,7 +230,7 @@ describe("Function Pointer Decoding", function () {
     let receipt = await abstractions.InternalsTest.new();
     let txHash = receipt.transactionHash;
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let sourceId = bugger.view(solidity.current.source).id;
     let source = bugger.view(solidity.current.source).source;
@@ -251,7 +251,7 @@ describe("Function Pointer Decoding", function () {
       baseFn: "InternalsBase.inherited",
       libFn: "InternalsLib.libraryFn",
       storedFreeFn: "freeFn",
-      undefFn: "assert(false)",
+      undefFn: "<uninitialized>",
       storageFn: "InternalsTest.run"
     };
 

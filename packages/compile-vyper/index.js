@@ -8,6 +8,7 @@ const semver = require("semver");
 
 const findContracts = require("@truffle/contract-sources");
 const Common = require("@truffle/compile-common");
+const Config = require("@truffle/config");
 
 const { compileAllJson } = require("./vyper-json");
 
@@ -140,11 +141,11 @@ async function compileAllNoJson({ sources, options, version }) {
             source: sourceContents,
             abi: JSON.parse(compiledContract.abi),
             bytecode: {
-              bytes: compiledContract.bytecode,
+              bytes: compiledContract.bytecode.slice(2), //remove "0x" prefix
               linkReferences: [] //no libraries in Vyper
             },
             deployedBytecode: {
-              bytes: compiledContract.bytecode_runtime,
+              bytes: compiledContract.bytecode_runtime.slice(2), //remove "0x" prefix
               linkReferences: [] //no libraries in Vyper
             },
             deployedSourceMap: JSON.parse(compiledContract.source_map), //there is no constructor source map
@@ -177,8 +178,9 @@ async function compileAllNoJson({ sources, options, version }) {
 const Compile = {
   // Check that vyper is available then forward to internal compile function
   async sources({ sources = [], options }) {
+    options = Config.default().merge(options);
     // filter out non-vyper paths
-    const vyperFiles = sources.filter(path => minimatch(path, VYPER_PATTERN));
+    const vyperFiles = sources.filter(path => minimatch(path, VYPER_PATTERN, { dot: true }));
 
     // no vyper files found, no need to check vyper
     if (vyperFiles.length === 0) {

@@ -49,12 +49,17 @@ function* stacktraceSaga() {
   //technically, an EXECUTE_RETURN could happen as well as those below,
   //resulting in 2 actions instead of just one, but it's pretty unlikely.
   //(an EXTERNAL_RETURN, OTOH, is obviously exclusive of the possibilities below)
-  if (yield select(stacktrace.current.willJumpIn)) {
+  if ((yield select(stacktrace.current.willJumpIn)) && returnCounter === 0) {
+    //note: do NOT process jumps while there are returns waiting to execute
     const nextLocation = yield select(stacktrace.next.location);
     const nextParent = yield select(stacktrace.next.contractNode);
     yield put(actions.jumpIn(currentLocation, nextLocation.node, nextParent));
     positionUpdated = true;
-  } else if (yield select(stacktrace.current.willJumpOut)) {
+  } else if (
+    (yield select(stacktrace.current.willJumpOut)) &&
+    returnCounter === 0
+  ) {
+    //again, do not process jumps while there are returns waiting to execute
     yield put(actions.jumpOut(currentLocation));
     positionUpdated = true;
   } else if (yield select(stacktrace.current.willCall)) {

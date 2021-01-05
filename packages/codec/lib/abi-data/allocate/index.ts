@@ -21,6 +21,7 @@ import {
   ReturndataAllocation,
   FunctionReturndataAllocation,
   ConstructorReturndataAllocation,
+  AdditionalReturndataAllocation,
   ReturnImmutableAllocation,
   CalldataAllocations,
   CalldataAllocationTemporary,
@@ -58,6 +59,12 @@ interface EventParameterInfo {
   name: string;
   indexed: boolean;
 }
+
+export const FallbackOutputAllocation: AdditionalReturndataAllocation = {
+  kind: "returnmessage",
+  selector: new Uint8Array(), //empty
+  allocationMode: "full"
+};
 
 export function getAbiAllocations(
   userDefinedTypes: Format.Types.TypesById

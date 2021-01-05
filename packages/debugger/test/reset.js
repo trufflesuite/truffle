@@ -1,18 +1,18 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:test:reset");
 
-import {assert} from "chai";
+import { assert } from "chai";
 
 import Ganache from "ganache-core";
 
-import {prepareContracts, lineOf} from "./helpers";
+import { prepareContracts, lineOf } from "./helpers";
 import * as Codec from "@truffle/codec";
 import Debugger from "lib/debugger";
 
 import solidity from "lib/solidity/selectors";
 
 const __SETSTHINGS = `
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 contract SetsThings {
   int x;
@@ -39,7 +39,7 @@ describe("Reset Button", function () {
   var compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
+    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
   before("Prepare contracts and artifacts", async function () {

@@ -20,11 +20,14 @@ function generateReport(callstack, location, status, message) {
   locations.shift();
   locations.push(location);
   debug("locations: %O", locations);
-  const names = callstack.map(({ functionName, contractName, address }) => ({
-    functionName,
-    contractName,
-    address
-  }));
+  const names = callstack.map(
+    ({ functionName, contractName, address, type }) => ({
+      functionName,
+      contractName,
+      address,
+      type
+    })
+  );
   debug("names: %O", names);
   let report = zipWith(locations, names, (location, nameInfo) => ({
     ...nameInfo,
@@ -36,7 +39,11 @@ function generateReport(callstack, location, status, message) {
     report[report.length - 1].status = status;
   }
   if (message !== undefined) {
-    report[0].message = message;
+    if (message.Error !== undefined) {
+      report[0].message = message.Error;
+    } else if (message.Panic !== undefined) {
+      report[0].panic = message.Panic;
+    }
   }
   return report;
 }
@@ -70,8 +77,8 @@ function createMultistepSelectors(stepSelector) {
      */
     strippedLocation: createLeaf(
       ["./location/source", "./location/sourceRange"],
-      ({ id, sourcePath }, sourceRange) => ({
-        source: { id, sourcePath },
+      ({ id, sourcePath, internal }, sourceRange) => ({
+        source: { id, sourcePath, internal },
         sourceRange
       })
     ),
@@ -221,9 +228,12 @@ let stacktrace = createSelectorTree({
 
     /**
      * stacktrace.current.revertString
-     * Crudely decodes the current revert string.
+     * Crudely decodes the current revert string, OR the current panic.
+     * Returns { Error: <string> } or { Panic: <BN> }
      * Not meant to account for crazy things, just there to produce
-     * a simple string.
+     * a simple string or number.
+     * NOTE: if panic code is overlarge, we'll use -1 instead to indicate
+     * an unknown type of panic.
      */
     revertString: createLeaf(
       [evm.current.step.returnValue],
@@ -235,17 +245,28 @@ let stacktrace = createSelectorTree({
           revertDecodings.length === 1 &&
           revertDecodings[0].kind === "revert"
         ) {
-          let revertStringInfo = revertDecodings[0].arguments[0].value.value;
-          switch (revertStringInfo.kind) {
-            case "valid":
-              return revertStringInfo.asString;
-            case "malformed":
-              //turn into a JS string while smoothing over invalid UTF-8
-              //slice 2 to remove 0x prefix
-              return Buffer.from(
-                revertStringInfo.asHex.slice(2),
-                "hex"
-              ).toString();
+          const decoding = revertDecodings[0];
+          switch (decoding.abi.name) {
+            case "Error":
+              const revertStringInfo = decoding.arguments[0].value.value;
+              switch (revertStringInfo.kind) {
+                case "valid":
+                  return { Error: revertStringInfo.asString };
+                case "malformed":
+                  //turn into a JS string while smoothing over invalid UTF-8
+                  //slice 2 to remove 0x prefix
+                  return {
+                    Error: Buffer.from(
+                      revertStringInfo.asHex.slice(2),
+                      "hex"
+                    ).toString()
+                  };
+              }
+            case "Panic":
+              const panicCode = decoding.arguments[0].value.value.asBN;
+              return { Panic: panicCode };
+            default:
+              return undefined;
           }
         } else {
           return undefined;
@@ -255,18 +276,21 @@ let stacktrace = createSelectorTree({
 
     /**
      * stacktrace.current.positionWillChange
+     * note: we disregard internal sources here!
      */
     positionWillChange: createLeaf(
       ["/next/location", "/current/location", "./lastPosition"],
       (nextLocation, currentLocation, lastLocation) => {
         let oldLocation =
-          currentLocation.source.id !== undefined
+          currentLocation.source.id !== undefined &&
+          !currentLocation.source.internal
             ? currentLocation
             : lastLocation;
         return (
           Boolean(oldLocation) && //if there's no current or last position, we don't need this check
           Boolean(nextLocation.source) &&
           nextLocation.source.id !== undefined && //if next location is unmapped, we consider ourselves to have not moved
+          !nextLocation.source.internal && //similarly if it's internal
           (nextLocation.source.id !== oldLocation.source.id ||
             nextLocation.sourceRange.start !== oldLocation.sourceRange.start ||
             nextLocation.sourceRange.length !== oldLocation.sourceRange.length)

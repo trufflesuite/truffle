@@ -1,11 +1,11 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:test:txlog");
 
-import {assert} from "chai";
+import { assert } from "chai";
 
 import Ganache from "ganache-core";
 
-import {prepareContracts} from "./helpers";
+import { prepareContracts } from "./helpers";
 import Debugger from "lib/debugger";
 import * as Codec from "@truffle/codec";
 
@@ -13,7 +13,7 @@ import txlog from "lib/txlog/selectors";
 
 const __TXLOG = `
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 contract VizTest {
 
@@ -33,7 +33,7 @@ contract VizTest {
   }
 
   function testTransfer() public {
-    tx.origin.transfer(1);
+    payable(tx.origin).transfer(1);
   }
 
   fallback() external {
@@ -118,7 +118,7 @@ describe("Transaction log (visualizer)", function () {
   var compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
+    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
   before("Prepare contracts and artifacts", async function () {
@@ -324,7 +324,7 @@ describe("Transaction log (visualizer)", function () {
   it("Correctly logs a fallback call", async function () {
     this.timeout(12000);
     let instance = await abstractions.VizTest.deployed();
-    let receipt = await instance.sendTransaction({data: "0xdeadbeef"});
+    let receipt = await instance.sendTransaction({ data: "0xdeadbeef" });
     let txHash = receipt.tx;
 
     let bugger = await Debugger.forTx(txHash, {

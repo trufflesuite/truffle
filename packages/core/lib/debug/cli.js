@@ -66,6 +66,13 @@ class CLIDebugger {
           )}.`
         );
       }
+      if (badCompilationAddresses.length > 0) {
+        warningStrings.push(
+          `Errors occurred while compiling sources for addresses ${badCompilations.join(
+            ", "
+          )}.`
+        );
+      }
       fetchSpinner.warn(warningStrings.join("  "));
     }
   }
@@ -73,23 +80,31 @@ class CLIDebugger {
   async getCompilations() {
     let artifacts;
     artifacts = await this.gatherArtifacts();
-    if (artifacts) {
+    if ((artifacts && !this.config.forceRecompile) || this.config.forceNoRecompile) {
       let shimmedCompilations = Codec.Compilations.Utils.shimArtifacts(
         artifacts
       );
       //if they were compiled simultaneously, yay, we can use it!
-      if (shimmedCompilations.every(DebugUtils.isUsableCompilation)) {
+      //(or if we *force* it to...)
+      if (
+        this.config.forceNoRecompile ||
+        shimmedCompilations.every(DebugUtils.isUsableCompilation)
+      ) {
+        debug("shimmed compilations usable")
         return shimmedCompilations;
       }
+      debug("shimmed compilations unusable")
     }
-    //if not, or if build directory doens't exist, we have to recompile
+    //if not, or if build directory doesn't exist, we have to recompile
     return await this.compileSources();
   }
 
   async compileSources() {
     const compileSpinner = ora("Compiling your contracts...").start();
 
-    const compilationResult = await new DebugCompiler(this.config).compile();
+    const compilationResult = await new DebugCompiler(this.config).compile({
+      withTests: this.config.compileTests
+    });
     debug("compilationResult: %O", compilationResult);
 
     compileSpinner.succeed();

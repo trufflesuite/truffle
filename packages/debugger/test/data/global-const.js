@@ -1,18 +1,18 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:test:data:global");
 
-import {assert} from "chai";
+import { assert } from "chai";
 
 import Ganache from "ganache-core";
 
-import {prepareContracts} from "../helpers";
+import { prepareContracts } from "../helpers";
 import Debugger from "lib/debugger";
 
 import * as Codec from "@truffle/codec";
 
 const __TESTER = `
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.7.4;
+pragma solidity ^0.8.0;
 
 import "./Constants.sol";
 
@@ -26,7 +26,7 @@ contract ConstTest {
 
 const __CONSTANTS = `
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.7.4;
+pragma solidity ^0.8.0;
 
 uint constant secret = 77;
 
@@ -46,7 +46,7 @@ describe("Globally-defined constants", function () {
   var compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
+    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
   before("Prepare contracts and artifacts", async function () {
@@ -63,7 +63,7 @@ describe("Globally-defined constants", function () {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     //file-level constants should be available right away
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(

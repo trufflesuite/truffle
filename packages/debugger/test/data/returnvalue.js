@@ -1,17 +1,17 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:test:data:returnvalue");
 
-import {assert} from "chai";
+import { assert } from "chai";
 
 import Ganache from "ganache-core";
 
-import {prepareContracts} from "../helpers";
+import { prepareContracts } from "../helpers";
 import Debugger from "lib/debugger";
 
 import * as Codec from "@truffle/codec";
 
 const __RETURNVALUES = `
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 contract ReturnValues {
 
@@ -19,7 +19,7 @@ contract ReturnValues {
 
   constructor(bool fail) {
     if(fail) {
-      selfdestruct(tx.origin);
+      selfdestruct(payable(tx.origin));
     }
   }
 
@@ -33,6 +33,10 @@ contract ReturnValues {
 
   function pair() public returns (int x, int) {
     return (minus, -2);
+  }
+
+  function panic() public {
+    assert(false);
   }
 }
 
@@ -75,7 +79,7 @@ describe("Return value decoding", function () {
   var compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
+    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
   before("Prepare contracts and artifacts", async function () {
@@ -93,7 +97,7 @@ describe("Return value decoding", function () {
     let receipt = await instance.pair();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     await bugger.continueUntilBreakpoint(); //run till end
 
@@ -105,7 +109,7 @@ describe("Return value decoding", function () {
     assert.lengthOf(outputs, 2);
     assert.strictEqual(outputs[0].name, "x");
     assert.isUndefined(outputs[1].name);
-    const values = outputs.map(({value}) =>
+    const values = outputs.map(({ value }) =>
       Codec.Format.Utils.Inspect.nativize(value)
     );
     assert.deepEqual(values, [-1, -2]);
@@ -118,7 +122,7 @@ describe("Return value decoding", function () {
     let txHash = instance.transactionHash;
     debug("txHash: %s", txHash);
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     debug("about to run!");
     await bugger.continueUntilBreakpoint(); //run till end
@@ -146,7 +150,7 @@ describe("Return value decoding", function () {
     let txHash = instance.transactionHash;
     debug("txHash: %s", txHash);
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     debug("about to run!");
     await bugger.continueUntilBreakpoint(); //run till end
@@ -167,7 +171,7 @@ describe("Return value decoding", function () {
     let txHash = instance.transactionHash;
     debug("txHash: %s", txHash);
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     debug("about to run!");
     await bugger.continueUntilBreakpoint(); //run till end
@@ -202,7 +206,7 @@ describe("Return value decoding", function () {
       txHash = error.hashes[0]; //it's the only hash involved
     }
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     await bugger.continueUntilBreakpoint(); //run till end
 
@@ -226,7 +230,7 @@ describe("Return value decoding", function () {
       txHash = error.hashes[0]; //it's the only hash involved
     }
 
-    let bugger = await Debugger.forTx(txHash, {provider, compilations});
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     await bugger.continueUntilBreakpoint(); //run till end
 
@@ -234,9 +238,39 @@ describe("Return value decoding", function () {
     assert.lengthOf(decodings, 1);
     const decoding = decodings[0];
     assert.strictEqual(decoding.kind, "revert");
+    assert.strictEqual(decoding.abi.name, "Error");
     const outputs = decoding.arguments;
     assert.lengthOf(outputs, 1);
     const message = Codec.Format.Utils.Inspect.nativize(outputs[0].value);
     assert.strictEqual(message, "Noise!");
+  });
+
+  it("Decodes panic code", async function () {
+    this.timeout(9000);
+
+    //HACK: because this transaction makes web3 throw, we have to extract the hash from
+    //the resulting exception (there is supposed to be a non-hacky way but it
+    //does not presently work)
+    let instance = await abstractions.ReturnValues.deployed();
+    let txHash;
+    try {
+      await instance.panic(); //web3 throws on failure
+    } catch (error) {
+      txHash = error.hashes[0]; //it's the only hash involved
+    }
+
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+
+    await bugger.continueUntilBreakpoint(); //run till end
+
+    const decodings = await bugger.returnValue();
+    assert.lengthOf(decodings, 1);
+    const decoding = decodings[0];
+    assert.strictEqual(decoding.kind, "revert");
+    assert.strictEqual(decoding.abi.name, "Panic");
+    const outputs = decoding.arguments;
+    assert.lengthOf(outputs, 1);
+    const panicCode = Codec.Format.Utils.Inspect.nativize(outputs[0].value);
+    assert.strictEqual(panicCode, 1);
   });
 });
