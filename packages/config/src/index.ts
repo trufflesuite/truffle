@@ -116,7 +116,7 @@ class TruffleConfig {
     this.events.updateSubscriberOptions(eventsOptions);
 
     return assignIn(
-      Object.create(TruffleConfig.prototype),
+      TruffleConfig.default(),
       current,
       normalized
     );
