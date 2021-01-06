@@ -34,10 +34,10 @@ const RangeUtils = {
     //the following line doesn't, despite the flag, but does work with version ranges
     const rangeAtLeast =
       semver.validRange(range, { loose: true }) &&
-      (semver.ltr(comparisonVersion, range, {
+      !semver.gtr(comparisonVersion, range, {
         includePrerelease: true,
         loose: true
-      }) || semver.satisfies(comparisonVersion, range)); //intersects will throw if given undefined so must ward against
+      }); //intersects will throw if given undefined so must ward against
     return individualAtLeast || rangeAtLeast;
   },
 
