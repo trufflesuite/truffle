@@ -1,6 +1,5 @@
 import "source-map-support/register";
 import path from "path";
-import assignIn from "lodash.assignin";
 import merge from "lodash.merge";
 import Module from "module";
 import findUp from "find-up";
@@ -115,11 +114,23 @@ class TruffleConfig {
     let eventsOptions = this.eventManagerOptions(this);
     this.events.updateSubscriberOptions(eventsOptions);
 
-    return assignIn(
-      TruffleConfig.default(),
-      current,
-      normalized
-    );
+    let combined = TruffleConfig.default();
+    for (const key of Object.keys(current)) {
+      try {
+        combined[key] = current[key];
+      } catch {
+        // ignore things that can't be directly set
+      }
+    }
+    for (const key of Object.keys(normalized)) {
+      try {
+        combined[key] = normalized[key];
+      } catch {
+        // ignore things that can't be directly set
+      }
+    }
+
+    return combined;
   }
 
   public clone(): TruffleConfig {
@@ -131,9 +142,7 @@ class TruffleConfig {
     const current = this.clone(); //clone current so we don't modfiy it
 
     // Only set keys for values that don't throw.
-    const propertyNames = Object.keys(obj);
-
-    propertyNames.forEach(key => {
+    for (const key of Object.keys(obj)) {
       try {
         if (typeof clone[key] === "object" && this._deepCopy.includes(key)) {
           current[key] = merge(current[key], clone[key]);
@@ -143,7 +152,7 @@ class TruffleConfig {
       } catch {
         // ignore
       }
-    });
+    }
 
     const eventsOptions = this.eventManagerOptions(this);
     this.events.updateSubscriberOptions(eventsOptions);
