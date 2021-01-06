@@ -251,7 +251,7 @@ const Compile = {
     const updatedVyperPaths = updated.filter(path => {
       return path.match(/\.vy$|\.v.py$|\.vyper.py$/);
     });
-    return await Compile.sources({
+    return await Compile.sourcesWithDependencies({
       sources: files,
       options: options.with({
         compilationTargets: updatedVyperPaths
