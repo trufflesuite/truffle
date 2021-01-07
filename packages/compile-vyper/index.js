@@ -252,7 +252,7 @@ const Compile = {
       return path.match(/\.vy$|\.v.py$|\.vyper.py$|\.json$/);
     });
     return await Compile.sourcesWithDependencies({
-      sources: udpatedVyperPaths,
+      sources: updatedVyperPaths,
       options
     });
   },
