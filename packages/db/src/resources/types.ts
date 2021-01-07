@@ -3,7 +3,6 @@ const debug = logger("db:resources:types");
 
 import * as Meta from "@truffle/db/meta";
 import * as Pouch from "@truffle/db/pouch";
-import * as GraphQl from "@truffle/db/graphql";
 
 export { Db, IdObject, toIdObject } from "@truffle/db/meta";
 
@@ -137,7 +136,7 @@ export type CollectionName = Meta.CollectionName<Collections>;
 
 export type Definitions = {
   [N in CollectionName]: Pouch.Definition<Collections, N> &
-    GraphQl.Definition<Collections, N>;
+    Meta.Definition<Collections, N>;
 };
 
 export type Definition<N extends CollectionName> = Definitions[N];

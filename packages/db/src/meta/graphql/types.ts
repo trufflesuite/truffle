@@ -9,9 +9,9 @@ import {
   CollectionName,
   CollectionNameStyle,
   CollectionNameStyledAs,
-  MutableCollectionName,
-  Workspace
-} from "@truffle/db/meta";
+  MutableCollectionName
+} from "@truffle/db/meta/collections";
+import { Workspace } from "@truffle/db/meta/data";
 
 export type Definitions<C extends Collections> = {
   [N in CollectionName<C>]: {
