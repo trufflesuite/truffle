@@ -15,10 +15,23 @@ import { Collections } from "./collections";
 import { Definitions } from "./definitions";
 import * as GraphQl from "./graphql";
 import * as Pouch from "./pouch";
+import * as Interface from "./interface";
 
 export const forDefinitions = <C extends Collections>(
   definitions: Definitions<C>
-) => ({
-  schema: GraphQl.forDefinitions(definitions),
-  attach: Pouch.forDefinitions(definitions)
-});
+) => {
+  const attach = Pouch.forDefinitions(definitions);
+  const schema = GraphQl.forDefinitions(definitions);
+
+  const { connect, serve } = Interface.forAttachAndSchema({
+    attach,
+    schema
+  });
+
+  return {
+    schema,
+    attach,
+    connect,
+    serve
+  };
+};
