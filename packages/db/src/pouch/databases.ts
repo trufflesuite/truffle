@@ -11,11 +11,12 @@ import {
   MutationInput,
   MutationPayload,
   MutableCollectionName,
-  SavedInput,
   generateId
 } from "@truffle/db/meta";
 
-import { Workspace, Definition, Definitions, Historical } from "./types";
+import { Workspace, SavedInput, Historical } from "@truffle/db/meta/data";
+
+import { Definition, Definitions } from "./types";
 
 export interface DatabasesOptions<C extends Collections> {
   settings: any;

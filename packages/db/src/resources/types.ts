@@ -157,4 +157,4 @@ export type NamedResource<
 
 export type NamedCollectionName = Meta.NamedCollectionName<Collections>;
 
-export type Workspace = Pouch.Workspace<Collections>;
+export type Workspace = Meta.Workspace<Collections>;

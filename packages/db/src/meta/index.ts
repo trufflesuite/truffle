@@ -6,3 +6,4 @@ export * from "./requests";
 export * from "./collections";
 export * from "./requests";
 export * from "./interface";
+export * from "./data";

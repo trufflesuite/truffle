@@ -12,8 +12,8 @@ import { FSDatabases } from "./fs";
 import { MemoryDatabases } from "./memory";
 import { SqliteDatabases } from "./sqlite";
 
-import { Collections } from "@truffle/db/meta";
-import { Workspace, Definitions } from "./types";
+import { Collections, Workspace } from "@truffle/db/meta";
+import { Definitions } from "./types";
 
 export interface DatabasesConfig {
   workingDirectory?: string;

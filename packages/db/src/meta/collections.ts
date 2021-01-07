@@ -92,15 +92,6 @@ export type Input<
   N extends CollectionName<C> = CollectionName<C>
 > = CollectionProperty<"input", C, N>;
 
-export type SavedInput<
-  C extends Collections = Collections,
-  N extends CollectionName<C> = CollectionName<C>
-> = {
-  [K in keyof Input<C, N> | "id"]: K extends keyof Input<C, N>
-    ? Input<C, N>[K]
-    : string;
-};
-
 export type FilteredCollectionName<C extends Collections, F = undefined> = {
   [K in CollectionName<C>]: Resource<C, K, F> extends never ? never : K;
 }[CollectionName<C>];
