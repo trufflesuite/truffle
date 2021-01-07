@@ -19,7 +19,6 @@ export async function getImports({
   shouldIncludePath,
   parseImports
 }: GetImportsOptions): Promise<string[]> {
-  // No imports in vyper!
   if (!shouldIncludePath(filePath)) return [];
 
   const imports = await parseImports(body);

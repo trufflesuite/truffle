@@ -9,6 +9,7 @@ const semver = require("semver");
 const findContracts = require("@truffle/contract-sources");
 const Common = require("@truffle/compile-common");
 const Config = require("@truffle/config");
+const { requiredSources } = require("./profiler");
 
 const { compileAllJson } = require("./vyper-json");
 
@@ -181,11 +182,11 @@ const Compile = {
   async sources({ sources = [], options }) {
     options = Config.default().merge(options);
     // filter out non-vyper paths
-    const vyperFiles = sources.filter(
-      path => minimatch(path, VYPER_PATTERN, { dot: true })
+    const vyperFiles = sources.filter(path =>
+      minimatch(path, VYPER_PATTERN, { dot: true })
     );
-    const vyperFilesStrict = vyperFiles.filter(
-      path => minimatch(path, VYPER_PATTERN_STRICT, { dot: true })
+    const vyperFilesStrict = vyperFiles.filter(path =>
+      minimatch(path, VYPER_PATTERN_STRICT, { dot: true })
     );
 
     // no vyper files found, no need to check vyper
@@ -203,11 +204,37 @@ const Compile = {
     });
   },
 
-  //since we don't have an imports analyzer for Vyper
-  //yet, we'll just treat this the same as all; this will
-  //need to be revisited once we have an import parser for Vyper
-  async sourcesWithDependencies({ paths: _paths = [], options }) {
-    return await Compile.all({ options });
+  async sourcesWithDependencies({ paths = [], options }) {
+    options = Config.default().merge(options);
+    const vyperFilesStrict = paths.filter(path =>
+      minimatch(path, VYPER_PATTERN_STRICT, { dot: true })
+    );
+
+    const { json: useJson } = await checkVyper();
+    if (!useJson) {
+      //if we don't have vyper-json, we can't (currently) do dependency
+      //analysis, so we just compile everything
+      //(we don't call Compile.all() here to avoid circularity)
+      const files = await findContracts(options.contracts_directory);
+      return await Compile.sources({
+        sources: files,
+        options
+      });
+    }
+
+    const { allSources, compilationTargets } = await requiredSources(
+      options.with({
+        paths: vyperFilesStrict,
+        base_path: options.contracts_directory
+      })
+    );
+
+    return await Compile.sources({
+      sources: allSources,
+      options: options.with({
+        compilationTargets
+      })
+    });
   },
 
   // contracts_directory: String. Directory where contract files can be found.
@@ -215,16 +242,20 @@ const Compile = {
   // strict: Boolean. Return compiler warnings as errors. Defaults to false.
   async all(options) {
     options = Config.default().merge(options);
-    const fileSearchPattern = path.join(
-      options.contracts_directory,
-      VYPER_PATTERN
-    );
-    debug("fileSearchPattern: %O", fileSearchPattern);
-    const files = await findContracts(fileSearchPattern);
-    debug("files: %O", files);
+    const files = await findContracts(options.contracts_directory);
 
-    return await Compile.sources({
-      sources: files,
+    const { json: useJson } = await checkVyper();
+    if (!useJson) {
+      //if we don't have vyper-json, we can't (currently) do dependency
+      //analysis, so we skip that
+      return await Compile.sources({
+        sources: files,
+        options
+      });
+    }
+
+    return await Compile.sourcesWithDependencies({
+      paths: files,
       options
     });
   },
@@ -237,23 +268,13 @@ const Compile = {
   async necessary(options) {
     options = Config.default().merge(options);
 
-    const fileSearchPattern = path.join(
-      options.contracts_directory,
-      VYPER_PATTERN
-    );
-    const files = await findContracts(fileSearchPattern);
-
     const profiler = await new Common.Profiler({});
     const updated = await profiler.updated(options);
     if (updated.length === 0) {
       return { compilations: [] };
     }
-    // select only Vyper files
-    const updatedVyperPaths = updated.filter(path => {
-      return path.match(/\.vy$|\.v.py$|\.vyper.py$|\.json$/);
-    });
     return await Compile.sourcesWithDependencies({
-      sources: updatedVyperPaths,
+      paths: updated,
       options
     });
   },

@@ -28,8 +28,6 @@ function compileAllJson({ sources: sourcePaths, options, version }) {
     originalSourcePaths
   } = Common.Sources.collectSources(rawSources, options.compilationTargets);
 
-  debug("sources: %O", sources);
-
   const [interfacePaths, properSourcePaths] = partition(
     Object.keys(sources),
     sourcePath => sourcePath.endsWith(".json")
@@ -58,8 +56,6 @@ function compileAllJson({ sources: sourcePaths, options, version }) {
     version
   });
 
-  debug("compilerInput: %O", compilerInput);
-
   // perform compilation
   const rawCompilerOutput = invokeCompiler({
     compilerInput
@@ -72,7 +68,6 @@ function compileAllJson({ sources: sourcePaths, options, version }) {
     compilerOutput: rawCompilerOutput,
     options
   });
-  debug("errors: %O", errors);
   if (warnings.length > 0) {
     options.events.emit("compile:warnings", { warnings });
   }
@@ -335,5 +330,6 @@ function fixPath(path) {
 }
 
 module.exports = {
-  compileAllJson
+  compileAllJson,
+  execVyperJson
 };
