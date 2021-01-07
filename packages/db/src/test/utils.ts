@@ -6,8 +6,7 @@ import path from "path";
 import * as graphql from "graphql";
 
 import { Workspace } from "@truffle/db/resources";
-import { schema } from "@truffle/db/schema";
-import { attach } from "@truffle/db/workspace";
+import { schema, attach } from "@truffle/db";
 export { generateId } from "@truffle/db/meta";
 
 import tmp from "tmp";
