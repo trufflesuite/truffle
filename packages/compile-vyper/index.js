@@ -214,6 +214,7 @@ const Compile = {
   // quiet: Boolean. Suppress output. Defaults to false.
   // strict: Boolean. Return compiler warnings as errors. Defaults to false.
   async all(options) {
+    options = Config.default().merge(options);
     const fileSearchPattern = path.join(
       options.contracts_directory,
       VYPER_PATTERN
@@ -234,7 +235,7 @@ const Compile = {
   // quiet: Boolean. Suppress output. Defaults to false.
   // strict: Boolean. Return compiler warnings as errors. Defaults to false.
   async necessary(options) {
-    options.logger = options.logger || console;
+    options = Config.default().merge(options);
 
     const fileSearchPattern = path.join(
       options.contracts_directory,
