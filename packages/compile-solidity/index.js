@@ -86,7 +86,7 @@ const Compile = {
 
     // we need to remove all JSON files so Vyper-related stuff doesn't get
     // sent to the compiler - the Profiler will find JSON imports
-    const filteredPaths = paths.filter(path => path.extname !== ".json");
+    const filteredPaths = paths.filter(file => path.extname(file) !== ".json");
 
     options = Config.default().merge(options);
     const { allSources, compilationTargets } = await Profiler.requiredSources(
