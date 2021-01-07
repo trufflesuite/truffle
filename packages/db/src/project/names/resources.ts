@@ -4,11 +4,8 @@ const debug = logger("db:project:names:resources");
 import gql from "graphql-tag";
 import pascalCase from "pascal-case";
 import { singular } from "pluralize";
-import {
-  resources,
-  IdObject,
-  NamedCollectionName
-} from "@truffle/db/project/process";
+import { resources } from "@truffle/db/process";
+import { IdObject, NamedCollectionName } from "@truffle/db/resources";
 import * as Batch from "./batch";
 
 export const generateResourceNames = Batch.generate<{

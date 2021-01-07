@@ -1,10 +1,11 @@
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:loaders:run");
+const debug = logger("db:meta:process:run");
 
 import { promisify } from "util";
 import type { Provider } from "web3/providers";
 
-import { Collections, Db } from "@truffle/db/meta";
+import { Collections } from "@truffle/db/meta/collections";
+import { Db } from "@truffle/db/meta/interface";
 
 import {
   Definitions,
@@ -20,14 +21,14 @@ export type ProcessorRunner<C extends Collections> = <
   T = any,
   R extends RequestType<C> | undefined = undefined
 >(
-  loader: Processor<C, A, T, R>,
+  processor: Processor<C, A, T, R>,
   ...args: A
 ) => Promise<T>;
 
 export const runForDefinitions = <C extends Collections>(
   _definitions: Definitions<C> // this is only used for type inference
 ) => (
-  db: Db
+  db: Db<C>
 ): {
   forProvider(
     provider: Provider
@@ -41,8 +42,8 @@ export const runForDefinitions = <C extends Collections>(
   };
 
   return {
-    run(loader, ...args) {
-      return run(connections, loader, ...args);
+    run(processor, ...args) {
+      return run(connections, processor, ...args);
     },
 
     forProvider(provider) {
@@ -52,7 +53,7 @@ export const runForDefinitions = <C extends Collections>(
       };
 
       return {
-        run: (loader, ...args) => run(connections, loader, ...args)
+        run: (processor, ...args) => run(connections, processor, ...args)
       };
     }
   };
@@ -64,11 +65,11 @@ const run = async <
   Return,
   R extends RequestType<C> | undefined
 >(
-  connections: { db: Db; provider?: Provider },
-  loader: Processor<C, Args, Return, R>,
+  connections: { db: Db<C>; provider?: Provider },
+  processor: Processor<C, Args, Return, R>,
   ...args: Args
 ) => {
-  const saga = loader(...args);
+  const saga = processor(...args);
   let current = saga.next();
 
   while (!current.done) {

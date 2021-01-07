@@ -1,5 +1,5 @@
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:pouch:fs");
+const debug = logger("db:meta:pouch:adapters:fs");
 
 import path from "path";
 import PouchDB from "pouchdb";
@@ -7,14 +7,25 @@ import * as jsondown from "jsondown";
 import * as PouchDBUtils from "pouchdb-utils";
 import CoreLevelPouch from "pouchdb-adapter-leveldb-core";
 
-import { Collections } from "@truffle/db/meta";
-import { Databases } from "./databases";
+import { Collections } from "@truffle/db/meta/collections";
+import { GetDefaultSettings } from "./types";
+import * as Base from "./base";
 
-export class FSDatabases<C extends Collections> extends Databases<C> {
+export interface DatabasesSettings {
+  directory: string;
+}
+
+export const getDefaultSettings: GetDefaultSettings = ({
+  workingDirectory
+}) => ({
+  directory: path.join(workingDirectory, ".db", "json")
+});
+
+export class Databases<C extends Collections> extends Base.Databases<C> {
   private directory: string;
 
-  setup(options) {
-    this.directory = options.settings.directory;
+  setup(settings: DatabasesSettings) {
+    this.directory = settings.directory;
 
     this.jsondownpouch["valid"] = () => true;
     this.jsondownpouch["use_prefix"] = false;

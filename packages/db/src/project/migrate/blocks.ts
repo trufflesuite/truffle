@@ -1,6 +1,7 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:migrate:networks");
 
+import { DataModel } from "@truffle/db/resources";
 import * as Batch from "./batch";
 
 export const generateTransactionBlocks = Batch.generate<{

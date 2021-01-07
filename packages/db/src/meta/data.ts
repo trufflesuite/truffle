@@ -1,28 +1,16 @@
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:pouch:types");
+const debug = logger("db:meta:data");
 
 import PouchDB from "pouchdb";
 
 import {
-  CollectionName,
   Collections,
-  MutationInput,
-  MutationPayload,
+  CollectionName,
+  Input,
   MutableCollectionName,
-  SavedInput
-} from "@truffle/db/meta";
-
-export type Definitions<C extends Collections> = {
-  [N in CollectionName<C>]: {
-    createIndexes: PouchDB.Find.CreateIndexOptions["index"][];
-    idFields: string[];
-  };
-};
-
-export type Definition<
-  C extends Collections,
-  N extends CollectionName<C>
-> = Definitions<C>[N];
+  MutationInput,
+  MutationPayload
+} from "./collections";
 
 export interface Workspace<C extends Collections> {
   all<N extends CollectionName<C>>(
@@ -54,6 +42,15 @@ export interface Workspace<C extends Collections> {
     input: MutationInput<C, M>
   ): Promise<void>;
 }
+
+export type SavedInput<
+  C extends Collections = Collections,
+  N extends CollectionName<C> = CollectionName<C>
+> = {
+  [K in keyof Input<C, N> | "id"]: K extends keyof Input<C, N>
+    ? Input<C, N>[K]
+    : string;
+};
 
 export type History = PouchDB.Core.IdMeta & PouchDB.Core.GetMeta;
 
