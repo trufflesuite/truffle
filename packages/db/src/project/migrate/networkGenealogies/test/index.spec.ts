@@ -7,9 +7,8 @@ import * as fc from "fast-check";
 
 import { Networks, Batches } from "test/arbitraries/networks";
 
-import { IdObject } from "@truffle/db/meta";
-import { connect, Project } from "@truffle/db";
-import { resources } from "@truffle/db/project/process";
+import { resources } from "@truffle/db/process";
+import { Resource } from "@truffle/db/resources";
 import { generateNetworkGenealogiesLoad } from "..";
 
 import { mockProvider } from "./mockProvider";
@@ -53,7 +52,7 @@ describe("generateNetworkGenealogiesLoad", () => {
             project,
             model,
             batch
-          })
+          });
 
           debug("connecting with mocked provider");
           const provider = mockProvider({ model, batch });
@@ -70,17 +69,21 @@ describe("generateNetworkGenealogiesLoad", () => {
         const { expectedLatestDescendants } = plan({ model, batches });
         debug("expectedLatestDescendants %O", expectedLatestDescendants);
 
-        const networks = await project.run(resources.all, "networks", gql`
-          fragment NetworkAncestors on Network {
-            id
-            historicBlock {
-              height
-            }
-            descendants(includeSelf: true, onlyLatest: true) {
+        const networks = (await project.run(
+          resources.all,
+          "networks",
+          gql`
+            fragment NetworkAncestors on Network {
               id
+              historicBlock {
+                height
+              }
+              descendants(includeSelf: true, onlyLatest: true) {
+                id
+              }
             }
-          }
-        `) as DataModel.Network[];
+          `
+        )) as Resource<"networks">[];
         debug("networks %O", networks);
 
         const ids = new Set(networks

@@ -10,11 +10,9 @@ import {
   CollectionName,
   Collections,
   Input,
-  Resource,
-  IdObject,
-  toIdObject
-} from "@truffle/db/meta";
-
+  Resource
+} from "@truffle/db/meta/collections";
+import { IdObject, toIdObject } from "@truffle/db/meta/ids";
 import { Definitions, Process } from "./types";
 
 export interface ResourceProcessorsOptions<C extends Collections> {
@@ -25,7 +23,7 @@ export interface ResourceProcessors<C extends Collections> {
   load: <N extends CollectionName<C>>(
     collectionName: N,
     inputs: Input<C, N>[]
-  ) => Process<C, IdObject<Resource<C, N>>[]>;
+  ) => Process<C, IdObject<C, N>[]>;
 
   get: <N extends CollectionName<C>>(
     collectionName: N,
@@ -76,7 +74,7 @@ export const resourceProcessorsForDefinitions = <C extends Collections>(
     *load<N extends CollectionName<C>>(
       collectionName: N,
       inputs: Input<C, N>[]
-    ): Process<C, IdObject<Resource<C, N>>[]> {
+    ): Process<C, IdObject<C, N>[]> {
       const { Resource, Resources, resources, resourcesMutate } = names(
         collectionName
       );

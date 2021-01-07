@@ -4,11 +4,13 @@ const debug = logger("db:project:migrate:networkGenealogies");
 import gql from "graphql-tag";
 
 import {
+  DataModel,
+  Input,
+  Resource,
   IdObject,
-  toIdObject,
-  resources,
-  Process
-} from "@truffle/db/project/process";
+  toIdObject
+} from "@truffle/db/resources";
+import { resources, Process } from "@truffle/db/process";
 
 /**
  * Load NetworkGenealogy records for a given set of artifacts while connected
@@ -53,7 +55,7 @@ export function* generateNetworkGenealogiesLoad<
   ArtifactNetwork extends {
     block?: DataModel.Block;
     db?: {
-      network: IdObject<DataModel.Network>;
+      network: IdObject<"networks">;
     };
   }
 >(options: {
@@ -64,7 +66,7 @@ export function* generateNetworkGenealogiesLoad<
     };
   }[];
   disableIndex?: boolean;
-}): Process<IdObject<DataModel.NetworkGenealogy>[]> {
+}): Process<IdObject<"networkGenealogies">[]> {
   const {
     artifacts,
     network: { networkId },
@@ -83,10 +85,9 @@ export function* generateNetworkGenealogiesLoad<
 
   // for all such artifact networks, order the networks by height and collect
   // NetworkGenealogyInputs for all sequential pairs in this list.
-  const {
-    networks,
-    networkGenealogies
-  } = collectArtifactNetworks(artifactNetworks);
+  const { networks, networkGenealogies } = collectArtifactNetworks(
+    artifactNetworks
+  );
 
   // for each network in order
   for (const network of networks) {
@@ -124,20 +125,21 @@ function collectArtifactNetworks<
   ArtifactNetwork extends {
     block?: DataModel.Block;
     db?: {
-      network: IdObject<DataModel.Network>;
+      network: IdObject<"networks">;
     };
   }
 >(
   artifactNetworks: (ArtifactNetwork | undefined)[]
 ): {
-  networks: IdObject<DataModel.Network>[];
-  networkGenealogies: DataModel.NetworkGenealogyInput[];
+  networks: IdObject<"networks">[];
+  networkGenealogies: Input<"networkGenealogies">[];
 } {
   // start by ordering non-null networks by block height
   // map to reference to Network itself
-  const networks: IdObject<DataModel.Network>[] = artifactNetworks
+  const networks: IdObject<"networks">[] = artifactNetworks
     .filter(
-      ({ block, db: { network } = {} } = {} as ArtifactNetwork) => block && network
+      ({ block, db: { network } = {} } = {} as ArtifactNetwork) =>
+        block && network
     )
     .sort((a, b) => a.block.height - b.block.height)
     .map(({ db: { network } }) => network);
@@ -153,9 +155,9 @@ function collectArtifactNetworks<
   // for our reduction, we'll need to keep track of the current ancestor for
   // each pair as we step over the descendants for each pair.
   type ResultAccumulator = {
-    ancestor: IdObject<DataModel.Network>;
-    networkGenealogies: DataModel.NetworkGenealogyInput[];
-  }
+    ancestor: IdObject<"networks">;
+    networkGenealogies: Input<"networkGenealogies">[];
+  };
 
   const initialAccumulator: ResultAccumulator = {
     ancestor: networks[0],
@@ -167,12 +169,13 @@ function collectArtifactNetworks<
   const { networkGenealogies } = networks.slice(1).reduce(
     (
       { ancestor, networkGenealogies }: ResultAccumulator,
-      descendant: IdObject<DataModel.Network>
+      descendant: IdObject<"networks">
     ): ResultAccumulator => ({
       ancestor: descendant,
-      networkGenealogies: ancestor.id === descendant.id
-        ? networkGenealogies
-        : [...networkGenealogies, { ancestor, descendant }]
+      networkGenealogies:
+        ancestor.id === descendant.id
+          ? networkGenealogies
+          : [...networkGenealogies, { ancestor, descendant }]
     }),
     initialAccumulator
   );
@@ -182,7 +185,7 @@ function collectArtifactNetworks<
     networks,
     networkGenealogies
   };
-};
+}
 
 /**
  * Issue GraphQL requests and eth_getBlockByNumber requests to determine if any
@@ -199,9 +202,9 @@ function collectArtifactNetworks<
  */
 function* findRelation(
   relation: "ancestor" | "descendant",
-  network: IdObject<DataModel.Network>,
+  network: IdObject<"networks">,
   disableIndex?: boolean
-): Process<IdObject<DataModel.Network | undefined>> {
+): Process<IdObject<"networks"> | undefined> {
   // determine GraphQL query to invoke based on requested relation
   const query =
     relation === "ancestor" ? "possibleAncestors" : "possibleDescendants";
@@ -209,7 +212,7 @@ function* findRelation(
   // since we're doing this iteratively, keep track of what networks we've
   // tried and which ones we haven't
   let alreadyTried: string[] = [];
-  let candidates: DataModel.Network[];
+  let candidates: Resource<"networks">[];
 
   do {
     // query graphql for new candidates
@@ -224,8 +227,9 @@ function* findRelation(
     ));
 
     // check blockchain to find a matching network
-    const matchingCandidate: IdObject<DataModel.Network> | undefined =
-      yield* findMatchingCandidateOnChain(candidates);
+    const matchingCandidate:
+      | IdObject<"networks">
+      | undefined = yield* findMatchingCandidateOnChain(candidates);
 
     if (matchingCandidate) {
       return matchingCandidate;
@@ -245,7 +249,7 @@ let fragmentIndex = 0;
  */
 function* queryNextPossiblyRelatedNetworks(
   relation: "ancestor" | "descendant",
-  network: IdObject<DataModel.Network>,
+  network: IdObject<"networks">,
   alreadyTried: string[],
   disableIndex?: boolean
 ): Process<DataModel.CandidateSearchResult> {
@@ -257,9 +261,7 @@ function* queryNextPossiblyRelatedNetworks(
   // query graphql for new candidates
   let result;
   try {
-    ({
-      [query]: result
-    } = yield* resources.get(
+    ({ [query]: result } = yield* resources.get(
       "networks",
       network.id,
       gql`
@@ -301,8 +303,8 @@ function* queryNextPossiblyRelatedNetworks(
  * This works by querying for block hashes for given candidate heights
  */
 function* findMatchingCandidateOnChain(
-  candidates: DataModel.Network[]
-): Process<IdObject<DataModel.Network> | undefined> {
+  candidates: Resource<"networks">[]
+): Process<IdObject<"networks"> | undefined> {
   for (const candidate of candidates) {
     const response = yield {
       type: "web3",
@@ -316,7 +318,7 @@ function* findMatchingCandidateOnChain(
       response.result &&
       response.result.hash === candidate.historicBlock.hash
     ) {
-      return toIdObject(candidate);
+      return toIdObject<"networks">(candidate);
     }
   }
 }

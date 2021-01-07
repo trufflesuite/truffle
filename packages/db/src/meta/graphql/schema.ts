@@ -1,5 +1,5 @@
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:graphql:schema");
+const debug = logger("db:meta:graphql:schema");
 
 import gql from "graphql-tag";
 import * as graphql from "graphql";
@@ -9,7 +9,7 @@ import {
   Collections,
   CollectionName,
   MutableCollectionName
-} from "@truffle/db/meta";
+} from "@truffle/db/meta/collections";
 import { Context, Definition, Definitions } from "./types";
 
 export const forDefinitions = <C extends Collections>(
@@ -38,6 +38,9 @@ class DefinitionsSchema<C extends Collections> {
     log("Generating...");
 
     const common = gql`
+      type Query
+      type Mutation
+
       interface Resource {
         id: ID!
         type: String!
@@ -61,9 +64,6 @@ class DefinitionsSchema<C extends Collections> {
       input QueryFilter {
         ids: [ID]!
       }
-
-      type Query
-      type Mutation
     `;
 
     const result = Object.values(this.collections)

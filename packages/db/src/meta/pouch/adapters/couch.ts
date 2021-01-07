@@ -1,27 +1,32 @@
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:pouch:couch");
+const debug = logger("db:meta:pouch:adapters:couch");
 
 import PouchDB from "pouchdb";
 import { kebabCase } from "change-case";
 
-import { Collections } from "@truffle/db/meta";
-import { Databases } from "./databases";
+import { Collections } from "@truffle/db/meta/collections";
+import { GetDefaultSettings } from "./types";
+import * as Base from "./base";
 
-export interface CouchDatabaseSettings {
+export interface DatabasesSettings {
   url: string;
-  auth: {
+  auth?: {
     username: string;
     password: string;
   };
 }
 
-export class CouchDatabases<C extends Collections> extends Databases<C> {
+export const getDefaultSettings: GetDefaultSettings = ({}) => ({
+  url: "http://localhost:5984"
+});
+
+export class Databases<C extends Collections> extends Base.Databases<C> {
   private _createDatabase: (resource) => PouchDB.Database;
 
-  setup(options) {
-    const { auth } = options.settings;
+  setup(settings: DatabasesSettings) {
+    const { auth } = settings;
 
-    let { url } = options.settings;
+    let { url } = settings;
     if (url.endsWith("/")) {
       url = url.slice(0, -1);
     }

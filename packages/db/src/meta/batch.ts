@@ -1,8 +1,16 @@
-import { $, _ } from "hkts/src";
-export { _ };
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:meta:batch");
 
-import { Collections } from "@truffle/db/meta";
-import { Process } from "./types";
+import { $ } from "hkts/src";
+
+import { Collections } from "@truffle/db/meta/collections";
+import { Process } from "@truffle/db/meta/process";
+
+export type Configure<C extends Collections = Collections> = <B extends Batch>(
+  options: Options<B>
+) => <I extends Input<B>, O extends Output<B>>(
+  inputs: Inputs<B, I>
+) => Process<C, Outputs<B, O>>;
 
 /**
  * Configure a batch process to query and/or mutate resources.
@@ -38,11 +46,7 @@ import { Process } from "./types";
  *
  *
  */
-export const configure = <B extends Batch>(
-  options: Options<B>
-): (<I extends Input<B>, O extends Output<B>>(
-  inputs: Inputs<B, I>
-) => Process<Collections, Outputs<B, O>>) => {
+export const configure: Configure = <B extends Batch>(options: Options<B>) => {
   const {
     process,
     extract,
@@ -151,7 +155,7 @@ export type Options<B extends Batch> = {
   }): Outputs<B, O>;
 };
 
-type Batch = {
+export type Batch = {
   structure: any;
   breadcrumb: any;
   input: any;

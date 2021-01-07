@@ -1,13 +1,14 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:compile:contracts");
 
-import { IdObject, resources } from "@truffle/db/project/process";
+import { Input, IdObject } from "@truffle/db/resources";
+import { resources } from "@truffle/db/process";
 import * as Batch from "./batch";
 
 export const generateContractsLoad = Batch.Contracts.generate<{
   compilation: {
     db: {
-      compilation: IdObject<DataModel.Compilation>;
+      compilation: IdObject<"compilations">;
     };
   };
   source: {};
@@ -16,15 +17,15 @@ export const generateContractsLoad = Batch.Contracts.generate<{
     abi: any;
     sourcePath: string;
     db: {
-      callBytecode: IdObject<DataModel.Bytecode>;
-      createBytecode: IdObject<DataModel.Bytecode>;
+      callBytecode: IdObject<"bytecodes">;
+      createBytecode: IdObject<"bytecodes">;
     };
   };
   resources: {
-    contract: IdObject<DataModel.Contract>;
+    contract: IdObject<"contracts">;
   };
-  entry: DataModel.ContractInput;
-  result: IdObject<DataModel.Contract>;
+  entry: Input<"contracts">;
+  result: IdObject<"contracts">;
 }>({
   extract({ input, inputs, breadcrumb }) {
     debug("inputs %o", inputs);

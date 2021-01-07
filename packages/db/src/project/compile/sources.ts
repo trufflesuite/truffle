@@ -1,7 +1,8 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:compile:sources");
 
-import { IdObject, resources } from "@truffle/db/project/process";
+import { IdObject, Input } from "@truffle/db/resources";
+import { resources } from "@truffle/db/process";
 import * as Batch from "./batch";
 
 interface Source {
@@ -11,16 +12,16 @@ interface Source {
   ast: any;
   legacyAST: any;
 
-  db: { source: IdObject<DataModel.Source> };
+  db: { source: IdObject<"sources"> };
 }
 
 export const generateSourcesLoad = Batch.Sources.generate<{
   compilation: {};
   contract: {};
   source: Source;
-  resources: { source: IdObject<DataModel.Source> };
-  entry: DataModel.SourceInput;
-  result: IdObject<DataModel.Source>;
+  resources: { source: IdObject<"sources"> };
+  entry: Input<"sources">;
+  result: IdObject<"sources">;
 }>({
   extract<_I>({ input: { sourcePath, contents } }) {
     return { contents, sourcePath };
