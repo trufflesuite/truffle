@@ -13,31 +13,33 @@ export interface Db {
 }
 
 export type Collections = {
-  [collectionName: string]:
+  [collectionName: string]: {
+    resource: {
+      id: string;
+    };
+    input: object;
+    names: {
+      [S in CollectionNameStyle]: string;
+    };
+  } & (
     | {
         resource: {
-          id: string;
-        };
-        input: object;
-        mutable?: boolean;
-        named?: false;
-        names: {
-          [S in CollectionNameStyle]: string;
-        };
-      }
-    // definitely named, must define name property
-    | {
-        resource: {
-          id: string;
           name: string;
         };
-        input: object;
-        mutable?: boolean;
         named: true;
-        names: {
-          [S in CollectionNameStyle]: string;
-        };
-      };
+      }
+    | {
+        named?: false;
+      }
+  ) &
+    (
+      | {
+          mutable: true;
+        }
+      | {
+          mutable?: false;
+        }
+    );
 };
 
 export type CollectionName<C extends Collections> = string & keyof C;
