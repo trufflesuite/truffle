@@ -26,6 +26,21 @@ export const LookupNames = gql`
   }
 `;
 
+export const ListResources = gql`
+  query ListResources(
+    $projectId: ID!
+  ) {
+    project(id: $projectId) {
+      networks {
+        name
+      }
+      contracts {
+        name
+      }
+    }
+  }
+`;
+
 export const AddProject = gql`
   mutation AddProject($directory: String!) {
     projectsAdd(input: { projects: [{ directory: $directory }] }) {
