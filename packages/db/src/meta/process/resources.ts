@@ -10,11 +10,9 @@ import {
   CollectionName,
   Collections,
   Input,
-  Resource,
-  IdObject,
-  toIdObject
-} from "@truffle/db/meta";
-
+  Resource
+} from "@truffle/db/meta/collections";
+import { IdObject, toIdObject } from "@truffle/db/meta/ids";
 import { Definitions, Process } from "./types";
 
 export interface ResourceProcessorsOptions<C extends Collections> {

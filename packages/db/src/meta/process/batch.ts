@@ -1,7 +1,7 @@
 import { $, _ } from "hkts/src";
 export { _ };
 
-import { Collections } from "@truffle/db/meta";
+import { Collections } from "@truffle/db/meta/collections";
 import { Process } from "./types";
 
 /**

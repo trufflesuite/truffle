@@ -6,11 +6,12 @@ import {
   definitions,
   NamedCollectionName
 } from "@truffle/db/resources";
-import { Db, IdObject, toIdObject } from "@truffle/db/meta";
+import { Db, forDefinitions, IdObject, toIdObject } from "@truffle/db/meta";
 
 export { Db, IdObject, toIdObject, NamedCollectionName };
-import * as Base from "@truffle/db/process";
-export { Batch, _ } from "@truffle/db/process";
+import { Process as Base } from "@truffle/db/meta";
+
+export type _ = Base._;
 
 export type Process<
   T = any,
@@ -31,6 +32,6 @@ export type ProcessRequest<
 
 export type ProcessorRunner = Base.ProcessorRunner<Collections>;
 
-export const { forDb, resources } = Base.forDefinitions<Collections>(
-  definitions
-);
+export const {
+  process: { forDb, resources }
+} = forDefinitions(definitions);

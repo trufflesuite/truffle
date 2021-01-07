@@ -4,7 +4,8 @@ const debug = logger("db:loaders:run");
 import { promisify } from "util";
 import type { Provider } from "web3/providers";
 
-import { Collections, Db } from "@truffle/db/meta";
+import { Collections } from "@truffle/db/meta/collections";
+import { Db } from "@truffle/db/meta/interface";
 
 import {
   Definitions,

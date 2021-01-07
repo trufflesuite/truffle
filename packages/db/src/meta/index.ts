@@ -7,15 +7,17 @@ export * from "./collections";
 export * from "./requests";
 export * from "./interface";
 export * from "./data";
-export * as GraphQl from "./graphql";
-export * as Pouch from "./pouch";
 export * from "./definitions";
 
 import { Collections } from "./collections";
 import { Definitions } from "./definitions";
 import * as GraphQl from "./graphql";
+export { GraphQl };
 import * as Pouch from "./pouch";
+export { Pouch };
 import * as Interface from "./interface";
+import * as Process from "./process";
+export { Process };
 
 export const forDefinitions = <C extends Collections>(
   definitions: Definitions<C>
@@ -28,10 +30,16 @@ export const forDefinitions = <C extends Collections>(
     schema
   });
 
+  const { forDb, resources } = Process.forDefinitions(definitions);
+
   return {
     schema,
     attach,
     connect,
-    serve
+    serve,
+    process: {
+      forDb,
+      resources
+    }
   };
 };

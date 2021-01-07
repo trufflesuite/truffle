@@ -1,12 +1,13 @@
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:process");
+const debug = logger("db:meta:process");
 
-import { Collections } from "@truffle/db/meta";
+import { Collections } from "@truffle/db/meta/collections";
 
 export * from "./types";
 import { _ } from "./batch";
+export { _ };
 import * as Batch from "./batch";
-export { _, Batch };
+export { Batch };
 export * from "./resources";
 export * from "./run";
 

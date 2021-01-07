@@ -1,7 +1,8 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:names:batch");
 
-import { Process, Batch, _, IdObject } from "@truffle/db/project/process";
+import * as Meta from "@truffle/db/meta";
+import { Process, _, IdObject } from "@truffle/db/project/process";
 
 type Config = {
   assignment: {};
@@ -40,7 +41,7 @@ type Batch<C extends Config> = {
 };
 
 type Options<C extends Config> = Omit<
-  Batch.Options<Batch<C>>,
+  Meta.Process.Batch.Options<Batch<C>>,
   "iterate" | "find" | "initialize" | "merge"
 >;
 
@@ -84,7 +85,7 @@ export const generate = <C extends Config>(options: Options<C>) => {
 };
 
 const generateForCollection = <C extends Config>(options: Options<C>) =>
-  Batch.configure<Batch<C>>({
+  Meta.Process.Batch.configure<Batch<C>>({
     *iterate<_I, _O>({ inputs }) {
       for (const [
         assignmentIndex,

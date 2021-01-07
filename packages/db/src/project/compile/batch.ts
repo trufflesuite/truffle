@@ -3,7 +3,8 @@ const debug = logger("db:project:compile:batch");
 
 import type * as Common from "@truffle/compile-common";
 
-import { Process, Batch, _ } from "@truffle/db/project/process";
+import * as Meta from "@truffle/db/meta";
+import { Process, _ } from "@truffle/db/project/process";
 
 export type Config = {
   compilation: {};
@@ -46,16 +47,19 @@ export namespace Compilations {
   };
 
   type Options<C extends Config> = Omit<
-    Batch.Options<Batch<C>>,
+    Meta.Process.Batch.Options<Batch<C>>,
     "iterate" | "find" | "initialize" | "merge"
   >;
 
   export const generate = <C extends Config>(
     options: Options<C>
-  ): (<I extends Batch.Input<Batch<C>>, O extends Batch.Output<Batch<C>>>(
-    inputs: Batch.Inputs<Batch<C>, I>
-  ) => Process<Batch.Outputs<Batch<C>, I & O>>) =>
-    Batch.configure<Batch<C>>({
+  ): (<
+    I extends Meta.Process.Batch.Input<Batch<C>>,
+    O extends Meta.Process.Batch.Output<Batch<C>>
+  >(
+    inputs: Meta.Process.Batch.Inputs<Batch<C>, I>
+  ) => Process<Meta.Process.Batch.Outputs<Batch<C>, I & O>>) =>
+    Meta.Process.Batch.configure<Batch<C>>({
       *iterate<_I>({ inputs }) {
         for (const [compilationIndex, compilation] of inputs.entries()) {
           yield {
@@ -117,16 +121,19 @@ export namespace Contracts {
   };
 
   type Options<C extends Config> = Omit<
-    Batch.Options<Batch<C>>,
+    Meta.Process.Batch.Options<Batch<C>>,
     "iterate" | "find" | "initialize" | "find" | "merge"
   >;
 
   export const generate = <C extends Config>(
     options: Options<C>
-  ): (<I extends Batch.Input<Batch<C>>, O extends Batch.Output<Batch<C>>>(
-    inputs: Batch.Inputs<Batch<C>, I>
-  ) => Process<Batch.Outputs<Batch<C>, I & O>>) =>
-    Batch.configure<Batch<C>>({
+  ): (<
+    I extends Meta.Process.Batch.Input<Batch<C>>,
+    O extends Meta.Process.Batch.Output<Batch<C>>
+  >(
+    inputs: Meta.Process.Batch.Inputs<Batch<C>, I>
+  ) => Process<Meta.Process.Batch.Outputs<Batch<C>, I & O>>) =>
+    Meta.Process.Batch.configure<Batch<C>>({
       *iterate<_I>({ inputs }) {
         for (const [compilationIndex, { contracts }] of inputs.entries()) {
           for (const [contractIndex, contract] of contracts.entries()) {

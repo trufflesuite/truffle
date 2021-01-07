@@ -6,12 +6,15 @@ import * as graphql from "graphql";
 import {
   Collections,
   CollectionName,
-  MutableCollectionName,
+  MutableCollectionName
+} from "@truffle/db/meta/collections";
+
+import {
   QueryName,
   Query,
   MutationName,
   Mutation
-} from "@truffle/db/meta";
+} from "@truffle/db/meta/requests";
 
 export type Definitions<C extends Collections> = {
   [N in CollectionName<C>]: N extends MutableCollectionName<C>
