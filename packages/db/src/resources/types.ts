@@ -2,7 +2,6 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:resources:types");
 
 import * as Meta from "@truffle/db/meta";
-import * as Pouch from "@truffle/db/pouch";
 
 export { Db, IdObject, toIdObject } from "@truffle/db/meta";
 
@@ -134,10 +133,7 @@ export type Collections = {
 
 export type CollectionName = Meta.CollectionName<Collections>;
 
-export type Definitions = {
-  [N in CollectionName]: Pouch.Definition<Collections, N> &
-    Meta.Definition<Collections, N>;
-};
+export type Definitions = Meta.Definitions<Collections>;
 
 export type Definition<N extends CollectionName> = Definitions[N];
 

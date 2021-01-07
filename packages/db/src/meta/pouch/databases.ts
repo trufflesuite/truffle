@@ -1,5 +1,5 @@
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:pouch:databases");
+const debug = logger("db:meta:pouch:databases");
 
 import PouchDB from "pouchdb";
 import PouchDBDebug from "pouchdb-debug";
@@ -10,10 +10,9 @@ import {
   Collections,
   MutationInput,
   MutationPayload,
-  MutableCollectionName,
-  generateId
-} from "@truffle/db/meta";
-
+  MutableCollectionName
+} from "@truffle/db/meta/collections";
+import { generateId } from "@truffle/db/meta/ids";
 import { Workspace, SavedInput, Historical } from "@truffle/db/meta/data";
 
 import { Definition, Definitions } from "./types";

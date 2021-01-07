@@ -10,8 +10,9 @@ import type TruffleConfig from "@truffle/config";
 import { Db } from "./meta";
 export { Db }; // rather than force src/index from touching meta
 
+import { Workspace } from "./resources";
 import { schema } from "./schema";
-import { Workspace, attach } from "./workspace";
+import { attach } from "./workspace";
 
 export const connect = (config: TruffleConfig): Db => {
   const workspace: Workspace = attach({

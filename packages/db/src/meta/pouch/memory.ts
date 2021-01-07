@@ -1,10 +1,10 @@
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:pouch:memory");
+const debug = logger("db:meta:pouch:memory");
 
 import PouchDB from "pouchdb";
 import PouchDBMemoryAdapter from "pouchdb-adapter-memory";
 
-import { Collections } from "@truffle/db/meta";
+import { Collections } from "@truffle/db/meta/collections";
 import { Databases } from "./databases";
 
 export class MemoryDatabases<C extends Collections> extends Databases<C> {

@@ -1,5 +1,5 @@
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:pouch");
+const debug = logger("db:meta:pouch");
 
 import path from "path";
 
@@ -12,7 +12,8 @@ import { FSDatabases } from "./fs";
 import { MemoryDatabases } from "./memory";
 import { SqliteDatabases } from "./sqlite";
 
-import { Collections, Workspace } from "@truffle/db/meta";
+import { Collections } from "@truffle/db/meta/collections";
+import { Workspace } from "@truffle/db/meta/data";
 import { Definitions } from "./types";
 
 export interface DatabasesConfig {

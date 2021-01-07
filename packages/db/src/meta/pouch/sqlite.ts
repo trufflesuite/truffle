@@ -1,12 +1,12 @@
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:pouch:sqlite");
+const debug = logger("db:meta:pouch:sqlite");
 
 import path from "path";
 import fse from "fs-extra";
 import PouchDB from "pouchdb";
 import PouchDBNodeWebSQLAdapter from "pouchdb-adapter-node-websql";
 
-import { Collections } from "@truffle/db/meta";
+import { Collections } from "@truffle/db/meta/collections";
 import { Databases } from "./databases";
 
 export class SqliteDatabases<C extends Collections> extends Databases<C> {
