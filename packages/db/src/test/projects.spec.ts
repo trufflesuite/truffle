@@ -5,6 +5,7 @@ import { generateId, Migrations, WorkspaceClient } from "./utils";
 import {
   GetProject,
   LookupNames,
+  ListResources,
   AddProject,
   AssignProjectName
 } from "./projects.graphql";
@@ -184,6 +185,29 @@ describe("Project", () => {
     const { network, contract } = project;
 
     expect(network.name).toEqual("ganache");
+    expect(contract.name).toEqual("Migrations");
+  });
+
+  test("enumerates known named resources", async () => {
+    const result = await wsClient.execute(ListResources, {
+      projectId
+    });
+
+    expect(result).toHaveProperty("project");
+    const { project } = result;
+
+    debug("project %O", project);
+
+    expect(project).toHaveProperty("networks");
+    expect(project).toHaveProperty("contracts");
+    const { networks, contracts } = project;
+
+    expect(networks).toHaveLength(1);
+    const [ network ] = networks;
+    expect(network.name).toEqual("ganache");
+
+    expect(contracts).toHaveLength(1);
+    const [ contract ] = contracts;
     expect(contract.name).toEqual("Migrations");
   });
 });
