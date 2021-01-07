@@ -2,7 +2,8 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:migrate");
 
 import { ContractObject } from "@truffle/contract-schema/spec";
-import { toIdObject, IdObject, Process } from "@truffle/db/project/process";
+import { Input, toIdObject, IdObject } from "@truffle/db/resources";
+import { Process } from "@truffle/db/process";
 
 import { generateNetworkId } from "./networkId";
 import { generateTransactionBlocks } from "./blocks";
@@ -15,8 +16,8 @@ export type Artifact = ContractObject & {
   networks?: {
     [networkId: string]: {
       db?: {
-        network: IdObject<DataModel.Network>;
-        contractInstance: IdObject<DataModel.ContractInstance>;
+        network: IdObject<"networks">;
+        contractInstance: IdObject<"contractInstances">;
       };
     };
   };
@@ -24,16 +25,16 @@ export type Artifact = ContractObject & {
 
 export function* generateMigrateLoad(options: {
   // we'll need everything for this input other than what's calculated here
-  network: Omit<DataModel.NetworkInput, "networkId" | "historicBlock">;
+  network: Omit<Input<"networks">, "networkId" | "historicBlock">;
   artifacts: (ContractObject & {
     db: {
-      contract: IdObject<DataModel.Contract>;
-      callBytecode: IdObject<DataModel.Bytecode>;
-      createBytecode: IdObject<DataModel.Bytecode>;
+      contract: IdObject<"contracts">;
+      callBytecode: IdObject<"bytecodes">;
+      createBytecode: IdObject<"bytecodes">;
     };
   })[];
 }): Process<{
-  network: IdObject<DataModel.Network>;
+  network: IdObject<"networks">;
   artifacts: Artifact[];
 }> {
   const networkId = yield* generateNetworkId();

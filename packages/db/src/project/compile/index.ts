@@ -2,7 +2,8 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:loaders:commands:compile");
 
 import * as Common from "@truffle/compile-common/src/types";
-import { IdObject, Process } from "@truffle/db/project/process";
+import { IdObject } from "@truffle/db/resources";
+import { Process } from "@truffle/db/process";
 
 import { generateSourcesLoad } from "./sources";
 import { generateBytecodesLoad } from "./bytecodes";
@@ -14,20 +15,20 @@ export type Compilation = Common.Compilation & {
   sources: Source[];
   compiler: { name: string; version: string };
   db: {
-    compilation: IdObject<DataModel.Compilation>;
+    compilation: IdObject<"compilations">;
   };
 };
 
 export type Source = Common.Source & {
-  db: { source: IdObject<DataModel.Source> };
+  db: { source: IdObject<"sources"> };
 };
 
 export type Contract = Common.CompiledContract & {
   db: {
-    contract: IdObject<DataModel.Contract>;
-    source: IdObject<DataModel.Source>;
-    callBytecode: IdObject<DataModel.Bytecode>;
-    createBytecode: IdObject<DataModel.Bytecode>;
+    contract: IdObject<"contracts">;
+    source: IdObject<"sources">;
+    callBytecode: IdObject<"bytecodes">;
+    createBytecode: IdObject<"bytecodes">;
   };
 };
 
@@ -50,16 +51,18 @@ export function* generateCompileLoad(
 
   const withSourcesAndBytecodes = yield* generateBytecodesLoad(withSources);
 
-  // @ts-ignore
-  const withCompilations = yield* generateCompilationsLoad(withSourcesAndBytecodes
+  const withCompilations = yield* generateCompilationsLoad(
+    // @ts-ignore
+    withSourcesAndBytecodes
   );
 
   const withContracts = yield* generateContractsLoad(withCompilations);
 
   const compilations = withContracts;
 
-  // @ts-ignore
-  return {compilations,
+  return {
+    // @ts-ignore
+    compilations,
     contracts: compilations.reduce(
       (a, { contracts }) => [...a, ...contracts],
       []

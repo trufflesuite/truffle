@@ -4,15 +4,16 @@ const debug = logger("test:arbitraries:networks");
 import * as fc from "fast-check";
 
 import { generateId, IdObject } from "@truffle/db/meta";
+import { DataModel, Input } from "@truffle/db/resources";
 
 import { fake } from "./fake";
 
-export interface Network extends DataModel.NetworkInput {
+export interface Network extends Input<"networks"> {
   getBlockByNumber(height: number): DataModel.BlockInput;
 }
 
 export class Model {
-  private byDescendantIndexThenHeight: DataModel.NetworkInput[][] = [];
+  private byDescendantIndexThenHeight: Input<"networks">[][] = [];
 
   extendNetwork(descendantIndex: number, hash: string) {
     const networks = this.byDescendantIndexThenHeight[descendantIndex];
@@ -28,7 +29,7 @@ export class Model {
     });
   }
 
-  addNetwork(network: DataModel.NetworkInput) {
+  addNetwork(network: Input<"networks">) {
     this.byDescendantIndexThenHeight.push([network]);
   }
 
@@ -164,7 +165,7 @@ export const Networks = (): fc.Arbitrary<Model> =>
 
 export interface Batch {
   descendantIndex: number;
-  inputs: DataModel.NetworkInput[];
+  inputs: Input<"networks">[];
 }
 
 export const Batch = (model: Model): fc.Arbitrary<Batch> => {

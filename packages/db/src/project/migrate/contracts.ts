@@ -2,15 +2,16 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:migrate:networks");
 
 import gql from "graphql-tag";
-import { IdObject, resources } from "@truffle/db/project/process";
+import { IdObject } from "@truffle/db/resources";
+import { resources } from "@truffle/db/process";
 import * as Batch from "./batch";
 
 export const generateContracts = Batch.generate<{
   artifact: {
     db: {
-      contract: IdObject<DataModel.Contract>;
-      callBytecode: IdObject<DataModel.Bytecode>;
-      createBytecode: IdObject<DataModel.Bytecode>;
+      contract: IdObject<"contracts">;
+      callBytecode: IdObject<"bytecodes">;
+      createBytecode: IdObject<"bytecodes">;
     };
   };
   produces: {
@@ -21,7 +22,7 @@ export const generateContracts = Batch.generate<{
       linkReferences: { name: string }[];
     };
   };
-  entry: IdObject<DataModel.Contract>;
+  entry: IdObject<"contracts">;
   result: {
     callBytecode?: {
       linkReferences: { name: string }[];

@@ -1,9 +1,11 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:compile:batch");
 
+import { _ } from "hkts/src";
 import type * as Common from "@truffle/compile-common";
 
-import { Process, Batch, _ } from "@truffle/db/project/process";
+import { Process } from "@truffle/db/process";
+import * as Batch from "@truffle/db/batch";
 
 export type Config = {
   compilation: {};
