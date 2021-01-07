@@ -1,7 +1,7 @@
 const path = require("path");
 
 function shouldIncludePath(filePath) {
-  const validExtensions = [".sol", ".abi.json", ".json"];
+  const validExtensions = [".sol", ".json"];
   return validExtensions.some(extension => path.extname(filePath) === extension);
 }
 
