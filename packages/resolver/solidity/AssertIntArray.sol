@@ -173,7 +173,7 @@ library AssertIntArray {
             neg = true;
         }
         while (n > 0) {
-            bts[i++] = _utoa(uint8(n % radix)); // Turn it to ascii.
+            bts[i++] = _utoa(uint8(uint(n % radix))); // Turn it to ascii.
             n /= radix;
         }
         // Reverse
@@ -212,7 +212,7 @@ library AssertIntArray {
         bytes memory bts = new bytes(256);
         uint i;
         while (n > 0) {
-            bts[i++] = _utoa(uint8(n % radix)); // Turn it to ascii.
+            bts[i++] = _utoa(uint8(uint(n % radix))); // Turn it to ascii.
             n /= radix;
         }
         // Reverse
