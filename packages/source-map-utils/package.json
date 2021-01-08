@@ -1,6 +1,6 @@
 {
   "name": "@truffle/source-map-utils",
-  "version": "1.3.31",
+  "version": "1.3.32",
   "description": "Utilities for Solidity (and other) source maps",
   "main": "index.js",
   "scripts": {
@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "@truffle/code-utils": "^1.2.23",
-    "@truffle/codec": "^0.9.3",
+    "@truffle/codec": "^0.9.4",
     "debug": "^4.1.1",
     "json-pointer": "^0.6.0",
     "node-interval-tree": "^1.3.3",
