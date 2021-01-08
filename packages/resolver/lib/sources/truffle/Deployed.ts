@@ -44,7 +44,7 @@ export class Deployed {
     }
     if (!RangeUtils.rangeContainsAtLeast(version, "0.6.0")) {
       //remove "payable"s in conversions if we're before 0.6.0
-      source = source.replace(/payable(\1)/g, "$1");
+      source = source.replace(/payable(.*)/g, "$1");
     }
     //regardless of version, replace all pragmas with the new version
     const coercedVersion = RangeUtils.coerce(version);
