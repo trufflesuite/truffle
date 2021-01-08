@@ -56,6 +56,10 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
     fs.writeFileSync(mapping[key].sourcePath, source);
   }
 
+  function hasBeenUpdated(fileName) {
+    return initialTimes[fileName] < finalTimes[fileName];
+  }
+
   // ----------------------- Setup -----------------------------
 
   before("set up the server", function (done) {
@@ -124,16 +128,11 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
     finalTimes = getArtifactStats();
 
     try {
-      assert(
-        initialTimes["Root.sol"] < finalTimes["Root.sol"],
-        "Should update root"
-      );
+      assert(hasBeenUpdated("Root.sol"), "Should update root");
+
       for (const file of Object.keys(mapping)) {
         if (file !== "Root.sol") {
-          assert(
-            initialTimes[file] === finalTimes[file],
-            `Should not update ${file}`
-          );
+          assert(!hasBeenUpdated(file), `Should not update ${file}`);
         }
       }
     } catch (err) {
@@ -163,21 +162,12 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
     finalTimes = getArtifactStats();
 
     try {
-      assert(
-        initialTimes["Root.sol"] < finalTimes["Root.sol"],
-        "Should update root"
-      );
-      assert(
-        initialTimes["LibraryA.sol"] < finalTimes["LibraryA.sol"],
-        "Should update LibraryA"
-      );
-      // ensure that the rest of the files have not been updated
+      assert(hasBeenUpdated("Root.sol"), "Should update root");
+      assert(hasBeenUpdated("LibraryA.sol"), "Should update LibraryA");
+
       for (const file of Object.keys(mapping)) {
         if (file !== "Root.sol" && file !== "LibraryA.sol") {
-          assert(
-            initialTimes[file] === finalTimes[file],
-            `Should not update ${file}`
-          );
+          assert(!hasBeenUpdated(file), `Should not update ${file}`);
         }
       }
     } catch (err) {
@@ -207,21 +197,12 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
     finalTimes = getArtifactStats();
 
     try {
-      assert(
-        initialTimes["Root.sol"] < finalTimes["Root.sol"],
-        "Should update root"
-      );
-      assert(
-        initialTimes["Branch.sol"] < finalTimes["Branch.sol"],
-        "Should update Branch"
-      );
-      // ensure that the rest of the files have not been updated
+      assert(hasBeenUpdated("Root.sol"), "Should update root");
+      assert(hasBeenUpdated("Branch.sol"), "Should update Branch");
+
       for (const file of Object.keys(mapping)) {
         if (file !== "Root.sol" && file !== "Branch.sol") {
-          assert(
-            initialTimes[file] === finalTimes[file],
-            `Should not update ${file}`
-          );
+          assert(!hasBeenUpdated(file), `Should not update ${file}`);
         }
       }
     } catch (err) {
@@ -251,29 +232,17 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
     finalTimes = getArtifactStats();
 
     try {
-      assert(
-        initialTimes["Root.sol"] < finalTimes["Root.sol"],
-        "Should update root"
-      );
-      assert(
-        initialTimes["Branch.sol"] < finalTimes["Branch.sol"],
-        "Should update Branch"
-      );
-      assert(
-        initialTimes["LeafA.sol"] < finalTimes["LeafA.sol"],
-        "Should update LeafA"
-      );
-      // ensure that the rest of the files have not been updated
+      assert(hasBeenUpdated("LeafA.sol"), "Should update LeafA");
+      assert(hasBeenUpdated("Branch.sol"), "Should update Branch");
+      assert(hasBeenUpdated("Root.sol"), "Should update root");
+
       for (const file of Object.keys(mapping)) {
         if (
           file !== "Root.sol" &&
           file !== "Branch.sol" &&
           file !== "LeafA.sol"
         ) {
-          assert(
-            initialTimes[file] === finalTimes[file],
-            `Should not update ${file}`
-          );
+          assert(!hasBeenUpdated(file), `Should not update ${file}`);
         }
       }
     } catch (err) {
@@ -303,21 +272,12 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
     finalTimes = getArtifactStats();
 
     try {
-      assert(
-        initialTimes["LibraryA.sol"] === finalTimes["LibraryA.sol"],
-        "Should not update LibraryA"
-      );
-      assert(
-        initialTimes["Abi.abi.json"] === finalTimes["Abi.abi.json"],
-        "Should not update Abi"
-      );
-      // ensure that the rest of the files have been updated
+      assert(!hasBeenUpdated("LibraryA.sol"), "Should not update LibraryA");
+      assert(!hasBeenUpdated("Abi.abi.json"), "Should not update Abi");
+
       for (const file of Object.keys(mapping)) {
         if (file !== "LibraryA.sol" && file !== "Abi.abi.json") {
-          assert(
-            initialTimes[file] < finalTimes[file],
-            `Should not update ${file}`
-          );
+          assert(hasBeenUpdated(file), `Should not update ${file}`);
         }
       }
     } catch (err) {
@@ -347,21 +307,11 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
     finalTimes = getArtifactStats();
 
     try {
-      assert(
-        initialTimes["Root.sol"] < finalTimes["Root.sol"],
-        "Should update root"
-      );
-      assert(
-        initialTimes["Abi.abi.json"] < finalTimes["Abi.abi.json"],
-        "Should not update Abi"
-      );
-      // ensure that everything has been updated
+      assert(hasBeenUpdated("Root.sol"), "Should update root");
+      assert(hasBeenUpdated("Abi.abi.json"), "Should update Abi");
       for (const file of Object.keys(mapping)) {
         if (file !== "Root.sol" && file !== "Abi.abi.json") {
-          assert(
-            initialTimes[file] === finalTimes[file],
-            `Should not update ${file}`
-          );
+          assert(!hasBeenUpdated(file), `Should not update ${file}`);
         }
       }
     } catch (err) {
