@@ -23,7 +23,7 @@ export class Deployed {
       if (address) {
         address = Deployed.toChecksumAddress(address);
 
-        body = "return " + address + ";";
+        body = "return payable(" + address + ");";
       }
 
       source +=
@@ -39,8 +39,12 @@ export class Deployed {
 
     version = RangeUtils.resolveToRange(version);
     if (!RangeUtils.rangeContainsAtLeast(version, "0.5.0")) {
-      //remove "payable"s if we're before 0.5.0
-      source = source.replace(/address payable/gm, "address");
+      //remove "payable"s in types if we're before 0.5.0
+      source = source.replace(/address payable/g, "address");
+    }
+    if (!RangeUtils.rangeContainsAtLeast(version, "0.6.0")) {
+      //remove "payable"s in conversions if we're before 0.6.0
+      source = source.replace(/payable(\1)/g, "$1");
     }
     //regardless of version, replace all pragmas with the new version
     const coercedVersion = RangeUtils.coerce(version);
@@ -48,8 +52,8 @@ export class Deployed {
     // we need to update the pragma expression differently depending on whether
     // a single version or range is suppplied
     source = semver.valid(coercedVersion) ?
-      source.replace(/0\.5\.0/gm, coercedVersion) :
-      source.replace(/>= 0.5.0 < 0.9.0/gm, coercedVersion);
+      source.replace(/0\.5\.0/g, coercedVersion) :
+      source.replace(/>= 0.5.0 < 0.9.0/g, coercedVersion);
 
     return source;
   }
