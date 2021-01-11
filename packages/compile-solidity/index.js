@@ -99,7 +99,7 @@ const Compile = {
     const solidityTargets = compilationTargets.filter(fileName => {
       return fileName.endsWith(".sol");
     });
-    if (compilationTargets !== 0 && solidityTargets.length === 0) {
+    if (compilationTargets.length !== 0 && solidityTargets.length === 0) {
       return { compilations: [] };
     }
     const hasTargets = compilationTargets.length;
