@@ -16,7 +16,8 @@ describe("config", function () {
     from: "0x1234567890123456789012345678901234567890"
   };
 
-  before("Create a sandbox with extra config values", async () => {
+  before("Create a sandbox with extra config values", async function () {
+    this.timeout(5000);
     config = await Box.sandbox("default");
     config.resolver = new Resolver(config);
     config.artifactor = new Artifactor(config.contracts_build_directory);

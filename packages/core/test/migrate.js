@@ -14,7 +14,7 @@ var Web3 = require("web3");
 describe("migrate", function () {
   var config;
 
-  before("Create a sandbox", async () => {
+  before("Create a sandbox", async function () {
     config = await Box.sandbox("default");
     config.resolver = new Resolver(config);
     config.artifactor = new Artifactor(config.contracts_build_directory);
@@ -51,7 +51,7 @@ describe("migrate", function () {
     });
   });
 
-  it("profiles a new project as not having any contracts deployed", async () => {
+  it("profiles a new project as not having any contracts deployed", async function() {
     const networks = await Networks.deployed(config);
     assert.equal(
       Object.keys(networks).length,
@@ -70,7 +70,7 @@ describe("migrate", function () {
     );
   });
 
-  it("links libraries in initial project, and runs all migrations", async () => {
+  it("links libraries in initial project, and runs all migrations", async function () {
     this.timeout(10000);
 
     config.network = "primary";
@@ -112,7 +112,7 @@ describe("migrate", function () {
     );
   });
 
-  it("should migrate secondary network without altering primary network", async () => {
+  it("should migrate secondary network without altering primary network", async function () {
     this.timeout(10000);
 
     config.network = "secondary";
@@ -180,7 +180,7 @@ describe("migrate", function () {
     });
   });
 
-  it("should ignore files that don't start with a number", () => {
+  it("should ignore files that don't start with a number", function () {
     fs.writeFileSync(
       path.join(config.migrations_directory, "~2_deploy_contracts.js"),
       "module.exports = function() {};",
@@ -195,7 +195,7 @@ describe("migrate", function () {
     );
   });
 
-  it("should ignore non-js extensions", () => {
+  it("should ignore non-js extensions", function () {
     fs.writeFileSync(
       path.join(config.migrations_directory, "2_deploy_contracts.js~"),
       "module.exports = function() {};",

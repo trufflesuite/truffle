@@ -10,7 +10,8 @@ const Artifactor = require("@truffle/artifactor");
 describe("create", function () {
   let config;
 
-  before("Create a sandbox", async () => {
+  before("Create a sandbox", async function() {
+    this.timeout(5000);
     config = await Box.sandbox("default");
     config.resolver = new Resolver(config);
     config.artifactor = new Artifactor(config.contracts_build_directory);
