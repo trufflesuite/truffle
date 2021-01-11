@@ -2,13 +2,14 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:process");
 
 import {
+  DataModel,
   Collections,
   definitions,
   NamedCollectionName
 } from "@truffle/db/resources";
 import { Db, forDefinitions, IdObject, toIdObject } from "@truffle/db/meta";
 
-export { Db, IdObject, toIdObject, NamedCollectionName };
+export { Db, DataModel, IdObject, toIdObject, NamedCollectionName };
 import { Process as Base } from "@truffle/db/meta";
 
 export type _ = Base._;

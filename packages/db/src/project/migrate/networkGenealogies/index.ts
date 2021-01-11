@@ -4,6 +4,7 @@ const debug = logger("db:project:migrate:networkGenealogies");
 import gql from "graphql-tag";
 
 import {
+  DataModel,
   IdObject,
   toIdObject,
   resources,
@@ -81,10 +82,9 @@ export function* generateNetworkGenealogiesLoad<
 
   // for all such artifact networks, order the networks by height and collect
   // NetworkGenealogyInputs for all sequential pairs in this list.
-  const {
-    networks,
-    networkGenealogies
-  } = collectArtifactNetworks(artifactNetworks);
+  const { networks, networkGenealogies } = collectArtifactNetworks(
+    artifactNetworks
+  );
 
   // for each network in order
   for (const network of networks) {
@@ -135,7 +135,8 @@ function collectArtifactNetworks<
   // map to reference to Network itself
   const networks: IdObject<DataModel.Network>[] = artifactNetworks
     .filter(
-      ({ block, db: { network } = {} } = {} as ArtifactNetwork) => block && network
+      ({ block, db: { network } = {} } = {} as ArtifactNetwork) =>
+        block && network
     )
     .sort((a, b) => a.block.height - b.block.height)
     .map(({ db: { network } }) => network);
@@ -153,7 +154,7 @@ function collectArtifactNetworks<
   type ResultAccumulator = {
     ancestor: IdObject<DataModel.Network>;
     networkGenealogies: DataModel.NetworkGenealogyInput[];
-  }
+  };
 
   const initialAccumulator: ResultAccumulator = {
     ancestor: networks[0],
@@ -168,9 +169,10 @@ function collectArtifactNetworks<
       descendant: IdObject<DataModel.Network>
     ): ResultAccumulator => ({
       ancestor: descendant,
-      networkGenealogies: ancestor.id === descendant.id
-        ? networkGenealogies
-        : [...networkGenealogies, { ancestor, descendant }]
+      networkGenealogies:
+        ancestor.id === descendant.id
+          ? networkGenealogies
+          : [...networkGenealogies, { ancestor, descendant }]
     }),
     initialAccumulator
   );
@@ -180,7 +182,7 @@ function collectArtifactNetworks<
     networks,
     networkGenealogies
   };
-};
+}
 
 /**
  * Issue GraphQL requests and eth_getBlockByNumber requests to determine if any
@@ -199,10 +201,6 @@ function* findRelation(
   relation: "ancestor" | "descendant",
   network: IdObject<DataModel.Network>
 ): Process<IdObject<DataModel.Network | undefined>> {
-  // determine GraphQL query to invoke based on requested relation
-  const query =
-    relation === "ancestor" ? "possibleAncestors" : "possibleDescendants";
-
   // since we're doing this iteratively, keep track of what networks we've
   // tried and which ones we haven't
   let alreadyTried: string[] = [];
@@ -220,8 +218,9 @@ function* findRelation(
     ));
 
     // check blockchain to find a matching network
-    const matchingCandidate: IdObject<DataModel.Network> | undefined =
-      yield* findMatchingCandidateOnChain(candidates);
+    const matchingCandidate:
+      | IdObject<DataModel.Network>
+      | undefined = yield* findMatchingCandidateOnChain(candidates);
 
     if (matchingCandidate) {
       return matchingCandidate;
@@ -252,9 +251,7 @@ function* queryNextPossiblyRelatedNetworks(
   // query graphql for new candidates
   let result;
   try {
-    ({
-      [query]: result
-    } = yield* resources.get(
+    ({ [query]: result } = yield* resources.get(
       "networks",
       network.id,
       gql`

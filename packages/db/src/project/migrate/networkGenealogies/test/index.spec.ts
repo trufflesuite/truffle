@@ -10,6 +10,7 @@ import { Networks, Batches } from "test/arbitraries/networks";
 import { IdObject } from "@truffle/db/meta";
 import { connect, Project } from "@truffle/db";
 import { resources } from "@truffle/db/project/process";
+import { DataModel } from "@truffle/db/resources";
 import { generateNetworkGenealogiesLoad } from "..";
 
 import { mockProvider } from "./mockProvider";

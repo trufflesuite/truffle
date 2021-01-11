@@ -3,7 +3,7 @@ const debug = logger("db:resources:projects");
 
 import gql from "graphql-tag";
 
-import { Definition, IdObject, Workspace } from "./types";
+import { DataModel, Definition, IdObject, Workspace } from "./types";
 
 export const projects: Definition<"projects"> = {
   names: {

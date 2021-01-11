@@ -12,7 +12,7 @@ import { generateNamesLoad } from "./names";
 import { Compilation, Contract, generateCompileLoad } from "./compile";
 import { Artifact, generateMigrateLoad } from "./migrate";
 
-import { ProcessorRunner, forDb } from "./process";
+import { DataModel, ProcessorRunner, forDb } from "./process";
 
 /**
  * Interface between @truffle/db and Truffle-at-large. Accepts external

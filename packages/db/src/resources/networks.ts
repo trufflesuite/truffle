@@ -4,7 +4,7 @@ const debug = logger("db:resources:networks");
 import gql from "graphql-tag";
 import { singular } from "pluralize";
 
-import { IdObject, Definition } from "./types";
+import { DataModel, IdObject, Definition } from "./types";
 
 export const networks: Definition<"networks"> = {
   names: {

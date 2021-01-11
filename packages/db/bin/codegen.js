@@ -5,7 +5,7 @@ const { generateNamespace } = require("@gql2ts/from-schema");
 const { schema } = require("@truffle/db");
 
 const dataModel = generateNamespace(
-  "DataModel",
+  "_DataModel",
   schema,
   {
     ignoreTypeNameDeclaration: true,

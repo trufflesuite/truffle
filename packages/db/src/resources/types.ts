@@ -5,6 +5,9 @@ import * as Meta from "@truffle/db/meta";
 
 export { Db, IdObject, toIdObject } from "@truffle/db/meta";
 
+import * as DataModel from "./data";
+export { DataModel };
+
 export type Collections = {
   sources: {
     resource: DataModel.Source;

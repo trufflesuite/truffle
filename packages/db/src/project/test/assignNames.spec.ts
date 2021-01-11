@@ -4,6 +4,7 @@ const debug = logger("db:project:test:assignNames");
 import gql from "graphql-tag";
 
 import { Db, Project, connect } from "@truffle/db";
+import { DataModel } from "@truffle/db/resources";
 
 const helpers = (db: Db, project: Project) => ({
   async addContract(input: DataModel.ContractInput) {

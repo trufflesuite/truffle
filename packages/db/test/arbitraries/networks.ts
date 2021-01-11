@@ -4,6 +4,7 @@ const debug = logger("test:arbitraries:networks");
 import * as fc from "fast-check";
 
 import { generateId, IdObject } from "@truffle/db/meta";
+import { DataModel } from "@truffle/db/resources";
 
 import { fake } from "./fake";
 

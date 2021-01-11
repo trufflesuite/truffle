@@ -3,7 +3,7 @@ const debug = logger("db:project:migrate:batch");
 
 import { ContractObject, NetworkObject } from "@truffle/contract-schema/spec";
 import * as Meta from "@truffle/db/meta";
-import { Process, _, IdObject } from "@truffle/db/project/process";
+import { DataModel, Process, _, IdObject } from "@truffle/db/project/process";
 
 type Config = {
   network?: {};

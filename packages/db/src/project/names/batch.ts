@@ -2,7 +2,7 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:names:batch");
 
 import * as Meta from "@truffle/db/meta";
-import { Process, _, IdObject } from "@truffle/db/project/process";
+import { DataModel, Process, _, IdObject } from "@truffle/db/project/process";
 
 type Config = {
   assignment: {};

@@ -1,7 +1,7 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:migrate:networks");
 
-import { IdObject, resources } from "@truffle/db/project/process";
+import { DataModel, IdObject, resources } from "@truffle/db/project/process";
 import * as Batch from "./batch";
 
 export const generateNetworksLoad = Batch.generate<{

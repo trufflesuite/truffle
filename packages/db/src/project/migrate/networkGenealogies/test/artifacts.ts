@@ -3,6 +3,7 @@ const debug = logger("db:project:migrate:networkGenealogies:test:artifacts");
 
 import { Project } from "@truffle/db";
 import { resources } from "@truffle/db/project/process";
+import { DataModel } from "@truffle/db/resources";
 import { generateId, IdObject } from "@truffle/db/meta";
 import { Batch, Model } from "test/arbitraries/networks";
 

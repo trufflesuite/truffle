@@ -1,7 +1,7 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:names:current");
 
-import { IdObject, resources } from "@truffle/db/project/process";
+import { DataModel, IdObject, resources } from "@truffle/db/project/process";
 import * as Batch from "./batch";
 
 export const generateProjectNamesLoad = Batch.generate<{

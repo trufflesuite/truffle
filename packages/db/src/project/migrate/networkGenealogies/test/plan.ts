@@ -3,6 +3,7 @@ const debug = logger("db:project:migrate:networkGenealogies:test:plan");
 
 import { Project } from "@truffle/db";
 import { generateId, IdObject } from "@truffle/db/meta";
+import { DataModel } from "@truffle/db/resources";
 import { Batch, Model } from "test/arbitraries/networks";
 
 export const plan = (options: {
