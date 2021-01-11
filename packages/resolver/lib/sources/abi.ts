@@ -43,7 +43,14 @@ export class ABI extends FS {
         body: soliditySource
       };
     } catch (e) {
-      return { filePath, body };
+      const emptySolidity = `
+        // SPDX-License-Identifier: MIT
+        pragma solidity >0.0.0;
+      `;
+      return {
+        filePath,
+        body: emptySolidity
+      };
     }
   }
 }
