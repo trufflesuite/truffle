@@ -3,6 +3,7 @@ pragma solidity ^0.5.0;
 import "./Branch.sol";
 import "./LeafC.sol";
 import "./LibraryA.sol";
+import "./Abi.abi.json";
 
 contract Root is Branch {
   uint root;

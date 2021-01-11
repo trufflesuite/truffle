@@ -8,26 +8,21 @@ const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const log = console.log;
 
-describe("Repeated compilation of contracts with inheritance [ @standalone ]", function() {
-  let config,
-    sourcePaths,
-    artifactPaths,
-    initialTimes,
-    finalTimes,
-    output,
-    sources;
+describe("Repeated compilation of contracts with inheritance [ @standalone ]", function () {
+  let config, artifactPaths, initialTimes, finalTimes, output;
   const mapping = {};
 
   const project = path.join(__dirname, "../../sources/inheritance");
   const names = [
-    "Root",
-    "Branch",
-    "LeafA",
-    "LeafB",
-    "LeafC",
-    "SameFile1",
-    "SameFile2",
-    "LibraryA"
+    "Root.sol",
+    "Branch.sol",
+    "LeafA.sol",
+    "LeafB.sol",
+    "LeafC.sol",
+    "SameFile1.sol",
+    "SameFile2.sol",
+    "LibraryA.sol",
+    "Abi.abi.json"
   ];
   const logger = new MemoryLogger();
 
@@ -61,17 +56,21 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
     fs.writeFileSync(mapping[key].sourcePath, source);
   }
 
+  function hasBeenUpdated(fileName) {
+    return initialTimes[fileName] < finalTimes[fileName];
+  }
+
   // ----------------------- Setup -----------------------------
 
-  before("set up the server", function(done) {
+  before("set up the server", function (done) {
     Server.start(done);
   });
 
-  after("stop server", function(done) {
+  after("stop server", function (done) {
     Server.stop(done);
   });
 
-  beforeEach("set up sandbox and do initial compile", async function() {
+  beforeEach("set up sandbox and do initial compile", async function () {
     this.timeout(30000);
 
     const conf = await sandbox.create(project);
@@ -82,19 +81,17 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
       reporter: new Reporter(logger)
     };
 
-    sources = names.map(name => name + ".sol");
-    artifactPaths = names.map(name =>
-      path.join(config.contracts_build_directory, name + ".json")
-    );
-    sourcePaths = sources.map(source =>
-      path.join(config.contracts_directory, source)
-    );
+    // create artifact path array
+    artifactPaths = names.map(name => {
+      const basename = path.basename(path.basename(name, ".sol"), ".abi.json");
+      return path.join(config.contracts_build_directory, `${basename}.json`);
+    });
 
+    // create mapping from name to source path
     names.forEach((name, i) => {
       mapping[name] = {};
-      mapping[name].source = sources[i];
       mapping[name].artifactPath = artifactPaths[i];
-      mapping[name].sourcePath = sourcePaths[i];
+      mapping[name].sourcePath = path.join(config.contracts_directory, name);
     });
 
     try {
@@ -115,14 +112,15 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
   //      LibA         LeafA              |    SameFile1 - LeafC
   //     /           /       \            |
   // Root* - Branch -           - LeafC   |    SameFile2
-  //                 \       /            |
-  //                   LeafB              |
+  //     \           \       /            |
+  //      Abi          LeafB              |
+  //                                      |
   // ------------------------------------------------------------
 
-  it("Updates only Root when Root is touched", async function() {
+  it("updates only Root when Root is touched", async function () {
     this.timeout(30000);
 
-    touchSource("Root");
+    touchSource("Root.sol");
 
     await CommandRunner.run("compile", config);
     output = logger.contents();
@@ -130,35 +128,13 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
     finalTimes = getArtifactStats();
 
     try {
-      assert(initialTimes["Root"] < finalTimes["Root"], "Should update root");
-      assert(
-        initialTimes["Branch"] === finalTimes["Branch"],
-        "Should not update Branch"
-      );
-      assert(
-        initialTimes["LeafA"] === finalTimes["LeafA"],
-        "Should not update LeafA"
-      );
-      assert(
-        initialTimes["LeafB"] === finalTimes["LeafB"],
-        "Should not update LeafB"
-      );
-      assert(
-        initialTimes["LeafC"] === finalTimes["LeafC"],
-        "Should not update LeafC"
-      );
-      assert(
-        initialTimes["LibraryA"] === finalTimes["LibraryA"],
-        "Should not update LibraryA"
-      );
-      assert(
-        initialTimes["SameFile1"] === finalTimes["SameFile1"],
-        "Should not update SameFile1"
-      );
-      assert(
-        initialTimes["SameFile2"] === finalTimes["SameFile2"],
-        "Should not update SameFile2"
-      );
+      assert(hasBeenUpdated("Root.sol"), "Should update root");
+
+      for (const file of Object.keys(mapping)) {
+        if (file !== "Root.sol") {
+          assert(!hasBeenUpdated(file), `Should not update ${file}`);
+        }
+      }
     } catch (err) {
       err.message += "\n\n" + output;
       throw new Error(err);
@@ -170,14 +146,15 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
   //      LibA*        LeafA              |    SameFile1 - LeafC
   //     /           /       \            |
   // Root* - Branch -           - LeafC   |    SameFile2
-  //                 \       /            |
-  //                   LeafB              |
+  //     \           \       /            |
+  //      Abi          LeafB              |
+  //                                      |
   // ------------------------------------------------------------
 
-  it("Updates Root and Library when Library is touched", async function() {
+  it("updates Root and Library when Library is touched", async function () {
     this.timeout(30000);
 
-    touchSource("LibraryA");
+    touchSource("LibraryA.sol");
 
     await CommandRunner.run("compile", config);
     output = logger.contents();
@@ -185,35 +162,14 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
     finalTimes = getArtifactStats();
 
     try {
-      assert(initialTimes["Root"] < finalTimes["Root"], "Should update root");
-      assert(
-        initialTimes["Branch"] === finalTimes["Branch"],
-        "Should not update Branch"
-      );
-      assert(
-        initialTimes["LeafA"] === finalTimes["LeafA"],
-        "Should not update LeafA"
-      );
-      assert(
-        initialTimes["LeafB"] === finalTimes["LeafB"],
-        "Should not update LeafB"
-      );
-      assert(
-        initialTimes["LeafC"] === finalTimes["LeafC"],
-        "Should not update LeafC"
-      );
-      assert(
-        initialTimes["LibraryA"] < finalTimes["LibraryA"],
-        "Should update LibraryA"
-      );
-      assert(
-        initialTimes["SameFile1"] === finalTimes["SameFile1"],
-        "Should not update SameFile1"
-      );
-      assert(
-        initialTimes["SameFile2"] === finalTimes["SameFile2"],
-        "Should not update SameFile2"
-      );
+      assert(hasBeenUpdated("Root.sol"), "Should update root");
+      assert(hasBeenUpdated("LibraryA.sol"), "Should update LibraryA");
+
+      for (const file of Object.keys(mapping)) {
+        if (file !== "Root.sol" && file !== "LibraryA.sol") {
+          assert(!hasBeenUpdated(file), `Should not update ${file}`);
+        }
+      }
     } catch (err) {
       err.message += "\n\n" + output;
       throw new Error(err);
@@ -225,14 +181,15 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
   //      LibA         LeafA              |    SameFile1 - LeafC
   //     /           /       \            |
   // Root* - Branch* -           - LeafC  |    SameFile2
-  //                 \       /            |
-  //                   LeafB              |
+  //     \           \       /            |
+  //      Abi          LeafB              |
+  //                                      |
   // ------------------------------------------------------------
 
-  it("Updates Branch and Root when Branch is touched", async function() {
+  it("updates Branch and Root when Branch is touched", async function () {
     this.timeout(30000);
 
-    touchSource("Branch");
+    touchSource("Branch.sol");
 
     await CommandRunner.run("compile", config);
     output = logger.contents();
@@ -240,35 +197,14 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
     finalTimes = getArtifactStats();
 
     try {
-      assert(initialTimes["Root"] < finalTimes["Root"], "Should update root");
-      assert(
-        initialTimes["Branch"] < finalTimes["Branch"],
-        "Should update Branch"
-      );
-      assert(
-        initialTimes["LeafA"] === finalTimes["LeafA"],
-        "Should not update LeafA"
-      );
-      assert(
-        initialTimes["LeafB"] === finalTimes["LeafB"],
-        "Should not update LeafB"
-      );
-      assert(
-        initialTimes["LeafC"] === finalTimes["LeafC"],
-        "Should not update LeafC"
-      );
-      assert(
-        initialTimes["LibraryA"] === finalTimes["LibraryA"],
-        "Should not update LibraryA"
-      );
-      assert(
-        initialTimes["SameFile1"] === finalTimes["SameFile1"],
-        "Should not update SameFile1"
-      );
-      assert(
-        initialTimes["SameFile2"] === finalTimes["SameFile2"],
-        "Should not update SameFile2"
-      );
+      assert(hasBeenUpdated("Root.sol"), "Should update root");
+      assert(hasBeenUpdated("Branch.sol"), "Should update Branch");
+
+      for (const file of Object.keys(mapping)) {
+        if (file !== "Root.sol" && file !== "Branch.sol") {
+          assert(!hasBeenUpdated(file), `Should not update ${file}`);
+        }
+      }
     } catch (err) {
       err.message += "\n\n" + output;
       throw new Error(err);
@@ -280,14 +216,15 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
   //      LibA          LeafA*             |    SameFile1 - LeafC
   //     /            /       \            |
   // Root* - Branch* -           - LeafC   |    SameFile2
-  //                  \       /            |
-  //                    LeafB              |
+  //     \            \       /            |
+  //      Abi           LeafB              |
+  //                                       |
   // ------------------------------------------------------------
 
-  it("Updates LeafA, Branch and Root when LeafA is touched", async function() {
+  it("updates LeafA, Branch and Root when LeafA is touched", async function () {
     this.timeout(30000);
 
-    touchSource("LeafA");
+    touchSource("LeafA.sol");
 
     await CommandRunner.run("compile", config);
     output = logger.contents();
@@ -295,35 +232,19 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
     finalTimes = getArtifactStats();
 
     try {
-      assert(initialTimes["Root"] < finalTimes["Root"], "Should update root");
-      assert(
-        initialTimes["Branch"] < finalTimes["Branch"],
-        "Should update Branch"
-      );
-      assert(
-        initialTimes["LeafA"] < finalTimes["LeafA"],
-        "Should update LeafA"
-      );
-      assert(
-        initialTimes["LeafB"] === finalTimes["LeafB"],
-        "Should not update LeafB"
-      );
-      assert(
-        initialTimes["LeafC"] === finalTimes["LeafC"],
-        "Should not update LeafC"
-      );
-      assert(
-        initialTimes["LibraryA"] === finalTimes["LibraryA"],
-        "Should not update LibraryA"
-      );
-      assert(
-        initialTimes["SameFile1"] === finalTimes["SameFile1"],
-        "Should not update SameFile1"
-      );
-      assert(
-        initialTimes["SameFile2"] === finalTimes["SameFile2"],
-        "Should not update SameFile2"
-      );
+      assert(hasBeenUpdated("LeafA.sol"), "Should update LeafA");
+      assert(hasBeenUpdated("Branch.sol"), "Should update Branch");
+      assert(hasBeenUpdated("Root.sol"), "Should update root");
+
+      for (const file of Object.keys(mapping)) {
+        if (
+          file !== "Root.sol" &&
+          file !== "Branch.sol" &&
+          file !== "LeafA.sol"
+        ) {
+          assert(!hasBeenUpdated(file), `Should not update ${file}`);
+        }
+      }
     } catch (err) {
       err.message += "\n\n" + output;
       throw new Error(err);
@@ -335,14 +256,15 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
   //      LibA         LeafA*              |  SameFile1* - LeafC*
   //     /           /        \            |
   // Root* - Branch* -           - LeafC*  |  SameFile2*
-  //                 \        /            |
-  //                   LeafB*              |
+  //     \           \        /            |
+  //      Abi          LeafB*              |
+  //                                       |
   // ------------------------------------------------------------
 
-  it("Updates everything except LibraryA when LeafC is touched", async function() {
+  it("updates everything except LibraryA and Abi when LeafC is touched", async function () {
     this.timeout(30000);
 
-    touchSource("LeafC");
+    touchSource("LeafC.sol");
 
     await CommandRunner.run("compile", config);
     output = logger.contents();
@@ -350,35 +272,48 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
     finalTimes = getArtifactStats();
 
     try {
-      assert(initialTimes["Root"] < finalTimes["Root"], "Should update root");
-      assert(
-        initialTimes["Branch"] < finalTimes["Branch"],
-        "Should update Branch"
-      );
-      assert(
-        initialTimes["LeafA"] < finalTimes["LeafA"],
-        "Should update LeafA"
-      );
-      assert(
-        initialTimes["LeafB"] < finalTimes["LeafB"],
-        "Should update LeafB"
-      );
-      assert(
-        initialTimes["LeafC"] < finalTimes["LeafC"],
-        "Should update LeafC"
-      );
-      assert(
-        initialTimes["LibraryA"] === finalTimes["LibraryA"],
-        "Should not update LibraryA"
-      );
-      assert(
-        initialTimes["SameFile1"] < finalTimes["SameFile1"],
-        "Should update SameFile1"
-      );
-      assert(
-        initialTimes["SameFile2"] < finalTimes["SameFile2"],
-        "Should update SameFile2"
-      );
+      assert(!hasBeenUpdated("LibraryA.sol"), "Should not update LibraryA");
+      assert(!hasBeenUpdated("Abi.abi.json"), "Should not update Abi");
+
+      for (const file of Object.keys(mapping)) {
+        if (file !== "LibraryA.sol" && file !== "Abi.abi.json") {
+          assert(hasBeenUpdated(file), `Should not update ${file}`);
+        }
+      }
+    } catch (err) {
+      err.message += "\n\n" + output;
+      throw new Error(err);
+    }
+  });
+
+  // -------------Inheritance Graph -----------------------------
+  //                                       |
+  //      LibA         LeafA*              |  SameFile1* - LeafC*
+  //     /           /        \            |
+  // Root* - Branch* -           - LeafC*  |  SameFile2*
+  //     \           \        /            |
+  //      Abi          LeafB*              |
+  //                                       |
+  // ------------------------------------------------------------
+
+  it("updates Root and Abi when Abi is touched", async function () {
+    this.timeout(30000);
+
+    touchSource("Abi.abi.json");
+
+    await CommandRunner.run("compile", config);
+    output = logger.contents();
+
+    finalTimes = getArtifactStats();
+
+    try {
+      assert(hasBeenUpdated("Root.sol"), "Should update root");
+      assert(hasBeenUpdated("Abi.abi.json"), "Should update Abi");
+      for (const file of Object.keys(mapping)) {
+        if (file !== "Root.sol" && file !== "Abi.abi.json") {
+          assert(!hasBeenUpdated(file), `Should not update ${file}`);
+        }
+      }
     } catch (err) {
       err.message += "\n\n" + output;
       throw new Error(err);
