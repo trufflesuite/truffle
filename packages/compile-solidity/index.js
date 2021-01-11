@@ -61,6 +61,7 @@ const Compile = {
     ]);
 
     options = Config.default().merge(options);
+
     const { allSources, compilationTargets } = await Profiler.requiredSources(
       options.with({
         paths,
@@ -69,6 +70,14 @@ const Compile = {
       })
     );
 
+    // we can exit if there are no Solidity files to compile since
+    // it indicates that we only have Vyper-related JSON
+    const solidityTargets = compilationTargets.filter(fileName => {
+      return fileName.endsWith(".sol");
+    });
+    if (compilationTargets.length !== 0 && solidityTargets.length === 0) {
+      return { compilations: [] };
+    }
     const hasTargets = compilationTargets.length;
 
     hasTargets
@@ -85,6 +94,7 @@ const Compile = {
       allSources,
       normalizeOptions(options)
     );
+
     const { name, version } = compiler;
     // returns CompilerResult - see @truffle/compile-common
     return contracts.length > 0
@@ -122,7 +132,9 @@ const Compile = {
               path.sep +
               path.relative(options.working_directory, contract);
           }
-          if (contract.match(blacklistRegex)) return;
+          if (contract.match(blacklistRegex) || contract.endsWith(".json")) {
+            return;
+          }
           return contract;
         })
         .filter(contract => contract);
