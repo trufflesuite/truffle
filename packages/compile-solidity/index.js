@@ -84,18 +84,15 @@ const Compile = {
       "resolver"
     ]);
 
-    // we need to remove all JSON files so Vyper-related stuff doesn't get
-    // sent to the compiler - the Profiler will find JSON imports
-    const filteredPaths = paths.filter(file => path.extname(file) !== ".json");
-
     options = Config.default().merge(options);
     const { allSources, compilationTargets } = await Profiler.requiredSources(
       options.with({
-        paths: filteredPaths,
+        paths,
         base_path: options.contracts_directory,
         resolver: options.resolver
       })
     );
+
 
     const hasTargets = compilationTargets.length;
 
@@ -103,8 +100,13 @@ const Compile = {
       ? Compile.display(compilationTargets, options)
       : Compile.display(allSources, options);
 
+    // if there are no Solidity files to compile, then we can exit
+    // since we may only have Vyper-related JSON
+    const soliditySources = Object.keys(allSources).filter(fileName => {
+      return fileName.endsWith(".sol");
+    });
     // when there are no sources, don't call run
-    if (Object.keys(allSources).length === 0) {
+    if (soliditySources.length === 0 || Object.keys(allSources).length === 0) {
       return { compilations: [] };
     }
 
