@@ -6,15 +6,22 @@ describe("Bytecode", () => {
   let wsClient;
   let expectedId;
   let addBytecodeResult, shimmedBytecode;
+  let bytecodeImmutableReferences;
 
   beforeEach(async () => {
     wsClient = new WorkspaceClient();
     shimmedBytecode = Shims.LegacyToNew.forBytecode(Migrations.bytecode);
-    shimmedBytecode.immutableReferences = {};
-    expectedId = generateId({ ...shimmedBytecode, immutableReferences: [] });
+    bytecodeImmutableReferences = [
+      { ASTId: "1", references: [{ length: 5, start: 1 }] }
+    ];
+    expectedId = generateId({
+      ...shimmedBytecode,
+      immutableReferences: bytecodeImmutableReferences
+    });
+
     addBytecodeResult = await wsClient.execute(AddBytecode, {
       ...shimmedBytecode,
-      immutableReferences: []
+      immutableReferences: bytecodeImmutableReferences
     });
   });
 
@@ -48,7 +55,7 @@ describe("Bytecode", () => {
     expect(id).toEqual(expectedId);
     expect(bytes).toEqual(shimmedBytecode.bytes);
     expect(linkReferences).toEqual(shimmedBytecode.linkReferences);
-    expect(immutableReferences).toEqual([]);
+    expect(immutableReferences).toEqual(bytecodeImmutableReferences);
   });
 
   test("can retrieve all bytecodes", async () => {
