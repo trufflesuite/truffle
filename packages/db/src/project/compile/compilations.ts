@@ -17,14 +17,26 @@ interface Contract {
   };
 }
 
+interface Source {
+  sourcePath: string;
+  contents: string;
+  language: string;
+  ast: any;
+  legacyAST: any;
+
+  db: { source: IdObject<DataModel.Source> };
+}
+
 export const generateCompilationsLoad = Batch.Compilations.generate<{
   compilation: {
     compiler: {
       name: string;
       version: string;
     };
+    sources: {};
     sourceIndexes: string[];
   };
+  source: Source;
   contract: Contract;
   resources: {
     compilation: IdObject<DataModel.Compilation>;
@@ -36,7 +48,8 @@ export const generateCompilationsLoad = Batch.Compilations.generate<{
     return toCompilationInput({
       compiler: input.compiler,
       contracts: input.contracts,
-      sourceIndexes: input.sourceIndexes
+      sourceIndexes: input.sourceIndexes,
+      sources: input.sources
     });
   },
 
@@ -60,6 +73,7 @@ function toCompilationInput(options: {
   compiler: DataModel.CompilerInput;
   contracts: Contract[];
   sourceIndexes: string[];
+  sources: Source[];
 }): DataModel.CompilationInput {
   const { compiler } = options;
 
@@ -72,47 +86,45 @@ function toCompilationInput(options: {
 }
 
 function toProcessedSourceInputs(options: {
-  contracts: Contract[];
+  sources: Source[];
   sourceIndexes: string[];
 }): DataModel.ProcessedSourceInput[] {
   return options.sourceIndexes.map(sourcePath => {
-    const contract = options.contracts.find(
-      contract => contract.sourcePath === sourcePath
+    const source = options.sources.find(
+      source => source.sourcePath === sourcePath
     );
 
-    if (!contract) {
+    if (!source) {
       return;
     }
 
-    const { source } = contract.db;
-
-    const ast = contract.ast
-      ? { json: JSON.stringify(contract.ast) }
-      : undefined;
+    const ast = source.ast ? { json: JSON.stringify(source.ast) } : undefined;
+    const language = source.language;
 
     return {
-      source,
-      ast
+      source: source.db.source,
+      ast,
+      language
     };
   });
 }
 
 function toSourceInputs(options: {
-  contracts: Contract[];
+  sources: Source[];
   sourceIndexes: string[];
 }): IdObject<DataModel.Source>[] {
   return options.sourceIndexes.map(sourcePath => {
-    const contract = options.contracts.find(
-      contract => contract.sourcePath === sourcePath
+    const compiledSource = options.sources.find(
+      source => source.sourcePath === sourcePath
     );
 
-    if (!contract) {
+    if (!compiledSource) {
       return;
     }
 
     const {
       db: { source }
-    } = contract;
+    } = compiledSource;
 
     return source;
   });

@@ -41,7 +41,8 @@ describe("Contract", () => {
       sourceId: sourceId,
       bytecodeId,
       abi: JSON.stringify(Migrations.abi),
-      sourceMap: JSON.stringify(Migrations.sourceMap)
+      sourceMap: JSON.stringify(Migrations.sourceMap),
+      language: "Solidity"
     };
     const compilationResult = await wsClient.execute(
       AddCompilation,
