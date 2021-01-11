@@ -100,12 +100,12 @@ const Compile = {
       ? Compile.display(compilationTargets, options)
       : Compile.display(allSources, options);
 
-    // if there are no Solidity files to compile, then we can exit
-    // since we may only have Vyper-related JSON
     const soliditySources = Object.keys(allSources).filter(fileName => {
       return fileName.endsWith(".sol");
     });
     // when there are no sources, don't call run
+    // we can also exit if there are no Soldity files to compile since
+    // it is possible that we only have Vyper-related JSON
     if (soliditySources.length === 0 || Object.keys(allSources).length === 0) {
       return { compilations: [] };
     }
