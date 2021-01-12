@@ -53,13 +53,6 @@ export async function requiredSources({
     paths: allPaths
   });
 
-  // Generate hash of all sources including external packages - passed to solc inputs.
-  for (const file of Object.keys(resolved)) {
-    if (shouldIncludePath(file)) {
-      allSources[file] = resolved[file].body;
-    }
-  }
-
   // Exit w/out minimizing if we've been asked to compile everything, or nothing.
   if (listsEqual(updatedPaths, allPaths)) {
     return {
@@ -117,6 +110,25 @@ export async function requiredSources({
         updatedPaths.push(currentFile);
         compilationTargets.push(currentFile);
       }
+    }
+  }
+
+  debug("compilationTargets: %O", compilationTargets);
+
+  //now: re-resolve all sources, but this time only the ones we need
+  const required = await resolveAllSources({
+    resolve,
+    parseImports,
+    shouldIncludePath,
+    paths: compilationTargets
+  });
+
+  debug("required: %O", required);
+
+  // Generate dictionary of all required sources, including external packages
+  for (const file of Object.keys(required)) {
+    if (shouldIncludePath(file)) {
+      allSources[file] = required[file].body;
     }
   }
 

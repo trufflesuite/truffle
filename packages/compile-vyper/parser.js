@@ -105,6 +105,8 @@ async function parseImports(body, execVyperJson, resolver) {
     )
   ).filter(match => match !== undefined);
 
+  debug("imports: %O", imports);
+
   return imports;
 }
 

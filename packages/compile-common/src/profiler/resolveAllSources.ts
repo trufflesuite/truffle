@@ -1,3 +1,5 @@
+import debugModule from "debug";
+const debug = debugModule("compile-common:profiler:resolveAllSources");
 import { getImports, ResolvedSource } from "./getImports";
 
 export interface ResolveAllSourcesOptions {
@@ -26,6 +28,7 @@ export async function resolveAllSources({
 }: ResolveAllSourcesOptions): Promise<ResolvedSourcesMapping> {
   const mapping: ResolvedSourcesMapping = {};
   const allPaths: (UnresolvedSource | string)[] = paths.slice();
+  debug("resolveAllSources called");
 
   // Begin generateMapping
   async function generateMapping() {
@@ -62,10 +65,13 @@ export async function resolveAllSources({
     // Queue unknown imports for the next resolver cycle
     while (results.length) {
       const source = results.shift();
+      debug("source.filePath: %s", source.filePath);
 
       const imports = shouldIncludePath(source.filePath)
         ? await getImports({ source, parseImports, shouldIncludePath })
         : [];
+
+      debug("imports: %O", imports);
 
       // Detect unknown external packages / add them to the list of files to resolve
       // Keep track of location of this import because we need to report that.
