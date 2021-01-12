@@ -1,7 +1,6 @@
 const debug = require("debug")("compile-vyper:vyper-json");
 const execSync = require("child_process").execSync;
 const path = require("path");
-const fs = require("fs");
 const semver = require("semver");
 const Common = require("@truffle/compile-common");
 const partition = require("lodash.partition");
@@ -10,17 +9,8 @@ const partition = require("lodash.partition");
 //from compile-solidity/run.js, so be warned...
 //(some has since been factored into compile-common, but not all)
 
-function compileAllJson({ sources: sourcePaths, options, version }) {
+function compileAllJson({ sources: rawSources, options, version }) {
   const compiler = { name: "vyper", version };
-
-  debug("sourcePaths: %O", sourcePaths);
-
-  const rawSources = Object.assign(
-    {},
-    ...sourcePaths.map(sourcePath => ({
-      [sourcePath]: fs.readFileSync(sourcePath).toString()
-    }))
-  );
 
   const {
     sources,

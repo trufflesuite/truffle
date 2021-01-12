@@ -97,13 +97,20 @@ function readSource(sourcePath) {
  */
 
 // compile all sources
-async function compileAll({ sources, options, version, useJson }) {
+async function compileAll({ sources: sourcePaths, options, version, useJson }) {
   options.logger = options.logger || console;
   Compile.display(sources, options);
   if (useJson) {
+    //read in sources
+    const sources = Object.assign(
+      {},
+      ...sourcePaths.map(sourcePath => ({
+        [sourcePath]: fs.readFileSync(sourcePath).toString()
+      }))
+    );
     return compileAllJson({ sources, options, version });
   } else {
-    return await compileAllNoJson({ sources, options, version });
+    return await compileAllNoJson({ sources: sourcePaths, options, version });
   }
 }
 
@@ -181,6 +188,7 @@ const Compile = {
   // Check that vyper is available then forward to internal compile function
   async sources({ sources = [], options }) {
     options = Config.default().merge(options);
+    debug("sources: %o", sources);
     // filter out non-vyper paths
     const vyperFiles = sources.filter(path =>
       minimatch(path, VYPER_PATTERN, { dot: true })
@@ -210,7 +218,7 @@ const Compile = {
       minimatch(path, VYPER_PATTERN_STRICT, { dot: true })
     );
 
-    const { json: useJson } = await checkVyper();
+    const { version, json: useJson } = await checkVyper();
     if (!useJson) {
       //if we don't have vyper-json, we can't (currently) do dependency
       //analysis, so we just compile everything
@@ -229,11 +237,14 @@ const Compile = {
       })
     );
 
-    return await Compile.sources({
+    //having gotten the sources from the resolver, we invoke compileAllJson
+    //ourselves, rather than going through Compile.sources()
+    return compileAllJson({
       sources: allSources,
       options: options.with({
         compilationTargets
-      })
+      }),
+      version
     });
   },
 
