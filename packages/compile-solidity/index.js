@@ -88,6 +88,7 @@ const Compile = {
 
     options = Config.default().merge(options);
 
+    debug("invoking profiler");
     const { allSources, compilationTargets } = await Profiler.requiredSources(
       options.with({
         paths,
@@ -95,6 +96,8 @@ const Compile = {
         resolver: options.resolver
       })
     );
+    debug("allSources: %O", allSources);
+    debug("compilationTargets: %O", compilationTargets);
 
     // we can exit if there are no Solidity files to compile since
     // it indicates that we only have Vyper-related JSON

@@ -1,3 +1,6 @@
+import debugModule from "debug";
+const debug = debugModule("compile-common:profiler:requiredSources");
+
 import {
   resolveAllSources,
   ResolveAllSourcesOptions
@@ -32,6 +35,9 @@ export async function requiredSources({
 }: RequiredSourcesOptions): Promise<RequiredSources> {
   const allSources: RequiredSources["allSources"] = {};
   const compilationTargets: string[] = [];
+
+  debug("allPaths: %O", allPaths);
+  debug("updatedPaths: %O", updatedPaths);
 
   // Solidity test files might have been injected. Include them in the known set.
   updatedPaths.forEach(_path => {
@@ -69,8 +75,12 @@ export async function requiredSources({
 
   // Seed compilationTargets with known updates
   for (const update of updatedPaths) {
-    compilationTargets.push(update);
+    if (shouldIncludePath(update)) {
+      compilationTargets.push(update);
+    }
   }
+
+  debug("entering main loop");
 
   // While there are updated files in the queue, we take each one
   // and search the entire file corpus to find any sources that import it.
@@ -89,6 +99,8 @@ export async function requiredSources({
         continue;
       }
 
+      debug("currentFile: %s", currentFile);
+
       const imports = shouldIncludePath(currentFile)
         ? await getImports({
             source: resolved[currentFile],
@@ -96,6 +108,8 @@ export async function requiredSources({
             shouldIncludePath
           })
         : [];
+
+      debug("imports.length: %d", imports.length);
 
       // If file imports a compilation target, add it
       // to list of updates and compilation targets

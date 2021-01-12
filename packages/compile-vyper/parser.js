@@ -16,6 +16,7 @@ async function parseImports(body, execVyperJson, resolver) {
   // a JSON file!)
   try {
     JSON.parse(body);
+    debug("was JSON, no imports");
     return []; //if we reach this point it was a JSON file
   } catch (_) {
     //it was Vyper, proceed onward
@@ -45,6 +46,7 @@ async function parseImports(body, execVyperJson, resolver) {
   const output = JSON.parse(execVyperJson(JSON.stringify(vyperStandardInput)));
 
   // Filter out our forced import, then get the import paths of the rest.
+  debug("raw output: %O", output);
   const imports = (
     await Promise.all(
       output.errors
@@ -52,6 +54,8 @@ async function parseImports(body, execVyperJson, resolver) {
         .filter(({ message }) => !message.includes(failingImportFileName))
         .map(({ message }) => {
           const matches = message.match(/interface '(.*)\{\.vy,\.json\}'/);
+
+          debug("mathces: %o", matches);
 
           return matches ? matches[1] : undefined;
         })
@@ -70,17 +74,22 @@ async function parseImports(body, execVyperJson, resolver) {
           //a filename) and so it could possibly cause trouble down the line.  So
           //we've got this hack instead!
 
+          debug("bareName: %s", bareName);
+
           const jsonName = bareName + ".json";
           const vyperName = bareName + ".vy";
 
           const { body: jsonBody } = await resolver.resolve(jsonName);
           if (jsonBody) {
+            debug("found json");
             return jsonName;
           }
           const { body: vyperBody } = await resolver.resolve(vyperName);
           if (vyperBody) {
+            debug("found vyper");
             return vyperName;
           }
+          debug("not found");
           return undefined;
         })
     )

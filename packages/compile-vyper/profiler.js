@@ -26,6 +26,7 @@ async function requiredSources(options) {
   });
 
   // invoke profiler
+  debug("invoking profiler");
   return await profiler.requiredSources(options.with({ resolver }));
 }
 
