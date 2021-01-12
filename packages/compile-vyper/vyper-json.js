@@ -9,7 +9,7 @@ const partition = require("lodash.partition");
 //from compile-solidity/run.js, so be warned...
 //(some has since been factored into compile-common, but not all)
 
-function compileAllJson({ sources: rawSources, options, version }) {
+function compileJson({ sources: rawSources, options, version }) {
   const compiler = { name: "vyper", version };
 
   const {
@@ -320,6 +320,6 @@ function fixPath(path) {
 }
 
 module.exports = {
-  compileAllJson,
+  compileJson,
   execVyperJson
 };
