@@ -90,7 +90,9 @@ const Test = {
 
     const accounts = await this.getAccounts(interfaceAdapter);
 
-    const testResolver = new Resolver(config, true);
+    const testResolver = new Resolver(config, {
+      includeTruffleSources: true
+    });
 
     const { compilations } = await this.compileContractsWithTestFilesIfNeeded(
       solTests,

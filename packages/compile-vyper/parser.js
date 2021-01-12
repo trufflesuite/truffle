@@ -1,7 +1,7 @@
 const debug = require("debug")("compile-vyper:parser");
 
 // This needs to be fast! It is fast (as of this writing). Keep it fast!
-async function parseImports(body, execVyperJson) {
+async function parseImports(body, execVyperJson, resolver) {
   // WARNING: Kind of a hack (an expedient one).
 
   // So we don't have to maintain a separate parser, we'll get all the imports
@@ -43,9 +43,6 @@ async function parseImports(body, execVyperJson) {
 
   // By compiling with only ParsedContract.vy as the source, we get file import errors for each import path.
   const output = JSON.parse(execVyperJson(JSON.stringify(vyperStandardInput)));
-
-  const resolver = new Resolver({ translateJson: false }); //see below for why we need this
-  //(this is also why this function is async)
 
   // Filter out our forced import, then get the import paths of the rest.
   const imports = (

@@ -1,3 +1,6 @@
+import debugModule from "debug";
+const debug = debugModule("resolver");
+
 const contract = require("@truffle/contract");
 const expect = require("@truffle/expect");
 const provision = require("@truffle/provisioner");
@@ -5,25 +8,42 @@ const provision = require("@truffle/provisioner");
 import { ResolverSource } from "./source";
 import { EthPMv1, NPM, GlobalNPM, FS, Truffle, ABI } from "./sources";
 
+export interface ResolverOptions {
+  includeTruffleSources?: boolean; //default: false
+  translateJsonToSolidity?: boolean; //default: true
+}
+
 export class Resolver {
   options: any;
   sources: ResolverSource[];
 
-  constructor(options: any, includeTruffleSource: boolean = false) {
+  constructor(options: any, resolverOptions: ResolverOptions = {}) {
     expect.options(options, ["working_directory", "contracts_build_directory"]);
+
+    let { includeTruffleSources, translateJsonToSolidity } = resolverOptions;
+    if (includeTruffleSources === undefined) {
+      includeTruffleSources = false;
+    }
+    if (translateJsonToSolidity === undefined) {
+      translateJsonToSolidity = true;
+    }
 
     this.options = options;
     this.sources = [
+      ...(includeTruffleSources ? [new Truffle(options)] : []),
       new EthPMv1(options.working_directory),
       new NPM(options.working_directory),
       new GlobalNPM(),
-      new ABI(options.working_directory, options.contracts_build_directory),
+      ...(translateJsonToSolidity
+        ? [
+            new ABI(
+              options.working_directory,
+              options.contracts_build_directory
+            )
+          ]
+        : []),
       new FS(options.working_directory, options.contracts_build_directory)
     ];
-
-    if (includeTruffleSource) {
-      this.sources.unshift(new Truffle(options));
-    }
   }
 
   // This function might be doing too much. If so, too bad (for now).
