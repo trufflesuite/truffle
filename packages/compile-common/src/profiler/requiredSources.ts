@@ -20,7 +20,7 @@ export interface RequiredSources {
     [filePath: string]: string;
   };
 
-  compilationTargets?: string[];
+  compilationTargets: string[];
 }
 
 export async function requiredSources({
@@ -58,7 +58,7 @@ export async function requiredSources({
   if (listsEqual(updatedPaths, allPaths)) {
     return {
       allSources,
-      compilationTargets: []
+      compilationTargets: Object.keys(allSources)
     };
   } else if (!updatedPaths.length) {
     return {

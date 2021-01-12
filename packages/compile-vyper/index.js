@@ -237,6 +237,15 @@ const Compile = {
       })
     );
 
+    const vyperTargets = compilationTargets.filter(path =>
+      minimatch(path, VYPER_PATTERN_STRICT, { dot: true })
+    );
+
+    // no vyper targets found, no need to activate Vyper
+    if (vyperTargets.length === 0) {
+      return { compilations: [] };
+    }
+
     //having gotten the sources from the resolver, we invoke compileAllJson
     //ourselves, rather than going through Compile.sources()
     return compileAllJson({
