@@ -55,7 +55,7 @@ async function parseImports(body, execVyperJson, resolver) {
         .map(({ message }) => {
           const matches = message.match(/interface '(.*)\{\.vy,\.json\}'/);
 
-          debug("mathces: %o", matches);
+          debug("matches: %o", matches);
 
           return matches ? matches[1] : undefined;
         })
@@ -79,16 +79,26 @@ async function parseImports(body, execVyperJson, resolver) {
           const jsonName = bareName + ".json";
           const vyperName = bareName + ".vy";
 
-          const { body: jsonBody } = await resolver.resolve(jsonName);
-          if (jsonBody) {
+          try {
+            await resolver.resolve(jsonName);
             debug("found json");
             return jsonName;
+          } catch (error) {
+            if (!error.message.startsWith("Could not find")) {
+              throw error; //rethrow unexpected errors
+            }
           }
-          const { body: vyperBody } = await resolver.resolve(vyperName);
-          if (vyperBody) {
+
+          try {
+            await resolver.resolve(vyperName);
             debug("found vyper");
             return vyperName;
+          } catch (error) {
+            if (!error.message.startsWith("Could not find")) {
+              throw error; //rethrow unexpected errors
+            }
           }
+
           debug("not found");
           return undefined;
         })
