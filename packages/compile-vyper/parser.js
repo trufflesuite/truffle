@@ -76,26 +76,23 @@ async function parseImports(body, execVyperJson, resolver) {
 
           debug("bareName: %s", bareName);
 
-          const jsonName = bareName + ".json";
-          const vyperName = bareName + ".vy";
+          const namesToTry = [
+            //JSON before Vyper, note
+            `${bareName}.json`,
+            `./${bareName}.json`,
+            `${bareName}.vy`,
+            `./${bareName}.vy`
+          ];
 
-          try {
-            await resolver.resolve(jsonName);
-            debug("found json");
-            return jsonName;
-          } catch (error) {
-            if (!error.message.startsWith("Could not find")) {
-              throw error; //rethrow unexpected errors
-            }
-          }
-
-          try {
-            await resolver.resolve(vyperName);
-            debug("found vyper");
-            return vyperName;
-          } catch (error) {
-            if (!error.message.startsWith("Could not find")) {
-              throw error; //rethrow unexpected errors
+          for (const name of namesToTry) {
+            try {
+              debug("trying %s", name);
+              await resolver.resolve(name);
+              return name;
+            } catch (error) {
+              if (!error.message.startsWith("Could not find")) {
+                throw error; //rethrow unexpected errors
+              }
             }
           }
 
