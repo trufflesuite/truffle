@@ -94,13 +94,7 @@ export async function requiredSources({
 
       debug("currentFile: %s", currentFile);
 
-      const imports = shouldIncludePath(currentFile)
-        ? await getImports({
-            source: resolved[currentFile],
-            parseImports,
-            shouldIncludePath
-          })
-        : [];
+      const imports = resolved[currentFile].imports;
 
       debug("imports.length: %d", imports.length);
 
@@ -115,20 +109,24 @@ export async function requiredSources({
 
   debug("compilationTargets: %O", compilationTargets);
 
-  //now: re-resolve all sources, but this time only the ones we need
-  const required = await resolveAllSources({
-    resolve,
-    parseImports,
-    shouldIncludePath,
-    paths: compilationTargets
-  });
+  //now: crawl the tree downward from the compilation targets
+  //to get all the sources we need
+  const filesToProcess = compilationTargets.slice(); //clone
+  const required = [];
+  while (filesToProcess.length > 0) {
+    const file = filesToProcess.shift();
+    required.push(file);
+    for (const importPath of resolved[file].imports) {
+      filesToProcess.push(importPath);
+    }
+  }
 
   debug("required: %O", required);
 
   // Generate dictionary of all required sources, including external packages
-  for (const file of Object.keys(required)) {
+  for (const file of required) {
     if (shouldIncludePath(file)) {
-      allSources[file] = required[file].body;
+      allSources[file] = resolved[file].body;
     }
   }
 
