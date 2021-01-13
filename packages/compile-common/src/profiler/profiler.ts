@@ -1,7 +1,7 @@
-import path from "path";
 const findContracts = require("@truffle/contract-sources");
 const expect = require("@truffle/expect");
 
+import type TruffleConfig from "@truffle/config";
 import { updated } from "./updated";
 import { UnresolvedSource } from "./resolveAllSources";
 import { requiredSources, RequiredSourcesOptions } from "./requiredSources";
@@ -57,9 +57,29 @@ export class Profiler {
 
     const updatedPaths = convertToAbsolutePaths(paths, basePath);
     const allPaths = convertToAbsolutePaths(
-      await findContracts(options.contracts_directory),
-      options.base_path
+      await findContracts(contractsDirectory),
+      basePath
     );
+
+    return await requiredSources({
+      resolve,
+      parseImports: this.config.parseImports,
+      shouldIncludePath: this.config.shouldIncludePath,
+      updatedPaths,
+      allPaths
+    });
+  }
+
+  async requiredSourcesForSingleFile(options: TruffleConfig) {
+    expect.options(options, ["path", "base_path", "resolver"]);
+
+    const { resolver, path, base_path: basePath } = options;
+
+    const resolve = ({ filePath, importedFrom }: UnresolvedSource) =>
+      resolver.resolve(filePath, importedFrom);
+
+    const allPaths = convertToAbsolutePaths([path], basePath);
+    const updatedPaths = allPaths;
 
     return await requiredSources({
       resolve,

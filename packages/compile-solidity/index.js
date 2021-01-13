@@ -1,41 +1,13 @@
 const debug = require("debug")("compile");
 const path = require("path");
-const expect = require("@truffle/expect");
 const findContracts = require("@truffle/contract-sources");
 const Config = require("@truffle/config");
 const Profiler = require("./profiler");
 const CompilerSupplier = require("./compilerSupplier");
 const { run } = require("./run");
-
-const normalizeOptions = options => {
-  if (options.logger === undefined) options.logger = console;
-
-  expect.options(options, ["contracts_directory", "compilers"]);
-  expect.options(options.compilers, ["solc"]);
-
-  options.compilers.solc.settings.evmVersion =
-    options.compilers.solc.settings.evmVersion ||
-    options.compilers.solc.evmVersion;
-  options.compilers.solc.settings.optimizer =
-    options.compilers.solc.settings.optimizer ||
-    options.compilers.solc.optimizer ||
-    {};
-
-  // Grandfather in old solc config
-  if (options.solc) {
-    options.compilers.solc.settings.evmVersion = options.solc.evmVersion;
-    options.compilers.solc.settings.optimizer = options.solc.optimizer;
-  }
-
-  // Certain situations result in `{}` as a value for compilationTargets
-  // Previous implementations treated any value lacking `.length` as equivalent
-  // to `[]`
-  if (!options.compilationTargets || !options.compilationTargets.length) {
-    options.compilationTargets = [];
-  }
-
-  return options;
-};
+const { normalizeOptions } = require("./normalizeOptions");
+const { compileWithPragmaAnalysis } = require("./compileWithPragmaAnalysis");
+const expect = require("@truffle/expect");
 
 const Compile = {
   // this takes an object with keys being the name and values being source
@@ -75,6 +47,10 @@ const Compile = {
 
   // this takes an array of paths and options
   async sourcesWithDependencies({ paths, options }) {
+    if (options.compilers.solc.version === "pragma") {
+      return this.sourcesWithPragmaAnalysis({ paths, options });
+    }
+
     options.logger = options.logger || console;
     options.contracts_directory = options.contracts_directory || process.cwd();
 
@@ -133,6 +109,10 @@ const Compile = {
           ]
         }
       : { compilations: [] };
+  },
+
+  async sourcesWithPragmaAnalysis({ paths, options }) {
+    return compileWithPragmaAnalysis({ paths, options });
   },
 
   display(paths, options) {
