@@ -54,12 +54,6 @@ export interface Workspace<C extends Collections> {
     input: MutationInput<C, M>
   ): Promise<MutationPayload<C, M>>;
 
-  merge<N extends CollectionName<C>>(
-    collectionName: N,
-    resource: Historical<SavedInput<C, N>>,
-    input: Input<C, N>
-  ): Promise<SavedInput<C, N>>;
-
   remove<M extends MutableCollectionName<C>>(
     collectionName: M,
     input: MutationInput<C, M>

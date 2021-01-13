@@ -153,11 +153,11 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
     }
   }
 
-  public async merge<N extends CollectionName<C>>(
+  private async merge<N extends CollectionName<C>>(
     collectionName: N,
     resource: Historical<SavedInput<C, N>>,
     input: Input<C, N>
-  ): Promise<SavedInput<C, N>> {
+  ): Promise<Historical<SavedInput<C, N>>> {
     await this.ready;
 
     const log = debug.extend(`${collectionName}:merge`);
@@ -168,7 +168,7 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
       input
     );
 
-    return mergedResource as SavedInput<C, N>;
+    return mergedResource as Historical<SavedInput<C, N>>;
   }
 
   public async add<N extends CollectionName<C>>(
@@ -195,7 +195,20 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
         // check for existing
         const resource = await this.get(collectionName, id);
         if (resource) {
-          return this.merge(collectionName, resource, resourceInput);
+          const mergedResource = await this.merge(
+            collectionName,
+            resource,
+            resourceInput
+          );
+
+          const { _rev } = resource;
+          await this.collections[collectionName].put({
+            ...mergedResource,
+            _rev,
+            _id: id
+          });
+
+          return mergedResource;
         }
 
         await this.collections[collectionName].put({
