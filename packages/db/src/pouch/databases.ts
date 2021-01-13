@@ -123,9 +123,8 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
       log("Found.");
       return result;
     } catch (error) {
-      console.log(`Error fetching all ${collectionName}\n`);
-      console.log(error);
-      return ([] as unknown) as SavedInput<C, N>[];
+      log("Error fetching all %s, got error: %O", collectionName, error);
+      throw error;
     }
   }
 
