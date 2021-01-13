@@ -20,8 +20,7 @@ export const bytecodes: Definition<"bytecodes"> = {
   merge: (resource, input) => {
     return {
       ...resource,
-      ...input,
-      linkReferences: [...resource.linkReferences, ...input.linkReferences]
+      ...input
     };
   },
   typeDefs: gql`

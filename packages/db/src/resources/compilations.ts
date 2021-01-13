@@ -19,13 +19,7 @@ export const compilations: Definition<"compilations"> = {
   merge: (input, resource) => {
     return {
       ...resource,
-      ...input,
-      sources: [...resource.sources, ...input.sources],
-      processedSources: [
-        ...resource.processedSources,
-        ...input.processedSources
-      ],
-      sourceMaps: [...resource.sourceMaps, ...input.sourceMaps]
+      ...input
     };
   },
   typeDefs: gql`
