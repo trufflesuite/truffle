@@ -73,64 +73,19 @@ export const networks: Definition<"networks"> = {
   resolvers: {
     Network: {
       ancestors: {
-        resolve: resolveRelationship("ancestor")
+        resolve: resolveRelations("ancestor")
       },
 
       descendants: {
-        resolve: resolveRelationship("descendant")
+        resolve: resolveRelations("descendant")
       },
 
       possibleAncestors: {
-        resolve: async ({ id }, { limit = 5, alreadyTried }, { workspace }) => {
-          const network = await workspace.get("networks", id);
-          const networks = await workspace.find("networks", {
-            selector: {
-              "historicBlock.height": {
-                $lt: network.historicBlock.height,
-                $ne: network.historicBlock.height
-              },
-              "networkId": network.networkId,
-              "id": {
-                $nin: alreadyTried
-              }
-            },
-            sort: [{ "historicBlock.height": "desc" }],
-            limit
-          });
-
-          return {
-            networks,
-            alreadyTried: [
-              ...new Set([...alreadyTried, ...networks.map(({ id }) => id)])
-            ]
-          };
-        }
+        resolve: resolvePossibleRelations("ancestor")
       },
-      possibleDescendants: {
-        resolve: async ({ id }, { limit = 5, alreadyTried }, { workspace }) => {
-          const network = await workspace.get("networks", id);
-          const networks = await workspace.find("networks", {
-            selector: {
-              "historicBlock.height": {
-                $gt: network.historicBlock.height,
-                $ne: network.historicBlock.height
-              },
-              "networkId": network.networkId,
-              "id": {
-                $nin: alreadyTried
-              }
-            },
-            sort: [{ "historicBlock.height": "asc" }],
-            limit
-          });
 
-          return {
-            networks,
-            alreadyTried: [
-              ...new Set([...alreadyTried, ...networks.map(({ id }) => id)])
-            ]
-          };
-        }
+      possibleDescendants: {
+        resolve: resolvePossibleRelations("descendant")
       }
     },
     CandidateSearchResult: {
@@ -148,7 +103,7 @@ export const networks: Definition<"networks"> = {
   }
 };
 
-function resolveRelationship(
+function resolveRelations(
   relationship: "ancestor" | "descendant"
 ) {
   const reverseRelationship = relationship === "ancestor"
@@ -229,4 +184,45 @@ function resolveRelationship(
       sort: [{ "historicBlock.height": heightOrder }],
     });
   };
+}
+
+function resolvePossibleRelations(
+  relationship: "ancestor" | "descendant"
+) {
+  const heightFilter = relationship === "ancestor"
+    ? "$lt"
+    : "$gt";
+
+  const heightOrder = relationship === "ancestor"
+    ? "desc"
+    : "asc";
+
+  return async (
+    { id }: IdObject<DataModel.Network>,
+    { limit = 5, alreadyTried },
+    { workspace }
+  ) => {
+    const network = await workspace.get("networks", id);
+    const networks = await workspace.find("networks", {
+      selector: {
+        "historicBlock.height": {
+          [heightFilter]: network.historicBlock.height,
+          $ne: network.historicBlock.height
+        },
+        "networkId": network.networkId,
+        "id": {
+          $nin: alreadyTried
+        }
+      },
+      sort: [{ "historicBlock.height": heightOrder }],
+      limit
+    });
+
+    return {
+      networks,
+      alreadyTried: [
+        ...new Set([...alreadyTried, ...networks.map(({ id }) => id)])
+      ]
+    };
+  }
 }
