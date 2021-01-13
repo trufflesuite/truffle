@@ -59,9 +59,12 @@ function execVyper(options, sourcePath, version, callback) {
     }
     evmVersionOption = `--evm-version '${evmVersion}'`;
   }
+  if (options.contracts_directory.includes("'")) {
+    throw new Error("Contracts directory contains apostrophe");
+  }
   const command = `vyper -f ${formats.join(
     ","
-  )} ${evmVersionOption} ${sourcePath}`;
+  )} ${evmVersionOption} ${sourcePath} -p '${options.contracts_directory}'`;
 
   exec(command, { maxBuffer: 600 * 1024 }, function (err, stdout, stderr) {
     if (err)
