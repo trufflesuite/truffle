@@ -51,7 +51,12 @@ function parseImports(body) {
         return stripWhitespace(path);
       } else if (matches = line.match(fromImportRegex)) {
         const [_, basePath, endPath] = matches;
-        return `${stripWhitespace(basePath)}.${stripWhitespace(endPath)}`;
+        const strippedBasePath = stripWhitespace(basePath);
+        if (strippedBasePath === "vyper.interfaces") {
+          //built-in import; we should not attempt to resolve it
+          return null;
+        }
+        return `${strippedBasePath}.${stripWhitespace(endPath)}`;
         //on the endPath because
       } else {
         return null;
