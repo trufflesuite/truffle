@@ -37,9 +37,9 @@ export const forDefinitions = <C extends Collections>(
     attach,
     connect,
     serve,
-    process: {
-      forDb,
-      resources
+    resources,
+    Run: {
+      forDb
     }
   };
 };

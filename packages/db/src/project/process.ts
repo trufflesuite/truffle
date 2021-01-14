@@ -1,15 +1,10 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:process");
 
-import {
-  DataModel,
-  Collections,
-  definitions,
-  NamedCollectionName
-} from "@truffle/db/resources";
-import { Db, forDefinitions, IdObject, toIdObject } from "@truffle/db/meta";
+import { Collections } from "@truffle/db/resources";
+export { DataModel, Db, Run, NamedCollectionName, resources } from "@truffle/db/resources";
+export { IdObject, toIdObject } from "@truffle/db/meta";
 
-export { Db, DataModel, IdObject, toIdObject, NamedCollectionName };
 import { Process as Base } from "@truffle/db/meta";
 
 export type _ = Base._;
@@ -33,6 +28,3 @@ export type ProcessRequest<
 
 export type ProcessorRunner = Base.ProcessorRunner<Collections>;
 
-export const {
-  process: { forDb, resources }
-} = forDefinitions(definitions);

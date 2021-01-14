@@ -3,13 +3,21 @@ const debug = logger("db:meta:process");
 
 import { Collections } from "@truffle/db/meta/collections";
 
-export * from "./types";
+export {
+  Process,
+  Processor,
+  ProcessRequest,
+  RequestType,
+} from "./types";
 import { _ } from "./batch";
 export { _ };
 import * as Batch from "./batch";
 export { Batch };
-export * from "./resources";
-export * from "./run";
+export {
+  ResourceProcessors,
+  ResourceProcessorsOptions
+} from "./resources";
+export { ProcessorRunner } from "./run";
 
 import { Definitions } from "./types";
 import { runForDefinitions } from "./run";

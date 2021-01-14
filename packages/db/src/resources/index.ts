@@ -1,6 +1,7 @@
 import {logger} from "@truffle/db/logger";
 const debug = logger("db:resources");
 
+import { forDefinitions } from "@truffle/db/meta";
 import {Definitions} from "./types";
 export * from "./types";
 
@@ -27,3 +28,12 @@ export const definitions: Definitions = {
   projectNames,
   networkGenealogies
 };
+
+export const {
+  schema,
+  connect,
+  serve,
+  attach,
+  Run,
+  resources
+} = forDefinitions(definitions);

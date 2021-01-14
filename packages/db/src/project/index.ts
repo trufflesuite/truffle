@@ -12,7 +12,7 @@ import { generateNamesLoad } from "./names";
 import { Compilation, Contract, generateCompileLoad } from "./compile";
 import { Artifact, generateMigrateLoad } from "./migrate";
 
-import { DataModel, ProcessorRunner, forDb } from "./process";
+import { DataModel, ProcessorRunner, Run } from "./process";
 
 /**
  * Interface between @truffle/db and Truffle-at-large. Accepts external
@@ -28,7 +28,7 @@ export class Project {
   }): Promise<Project> {
     const { db, project: input } = options;
 
-    const { run, forProvider } = forDb(db);
+    const { run, forProvider } = Run.forDb(db);
 
     const project = await run(generateInitializeLoad, input);
 
