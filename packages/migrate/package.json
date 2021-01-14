@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "3.2.8",
+  "version": "3.2.9",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0",
@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@truffle/config": "^1.2.34",
-    "@truffle/deployer": "^3.2.8",
+    "@truffle/deployer": "^3.2.9",
     "@truffle/expect": "^0.0.15",
     "@truffle/interface-adapter": "^0.4.18",
     "@truffle/reporters": "^1.1.2",

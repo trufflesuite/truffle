@@ -11,7 +11,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.3.0",
+  "version": "0.4.0-0",
   "main": "dist/src/index.js",
   "files": [
     "dist",
@@ -39,7 +39,7 @@
     "@truffle/code-utils": "^1.2.23",
     "@truffle/compile-common": "^0.5.1",
     "@truffle/config": "^1.2.34",
-    "@truffle/workflow-compile": "^3.1.6",
+    "@truffle/workflow-compile": "^3.1.7",
     "apollo-server": "^2.18.2",
     "debug": "^4.2.0",
     "fse": "^4.0.1",
