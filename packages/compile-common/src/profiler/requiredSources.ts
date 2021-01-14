@@ -6,8 +6,6 @@ import {
   ResolveAllSourcesOptions
 } from "./resolveAllSources";
 
-import { getImports } from "./getImports";
-
 export interface RequiredSourcesOptions {
   allPaths: string[];
   updatedPaths: string[];

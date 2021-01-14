@@ -1,15 +1,15 @@
 const debug = require("debug")("compile-vyper:parser");
+const OS = require("os");
 
-// This needs to be fast! It is fast (as of this writing). Keep it fast!
-async function parseImports(body, execVyperJson, resolver) {
-  // WARNING: Kind of a hack (an expedient one).
-
-  // So we don't have to maintain a separate parser, we'll get all the imports
-  // in a file by sending the file to vyper and evaluating the error messages
-  // to see what import statements couldn't be resolved. To prevent full-on
-  // compilation when a file has no import statements, we inject an import
-  // statement right on the end; just to ensure it will error and we can parse
-  // the imports speedily without doing extra work.
+function parseImports(body) {
+  // WARNING: We're going to do this with crudely with regexes!!
+  //
+  // Vyper has a rigid enough syntax that I think this is workable.
+  // (Although, there is a case that will fail :-/ -- see below.
+  //
+  // We can't use the Solidity approach here of analyzing error messages
+  // because the Vyper compiler will only provide an error for the *first*
+  // failing import, not all of them.
 
   // (before we do all that, though, we'll try parsing as JSON
   // and return no imports if it parses, in case this gets passed
@@ -22,89 +22,43 @@ async function parseImports(body, execVyperJson, resolver) {
     //it was Vyper, proceed onward
   }
 
-  // Inject failing import.
-  const failingImportFileName = "__Truffle__NotFound";
+  //NOTE: This is slightly incorrect if you have comments ending in
+  //backslashes.  However, I'm not going to try to handle
+  //comment-stripping, because that requires recognizing string
+  //literals, which would be too much work.  So, <shrug>
+  //
+  //Basically the problem case is what if someone does this:
+  //
+  //#comment ending in a backslash \
+  //import foo as Foo
+  //
+  //we'll get this case wrong, but doing better seems hard
+  
+  const stripWhitespace = str => str.replace(/\s/g, ""); //remove even internal whitespace
 
-  body = `${body}\n\nimport ${failingImportFileName} as ${failingImportFileName}\n`;
-
-  const outputSelection = { "*": [] }; //no output needed
-
-  const vyperStandardInput = {
-    language: "Vyper",
-    sources: {
-      "ParsedContract.vy": {
-        content: body
+  return body
+    .replace(/\\\r?\n/g, " ") //process line extensions;
+    //for convenience we use \r?\n instead of OS.EOL
+    //(we don't care that this screws up string literals)
+    .split(OS.EOL) //split body into lines
+    .map(line => {
+      //extract imports!
+      const importRegex = /^import\b(.*?)\bas\b/;
+      const fromImportRegex = /^from\b(.*?)\bimport\b(.*?)\bas\b/;
+      let matches;
+      if (matches = line.match(importRegex)) {
+        const [_, path] = matches;
+        return stripWhitespace(path);
+      } else if (matches = line.match(fromImportRegex)) {
+        const [_, basePath, endPath] = matches;
+        return `${stripWhitespace(basePath)}.${stripWhitespace(endPath)}`;
+        //on the endPath because
+      } else {
+        return null;
       }
-    },
-    settings: {
-      outputSelection
-    },
-    outputSelection //for older versions
-  };
+    })
+    .filter(moduleName => moduleName !== null);
 
-  // By compiling with only ParsedContract.vy as the source, we get file import errors for each import path.
-  const output = JSON.parse(execVyperJson(JSON.stringify(vyperStandardInput)));
-
-  // Filter out our forced import, then get the import paths of the rest.
-  debug("raw output: %O", output);
-  const imports = (
-    await Promise.all(
-      output.errors
-        .filter(({ type }) => type === "FileNotFoundError")
-        .filter(({ message }) => !message.includes(failingImportFileName))
-        .map(({ message }) => {
-          const matches = message.match(/interface '(.*)\{\.vy,\.json\}'/);
-
-          debug("matches: %o", matches);
-
-          return matches ? matches[1] : undefined;
-        })
-        .filter(match => match !== undefined)
-        .map(async bareName => {
-          //HACK: at this point, we have the filenames *minus* the extensions
-          //(.json or .vy).  We'll actually attempt to resolve the filename with
-          //the extension, and return whichever one we find (or undefined if
-          //neither).  If both exist we return .json as that's what Vyper does.
-          //
-          //Originally I was going to instead handle this by just returning the
-          //filenames without extensions, and adding a special Vyper resolver type
-          //that would perform this step, but I came to the conclusion that, while
-          //possible, it wasn't a great fit for how resolvers work (because
-          //currently we expect that the input to resolve() should be something like
-          //a filename) and so it could possibly cause trouble down the line.  So
-          //we've got this hack instead!
-
-          debug("bareName: %s", bareName);
-
-          const namesToTry = [
-            //JSON before Vyper, note
-            `${bareName}.json`,
-            `./${bareName}.json`,
-            `${bareName}.vy`,
-            `./${bareName}.vy`
-          ];
-
-          for (const name of namesToTry) {
-            try {
-              debug("trying %s", name);
-              await resolver.resolve(name);
-              return name;
-            } catch (error) {
-              if (!error.message.startsWith("Could not find")) {
-                throw error; //rethrow unexpected errors
-              }
-            }
-          }
-
-          debug("not found");
-          return undefined;
-        })
-    )
-  ).filter(match => match !== undefined);
-
-  debug("imports: %O", imports);
-
-  return imports;
 }
 
 module.exports = {

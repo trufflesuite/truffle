@@ -6,27 +6,39 @@ const expect = require("@truffle/expect");
 const provision = require("@truffle/provisioner");
 
 import { ResolverSource } from "./source";
-import { EthPMv1, NPM, GlobalNPM, FS, Truffle, ABI } from "./sources";
+import { EthPMv1, NPM, GlobalNPM, FS, Truffle, ABI, Vyper } from "./sources";
 
 export interface ResolverOptions {
-  includeTruffleSources?: boolean; //default: false
-  translateJsonToSolidity?: boolean; //default: true
+  includeTruffleSources?: boolean;
+  translateJsonToSolidity?: boolean;
+  resolveVyperMoudles?: boolean;
 }
+
+const defaultResolverOptions = {
+  includeTruffleSources: false,
+  translateJsonToSolidity: true,
+  resolveVyperMoudles: false,
+};
 
 export class Resolver {
   options: any;
   sources: ResolverSource[];
 
   constructor(options: any, resolverOptions: ResolverOptions = {}) {
-    expect.options(options, ["working_directory", "contracts_build_directory"]);
+    expect.options(
+      options,
+      ["working_directory", "contracts_build_directory", "contracts_directory"]
+    );
 
-    let { includeTruffleSources, translateJsonToSolidity } = resolverOptions;
-    if (includeTruffleSources === undefined) {
-      includeTruffleSources = false;
-    }
-    if (translateJsonToSolidity === undefined) {
-      translateJsonToSolidity = true;
-    }
+    resolverOptions = {
+      ...defaultResolverOptions,
+      ...resolverOptions
+    };
+    const {
+      includeTruffleSources,
+      translateJsonToSolidity,
+      resolveVyperModules
+    } = resolverOptions;
 
     this.options = options;
     this.sources = [
@@ -44,6 +56,12 @@ export class Resolver {
         : []),
       new FS(options.working_directory, options.contracts_build_directory)
     ];
+
+    if (resolveVyperModules) {
+      this.sources = this.sources.concat(
+        this.sources.map(source => new Vyper(source, options.contracts_directory))
+      );
+    }
   }
 
   // This function might be doing too much. If so, too bad (for now).
