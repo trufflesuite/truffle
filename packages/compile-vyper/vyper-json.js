@@ -18,9 +18,15 @@ function compileJson({ sources: rawSources, options, version }) {
     originalSourcePaths
   } = Common.Sources.collectSources(rawSources, options.compilationTargets);
 
-  const [interfacePaths, properSourcePaths] = partition(
+  //Vyper complains if we give it a source that is not also a target,
+  //*unless* we give it as an interface.  So we have to split that out.
+  //(JSON files also must always be interfaces)
+  const [properSourcePaths, interfacePaths] = partition(
     Object.keys(sources),
-    sourcePath => sourcePath.endsWith(".json")
+    targets.length > 0
+      ? sourcePath => !sourcePath.endsWith(".json") &&
+        targets.includes(sourcePath)
+      : sourcePath => !sourcePath.endsWith(".json")
   );
 
   const properSources = Object.assign(
@@ -136,7 +142,11 @@ function prepareSources({ sources }) {
 
 function prepareInterfaces({ interfaces }) {
   return Object.entries(interfaces)
-    .map(([sourcePath, abi]) => ({ [sourcePath]: { abi: JSON.parse(abi) } })) //note the parse!
+    .map(([sourcePath, content]) =>
+      sourcePath.endsWith(".json") //for JSON we need the ABI *object*, not JSON!
+        ? { [sourcePath]: { abi: JSON.parse(content) } }
+        : { [sourcePath]: { content } }
+     )
     .reduce((a, b) => Object.assign({}, a, b), {});
 }
 
