@@ -47,7 +47,6 @@ function compileJson({ sources: rawSources, options, version }) {
   const compilerInput = prepareCompilerInput({
     sources: properSources,
     interfaces,
-    targets,
     settings: options.compilers.vyper.settings || {},
     version
   });
@@ -114,12 +113,11 @@ function execVyperJson(inputString) {
 
 function prepareCompilerInput({
   sources,
-  targets,
   settings,
   interfaces,
   version
 }) {
-  const outputSelection = prepareOutputSelection({ targets, version });
+  const outputSelection = prepareOutputSelection({ version });
   return {
     language: "Vyper",
     sources: prepareSources({ sources }),
@@ -150,7 +148,7 @@ function prepareInterfaces({ interfaces }) {
     .reduce((a, b) => Object.assign({}, a, b), {});
 }
 
-function prepareOutputSelection({ targets = [], version }) {
+function prepareOutputSelection({ version }) {
   //Vyper uses a simpler output selection format
   //than solc does; it also supports solc's format,
   //but I've gone with the simpler version here
@@ -176,15 +174,11 @@ function prepareOutputSelection({ targets = [], version }) {
     defaultSelectors = defaultSelectors.concat(additionalSelectors);
   }
 
-  if (!targets.length) {
-    return {
-      "*": defaultSelectors
-    };
-  }
-
-  return targets
-    .map(target => ({ [target]: defaultSelectors }))
-    .reduce((a, b) => Object.assign({}, a, b), {});
+  //because we've already filtered down the sources to match the targets,
+  //we can just say that the targets are everything
+  return {
+    "*": defaultSelectors
+  };
 }
 
 //this also is copy-pasted, but minus some complications
