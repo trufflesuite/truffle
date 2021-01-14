@@ -16,8 +16,12 @@ export { GraphQl };
 import * as Pouch from "./pouch";
 export { Pouch };
 import * as Interface from "./interface";
+
 import * as Process from "./process";
 export { Process };
+
+import * as Batch from "./batch";
+export { Batch };
 
 export const forDefinitions = <C extends Collections>(
   definitions: Definitions<C>

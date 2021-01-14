@@ -5,26 +5,26 @@ import { Collections } from "@truffle/db/resources";
 export { DataModel, Db, Run, NamedCollectionName, resources } from "@truffle/db/resources";
 export { IdObject, toIdObject } from "@truffle/db/meta";
 
-import { Process as Base } from "@truffle/db/meta";
+import * as Meta from "@truffle/db/meta";
 
-export type _ = Base._;
+export type _ = Meta.Batch._;
 
 export type Process<
   T = any,
-  R extends Base.RequestType<Collections> | undefined = undefined
-> = Base.Process<Collections, T, R>;
+  R extends Meta.Process.RequestType<Collections> | undefined = undefined
+> = Meta.Process.Process<Collections, T, R>;
 
 export type Processor<
   A extends unknown[],
   T = any,
-  R extends Base.RequestType<Collections> | undefined = undefined
-> = Base.Processor<Collections, A, T, R>;
+  R extends Meta.Process.RequestType<Collections> | undefined = undefined
+> = Meta.Process.Processor<Collections, A, T, R>;
 
-export type RequestType = Base.RequestType<Collections>;
+export type RequestType = Meta.Process.RequestType<Collections>;
 
 export type ProcessRequest<
-  R extends Base.RequestType<Collections> | undefined
-> = Base.ProcessRequest<Collections, R>;
+  R extends Meta.Process.RequestType<Collections> | undefined
+> = Meta.Process.ProcessRequest<Collections, R>;
 
-export type ProcessorRunner = Base.ProcessorRunner<Collections>;
+export type ProcessorRunner = Meta.Process.ProcessorRunner<Collections>;
 

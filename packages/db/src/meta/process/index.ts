@@ -9,10 +9,6 @@ export {
   ProcessRequest,
   RequestType,
 } from "./types";
-import { _ } from "./batch";
-export { _ };
-import * as Batch from "./batch";
-export { Batch };
 export {
   ResourceProcessors,
   ResourceProcessorsOptions

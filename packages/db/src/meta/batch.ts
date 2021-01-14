@@ -2,7 +2,7 @@ import { $, _ } from "hkts/src";
 export { _ };
 
 import { Collections } from "@truffle/db/meta/collections";
-import { Process } from "./types";
+import { Process } from "@truffle/db/meta/process";
 
 /**
  * Configure a batch process to query and/or mutate resources.

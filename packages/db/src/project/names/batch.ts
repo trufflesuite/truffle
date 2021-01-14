@@ -41,7 +41,7 @@ type Batch<C extends Config> = {
 };
 
 type Options<C extends Config> = Omit<
-  Meta.Process.Batch.Options<Batch<C>>,
+  Meta.Batch.Options<Batch<C>>,
   "iterate" | "find" | "initialize" | "merge"
 >;
 
@@ -85,7 +85,7 @@ export const generate = <C extends Config>(options: Options<C>) => {
 };
 
 const generateForCollection = <C extends Config>(options: Options<C>) =>
-  Meta.Process.Batch.configure<Batch<C>>({
+  Meta.Batch.configure<Batch<C>>({
     *iterate<_I, _O>({ inputs }) {
       for (const [
         assignmentIndex,
