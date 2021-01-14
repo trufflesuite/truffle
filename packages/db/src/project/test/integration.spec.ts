@@ -277,6 +277,9 @@ const GetWorkspaceBytecode = gql`
         name
         length
       }
+      immutableReferences {
+        ASTId
+      }
     }
   }
 `;
@@ -714,7 +717,7 @@ describe("Compilation", () => {
     for (let index in bytecodeIds) {
       let {
         data: {
-          bytecode: { bytes }
+          bytecode: { bytes, immutableReferences }
         }
       } = await db.execute(GetWorkspaceBytecode, bytecodeIds[index]);
 
@@ -722,6 +725,7 @@ describe("Compilation", () => {
         artifacts[index].bytecode
       );
       expect(bytes).toEqual(shimmedBytecode.bytes);
+      expect(immutableReferences).toEqual([]);
     }
   });
 
