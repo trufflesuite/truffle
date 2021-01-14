@@ -11,8 +11,14 @@ import { EthPMv1, NPM, GlobalNPM, FS, Truffle, ABI, Vyper } from "./sources";
 export interface ResolverOptions {
   includeTruffleSources?: boolean;
   translateJsonToSolidity?: boolean;
-  resolveVyperMoudles?: boolean;
+  resolveVyperModules?: boolean;
 }
+
+export interface ResolvedSource {
+  body: string;
+  filePath: string;
+  source: ResolverSource;
+};
 
 const defaultResolverOptions = {
   includeTruffleSources: false,
@@ -58,8 +64,8 @@ export class Resolver {
     ];
 
     if (resolveVyperModules) {
-      this.sources = this.sources.concat(
-        this.sources.map(source => new Vyper(source, options.contracts_directory))
+      this.sources = this.sources.map(
+        source => new Vyper(source, options.contracts_directory)
       );
     }
   }
@@ -83,7 +89,7 @@ export class Resolver {
   async resolve(
     importPath: string,
     importedFrom: string
-  ): Promise<{ body: string; filePath: string; source: ResolverSource }> {
+  ): Promise<ResolvedSource> {
     let body: string | null = null;
     let filePath: string | null = null;
     let source: ResolverSource | null = null;

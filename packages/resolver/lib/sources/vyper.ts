@@ -1,3 +1,5 @@
+import debugModule from "debug";
+const debug = debugModule("resolver:sources:vyper");
 import path from "path";
 import { ContractObject } from "@truffle/contract-schema/spec";
 import { ResolverSource } from "../source";
@@ -18,6 +20,14 @@ export class Vyper implements ResolverSource {
 
   async resolve(importModule: string, importedFrom: string) {
     importedFrom = importedFrom || "";
+
+    //attempt to just resolve as if it's a file path rather than Vyper module
+    const directlyResolvedSource =
+        await this.wrappedSource.resolve(importModule, importedFrom);
+    if (directlyResolvedSource.body) {
+      return directlyResolvedSource;
+    }
+    //otherwise, it's time for some Vyper module processing...
 
     const importPath = moduleToPath(importModule); //note: no file extension yet
     const explicitlyRelative = importPath.startsWith("./") ||
@@ -57,14 +67,25 @@ export class Vyper implements ResolverSource {
     //if not found, return nothing
     return { body: undefined, filePath: undefined };
   }
+
+  async resolveDependencyPath(importPath: string, dependencyPath: string) {
+    //unfortunately, for this sort of source to resolve a dependency path,
+    //it's going to need to do a resolve :-/
+    const resolved = await this.resolve(dependencyPath, importPath);
+    if (resolved) {
+      return resolved.filePath;
+    } else {
+      return null;
+    }
+  }
 }
 
 function moduleToPath(moduleName: string): string {
   const initialDotCount = (moduleName.match(/^\.*/) || []).length;
   const withoutInitialDots = moduleName.replace(/^\.*/, "");
   const pathWithoutDots = withoutInitialDots.replace(/\./g, path.sep);
-  let initialDothPath;
-  switch (initialDots) {
+  let initialDotPath;
+  switch (initialDotCount) {
     case 0:
       initialDotPath = "";
       break;

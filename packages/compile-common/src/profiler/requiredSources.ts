@@ -112,9 +112,12 @@ export async function requiredSources({
   const filesToProcess = compilationTargets.slice(); //clone
   const required = [];
   while (filesToProcess.length > 0) {
+    debug("filesToProcess: %O", filesToProcess);
     const file = filesToProcess.shift();
+    debug("file: %s", file);
     required.push(file);
     for (const importPath of resolved[file].imports) {
+      debug("importPath: %s", importPath);
       filesToProcess.push(importPath);
     }
   }

@@ -1,12 +1,6 @@
-import { isExplicitlyRelative } from "./isExplicitlyRelative";
-
-export interface ResolvedSource {
-  filePath: string;
-  body: string;
-  source: {
-    resolveDependencyPath(importPath: string, dependencyPath: string): string;
-  };
-}
+import debugModule from "debug";
+const debug = debugModule("compile-common:profiler:getImports");
+import { ResolvedSource } from "@truffle/resolver";
 
 export interface GetImportsOptions {
   source: ResolvedSource;
@@ -21,12 +15,16 @@ export async function getImports({
 }: GetImportsOptions): Promise<string[]> {
   if (!shouldIncludePath(filePath)) return [];
 
+  debug("filePath: %s", filePath);
+
   const imports = await parseImports(body);
 
-  // Convert explicitly relative dependencies of modules back into module paths.
-  return imports.map(dependencyPath =>
-    isExplicitlyRelative(dependencyPath)
-      ? source.resolveDependencyPath(filePath, dependencyPath)
-      : dependencyPath
-  );
+  debug("imports: %O", imports);
+
+  // Convert relative dependencies of modules back into module paths.
+  // note: the check for what's a relative dependency has been removed from
+  // here, that's now the responsibility of the individual resolverSource to check
+  return (await Promise.all(imports.map(
+    dependencyPath => source.resolveDependencyPath(filePath, dependencyPath)
+  ))).filter(path => path); //filter out Vyper failures
 }
