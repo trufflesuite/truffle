@@ -5,12 +5,10 @@ import { ContractObject } from "@truffle/contract-schema/spec";
 import { ResolverSource } from "../source";
 
 export class Vyper implements ResolverSource {
-  contractsDirectory: string;
   wrappedSource: ResolverSource;
 
-  constructor(wrappedSource: ResolverSource, contractsDirectory: string) {
+  constructor(wrappedSource: ResolverSource) {
     this.wrappedSource = wrappedSource;
-    this.contractsDirectory = contractsDirectory;
   }
 
   require(): ContractObject | null {
@@ -30,30 +28,16 @@ export class Vyper implements ResolverSource {
     //otherwise, it's time for some Vyper module processing...
 
     const importPath = moduleToPath(importModule); //note: no file extension yet
-    const explicitlyRelative = importPath.startsWith("./") ||
-      importPath.startsWith("../");
 
     const possiblePaths = [];
     //first: check for JSON in local directory
     possiblePaths.push(
       path.join(path.dirname(importedFrom), importPath + ".json")
     );
-    if(!explicitlyRelative) {
-      //next: check for JSON in contracts dir, if not explicitly relative
-      possiblePaths.push(
-        path.join(this.contractsDirectory, importPath + ".json")
-      );
-    }
     //next: check for Vyper in local directory
     possiblePaths.push(
       path.join(path.dirname(importedFrom), importPath + ".vy")
     );
-    if(!explicitlyRelative) {
-      //finally: check for Vyper in contracts dir, if not explicitly relative
-      possiblePaths.push(
-        path.join(this.contractsDirectory, importPath + ".vy")
-      );
-    }
 
     for (const possiblePath of possiblePaths) {
       const resolvedSource =
