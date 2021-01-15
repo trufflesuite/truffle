@@ -16,7 +16,11 @@ function compileJson({ sources: rawSources, options, version }) {
     sources,
     targets,
     originalSourcePaths
-  } = Common.Sources.collectSources(rawSources, options.compilationTargets);
+  } = Common.Sources.collectSources(
+    rawSources,
+    options.compilationTargets,
+    options.contracts_directory
+  );
 
   //Vyper complains if we give it a source that is not also a target,
   //*unless* we give it as an interface.  So we have to split that out.
@@ -28,6 +32,11 @@ function compileJson({ sources: rawSources, options, version }) {
         targets.includes(sourcePath)
       : sourcePath => !sourcePath.endsWith(".json")
   );
+
+  //in order to better support absolute Vyper imports, we pretend that
+  //the contracts directory is the root directory.  note this means that
+  //if an imported source from somewhere other than FS uses an absolute
+  //import to refer to its own project root, it won't work.  But, oh well.
 
   const properSources = Object.assign(
     {},
