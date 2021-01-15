@@ -2,13 +2,20 @@ import debugModule from "debug";
 const debug = debugModule("resolver:sources:vyper");
 import path from "path";
 import { ContractObject } from "@truffle/contract-schema/spec";
-import { ResolverSource } from "../source";
+import { ResolverSource, SourceResolution } from "../source";
 
 export class Vyper implements ResolverSource {
   wrappedSource: ResolverSource;
+  //because this ResolverSource has to do an actual resolution just to
+  //do a resolveDependencyPath, I'm giving it a cache to prevent redoing
+  //the work of resolution later
+  cache: {
+    [filePath: string]: SourceResolution
+  };
 
   constructor(wrappedSource: ResolverSource) {
     this.wrappedSource = wrappedSource;
+    this.cache = {};
   }
 
   require(): ContractObject | null {
@@ -40,8 +47,11 @@ export class Vyper implements ResolverSource {
     );
 
     for (const possiblePath of possiblePaths) {
-      const resolvedSource =
-        await this.wrappedSource.resolve(possiblePath, importedFrom);
+      const resolvedSource = possiblePath in this.cache
+        ? this.cache[possiblePath]
+        : await this.wrappedSource.resolve(possiblePath, importedFrom);
+
+      this.cache[possiblePath] = resolvedSource; //yes, even failures are cached!
 
       if (resolvedSource.body) {
         return resolvedSource;
