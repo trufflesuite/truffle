@@ -1,0 +1,47 @@
+{
+  "name": "@truffle/preserve-to-filecoin",
+  "version": "0.1.0-preserves.8",
+  "description": "Truffle `preserve` command support for Filecoin",
+  "main": "dist/lib/index.js",
+  "types": "dist/lib/index.d.ts",
+  "files": [
+    "dist",
+    "truffle-plugin.json"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepare": "yarn build",
+    "test": "jest --verbose --detectOpenHandles"
+  },
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/preserve-to-filecoin",
+  "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/bl": "^2.1.0",
+    "@types/jest": "^26.0.0",
+    "@types/node": "^14.0.13",
+    "@types/ws": "^7.2.6",
+    "ipfs": "^0.43",
+    "ipfsd-ctl": "^4.1.1",
+    "it-concat": "^1.0.0",
+    "jest": "^26.0.1",
+    "ts-jest": "^26.1.0",
+    "typescript": "^3.8.3"
+  },
+  "dependencies": {
+    "@filecoin-shipyard/lotus-client-provider-browser": "^0.0.14",
+    "@filecoin-shipyard/lotus-client-rpc": "^0.0.11",
+    "@filecoin-shipyard/lotus-client-schema": "0.0.9",
+    "@truffle/preserve": "^0.1.0-preserves.8",
+    "@truffle/preserve-to-ipfs": "^0.1.0-preserves.8",
+    "cids": "^0.8.3",
+    "ipfs-http-client": "^44.3.0",
+    "isomorphic-ws": "^4.0.1",
+    "iter-tools": "^7.0.0-rc.0",
+    "node-fetch": "^2.6.0",
+    "ws": "^7.3.1"
+  }
+}

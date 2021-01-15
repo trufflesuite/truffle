@@ -1,3 +1,5 @@
+const { callbackify } = require("util");
+
 var command = {
   command: "help",
   description:
@@ -12,17 +14,17 @@ var command = {
     ]
   },
   builder: {},
-  run: function (options, callback) {
+  run: callbackify(async function(options) {
     var commands = require("./index");
     if (options._.length === 0) {
-      this.displayCommandHelp("help");
-      return callback();
+      await this.displayCommandHelp("help", options);
+      return;
     }
     var selectedCommand = options._[0];
 
     if (commands[selectedCommand]) {
-      this.displayCommandHelp(selectedCommand);
-      return callback();
+      await this.displayCommandHelp(selectedCommand, options);
+      return;
     } else {
       console.log(`\n  Cannot find the given command '${selectedCommand}'`);
       console.log("  Please ensure your command is one of the following: ");
@@ -30,12 +32,16 @@ var command = {
         .sort()
         .forEach(command => console.log(`      ${command}`));
       console.log("");
-      return callback();
+      return;
     }
-  },
-  displayCommandHelp: function (selectedCommand) {
-    let commands = require("./index");
+  }),
+  displayCommandHelp: async (selectedCommand, options) => {
+    var commands = require("./index");
     var commandHelp = commands[selectedCommand].help;
+
+    if (typeof commandHelp === "function") {
+      commandHelp = await commandHelp(options);
+    }
 
     console.log(`\n  Usage:        ${commandHelp.usage}`);
     console.log(`  Description:  ${commands[selectedCommand].description}`);

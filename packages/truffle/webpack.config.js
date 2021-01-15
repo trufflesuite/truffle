@@ -104,6 +104,9 @@ module.exports = {
     // Here, we leave it as an external, and use the original-require
     // module that's a dependency of Truffle instead.
     /^original-require$/,
+    /^@truffle\/preserve-fs/,
+    /^@truffle\/preserve-to-ipfs/,
+    /^@truffle\/preserve-to-filecoin/,
     /^mocha$/,
     // this is the commands portion shared by cli.js and console-child.js
     /^\.\/commands.bundled.js$/

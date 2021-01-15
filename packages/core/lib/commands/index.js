@@ -15,6 +15,7 @@ module.exports = {
   networks: require("./networks"),
   obtain: require("./obtain"),
   opcode: require("./opcode"),
+  preserve: require("./preserve"),
   publish: require("./publish"),
   run: require("./run"),
   test: require("./test"),

@@ -1,0 +1,33 @@
+{
+  "name": "@truffle/plugins",
+  "version": "0.1.0-preserves.8",
+  "description": "Truffle plugin support",
+  "main": "dist/lib/index.js",
+  "types": "dist/lib/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepare": "yarn build",
+    "test": "jest --verbose --detectOpenHandles --passWithNoTests"
+  },
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/preserve-to-ipfs",
+  "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.0",
+    "@types/node": "^14.0.13",
+    "jest": "^26.0.1",
+    "ts-jest": "^26.1.0",
+    "typescript": "^3.8.3"
+  },
+  "dependencies": {
+    "@truffle/error": "^0.0.8",
+    "app-module-path": "^2.2.0",
+    "original-require": "^1.0.1"
+  }
+}
