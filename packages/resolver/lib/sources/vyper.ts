@@ -5,6 +5,7 @@ import { ContractObject } from "@truffle/contract-schema/spec";
 import { ResolverSource, SourceResolution } from "../source";
 
 export class Vyper implements ResolverSource {
+  contractsDirectory: string;
   wrappedSource: ResolverSource;
   //because this ResolverSource has to do an actual resolution just to
   //do a resolveDependencyPath, I'm giving it a cache to prevent redoing
@@ -13,9 +14,10 @@ export class Vyper implements ResolverSource {
     [filePath: string]: SourceResolution
   };
 
-  constructor(wrappedSource: ResolverSource) {
+  constructor(wrappedSource: ResolverSource, contractsDirectory: string) {
     this.wrappedSource = wrappedSource;
     this.cache = {};
+    this.contractsDirectory = contractsDirectory;
   }
 
   require(): ContractObject | null {
@@ -35,16 +37,30 @@ export class Vyper implements ResolverSource {
     //otherwise, it's time for some Vyper module processing...
 
     const importPath = moduleToPath(importModule); //note: no file extension yet
+    const explicitlyRelative = importPath.startsWith("./") ||
+      importPath.startsWith("../");
 
     const possiblePaths = [];
     //first: check for JSON in local directory
     possiblePaths.push(
       path.join(path.dirname(importedFrom), importPath + ".json")
     );
+    if(!explicitlyRelative) {
+      //next: check for JSON in contracts dir, if not explicitly relative
+      possiblePaths.push(
+        path.join(this.contractsDirectory, importPath + ".json")
+      );
+    }
     //next: check for Vyper in local directory
     possiblePaths.push(
       path.join(path.dirname(importedFrom), importPath + ".vy")
     );
+    if(!explicitlyRelative) {
+      //finally: check for Vyper in contracts dir, if not explicitly relative
+      possiblePaths.push(
+        path.join(this.contractsDirectory, importPath + ".vy")
+      );
+    }
 
     for (const possiblePath of possiblePaths) {
       const resolvedSource = possiblePath in this.cache

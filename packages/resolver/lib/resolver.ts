@@ -31,7 +31,10 @@ export class Resolver {
   sources: ResolverSource[];
 
   constructor(options: any, resolverOptions: ResolverOptions = {}) {
-    expect.options(options, ["working_directory", "contracts_build_directory"]);
+    expect.options(
+      options,
+      ["working_directory", "contracts_build_directory", "contracts_directory"]
+    );
 
     resolverOptions = {
       ...defaultResolverOptions,
@@ -61,7 +64,9 @@ export class Resolver {
     ];
 
     if (resolveVyperModules) {
-      this.sources = this.sources.map(source => new Vyper(source));
+      this.sources = this.sources.map(
+        source => new Vyper(source, options.contracts_directory)
+      );
     }
   }
 
