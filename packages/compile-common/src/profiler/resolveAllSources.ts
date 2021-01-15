@@ -67,6 +67,11 @@ export async function resolveAllSources({
       const source = results.shift();
       debug("source.filePath: %s", source.filePath);
 
+      if (mapping[source.filePath]) {
+        //skip ones that are already recorded
+        continue;
+      }
+
       const imports = shouldIncludePath(source.filePath)
         ? await getImports({ source, parseImports, shouldIncludePath })
         : [];
