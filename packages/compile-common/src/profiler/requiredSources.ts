@@ -118,7 +118,9 @@ export async function requiredSources({
     required.push(file);
     for (const importPath of resolved[file].imports) {
       debug("importPath: %s", importPath);
-      filesToProcess.push(importPath);
+      if (!required.includes(importPath)) { //don't go into a loop!
+        filesToProcess.push(importPath);
+      }
     }
   }
 
