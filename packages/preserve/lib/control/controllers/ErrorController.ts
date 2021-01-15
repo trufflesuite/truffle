@@ -1,43 +1,10 @@
-import { Task } from "./tasks";
-import * as Tasks from "./tasks";
-import { Scope } from "./scopes";
-
-export type Config = {
-  methods: {
-    fail: {
-      options: Options.Fail;
-      event: Events.Fail | Events.Abort | Events.Stop;
-    };
-
-    abort: {
-      options: Options.Abort;
-      event: Events.Abort | Events.Stop;
-    };
-
-    stop: {
-      options: Options.Stop;
-      event: Events.Stop;
-    };
-  };
-};
-
-export namespace Events {
-  export interface Fail {
-    type: "fail";
-    scope: Scope;
-    error: Error;
-  }
-
-  export interface Abort {
-    type: "abort";
-    scope: Scope;
-  }
-
-  export interface Stop {
-    type: "stop";
-    scope: Scope;
-  }
-}
+import { Events } from "../events";
+import { Process, State } from "../types";
+import {
+  BaseController,
+  ConstructorOptions as BaseConstructorOptions,
+  IBaseController
+} from "./BaseController";
 
 export namespace Options {
   export interface Fail {
@@ -52,16 +19,25 @@ export namespace Options {
   export interface Stop {}
 }
 
-export interface ControllerConstructorOptions
-  extends Tasks.ControllerConstructorOptions {
-  parent?: Task<Config>;
+export interface ConstructorOptions extends BaseConstructorOptions {
+  parent?: IErrorController;
 }
 
-export class Controller extends Tasks.Controller implements Task<Config> {
-  protected parent?: Task<Config>;
-  protected children: Task<Config>[];
+export interface IErrorController extends IBaseController {
+  fail(
+    options: Options.Fail
+  ): Process<void, Events.Fail | Events.Abort | Events.Stop>;
+  abort(options: Options.Abort): Process<void, Events.Abort | Events.Stop>;
+  stop(options?: Options.Stop): Process<void, Events.Stop>;
+}
 
-  constructor(options: ControllerConstructorOptions) {
+export abstract class ErrorController
+  extends BaseController
+  implements IErrorController {
+  protected parent?: IErrorController;
+  protected children: IErrorController[];
+
+  constructor(options: ConstructorOptions) {
     const { parent, ...superOptions } = options;
 
     super(superOptions);
@@ -79,7 +55,7 @@ export class Controller extends Tasks.Controller implements Task<Config> {
 
   async *fail({ error, cascade = true }: Options.Fail = {}) {
     // only meaningful to fail if we're currently active
-    if (this.state !== Tasks.State.Active) {
+    if (this._state !== State.Active) {
       return;
     }
 
@@ -93,7 +69,7 @@ export class Controller extends Tasks.Controller implements Task<Config> {
       error
     });
 
-    this.state = Tasks.State.Error;
+    this._state = State.Error;
 
     // propagate to parent
     if (this.parent && cascade) {
@@ -103,7 +79,7 @@ export class Controller extends Tasks.Controller implements Task<Config> {
 
   async *abort({ cascade = true }: Options.Abort = {}) {
     // only meaningful to stop if we're currently active
-    if (this.state !== Tasks.State.Active) {
+    if (this._state !== State.Active) {
       return;
     }
 
@@ -116,7 +92,7 @@ export class Controller extends Tasks.Controller implements Task<Config> {
       type: "abort"
     });
 
-    this.state = Tasks.State.Error;
+    this._state = State.Error;
 
     // propagate to parent
     if (this.parent && cascade) {
@@ -126,7 +102,7 @@ export class Controller extends Tasks.Controller implements Task<Config> {
 
   async *stop({}: Options.Stop = {}) {
     // only meaningful to stop if we're currently active
-    if (this.state !== Tasks.State.Active) {
+    if (this._state !== State.Active) {
       return;
     }
 

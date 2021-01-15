@@ -1,7 +1,6 @@
-import { Target } from "../targets";
+import { Target } from "./targets";
 
-import { Process } from "../processes";
-import { Controls } from "../controllers";
+import { Process, Controls } from "./control";
 
 export interface ConstructorOptions {}
 
@@ -12,12 +11,10 @@ export interface Constructor {
 
 export interface PreserveOptions {
   target: Target;
-  labels?: Map<string, any>;
+  results?: Map<string, any>;
   settings?: any;
   controls: Controls;
 }
-
-export type Label = any;
 
 export interface Recipe {
   name: string;

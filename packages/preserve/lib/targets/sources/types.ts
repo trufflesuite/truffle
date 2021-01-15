@@ -1,6 +1,4 @@
-import { Content } from "./contents/types";
-import * as Contents from "./contents/types";
-export { Content, Contents };
+import { Content } from "./contents";
 
 export interface Entry {
   path: string;

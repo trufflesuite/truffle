@@ -1,7 +1,6 @@
-import { Loader } from "./targets";
+import { Loader } from "./loaders";
 import { Recipe } from "./recipes";
-import { Event } from "./processes";
-import { control } from "./controllers";
+import { control, Event } from "./control";
 
 export interface Request {
   loader: string; // package name
@@ -32,8 +31,8 @@ export async function* preserve(
   /*
    * setup
    */
-  const loader: Loader = loaders.get(request.loader);
-  const recipe: Recipe = recipes.get(request.recipe);
+  const loader = loaders.get(request.loader);
+  const recipe = recipes.get(request.recipe);
 
   /*
    * loading
@@ -57,7 +56,7 @@ export async function* preserve(
 
   const plan: Recipe[] = [];
   while (queue.length > 0) {
-    const current: Recipe = recipes.get(queue.shift());
+    const current = recipes.get(queue.shift());
 
     assertRecipeExists({
       name: current.name,
@@ -79,29 +78,29 @@ export async function* preserve(
   /*
    * execution
    */
-  let labels: Map<string, any> = new Map([]);
+  let results: Map<string, any> = new Map([]);
 
   for (const recipe of plan) {
     const settings = request.settings.get(recipe.name);
 
     // for the result
-    const label = yield* control(
+    const result = yield* control(
       {
         name: recipe.name,
         method: recipe.preserve.bind(recipe)
       },
       {
         target,
-        labels,
+        results,
         settings
       }
     );
 
-    if (!label) {
+    if (!result) {
       return;
     }
 
-    labels.set(recipe.name, label);
+    results.set(recipe.name, result);
   }
 }
 

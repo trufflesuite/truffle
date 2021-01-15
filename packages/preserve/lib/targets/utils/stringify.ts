@@ -1,7 +1,7 @@
 import { Normalized, normalize } from "./normalize";
-import * as Common from "../types";
+import * as Common from "..";
 
-export namespace Thunked {
+export namespace Stringified {
   export namespace Sources {
     export type Content = string;
 
@@ -24,48 +24,47 @@ export namespace Thunked {
   }
 }
 
-export const thunk = async (target: Common.Target): Promise<Thunked.Target> => {
-  const { source } = normalize(target);
-
-  return {
-    source: await thunkSource(source)
-  };
+export const stringify = async (
+  target: Common.Target
+): Promise<Stringified.Target> => {
+  const normalizedTarget = normalize(target);
+  const source = await stringifySource(normalizedTarget.source);
+  return { source };
 };
 
-const thunkSource = async (
+const stringifySource = async (
   source: Normalized.Source
-): Promise<Thunked.Source> => {
-  if (Common.Sources.isContent(source)) {
-    return await thunkContent(source);
+): Promise<Stringified.Source> => {
+  if (Common.Sources.isContainer(source)) {
+    return await stringifyContainer(source);
   }
 
-  return await thunkContainer(source);
+  return await stringifyContent(source);
 };
 
-const thunkContainer = async (
+const stringifyContainer = async (
   container: Normalized.Sources.Container
-): Promise<Thunked.Sources.Container> => {
+): Promise<Stringified.Sources.Container> => {
   const entries = [];
 
   for await (const entry of container.entries) {
-    entries.push(await thunkEntry(entry));
+    entries.push(await stringifyEntry(entry));
   }
 
   return { entries };
 };
 
-const thunkEntry = async (
+const stringifyEntry = async (
   entry: Normalized.Sources.Entry
-): Promise<Thunked.Sources.Entry> => {
-  return {
-    path: entry.path,
-    source: await thunkSource(entry.source)
-  };
+): Promise<Stringified.Sources.Entry> => {
+  const { path } = entry;
+  const source = await stringifySource(entry.source);
+  return { path, source };
 };
 
-const thunkContent = async (
+const stringifyContent = async (
   content: Normalized.Sources.Content
-): Promise<Thunked.Sources.Content> => {
+): Promise<Stringified.Sources.Content> => {
   const buffers: Buffer[] = [];
 
   for await (const piece of content) {

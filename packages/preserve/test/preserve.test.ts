@@ -1,18 +1,10 @@
-import {
-  execPipe,
-  filter,
-  toArray,
-  pipe,
-  map,
-  reduce,
-  asyncToArray
-} from "iter-tools";
+import { asyncToArray } from "iter-tools";
 
-import { Target, Loader, thunk } from "../targets";
-import { Recipe } from "../recipes";
-import { Process } from "../processes";
-import * as Processes from "../processes";
-import { PreserveOptions, preserve } from "../preserve";
+import { Target, stringify } from "../lib/targets";
+import { Recipe } from "../lib/recipes";
+import { Loader } from "../lib/loaders";
+import { Process, ValueResolutionController } from "../lib/control";
+import { preserve } from "../lib/preserve";
 
 const simpleTarget: Target = {
   source: "hello, world!"
@@ -39,7 +31,7 @@ const vowelsRecipe: Recipe = {
 
     // for testing purposes, this only handles the case of a Content target
     // (no Containers)
-    const source = (await thunk(target)).source as string;
+    const source = (await stringify(target)).source as string;
 
     const finalize = yield* step({
       identifier: "finalize",
@@ -62,22 +54,22 @@ const vowelsCounterRecipe: Recipe = {
 
   dependencies: [vowelsRecipe.name],
 
-  async *preserve({ labels, controls }): Process<{ count: number }> {
+  async *preserve({ results, controls }): Process<{ count: number }> {
     const { log, declare } = controls;
 
     yield* log({ message: "Counting vowels..." });
 
     const allVowels = ["a", "e", "i", "o", "u"];
 
-    const unknowns: { [vowel: string]: Processes.Unknown } = {};
+    const valueResolutions: { [vowel: string]: ValueResolutionController } = {};
     for (const vowel of allVowels) {
-      unknowns[vowel] = yield* declare({
+      valueResolutions[vowel] = yield* declare({
         identifier: vowel,
         message: `# of ${vowel}'s`
       });
     }
 
-    const { vowels } = labels.get(vowelsRecipe.name) as { vowels: string };
+    const { vowels } = results.get(vowelsRecipe.name) as { vowels: string };
 
     const counts = allVowels
       .map(vowel => ({ [vowel]: { count: 0 } }))
@@ -87,9 +79,9 @@ const vowelsCounterRecipe: Recipe = {
       counts[vowel].count++;
     }
 
-    for (const [vowel, unknown] of Object.entries(unknowns)) {
-      yield* unknown.resolve({
-        label: counts[vowel]
+    for (const [vowel, valueResolution] of Object.entries(valueResolutions)) {
+      yield* valueResolution.resolve({
+        resolution: counts[vowel]
       });
     }
 
@@ -102,12 +94,8 @@ const vowelsCounterRecipe: Recipe = {
 const mapByName = <T extends { name: string }>(entities: T[]): Map<string, T> =>
   new Map(entities.map(entity => [entity.name, entity]));
 
-const loaders: PreserveOptions["loaders"] = mapByName([simpleLoader]);
-
-const recipes: PreserveOptions["recipes"] = mapByName([
-  vowelsRecipe,
-  vowelsCounterRecipe
-]);
+const loaders = mapByName([simpleLoader]);
+const recipes = mapByName([vowelsRecipe, vowelsCounterRecipe]);
 
 it("preserves via a single recipe", async () => {
   const preserves = await asyncToArray(
@@ -129,7 +117,7 @@ it("preserves via a single recipe", async () => {
     {
       type: "succeed",
       scope: ["simple-loader"],
-      label: { source: "hello, world!" }
+      result: { source: "hello, world!" }
     },
     {
       type: "begin",
@@ -152,15 +140,13 @@ it("preserves via a single recipe", async () => {
     {
       type: "succeed",
       scope: ["vowels-recipe"],
-      label: {
-        vowels: "eoo"
-      }
+      result: { vowels: "eoo" }
     }
   ]);
 });
 
 it("preserves via a recipe that depends on another recipe", async () => {
-  const preserves = await asyncToArray(
+  const allEvents = await asyncToArray(
     preserve({
       request: {
         loader: simpleLoader.name,
@@ -171,13 +157,10 @@ it("preserves via a recipe that depends on another recipe", async () => {
     })
   );
 
-  const events = execPipe(
-    preserves,
-    filter(({ scope }) => scope[0] === "vowels-counter-recipe"),
-    toArray
-  );
+  const relevantEvents = allEvents
+    .filter(({ scope }) => scope[0] === "vowels-counter-recipe");
 
-  expect(events).toEqual([
+  expect(relevantEvents).toEqual([
     {
       type: "begin",
       scope: ["vowels-counter-recipe"]
@@ -215,56 +198,32 @@ it("preserves via a recipe that depends on another recipe", async () => {
     {
       type: "resolve",
       scope: ["vowels-counter-recipe", "a"],
-      label: {
-        count: 0
-      }
+      resolution: { count: 0 }
     },
     {
       type: "resolve",
       scope: ["vowels-counter-recipe", "e"],
-      label: {
-        count: 1
-      }
+      resolution: { count: 1 }
     },
     {
       type: "resolve",
       scope: ["vowels-counter-recipe", "i"],
-      label: {
-        count: 0
-      }
+      resolution: { count: 0 }
     },
     {
       type: "resolve",
       scope: ["vowels-counter-recipe", "o"],
-      label: {
-        count: 2
-      }
+      resolution: { count: 2 }
     },
     {
       type: "resolve",
       scope: ["vowels-counter-recipe", "u"],
-      label: {
-        count: 0
-      }
+      resolution: { count: 0 }
     },
     {
       type: "succeed",
       scope: ["vowels-counter-recipe"],
-      label: {
-        count: 3
-      }
+      result: { count: 3 }
     }
   ]);
 });
-
-const collectScopes = pipe(
-  pipe(
-    map(({ scope }) => scope),
-    map(Processes.Scopes.toKey),
-    reduce(new Set([]), (keys, key) => keys.add(key))
-  ),
-
-  map(Processes.Scopes.fromKey),
-
-  toArray
-);

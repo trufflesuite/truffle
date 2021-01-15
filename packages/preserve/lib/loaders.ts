@@ -1,7 +1,6 @@
-import { Target } from "./types";
+import { Target } from "./targets";
 
-import { Process } from "../processes";
-import { Controls } from "../controllers";
+import { Process, Controls } from "./control";
 
 export interface ConstructorOptions {}
 

@@ -1,8 +1,7 @@
 import chalk from "chalk";
 import Spinnies from "spinnies";
 
-import * as Processes from "./processes";
-import { preserve } from "./preserve";
+import * as Control from "./control";
 
 export interface ConsoleReporterConstructorOptions {
   console: Console;
@@ -17,12 +16,9 @@ export class ConsoleReporter {
     this.console = options.console;
   }
 
-  async report(events: AsyncIterable<Processes.Event>) {
+  async report(events: AsyncIterable<Control.Event>) {
     for await (const event of events) {
-      const { type, scope } = event;
-      const key = Processes.Scopes.toKey(scope);
-
-      this[type].bind(this)(event);
+      this[event.type].bind(this)(event);
     }
   }
 
@@ -30,7 +26,7 @@ export class ConsoleReporter {
    * Error events
    */
 
-  private fail(event: Processes.Errors.Events.Fail) {
+  private fail(event: Control.Events.Fail) {
     const { error } = event;
 
     const { key } = eventProperties(event);
@@ -47,13 +43,13 @@ export class ConsoleReporter {
     this.spinners.fail(key, options);
   }
 
-  private abort(event: Processes.Errors.Events.Abort) {
+  private abort(event: Control.Events.Abort) {
     const { key } = eventProperties(event);
 
     this.spinners.fail(key);
   }
 
-  private stop(event: Processes.Errors.Events.Stop) {
+  private stop(event: Control.Events.Stop) {
     const { key } = eventProperties(event);
 
     this.spinners.remove(key);
@@ -63,7 +59,7 @@ export class ConsoleReporter {
    * Step events
    */
 
-  private begin(event: Processes.Steps.Events.Begin) {
+  private begin(event: Control.Events.Begin) {
     this.console.log();
 
     const { key, indent } = eventProperties(event);
@@ -75,7 +71,7 @@ export class ConsoleReporter {
     });
   }
 
-  private log(event: Processes.Steps.Events.Log) {
+  private log(event: Control.Events.Log) {
     const { message } = event;
 
     const { key } = eventProperties(event);
@@ -85,7 +81,7 @@ export class ConsoleReporter {
     });
   }
 
-  private succeed(event: Processes.Steps.Events.Succeed) {
+  private succeed(event: Control.Events.Succeed) {
     const { message } = event;
 
     const { key } = eventProperties(event);
@@ -95,7 +91,7 @@ export class ConsoleReporter {
     this.spinners.succeed(key, options);
   }
 
-  private step(event: Processes.Steps.Events.Step) {
+  private step(event: Control.Events.Step) {
     const { key, indent } = eventProperties(event);
 
     const { message } = event;
@@ -112,7 +108,7 @@ export class ConsoleReporter {
    * Unknown events
    */
 
-  private resolve(event: Processes.Unknowns.Events.Resolve) {
+  private resolve(event: Control.Events.Resolve) {
     const { payload } = event;
 
     const { key } = eventProperties(event);
@@ -127,7 +123,7 @@ export class ConsoleReporter {
     });
   }
 
-  private declare(event: Processes.Unknowns.Events.Declare) {
+  private declare(event: Control.Events.Declare) {
     const { key, indent } = eventProperties(event);
 
     const { message } = event;
@@ -141,7 +137,7 @@ export class ConsoleReporter {
   }
 }
 
-const eventProperties = (event: Processes.Event) => ({
-  key: Processes.Scopes.toKey(event.scope),
+const eventProperties = (event: Control.Event) => ({
+  key: Control.Scopes.toKey(event.scope),
   indent: event.scope.length * 2
 });
