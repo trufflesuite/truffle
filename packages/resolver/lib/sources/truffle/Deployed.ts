@@ -46,14 +46,6 @@ export class Deployed {
       //remove "payable"s in conversions if we're before 0.6.0
       source = source.replace(/payable\((.*)\)/g, "$1");
     }
-    //regardless of version, replace all pragmas with the new version
-    const coercedVersion = RangeUtils.coerce(version);
-
-    // we need to update the pragma expression differently depending on whether
-    // a single version or range is suppplied
-    source = semver.valid(coercedVersion) ?
-      source.replace(/0\.5\.0/g, coercedVersion) :
-      source.replace(/>= 0.5.0 < 0.9.0/g, coercedVersion);
 
     return source;
   }
