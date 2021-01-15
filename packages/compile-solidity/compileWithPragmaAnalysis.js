@@ -1,9 +1,11 @@
 const CompilerSupplier = require("./compilerSupplier");
+const Config = require("@truffle/config");
 const semver = require("semver");
 const Profiler = require("./profiler");
 const fse = require("fs-extra");
 const { run } = require("./run");
 const OS = require("os");
+const cloneDeep = require("lodash/clonedeep");
 
 const getSemverExpression = source => {
   return source.match(/pragma solidity(.*);/)[1].trim();
@@ -55,7 +57,7 @@ const compileWithPragmaAnalysis = async ({ paths, options }) => {
   // collect sources by the version of the Solidity compiler that they require
   const versionsAndSources = {};
   for (const path of paths) {
-    const source = await fse.readFile(path, "utf8");
+    const source = (await options.resolver.resolve(path)).body;
 
     const parserVersion = findNewestSatisfyingVersion({
       solcReleases: releases,
@@ -114,17 +116,16 @@ const compileWithPragmaAnalysis = async ({ paths, options }) => {
 
   const compilations = [];
   for (const compilerVersion of Object.keys(versionsAndSources)) {
-    const compilationOptions = options.merge({
-      compilers: {
-        solc: {
-          version: compilerVersion
-        }
-      }
-    });
+    const compilationOptions = Object.assign(
+      {},
+      { compilers: cloneDeep(options.compilers) }
+    );
+    compilationOptions.compilers.solc.version = compilerVersion;
 
+    const config = Config.default().with(compilationOptions);
     const compilation = await run(
       versionsAndSources[compilerVersion],
-      compilationOptions
+      config
     );
     if (compilation.contracts.length > 0) {
       compilations.push(compilation);
