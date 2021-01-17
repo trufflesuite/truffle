@@ -3,7 +3,7 @@ const debug = logger("db:meta:pouch");
 
 import path from "path";
 
-export * from "./types";
+export { Definition, Definitions } from "./types";
 
 import { DatabasesOptions } from "./databases";
 

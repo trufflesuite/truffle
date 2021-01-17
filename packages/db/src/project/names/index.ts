@@ -1,7 +1,8 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:names");
 
-import { DataModel, IdObject, Process } from "@truffle/db/project/process";
+import { Process } from "@truffle/db/process";
+import { IdObject, NamedCollectionName } from "@truffle/db/resources";
 
 import { generateResourceNames } from "./resources";
 import { generateCurrentNameRecords } from "./current";
@@ -12,19 +13,19 @@ import { generateProjectNamesLoad } from "./projectNames";
  * generator function to load nameRecords and project names into Truffle DB
  */
 export function* generateNamesLoad(options: {
-  project: IdObject<DataModel.Project>;
+  project: IdObject<"projects">;
   assignments: {
-    [collectionName: string]: IdObject[];
+    [N in NamedCollectionName]?: IdObject<N>[];
   };
 }): Process<{
-  project: IdObject<DataModel.Project>;
+  project: IdObject<"projects">;
   assignments: {
     [collectionName: string]: {
       resource: IdObject;
       name: string;
       type: string;
-      nameRecord: IdObject<DataModel.NameRecord>;
-      projectName: IdObject<DataModel.ProjectName>;
+      nameRecord: IdObject<"nameRecords">;
+      projectName: IdObject<"projectNames">;
     }[];
   };
 }> {

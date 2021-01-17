@@ -1,7 +1,8 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:compile:bytecodes");
 
-import { DataModel, IdObject, resources } from "@truffle/db/project/process";
+import { DataModel, IdObject } from "@truffle/db/resources";
+import { resources } from "@truffle/db/process";
 import * as Batch from "./batch";
 
 export const generateBytecodesLoad = Batch.Contracts.generate<{
@@ -12,16 +13,16 @@ export const generateBytecodesLoad = Batch.Contracts.generate<{
   };
   source: {};
   resources: {
-    callBytecode: IdObject<DataModel.Bytecode>;
-    createBytecode: IdObject<DataModel.Bytecode>;
+    callBytecode: IdObject<"bytecodes">;
+    createBytecode: IdObject<"bytecodes">;
   };
   entry: {
     callBytecode: DataModel.BytecodeInput;
     createBytecode: DataModel.BytecodeInput;
   };
   result: {
-    callBytecode: IdObject<DataModel.Bytecode>;
-    createBytecode: IdObject<DataModel.Bytecode>;
+    callBytecode: IdObject<"bytecodes">;
+    createBytecode: IdObject<"bytecodes">;
   };
 }>({
   extract({

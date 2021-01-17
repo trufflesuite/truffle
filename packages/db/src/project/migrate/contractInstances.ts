@@ -1,15 +1,16 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:migrate:contractInstances");
 
-import { DataModel, IdObject, resources } from "@truffle/db/project/process";
+import { DataModel, IdObject } from "@truffle/db/resources";
+import { resources } from "@truffle/db/process";
 import * as Batch from "./batch";
 
 export const generateContractInstancesLoad = Batch.generate<{
   artifact: {
     db: {
-      contract: IdObject<DataModel.Contract>;
-      callBytecode: IdObject<DataModel.Bytecode>;
-      createBytecode: IdObject<DataModel.Bytecode>;
+      contract: IdObject<"contracts">;
+      callBytecode: IdObject<"bytecodes">;
+      createBytecode: IdObject<"bytecodes">;
     };
   };
   requires: {
@@ -20,16 +21,16 @@ export const generateContractInstancesLoad = Batch.generate<{
       linkReferences: { name: string }[];
     };
     db?: {
-      network: IdObject<DataModel.Network>;
+      network: IdObject<"networks">;
     };
   };
   produces: {
     db?: {
-      contractInstance: IdObject<DataModel.ContractInstance>;
+      contractInstance: IdObject<"contractInstances">;
     };
   };
   entry: DataModel.ContractInstanceInput;
-  result: IdObject<DataModel.ContractInstance>;
+  result: IdObject<"contractInstances">;
 }>({
   extract({ input, inputs, breadcrumb }) {
     const { artifacts } = inputs;
@@ -80,7 +81,7 @@ export const generateContractInstancesLoad = Batch.generate<{
 });
 
 function link(
-  bytecode: IdObject<DataModel.Bytecode>,
+  bytecode: IdObject<"bytecodes">,
   linkReferences: { name: string }[],
   links?: { [name: string]: string }
 ): DataModel.LinkedBytecodeInput {

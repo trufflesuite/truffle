@@ -1,25 +1,24 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:migrate:networkGenealogies:test:plan");
 
-import { Project } from "@truffle/db";
-import { generateId, IdObject } from "@truffle/db/meta";
-import { DataModel } from "@truffle/db/resources";
+import { generateId } from "@truffle/db/meta";
+import { IdObject } from "@truffle/db/resources";
 import { Batch, Model } from "test/arbitraries/networks";
 
 export const plan = (options: {
-  model: Model,
-  batches: Batch[]
+  model: Model;
+  batches: Batch[];
 }): {
-  expectedLatestDescendants: IdObject<DataModel.Network>[]
+  expectedLatestDescendants: IdObject<"networks">[];
 } => {
   const { model, batches } = options;
 
   // track latest for each descendant in the model
   const latestByDescendantIndex: {
     [descendantIndex: number]: {
-      network: IdObject<DataModel.Network>;
-      height: number
-    }
+      network: IdObject<"networks">;
+      height: number;
+    };
   } = {};
 
   // track any networks that have been superseded by later descendants, since
@@ -31,34 +30,30 @@ export const plan = (options: {
   for (const batch of batches) {
     const { inputs } = batch;
 
-    const {
-      getBlockByNumber: getBatchBlockByNumber
-    } = model.networks[batch.descendantIndex];
+    const { getBlockByNumber: getBatchBlockByNumber } = model.networks[
+      batch.descendantIndex
+    ];
 
     // for each input in each batch
     for (const { networkId, historicBlock } of inputs) {
-      const { height, hash } = historicBlock;
+      const { height } = historicBlock;
 
       // for each descendant network in our model
       for (const [
         descendantIndex,
-        {
-          getBlockByNumber: getComparedBlockByNumber
-        }
+        { getBlockByNumber: getComparedBlockByNumber }
       ] of model.networks.entries()) {
-        const {
-          network: currentLatestNetwork,
-          height: latestHeight = -1
-        } = latestByDescendantIndex[descendantIndex] || {};
+        const { network: currentLatestNetwork, height: latestHeight = -1 } =
+          latestByDescendantIndex[descendantIndex] || {};
 
         const inputComparison =
           height === latestHeight
             ? "equal"
             : height < latestHeight
-              ? "earlier"
-              : "later";
+            ? "earlier"
+            : "later";
 
-        const id = generateId({ networkId, historicBlock })
+        const id = generateId({ networkId, historicBlock });
 
         switch (inputComparison) {
           case "equal": {
@@ -87,7 +82,7 @@ export const plan = (options: {
                 // @ts-ignore
                 network: { id },
                 height
-              }
+              };
             }
 
             break;
@@ -118,14 +113,13 @@ export const plan = (options: {
   }
 
   const ids = new Set(
-    Object.values(latestByDescendantIndex)
-      .map(({ network: { id } }) => id)
+    Object.values(latestByDescendantIndex).map(({ network: { id } }) => id)
   );
   debug("superseded %O", superseded);
 
   return {
     expectedLatestDescendants: [...ids]
       .filter(id => !superseded.has(id))
-      .map(id => ({ id } as IdObject<DataModel.Network>))
+      .map(id => ({ id } as IdObject<"networks">))
   };
-}
+};

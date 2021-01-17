@@ -2,7 +2,8 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:names:current");
 
 import gql from "graphql-tag";
-import { DataModel, resources } from "@truffle/db/project/process";
+import { resources } from "@truffle/db/process";
+import { DataModel } from "@truffle/db/resources";
 import * as Batch from "./batch";
 
 export const generateCurrentNameRecords = Batch.generate<{

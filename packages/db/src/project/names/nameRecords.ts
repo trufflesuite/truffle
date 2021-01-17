@@ -1,7 +1,8 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:names:nameRecords");
 
-import { DataModel, IdObject, resources } from "@truffle/db/project/process";
+import { resources } from "@truffle/db/process";
+import { DataModel, IdObject } from "@truffle/db/resources";
 import * as Batch from "./batch";
 
 export const generateNameRecordsLoad = Batch.generate<{
@@ -11,10 +12,10 @@ export const generateNameRecordsLoad = Batch.generate<{
     current: DataModel.NameRecord | undefined;
   };
   properties: {
-    nameRecord: IdObject<DataModel.NameRecord>;
+    nameRecord: IdObject<"nameRecords">;
   };
   entry: DataModel.NameRecordInput;
-  result: IdObject<DataModel.NameRecord>;
+  result: IdObject<"nameRecords">;
 }>({
   extract<_I>({
     input: {

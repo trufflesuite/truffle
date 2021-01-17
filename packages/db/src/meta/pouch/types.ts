@@ -5,14 +5,20 @@ import PouchDB from "pouchdb";
 
 import { Collections, CollectionName } from "@truffle/db/meta/collections";
 
+/**
+ * @category Definitions
+ */
 export type Definitions<C extends Collections> = {
-  [N in CollectionName<C>]: {
-    createIndexes: PouchDB.Find.CreateIndexOptions["index"][];
-    idFields: string[];
-  };
+  [N in CollectionName<C>]: Definition<C, N>;
 };
 
+/**
+ * @category Definitions
+ */
 export type Definition<
-  C extends Collections,
-  N extends CollectionName<C>
-> = Definitions<C>[N];
+  _C extends Collections,
+  _N extends CollectionName<_C>
+> = {
+  createIndexes: PouchDB.Find.CreateIndexOptions["index"][];
+  idFields: string[];
+};

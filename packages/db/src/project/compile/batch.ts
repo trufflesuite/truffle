@@ -1,10 +1,11 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:compile:batch");
 
+import { _ } from "hkts/src";
 import type * as Common from "@truffle/compile-common";
 
-import * as Meta from "@truffle/db/meta";
-import { Process, _ } from "@truffle/db/project/process";
+import { Process } from "@truffle/db/process";
+import * as Batch from "@truffle/db/batch";
 
 export type Config = {
   compilation: {};
@@ -47,19 +48,16 @@ export namespace Compilations {
   };
 
   type Options<C extends Config> = Omit<
-    Meta.Batch.Options<Batch<C>>,
+    Batch.Options<Batch<C>>,
     "iterate" | "find" | "initialize" | "merge"
   >;
 
   export const generate = <C extends Config>(
     options: Options<C>
-  ): (<
-    I extends Meta.Batch.Input<Batch<C>>,
-    O extends Meta.Batch.Output<Batch<C>>
-  >(
-    inputs: Meta.Batch.Inputs<Batch<C>, I>
-  ) => Process<Meta.Batch.Outputs<Batch<C>, I & O>>) =>
-    Meta.Batch.configure<Batch<C>>({
+  ): (<I extends Batch.Input<Batch<C>>, O extends Batch.Output<Batch<C>>>(
+    inputs: Batch.Inputs<Batch<C>, I>
+  ) => Process<Batch.Outputs<Batch<C>, I & O>>) =>
+    Batch.configure<Batch<C>>({
       *iterate<_I>({ inputs }) {
         for (const [compilationIndex, compilation] of inputs.entries()) {
           yield {
@@ -121,19 +119,16 @@ export namespace Contracts {
   };
 
   type Options<C extends Config> = Omit<
-    Meta.Batch.Options<Batch<C>>,
+    Batch.Options<Batch<C>>,
     "iterate" | "find" | "initialize" | "find" | "merge"
   >;
 
   export const generate = <C extends Config>(
     options: Options<C>
-  ): (<
-    I extends Meta.Batch.Input<Batch<C>>,
-    O extends Meta.Batch.Output<Batch<C>>
-  >(
-    inputs: Meta.Batch.Inputs<Batch<C>, I>
-  ) => Process<Meta.Batch.Outputs<Batch<C>, I & O>>) =>
-    Meta.Batch.configure<Batch<C>>({
+  ): (<I extends Batch.Input<Batch<C>>, O extends Batch.Output<Batch<C>>>(
+    inputs: Batch.Inputs<Batch<C>, I>
+  ) => Process<Batch.Outputs<Batch<C>, I & O>>) =>
+    Batch.configure<Batch<C>>({
       *iterate<_I>({ inputs }) {
         for (const [compilationIndex, { contracts }] of inputs.entries()) {
           for (const [contractIndex, contract] of contracts.entries()) {
@@ -204,19 +199,16 @@ export namespace Sources {
   };
 
   type Options<C extends Config> = Omit<
-    Meta.Batch.Options<Batch<C>>,
+    Batch.Options<Batch<C>>,
     "iterate" | "find" | "initialize" | "find" | "merge"
   >;
 
   export const generate = <C extends Config>(
     options: Options<C>
-  ): (<
-    I extends Meta.Batch.Input<Batch<C>>,
-    O extends Meta.Batch.Output<Batch<C>>
-  >(
-    inputs: Meta.Batch.Inputs<Batch<C>, I>
-  ) => Process<Meta.Batch.Outputs<Batch<C>, I & O>>) =>
-    Meta.Batch.configure<Batch<C>>({
+  ): (<I extends Batch.Input<Batch<C>>, O extends Batch.Output<Batch<C>>>(
+    inputs: Batch.Inputs<Batch<C>, I>
+  ) => Process<Batch.Outputs<Batch<C>, I & O>>) =>
+    Batch.configure<Batch<C>>({
       *iterate<_I>({ inputs }) {
         for (const [compilationIndex, { sources }] of inputs.entries()) {
           for (const [sourceIndex, source] of sources.entries()) {

@@ -3,8 +3,6 @@ const debug = logger("db:resources:types");
 
 import * as Meta from "@truffle/db/meta";
 
-export { Db, IdObject, toIdObject } from "@truffle/db/meta";
-
 import * as DataModel from "./data";
 export { DataModel };
 
@@ -134,16 +132,33 @@ export type Collections = {
   };
 };
 
-export type CollectionName = Meta.CollectionName<Collections>;
+/**
+ * @hidden
+ */
+export type Db = Meta.Db<Collections>;
 
 export type Definitions = Meta.Definitions<Collections>;
 
 export type Definition<N extends CollectionName> = Definitions[N];
 
+export type CollectionName = Meta.CollectionName<Collections>;
+
+export type Input<N extends CollectionName = CollectionName> = Meta.Input<
+  Collections,
+  N
+>;
+
 export type Resource<N extends CollectionName = CollectionName> = Meta.Resource<
   Collections,
   N
 >;
+
+export type IdObject<
+  N extends CollectionName | undefined = undefined
+> = Meta.IdObject<Collections, N>;
+
+export const toIdObject = <N extends CollectionName>(resource) =>
+  Meta.toIdObject<Collections, N>(resource);
 
 export type MutableResource<
   N extends CollectionName = CollectionName

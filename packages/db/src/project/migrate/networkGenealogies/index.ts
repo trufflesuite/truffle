@@ -3,13 +3,8 @@ const debug = logger("db:project:migrate:networkGenealogies");
 
 import gql from "graphql-tag";
 
-import {
-  DataModel,
-  IdObject,
-  toIdObject,
-  resources,
-  Process
-} from "@truffle/db/project/process";
+import { DataModel, IdObject, toIdObject } from "@truffle/db/resources";
+import { resources, Process } from "@truffle/db/process";
 
 /**
  * Load NetworkGenealogy records for a given set of artifacts while connected
@@ -54,7 +49,7 @@ export function* generateNetworkGenealogiesLoad<
   ArtifactNetwork extends {
     block?: DataModel.Block;
     db?: {
-      network: IdObject<DataModel.Network>;
+      network: IdObject<"networks">;
     };
   }
 >(options: {
@@ -64,7 +59,7 @@ export function* generateNetworkGenealogiesLoad<
       [networkId: string]: ArtifactNetwork | undefined;
     };
   }[];
-}): Process<IdObject<DataModel.NetworkGenealogy>[]> {
+}): Process<IdObject<"networkGenealogies">[]> {
   const {
     artifacts,
     network: { networkId }
@@ -122,18 +117,18 @@ function collectArtifactNetworks<
   ArtifactNetwork extends {
     block?: DataModel.Block;
     db?: {
-      network: IdObject<DataModel.Network>;
+      network: IdObject<"networks">;
     };
   }
 >(
   artifactNetworks: (ArtifactNetwork | undefined)[]
 ): {
-  networks: IdObject<DataModel.Network>[];
+  networks: IdObject<"networks">[];
   networkGenealogies: DataModel.NetworkGenealogyInput[];
 } {
   // start by ordering non-null networks by block height
   // map to reference to Network itself
-  const networks: IdObject<DataModel.Network>[] = artifactNetworks
+  const networks: IdObject<"networks">[] = artifactNetworks
     .filter(
       ({ block, db: { network } = {} } = {} as ArtifactNetwork) =>
         block && network
@@ -152,7 +147,7 @@ function collectArtifactNetworks<
   // for our reduction, we'll need to keep track of the current ancestor for
   // each pair as we step over the descendants for each pair.
   type ResultAccumulator = {
-    ancestor: IdObject<DataModel.Network>;
+    ancestor: IdObject<"networks">;
     networkGenealogies: DataModel.NetworkGenealogyInput[];
   };
 
@@ -166,7 +161,7 @@ function collectArtifactNetworks<
   const { networkGenealogies } = networks.slice(1).reduce(
     (
       { ancestor, networkGenealogies }: ResultAccumulator,
-      descendant: IdObject<DataModel.Network>
+      descendant: IdObject<"networks">
     ): ResultAccumulator => ({
       ancestor: descendant,
       networkGenealogies:
@@ -199,8 +194,8 @@ function collectArtifactNetworks<
  */
 function* findRelation(
   relation: "ancestor" | "descendant",
-  network: IdObject<DataModel.Network>
-): Process<IdObject<DataModel.Network | undefined>> {
+  network: IdObject<"networks">
+): Process<IdObject<"networks"> | undefined> {
   // since we're doing this iteratively, keep track of what networks we've
   // tried and which ones we haven't
   let alreadyTried: string[] = [];
@@ -219,7 +214,7 @@ function* findRelation(
 
     // check blockchain to find a matching network
     const matchingCandidate:
-      | IdObject<DataModel.Network>
+      | IdObject<"networks">
       | undefined = yield* findMatchingCandidateOnChain(candidates);
 
     if (matchingCandidate) {
@@ -240,7 +235,7 @@ let fragmentIndex = 0;
  */
 function* queryNextPossiblyRelatedNetworks(
   relation: "ancestor" | "descendant",
-  network: IdObject<DataModel.Network>,
+  network: IdObject<"networks">,
   alreadyTried: string[]
 ): Process<DataModel.CandidateSearchResult> {
   // determine GraphQL query to invoke based on requested relation
@@ -287,7 +282,7 @@ function* queryNextPossiblyRelatedNetworks(
  */
 function* findMatchingCandidateOnChain(
   candidates: DataModel.Network[]
-): Process<IdObject<DataModel.Network> | undefined> {
+): Process<IdObject<"networks"> | undefined> {
   for (const candidate of candidates) {
     const response = yield {
       type: "web3",
@@ -301,7 +296,7 @@ function* findMatchingCandidateOnChain(
       response.result &&
       response.result.hash === candidate.historicBlock.hash
     ) {
-      return toIdObject(candidate);
+      return toIdObject<"networks">(candidate);
     }
   }
 }

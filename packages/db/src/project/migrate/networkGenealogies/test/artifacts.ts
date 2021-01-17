@@ -2,12 +2,9 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:migrate:networkGenealogies:test:artifacts");
 
 import { Project } from "@truffle/db";
-import { resources } from "@truffle/db/project/process";
-import { DataModel } from "@truffle/db/resources";
-import { generateId, IdObject } from "@truffle/db/meta";
+import { resources } from "@truffle/db/process";
+import { DataModel, IdObject } from "@truffle/db/resources";
 import { Batch, Model } from "test/arbitraries/networks";
-
-import { mockProvider } from "./mockProvider";
 
 export const prepareArtifacts = async (options: {
   project: Project;
@@ -22,10 +19,10 @@ export const prepareArtifacts = async (options: {
       [networkId: string]: {
         block: DataModel.Block;
         db: {
-          network: IdObject<DataModel.Network>;
-        }
-      }
-    }
+          network: IdObject<"networks">;
+        };
+      };
+    };
   }[];
 }> => {
   const { model, batch, project } = options;
@@ -39,7 +36,7 @@ export const prepareArtifacts = async (options: {
     network: {
       networkId
     },
-    artifacts: networks.map((network: IdObject<DataModel.Network>, index) => ({
+    artifacts: networks.map((network: IdObject<"networks">, index) => ({
       networks: {
         [networkId]: {
           block: inputs[index].historicBlock,
@@ -49,7 +46,5 @@ export const prepareArtifacts = async (options: {
         }
       }
     }))
-  }
-}
-
-
+  };
+};

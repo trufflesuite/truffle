@@ -11,11 +11,14 @@ import { Collections } from "./collections";
 import { Workspace } from "./data";
 import * as Pouch from "./pouch";
 
-export interface Db {
-  execute: (
+export interface Db<_C extends Collections> {
+  /**
+   * Perform a query or mutation via GraphQL interface
+   */
+  execute(
     request: DocumentNode | string,
     variables: any
-  ) => Promise<ExecutionResult>;
+  ): Promise<ExecutionResult>;
 }
 
 export const forAttachAndSchema = <C extends Collections>(options: {
@@ -24,7 +27,7 @@ export const forAttachAndSchema = <C extends Collections>(options: {
 }) => {
   const { attach, schema } = options;
 
-  const connect = (config: TruffleConfig): Db => {
+  const connect = (config: TruffleConfig): Db<C> => {
     const workspace = attach({
       workingDirectory: config.working_directory,
       adapter: (config.db || {}).adapter

@@ -1,8 +1,11 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:names:batch");
 
-import * as Meta from "@truffle/db/meta";
-import { DataModel, Process, _, IdObject } from "@truffle/db/project/process";
+import { _ } from "hkts/src";
+
+import { IdObject } from "@truffle/db/resources";
+import { Process } from "@truffle/db/process";
+import * as Batch from "@truffle/db/batch";
 
 type Config = {
   assignment: {};
@@ -15,7 +18,7 @@ type Assignment<C extends Config> = { resource: IdObject } & C["assignment"];
 type Properties<C extends Config> = C["properties"];
 
 type Structure<_C extends Config> = {
-  project: IdObject<DataModel.Project>;
+  project: IdObject<"projects">;
   collectionName: string;
   assignments: _[];
 };
@@ -41,7 +44,7 @@ type Batch<C extends Config> = {
 };
 
 type Options<C extends Config> = Omit<
-  Meta.Batch.Options<Batch<C>>,
+  Batch.Options<Batch<C>>,
   "iterate" | "find" | "initialize" | "merge"
 >;
 
@@ -49,12 +52,12 @@ export const generate = <C extends Config>(options: Options<C>) => {
   const generateCollectionAssignments = generateForCollection(options);
 
   return function* <I extends Input<C>, O extends Output<C>>(options: {
-    project: IdObject<DataModel.Project>;
+    project: IdObject<"projects">;
     assignments: {
       [collectionName: string]: I[];
     };
   }): Process<{
-    project: IdObject<DataModel.Project>;
+    project: IdObject<"projects">;
     assignments: {
       [collectionName: string]: (I & O)[];
     };
@@ -85,7 +88,7 @@ export const generate = <C extends Config>(options: Options<C>) => {
 };
 
 const generateForCollection = <C extends Config>(options: Options<C>) =>
-  Meta.Batch.configure<Batch<C>>({
+  Batch.configure<Batch<C>>({
     *iterate<_I, _O>({ inputs }) {
       for (const [
         assignmentIndex,

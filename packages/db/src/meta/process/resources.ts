@@ -23,7 +23,7 @@ export interface ResourceProcessors<C extends Collections> {
   load: <N extends CollectionName<C>>(
     collectionName: N,
     inputs: Input<C, N>[]
-  ) => Process<C, IdObject<Resource<C, N>>[]>;
+  ) => Process<C, IdObject<C, N>[]>;
 
   get: <N extends CollectionName<C>>(
     collectionName: N,
@@ -74,7 +74,7 @@ export const resourceProcessorsForDefinitions = <C extends Collections>(
     *load<N extends CollectionName<C>>(
       collectionName: N,
       inputs: Input<C, N>[]
-    ): Process<C, IdObject<Resource<C, N>>[]> {
+    ): Process<C, IdObject<C, N>[]> {
       const { Resource, Resources, resources, resourcesMutate } = names(
         collectionName
       );

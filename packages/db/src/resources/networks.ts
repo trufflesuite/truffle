@@ -2,7 +2,6 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:resources:networks");
 
 import gql from "graphql-tag";
-import { singular } from "pluralize";
 
 import { DataModel, IdObject, Definition } from "./types";
 
@@ -25,13 +24,13 @@ export const networks: Definition<"networks"> = {
       fork: Network
 
       ancestors(
-        limit: Int, # default all
+        limit: Int # default all
         includeSelf: Boolean # default false
         onlyEarliest: Boolean # default false
       ): [Network]!
 
       descendants(
-        limit: Int, # default all
+        limit: Int # default all
         includeSelf: Boolean # default false
         onlyLatest: Boolean # default false
       ): [Network]!
@@ -148,27 +147,16 @@ export const networks: Definition<"networks"> = {
   }
 };
 
-function resolveRelationship(
-  relationship: "ancestor" | "descendant"
-) {
-  const reverseRelationship = relationship === "ancestor"
-    ? "descendant"
-    : "ancestor";
+function resolveRelationship(relationship: "ancestor" | "descendant") {
+  const reverseRelationship =
+    relationship === "ancestor" ? "descendant" : "ancestor";
 
-  const heightOrder = relationship === "ancestor"
-    ? "desc"
-    : "asc";
+  const heightOrder = relationship === "ancestor" ? "desc" : "asc";
 
+  const superlativeOption =
+    relationship === "ancestor" ? "onlyEarliest" : "onlyLatest";
 
-  const superlativeOption = relationship === "ancestor"
-    ? "onlyEarliest"
-    : "onlyLatest";
-
-  return async (
-    network: IdObject<DataModel.Network>,
-    options,
-    { workspace }
-  ) => {
+  return async (network: IdObject<"networks">, options, { workspace }) => {
     const { id } = network;
     const {
       limit,
@@ -177,9 +165,7 @@ function resolveRelationship(
     } = options;
 
     let depth = 1;
-    const relations: Set<string> = includeSelf
-      ? new Set([id])
-      : new Set([]);
+    const relations: Set<string> = includeSelf ? new Set([id]) : new Set([]);
     const superlatives: Set<string> = new Set([]);
     let unsearched: string[] = [id];
 
@@ -187,20 +173,21 @@ function resolveRelationship(
       debug("depth %d", depth);
       debug("unsearched %o", unsearched);
 
-      const networkGenealogies: DataModel.NetworkGenealogyInput[] =
-        await workspace.find("networkGenealogies", {
+      const networkGenealogies: DataModel.NetworkGenealogyInput[] = await workspace.find(
+        "networkGenealogies",
+        {
           selector: {
             [`${reverseRelationship}.id`]: { $in: unsearched }
           }
-        });
+        }
+      );
       debug("networkGenealogies %o", networkGenealogies);
 
       const hasRelation = new Set(
         networkGenealogies.map(({ [reverseRelationship]: { id } }) => id)
       );
 
-      const missingRelation = unsearched
-        .filter(id => !hasRelation.has(id));
+      const missingRelation = unsearched.filter(id => !hasRelation.has(id));
 
       for (const id of missingRelation) {
         superlatives.add(id);
@@ -217,16 +204,14 @@ function resolveRelationship(
       depth++;
     }
 
-    const ids = onlySuperlative
-      ? [...superlatives]
-      : [...relations];
+    const ids = onlySuperlative ? [...superlatives] : [...relations];
 
     return await workspace.find("networks", {
       selector: {
         "historicBlock.height": { $gte: 0 },
         "id": { $in: ids }
       },
-      sort: [{ "historicBlock.height": heightOrder }],
+      sort: [{ "historicBlock.height": heightOrder }]
     });
   };
 }

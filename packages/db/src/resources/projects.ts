@@ -3,7 +3,7 @@ const debug = logger("db:resources:projects");
 
 import gql from "graphql-tag";
 
-import { DataModel, Definition, IdObject, Workspace } from "./types";
+import { Definition, IdObject, Workspace } from "./types";
 
 export const projects: Definition<"projects"> = {
   names: {
@@ -150,7 +150,7 @@ export const projects: Definition<"projects"> = {
 };
 
 async function resolve(options: {
-  project: IdObject<DataModel.Project>;
+  project: IdObject<"projects">;
   name?: string;
   type?: string;
   workspace: Workspace;
@@ -177,10 +177,4 @@ async function resolve(options: {
   });
 
   return nameRecords;
-}
-
-function extractSelectionSet(document) {
-  return document.definitions
-    .map(({ selectionSet }) => selectionSet)
-    .find(selectionSet => selectionSet);
 }

@@ -1,9 +1,12 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:migrate:batch");
 
+import { _ } from "hkts/src";
 import { ContractObject, NetworkObject } from "@truffle/contract-schema/spec";
-import * as Meta from "@truffle/db/meta";
-import { DataModel, Process, _, IdObject } from "@truffle/db/project/process";
+
+import { IdObject } from "@truffle/db/resources";
+import { Process } from "@truffle/db/process";
+import * as Batch from "@truffle/db/batch";
 
 type Config = {
   network?: {};
@@ -31,9 +34,9 @@ type ArtifactNetwork<C extends Config> = NetworkObject & Requires<C>;
 type Artifact<C extends Config> = ContractObject &
   C["artifact"] & {
     db: {
-      contract: IdObject<DataModel.Contract>;
-      callBytecode: IdObject<DataModel.Bytecode>;
-      createBytecode: IdObject<DataModel.Bytecode>;
+      contract: IdObject<"contracts">;
+      callBytecode: IdObject<"bytecodes">;
+      createBytecode: IdObject<"bytecodes">;
     };
     networks?: {
       [networkId: string]: ArtifactNetwork<C>;
@@ -48,9 +51,9 @@ type Structure<C extends Config> = {
   artifacts: (ContractObject &
     Artifact<C> & {
       db: {
-        contract: IdObject<DataModel.Contract>;
-        callBytecode: IdObject<DataModel.Bytecode>;
-        createBytecode: IdObject<DataModel.Bytecode>;
+        contract: IdObject<"contracts">;
+        callBytecode: IdObject<"bytecodes">;
+        createBytecode: IdObject<"bytecodes">;
       };
       networks?: {
         [networkId: string]: _;
@@ -72,19 +75,16 @@ type Batch<C extends Config> = {
 };
 
 type Options<C extends Config> = Omit<
-  Meta.Batch.Options<Batch<C>>,
+  Batch.Options<Batch<C>>,
   "iterate" | "find" | "initialize" | "merge"
 >;
 
 export const generate = <C extends Config>(
   options: Options<C>
-): (<
-  I extends Meta.Batch.Input<Batch<C>>,
-  O extends Meta.Batch.Output<Batch<C>>
->(
-  inputs: Meta.Batch.Inputs<Batch<C>, I>
-) => Process<Meta.Batch.Outputs<Batch<C>, I & O>>) =>
-  Meta.Batch.configure<Batch<C>>({
+): (<I extends Batch.Input<Batch<C>>, O extends Batch.Output<Batch<C>>>(
+  inputs: Batch.Inputs<Batch<C>, I>
+) => Process<Batch.Outputs<Batch<C>, I & O>>) =>
+  Batch.configure<Batch<C>>({
     *iterate<_I>({
       inputs: {
         artifacts,

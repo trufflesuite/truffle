@@ -6,30 +6,22 @@ import * as graphql from "graphql";
 import {
   Collections,
   CollectionName,
-  MutableCollectionName
+  CollectionProperty,
+  MutableCollectionName,
+  Resource,
+  MutationPayload
 } from "@truffle/db/meta/collections";
 
-import {
-  QueryName,
-  Query,
-  MutationName,
-  Mutation
-} from "@truffle/db/meta/requests";
-
 export type Definitions<C extends Collections> = {
-  [N in CollectionName<C>]: N extends MutableCollectionName<C>
-    ? {
-        mutable: true;
-      }
-    : {
-        mutable?: boolean;
-      };
+  [N in CollectionName<C>]: Definition<C, N>;
 };
 
 export type Definition<
   C extends Collections,
   N extends CollectionName<C>
-> = Definitions<C>[N];
+> = N extends MutableCollectionName<C>
+  ? { mutable: true }
+  : { mutable?: false };
 
 type Data<O, N extends string | keyof O> = string extends N
   ? Partial<O>
@@ -120,3 +112,39 @@ export type Processor<
   T = any,
   R extends RequestType<C> | undefined = undefined
 > = (...args: A) => Process<C, T, R>;
+
+export type QueryName<
+  C extends Collections,
+  N extends CollectionName<C> = CollectionName<C>
+> = {
+  [K in N]:
+    | CollectionProperty<"names", C, K>["resource"]
+    | CollectionProperty<"names", C, K>["resources"];
+}[N];
+
+export type Query<C extends Collections> = {
+  [N in CollectionName<C>]: {
+    [Q in QueryName<C, N>]: Q extends CollectionProperty<
+      "names",
+      C,
+      N
+    >["resource"]
+      ? Resource<C, N> | null
+      : Q extends CollectionProperty<"names", C, N>["resources"]
+      ? (Resource<C, N> | null)[] | null
+      : never;
+  };
+}[CollectionName<C>];
+
+export type MutationName<
+  C extends Collections,
+  N extends CollectionName<C> = CollectionName<C>
+> = {
+  [K in N]: CollectionProperty<"names", C, K>["resourcesMutate"];
+}[N];
+
+export type Mutation<C extends Collections> = {
+  [N in CollectionName<C>]: {
+    [M in MutationName<C, N>]: MutationPayload<C, N> | null;
+  };
+}[CollectionName<C>];

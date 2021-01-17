@@ -1,7 +1,8 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:compile:compilations");
 
-import { DataModel, IdObject, resources } from "@truffle/db/project/process";
+import { DataModel, IdObject } from "@truffle/db/resources";
+import { resources } from "@truffle/db/process";
 import * as Batch from "./batch";
 
 interface Contract {
@@ -11,9 +12,9 @@ interface Contract {
   deployedSourceMap: string;
 
   db: {
-    source: IdObject<DataModel.Source>;
-    callBytecode: IdObject<DataModel.Bytecode>;
-    createBytecode: IdObject<DataModel.Bytecode>;
+    source: IdObject<"sources">;
+    callBytecode: IdObject<"bytecodes">;
+    createBytecode: IdObject<"bytecodes">;
   };
 }
 
@@ -24,7 +25,7 @@ interface Source {
   ast: any;
   legacyAST: any;
 
-  db: { source: IdObject<DataModel.Source> };
+  db: { source: IdObject<"sources"> };
 }
 
 export const generateCompilationsLoad = Batch.Compilations.generate<{
@@ -39,10 +40,10 @@ export const generateCompilationsLoad = Batch.Compilations.generate<{
   source: Source;
   contract: Contract;
   resources: {
-    compilation: IdObject<DataModel.Compilation>;
+    compilation: IdObject<"compilations">;
   };
   entry: DataModel.CompilationInput;
-  result: IdObject<DataModel.Compilation>;
+  result: IdObject<"compilations">;
 }>({
   extract({ input }) {
     return toCompilationInput({
@@ -112,7 +113,7 @@ function toProcessedSourceInputs(options: {
 function toSourceInputs(options: {
   sources: Source[];
   sourceIndexes: string[];
-}): IdObject<DataModel.Source>[] {
+}): IdObject<"sources">[] {
   return options.sourceIndexes.map(sourcePath => {
     const compiledSource = options.sources.find(
       source => source.sourcePath === sourcePath

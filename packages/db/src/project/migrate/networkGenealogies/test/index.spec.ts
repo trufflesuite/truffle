@@ -7,9 +7,7 @@ import * as fc from "fast-check";
 
 import { Networks, Batches } from "test/arbitraries/networks";
 
-import { IdObject } from "@truffle/db/meta";
-import { connect, Project } from "@truffle/db";
-import { resources } from "@truffle/db/project/process";
+import { resources } from "@truffle/db/process";
 import { DataModel } from "@truffle/db/resources";
 import { generateNetworkGenealogiesLoad } from "..";
 
@@ -35,10 +33,12 @@ describe("generateNetworkGenealogiesLoad", () => {
     testProp(
       `saves network genealogies so that @truffle/db correctly reports known latest descendant networks (numRuns: ${testConfig.numRuns})`,
       [
-        Networks().chain(model => fc.record({
-          model: fc.constant(model),
-          batches: Batches(model)
-        }))
+        Networks().chain(model =>
+          fc.record({
+            model: fc.constant(model),
+            batches: Batches(model)
+          })
+        )
       ],
       async ({ model, batches }) => {
         debug("initializing project");
@@ -53,39 +53,45 @@ describe("generateNetworkGenealogiesLoad", () => {
             project,
             model,
             batch
-          })
+          });
 
           debug("connecting with mocked provider");
           const provider = mockProvider({ model, batch });
           const liveProject = project.connect({ provider });
 
           debug("loading network genealogies for batch");
-          await liveProject.run(
-            generateNetworkGenealogiesLoad,
-            { network, artifacts }
-          );
+          await liveProject.run(generateNetworkGenealogiesLoad, {
+            network,
+            artifacts
+          });
         }
 
         // compute expected
         const { expectedLatestDescendants } = plan({ model, batches });
         debug("expectedLatestDescendants %O", expectedLatestDescendants);
 
-        const networks = await project.run(resources.all, "networks", gql`
-          fragment NetworkAncestors on Network {
-            id
-            historicBlock {
-              height
-            }
-            descendants(includeSelf: true, onlyLatest: true) {
+        const networks = (await project.run(
+          resources.all,
+          "networks",
+          gql`
+            fragment NetworkAncestors on Network {
               id
+              historicBlock {
+                height
+              }
+              descendants(includeSelf: true, onlyLatest: true) {
+                id
+              }
             }
-          }
-        `) as DataModel.Network[];
+          `
+        )) as DataModel.Network[];
         debug("networks %O", networks);
 
-        const ids = new Set(networks.map(
-          ({ descendants: [ latestDescendant ] }) => latestDescendant.id
-        ));
+        const ids = new Set(
+          networks.map(
+            ({ descendants: [latestDescendant] }) => latestDescendant.id
+          )
+        );
         debug("ids %O", ids);
 
         expect(ids).toEqual(
