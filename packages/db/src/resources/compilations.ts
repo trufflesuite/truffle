@@ -23,6 +23,29 @@ export const compilations: Definition<"compilations"> = {
       processedSources: [ProcessedSource]!
       sourceMaps: [SourceMap]
       contracts: [Contract]!
+      immutableReferences: [ImmutableReference]!
+    }
+
+    type ImmutableReference {
+      astNode: String!
+      bytecode: Bytecode!
+      slices: [Slice!]!
+    }
+
+    input ImmutableReferenceInput {
+      astNode: String!
+      bytecode: ResourceReferenceInput!
+      slices: [SliceInput!]!
+    }
+
+    type Slice {
+      length: Int!
+      start: ByteOffset!
+    }
+
+    input SliceInput {
+      length: Int!
+      start: ByteOffset!
     }
 
     type Compiler {
@@ -54,6 +77,7 @@ export const compilations: Definition<"compilations"> = {
       processedSources: [ProcessedSourceInput]
       sources: [ResourceReferenceInput]!
       sourceMaps: [SourceMapInput]
+      immutableReferences: [ImmutableReferenceInput]
     }
 
     input CompilerInput {
@@ -158,6 +182,15 @@ export const compilations: Definition<"compilations"> = {
 
           debug("Resolved ProcessedSource.compilation.");
           return result;
+        }
+      }
+    },
+
+    ImmutableReference: {
+      bytecode: {
+        resolve: async ({ bytecode: { id } }, _, { workspace }) => {
+          debug("Resolving ImmutableReference.bytecode");
+          return await workspace.get("bytecodes", id);
         }
       }
     }
