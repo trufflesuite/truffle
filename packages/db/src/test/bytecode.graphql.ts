@@ -10,13 +10,6 @@ export const GetAllBytecodes = gql`
         offsets
         length
       }
-      immutableReferences {
-        ASTId
-        references {
-          start
-          length
-        }
-      }
       sourceMap
       instructions {
         opcode
@@ -35,33 +28,14 @@ export const GetBytecode = gql`
         name
         length
       }
-      immutableReferences {
-        ASTId
-        references {
-          start
-          length
-        }
-      }
     }
   }
 `;
 
 export const AddBytecode = gql`
-  mutation AddBytecode(
-    $bytes: Bytes!
-    $linkReferences: [LinkReferenceInput]
-    $immutableReferences: [ImmutableReferencesInput]
-  ) {
+  mutation AddBytecode($bytes: Bytes!, $linkReferences: [LinkReferenceInput]) {
     bytecodesAdd(
-      input: {
-        bytecodes: [
-          {
-            bytes: $bytes
-            linkReferences: $linkReferences
-            immutableReferences: $immutableReferences
-          }
-        ]
-      }
+      input: { bytecodes: [{ bytes: $bytes, linkReferences: $linkReferences }] }
     ) {
       bytecodes {
         id
