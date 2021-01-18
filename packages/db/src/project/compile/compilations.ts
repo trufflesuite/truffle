@@ -1,7 +1,9 @@
+import { ImmutableReferences } from "@truffle/contract-schema/spec";
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:compile:compilations");
 
 import { IdObject, resources } from "@truffle/db/project/process";
+
 import * as Batch from "./batch";
 
 interface Contract {
@@ -9,6 +11,7 @@ interface Contract {
   ast: any;
   sourceMap: string;
   deployedSourceMap: string;
+  immutableReferences: ImmutableReferences;
 
   db: {
     source: IdObject<DataModel.Source>;
@@ -81,7 +84,8 @@ function toCompilationInput(options: {
     compiler,
     processedSources: toProcessedSourceInputs(options),
     sources: toSourceInputs(options),
-    sourceMaps: toSourceMapInputs(options)
+    sourceMaps: toSourceMapInputs(options),
+    immutableReferences: toImmutableReferencesInputs(options)
   };
 }
 
@@ -154,4 +158,25 @@ function toSourceMapInputs(options: {
       return sourceMaps;
     })
     .flat();
+}
+
+function toImmutableReferencesInputs(options: {
+  contracts: Contract[];
+}): DataModel.ImmutableReferenceInput[] {
+  const immutableReferences = options.contracts
+    .filter(({ immutableReferences }) => {
+      return Object.keys(immutableReferences).length > 0;
+    })
+    .map(contract => {
+      return Object.entries(contract.immutableReferences).map(reference => {
+        return {
+          astNode: reference[0],
+          bytecode: contract.db.callBytecode,
+          slices: reference[1] as []
+        };
+      });
+    })
+    .flat();
+
+  return immutableReferences;
 }
