@@ -360,6 +360,9 @@ const GetWorkspaceCompilation = gql`
       sourceMaps {
         data
       }
+      immutableReferences {
+        astNode
+      }
     }
   }
 `;
@@ -683,6 +686,7 @@ describe("Compilation", () => {
         )
       ).toBeDefined();
     });
+    expect(solcCompilation.immutableReferences).toEqual([]);
 
     const vyperCompilation = compilationsQuery[1].data.compilation;
     expect(vyperCompilation.compiler.version).toEqual(
@@ -695,6 +699,7 @@ describe("Compilation", () => {
       artifacts[3].source
     );
     expect(vyperCompilation.processedSources[0].language).toEqual("Vyper");
+    expect(vyperCompilation.immutableReferences).toEqual([]);
   });
 
   it("loads contract sources", async () => {
