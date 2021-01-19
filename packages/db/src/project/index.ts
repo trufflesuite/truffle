@@ -7,7 +7,7 @@ import { ContractObject } from "@truffle/contract-schema/spec";
 
 import * as Meta from "@truffle/db/meta";
 import * as _Batch from "@truffle/db/batch";
-import { Process } from "@truffle/db/process";
+import * as Process from "@truffle/db/process";
 import {
   Db,
   NamedCollectionName,
@@ -20,8 +20,6 @@ import { generateNamesLoad } from "./names";
 import { Compilation, Contract, generateCompileLoad } from "./compile";
 import { Artifact, generateMigrateLoad } from "./migrate";
 
-import { ProcessorRunner, Run } from "@truffle/db/process";
-
 /**
  * Abstraction to integrate with Truffle projects
  *
@@ -31,7 +29,7 @@ export class Project {
   /**
    * Construct abstraction and idempotentally add a project resource
    *
-   * @constructor
+   * @category Constructor
    */
   static async initialize(options: {
     db: Db;
@@ -39,7 +37,7 @@ export class Project {
   }): Promise<Project> {
     const { db, project: input } = options;
 
-    const { run, forProvider } = Run.forDb(db);
+    const { run, forProvider } = Process.Run.forDb(db);
 
     const project = await run(generateInitializeLoad, input);
 
@@ -53,6 +51,7 @@ export class Project {
   /**
    * Accept a compilation result and process it to save all relevant resources
    * (Source, Bytecode, Compilation, Contract)
+   * @category Truffle-specific
    */
   async loadCompile(options: {
     result: WorkflowCompileResult;
@@ -123,6 +122,7 @@ export class Project {
   /**
    * Accept a provider to enable workflows that require communicating with the
    * underlying blockchain network.
+   * @category Constructor
    */
   connect(options: { provider: Provider }): Project.ConnectedProject {
     const { run } = this.forProvider(options.provider);
@@ -133,25 +133,50 @@ export class Project {
     });
   }
 
-  run: ProcessorRunner;
+  /**
+   * Run a given [[Process.Processor | Processor]] with specified arguments.
+   *
+   * This method is a [[Meta.Process.ProcessorRunner | ProcessorRunner]] and
+   * can be used to `await` (e.g.) the processors defined by
+   * [[Process.resources | Process's `resources`]].
+   *
+   * @category Processor
+   */
+  async run<
+    A extends unknown[],
+    T = any,
+    R extends Process.RequestType | undefined = undefined
+  >(processor: Process.Processor<A, T, R>, ...args: A): Promise<T> {
+    return this._run(processor, ...args);
+  }
 
   /*
    * internals
    */
 
-  private forProvider: (provider: Provider) => { run: ProcessorRunner };
+  /**
+   * @hidden
+   */
+  private forProvider: (provider: Provider) => { run: Process.ProcessorRunner };
+  /**
+   * @hidden
+   */
   private project: IdObject<"projects">;
+  /**
+   * @hidden
+   */
+  private _run: Process.ProcessorRunner;
 
   /**
    * @ignore
    */
   protected constructor(options: {
     project: IdObject<"projects">;
-    run: ProcessorRunner;
-    forProvider?: (provider: Provider) => { run: ProcessorRunner };
+    run: Process.ProcessorRunner;
+    forProvider?: (provider: Provider) => { run: Process.ProcessorRunner };
   }) {
     this.project = options.project;
-    this.run = options.run;
+    this._run = options.run;
     if (options.forProvider) {
       this.forProvider = options.forProvider;
     }
@@ -173,6 +198,7 @@ export namespace Project {
      *
      * Returns both a list of ContractInstances and the Network added with the
      * highest block height.
+     * @category Truffle-specific
      */
     async loadMigrate(options: {
       network: Omit<Input<"networks">, "networkId" | "historicBlock">;
@@ -190,7 +216,7 @@ export namespace Project {
       options: Options<B>
     ) => <I extends Input<B>, O extends Output<B>>(
       inputs: Inputs<B, I>
-    ) => Process<Outputs<B, O>>;
+    ) => Process.Process<Outputs<B, O>>;
 
     export const configure: Configure = Meta.Batch.configure;
 
