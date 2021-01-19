@@ -57,7 +57,7 @@
  *     [resource: [[DataModel.Network | Network]],
  *     input: [[DataModel.NetworkInput | NetworkInput]]]
  *
- *   - **`"networkGenealogys"`**
+ *   - **`"networkGenealogies"`**
  *     [resource: [[DataModel.NetworkGenealogy | NetworkGenealogy]],
  *     input: [[DataModel.NetworkGenealogyInput | NetworkGenealogyInput]]]
  *
