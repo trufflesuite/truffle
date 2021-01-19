@@ -63,10 +63,12 @@ export function* generateNetworkGenealogiesLoad<
       [networkId: string]: ArtifactNetwork | undefined;
     };
   }[];
+  disableIndex?: boolean;
 }): Process<IdObject<DataModel.NetworkGenealogy>[]> {
   const {
     artifacts,
-    network: { networkId }
+    network: { networkId },
+    disableIndex
   } = options;
 
   // grab only the artifact networks for our currently connected networkId
@@ -89,7 +91,7 @@ export function* generateNetworkGenealogiesLoad<
   // for each network in order
   for (const network of networks) {
     // look for known ancestor
-    const ancestor = yield* findRelation("ancestor", network);
+    const ancestor = yield* findRelation("ancestor", network, disableIndex);
     if (ancestor) {
       networkGenealogies.push({
         ancestor,
@@ -98,7 +100,7 @@ export function* generateNetworkGenealogiesLoad<
     }
 
     // look for known descendant
-    const descendant = yield* findRelation("descendant", network);
+    const descendant = yield* findRelation("descendant", network, disableIndex);
     if (descendant) {
       networkGenealogies.push({
         ancestor: network,
@@ -197,7 +199,8 @@ function collectArtifactNetworks<
  */
 function* findRelation(
   relation: "ancestor" | "descendant",
-  network: IdObject<DataModel.Network>
+  network: IdObject<DataModel.Network>,
+  disableIndex?: boolean
 ): Process<IdObject<DataModel.Network | undefined>> {
   // determine GraphQL query to invoke based on requested relation
   const query =
@@ -216,7 +219,8 @@ function* findRelation(
     } = yield* queryNextPossiblyRelatedNetworks(
       relation,
       network,
-      alreadyTried
+      alreadyTried,
+      disableIndex
     ));
 
     // check blockchain to find a matching network
@@ -242,7 +246,8 @@ let fragmentIndex = 0;
 function* queryNextPossiblyRelatedNetworks(
   relation: "ancestor" | "descendant",
   network: IdObject<DataModel.Network>,
-  alreadyTried: string[]
+  alreadyTried: string[],
+  disableIndex?: boolean
 ): Process<DataModel.CandidateSearchResult> {
   // determine GraphQL query to invoke based on requested relation
   const query =
@@ -259,7 +264,14 @@ function* queryNextPossiblyRelatedNetworks(
       network.id,
       gql`
         fragment Possible_${relation}s_${fragmentIndex++} on Network {
-          ${query}(alreadyTried: ${JSON.stringify(alreadyTried)}) {
+          ${query}(
+            alreadyTried: ${JSON.stringify(alreadyTried)}
+            ${
+              disableIndex
+                ? "disableIndex: true"
+                : ""
+            }
+          ) {
             networks {
               id
               historicBlock {

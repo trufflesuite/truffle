@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "8.0.9",
+  "version": "8.0.10",
   "main": "dist/debugger.js",
   "scripts": {
     "build": "webpack --config webpack/webpack.config.js",
@@ -44,9 +44,9 @@
   "devDependencies": {
     "@truffle/artifactor": "^4.0.93",
     "@truffle/box": "^2.1.5",
-    "@truffle/migrate": "^3.2.8",
-    "@truffle/resolver": "^6.1.9",
-    "@truffle/workflow-compile": "^3.1.6",
+    "@truffle/migrate": "^3.2.9",
+    "@truffle/resolver": "^6.1.10",
+    "@truffle/workflow-compile": "^3.1.7",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
