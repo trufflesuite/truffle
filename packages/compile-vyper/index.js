@@ -272,9 +272,10 @@ const Compile = {
     if (!useJson) {
       //if we don't have vyper-json, we can't (currently) do dependency
       //analysis, so we skip that
-      return await Compile.sources({
-        sources: files,
-        options
+      return await compileNoJson({
+        paths: files,
+        options,
+        version
       });
     }
 
