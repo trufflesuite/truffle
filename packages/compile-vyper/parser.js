@@ -56,7 +56,10 @@ function parseImports(body) {
           //built-in import; we should not attempt to resolve it
           return null;
         }
-        return `${strippedBasePath}.${stripWhitespace(endPath)}`;
+        const strippedEndPath = stripWhitespace(basePath);
+        return strippedBasePath.endsWith(".")
+          ? `${strippedBasePath}${stripWhitespace(endPath)}` //don't add extra "." for "from . import", etc
+          : `${strippedBasePath}.${stripWhitespace(endPath)}`;
         //on the endPath because
       } else {
         return null;
