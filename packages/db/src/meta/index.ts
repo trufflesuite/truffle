@@ -14,7 +14,7 @@ export {
   MutableResource,
   NamedResource
 } from "./collections";
-export { Db } from "./interface";
+export { Db, ConnectOptions } from "./interface";
 export { Workspace } from "./data";
 export { Definition, Definitions } from "./definitions";
 

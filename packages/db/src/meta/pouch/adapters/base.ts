@@ -1,5 +1,5 @@
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:meta:pouch:databases");
+const debug = logger("db:meta:pouch:adapters:base");
 
 import PouchDB from "pouchdb";
 import PouchDBDebug from "pouchdb-debug";
@@ -15,12 +15,7 @@ import {
 import { generateId } from "@truffle/db/meta/ids";
 import { Workspace, SavedInput, Historical } from "@truffle/db/meta/data";
 
-import { Definition, Definitions } from "./types";
-
-export interface DatabasesOptions<C extends Collections> {
-  settings: any;
-  definitions: Definitions<C>;
-}
+import { Definition, Definitions } from "@truffle/db/meta/pouch/types";
 
 /**
  * Aggegrates logic for interacting wth a set of PouchDB databases identified
@@ -32,8 +27,8 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
 
   private ready: Promise<void>;
 
-  constructor(options: DatabasesOptions<C>) {
-    this.setup(options);
+  constructor(options) {
+    this.setup(options.settings);
 
     this.definitions = options.definitions;
 

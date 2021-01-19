@@ -3,7 +3,9 @@ const path = require("path");
 const { generateNamespace } = require("@gql2ts/from-schema");
 
 const {
-  GraphQl: { schema }
+  System: {
+    GraphQl: { schema }
+  }
 } = require("@truffle/db");
 
 const dataModel = generateNamespace(

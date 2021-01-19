@@ -132,9 +132,6 @@ export type Collections = {
   };
 };
 
-/**
- * @hidden
- */
 export type Db = Meta.Db<Collections>;
 
 export type Definitions = Meta.Definitions<Collections>;
