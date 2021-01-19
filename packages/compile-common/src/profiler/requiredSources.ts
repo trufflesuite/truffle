@@ -59,6 +59,19 @@ export async function requiredSources({
     paths: allPaths
   });
 
+  //exit out semi-quickly if we've been asked to compile everything
+  if (listsEqual(updatedPaths, allPaths)) {
+    for (const file of Object.keys(resolved)) {
+      if (shouldIncludePath(file)) {
+        allSources[file] = resolved[file].body;
+      }
+    }
+    return {
+      allSources,
+      compilationTargets: Object.keys(allSources)
+    };
+  }
+
 
   // Seed compilationTargets with known updates
   for (const update of updatedPaths) {
