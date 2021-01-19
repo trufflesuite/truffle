@@ -22,21 +22,18 @@ function parseImports(body) {
     //it was Vyper, proceed onward
   }
 
-  //NOTE: This is slightly incorrect if you have comments ending in
-  //backslashes.  However, I'm not going to try to handle
-  //comment-stripping, because that requires recognizing string
-  //literals, which would be too much work.  So, <shrug>
-  //
-  //Basically the problem case is what if someone does this:
-  //
-  //#comment ending in a backslash \
-  //import foo as Foo
-  //
-  //we'll get this case wrong, but doing better seems hard
-  
   const stripWhitespace = str => str.replace(/\s/g, ""); //remove even internal whitespace
 
+  //HACK: this isn't actually a correct way of handling line
+  //extensions and comments... but it should be good enough
+  //for our purposes!  I can't think of any cases that this
+  //gets wrong *in a way that we care about*
+
   return body
+    .replace(/(#.*)\\\r?\n/g, "$1") //remove backslashes from end of comments
+    // (this is the most-incorrect step; it will detect a "comment" even if
+    // the # is used in a string literal.  but this shouldn't screw up imports,
+    // so...)
     .replace(/\\\r?\n/g, " ") //process line extensions;
     //for convenience we use \r?\n instead of OS.EOL
     //(we don't care that this screws up string literals)
