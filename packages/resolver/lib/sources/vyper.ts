@@ -49,31 +49,31 @@ export class Vyper implements ResolverSource {
 
     const importPath = moduleToPath(importModule); //note: no file extension yet
     debug("importPath: %s", importPath);
-    const explicitlyRelative = importPath.startsWith("./") ||
-      importPath.startsWith("../");
+    const explicitlyRelative = importModule[0] === ".";
     debug("explicitlyRelative: %o", explicitlyRelative);
 
-    const possiblePaths = [];
-    //first: check for JSON in local directory
-    possiblePaths.push(
-      path.join(path.dirname(importedFrom), importPath + ".json")
+    const possiblePathsMinusExtension: string[] = [];
+    //first: check in local directory
+    possiblePathsMinusExtension.push(
+      path.join(path.dirname(importedFrom), importPath)
     );
     if(!explicitlyRelative) {
-      //next: check for JSON in contracts dir, if not explicitly relative
-      possiblePaths.push(
-        path.join(this.contractsDirectory, importPath + ".json")
+      //next: check in contracts dir, if not explicitly relative
+      possiblePathsMinusExtension.push(
+        path.join(this.contractsDirectory, importPath)
       );
+      //finally: check wherever the resolver says to check 
+      possiblePathsMinusExtension.push(importPath);
     }
-    //next: check for Vyper in local directory
-    possiblePaths.push(
-      path.join(path.dirname(importedFrom), importPath + ".vy")
+    const possibleExtensions = [".json", ".vy"]; //Vyper only expects these two
+    //note: this puts all JSON before all Vyper, which is how we want it
+    //(we do not want to try Vyper from any sources until JSON from all sources
+    //has been checked)
+    const possiblePaths = [].concat(
+      ...possibleExtensions.map(extension =>
+        possiblePathsMinusExtension.map(path => path + extension))
     );
-    if(!explicitlyRelative) {
-      //finally: check for Vyper in contracts dir, if not explicitly relative
-      possiblePaths.push(
-        path.join(this.contractsDirectory, importPath + ".vy")
-      );
-    }
+
     debug("possiblePaths: %O", possiblePaths);
 
     for (const possiblePath of possiblePaths) {
