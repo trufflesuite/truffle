@@ -80,6 +80,8 @@ const Compile = {
     options.logger = options.logger || console;
     options.contracts_directory = options.contracts_directory || process.cwd();
 
+    debug("paths: %O", paths);
+
     expect.options(options, [
       "working_directory",
       "contracts_directory",

@@ -44,6 +44,14 @@ export async function requiredSources({
     }
   });
 
+  //exit out quickly if we've been asked to compile nothing
+  if (!updatedPaths.length) {
+    return {
+      allSources: {},
+      compilationTargets: []
+    };
+  }
+
   const resolved = await resolveAllSources({
     resolve,
     parseImports,
@@ -51,18 +59,6 @@ export async function requiredSources({
     paths: allPaths
   });
 
-  // Exit w/out minimizing if we've been asked to compile everything, or nothing.
-  if (listsEqual(updatedPaths, allPaths)) {
-    return {
-      allSources,
-      compilationTargets: Object.keys(allSources)
-    };
-  } else if (!updatedPaths.length) {
-    return {
-      allSources: {},
-      compilationTargets: []
-    };
-  }
 
   // Seed compilationTargets with known updates
   for (const update of updatedPaths) {
