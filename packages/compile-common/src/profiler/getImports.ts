@@ -1,6 +1,16 @@
 import debugModule from "debug";
 const debug = debugModule("compile-common:profiler:getImports");
-import { ResolvedSource } from "@truffle/resolver";
+
+//HACK: do *not* import ResolvedSource from @truffle/resolver because
+//that would create a circular dependency!
+//don't import ResolverSource for the same reasons
+export interface ResolvedSource {
+  filePath: string;
+  body: string;
+  source: {
+    resolveDependencyPath(importPath: string, dependencyPath: string): string;
+  };
+}
 
 export interface GetImportsOptions {
   source: ResolvedSource;

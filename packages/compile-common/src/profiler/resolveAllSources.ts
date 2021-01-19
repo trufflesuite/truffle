@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("compile-common:profiler:resolveAllSources");
-import { getImports } from "./getImports";
-import { ResolvedSource } from "@truffle/resolver";
+import { getImports, ResolvedSource } from "./getImports";
+//note: see getImports.ts for why we don't import from @truffle/resolver
 
 export interface ResolveAllSourcesOptions {
   paths: string[];
