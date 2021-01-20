@@ -103,7 +103,7 @@ const Create = {
     if (!options.force && fs.existsSync(to)) {
       throw new Error("Can not create " + filename + ": file exists");
     }
-    return promisify(copy.file)(from, to);
+    return await promisify(copy.file)(from, to);
   }
 };
 
