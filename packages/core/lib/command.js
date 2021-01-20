@@ -135,7 +135,7 @@ class Command {
       version: bundled || "(unbundled) " + core
     });
 
-    return result.command.run(newOptions);
+    return await result.command.run(newOptions);
   }
 
   displayGeneralHelp() {
