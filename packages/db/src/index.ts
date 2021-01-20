@@ -129,14 +129,12 @@ import * as _System from "./system";
 export const connect = _System.connect;
 export const serve = _System.serve;
 
-export namespace System {
-  export namespace GraphQl {
-    export const schema = _System.schema;
-  }
+export namespace GraphQl {
+  export const schema = _System.schema;
+}
 
-  export namespace Pouch {
-    export const attach = _System.attach;
-  }
+export namespace Pouch {
+  export const attach = _System.attach;
 }
 
 import * as Process from "./process";
