@@ -20,7 +20,6 @@
   },
   "include": [
     "./lib/**/*.ts",
-    "./test/**/*.ts",
-    "../preserve/typings/**/*.ts"
+    "./test/**/*.ts"
   ]
 }

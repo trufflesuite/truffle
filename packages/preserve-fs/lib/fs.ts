@@ -2,12 +2,7 @@ import fs from "fs";
 import { join as joinPath } from "path";
 
 import * as Preserve from "@truffle/preserve";
-
-export interface TargetPathOptions {
-  path: string;
-  verbose?: boolean;
-  controls: Preserve.Controls;
-}
+import { TargetPathOptions, PathEntryOptions } from "./types";
 
 export async function* targetPath(
   options: TargetPathOptions
@@ -27,41 +22,6 @@ export async function* targetPath(
   }
 }
 
-interface PathEntryOptions {
-  path: string;
-  parent: string;
-  verbose?: boolean;
-  controls: Preserve.Controls;
-}
-
-async function* pathEntry(
-  options: PathEntryOptions
-): Preserve.Process<Preserve.Targets.Sources.Entry> {
-  const { path, parent } = options;
-
-  const stats = await fs.promises.stat(joinPath(parent, path));
-
-  if (stats.isFile()) {
-    return {
-      path,
-      source: yield* pathContent({
-        ...options,
-        path: joinPath(parent, path)
-      })
-    };
-  }
-
-  if (stats.isDirectory()) {
-    return {
-      path,
-      source: yield* pathContainer({
-        ...options,
-        path: joinPath(parent, path)
-      })
-    };
-  }
-}
-
 async function* pathContent(
   options: TargetPathOptions
 ): Preserve.Process<Preserve.Targets.Sources.Content> {
@@ -75,7 +35,7 @@ async function* pathContent(
   const content = fs.createReadStream(path);
 
   if (verbose) {
-    yield* task.succeed();
+    yield* (task as Preserve.Control.StepsController).succeed();
   }
 
   return content;
@@ -107,10 +67,38 @@ async function* pathContainer(
   }
 
   if (verbose) {
-    yield* task.succeed();
+    yield* (task as Preserve.Control.StepsController).succeed();
   }
 
   return {
     entries
   };
+}
+
+async function* pathEntry(
+  options: PathEntryOptions
+): Preserve.Process<Preserve.Targets.Sources.Entry> {
+  const { path, parent } = options;
+
+  const stats = await fs.promises.stat(joinPath(parent, path));
+
+  if (stats.isFile()) {
+    return {
+      path,
+      source: yield* pathContent({
+        ...options,
+        path: joinPath(parent, path)
+      })
+    };
+  }
+
+  if (stats.isDirectory()) {
+    return {
+      path,
+      source: yield* pathContainer({
+        ...options,
+        path: joinPath(parent, path)
+      })
+    };
+  }
 }

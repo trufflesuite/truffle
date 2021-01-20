@@ -5,20 +5,15 @@
 import * as Preserve from "@truffle/preserve";
 
 import { targetPath } from "./fs";
+import { LoadOptions } from "./types";
 
-export interface LoadOptions {
-  path: string;
-  controls: Preserve.Controls;
-}
-
-export class Loader implements Preserve.Targets.Loader {
+export class Loader implements Preserve.Loader {
   name = "@truffle/preserve-fs";
 
   async *load(options: LoadOptions): Preserve.Process<Preserve.Target> {
-    const {
-      path,
-      controls: { log }
-    } = options;
+    const { controls } = options;
+
+    const { log } = controls;
 
     yield* log({ message: "Loading target..." });
 
