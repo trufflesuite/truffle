@@ -206,23 +206,6 @@ const Compile = {
       return { compilations: [] };
     }
 
-    const { version, json: useJson } = await checkVyper();
-    if (!useJson) {
-      //if we don't have vyper-json, we can't (currently) do dependency
-      //analysis, so we just compile everything
-      //(we don't call Compile.all() here to avoid circularity)
-      const files = await findContracts(options.contracts_directory);
-      const vyperFiles = files.filter(path =>
-        minimatch(path, VYPER_PATTERN_STRICT, { dot: true })
-      );
-      Compile.display(vyperFiles, options);
-      return await compileNoJson({
-        paths: vyperFiles,
-        options,
-        version
-      });
-    }
-
     const { allSources, compilationTargets } = await requiredSources(
       options.with({
         paths: vyperFilesStrict,
@@ -244,13 +227,26 @@ const Compile = {
     //having gotten the sources from the resolver, we invoke compileJson
     //ourselves, rather than going through Compile.sources()
     Compile.display(compilationTargets, options);
-    return compileJson({
-      sources: allSources,
-      options: options.with({
-        compilationTargets
-      }),
-      version
-    });
+
+    const { version, json: useJson } = await checkVyper();
+
+    if (useJson) {
+      return compileJson({
+        sources: allSources,
+        options: options.with({
+          compilationTargets
+        }),
+        version
+      });
+    } else {
+      return await compileNoJson({
+        paths: Object.keys(allSources),
+        options: options.with({
+          compilationTargets
+        }),
+        version
+      });
+    }
   },
 
   // contracts_directory: String. Directory where contract files can be found.
@@ -266,17 +262,6 @@ const Compile = {
     // no vyper targets found, no need to check Vyper
     if (vyperFilesStrict.length === 0) {
       return { compilations: [] };
-    }
-
-    const { json: useJson } = await checkVyper();
-    if (!useJson) {
-      //if we don't have vyper-json, we can't (currently) do dependency
-      //analysis, so we skip that
-      return await compileNoJson({
-        paths: files,
-        options,
-        version
-      });
     }
 
     return await Compile.sourcesWithDependencies({
