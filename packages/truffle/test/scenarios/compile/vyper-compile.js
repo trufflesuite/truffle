@@ -1,12 +1,11 @@
 const MemoryLogger = require("../memorylogger");
 const CommandRunner = require("../commandrunner");
-const fs = require("fs");
 const path = require("path");
 const assert = require("assert");
 const Server = require("../server");
 const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
-const log = console.log;
+const Utils = require("./utils");
 
 //NOTE: this file is copypasted with modifications from compile.js
 describe("Repeated compilation of Vyper contracts with imports [ @standalone ]", function () {
@@ -16,36 +15,6 @@ describe("Repeated compilation of Vyper contracts with imports [ @standalone ]",
   const project = path.join(__dirname, "../../sources/vyper-imports");
   const names = ["Root.vy", "Branch.vy", "LeafA.vy", "LeafB.vy", "LeafC.vy"];
   const logger = new MemoryLogger();
-
-  // ----------------------- Utils -----------------------------
-  function processErr(err, output) {
-    if (err) {
-      log(output);
-      throw new Error(err);
-    }
-  }
-
-  function waitSecond() {
-    return new Promise((resolve, _reject) => setTimeout(() => resolve(), 1250));
-  }
-
-  function getSource(key) {
-    return fs.readFileSync(mapping[key].sourcePath);
-  }
-
-  function getArtifactStats() {
-    const stats = {};
-    names.forEach(key => {
-      const mDate = fs.statSync(mapping[key].artifactPath).mtime.getTime();
-      stats[key] = mDate;
-    });
-    return stats;
-  }
-
-  function touchSource(key) {
-    const source = getSource(key);
-    fs.writeFileSync(mapping[key].sourcePath, source);
-  }
 
   function hasBeenUpdated(fileName) {
     return initialTimes[fileName] < finalTimes[fileName];
@@ -89,13 +58,13 @@ describe("Repeated compilation of Vyper contracts with imports [ @standalone ]",
       await CommandRunner.run("compile", config);
     } catch (error) {
       output = logger.contents();
-      processErr(error, output);
+      Utils.processErr(error, output);
     }
 
-    initialTimes = getArtifactStats();
+    initialTimes = Utils.getArtifactStats();
 
     // mTime resolution on 6.9.1 is 1 sec.
-    await waitSecond();
+    await Utils.waitSecond();
   });
 
   // -------------Inheritance Graph -------
@@ -111,12 +80,12 @@ describe("Repeated compilation of Vyper contracts with imports [ @standalone ]",
   it("updates only Root when Root is touched", async function () {
     this.timeout(30000);
 
-    touchSource("Root.vy");
+    Utils.touchSource("Root.vy");
 
     await CommandRunner.run("compile", config);
     output = logger.contents();
 
-    finalTimes = getArtifactStats();
+    finalTimes = Utils.getArtifactStats();
 
     try {
       assert(hasBeenUpdated("Root.vy"), "Should update root");
@@ -145,12 +114,12 @@ describe("Repeated compilation of Vyper contracts with imports [ @standalone ]",
   it("updates Branch and Root when Branch is touched", async function () {
     this.timeout(30000);
 
-    touchSource("Branch.vy");
+    Utils.touchSource("Branch.vy");
 
     await CommandRunner.run("compile", config);
     output = logger.contents();
 
-    finalTimes = getArtifactStats();
+    finalTimes = Utils.getArtifactStats();
 
     try {
       assert(hasBeenUpdated("Root.vy"), "Should update root");
@@ -180,12 +149,12 @@ describe("Repeated compilation of Vyper contracts with imports [ @standalone ]",
   it("updates LeafA, Branch and Root when LeafA is touched", async function () {
     this.timeout(30000);
 
-    touchSource("LeafA.vy");
+    Utils.touchSource("LeafA.vy");
 
     await CommandRunner.run("compile", config);
     output = logger.contents();
 
-    finalTimes = getArtifactStats();
+    finalTimes = Utils.getArtifactStats();
 
     try {
       assert(hasBeenUpdated("LeafA.vy"), "Should update LeafA");
@@ -216,12 +185,12 @@ describe("Repeated compilation of Vyper contracts with imports [ @standalone ]",
   it("updates everything when LeafC is touched", async function () {
     this.timeout(30000);
 
-    touchSource("LeafC.vy");
+    Utils.touchSource("LeafC.vy");
 
     await CommandRunner.run("compile", config);
     output = logger.contents();
 
-    finalTimes = getArtifactStats();
+    finalTimes = Utils.getArtifactStats();
 
     try {
       for (const file of Object.keys(mapping)) {

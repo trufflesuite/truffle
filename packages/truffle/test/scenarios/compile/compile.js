@@ -1,14 +1,13 @@
 const MemoryLogger = require("../memorylogger");
 const CommandRunner = require("../commandrunner");
-const fs = require("fs");
 const path = require("path");
 const assert = require("assert");
 const Server = require("../server");
 const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
-const log = console.log;
+const Utils = require("./utils");
 
-describe("Repeated compilation of contracts with inheritance [ @standalone ]", function () {
+describe("Repeated compilation of contracts with imports [ @standalone ]", function () {
   let config, artifactPaths, initialTimes, finalTimes, output;
   const mapping = {};
 
@@ -25,36 +24,6 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
     "Abi.abi.json"
   ];
   const logger = new MemoryLogger();
-
-  // ----------------------- Utils -----------------------------
-  function processErr(err, output) {
-    if (err) {
-      log(output);
-      throw new Error(err);
-    }
-  }
-
-  function waitSecond() {
-    return new Promise((resolve, _reject) => setTimeout(() => resolve(), 1250));
-  }
-
-  function getSource(key) {
-    return fs.readFileSync(mapping[key].sourcePath);
-  }
-
-  function getArtifactStats() {
-    const stats = {};
-    names.forEach(key => {
-      const mDate = fs.statSync(mapping[key].artifactPath).mtime.getTime();
-      stats[key] = mDate;
-    });
-    return stats;
-  }
-
-  function touchSource(key) {
-    const source = getSource(key);
-    fs.writeFileSync(mapping[key].sourcePath, source);
-  }
 
   function hasBeenUpdated(fileName) {
     return initialTimes[fileName] < finalTimes[fileName];
@@ -98,13 +67,13 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
       await CommandRunner.run("compile", config);
     } catch (error) {
       output = logger.contents();
-      processErr(error, output);
+      Utils.processErr(error, output);
     }
 
-    initialTimes = getArtifactStats();
+    initialTimes = Utils.getArtifactStats();
 
     // mTime resolution on 6.9.1 is 1 sec.
-    await waitSecond();
+    await Utils.waitSecond();
   });
 
   // -------------Inheritance Graph -----------------------------
@@ -120,12 +89,12 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
   it("updates only Root when Root is touched", async function () {
     this.timeout(30000);
 
-    touchSource("Root.sol");
+    Utils.touchSource("Root.sol");
 
     await CommandRunner.run("compile", config);
     output = logger.contents();
 
-    finalTimes = getArtifactStats();
+    finalTimes = Utils.getArtifactStats();
 
     try {
       assert(hasBeenUpdated("Root.sol"), "Should update root");
@@ -154,12 +123,12 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
   it("updates Root and Library when Library is touched", async function () {
     this.timeout(30000);
 
-    touchSource("LibraryA.sol");
+    Utils.touchSource("LibraryA.sol");
 
     await CommandRunner.run("compile", config);
     output = logger.contents();
 
-    finalTimes = getArtifactStats();
+    finalTimes = Utils.getArtifactStats();
 
     try {
       assert(hasBeenUpdated("Root.sol"), "Should update root");
@@ -189,12 +158,12 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
   it("updates Branch and Root when Branch is touched", async function () {
     this.timeout(30000);
 
-    touchSource("Branch.sol");
+    Utils.touchSource("Branch.sol");
 
     await CommandRunner.run("compile", config);
     output = logger.contents();
 
-    finalTimes = getArtifactStats();
+    finalTimes = Utils.getArtifactStats();
 
     try {
       assert(hasBeenUpdated("Root.sol"), "Should update root");
@@ -224,12 +193,12 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
   it("updates LeafA, Branch and Root when LeafA is touched", async function () {
     this.timeout(30000);
 
-    touchSource("LeafA.sol");
+    Utils.touchSource("LeafA.sol");
 
     await CommandRunner.run("compile", config);
     output = logger.contents();
 
-    finalTimes = getArtifactStats();
+    finalTimes = Utils.getArtifactStats();
 
     try {
       assert(hasBeenUpdated("LeafA.sol"), "Should update LeafA");
@@ -264,12 +233,12 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
   it("updates everything except LibraryA and Abi when LeafC is touched", async function () {
     this.timeout(30000);
 
-    touchSource("LeafC.sol");
+    Utils.touchSource("LeafC.sol");
 
     await CommandRunner.run("compile", config);
     output = logger.contents();
 
-    finalTimes = getArtifactStats();
+    finalTimes = Utils.getArtifactStats();
 
     try {
       assert(!hasBeenUpdated("LibraryA.sol"), "Should not update LibraryA");
@@ -299,12 +268,12 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
   it("updates Root and Abi when Abi is touched", async function () {
     this.timeout(30000);
 
-    touchSource("Abi.abi.json");
+    Utils.touchSource("Abi.abi.json");
 
     await CommandRunner.run("compile", config);
     output = logger.contents();
 
-    finalTimes = getArtifactStats();
+    finalTimes = Utils.getArtifactStats();
 
     try {
       assert(hasBeenUpdated("Root.sol"), "Should update root");
