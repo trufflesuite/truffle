@@ -94,7 +94,7 @@ const command = {
         );
       }
 
-      return WorkflowCompile.save(config, compilationOutput);
+      return await WorkflowCompile.save(config, compilationOutput);
     }
   },
 
