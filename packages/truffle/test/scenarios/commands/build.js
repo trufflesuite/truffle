@@ -54,7 +54,7 @@ describe("truffle build [ @standalone ]", () => {
   });
 
   describe("when there is an object in the build config", () => {
-    beforeEach("set up sandbox", () => {
+    beforeEach("set up sandbox", function () {
       project = path.join(
         __dirname,
         "../../sources/build/projectWithObjectInBuildScript"
