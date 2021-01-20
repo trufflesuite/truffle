@@ -68,7 +68,7 @@ const command = {
     const config = Config.detect(options);
 
     if (config.list !== undefined) {
-      return command.listVersions(config);
+      return await command.listVersions(config);
     } else {
       if (
         options.saveIntermediate === true ||
