@@ -92,7 +92,7 @@ const command = {
       );
     }
     const interpreter = await new CLIDebugger(config, {txHash}).run();
-    return promisify(interpreter.start)();
+    return await promisify(interpreter.start)();
   }
 };
 
