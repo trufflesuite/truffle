@@ -46,7 +46,7 @@ describe("truffle build [ @standalone ]", () => {
         config.logger = logger;
       });
     });
-    it("runs the build script", async () => {
+    it("runs the build script", async function () {
       await CommandRunner.run("build", config);
       const output = logger.contents();
       assert(output.includes("'this is the build script'"));
