@@ -1,6 +1,6 @@
-import { Source } from "./sources";
+export { Source } from "./sources";
 import * as Sources from "./sources";
-export { Sources, Source };
+export { Sources };
 
 export * from "./types";
 export * from "./utils";
