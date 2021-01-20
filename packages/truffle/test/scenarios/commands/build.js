@@ -9,7 +9,7 @@ describe("truffle build [ @standalone ]", () => {
   let config, project;
 
   describe("when there is no build script in config", () => {
-    beforeEach("set up sandbox", () => {
+    beforeEach("set up sandbox", function () {
       project = path.join(
         __dirname,
         "../../sources/build/projectWithoutBuildScript"
