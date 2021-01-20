@@ -41,22 +41,23 @@ function parseImports(body) {
     .map(line => {
       //extract imports!
       const importRegex = /^import\b(.*?)\bas\b/;
-      const fromImportRegex = /^from\b(.*?)\bimport\b(.*?)\bas\b/;
+      const fromImportRegex = /^from\b(.*?)\bimport\b(.*?)($|\bas\b)/;
       let matches;
       if (matches = line.match(importRegex)) {
         const [_, path] = matches;
         return stripWhitespace(path);
       } else if (matches = line.match(fromImportRegex)) {
         const [_, basePath, endPath] = matches;
+        debug("basePath: %s; endPath: %s", basePath, endPath);
         const strippedBasePath = stripWhitespace(basePath);
         if (strippedBasePath === "vyper.interfaces") {
           //built-in import; we should not attempt to resolve it
           return null;
         }
-        const strippedEndPath = stripWhitespace(basePath);
+        const strippedEndPath = stripWhitespace(endPath);
         return strippedBasePath.endsWith(".")
-          ? `${strippedBasePath}${stripWhitespace(endPath)}` //don't add extra "." for "from . import", etc
-          : `${strippedBasePath}.${stripWhitespace(endPath)}`;
+          ? `${strippedBasePath}${strippedEndPath}` //don't add extra "." for "from . import", etc
+          : `${strippedBasePath}.${strippedEndPath}`;
         //on the endPath because
       } else {
         return null;
