@@ -38,7 +38,7 @@ const command = {
 
     await Environment.detect(config);
     const c = new Console(consoleCommands, config.with({noAliases: true}));
-    return promisify(c.start)();
+    return await promisify(c.start)();
   }
 };
 
