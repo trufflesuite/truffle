@@ -10,3 +10,7 @@ export interface SourceResolution {
   body: string | undefined;
   filePath: string | undefined;
 }
+
+export interface ResolvedSource extends SourceResolution {
+  source: ResolverSource;
+};

@@ -5,7 +5,7 @@ const contract = require("@truffle/contract");
 const expect = require("@truffle/expect");
 const provision = require("@truffle/provisioner");
 
-import { ResolverSource } from "./source";
+import { ResolverSource, ResolvedSource } from "./source";
 import { EthPMv1, NPM, GlobalNPM, FS, Truffle, ABI, Vyper } from "./sources";
 
 export interface ResolverOptions {
@@ -13,12 +13,6 @@ export interface ResolverOptions {
   translateJsonToSolidity?: boolean;
   resolveVyperModules?: boolean;
 }
-
-export interface ResolvedSource {
-  body: string;
-  filePath: string;
-  source: ResolverSource;
-};
 
 const defaultResolverOptions = {
   includeTruffleSources: false,
@@ -64,9 +58,7 @@ export class Resolver {
     ];
 
     if (resolveVyperModules) {
-      this.sources = this.sources.map(
-        source => new Vyper(source, options.contracts_directory)
-      );
+      this.sources = [new Vyper(this.sources, options.contracts_directory)];
     }
   }
 

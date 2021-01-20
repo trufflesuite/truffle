@@ -6,7 +6,7 @@ import { ResolverSource, SourceResolution } from "../source";
 
 export class Vyper implements ResolverSource {
   contractsDirectory: string;
-  wrappedSource: ResolverSource;
+  wrappedSources: ResolverSource[];
   //because this ResolverSource has to do an actual resolution just to
   //do a resolveDependencyPath, I'm giving it a cache to prevent redoing
   //the work of resolution later
@@ -14,10 +14,9 @@ export class Vyper implements ResolverSource {
     [filePath: string]: SourceResolution
   };
 
-  constructor(wrappedSource: ResolverSource, contractsDirectory: string) {
-    this.wrappedSource = wrappedSource;
+  constructor(wrappedSources: ResolverSource[], contractsDirectory: string) {
+    this.wrappedSources = wrappedSources;
     this.cache = {};
-    debug("contractsDirectory: %s", contractsDirectory);
     this.contractsDirectory = contractsDirectory;
   }
 
@@ -33,11 +32,12 @@ export class Vyper implements ResolverSource {
     debug("importedFrom: %s", importedFrom);
 
     //attempt to just resolve as if it's a file path rather than Vyper module
-    const directlyResolvedSource =
-        await this.wrappedSource.resolve(importModule, importedFrom);
-    if (directlyResolvedSource.body) {
-      debug("found directly");
-      return directlyResolvedSource;
+    for (const source of this.wrappedSources) {
+      const directlyResolvedSource = await source.resolve(importModule, importedFrom);
+      if (directlyResolvedSource.body) {
+        debug("found directly");
+        return directlyResolvedSource;
+      }
     }
     //otherwise, it's time for some Vyper module processing...
 
@@ -78,11 +78,18 @@ export class Vyper implements ResolverSource {
 
     for (const possiblePath of possiblePaths) {
       debug("possiblePath: %s", possiblePath);
-      const resolvedSource = possiblePath in this.cache
-        ? this.cache[possiblePath]
-        : await this.wrappedSource.resolve(possiblePath, importedFrom);
-
-      if (!(possiblePath in this.cache)) {
+      let resolvedSource;
+      if (possiblePath in this.cache) {
+        resolvedSource = this.cache[possiblePath];
+      } else {
+        for (const source of this.wrappedSources) {
+          debug("source: %o", source);
+          resolvedSource = await source.resolve(possiblePath, importedFrom);
+          if (resolvedSource.body) {
+            debug("found via this source");
+            break;
+          }
+        }
         this.cache[possiblePath] = resolvedSource; //yes, even failures are cached!
       }
 
@@ -100,6 +107,7 @@ export class Vyper implements ResolverSource {
   async resolveDependencyPath(importPath: string, dependencyPath: string) {
     //unfortunately, for this sort of source to resolve a dependency path,
     //it's going to need to do a resolve :-/
+    debug("importPath: %s", importPath);
     const resolved = await this.resolve(dependencyPath, importPath);
     if (resolved) {
       return resolved.filePath;
