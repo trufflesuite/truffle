@@ -64,7 +64,7 @@ describe("truffle build [ @standalone ]", () => {
         config.logger = logger;
       });
     });
-    it("tells the user it shouldn't use an object", async () => {
+    it("tells the user it shouldn't use an object", async function () {
       try {
         await CommandRunner.run("build", config);
       } catch (error) {
