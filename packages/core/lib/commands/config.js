@@ -58,7 +58,7 @@ const command = {
     }
 
     if (command === null) {
-      return googleAnalytics.setUserConfigViaPrompt();
+      return await googleAnalytics.setUserConfigViaPrompt();
     } else if (command.userLevel) {
       switch (command.key) {
         case "analytics": {
