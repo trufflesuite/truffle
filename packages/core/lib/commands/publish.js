@@ -11,7 +11,7 @@ const command = {
     const Package = require("../package");
 
     const config = Config.detect(options);
-    return Package.publish(config);
+    return await Package.publish(config);
   }
 };
 

@@ -25,7 +25,7 @@ module.exports = {
     config.events.emit("obtain:start");
 
     if (options.solc) {
-      return this.downloadAndCacheSolc({config, options, supplier});
+      return await this.downloadAndCacheSolc({config, options, supplier});
     }
 
     const message =

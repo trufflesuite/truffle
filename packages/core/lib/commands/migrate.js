@@ -254,12 +254,12 @@ const command = {
       Migrate.launchReporter(config);
 
       if (options.f) {
-        return Migrate.runFrom(options.f, config);
+        return await Migrate.runFrom(options.f, config);
       } else {
         const needsMigrating = await Migrate.needsMigrating(config);
 
         if (needsMigrating) {
-          return Migrate.run(config);
+          return await Migrate.run(config);
         } else {
           config.logger.log("Network up to date.");
           return;

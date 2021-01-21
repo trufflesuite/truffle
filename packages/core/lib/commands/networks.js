@@ -26,9 +26,9 @@ var command = {
     const config = Config.detect(options);
 
     if (options.clean) {
-      return Networks.clean(config);
+      return await Networks.clean(config);
     }
-    return Networks.display(config);
+    return await Networks.display(config);
   }
 };
 
