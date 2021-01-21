@@ -1,5 +1,3 @@
-const { promisify } = require("util");
-
 const command = {
   command: "console",
   description:
@@ -39,7 +37,7 @@ const command = {
 
     await Environment.detect(config);
     const c = new Console(consoleCommands, config.with({noAliases: true}));
-    return await promisify(c.start).bind(c.start)();
+    return await c.start();
   }
 };
 
