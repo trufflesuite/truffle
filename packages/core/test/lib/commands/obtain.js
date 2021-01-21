@@ -5,7 +5,7 @@ const CompilerSupplier = require("@truffle/compile-solidity").CompilerSupplier;
 let options, solc;
 
 describe("obtain", () => {
-  describe(".run(options)", () => {
+  describe(".run(options)", function () {
     beforeEach(() => {
       options = {solc: "0.5.3"};
       solc = {version: () => "0.5.3"};
@@ -17,19 +17,19 @@ describe("obtain", () => {
       CompilerSupplier.prototype.downloadAndCacheSolc.restore();
     });
 
-    it("calls downloadAndCacheSolc on the supplier with the version", async () => {
+    it("calls downloadAndCacheSolc on the supplier with the version", async function () {
       await command.run(options);
       assert(
         CompilerSupplier.prototype.downloadAndCacheSolc.calledWith("0.5.3")
       );
     });
 
-    describe("when options.solc is not present", () => {
+    describe("when options.solc is not present", async () {
       beforeEach(() => {
         options.solc = undefined;
       });
 
-      it("throws an error", async () => {
+      it("throws an error", async function() {
         try {
           await command.run(options);
           assert.fail("The run command should have failed");

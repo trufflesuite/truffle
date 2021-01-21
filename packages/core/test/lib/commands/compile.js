@@ -36,7 +36,7 @@ describe("compile", function () {
 
   afterEach("Clear MemoryStream", () => (output = ""));
 
-  it("compiles all initial contracts", async () => {
+  it("compiles all initial contracts", async function () {
     const {contracts} = await WorkflowCompile.compileAndSave(
       config.with({
         all: false,
@@ -50,7 +50,7 @@ describe("compile", function () {
     );
   });
 
-  it("compiles no contracts after no updates", async () => {
+  it("compiles no contracts after no updates", async function () {
     const {contracts} = await WorkflowCompile.compileAndSave(
       config.with({
         all: false,
@@ -64,7 +64,7 @@ describe("compile", function () {
     );
   });
 
-  it("compiles updated contract and its ancestors", async () => {
+  it("compiles updated contract and its ancestors", async function () {
     const fileToUpdate = path.resolve(
       path.join(config.contracts_directory, "ConvertLib.sol")
     );
@@ -107,7 +107,7 @@ describe("compile", function () {
       });
     });
 
-    it("prints a truncated list of solcjs versions", async () => {
+    it("prints a truncated list of solcjs versions", async function () {
       const options = {
         list: ""
       };
@@ -120,7 +120,7 @@ describe("compile", function () {
       memStream.end("");
     });
 
-    it("prints a list of docker tags", async () => {
+    it("prints a list of docker tags", async function () {
       const options = {
         list: "docker"
       };
@@ -134,7 +134,7 @@ describe("compile", function () {
       memStream.end("");
     });
 
-    it("prints a full list of releases when --all is set", async () => {
+    it("prints a full list of releases when --all is set", async function () {
       const options = {
         list: "releases",
         all: true

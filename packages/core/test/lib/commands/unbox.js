@@ -49,12 +49,12 @@ describe("commands/unbox.js", () => {
               .catch(_error => assert(true))
           );
         }
-        return Promise.all(promises);
+        return await Promise.all(promises);
       });
     });
 
     describe("successful unboxes", () => {
-      it("runs when passed valid box input", async () => {
+      it("runs when passed valid box input", async function () {
         let promises = [];
         validBoxInput.forEach(val => {
           promises.push(
@@ -64,7 +64,7 @@ describe("commands/unbox.js", () => {
               .catch(_error => assert.fail())
           );
         });
-        return Promise.all(promises);
+        return await Promise.all(promises);
       }).timeout(10000);
     });
   });

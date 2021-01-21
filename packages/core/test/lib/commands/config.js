@@ -37,7 +37,7 @@ describe("config", function () {
     });
   });
 
-  after("Cleanup tmp files", async () => {
+  after("Cleanup tmp files", async function () {
     const files = glob.sync("tmp-*");
     files.forEach(file => fs.removeSync(file));
   });
@@ -47,7 +47,7 @@ describe("config", function () {
     output = "";
   });
 
-  it("retrieves the default migrations directory", async () => {
+  it("retrieves the default migrations directory", async function () {
     await command.run({
       working_directory: config.working_directory,
       _: ["get", "migrations_directory"],
@@ -57,7 +57,7 @@ describe("config", function () {
     assert.equal(output, expected);
   });
 
-  it("retrieves an adjusted migrations directory", async () => {
+  it("retrieves an adjusted migrations directory", async function () {
     const configFile = Config.search({
       working_directory: config.working_directory
     });

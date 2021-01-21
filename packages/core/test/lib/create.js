@@ -17,12 +17,12 @@ describe("create", function () {
     config.artifactor = new Artifactor(config.contracts_build_directory);
   });
 
-  after("Cleanup tmp files", async () => {
+  after("Cleanup tmp files", async function () {
     const files = glob.sync("tmp-*");
     files.forEach(file => fse.removeSync(file));
   });
 
-  it("creates a new contract", async () => {
+  it("creates a new contract", async function () {
     await Create.contract(config.contracts_directory, "MyNewContract", {});
 
     const expectedFile = path.join(
@@ -43,7 +43,7 @@ describe("create", function () {
     );
   });
 
-  it("will not overwrite an existing contract (by default)", async () => {
+  it("will not overwrite an existing contract (by default)", async function () {
     await Create.contract(config.contracts_directory, "MyNewContract2", {});
 
     const expectedFile = path.join(
@@ -63,7 +63,7 @@ describe("create", function () {
     }
   });
 
-  it("will overwrite an existing contract if the force option is enabled", async () => {
+  it("will overwrite an existing contract if the force option is enabled", async function () {
     await Create.contract(config.contracts_directory, "MyNewContract3", {});
 
     const expectedFile = path.join(
@@ -83,7 +83,7 @@ describe("create", function () {
     );
   });
 
-  it("creates a new test", async () => {
+  it("creates a new test", async function () {
     await Create.test(config.test_directory, "MyNewTest", {});
 
     const expectedFile = path.join(config.test_directory, "my_new_test.js");
@@ -97,7 +97,7 @@ describe("create", function () {
     assert.notEqual(fileData, "", "File's data is blank");
   });
 
-  it("creates a new migration", async () => {
+  it("creates a new migration", async function () {
     await Create.migration(config.migrations_directory, "MyNewMigration", {});
     const files = glob.sync(`${config.migrations_directory}${path.sep}*`);
 
