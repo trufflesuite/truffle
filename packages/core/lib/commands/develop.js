@@ -124,7 +124,7 @@ const command = {
     }
 
     if (!options.log) {
-      return command.runConsole(config, ganacheOptions);
+      return await command.runConsole(config, ganacheOptions);
     }
   }
 };
