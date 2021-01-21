@@ -77,7 +77,7 @@ const command = {
     if (compilationOutput) {
       await WorkflowCompile.save(config, compilationOutput);
     }
-    return promisify(Require.exec.bind(Require))(config.with({file}));
+    return await promisify(Require.exec.bind(Require))(config.with({file}));
   }
 };
 
