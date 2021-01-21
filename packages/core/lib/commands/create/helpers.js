@@ -19,16 +19,16 @@ const templates = {
   }
 };
 
-const replaceContents = function (file_path, find, replacement) {
-  const data = fs.readFileSync(file_path, { encoding: "utf8" });
+const replaceContents = (filePath, find, replacement) => {
+  const data = fs.readFileSync(filePath, { encoding: "utf8" });
   if (typeof find === "string") {
     find = new RegExp(find, "g");
   }
   const result = data.replace(find, replacement);
-  fs.writeFileSync(file_path, result, { encoding: "utf8" });
+  fs.writeFileSync(filePath, result, { encoding: "utf8" });
 };
 
-const toUnderscoreFromCamel = function (string) {
+const toUnderscoreFromCamel = (string) => {
   string = string.replace(/([A-Z])/g, function ($1) {
     return "_" + $1.toLowerCase();
   });
@@ -42,10 +42,11 @@ const toUnderscoreFromCamel = function (string) {
 
 // getLicense return the license property value from Truffle config first and
 // in case that the file doesn't exist it will fallback to package.json
-function getLicense(options) {
+const getLicense = (options) => {
   try {
-    if ((license = require("@truffle/config").detect(options).license))
+    if ((license = require("@truffle/config").detect(options).license)) {
       return license;
+    }
   } catch (err) {
     console.log(err);
   }
@@ -103,7 +104,7 @@ const Create = {
     if (!options.force && fs.existsSync(to)) {
       throw new Error("Can not create " + filename + ": file exists");
     }
-    return await promisify(copy.file)(from, to);
+    return await promisify(copy.file).bind(copy.file)(from, to);
   }
 };
 
