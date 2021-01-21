@@ -69,7 +69,7 @@ const Create = {
 
     replaceContents(to, templates.contract.name, name);
     if ((license = getLicense(options))) {
-      replaceContents(to, templates.contract.license, license, callback);
+      replaceContents(to, templates.contract.license, license);
     }
   },
 
