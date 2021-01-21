@@ -3,7 +3,13 @@ const debug = logger("db:project:migrate:networkGenealogies");
 
 import gql from "graphql-tag";
 
-import { DataModel, IdObject, toIdObject } from "@truffle/db/resources";
+import {
+  DataModel,
+  Input,
+  Resource,
+  IdObject,
+  toIdObject
+} from "@truffle/db/resources";
 import { resources, Process } from "@truffle/db/process";
 
 /**
@@ -124,7 +130,7 @@ function collectArtifactNetworks<
   artifactNetworks: (ArtifactNetwork | undefined)[]
 ): {
   networks: IdObject<"networks">[];
-  networkGenealogies: DataModel.NetworkGenealogyInput[];
+  networkGenealogies: Input<"networkGenealogies">[];
 } {
   // start by ordering non-null networks by block height
   // map to reference to Network itself
@@ -148,7 +154,7 @@ function collectArtifactNetworks<
   // each pair as we step over the descendants for each pair.
   type ResultAccumulator = {
     ancestor: IdObject<"networks">;
-    networkGenealogies: DataModel.NetworkGenealogyInput[];
+    networkGenealogies: Input<"networkGenealogies">[];
   };
 
   const initialAccumulator: ResultAccumulator = {
@@ -199,7 +205,7 @@ function* findRelation(
   // since we're doing this iteratively, keep track of what networks we've
   // tried and which ones we haven't
   let alreadyTried: string[] = [];
-  let candidates: DataModel.Network[];
+  let candidates: Resource<"networks">[];
 
   do {
     // query graphql for new candidates
@@ -281,7 +287,7 @@ function* queryNextPossiblyRelatedNetworks(
  * This works by querying for block hashes for given candidate heights
  */
 function* findMatchingCandidateOnChain(
-  candidates: DataModel.Network[]
+  candidates: Resource<"networks">[]
 ): Process<IdObject<"networks"> | undefined> {
   for (const candidate of candidates) {
     const response = yield {

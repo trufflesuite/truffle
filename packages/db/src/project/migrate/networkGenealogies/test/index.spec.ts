@@ -8,7 +8,7 @@ import * as fc from "fast-check";
 import { Networks, Batches } from "test/arbitraries/networks";
 
 import { resources } from "@truffle/db/process";
-import { DataModel } from "@truffle/db/resources";
+import { Resource } from "@truffle/db/resources";
 import { generateNetworkGenealogiesLoad } from "..";
 
 import { mockProvider } from "./mockProvider";
@@ -84,7 +84,7 @@ describe("generateNetworkGenealogiesLoad", () => {
               }
             }
           `
-        )) as DataModel.Network[];
+        )) as Resource<"networks">[];
         debug("networks %O", networks);
 
         const ids = new Set(

@@ -2,7 +2,7 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:migrate");
 
 import { ContractObject } from "@truffle/contract-schema/spec";
-import { DataModel, toIdObject, IdObject } from "@truffle/db/resources";
+import { Input, toIdObject, IdObject } from "@truffle/db/resources";
 import { Process } from "@truffle/db/process";
 
 import { generateNetworkId } from "./networkId";
@@ -25,7 +25,7 @@ export type Artifact = ContractObject & {
 
 export function* generateMigrateLoad(options: {
   // we'll need everything for this input other than what's calculated here
-  network: Omit<DataModel.NetworkInput, "networkId" | "historicBlock">;
+  network: Omit<Input<"networks">, "networkId" | "historicBlock">;
   artifacts: (ContractObject & {
     db: {
       contract: IdObject<"contracts">;

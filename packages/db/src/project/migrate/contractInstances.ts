@@ -1,7 +1,7 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:migrate:contractInstances");
 
-import { DataModel, IdObject } from "@truffle/db/resources";
+import { DataModel, Input, IdObject } from "@truffle/db/resources";
 import { resources } from "@truffle/db/process";
 import * as Batch from "./batch";
 
@@ -29,7 +29,7 @@ export const generateContractInstancesLoad = Batch.generate<{
       contractInstance: IdObject<"contractInstances">;
     };
   };
-  entry: DataModel.ContractInstanceInput;
+  entry: Input<"contractInstances">;
   result: IdObject<"contractInstances">;
 }>({
   extract({ input, inputs, breadcrumb }) {

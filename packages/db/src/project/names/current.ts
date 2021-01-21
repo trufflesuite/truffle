@@ -3,7 +3,7 @@ const debug = logger("db:project:names:current");
 
 import gql from "graphql-tag";
 import { resources } from "@truffle/db/process";
-import { DataModel } from "@truffle/db/resources";
+import { Resource } from "@truffle/db/resources";
 import * as Batch from "./batch";
 
 export const generateCurrentNameRecords = Batch.generate<{
@@ -12,20 +12,20 @@ export const generateCurrentNameRecords = Batch.generate<{
     type: string;
   };
   properties: {
-    current: DataModel.NameRecord | undefined;
+    current: Resource<"nameRecords"> | undefined;
   };
   entry: {
     name: string;
     type: string;
   };
-  result: DataModel.NameRecord | undefined;
+  result: Resource<"nameRecords"> | undefined;
 }>({
   extract<_I>({ input: { name, type } }) {
     return { name, type };
   },
 
   *process({ entries, inputs: { project } }) {
-    const nameRecords: (DataModel.NameRecord | undefined)[] = [];
+    const nameRecords: (Resource<"nameRecords"> | undefined)[] = [];
     for (const { name, type } of entries) {
       const {
         resolve: [nameRecord]

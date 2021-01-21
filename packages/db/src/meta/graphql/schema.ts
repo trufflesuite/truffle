@@ -38,6 +38,9 @@ class DefinitionsSchema<C extends Collections> {
     log("Generating...");
 
     const common = gql`
+      type Query
+      type Mutation
+
       interface Resource {
         id: ID!
         type: String!
@@ -61,9 +64,6 @@ class DefinitionsSchema<C extends Collections> {
       input QueryFilter {
         ids: [ID]!
       }
-
-      type Query
-      type Mutation
     `;
 
     const result = Object.values(this.collections)

@@ -9,7 +9,7 @@ import { Environment } from "@truffle/environment";
 import { ContractObject } from "@truffle/contract-schema/spec";
 
 import { Project } from "@truffle/db/project";
-import { DataModel, Db, IdObject, toIdObject } from "@truffle/db/resources";
+import { Resource, Db, IdObject, toIdObject } from "@truffle/db/resources";
 import { resources } from "@truffle/db/process";
 import { WorkflowCompileResult } from "@truffle/compile-common/src/types";
 import WorkflowCompile from "@truffle/workflow-compile";
@@ -115,7 +115,7 @@ export class ArtifactsLoader {
     );
 
     // and resolve artifact
-    return contracts.map((contract: DataModel.Contract) => {
+    return contracts.map((contract: Resource<"contracts">) => {
       const { name, callBytecode, createBytecode } = contract;
 
       debug("Requiring artifact for %s...", name);

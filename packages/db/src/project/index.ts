@@ -21,9 +21,31 @@ import { Compilation, Contract, generateCompileLoad } from "./compile";
 import { Artifact, generateMigrateLoad } from "./migrate";
 
 /**
- * Abstraction to integrate with Truffle projects
+ * Abstraction for connecting @truffle/db to a Truffle project
  *
- * Truffle concepts such as compilation results and migrated artifacts.
+ * This class affords an interface between Truffle and @truffle/db,
+ * specifically for the purposes of ingesting @truffle/workflow-compile results
+ * and contract instance information from @truffle/contract-schema artifact
+ * files.
+ *
+ * Unless you are building tools that work with Truffle's various packages
+ * directly, you probably don't need to use this class.
+ *
+ * @example To instantiate this abstraction:
+ * ```typescript
+ * import { connect, Project } from "@truffle/db";
+ *
+ * const db = connect({
+ *   // ...
+ * });
+ *
+ * const project = await Project.initialize({
+ *   db,
+ *   project: {
+ *     directory: "/path/to/project/dir"
+ *   }
+ * });
+ * ```
  */
 export class Project {
   /**
@@ -50,7 +72,13 @@ export class Project {
 
   /**
    * Accept a compilation result and process it to save all relevant resources
-   * (Source, Bytecode, Compilation, Contract)
+   * ([[DataModel.Source | Source]], [[DataModel.Bytecode | Bytecode]],
+   * [[DataModel.Compilation | Compilation]],
+   * [[DataModel.Contract | Contract]])
+   *
+   * This returns the same WorkflowCompileResult but with additional
+   * references to each of the added resources.
+   *
    * @category Truffle-specific
    */
   async loadCompile(options: {
@@ -66,15 +94,17 @@ export class Project {
 
   /**
    * Update name pointers for this project. Currently affords name-keeping for
-   * Network and Contract resources (e.g., naming ContractInstance resources
-   * is not supported directly)
+   * [[DataModel.Network | Network]] and [[DataModel.Contract | Contract]]
+   * resources (e.g., naming [[DataModel.ContractInstance | ContractInstance]]
+   * resources is not supported directly)
    *
    * This saves [[DataModel.NameRecord | NameRecord]] and
    * [[DataModel.ProjectName | ProjectName]] resources to @truffle/db.
    *
-   * Returns a list NameRecord resources for completeness, although these may
-   * be regarded as an internal concern. ProjectName resources are not returned
-   * because they are mutable; returned representations would be impermanent.
+   * Returns a list of NameRecord resources for completeness, although these
+   * may be regarded as an internal concern. ProjectName resources are not
+   * returned because they are mutable; returned representations would be
+   * impermanent.
    *
    * @typeParam N
    * Either `"contracts"`, `"networks"`, or `"contracts" | "networks"`.
@@ -183,21 +213,29 @@ export class Project {
   }
 }
 
+/**
+ * @category Internal
+ */
 export namespace Project {
   export class ConnectedProject extends Project {
     /**
      * Process artifacts after a migration. Uses provider to determine most
-     * relevant network information directly, but still requires project-specific
-     * information about the network (i.e., name)
+     * relevant network information directly, but still requires
+     * project-specific information about the network (i.e., name)
      *
-     * This adds potentially multiple Network resources to @truffle/db, creating
-     * individual networks for the historic blocks in which each ContractInstance
-     * was first created on-chain.
+     * This adds potentially multiple [[DataModel.Network | Network]] resources
+     * to @truffle/db, creating individual networks for the historic blocks in
+     * which each [[DataModel.ContractInstance | ContractInstance]] was first
+     * created on-chain.
      *
-     * This saves Network and ContractInstance resources to @truffle/db.
+     * This saves [[DataModel.Network | Network]] and
+     * [[DataModel.ContractInstance | ContractInstance]] resources to
+     * \@truffle/db.
      *
-     * Returns both a list of ContractInstances and the Network added with the
-     * highest block height.
+     * Returns `artifacts` with network objects populated with IDs for each
+     * [[DataModel.ContractInstance | ContractInstance]], along with a
+     * `network` object containing the ID of whichever
+     * [[DataModel.Network | Network]] was added with the highest block height.
      * @category Truffle-specific
      */
     async loadMigrate(options: {

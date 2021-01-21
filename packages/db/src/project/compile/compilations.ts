@@ -1,7 +1,7 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:compile:compilations");
 
-import { DataModel, IdObject } from "@truffle/db/resources";
+import { DataModel, Input, IdObject } from "@truffle/db/resources";
 import { resources } from "@truffle/db/process";
 import * as Batch from "./batch";
 
@@ -42,7 +42,7 @@ export const generateCompilationsLoad = Batch.Compilations.generate<{
   resources: {
     compilation: IdObject<"compilations">;
   };
-  entry: DataModel.CompilationInput;
+  entry: Input<"compilations">;
   result: IdObject<"compilations">;
 }>({
   extract({ input }) {
@@ -75,7 +75,7 @@ function toCompilationInput(options: {
   contracts: Contract[];
   sourceIndexes: string[];
   sources: Source[];
-}): DataModel.CompilationInput {
+}): Input<"compilations"> {
   const { compiler } = options;
 
   return {

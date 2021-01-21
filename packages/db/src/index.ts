@@ -13,6 +13,19 @@
  * [[Meta.Db.execute | `db.execute()`]]
  * method that accepts a GraphQL request and returns a GraphQL response.
  *
+ * ## HTTP interface
+ *
+ * This package exposes the [[serve | `serve()`]] function, which starts an
+ * HTTP server on port 4444. This server runs
+ * [GraphQL Playground](https://github.com/graphql/graphql-playground) and
+ * accepts plain GraphQL requests.
+ *
+ * ## GraphQL Schema
+ *
+ * \@truffle/db makes its GraphQL schema available as the exported
+ * [[GraphQl.schema | `GraphQl.schema`]] variable, or view the "Schema SDL"
+ * details in the [[GraphQl]] namespace documentation.
+ *
  * ## Truffle-specific interface
  *
  * This package also provides an abstraction to interface with other
@@ -73,7 +86,7 @@
  *     [resource: [[DataModel.Source | Source]],
  *     input: [[DataModel.SourceInput | SourceInput]]]
  *
- * ## JavaScript / TypeScript interface for resource entry / retrieval
+ * ## JavaScript / TypeScript interface
  *
  * This package exposes programmatic interfaces for working with
  * the resources listed above:
@@ -84,18 +97,8 @@
  *     requests/responses from/to the above generators against a given [[Db]]
  *     instance.
  *
- * ## GraphQL Schema
- *
- * \@truffle/db makes its GraphQL schema available as the exported
- * [[GraphQl.schema | `GraphQl.schema`]] variable.
- *
- * ## HTTP interface
- *
- * This package exposes the [[serve | `serve()`]] function, which starts an
- * HTTP server on port 4444. This server runs
- * [GraphQL Playground](https://github.com/graphql/graphql-playground) and
- * accepts plain GraphQL requests.
- *
+ * In addition, see the [[Resources]] module for handy helper types for
+ * dealing with @truffle/db entities.
  *
  * ## Other namespaces
  *
@@ -121,18 +124,48 @@ export { Meta };
 export { Project } from "./project";
 
 export { DataModel, Db } from "./resources";
+
 import * as Resources from "./resources";
 export { Resources };
 
 export { ConnectOptions } from "./system";
 import * as _System from "./system";
+
+/**
+ * Instantiate @truffle/db for given [[ConnectOptions]]
+ */
 export const connect = _System.connect;
+
+/**
+ * Create an Apollo GraphQL server for @truffle/db for given [[ConnectOptions]]
+ *
+ * See
+ * [Apollo Server documentation](https://www.apollographql.com/docs/apollo-server/)
+ * for more information.
+ */
 export const serve = _System.serve;
 
+/**
+ * GraphQL-related exports for @truffle/db
+ *
+ * <details>
+ * <summary>Schema SDL</summary>
+ *
+ * ```graphql
+ * [[include:schema.sdl]]
+ * ```
+ *
+ * </details>
+ *
+ * @category Primary
+ */
 export namespace GraphQl {
   export const schema = _System.schema;
 }
 
+/**
+ * @category Internal
+ */
 export namespace Pouch {
   export const attach = _System.attach;
 }

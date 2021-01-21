@@ -1,3 +1,7 @@
+/**
+ * @category Primary
+ * @packageDocumentation
+ */
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:process");
 

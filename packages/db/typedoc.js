@@ -2,7 +2,19 @@ const useNeo = false;
 
 const common = {
   entryPoints: ["src/index.ts"],
+  categoryOrder: [
+    "Primary",
+    "Schema Root",
+    "Resource",
+    "Resource Input",
+    "Constructor",
+    "Truffle-specific",
+    "Definitions",
+    "Other",
+    "Internal"
+  ],
   readme: "none",
+  includes: "dist",
   out: "dist/docs"
 };
 

@@ -6,6 +6,9 @@ import * as Meta from "@truffle/db/meta";
 import * as DataModel from "./data";
 export { DataModel };
 
+/**
+ * @category Internal
+ */
 export type Collections = {
   sources: {
     resource: DataModel.Source;
@@ -134,37 +137,103 @@ export type Collections = {
 
 export type Db = Meta.Db<Collections>;
 
+/**
+ * @category Internal
+ */
 export type Definitions = Meta.Definitions<Collections>;
 
+/**
+ * @category Internal
+ */
 export type Definition<N extends CollectionName> = Definitions[N];
 
+/**
+ * `bytecodes`, `contracts`, etc.
+ *
+ * @category Primary
+ */
 export type CollectionName = Meta.CollectionName<Collections>;
 
+/**
+ * Input type for a given collection name
+ *
+ * @example
+ * ```typescript
+ * import { Resources } from "@truffle/db";
+ *
+ * const sourceInput: Resources.Input<"sources"> = {
+ *   contents: "echo \"hello world\""
+ * }
+ * ```
+ * @category Primary
+ */
 export type Input<N extends CollectionName = CollectionName> = Meta.Input<
   Collections,
   N
 >;
 
+/**
+ * Resource type for a given collection name
+ *
+ * @example
+ * ```typescript
+ * import { Resources } from "@truffle/db";
+ *
+ * const source: Resources.Resource<"sources"> = {
+ *   id: "0x...",
+ *   contents: "echo \"hello world\""
+ * }
+ * ```
+ * @category Primary
+ */
 export type Resource<N extends CollectionName = CollectionName> = Meta.Resource<
   Collections,
   N
 >;
 
+/**
+ * Common reference type for resources in the system
+ *
+ * This exists for type safety purposes. Typically, do not define variables
+ * of this type directly; use [[toIdObject]] on existing resources.
+ *
+ * @example
+ * ```typescript
+ * import { Resources } from "@truffle/db";
+ *
+ * declare const source: Resources.Resource<"sources">;
+ *
+ * const { id }: Resources.IdObject<"sources"> = Resources.toIdObject(source);
+ * ```
+ * @category Primary
+ */
 export type IdObject<
   N extends CollectionName | undefined = undefined
 > = Meta.IdObject<Collections, N>;
 
+/**
+ * Convert a given [[Resource]] to an [[IdObject]]
+ *
+ * @category Primary
+ */
 export const toIdObject = <N extends CollectionName>(resource) =>
   Meta.toIdObject<Collections, N>(resource);
 
-export type MutableResource<
-  N extends CollectionName = CollectionName
-> = Meta.MutableResource<Collections, N>;
+/**
+ * Type akin to [[CollectionName]] but only includes mutable collections
+ *
+ * @category Primary
+ */
+export type MutableCollectionName = Meta.MutableCollectionName<Collections>;
 
-export type NamedResource<
-  N extends CollectionName = CollectionName
-> = Meta.NamedResource<Collections, N>;
-
+/**
+ * Type akin to [[CollectionName]] but only includes named collections
+ *
+ * @category Primary
+ */
 export type NamedCollectionName = Meta.NamedCollectionName<Collections>;
 
+/**
+ * @category Internal
+ */
 export type Workspace = Meta.Workspace<Collections>;

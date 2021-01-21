@@ -3,7 +3,7 @@ const debug = logger("db:resources:networks");
 
 import gql from "graphql-tag";
 
-import { DataModel, IdObject, Definition } from "./types";
+import { Input, IdObject, Definition } from "./types";
 
 export const networks: Definition<"networks"> = {
   names: {
@@ -173,7 +173,7 @@ function resolveRelationship(relationship: "ancestor" | "descendant") {
       debug("depth %d", depth);
       debug("unsearched %o", unsearched);
 
-      const networkGenealogies: DataModel.NetworkGenealogyInput[] = await workspace.find(
+      const networkGenealogies: Input<"networkGenealogies">[] = await workspace.find(
         "networkGenealogies",
         {
           selector: {

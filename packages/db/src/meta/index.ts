@@ -1,6 +1,12 @@
 /**
- * Meta
- */ /** */
+ * \@truffle/db Meta system
+ *
+ * This exposes the [[forDefinitions]] function for building a concrete
+ * system for any defined set of resources.
+ *
+ * @category Internal
+ * @packageDocumentation
+ */
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:meta");
 
@@ -9,6 +15,7 @@ export {
   Collections,
   CollectionName,
   NamedCollectionName,
+  MutableCollectionName,
   Input,
   Resource,
   MutableResource,
