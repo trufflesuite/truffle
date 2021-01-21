@@ -30,6 +30,10 @@ run_geth() {
 if [ "$INTEGRATION" = true ]; then
 
   sudo apt install -y jq
+  sudo apt install -y python3.6 python3.6-dev python3.6-venv
+  wget https://bootstrap.pypa.io/get-pip.py
+  sudo python3.6 get-pip.py
+  sudo pip3 install vyper
   lerna run --scope truffle test --stream
 
 elif [ "$GETH" = true ]; then
