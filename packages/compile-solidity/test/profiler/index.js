@@ -2,16 +2,14 @@ var assert = require("chai").assert;
 var fs = require("fs-extra");
 var glob = require("glob");
 var Box = require("@truffle/box");
-var Profiler = require("@truffle/compile-solidity/profiler");
+var Profiler = require("../../profiler");
 var Resolver = require("@truffle/resolver");
 var Artifactor = require("@truffle/artifactor");
 
-// TOOD: Move this to @truffle/compile-solidity!
-
-describe("profiler", function() {
+describe("profiler", function () {
   var config;
 
-  before("Create a sandbox", async function() {
+  before("Create a sandbox", async function () {
     config = await Box.sandbox("default");
     config.resolver = new Resolver(config);
     config.artifactor = new Artifactor(config.contracts_build_directory);
@@ -26,7 +24,7 @@ describe("profiler", function() {
     });
   });
 
-  it("profiles example project successfully", async function() {
+  it("profiles example project successfully", async function () {
     const { allSources, compilationTargets } = await Profiler.requiredSources(
       config.with({
         paths: ["./ConvertLib.sol"],
