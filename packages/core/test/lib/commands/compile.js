@@ -29,7 +29,7 @@ describe("compile", function () {
     config.logger = {log: val => val && memStream.write(val)};
   });
 
-  after("Cleanup tmp files", async () => {
+  after("Cleanup tmp files", async function () {
     const files = glob.sync("tmp-*");
     files.forEach(file => fs.removeSync(file));
   });
