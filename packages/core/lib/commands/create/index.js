@@ -81,7 +81,7 @@ const command = {
     } else if (fn == null) {
       throw new ConfigurationError(`Cannot find creation type: ${type}`);
     } else {
-      return create[type](destinations[type], name, options);
+      return await create[type](destinations[type], name, options);
     }
   }
 };
