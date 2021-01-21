@@ -1,3 +1,5 @@
+const { promisify } = require("util");
+
 const command = {
   command: "console",
   description:
@@ -19,7 +21,6 @@ const command = {
     ]
   },
   run: async function (options) {
-    const { promisify } = require("util");
     const Config = require("@truffle/config");
     const Console = require("../console");
     const { Environment } = require("@truffle/environment");
