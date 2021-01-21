@@ -38,7 +38,7 @@ const command = {
     await Environment.develop(config, ganacheOptions);
     const c = new Console(consoleCommands, config.with({noAliases: true}));
     c.on("exit", () => process.exit());
-    return c.start();
+    return await c.start();
   },
   run: async options => {
     const {Develop} = require("@truffle/environment");
@@ -124,7 +124,7 @@ const command = {
     }
 
     if (!options.log) {
-      return command.runConsole(config, ganacheOptions);
+      return await command.runConsole(config, ganacheOptions);
     }
   }
 };
