@@ -24,7 +24,7 @@ describe("obtain", () => {
       );
     });
 
-    describe("when options.solc is not present", async () {
+    describe("when options.solc is not present", async function () {
       beforeEach(() => {
         options.solc = undefined;
       });
