@@ -108,9 +108,7 @@ class Command {
         let opt = item.option.split(" ")[0];
         return opt.startsWith("--") ? opt : null;
       })
-      .filter(item => {
-        return item != null;
-      });
+      .filter(item => item != null);
 
     let invalidOptions = inputOptions.filter(
       opt => !validOptions.includes(opt)
