@@ -64,7 +64,7 @@ const Create = {
       throw new Error("Can not create " + name + ".sol: file exists");
     }
 
-    await promisify(copy.file)(from, to);
+    await promisify(copy.file).bind(copy.file)(from, to);
 
     replaceContents(to, templates.contract.name, name);
     if ((license = getLicense(options))) {
@@ -82,7 +82,7 @@ const Create = {
       throw new Error("Can not create " + underscored + ".js: file exists");
     }
 
-    await promisify(copy.file)(from, to);
+    await promisify(copy.file).bind(copy.file)(from, to);
     replaceContents(to, templates.contract.name, name);
     replaceContents(to, templates.contract.variable, underscored);
   },

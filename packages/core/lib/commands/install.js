@@ -25,7 +25,7 @@ const command = {
     if (options._ && options._.length > 0) options.packages = options._;
 
     const config = Config.detect(options);
-    return Package.install(config);
+    return await Package.install(config);
   }
 };
 
