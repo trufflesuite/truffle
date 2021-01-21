@@ -15,6 +15,7 @@ const common = {
   ],
   readme: "none",
   includes: "dist",
+  media: "docs",
   out: "dist/docs"
 };
 

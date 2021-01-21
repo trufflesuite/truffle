@@ -1,0 +1,506 @@
+type Query {
+  sources(filter: QueryFilter): [Source]
+  source(id: ID!): Source
+  bytecodes(filter: QueryFilter): [Bytecode]
+  bytecode(id: ID!): Bytecode
+  compilations(filter: QueryFilter): [Compilation]
+  compilation(id: ID!): Compilation
+  contracts(filter: QueryFilter): [Contract]
+  contract(id: ID!): Contract
+  contractInstances(filter: QueryFilter): [ContractInstance]
+  contractInstance(id: ID!): ContractInstance
+  networks(filter: QueryFilter): [Network]
+  network(id: ID!): Network
+  nameRecords(filter: QueryFilter): [NameRecord]
+  nameRecord(id: ID!): NameRecord
+  projects(filter: QueryFilter): [Project]
+  project(id: ID!): Project
+  projectNames(filter: QueryFilter): [ProjectName]
+  projectName(id: ID!): ProjectName
+  networkGenealogies(filter: QueryFilter): [NetworkGenealogy]
+  networkGenealogy(id: ID!): NetworkGenealogy
+}
+
+type Mutation {
+  sourcesAdd(input: SourcesAddInput!): SourcesAddPayload
+  bytecodesAdd(input: BytecodesAddInput!): BytecodesAddPayload
+  compilationsAdd(input: CompilationsAddInput!): CompilationsAddPayload
+  contractsAdd(input: ContractsAddInput!): ContractsAddPayload
+  contractInstancesAdd(input: ContractInstancesAddInput!): ContractInstancesAddPayload
+  networksAdd(input: NetworksAddInput!): NetworksAddPayload
+  nameRecordsAdd(input: NameRecordsAddInput!): NameRecordsAddPayload
+  projectsAdd(input: ProjectsAddInput!): ProjectsAddPayload
+  projectNamesAssign(input: ProjectNamesAssignInput!): ProjectNamesAssignPayload
+  networkGenealogiesAdd(input: NetworkGenealogiesAddInput!): NetworkGenealogiesAddPayload
+}
+
+interface Resource {
+  id: ID!
+  type: String!
+}
+
+interface Named {
+  id: ID!
+  type: String!
+  name: String!
+}
+
+input ResourceReferenceInput {
+  id: ID!
+}
+
+input TypedResourceReferenceInput {
+  id: ID!
+  type: String!
+}
+
+input QueryFilter {
+  ids: [ID]!
+}
+
+type Source implements Resource {
+  sourcePath: String
+  contents: String!
+  id: ID!
+  type: String!
+}
+
+input SourceInput {
+  contents: String!
+  sourcePath: String
+}
+
+input SourcesAddInput {
+  sources: [SourceInput!]!
+}
+
+type SourcesAddPayload {
+  sources: [Source!]
+}
+
+type Bytecode implements Resource {
+  bytes: Bytes!
+  linkReferences: [LinkReference]
+  instructions(count: Int): [Instruction!]
+  id: ID!
+  type: String!
+}
+
+scalar Bytes
+
+type LinkReference {
+  offsets: [ByteOffset!]!
+  name: String
+  length: Int!
+}
+
+scalar ByteOffset
+
+type Instruction {
+  opcode: String!
+  programCounter: Int!
+  pushData: Bytes
+}
+
+input BytecodeInput {
+  bytes: Bytes!
+  linkReferences: [LinkReferenceInput]
+}
+
+input LinkReferenceInput {
+  offsets: [Int!]!
+  name: String
+  length: Int!
+}
+
+input BytecodesAddInput {
+  bytecodes: [BytecodeInput!]!
+}
+
+type BytecodesAddPayload {
+  bytecodes: [Bytecode!]
+}
+
+type Compilation implements Resource {
+  compiler: Compiler!
+  sources: [Source]!
+  processedSources: [ProcessedSource]!
+  sourceMaps: [SourceMap]
+  contracts: [Contract]!
+  id: ID!
+  type: String!
+}
+
+type Compiler {
+  name: String!
+  version: String!
+  settings: CompilerSettings
+}
+
+scalar CompilerSettings
+
+type ProcessedSource {
+  source: Source!
+  contracts: [Contract]!
+  ast: AST
+  language: String!
+}
+
+type AST {
+  json: String!
+}
+
+type SourceMap {
+  bytecode: Bytecode!
+  data: String!
+}
+
+input CompilationInput {
+  compiler: CompilerInput!
+  processedSources: [ProcessedSourceInput]
+  sources: [ResourceReferenceInput]!
+  sourceMaps: [SourceMapInput]
+}
+
+input CompilerInput {
+  name: String!
+  version: String!
+  settings: CompilerSettings
+}
+
+input ProcessedSourceInput {
+  source: ResourceReferenceInput
+  ast: ASTInput
+  language: String!
+}
+
+input ASTInput {
+  json: String!
+}
+
+input SourceMapInput {
+  bytecode: ResourceReferenceInput!
+  data: String!
+}
+
+input CompilationsAddInput {
+  compilations: [CompilationInput!]!
+}
+
+type CompilationsAddPayload {
+  compilations: [Compilation!]
+}
+
+type Contract implements Resource & Named {
+  name: String!
+  abi: ABI
+  compilation: Compilation
+  processedSource: ProcessedSource
+  createBytecode: Bytecode
+  callBytecode: Bytecode
+  id: ID!
+  type: String!
+}
+
+type ABI {
+  json: String!
+  entries: [Entry]
+}
+
+input ContractInput {
+  name: String!
+  abi: ABIInput
+  compilation: ResourceReferenceInput
+  processedSource: IndexReferenceInput
+  createBytecode: ResourceReferenceInput
+  callBytecode: ResourceReferenceInput
+}
+
+input IndexReferenceInput {
+  index: Int!
+}
+
+input ABIInput {
+  json: String!
+}
+
+interface Entry {
+  type: String!
+}
+
+enum StateMutability {
+  pure
+  view
+  nonpayable
+  payable
+}
+
+type FunctionEntry implements Entry {
+  type: String!
+  name: String!
+  inputs: [Parameter]!
+  outputs: [Parameter]!
+  stateMutability: StateMutability!
+}
+
+type ConstructorEntry implements Entry {
+  type: String!
+  inputs: [Parameter]!
+  stateMutability: StateMutability!
+}
+
+type FallbackEntry implements Entry {
+  type: String!
+  stateMutability: StateMutability!
+}
+
+type ReceiveEntry implements Entry {
+  type: String!
+  stateMutability: StateMutability!
+}
+
+type EventEntry implements Entry {
+  type: String!
+  name: String!
+  inputs: [EventParameter]!
+  anonymous: Boolean!
+}
+
+type Parameter {
+  name: String!
+  type: String!
+  components: [Parameter]
+  internalType: String
+}
+
+type EventParameter {
+  name: String!
+  type: String!
+  components: [Parameter]
+  internalType: String
+  indexed: Boolean!
+}
+
+input ContractsAddInput {
+  contracts: [ContractInput!]!
+}
+
+type ContractsAddPayload {
+  contracts: [Contract!]
+}
+
+type ContractInstance implements Resource {
+  address: Address!
+  network: Network!
+  creation: ContractInstanceCreation
+  callBytecode: LinkedBytecode!
+  contract: Contract
+  id: ID!
+  type: String!
+}
+
+scalar Address
+
+type ContractInstanceCreation {
+  transactionHash: TransactionHash
+  constructorArguments: [ConstructorArgument]
+  constructor: Constructor
+}
+
+scalar TransactionHash
+
+scalar ConstructorArgument
+
+type Constructor {
+  createBytecode: LinkedBytecode
+}
+
+type LinkedBytecode {
+  bytecode: Bytecode!
+  linkValues: [LinkValue]!
+}
+
+type LinkValue {
+  linkReference: LinkReference!
+  value: Bytes
+}
+
+input ContractInstanceInput {
+  address: Address!
+  network: ResourceReferenceInput
+  creation: ContractInstanceCreationInput
+  contract: ResourceReferenceInput
+  callBytecode: LinkedBytecodeInput
+}
+
+input ContractInstanceCreationInput {
+  transactionHash: TransactionHash!
+  constructor: ConstructorInput!
+}
+
+input ConstructorInput {
+  createBytecode: LinkedBytecodeInput!
+}
+
+input LinkedBytecodeInput {
+  bytecode: ResourceReferenceInput
+  linkValues: [LinkValueInput]
+}
+
+input LinkValueInput {
+  value: Address!
+  linkReference: LinkValueLinkReferenceInput!
+}
+
+input LinkValueLinkReferenceInput {
+  bytecode: ResourceReferenceInput!
+  index: Int
+}
+
+input ContractInstancesAddInput {
+  contractInstances: [ContractInstanceInput!]!
+}
+
+type ContractInstancesAddPayload {
+  contractInstances: [ContractInstance!]
+}
+
+type Network implements Resource & Named {
+  name: String!
+  networkId: NetworkId!
+  historicBlock: Block!
+  fork: Network
+  ancestors(limit: Int, includeSelf: Boolean, onlyEarliest: Boolean): [Network]!
+  descendants(limit: Int, includeSelf: Boolean, onlyLatest: Boolean): [Network]!
+  possibleAncestors(alreadyTried: [ID]!, limit: Int): CandidateSearchResult!
+  possibleDescendants(alreadyTried: [ID]!, limit: Int): CandidateSearchResult!
+  id: ID!
+  type: String!
+}
+
+scalar NetworkId
+
+type Block {
+  height: Int!
+  hash: String!
+}
+
+input NetworkInput {
+  name: String!
+  networkId: NetworkId!
+  historicBlock: BlockInput!
+}
+
+input BlockInput {
+  height: Int!
+  hash: String!
+}
+
+type CandidateSearchResult {
+  networks: [Network]!
+  alreadyTried: [ID]!
+}
+
+input NetworksAddInput {
+  networks: [NetworkInput!]!
+}
+
+type NetworksAddPayload {
+  networks: [Network!]
+}
+
+type NameRecord implements Resource {
+  resource: Named!
+  previous: NameRecord
+  history(limit: Int, includeSelf: Boolean): [NameRecord]!
+  id: ID!
+  type: String!
+}
+
+input NameRecordInput {
+  resource: TypedResourceReferenceInput!
+  previous: ResourceReferenceInput
+}
+
+input NameRecordsAddInput {
+  nameRecords: [NameRecordInput!]!
+}
+
+type NameRecordsAddPayload {
+  nameRecords: [NameRecord!]
+}
+
+type Project implements Resource {
+  directory: String!
+  contract(name: String!): Contract
+  contracts: [Contract]!
+  network(name: String!): Network
+  networks: [Network]!
+  resolve(type: String, name: String): [NameRecord]
+  id: ID!
+  type: String!
+}
+
+input ProjectInput {
+  directory: String!
+}
+
+input ProjectsAddInput {
+  projects: [ProjectInput!]!
+}
+
+type ProjectsAddPayload {
+  projects: [Project!]
+}
+
+type ProjectName implements Resource {
+  project: Project!
+  key: ProjectNameKey!
+  nameRecord: NameRecord!
+  id: ID!
+  type: String!
+}
+
+type ProjectNameKey {
+  name: String!
+  type: String!
+}
+
+input ProjectNameInput {
+  project: ResourceReferenceInput!
+  key: ProjectNameKeyInput!
+  nameRecord: ResourceReferenceInput!
+}
+
+input ProjectNameKeyInput {
+  name: String!
+  type: String!
+}
+
+input ProjectNamesAssignInput {
+  projectNames: [ProjectNameInput!]!
+}
+
+type ProjectNamesAssignPayload {
+  projectNames: [ProjectName!]
+}
+
+type NetworkGenealogy implements Resource {
+  ancestor: Network
+  descendant: Network
+  id: ID!
+  type: String!
+}
+
+input NetworkGenealogyInput {
+  ancestor: ResourceReferenceInput!
+  descendant: ResourceReferenceInput!
+}
+
+input NetworkGenealogiesAddInput {
+  networkGenealogies: [NetworkGenealogyInput!]!
+}
+
+type NetworkGenealogiesAddPayload {
+  networkGenealogies: [NetworkGenealogy!]
+}

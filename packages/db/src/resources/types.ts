@@ -135,6 +135,53 @@ export type Collections = {
   };
 };
 
+/**
+ * An instance of @truffle/db
+ *
+ * Defines the [[Meta.Db.execute | `db.execute()`]] method, which accepts
+ * GraphQL requests and returns GraphQL responses.
+ *
+ * See [[connect | connect()]] for how to instantiate this interface.
+ *
+ * @example
+ * ```typescript
+ * import gql from "graphql-tag";
+ * import { connect, Db } from "@truffle/db";
+ *
+ * const db: Db = connect({
+ *   // ...
+ * });
+ *
+ * const {
+ *   project: {
+ *     contract: {
+ *       id,
+ *       abi,
+ *       processedSource,
+ *       callBytecode
+ *     }
+ *   }
+ * } = await db.execute(gql`
+ *   query {
+ *     project(id: "0x...") {
+ *       contract(name: "MagicSquare") {
+ *         id
+ *         abi { json }
+ *         processedSource {
+ *           source { contents }
+ *           ast { json }
+ *         }
+ *         callBytecode {
+ *           bytes
+ *           linkReferences { name length offsets }
+ *           instructions { opcode programCounter pushData }
+ *         }
+ *       }
+ *     }
+ *   }
+ * `);
+ * ```
+ */
 export type Db = Meta.Db<Collections>;
 
 /**

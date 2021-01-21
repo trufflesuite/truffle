@@ -1,10 +1,67 @@
 /**
  * # @truffle/db API documentation
  *
- * \@truffle/db tracks information about smart contracts and their development
- * histories.
+ * ## Introduction
+ *
+ * **@truffle/db** tracks information about smart contracts and their
+ * development histories. It organizes this information almost entirely in the
+ * form of **content-addressed, immutable resources** and seeks to serve as a
+ * **complete system of record**, suitable to perfectly reproduce prior builds
+ * and to act as a single source of truth.
+ *
+ * This system of record covers the full gamut of concepts related to smart
+ * contract development, from source code to deployment. Among other features,
+ * it includes mechanisms for tracking the continuity of a smart contract as it
+ * is implemented and even as the network to which it's deployed experiences
+ * a hard-fork. **Blockchain data is not forgotten — why is blockchain
+ * metadata?**
+ *
+ * At a high-level, this package provides a
+ * [GraphQL](https://graphql.org/) interface and stores data via one of
+ * several persistence backends thanks to [PouchDB](https://pouchdb.com/).
+ * Use of this package directly is intended mostly for other tools – end users
+ * can find interfaces to @truffle/db by way of Truffle itself, e.g. with the
+ * `truffle db serve` command that starts a GraphQL Playground HTTP server.
+ *
+ * This documentation serves to organize the modules and namespaces included
+ * in the package, both for tool-developer reference and for continued work
+ * on @truffle/db itself. (Disclaimer: as a result, this API documentation
+ * may serve neither of these purposes well. Please reach out with questions
+ * and/or to suggest helpful clarifications!)
+ *
+ * Continue reading below for an overview and full index of this package's
+ * exports.
+ *
+ * ![Example query for a near-complete representation of a project's
+ * contract](media://images/example-query.svg)
+ *
+ * ## Contents
+ *
+ * For quick reference, this documentation summary contains the following
+ * headings:
+ *
+ * - [Introduction](#introduction)
+ *
+ * - [Contents](#contents)
+ *
+ * - [Core library interface](#core-library-interface)
+ *   - [Instantiating @truffle/db](#instantiating-truffledb)
+ *   - [GraphQL schema](#graphql-schema)
+ *
+ * - [Data model](#data-model)
+ *   - [Structure](#structure)
+ *   - [List of collections](#list-of-collections)
+ *
+ * - [Other interfaces](#other-interfaces)
+ *   - [JavaScript / TypeScript interface](#javascript---typescript-interface)
+ *   - [Truffle-specific interface](#truffle-specific-interface)
+ *   - [HTTP interface](#http-interface)
+ *
+ * - [Additional materials](#additional-materials)
  *
  * ## Core library interface
+ *
+ * ### Instantiating @truffle/db
  *
  * This package defines the primary [[connect | `connect()`]] function, which
  * returns an object adhering to the [[Db]] interface for given
@@ -13,20 +70,86 @@
  * [[Meta.Db.execute | `db.execute()`]]
  * method that accepts a GraphQL request and returns a GraphQL response.
  *
- * ## HTTP interface
- *
- * This package exposes the [[serve | `serve()`]] function, which starts an
- * HTTP server on port 4444. This server runs
- * [GraphQL Playground](https://github.com/graphql/graphql-playground) and
- * accepts plain GraphQL requests.
- *
- * ## GraphQL Schema
+ * ### GraphQL schema
  *
  * \@truffle/db makes its GraphQL schema available as the exported
- * [[GraphQl.schema | `GraphQl.schema`]] variable, or view the "Schema SDL"
- * details in the [[GraphQl]] namespace documentation.
+ * [[GraphQl.schema | `GraphQl.schema`]] variable, or view the _Schema SDL_
+ * details in the [[GraphQl]] namespace description.
  *
- * ## Truffle-specific interface
+ * ## Data model
+ *
+ * ### Structure
+ *
+ * Data is organized as a number of collections of representations of key
+ * concepts related to smart contract development. Each collection specifies:
+ *   - A collection name
+ *   - A complete resource type (exported as
+ *     [[Resources.Resource | `Resources.Resource<"<collectionName>">`]]; for
+ *     retrieved records)
+ *   - An input type (exported as
+ *     [[Resources.Input | `Resources.Input<"<collectionName>">`]]; for
+ *     new records)
+ *   - Whether its resources are mutable (**note**: currently, only
+ *     `"projectNames"` resources are mutable)
+ *   - Whether its resources are named (meaning that resources of the same
+ *     and collection will be tracked by name, for continuity and easy lookup)
+ *
+ * ### List of collections
+ *
+ * \@truffle/db defines the following collections:
+ *   - `"bytecodes"`
+ *     [_resource_: [[DataModel.Bytecode | Bytecode]];
+ *     _input_: [[DataModel.BytecodeInput | BytecodeInput]]]
+ *   - `"compilations"`
+ *     [_resource_: [[DataModel.Compilation | Compilation]];
+ *     _input_: [[DataModel.CompilationInput | CompilationInput]]]
+ *   - `"contracts"`
+ *     [_**named**_; _resource_: [[DataModel.Contract | Contract]];
+ *     _input_: [[DataModel.ContractInput | ContractInput]]]
+ *   - `"contractInstances"`
+ *     [_resource_: [[DataModel.ContractInstance | ContractInstance]];
+ *     _input_: [[DataModel.ContractInstanceInput | ContractInstanceInput]]]
+ *   - `"nameRecords"`
+ *     [_resource_: [[DataModel.NameRecord | NameRecord]];
+ *     _input_: [[DataModel.NameRecordInput | NameRecordInput]]]
+ *   - `"networks"`
+ *     [_**named**_; _resource_: [[DataModel.Network | Network]];
+ *     _input_: [[DataModel.NetworkInput | NetworkInput]]]
+ *   - `"networkGenealogies"`
+ *     [_resource_: [[DataModel.NetworkGenealogy | NetworkGenealogy]];
+ *     _input_: [[DataModel.NetworkGenealogyInput | NetworkGenealogyInput]]]
+ *   - `"projectNames"`
+ *     [_**mutable**_; _resource_: [[DataModel.ProjectName | ProjectName]];
+ *     _input_: [[DataModel.ProjectNameInput | ProjectNameInput]]]
+ *   - `"projects"`
+ *     [_resource_: [[DataModel.Project | Project]];
+ *     _input_: [[DataModel.ProjectInput | ProjectInput]]]
+ *   - `"sources"`
+ *     [_resource_: [[DataModel.Source | Source]];
+ *     _input_: [[DataModel.SourceInput | SourceInput]]]
+ *
+ * This list is not intended to be static; since @truffle/db is in early
+ * release, it may make sense to add new collections / change relationships
+ * between existing collections. Backwards compatibility is planned but not yet
+ * guaranteed.
+ *
+ * ## Other interfaces
+ *
+ * ### JavaScript / TypeScript interface
+ *
+ * This package exposes programmatic interfaces for working with
+ * the resources listed above:
+ *   - [[Process.resources]], a set of four generator functions that encode
+ *     logic for storing and retrieving resources for a given `collectionName`.
+ *
+ *   - [[Process.Run.forDb]], to construct an `async` helper that facilitates
+ *     requests/responses from/to the above generator functions against a given
+ *     [[Db]] instance.
+ *
+ * In addition, please see the [[Resources]] module for handy helper types for
+ * dealing with @truffle/db entities.
+ *
+ * ### Truffle-specific interface
  *
  * This package also provides an abstraction to interface with other
  * Truffle data formats, namely `WorkflowCompileResult`s, returned by
@@ -38,77 +161,28 @@
  *     blockchain network. Use existing project abstraction's
  *     [[Project.connect | `project.connect()`]] method to create.
  *
- * ## Data model
+ * ### HTTP interface
  *
- * \@truffle/db models data as a number of collections of key types related to
- * smart contract development. Each of these is identified by `collectionName`,
- * corresponds to a type that represents valid input for a given
- * resource to this collection, and corresponds to a type that represents the
- * full representation of a resource in this collection:
+ * This package exposes the [[serve | `serve()`]] function, which returns an
+ * [Apollo Server](https://www.apollographql.com/docs/apollo-server/)
+ * instance, adherent to the
+ * [Node.js `http.Server`](https://nodejs.org/api/http.html#http_class_http_server)
+ * interface. This server runs
+ * [GraphQL Playground](https://github.com/graphql/graphql-playground) for the
+ * browser and also accepts plain GraphQL requests.
  *
- *   - **`"bytecodes"`**
- *     [resource: [[DataModel.Bytecode | Bytecode]],
- *     input: [[DataModel.BytecodeInput | BytecodeInput]]]
+ * _(This is a handy way to explore @truffle/db, since it offers schema-aware
+ * auto-completion and the ability to explore relationships between entities.)_
  *
- *   - **`"compilations"`**
- *     [resource: [[DataModel.Compilation | Compilation]],
- *     input: [[DataModel.CompilationInput | CompilationInput]]]
+ * ## Additional materials
  *
- *   - **`"contracts"`**
- *     [resource: [[DataModel.Contract | Contract]],
- *     input: [[DataModel.ContractInput | ContractInput]]]
- *
- *   - **`"contractInstances"`**
- *     [resource: [[DataModel.ContractInstance | ContractInstance]],
- *     input: [[DataModel.ContractInstanceInput | ContractInstanceInput]]]
- *
- *   - **`"nameRecords"`**
- *     [resource: [[DataModel.NameRecord | NameRecord]],
- *     input: [[DataModel.NameRecordInput | NameRecordInput]]]
- *
- *   - **`"networks"`**
- *     [resource: [[DataModel.Network | Network]],
- *     input: [[DataModel.NetworkInput | NetworkInput]]]
- *
- *   - **`"networkGenealogies"`**
- *     [resource: [[DataModel.NetworkGenealogy | NetworkGenealogy]],
- *     input: [[DataModel.NetworkGenealogyInput | NetworkGenealogyInput]]]
- *
- *   - **`"projectNames"`**
- *     [resource: [[DataModel.ProjectName | ProjectName]],
- *     input: [[DataModel.ProjectNameInput | ProjectNameInput]]]
- *
- *   - **`"projects"`**
- *     [resource: [[DataModel.Project | Project]],
- *     input: [[DataModel.ProjectInput | ProjectInput]]]
- *
- *   - **`"sources"`**
- *     [resource: [[DataModel.Source | Source]],
- *     input: [[DataModel.SourceInput | SourceInput]]]
- *
- * ## JavaScript / TypeScript interface
- *
- * This package exposes programmatic interfaces for working with
- * the resources listed above:
- *   - [[Process.resources]], a set of four generator functions that encode
- *     logic for storing and retrieving resources for a given `collectionName`.
- *
- *   - [[Process.Run.forDb]], to construct an `async` helper that facilitates
- *     requests/responses from/to the above generators against a given [[Db]]
- *     instance.
- *
- * In addition, see the [[Resources]] module for handy helper types for
- * dealing with @truffle/db entities.
- *
- * ## Other namespaces
- *
- * This package listing contains other namespaces not mentioned here.
+ * This package listing contains other namespaces not mentioned above.
  * These are for internal use and not to be considered part of @truffle/db's
- * external interface.
+ * public interface.
  *
  * For those curious about these internals, of particular note is the [[Meta]]
- * namespace, which houses underlying resource-agnostic logic for integrating
- * GraphQL and PouchDB.
+ * namespace, which houses underlying collections-agnostic logic for
+ * integrating GraphQL and PouchDB.
  *
  * @packageDocumentation
  */ /** */
@@ -118,12 +192,12 @@ const debug = debugModule("db");
 
 require("source-map-support/register");
 
+export { DataModel, Db } from "./resources";
 import * as Meta from "./meta";
 export { Meta };
 
 export { Project } from "./project";
 
-export { DataModel, Db } from "./resources";
 
 import * as Resources from "./resources";
 export { Resources };
