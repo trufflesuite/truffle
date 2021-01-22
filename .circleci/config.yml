@@ -1,0 +1,21 @@
+version: 2.1
+orbs:
+  node: circleci/node@2.1.1
+jobs:
+  dummy-job:
+    executor:
+      name: node/default
+      tag: '10.20'
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run: "true" #dummy job to stop CI failures for now
+
+workflows:
+  dummy-workflow:
+    jobs:
+      - dummy-job:
+          filters:
+            branches:
+              only:
+                - develop

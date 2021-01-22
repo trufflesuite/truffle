@@ -2,6 +2,7 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:db");
 
 import gql from "graphql-tag";
+import { print } from "graphql/language/printer";
 import { DocumentNode, ExecutionResult, execute } from "graphql";
 
 import type TruffleConfig from "@truffle/config";
@@ -23,20 +24,23 @@ export const connect = (config: TruffleConfig): Db => {
       request: DocumentNode | string,
       variables: any = {}
     ): Promise<ExecutionResult> {
-      const response = await execute(
-        schema,
+      const document =
         typeof request === "string"
           ? gql`
               ${request}
             `
-          : request,
+          : request;
+      const response = await execute(
+        schema,
+        document,
         null,
         { workspace },
         variables
       );
 
       if (response.errors) {
-        debug("errors %o", response.errors);
+        debug("request %s", print(document));
+        debug("errors %O", response.errors);
       }
 
       return response;

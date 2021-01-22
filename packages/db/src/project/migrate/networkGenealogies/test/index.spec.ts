@@ -37,9 +37,10 @@ describe("generateNetworkGenealogiesLoad", () => {
         Networks().chain(model => fc.record({
           model: fc.constant(model),
           batches: Batches(model)
-        }))
+        })),
+        fc.boolean()
       ],
-      async ({ model, batches }) => {
+      async ({ model, batches }, disableIndex) => {
         debug("initializing project");
         const { project } = await setupProjectForTest({
           identifier: "test:networkGenealogies:property:latestDescendants"
@@ -61,7 +62,7 @@ describe("generateNetworkGenealogiesLoad", () => {
           debug("loading network genealogies for batch");
           await liveProject.run(
             generateNetworkGenealogiesLoad,
-            { network, artifacts }
+            { network, artifacts, disableIndex }
           );
         }
 
@@ -82,9 +83,9 @@ describe("generateNetworkGenealogiesLoad", () => {
         `) as DataModel.Network[];
         debug("networks %O", networks);
 
-        const ids = new Set(networks.map(
-          ({ descendants: [ latestDescendant ] }) => latestDescendant.id
-        ));
+        const ids = new Set(networks
+          .filter(({ descendants }) => descendants.length > 0)
+          .map(({ descendants: [ latestDescendant ] }) => latestDescendant.id));
         debug("ids %O", ids);
 
         expect(ids).toEqual(
