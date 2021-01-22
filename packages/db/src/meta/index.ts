@@ -25,8 +25,8 @@ export { Db, ConnectOptions } from "./interface";
 export { Workspace } from "./data";
 export { Definition, Definitions } from "./definitions";
 
-import * as GraphQl from "./graphql";
-export { GraphQl };
+import * as Graph from "./graph";
+export { Graph };
 
 import * as Pouch from "./pouch";
 export { Pouch };
@@ -45,7 +45,7 @@ export const forDefinitions = <C extends Collections>(
   definitions: Definitions<C>
 ) => {
   const attach = Pouch.forDefinitions(definitions);
-  const schema = GraphQl.forDefinitions(definitions);
+  const schema = Graph.forDefinitions(definitions);
 
   const { connect, serve } = forAttachAndSchema({
     attach,
