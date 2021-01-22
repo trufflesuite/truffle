@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const { generateNamespace: generate } = require("@gql2ts/from-schema");
-const { camelCase } = require("change-case");
+const { camelCase, pascalCase } = require("change-case");
 const { plural } = require("pluralize");
 const { printSchema } = require("graphql");
 
@@ -53,6 +53,8 @@ interface ${name} ${body}`;
   return `interface ${name} ${body}`;
 }
 
+const generateInterfaceName = (name) => pascalCase(name);
+
 const dataModel = generate(
   "_DataModel",
   schema,
@@ -62,7 +64,7 @@ const dataModel = generate(
   },
   {
     interfaceBuilder,
-    generateInterfaceName: name => name,
+    generateInterfaceName,
     generateNamespace
   }
 );
