@@ -6,7 +6,7 @@ const command = {
     usage: "truffle build",
     options: []
   },
-  run: function(options, done) {
+  run: async function (options) {
     const OS = require("os");
     const colors = require("colors");
     const deprecationMessage = colors.yellow(
@@ -20,7 +20,7 @@ const command = {
     const Build = require("../build");
     const config = Config.detect(options);
 
-    Build.build(config, done);
+    return await Build.build(config);
   }
 };
 

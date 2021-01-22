@@ -6,12 +6,12 @@ const command = {
     usage: "truffle version",
     options: []
   },
-  run: function(options, done) {
-    let config;
+  run: async function (options) {
     const version = require("../version");
-    const { logger } = options;
+    const {logger} = options;
     const Config = require("@truffle/config");
 
+    let config;
     try {
       config = Config.detect(options);
     } catch (error) {
@@ -19,12 +19,12 @@ const command = {
       if (error.message === "Could not find suitable configuration file.") {
         config = Config.default();
       } else {
-        return done(error);
+        throw error;
       }
     }
 
     version.logAll(logger, config);
-    done();
+    return;
   }
 };
 

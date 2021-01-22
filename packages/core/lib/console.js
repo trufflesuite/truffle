@@ -76,6 +76,7 @@ class Console extends EventEmitter {
       this.repl.on("exit", () => {
         process.exit();
       });
+      return new Promise(() => {});
     } catch (error) {
       this.options.logger.log(
         "Unexpected error: Cannot provision contracts while instantiating the console."
@@ -138,7 +139,7 @@ class Console extends EventEmitter {
     });
   }
 
-  runSpawn(inputStrings, options, callback) {
+  runSpawn(inputStrings, options) {
     let childPath;
     if (typeof BUNDLE_CONSOLE_CHILD_FILENAME !== "undefined") {
       childPath = path.join(__dirname, BUNDLE_CONSOLE_CHILD_FILENAME);
@@ -149,21 +150,17 @@ class Console extends EventEmitter {
     // stderr is piped here because we don't need to repeatedly see the parent
     // errors/warnings in child process - specifically the error re: having
     // multiple config files
-    const spawnOptions = { stdio: ["inherit", "inherit", "pipe"] };
+    const spawnOptions = {stdio: ["inherit", "inherit", "pipe"]};
 
     const spawnInput = "--network " + options.network + " -- " + inputStrings;
-    try {
-      spawnSync(
-        "node",
-        ["--no-deprecation", childPath, spawnInput],
-        spawnOptions
-      );
+    spawnSync(
+      "node",
+      ["--no-deprecation", childPath, spawnInput],
+      spawnOptions
+    );
 
-      // re-provision to ensure any changes are available in the repl
-      this.provision();
-    } catch (err) {
-      callback(err);
-    }
+    // re-provision to ensure any changes are available in the repl
+    this.provision();
 
     //display prompt when child repl process is finished
     this.repl.displayPrompt();
@@ -174,28 +171,28 @@ class Console extends EventEmitter {
     if (
       this.command.getCommand(processedInput, this.options.noAliases) != null
     ) {
-      return this.runSpawn(processedInput, this.options, error => {
-        if (error) {
-          // Perform error handling ourselves.
-          if (error instanceof TruffleError) {
-            console.log(error.message);
-          } else {
-            // Bubble up all other unexpected errors.
-            console.log(error.stack || error.toString());
-          }
-          return callback();
+      try {
+        this.runSpawn(processedInput, this.options);
+      } catch (error) {
+        // Perform error handling ourselves.
+        if (error instanceof TruffleError) {
+          console.log(error.message);
+        } else {
+          // Bubble up all other unexpected errors.
+          console.log(error.stack || error.toString());
         }
+        return callback();
+      }
 
-        // Reprovision after each command as it may change contracts.
-        try {
-          this.provision();
-          callback();
-        } catch (error) {
-          // Don't pass abstractions to the callback if they're there or else
-          // they'll get printed in the repl.
-          callback(error);
-        }
-      });
+      // Reprovision after each command as it may change contracts.
+      try {
+        this.provision();
+        return callback();
+      } catch (error) {
+        // Don't pass abstractions to the callback if they're there or else
+        // they'll get printed in the repl.
+        return callback(error);
+      }
     }
 
     // Much of the following code is from here, though spruced up:

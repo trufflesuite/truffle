@@ -36,12 +36,12 @@ const command = {
       },
     ],
   },
-  run(options, done) {
+  async run(options) {
     const Config = require("@truffle/config");
     const Box = require("@truffle/box");
     const fse = require("fs-extra");
 
-    const config = Config.default().with({ logger: console });
+    const config = Config.default().with({logger: console});
 
     let [url, destination] = options._;
 
@@ -52,17 +52,18 @@ const command = {
 
     fse.ensureDirSync(normalizedDestination);
 
-    const unboxOptions = Object.assign({}, options, { logger: config.logger });
+    const unboxOptions = Object.assign({}, options, {logger: config.logger});
 
     config.events.emit("unbox:start");
 
-    Box.unbox(url, normalizedDestination, unboxOptions, config)
-      .then(async (boxConfig) => {
-        await config.events.emit("unbox:succeed", { boxConfig });
-        done();
-      })
-      .catch(done);
-  },
+    const boxConfig = await Box.unbox(
+      url,
+      normalizedDestination,
+      unboxOptions,
+      config
+    );
+    await config.events.emit("unbox:succeed", { boxConfig });
+  }
 };
 
 module.exports = command;

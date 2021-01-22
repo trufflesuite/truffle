@@ -33,9 +33,8 @@ const command = {
   /**
    * run config commands to get/set Truffle config options
    * @param {Object} options
-   * @param {Func} callback
    */
-  run: function(options, done) {
+  run: async function (options) {
     const googleAnalytics = require("../services/analytics/google.js");
     const Config = require("@truffle/config");
     const OS = require("os");
@@ -59,8 +58,7 @@ const command = {
     }
 
     if (command === null) {
-      const setAnalytics = googleAnalytics.setUserConfigViaPrompt();
-      setAnalytics.then(() => done()).catch(err => err);
+      return await googleAnalytics.setUserConfigViaPrompt();
     } else if (command.userLevel) {
       switch (command.key) {
         case "analytics": {
@@ -73,29 +71,25 @@ const command = {
         }
       }
 
-      done();
+      return;
     } else {
-      Promise.resolve()
-        .then(() => {
-          const config = Config.detect(options);
+      const config = Config.detect(options);
 
-          if (command.set) {
-            options.logger.log(
-              "Setting project-level parameters is not supported yet."
-            );
-            // TODO: add support for writing project-level settings to the truffle config file
-            // config[command.key] = command.value;
-          } else {
-            options.logger.log(config[command.key]);
-          }
-        })
-        .then(done)
-        .catch(options.logger.log);
+      if (command.set) {
+        options.logger.log(
+          "Setting project-level parameters is not supported yet."
+        );
+        // TODO: add support for writing project-level settings to the truffle config file
+        // config[command.key] = command.value;
+      } else {
+        options.logger.log(config[command.key]);
+      }
+      return;
     }
   }
 };
 
-const parse = function(args) {
+const parse = function (args) {
   if (args.length === 0) {
     return null;
   }

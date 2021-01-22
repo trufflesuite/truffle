@@ -26,22 +26,18 @@ describe("compile", function () {
       }
     };
     config.network = "default";
-    config.logger = { log: val => val && memStream.write(val) };
+    config.logger = {log: val => val && memStream.write(val)};
   });
 
-  after("Cleanup tmp files", function (done) {
-    glob("tmp-*", (err, files) => {
-      if (err) done(err);
-      files.forEach(file => fs.removeSync(file));
-      done();
-    });
+  after("Cleanup tmp files", async function () {
+    const files = glob.sync("tmp-*");
+    files.forEach(file => fs.removeSync(file));
   });
 
   afterEach("Clear MemoryStream", () => (output = ""));
 
   it("compiles all initial contracts", async function () {
-    this.timeout(10000);
-    const { contracts } = await WorkflowCompile.compileAndSave(
+    const {contracts} = await WorkflowCompile.compileAndSave(
       config.with({
         all: false,
         quiet: true
@@ -55,8 +51,7 @@ describe("compile", function () {
   });
 
   it("compiles no contracts after no updates", async function () {
-    this.timeout(10000);
-    const { contracts } = await WorkflowCompile.compileAndSave(
+    const {contracts} = await WorkflowCompile.compileAndSave(
       config.with({
         all: false,
         quiet: true
@@ -70,18 +65,16 @@ describe("compile", function () {
   });
 
   it("compiles updated contract and its ancestors", async function () {
-    this.timeout(10000);
-
-    var file_to_update = path.resolve(
+    const fileToUpdate = path.resolve(
       path.join(config.contracts_directory, "ConvertLib.sol")
     );
-    var stat = fs.statSync(file_to_update);
+    const stat = fs.statSync(fileToUpdate);
 
     // Update the modification time to simulate an edit.
-    var newTime = new Date().getTime();
-    fs.utimesSync(file_to_update, newTime, newTime);
+    const newTime = new Date().getTime();
+    fs.utimesSync(fileToUpdate, newTime, newTime);
 
-    const { contracts } = await WorkflowCompile.compileAndSave(
+    const {contracts} = await WorkflowCompile.compileAndSave(
       config.with({
         all: false,
         quiet: true
@@ -94,11 +87,11 @@ describe("compile", function () {
     );
 
     // reset time
-    fs.utimesSync(file_to_update, stat.atime, stat.mtime);
+    fs.utimesSync(fileToUpdate, stat.atime, stat.mtime);
   });
 
   it("compiling shouldn't create any network artifacts", function () {
-    var contract = config.resolver.require("MetaCoin.sol");
+    const contract = config.resolver.require("MetaCoin.sol");
     assert.equal(
       Object.keys(contract.networks).length,
       0,
@@ -114,67 +107,46 @@ describe("compile", function () {
       });
     });
 
-    it("prints a truncated list of solcjs versions", function (done) {
-      this.timeout(5000);
-
+    it("prints a truncated list of solcjs versions", async function () {
       const options = {
         list: ""
       };
 
-      command.run(config.with(options), err => {
-        if (err) return done(err);
-
-        memStream.on("end", function () {
-          const arr = JSON.parse(output);
-          assert(arr.length === 11);
-          done();
-        });
-
-        memStream.end("");
+      await command.run(config.with(options));
+      memStream.on("end", () => {
+        const arr = JSON.parse(output);
+        assert(arr.length === 11);
       });
+      memStream.end("");
     });
 
-    it("prints a list of docker tags", function (done) {
-      this.timeout(20000);
-
+    it("prints a list of docker tags", async function () {
       const options = {
         list: "docker"
       };
 
-      command.run(config.with(options), err => {
-        if (err) return done(err);
-
-        memStream.on("end", function () {
-          const arr = JSON.parse(output);
-          assert(arr.length === 11);
-          assert(typeof arr[0] === "string");
-          done();
-        });
-
-        memStream.end("");
+      await command.run(config.with(options));
+      memStream.on("end", () => {
+        const arr = JSON.parse(output);
+        assert(arr.length === 11);
+        assert(typeof arr[0] === "string");
       });
+      memStream.end("");
     });
 
-    it("prints a full list of releases when --all is set", function (done) {
-      this.timeout(5000);
-
+    it("prints a full list of releases when --all is set", async function () {
       const options = {
         list: "releases",
         all: true
       };
 
-      command.run(config.with(options), err => {
-        if (err) return done(err);
-
-        memStream.on("end", function () {
-          const arr = JSON.parse(output);
-          assert(arr.length > 11);
-          assert(typeof arr[0] === "string");
-          done();
-        });
-
-        memStream.end("");
+      await command.run(config.with(options));
+      memStream.on("end", () => {
+        const arr = JSON.parse(output);
+        assert(arr.length > 11);
+        assert(typeof arr[0] === "string");
       });
+      memStream.end("");
     });
   });
-}).timeout(10000);
+});
