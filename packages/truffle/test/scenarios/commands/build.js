@@ -10,7 +10,6 @@ describe("truffle build [ @standalone ]", () => {
 
   describe("when there is no build script in config", () => {
     beforeEach("set up sandbox", function () {
-      this.timeout(10000);
       project = path.join(
         __dirname,
         "../../sources/build/projectWithoutBuildScript"
@@ -33,12 +32,11 @@ describe("truffle build [ @standalone ]", () => {
       await CommandRunner.run("build", config);
       const output = logger.contents();
       assert(output.includes("No build configuration found."));
-    }).timeout(20000);
+    });
   });
 
   describe("when there is a proper build config", () => {
     beforeEach("set up sandbox", function () {
-      this.timeout(10000);
       project = path.join(
         __dirname,
         "../../sources/build/projectWithBuildScript"
@@ -49,7 +47,6 @@ describe("truffle build [ @standalone ]", () => {
       });
     });
     it("runs the build script", async function () {
-      this.timeout(10000);
       await CommandRunner.run("build", config);
       const output = logger.contents();
       assert(output.includes("'this is the build script'"));
@@ -58,7 +55,6 @@ describe("truffle build [ @standalone ]", () => {
 
   describe("when there is an object in the build config", () => {
     beforeEach("set up sandbox", function () {
-      this.timeout(10000);
       project = path.join(
         __dirname,
         "../../sources/build/projectWithObjectInBuildScript"
@@ -69,10 +65,8 @@ describe("truffle build [ @standalone ]", () => {
       });
     });
     it("tells the user it shouldn't use an object", async function () {
-      this.timeout(12000);
       try {
         await CommandRunner.run("build", config);
-        assert(false, "The process should have exited with code 1");
       } catch (error) {
         const output = logger.contents();
         assert(

@@ -28,7 +28,7 @@ const command = {
       }
     ]
   },
-  run: function (options, done) {
+  run: async function (options) {
     const Config = require("@truffle/config");
     const ConfigurationError = require("../../errors/configurationerror");
     const create = require("./helpers");
@@ -48,28 +48,20 @@ const command = {
     }
 
     if (type == null) {
-      return done(
-        new ConfigurationError(
-          "Please specify the type of item to create. Example: truffle create contract MyContract"
-        )
+      throw new ConfigurationError(
+        "Please specify the type of item to create. Example: truffle create contract MyContract"
       );
     }
 
     if (name == null) {
-      return done(
-        new ConfigurationError(
-          "Please specify the name of item to create. Example: truffle create contract MyContract"
-        )
+      throw new ConfigurationError(
+        "Please specify the name of item to create. Example: truffle create contract MyContract"
       );
     }
 
     if (!/^[a-zA-Z_$][a-zA-Z_$0-9]*$/.test(name)) {
-      return done(
-        new ConfigurationError(
-          "The name " +
-            name +
-            " is invalid. Please enter a valid name using alpha-numeric characters."
-        )
+      throw new ConfigurationError(
+        `The name ${name} is invalid. Please enter a valid name using alpha-numeric characters.`
       );
     }
 
@@ -81,13 +73,16 @@ const command = {
       test: config.test_directory
     };
 
-    if (type === "all")
-      Object.keys(destinations).forEach((type, _) =>
-        create[type](destinations[type], name, options, done)
-      );
-    else if (fn == null)
-      return done(new ConfigurationError("Cannot find creation type: " + type));
-    else create[type](destinations[type], name, options, done);
+    if (type === "all") {
+      for (const key of Object.keys(destinations)) {
+        await create[key](destinations[key], name, options);
+      }
+      return;
+    } else if (fn == null) {
+      throw new ConfigurationError(`Cannot find creation type: ${type}`);
+    } else {
+      return await create[type](destinations[type], name, options);
+    }
   }
 };
 

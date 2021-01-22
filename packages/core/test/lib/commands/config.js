@@ -9,10 +9,10 @@ const fs = require("fs-extra");
 const glob = require("glob");
 const Config = require("@truffle/config");
 
-describe("config", function() {
-  var config;
-  var output = "";
-  var memStream;
+describe("config", function () {
+  let config;
+  let output = "";
+  let memStream;
 
   before("Create a sandbox", async () => {
     config = await Box.sandbox("default");
@@ -27,22 +27,19 @@ describe("config", function() {
       }
     };
     config.network = "default";
-    config.logger = { log: val => val && memStream.write(val) };
+    config.logger = {log: val => val && memStream.write(val)};
   });
 
   beforeEach(() => {
     memStream = new MemoryStream();
-    memStream.on("data", function(data) {
+    memStream.on("data", data => {
       output += data.toString();
     });
   });
 
-  after("Cleanup tmp files", function(done) {
-    glob("tmp-*", (err, files) => {
-      if (err) done(err);
-      files.forEach(file => fs.removeSync(file));
-      done();
-    });
+  after("Cleanup tmp files", async function () {
+    const files = glob.sync("tmp-*");
+    files.forEach(file => fs.removeSync(file));
   });
 
   afterEach("Clear MemoryStream", () => {
@@ -50,45 +47,32 @@ describe("config", function() {
     output = "";
   });
 
-  it("retrieves the default migrations directory", function(done) {
-    command.run(
-      {
-        working_directory: config.working_directory,
-        _: ["get", "migrations_directory"],
-        logger: config.logger
-      },
-      () => {
-        const expected = path.join(config.working_directory, "./migrations");
-        assert.equal(output, expected);
-        done();
-      }
-    );
+  it("retrieves the default migrations directory", async function () {
+    await command.run({
+      working_directory: config.working_directory,
+      _: ["get", "migrations_directory"],
+      logger: config.logger
+    });
+    const expected = path.join(config.working_directory, "./migrations");
+    assert.equal(output, expected);
   });
 
-  it("retrieves an adjusted migrations directory", function(done) {
+  it("retrieves an adjusted migrations directory", async function () {
     const configFile = Config.search({
       working_directory: config.working_directory
     });
     fs.writeFileSync(
       configFile,
       "module.exports = { migrations_directory: './a-different-dir' };",
-      { encoding: "utf8" }
+      {encoding: "utf8"}
     );
 
-    command.run(
-      {
-        working_directory: config.working_directory,
-        _: ["get", "migrations_directory"],
-        logger: config.logger
-      },
-      () => {
-        const expected = path.join(
-          config.working_directory,
-          "./a-different-dir"
-        );
-        assert.equal(output, expected);
-        done();
-      }
-    );
+    await command.run({
+      working_directory: config.working_directory,
+      _: ["get", "migrations_directory"],
+      logger: config.logger
+    });
+    const expected = path.join(config.working_directory, "./a-different-dir");
+    assert.equal(output, expected);
   });
 });

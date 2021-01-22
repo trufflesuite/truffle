@@ -10,7 +10,7 @@ const command = {
     usage: "truffle watch",
     options: []
   },
-  run: function(options) {
+  run: async function (options) {
     const OS = require("os");
     const deprecationMessage = colors.yellow(
       `> The watch command is planned ` +

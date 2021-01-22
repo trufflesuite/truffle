@@ -17,136 +17,107 @@ describe("create", function () {
     config.artifactor = new Artifactor(config.contracts_build_directory);
   });
 
-  after("Cleanup tmp files", function (done) {
-    glob("tmp-*", (err, files) => {
-      if (err) done(err);
-      files.forEach(file => fse.removeSync(file));
-      done();
-    });
+  after("Cleanup tmp files", async function () {
+    const files = glob.sync("tmp-*");
+    files.forEach(file => fse.removeSync(file));
   });
 
-  it("creates a new contract", function (done) {
-    Create.contract(config.contracts_directory, "MyNewContract", function (
-      err
-    ) {
-      if (err) return done(err);
+  it("creates a new contract", async function () {
+    await Create.contract(config.contracts_directory, "MyNewContract", {});
 
-      const expectedFile = path.join(
-        config.contracts_directory,
-        "MyNewContract.sol"
-      );
-      assert.isTrue(
-        fse.existsSync(expectedFile),
-        `Contract to be created doesns't exist, ${expectedFile}`
-      );
+    const expectedFile = path.join(
+      config.contracts_directory,
+      "MyNewContract.sol"
+    );
+    assert.isTrue(
+      fse.existsSync(expectedFile),
+      `Contract to be created doesns't exist, ${expectedFile}`
+    );
 
-      const fileData = fse.readFileSync(expectedFile, { encoding: "utf8" });
-      assert.isNotNull(fileData, "File's data is null");
-      assert.notEqual(fileData, "", "File's data is blank");
-      assert.isTrue(
-        fileData.includes("pragma solidity >=0.4.22 <0.9.0;"),
-        "File's solidity version does not match >=0.4.22 <0.9.0"
-      );
-      done();
-    });
+    const fileData = fse.readFileSync(expectedFile, {encoding: "utf8"});
+    assert.isNotNull(fileData, "File's data is null");
+    assert.notEqual(fileData, "", "File's data is blank");
+    assert.isTrue(
+      fileData.includes("pragma solidity >=0.4.22 <0.9.0;"),
+      "File's solidity version does not match >=0.4.22 <0.9.0"
+    );
   });
 
-  it("will not overwrite an existing contract (by default)", function (done) {
-    Create.contract(config.contracts_directory, "MyNewContract2", function (
-      err
-    ) {
-      if (err) return done(err);
+  it("will not overwrite an existing contract (by default)", async function () {
+    await Create.contract(config.contracts_directory, "MyNewContract2", {});
 
-      const expectedFile = path.join(
-        config.contracts_directory,
-        "MyNewContract2.sol"
-      );
-      assert.isTrue(
-        fse.existsSync(expectedFile),
-        `Contract to be created doesns't exist, ${expectedFile}`
-      );
+    const expectedFile = path.join(
+      config.contracts_directory,
+      "MyNewContract2.sol"
+    );
+    assert.isTrue(
+      fse.existsSync(expectedFile),
+      `Contract to be created doesn't exist, ${expectedFile}`
+    );
 
-      Create.contract(config.contracts_directory, "MyNewContract2", function (
-        err
+    try {
+      await Create.contract(config.contracts_directory, "MyNewContract2", {});
+      assert.fail();
+    } catch (error) {
+      assert(error.message.includes("file exists"));
+    }
+  });
+
+  it("will overwrite an existing contract if the force option is enabled", async function () {
+    await Create.contract(config.contracts_directory, "MyNewContract3", {});
+
+    const expectedFile = path.join(
+      config.contracts_directory,
+      "MyNewContract3.sol"
+    );
+    assert.isTrue(
+      fse.existsSync(expectedFile),
+      `Contract to be created doesns't exist, ${expectedFile}`
+    );
+
+    const options = {force: true};
+    await Create.contract(
+      config.contracts_directory,
+      "MyNewContract3",
+      options
+    );
+  });
+
+  it("creates a new test", async function () {
+    await Create.test(config.test_directory, "MyNewTest", {});
+
+    const expectedFile = path.join(config.test_directory, "my_new_test.js");
+    assert.isTrue(
+      fse.existsSync(expectedFile),
+      `Test to be created doesns't exist, ${expectedFile}`
+    );
+
+    const fileData = fse.readFileSync(expectedFile, {encoding: "utf8"});
+    assert.isNotNull(fileData, "File's data is null");
+    assert.notEqual(fileData, "", "File's data is blank");
+  });
+
+  it("creates a new migration", async function () {
+    await Create.migration(config.migrations_directory, "MyNewMigration", {});
+    const files = glob.sync(`${config.migrations_directory}${path.sep}*`);
+
+    const found = false;
+    const expectedSuffix = "_my_new_migration.js";
+
+    for (let file of files) {
+      if (
+        file.indexOf(expectedSuffix) ===
+        file.length - expectedSuffix.length
       ) {
-        assert(err.message.includes("file exists"));
-        done();
-      });
-    });
-  });
-
-  it("will overwrite an existing contract if the force option is enabled", function (done) {
-    Create.contract(config.contracts_directory, "MyNewContract3", function (
-      err
-    ) {
-      if (err) return done(err);
-
-      const expectedFile = path.join(
-        config.contracts_directory,
-        "MyNewContract3.sol"
-      );
-      assert.isTrue(
-        fse.existsSync(expectedFile),
-        `Contract to be created doesns't exist, ${expectedFile}`
-      );
-
-      const options = { force: true };
-      Create.contract(
-        config.contracts_directory,
-        "MyNewContract3",
-        options,
-        function (err) {
-          assert(err === null);
-          done();
-        }
-      );
-    });
-  });
-
-  it("creates a new test", function (done) {
-    Create.test(config.test_directory, "MyNewTest", function (err) {
-      if (err) return done(err);
-
-      const expectedFile = path.join(config.test_directory, "my_new_test.js");
-      assert.isTrue(
-        fse.existsSync(expectedFile),
-        `Test to be created doesns't exist, ${expectedFile}`
-      );
-
-      const fileData = fse.readFileSync(expectedFile, { encoding: "utf8" });
-      assert.isNotNull(fileData, "File's data is null");
-      assert.notEqual(fileData, "", "File's data is blank");
-
-      done();
-    });
-  }); // it
-
-  it("creates a new migration", function (done) {
-    Create.migration(config.migrations_directory, "MyNewMigration", function (
-      err
-    ) {
-      if (err) return done(err);
-      const files = glob.sync(`${config.migrations_directory}${path.sep}*`);
-
-      const found = false;
-      const expectedSuffix = "_my_new_migration.js";
-
-      for (let file of files) {
-        if (
-          file.indexOf(expectedSuffix) ===
-          file.length - expectedSuffix.length
-        ) {
-          const fileData = fse.readFileSync(file, { encoding: "utf8" });
-          assert.isNotNull(fileData, "File's data is null");
-          assert.notEqual(fileData, "", "File's data is blank");
-
-          return done();
-        }
+        const fileData = fse.readFileSync(file, {encoding: "utf8"});
+        assert.isNotNull(fileData, "File's data is null");
+        assert.notEqual(fileData, "", "File's data is blank");
+        return;
       }
+    }
 
-      if (found === false) {
-        assert.fail("Could not find a file that matched expected name");
-      }
-    });
-  }); // it
+    if (found === false) {
+      assert.fail("Could not find a file that matched expected name");
+    }
+  });
 }).timeout(10000);

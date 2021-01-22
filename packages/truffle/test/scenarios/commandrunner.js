@@ -17,11 +17,11 @@ module.exports = {
           " " +
           command);
 
-    let child = exec(execString, {
-      cwd: config.working_directory
-    });
-
     return new Promise((resolve, reject) => {
+      let child = exec(execString, {
+        cwd: config.working_directory
+      });
+
       child.stdout.on("data", data => {
         data = data.toString().replace(/\n$/, "");
         config.logger.log(data);
@@ -33,15 +33,13 @@ module.exports = {
       child.on("close", code => {
         // If the command didn't exit properly, show the output and throw.
         if (code !== 0) {
-          const err = new Error("Unknown exit code: " + code);
-          reject(err);
+          reject(new Error("Unknown exit code: " + code));
         }
-
         resolve();
       });
 
       if (child.error) {
-        throw child.error;
+        reject(child.error);
       }
     });
   }
