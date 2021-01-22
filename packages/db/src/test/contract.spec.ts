@@ -45,7 +45,7 @@ describe("Contract", () => {
       language: "Solidity",
       astNode: "1",
       length: 5,
-      start: 16,
+      offset: 16,
       contractBytecodeId: bytecodeId
     };
     const compilationResult = await wsClient.execute(

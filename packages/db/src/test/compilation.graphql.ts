@@ -11,7 +11,7 @@ export const AddCompilation = gql`
     $language: String!
     $astNode: String!
     $length: Int!
-    $start: Int!
+    $offset: Int!
     $contractBytecodeId: ID!
   ) {
     compilationsAdd(
@@ -32,8 +32,9 @@ export const AddCompilation = gql`
             immutableReferences: [
               {
                 astNode: $astNode
-                slices: [{ length: $length, start: $start }]
                 bytecode: { id: $contractBytecodeId }
+                length: $length
+                offsets: [$offset]
               }
             ]
           }
@@ -63,10 +64,8 @@ export const AddCompilation = gql`
         }
         immutableReferences {
           astNode
-          slices {
-            length
-            start
-          }
+          length
+          offsets
         }
       }
     }
@@ -93,10 +92,8 @@ export const GetCompilation = gql`
       }
       immutableReferences {
         astNode
-        slices {
-          length
-          start
-        }
+        length
+        offsets
       }
     }
   }

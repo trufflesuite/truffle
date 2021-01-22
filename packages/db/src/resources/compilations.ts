@@ -29,23 +29,15 @@ export const compilations: Definition<"compilations"> = {
     type ImmutableReference {
       astNode: String!
       bytecode: Bytecode!
-      slices: [Slice!]!
+      length: Int!
+      offsets: [ByteOffset!]!
     }
 
     input ImmutableReferenceInput {
       astNode: String!
       bytecode: ResourceReferenceInput!
-      slices: [SliceInput!]!
-    }
-
-    type Slice {
       length: Int!
-      start: ByteOffset!
-    }
-
-    input SliceInput {
-      length: Int!
-      start: ByteOffset!
+      offsets: [ByteOffset!]!
     }
 
     type Compiler {

@@ -35,7 +35,7 @@ describe("Compilation", () => {
       language: "Solidity",
       astNode: "1",
       length: 5,
-      start: 16,
+      offset: 16,
       contractBytecodeId: bytecodeExpectedId
     };
     addCompilationResult = await wsClient.execute(AddCompilation, variables);
@@ -75,10 +75,13 @@ describe("Compilation", () => {
         expect(processedSource).toHaveProperty("language");
       }
       expect(immutableReferences).toHaveLength(1);
+      console.debug(
+        "immutable references " + JSON.stringify(immutableReferences)
+      );
       expect(immutableReferences[0].astNode).toEqual(variables.astNode);
-      expect(immutableReferences[0].slices).toHaveLength(1);
-      expect(immutableReferences[0].slices[0].length).toEqual(variables.length);
-      expect(immutableReferences[0].slices[0].start).toEqual(variables.start);
+      expect(immutableReferences[0].offsets).toHaveLength(1);
+      expect(immutableReferences[0].length).toEqual(variables.length);
+      expect(immutableReferences[0].offsets[0]).toEqual(variables.offset);
     }
   });
 
@@ -112,9 +115,9 @@ describe("Compilation", () => {
 
     expect(immutableReferences).toHaveLength(1);
     expect(immutableReferences[0].astNode).toEqual(variables.astNode);
-    expect(immutableReferences[0].slices).toHaveLength(1);
-    expect(immutableReferences[0].slices[0].length).toEqual(variables.length);
-    expect(immutableReferences[0].slices[0].start).toEqual(variables.start);
+    expect(immutableReferences[0].offsets).toHaveLength(1);
+    expect(immutableReferences[0].length).toEqual(variables.length);
+    expect(immutableReferences[0].offsets[0]).toEqual(variables.offset);
   });
 
   test("can retrieve all compilations", async () => {

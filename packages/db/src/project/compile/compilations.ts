@@ -172,7 +172,8 @@ function toImmutableReferencesInputs(options: {
         return {
           astNode: reference[0],
           bytecode: contract.db.callBytecode,
-          slices: reference[1] as []
+          length: reference[1][0].length,
+          offsets: reference[1].map(({ start }) => start)
         };
       });
     })
