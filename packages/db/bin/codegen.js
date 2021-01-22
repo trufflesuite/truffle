@@ -6,7 +6,7 @@ const { plural } = require("pluralize");
 const { printSchema } = require("graphql");
 
 const {
-  GraphQl: { schema },
+  Graph: { schema },
   Resources: { definitions }
 } = require("@truffle/db");
 
