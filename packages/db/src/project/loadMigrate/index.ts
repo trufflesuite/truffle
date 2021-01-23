@@ -1,16 +1,31 @@
+/**
+ * @category Internal processor
+ * @packageDocumentation
+ */
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:project:migrate");
+const debug = logger("db:project:loadMigrate");
 
 import { ContractObject } from "@truffle/contract-schema/spec";
 import { Input, toIdObject, IdObject } from "@truffle/db/resources";
 import { Process } from "@truffle/db/process";
 
-import { generateNetworkId } from "./networkId";
-import { generateTransactionBlocks } from "./blocks";
-import { generateNetworksLoad } from "./networks";
-import { generateNetworkGenealogiesLoad } from "./networkGenealogies";
-import { generateContracts } from "./contracts";
-import { generateContractInstancesLoad } from "./contractInstances";
+import * as Batch from "./batch";
+export { Batch };
+
+import * as FetchNetworkId from "./networkId";
+import * as FetchTransactionBlocks from "./blocks";
+import * as AddNetworks from "./networks";
+import * as LoadNetworkGenealogies from "./networkGenealogies";
+import * as GetContracts from "./contracts";
+import * as AddContractInstances from "./contractInstances";
+export {
+  FetchNetworkId,
+  FetchTransactionBlocks,
+  AddNetworks,
+  LoadNetworkGenealogies,
+  GetContracts,
+  AddContractInstances
+};
 
 export type Artifact = ContractObject & {
   networks?: {
@@ -23,7 +38,7 @@ export type Artifact = ContractObject & {
   };
 };
 
-export function* generateMigrateLoad(options: {
+export function* process(options: {
   // we'll need everything for this input other than what's calculated here
   network: Omit<Input<"networks">, "networkId" | "historicBlock">;
   artifacts: (ContractObject & {
@@ -37,9 +52,9 @@ export function* generateMigrateLoad(options: {
   network: IdObject<"networks">;
   artifacts: Artifact[];
 }> {
-  const networkId = yield* generateNetworkId();
+  const networkId = yield* FetchNetworkId.process();
 
-  const withBlocks = yield* generateTransactionBlocks({
+  const withBlocks = yield* FetchTransactionBlocks.process({
     network: {
       ...options.network,
       networkId
@@ -48,9 +63,9 @@ export function* generateMigrateLoad(options: {
   });
 
   // @ts-ignore
-  const withNetworks = yield* generateNetworksLoad(withBlocks);
+  const withNetworks = yield* AddNetworks.process(withBlocks);
 
-  yield* generateNetworkGenealogiesLoad(withNetworks);
+  yield* LoadNetworkGenealogies.process(withNetworks);
 
   const [
     {
@@ -61,9 +76,9 @@ export function* generateMigrateLoad(options: {
     .filter(networkObject => networkObject && networkObject.block)
     .sort((a, b) => b.block.height - a.block.height); // descending
 
-  const withContracts = yield* generateContracts(withNetworks);
+  const withContracts = yield* GetContracts.process(withNetworks);
 
-  const { artifacts } = yield* generateContractInstancesLoad(
+  const { artifacts } = yield* AddContractInstances.process(
     // @ts-ignore
     withContracts
   );

@@ -1,11 +1,15 @@
+/**
+ * @category Internal processor
+ * @packageDocumentation
+ */
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:project:migrate:networks");
+const debug = logger("db:project:loadMigrate:networks");
 
 import { DataModel, Input, IdObject } from "@truffle/db/resources";
 import { resources } from "@truffle/db/process";
 import * as Batch from "./batch";
 
-export const generateNetworksLoad = Batch.generate<{
+export const process = Batch.configure<{
   network: {
     name: string;
   };

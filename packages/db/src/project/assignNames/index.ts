@@ -1,18 +1,26 @@
+/**
+ * @category Internal processor
+ * @packageDocumentation
+ */
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:project:names");
+const debug = logger("db:project:assignNames");
 
 import { Process } from "@truffle/db/process";
 import { IdObject, NamedCollectionName } from "@truffle/db/resources";
 
-import { generateResourceNames } from "./resources";
-import { generateCurrentNameRecords } from "./current";
-import { generateNameRecordsLoad } from "./nameRecords";
-import { generateProjectNamesLoad } from "./projectNames";
+import * as Batch from "./batch";
+export { Batch };
+
+import * as LookupNames from "./lookupNames";
+import * as GetCurrent from "./getCurrent";
+import * as AddNameRecords from "./addNameRecords";
+import * as UpdateProjectNames from "./updateProjectNames";
+export { LookupNames, GetCurrent, AddNameRecords, UpdateProjectNames };
 
 /**
  * generator function to load nameRecords and project names into Truffle DB
  */
-export function* generateNamesLoad(options: {
+export function* process(options: {
   project: IdObject<"projects">;
   assignments: {
     [N in NamedCollectionName]?: IdObject<N>[];
@@ -37,20 +45,20 @@ export function* generateNamesLoad(options: {
     }))
     .reduce((a, b) => ({ ...a, ...b }), {});
 
-  const withNameAndType = yield* generateResourceNames({
+  const withNameAndType = yield* LookupNames.process({
     project,
     assignments
   });
 
-  const withCurrentNameRecords = yield* generateCurrentNameRecords(
+  const withCurrentNameRecords = yield* GetCurrent.process(
     withNameAndType
   );
 
-  const withNameRecords = yield* generateNameRecordsLoad(
+  const withNameRecords = yield* AddNameRecords.process(
     withCurrentNameRecords
   );
 
-  const withProjectNames = yield* generateProjectNamesLoad(withNameRecords);
+  const withProjectNames = yield* UpdateProjectNames.process(withNameRecords);
 
   return withProjectNames;
 }

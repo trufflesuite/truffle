@@ -1,5 +1,9 @@
+/**
+ * @category Internal processor
+ * @packageDocumentation
+ */
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:project:compile:sources");
+const debug = logger("db:project:loadCompile:sources");
 
 import { IdObject, Input } from "@truffle/db/resources";
 import { resources } from "@truffle/db/process";
@@ -15,7 +19,7 @@ interface Source {
   db: { source: IdObject<"sources"> };
 }
 
-export const generateSourcesLoad = Batch.Sources.generate<{
+export const process = Batch.Sources.configure<{
   compilation: {};
   contract: {};
   source: Source;

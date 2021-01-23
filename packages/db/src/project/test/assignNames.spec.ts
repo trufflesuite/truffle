@@ -6,7 +6,7 @@ import gql from "graphql-tag";
 import { Db, Project, connect } from "@truffle/db";
 import { Input } from "@truffle/db/resources";
 
-const helpers = (db: Db, project: Project) => ({
+const helpers = (db: Db, project: Project.Project) => ({
   async addContract(input: Input<"contracts">) {
     const {
       data: {

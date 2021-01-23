@@ -7,7 +7,7 @@ import { DataModel, IdObject } from "@truffle/db/resources";
 import { Batch, Model } from "test/arbitraries/networks";
 
 export const prepareArtifacts = async (options: {
-  project: Project;
+  project: Project.Project;
   model: Model;
   batch: Batch;
 }): Promise<{

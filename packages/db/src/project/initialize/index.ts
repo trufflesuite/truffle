@@ -1,12 +1,17 @@
+/**
+ * @category Internal processor
+ * @packageDocumentation
+ */
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:loaders:commands:initialize");
+const debug = logger("db:project:initialize");
 
-import { IdObject } from "@truffle/db/resources";
+import { Input, IdObject } from "@truffle/db/resources";
 import { resources, Process } from "@truffle/db/process";
 
-export function* generateInitializeLoad({
-  directory
+export function* process(options: {
+  input: Input<"projects">
 }): Process<IdObject<"projects">> {
-  const [project] = yield* resources.load("projects", [{ directory }]);
+  const { input } = options;
+  const [project] = yield* resources.load("projects", [input]);
   return project;
 }
