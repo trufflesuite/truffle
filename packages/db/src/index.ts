@@ -196,6 +196,8 @@ require("source-map-support/register");
 export { DataModel, Db } from "./resources";
 import * as Project from "./project";
 export { Project }
+import * as Network from "./network";
+export { Network };
 
 
 import * as Resources from "./resources";
