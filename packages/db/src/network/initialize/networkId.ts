@@ -3,7 +3,7 @@
  * @packageDocumentation
  */
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:network:networkId");
+const debug = logger("db:network:initialize:networkId");
 
 import { Process } from "@truffle/db/process";
 

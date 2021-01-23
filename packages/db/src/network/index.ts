@@ -3,29 +3,20 @@ const debug = logger("db:network");
 
 import type { Provider } from "web3/providers";
 
-import * as Meta from "@truffle/db/meta";
 import * as Process from "@truffle/db/process";
 import {
   Db,
   DataModel,
   Input,
   Resource,
-  IdObject,
-  toIdObject
+  IdObject
 } from "@truffle/db/resources";
 
-import * as FetchNetworkId from "./networkId";
-import * as FetchGenesisBlock from "./genesisBlock";
+import * as Initialize from "./initialize";
 import * as FetchTransactionBlocks from "./transactionBlocks";
+import * as AddNetworks from "./addNetworks";
 import * as LoadNetworkGenealogies from "./networkGenealogies";
-export {
-  FetchNetworkId,
-  FetchGenesisBlock,
-  FetchTransactionBlocks,
-  LoadNetworkGenealogies
-};
-
-const { resources } = Process;
+export { Initialize, FetchTransactionBlocks, AddNetworks, LoadNetworkGenealogies };
 
 type NetworkResource = Pick<
   Resource<"networks">,
@@ -53,47 +44,37 @@ export async function initialize(
     ? Process.Run.forDb(options.db).forProvider(options.provider)
     : options;
 
-  const networkId = await run(FetchNetworkId.process);
-  const genesisBlock = await run(FetchGenesisBlock.process);
+  const { network } = options;
 
-  const input = {
-    ...options.network,
-    networkId: await run(FetchNetworkId.process),
-    historicBlock: await run(FetchGenesisBlock.process)
-  };
-
-  const [{ id }] = await run(resources.load, "networks", [input]);
+  const genesis = await run(Initialize.process, { network });
 
   return new Network({
-    run,
-    genesis: {
-      id,
-      ...input
-    }
+    genesis,
+    run
   });
 }
 
 export class Network {
-  get genesis(): IdObject<"networks"> {
-    return toIdObject(this._genesis);
+  get genesis(): NetworkResource {
+    return this._genesis;
   }
 
-  get congruentLatest(): IdObject<"networks"> {
-    return toIdObject(this._latest);
+  get congruentLatest(): NetworkResource {
+    return this._latest;
   }
 
   async recordBlocks(options: {
     blocks: DataModel.Block[]
-  }): Promise<void> {
+  }): Promise<(IdObject<"networks"> | undefined)[]> {
     const { blocks } = options;
 
-    const networks = await this.run(resources.load, "networks", blocks.map(
-      (block) => ({
-        historicBlock: block,
-        networkId: this._genesis.networkId,
-        name: this._genesis.name
-      })
-    ))
+    const networks = await this.run(AddNetworks.process, {
+      network: {
+        name: this._genesis.name,
+        networkId: this._genesis.networkId
+      },
+      blocks
+    });
 
     this._incongruent.push(
       ...networks.map(({ id }, index) => ({
@@ -102,11 +83,13 @@ export class Network {
         historicBlock: blocks[index]
       }))
     );
+
+    return networks;
   }
 
   async recordTransactions(options: {
     transactionHashes: string[];
-  }): Promise<void> {
+  }): Promise<(IdObject<"networks"> | undefined)[]> {
     const { transactionHashes } = options;
 
     const blocks = await this.run(
@@ -114,12 +97,12 @@ export class Network {
       transactionHashes
     );
 
-    await this.recordBlocks({ blocks });
+    return await this.recordBlocks({ blocks });
   }
 
-  async congrueGenealogy(options?: {
+  async congrueGenealogy(options: {
     disableIndex?: boolean
-  }): Promise<void> {
+  } = {}): Promise<void> {
     await this.run(LoadNetworkGenealogies.process, {
       networks: this._incongruent,
       disableIndex: options.disableIndex
@@ -188,4 +171,3 @@ export class Network {
     this._run = options.run;
   }
 }
-

@@ -62,6 +62,7 @@ export function* process(options: {
   )[];
   disableIndex?: boolean;
 }): Process<IdObject<"networkGenealogies">[]> {
+  debug("Processing loading network genealogies...");
   const { disableIndex } = options;
 
   if (!options.networks.length) {
@@ -96,7 +97,13 @@ export function* process(options: {
   // load all NetworkGenealogyInputs, both pairwise inputs from artifact
   // networks, as well as genealogy inputs for relationships to
   // previously-known networks
-  return yield* resources.load("networkGenealogies", networkGenealogies);
+  const results = yield* resources.load(
+    "networkGenealogies",
+    networkGenealogies
+  );
+
+  debug("Processing loading network genealogies...");
+  return results;
 }
 
 /**
