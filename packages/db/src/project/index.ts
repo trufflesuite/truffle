@@ -6,7 +6,6 @@ import { WorkflowCompileResult } from "@truffle/compile-common";
 import { ContractObject } from "@truffle/contract-schema/spec";
 
 import * as Meta from "@truffle/db/meta";
-import * as _Batch from "@truffle/db/batch";
 import * as Process from "@truffle/db/process";
 import {
   Db,
@@ -15,10 +14,33 @@ import {
   IdObject
 } from "@truffle/db/resources";
 
-import { generateInitializeLoad } from "./initialize";
-import { generateNamesLoad } from "./names";
-import { Compilation, Contract, generateCompileLoad } from "./compile";
-import { Artifact, generateMigrateLoad } from "./migrate";
+import * as Batch from "./batch";
+export { Batch };
+
+import * as Initialize from "./initialize";
+import * as AssignNames from "./assignNames";
+import * as LoadCompile from "./loadCompile";
+import * as LoadMigrate from "./loadMigrate";
+export { Initialize, AssignNames, LoadCompile, LoadMigrate };
+
+
+/**
+ * Construct abstraction and idempotentally add a project resource
+ *
+ * @category Constructor
+ */
+export async function initialize(options: {
+  db: Db;
+  project: Input<"projects">;
+}): Promise<Project> {
+  const { db, project: input } = options;
+
+  const { run, forProvider } = Process.Run.forDb(db);
+
+  const project = await run(Initialize.process, { input });
+
+  return new Project({ run, forProvider, project });
+}
 
 /**
  * Abstraction for connecting @truffle/db to a Truffle project
@@ -48,24 +70,6 @@ import { Artifact, generateMigrateLoad } from "./migrate";
  * ```
  */
 export class Project {
-  /**
-   * Construct abstraction and idempotentally add a project resource
-   *
-   * @category Constructor
-   */
-  static async initialize(options: {
-    db: Db;
-    project: Input<"projects">;
-  }): Promise<Project> {
-    const { db, project: input } = options;
-
-    const { run, forProvider } = Process.Run.forDb(db);
-
-    const project = await run(generateInitializeLoad, input);
-
-    return new Project({ run, forProvider, project });
-  }
-
   public get id(): string {
     return this.project.id;
   }
@@ -84,12 +88,12 @@ export class Project {
   async loadCompile(options: {
     result: WorkflowCompileResult;
   }): Promise<{
-    compilations: Compilation[];
-    contracts: Contract[];
+    compilations: LoadCompile.Compilation[];
+    contracts: LoadCompile.Contract[];
   }> {
     const { result } = options;
 
-    return await this.run(generateCompileLoad, result);
+    return await this.run(LoadCompile.process, result);
   }
 
   /**
@@ -135,7 +139,7 @@ export class Project {
       [K in N]: IdObject<"nameRecords">[];
     };
   }> {
-    const { assignments } = await this.run(generateNamesLoad, {
+    const { assignments } = await this.run(AssignNames.process, {
       project: this.project,
       assignments: options.assignments
     });
@@ -154,10 +158,10 @@ export class Project {
    * underlying blockchain network.
    * @category Constructor
    */
-  connect(options: { provider: Provider }): Project.ConnectedProject {
+  connect(options: { provider: Provider }): ConnectedProject {
     const { run } = this.forProvider(options.provider);
 
-    return new Project.ConnectedProject({
+    return new ConnectedProject({
       run,
       project: this.project
     });
@@ -200,7 +204,7 @@ export class Project {
   /**
    * @ignore
    */
-  protected constructor(options: {
+  constructor(options: {
     project: IdObject<"projects">;
     run: Process.ProcessorRunner;
     forProvider?: (provider: Provider) => { run: Process.ProcessorRunner };
@@ -213,62 +217,34 @@ export class Project {
   }
 }
 
-/**
- * @category Internal
- */
-export namespace Project {
-  export class ConnectedProject extends Project {
-    /**
-     * Process artifacts after a migration. Uses provider to determine most
-     * relevant network information directly, but still requires
-     * project-specific information about the network (i.e., name)
-     *
-     * This adds potentially multiple [[DataModel.Network | Network]] resources
-     * to @truffle/db, creating individual networks for the historic blocks in
-     * which each [[DataModel.ContractInstance | ContractInstance]] was first
-     * created on-chain.
-     *
-     * This saves [[DataModel.Network | Network]] and
-     * [[DataModel.ContractInstance | ContractInstance]] resources to
-     * \@truffle/db.
-     *
-     * Returns `artifacts` with network objects populated with IDs for each
-     * [[DataModel.ContractInstance | ContractInstance]], along with a
-     * `network` object containing the ID of whichever
-     * [[DataModel.Network | Network]] was added with the highest block height.
-     * @category Truffle-specific
-     */
-    async loadMigrate(options: {
-      network: Omit<Input<"networks">, "networkId" | "historicBlock">;
-      artifacts: ContractObject[];
-    }): Promise<{
-      network: IdObject<"networks">;
-      artifacts: Artifact[];
-    }> {
-      return await this.run(generateMigrateLoad, options);
-    }
-  }
-
-  export namespace Batch {
-    export type Configure = <B extends Batch>(
-      options: Options<B>
-    ) => <I extends Input<B>, O extends Output<B>>(
-      inputs: Inputs<B, I>
-    ) => Process.Process<Outputs<B, O>>;
-
-    export const configure: Configure = Meta.Batch.configure;
-
-    export type Batch = Meta.Batch.Batch;
-    export type Options<B extends Meta.Batch.Batch> = Meta.Batch.Options<B>;
-    export type Input<B extends Meta.Batch.Batch> = Meta.Batch.Input<B>;
-    export type Inputs<
-      B extends Meta.Batch.Batch,
-      I extends Input<B>
-    > = Meta.Batch.Inputs<B, I>;
-    export type Output<B extends Meta.Batch.Batch> = Meta.Batch.Output<B>;
-    export type Outputs<
-      B extends Meta.Batch.Batch,
-      O extends Output<B>
-    > = Meta.Batch.Outputs<B, O>;
+export class ConnectedProject extends Project {
+  /**
+   * Process artifacts after a migration. Uses provider to determine most
+   * relevant network information directly, but still requires
+   * project-specific information about the network (i.e., name)
+   *
+   * This adds potentially multiple [[DataModel.Network | Network]] resources
+   * to @truffle/db, creating individual networks for the historic blocks in
+   * which each [[DataModel.ContractInstance | ContractInstance]] was first
+   * created on-chain.
+   *
+   * This saves [[DataModel.Network | Network]] and
+   * [[DataModel.ContractInstance | ContractInstance]] resources to
+   * \@truffle/db.
+   *
+   * Returns `artifacts` with network objects populated with IDs for each
+   * [[DataModel.ContractInstance | ContractInstance]], along with a
+   * `network` object containing the ID of whichever
+   * [[DataModel.Network | Network]] was added with the highest block height.
+   * @category Truffle-specific
+   */
+  async loadMigrate(options: {
+    network: Omit<Input<"networks">, "networkId" | "historicBlock">;
+    artifacts: ContractObject[];
+  }): Promise<{
+    network: IdObject<"networks">;
+    artifacts: LoadMigrate.Artifact[];
+  }> {
+    return await this.run(LoadMigrate.process, options);
   }
 }

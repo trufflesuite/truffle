@@ -8,7 +8,7 @@ import type { Resolver } from "@truffle/resolver";
 import { Environment } from "@truffle/environment";
 import { ContractObject } from "@truffle/contract-schema/spec";
 
-import { Project } from "@truffle/db/project";
+import { initialize, Project }from "@truffle/db/project";
 import { Resource, Db, IdObject, toIdObject } from "@truffle/db/resources";
 import { resources } from "@truffle/db/process";
 import { WorkflowCompileResult } from "@truffle/compile-common/src/types";
@@ -34,7 +34,7 @@ export class ArtifactsLoader {
     debug("Compiled.");
 
     debug("Initializing project...");
-    const project = await Project.initialize({
+    const project = await initialize({
       project: {
         directory: this.compilationConfig.working_directory
       },

@@ -1,10 +1,14 @@
+/**
+ * @category Internal processor
+ * @packageDocumentation
+ */
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:project:migrate:networks");
+const debug = logger("db:project:loadMigrate:blocks");
 
 import { DataModel } from "@truffle/db/resources";
 import * as Batch from "./batch";
 
-export const generateTransactionBlocks = Batch.generate<{
+export const process = Batch.configure<{
   requires: {
     transactionHash?: string;
   };

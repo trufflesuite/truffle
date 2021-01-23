@@ -1,14 +1,18 @@
+/**
+ * @category Internal boilerplate
+ * @packageDocumentation
+ */
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:project:migrate:batch");
+const debug = logger("db:project:loadMigrate:batch");
 
 import { _ } from "hkts/src";
 import { ContractObject, NetworkObject } from "@truffle/contract-schema/spec";
 
 import { IdObject } from "@truffle/db/resources";
 import { Process } from "@truffle/db/process";
-import * as Batch from "@truffle/db/batch";
+import * as Base from "@truffle/db/project/batch";
 
-type Config = {
+export type Config = {
   network?: {};
   artifact?: {};
 
@@ -19,19 +23,19 @@ type Config = {
   result?: any;
 };
 
-type Network<C extends Config> = C["network"] & {
+export type Network<C extends Config> = C["network"] & {
   networkId: string;
 };
-type Requires<C extends Config> = "requires" extends keyof C
+export type Requires<C extends Config> = "requires" extends keyof C
   ? C["requires"]
   : {};
-type Produces<C extends Config> = C["produces"];
+export type Produces<C extends Config> = C["produces"];
 
-type Entry<C extends Config> = C["entry"];
-type Result<C extends Config> = C["result"];
+export type Entry<C extends Config> = C["entry"];
+export type Result<C extends Config> = C["result"];
 
-type ArtifactNetwork<C extends Config> = NetworkObject & Requires<C>;
-type Artifact<C extends Config> = ContractObject &
+export type ArtifactNetwork<C extends Config> = NetworkObject & Requires<C>;
+export type Artifact<C extends Config> = ContractObject &
   C["artifact"] & {
     db: {
       contract: IdObject<"contracts">;
@@ -43,10 +47,10 @@ type Artifact<C extends Config> = ContractObject &
     };
   };
 
-type Input<C extends Config> = ArtifactNetwork<C>;
-type Output<C extends Config> = Input<C> & Produces<C>;
+export type Input<C extends Config> = ArtifactNetwork<C>;
+export type Output<C extends Config> = Input<C> & Produces<C>;
 
-type Structure<C extends Config> = {
+export type Structure<C extends Config> = {
   network: Network<C>;
   artifacts: (ContractObject &
     Artifact<C> & {
@@ -61,11 +65,11 @@ type Structure<C extends Config> = {
     })[];
 };
 
-type Breadcrumb<_C extends Config> = {
+export type Breadcrumb<_C extends Config> = {
   artifactIndex: number;
 };
 
-type Batch<C extends Config> = {
+export type Batch<C extends Config> = {
   structure: Structure<C>;
   breadcrumb: Breadcrumb<C>;
   input: Input<C>;
@@ -74,17 +78,17 @@ type Batch<C extends Config> = {
   result: Result<C>;
 };
 
-type Options<C extends Config> = Omit<
-  Batch.Options<Batch<C>>,
+export type Options<C extends Config> = Omit<
+  Base.Options<Batch<C>>,
   "iterate" | "find" | "initialize" | "merge"
 >;
 
-export const generate = <C extends Config>(
+export const configure = <C extends Config>(
   options: Options<C>
-): (<I extends Batch.Input<Batch<C>>, O extends Batch.Output<Batch<C>>>(
-  inputs: Batch.Inputs<Batch<C>, I>
-) => Process<Batch.Outputs<Batch<C>, I & O>>) =>
-  Batch.configure<Batch<C>>({
+): (<I extends Base.Input<Batch<C>>, O extends Base.Output<Batch<C>>>(
+  inputs: Base.Inputs<Batch<C>, I>
+) => Process<Base.Outputs<Batch<C>, I & O>>) =>
+  Base.configure<Batch<C>>({
     *iterate<_I>({
       inputs: {
         artifacts,

@@ -1,11 +1,15 @@
+/**
+ * @category Internal processor
+ * @packageDocumentation
+ */
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:project:names:nameRecords");
+const debug = logger("db:project:assignNames:addNameRecords");
 
 import { resources } from "@truffle/db/process";
 import { Resource, Input, IdObject } from "@truffle/db/resources";
 import * as Batch from "./batch";
 
-export const generateNameRecordsLoad = Batch.generate<{
+export const process = Batch.configure<{
   assignment: {
     name: string;
     type: string;

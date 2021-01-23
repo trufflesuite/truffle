@@ -1,5 +1,9 @@
+/**
+ * @category Internal processor
+ * @packageDocumentation
+ */
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:project:migrate:networkGenealogies");
+const debug = logger("db:project:loadMigrate:networkGenealogies");
 
 import gql from "graphql-tag";
 
@@ -51,7 +55,7 @@ import { resources, Process } from "@truffle/db/process";
  * NetworkGenealogy ID objects, it is likely not necessary to capture this
  * information anywhere, and thus the return value can likely be discarded.
  */
-export function* generateNetworkGenealogiesLoad<
+export function* process<
   ArtifactNetwork extends {
     block?: DataModel.Block;
     db?: {

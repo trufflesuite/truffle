@@ -1,11 +1,15 @@
+/**
+ * @category Internal processor
+ * @packageDocumentation
+ */
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:project:compile:bytecodes");
+const debug = logger("db:project:loadCompile:bytecodes");
 
 import { IdObject, Input } from "@truffle/db/resources";
 import { resources } from "@truffle/db/process";
 import * as Batch from "./batch";
 
-export const generateBytecodesLoad = Batch.Contracts.generate<{
+export const process = Batch.Contracts.configure<{
   compilation: {};
   contract: {
     bytecode: Input<"bytecodes">;

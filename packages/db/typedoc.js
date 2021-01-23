@@ -11,6 +11,8 @@ const common = {
     "Truffle-specific",
     "Definitions",
     "Other",
+    "Internal processor",
+    "Internal boilerplate",
     "Internal"
   ],
   readme: "none",

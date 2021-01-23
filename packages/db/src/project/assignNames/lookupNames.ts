@@ -1,5 +1,9 @@
+/**
+ * @category Internal processor
+ * @packageDocumentation
+ */
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:project:names:resources");
+const debug = logger("db:project:assignNames:lookupNames");
 
 import gql from "graphql-tag";
 import pascalCase from "pascal-case";
@@ -8,7 +12,7 @@ import { resources } from "@truffle/db/process";
 import { IdObject, NamedCollectionName } from "@truffle/db/resources";
 import * as Batch from "./batch";
 
-export const generateResourceNames = Batch.generate<{
+export const process = Batch.configure<{
   assignment: {};
   properties: {
     name: string;
