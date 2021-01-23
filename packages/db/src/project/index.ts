@@ -2,10 +2,9 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:project");
 
 import type { Provider } from "web3/providers";
-import { WorkflowCompileResult } from "@truffle/compile-common";
-import { ContractObject } from "@truffle/contract-schema/spec";
+import type { WorkflowCompileResult } from "@truffle/compile-common";
+import type { ContractObject } from "@truffle/contract-schema/spec";
 
-import * as Meta from "@truffle/db/meta";
 import * as Process from "@truffle/db/process";
 import {
   Db,
@@ -25,7 +24,6 @@ import * as AssignNames from "./assignNames";
 import * as LoadCompile from "./loadCompile";
 import * as LoadMigrate from "./loadMigrate";
 export { Initialize, AssignNames, LoadCompile, LoadMigrate };
-
 
 /**
  * Construct abstraction and idempotentally add a project resource
@@ -243,16 +241,13 @@ export class ConnectedProject extends Project {
    */
   async loadMigrate(options: {
     network: Omit<Input<"networks">, "networkId" | "historicBlock">;
-    artifacts: (
-      & ContractObject
-      & {
-          db: {
-            contract: IdObject<"contracts">;
-            callBytecode: IdObject<"bytecodes">;
-            createBytecode: IdObject<"bytecodes">;
-          }
-        }
-    )[];
+    artifacts: (ContractObject & {
+      db: {
+        contract: IdObject<"contracts">;
+        callBytecode: IdObject<"bytecodes">;
+        createBytecode: IdObject<"bytecodes">;
+      };
+    })[];
   }): Promise<{
     network: IdObject<"networks">;
     artifacts: LoadMigrate.Artifact[];
@@ -264,8 +259,9 @@ export class ConnectedProject extends Project {
 
     const { networkId } = network.genesis;
 
-    const transactionHashes = options.artifacts
-      .map(({ networks }) => (networks[networkId] || {}).transactionHash);
+    const transactionHashes = options.artifacts.map(
+      ({ networks }) => (networks[networkId] || {}).transactionHash
+    );
 
     const networks = await network.recordTransactions({ transactionHashes });
     debug("got networks, congruing genealogy %O", networks);
@@ -281,15 +277,13 @@ export class ConnectedProject extends Project {
           ...artifact.networks,
           [networkId]: {
             ...artifact.networks[networkId],
-            ...(
-              networks[index]
-                ? {
-                    db: {
-                      network: networks[index]
-                    }
+            ...(networks[index]
+              ? {
+                  db: {
+                    network: networks[index]
                   }
-                : {}
-            )
+                }
+              : {})
           }
         }
       }))
@@ -298,6 +292,6 @@ export class ConnectedProject extends Project {
     return {
       network: toIdObject(network.congruentLatest),
       artifacts
-    }
+    };
   }
 }

@@ -5,7 +5,7 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:loadCompile");
 
-import * as Common from "@truffle/compile-common/src/types";
+import type * as Common from "@truffle/compile-common";
 import { IdObject } from "@truffle/db/resources";
 import { Process } from "@truffle/db/process";
 
