@@ -1,5 +1,5 @@
 /**
- * @category Internal
+ * @category Internal processor
  * @packageDocumentation
  */
 import { logger } from "@truffle/db/logger";
@@ -13,10 +13,9 @@ import * as FetchGenesisBlock from "./genesisBlock";
 export function* process<
   Network extends Omit<Input<"networks">, "networkId" | "historicBock">
 >(options: {
-  network: Network
+  network: Network;
 }): Process<
-  & Network
-  & Pick<Resource<"networks">, "id" | keyof Input<"networks">>
+  Network & Pick<Resource<"networks">, "id" | keyof Input<"networks">>
 > {
   const input = {
     ...options.network,
@@ -24,7 +23,7 @@ export function* process<
     historicBlock: yield* FetchGenesisBlock.process()
   };
 
-  const [{ id }] = yield* resources.load("networks", [ input ]);
+  const [{ id }] = yield* resources.load("networks", [input]);
 
   return {
     id,
