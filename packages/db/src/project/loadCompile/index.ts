@@ -6,8 +6,8 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:loadCompile");
 
 import type * as Common from "@truffle/compile-common";
-import { IdObject } from "@truffle/db/resources";
-import { Process } from "@truffle/db/process";
+import type { IdObject } from "@truffle/db/resources";
+import type { Process } from "@truffle/db/process";
 
 import * as Batch from "./batch";
 export { Batch };

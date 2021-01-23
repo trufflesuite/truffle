@@ -5,13 +5,12 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:network:transactionBlocks");
 
-import { Process } from "@truffle/db/process";
-import { DataModel } from "@truffle/db/resources";
+import type { Process } from "@truffle/db/process";
+import type { DataModel } from "@truffle/db/resources";
 
-export function* process(transactionHashes: string[]): Process<
-  DataModel.Block[],
-  { web3: "eth_getTransactionByHash" }
-> {
+export function* process(
+  transactionHashes: string[]
+): Process<DataModel.Block[], { web3: "eth_getTransactionByHash" }> {
   const blocks: DataModel.Block[] = [];
 
   for (const transactionHash of transactionHashes) {
@@ -26,10 +25,7 @@ export function* process(transactionHashes: string[]): Process<
       continue;
     }
 
-    const {
-      blockHash: hash,
-      blockNumber
-    } = response.result;
+    const { blockHash: hash, blockNumber } = response.result;
 
     const height = parseInt(blockNumber);
 

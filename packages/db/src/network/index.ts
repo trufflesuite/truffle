@@ -4,7 +4,7 @@ const debug = logger("db:network");
 import type { Provider } from "web3/providers";
 
 import * as Process from "@truffle/db/process";
-import {
+import type {
   Db,
   DataModel,
   Input,
@@ -16,33 +16,35 @@ import * as Initialize from "./initialize";
 import * as FetchTransactionBlocks from "./transactionBlocks";
 import * as AddNetworks from "./addNetworks";
 import * as LoadNetworkGenealogies from "./networkGenealogies";
-export { Initialize, FetchTransactionBlocks, AddNetworks, LoadNetworkGenealogies };
+export {
+  Initialize,
+  FetchTransactionBlocks,
+  AddNetworks,
+  LoadNetworkGenealogies
+};
 
 type NetworkResource = Pick<
   Resource<"networks">,
   "id" | keyof Input<"networks">
 >;
 
-export type InitializeOptions =
-  & (
-    | { db: Db; provider: Provider; }
-    | { run: Process.ProcessorRunner }
-  )
-  & {
-    network: Omit<Input<"networks">, "networkId" | "historicBlock">
-  };
+export type InitializeOptions = (
+  | { db: Db; provider: Provider }
+  | { run: Process.ProcessorRunner }
+) & {
+  network: Omit<Input<"networks">, "networkId" | "historicBlock">;
+};
 
 /**
  * Construct abstraction
  *
  * @category Constructor
  */
-export async function initialize(
-  options: InitializeOptions
-): Promise<Network> {
-  const { run } = "db" in options && "provider" in options
-    ? Process.Run.forDb(options.db).forProvider(options.provider)
-    : options;
+export async function initialize(options: InitializeOptions): Promise<Network> {
+  const { run } =
+    "db" in options && "provider" in options
+      ? Process.Run.forDb(options.db).forProvider(options.provider)
+      : options;
 
   const { network } = options;
 
@@ -64,7 +66,7 @@ export class Network {
   }
 
   async recordBlocks(options: {
-    blocks: DataModel.Block[]
+    blocks: DataModel.Block[];
   }): Promise<(IdObject<"networks"> | undefined)[]> {
     const { blocks } = options;
 
@@ -100,9 +102,11 @@ export class Network {
     return await this.recordBlocks({ blocks });
   }
 
-  async congrueGenealogy(options: {
-    disableIndex?: boolean
-  } = {}): Promise<void> {
+  async congrueGenealogy(
+    options: {
+      disableIndex?: boolean;
+    } = {}
+  ): Promise<void> {
     await this.run(LoadNetworkGenealogies.process, {
       networks: this._incongruent,
       disableIndex: options.disableIndex
@@ -113,7 +117,7 @@ export class Network {
         network.historicBlock.height > latest.historicBlock.height
           ? network
           : latest,
-        this._latest
+      this._latest
     );
 
     this._incongruent = [];
@@ -139,7 +143,6 @@ export class Network {
   /*
    * internals
    */
-
 
   /**
    * @hidden

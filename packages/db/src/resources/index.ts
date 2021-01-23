@@ -55,7 +55,7 @@ export {
   Workspace
 } from "./types";
 
-import { Definitions } from "./types";
+import type { Definitions } from "./types";
 
 import { sources } from "./sources";
 import { bytecodes } from "./bytecodes";

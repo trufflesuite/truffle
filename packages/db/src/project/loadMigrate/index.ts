@@ -5,9 +5,9 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:loadMigrate");
 
-import { ContractObject } from "@truffle/contract-schema/spec";
-import { Input, toIdObject, IdObject } from "@truffle/db/resources";
-import { Process } from "@truffle/db/process";
+import type { ContractObject } from "@truffle/contract-schema/spec";
+import type { IdObject } from "@truffle/db/resources";
+import type { Process } from "@truffle/db/process";
 
 import * as Batch from "./batch";
 export { Batch };
@@ -41,9 +41,9 @@ export function* process(options: {
       [networkId: string]: {
         db?: {
           network: IdObject<"networks">;
-        }
-      }
-    }
+        };
+      };
+    };
   })[];
 }): Process<{
   artifacts: Artifact[];

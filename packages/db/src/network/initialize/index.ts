@@ -5,7 +5,7 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:network:initialize");
 
-import { Resource, Input } from "@truffle/db/resources";
+import type { Resource, Input } from "@truffle/db/resources";
 import { resources, Process } from "@truffle/db/process";
 import * as FetchNetworkId from "./networkId";
 import * as FetchGenesisBlock from "./genesisBlock";

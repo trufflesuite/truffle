@@ -1,15 +1,18 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:meta:process");
 
-import { Collections } from "@truffle/db/meta/collections";
+import type { Collections } from "@truffle/db/meta/collections";
 
-export { Process, Processor, ProcessRequest, RequestType } from "./types";
-export { ResourceProcessors, ResourceProcessorsOptions } from "./resources";
-export { ProcessorRunner } from "./run";
+export type { Process, Processor, ProcessRequest, RequestType } from "./types";
+export type {
+  ResourceProcessors,
+  ResourceProcessorsOptions
+} from "./resources";
+export type { ProcessorRunner } from "./run";
 
-export { Definition, Definitions } from "./types";
+export type { Definition, Definitions } from "./types";
 
-import { Definitions } from "./types";
+import type { Definitions } from "./types";
 import { runForDefinitions } from "./run";
 import { resourceProcessorsForDefinitions } from "./resources";
 

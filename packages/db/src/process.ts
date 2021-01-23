@@ -5,11 +5,11 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:process");
 
-import * as graphql from "graphql";
+import type * as graphql from "graphql";
 
-import * as Meta from "./meta";
+import type * as Meta from "./meta";
 import * as System from "./system";
-import {
+import type {
   Collections,
   CollectionName,
   Input,

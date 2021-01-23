@@ -6,7 +6,7 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:batch");
 
 import * as Meta from "@truffle/db/meta";
-import { Process } from "@truffle/db/process";
+import type { Process } from "@truffle/db/process";
 
 export type Configure = <B extends Batch>(
   options: Options<B>

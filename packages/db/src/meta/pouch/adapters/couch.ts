@@ -4,8 +4,8 @@ const debug = logger("db:meta:pouch:adapters:couch");
 import PouchDB from "pouchdb";
 import { paramCase } from "change-case";
 
-import { Collections } from "@truffle/db/meta/collections";
-import { GetDefaultSettings } from "./types";
+import type { Collections } from "@truffle/db/meta/collections";
+import type { GetDefaultSettings } from "./types";
 import * as Base from "./base";
 
 export interface DatabasesSettings {

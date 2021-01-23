@@ -6,12 +6,11 @@ import type { WorkflowCompileResult } from "@truffle/compile-common";
 import type { ContractObject } from "@truffle/contract-schema/spec";
 
 import * as Process from "@truffle/db/process";
-import {
+import type {
   Db,
   NamedCollectionName,
   Input,
-  IdObject,
-  toIdObject
+  IdObject
 } from "@truffle/db/resources";
 
 import * as Network from "@truffle/db/network";
@@ -290,7 +289,9 @@ export class ConnectedProject extends Project {
     });
 
     return {
-      network: toIdObject(network.congruentLatest),
+      network: {
+        id: network.congruentLatest.id
+      },
       artifacts
     };
   }

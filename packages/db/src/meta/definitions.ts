@@ -1,10 +1,10 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:meta:definitions");
 
-import { Collections, CollectionName } from "./collections";
-import * as Graph from "./graph";
-import * as Pouch from "./pouch";
-import * as Process from "./process";
+import type { Collections, CollectionName } from "./collections";
+import type * as Graph from "./graph";
+import type * as Pouch from "./pouch";
+import type * as Process from "./process";
 
 /**
  * Definitions type for whole meta system
@@ -13,9 +13,6 @@ import * as Process from "./process";
  */
 export type Definitions<C extends Collections> = {
   [N in CollectionName<C>]: Definition<C, N>;
-  // [N in CollectionName<C>]: Graph.Definition<C, N> &
-  //   Process.Definition<C, N> &
-  //   Pouch.Definition<C, N>;
 };
 
 /**
@@ -30,7 +27,4 @@ export type Definitions<C extends Collections> = {
 export type Definition<
   C extends Collections,
   N extends CollectionName<C>
-> = Graph.Definition<C, N> &
-  Process.Definition<C, N> &
-  Pouch.Definition<C, N>;
-// > = Definitions<C>[N];
+> = Graph.Definition<C, N> & Process.Definition<C, N> & Pouch.Definition<C, N>;

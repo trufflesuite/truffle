@@ -1,7 +1,7 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:meta:ids");
 
-import { Collections, CollectionName, Resource } from "./collections";
+import type { Collections, CollectionName, Resource } from "./collections";
 import { soliditySha3 } from "web3-utils";
 const jsonStableStringify = require("json-stable-stringify");
 

@@ -5,8 +5,8 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:network:initialize:genesisBlock");
 
-import { Process } from "@truffle/db/process";
-import { DataModel } from "@truffle/db/resources";
+import type { Process } from "@truffle/db/process";
+import type { DataModel } from "@truffle/db/resources";
 
 export function* process(): Process<
   DataModel.Block,
