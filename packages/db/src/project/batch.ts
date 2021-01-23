@@ -1,5 +1,9 @@
+/**
+ * @category Internal boilerplate
+ * @packageDocumentation
+ */
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:batch");
+const debug = logger("db:project:batch");
 
 import * as Meta from "@truffle/db/meta";
 import { Process } from "@truffle/db/process";

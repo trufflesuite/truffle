@@ -1,6 +1,11 @@
-import { ImmutableReferences } from "@truffle/contract-schema/spec";
+/**
+ * @category Internal processor
+ * @packageDocumentation
+ */
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:project:compile:compilations");
+const debug = logger("db:project:loadCompile:compilations");
+
+import { ImmutableReferences } from "@truffle/contract-schema/spec";
 
 import { DataModel, Input, IdObject } from "@truffle/db/resources";
 import { resources } from "@truffle/db/process";
@@ -30,7 +35,7 @@ interface Source {
   db: { source: IdObject<"sources"> };
 }
 
-export const generateCompilationsLoad = Batch.Compilations.generate<{
+export const process = Batch.Compilations.configure<{
   compilation: {
     compiler: {
       name: string;

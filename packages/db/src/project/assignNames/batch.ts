@@ -1,40 +1,45 @@
+/**
+ * @category Internal boilerplate
+ * @packageDocumentation
+ */
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:project:names:batch");
+const debug = logger("db:project:assignNames:batch");
 
 import { _ } from "hkts/src";
 
 import { IdObject } from "@truffle/db/resources";
 import { Process } from "@truffle/db/process";
-import * as Batch from "@truffle/db/batch";
+import * as Base from "@truffle/db/project/batch";
 
-type Config = {
+export type Config = {
   assignment: {};
   properties: {};
   entry?: any;
   result?: any;
 };
 
-type Assignment<C extends Config> = { resource: IdObject } & C["assignment"];
-type Properties<C extends Config> = C["properties"];
+export type Assignment<C extends Config> =
+  & { resource: IdObject }
+  & C["assignment"];
+export type Properties<C extends Config> = C["properties"];
 
-type Structure<_C extends Config> = {
+export type Structure<_C extends Config> = {
   project: IdObject<"projects">;
   collectionName: string;
   assignments: _[];
 };
 
-type Breadcrumb<_C extends Config> = {
+export type Breadcrumb<_C extends Config> = {
   assignmentIndex: number;
 };
 
-type Input<C extends Config> = Assignment<C>;
+export type Input<C extends Config> = Assignment<C>;
+export type Output<C extends Config> = Input<C> & Properties<C>;
 
-type Entry<C extends Config> = C["entry"];
-type Result<C extends Config> = C["result"];
+export type Entry<C extends Config> = C["entry"];
+export type Result<C extends Config> = C["result"];
 
-type Output<C extends Config> = Input<C> & Properties<C>;
-
-type Batch<C extends Config> = {
+export type Batch<C extends Config> = {
   structure: Structure<C>;
   breadcrumb: Breadcrumb<C>;
   input: Input<C>;
@@ -43,13 +48,13 @@ type Batch<C extends Config> = {
   result: Result<C>;
 };
 
-type Options<C extends Config> = Omit<
-  Batch.Options<Batch<C>>,
+export type Options<C extends Config> = Omit<
+  Base.Options<Batch<C>>,
   "iterate" | "find" | "initialize" | "merge"
 >;
 
-export const generate = <C extends Config>(options: Options<C>) => {
-  const generateCollectionAssignments = generateForCollection(options);
+export const configure = <C extends Config>(options: Options<C>) => {
+  const processCollection = configureForCollection(options);
 
   return function* <I extends Input<C>, O extends Output<C>>(options: {
     project: IdObject<"projects">;
@@ -72,7 +77,7 @@ export const generate = <C extends Config>(options: Options<C>) => {
       options.assignments
     )) {
       debug("collectionName %o", collectionName);
-      const outputs = yield* generateCollectionAssignments({
+      const outputs = yield* processCollection({
         project,
         collectionName,
         assignments
@@ -87,8 +92,8 @@ export const generate = <C extends Config>(options: Options<C>) => {
   };
 };
 
-const generateForCollection = <C extends Config>(options: Options<C>) =>
-  Batch.configure<Batch<C>>({
+const configureForCollection = <C extends Config>(options: Options<C>) =>
+  Base.configure<Batch<C>>({
     *iterate<_I, _O>({ inputs }) {
       for (const [
         assignmentIndex,

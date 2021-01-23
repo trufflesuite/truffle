@@ -9,7 +9,7 @@ import { Networks, Batches } from "test/arbitraries/networks";
 
 import { resources } from "@truffle/db/process";
 import { Resource } from "@truffle/db/resources";
-import { generateNetworkGenealogiesLoad } from "..";
+import * as LoadNetworkGenealogies from "..";
 
 import { mockProvider } from "./mockProvider";
 import { setupProjectForTest } from "./setup";
@@ -59,10 +59,11 @@ describe("generateNetworkGenealogiesLoad", () => {
           const liveProject = project.connect({ provider });
 
           debug("loading network genealogies for batch");
-          await liveProject.run(
-            generateNetworkGenealogiesLoad,
-            { network, artifacts, disableIndex }
-          );
+          await liveProject.run(LoadNetworkGenealogies.process, {
+            network,
+            artifacts,
+            disableIndex
+          });
         }
 
         // compute expected

@@ -1,11 +1,15 @@
+/**
+ * @category Internal boilerplate
+ * @packageDocumentation
+ */
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:project:compile:batch");
+const debug = logger("db:project:loadCompile:batch");
 
 import { _ } from "hkts/src";
 import type * as Common from "@truffle/compile-common";
 
 import { Process } from "@truffle/db/process";
-import * as Batch from "@truffle/db/batch";
+import * as Base from "@truffle/db/project/batch";
 
 export type Config = {
   compilation: {};
@@ -16,25 +20,25 @@ export type Config = {
   result?: any;
 };
 
-type Resources<C extends Config> = C["resources"];
-type Entry<C extends Config> = C["entry"];
-type Result<C extends Config> = C["result"];
-type Source<C extends Config> = Common.Source & C["source"];
-type Contract<C extends Config> = Common.CompiledContract & C["contract"];
-type Compilation<C extends Config> = Common.Compilation &
+export type Resources<C extends Config> = C["resources"];
+export type Entry<C extends Config> = C["entry"];
+export type Result<C extends Config> = C["result"];
+export type Source<C extends Config> = Common.Source & C["source"];
+export type Contract<C extends Config> = Common.CompiledContract & C["contract"];
+export type Compilation<C extends Config> = Common.Compilation &
   C["compilation"] & {
     contracts: Contract<C>[];
     sources: Source<C>[];
   };
 
 export namespace Compilations {
-  type Structure<_C extends Config> = _[];
+  export type Structure<_C extends Config> = _[];
 
-  type Breadcrumb<_C extends Config> = {
+  export type Breadcrumb<_C extends Config> = {
     compilationIndex: number;
   };
 
-  type Batch<C extends Config> = {
+  export type Batch<C extends Config> = {
     structure: Structure<C>;
     breadcrumb: Breadcrumb<C>;
 
@@ -47,17 +51,17 @@ export namespace Compilations {
     result?: Result<C>;
   };
 
-  type Options<C extends Config> = Omit<
-    Batch.Options<Batch<C>>,
+  export type Options<C extends Config> = Omit<
+    Base.Options<Batch<C>>,
     "iterate" | "find" | "initialize" | "merge"
   >;
 
-  export const generate = <C extends Config>(
+  export const configure = <C extends Config>(
     options: Options<C>
-  ): (<I extends Batch.Input<Batch<C>>, O extends Batch.Output<Batch<C>>>(
-    inputs: Batch.Inputs<Batch<C>, I>
-  ) => Process<Batch.Outputs<Batch<C>, I & O>>) =>
-    Batch.configure<Batch<C>>({
+  ): (<I extends Base.Input<Batch<C>>, O extends Base.Output<Batch<C>>>(
+    inputs: Base.Inputs<Batch<C>, I>
+  ) => Process<Base.Outputs<Batch<C>, I & O>>) =>
+    Base.configure<Batch<C>>({
       *iterate<_I>({ inputs }) {
         for (const [compilationIndex, compilation] of inputs.entries()) {
           yield {
@@ -98,16 +102,17 @@ export namespace Compilations {
 }
 
 export namespace Contracts {
-  type Structure<C extends Config> = (Omit<Compilation<C>, "contracts"> & {
-    contracts: _[];
-  })[];
+  export type Structure<C extends Config> = (
+    & Omit<Compilation<C>, "contracts">
+    & { contracts: _[]; }
+  )[];
 
-  type Breadcrumb<_C extends Config> = {
+  export type Breadcrumb<_C extends Config> = {
     compilationIndex: number;
     contractIndex: number;
   };
 
-  type Batch<C extends Config> = {
+  export type Batch<C extends Config> = {
     structure: Structure<C>;
     breadcrumb: Breadcrumb<C>;
 
@@ -118,17 +123,17 @@ export namespace Contracts {
     result?: Result<C>;
   };
 
-  type Options<C extends Config> = Omit<
-    Batch.Options<Batch<C>>,
+  export type Options<C extends Config> = Omit<
+    Base.Options<Batch<C>>,
     "iterate" | "find" | "initialize" | "find" | "merge"
   >;
 
-  export const generate = <C extends Config>(
+  export const configure = <C extends Config>(
     options: Options<C>
-  ): (<I extends Batch.Input<Batch<C>>, O extends Batch.Output<Batch<C>>>(
-    inputs: Batch.Inputs<Batch<C>, I>
-  ) => Process<Batch.Outputs<Batch<C>, I & O>>) =>
-    Batch.configure<Batch<C>>({
+  ): (<I extends Base.Input<Batch<C>>, O extends Base.Output<Batch<C>>>(
+    inputs: Base.Inputs<Batch<C>, I>
+  ) => Process<Base.Outputs<Batch<C>, I & O>>) =>
+    Base.configure<Batch<C>>({
       *iterate<_I>({ inputs }) {
         for (const [compilationIndex, { contracts }] of inputs.entries()) {
           for (const [contractIndex, contract] of contracts.entries()) {
@@ -177,17 +182,19 @@ export namespace Contracts {
       ...options
     });
 }
+
 export namespace Sources {
-  type Structure<C extends Config> = (Omit<Compilation<C>, "sources"> & {
-    sources: _[];
+  export type Structure<C extends Config> = (
+    & Omit<Compilation<C>, "sources">
+    & { sources: _[];
   })[];
 
-  type Breadcrumb<_C extends Config> = {
+  export type Breadcrumb<_C extends Config> = {
     compilationIndex: number;
     sourceIndex: number;
   };
 
-  type Batch<C extends Config> = {
+  export type Batch<C extends Config> = {
     structure: Structure<C>;
     breadcrumb: Breadcrumb<C>;
 
@@ -198,17 +205,17 @@ export namespace Sources {
     result?: Result<C>;
   };
 
-  type Options<C extends Config> = Omit<
-    Batch.Options<Batch<C>>,
+  export type Options<C extends Config> = Omit<
+    Base.Options<Batch<C>>,
     "iterate" | "find" | "initialize" | "find" | "merge"
   >;
 
-  export const generate = <C extends Config>(
+  export const configure = <C extends Config>(
     options: Options<C>
-  ): (<I extends Batch.Input<Batch<C>>, O extends Batch.Output<Batch<C>>>(
-    inputs: Batch.Inputs<Batch<C>, I>
-  ) => Process<Batch.Outputs<Batch<C>, I & O>>) =>
-    Batch.configure<Batch<C>>({
+  ): (<I extends Base.Input<Batch<C>>, O extends Base.Output<Batch<C>>>(
+    inputs: Base.Inputs<Batch<C>, I>
+  ) => Process<Base.Outputs<Batch<C>, I & O>>) =>
+    Base.configure<Batch<C>>({
       *iterate<_I>({ inputs }) {
         for (const [compilationIndex, { sources }] of inputs.entries()) {
           for (const [sourceIndex, source] of sources.entries()) {

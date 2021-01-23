@@ -1,11 +1,15 @@
+/**
+ * @category Internal processor
+ * @packageDocumentation
+ */
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:project:compile:contracts");
+const debug = logger("db:project:loadCompile:contracts");
 
 import { Input, IdObject } from "@truffle/db/resources";
 import { resources } from "@truffle/db/process";
 import * as Batch from "./batch";
 
-export const generateContractsLoad = Batch.Contracts.generate<{
+export const process = Batch.Contracts.configure<{
   compilation: {
     db: {
       compilation: IdObject<"compilations">;

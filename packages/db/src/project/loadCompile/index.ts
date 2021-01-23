@@ -1,14 +1,22 @@
+/**
+ * @category Internal processor
+ * @packageDocumentation
+ */
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:loaders:commands:compile");
+const debug = logger("db:project:loadCompile");
 
 import * as Common from "@truffle/compile-common/src/types";
 import { IdObject } from "@truffle/db/resources";
 import { Process } from "@truffle/db/process";
 
-import { generateSourcesLoad } from "./sources";
-import { generateBytecodesLoad } from "./bytecodes";
-import { generateCompilationsLoad } from "./compilations";
-import { generateContractsLoad } from "./contracts";
+import * as Batch from "./batch";
+export { Batch };
+
+import * as AddSources from "./sources";
+import * as AddBytecodes from "./bytecodes";
+import * as AddCompilations from "./compilations";
+import * as AddContracts from "./contracts";
+export { AddSources, AddBytecodes, AddCompilations, AddContracts };
 
 export type Compilation = Common.Compilation & {
   contracts: Contract[];
@@ -40,23 +48,23 @@ export type Contract = Common.CompiledContract & {
  * When calling `.next()` on this generator, pass any/all responses
  * and ultimately returns nothing when complete.
  */
-export function* generateCompileLoad(
+export function* process(
   result: Common.WorkflowCompileResult
 ): Process<{
   compilations: Compilation[];
   contracts: Contract[];
 }> {
   // @ts-ignore
-  const withSources = yield* generateSourcesLoad(result.compilations);
+  const withSources = yield* AddSources.process(result.compilations);
 
-  const withSourcesAndBytecodes = yield* generateBytecodesLoad(withSources);
+  const withSourcesAndBytecodes = yield* AddBytecodes.process(withSources);
 
-  const withCompilations = yield* generateCompilationsLoad(
+  const withCompilations = yield* AddCompilations.process(
     // @ts-ignore
     withSourcesAndBytecodes
   );
 
-  const withContracts = yield* generateContractsLoad(withCompilations);
+  const withContracts = yield* AddContracts.process(withCompilations);
 
   const compilations = withContracts;
 

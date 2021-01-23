@@ -167,8 +167,9 @@
  * Truffle data formats, namely `WorkflowCompileResult`, returned by
  * \@truffle/workflow-compile, and the Truffle contract artifacts format,
  * defined by @truffle/contract-schema. This abstraction covers two classes:
- *   - [[Project]] for operations that **do not** require a network connection.
- *     Use static [[Project.initialize | `Project.initialize()`]] to create.
+ *   - [[Project.Project]] for operations that **do not** require a network
+ *     connection. Use function [[Project.initialize | `Project.initialize()`]]
+ *     to create.
  *   - [[Project.ConnectedProject]] for operations that **do** require a
  *     blockchain network. Use existing project abstraction's
  *     [[Project.connect | `project.connect()`]] method to create.
@@ -205,7 +206,8 @@ const debug = debugModule("db");
 require("source-map-support/register");
 
 export { DataModel, Db } from "./resources";
-export { Project } from "./project";
+import * as Project from "./project";
+export { Project }
 
 
 import * as Resources from "./resources";

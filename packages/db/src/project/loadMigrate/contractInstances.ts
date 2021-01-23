@@ -1,11 +1,15 @@
+/**
+ * @category Internal processor
+ * @packageDocumentation
+ */
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:project:migrate:contractInstances");
+const debug = logger("db:project:loadMigrate:contractInstances");
 
 import { DataModel, Input, IdObject } from "@truffle/db/resources";
 import { resources } from "@truffle/db/process";
 import * as Batch from "./batch";
 
-export const generateContractInstancesLoad = Batch.generate<{
+export const process = Batch.configure<{
   artifact: {
     db: {
       contract: IdObject<"contracts">;
