@@ -18,33 +18,40 @@ import * as FetchNetworkId from "./networkId";
 import * as FetchGenesisBlock from "./genesisBlock";
 import * as FetchTransactionBlocks from "./transactionBlocks";
 import * as LoadNetworkGenealogies from "./networkGenealogies";
+export {
+  FetchNetworkId,
+  FetchGenesisBlock,
+  FetchTransactionBlocks,
+  LoadNetworkGenealogies
+};
 
 const { resources } = Process;
 
-/**
- * Network properties used by this abstraction - excludes complex queryable
- * fields like ancestors/descendants
- *
- * @category Internal
- */
-export type NetworkResource = Pick<
+type NetworkResource = Pick<
   Resource<"networks">,
   "id" | keyof Input<"networks">
 >;
+
+export type InitializeOptions =
+  & (
+    | { db: Db; provider: Provider; }
+    | { run: Process.ProcessorRunner }
+  )
+  & {
+    network: Omit<Input<"networks">, "networkId" | "historicBlock">
+  };
 
 /**
  * Construct abstraction
  *
  * @category Constructor
  */
-export async function initialize(options: {
-  db: Db;
-  provider: Provider;
-  network: Omit<Input<"networks">, "networkId" | "historicBlock">
-}): Promise<Network> {
-  const { db, provider } = options;
-
-  const { run } = Process.Run.forDb(db).forProvider(provider);
+export async function initialize(
+  options: InitializeOptions
+): Promise<Network> {
+  const { run } = "db" in options && "provider" in options
+    ? Process.Run.forDb(options.db).forProvider(options.provider)
+    : options;
 
   const networkId = await run(FetchNetworkId.process);
   const genesisBlock = await run(FetchGenesisBlock.process);
@@ -76,7 +83,7 @@ export class Network {
   }
 
   async recordBlocks(options: {
-    blocks: DataModel.BlockInput[]
+    blocks: DataModel.Block[]
   }): Promise<void> {
     const { blocks } = options;
 
