@@ -28,12 +28,14 @@ export const networks: Definition<"networks"> = {
 
       ancestors(
         limit: Int # default all
+        minimumHeight: Int # default any height
         includeSelf: Boolean # default false
         onlyEarliest: Boolean # default false
       ): [Network]!
 
       descendants(
         limit: Int # default all
+        maximumHeight: Int # default no height
         includeSelf: Boolean # default false
         onlyLatest: Boolean # default false
       ): [Network]!
@@ -119,6 +121,11 @@ function resolveRelations(
   const superlativeOption =
     relationship === "ancestor" ? "onlyEarliest" : "onlyLatest";
 
+  const heightBoundOption =
+    relationship === "ancestor" ? "minimumHeight" : "maximumHeight";
+  const heightBoundComparison =
+    relationship === "ancestor" ? "$gte" : "$lte";
+
   return async (
     network: IdObject<"networks">,
     options,
@@ -130,7 +137,8 @@ function resolveRelations(
     const {
       limit,
       includeSelf = false,
-      [superlativeOption]: onlySuperlative
+      [superlativeOption]: onlySuperlative,
+      [heightBoundOption]: heightBound
     } = options;
 
     let depth = 1;
@@ -177,7 +185,13 @@ function resolveRelations(
 
     const results = await workspace.find("networks", {
       selector: {
-        "historicBlock.height": { $gte: 0 },
+        "historicBlock.height": typeof heightBound === "number"
+          ? {
+              [heightBoundComparison]: heightBound
+            }
+          : {
+              $gte: 0
+            },
         "id": { $in: ids }
       },
       sort: [{ "historicBlock.height": heightOrder }]

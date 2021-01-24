@@ -24,6 +24,9 @@ export interface Db<_C extends Collections> {
 export interface ConnectOptions<_C extends Collections> {
   workingDirectory: string;
   adapter?: Pouch.Adapters.AdapterOptions;
+  context?: {
+    [key: string]: any;
+  }
 }
 
 export const forAttachAndSchema = <C extends Collections>(options: {
@@ -39,6 +42,10 @@ export const forAttachAndSchema = <C extends Collections>(options: {
         : (config as ConnectOptions<C>);
 
     const workspace = attach(options);
+    const context = {
+      ...options.context,
+      workspace
+    };
 
     return {
       async execute(
@@ -55,7 +62,7 @@ export const forAttachAndSchema = <C extends Collections>(options: {
           schema,
           document,
           null,
-          { workspace },
+          context,
           variables
         );
 
@@ -76,11 +83,15 @@ export const forAttachAndSchema = <C extends Collections>(options: {
         : (config as ConnectOptions<C>);
 
     const workspace = attach(options);
+    const context = {
+      ...options.context,
+      workspace
+    };
 
     return new ApolloServer({
       tracing: true,
       schema,
-      context: { workspace }
+      context
     });
   };
 
@@ -92,6 +103,7 @@ function toConnectOptions<C extends Collections>(
 ): ConnectOptions<C> {
   return {
     workingDirectory: config.working_directory,
-    adapter: (config.db || {}).adapter
+    adapter: (config.db || {}).adapter,
+    context: (config.db || {}).context || {}
   };
 }

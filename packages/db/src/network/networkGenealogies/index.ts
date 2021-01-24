@@ -73,6 +73,11 @@ export function* process(options: {
   // NetworkGenealogyInputs for all sequential pairs in this list.
   const { networks, networkGenealogies } = collectNetworks(options);
 
+  const earliest = networks[0];
+  const ancestor = yield* findRelation("ancestor", earliest, disableIndex);
+
+  const latest = networks[networks.length - 1];
+
   // for each network in order
   for (const network of networks) {
     // look for known ancestor

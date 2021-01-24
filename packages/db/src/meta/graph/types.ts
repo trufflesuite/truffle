@@ -11,6 +11,7 @@ import type {
   CollectionNameStyledAs,
   MutableCollectionName
 } from "@truffle/db/meta/collections";
+import type { IdObject } from "@truffle/db/meta/ids";
 import type { Workspace } from "@truffle/db/meta/data";
 
 /**
@@ -33,6 +34,15 @@ export type Definition<C extends Collections, N extends CollectionName<C>> = {
   ? { mutable: true }
   : { mutable?: false });
 
-export interface Context<C extends Collections> {
-  workspace: Workspace<C>;
-}
+export type ResourceContext<
+  C extends Collections,
+  N extends CollectionName<C> = CollectionName<C>
+> = {
+  [K in CollectionNameStyledAs<"resource", C, N>]?: IdObject<C, N>;
+};
+
+export type Context<C extends Collections> =
+  & {
+      workspace: Workspace<C>;
+    }
+  & ResourceContext<C>;
