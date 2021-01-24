@@ -2,83 +2,151 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:project");
 
 import type { Provider } from "web3/providers";
-import { WorkflowCompileResult } from "@truffle/compile-common";
-import { ContractObject } from "@truffle/contract-schema/spec";
+import type { WorkflowCompileResult } from "@truffle/compile-common";
+import type { ContractObject } from "@truffle/contract-schema/spec";
 
-import { Db, IdObject } from "@truffle/db/meta";
+import * as Process from "@truffle/db/process";
+import type {
+  Db,
+  NamedCollectionName,
+  Input,
+  IdObject
+} from "@truffle/db/resources";
 
-import { generateInitializeLoad } from "./initialize";
-import { generateNamesLoad } from "./names";
-import { Compilation, Contract, generateCompileLoad } from "./compile";
-import { Artifact, generateMigrateLoad } from "./migrate";
+import * as Network from "@truffle/db/network";
 
-import { ProcessorRunner, forDb } from "./process";
+import * as Batch from "./batch";
+export { Batch };
+
+import * as Initialize from "./initialize";
+import * as AssignNames from "./assignNames";
+import * as LoadCompile from "./loadCompile";
+import * as LoadMigrate from "./loadMigrate";
+export { Initialize, AssignNames, LoadCompile, LoadMigrate };
+
+export type InitializeOptions = {
+  project: Input<"projects">;
+} & ({ db: Db } | ReturnType<typeof Process.Run.forDb>);
 
 /**
- * Interface between @truffle/db and Truffle-at-large. Accepts external
- * Truffle concepts such as compilation results and migrated artifacts.
+ * Construct abstraction and idempotentally add a project resource
+ *
+ * @category Constructor
+ */
+export async function initialize(options: InitializeOptions): Promise<Project> {
+  const { run, forProvider } =
+    "db" in options ? Process.Run.forDb(options.db) : options;
+
+  const { project: input } = options;
+
+  const project = await run(Initialize.process, { input });
+
+  return new Project({ run, forProvider, project });
+}
+
+/**
+ * Abstraction for connecting @truffle/db to a Truffle project
+ *
+ * This class affords an interface between Truffle and @truffle/db,
+ * specifically for the purposes of ingesting @truffle/workflow-compile results
+ * and contract instance information from @truffle/contract-schema artifact
+ * files.
+ *
+ * Unless you are building tools that work with Truffle's various packages
+ * directly, you probably don't need to use this class.
+ *
+ * @example To instantiate this abstraction:
+ * ```typescript
+ * import { connect, Project } from "@truffle/db";
+ *
+ * const db = connect({
+ *   // ...
+ * });
+ *
+ * const project = await Project.initialize({
+ *   db,
+ *   project: {
+ *     directory: "/path/to/project/dir"
+ *   }
+ * });
+ * ```
  */
 export class Project {
-  /**
-   * Construct abstraction and idempotentally add a project resource
-   */
-  static async initialize(options: {
-    db: Db;
-    project: DataModel.ProjectInput;
-  }): Promise<Project> {
-    const { db, project: input } = options;
-
-    const { run, forProvider } = forDb(db);
-
-    const project = await run(generateInitializeLoad, input);
-
-    return new Project({ run, forProvider, project });
-  }
-
-  get id() {
+  public get id(): string {
     return this.project.id;
   }
 
   /**
    * Accept a compilation result and process it to save all relevant resources
-   * (Source, Bytecode, Compilation, Contract)
+   * ([[DataModel.Source | Source]], [[DataModel.Bytecode | Bytecode]],
+   * [[DataModel.Compilation | Compilation]],
+   * [[DataModel.Contract | Contract]])
+   *
+   * This returns the same WorkflowCompileResult but with additional
+   * references to each of the added resources.
+   *
+   * @category Truffle-specific
    */
   async loadCompile(options: {
     result: WorkflowCompileResult;
   }): Promise<{
-    compilations: Compilation[];
-    contracts: Contract[];
+    compilations: LoadCompile.Compilation[];
+    contracts: LoadCompile.Contract[];
   }> {
     const { result } = options;
 
-    return await this.run(generateCompileLoad, result);
+    return await this.run(LoadCompile.process, result);
   }
 
   /**
    * Update name pointers for this project. Currently affords name-keeping for
-   * Network and Contract resources (e.g., naming ContractInstance resources
-   * is not supported directly)
+   * [[DataModel.Network | Network]] and [[DataModel.Contract | Contract]]
+   * resources (e.g., naming [[DataModel.ContractInstance | ContractInstance]]
+   * resources is not supported directly)
    *
-   * This saves NameRecord and ProjectName resources to @truffle/db.
+   * This saves [[DataModel.NameRecord | NameRecord]] and
+   * [[DataModel.ProjectName | ProjectName]] resources to @truffle/db.
    *
-   * Returns a list NameRecord resources for completeness, although these may
-   * be regarded as an internal concern. ProjectName resources are not returned
-   * because they are mutable; returned representations would be impermanent.
+   * Returns a list of NameRecord resources for completeness, although these
+   * may be regarded as an internal concern. ProjectName resources are not
+   * returned because they are mutable; returned representations would be
+   * impermanent.
+   *
+   * @typeParam N
+   * Either `"contracts"`, `"networks"`, or `"contracts" | "networks"`.
+   *
+   * @param options.assignments
+   * Object whose keys belong to the set of named collection names and whose
+   * values are [[IdObject | IdObjects]] for resources of that collection.
+   *
+   * @example
+   * ```typescript
+   * await project.assignNames({
+   *   assignments: {
+   *     contracts: [
+   *       { id: "<contract1-id>" },
+   *       { id: "<contract2-id>" },
+   *       // ...
+   *     }
+   *   }
+   * });
+   * ```
    */
-  async assignNames(options: {
+  async assignNames<N extends NamedCollectionName>(options: {
     assignments: {
-      [collectionName: string]: IdObject[];
+      [K in N]: IdObject<K>[];
     };
   }): Promise<{
     assignments: {
-      [collectionName: string]: IdObject<DataModel.NameRecord>[];
+      [K in N]: IdObject<"nameRecords">[];
     };
   }> {
-    const { assignments } = await this.run(generateNamesLoad, {
+    const { assignments } = await this.run(AssignNames.process, {
       project: this.project,
       assignments: options.assignments
     });
     return {
+      // @ts-ignore
       assignments: Object.entries(assignments)
         .map(([collectionName, assignments]) => ({
           [collectionName]: assignments.map(({ nameRecord }) => nameRecord)
@@ -90,6 +158,7 @@ export class Project {
   /**
    * Accept a provider to enable workflows that require communicating with the
    * underlying blockchain network.
+   * @category Constructor
    */
   connect(options: { provider: Provider }): ConnectedProject {
     const { run } = this.forProvider(options.provider);
@@ -100,50 +169,132 @@ export class Project {
     });
   }
 
-  run: ProcessorRunner;
+  /**
+   * Run a given [[Process.Processor | Processor]] with specified arguments.
+   *
+   * This method is a [[Meta.Process.ProcessorRunner | ProcessorRunner]] and
+   * can be used to `await` (e.g.) the processors defined by
+   * [[Process.resources | Process's `resources`]].
+   *
+   * @category Processor
+   */
+  async run<
+    A extends unknown[],
+    T = any,
+    R extends Process.RequestType | undefined = undefined
+  >(processor: Process.Processor<A, T, R>, ...args: A): Promise<T> {
+    return this._run(processor, ...args);
+  }
 
   /*
    * internals
    */
 
-  private forProvider: (provider: Provider) => { run: ProcessorRunner };
-  private project: IdObject<DataModel.Project>;
+  /**
+   * @hidden
+   */
+  private forProvider: (provider: Provider) => { run: Process.ProcessorRunner };
+  /**
+   * @hidden
+   */
+  private project: IdObject<"projects">;
+  /**
+   * @hidden
+   */
+  private _run: Process.ProcessorRunner;
 
-  protected constructor(options: {
-    project: IdObject<DataModel.Project>;
-    run: ProcessorRunner;
-    forProvider?: (provider: Provider) => { run: ProcessorRunner };
+  /**
+   * @ignore
+   */
+  constructor(options: {
+    project: IdObject<"projects">;
+    run: Process.ProcessorRunner;
+    forProvider?: (provider: Provider) => { run: Process.ProcessorRunner };
   }) {
     this.project = options.project;
-    this.run = options.run;
+    this._run = options.run;
     if (options.forProvider) {
       this.forProvider = options.forProvider;
     }
   }
 }
 
-class ConnectedProject extends Project {
+export class ConnectedProject extends Project {
   /**
    * Process artifacts after a migration. Uses provider to determine most
-   * relevant network information directly, but still requires project-specific
-   * information about the network (i.e., name)
+   * relevant network information directly, but still requires
+   * project-specific information about the network (i.e., name)
    *
-   * This adds potentially multiple Network resources to @truffle/db, creating
-   * individual networks for the historic blocks in which each ContractInstance
-   * was first created on-chain.
+   * This adds potentially multiple [[DataModel.Network | Network]] resources
+   * to @truffle/db, creating individual networks for the historic blocks in
+   * which each [[DataModel.ContractInstance | ContractInstance]] was first
+   * created on-chain.
    *
-   * This saves Network and ContractInstance resources to @truffle/db.
+   * This saves [[DataModel.Network | Network]] and
+   * [[DataModel.ContractInstance | ContractInstance]] resources to
+   * \@truffle/db.
    *
-   * Returns both a list of ContractInstances and the Network added with the
-   * highest block height.
+   * Returns `artifacts` with network objects populated with IDs for each
+   * [[DataModel.ContractInstance | ContractInstance]], along with a
+   * `network` object containing the ID of whichever
+   * [[DataModel.Network | Network]] was added with the highest block height.
+   * @category Truffle-specific
    */
   async loadMigrate(options: {
-    network: Omit<DataModel.NetworkInput, "networkId" | "historicBlock">;
-    artifacts: ContractObject[];
+    network: Omit<Input<"networks">, "networkId" | "historicBlock">;
+    artifacts: (ContractObject & {
+      db: {
+        contract: IdObject<"contracts">;
+        callBytecode: IdObject<"bytecodes">;
+        createBytecode: IdObject<"bytecodes">;
+      };
+    })[];
   }): Promise<{
-    network: IdObject<DataModel.Network>;
-    artifacts: Artifact[];
+    network: IdObject<"networks">;
+    artifacts: LoadMigrate.Artifact[];
   }> {
-    return await this.run(generateMigrateLoad, options);
+    const network = await Network.initialize({
+      network: options.network,
+      run: (...args) => this.run(...args)
+    });
+
+    const { networkId } = network.genesis;
+
+    const transactionHashes = options.artifacts.map(
+      ({ networks }) => (networks[networkId] || {}).transactionHash
+    );
+
+    const networks = await network.recordTransactions({ transactionHashes });
+    debug("got networks, congruing genealogy %O", networks);
+    await network.congrueGenealogy();
+
+    const { artifacts } = await this.run(LoadMigrate.process, {
+      network: {
+        networkId: network.congruentLatest.networkId
+      },
+      artifacts: options.artifacts.map((artifact, index) => ({
+        ...artifact,
+        networks: {
+          ...artifact.networks,
+          [networkId]: {
+            ...artifact.networks[networkId],
+            ...(networks[index]
+              ? {
+                  db: {
+                    network: networks[index]
+                  }
+                }
+              : {})
+          }
+        }
+      }))
+    });
+
+    return {
+      network: {
+        id: network.congruentLatest.id
+      },
+      artifacts
+    };
   }
 }

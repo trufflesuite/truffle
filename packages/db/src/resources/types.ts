@@ -2,11 +2,13 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:resources:types");
 
 import * as Meta from "@truffle/db/meta";
-import * as Pouch from "@truffle/db/pouch";
-import * as GraphQl from "@truffle/db/graphql";
 
-export { Db, IdObject, toIdObject } from "@truffle/db/meta";
+import * as DataModel from "./data";
+export { DataModel };
 
+/**
+ * @category Internal
+ */
 export type Collections = {
   sources: {
     resource: DataModel.Source;
@@ -133,28 +135,152 @@ export type Collections = {
   };
 };
 
-export type CollectionName = Meta.CollectionName<Collections>;
+/**
+ * An instance of @truffle/db
+ *
+ * Defines the [[Meta.Db.execute | `db.execute()`]] method, which accepts
+ * GraphQL requests and returns GraphQL responses.
+ *
+ * See [[connect | connect()]] for how to instantiate this interface.
+ *
+ * @example
+ * ```typescript
+ * import gql from "graphql-tag";
+ * import { connect, Db } from "@truffle/db";
+ *
+ * const db: Db = connect({
+ *   // ...
+ * });
+ *
+ * const {
+ *   project: {
+ *     contract: {
+ *       id,
+ *       abi,
+ *       processedSource,
+ *       callBytecode
+ *     }
+ *   }
+ * } = await db.execute(gql`
+ *   query {
+ *     project(id: "0x...") {
+ *       contract(name: "MagicSquare") {
+ *         id
+ *         abi { json }
+ *         processedSource {
+ *           source { contents }
+ *           ast { json }
+ *         }
+ *         callBytecode {
+ *           bytes
+ *           linkReferences { name length offsets }
+ *           instructions { opcode programCounter pushData }
+ *         }
+ *       }
+ *     }
+ *   }
+ * `);
+ * ```
+ */
+export type Db = Meta.Db<Collections>;
 
-export type Definitions = {
-  [N in CollectionName]: Pouch.Definition<Collections, N> &
-    GraphQl.Definition<Collections, N>;
-};
+/**
+ * @category Internal
+ */
+export type Definitions = Meta.Definitions<Collections>;
 
+/**
+ * @category Internal
+ */
 export type Definition<N extends CollectionName> = Definitions[N];
 
+/**
+ * `bytecodes`, `contracts`, etc.
+ *
+ * @category Primary
+ */
+export type CollectionName = Meta.CollectionName<Collections>;
+
+/**
+ * Input type for a given collection name
+ *
+ * @example
+ * ```typescript
+ * import { Resources } from "@truffle/db";
+ *
+ * const sourceInput: Resources.Input<"sources"> = {
+ *   contents: "echo \"hello world\""
+ * }
+ * ```
+ * @category Primary
+ */
+export type Input<N extends CollectionName = CollectionName> = Meta.Input<
+  Collections,
+  N
+>;
+
+/**
+ * Resource type for a given collection name
+ *
+ * @example
+ * ```typescript
+ * import { Resources } from "@truffle/db";
+ *
+ * const source: Resources.Resource<"sources"> = {
+ *   id: "0x...",
+ *   contents: "echo \"hello world\""
+ * }
+ * ```
+ * @category Primary
+ */
 export type Resource<N extends CollectionName = CollectionName> = Meta.Resource<
   Collections,
   N
 >;
 
-export type MutableResource<
-  N extends CollectionName = CollectionName
-> = Meta.MutableResource<Collections, N>;
+/**
+ * Common reference type for resources in the system
+ *
+ * This exists for type safety purposes. Typically, do not define variables
+ * of this type directly; use [[toIdObject]] on existing resources.
+ *
+ * @example
+ * ```typescript
+ * import { Resources } from "@truffle/db";
+ *
+ * declare const source: Resources.Resource<"sources">;
+ *
+ * const { id }: Resources.IdObject<"sources"> = Resources.toIdObject(source);
+ * ```
+ * @category Primary
+ */
+export type IdObject<
+  N extends CollectionName | undefined = undefined
+> = Meta.IdObject<Collections, N>;
 
-export type NamedResource<
-  N extends CollectionName = CollectionName
-> = Meta.NamedResource<Collections, N>;
+/**
+ * Convert a given [[Resource]] to an [[IdObject]]
+ *
+ * @category Primary
+ */
+export const toIdObject = <N extends CollectionName>(resource) =>
+  Meta.toIdObject<Collections, N>(resource);
 
+/**
+ * Type akin to [[CollectionName]] but only includes mutable collections
+ *
+ * @category Primary
+ */
+export type MutableCollectionName = Meta.MutableCollectionName<Collections>;
+
+/**
+ * Type akin to [[CollectionName]] but only includes named collections
+ *
+ * @category Primary
+ */
 export type NamedCollectionName = Meta.NamedCollectionName<Collections>;
 
-export type Workspace = Pouch.Workspace<Collections>;
+/**
+ * @category Internal
+ */
+export type Workspace = Meta.Workspace<Collections>;
