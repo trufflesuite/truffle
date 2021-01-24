@@ -362,6 +362,8 @@ const GetWorkspaceCompilation = gql`
       }
       immutableReferences {
         astNode
+        length
+        offsets
       }
     }
   }
@@ -686,7 +688,20 @@ describe("Compilation", () => {
         )
       ).toBeDefined();
     });
-    expect(solcCompilation.immutableReferences).toEqual([]);
+
+    expect(Array.isArray(solcCompilation.immutableReferences)).toBe(true);
+    expect(solcCompilation.immutableReferences[0]).toHaveProperty("astNode");
+    expect(solcCompilation.immutableReferences[0]).toHaveProperty("length");
+    expect(solcCompilation.immutableReferences[0]).toHaveProperty("offsets");
+    expect(solcCompilation.immutableReferences[0].astNode).toEqual(
+      Object.entries(artifacts[0].immutableReferences)[0][0]
+    );
+    expect(solcCompilation.immutableReferences[0].length).toEqual(
+      Object.entries(artifacts[0].immutableReferences)[0][1][0].length
+    );
+    expect(solcCompilation.immutableReferences[0].offsets[0]).toEqual(
+      Object.entries(artifacts[0].immutableReferences)[0][1][0].start
+    );
 
     const vyperCompilation = compilationsQuery[1].data.compilation;
     expect(vyperCompilation.compiler.version).toEqual(

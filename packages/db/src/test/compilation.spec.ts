@@ -75,9 +75,6 @@ describe("Compilation", () => {
         expect(processedSource).toHaveProperty("language");
       }
       expect(immutableReferences).toHaveLength(1);
-      console.debug(
-        "immutable references " + JSON.stringify(immutableReferences)
-      );
       expect(immutableReferences[0].astNode).toEqual(variables.astNode);
       expect(immutableReferences[0].offsets).toHaveLength(1);
       expect(immutableReferences[0].length).toEqual(variables.length);
