@@ -24,18 +24,20 @@ import * as LoadCompile from "./loadCompile";
 import * as LoadMigrate from "./loadMigrate";
 export { Initialize, AssignNames, LoadCompile, LoadMigrate };
 
+export type InitializeOptions = {
+  project: Input<"projects">;
+} & ({ db: Db } | ReturnType<typeof Process.Run.forDb>);
+
 /**
  * Construct abstraction and idempotentally add a project resource
  *
  * @category Constructor
  */
-export async function initialize(options: {
-  db: Db;
-  project: Input<"projects">;
-}): Promise<Project> {
-  const { db, project: input } = options;
+export async function initialize(options: InitializeOptions): Promise<Project> {
+  const { run, forProvider } =
+    "db" in options ? Process.Run.forDb(options.db) : options;
 
-  const { run, forProvider } = Process.Run.forDb(db);
+  const { project: input } = options;
 
   const project = await run(Initialize.process, { input });
 

@@ -9,6 +9,7 @@ import type { Resource, Input } from "@truffle/db/resources";
 import { resources, Process } from "@truffle/db/process";
 import * as FetchNetworkId from "./networkId";
 import * as FetchGenesisBlock from "./genesisBlock";
+export { FetchNetworkId, FetchGenesisBlock };
 
 export function* process<
   Network extends Omit<Input<"networks">, "networkId" | "historicBock">

@@ -1,3 +1,55 @@
+/**
+ * # Network abstraction for @truffle/db
+ *
+ * This provides a TypeScript (or JavaScript) interface for loading blockchain
+ * network information into a running [[Db]].
+ *
+ * ## Usage
+ *
+ * ```typescript
+ * // you'll need a provider
+ * import type { Provider } from "web3/providers";
+ * declare const provider: Provider;
+ *
+ * // relevant imports
+ * import { connect, Network } from "@truffle/db";
+ *
+ * const db = connect({
+ *   // ...
+ * });
+ *
+ * const network = await Network.initialize({
+ *   db,
+ *   provider,
+ *   network: {
+ *     name: "development"
+ *   }
+ * });
+ *
+ * // load specific blocks
+ * await network.recordBlocks({
+ *   blocks: [
+ *     { height: 10, hash: "0x..." },
+ *     // ...
+ *   ]
+ * });
+ *
+ * // and/or load transactions
+ * await network.recordTransactions({
+ *   transactionHashes: [
+ *     "0x...",
+ *     // ...
+ *   ]
+ * });
+ *
+ * // then tell abstraction to relate recorded information with existing
+ * // information in @truffle/db
+ * await network.congrueGenealogy();
+ * ```
+ *
+ *
+ * @packageDocumentation
+ */
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:network");
 
@@ -28,12 +80,12 @@ type NetworkResource = Pick<
   "id" | keyof Input<"networks">
 >;
 
-export type InitializeOptions = (
-  | { db: Db; provider: Provider }
-  | { run: Process.ProcessorRunner }
-) & {
+export type InitializeOptions = {
   network: Omit<Input<"networks">, "networkId" | "historicBlock">;
-};
+} & (
+  | { db: Db; provider: Provider }
+  | ReturnType<ReturnType<typeof Process.Run.forDb>["forProvider"]>
+);
 
 /**
  * Construct abstraction
