@@ -632,7 +632,7 @@ describe("Compilation", () => {
         let migratedArtifact = JSON.parse(migratedArtifactPath);
         migratedArtifact.networks = {};
         migratedArtifact.updatedAt = "";
-        migratedArtifact.schemaVersion = "3.0.11";
+        migratedArtifact.schemaVersion = "3.0.9";
         fse.removeSync(
           path.join(
             __dirname,
