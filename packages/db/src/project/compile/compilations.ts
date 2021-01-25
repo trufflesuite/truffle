@@ -171,7 +171,7 @@ function toImmutableReferencesInputs(options: {
       return Object.entries(contract.immutableReferences).map(reference => {
         return {
           astNode: reference[0],
-          bytecode: contract.db.callBytecode,
+          bytecode: contract.db.createBytecode,
           length: reference[1][0].length,
           offsets: reference[1].map(({ start }) => start)
         };

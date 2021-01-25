@@ -362,6 +362,9 @@ const GetWorkspaceCompilation = gql`
       }
       immutableReferences {
         astNode
+        bytecode {
+          bytes
+        }
         length
         offsets
       }
@@ -701,6 +704,11 @@ describe("Compilation", () => {
     );
     expect(solcCompilation.immutableReferences[0].offsets[0]).toEqual(
       Object.entries(artifacts[0].immutableReferences)[0][1][0].start
+    );
+
+    let shimmedBytecode = Shims.LegacyToNew.forBytecode(artifacts[0].bytecode);
+    expect(solcCompilation.immutableReferences[0].bytecode.bytes).toEqual(
+      shimmedBytecode.bytes
     );
 
     const vyperCompilation = compilationsQuery[1].data.compilation;
