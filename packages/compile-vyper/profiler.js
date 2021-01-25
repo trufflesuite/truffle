@@ -3,8 +3,8 @@ const Common = require("@truffle/compile-common");
 const Resolver = require("@truffle/resolver");
 const { parseImports } = require("./parser");
 
-// Returns the minimal set of sources to pass to solc as compilations targets,
-// as well as the complete set of sources so solc can resolve the comp targets' imports.
+// Returns the minimal set of sources to pass to vyper-json as compilations targets,
+// as well as the complete set of sources so vyper-json can resolve the comp targets' imports.
 async function requiredSources(options) {
   const resolver = new Resolver(options, {
     translateJsonToSolidity: false,

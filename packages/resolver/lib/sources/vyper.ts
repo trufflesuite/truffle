@@ -11,7 +11,7 @@ export class Vyper implements ResolverSource {
   //do a resolveDependencyPath, I'm giving it a cache to prevent redoing
   //the work of resolution later
   cache: {
-    [filePath: string]: SourceResolution
+    [filePath: string]: SourceResolution;
   };
 
   constructor(wrappedSources: ResolverSource[], contractsDirectory: string) {
@@ -33,7 +33,10 @@ export class Vyper implements ResolverSource {
 
     //attempt to just resolve as if it's a file path rather than Vyper module
     for (const source of this.wrappedSources) {
-      const directlyResolvedSource = await source.resolve(importModule, importedFrom);
+      const directlyResolvedSource = await source.resolve(
+        importModule,
+        importedFrom
+      );
       if (directlyResolvedSource.body) {
         debug("found directly");
         return directlyResolvedSource;
@@ -49,7 +52,9 @@ export class Vyper implements ResolverSource {
 
     const importPath = moduleToPath(importModule); //note: no file extension yet
     debug("importPath: %s", importPath);
-    const explicitlyRelative = importModule[0] === ".";
+    const explicitlyRelative = importModule[0] === "."; //note we check importModule,
+    //not importPath, to make the check simpler (can just check if begins with "."
+    //rather than "./" or "../")
     debug("explicitlyRelative: %o", explicitlyRelative);
 
     const possiblePathsMinusExtension: string[] = [];
@@ -57,12 +62,12 @@ export class Vyper implements ResolverSource {
     possiblePathsMinusExtension.push(
       path.join(path.dirname(importedFrom), importPath)
     );
-    if(!explicitlyRelative) {
+    if (!explicitlyRelative) {
       //next: check in contracts dir, if not explicitly relative
       possiblePathsMinusExtension.push(
         path.join(this.contractsDirectory, importPath)
       );
-      //finally: check wherever the resolver says to check 
+      //finally: check wherever the resolver says to check
       possiblePathsMinusExtension.push(importPath);
     }
     const possibleExtensions = [".json", ".vy"]; //Vyper only expects these two
@@ -71,7 +76,8 @@ export class Vyper implements ResolverSource {
     //has been checked)
     const possiblePaths = [].concat(
       ...possibleExtensions.map(extension =>
-        possiblePathsMinusExtension.map(path => path + extension))
+        possiblePathsMinusExtension.map(path => path + extension)
+      )
     );
 
     debug("possiblePaths: %O", possiblePaths);
