@@ -81,10 +81,23 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
     const log = debug.extend(`${collectionName}:all`);
     log("Fetching all...");
 
-    const result = await this.find<N>(collectionName, { selector: {} });
+    try {
+      const { rows }: any = await this.collections[collectionName].allDocs({
+        include_docs: true
+      });
 
-    log("Fetched all.");
-    return result;
+      const result = rows
+        // make sure we include `id` in the response as well
+        .map(({ doc }) => ({ ...doc, id: doc["_id"] }))
+        // but filter out any views
+        .filter(({ views }) => !views);
+
+      log("Found.");
+      return result;
+    } catch (error) {
+      log("Error fetching all %s, got error: %O", collectionName, error);
+      throw error;
+    }
   }
 
   public async find<N extends CollectionName<C>>(
