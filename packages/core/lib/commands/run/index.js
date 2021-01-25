@@ -1,5 +1,3 @@
-const { error } = require("@truffle/contract/lib/handlers");
-
 const command = {
   command: "run",
   description: "Run a third-party command",
@@ -28,15 +26,9 @@ const command = {
 
     const customCommand = options._[0];
 
-    try {
-      checkPluginConfig(config);
-    } catch (err) {
-      console.error(err);
-      return;
-    }
+    checkPluginConfig(config);
 
     return await promisify(Run.run.bind(Run))(customCommand, config);
-    Run.run(customCommand, config, done);
   }
 };
 
