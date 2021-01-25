@@ -17,7 +17,7 @@ export function* process(): Process<
   const response = yield {
     type: "web3",
     method: "eth_getBlockByNumber",
-    params: [0, false]
+    params: ["0x0", false]
   };
 
   // not sure why this would fail but just in case

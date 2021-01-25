@@ -18,7 +18,7 @@ import { plan } from "./plan";
 const testConfig = process.env["OVERKILL"]
   ? {
       timeout: 5 * 60 * 1000, // 5 min
-      numRuns: 250
+      numRuns: 100
     }
   : {
       timeout: 30 * 1000, // 30 sec

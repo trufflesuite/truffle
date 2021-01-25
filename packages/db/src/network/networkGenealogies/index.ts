@@ -16,44 +16,48 @@ import {
 } from "@truffle/db/resources";
 import { resources, Process } from "@truffle/db/process";
 
+import * as FindRelation from "./findRelation";
+import * as FindAncestorsBetween from "./findBetween";
+export { FindRelation, FindAncestorsBetween };
+
 /**
- * Load NetworkGenealogy records for a given set of artifacts while connected
+ * Load NetworkGenealogy records for a given set of networks while connected
  * to a blockchain with a provider.
  *
- * This operates on a batch of artifacts, each of which may define a network
- * object for the currently connected chain. As part of the Project.loadMigrate
- * workflow, this process function requires artifact networks to be passed with
- * historic block information and a reference to the Network.
- *
- * We take, as a precondition, that all relevant artifact networks are actually
- * part of the same blockchain; i.e., that artifact networks represented by
- * later blocks do in fact descend from artifact networks represented by
- * earlier blocks.
+ * We take, as a **precondition**, that all relevant networks are actually
+ * part of the same blockchain; i.e., that networks with later historic blocks
+ * do in fact descend from networks with earlier historic blocks in the list.
  *
  * Using this assumption, the process is as follows:
  *
- *   1. Map + filter artifacts into artifact networks, excluding any unrelated
- *      artifact networks in each artifact.
+ *   1. Sort input networks by block height, filtering out missing values
+ *      (since input array can be sparse)
  *
- *   2. Sort these artifact networks by block height.
+ *   2. Find up to three existing networks in the system that are valid for
+ *      the currently connected blockchain:
  *
- *   3. For each pair of artifact networks in the sorted list, generate a
- *      corresponding NetworkGenealogyInput whose ancestor/descendant are
- *      Networks from the earlier/later item in the pair, respectively.
+ *      a. the ancestor of the earliest input network
+ *      b. the ancestor of the latest input network
+ *      c. the descendant of the latest input network
  *
- *   4. Connect this series of network genealogy records with existing
- *      genealogy records in the system by querying our input networks one at a
- *      time, looking for any known ancestor and/or any known descendant. If
- *      either or both of these relations exist, add corresponding genealogy
- *      inputs to our list.
+ *   3. If **2.a.** and **2.b.** are different, find the existing networks
+ *      between those (i.e., all of **2.b.**'s ancestors back to **2.a.***).
  *
- *   5. Load all inputs as NetworkGenealogy resources
+ *      *****: _**2.a.** is guaranteed to be an ancestor of **2.b.** because of
+ *      the above precondition._
  *
- * Note: unlike other process functions in the larger Project.loadMigrate flow,
- * this does not use the batch abstraction, and thus does not return structured
- * data in the original input form. Although this function returns a list of
- * NetworkGenealogy ID objects, it is likely not necessary to capture this
- * information anywhere, and thus the return value can likely be discarded.
+ *   4. Merge the following networks into a sorted list:
+ *      - all input networks
+ *      - any/all existing networks in range determined by step **3.**,
+ *        including the boundary condition networks from **2.a.** and **2.b.**
+ *      - network from **2.c.**, if it exists.
+ *
+ *   5. For each pair of networks in this list, generate a corresponding
+ *      [[[DataModel.NetworkGenealogyInput | NetworkGenealogyInput] whose
+ *      ancestor/descendant are [[DataModel.Network | Networks]] from the
+ *      earlier/later item in the pair, respectively.
+ *
+ *   6. Load these genealogy inputs.
  */
 export function* process(options: {
   networks: (
@@ -69,39 +73,49 @@ export function* process(options: {
     return;
   }
 
-  // for all such artifact networks, order the networks by height and collect
-  // NetworkGenealogyInputs for all sequential pairs in this list.
-  const { networks, networkGenealogies } = collectNetworks(options);
+  // sort by historic block height
+  const inputNetworks = collectNetworks(options);
 
-  const earliest = networks[0];
-  const ancestor = yield* findRelation("ancestor", earliest, disableIndex);
+  // find ancestor/descendant for earliest/latest input networks, respectively
+  const existingAncestor = yield* FindRelation.process(
+    "ancestor",
+    inputNetworks[0],
+    disableIndex
+  );
 
-  const latest = networks[networks.length - 1];
+  const existingDescendant = yield* FindRelation.process(
+    "descendant",
+    inputNetworks[inputNetworks.length - 1],
+    disableIndex
+  );
 
-  // for each network in order
-  for (const network of networks) {
-    // look for known ancestor
-    const ancestor = yield* findRelation("ancestor", network, disableIndex);
-    if (ancestor) {
-      networkGenealogies.push({
-        ancestor,
-        descendant: network
-      });
-    }
+  // find ancestor to latest input network and use that to find ancestors
+  // in our input range
+  const existingNetworksInRange = yield* FindAncestorsBetween.process({
+    earliest: existingAncestor,
+    latest: yield* FindRelation.process(
+      "ancestor",
+      inputNetworks[inputNetworks.length - 1],
+      disableIndex
+    )
+  });
 
-    // look for known descendant
-    const descendant = yield* findRelation("descendant", network, disableIndex);
-    if (descendant) {
-      networkGenealogies.push({
-        ancestor: network,
-        descendant
-      });
-    }
-  }
+  // sort all these networks by block height
+  const networks = collectNetworks({
+    networks: [
+      ...(existingAncestor ? [existingAncestor] : []),
+      ...inputNetworks,
+      ...existingNetworksInRange,
+      ...(existingDescendant ? [existingDescendant] : [])
+    ]
+  });
 
-  // load all NetworkGenealogyInputs, both pairwise inputs from artifact
-  // networks, as well as genealogy inputs for relationships to
-  // previously-known networks
+  // build pairwise genealogy inputs
+  const networkGenealogies = collectPairwiseGenealogies({
+    networks
+  });
+
+  // and load
   const results = yield* resources.load(
     "networkGenealogies",
     networkGenealogies
@@ -112,30 +126,37 @@ export function* process(options: {
 }
 
 /**
- * Given a sparsely-populated list of artifact networks from the same
- * blockchain, sort networks by block height and build a NetworkGenealogyInput
- * for each pair of sequential networks.
+ * Given a sparsely-populated list of networks from the same blockchain, sort
+ * networks by block height.
  */
 function collectNetworks(options: {
   networks: (
     | Pick<Resource<"networks">, "id" | "historicBlock">
     | undefined)[];
-}): {
-  networks: IdObject<"networks">[];
-  networkGenealogies: Input<"networkGenealogies">[];
-} {
+}): Pick<Resource<"networks">, "id" | "historicBlock">[] {
   // start by ordering non-null networks by block height
-  const networks: IdObject<"networks">[] = options.networks
+  const networks = options.networks
     .filter(network => !!network)
-    .sort((a, b) => a.historicBlock.height - b.historicBlock.height)
-    .map(toIdObject);
+    .sort((a, b) => a.historicBlock.height - b.historicBlock.height);
+
+  // return sorted networks
+  return networks;
+}
+
+/**
+ * Given a sorted list of networks, form pairwise NetworkGenealogyInputs where
+ * the ancestor is the earlier in the pair and descendant is later in the pair.
+ */
+function collectPairwiseGenealogies<
+  Network extends Pick<Resource<"networks">, "id" | "historicBlock">
+>(options: {
+  networks: Network[];
+}): Input<"networkGenealogies">[] {
+  const { networks } = options;
 
   // handle all-null case
   if (networks.length < 1) {
-    return {
-      networks: [],
-      networkGenealogies: []
-    };
+    return [];
   }
 
   // for our reduction, we'll need to keep track of the current ancestor for
@@ -146,7 +167,7 @@ function collectNetworks(options: {
   };
 
   const initialAccumulator: ResultAccumulator = {
-    ancestor: networks[0],
+    ancestor: toIdObject(networks[0]),
     networkGenealogies: []
   };
 
@@ -155,156 +176,20 @@ function collectNetworks(options: {
   const { networkGenealogies } = networks.slice(1).reduce(
     (
       { ancestor, networkGenealogies }: ResultAccumulator,
-      descendant: IdObject<"networks">
+      descendant: Network
     ): ResultAccumulator => ({
-      ancestor: descendant,
+      ancestor: toIdObject(descendant),
       networkGenealogies:
         ancestor.id === descendant.id
           ? networkGenealogies
-          : [...networkGenealogies, { ancestor, descendant }]
+          : [...networkGenealogies, {
+              ancestor,
+              descendant: toIdObject(descendant)
+            }]
     }),
     initialAccumulator
   );
 
-  // return sorted networks and pairwise genealogies
-  return {
-    networks,
-    networkGenealogies
-  };
-}
-
-/**
- * Issue GraphQL requests and eth_getBlockByNumber requests to determine if any
- * existing Network resources are ancestor or descendant of the connected
- * Network.
- *
- * Iteratively, this queries all possibly-related Networks for known historic
- * block. For each possibly-related Network, issue a corresponding web3 request
- * to determine if the known historic block is, in fact, the connected
- * blockchain's record of the block at that historic height.
- *
- * This queries @truffle/db for possibly-related Networks in batches, keeping
- * track of new candidates vs. what has already been tried.
- */
-function* findRelation(
-  relation: "ancestor" | "descendant",
-  network: IdObject<"networks">,
-  disableIndex?: boolean
-): Process<IdObject<"networks"> | undefined> {
-  // determine GraphQL query to invoke based on requested relation
-  const query =
-    relation === "ancestor" ? "possibleAncestors" : "possibleDescendants";
-
-  // since we're doing this iteratively, keep track of what networks we've
-  // tried and which ones we haven't
-  let alreadyTried: string[] = [];
-  let candidates: Resource<"networks">[];
-
-  do {
-    // query graphql for new candidates
-    ({
-      networks: candidates,
-      alreadyTried
-    } = yield* queryNextPossiblyRelatedNetworks(
-      relation,
-      network,
-      alreadyTried,
-      disableIndex
-    ));
-
-    // check blockchain to find a matching network
-    const matchingCandidate:
-      | IdObject<"networks">
-      | undefined = yield* findMatchingCandidateOnChain(candidates);
-
-    if (matchingCandidate) {
-      return matchingCandidate;
-    }
-  } while (candidates.length > 0);
-
-  // otherwise we got nothin'
-}
-
-let fragmentIndex = 0;
-
-/**
- * Issue GraphQL queries for possibly-related networks.
- *
- * This is called repeatedly, passing the resulting `alreadyTried` to the next
- * invocation.
- */
-function* queryNextPossiblyRelatedNetworks(
-  relation: "ancestor" | "descendant",
-  network: IdObject<"networks">,
-  alreadyTried: string[],
-  disableIndex?: boolean
-): Process<DataModel.CandidateSearchResult> {
-  // determine GraphQL query to invoke based on requested relation
-  const query =
-    relation === "ancestor" ? "possibleAncestors" : "possibleDescendants";
-  debug("finding %s", query);
-
-  // query graphql for new candidates
-  let result;
-  try {
-    ({ [query]: result } = yield* resources.get(
-      "networks",
-      network.id,
-      gql`
-        fragment Possible_${relation}s_${fragmentIndex++} on Network {
-          ${query}(
-            alreadyTried: ${JSON.stringify(alreadyTried)}
-            ${
-              disableIndex
-                ? "disableIndex: true"
-                : ""
-            }
-          ) {
-            networks {
-              id
-              historicBlock {
-                hash
-                height
-              }
-            }
-            alreadyTried {
-              id
-            }
-          }
-        }
-      `
-    ));
-  } catch (error) {
-    debug("error %o", error);
-  }
-
-  debug("candidate networks %o", result.networks);
-  return result;
-}
-
-/**
- * Issue web3 requests for a list of candidate Networks to determine
- * if any of their historic blocks are present in the connected blockchain.
- *
- * This works by querying for block hashes for given candidate heights
- */
-function* findMatchingCandidateOnChain(
-  candidates: Resource<"networks">[]
-): Process<IdObject<"networks"> | undefined> {
-  for (const candidate of candidates) {
-    const response = yield {
-      type: "web3",
-      method: "eth_getBlockByNumber",
-      params: [candidate.historicBlock.height, false]
-    };
-
-    // return if we have a result
-    if (
-      response &&
-      response.result &&
-      response.result.hash === candidate.historicBlock.hash
-    ) {
-      return toIdObject<"networks">(candidate);
-    }
-  }
+  // return pairwise genealogies
+  return networkGenealogies;
 }
