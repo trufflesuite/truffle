@@ -55,13 +55,16 @@ export const process = Batch.Contracts.configure<{
       )
     };
 
+    const generatedSources = toGeneratedSourceInput(input);
+
     return {
       name,
       abi,
       compilation,
       processedSource,
       createBytecode,
-      callBytecode
+      callBytecode,
+      generatedSources: generatedSources
     };
   },
 
@@ -79,3 +82,36 @@ export const process = Batch.Contracts.configure<{
     };
   }
 });
+
+function toGeneratedSourceInput({
+  generatedSources,
+  deployedGeneratedSources
+}) {
+  const processedGeneratedSources = generatedSources
+    ? generatedSources.map(source => {
+        return {
+          ast: { json: JSON.stringify(source.ast) },
+          id: source.id,
+          contents: source.contents,
+          name: source.name,
+          language: source.language
+        };
+      })
+    : [];
+  const processedDeployedGeneratedSources = deployedGeneratedSources
+    ? deployedGeneratedSources.map(source => {
+        return {
+          ast: { json: JSON.stringify(source.ast) },
+          id: source.id,
+          contents: source.contents,
+          name: source.name,
+          language: source.language
+        };
+      })
+    : [];
+
+  return {
+    forCreateBytecode: processedGeneratedSources,
+    forCallBytecode: processedDeployedGeneratedSources
+  };
+}
