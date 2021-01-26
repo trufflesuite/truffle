@@ -60,8 +60,14 @@ describe("Contract", () => {
       contractName: Migrations.contractName,
       compilationId: compilationId,
       bytecodeId: bytecodeId,
-      abi: JSON.stringify(Migrations.abi)
+      abi: JSON.stringify(Migrations.abi),
+      name: "#utility.yul",
+      ast: JSON.stringify(Migrations.ast),
+      id: 3,
+      contents: Migrations.source,
+      language: "Yul"
     };
+
     const addContractsResult = await wsClient.execute(AddContracts, variables);
 
     expect(addContractsResult).toHaveProperty("contractsAdd");
@@ -78,8 +84,18 @@ describe("Contract", () => {
     expect(contract).toHaveProperty("name");
     expect(contract).toHaveProperty("processedSource");
 
-    const { processedSource } = contract;
+    const { processedSource, generatedSources } = contract;
     expect(processedSource).toHaveProperty("ast");
+
+    expect(generatedSources).toHaveProperty("forCallBytecode");
+    expect(generatedSources).toHaveProperty("forCreateBytecode");
+    const { forCallBytecode, forCreateBytecode } = generatedSources;
+    expect(forCreateBytecode).toEqual([]);
+    expect(forCallBytecode[0].name).toEqual(variables.name);
+    expect(forCallBytecode[0].ast.json).toEqual(variables.ast);
+    expect(forCallBytecode[0].id).toEqual(variables.id);
+    expect(forCallBytecode[0].contents).toEqual(variables.contents);
+    expect(forCallBytecode[0].language).toEqual(variables.language);
   });
 
   test("can be queried", async () => {
@@ -100,6 +116,7 @@ describe("Contract", () => {
     expect(contract).toHaveProperty("name");
     expect(contract).toHaveProperty("processedSource");
     expect(contract).toHaveProperty("abi");
+    expect(contract).toHaveProperty("generatedSources");
   });
 
   test("can be queried via compilation directly", async () => {
