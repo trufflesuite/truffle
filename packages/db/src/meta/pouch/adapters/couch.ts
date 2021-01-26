@@ -2,7 +2,7 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:meta:pouch:adapters:couch");
 
 import PouchDB from "pouchdb";
-import { kebabCase } from "change-case";
+import { paramCase } from "change-case";
 
 import { Collections } from "@truffle/db/meta/collections";
 import { GetDefaultSettings } from "./types";
@@ -33,7 +33,7 @@ export class Databases<C extends Collections> extends Base.Databases<C> {
 
     // put sensitive information inside a closure so it's not as easily found
     this._createDatabase = resource => {
-      const remotePath = `${url}/${kebabCase(resource)}`;
+      const remotePath = `${url}/${paramCase(resource)}`;
       debug("remotePath %O", remotePath);
 
       return new PouchDB(remotePath, { auth });
