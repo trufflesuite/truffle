@@ -85,7 +85,7 @@
  * ### GraphQL schema
  *
  * \@truffle/db makes its GraphQL schema available as the exported
- * [[Graph.schema | `Graph.schema`]] variable, or view the _Schema SDL_
+ * [[Graph.schema | `Graph.schema`]] variable, or view the SDL
  * details in the [[Graph]] namespace description.
  *
  * ## Data model
@@ -229,10 +229,12 @@ export const connect = _System.connect;
 export const serve = _System.serve;
 
 /**
- * GraphQL-related exports for @truffle/db
+ * # GraphQL-related exports for @truffle/db
+ *
+ * ## SDL
  *
  * <details>
- * <summary>Schema SDL</summary>
+ * <summary>@truffle/db SDL</summary>
  *
  * ```graphql
  * [[include:schema.sdl]]
