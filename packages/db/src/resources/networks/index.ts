@@ -38,6 +38,7 @@ export const networks: Definition<"networks"> = {
         minimumHeight: Int # default any height
         includeSelf: Boolean # default false
         onlyEarliest: Boolean # default false
+        batchSize: Int # default 10
       ): [Network]!
 
       descendants(
@@ -45,6 +46,7 @@ export const networks: Definition<"networks"> = {
         maximumHeight: Int # default no height
         includeSelf: Boolean # default false
         onlyLatest: Boolean # default false
+        batchSize: Int # default 10
       ): [Network]!
 
       possibleAncestors(

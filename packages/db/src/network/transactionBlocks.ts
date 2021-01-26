@@ -8,9 +8,11 @@ const debug = logger("db:network:transactionBlocks");
 import type { Process } from "@truffle/db/process";
 import type { DataModel } from "@truffle/db/resources";
 
-export function* process(
-  transactionHashes: string[]
-): Process<DataModel.Block[], { web3: "eth_getTransactionByHash" }> {
+export function* process(options: {
+  transactionHashes: string[];
+}): Process<DataModel.Block[], { web3: "eth_getTransactionByHash" }> {
+  const { transactionHashes } = options;
+
   const blocks: DataModel.Block[] = [];
 
   for (const transactionHash of transactionHashes) {

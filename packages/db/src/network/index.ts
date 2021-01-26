@@ -146,10 +146,9 @@ export class Network {
   }): Promise<(IdObject<"networks"> | undefined)[]> {
     const { transactionHashes } = options;
 
-    const blocks = await this.run(
-      FetchTransactionBlocks.process,
+    const blocks = await this.run(FetchTransactionBlocks.process, {
       transactionHashes
-    );
+    });
 
     return await this.recordBlocks({ blocks });
   }
