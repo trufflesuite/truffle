@@ -2,6 +2,7 @@ const useNeo = false;
 
 const common = {
   entryPoints: ["src/index.ts"],
+  categorizeByGroup: false,
   categoryOrder: [
     "Primary",
     "Schema Root",
