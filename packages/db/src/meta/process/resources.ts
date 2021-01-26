@@ -3,7 +3,7 @@ const debug = logger("db:process");
 
 import gql from "graphql-tag";
 import * as graphql from "graphql";
-import pascalCase from "pascal-case";
+import { pascalCase } from "change-case";
 import { singular } from "pluralize";
 
 import {
