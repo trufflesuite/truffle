@@ -7,8 +7,8 @@ import { GraphQLSchema, DocumentNode, ExecutionResult, execute } from "graphql";
 import { ApolloServer } from "apollo-server";
 import type TruffleConfig from "@truffle/config";
 
-import { Collections } from "./collections";
-import { Workspace } from "./data";
+import type { Collections } from "./collections";
+import type { Workspace } from "./data";
 import * as Pouch from "./pouch";
 
 export interface Db<_C extends Collections> {

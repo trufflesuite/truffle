@@ -1,9 +1,9 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:process:types");
 
-import * as graphql from "graphql";
+import type * as graphql from "graphql";
 
-import {
+import type {
   Collections,
   CollectionName,
   CollectionProperty,

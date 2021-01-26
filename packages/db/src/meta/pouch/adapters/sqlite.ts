@@ -6,8 +6,8 @@ import fse from "fs-extra";
 import PouchDB from "pouchdb";
 import PouchDBNodeWebSQLAdapter from "pouchdb-adapter-node-websql";
 
-import { Collections } from "@truffle/db/meta/collections";
-import { GetDefaultSettings } from "./types";
+import type { Collections } from "@truffle/db/meta/collections";
+import type { GetDefaultSettings } from "./types";
 import * as Base from "./base";
 
 export interface DatabasesSettings {

@@ -1,17 +1,17 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:graphql:types");
 
-import * as graphql from "graphql";
-import { IResolvers } from "graphql-tools";
+import type * as graphql from "graphql";
+import type { IResolvers } from "graphql-tools";
 
-import {
+import type {
   Collections,
   CollectionName,
   CollectionNameStyle,
   CollectionNameStyledAs,
   MutableCollectionName
 } from "@truffle/db/meta/collections";
-import { Workspace } from "@truffle/db/meta/data";
+import type { Workspace } from "@truffle/db/meta/data";
 
 /**
  * @category Definitions

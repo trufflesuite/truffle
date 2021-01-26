@@ -7,7 +7,7 @@ const debug = logger("db:project:assignNames:getCurrent");
 
 import gql from "graphql-tag";
 import { resources } from "@truffle/db/process";
-import { Resource } from "@truffle/db/resources";
+import type { Resource } from "@truffle/db/resources";
 import * as Batch from "./batch";
 
 export const process = Batch.configure<{

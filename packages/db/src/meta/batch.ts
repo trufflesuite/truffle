@@ -1,10 +1,10 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:meta:batch");
 
-import { $ } from "hkts/src";
+import type { $ } from "hkts/src";
 
-import { Collections } from "@truffle/db/meta/collections";
-import { Process } from "@truffle/db/meta/process";
+import type { Collections } from "@truffle/db/meta/collections";
+import type { Process } from "@truffle/db/meta/process";
 
 export type Configure<C extends Collections = Collections> = <B extends Batch>(
   options: Options<B>

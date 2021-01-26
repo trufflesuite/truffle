@@ -2,15 +2,15 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:meta:graphql:schema");
 
 import gql from "graphql-tag";
-import * as graphql from "graphql";
+import type * as graphql from "graphql";
 import { makeExecutableSchema, IResolvers } from "graphql-tools";
 
-import {
+import type {
   Collections,
   CollectionName,
   MutableCollectionName
 } from "@truffle/db/meta/collections";
-import { Context, Definition, Definitions } from "./types";
+import type { Context, Definition, Definitions } from "./types";
 
 export const forDefinitions = <C extends Collections>(
   definitions: Definitions<C>
