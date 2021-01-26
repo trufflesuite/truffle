@@ -5,10 +5,10 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:loadCompile:batch");
 
-import { _ } from "hkts/src";
+import type { _ } from "hkts/src";
 import type * as Common from "@truffle/compile-common";
 
-import { Process } from "@truffle/db/process";
+import type { Process } from "@truffle/db/process";
 import * as Base from "@truffle/db/project/batch";
 
 export type Config = {
@@ -24,7 +24,8 @@ export type Resources<C extends Config> = C["resources"];
 export type Entry<C extends Config> = C["entry"];
 export type Result<C extends Config> = C["result"];
 export type Source<C extends Config> = Common.Source & C["source"];
-export type Contract<C extends Config> = Common.CompiledContract & C["contract"];
+export type Contract<C extends Config> = Common.CompiledContract &
+  C["contract"];
 export type Compilation<C extends Config> = Common.Compilation &
   C["compilation"] & {
     contracts: Contract<C>[];
@@ -102,10 +103,10 @@ export namespace Compilations {
 }
 
 export namespace Contracts {
-  export type Structure<C extends Config> = (
-    & Omit<Compilation<C>, "contracts">
-    & { contracts: _[]; }
-  )[];
+  export type Structure<C extends Config> = (Omit<
+    Compilation<C>,
+    "contracts"
+  > & { contracts: _[] })[];
 
   export type Breadcrumb<_C extends Config> = {
     compilationIndex: number;
@@ -184,9 +185,8 @@ export namespace Contracts {
 }
 
 export namespace Sources {
-  export type Structure<C extends Config> = (
-    & Omit<Compilation<C>, "sources">
-    & { sources: _[];
+  export type Structure<C extends Config> = (Omit<Compilation<C>, "sources"> & {
+    sources: _[];
   })[];
 
   export type Breadcrumb<_C extends Config> = {

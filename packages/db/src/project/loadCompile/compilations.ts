@@ -5,9 +5,9 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:loadCompile:compilations");
 
-import { ImmutableReferences } from "@truffle/contract-schema/spec";
+import type { ImmutableReferences } from "@truffle/contract-schema/spec";
 
-import { DataModel, Input, IdObject } from "@truffle/db/resources";
+import type { DataModel, Input, IdObject } from "@truffle/db/resources";
 import { resources } from "@truffle/db/process";
 import * as Batch from "./batch";
 

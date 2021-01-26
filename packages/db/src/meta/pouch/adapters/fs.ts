@@ -7,8 +7,8 @@ import * as jsondown from "jsondown";
 import * as PouchDBUtils from "pouchdb-utils";
 import CoreLevelPouch from "pouchdb-adapter-leveldb-core";
 
-import { Collections } from "@truffle/db/meta/collections";
-import { GetDefaultSettings } from "./types";
+import type { Collections } from "@truffle/db/meta/collections";
+import type { GetDefaultSettings } from "./types";
 import * as Base from "./base";
 
 export interface DatabasesSettings {

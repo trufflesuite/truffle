@@ -2,12 +2,11 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:project");
 
 import type { Provider } from "web3/providers";
-import { WorkflowCompileResult } from "@truffle/compile-common";
-import { ContractObject } from "@truffle/contract-schema/spec";
+import type { WorkflowCompileResult } from "@truffle/compile-common";
+import type { ContractObject } from "@truffle/contract-schema/spec";
 
-import * as Meta from "@truffle/db/meta";
 import * as Process from "@truffle/db/process";
-import {
+import type {
   Db,
   NamedCollectionName,
   Input,

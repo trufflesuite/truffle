@@ -5,10 +5,10 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:assignNames:batch");
 
-import { _ } from "hkts/src";
+import type { _ } from "hkts/src";
 
-import { IdObject } from "@truffle/db/resources";
-import { Process } from "@truffle/db/process";
+import type { IdObject } from "@truffle/db/resources";
+import type { Process } from "@truffle/db/process";
 import * as Base from "@truffle/db/project/batch";
 
 export type Config = {
@@ -18,9 +18,9 @@ export type Config = {
   result?: any;
 };
 
-export type Assignment<C extends Config> =
-  & { resource: IdObject }
-  & C["assignment"];
+export type Assignment<C extends Config> = {
+  resource: IdObject;
+} & C["assignment"];
 export type Properties<C extends Config> = C["properties"];
 
 export type Structure<_C extends Config> = {

@@ -3,7 +3,7 @@ const debug = logger("db:meta:data");
 
 import PouchDB from "pouchdb";
 
-import {
+import type {
   Collections,
   CollectionName,
   Input,

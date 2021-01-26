@@ -5,7 +5,7 @@ import PouchDB from "pouchdb";
 import PouchDBDebug from "pouchdb-debug";
 import PouchDBFind from "pouchdb-find";
 
-import {
+import type {
   CollectionName,
   Collections,
   MutationInput,
@@ -13,9 +13,9 @@ import {
   MutableCollectionName
 } from "@truffle/db/meta/collections";
 import { generateId } from "@truffle/db/meta/ids";
-import { Workspace, SavedInput, Historical } from "@truffle/db/meta/data";
+import type { Workspace, SavedInput, Historical } from "@truffle/db/meta/data";
 
-import { Definition, Definitions } from "@truffle/db/meta/pouch/types";
+import type { Definition, Definitions } from "@truffle/db/meta/pouch/types";
 
 /**
  * Aggegrates logic for interacting wth a set of PouchDB databases identified

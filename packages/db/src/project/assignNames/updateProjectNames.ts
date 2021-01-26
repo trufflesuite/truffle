@@ -6,7 +6,7 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:assignNames:updateProjectNames");
 
 import { resources } from "@truffle/db/process";
-import { Input, IdObject } from "@truffle/db/resources";
+import type { Input, IdObject } from "@truffle/db/resources";
 import * as Batch from "./batch";
 
 export const process = Batch.configure<{
