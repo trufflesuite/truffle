@@ -69,33 +69,33 @@ const command = {
 
     if (config.list !== undefined) {
       return await command.listVersions(config);
-    } else {
-      if (
-        options.saveIntermediate === true ||
-        (typeof options.saveIntermediate === "string" &&
-          options.saveIntermediate.trim() === "")
-      ) {
-        // user asked to save the intermediate compilation results
-        // but didn't provide the file to save the results to
-        throw new TruffleError(
-          "You must provide a file to save compilation results to."
-        );
-      }
-
-      const compilationOutput = await WorkflowCompile.compile(config);
-      if (options.saveIntermediate) {
-        // Get the filename the user provided to save the compilation results to
-        const compilationOutputFile = path.resolve(options.saveIntermediate);
-
-        await fse.writeFile(
-          compilationOutputFile,
-          JSON.stringify(compilationOutput),
-          {encoding: "utf8"}
-        );
-      }
-
-      return await WorkflowCompile.save(config, compilationOutput);
     }
+
+    if (
+      options.saveIntermediate === true ||
+      (typeof options.saveIntermediate === "string" &&
+        options.saveIntermediate.trim() === "")
+    ) {
+      // user asked to save the intermediate compilation results
+      // but didn't provide the file to save the results to
+      throw new TruffleError(
+        "You must provide a file to save compilation results to."
+      );
+    }
+
+    const compilationOutput = await WorkflowCompile.compile(config);
+    if (options.saveIntermediate) {
+      // Get the filename the user provided to save the compilation results to
+      const compilationOutputFile = path.resolve(options.saveIntermediate);
+
+      await fse.writeFile(
+        compilationOutputFile,
+        JSON.stringify(compilationOutput),
+        {encoding: "utf8"}
+      );
+    }
+
+    return await WorkflowCompile.save(config, compilationOutput);
   },
 
   listVersions: async function (options) {
