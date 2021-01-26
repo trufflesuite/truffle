@@ -26,6 +26,8 @@ const command = {
 
     console.log(`🚀 Playground listening at ${url}`);
     console.log(`ℹ  Press Ctrl-C to exit`);
+
+    await new Promise(() => {});
   }
 };
 
