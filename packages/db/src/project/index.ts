@@ -13,6 +13,8 @@ import type {
   IdObject
 } from "@truffle/db/resources";
 
+import * as Network from "@truffle/db/network";
+
 import * as Batch from "./batch";
 export { Batch };
 
@@ -240,11 +242,63 @@ export class ConnectedProject extends Project {
    */
   async loadMigrate(options: {
     network: Omit<Input<"networks">, "networkId" | "historicBlock">;
-    artifacts: ContractObject[];
+    artifacts: (
+      & ContractObject
+      & {
+          db: {
+            contract: IdObject<"contracts">;
+            callBytecode: IdObject<"bytecodes">;
+            createBytecode: IdObject<"bytecodes">;
+          }
+        }
+    )[];
   }): Promise<{
     network: IdObject<"networks">;
     artifacts: LoadMigrate.Artifact[];
   }> {
-    return await this.run(LoadMigrate.process, options);
+    const network = await Network.initialize({
+      network: options.network,
+      run: (...args) => this.run(...args)
+    });
+
+    const { networkId } = network.genesis;
+
+    const transactionHashes = options.artifacts
+      .map(({ networks }) => (networks[networkId] || {}).transactionHash);
+
+    const networks = await network.recordTransactions({ transactionHashes });
+    debug("got networks, congruing genealogy %O", networks);
+    await network.congrueGenealogy();
+
+    const { artifacts } = await this.run(LoadMigrate.process, {
+      network: {
+        networkId: network.congruentLatest.networkId
+      },
+      artifacts: options.artifacts.map((artifact, index) => ({
+        ...artifact,
+        networks: {
+          ...artifact.networks,
+          [networkId]: {
+            ...artifact.networks[networkId],
+            ...(
+              networks[index]
+                ? {
+                    db: {
+                      network: networks[index]
+                    }
+                  }
+                : {}
+            )
+          }
+        }
+      }))
+    });
+
+    return {
+      network: {
+        id: network.congruentLatest.id
+      },
+      artifacts
+    }
   }
 }
