@@ -290,7 +290,7 @@ function* findMatchingCandidateOnChain(
     const response = yield {
       type: "web3",
       method: "eth_getBlockByNumber",
-      params: [candidate.historicBlock.height, false]
+      params: [`0x${candidate.historicBlock.height.toString(16)}`, false]
     };
 
     // return if we have a result
