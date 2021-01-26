@@ -28,9 +28,11 @@ export const mockProvider = (options: {
       switch(method) {
         case "eth_getBlockByNumber": {
           const [ blockNumber ] = params;
-          debug("intercepting eth_getBlockByNumber %o", blockNumber);
 
-          const result = getBlockByNumber(blockNumber);
+          const height = parseInt(blockNumber);
+          debug("intercepting eth_getBlockByNumber %o", height);
+
+          const result = getBlockByNumber(height);
           debug("result %o", result);
 
           return callback(null, {
