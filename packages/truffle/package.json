@@ -59,7 +59,7 @@
     "yargs": "^8.0.2"
   },
   "optionalDependencies": {
-    "@truffle/db": "^0.2.0-1"
+    "@truffle/db": "^0.4.0-1"
   },
   "publishConfig": {
     "access": "public"
