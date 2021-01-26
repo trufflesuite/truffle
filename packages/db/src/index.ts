@@ -32,8 +32,20 @@
  * Continue reading below for an overview and full index of this package's
  * exports.
  *
- * ![Example query for a near-complete representation of a project's
- * contract](media://images/example-query.png)
+ * ---
+ *
+ * <figure style="text-align: center">
+ * <img
+ *   src="media://images/example-query.png"
+ *   alt="Example query"
+ *   style="width: 85%" />
+ * <figcaption style="font-size: small; font-style: italic">
+ * <strong>Figure</strong>:
+ * Example query for a project's <code>MagicSquare</code> contract
+ * </figcaption>
+ * </figure>
+ *
+ * ---
  *
  * ## Contents
  *
