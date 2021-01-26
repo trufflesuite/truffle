@@ -15,6 +15,14 @@ export const GetContract = gql`
           json
         }
       }
+      generatedSources {
+        forCallBytecode {
+          name
+        }
+        forCreateBytecode {
+          name
+        }
+      }
     }
   }
 `;
@@ -52,6 +60,11 @@ export const AddContracts = gql`
     $compilationId: ID!
     $bytecodeId: ID!
     $abi: String!
+    $name: String!
+    $ast: String!
+    $id: Int!
+    $contents: String!
+    $language: String!
   ) {
     contractsAdd(
       input: {
@@ -62,6 +75,18 @@ export const AddContracts = gql`
             compilation: { id: $compilationId }
             processedSource: { index: 0 }
             constructor: { createBytecode: { bytecode: { id: $bytecodeId } } }
+            generatedSources: {
+              forCallBytecode: [
+                {
+                  name: $name
+                  ast: { json: $ast }
+                  id: $id
+                  contents: $contents
+                  language: $language
+                }
+              ]
+              forCreateBytecode: []
+            }
           }
         ]
       }
@@ -89,6 +114,20 @@ export const AddContracts = gql`
                 name
               }
             }
+          }
+        }
+        generatedSources {
+          forCallBytecode {
+            name
+            ast {
+              json
+            }
+            id
+            contents
+            language
+          }
+          forCreateBytecode {
+            name
           }
         }
       }
