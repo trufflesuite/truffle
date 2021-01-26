@@ -87,6 +87,16 @@ describe("Project.assignNames", () => {
     });
   });
 
+  it("aborts if specified resources don't exist", async () => {
+    expect(
+      project.assignNames({
+        assignments: {
+          networks: [{ id: "0xdeadbeef" }, { id: "pizza" }]
+        }
+      })
+    ).rejects.toThrow("Unknown networks: 0xdeadbeef, pizza");
+  });
+
   it("resolves to new contract with no prior contract", async () => {
     const { addContract, resolveContractNameRecord } = helpers(db, project);
 
