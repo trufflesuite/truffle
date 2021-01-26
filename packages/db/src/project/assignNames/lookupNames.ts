@@ -41,6 +41,14 @@ export const process = Batch.configure<{
       `
     );
 
+    // catch unknown resources so we can abort
+    const missing = results
+      .map((resource, index) => !resource && entries[index].id)
+      .filter(id => id);
+    if (missing.length > 0) {
+      throw new Error(`Unknown ${collectionName}: ${missing.join(", ")}`);
+    }
+
     return results.map(({ name }) => ({ name, type }));
   },
 
