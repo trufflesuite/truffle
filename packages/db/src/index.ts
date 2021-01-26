@@ -32,8 +32,20 @@
  * Continue reading below for an overview and full index of this package's
  * exports.
  *
- * ![Example query for a near-complete representation of a project's
- * contract](media://images/example-query.png)
+ * ---
+ *
+ * <figure style="text-align: center">
+ * <img
+ *   src="media://images/example-query.png"
+ *   alt="Example query"
+ *   style="width: 85%" />
+ * <figcaption style="font-size: small; font-style: italic">
+ * <strong>Figure</strong>:
+ * Example query for a project's <code>MagicSquare</code> contract
+ * </figcaption>
+ * </figure>
+ *
+ * ---
  *
  * ## Contents
  *
@@ -54,7 +66,8 @@
  *
  * - [Other interfaces](#other-interfaces)
  *   - [JavaScript / TypeScript interface](#javascript---typescript-interface)
- *   - [Truffle-specific interface](#truffle-specific-interface)
+ *   - [Network abstraction](#network-abstraction)
+ *   - [Truffle project abstraction](#truffle-project-abstraction)
  *   - [HTTP interface](#http-interface)
  *
  * - [Additional materials](#additional-materials)
@@ -149,10 +162,65 @@
  * In addition, please see the [[Resources]] module for handy helper types for
  * dealing with @truffle/db entities.
  *
- * ### Truffle-specific interface
+ * ### Network abstraction
+ *
+ * Keeping track of blockchain networks is nontrivial if you want to handle
+ * network forks/re-orgs. To accommodate this, @truffle/db models
+ * blockchain networks as individual point-in-time slices at various historic
+ * blocks. As a result, a single blockchain network (e.g., "mainnet") can and
+ * will comprise many disparate [[DataModel.Network]] resources, one for each
+ * block previously added.
+ *
+ * This approach preserves immutability but requires additional record-keeping
+ * in order to provide the commonly-understood continuous view of a blockchain.
+ * To maintain this continuity, @truffle/db defines the
+ * [[DataModel.NetworkGenealogy]] resource, each of which links two
+ * [[DataModel.Network]] resources, stating that a given network is ancestor
+ * to another. This collection of genealogy pairs is then used to compute a
+ * sparse list of past historic blocks for a given latest network.
+ *
+ * The process to populate @truffle/db with correct network data involves
+ * alternately querying GraphQL and the underlying blockchain JSON-RPC.
+ *
+ * This package provides the [[Network]] abstraction to simplify this process.
+ *
+ * <details>
+ * <summary>Example usage</summary>
+ *
+ * ```typescript
+ * import type { Provider } from "web3/providers";
+ * declare const provider: Provider;
+ *
+ * import { connect, Network } from "@truffle/db";
+ *
+ * const db = connect({
+ *   // ...
+ * });
+ *
+ * const network = await Network.initialize({
+ *   provider,
+ *   db: connect({
+ *     // ...
+ *   }),
+ *   network: { name: "mainnet" }
+ * });
+ *
+ * await network.recordBlocks([
+ *   { height: 10000000, hash: "0x..." },
+ *   // ...
+ * ]);
+ *
+ * await networks.congrueGenealogy();
+ *
+ * const { historicBlock } = network.congruentLatest;
+ * ```
+ *
+ * </details>
+ *
+ * ### Truffle project abstraction
  *
  * This package also provides an abstraction to interface with other
- * Truffle data formats, namely `WorkflowCompileResult`s, returned by
+ * Truffle data formats, namely `WorkflowCompileResult`, returned by
  * \@truffle/workflow-compile, and the Truffle contract artifacts format,
  * defined by @truffle/contract-schema. This abstraction covers two classes:
  *   - [[Project.Project]] for operations that **do not** require a network
@@ -193,11 +261,13 @@ const debug = debugModule("db");
 
 require("source-map-support/register");
 
-export { DataModel, Db } from "./resources";
-import * as Project from "./project";
-export { Project };
 import * as Network from "./network";
 export { Network };
+
+export { DataModel, Db } from "./resources";
+
+import * as Project from "./project";
+export { Project };
 
 import * as Resources from "./resources";
 export { Resources };
