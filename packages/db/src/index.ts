@@ -164,7 +164,7 @@
  * ### Truffle-specific interface
  *
  * This package also provides an abstraction to interface with other
- * Truffle data formats, namely `WorkflowCompileResult`s, returned by
+ * Truffle data formats, namely `WorkflowCompileResult`, returned by
  * \@truffle/workflow-compile, and the Truffle contract artifacts format,
  * defined by @truffle/contract-schema. This abstraction covers two classes:
  *   - [[Project]] for operations that **do not** require a network connection.
