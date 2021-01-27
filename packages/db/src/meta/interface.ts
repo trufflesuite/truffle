@@ -5,7 +5,6 @@ import gql from "graphql-tag";
 import { print } from "graphql/language/printer";
 import { GraphQLSchema, DocumentNode, ExecutionResult, execute } from "graphql";
 import { ApolloServer } from "apollo-server";
-import type TruffleConfig from "@truffle/config";
 
 import type { Collections } from "./collections";
 import type { Workspace } from "./data";
@@ -34,15 +33,9 @@ export const forAttachAndSchema = <C extends Collections>(options: {
 }) => {
   const { attach, schema } = options;
 
-  const connect = (
-    config: TruffleConfig | ConnectOptions<C> | undefined
-  ): Db<C> => {
-    // TODO: get rid of @truffle/config stuff and rename field to "directory"
+  const connect = (config: ConnectOptions<C> | undefined): Db<C> => {
     let options;
-    if (config && "working_directory" in config) {
-      // TruffleConfig case
-      options = toConnectOptions(config as TruffleConfig);
-    } else if (config && "directory" in config) {
+    if (config && "directory" in config) {
       // ConnectOptions case
       options = config;
     } else {
@@ -88,13 +81,9 @@ export const forAttachAndSchema = <C extends Collections>(options: {
     };
   };
 
-  const serve = (config: TruffleConfig | ConnectOptions<C> | undefined) => {
-    // TODO: get rid of @truffle/config stuff and rename field to "directory"
+  const serve = (config: ConnectOptions<C> | undefined) => {
     let options;
-    if (config && "working_directory" in config) {
-      // TruffleConfig case
-      options = toConnectOptions(config as TruffleConfig);
-    } else if (config && "directory" in config) {
+    if (config && "directory" in config) {
       // ConnectOptions case
       options = config;
     } else {
@@ -120,12 +109,3 @@ export const forAttachAndSchema = <C extends Collections>(options: {
 
   return { connect, serve };
 };
-
-function toConnectOptions<C extends Collections>(
-  config: TruffleConfig
-): ConnectOptions<C> {
-  return {
-    directory: config.working_directory,
-    adapter: (config.db || {}).adapter
-  };
-}
