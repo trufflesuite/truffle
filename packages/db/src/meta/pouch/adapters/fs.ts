@@ -15,10 +15,8 @@ export interface DatabasesSettings {
   directory: string;
 }
 
-export const getDefaultSettings: GetDefaultSettings = ({
-  workingDirectory
-}) => ({
-  directory: path.join(workingDirectory, ".db", "json")
+export const getDefaultSettings: GetDefaultSettings = ({ directory }) => ({
+  directory: path.join(directory, ".db", "json")
 });
 
 export class Databases<C extends Collections> extends Base.Databases<C> {

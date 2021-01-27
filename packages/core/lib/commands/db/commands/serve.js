@@ -23,7 +23,7 @@ const command = {
     const host = (config.db && config.db.host) || "127.0.0.1";
     const serveOptions =
       config.db && config.db.directory
-        ? { workingDirectory: config.db.directory }
+        ? { directory: config.db.directory }
         : undefined;
 
     const { url } = await serve(serveOptions).listen({ host, port });
