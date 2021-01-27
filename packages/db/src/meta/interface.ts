@@ -10,6 +10,8 @@ import type TruffleConfig from "@truffle/config";
 import type { Collections } from "./collections";
 import type { Workspace } from "./data";
 import * as Pouch from "./pouch";
+import Configstore from "configstore";
+import * as path from "path";
 
 export interface Db<_C extends Collections> {
   /**
@@ -22,7 +24,7 @@ export interface Db<_C extends Collections> {
 }
 
 export interface ConnectOptions<_C extends Collections> {
-  workingDirectory: string;
+  workingDirectory?: string;
   adapter?: Pouch.Adapters.AdapterOptions;
 }
 
@@ -32,12 +34,29 @@ export const forAttachAndSchema = <C extends Collections>(options: {
 }) => {
   const { attach, schema } = options;
 
-  const connect = (config: TruffleConfig | ConnectOptions<C>): Db<C> => {
-    const options =
-      "working_directory" in config // TruffleConfig case
-        ? toConnectOptions(config)
-        : (config as ConnectOptions<C>);
-
+  const connect = (
+    config: TruffleConfig | ConnectOptions<C> | undefined
+  ): Db<C> => {
+    // TODO: get rid of @truffle/config stuff and rename field to "directory"
+    let options;
+    if ("working_directory" in config) {
+      // TruffleConfig case
+      options = toConnectOptions(config as TruffleConfig);
+    } else if ("workingDirectory" in config) {
+      // ConnectOptions case
+      options = config;
+    } else {
+      const configStore = new Configstore(
+        "truffle",
+        {},
+        { globalConfigPath: true }
+      );
+      const truffleDataDirectory = path.dirname(configStore.path);
+      options = {
+        workingDirectory: truffleDataDirectory,
+        adapter: (config || {}).adapter
+      };
+    }
     const workspace = attach(options);
 
     return {
@@ -69,12 +88,27 @@ export const forAttachAndSchema = <C extends Collections>(options: {
     };
   };
 
-  const serve = (config: TruffleConfig | ConnectOptions<C>) => {
-    const options =
-      "working_directory" in config // TruffleConfig case
-        ? toConnectOptions(config)
-        : (config as ConnectOptions<C>);
-
+  const serve = (config: TruffleConfig | ConnectOptions<C> | undefined) => {
+    // TODO: get rid of @truffle/config stuff and rename field to "directory"
+    let options;
+    if ("working_directory" in config) {
+      // TruffleConfig case
+      options = toConnectOptions(config as TruffleConfig);
+    } else if ("workingDirectory" in config) {
+      // ConnectOptions case
+      options = config;
+    } else {
+      const configStore = new Configstore(
+        "truffle",
+        {},
+        { globalConfigPath: true }
+      );
+      const truffleDataDirectory = path.dirname(configStore.path);
+      options = {
+        workingDirectory: truffleDataDirectory,
+        adapter: (config || {}).adapter
+      };
+    }
     const workspace = attach(options);
 
     return new ApolloServer({
