@@ -59,7 +59,6 @@
   "devDependencies": {
     "@gql2ts/from-schema": "^2.0.0-4",
     "@truffle/compile-common": "^0.5.1",
-    "@truffle/config": "^1.2.34",
     "@truffle/contract-schema": "^3.3.3",
     "@truffle/workflow-compile": "^3.1.7",
     "@types/configstore": "^4.0.0",
