@@ -47,10 +47,12 @@ export type ConnectOptions = Meta.ConnectOptions<Collections>;
 
 const system = Meta.forDefinitions(definitions);
 
-export const connect: (options: TruffleConfig | ConnectOptions) => Db =
-  system.connect;
+export const connect: (
+  options: TruffleConfig | ConnectOptions | undefined
+) => Db = system.connect;
 
-export const serve: (options: TruffleConfig | ConnectOptions) => ApolloServer =
-  system.serve;
+export const serve: (
+  options: TruffleConfig | ConnectOptions | undefined
+) => ApolloServer = system.serve;
 
 export const { schema, attach, resources, forDb } = system;
