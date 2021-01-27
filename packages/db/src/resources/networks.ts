@@ -26,7 +26,6 @@ export const networks: Definition<"networks"> = {
       name: String!
       networkId: NetworkId!
       historicBlock: Block!
-      fork: Network
 
       ancestors(
         limit: Int, # default all
