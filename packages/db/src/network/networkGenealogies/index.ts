@@ -5,15 +5,7 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:network:networkGenealogies");
 
-import gql from "graphql-tag";
-
-import {
-  DataModel,
-  Input,
-  Resource,
-  IdObject,
-  toIdObject
-} from "@truffle/db/resources";
+import { Input, Resource, IdObject, toIdObject } from "@truffle/db/resources";
 import { resources, Process } from "@truffle/db/process";
 
 import * as FindRelation from "./findRelation";
@@ -60,10 +52,7 @@ export { FindRelation, FindAncestorsBetween };
  *   6. Load these genealogy inputs.
  */
 export function* process(options: {
-  networks: (
-    | Pick<Resource<"networks">, "id" | "historicBlock">
-    | undefined
-  )[];
+  networks: (Pick<Resource<"networks">, "id" | "historicBlock"> | undefined)[];
   disableIndex?: boolean;
 }): Process<IdObject<"networkGenealogies">[]> {
   debug("Processing loading network genealogies...");
@@ -80,12 +69,14 @@ export function* process(options: {
   const existingAncestor = yield* FindRelation.process(
     "ancestor",
     inputNetworks[0],
+    inputNetworks,
     disableIndex
   );
 
   const existingDescendant = yield* FindRelation.process(
     "descendant",
     inputNetworks[inputNetworks.length - 1],
+    inputNetworks,
     disableIndex
   );
 
@@ -96,6 +87,7 @@ export function* process(options: {
     latest: yield* FindRelation.process(
       "ancestor",
       inputNetworks[inputNetworks.length - 1],
+      inputNetworks,
       disableIndex
     )
   });
@@ -130,17 +122,25 @@ export function* process(options: {
  * networks by block height.
  */
 function collectNetworks(options: {
-  networks: (
-    | Pick<Resource<"networks">, "id" | "historicBlock">
-    | undefined)[];
+  networks: (Pick<Resource<"networks">, "id" | "historicBlock"> | undefined)[];
 }): Pick<Resource<"networks">, "id" | "historicBlock">[] {
   // start by ordering non-null networks by block height
   const networks = options.networks
     .filter(network => !!network)
     .sort((a, b) => a.historicBlock.height - b.historicBlock.height);
 
-  // return sorted networks
-  return networks;
+  if (networks.length < 2) {
+    return networks;
+  }
+
+  const [first, ...rest] = networks;
+  return rest.reduce(
+    (unique, next) =>
+      unique[unique.length - 1].historicBlock.hash === next.historicBlock.hash
+        ? unique
+        : [...unique, next],
+    [first]
+  );
 }
 
 /**
@@ -149,9 +149,7 @@ function collectNetworks(options: {
  */
 function collectPairwiseGenealogies<
   Network extends Pick<Resource<"networks">, "id" | "historicBlock">
->(options: {
-  networks: Network[];
-}): Input<"networkGenealogies">[] {
+>(options: { networks: Network[] }): Input<"networkGenealogies">[] {
   const { networks } = options;
 
   // handle all-null case
@@ -182,10 +180,13 @@ function collectPairwiseGenealogies<
       networkGenealogies:
         ancestor.id === descendant.id
           ? networkGenealogies
-          : [...networkGenealogies, {
-              ancestor,
-              descendant: toIdObject(descendant)
-            }]
+          : [
+              ...networkGenealogies,
+              {
+                ancestor,
+                descendant: toIdObject(descendant)
+              }
+            ]
     }),
     initialAccumulator
   );

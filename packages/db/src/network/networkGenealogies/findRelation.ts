@@ -12,7 +12,6 @@ import * as QueryNextPossiblyRelatedNetworks from "./queryNext";
 
 export { FindMatchingCandidateOnChain, QueryNextPossiblyRelatedNetworks };
 
-
 /**
  * Issue GraphQL requests and eth_getBlockByNumber requests to determine if any
  * existing Network resources are ancestor or descendant of the connected
@@ -29,15 +28,12 @@ export { FindMatchingCandidateOnChain, QueryNextPossiblyRelatedNetworks };
 export function* process(
   relation: "ancestor" | "descendant",
   network: IdObject<"networks">,
+  exclude: IdObject<"networks">[] = [],
   disableIndex?: boolean
 ): Process<Resource<"networks"> | undefined> {
-  // determine GraphQL query to invoke based on requested relation
-  const query =
-    relation === "ancestor" ? "possibleAncestors" : "possibleDescendants";
-
   // since we're doing this iteratively, keep track of what networks we've
   // tried and which ones we haven't
-  let alreadyTried: string[] = [];
+  let alreadyTried: string[] = exclude.map(({ id }) => id);
   let candidates: Resource<"networks">[];
 
   do {

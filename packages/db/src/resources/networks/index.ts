@@ -5,8 +5,11 @@ import gql from "graphql-tag";
 
 import type { Definition } from "../types";
 
-import { resolveRelations } from "./resolveRelations";
-import { resolvePossibleRelations } from "./resolvePossibleRelations";
+import { resolveAncestors, resolveDescendants } from "./resolveRelations";
+import {
+  resolvePossibleAncestors,
+  resolvePossibleDescendants
+} from "./resolvePossibleRelations";
 
 export const networks: Definition<"networks"> = {
   names: {
@@ -35,6 +38,7 @@ export const networks: Definition<"networks"> = {
         minimumHeight: Int # default any height
         includeSelf: Boolean # default false
         onlyEarliest: Boolean # default false
+        batchSize: Int # default 10
       ): [Network]!
 
       descendants(
@@ -42,6 +46,7 @@ export const networks: Definition<"networks"> = {
         maximumHeight: Int # default no height
         includeSelf: Boolean # default false
         onlyLatest: Boolean # default false
+        batchSize: Int # default 10
       ): [Network]!
 
       possibleAncestors(
@@ -83,19 +88,47 @@ export const networks: Definition<"networks"> = {
   resolvers: {
     Network: {
       ancestors: {
-        resolve: resolveRelations("ancestor")
+        async resolve(network, options, context) {
+          debug("Resolving Network.ancestors...");
+          const result = await resolveAncestors(network, options, context);
+          debug("Resolved Network.ancestors.");
+          return result;
+        }
       },
 
       descendants: {
-        resolve: resolveRelations("descendant")
+        async resolve(network, options, context) {
+          debug("Resolving Network.descendants...");
+          const result = await resolveDescendants(network, options, context);
+          debug("Resolved Network.descendants.");
+          return result;
+        }
       },
 
       possibleAncestors: {
-        resolve: resolvePossibleRelations("ancestor")
+        async resolve(network, options, context) {
+          debug("Resolving Network.possibleAncestors...");
+          const result = await resolvePossibleAncestors(
+            network,
+            options,
+            context
+          );
+          debug("Resolved Network.possibleAncestors.");
+          return result;
+        }
       },
 
       possibleDescendants: {
-        resolve: resolvePossibleRelations("descendant")
+        async resolve(network, options, context) {
+          debug("Resolving Network.possibleDescendants...");
+          const result = await resolvePossibleDescendants(
+            network,
+            options,
+            context
+          );
+          debug("Resolved Network.possibleDescendants.");
+          return result;
+        }
       }
     },
     CandidateSearchResult: {

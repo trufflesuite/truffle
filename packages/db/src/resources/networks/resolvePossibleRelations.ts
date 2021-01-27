@@ -3,6 +3,11 @@ const debug = logger("db:resources:networks:resolvePossibleRelations");
 
 import type { Resource, IdObject, Workspace } from "../types";
 
+export const resolvePossibleAncestors = resolvePossibleRelations("ancestor");
+export const resolvePossibleDescendants = resolvePossibleRelations(
+  "descendant"
+);
+
 export function resolvePossibleRelations(
   relationship: "ancestor" | "descendant"
 ) {
