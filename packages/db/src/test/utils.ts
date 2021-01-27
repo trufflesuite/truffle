@@ -27,7 +27,7 @@ export class WorkspaceClient {
 
   constructor() {
     this.workspace = attach({
-      workingDirectory: tempDir.name
+      directory: tempDir.name
     });
   }
 
