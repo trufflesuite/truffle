@@ -16,13 +16,17 @@ const command = {
    */
   run: async function (argv) {
     const Config = require("@truffle/config");
-    const {serve} = require("@truffle/db");
+    const { serve } = require("@truffle/db");
 
     const config = Config.detect(argv);
     const port = (config.db && config.db.port) || 4444;
     const host = (config.db && config.db.host) || "127.0.0.1";
+    const serveOptions =
+      config.db && config.db.directory
+        ? { workingDirectory: config.db.directory }
+        : undefined;
 
-    const {url} = await serve(config).listen({host, port});
+    const { url } = await serve(serveOptions).listen({ host, port });
 
     console.log(`🚀 Playground listening at ${url}`);
     console.log(`ℹ  Press Ctrl-C to exit`);

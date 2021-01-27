@@ -39,10 +39,10 @@ export const forAttachAndSchema = <C extends Collections>(options: {
   ): Db<C> => {
     // TODO: get rid of @truffle/config stuff and rename field to "directory"
     let options;
-    if ("working_directory" in config) {
+    if (config && "working_directory" in config) {
       // TruffleConfig case
       options = toConnectOptions(config as TruffleConfig);
-    } else if ("workingDirectory" in config) {
+    } else if (config && "workingDirectory" in config) {
       // ConnectOptions case
       options = config;
     } else {
@@ -91,10 +91,10 @@ export const forAttachAndSchema = <C extends Collections>(options: {
   const serve = (config: TruffleConfig | ConnectOptions<C> | undefined) => {
     // TODO: get rid of @truffle/config stuff and rename field to "directory"
     let options;
-    if ("working_directory" in config) {
+    if (config && "working_directory" in config) {
       // TruffleConfig case
       options = toConnectOptions(config as TruffleConfig);
-    } else if ("workingDirectory" in config) {
+    } else if (config && "workingDirectory" in config) {
       // ConnectOptions case
       options = config;
     } else {
