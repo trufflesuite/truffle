@@ -24,7 +24,7 @@ export interface Db<_C extends Collections> {
 }
 
 export interface ConnectOptions<_C extends Collections> {
-  workingDirectory?: string;
+  directory?: string;
   adapter?: Pouch.Adapters.AdapterOptions;
 }
 
@@ -42,7 +42,7 @@ export const forAttachAndSchema = <C extends Collections>(options: {
     if (config && "working_directory" in config) {
       // TruffleConfig case
       options = toConnectOptions(config as TruffleConfig);
-    } else if (config && "workingDirectory" in config) {
+    } else if (config && "directory" in config) {
       // ConnectOptions case
       options = config;
     } else {
@@ -53,7 +53,7 @@ export const forAttachAndSchema = <C extends Collections>(options: {
       );
       const truffleDataDirectory = path.dirname(configStore.path);
       options = {
-        workingDirectory: truffleDataDirectory,
+        directory: truffleDataDirectory,
         adapter: (config || {}).adapter
       };
     }
@@ -125,7 +125,7 @@ function toConnectOptions<C extends Collections>(
   config: TruffleConfig
 ): ConnectOptions<C> {
   return {
-    workingDirectory: config.working_directory,
+    directory: config.working_directory,
     adapter: (config.db || {}).adapter
   };
 }
