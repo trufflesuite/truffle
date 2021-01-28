@@ -57,7 +57,6 @@ export namespace Generic {
     A extends Adapters,
     N extends AdapterName<A> = AdapterName<A>
   > {
-    directory?: string;
     adapter?: AdapterOptions<A, N>;
   }
 
