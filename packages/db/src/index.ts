@@ -24,7 +24,7 @@
  * `truffle db serve` command that starts a GraphQL Playground HTTP server.
  *
  * This documentation serves to organize the modules and namespaces included
- * in the package, both for tool-developer reference and for continued work
+ * in the package, both for tool developer reference and for continued work
  * on @truffle/db itself. (Disclaimer: as a result, this API documentation
  * may serve neither of these purposes well. Please reach out with questions
  * and/or to suggest helpful clarifications!)
