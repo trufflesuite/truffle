@@ -390,7 +390,10 @@ describe("Compilation with db enabled", async () => {
 
     // number of contracts matches number of contracts in the project directory
     // (plus one library in this one)
-    assert(results.data.contracts.length === 4);
+    const names = ["Contract", "InnerLibrary", "Migrations", "RelativeImport"];
+    for (const name of names) {
+      assert(results.data.contracts.some(contract => contract.name === name));
+    }
 
     // contract names in project exist in new .db contracts file
     const resultsNames = results.data.contracts.map(a => a.name);
