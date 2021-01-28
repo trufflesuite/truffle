@@ -9,8 +9,6 @@ import { ApolloServer } from "apollo-server";
 import type { Collections } from "./collections";
 import type { Workspace } from "./data";
 import * as Pouch from "./pouch";
-import Config from "@truffle/config";
-import * as path from "path";
 
 export interface Db<_C extends Collections> {
   /**
@@ -23,7 +21,6 @@ export interface Db<_C extends Collections> {
 }
 
 export interface ConnectOptions<_C extends Collections> {
-  directory?: string;
   adapter?: Pouch.Adapters.AdapterOptions;
 }
 
@@ -34,16 +31,8 @@ export const forAttachAndSchema = <C extends Collections>(options: {
   const { attach, schema } = options;
 
   const connect = (config?: ConnectOptions<C>): Db<C> => {
-    let attachOptions;
-    if (config && "directory" in config) {
-      // ConnectOptions case
-      attachOptions = config;
-    } else {
-      const truffleDataDirectory = Config.getTruffleDataDirectory();
-      attachOptions = {
-        directory: truffleDataDirectory,
-        adapter: (config || {}).adapter
-      };
+    const attachOptions = {
+      adapter: (config || {}).adapter
     }
     const workspace = attach(attachOptions);
 
@@ -77,16 +66,8 @@ export const forAttachAndSchema = <C extends Collections>(options: {
   };
 
   const serve = (config?: ConnectOptions<C>) => {
-    let attachOptions;
-    if (config && "directory" in config) {
-      // ConnectOptions case
-      attachOptions = config;
-    } else {
-      const truffleDataDirectory = Config.getTruffleDataDirectory();
-      attachOptions = {
-        directory: truffleDataDirectory,
-        adapter: (config || {}).adapter
-      };
+    const attachOptions = {
+      adapter: (config || {}).adapter
     }
     const workspace = attach(attachOptions);
 
