@@ -33,11 +33,11 @@ export const forAttachAndSchema = <C extends Collections>(options: {
 }) => {
   const { attach, schema } = options;
 
-  const connect = (options: ConnectOptions<C> | undefined): Db<C> => {
-    let options;
+  const connect = (config?: ConnectOptions<C>): Db<C> => {
+    let attachOptions;
     if (config && "directory" in config) {
       // ConnectOptions case
-      options = config;
+      attachOptions = config;
     } else {
       const configStore = new Configstore(
         "truffle",
@@ -45,12 +45,12 @@ export const forAttachAndSchema = <C extends Collections>(options: {
         { globalConfigPath: true }
       );
       const truffleDataDirectory = path.dirname(configStore.path);
-      options = {
+      attachOptions = {
         directory: truffleDataDirectory,
         adapter: (config || {}).adapter
       };
     }
-    const workspace = attach(options);
+    const workspace = attach(attachOptions);
 
     return {
       async execute(
@@ -82,10 +82,10 @@ export const forAttachAndSchema = <C extends Collections>(options: {
   };
 
   const serve = (config?: ConnectOptions<C>) => {
-    let options;
+    let attachOptions;
     if (config && "directory" in config) {
       // ConnectOptions case
-      options = config;
+      attachOptions = config;
     } else {
       const configStore = new Configstore(
         "truffle",
@@ -93,12 +93,12 @@ export const forAttachAndSchema = <C extends Collections>(options: {
         { globalConfigPath: true }
       );
       const truffleDataDirectory = path.dirname(configStore.path);
-      options = {
+      attachOptions = {
         directory: truffleDataDirectory,
         adapter: (config || {}).adapter
       };
     }
-    const workspace = attach(options);
+    const workspace = attach(attachOptions);
 
     return new ApolloServer({
       tracing: true,

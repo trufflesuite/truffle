@@ -10,7 +10,7 @@ const fse = require("fs-extra");
 const { connect } = require("@truffle/db");
 const gql = require("graphql-tag");
 const pascalCase = require("pascal-case");
-const Configstore = require("configstore");
+const Config = require("@truffle/config");
 
 describe("Repeated compilation of contracts with inheritance [ @standalone ]", function () {
   let config, artifactPaths, initialTimes, finalTimes, output;
@@ -330,12 +330,7 @@ describe("Compilation with db enabled", async () => {
   const logger = new MemoryLogger();
 
   function checkForDb() {
-    const configStore = new Configstore(
-      "truffle",
-      {},
-      { globalConfigPath: true }
-    );
-    const truffleDataDirectory = path.dirname(configStore.path);
+    const truffleDataDirectory = Config.getTruffleDataDirectory();
     const dbPath = path.join(truffleDataDirectory, ".db");
 
     const dbExists = fse.pathExistsSync(dbPath);

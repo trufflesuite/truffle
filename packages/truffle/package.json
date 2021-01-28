@@ -33,12 +33,12 @@
   },
   "devDependencies": {
     "@truffle/box": "^2.1.5",
+    "@truffle/config": "^1.2.34",
     "@truffle/contract": "^4.3.5",
     "@truffle/core": "^5.1.63",
     "@truffle/debugger": "^8.0.10",
     "@truffle/interface-adapter": "^0.4.18",
     "clean-webpack-plugin": "^3.0.0",
-    "configstore": "^4.0.0",
     "copy-webpack-plugin": "^5.1.1",
     "eslint": "^5.7.0",
     "fs-extra": "^8.1.0",
