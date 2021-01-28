@@ -58,7 +58,7 @@ export const connect: (
 ) => Db = system.connect;
 
 export const serve: (
-  options: TruffleConfig | ConnectOptions | undefined
+  options?: TruffleConfig | ConnectOptions
 ) => ApolloServer = system.serve;
 
 export type StrictIdInput<N extends CollectionName> = Meta.Id.StrictIdInput<
