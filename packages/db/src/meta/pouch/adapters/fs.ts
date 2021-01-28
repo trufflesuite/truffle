@@ -10,13 +10,14 @@ import CoreLevelPouch from "pouchdb-adapter-leveldb-core";
 import type { Collections } from "@truffle/db/meta/collections";
 import type { GetDefaultSettings } from "./types";
 import * as Base from "./base";
+import Config from "@truffle/config";
 
 export interface DatabasesSettings {
   directory: string;
 }
 
-export const getDefaultSettings: GetDefaultSettings = ({ directory }) => ({
-  directory: path.join(directory, ".db", "json")
+export const getDefaultSettings: GetDefaultSettings = () => ({
+  directory: path.join(Config.getTruffleDataDirectory(), ".db", "json")
 });
 
 export class Databases<C extends Collections> extends Base.Databases<C> {

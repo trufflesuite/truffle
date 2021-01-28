@@ -6,9 +6,8 @@ import { connect } from "@truffle/db";
 export const setup = async (options: { identifier: string }) => {
   // @ts-ignore
   const db = connect({
-    directory: options.identifier,
     adapter: {
-      name: "memory"
+      name: "memory",
     }
   });
 
