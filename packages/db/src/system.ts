@@ -46,7 +46,7 @@ export type ConnectOptions = Meta.ConnectOptions<Collections>;
 
 const system = Meta.forDefinitions(definitions);
 
-export const connect: (options: ConnectOptions | undefined) => Db =
+export const connect: (options?: ConnectOptions) => Db =
   system.connect;
 
 export const serve: (options?: ConnectOptions) => ApolloServer =
