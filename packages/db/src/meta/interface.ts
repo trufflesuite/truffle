@@ -81,7 +81,7 @@ export const forAttachAndSchema = <C extends Collections>(options: {
     };
   };
 
-  const serve = (config: ConnectOptions<C> | undefined) => {
+  const serve = (config?: ConnectOptions<C>) => {
     let options;
     if (config && "directory" in config) {
       // ConnectOptions case
