@@ -7,8 +7,6 @@ import * as fc from "fast-check";
 
 import * as Arbitrary from "test/arbitraries/networks";
 
-import { resources } from "@truffle/db/process";
-import { Resource } from "@truffle/db/resources";
 import * as Network from "..";
 
 import { mockProvider } from "./mockProvider";
@@ -18,27 +16,31 @@ import { plan } from "./plan";
 const testConfig = process.env["OVERKILL"]
   ? {
       timeout: 5 * 60 * 1000, // 5 min
-      numRuns: 250
+      numRuns: 500
     }
   : {
       timeout: 30 * 1000, // 30 sec
-      numRuns: 10
+      numRuns: 50
     };
 
 describe("Network", () => {
   describe("for arbitrary batches of blocks from an arbitrary set of arbitrarily forked blockchains", () => {
     jest.setTimeout(testConfig.timeout);
+    let run = 0;
 
     testProp(
       `saves network genealogies so that @truffle/db correctly reports known latest descendant networks (numRuns: ${testConfig.numRuns})`,
       [
-        Arbitrary.Networks().chain(model => fc.record({
-          model: fc.constant(model),
-          batches: Arbitrary.Batches(model)
-        })),
+        Arbitrary.Networks().chain(model =>
+          fc.record({
+            model: fc.constant(model),
+            batches: Arbitrary.Batches(model)
+          })
+        ),
         fc.boolean()
       ],
       async ({ model, batches }, disableIndex) => {
+        debug("run #%o", run++);
         const db = await setup({
           identifier: "test:network:property:latestDescendants"
         });
@@ -73,9 +75,7 @@ describe("Network", () => {
         debug("expectedLatestDescendants %O", expectedLatestDescendants);
 
         const {
-          data: {
-            networks
-          }
+          data: { networks }
         } = await db.execute(
           gql`
             query {
@@ -94,9 +94,11 @@ describe("Network", () => {
         );
         debug("networks %O", networks);
 
-        const ids = new Set(networks
-          .filter(({ descendants }) => descendants.length > 0)
-          .map(({ descendants: [ latestDescendant ] }) => latestDescendant.id));
+        const ids = new Set(
+          networks
+            .filter(({ descendants }) => descendants.length > 0)
+            .map(({ descendants: [latestDescendant] }) => latestDescendant.id)
+        );
         debug("ids %O", ids);
 
         expect(ids).toEqual(
