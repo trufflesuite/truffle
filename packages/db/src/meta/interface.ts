@@ -33,7 +33,7 @@ export const forAttachAndSchema = <C extends Collections>(options: {
 }) => {
   const { attach, schema } = options;
 
-  const connect = (config: ConnectOptions<C> | undefined): Db<C> => {
+  const connect = (options: ConnectOptions<C> | undefined): Db<C> => {
     let options;
     if (config && "directory" in config) {
       // ConnectOptions case
