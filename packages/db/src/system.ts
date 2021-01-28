@@ -54,7 +54,7 @@ export type ConnectOptions = Meta.ConnectOptions<Collections>;
 const system = Meta.forDefinitions(definitions);
 
 export const connect: (
-  options: TruffleConfig | ConnectOptions | undefined
+  options?: TruffleConfig | ConnectOptions
 ) => Db = system.connect;
 
 export const serve: (
