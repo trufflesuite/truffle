@@ -10,7 +10,7 @@ import type TruffleConfig from "@truffle/config";
 import type { Collections } from "./collections";
 import type { Workspace } from "./data";
 import * as Pouch from "./pouch";
-import Configstore from "configstore";
+import Config from "@truffle/config";
 import * as path from "path";
 
 export interface Db<_C extends Collections> {
@@ -46,12 +46,7 @@ export const forAttachAndSchema = <C extends Collections>(options: {
       // ConnectOptions case
       options = config;
     } else {
-      const configStore = new Configstore(
-        "truffle",
-        {},
-        { globalConfigPath: true }
-      );
-      const truffleDataDirectory = path.dirname(configStore.path);
+      const truffleDataDirectory = Config.getTruffleDataDirectory();
       options = {
         directory: truffleDataDirectory,
         adapter: (config || {}).adapter
@@ -98,12 +93,7 @@ export const forAttachAndSchema = <C extends Collections>(options: {
       // ConnectOptions case
       options = config;
     } else {
-      const configStore = new Configstore(
-        "truffle",
-        {},
-        { globalConfigPath: true }
-      );
-      const truffleDataDirectory = path.dirname(configStore.path);
+      const truffleDataDirectory = Config.getTruffleDataDirectory();
       options = {
         directory: truffleDataDirectory,
         adapter: (config || {}).adapter
