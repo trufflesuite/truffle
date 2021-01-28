@@ -49,7 +49,7 @@ const system = Meta.forDefinitions(definitions);
 export const connect: (options: ConnectOptions | undefined) => Db =
   system.connect;
 
-export const serve: (options: ConnectOptions | undefined) => ApolloServer =
+export const serve: (options?: ConnectOptions) => ApolloServer =
   system.serve;
 
 export const { schema, attach, resources, forDb } = system;
