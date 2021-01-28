@@ -56,9 +56,7 @@ export const connect: (
   options: ConnectOptions | undefined
 ) => Db = system.connect;
 
-export const serve: (
-  options: ConnectOptions | undefined
-) => ApolloServer = system.serve;
+export const serve: (options?: ConnectOptions) => ApolloServer = system.serve;
 
 export type StrictIdInput<N extends CollectionName> = Meta.Id.StrictIdInput<
   Collections,
