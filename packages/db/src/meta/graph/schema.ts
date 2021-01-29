@@ -1,5 +1,5 @@
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:meta:graphql:schema");
+const debug = logger("db:meta:graph:schema");
 
 import gql from "graphql-tag";
 import type * as graphql from "graphql";
@@ -10,6 +10,7 @@ import type {
   CollectionName,
   MutableCollectionName
 } from "@truffle/db/meta/collections";
+import * as Id from "@truffle/db/meta/id";
 import type { Context, Definition, Definitions } from "./types";
 
 export const forDefinitions = <C extends Collections>(
@@ -22,10 +23,13 @@ export const forDefinitions = <C extends Collections>(
 class DefinitionsSchema<C extends Collections> {
   private definitions: Definitions<C>;
   private collections: CollectionSchemas<C>;
+  private generateId: Id.GenerateId<C>;
 
   constructor(options: { definitions: Definitions<C> }) {
     this.definitions = options.definitions;
+    this.generateId = Id.forDefinitions(options.definitions);
 
+    // @ts-ignore
     this.collections = Object.keys(options.definitions)
       .map((resource: CollectionName<C>) => ({
         [resource]: this.createSchema(resource)
@@ -80,7 +84,6 @@ class DefinitionsSchema<C extends Collections> {
 
     const common = {
       Query: {},
-
       Mutation: {},
 
       // HACK bit messy to put this here
@@ -117,16 +120,20 @@ class DefinitionsSchema<C extends Collections> {
     return result;
   }
 
-  private createSchema(
-    resource: CollectionName<C>
-  ): DefinitionSchema<C, CollectionName<C>> {
+  private createSchema<N extends CollectionName<C>>(
+    resource: N
+  ): DefinitionSchema<C, N> {
     debug("Creating DefinitonSchema for %s...", resource);
+
+    const generateId: Id.SpecificGenerateId<C, N> = input =>
+      this.generateId<N>(resource, input);
 
     const definition = this.definitions[resource];
     if (definition.mutable) {
-      const result = new MutableDefinitionSchema({
-        resource: resource as MutableCollectionName<C>,
-        definition
+      const result = new MutableDefinitionSchema<C, any>({
+        resource,
+        definition,
+        generateId
       });
 
       debug("Created MutableDefinitonSchema for %s.", resource);
@@ -135,7 +142,8 @@ class DefinitionsSchema<C extends Collections> {
 
     const result = new ImmutableDefinitionSchema({
       resource,
-      definition
+      definition,
+      generateId
     });
 
     debug("Created ImmutableDefinitionSchema for %s.", resource);
@@ -149,10 +157,16 @@ abstract class DefinitionSchema<
 > {
   protected resource: N;
   protected definition: Definition<C, N>;
+  protected generateId: Id.SpecificGenerateId<C, N>;
 
-  constructor(options: { resource: N; definition: Definition<C, N> }) {
+  constructor(options: {
+    resource: N;
+    definition: Definition<C, N>;
+    generateId: Id.SpecificGenerateId<C, N>;
+  }) {
     this.resource = options.resource;
     this.definition = options.definition;
+    this.generateId = options.generateId;
   }
 
   get typeDefs() {
@@ -181,6 +195,7 @@ abstract class DefinitionSchema<
       extend type Query {
         ${resources}(filter: QueryFilter): [${Resource}]
         ${resource}(id: ID!): ${Resource}
+        ${resource}Id(input: ${Resource}Input!): ID!
       }
 
       input ${ResourcesMutate}Input {
@@ -263,6 +278,12 @@ abstract class DefinitionSchema<
               logAll("Fetched all.");
               return result;
             }
+          }
+        },
+        [`${resource}Id`]: {
+          resolve: (_, { input }) => {
+            debug("resolving %O id", Resource);
+            return this.generateId(input);
           }
         }
       }
