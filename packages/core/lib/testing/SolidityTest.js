@@ -210,11 +210,9 @@ const SolidityTest = {
     }
 
     if (balance !== 0) {
-      await deployer.deploy(SafeSend, {
-        value: balance
-      });
+      await deployer.deploy(SafeSend);
       const safeSend = await SafeSend.deployed();
-      await safeSend.deliver(deployed.address);
+      await safeSend.deliver(deployed.address, { value: balance });
     }
 
     debug("deployed %s", abstraction.contract_name);
