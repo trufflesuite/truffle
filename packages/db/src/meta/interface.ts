@@ -30,9 +30,9 @@ export const forAttachAndSchema = <C extends Collections>(options: {
 }) => {
   const { attach, schema } = options;
 
-  const connect = (config?: ConnectOptions<C>): Db<C> => {
+  const connect = (connectOptions?: ConnectOptions<C>): Db<C> => {
     const attachOptions = {
-      adapter: (config || {}).adapter
+      adapter: (connectOptions || {}).adapter
     }
     const workspace = attach(attachOptions);
 
@@ -65,9 +65,9 @@ export const forAttachAndSchema = <C extends Collections>(options: {
     };
   };
 
-  const serve = (config?: ConnectOptions<C>) => {
+  const serve = (serveOptions?: ConnectOptions<C>) => {
     const attachOptions = {
-      adapter: (config || {}).adapter
+      adapter: (serveOptions || {}).adapter
     }
     const workspace = attach(attachOptions);
 
