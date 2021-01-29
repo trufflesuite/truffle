@@ -47,6 +47,9 @@ const throwCompilerVersionNotFound = ({ path, semverExpressions }) => {
 };
 
 const compileWithPragmaAnalysis = async ({ paths, options }) => {
+  const filteredPaths = paths.filter(
+    path => path.endsWith(".sol") || path.endsWith(".json")
+  );
   const supplierOptions = {
     events: options.events,
     solcConfig: options.compilers.solc
