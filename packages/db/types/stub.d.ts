@@ -50,6 +50,7 @@ declare namespace DataModel {
   type NetworkGenealogy = any;
   type NetworkGenealogyInput = any;
   type CandidateSearchResult = any;
+  type ImmutableReferenceInput = any;
 
   type Query = any;
   type Mutation = any;

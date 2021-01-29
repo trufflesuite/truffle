@@ -360,6 +360,14 @@ const GetWorkspaceCompilation = gql`
       sourceMaps {
         data
       }
+      immutableReferences {
+        astNode
+        bytecode {
+          bytes
+        }
+        length
+        offsets
+      }
     }
   }
 `;
@@ -629,7 +637,7 @@ describe("Compilation", () => {
         let migratedArtifact = JSON.parse(migratedArtifactPath);
         migratedArtifact.networks = {};
         migratedArtifact.updatedAt = "";
-        migratedArtifact.schemaVersion = "3.0.11";
+        migratedArtifact.schemaVersion = "3.0.9";
         fse.removeSync(
           path.join(
             __dirname,
@@ -684,6 +692,25 @@ describe("Compilation", () => {
       ).toBeDefined();
     });
 
+    expect(Array.isArray(solcCompilation.immutableReferences)).toBe(true);
+    expect(solcCompilation.immutableReferences[0]).toHaveProperty("astNode");
+    expect(solcCompilation.immutableReferences[0]).toHaveProperty("length");
+    expect(solcCompilation.immutableReferences[0]).toHaveProperty("offsets");
+    expect(solcCompilation.immutableReferences[0].astNode).toEqual(
+      Object.entries(artifacts[0].immutableReferences)[0][0]
+    );
+    expect(solcCompilation.immutableReferences[0].length).toEqual(
+      Object.entries(artifacts[0].immutableReferences)[0][1][0].length
+    );
+    expect(solcCompilation.immutableReferences[0].offsets[0]).toEqual(
+      Object.entries(artifacts[0].immutableReferences)[0][1][0].start
+    );
+
+    let shimmedBytecode = Shims.LegacyToNew.forBytecode(artifacts[0].bytecode);
+    expect(solcCompilation.immutableReferences[0].bytecode.bytes).toEqual(
+      shimmedBytecode.bytes
+    );
+
     const vyperCompilation = compilationsQuery[1].data.compilation;
     expect(vyperCompilation.compiler.version).toEqual(
       artifacts[3].compiler.version
@@ -695,6 +722,7 @@ describe("Compilation", () => {
       artifacts[3].source
     );
     expect(vyperCompilation.processedSources[0].language).toEqual("Vyper");
+    expect(vyperCompilation.immutableReferences).toEqual([]);
   });
 
   it("loads contract sources", async () => {

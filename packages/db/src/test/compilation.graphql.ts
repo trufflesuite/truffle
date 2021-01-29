@@ -9,6 +9,10 @@ export const AddCompilation = gql`
     $abi: String!
     $sourceMap: String!
     $language: String!
+    $astNode: String!
+    $length: Int!
+    $offset: Int!
+    $contractBytecodeId: ID!
   ) {
     compilationsAdd(
       input: {
@@ -25,6 +29,14 @@ export const AddCompilation = gql`
               }
             ]
             sources: [{ id: $sourceId }]
+            immutableReferences: [
+              {
+                astNode: $astNode
+                bytecode: { id: $contractBytecodeId }
+                length: $length
+                offsets: [$offset]
+              }
+            ]
           }
         ]
       }
@@ -50,6 +62,11 @@ export const AddCompilation = gql`
           }
           language
         }
+        immutableReferences {
+          astNode
+          length
+          offsets
+        }
       }
     }
   }
@@ -72,6 +89,11 @@ export const GetCompilation = gql`
           contents
         }
         language
+      }
+      immutableReferences {
+        astNode
+        length
+        offsets
       }
     }
   }
