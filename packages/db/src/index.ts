@@ -92,7 +92,7 @@
  *
  * ### Structure
  *
- * Data is organized as a number of collections of representations of key
+ * Data is organized as collections of representations of key
  * concepts related to smart contract development. Each collection specifies:
  *   - A collection name
  *   - A complete resource type (exported as
