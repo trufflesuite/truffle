@@ -1,10 +1,11 @@
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:meta:pouch:types");
+const debug = logger("db:meta:id:definitions");
 
-import PouchDB from "pouchdb";
-
-import type { Collections, CollectionName } from "@truffle/db/meta/collections";
-import type * as Id from "@truffle/db/meta/id";
+import type {
+  Collections,
+  CollectionName,
+  IdFields
+} from "@truffle/db/meta/collections";
 
 /**
  * @category Definitions
@@ -17,5 +18,5 @@ export type Definitions<C extends Collections> = {
  * @category Definitions
  */
 export type Definition<C extends Collections, N extends CollectionName<C>> = {
-  createIndexes: PouchDB.Find.CreateIndexOptions["index"][];
-} & Id.Definition<C, N>;
+  idFields: IdFields<C, N>;
+};

@@ -13,6 +13,7 @@ export type Collections = {
   sources: {
     resource: DataModel.Source;
     input: DataModel.SourceInput;
+    idFields: ["contents", "sourcePath"];
     names: {
       resource: "source";
       Resource: "Source";
@@ -25,6 +26,7 @@ export type Collections = {
   bytecodes: {
     resource: DataModel.Bytecode;
     input: DataModel.BytecodeInput;
+    idFields: ["bytes", "linkReferences"];
     names: {
       resource: "bytecode";
       Resource: "Bytecode";
@@ -37,6 +39,7 @@ export type Collections = {
   compilations: {
     resource: DataModel.Compilation;
     input: DataModel.CompilationInput;
+    idFields: ["compiler", "sources"];
     names: {
       resource: "compilation";
       Resource: "Compilation";
@@ -49,6 +52,7 @@ export type Collections = {
   contractInstances: {
     resource: DataModel.ContractInstance;
     input: DataModel.ContractInstanceInput;
+    idFields: ["address", "network"];
     names: {
       resource: "contractInstance";
       Resource: "ContractInstance";
@@ -61,6 +65,7 @@ export type Collections = {
   contracts: {
     resource: DataModel.Contract;
     input: DataModel.ContractInput;
+    idFields: ["name", "abi", "processedSource", "compilation"];
     named: true;
     names: {
       resource: "contract";
@@ -74,6 +79,7 @@ export type Collections = {
   nameRecords: {
     resource: DataModel.NameRecord;
     input: DataModel.NameRecordInput;
+    idFields: ["resource", "previous"];
     names: {
       resource: "nameRecord";
       Resource: "NameRecord";
@@ -86,6 +92,7 @@ export type Collections = {
   networks: {
     resource: DataModel.Network;
     input: DataModel.NetworkInput;
+    idFields: ["networkId", "historicBlock"];
     named: true;
     names: {
       resource: "network";
@@ -99,6 +106,7 @@ export type Collections = {
   projects: {
     resource: DataModel.Project;
     input: DataModel.ProjectInput;
+    idFields: ["directory"];
     names: {
       resource: "project";
       Resource: "Project";
@@ -111,6 +119,7 @@ export type Collections = {
   projectNames: {
     resource: DataModel.ProjectName;
     input: DataModel.ProjectNameInput;
+    idFields: ["project", "key"];
     mutable: true;
     names: {
       resource: "projectName";
@@ -124,6 +133,7 @@ export type Collections = {
   networkGenealogies: {
     resource: DataModel.NetworkGenealogy;
     input: DataModel.NetworkGenealogyInput;
+    idFields: ["ancestor", "descendant"];
     names: {
       resource: "networkGenealogy";
       Resource: "NetworkGenealogy";
@@ -234,6 +244,11 @@ export type Input<N extends CollectionName = CollectionName> = Meta.Input<
  * @category Primary
  */
 export type Resource<N extends CollectionName = CollectionName> = Meta.Resource<
+  Collections,
+  N
+>;
+
+export type IdFields<N extends CollectionName = CollectionName> = Meta.IdFields<
   Collections,
   N
 >;

@@ -218,7 +218,7 @@ describe("Network Genealogy", () => {
       addNetworkGenealogyRecord.networkGenealogiesAdd.networkGenealogies.length
     ).toEqual(1);
 
-    const networkGenealogyRecordId = generateId({
+    const networkGenealogyRecordId = generateId("networkGenealogies", {
       ancestor: { id: ancestors[0].id },
       descendant: { id: descendants[0].id }
     });

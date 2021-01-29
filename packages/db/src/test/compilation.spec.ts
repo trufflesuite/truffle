@@ -23,7 +23,7 @@ describe("Compilation", () => {
     sourceId = sourceResult.sourcesAdd.sources[0].id;
 
     const shimmedBytecode = Shims.LegacyToNew.forBytecode(Migrations.bytecode);
-    const bytecodeExpectedId = generateId(shimmedBytecode);
+    const bytecodeExpectedId = generateId("bytecodes", shimmedBytecode);
 
     variables = {
       compilerName: Migrations.compiler.name,
@@ -83,7 +83,7 @@ describe("Compilation", () => {
   });
 
   test("can be queried", async () => {
-    const expectedId = generateId({
+    const expectedId = generateId("compilations", {
       compiler: Migrations.compiler,
       sources: [{ id: sourceId }]
     });
