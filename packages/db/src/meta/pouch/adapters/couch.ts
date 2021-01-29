@@ -16,7 +16,7 @@ export interface DatabasesSettings {
   };
 }
 
-export const getDefaultSettings: GetDefaultSettings = ({}) => ({
+export const getDefaultSettings: GetDefaultSettings = () => ({
   url: "http://localhost:5984"
 });
 
