@@ -2,12 +2,13 @@ import chalk from "chalk";
 import CID from "cids";
 
 import * as Preserve from "@truffle/preserve";
-import { IpfsClient, FileObject } from "./adapter";
+import { IpfsClient } from "./ipfs-adapter";
+import { search } from "./search";
+import { asyncToArray } from "iter-tools";
 
 export interface UploadOptions {
   controls: Preserve.Controls;
-  source: Preserve.Targets.Source;
-  data: Iterable<FileObject>;
+  source: Preserve.Targets.Normalized.Source;
   ipfs: IpfsClient;
 }
 
@@ -18,30 +19,28 @@ export interface UploadResult {
 export async function* upload(
   options: UploadOptions
 ): Preserve.Process<UploadResult> {
-  const {
-    source,
-    ipfs,
-    data,
-    controls: { step }
-  } = options;
+  const { source, ipfs, controls } = options;
+  const { step } = controls;
 
   const task = yield* step({
     message: "Uploading..."
   });
 
-  const unknowns: {
-    [unknown: string]: Preserve.Control.ValueResolutionController;
-  } = {
-    root: yield* task.declare({ identifier: "Root CID" })
-  };
+  // depth-first search to add files to IPFS before parent directories
+  const data = await asyncToArray(search({ source }));
+
+  // define a dictionary of values for CIDs that are resolved asynchronously
+  const values: {
+    [name: string]: Preserve.Control.ValueResolutionController;
+  } = {};
+
+  values.root = yield* task.declare({ identifier: "Root CID" });
 
   for await (const { path } of data) {
-    if (path !== ".") {
-      unknowns[path] = yield* unknowns.root.extend({ identifier: path });
-    }
+    if (path === ".") continue;
+    values[path] = yield* values.root.extend({ identifier: path });
   }
 
-  // add to IPFS
   const results = ipfs.addAll(data, {
     wrapWithDirectory: Preserve.Targets.Sources.isContainer(source)
   });
@@ -51,9 +50,11 @@ export async function* upload(
     for await (result of results) {
       const { path, cid } = result;
 
-      const unknown = unknowns[`./${path}`];
-      if (unknown) {
-        yield* unknown.resolve({
+      // path is prefixed with ./ to match the result format to the source format
+      const value = values[`./${path}`];
+
+      if (value) {
+        yield* value.resolve({
           resolution: { cid },
           payload: cid.toString()
         });
@@ -63,7 +64,7 @@ export async function* upload(
     yield* task.fail({ error });
   }
 
-  yield* unknowns.root.resolve({
+  yield* values.root.resolve({
     resolution: result,
     payload: chalk.bold(result.cid.toString())
   });

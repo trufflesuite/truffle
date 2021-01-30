@@ -2,15 +2,13 @@
  * @module @truffle/preserve-to-ipfs
  */ /** */
 
-import { asyncToArray } from "iter-tools";
 import CID from "cids";
 import * as Preserve from "@truffle/preserve";
 
-import { search } from "./search";
 import { connect } from "./connect";
 import { upload } from "./upload";
 
-export interface Label {
+export interface Result {
   cid: CID;
 }
 
@@ -26,7 +24,7 @@ export class Recipe implements Preserve.Recipe {
 
   static help = "Preserve to IPFS";
 
-  dependencies: [] = [];
+  dependencies: string[] = [];
 
   private address: string;
 
@@ -36,30 +34,18 @@ export class Recipe implements Preserve.Recipe {
 
   async *preserve(
     options: Preserve.Recipes.PreserveOptions
-  ): Preserve.Process<Label> {
+  ): Preserve.Process<Result> {
+    const { address } = this;
     const { target: rawTarget, controls } = options;
-
     const { log } = controls;
 
     yield* log({ message: "Preserving to IPFS..." });
 
-    const ipfs = yield* connect({
-      address: this.address,
-      controls
-    });
+    const ipfs = yield* connect({ address, controls });
 
-    // normalize target
-    const { source } = await Preserve.Targets.normalize(rawTarget);
+    const { source } = Preserve.Targets.normalize(rawTarget);
 
-    // depth-first search to add files to IPFS before parent directories
-    const data = await asyncToArray(search({ source }));
-
-    const { cid } = yield* upload({
-      source,
-      data,
-      ipfs,
-      controls
-    });
+    const { cid } = yield* upload({ source, ipfs, controls });
 
     return { cid };
   }

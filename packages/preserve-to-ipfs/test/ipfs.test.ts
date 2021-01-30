@@ -7,7 +7,7 @@ import { Recipe } from "../lib";
 import { tests } from "./ipfs.fixture";
 import { fetch } from "./utils/fetch";
 import { asyncToArray } from "iter-tools";
-import { IpfsClient } from "lib/adapter";
+import { IpfsClient } from "../lib/ipfs-adapter";
 
 const IPFS_BIN = `${__dirname}/../node_modules/.bin/jsipfs`;
 

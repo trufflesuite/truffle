@@ -2,7 +2,7 @@ import { asyncConcat, asyncToArray } from "iter-tools";
 import CID from "cids";
 import * as Preserve from "@truffle/preserve";
 
-import { IpfsClient, IpfsGetResults } from "../../lib/adapter";
+import { IpfsClient, IpfsGetResults } from "../../lib/ipfs-adapter";
 
 export interface FetchOptions {
   cid: CID;
@@ -27,7 +27,6 @@ export const convertResultsToTarget = async (
   const root: Collection = new Map([]);
 
   for await (const result of results) {
-    // console.log(result)
     // skip directories
     if (!result.content) {
       continue;

@@ -1,5 +1,5 @@
 import * as Preserve from "@truffle/preserve";
-import { FileObject } from "./adapter";
+import { FileObject } from "./ipfs-adapter";
 
 export type SearchOptions = {
   source: Preserve.Targets.Normalized.Source;
@@ -11,7 +11,7 @@ export const search = ({
   path = "."
 }: SearchOptions): AsyncIterable<FileObject> => {
   if (Preserve.Targets.Sources.isContent(source)) {
-    return (async function*() {
+    return (async function* () {
       yield {
         path,
         content: source
@@ -19,7 +19,7 @@ export const search = ({
     })();
   }
 
-  return (async function*() {
+  return (async function* () {
     for await (const entry of source.entries) {
       const results = search({
         source: entry.source,
