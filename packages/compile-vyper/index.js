@@ -9,10 +9,10 @@ const semver = require("semver");
 const findContracts = require("@truffle/contract-sources");
 const Common = require("@truffle/compile-common");
 const Config = require("@truffle/config");
+const { requiredSources } = require("./profiler");
 
-const { compileAllJson } = require("./vyper-json");
+const { compileJson } = require("./vyper-json");
 
-const VYPER_PATTERN = "**/*.{vy,v.py,vyper.py,json}"; //include JSON for interfaces
 const VYPER_PATTERN_STRICT = "**/*.{vy,v.py,vyper.py}"; //no JSON
 
 // Check that vyper is available, return its version
@@ -59,9 +59,12 @@ function execVyper(options, sourcePath, version, callback) {
     }
     evmVersionOption = `--evm-version '${evmVersion}'`;
   }
+  if (options.contracts_directory.includes("'")) {
+    throw new Error("Contracts directory contains apostrophe");
+  }
   const command = `vyper -f ${formats.join(
     ","
-  )} ${evmVersionOption} ${sourcePath}`;
+  )} ${evmVersionOption} ${sourcePath} -p '${options.contracts_directory}'`;
 
   exec(command, { maxBuffer: 600 * 1024 }, function (err, stdout, stderr) {
     if (err)
@@ -95,18 +98,8 @@ function readSource(sourcePath) {
  * this can include sources that are not contracts
  */
 
-// compile all sources
-async function compileAll({ sources, options, version, useJson }) {
-  options.logger = options.logger || console;
-  Compile.display(sources, options);
-  if (useJson) {
-    return compileAllJson({ sources, options, version });
-  } else {
-    return await compileAllNoJson({ sources, options, version });
-  }
-}
-
-async function compileAllNoJson({ sources, options, version }) {
+//note: this takes paths, rather than full source objects like compileJson!
+async function compileNoJson({ paths: sources, options, version }) {
   const compiler = { name: "vyper", version };
   const promises = [];
   const properSources = sources.filter(source => !source.endsWith(".json")); //filter out JSON interfaces
@@ -178,36 +171,86 @@ async function compileAllNoJson({ sources, options, version }) {
 
 const Compile = {
   // Check that vyper is available then forward to internal compile function
-  async sources({ sources = [], options }) {
+  async sources({ sources = {}, options }) {
     options = Config.default().merge(options);
-    // filter out non-vyper paths
-    const vyperFiles = sources.filter(
-      path => minimatch(path, VYPER_PATTERN, { dot: true })
-    );
-    const vyperFilesStrict = vyperFiles.filter(
-      path => minimatch(path, VYPER_PATTERN_STRICT, { dot: true })
+    const paths = Object.keys(sources);
+    const vyperFiles = paths.filter(path =>
+      minimatch(path, VYPER_PATTERN_STRICT, { dot: true })
     );
 
     // no vyper files found, no need to check vyper
     // (note that JSON-only will not activate vyper)
+    if (vyperFiles.length === 0) {
+      return { compilations: [] };
+    }
+
+    Compile.display(vyperFiles, options);
+    const { version, json: useJson } = await checkVyper();
+    if (!useJson) {
+      //it might be possible to handle this case by writing the sources
+      //to a temporary directory (and possibly using some sort of remapping--
+      //a manual one I mean, Vyper doesn't have remappings),
+      //but for now I'll just have it throw for simplicity
+      throw new Error("Compiling literal Vyper sources requires vyper-json");
+    }
+
+    return compileJson({ sources, options, version });
+  },
+
+  async sourcesWithDependencies({ paths = [], options }) {
+    options = Config.default().merge(options);
+    debug("paths: %O", paths);
+    const vyperFilesStrict = paths.filter(path =>
+      minimatch(path, VYPER_PATTERN_STRICT, { dot: true })
+    );
+    debug("vyperFilesStrict: %O", vyperFilesStrict);
+
+    // no vyper targets found, no need to check Vyper
     if (vyperFilesStrict.length === 0) {
       return { compilations: [] };
     }
 
-    const { version, json } = await checkVyper();
-    return await compileAll({
-      sources: vyperFiles,
-      options,
-      version,
-      useJson: json
-    });
-  },
+    const { allSources, compilationTargets } = await requiredSources(
+      options.with({
+        paths: vyperFilesStrict,
+        base_path: options.contracts_directory
+      })
+    );
 
-  //since we don't have an imports analyzer for Vyper
-  //yet, we'll just treat this the same as all; this will
-  //need to be revisited once we have an import parser for Vyper
-  async sourcesWithDependencies({ paths: _paths = [], options }) {
-    return await Compile.all({ options });
+    debug("allSources: %O", allSources);
+    debug("compilationTargets: %O", compilationTargets);
+    const vyperTargets = compilationTargets.filter(path =>
+      minimatch(path, VYPER_PATTERN_STRICT, { dot: true })
+    );
+
+    // no vyper targets found, no need to activate Vyper
+    if (vyperTargets.length === 0) {
+      return { compilations: [] };
+    }
+
+    //having gotten the sources from the resolver, we invoke compileJson
+    //ourselves, rather than going through Compile.sources()
+    Compile.display(compilationTargets, options);
+
+    const { version, json: useJson } = await checkVyper();
+
+    if (useJson) {
+      return compileJson({
+        sources: allSources,
+        options: options.with({
+          compilationTargets
+        }),
+        version
+      });
+    } else {
+      return await compileNoJson({
+        paths: Object.keys(allSources),
+        options: options.with({
+          compilationTargets
+        }),
+        version
+      });
+    }
   },
 
   // contracts_directory: String. Directory where contract files can be found.
@@ -215,16 +258,18 @@ const Compile = {
   // strict: Boolean. Return compiler warnings as errors. Defaults to false.
   async all(options) {
     options = Config.default().merge(options);
-    const fileSearchPattern = path.join(
-      options.contracts_directory,
-      VYPER_PATTERN
-    );
-    debug("fileSearchPattern: %O", fileSearchPattern);
-    const files = await findContracts(fileSearchPattern);
-    debug("files: %O", files);
+    const files = await findContracts(options.contracts_directory);
 
-    return await Compile.sources({
-      sources: files,
+    const vyperFilesStrict = files.filter(path =>
+      minimatch(path, VYPER_PATTERN_STRICT, { dot: true })
+    );
+    // no vyper targets found, no need to check Vyper
+    if (vyperFilesStrict.length === 0) {
+      return { compilations: [] };
+    }
+
+    return await Compile.sourcesWithDependencies({
+      paths: files,
       options
     });
   },
@@ -237,23 +282,13 @@ const Compile = {
   async necessary(options) {
     options = Config.default().merge(options);
 
-    const fileSearchPattern = path.join(
-      options.contracts_directory,
-      VYPER_PATTERN
-    );
-    const files = await findContracts(fileSearchPattern);
-
     const profiler = await new Common.Profiler({});
     const updated = await profiler.updated(options);
     if (updated.length === 0) {
       return { compilations: [] };
     }
-    // select only Vyper files
-    const updatedVyperPaths = updated.filter(path => {
-      return path.match(/\.vy$|\.v.py$|\.vyper.py$|\.json$/);
-    });
     return await Compile.sourcesWithDependencies({
-      sources: updatedVyperPaths,
+      paths: updated,
       options
     });
   },

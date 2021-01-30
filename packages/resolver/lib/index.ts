@@ -1,8 +1,8 @@
 import "source-map-support/register";
 
 import { Resolver } from "./resolver";
-import { ResolverSource } from "./source";
+import { ResolverSource, ResolvedSource } from "./source";
 
-export { Resolver, ResolverSource };
+export { Resolver, ResolverSource, ResolvedSource };
 
 module.exports = Resolver;

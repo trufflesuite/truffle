@@ -1,4 +1,5 @@
-import path from "path";
+import debugModule from "debug";
+const debug = debugModule("compile-common:profiler");
 const findContracts = require("@truffle/contract-sources");
 const expect = require("@truffle/expect");
 
@@ -52,15 +53,18 @@ export class Profiler {
       contracts_directory: contractsDirectory
     } = options;
 
+    debug("paths: %O", paths);
+
     const resolve = ({ filePath, importedFrom }: UnresolvedSource) =>
       resolver.resolve(filePath, importedFrom);
 
     const updatedPaths = convertToAbsolutePaths(paths, basePath);
     const allPaths = convertToAbsolutePaths(
-      await findContracts(options.contracts_directory),
-      options.base_path
+      await findContracts(contractsDirectory),
+      basePath
     );
 
+    debug("invoking requiredSources");
     return await requiredSources({
       resolve,
       parseImports: this.config.parseImports,

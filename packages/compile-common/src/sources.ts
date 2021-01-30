@@ -1,4 +1,5 @@
 import { Sources, CollectedSources } from "./types";
+import * as path from "path";
 
 /**
  * Collects sources, targets into collections with OS-independent paths,
@@ -10,13 +11,16 @@ import { Sources, CollectedSources } from "./types";
  */
 export function collectSources(
   originalSources: Sources,
-  originalTargets: string[] = []
+  originalTargets: string[] = [],
+  contractsDirectory: string = "" //only used by Vyper atm
 ): CollectedSources {
   const mappedResults = Object.entries(originalSources)
     .map(([originalSourcePath, contents]) => ({
       originalSourcePath,
       contents,
-      sourcePath: getPortableSourcePath(originalSourcePath)
+      sourcePath: getPortableSourcePath(
+        removeRootDirectory(originalSourcePath, contractsDirectory)
+      )
     }))
     .map(({ originalSourcePath, sourcePath, contents }) => ({
       sources: {
@@ -67,4 +71,14 @@ function getPortableSourcePath(sourcePath: string): string {
   }
 
   return replacement;
+}
+
+function removeRootDirectory(sourcePath: string, rootDirectory: string): string {
+  //make sure root directory doesn't end in a separator
+  if (rootDirectory.endsWith(path.sep)) {
+    rootDirectory = rootDirectory.slice(0, -1); //remove last character
+  }
+  return sourcePath.startsWith(rootDirectory)
+    ? sourcePath.slice(rootDirectory.length) //remove prefix
+    : sourcePath;
 }
