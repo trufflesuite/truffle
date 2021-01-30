@@ -186,11 +186,15 @@ const Compile = {
 
     Compile.display(vyperFiles, options);
     const { version, json: useJson } = await checkVyper();
-    if (useJson) {
-      return compileJson({ sources, options, version });
-    } else {
-      return await compileNoJson({ paths: vyperFiles, options, version });
+    if (!useJson) {
+      //it might be possible to handle this case by writing the sources
+      //to a temporary directory (and possibly using some sort of remapping--
+      //a manual one I mean, Vyper doesn't have remappings),
+      //but for now I'll just have it throw for simplicity
+      throw new Error("Compiling literal Vyper sources requires vyper-json");
     }
+
+    return compileJson({ sources, options, version });
   },
 
   async sourcesWithDependencies({ paths = [], options }) {
