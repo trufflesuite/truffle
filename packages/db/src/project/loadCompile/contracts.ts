@@ -55,7 +55,12 @@ export const process = Batch.Contracts.configure<{
       )
     };
 
-    const generatedSources = toGeneratedSourceInput(input);
+    const createBytecodeGeneratedSources = toGeneratedSourceInput({
+      generatedSources: input.generatedSources
+    });
+    const callBytecodeGeneratedSources = toGeneratedSourceInput({
+      generatedSources: input.deployedGeneratedSources
+    });
 
     return {
       name,
@@ -64,7 +69,8 @@ export const process = Batch.Contracts.configure<{
       processedSource,
       createBytecode,
       callBytecode,
-      generatedSources: generatedSources
+      createBytecodeGeneratedSources,
+      callBytecodeGeneratedSources
     };
   },
 
@@ -83,10 +89,7 @@ export const process = Batch.Contracts.configure<{
   }
 });
 
-function toGeneratedSourceInput({
-  generatedSources,
-  deployedGeneratedSources
-}) {
+function toGeneratedSourceInput({ generatedSources }) {
   const processedGeneratedSources = generatedSources
     ? generatedSources.map(source => {
         return {
@@ -98,20 +101,6 @@ function toGeneratedSourceInput({
         };
       })
     : [];
-  const processedDeployedGeneratedSources = deployedGeneratedSources
-    ? deployedGeneratedSources.map(source => {
-        return {
-          ast: { json: JSON.stringify(source.ast) },
-          id: source.id,
-          contents: source.contents,
-          name: source.name,
-          language: source.language
-        };
-      })
-    : [];
 
-  return {
-    forCreateBytecode: processedGeneratedSources,
-    forCallBytecode: processedDeployedGeneratedSources
-  };
+  return processedGeneratedSources;
 }

@@ -33,15 +33,11 @@ export const contracts: Definition<"contracts"> = {
       processedSource: ProcessedSource
       createBytecode: Bytecode
       callBytecode: Bytecode
-      generatedSources: generatedSources
+      callBytecodeGeneratedSources: [GeneratedSource]
+      createBytecodeGeneratedSources: [GeneratedSource]
     }
 
-    type generatedSources {
-      forCallBytecode: [generatedSource]
-      forCreateBytecode: [generatedSource]
-    }
-
-    type generatedSource {
+    type GeneratedSource {
       ast: AST!
       id: Int!
       contents: String!
@@ -61,15 +57,11 @@ export const contracts: Definition<"contracts"> = {
       processedSource: IndexReferenceInput
       createBytecode: ResourceReferenceInput
       callBytecode: ResourceReferenceInput
-      generatedSources: generatedSourceInput
+      callBytecodeGeneratedSources: [GeneratedInput]
+      createBytecodeGeneratedSources: [GeneratedInput]
     }
 
-    input generatedSourceInput {
-      forCallBytecode: [generatedInput]!
-      forCreateBytecode: [generatedInput]!
-    }
-
-    input generatedInput {
+    input GeneratedInput {
       ast: ASTInput!
       id: Int!
       contents: String!
