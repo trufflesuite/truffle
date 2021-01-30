@@ -83,8 +83,7 @@ export class Truffle implements ResolverSource {
       "AssertString",
       "AssertUint",
       "AssertUintArray",
-      "NewSafeSend",
-      "OldSafeSend"
+      "SafeSend"
     ];
 
     for (const lib of truffleLibraries) {
