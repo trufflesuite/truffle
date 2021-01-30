@@ -58,24 +58,34 @@ class Console extends EventEmitter {
     });
   }
 
-  start() {
+  async start() {
     try {
       this.repl = repl.start({
         prompt: "truffle(" + this.options.network + ")> ",
         eval: this.interpret.bind(this)
       });
 
-      this.interfaceAdapter.getAccounts().then(fetchedAccounts => {
-        this.repl.context.web3 = this.web3;
-        this.repl.context.interfaceAdapter = this.interfaceAdapter;
-        this.repl.context.accounts = fetchedAccounts;
-      });
+      let accounts;
+      try {
+        accounts = await this.interfaceAdapter.getAccounts();
+      } catch {
+        // don't prevent Truffle from working if user doesn't provide some way
+        // to sign transactions (e.g. no reason to disallow debugging)
+        accounts = [];
+      }
+
+      this.repl.context.web3 = this.web3;
+      this.repl.context.interfaceAdapter = this.interfaceAdapter;
+      this.repl.context.accounts = accounts;
       this.provision();
 
       //want repl to exit when it receives an exit command
       this.repl.on("exit", () => {
         process.exit();
       });
+
+      // ensure that `await`-ing this method never resolves. (we want to keep
+      // the console open until it exits on its own)
       return new Promise(() => {});
     } catch (error) {
       this.options.logger.log(
@@ -150,7 +160,7 @@ class Console extends EventEmitter {
     // stderr is piped here because we don't need to repeatedly see the parent
     // errors/warnings in child process - specifically the error re: having
     // multiple config files
-    const spawnOptions = {stdio: ["inherit", "inherit", "pipe"]};
+    const spawnOptions = { stdio: ["inherit", "inherit", "pipe"] };
 
     const spawnInput = "--network " + options.network + " -- " + inputStrings;
     spawnSync(
