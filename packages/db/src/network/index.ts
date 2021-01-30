@@ -66,6 +66,7 @@ import type {
 
 import * as Initialize from "./initialize";
 import * as FetchTransactionBlocks from "./transactionBlocks";
+import * as FetchBlockForHeight from "./fetchBlockForHeight";
 import * as AddNetworks from "./addNetworks";
 import * as LoadNetworkGenealogies from "./networkGenealogies";
 export {
@@ -117,10 +118,27 @@ export class Network {
     return this._latest;
   }
 
-  async recordBlocks(options: {
-    blocks: DataModel.Block[];
-  }): Promise<(IdObject<"networks"> | undefined)[]> {
-    const { blocks } = options;
+  async recordLatest(): Promise<IdObject<"networks">> {
+    const block = await this.run(FetchBlockForHeight.process, {
+      height: "latest" as const
+    });
+
+    const [network] = await this.recordBlocks({ blocks: [block] });
+    return network;
+  }
+
+  async recordBlocks<
+    Block extends DataModel.Block | Omit<DataModel.Block, "hash">
+  >(options: { blocks: Block[] }): Promise<IdObject<"networks">[]> {
+    const blocks: DataModel.Block[] = await Promise.all(
+      options.blocks.map(async block =>
+        "hash" in block
+          ? (block as DataModel.Block)
+          : await this.run(FetchBlockForHeight.process, {
+              height: block.height
+            })
+      )
+    );
 
     const networks = await this.run(AddNetworks.process, {
       network: {
