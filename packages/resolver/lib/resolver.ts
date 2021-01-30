@@ -89,12 +89,12 @@ export class Resolver {
     for (source of this.sources) {
       ({ body, filePath } = await source.resolve(importPath, importedFrom));
 
-      if (body) {
+      if (body !== undefined) {
         break;
       }
     }
 
-    if (!body) {
+    if (body === undefined) {
       let message = `Could not find ${importPath} from any sources`;
 
       if (importedFrom) {
