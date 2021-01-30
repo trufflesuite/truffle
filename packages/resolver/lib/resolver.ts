@@ -42,20 +42,21 @@ export class Resolver {
 
     this.options = options;
     this.sources = [
-      ...(includeTruffleSources ? [new Truffle(options)] : []),
       new EthPMv1(options.working_directory),
       new NPM(options.working_directory),
       new GlobalNPM(),
-      ...(translateJsonToSolidity
-        ? [
-            new ABI(
-              options.working_directory,
-              options.contracts_build_directory
-            )
-          ]
-        : []),
       new FS(options.working_directory, options.contracts_build_directory)
     ];
+
+    if (includeTruffleSources) {
+      this.sources.unshift(new Truffle(options));
+    }
+
+    if (translateJsonToSolidity) {
+      this.sources = [].concat(
+        ...this.sources.map(source => [new ABI(source), source])
+      );
+    }
 
     if (resolveVyperModules) {
       this.sources = [new Vyper(this.sources, options.contracts_directory)];
