@@ -3,7 +3,7 @@
  * @packageDocumentation
  */
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:network:networkGenealogies:queryNext");
+const debug = logger("db:network:query:nextPossiblyRelatedNetworks");
 
 import gql from "graphql-tag";
 

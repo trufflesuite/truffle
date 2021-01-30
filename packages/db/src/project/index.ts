@@ -242,16 +242,13 @@ export class ConnectedProject extends Project {
    */
   async loadMigrate(options: {
     network: Omit<Input<"networks">, "networkId" | "historicBlock">;
-    artifacts: (
-      & ContractObject
-      & {
-          db: {
-            contract: IdObject<"contracts">;
-            callBytecode: IdObject<"bytecodes">;
-            createBytecode: IdObject<"bytecodes">;
-          }
-        }
-    )[];
+    artifacts: (ContractObject & {
+      db: {
+        contract: IdObject<"contracts">;
+        callBytecode: IdObject<"bytecodes">;
+        createBytecode: IdObject<"bytecodes">;
+      };
+    })[];
   }): Promise<{
     network: IdObject<"networks">;
     artifacts: LoadMigrate.Artifact[];
@@ -263,16 +260,16 @@ export class ConnectedProject extends Project {
 
     const { networkId } = network.genesis;
 
-    const transactionHashes = options.artifacts
-      .map(({ networks }) => (networks[networkId] || {}).transactionHash);
+    const transactionHashes = options.artifacts.map(
+      ({ networks }) => (networks[networkId] || {}).transactionHash
+    );
 
-    const networks = await network.recordTransactions({ transactionHashes });
-    debug("got networks, congruing genealogy %O", networks);
-    await network.congrueGenealogy();
+    const networks = await network.includeTransactions({ transactionHashes });
+    debug("networks %O", networks);
 
     const { artifacts } = await this.run(LoadMigrate.process, {
       network: {
-        networkId: network.congruentLatest.networkId
+        networkId: network.knownLatest.networkId
       },
       artifacts: options.artifacts.map((artifact, index) => ({
         ...artifact,
@@ -280,15 +277,13 @@ export class ConnectedProject extends Project {
           ...artifact.networks,
           [networkId]: {
             ...artifact.networks[networkId],
-            ...(
-              networks[index]
-                ? {
-                    db: {
-                      network: networks[index]
-                    }
+            ...(networks[index]
+              ? {
+                  db: {
+                    network: networks[index]
                   }
-                : {}
-            )
+                }
+              : {})
           }
         }
       }))
@@ -296,9 +291,9 @@ export class ConnectedProject extends Project {
 
     return {
       network: {
-        id: network.congruentLatest.id
+        id: network.knownLatest.id
       },
       artifacts
-    }
+    };
   }
 }

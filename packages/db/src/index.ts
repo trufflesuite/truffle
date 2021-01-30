@@ -205,14 +205,12 @@
  *   network: { name: "mainnet" }
  * });
  *
- * await network.recordBlocks([
+ * await network.includeBlocks([
  *   { height: 10000000, hash: "0x..." },
  *   // ...
  * ]);
  *
- * await networks.congrueGenealogy();
- *
- * const { historicBlock } = network.congruentLatest;
+ * const { historicBlock } = network.knownLatest;
  * ```
  *
  * </details>

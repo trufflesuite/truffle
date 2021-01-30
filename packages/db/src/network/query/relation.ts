@@ -3,14 +3,12 @@
  * @packageDocumentation
  */
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:network:networkGenealogies:findRelation");
+const debug = logger("db:network:query:relation");
 
 import type { IdObject, Resource } from "@truffle/db/resources";
 import type { Process } from "@truffle/db/process";
-import * as FindMatchingCandidateOnChain from "./findMatching";
-import * as QueryNextPossiblyRelatedNetworks from "./queryNext";
-
-export { FindMatchingCandidateOnChain, QueryNextPossiblyRelatedNetworks };
+import * as Fetch from "@truffle/db/network/fetch";
+import * as QueryNextPossiblyRelatedNetworks from "./nextPossiblyRelatedNetworks";
 
 /**
  * Issue GraphQL requests and eth_getBlockByNumber requests to determine if any
@@ -53,12 +51,17 @@ export function* process(options: {
     }));
 
     // check blockchain to find a matching network
-    const matchingCandidate:
-      | Resource<"networks">
-      | undefined = yield* FindMatchingCandidateOnChain.process({ candidates });
+    for (const candidate of candidates) {
+      const { historicBlock } = candidate;
+      const block = yield* Fetch.Block.process({
+        block: {
+          height: historicBlock.height
+        }
+      });
 
-    if (matchingCandidate) {
-      return matchingCandidate;
+      if (block && block.hash === historicBlock.hash) {
+        return candidate;
+      }
     }
   } while (candidates.length > 0);
 

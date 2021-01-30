@@ -3,14 +3,12 @@
  * @packageDocumentation
  */
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:network:networkGenealogies");
+const debug = logger("db:network:load:networkGenealogies");
 
 import { Input, Resource, IdObject, toIdObject } from "@truffle/db/resources";
 import { resources, Process } from "@truffle/db/process";
 
-import * as FindRelation from "./findRelation";
-import * as FindAncestorsBetween from "./findBetween";
-export { FindRelation, FindAncestorsBetween };
+import * as Query from "@truffle/db/network/query";
 
 /**
  * Load NetworkGenealogy records for a given set of networks while connected
@@ -53,10 +51,14 @@ export { FindRelation, FindAncestorsBetween };
  */
 export function* process(options: {
   networks: (Pick<Resource<"networks">, "id" | "historicBlock"> | undefined)[];
-  disableIndex?: boolean;
+  settings?: {
+    disableIndex?: boolean;
+  };
 }): Process<IdObject<"networkGenealogies">[]> {
   debug("Processing loading network genealogies...");
-  const { disableIndex } = options;
+  const {
+    settings: { disableIndex = false }
+  } = options;
 
   if (!options.networks.length) {
     return;
@@ -73,19 +75,19 @@ export function* process(options: {
   // find anchors
   //
 
-  const earliestInputNetworkAncestor = yield* FindRelation.process({
+  const earliestInputNetworkAncestor = yield* Query.Relation.process({
     ...commonOptions,
     relationship: "ancestor",
     network: earliestInputNetwork
   });
 
-  const latestInputNetworkAncestor = yield* FindRelation.process({
+  const latestInputNetworkAncestor = yield* Query.Relation.process({
     ...commonOptions,
     relationship: "ancestor",
     network: latestInputNetwork
   });
 
-  const latestInputNetworkDescendant = yield* FindRelation.process({
+  const latestInputNetworkDescendant = yield* Query.Relation.process({
     ...commonOptions,
     relationship: "descendant",
     network: latestInputNetwork
@@ -93,7 +95,7 @@ export function* process(options: {
 
   // find ancestor to latest input network and use that to find ancestors
   // in our input range
-  const existingRelationsInRange = yield* FindAncestorsBetween.process({
+  const existingRelationsInRange = yield* Query.AncestorsBetween.process({
     earliest: earliestInputNetworkAncestor,
     latest: latestInputNetworkAncestor
   });

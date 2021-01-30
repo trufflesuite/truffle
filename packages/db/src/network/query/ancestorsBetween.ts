@@ -3,7 +3,7 @@
  * @packageDocumentation
  */
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:network:networkGenealogies:findBetween");
+const debug = logger("db:network:query:ancestorsBetween");
 
 import gql from "graphql-tag";
 
@@ -17,26 +17,23 @@ let fragmentIndex = 0;
  * network.
  */
 export function* process(options: {
-  earliest: Resource<"networks"> | undefined,
-  latest: Resource<"networks"> | undefined
+  earliest: Resource<"networks"> | undefined;
+  latest: Resource<"networks"> | undefined;
 }): Process<Resource<"networks">[]> {
   if (!options.latest) {
     return [];
   }
 
   const {
-    earliest: {
-      historicBlock: {
-        height: minimumHeight
-      }
-    } = { historicBlock: { height: 0 } },
-    latest: {
-      id
-    }
+    earliest: { historicBlock: { height: minimumHeight } } = {
+      historicBlock: { height: 0 }
+    },
+    latest: { id }
   } = options;
-  const {
-    ancestors: networks
-  } = yield* resources.get("networks", id, gql`
+  const { ancestors: networks } = yield* resources.get(
+    "networks",
+    id,
+    gql`
     fragment AncestorsAbove_${fragmentIndex++} on Network {
       ancestors(
         minimumHeight: ${minimumHeight}
@@ -49,7 +46,8 @@ export function* process(options: {
         }
       }
     }
-  `);
+  `
+  );
 
   debug("networks %O", networks);
 

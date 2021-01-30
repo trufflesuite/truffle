@@ -1,3 +1,6 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:project:test:integration");
+
 import path from "path";
 import gql from "graphql-tag";
 import { connect } from "@truffle/db";
@@ -494,6 +497,7 @@ describe("Compilation", () => {
             networkId: networkId,
             historicBlock: historicBlock
           });
+          debug("netId %o", netId);
           netIds.push({ id: netId });
           migratedNetworks.push({
             networkId: networkId,

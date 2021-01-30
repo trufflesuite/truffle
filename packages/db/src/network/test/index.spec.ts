@@ -40,7 +40,7 @@ describe("Network", () => {
         fc.boolean()
       ],
       async ({ model, batches }, disableIndex) => {
-        debug("run #%o", run++);
+        debug.extend("run")("run #%o", run++);
         const db = await setup({
           identifier: "test:network:property:latestDescendants"
         });
@@ -59,15 +59,19 @@ describe("Network", () => {
             provider,
             network: {
               name
+            },
+            settings: {
+              skipKnownLatest: true
             }
           });
 
           debug("loading networks");
-          await network.recordBlocks({
-            blocks: batch.inputs.map(({ historicBlock }) => historicBlock)
+          await network.includeBlocks({
+            blocks: batch.inputs.map(({ historicBlock }) => historicBlock),
+            settings: {
+              disableIndex
+            }
           });
-
-          await network.congrueGenealogy({ disableIndex });
         }
 
         // compute expected
@@ -106,7 +110,10 @@ describe("Network", () => {
         );
       },
 
-      { numRuns: testConfig.numRuns }
+      {
+        numRuns: testConfig.numRuns,
+        interruptAfterTimeLimit: testConfig.timeout * 0.8 // leave padding
+      }
     );
   });
 });

@@ -11,29 +11,28 @@ export const mockProvider = (options: {
 }): Provider => {
   const { model, batch } = options;
 
-  const {
-    networkId,
-    getBlockByNumber
-  } = model.networks[batch.descendantIndex];
+  const { networkId, getBlockByNumber } = model.networks[batch.descendantIndex];
 
   return {
     send(payload, callback) {
-      const {
-        jsonrpc,
-        id,
-        method,
-        params
-      } = payload;
+      const { jsonrpc, id, method, params } = payload;
 
-      switch(method) {
+      switch (method) {
         case "eth_getBlockByNumber": {
-          const [ blockNumber ] = params;
+          const [blockNumber] = params;
 
           const height = parseInt(blockNumber);
           debug("intercepting eth_getBlockByNumber %o", height);
 
-          const result = getBlockByNumber(height);
-          debug("result %o", result);
+          const block = getBlockByNumber(height);
+          debug("block %o", block);
+
+          const result = block
+            ? {
+                number: `0x${height.toString(16)}`,
+                hash: block.hash
+              }
+            : undefined;
 
           return callback(null, {
             jsonrpc,
@@ -42,7 +41,7 @@ export const mockProvider = (options: {
           });
         }
         case "net_version": {
-          const result = networkId
+          const result = networkId;
           debug("result %o", result);
 
           return callback(null, {
@@ -54,4 +53,4 @@ export const mockProvider = (options: {
       }
     }
   };
-}
+};
