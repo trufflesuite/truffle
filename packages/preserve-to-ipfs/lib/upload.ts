@@ -30,7 +30,7 @@ export async function* upload(
   });
 
   const unknowns: {
-    [unknown: string]: Preserve.Processes.Unknown;
+    [unknown: string]: Preserve.Control.ValueResolutionController;
   } = {
     root: yield* task.declare({ identifier: "Root CID" })
   };
@@ -54,7 +54,7 @@ export async function* upload(
       const unknown = unknowns[`./${path}`];
       if (unknown) {
         yield* unknown.resolve({
-          label: { cid },
+          resolution: { cid },
           payload: cid.toString()
         });
       }
@@ -64,7 +64,7 @@ export async function* upload(
   }
 
   yield* unknowns.root.resolve({
-    label: result,
+    resolution: result,
     payload: chalk.bold(result.cid.toString())
   });
 

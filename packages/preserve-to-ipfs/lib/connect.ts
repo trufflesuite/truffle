@@ -26,7 +26,7 @@ export async function* connect(
   try {
     const version = await ipfs.version();
     yield* task.succeed({
-      label: version,
+      result: version,
       message: `Connected to IPFS node at ${address}`
     });
   } catch (error) {

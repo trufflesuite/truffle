@@ -5,12 +5,10 @@
 import { asyncToArray } from "iter-tools";
 import CID from "cids";
 import * as Preserve from "@truffle/preserve";
-const IpfsHttpClient: any = require("ipfs-http-client");
 
 import { search } from "./search";
 import { connect } from "./connect";
 import { upload } from "./upload";
-import { IpfsClient } from "./adapter";
 
 export interface Label {
   cid: CID;
