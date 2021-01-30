@@ -37,7 +37,7 @@ export class Vyper implements ResolverSource {
         importModule,
         importedFrom
       );
-      if (directlyResolvedSource.body) {
+      if (directlyResolvedSource.body !== undefined) {
         debug("found directly");
         return directlyResolvedSource;
       }
@@ -91,7 +91,7 @@ export class Vyper implements ResolverSource {
         for (const source of this.wrappedSources) {
           debug("source: %o", source);
           resolvedSource = await source.resolve(possiblePath, importedFrom);
-          if (resolvedSource.body) {
+          if (resolvedSource.body !== undefined) {
             debug("found via this source");
             break;
           }
@@ -99,7 +99,7 @@ export class Vyper implements ResolverSource {
         this.cache[possiblePath] = resolvedSource; //yes, even failures are cached!
       }
 
-      if (resolvedSource.body) {
+      if (resolvedSource.body !== undefined) {
         debug("found");
         return resolvedSource;
       }

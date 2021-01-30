@@ -98,7 +98,7 @@ export class Truffle implements ResolverSource {
       }
     }
 
-    return { body: null, filePath: null };
+    return { body: undefined, filePath: undefined };
   }
 
   require(): null {
