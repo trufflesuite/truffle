@@ -1,4 +1,4 @@
-const IpfsHttpClient: any = require("ipfs-http-client");
+import createIpfsClient from "ipfs-http-client";
 
 import * as Preserve from "@truffle/preserve";
 import { IpfsClient } from "./adapter";
@@ -21,7 +21,7 @@ export async function* connect(
   });
 
   // init client
-  const ipfs = IpfsHttpClient(address);
+  const ipfs = createIpfsClient({ url: address });
 
   try {
     const version = await ipfs.version();

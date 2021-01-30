@@ -2,7 +2,7 @@ import { asyncConcat, asyncToArray } from "iter-tools";
 import CID from "cids";
 import * as Preserve from "@truffle/preserve";
 
-import { IpfsClient } from "../../lib/adapter";
+import { IpfsClient, IpfsGetResults } from "../../lib/adapter";
 
 export interface FetchOptions {
   cid: CID;
@@ -22,7 +22,7 @@ type Collection = Map<string, CollectionNode>;
 type CollectionNode = string | Collection;
 
 export const convertResultsToTarget = async (
-  results: any
+  results: IpfsGetResults
 ): Promise<Preserve.Target> => {
   const root: Collection = new Map([]);
 

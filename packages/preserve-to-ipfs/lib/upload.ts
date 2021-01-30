@@ -42,7 +42,7 @@ export async function* upload(
   }
 
   // add to IPFS
-  const results = ipfs.add(data, {
+  const results = ipfs.addAll(data, {
     wrapWithDirectory: Preserve.Targets.Sources.isContainer(source)
   });
 

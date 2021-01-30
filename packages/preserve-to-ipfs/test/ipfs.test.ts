@@ -1,5 +1,5 @@
 const IpfsdCtl = require("ipfsd-ctl");
-const createIpfsClient = require("ipfs-http-client");
+import createIpfsClient from "ipfs-http-client";
 
 import * as Preserve from "@truffle/preserve";
 
@@ -46,7 +46,7 @@ describe("preserve", () => {
       let ipfs: IpfsClient;
 
       beforeAll(async () => {
-        ipfs = createIpfsClient(address);
+        ipfs = createIpfsClient({ url: address });
       });
 
       it("saves correctly to IPFS", async () => {

@@ -4,7 +4,8 @@
     "esModuleInterop": true,
     "declaration": true,
     "target": "es6",
-    "noImplicitAny": true,
+    // We disable this because of IPFS dependencies that don't adhere
+    "noImplicitAny": false,
     "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "dist",
