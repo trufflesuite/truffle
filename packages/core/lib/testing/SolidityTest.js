@@ -110,26 +110,12 @@ const SolidityTest = {
     let solcVersion = config.compilers.solc.version;
     solcVersion = RangeUtils.resolveToRange(solcVersion);
 
-    const truffleLibraries = [
-      "truffle/Assert.sol",
-      "truffle/AssertAddress.sol",
-      "truffle/AssertAddressArray.sol",
-      "truffle/AssertBalance.sol",
-      "truffle/AssertBool.sol",
-      "truffle/AssertBytes32.sol",
-      "truffle/AssertBytes32Array.sol",
-      "truffle/AssertGeneral.sol",
-      "truffle/AssertInt.sol",
-      "truffle/AssertIntArray.sol",
-      "truffle/AssertString.sol",
-      "truffle/AssertUint.sol",
-      "truffle/AssertUintArray.sol",
-      "truffle/DeployedAddresses.sol",
-      `truffle/SafeSend.sol`
-    ];
-
+    //in addition to the main things needing compiling, we also
+    //compile SafeSend for use below (paths adds things to compilation,
+    //it doesn't mean just compile this thing).
+    //Other truffle test library sources will be handled by the resolver.
     const { compilations } = await Compile.sourcesWithDependencies({
-      paths: truffleLibraries,
+      paths: [ "truffle/SafeSend.sol" ],
       options: runner.config.with({
         quiet: true
       })
@@ -178,9 +164,21 @@ const SolidityTest = {
       "DeployedAddresses"
     ];
 
-    const testAbstractions = testLibraries.map(name =>
-      runner.config.resolver.require(`truffle/${name}.sol`)
-    );
+    const testAbstractions = [];
+    for (const testLibraryName of testLibraries) {
+      try {
+        //not all test abstractions will be present, because not all
+        //were compiled, so this is in a try/catch
+        testAbstractions.push(runner.config.resolver.require(testLibraryName));
+      } catch (error) {
+        //resolver currently doesn't throw structured errors, so we'll
+        //check the message to see whether this error is expected (HACK)
+        if (!error.message.startsWith("Could not find artifacts for")) {
+          //rethrow unexpected errors
+          throw error;
+        }
+      }
+    }
 
     const SafeSend = runner.config.resolver.require("SafeSend");
 
