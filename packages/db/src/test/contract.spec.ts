@@ -84,18 +84,23 @@ describe("Contract", () => {
     expect(contract).toHaveProperty("name");
     expect(contract).toHaveProperty("processedSource");
 
-    const { processedSource, generatedSources } = contract;
+    const {
+      processedSource,
+      callBytecodeGeneratedSources,
+      createBytecodeGeneratedSources
+    } = contract;
     expect(processedSource).toHaveProperty("ast");
 
-    expect(generatedSources).toHaveProperty("forCallBytecode");
-    expect(generatedSources).toHaveProperty("forCreateBytecode");
-    const { forCallBytecode, forCreateBytecode } = generatedSources;
-    expect(forCreateBytecode).toEqual([]);
-    expect(forCallBytecode[0].name).toEqual(variables.name);
-    expect(forCallBytecode[0].ast.json).toEqual(variables.ast);
-    expect(forCallBytecode[0].id).toEqual(variables.id);
-    expect(forCallBytecode[0].contents).toEqual(variables.contents);
-    expect(forCallBytecode[0].language).toEqual(variables.language);
+    expect(createBytecodeGeneratedSources).toEqual([]);
+    expect(callBytecodeGeneratedSources[0].name).toEqual(variables.name);
+    expect(callBytecodeGeneratedSources[0].ast.json).toEqual(variables.ast);
+    expect(callBytecodeGeneratedSources[0].id).toEqual(variables.id);
+    expect(callBytecodeGeneratedSources[0].contents).toEqual(
+      variables.contents
+    );
+    expect(callBytecodeGeneratedSources[0].language).toEqual(
+      variables.language
+    );
   });
 
   test("can be queried", async () => {
@@ -116,7 +121,7 @@ describe("Contract", () => {
     expect(contract).toHaveProperty("name");
     expect(contract).toHaveProperty("processedSource");
     expect(contract).toHaveProperty("abi");
-    expect(contract).toHaveProperty("generatedSources");
+    expect(contract).toHaveProperty("callBytecodeGeneratedSources");
   });
 
   test("can be queried via compilation directly", async () => {
