@@ -6,7 +6,7 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:loadMigrate:contracts");
 
 import gql from "graphql-tag";
-import { IdObject } from "@truffle/db/resources";
+import type { IdObject } from "@truffle/db/resources";
 import { resources } from "@truffle/db/process";
 import * as Batch from "./batch";
 

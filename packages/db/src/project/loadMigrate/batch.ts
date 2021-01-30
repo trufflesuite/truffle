@@ -5,11 +5,14 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:loadMigrate:batch");
 
-import { _ } from "hkts/src";
-import { ContractObject, NetworkObject } from "@truffle/contract-schema/spec";
+import type { _ } from "hkts/src";
+import type {
+  ContractObject,
+  NetworkObject
+} from "@truffle/contract-schema/spec";
 
-import { IdObject } from "@truffle/db/resources";
-import { Process } from "@truffle/db/process";
+import type { IdObject } from "@truffle/db/resources";
+import type { Process } from "@truffle/db/process";
 import * as Base from "@truffle/db/project/batch";
 
 export type Config = {

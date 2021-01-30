@@ -3,7 +3,7 @@ const debug = logger("db:meta:pouch:types");
 
 import PouchDB from "pouchdb";
 
-import { Collections, CollectionName } from "@truffle/db/meta/collections";
+import type { Collections, CollectionName } from "@truffle/db/meta/collections";
 
 /**
  * @category Definitions

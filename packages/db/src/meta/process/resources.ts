@@ -3,17 +3,17 @@ const debug = logger("db:process");
 
 import gql from "graphql-tag";
 import * as graphql from "graphql";
-import pascalCase from "pascal-case";
+import { pascalCase } from "change-case";
 import { singular } from "pluralize";
 
-import {
+import type {
   CollectionName,
   Collections,
   Input,
   Resource
 } from "@truffle/db/meta/collections";
 import { IdObject, toIdObject } from "@truffle/db/meta/ids";
-import { Definitions, Process } from "./types";
+import type { Definitions, Process } from "./types";
 
 export interface ResourceProcessorsOptions<C extends Collections> {
   definitions: Definitions<C>;

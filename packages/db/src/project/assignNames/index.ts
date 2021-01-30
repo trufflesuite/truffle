@@ -5,8 +5,8 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:assignNames");
 
-import { Process } from "@truffle/db/process";
-import { IdObject, NamedCollectionName } from "@truffle/db/resources";
+import type { Process } from "@truffle/db/process";
+import type { IdObject, NamedCollectionName } from "@truffle/db/resources";
 
 import * as Batch from "./batch";
 export { Batch };
@@ -50,13 +50,9 @@ export function* process(options: {
     assignments
   });
 
-  const withCurrentNameRecords = yield* GetCurrent.process(
-    withNameAndType
-  );
+  const withCurrentNameRecords = yield* GetCurrent.process(withNameAndType);
 
-  const withNameRecords = yield* AddNameRecords.process(
-    withCurrentNameRecords
-  );
+  const withNameRecords = yield* AddNameRecords.process(withCurrentNameRecords);
 
   const withProjectNames = yield* UpdateProjectNames.process(withNameRecords);
 

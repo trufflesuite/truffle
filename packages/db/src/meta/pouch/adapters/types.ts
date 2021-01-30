@@ -1,9 +1,9 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:meta:pouch:adapters:types");
 
-import { Collections } from "@truffle/db/meta/collections";
-import { Definitions } from "@truffle/db/meta/pouch/types";
-import { Databases } from "./base";
+import type { Collections } from "@truffle/db/meta/collections";
+import type { Definitions } from "@truffle/db/meta/pouch/types";
+import type { Databases } from "./base";
 
 export namespace Generic {
   export type Adapters = {

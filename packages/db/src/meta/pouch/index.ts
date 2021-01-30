@@ -6,9 +6,9 @@ export { Definition, Definitions } from "./types";
 import * as Adapters from "./adapters";
 export { Adapters };
 
-import { Collections } from "@truffle/db/meta/collections";
-import { Workspace } from "@truffle/db/meta/data";
-import { Definitions } from "./types";
+import type { Collections } from "@truffle/db/meta/collections";
+import type { Workspace } from "@truffle/db/meta/data";
+import type { Definitions } from "./types";
 
 export const forDefinitions = <C extends Collections>(
   definitions: Definitions<C>

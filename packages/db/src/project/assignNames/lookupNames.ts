@@ -6,10 +6,10 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:assignNames:lookupNames");
 
 import gql from "graphql-tag";
-import pascalCase from "pascal-case";
+import { pascalCase } from "change-case";
 import { singular } from "pluralize";
 import { resources } from "@truffle/db/process";
-import { IdObject, NamedCollectionName } from "@truffle/db/resources";
+import type { IdObject, NamedCollectionName } from "@truffle/db/resources";
 import * as Batch from "./batch";
 
 export const process = Batch.configure<{

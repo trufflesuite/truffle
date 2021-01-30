@@ -4,10 +4,10 @@ const debug = logger("db:meta:process:run");
 import { promisify } from "util";
 import type { Provider } from "web3/providers";
 
-import { Collections } from "@truffle/db/meta/collections";
-import { Db } from "@truffle/db/meta/interface";
+import type { Collections } from "@truffle/db/meta/collections";
+import type { Db } from "@truffle/db/meta/interface";
 
-import {
+import type {
   Definitions,
   GraphQlRequest,
   Web3Request,

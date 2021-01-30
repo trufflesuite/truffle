@@ -5,7 +5,7 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:loadCompile:bytecodes");
 
-import { IdObject, Input } from "@truffle/db/resources";
+import type { IdObject, Input } from "@truffle/db/resources";
 import { resources } from "@truffle/db/process";
 import * as Batch from "./batch";
 

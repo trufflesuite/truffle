@@ -1,9 +1,8 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:meta:pouch:adapters");
 
-import { Collections } from "@truffle/db/meta/collections";
-import { Generic } from "./types";
-
+import type { Collections } from "@truffle/db/meta/collections";
+import type { Generic } from "./types";
 export { Generic };
 
 import * as Base from "./base";
