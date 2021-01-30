@@ -5,7 +5,7 @@ import { getImports, ResolvedSource } from "./getImports";
 
 export interface ResolveAllSourcesOptions {
   paths: string[];
-  resolve(source: UnresolvedSource): Promise<ResolvedSource>;
+  resolve(source: UnresolvedSource): Promise<ResolvedSource | undefined>;
   parseImports(body: string): Promise<string[]>;
   shouldIncludePath(filePath: string): boolean;
 }
@@ -65,10 +65,9 @@ export async function resolveAllSources({
     // Queue unknown imports for the next resolver cycle
     while (results.length) {
       const source = results.shift();
-      debug("source.filePath: %s", source.filePath);
 
-      if (mapping[source.filePath]) {
-        //skip ones that are already recorded
+      if (!source || mapping[source.filePath]) {
+        //skip ones that couldn't be resolved, or are already recorded
         continue;
       }
 
