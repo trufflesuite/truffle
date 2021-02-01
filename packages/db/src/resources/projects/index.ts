@@ -3,7 +3,8 @@ const debug = logger("db:resources:projects");
 
 import gql from "graphql-tag";
 
-import { Definition, IdObject, Workspace } from "./types";
+import type { Definition } from "@truffle/db/resources/types";
+import { resolveNameRecords } from "./resolveNameRecords";
 
 export const projects: Definition<"projects"> = {
   names: {
@@ -36,24 +37,10 @@ export const projects: Definition<"projects"> = {
   resolvers: {
     Project: {
       resolve: {
-        resolve: async ({ id }, { name, type }, { workspace }) => {
+        resolve: async (...args) => {
           debug("Resolving Project.resolve...");
 
-          const results = await workspace.find("projectNames", {
-            selector: {
-              "project.id": id,
-              "key.name": name,
-              "key.type": type
-            }
-          });
-
-          const nameRecordIds = results.map(({ nameRecord: { id } }) => id);
-
-          const result = await workspace.find("nameRecords", {
-            selector: {
-              id: { $in: nameRecordIds }
-            }
-          });
+          const result = await resolveNameRecords(...args);
 
           debug("Resolved Project.resolve.");
           return result;
@@ -63,12 +50,11 @@ export const projects: Definition<"projects"> = {
         resolve: async (project, { name }, { workspace }) => {
           debug("Resolving Project.network...");
 
-          const [nameRecord] = await resolve({
+          const [nameRecord] = await resolveNameRecords(
             project,
-            name,
-            type: "Network",
-            workspace
-          });
+            { name, type: "Network" },
+            { workspace }
+          );
 
           if (!nameRecord) {
             return;
@@ -86,11 +72,11 @@ export const projects: Definition<"projects"> = {
         resolve: async (project, _, { workspace }) => {
           debug("Resolving Project.networks...");
 
-          const nameRecords = await resolve({
+          const nameRecords = await resolveNameRecords(
             project,
-            type: "Network",
-            workspace
-          });
+            { type: "Network" },
+            { workspace }
+          );
 
           const resourceIds = nameRecords.map(({ resource }) => resource.id);
 
@@ -103,13 +89,10 @@ export const projects: Definition<"projects"> = {
         }
       },
       contract: {
-        resolve: async (project, { name }, { workspace }) => {
+        resolve: async (project, inputs, { workspace }) => {
           debug("Resolving Project.contract...");
 
-          const [nameRecord] = await resolve({
-            project,
-            name,
-            type: "Contract",
+          const [nameRecord] = await resolveNameRecords(project, inputs, {
             workspace
           });
 
@@ -129,11 +112,11 @@ export const projects: Definition<"projects"> = {
         resolve: async (project, _, { workspace }) => {
           debug("Resolving Project.contracts...");
 
-          const nameRecords = await resolve({
+          const nameRecords = await resolveNameRecords(
             project,
-            type: "Contract",
-            workspace
-          });
+            { type: "Contract" },
+            { workspace }
+          );
 
           const resourceIds = nameRecords.map(({ resource }) => resource.id);
 
@@ -148,33 +131,3 @@ export const projects: Definition<"projects"> = {
     }
   }
 };
-
-async function resolve(options: {
-  project: IdObject<"projects">;
-  name?: string;
-  type?: string;
-  workspace: Workspace;
-}) {
-  const {
-    project: { id },
-    name,
-    type,
-    workspace
-  } = options;
-
-  const results = await workspace.find("projectNames", {
-    selector: {
-      "project.id": id,
-      "key.name": name,
-      "key.type": type
-    }
-  });
-  const nameRecordIds = results.map(({ nameRecord: { id } }) => id);
-  const nameRecords = await workspace.find("nameRecords", {
-    selector: {
-      id: { $in: nameRecordIds }
-    }
-  });
-
-  return nameRecords;
-}
