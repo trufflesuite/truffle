@@ -9,6 +9,7 @@ const common = {
     "Resource",
     "Resource Input",
     "Constructor",
+    "Abstraction",
     "Truffle-specific",
     "Definitions",
     "Other",

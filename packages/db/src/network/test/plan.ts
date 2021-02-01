@@ -30,12 +30,22 @@ export const plan = (options: {
   for (const batch of batches) {
     const { inputs } = batch;
 
-    const { getBlockByNumber: getBatchBlockByNumber } = model.networks[
+    const {
+      name,
+      networkId,
+      getBlockByNumber: getBatchBlockByNumber
+    } = model.networks[
       batch.descendantIndex
     ];
 
+    const genesis = {
+      name,
+      networkId,
+      historicBlock: getBatchBlockByNumber(0)
+    };
+
     // for each input in each batch
-    for (const { networkId, historicBlock } of inputs) {
+    for (const { networkId, historicBlock } of [genesis, ...inputs]) {
       const { height } = historicBlock;
 
       // for each descendant network in our model
