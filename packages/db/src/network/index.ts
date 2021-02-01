@@ -163,8 +163,9 @@ export class Network {
    * After [[initialize | `Network.initialize()`]], [[`includeLatest`]],
    * [[`includeBlocks`]], and [[`includeTransactions`]], by default this value
    * will be computed (or re-computed) based on inputs as well as queried
-   * records in \@truffle/db already. Use [[IncludeSettings.skipKnownLatest]]
-   * to update based only on existing known latest and additional inputs.
+   * records in \@truffle/db already. Use `skipKnownLatest` option in
+   * [[IncludeSettings]] to update based only on existing known latest and
+   * additional inputs.
    *
    * @category Resource accessors
    */
