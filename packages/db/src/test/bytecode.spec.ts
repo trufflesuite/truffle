@@ -11,6 +11,7 @@ describe("Bytecode", () => {
     wsClient = new WorkspaceClient();
     shimmedBytecode = Shims.LegacyToNew.forBytecode(Migrations.bytecode);
     expectedId = generateId(shimmedBytecode);
+
     addBytecodeResult = await wsClient.execute(AddBytecode, shimmedBytecode);
   });
 

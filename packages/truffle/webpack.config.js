@@ -196,10 +196,7 @@ module.exports = {
         from: path.join(truffleLibraryDirectory, "AssertUintArray.sol")
       },
       {
-        from: path.join(truffleLibraryDirectory, "NewSafeSend.sol")
-      },
-      {
-        from: path.join(truffleLibraryDirectory, "OldSafeSend.sol")
+        from: path.join(truffleLibraryDirectory, "SafeSend.sol")
       },
       {
         from: path.join(

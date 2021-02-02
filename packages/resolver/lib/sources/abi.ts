@@ -1,10 +1,16 @@
 import path from "path";
 import { ContractObject } from "@truffle/contract-schema/spec";
 import { generateSolidity } from "abi-to-sol";
+import { ResolverSource } from "../source";
 
-import { FS } from "./fs";
+export class ABI {
 
-export class ABI extends FS {
+  wrappedSource: ResolverSource;
+
+  constructor(wrappedSource: ResolverSource) {
+    this.wrappedSource = wrappedSource;
+  }
+
   // requiring artifacts is out of scope for this ResolverSource
   // just return `null` here and let another ResolverSource handle it
   require(): ContractObject | null {
@@ -19,8 +25,8 @@ export class ABI extends FS {
       return { filePath, body };
     }
 
-    const resolution = await super.resolve(importPath, importedFrom);
-    if (!resolution.body) {
+    const resolution = await this.wrappedSource.resolve(importPath, importedFrom);
+    if (resolution.body === undefined) {
       return { filePath, body };
     }
 
@@ -42,15 +48,23 @@ export class ABI extends FS {
         filePath,
         body: soliditySource
       };
-    } catch (e) {
+    } catch (_) {
+      //we use this not-quite-empty Solidity to avoid warnings
+      //pragma statement introduced in 0.4.0 so can't go earlier
+      //than that :)
       const emptySolidity = `
         // SPDX-License-Identifier: MIT
-        pragma solidity >0.0.0;
+        pragma solidity >=0.4.0;
       `;
       return {
         filePath,
         body: emptySolidity
       };
     }
+  }
+
+  async resolveDependencyPath(importPath: string, dependencyPath: string) {
+    //just defer to wrapped source
+    return await this.wrappedSource.resolveDependencyPath(importPath, dependencyPath);
   }
 }

@@ -2,7 +2,7 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:definitions:nameRecords");
 
 import gql from "graphql-tag";
-import camelCase from "camel-case";
+import { camelCase } from "change-case";
 import { plural } from "pluralize";
 
 import { Definition, CollectionName } from "./types";
@@ -64,9 +64,9 @@ export const nameRecords: Definition<"nameRecords"> = {
       },
       history: {
         async resolve(
-          {id, resource, previous},
-          {limit, includeSelf = false},
-          {workspace}
+          { id, resource, previous },
+          { limit, includeSelf = false },
+          { workspace }
         ) {
           debug(
             "Resolving NameRecord.history with limit: %s...",
@@ -74,7 +74,7 @@ export const nameRecords: Definition<"nameRecords"> = {
           );
 
           let depth = 0;
-          const nameRecords = includeSelf ? [{id, resource, previous}] : [];
+          const nameRecords = includeSelf ? [{ id, resource, previous }] : [];
 
           debug("previous %o", previous);
           while (previous && (typeof limit !== "number" || depth < limit)) {
