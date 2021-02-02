@@ -24,15 +24,20 @@ function checkVyper() {
           if (err) {
             return reject(`${colors.red("Error executing vyper:")}\n${stderr}`);
           }
-          const version = stdout.trim();
+          const version = normalizeVersion(stdout.trim());
           resolve({ version, json: false });
         });
       } else {
-        const version = stdout.trim();
+        const version = normalizeVersion(stdout.trim());
         resolve({ version, json: true });
       }
     });
   });
+}
+
+//HACK: alters prerelease versions so semver can understand them
+function normalizeVersion(version) {
+  return version.replace(/^(\d+\.\d+\.\d+)b(\d+)/, "$1-beta.$2");
 }
 
 // Execute vyper for single source file
