@@ -9,7 +9,7 @@ const partition = require("lodash.partition");
 //from compile-solidity/run.js, so be warned...
 //(some has since been factored into compile-common, but not all)
 
-function compileJson({ sources: rawSources, options, version }) {
+function compileJson({ sources: rawSources, options, version, command }) {
   const compiler = { name: "vyper", version };
 
   const {
@@ -62,7 +62,8 @@ function compileJson({ sources: rawSources, options, version }) {
 
   // perform compilation
   const rawCompilerOutput = invokeCompiler({
-    compilerInput
+    compilerInput,
+    command
   });
   debug("rawCompilerOutput: %O", rawCompilerOutput);
 
@@ -107,14 +108,14 @@ function compileJson({ sources: rawSources, options, version }) {
   return { compilations: [compilation] };
 }
 
-function invokeCompiler({ compilerInput }) {
+function invokeCompiler({ compilerInput, command }) {
   const inputString = JSON.stringify(compilerInput);
-  const outputString = execVyperJson(inputString);
+  const outputString = execVyperJson(inputString, command);
   return JSON.parse(outputString);
 }
 
-function execVyperJson(inputString) {
-  return execSync("vyper-json", {
+function execVyperJson(inputString, command) {
+  return execSync(command, {
     input: inputString,
     maxBuffer: 1024 * 1024 * 10 //I guess?? copied from compile-solidity
   });
