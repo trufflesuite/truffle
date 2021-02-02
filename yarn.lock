@@ -14614,7 +14614,7 @@ ipfs-grpc-server@^0.1.2:
     protobufjs "^6.10.2"
     ws "^7.3.1"
 
-ipfs-http-client@^44.0.0, ipfs-http-client@^44.0.3, ipfs-http-client@^44.3.0:
+ipfs-http-client@^44.0.0, ipfs-http-client@^44.0.3:
   version "44.3.0"
   resolved "https://registry.yarnpkg.com/ipfs-http-client/-/ipfs-http-client-44.3.0.tgz#30921a27b480de7015d555049092209a3832d34f"
   integrity sha512-oGlD2GkyisCrRPgJYrpo6TYA5VZneCoazEaaKxc1fyGd9TG0Fvc/nBuwW6jB6I5CR78z1JwKr/71QlvZL4jDNg==

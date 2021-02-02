@@ -1,6 +1,5 @@
 import CID from "cids";
 import * as Preserve from "@truffle/preserve";
-import { StorageProposalResult } from "./storage";
 import { dealstates, terminalStates } from "./dealstates";
 
 export interface WaitOptions {

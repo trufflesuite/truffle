@@ -19,10 +19,10 @@ export interface ConstructorOptions
 
 export interface PreserveOptions extends Preserve.Recipes.PreserveOptions {
   target: Preserve.Target;
-  labels: Map<string, any>;
+  results: Map<string, any>;
 }
 
-export interface Label {
+export interface Result {
   dealCid: CID;
 }
 
@@ -39,9 +39,8 @@ export class Recipe implements Preserve.Recipe {
     this.address = options.address || defaultAddress;
   }
 
-  async *preserve(options: PreserveOptions): Preserve.Process<Label> {
-    const { target, labels, controls } = options;
-
+  async *preserve(options: PreserveOptions): Preserve.Process<Result> {
+    const { target, results, controls } = options;
     const { log } = controls;
 
     if (Preserve.Targets.Sources.isContent(target.source)) {
@@ -50,7 +49,7 @@ export class Recipe implements Preserve.Recipe {
       );
     }
 
-    const { cid } = labels.get("@truffle/preserve-to-ipfs");
+    const { cid } = results.get("@truffle/preserve-to-ipfs");
 
     yield* log({ message: "Preserving to Filecoin..." });
 

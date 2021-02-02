@@ -44,7 +44,7 @@ export async function* proposeStorageDeal(
     message: "Proposing storage deal..."
   });
 
-  const unknown = yield* task.declare({
+  const dealCidResolution = yield* task.declare({
     identifier: "Deal CID"
   });
 
@@ -70,7 +70,7 @@ export async function* proposeStorageDeal(
 
   const dealCid = new CID(result["/"]);
 
-  yield* unknown.resolve({ payload: chalk.bold(dealCid.toString()) });
+  yield* dealCidResolution.resolve({ payload: chalk.bold(dealCid.toString()) });
 
   yield* task.succeed();
 

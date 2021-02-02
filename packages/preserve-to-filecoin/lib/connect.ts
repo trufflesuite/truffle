@@ -15,10 +15,8 @@ export type LotusClient = any;
 export async function* connect(
   options: ConnectOptions
 ): Preserve.Process<LotusClient> {
-  const {
-    address,
-    controls: { step }
-  } = options;
+  const { address, controls } = options;
+  const { step } = controls;
 
   const task = yield* step({
     message: `Connecting to Filecoin node at ${address}...`

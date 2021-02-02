@@ -1,11 +1,9 @@
-const IpfsHttpClient: any = require("ipfs-http-client");
-
 import * as Preserve from "@truffle/preserve";
 import * as PreserveToIpfs from "@truffle/preserve-to-ipfs";
 
-import { Recipe } from "..";
-import { LotusClient, createLotusClient } from "../connect";
-import { getDealState } from "../wait";
+import { Recipe } from "../lib";
+import { LotusClient, createLotusClient } from "../lib/connect";
+import { getDealState } from "../lib/wait";
 
 interface Test {
   name: string;
@@ -145,7 +143,7 @@ describe("preserve", () => {
             IPFSConfig.apiPath
         });
 
-        const { cid } = await Preserve.Controllers.run(
+        const { cid } = await Preserve.Control.run(
           {
             method: ipfsRecipe.preserve.bind(ipfsRecipe)
           },
@@ -154,13 +152,13 @@ describe("preserve", () => {
 
         const recipe = new Recipe({ address });
 
-        const { dealCid } = await Preserve.Controllers.run(
+        const { dealCid } = await Preserve.Control.run(
           {
             method: recipe.preserve.bind(recipe)
           },
           {
             target: target,
-            labels: new Map([["@truffle/preserve-to-ipfs", { cid }]])
+            results: new Map([["@truffle/preserve-to-ipfs", { cid }]])
           }
         );
 
