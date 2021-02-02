@@ -24,20 +24,26 @@ function checkVyper() {
           if (err) {
             return reject(`${colors.red("Error executing vyper:")}\n${stderr}`);
           }
-          const version = stdout.trim();
+          const version = normalizeVersion(stdout.trim());
           resolve({ version, json: false });
         });
       } else {
-        const version = stdout.trim();
+        const version = normalizeVersion(stdout.trim());
         resolve({ version, json: true });
       }
     });
   });
 }
 
+//HACK: alters prerelease versions so semver can understand them
+function normalizeVersion(version) {
+  return version.replace(/^(\d+\.\d+\.\d+)b(\d+)/, "$1-beta.$2");
+}
+
 // Execute vyper for single source file
 function execVyper(options, sourcePath, version, callback) {
-  const formats = ["abi", "bytecode", "bytecode_runtime", "source_map"];
+  const formats = ["abi", "bytecode", "bytecode_runtime"];
+  debug("version: %s", version);
   if (
     semver.satisfies(version, ">=0.1.0-beta.7", {
       loose: true,
@@ -75,6 +81,9 @@ function execVyper(options, sourcePath, version, callback) {
       );
 
     var outputs = stdout.split(/\r?\n/);
+
+    debug("formats: %O", formats);
+    debug("outputs: %O", outputs);
 
     const compiledContract = outputs.reduce((contract, output, index) => {
       return Object.assign(contract, { [formats[index]]: output });
@@ -117,6 +126,8 @@ async function compileNoJson({ paths: sources, options, version }) {
         ) {
           if (error) return reject(error);
 
+          debug("compiledContract: %O", compiledContract);
+
           // remove first extension from filename
           const extension = path.extname(sourcePath);
           const basename = path.basename(sourcePath, extension);
@@ -128,6 +139,9 @@ async function compileNoJson({ paths: sources, options, version }) {
               : path.basename(basename, path.extname(basename));
 
           const sourceContents = readSource(sourcePath);
+          const deployedSourceMap = compiledContract.source_map //there is no constructor source map
+            ? JSON.parse(compiledContract.source_map)
+            : undefined;
 
           const contractDefinition = {
             contractName: contractName,
@@ -142,7 +156,7 @@ async function compileNoJson({ paths: sources, options, version }) {
               bytes: compiledContract.bytecode_runtime.slice(2), //remove "0x" prefix
               linkReferences: [] //no libraries in Vyper
             },
-            deployedSourceMap: JSON.parse(compiledContract.source_map), //there is no constructor source map
+            deployedSourceMap,
             compiler
           };
 
