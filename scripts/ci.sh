@@ -30,8 +30,8 @@ run_geth() {
 if [ "$INTEGRATION" = true ]; then
 
   sudo add-apt-repository -y ppa:deadsnakes/ppa
-  sudo apt install -y jq
-  sudo apt install -y python3.6 python3.6-dev python3.6-venv
+  sudo add-apt-repository -y ppa:ethereum/ethereum
+  sudo apt install -y jq python3.6 python3.6-dev python3.6-venv solc
   wget https://bootstrap.pypa.io/get-pip.py
   sudo python3.6 get-pip.py
   sudo pip3 install vyper
