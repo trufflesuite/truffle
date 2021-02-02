@@ -20,16 +20,35 @@ function checkVyper() {
   return new Promise((resolve, reject) => {
     exec("vyper-json --version", function (err, stdout, _stderr) {
       if (err) {
+        //vyper-json not available, check vyper
         exec("vyper --version", function (err, stdout, stderr) {
           if (err) {
+            //error: neither vyper nor vyper-json available
             return reject(`${colors.red("Error executing vyper:")}\n${stderr}`);
           }
           const version = normalizeVersion(stdout.trim());
-          resolve({ version, json: false });
+          if (
+            semver.satisfies(version, ">=0.2.5", {
+              loose: true,
+              includePrerelase: true
+            })
+          ) {
+            //if version is >=0.2.5, we can still use JSON via
+            //vyper --standard-json
+            resolve({
+              version,
+              json: true,
+              jsonCommand: "vyper --standard-json"
+            });
+          } else {
+            //otherwise, we're stuck using vyper w/o JSON
+            resolve({ version, json: false });
+          }
         });
       } else {
+        //no error: vyper-json is available
         const version = normalizeVersion(stdout.trim());
-        resolve({ version, json: true });
+        resolve({ version, json: true, jsonCommand: "vyper-json" });
       }
     });
   });
@@ -199,7 +218,7 @@ const Compile = {
     }
 
     Compile.display(vyperFiles, options);
-    const { version, json: useJson } = await checkVyper();
+    const { version, json: useJson, jsonCommand } = await checkVyper();
     if (!useJson) {
       //it might be possible to handle this case by writing the sources
       //to a temporary directory (and possibly using some sort of remapping--
@@ -208,7 +227,7 @@ const Compile = {
       throw new Error("Compiling literal Vyper sources requires vyper-json");
     }
 
-    return compileJson({ sources, options, version });
+    return compileJson({ sources, options, version, command: jsonCommand });
   },
 
   async sourcesWithDependencies({ paths = [], options }) {
@@ -246,7 +265,7 @@ const Compile = {
     //ourselves, rather than going through Compile.sources()
     Compile.display(compilationTargets, options);
 
-    const { version, json: useJson } = await checkVyper();
+    const { version, json: useJson, jsonCommand } = await checkVyper();
 
     if (useJson) {
       return compileJson({
@@ -254,7 +273,8 @@ const Compile = {
         options: options.with({
           compilationTargets
         }),
-        version
+        version,
+        command: jsonCommand
       });
     } else {
       return await compileNoJson({
