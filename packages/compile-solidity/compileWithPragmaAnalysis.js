@@ -107,18 +107,14 @@ const compileWithPragmaAnalysis = async ({ paths, options }) => {
       });
     }
 
-    if (versionsAndSources[newestSatisfyingVersion]) {
-      versionsAndSources[newestSatisfyingVersion] = {
-        ...versionsAndSources[newestSatisfyingVersion],
-        ...allSources
-      };
-    } else {
-      versionsAndSources[newestSatisfyingVersion] = allSources;
-    }
+    versionsAndSources[newestSatisfyingVersion] = {
+      ...versionsAndSources[newestSatisfyingVersion],
+      ...allSources
+    };
   }
 
   const compilations = [];
-  for (const compilerVersion of Object.keys(versionsAndSources)) {
+  for (const compilerVersion in versionsAndSources) {
     const compilationOptions = Object.assign(
       {},
       { compilers: cloneDeep(options.compilers) }
