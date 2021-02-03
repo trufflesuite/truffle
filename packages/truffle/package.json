@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "app-module-path": "^2.2.0",
-    "ganache-core": "2.12.0-tezos.0 ",
+    "ganache-core": "2.12.0-tezos.0",
     "mocha": "5.2.0",
     "original-require": "1.0.1"
   },

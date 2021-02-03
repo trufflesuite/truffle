@@ -27,7 +27,7 @@
     "@types/node": "^12.6.2",
     "chai": "4.2.0",
     "debug": "^4.1.1",
-    "ganache-core": "2.12.0-tezos.0 ",
+    "ganache-core": "2.12.0-tezos.0",
     "mocha": "5.2.0",
     "require-nocache": "^1.0.0",
     "temp": "^0.8.3",

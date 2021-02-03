@@ -21,7 +21,7 @@
     "web3": "1.2.1"
   },
   "devDependencies": {
-    "ganache-core": "2.12.0-tezos.0 ",
+    "ganache-core": "2.12.0-tezos.0",
     "mocha": "5.2.0"
   },
   "keywords": [
