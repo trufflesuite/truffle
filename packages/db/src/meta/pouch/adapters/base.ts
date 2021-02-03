@@ -12,7 +12,7 @@ import type {
   MutationPayload,
   MutableCollectionName
 } from "@truffle/db/meta/collections";
-import { generateId } from "@truffle/db/meta/ids";
+import * as Id from "@truffle/db/meta/id";
 import type { Workspace, SavedInput, Historical } from "@truffle/db/meta/data";
 
 import type { Definition, Definitions } from "@truffle/db/meta/pouch/types";
@@ -24,6 +24,7 @@ import type { Definition, Definitions } from "@truffle/db/meta/pouch/types";
 export abstract class Databases<C extends Collections> implements Workspace<C> {
   private collections: CollectionDatabases<C>;
   private definitions: Definitions<C>;
+  private generateId: Id.GenerateId<C>;
 
   private ready: Promise<void>;
 
@@ -31,6 +32,7 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
     this.setup(options.settings);
 
     this.definitions = options.definitions;
+    this.generateId = Id.forDefinitions(this.definitions);
 
     PouchDB.plugin(PouchDBDebug);
     PouchDB.plugin(PouchDBFind);
@@ -169,7 +171,7 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
     log("Adding...");
 
     const resourceInputIds = input[collectionName].map(resourceInput =>
-      this.generateId(collectionName, resourceInput)
+      this.generateId<N>(collectionName, resourceInput)
     );
 
     const resourceInputById = input[collectionName]
@@ -294,23 +296,6 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
     );
 
     log("Removed.");
-  }
-
-  private generateId<N extends CollectionName<C>>(
-    collectionName: N,
-    input: MutationInput<C, N>[N][number]
-  ): string {
-    const { idFields } = this.definitions[collectionName];
-
-    return generateId(
-      idFields.reduce(
-        (obj, field) => ({
-          ...obj,
-          [field]: input[field]
-        }),
-        {}
-      )
-    );
   }
 }
 

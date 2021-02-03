@@ -10,7 +10,7 @@ const bytecode = {
   linkReferences: []
 };
 
-const id = generateId(bytecode);
+const id = generateId("bytecodes", bytecode);
 
 const memoryAdapter = {
   name: "memory" as const

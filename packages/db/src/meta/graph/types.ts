@@ -11,6 +11,7 @@ import type {
   CollectionNameStyledAs,
   MutableCollectionName
 } from "@truffle/db/meta/collections";
+import * as Id from "@truffle/db/meta/id";
 import type { Workspace } from "@truffle/db/meta/data";
 
 /**
@@ -23,15 +24,18 @@ export type Definitions<C extends Collections> = {
 /**
  * @category Definitions
  */
-export type Definition<C extends Collections, N extends CollectionName<C>> = {
+export type Definition<
+  C extends Collections,
+  N extends CollectionName<C>
+> = Id.Definition<C, N> & {
   typeDefs: graphql.DocumentNode;
   resolvers?: IResolvers<any, Context<C>>;
   names: {
     [S in CollectionNameStyle]: CollectionNameStyledAs<S, C, N>;
   };
 } & (N extends MutableCollectionName<C>
-  ? { mutable: true }
-  : { mutable?: false });
+    ? { mutable: true }
+    : { mutable?: false });
 
 export interface Context<C extends Collections> {
   workspace: Workspace<C>;

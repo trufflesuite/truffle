@@ -5,7 +5,13 @@ import type TruffleConfig from "@truffle/config";
 import type { ApolloServer } from "apollo-server";
 
 import * as Meta from "@truffle/db/meta";
-import { Collections, Db, definitions } from "@truffle/db/resources";
+import {
+  Collections,
+  CollectionName,
+  Input,
+  Db,
+  definitions
+} from "@truffle/db/resources";
 
 /**
  * Options for connecting to @truffle/db
@@ -52,5 +58,17 @@ export const connect: (options: TruffleConfig | ConnectOptions) => Db =
 
 export const serve: (options: TruffleConfig | ConnectOptions) => ApolloServer =
   system.serve;
+
+export type StrictIdInput<N extends CollectionName> = Meta.Id.StrictIdInput<
+  Collections,
+  N
+>;
+
+export type GenerateId = <N extends CollectionName>(
+  collectionName: N,
+  input: StrictIdInput<N> | Input<N>
+) => string;
+
+export const generateId: GenerateId = system.generateId;
 
 export const { schema, attach, resources, forDb } = system;

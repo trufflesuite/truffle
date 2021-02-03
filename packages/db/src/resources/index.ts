@@ -50,6 +50,7 @@ export {
   NamedCollectionName,
   Input,
   Resource,
+  IdFields,
   IdObject,
   toIdObject,
   Workspace

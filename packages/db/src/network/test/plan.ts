@@ -1,7 +1,7 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:migrate:networkGenealogies:test:plan");
 
-import { generateId } from "@truffle/db/meta";
+import { generateId } from "@truffle/db/system";
 import { IdObject } from "@truffle/db/resources";
 import { Batch, Model } from "test/arbitraries/networks";
 
@@ -34,9 +34,7 @@ export const plan = (options: {
       name,
       networkId,
       getBlockByNumber: getBatchBlockByNumber
-    } = model.networks[
-      batch.descendantIndex
-    ];
+    } = model.networks[batch.descendantIndex];
 
     const genesis = {
       name,
@@ -63,7 +61,7 @@ export const plan = (options: {
             ? "earlier"
             : "later";
 
-        const id = generateId({ networkId, historicBlock });
+        const id = generateId("networks", { networkId, historicBlock });
 
         switch (inputComparison) {
           case "equal": {

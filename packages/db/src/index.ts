@@ -102,6 +102,8 @@
  *   - An input type (exported as
  *     [[Resources.Input | `Resources.Input<"<collectionName>">`]]; for
  *     new records)
+ *   - A subset list of fields from its input type whose values strictly
+ *     compose to form a resource's content-addressable ID.
  *   - Whether its resources are mutable (**note**: currently, only
  *     `"projectNames"` resources are mutable)
  *   - Whether its resources are named (meaning that resources of the same
@@ -155,9 +157,13 @@
  *   - [[Process.resources]], a set of four generator functions that encode
  *     logic for storing and retrieving resources for a given `collectionName`.
  *
- *   - [[Process.Run.forDb]], to construct an `async` helper that facilitates
+ *   - [[Process.Run.forDb()]], to construct an `async` helper that facilitates
  *     requests/responses from/to the above generator functions against a given
  *     [[Db]] instance.
+ *
+ *   - [[generateId | generateId()]], to predict the ID for a given resource
+ *     input. This can be useful for determining how to query for additional
+ *     information about entities with known properties.
  *
  * In addition, please see the [[Resources]] module for handy helper types for
  * dealing with @truffle/db entities.
@@ -286,6 +292,14 @@ export const connect = _System.connect;
  * for more information.
  */
 export const serve = _System.serve;
+
+/**
+ * Compute an ID for a given collection name and input. This accepts either
+ * a full [[Resources.Input | `Resources.Input<"<collectionName>">`]]
+ * representation or an object containing only the relevant subset of
+ * [[Resources.IdFields | `Resources.IdFields<"<collectionName>">`]].
+ */
+export const generateId = _System.generateId;
 
 /**
  * # GraphQL-related exports for @truffle/db

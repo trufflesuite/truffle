@@ -3,6 +3,7 @@ export type Collections = {
     resource: {
       id: string;
     };
+    idFields: string[];
     input: object;
     names: {
       [S in CollectionNameStyle]: string;
@@ -91,6 +92,11 @@ export type Input<
   C extends Collections = Collections,
   N extends CollectionName<C> = CollectionName<C>
 > = CollectionProperty<"input", C, N>;
+
+export type IdFields<
+  C extends Collections = Collections,
+  N extends CollectionName<C> = CollectionName<C>
+> = CollectionProperty<"idFields", C, N>;
 
 export type FilteredCollectionName<C extends Collections, F = undefined> = {
   [K in CollectionName<C>]: Resource<C, K, F> extends never ? never : K;

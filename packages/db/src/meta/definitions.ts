@@ -5,6 +5,7 @@ import type { Collections, CollectionName } from "./collections";
 import type * as Graph from "./graph";
 import type * as Pouch from "./pouch";
 import type * as Process from "./process";
+import type * as Id from "./id";
 
 /**
  * Definitions type for whole meta system
@@ -27,4 +28,7 @@ export type Definitions<C extends Collections> = {
 export type Definition<
   C extends Collections,
   N extends CollectionName<C>
-> = Graph.Definition<C, N> & Process.Definition<C, N> & Pouch.Definition<C, N>;
+> = Graph.Definition<C, N> &
+  Process.Definition<C, N> &
+  Pouch.Definition<C, N> &
+  Id.Definition<C, N>;

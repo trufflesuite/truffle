@@ -5,7 +5,7 @@ import path from "path";
 import gql from "graphql-tag";
 import { connect } from "@truffle/db";
 import { ArtifactsLoader } from "./artifacts";
-import { generateId } from "@truffle/db/meta";
+import { generateId } from "@truffle/db/system";
 import Migrate from "@truffle/migrate";
 import { Environment } from "@truffle/environment";
 import Config from "@truffle/config";
@@ -453,7 +453,7 @@ describe("Compilation", () => {
     await Migrate.run(migrationConfig);
     await Promise.all(
       artifacts.map(async (contract, index) => {
-        let sourceId = generateId({
+        let sourceId = generateId("sources", {
           contents: contract["source"],
           sourcePath: contract["sourcePath"]
         });
@@ -464,9 +464,9 @@ describe("Compilation", () => {
         const shimCallBytecodeObject = Shims.LegacyToNew.forBytecode(
           contract["deployedBytecode"]
         );
-        let bytecodeId = generateId(shimBytecodeObject);
+        let bytecodeId = generateId("bytecodes", shimBytecodeObject);
         bytecodeIds.push({ id: bytecodeId });
-        let callBytecodeId = generateId(shimCallBytecodeObject);
+        let callBytecodeId = generateId("bytecodes", shimCallBytecodeObject);
         callBytecodeIds.push({ id: callBytecodeId });
 
         const networksPath = fse
@@ -493,7 +493,7 @@ describe("Compilation", () => {
             hash: transaction.blockHash
           };
 
-          const netId = generateId({
+          const netId = generateId("networks", {
             networkId: networkId,
             historicBlock: historicBlock
           });
@@ -504,7 +504,7 @@ describe("Compilation", () => {
             historicBlock: historicBlock,
             links: links
           });
-          const contractInstanceId = generateId({
+          const contractInstanceId = generateId("contractInstances", {
             network: {
               id: netId
             },
@@ -538,11 +538,11 @@ describe("Compilation", () => {
       })
     );
 
-    expectedSolcCompilationId = generateId({
+    expectedSolcCompilationId = generateId("compilations", {
       compiler: artifacts[0].compiler,
       sources: [sourceIds[0], sourceIds[1], sourceIds[2]]
     });
-    expectedVyperCompilationId = generateId({
+    expectedVyperCompilationId = generateId("compilations", {
       compiler: artifacts[3].compiler,
       sources: [sourceIds[3]]
     });
@@ -551,7 +551,7 @@ describe("Compilation", () => {
       { id: expectedVyperCompilationId }
     );
 
-    expectedProjectId = generateId({
+    expectedProjectId = generateId("projects", {
       directory: compilationConfig["working_directory"]
     });
 
@@ -584,7 +584,7 @@ describe("Compilation", () => {
       contracts: [previousContract]
     });
 
-    previousContractExpectedId = generateId({
+    previousContractExpectedId = generateId("contracts", {
       name: "Migrations",
       abi: { json: JSON.stringify(artifacts[1].abi) }
     });
@@ -761,7 +761,7 @@ describe("Compilation", () => {
     let contractIds = [];
 
     for (let index in artifacts) {
-      let expectedId = generateId({
+      let expectedId = generateId("contracts", {
         name: artifacts[index].contractName,
         abi: { json: JSON.stringify(artifacts[index].abi) },
         processedSource: {

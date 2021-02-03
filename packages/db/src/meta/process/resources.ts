@@ -12,7 +12,7 @@ import type {
   Input,
   Resource
 } from "@truffle/db/meta/collections";
-import { IdObject, toIdObject } from "@truffle/db/meta/ids";
+import { IdObject, toIdObject } from "@truffle/db/meta/id";
 import type { Definitions, Process } from "./types";
 
 export interface ResourceProcessorsOptions<C extends Collections> {

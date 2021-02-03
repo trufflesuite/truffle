@@ -10,14 +10,15 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:meta");
 
-export { IdObject, toIdObject, generateId } from "./ids";
+export { IdObject, toIdObject } from "./id";
 export {
   Collections,
   CollectionName,
   NamedCollectionName,
   MutableCollectionName,
-  Input,
   Resource,
+  Input,
+  IdFields,
   MutableResource,
   NamedResource
 } from "./collections";
@@ -37,6 +38,9 @@ export { Process };
 import * as Batch from "./batch";
 export { Batch };
 
+import * as Id from "./id";
+export { Id };
+
 import { Collections } from "./collections";
 import { Definitions } from "./definitions";
 import { forAttachAndSchema } from "./interface";
@@ -44,6 +48,7 @@ import { forAttachAndSchema } from "./interface";
 export const forDefinitions = <C extends Collections>(
   definitions: Definitions<C>
 ) => {
+  const generateId = Id.forDefinitions(definitions);
   const attach = Pouch.forDefinitions(definitions);
   const schema = Graph.forDefinitions(definitions);
 
@@ -55,6 +60,7 @@ export const forDefinitions = <C extends Collections>(
   const { forDb, resources } = Process.forDefinitions(definitions);
 
   return {
+    generateId,
     schema,
     attach,
     connect,

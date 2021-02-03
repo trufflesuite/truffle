@@ -83,7 +83,7 @@ describe("Contract", () => {
   });
 
   test("can be queried", async () => {
-    expectedId = generateId({
+    expectedId = generateId("contracts", {
       name: Migrations.contractName,
       abi: { json: JSON.stringify(Migrations.abi) },
       processedSource: { index: 0 },
@@ -103,7 +103,7 @@ describe("Contract", () => {
   });
 
   test("can be queried via compilation directly", async () => {
-    expectedId = generateId({
+    expectedId = generateId("contracts", {
       name: Migrations.contractName,
       abi: { json: JSON.stringify(Migrations.abi) },
       processedSource: { index: 0 },
@@ -136,7 +136,7 @@ describe("Contract", () => {
   });
 
   test("can be queried via compilation processedSources", async () => {
-    expectedId = generateId({
+    expectedId = generateId("contracts", {
       name: Migrations.contractName,
       abi: { json: JSON.stringify(Migrations.abi) },
       processedSource: { index: 0 },
