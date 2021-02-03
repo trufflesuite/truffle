@@ -5,6 +5,7 @@ import gql from "graphql-tag";
 
 import type { Definition } from "@truffle/db/resources/types";
 import { resolveNameRecords } from "./resolveNameRecords";
+import { resolveContractInstances } from "./resolveContractInstances";
 
 export const projects: Definition<"projects"> = {
   names: {
@@ -26,6 +27,15 @@ export const projects: Definition<"projects"> = {
 
       network(name: String!): Network
       networks: [Network]!
+
+      contractInstance(
+        contract: ResourceNameInput!
+        network: ResourceNameInput!
+      ): ContractInstance
+      contractInstances(
+        contract: ResourceNameInput
+        network: ResourceNameInput
+      ): [ContractInstance]
 
       resolve(type: String, name: String): [NameRecord] # null means unknown type
     }
@@ -123,6 +133,36 @@ export const projects: Definition<"projects"> = {
           );
 
           debug("Resolved Project.contracts.");
+          return result;
+        }
+      },
+      contractInstance: {
+        async resolve(project, inputs, context, info) {
+          debug("Resolving Project.contractInstance...");
+
+          const [result] = await resolveContractInstances(
+            project,
+            inputs,
+            context,
+            info
+          );
+
+          debug("Resolved Project.contractInstance.");
+          return result;
+        }
+      },
+      contractInstances: {
+        async resolve(project, inputs, context, info) {
+          debug("Resolving Project.contractInstances...");
+
+          const result = await resolveContractInstances(
+            project,
+            inputs,
+            context,
+            info
+          );
+
+          debug("Resolved Project.contractInstances.");
           return result;
         }
       }

@@ -60,6 +60,10 @@ class DefinitionsSchema<C extends Collections> {
         id: ID!
       }
 
+      input ResourceNameInput {
+        name: String!
+      }
+
       input TypedResourceReferenceInput {
         id: ID!
         type: String!
