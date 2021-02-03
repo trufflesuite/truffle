@@ -8,6 +8,7 @@ const handlers = require("./handlers");
 const override = require("./override");
 const reformat = require("./reformat");
 const { formatters } = require("web3-core-helpers"); //used for reproducing web3's behavior
+const ethers = require("ethers");
 
 const execute = {
   // -----------------------------------  Helpers --------------------------------------------------
@@ -535,17 +536,14 @@ const execute = {
     return execute.sendTransactionManual(web3, params, promiEvent);
   },
 
+  //this is less manual now, it uses ethers, whew
+  //(it's still more manual than using web3)
   sendTransactionManual: async function (web3, params, promiEvent) {
-    //note: to head off any potential problems with Webpack (contract *has* to
-    //work on web!), I'm going to resort to manual promise creation rather than
-    //using util.promisify :-/
     debug("executing manually!");
-    const send = rpc =>
-      new Promise((accept, reject) =>
-        web3.currentProvider.send(rpc, (err, result) =>
-          err ? reject(err) : accept(result)
-        )
-      );
+    //set up ethers provider
+    const ethersProvider = new ethers.providers.Web3Provider(
+      web3.currentProvider
+    );
     //let's clone params
     let transaction = {};
     for (let key in params) {
@@ -555,41 +553,88 @@ const execute = {
       transaction.from != undefined
         ? transaction.from
         : web3.eth.defaultAccount;
+    //now let's have web3 check our inputs
+    transaction = formatters.inputTransactionFormatter(transaction); //warning, not a pure fn
+    //...but ethers uses gasLimit instead of gas like web3
+    transaction.gasLimit = transaction.gas;
+    delete transaction.gas;
     //now: if the from address is in the wallet, web3 will sign the transaction before
     //sending, so we have to account for that
     const account = web3.eth.accounts.wallet[transaction.from];
-    let rpcPromise;
+    let txHash, receipt;
+    const handleError = error => {
+      debug("error: %O", error);
+      if (error.data && Object.keys(error.data).length === 3) {
+        //error.data will have 3 keys: stack, name, and the txHash
+        const transactionHash = Object.keys(error.data).find(
+          key => key !== "stack" && key !== "name"
+        );
+        return { txHash: transactionHash };
+      } else if (error.transactionHash && error.receipt) {
+        return {
+          txHash: error.transactionHash,
+          receipt: error.receipt
+        };
+      } else {
+        throw error; //rethrow unexpected errors
+      }
+    };
     if (account) {
-      const rawTx = (
-        await web3.eth.accounts.sign(transaction, account.privateKey)
-      ).rawTransaction;
-      rpcPromise = send({
-        jsonrpc: "2.0",
-        id: Date.now(),
-        method: "eth_sendRawTransaction",
-        params: [rawTx]
-      });
+      debug("signing!");
+      //must sign when sending
+      const ethersWallet = new ethers.Wallet(
+        account.privateKey,
+        ethersProvider
+      );
+      try {
+        //send transaction using ethers, then wait for it to be mined
+        //this throws if Ganache has VM errors and it reverts
+        //it also throws on revert more generally, but with a different error...
+        receipt = await (
+          await ethersWallet.sendTransaction(transaction)
+        ).wait();
+        //translate the receipt to web3 format by converting BigNumbers
+        //(note: these are *ethers* BigNumbers) to numbers
+        for (const [key, value] of Object.entries(receipt)) {
+          if (ethers.BigNumber.isBigNumber(value)) {
+            receipt[key] = value.toNumber();
+          }
+        }
+        txHash = receipt.transactionHash;
+      } catch (error) {
+        ({ txHash, receipt } = handleError(error));
+        //if Ganache error we won't have the receipt and will need
+        //to get it separately
+        if (!receipt) {
+          receipt = await web3.eth.getTransactionReceipt(txHash);
+        }
+      }
     } else {
-      //in this case, web3 hasn't checked the validity of our inputs, so we'd better
-      //have it do that before the send
-      transaction = formatters.inputTransactionFormatter(transaction); //warning, not a pure fn
-      rpcPromise = send({
-        jsonrpc: "2.0",
-        id: Date.now(),
-        method: "eth_sendTransaction",
-        params: [transaction]
-      });
+      //use eth_sendTransaction, no signing
+      //(note: earlier I tried using getSigner().sendTransaction()
+      //but it didn't work?)
+      //send tx and get hash immediately
+      debug("sending");
+      try {
+        //if Ganache has VM errors turned on, this will throw on revert
+        txHash = await ethersProvider
+          .getSigner(transaction.from)
+          .sendUncheckedTransaction(transaction);
+      } catch (error) {
+        //but, we can get the txHash from the error
+        //(this function also rethrows unexpected errors)
+        ({ txHash } = handleError(error));
+      }
+      //wait for it to be mined
+      debug("waiting");
+      await ethersProvider.waitForTransaction(txHash);
+      //get receipt via web3
+      receipt = await web3.eth.getTransactionReceipt(txHash);
     }
-    const rpcReturn = await rpcPromise;
-    const txHash = rpcReturn.result; //note: this should work even in Ganache default mode!
     debug("txHash: %s", txHash);
-    //this is unlike for calls, where default mode poses more of a problem
     promiEvent.setTransactionHash(txHash); //this here is why I wrote this function @_@
-    const receipt = await web3.eth.getTransactionReceipt(txHash);
-    if (rpcReturn.error) {
-      //appears to be how web3 handles errors in Ganache's default mode??
-      throw new Error("Returned error: " + rpcReturn.error.message);
-    }
+    //NOTE: we'll get the receipt again even if we only got it once to be sure
+    //that it's in web3's format (not gonna try and translate)
     if (receipt.status) {
       if (!transaction.to) {
         //in the deployment case, web3 might error even when technically successful @_@
