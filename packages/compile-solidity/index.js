@@ -54,6 +54,8 @@ const Compile = {
     options.logger = options.logger || console;
     options.contracts_directory = options.contracts_directory || process.cwd();
 
+    debug("paths: %O", paths);
+
     expect.options(options, [
       "working_directory",
       "contracts_directory",
@@ -62,6 +64,7 @@ const Compile = {
 
     options = Config.default().merge(options);
 
+    debug("invoking profiler");
     const { allSources, compilationTargets } = await Profiler.requiredSources(
       options.with({
         paths,
@@ -69,20 +72,19 @@ const Compile = {
         resolver: options.resolver
       })
     );
+    debug("allSources: %O", allSources);
+    debug("compilationTargets: %O", compilationTargets);
 
     // we can exit if there are no Solidity files to compile since
     // it indicates that we only have Vyper-related JSON
-    const solidityTargets = compilationTargets.filter(fileName => {
-      return fileName.endsWith(".sol");
-    });
-    if (compilationTargets.length !== 0 && solidityTargets.length === 0) {
+    const solidityTargets = compilationTargets.filter(fileName =>
+      fileName.endsWith(".sol")
+    );
+    if (solidityTargets.length === 0) {
       return { compilations: [] };
     }
-    const hasTargets = compilationTargets.length;
 
-    hasTargets
-      ? Compile.display(compilationTargets, options)
-      : Compile.display(allSources, options);
+    Compile.display(compilationTargets, options);
 
     // when there are no sources, don't call run
     if (Object.keys(allSources).length === 0) {

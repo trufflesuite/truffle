@@ -23,6 +23,8 @@ const normalizeOptions = options => {
   // Certain situations result in `{}` as a value for compilationTargets
   // Previous implementations treated any value lacking `.length` as equivalent
   // to `[]`
+  // (This also happens when run() is called from sources(), so
+  // compilationTargets is not passed)
   if (!options.compilationTargets || !options.compilationTargets.length) {
     options.compilationTargets = [];
   }

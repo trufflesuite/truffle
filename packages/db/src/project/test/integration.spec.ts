@@ -1,8 +1,11 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:project:test:integration");
+
 import path from "path";
 import gql from "graphql-tag";
 import { connect } from "@truffle/db";
 import { ArtifactsLoader } from "./artifacts";
-import { generateId } from "@truffle/db/meta";
+import { generateId } from "@truffle/db/system";
 import Migrate from "@truffle/migrate";
 import { Environment } from "@truffle/environment";
 import Config from "@truffle/config";
@@ -360,6 +363,14 @@ const GetWorkspaceCompilation = gql`
       sourceMaps {
         data
       }
+      immutableReferences {
+        astNode
+        bytecode {
+          bytes
+        }
+        length
+        offsets
+      }
     }
   }
 `;
@@ -442,7 +453,7 @@ describe("Compilation", () => {
     await Migrate.run(migrationConfig);
     await Promise.all(
       artifacts.map(async (contract, index) => {
-        let sourceId = generateId({
+        let sourceId = generateId("sources", {
           contents: contract["source"],
           sourcePath: contract["sourcePath"]
         });
@@ -453,9 +464,9 @@ describe("Compilation", () => {
         const shimCallBytecodeObject = Shims.LegacyToNew.forBytecode(
           contract["deployedBytecode"]
         );
-        let bytecodeId = generateId(shimBytecodeObject);
+        let bytecodeId = generateId("bytecodes", shimBytecodeObject);
         bytecodeIds.push({ id: bytecodeId });
-        let callBytecodeId = generateId(shimCallBytecodeObject);
+        let callBytecodeId = generateId("bytecodes", shimCallBytecodeObject);
         callBytecodeIds.push({ id: callBytecodeId });
 
         const networksPath = fse
@@ -482,17 +493,18 @@ describe("Compilation", () => {
             hash: transaction.blockHash
           };
 
-          const netId = generateId({
+          const netId = generateId("networks", {
             networkId: networkId,
             historicBlock: historicBlock
           });
+          debug("netId %o", netId);
           netIds.push({ id: netId });
           migratedNetworks.push({
             networkId: networkId,
             historicBlock: historicBlock,
             links: links
           });
-          const contractInstanceId = generateId({
+          const contractInstanceId = generateId("contractInstances", {
             network: {
               id: netId
             },
@@ -526,11 +538,11 @@ describe("Compilation", () => {
       })
     );
 
-    expectedSolcCompilationId = generateId({
+    expectedSolcCompilationId = generateId("compilations", {
       compiler: artifacts[0].compiler,
       sources: [sourceIds[0], sourceIds[1], sourceIds[2]]
     });
-    expectedVyperCompilationId = generateId({
+    expectedVyperCompilationId = generateId("compilations", {
       compiler: artifacts[3].compiler,
       sources: [sourceIds[3]]
     });
@@ -539,7 +551,7 @@ describe("Compilation", () => {
       { id: expectedVyperCompilationId }
     );
 
-    expectedProjectId = generateId({
+    expectedProjectId = generateId("projects", {
       directory: compilationConfig["working_directory"]
     });
 
@@ -572,7 +584,7 @@ describe("Compilation", () => {
       contracts: [previousContract]
     });
 
-    previousContractExpectedId = generateId({
+    previousContractExpectedId = generateId("contracts", {
       name: "Migrations",
       abi: { json: JSON.stringify(artifacts[1].abi) }
     });
@@ -629,7 +641,7 @@ describe("Compilation", () => {
         let migratedArtifact = JSON.parse(migratedArtifactPath);
         migratedArtifact.networks = {};
         migratedArtifact.updatedAt = "";
-        migratedArtifact.schemaVersion = "3.0.11";
+        migratedArtifact.schemaVersion = "3.0.9";
         fse.removeSync(
           path.join(
             __dirname,
@@ -684,6 +696,25 @@ describe("Compilation", () => {
       ).toBeDefined();
     });
 
+    expect(Array.isArray(solcCompilation.immutableReferences)).toBe(true);
+    expect(solcCompilation.immutableReferences[0]).toHaveProperty("astNode");
+    expect(solcCompilation.immutableReferences[0]).toHaveProperty("length");
+    expect(solcCompilation.immutableReferences[0]).toHaveProperty("offsets");
+    expect(solcCompilation.immutableReferences[0].astNode).toEqual(
+      Object.entries(artifacts[0].immutableReferences)[0][0]
+    );
+    expect(solcCompilation.immutableReferences[0].length).toEqual(
+      Object.entries(artifacts[0].immutableReferences)[0][1][0].length
+    );
+    expect(solcCompilation.immutableReferences[0].offsets[0]).toEqual(
+      Object.entries(artifacts[0].immutableReferences)[0][1][0].start
+    );
+
+    let shimmedBytecode = Shims.LegacyToNew.forBytecode(artifacts[0].bytecode);
+    expect(solcCompilation.immutableReferences[0].bytecode.bytes).toEqual(
+      shimmedBytecode.bytes
+    );
+
     const vyperCompilation = compilationsQuery[1].data.compilation;
     expect(vyperCompilation.compiler.version).toEqual(
       artifacts[3].compiler.version
@@ -695,6 +726,7 @@ describe("Compilation", () => {
       artifacts[3].source
     );
     expect(vyperCompilation.processedSources[0].language).toEqual("Vyper");
+    expect(vyperCompilation.immutableReferences).toEqual([]);
   });
 
   it("loads contract sources", async () => {
@@ -729,7 +761,7 @@ describe("Compilation", () => {
     let contractIds = [];
 
     for (let index in artifacts) {
-      let expectedId = generateId({
+      let expectedId = generateId("contracts", {
         name: artifacts[index].contractName,
         abi: { json: JSON.stringify(artifacts[index].abi) },
         processedSource: {

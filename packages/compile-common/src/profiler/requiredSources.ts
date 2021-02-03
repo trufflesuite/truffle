@@ -1,9 +1,10 @@
+import debugModule from "debug";
+const debug = debugModule("compile-common:profiler:requiredSources");
+
 import {
   resolveAllSources,
   ResolveAllSourcesOptions
 } from "./resolveAllSources";
-
-import { getImports } from "./getImports";
 
 export interface RequiredSourcesOptions {
   allPaths: string[];
@@ -20,7 +21,7 @@ export interface RequiredSources {
     [filePath: string]: string;
   };
 
-  compilationTargets?: string[];
+  compilationTargets: string[];
 }
 
 export async function requiredSources({
@@ -33,12 +34,23 @@ export async function requiredSources({
   const allSources: RequiredSources["allSources"] = {};
   const compilationTargets: string[] = [];
 
+  debug("allPaths: %O", allPaths);
+  debug("updatedPaths: %O", updatedPaths);
+
   // Solidity test files might have been injected. Include them in the known set.
   updatedPaths.forEach(_path => {
     if (!allPaths.includes(_path)) {
       allPaths.push(_path);
     }
   });
+
+  //exit out quickly if we've been asked to compile nothing
+  if (!updatedPaths.length) {
+    return {
+      allSources: {},
+      compilationTargets: []
+    };
+  }
 
   const resolved = await resolveAllSources({
     resolve,
@@ -47,30 +59,28 @@ export async function requiredSources({
     paths: allPaths
   });
 
-  // Generate hash of all sources including external packages - passed to solc inputs.
-  for (const file of Object.keys(resolved)) {
-    if (shouldIncludePath(file)) {
-      allSources[file] = resolved[file].body;
-    }
-  }
-
-  // Exit w/out minimizing if we've been asked to compile everything, or nothing.
+  //exit out semi-quickly if we've been asked to compile everything
   if (listsEqual(updatedPaths, allPaths)) {
+    for (const file of Object.keys(resolved)) {
+      if (shouldIncludePath(file)) {
+        allSources[file] = resolved[file].body;
+      }
+    }
     return {
       allSources,
-      compilationTargets: []
-    };
-  } else if (!updatedPaths.length) {
-    return {
-      allSources: {},
-      compilationTargets: []
+      compilationTargets: Object.keys(allSources)
     };
   }
+
 
   // Seed compilationTargets with known updates
   for (const update of updatedPaths) {
-    compilationTargets.push(update);
+    if (shouldIncludePath(update)) {
+      compilationTargets.push(update);
+    }
   }
+
+  debug("entering main loop");
 
   // While there are updated files in the queue, we take each one
   // and search the entire file corpus to find any sources that import it.
@@ -89,13 +99,11 @@ export async function requiredSources({
         continue;
       }
 
-      const imports = shouldIncludePath(currentFile)
-        ? await getImports({
-            source: resolved[currentFile],
-            parseImports,
-            shouldIncludePath
-          })
-        : [];
+      debug("currentFile: %s", currentFile);
+
+      const imports = resolved[currentFile].imports;
+
+      debug("imports.length: %d", imports.length);
 
       // If file imports a compilation target, add it
       // to list of updates and compilation targets
@@ -103,6 +111,34 @@ export async function requiredSources({
         updatedPaths.push(currentFile);
         compilationTargets.push(currentFile);
       }
+    }
+  }
+
+  debug("compilationTargets: %O", compilationTargets);
+
+  //now: crawl the tree downward from the compilation targets
+  //to get all the sources we need
+  const filesToProcess = compilationTargets.slice(); //clone
+  const required = [];
+  while (filesToProcess.length > 0) {
+    debug("filesToProcess: %O", filesToProcess);
+    const file = filesToProcess.shift();
+    debug("file: %s", file);
+    required.push(file);
+    for (const importPath of resolved[file].imports) {
+      debug("importPath: %s", importPath);
+      if (!required.includes(importPath)) { //don't go into a loop!
+        filesToProcess.push(importPath);
+      }
+    }
+  }
+
+  debug("required: %O", required);
+
+  // Generate dictionary of all required sources, including external packages
+  for (const file of required) {
+    if (shouldIncludePath(file)) {
+      allSources[file] = resolved[file].body;
     }
   }
 

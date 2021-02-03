@@ -1,7 +1,6 @@
 const debug = require("debug")("compile-vyper:vyper-json");
 const execSync = require("child_process").execSync;
 const path = require("path");
-const fs = require("fs");
 const semver = require("semver");
 const Common = require("@truffle/compile-common");
 const partition = require("lodash.partition");
@@ -10,30 +9,34 @@ const partition = require("lodash.partition");
 //from compile-solidity/run.js, so be warned...
 //(some has since been factored into compile-common, but not all)
 
-function compileAllJson({ sources: sourcePaths, options, version }) {
+function compileJson({ sources: rawSources, options, version, command }) {
   const compiler = { name: "vyper", version };
-
-  debug("sourcePaths: %O", sourcePaths);
-
-  const rawSources = Object.assign(
-    {},
-    ...sourcePaths.map(sourcePath => ({
-      [sourcePath]: fs.readFileSync(sourcePath).toString()
-    }))
-  );
 
   const {
     sources,
     targets,
     originalSourcePaths
-  } = Common.Sources.collectSources(rawSources, options.compilationTargets);
-
-  debug("sources: %O", sources);
-
-  const [interfacePaths, properSourcePaths] = partition(
-    Object.keys(sources),
-    sourcePath => sourcePath.endsWith(".json")
+  } = Common.Sources.collectSources(
+    rawSources,
+    options.compilationTargets,
+    options.contracts_directory
   );
+
+  //Vyper complains if we give it a source that is not also a target,
+  //*unless* we give it as an interface.  So we have to split that out.
+  //(JSON files also must always be interfaces)
+  const [properSourcePaths, interfacePaths] = partition(
+    Object.keys(sources),
+    targets.length > 0
+      ? sourcePath => !sourcePath.endsWith(".json") &&
+        targets.includes(sourcePath)
+      : sourcePath => !sourcePath.endsWith(".json")
+  );
+
+  //in order to better support absolute Vyper imports, we pretend that
+  //the contracts directory is the root directory.  note this means that
+  //if an imported source from somewhere other than FS uses an absolute
+  //import to refer to its own project root, it won't work.  But, oh well.
 
   const properSources = Object.assign(
     {},
@@ -53,16 +56,14 @@ function compileAllJson({ sources: sourcePaths, options, version }) {
   const compilerInput = prepareCompilerInput({
     sources: properSources,
     interfaces,
-    targets,
     settings: options.compilers.vyper.settings || {},
     version
   });
 
-  debug("compilerInput: %O", compilerInput);
-
   // perform compilation
   const rawCompilerOutput = invokeCompiler({
-    compilerInput
+    compilerInput,
+    command
   });
   debug("rawCompilerOutput: %O", rawCompilerOutput);
 
@@ -72,7 +73,6 @@ function compileAllJson({ sources: sourcePaths, options, version }) {
     compilerOutput: rawCompilerOutput,
     options
   });
-  debug("errors: %O", errors);
   if (warnings.length > 0) {
     options.events.emit("compile:warnings", { warnings });
   }
@@ -108,14 +108,14 @@ function compileAllJson({ sources: sourcePaths, options, version }) {
   return { compilations: [compilation] };
 }
 
-function invokeCompiler({ compilerInput }) {
+function invokeCompiler({ compilerInput, command }) {
   const inputString = JSON.stringify(compilerInput);
-  const outputString = execVyperJson(inputString);
+  const outputString = execVyperJson(inputString, command);
   return JSON.parse(outputString);
 }
 
-function execVyperJson(inputString) {
-  return execSync("vyper-json", {
+function execVyperJson(inputString, command) {
+  return execSync(command, {
     input: inputString,
     maxBuffer: 1024 * 1024 * 10 //I guess?? copied from compile-solidity
   });
@@ -123,12 +123,11 @@ function execVyperJson(inputString) {
 
 function prepareCompilerInput({
   sources,
-  targets,
   settings,
   interfaces,
   version
 }) {
-  const outputSelection = prepareOutputSelection({ targets, version });
+  const outputSelection = prepareOutputSelection({ version });
   return {
     language: "Vyper",
     sources: prepareSources({ sources }),
@@ -151,11 +150,15 @@ function prepareSources({ sources }) {
 
 function prepareInterfaces({ interfaces }) {
   return Object.entries(interfaces)
-    .map(([sourcePath, abi]) => ({ [sourcePath]: { abi: JSON.parse(abi) } })) //note the parse!
+    .map(([sourcePath, content]) =>
+      sourcePath.endsWith(".json") //for JSON we need the ABI *object*, not JSON!
+        ? { [sourcePath]: { abi: JSON.parse(content) } }
+        : { [sourcePath]: { content } }
+     )
     .reduce((a, b) => Object.assign({}, a, b), {});
 }
 
-function prepareOutputSelection({ targets = [], version }) {
+function prepareOutputSelection({ version }) {
   //Vyper uses a simpler output selection format
   //than solc does; it also supports solc's format,
   //but I've gone with the simpler version here
@@ -181,15 +184,11 @@ function prepareOutputSelection({ targets = [], version }) {
     defaultSelectors = defaultSelectors.concat(additionalSelectors);
   }
 
-  if (!targets.length) {
-    return {
-      "*": defaultSelectors
-    };
-  }
-
-  return targets
-    .map(target => ({ [target]: defaultSelectors }))
-    .reduce((a, b) => Object.assign({}, a, b), {});
+  //because we've already filtered down the sources to match the targets,
+  //we can just say that the targets are everything
+  return {
+    "*": defaultSelectors
+  };
 }
 
 //this also is copy-pasted, but minus some complications
@@ -335,5 +334,6 @@ function fixPath(path) {
 }
 
 module.exports = {
-  compileAllJson
+  compileJson,
+  execVyperJson
 };

@@ -5,6 +5,7 @@ import {
   GetCompilation,
   GetAllCompilations
 } from "./compilation.graphql";
+import { Shims } from "@truffle/compile-common";
 
 describe("Compilation", () => {
   const wsClient = new WorkspaceClient();
@@ -21,6 +22,9 @@ describe("Compilation", () => {
     const sourceResult = await wsClient.execute(AddSource, sourceVariables);
     sourceId = sourceResult.sourcesAdd.sources[0].id;
 
+    const shimmedBytecode = Shims.LegacyToNew.forBytecode(Migrations.bytecode);
+    const bytecodeExpectedId = generateId("bytecodes", shimmedBytecode);
+
     variables = {
       compilerName: Migrations.compiler.name,
       compilerVersion: Migrations.compiler.version,
@@ -28,7 +32,11 @@ describe("Compilation", () => {
       bytecodeId: "",
       abi: JSON.stringify(Migrations.abi),
       sourceMap: JSON.stringify(Migrations.sourceMap),
-      language: "Solidity"
+      language: "Solidity",
+      astNode: "1",
+      length: 5,
+      offset: 16,
+      contractBytecodeId: bytecodeExpectedId
     };
     addCompilationResult = await wsClient.execute(AddCompilation, variables);
   });
@@ -45,7 +53,12 @@ describe("Compilation", () => {
     for (let compilation of compilations) {
       expect(compilation).toHaveProperty("compiler");
       expect(compilation).toHaveProperty("sources");
-      const { compiler, sources, processedSources } = compilation;
+      const {
+        compiler,
+        sources,
+        processedSources,
+        immutableReferences
+      } = compilation;
 
       expect(compiler).toHaveProperty("name");
 
@@ -61,11 +74,16 @@ describe("Compilation", () => {
         expect(processedSource).toHaveProperty("ast");
         expect(processedSource).toHaveProperty("language");
       }
+      expect(immutableReferences).toHaveLength(1);
+      expect(immutableReferences[0].astNode).toEqual(variables.astNode);
+      expect(immutableReferences[0].offsets).toHaveLength(1);
+      expect(immutableReferences[0].length).toEqual(variables.length);
+      expect(immutableReferences[0].offsets[0]).toEqual(variables.offset);
     }
   });
 
   test("can be queried", async () => {
-    const expectedId = generateId({
+    const expectedId = generateId("compilations", {
       compiler: Migrations.compiler,
       sources: [{ id: sourceId }]
     });
@@ -81,7 +99,7 @@ describe("Compilation", () => {
     expect(compilation).toHaveProperty("compiler");
     expect(compilation).toHaveProperty("sources");
 
-    const { sources } = compilation;
+    const { sources, immutableReferences } = compilation;
 
     for (let source of sources) {
       expect(source).toHaveProperty("id");
@@ -91,6 +109,12 @@ describe("Compilation", () => {
       const { contents } = source;
       expect(contents).not.toBeNull();
     }
+
+    expect(immutableReferences).toHaveLength(1);
+    expect(immutableReferences[0].astNode).toEqual(variables.astNode);
+    expect(immutableReferences[0].offsets).toHaveLength(1);
+    expect(immutableReferences[0].length).toEqual(variables.length);
+    expect(immutableReferences[0].offsets[0]).toEqual(variables.offset);
   });
 
   test("can retrieve all compilations", async () => {

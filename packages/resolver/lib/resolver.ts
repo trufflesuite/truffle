@@ -1,28 +1,65 @@
+import debugModule from "debug";
+const debug = debugModule("resolver");
+
 const contract = require("@truffle/contract");
 const expect = require("@truffle/expect");
 const provision = require("@truffle/provisioner");
 
-import { ResolverSource } from "./source";
-import { EthPMv1, NPM, GlobalNPM, FS, Truffle, ABI } from "./sources";
+import { ResolverSource, ResolvedSource } from "./source";
+import { EthPMv1, NPM, GlobalNPM, FS, Truffle, ABI, Vyper } from "./sources";
+
+export interface ResolverOptions {
+  includeTruffleSources?: boolean;
+  translateJsonToSolidity?: boolean;
+  resolveVyperModules?: boolean;
+}
+
+const defaultResolverOptions = {
+  includeTruffleSources: false,
+  translateJsonToSolidity: true,
+  resolveVyperMoudles: false,
+};
 
 export class Resolver {
   options: any;
   sources: ResolverSource[];
 
-  constructor(options: any, includeTruffleSource: boolean = false) {
-    expect.options(options, ["working_directory", "contracts_build_directory"]);
+  constructor(options: any, resolverOptions: ResolverOptions = {}) {
+    expect.options(
+      options,
+      ["working_directory", "contracts_build_directory", "contracts_directory"]
+    );
+
+    resolverOptions = {
+      ...defaultResolverOptions,
+      ...resolverOptions
+    };
+    const {
+      includeTruffleSources,
+      translateJsonToSolidity,
+      resolveVyperModules
+    } = resolverOptions;
 
     this.options = options;
     this.sources = [
       new EthPMv1(options.working_directory),
       new NPM(options.working_directory),
       new GlobalNPM(),
-      new ABI(options.working_directory, options.contracts_build_directory),
       new FS(options.working_directory, options.contracts_build_directory)
     ];
 
-    if (includeTruffleSource) {
+    if (includeTruffleSources) {
       this.sources.unshift(new Truffle(options));
+    }
+
+    if (translateJsonToSolidity) {
+      this.sources = [].concat(
+        ...this.sources.map(source => [new ABI(source), source])
+      );
+    }
+
+    if (resolveVyperModules) {
+      this.sources = [new Vyper(this.sources, options.contracts_directory)];
     }
   }
 
@@ -45,7 +82,7 @@ export class Resolver {
   async resolve(
     importPath: string,
     importedFrom: string
-  ): Promise<{ body: string; filePath: string; source: ResolverSource }> {
+  ): Promise<ResolvedSource> {
     let body: string | null = null;
     let filePath: string | null = null;
     let source: ResolverSource | null = null;
@@ -53,12 +90,12 @@ export class Resolver {
     for (source of this.sources) {
       ({ body, filePath } = await source.resolve(importPath, importedFrom));
 
-      if (body) {
+      if (body !== undefined) {
         break;
       }
     }
 
-    if (!body) {
+    if (body === undefined) {
       let message = `Could not find ${importPath} from any sources`;
 
       if (importedFrom) {

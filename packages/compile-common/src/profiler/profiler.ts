@@ -1,3 +1,5 @@
+import debugModule from "debug";
+const debug = debugModule("compile-common:profiler");
 const findContracts = require("@truffle/contract-sources");
 const expect = require("@truffle/expect");
 
@@ -52,8 +54,26 @@ export class Profiler {
       contracts_directory: contractsDirectory
     } = options;
 
-    const resolve = ({ filePath, importedFrom }: UnresolvedSource) =>
-      resolver.resolve(filePath, importedFrom);
+    debug("paths: %O", paths);
+
+    const resolve = async ({ filePath, importedFrom }: UnresolvedSource) => {
+      //we want to allow resolution failure here.  so, if a source can't
+      //be resolved, it will show up as a compile error rather than a Truffle
+      //error.
+      try {
+        return await resolver.resolve(filePath, importedFrom);
+      } catch (error) {
+        //resolver doesn't throw structured errors at the moment,
+        //so we'll check the messag to see whether this is an expected error
+        //(kind of a HACK)
+        if(error.message.startsWith("Could not find ")) {
+          return undefined;
+        } else {
+          //rethrow unexpected errors
+          throw error;
+        }
+      }
+    }
 
     const updatedPaths = convertToAbsolutePaths(paths, basePath);
     const allPaths = convertToAbsolutePaths(
@@ -61,6 +81,7 @@ export class Profiler {
       basePath
     );
 
+    debug("invoking requiredSources");
     return await requiredSources({
       resolve,
       parseImports: this.config.parseImports,
