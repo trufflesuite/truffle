@@ -29,12 +29,11 @@ export async function resolveNameRecords(
       "key.type": type
     }
   });
-  const nameRecordIds = results.map(({ nameRecord: { id } }) => id);
-  const nameRecords = await workspace.find("nameRecords", {
-    selector: {
-      id: { $in: nameRecordIds }
-    }
-  });
+
+  const nameRecords = await workspace.find(
+    "nameRecords",
+    results.map(({ nameRecord }) => nameRecord)
+  );
 
   return nameRecords;
 }

@@ -78,11 +78,10 @@ export const projects: Definition<"projects"> = {
             { workspace }
           );
 
-          const resourceIds = nameRecords.map(({ resource }) => resource.id);
-
-          const result = await workspace.find("networks", {
-            selector: { id: { $in: resourceIds } }
-          });
+          const result = await workspace.find(
+            "networks",
+            nameRecords.map(({ resource }) => resource)
+          );
 
           debug("Resolved Project.networks.");
           return result;
@@ -118,11 +117,10 @@ export const projects: Definition<"projects"> = {
             { workspace }
           );
 
-          const resourceIds = nameRecords.map(({ resource }) => resource.id);
-
-          const result = await workspace.find("contracts", {
-            selector: { id: { $in: resourceIds } }
-          });
+          const result = await workspace.find(
+            "contracts",
+            nameRecords.map(({ resource }) => resource)
+          );
 
           debug("Resolved Project.contracts.");
           return result;

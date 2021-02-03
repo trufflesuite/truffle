@@ -256,20 +256,13 @@ abstract class DefinitionSchema<
             if (filter) {
               logFilter("Filtering for ids: %o...", filter.ids);
 
-              const results = await workspace.find(resources, {
-                selector: {
-                  id: { $in: filter.ids.filter(id => id) }
-                }
-              });
-
-              const byId = results
-                .map(result => ({
-                  [result.id]: result
-                }))
-                .reduce((a, b) => ({ ...a, ...b }), {});
+              const results = await workspace.find(
+                resources,
+                filter.ids.map(id => ({ id }))
+              );
 
               logFilter("Filtered for ids: %o", filter.ids);
-              return filter.ids.map(id => (id ? byId[id] : undefined));
+              return results;
             } else {
               logAll("Fetching all...");
 
