@@ -8,11 +8,13 @@ const OS = require("os");
 const cloneDeep = require("lodash.clonedeep");
 
 const getSemverExpression = source => {
-  return source.match(/pragma solidity(.*);/)[1].trim();
+  return source.match(/pragma solidity(.*);/)[1] ?
+    source.match(/pragma solidity(.*);/)[1].trim() :
+    undefined;
 };
 
 const getSemverExpressions = sources => {
-  return sources.map(source => getSemverExpression(source));
+  return sources.map(source => getSemverExpression(source)).filter(expression => expression);
 };
 
 const validateSemverExpressions = semverExpressions => {
@@ -70,10 +72,10 @@ const compileWithPragmaAnalysis = async ({ paths, options }) => {
       semverExpressions: [getSemverExpression(source)]
     });
     if (!parserVersion) {
-      throwCompilerVersionNotFound({
-        path,
-        semverExpressions: [getSemverExpression(source)]
-      });
+      const m = `Could not find a pragma expression in ${path}. To use the ` +
+        `"pragma" compiler setting your contracts must contain a pragma ` +
+        `expression.`;
+      throw new Error(m);
     }
 
     // allSources is of the format { [filename]: string }
