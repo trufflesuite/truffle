@@ -68,8 +68,8 @@
     "spawn-args": "^0.1.0",
     "tmp": "^0.2.1",
     "universal-analytics": "^0.4.17",
-    "web3": "1.2.9",
-    "web3-utils": "1.2.9",
+    "web3": "1.3.4",
+    "web3-utils": "1.3.4",
     "xregexp": "^4.2.4",
     "yargs": "^8.0.2"
   },

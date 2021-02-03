@@ -22,7 +22,7 @@
     "emittery": "^0.4.0",
     "eth-ens-namehash": "^2.0.8",
     "ethereum-ens": "^0.8.0",
-    "web3-utils": "1.2.9"
+    "web3-utils": "1.3.4"
   },
   "devDependencies": {
     "@truffle/reporters": "^1.1.2",
@@ -30,7 +30,7 @@
     "ganache-core": "2.13.0",
     "mocha": "8.1.2",
     "sinon": "9.0.2",
-    "web3": "1.2.9"
+    "web3": "1.3.4"
   },
   "keywords": [
     "contracts",
