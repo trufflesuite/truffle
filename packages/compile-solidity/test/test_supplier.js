@@ -171,7 +171,7 @@ describe("CompilerSupplier", function() {
     });
 
     describe("native / docker [ @native ]", function() {
-      it("compiles with native solc", async function() {
+      it.skip("compiles with native solc", async function() {
         options.compilers = {
           solc: {
             version: "native"
