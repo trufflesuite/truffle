@@ -44,7 +44,7 @@ export async function resolveContractInstances(
   const contractInstances: SavedInput<"contractInstances">[] = [];
   debug("inputs %O", inputs);
 
-  for await (const { skip, contracts } of findResourcesHistories<"contracts">({
+  for await (const { skip, contracts } of findResourcesHistories({
     collectionName: "contracts",
     nameRecords: contractNameRecords,
     workspace
@@ -100,17 +100,18 @@ export async function resolveContractInstances(
  *
  * Returns when all name records histories have been exhausted.
  */
-async function* findResourcesHistories<N extends NamedCollectionName>(options: {
-  collectionName: N;
-  nameRecords: (SavedInput<"nameRecords"> | undefined)[];
-  workspace: Workspace;
-}): AsyncIterable<
-  {
+async function* findResourcesHistories<
+  N extends NamedCollectionName,
+  ResourceHistoryStep extends {
     [K in "skip" | N]: "skip" extends K
       ? (...indexes: number[]) => void
       : (IdObject<N> | undefined)[];
   }
-> {
+>(options: {
+  collectionName: N;
+  nameRecords: (SavedInput<"nameRecords"> | undefined)[];
+  workspace: Workspace;
+}): AsyncIterable<ResourceHistoryStep> {
   const { collectionName, workspace } = options;
   let { nameRecords } = options;
 
@@ -123,7 +124,6 @@ async function* findResourcesHistories<N extends NamedCollectionName>(options: {
       }
     };
 
-    // @ts-ignore
     yield {
       skip,
       [collectionName]: nameRecords.map(nameRecord =>
@@ -131,7 +131,7 @@ async function* findResourcesHistories<N extends NamedCollectionName>(options: {
           ? ({ id: nameRecord.resource.id } as IdObject<N>)
           : undefined
       )
-    };
+    } as ResourceHistoryStep;
 
     // preserving order, iterate to next set of previous records
     nameRecords = await workspace.find(
@@ -154,14 +154,20 @@ async function filterProjectNetworkAncestors(options: {
   workspace: Workspace;
   info: graphql.GraphQLResolveInfo;
 }): Promise<IdObject<"networks">[]> {
-  const { project, network, workspace, info } = options;
+  const {
+    project,
+    network,
+    candidates: candidateReferences,
+    workspace,
+    info
+  } = options;
 
   // short-circuit early to avoid extra queries and to avoid index lookup guard
-  if (options.candidates.length === 0) {
+  if (candidateReferences.length === 0) {
     return [];
   }
 
-  const candidates = await workspace.find("networks", options.candidates);
+  const candidates = await workspace.find("networks", candidateReferences);
 
   // find earliest among candidates to specify minimumHeight to ancestors query
   const earliestCandidate = candidates
