@@ -1,6 +1,5 @@
-const assert = require("chai").assert;
-const util = require("./util");
-const debug = require("debug")("contract:test:errors");
+var assert = require("chai").assert;
+var util = require("./util");
 
 describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
   var Example;
@@ -321,7 +320,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
           "Should preserve hijacked error message"
         );
         assert(
-          e.hijackedStack.includes("/src.ts/abi-coder.ts:"),
+          e.hijackedStack.includes("/lib/abi-coder.js:"),
           "Should preserve hijacked stack details"
         );
       }
