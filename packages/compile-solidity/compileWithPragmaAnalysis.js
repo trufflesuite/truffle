@@ -118,10 +118,9 @@ const compileWithPragmaAnalysis = async ({ paths, options }) => {
 
   const compilations = [];
   for (const compilerVersion in versionsAndSources) {
-    const compilationOptions = Object.assign(
-      {},
-      { compilers: cloneDeep(options.compilers) }
-    );
+    const compilationOptions = {
+      compilers: cloneDeep(options.compilers)
+    };
     compilationOptions.compilers.solc.version = compilerVersion;
 
     const config = Config.default().with(compilationOptions);
