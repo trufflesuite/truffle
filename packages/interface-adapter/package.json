@@ -23,7 +23,7 @@
     "bn.js": "^4.11.8",
     "ethers": "^4.0.32",
     "source-map-support": "^0.5.19",
-    "web3": "1.2.9"
+    "web3": "1.3.4"
   },
   "devDependencies": {
     "@types/bn.js": "^4.11.4",
