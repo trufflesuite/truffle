@@ -50,6 +50,9 @@ const compileWithPragmaAnalysis = async ({ paths, options }) => {
   const filteredPaths = paths.filter(
     path => path.endsWith(".sol") || path.endsWith(".json")
   );
+  if (filteredPaths.length === 0) {
+    return { compilations: [] };
+  }
   const supplierOptions = {
     events: options.events,
     solcConfig: options.compilers.solc
@@ -59,7 +62,7 @@ const compileWithPragmaAnalysis = async ({ paths, options }) => {
 
   // collect sources by the version of the Solidity compiler that they require
   const versionsAndSources = {};
-  for (const path of paths) {
+  for (const path of filteredPaths) {
     const source = (await options.resolver.resolve(path)).body;
 
     const parserVersion = findNewestSatisfyingVersion({
