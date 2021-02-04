@@ -57,7 +57,7 @@ class Deployment {
   _extractFromArgs(args, key) {
     let value;
 
-    args.forEach(arg => {
+    args.forEach((arg) => {
       const hasKey =
         !Array.isArray(arg) &&
         typeof arg === "object" &&
@@ -93,7 +93,7 @@ class Deployment {
       const eventArgs = {
         blockNumber: newBlock,
         blocksWaited: blocksWaited,
-        secondsWaited: secondsWaited
+        secondsWaited: secondsWaited,
       };
 
       await self.emitter.emit("block", eventArgs);
@@ -121,7 +121,7 @@ class Deployment {
     const self = this;
     let currentBlock = await interfaceAdapter.getBlockNumber();
 
-    return new Promise(accept => {
+    return new Promise((accept) => {
       let blocksHeard = 0;
 
       const poll = setInterval(async () => {
@@ -135,7 +135,7 @@ class Deployment {
             contractName: state.contractName,
             receipt: state.receipt,
             num: blocksHeard,
-            block: currentBlock
+            block: currentBlock,
           };
 
           await self.emitter.emit("confirmation", eventArgs);
@@ -162,7 +162,7 @@ class Deployment {
     if (Array.isArray(contract)) {
       const message = await this.emitter.emit("error", {
         type: "noBatches",
-        contract: null
+        contract: null,
       });
 
       throw new Error(message);
@@ -172,7 +172,7 @@ class Deployment {
     if (contract.bytecode === "0x") {
       const message = await this.emitter.emit("error", {
         type: "noBytecode",
-        contract: contract
+        contract: contract,
       });
 
       throw new Error(message);
@@ -191,7 +191,7 @@ class Deployment {
   async _hashCb(parent, state, hash) {
     const eventArgs = {
       contractName: state.contractName,
-      transactionHash: hash
+      transactionHash: hash,
     };
     state.transactionHash = hash;
     await parent.emitter.emit("transactionHash", eventArgs);
@@ -208,7 +208,7 @@ class Deployment {
   async _receiptCb(parent, state, receipt) {
     const eventArgs = {
       contractName: state.contractName,
-      receipt: receipt
+      receipt: receipt,
     };
 
     // We want this receipt available for the post-deploy event
@@ -236,7 +236,7 @@ class Deployment {
     let interval;
     const self = this;
 
-    return new Promise(accept => {
+    return new Promise((accept) => {
       interval = setInterval(() => {
         if (self.confirmationsMap[hash] >= self.confirmations) {
           clearInterval(interval);
@@ -260,7 +260,7 @@ class Deployment {
     const eventArgs = {
       contractName: state.contractName,
       num: num,
-      receipt: receipt
+      receipt: receipt,
     };
 
     parent.confirmationsMap[receipt.transactionHash] = num;
@@ -285,11 +285,12 @@ class Deployment {
       let eventArgs;
       let shouldDeploy = true;
       let state = {
-        contractName: contract.contractName
+        contractName: contract.contractName,
       };
 
       const isDeployed = contract.isDeployed();
       const newArgs = await Promise.all(args);
+
       const currentBlock = await contract.interfaceAdapter.getBlock("latest");
 
       // Last arg can be an object that tells us not to overwrite.
@@ -316,7 +317,7 @@ class Deployment {
             self._extractFromArgs(newArgs, "gasPrice") ||
             contract.defaults().gasPrice,
           from:
-            self._extractFromArgs(newArgs, "from") || contract.defaults().from
+            self._extractFromArgs(newArgs, "from") || contract.defaults().from,
         };
 
         // Get an estimate for previews / detect constructor revert
@@ -329,6 +330,11 @@ class Deployment {
         } catch (err) {
           eventArgs.estimateError = err;
         }
+
+        /**
+         * Required as this sets the wallet for each migration
+         */
+        tezos && contract.interfaceAdapter.getAccounts(self);
 
         // Emit `preDeploy` & send transaction
         await self.emitter.emit("preDeploy", eventArgs);
@@ -375,7 +381,7 @@ class Deployment {
         contract,
         instance,
         deployed: shouldDeploy,
-        receipt: state.receipt
+        receipt: state.receipt,
       };
 
       if (web3) await self.emitter.emit("postEvmDeploy", eventArgs);
@@ -401,7 +407,7 @@ class Deployment {
    */
   close() {
     this.emitter.clearListeners();
-    this.promiEventEmitters.forEach(item => {
+    this.promiEventEmitters.forEach((item) => {
       item.removeAllListeners();
     });
   }
