@@ -157,7 +157,7 @@ describe("compileWithPragmaAnalysis", () => {
         });
         assert.fail("The function should have thrown.");
       } catch (error) {
-        const expectedMessage = "$0.5.3";
+        const expectedMessage = "Could not find a pragma expression";
         if (error.message.includes(expectedMessage)) {
           return "all good";
         }
