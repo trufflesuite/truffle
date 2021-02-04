@@ -104,12 +104,35 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
 
   public async find<N extends CollectionName<C>>(
     collectionName: N,
-    options: PouchDB.Find.FindRequest<{}>
+    options: (Id.IdObject<C, N> | undefined)[] | PouchDB.Find.FindRequest<{}>
   ): Promise<SavedInput<C, N>[]> {
     await this.ready;
 
     const log = debug.extend(`${collectionName}:find`);
     log("Finding...");
+
+    // handle convenient interface for getting a bunch of IDs while preserving
+    // order of input request
+    if (Array.isArray(options)) {
+      const references = options;
+      const unordered = await this.find<N>(collectionName, {
+        selector: {
+          id: { $in: references.filter(obj => obj).map(({ id }) => id) }
+        }
+      });
+
+      const byId = unordered.reduce(
+        (byId, savedInput) => ({
+          ...byId,
+          [savedInput.id as string]: savedInput
+        }),
+        {} as { [id: string]: SavedInput<C, N> }
+      );
+
+      return references.map(reference =>
+        reference ? byId[reference.id] : undefined
+      );
+    }
 
     // allows searching with `id` instead of pouch's internal `_id`,
     // since we call the field `id` externally, and this approach avoids

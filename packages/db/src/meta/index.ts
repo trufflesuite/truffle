@@ -23,7 +23,7 @@ export {
   NamedResource
 } from "./collections";
 export { Db, ConnectOptions } from "./interface";
-export { Workspace } from "./data";
+export { SavedInput, Workspace } from "./data";
 export { Definition, Definitions } from "./definitions";
 
 import * as Graph from "./graph";

@@ -1,7 +1,7 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:resources:networks:resolveRelations");
 
-import type { Input, IdObject, Workspace } from "../types";
+import type { SavedInput, Input, IdObject, Workspace } from "../types";
 
 export const resolveAncestors = resolveRelations("ancestor");
 export const resolveDescendants = resolveRelations("descendant");
@@ -19,7 +19,7 @@ export function resolveRelations(relationship: "ancestor" | "descendant") {
     network: IdObject<"networks">,
     options,
     { workspace }: { workspace: Workspace }
-  ) => {
+  ): Promise<SavedInput<"networks">[]> => {
     const {
       limit,
       includeSelf = false,
@@ -38,7 +38,7 @@ export function resolveRelations(relationship: "ancestor" | "descendant") {
     //
     // track related networks as we've found them from the workspace, as well
     // as the set of IDs we know to have no further relations ("superlatives")
-    const networks: { [id: string]: Input<"networks"> } = {};
+    const networks: { [id: string]: SavedInput<"networks"> } = {};
     const superlatives: Set<string> = new Set([]);
     //
     // iteratively search genealogy records (e.g. when looking for ancestors,
@@ -115,7 +115,7 @@ export function resolveRelations(relationship: "ancestor" | "descendant") {
       // fetch batch when we have enough or at the end when we're done
       if (batchReady() || done()) {
         // fetch from workspace
-        for (const input of await workspace.find("networks", {
+        for (const network of await workspace.find("networks", {
           selector: {
             "id": { $in: unsearchedInputs.map(({ id }) => id) },
             "historicBlock.height": heightBoundSelector
@@ -125,9 +125,9 @@ export function resolveRelations(relationship: "ancestor" | "descendant") {
           //
           // anything missing is either out of height bounds or an unknown ID
           // (silently skip unknown IDs in order to be tolerant of corruption)
-          if (input) {
-            const { id } = input;
-            networks[id] = input;
+          if (network) {
+            const { id } = network;
+            networks[id] = network;
           }
         }
 

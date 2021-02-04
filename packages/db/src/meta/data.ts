@@ -11,6 +11,7 @@ import type {
   MutationInput,
   MutationPayload
 } from "./collections";
+import type { IdObject } from "./id";
 
 export interface Workspace<C extends Collections> {
   all<N extends CollectionName<C>>(
@@ -19,7 +20,7 @@ export interface Workspace<C extends Collections> {
 
   find<N extends CollectionName<C>>(
     collectionName: N,
-    options: PouchDB.Find.FindRequest<{}>
+    options: (IdObject<C, N> | undefined)[] | PouchDB.Find.FindRequest<{}>
   ): Promise<SavedInput<C, N>[]>;
 
   get<N extends CollectionName<C>>(
