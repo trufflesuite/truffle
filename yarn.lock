@@ -7020,10 +7020,10 @@ ganache-cli@^6.1.0:
     source-map-support "0.5.12"
     yargs "13.2.4"
 
-ganache-core@2.12.0-tezos.0:
-  version "2.12.0-tezos.0"
-  resolved "https://registry.yarnpkg.com/ganache-core/-/ganache-core-2.12.0-tezos.0.tgz#d8edd4b17e6df3d2507f5f626d630d9b0858eeb0"
-  integrity sha512-jK/ITIUAWtS4lPHMo+9qY5a79ecJo+44uPrIIN9nIgJgIN860GrIcUkGXtEgyOm03pKs+TigFg/IGtmMg2HJ0g==
+ganache-core@2.13.2-tezos.0:
+  version "2.13.2-tezos.0"
+  resolved "https://registry.yarnpkg.com/ganache-core/-/ganache-core-2.13.2-tezos.0.tgz#860940d5b63bb570768fc0a923034807c8eebd1b"
+  integrity sha512-iUOSdFfBKHEqmhOepQjAGP0yIXn+XGQDoaEXlSmJ6ESakmgOARyQSdhcXnPpYrr89Tgxxkh907MQzTbqqUQDZg==
   dependencies:
     abstract-leveldown "3.0.0"
     async "2.6.2"
