@@ -32,6 +32,8 @@ export const networks: Definition<"networks"> = {
       networkId: NetworkId!
       historicBlock: Block!
 
+      genesis: Network!
+
       ancestors(
         limit: Int # default all
         minimumHeight: Int # default any height
@@ -86,6 +88,25 @@ export const networks: Definition<"networks"> = {
   `,
   resolvers: {
     Network: {
+      genesis: {
+        async resolve(network, _, context) {
+          debug("Resolving Network.genesis...");
+          const results = await resolveAncestors(
+            network,
+            { onlyEarliest: true, includeSelf: true },
+            context
+          );
+          const result = results[results.length - 1];
+          if (!result || result.historicBlock.height !== 0) {
+            throw new Error(
+              `No known genesis for network with ID: ${network.id}`
+            );
+          }
+          debug("Resolved Network.genesis.");
+          return result;
+        }
+      },
+
       ancestors: {
         async resolve(network, options, context) {
           debug("Resolving Network.ancestors...");
