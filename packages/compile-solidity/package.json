@@ -19,7 +19,7 @@
     "@truffle/config": "^1.2.34",
     "@truffle/contract-sources": "^0.1.10",
     "@truffle/expect": "^0.0.15",
-    "debug": "^4.1.0",
+    "debug": "^4.3.1",
     "fs-extra": "^8.1.0",
     "ora": "^3.4.0",
     "original-require": "^1.0.1",

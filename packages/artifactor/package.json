@@ -27,7 +27,7 @@
     "@types/lodash.merge": "^4.6.6",
     "@types/node": "12.12.21",
     "chai": "4.2.0",
-    "debug": "^4.1.1",
+    "debug": "^4.3.1",
     "ganache-core": "2.13.0",
     "mocha": "8.1.2",
     "require-nocache": "^1.0.0",

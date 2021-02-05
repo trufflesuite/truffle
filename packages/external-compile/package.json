@@ -18,7 +18,7 @@
     "@truffle/config": "^1.2.34",
     "@truffle/contract-schema": "^3.3.3",
     "@truffle/expect": "^0.0.15",
-    "debug": "^4.1.0",
+    "debug": "^4.3.1",
     "glob": "^7.1.2",
     "web3-utils": "1.2.9"
   },

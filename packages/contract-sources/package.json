@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/contract-sources#readme",
   "dependencies": {
-    "debug": "^4.1.0",
+    "debug": "^4.3.1",
     "glob": "^7.1.2"
   },
   "publishConfig": {

@@ -25,7 +25,7 @@
     "@truffle/contract": "^4.3.6",
     "bignumber.js": "^7.2.1",
     "chai": "4.2.0",
-    "debug": "^4.1.0",
+    "debug": "^4.3.1",
     "ganache-core": "2.13.0",
     "mocha": "8.0.1",
     "sinon": "9.0.2",
