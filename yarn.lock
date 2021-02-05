@@ -19828,20 +19828,6 @@ solc@^0.4.20:
     semver "^5.3.0"
     yargs "^4.7.1"
 
-solc@^0.6.0:
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/solc/-/solc-0.6.0.tgz#061a36075087b5ca16e1c4fc4fad565aa2851fe4"
-  integrity sha512-fYVRKbJLbg0oETBuAJN/ts0X/hj2YgOAl3ly3nrm/qhleVr22ecl3OSXW3hRmOWvH81hJ2KHRYRQWgqioK6d0A==
-  dependencies:
-    command-exists "^1.2.8"
-    commander "3.0.2"
-    fs-extra "^0.30.0"
-    js-sha3 "0.8.0"
-    memorystream "^0.3.1"
-    require-from-string "^2.0.0"
-    semver "^5.5.0"
-    tmp "0.0.33"
-
 sort-keys-length@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/sort-keys-length/-/sort-keys-length-1.0.1.tgz#9cb6f4f4e9e48155a6aa0671edd336ff1479a188"
