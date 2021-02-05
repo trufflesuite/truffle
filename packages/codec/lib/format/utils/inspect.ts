@@ -4,6 +4,7 @@ const debug = debugModule("codec:format:utils:inspect");
 import util from "util";
 import * as Format from "@truffle/codec/format/common";
 import * as Exception from "./exception";
+import * as Abify from "../../abify";
 
 //we'll need to write a typing for the options type ourself, it seems; just
 //going to include the relevant properties here
@@ -627,5 +628,120 @@ function nativizeWithTable(
           }
         }
       }
+  }
+}
+
+/**
+ * This function is similar to [[nativize]], but is intended to match the way
+ * that Truffle Contract currently returns values (based on the Ethers
+ * decoder).  As such, it only handles ABI types, and in addition does not
+ * handle the types fixed, ufixed, or function.  Note that in these cases it
+ * returns undefined rather than throwing, as we want this function to be used
+ * in contexts where it had better not throw.  It also does not handle
+ * circularities, for similar reasons.
+ *
+ * To handle numeric types, this function takes an optional second argument,
+ * numberFormatter, that tells it how to handle numbers; this function should
+ * take a BigInt as input.  By default, this function will be the identity,
+ * and so numbers will be represented as BigInts.
+ *
+ * Note that this function begins by calling abify, so out-of-range enums (that
+ * aren't so out-of-range as to be padding errors) will not return undefined.
+ * Out-of-range booleans similarly will return true rather than undefined.
+ * However, other range errors may return undefined; this may technically be a
+ * slight incompatibility with existing behavior, but should not be relevant
+ * except in quite unusual cases.
+ *
+ * In order to match the behavior for tuples, tuples will be transformed into
+ * arrays, but named entries will additionally be keyed by name.  Moreover,
+ * indexed variables of reference type will be nativized to an undecoded hex
+ * string.
+ */
+export function compatibleNativize(
+  result: Format.Values.Result,
+  numberFormatter: (n: BigInt) => any //not parameterized since result is any anyway
+    = x => x
+): any {
+  return compatibleNativizeAbified(
+    Abify.abifyResult(result),
+    numberFormatter
+  );
+}
+
+//HACK; this was going to be parameterized
+//but TypeScript didn't like that, so, whatever
+interface MixedArray extends Array<any> {
+  [key: string]: any
+}
+
+function compatibleNativizeAbified(
+  result: Format.Values.Result,
+  numberFormatter: (n: BigInt) => any
+): any {
+  if (result.kind === "error") {
+    switch (result.error.kind) {
+      case "BoolOutOfRangeError":
+        return true;
+      case "IndexedReferenceTypeError":
+        //strictly speaking for arrays ethers will fail to decode
+        //rather than do this, but, eh
+        return result.error.raw;
+      default:
+        return undefined;
+    }
+  }
+  switch (result.type.typeClass) {
+    case "uint":
+    case "int":
+      const asBN = (<Format.Values.UintValue | Format.Values.IntValue>(
+        result
+      )).value.asBN;
+      //BN is binary-based, so we convert by means of a hex string in order
+      //to avoid having to do a binary-decimal conversion and back :P
+      const asBigInt = !asBN.isNeg()
+        ? BigInt("0x" + asBN.toString(16))
+        : -BigInt("0x" + asBN.neg().toString(16)); //can't directly make negative BigInt from hex string
+      return numberFormatter(asBigInt);
+    case "bool":
+      return (<Format.Values.BoolValue>result).value.asBoolean;
+    case "bytes":
+      return (<Format.Values.BytesValue>result).value.asHex;
+    case "address":
+      return (<Format.Values.AddressValue>result).value.asAddress;
+    case "string": {
+      let coercedResult = <Format.Values.StringValue>result;
+      switch (coercedResult.value.kind) {
+        case "valid":
+          return coercedResult.value.asString;
+        case "malformed":
+          // this will turn malformed utf-8 into replacement characters (U+FFFD) (WARNING)
+          // note we need to cut off the 0x prefix
+          return Buffer.from(
+            coercedResult.value.asHex.slice(2),
+            "hex"
+          ).toString();
+      }
+    }
+    case "fixed":
+    case "ufixed":
+      return undefined;
+    case "array":
+      return (<Format.Values.ArrayValue>result).value.map(value =>
+        compatibleNativize(value, numberFormatter)
+      );
+    case "tuple":
+      //in this case, we need the result to be an array, but also
+      //to have the field names (where extant) as keys
+      const nativized: MixedArray = [];
+      for (const { name, value } of (<Format.Values.TupleValue>result).value) {
+        const nativizedValue = compatibleNativize(value, numberFormatter);
+        nativized.push(nativizedValue);
+        if (name) {
+          nativized[name] = nativizedValue;
+        }
+      }
+      return nativized;
+    case "function":
+      return undefined;
   }
 }
