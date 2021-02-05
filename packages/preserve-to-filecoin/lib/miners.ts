@@ -1,25 +1,22 @@
 import * as Preserve from "@truffle/preserve";
+import { LotusClient } from "filecoin.js";
 
 export interface GetMinersOptions {
-  client: any;
+  client: LotusClient;
   controls: Preserve.Controls;
 }
 
-export type Miner = any;
-
 export async function* getMiners(
   options: GetMinersOptions
-): Preserve.Process<Miner[]> {
-  const {
-    client,
-    controls: { step }
-  } = options;
+): Preserve.Process<string[]> {
+  const { client, controls } = options;
+  const { step } = controls;
 
   const task = yield* step({
     message: "Retrieving miners..."
   });
 
-  const miners = await client.stateListMiners([]);
+  const miners = await client.state.listMiners();
 
   yield* task.succeed();
 

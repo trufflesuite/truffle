@@ -10,11 +10,12 @@ import { getMiners } from "./miners";
 import { proposeStorageDeal } from "./storage";
 import { wait } from "./wait";
 
-export const defaultAddress: string = "ws://localhost:7777/0/node/rpc/v0";
+export const defaultAddress: string = "ws://localhost:7777/rpc/v0";
 
 export interface ConstructorOptions
   extends Preserve.Recipes.ConstructorOptions {
   address: string;
+  token?: string;
 }
 
 export interface PreserveOptions extends Preserve.Recipes.PreserveOptions {
@@ -28,18 +29,19 @@ export interface Result {
 
 export class Recipe implements Preserve.Recipe {
   name = "@truffle/preserve-to-filecoin";
-
   static help = "Preserve to Filecoin";
-
   dependencies: string[] = ["@truffle/preserve-to-ipfs"];
 
   private address: string;
+  private token?: string;
 
   constructor(options: ConstructorOptions) {
     this.address = options.address || defaultAddress;
+    this.token = options.token;
   }
 
   async *preserve(options: PreserveOptions): Preserve.Process<Result> {
+    const { address: url, token } = this;
     const { target, results, controls } = options;
     const { log } = controls;
 
@@ -53,15 +55,9 @@ export class Recipe implements Preserve.Recipe {
 
     yield* log({ message: "Preserving to Filecoin..." });
 
-    const client = yield* connect({
-      address: this.address,
-      controls
-    });
+    const client = yield* connect({ url, token, controls });
 
-    const miners = yield* getMiners({
-      client,
-      controls
-    });
+    const miners = yield* getMiners({ client, controls });
 
     const { dealCid } = yield* proposeStorageDeal({
       cid,
@@ -70,11 +66,7 @@ export class Recipe implements Preserve.Recipe {
       controls
     });
 
-    yield* wait({
-      client,
-      dealCid,
-      controls
-    });
+    yield* wait({ client, dealCid, controls });
 
     return { dealCid };
   }

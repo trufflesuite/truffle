@@ -1,21 +1,18 @@
 import CID from "cids";
 import * as Preserve from "@truffle/preserve";
-import { dealstates, terminalStates } from "./dealstates";
+import { dealstates, terminalStates, DealState } from "./dealstates";
+import { LotusClient } from "filecoin.js";
+import delay from "delay";
 
 export interface WaitOptions {
-  client: any;
+  client: LotusClient;
   dealCid: CID;
   controls: Preserve.Controls;
 }
 
-export type Miner = any;
-
 export async function* wait(options: WaitOptions): Preserve.Process<void> {
-  const {
-    client,
-    dealCid,
-    controls: { step }
-  } = options;
+  const { client, dealCid, controls } = options;
+  const { step } = controls;
 
   const wait = yield* step({
     message: "Waiting for deal to finish..."
@@ -31,34 +28,40 @@ export async function* wait(options: WaitOptions): Preserve.Process<void> {
   yield* wait.succeed();
 }
 
-export async function getDealState(dealCid: CID, client: any): Promise<string> {
-  const clientDeals = await client.clientListDeals();
+export async function getDealState(
+  dealCid: CID,
+  client: LotusClient
+): Promise<DealState> {
+  const clientDeals = await client.client.listDeals();
 
-  const [deal] = clientDeals.filter((d: any) => {
+  const [deal] = clientDeals.filter(d => {
     return d.ProposalCid["/"] == dealCid.toString();
   });
 
   return dealstates[deal.State];
 }
 
-function waitForDealToFinish(dealCid: CID, client: any) {
-  var accept: Function, reject: Function;
-  var p = new Promise((a, r) => {
-    accept = a;
-    reject = r;
-  });
+async function waitForDealToFinish(
+  dealCid: CID,
+  client: LotusClient
+): Promise<"Active"> {
+  const maxRetries = 600;
+  const intervalSeconds = 1;
 
-  var interval = setInterval(async () => {
+  for (let retries = 0; retries < maxRetries; retries++) {
+    await delay(intervalSeconds * 1000);
+
+    // TODO: Maybe report on the current state while waiting.
     const state = await getDealState(dealCid, client);
 
-    if (state == "Active") {
-      clearInterval(interval);
-      return accept(state);
-    } else if (terminalStates.indexOf(state) >= 0) {
-      clearInterval(interval);
-      return reject(new Error("Deal failed with state: " + state));
-    }
-  }, 1000);
+    if (state === "Active") return state;
 
-  return p;
+    if (terminalStates.includes(state)) {
+      throw new Error(`Deal failed with state: ${state}`);
+    }
+  }
+
+  throw new Error(
+    `Could not finish deal within ${maxRetries * intervalSeconds} seconds`
+  );
 }

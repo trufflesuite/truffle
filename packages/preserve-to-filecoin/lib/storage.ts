@@ -1,13 +1,12 @@
 import chalk from "chalk";
 import CID from "cids";
 import * as Preserve from "@truffle/preserve";
-import { LotusClient } from "./connect";
-import { Miner } from "./miners";
+import { LotusClient } from "filecoin.js";
 
 export interface ProposeStorageDealOptions {
   cid: CID;
   client: LotusClient;
-  miners: Miner[];
+  miners: string[];
   controls: Preserve.Controls;
 }
 
@@ -15,30 +14,11 @@ export interface StorageProposalResult {
   dealCid: CID;
 }
 
-export interface StorageProposal {
-  Data: {
-    TransferType: string;
-    Root: {
-      "/": string;
-    };
-    PieceCid: any;
-    PieceSize: number;
-  };
-  Wallet: string;
-  Miner: string;
-  EpochPrice: string;
-  MinBlocksDuration: number;
-}
-
 export async function* proposeStorageDeal(
   options: ProposeStorageDealOptions
 ): Preserve.Process<StorageProposalResult> {
-  const {
-    cid,
-    client,
-    miners,
-    controls: { step }
-  } = options;
+  const { cid, client, miners, controls } = options;
+  const { step } = controls;
 
   const task = yield* step({
     message: "Proposing storage deal..."
@@ -48,29 +28,29 @@ export async function* proposeStorageDeal(
     identifier: "Deal CID"
   });
 
-  const defaultWalletAddress = await client.walletDefaultAddress();
+  const defaultWalletAddress = await client.wallet.getDefaultAddress();
 
   // TODO: Make some of these values configurable
-  const storageProposal: StorageProposal = {
+  // TODO: Allow making a deal with multiple miners
+  const storageProposal = {
     Data: {
       TransferType: "graphsync",
-      Root: {
-        "/": cid.toV1().toString()
-      },
-      PieceCid: null,
-      PieceSize: 0
+      Root: { "/": cid.toString() }
     },
     Wallet: defaultWalletAddress,
     Miner: miners[0],
     EpochPrice: "2500",
-    MinBlocksDuration: 300
+    MinBlocksDuration: 518400 // Min 180 days
   };
 
-  const result = await client.clientStartDeal(storageProposal);
+  const result = await client.client.startDeal(storageProposal);
 
   const dealCid = new CID(result["/"]);
 
-  yield* dealCidResolution.resolve({ payload: chalk.bold(dealCid.toString()) });
+  yield* dealCidResolution.resolve({
+    resolution: dealCid,
+    payload: chalk.bold(dealCid.toString())
+  });
 
   yield* task.succeed();
 
