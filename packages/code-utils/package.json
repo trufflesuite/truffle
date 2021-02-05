@@ -19,9 +19,9 @@
   "devDependencies": {
     "@types/cbor": "^5.0.1",
     "@types/mocha": "^5.2.7",
-    "@types/node": "^12.6.8",
+    "@types/node": "12.12.21",
     "mocha": "8.1.2",
-    "ts-node": "8.10.2",
+    "ts-node": "^9.0.0",
     "typescript": "3.9.6"
   },
   "publishConfig": {

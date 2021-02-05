@@ -26,22 +26,19 @@
     "@truffle/expect": "^0.0.15",
     "@truffle/provisioner": "^0.2.12",
     "abi-to-sol": "^0.2.0",
-    "debug": "^4.1.1",
+    "debug": "^4.3.1",
     "detect-installed": "^2.0.4",
     "get-installed-path": "^4.0.8",
     "glob": "^7.1.6",
     "source-map-support": "^0.5.19",
     "supports-color": "^7.1.0"
   },
-  "peerDependencies": {
-    "@truffle/contract": "^4.0.13"
-  },
   "devDependencies": {
-    "@types/node": "^13.11.1",
-    "@types/sinon": "^9.0.0",
+    "@types/node": "12.12.21",
+    "@types/sinon": "^9.0.10",
     "mocha": "8.1.2",
-    "sinon": "9.0.2",
-    "ts-node": "8.10.2",
+    "sinon": "^9.0.2",
+    "ts-node": "^9.0.0",
     "typescript": "3.9.6"
   },
   "keywords": [
