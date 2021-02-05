@@ -1,6 +1,5 @@
 var provision = function(abstraction, options) {
   var self = this; // eslint-disable-line no-unused-vars
-
   if (options.provider) {
     abstraction.setProvider({ provider: options.provider });
   }
@@ -17,8 +16,12 @@ var provision = function(abstraction, options) {
     abstraction.ens = options.ens;
   }
 
+  if (abstraction.interfaceAdapter.tezos) {
+    abstraction.interfaceAdapter.setWallet(options);
+  }
+
   if (abstraction.interfaceAdapter.web3) {
-    ["from", "gas", "gasPrice"].forEach(key => {
+    ["from", "gas", "gasPrice"].forEach((key) => {
       if (options[key]) {
         var obj = {};
         obj[key] = options[key];

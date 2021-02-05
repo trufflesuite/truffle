@@ -334,7 +334,7 @@ class Deployment {
         /**
          * Required as this sets the wallet for each migration
          */
-        tezos && contract.interfaceAdapter.getAccounts(self);
+        tezos && contract.interfaceAdapter.setWallet(self);
 
         // Emit `preDeploy` & send transaction
         await self.emitter.emit("preDeploy", eventArgs);
