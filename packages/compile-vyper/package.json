@@ -14,7 +14,7 @@
     "@truffle/compile-common": "^0.6.0",
     "@truffle/config": "^1.2.34",
     "@truffle/resolver": "^7.0.0",
-    "colors": "^1.1.2",
+    "colors": "^1.4.0",
     "debug": "^4.3.1",
     "lodash.partition": "^4.6.0",
     "minimatch": "^3.0.4",

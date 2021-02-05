@@ -34,18 +34,18 @@
     "@types/faker": "^5.1.2",
     "@types/jest": "^26.0.20",
     "@types/jest-json-schema": "^2.1.2",
-    "jest": "^26.4.2",
+    "jest": "^26.5.2",
     "jest-extended": "^0.11.5",
-    "jest-fast-check": "^0.0.1",
+    "jest-fast-check": "^1.0.1",
     "jest-json-schema": "^2.1.0",
-    "ts-jest": "^26.4.0",
+    "ts-jest": "^26.4.1",
     "ts-node": "^9.0.0",
     "typescript": "^4.0.3"
   },
   "dependencies": {
-    "change-case": "^4.1.1",
-    "faker": "^5.1.0",
-    "fast-check": "^2.4.0",
+    "change-case": "^4.1.2",
+    "faker": "^5.3.1",
+    "fast-check": "^2.12.1",
     "source-map-support": "^0.5.19"
   }
 }
