@@ -5,7 +5,7 @@ import Web3 from "web3";
 import WalletProvider from "../dist";
 import { describe, it } from "mocha";
 
-describe("HD Wallet Provider", function() {
+describe.skip("HD Wallet Provider", function() {
   const web3 = new Web3();
   const port = 8545;
   let server: any;
