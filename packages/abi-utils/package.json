@@ -43,7 +43,7 @@
     "typescript": "^4.0.3"
   },
   "dependencies": {
-    "change-case": "^4.1.2",
+    "change-case": "3.0.2",
     "faker": "^5.3.1",
     "fast-check": "^2.12.1",
     "source-map-support": "^0.5.19"
