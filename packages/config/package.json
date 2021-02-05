@@ -33,7 +33,7 @@
     "@types/find-up": "^2.1.0",
     "@types/lodash.assignin": "^4.2.6",
     "@types/lodash.merge": "^4.6.6",
-    "@types/node": "^12.12.9",
+    "@types/node": "12.12.21",
     "@types/sinon": "^7.0.13",
     "mocha": "8.1.2",
     "sinon": "9.0.2",

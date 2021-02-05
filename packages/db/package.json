@@ -65,7 +65,7 @@
     "@types/express": "^4.16.0",
     "@types/graphql": "^14.5.0",
     "@types/jest": "^23.3.11",
-    "@types/node": "^10.12.18",
+    "@types/node": "12.12.21",
     "@types/pluralize": "^0.0.29",
     "@types/pouchdb": "^6.3.2",
     "@types/pouchdb-adapter-leveldb": "^6.1.3",

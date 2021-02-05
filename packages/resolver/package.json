@@ -37,7 +37,7 @@
     "@truffle/contract": "^4.0.13"
   },
   "devDependencies": {
-    "@types/node": "^13.11.1",
+    "@types/node": "12.12.21",
     "@types/sinon": "^9.0.0",
     "mocha": "8.1.2",
     "sinon": "9.0.2",
