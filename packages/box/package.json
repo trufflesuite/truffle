@@ -27,7 +27,7 @@
   "devDependencies": {
     "@types/fs-extra": "^8.1.0",
     "@types/inquirer": "6.0.3",
-    "@types/request-promise-native": "^1.0.16",
+    "@types/request-promise-native": "^1.0.17",
     "@types/tmp": "^0.1.0",
     "mocha": "8.1.2",
     "sinon": "9.0.2",

@@ -23,7 +23,7 @@
     "@types/assert": "^1.4.2",
     "@types/mocha": "^5.2.7",
     "@types/node": "12.12.21",
-    "@types/web3": "1.0.19",
+    "@types/web3": "^1.0.20",
     "mocha": "8.1.2",
     "ts-node": "8.10.2",
     "typescript": "3.9.6"
