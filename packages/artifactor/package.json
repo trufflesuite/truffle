@@ -15,7 +15,7 @@
   "types": "dist/index.d.ts",
   "dependencies": {
     "@truffle/contract-schema": "^3.3.3",
-    "fs-extra": "^8.1.0",
+    "fs-extra": "^9.1.0",
     "lodash.assign": "^4.2.0",
     "lodash.merge": "^4.6.2",
     "source-map-support": "^0.5.19"
@@ -26,7 +26,7 @@
     "@types/lodash.assign": "^4.2.6",
     "@types/lodash.merge": "^4.6.6",
     "@types/node": "12.12.21",
-    "chai": "4.2.0",
+    "chai": "^4.2.0",
     "debug": "^4.3.1",
     "ganache-core": "2.13.0",
     "mocha": "8.1.2",
