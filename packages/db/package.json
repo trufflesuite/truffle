@@ -78,7 +78,7 @@
     "jest-fast-check": "^1.0.1",
     "jsondown": "^1.0.0",
     "madge": "^3.11.0",
-    "ts-jest": "26.4.1",
+    "ts-jest": "^26.4.1",
     "ts-node-dev": "^1.0.0-pre.32",
     "tsconfig-paths": "^3.7.0",
     "ttypescript": "^1.5.7",
