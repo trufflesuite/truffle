@@ -20,13 +20,13 @@
     "@truffle/contract-sources": "^0.1.10",
     "@truffle/expect": "^0.0.15",
     "debug": "^4.3.1",
-    "fs-extra": "^9.1.0",
+    "fs-extra": "^8.1.0",
     "ora": "^3.4.0",
     "original-require": "^1.0.1",
     "request": "^2.85.0",
     "request-promise": "^4.2.2",
     "require-from-string": "^2.0.2",
-    "semver": "^7.3.4"
+    "semver": "^5.6.0"
   },
   "devDependencies": {
     "@truffle/artifactor": "^4.0.94",
@@ -38,8 +38,8 @@
     "chai": "^4.2.0",
     "glob": "^7.1.6",
     "mocha": "8.1.2",
-    "sinon": "^9.0.2",
-    "tmp": "^0.2.1"
+    "sinon": "9.0.2",
+    "tmp": "0.2.1"
   },
   "keywords": [
     "compile",

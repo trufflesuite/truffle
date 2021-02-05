@@ -15,13 +15,13 @@
   "dependencies": {
     "@truffle/config": "^1.2.34",
     "download-git-repo": "^3.0.2",
-    "fs-extra": "^9.1.0",
+    "fs-extra": "^8.1.0",
     "ignore": "^5.1.8",
     "inquirer": "^7.0.0",
     "request": "^2.85.0",
-    "request-promise-native": "^1.0.9",
+    "request-promise-native": "^1.0.7",
     "source-map-support": "^0.5.19",
-    "tmp": "^0.2.1",
+    "tmp": "0.2.1",
     "vcsurl": "^0.1.1"
   },
   "devDependencies": {
@@ -30,8 +30,8 @@
     "@types/request-promise-native": "^1.0.17",
     "@types/tmp": "^0.1.0",
     "mocha": "8.1.2",
-    "sinon": "^9.0.2",
-    "ts-node": "^9.0.0",
+    "sinon": "9.0.2",
+    "ts-node": "8.10.2",
     "typescript": "3.9.6"
   },
   "keywords": [

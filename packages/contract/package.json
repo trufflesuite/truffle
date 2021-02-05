@@ -24,7 +24,7 @@
     "@truffle/interface-adapter": "^0.4.18",
     "bignumber.js": "^7.2.1",
     "ethereum-ens": "^0.8.0",
-    "ethers": "^4.0.32",
+    "ethers": "^4.0.0-beta.1",
     "source-map-support": "^0.5.19",
     "web3": "1.2.9",
     "web3-core-helpers": "1.2.9",

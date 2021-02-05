@@ -25,7 +25,7 @@
     "lodash.assignin": "^4.2.0",
     "lodash.merge": "^4.6.2",
     "module": "^1.2.5",
-    "original-require": "^1.0.1",
+    "original-require": "1.0.1",
     "source-map-support": "^0.5.19"
   },
   "devDependencies": {
@@ -36,8 +36,8 @@
     "@types/node": "12.12.21",
     "@types/sinon": "^9.0.10",
     "mocha": "8.1.2",
-    "sinon": "^9.0.2",
-    "ts-node": "^9.0.0",
+    "sinon": "9.0.2",
+    "ts-node": "8.10.2",
     "typescript": "3.9.6"
   },
   "keywords": [
