@@ -9,6 +9,7 @@ const analytics = require("./lib/services/analytics");
 const version = require("./lib/version");
 const versionInfo = version.info();
 const XRegExp = require("xregexp");
+const omelette = require("omelette");
 
 // pre-flight check: Node version compatibility
 const minimumNodeVersion = "8.9.4";
@@ -43,7 +44,7 @@ const command =
 const listeners = process.listeners("warning");
 listeners.forEach(listener => process.removeListener("warning", listener));
 
-let options = {logger: console};
+let options = { logger: console };
 
 const inputArguments = process.argv.slice(2);
 const userWantsGeneralHelp =
@@ -52,6 +53,30 @@ const userWantsGeneralHelp =
 if (userWantsGeneralHelp) {
   command.displayGeneralHelp();
   process.exit(0);
+}
+
+const completion = omelette("truffle <action>");
+
+completion.on("action", ({ reply }) => {
+  reply(Object.keys(command.commands));
+});
+
+completion.init();
+
+const userWantsSetupShellInitFile =
+  inputArguments.length === 1 &&
+  ["setup", "--setup"].includes(inputArguments[0]);
+
+const userWantsCleanupShellInitFile =
+  inputArguments.length === 1 &&
+  ["cleanup", "--cleanup"].includes(inputArguments[0]);
+
+if (userWantsSetupShellInitFile) {
+  completion.setupShellInitFile();
+}
+
+if (userWantsCleanupShellInitFile) {
+  completion.cleanupShellInitFile();
 }
 
 command
@@ -107,6 +132,6 @@ command
       // Bubble up all other unexpected errors.
       console.log(error.stack || error.message || error.toString());
       version.logTruffleAndNode(options.logger);
-    };
+    }
     process.exit(1);
   });
