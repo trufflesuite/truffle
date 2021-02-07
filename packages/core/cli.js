@@ -63,20 +63,20 @@ completion.on("action", ({ reply }) => {
 
 completion.init();
 
-const userWantsSetupShellInitFile =
-  inputArguments.length === 1 &&
-  ["setup", "--setup"].includes(inputArguments[0]);
+const userWantsSetupShellInitFile = ["setup", "--setup"].includes(
+  inputArguments[0]
+);
 
-const userWantsCleanupShellInitFile =
-  inputArguments.length === 1 &&
-  ["cleanup", "--cleanup"].includes(inputArguments[0]);
+const userWantsCleanupShellInitFile = ["cleanup", "--cleanup"].includes(
+  inputArguments[0]
+);
 
 if (userWantsSetupShellInitFile) {
-  completion.setupShellInitFile();
+  completion.setupShellInitFile(inputArguments[1]);
 }
 
 if (userWantsCleanupShellInitFile) {
-  completion.cleanupShellInitFile();
+  completion.cleanupShellInitFile(inputArguments[1]);
 }
 
 command
