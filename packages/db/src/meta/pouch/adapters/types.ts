@@ -57,7 +57,6 @@ export namespace Generic {
     A extends Adapters,
     N extends AdapterName<A> = AdapterName<A>
   > {
-    workingDirectory?: string;
     adapter?: AdapterOptions<A, N>;
   }
 
@@ -74,6 +73,4 @@ export namespace Generic {
 export type GetDefaultSettings = <
   A extends Generic.Adapters,
   N extends Generic.AdapterName<A>
->(
-  options: Omit<Generic.AttachOptions<A, N>, "adapter">
-) => Generic.AdapterSettings<A, N>;
+>() => Generic.AdapterSettings<A, N>;

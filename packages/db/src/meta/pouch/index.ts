@@ -13,7 +13,7 @@ import type { Definitions } from "./types";
 export const forDefinitions = <C extends Collections>(
   definitions: Definitions<C>
 ) => <N extends Adapters.AdapterName>(
-  options: Adapters.AttachOptions<N>
+  options?: Adapters.AttachOptions<N>
 ): Workspace<C> => {
   const { constructor, settings } = Adapters.concretize<C, N>(options);
 

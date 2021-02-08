@@ -10,6 +10,7 @@ const fse = require("fs-extra");
 const { connect } = require("@truffle/db");
 const gql = require("graphql-tag");
 const pascalCase = require("pascal-case");
+const Config = require("@truffle/config");
 
 describe("Repeated compilation of contracts with inheritance [ @standalone ]", function () {
   let config, artifactPaths, initialTimes, finalTimes, output;
@@ -328,8 +329,9 @@ describe("Compilation with db enabled", async () => {
   let config, project;
   const logger = new MemoryLogger();
 
-  function checkForDb(config) {
-    const dbPath = path.join(config.working_directory, ".db");
+  function checkForDb() {
+    const truffleDataDirectory = Config.getTruffleDataDirectory();
+    const dbPath = path.join(truffleDataDirectory, ".db");
 
     const dbExists = fse.pathExistsSync(dbPath);
     return dbExists;
@@ -361,7 +363,7 @@ describe("Compilation with db enabled", async () => {
   it("creates a populated .db directory when db is enabled", async function () {
     this.timeout(12000);
 
-    const dbExists = checkForDb(config);
+    const dbExists = checkForDb();
 
     assert(dbExists === true);
   });
@@ -378,12 +380,15 @@ describe("Compilation with db enabled", async () => {
     `;
 
     // connect to DB
-    const db = connect(config);
+    const db = connect();
     const results = await db.execute(GetAllContracts, {});
 
     // number of contracts matches number of contracts in the project directory
     // (plus one library in this one)
-    assert(results.data.contracts.length === 4);
+    const names = ["Contract", "InnerLibrary", "Migrations", "RelativeImport"];
+    for (const name of names) {
+      assert(results.data.contracts.some(contract => contract.name === name));
+    }
 
     // contract names in project exist in new .db contracts file
     const resultsNames = results.data.contracts.map(a => a.name);
