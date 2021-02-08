@@ -16,8 +16,8 @@ export type Config = {
   contract: {};
   source: {};
   resources: {};
-  entry?: any;
-  result?: any;
+  entry: any;
+  result: any;
 };
 
 export type Resources<C extends Config> = C["resources"];
@@ -48,8 +48,8 @@ export namespace Compilations {
       db: Resources<C>;
     };
 
-    entry?: Entry<C>;
-    result?: Result<C>;
+    entry: Entry<C>;
+    result: Result<C>;
   };
 
   export type Options<C extends Config> = Omit<
@@ -120,8 +120,8 @@ export namespace Contracts {
     input: Contract<C>;
     output: Contract<C> & { db: Resources<C> };
 
-    entry?: Entry<C>;
-    result?: Result<C>;
+    entry: Entry<C>;
+    result: Result<C>;
   };
 
   export type Options<C extends Config> = Omit<

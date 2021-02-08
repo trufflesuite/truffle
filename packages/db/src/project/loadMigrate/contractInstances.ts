@@ -33,8 +33,8 @@ export const process = Batch.configure<{
       contractInstance: IdObject<"contractInstances">;
     };
   };
-  entry: Input<"contractInstances">;
-  result: IdObject<"contractInstances">;
+  entry: Input<"contractInstances"> | undefined;
+  result: IdObject<"contractInstances"> | undefined;
 }>({
   extract({ input, inputs, breadcrumb }) {
     const { artifacts } = inputs;
@@ -46,10 +46,14 @@ export const process = Batch.configure<{
       address,
       transactionHash,
       links,
-      callBytecode: { linkReferences: callLinkReferences },
-      createBytecode: { linkReferences: createLinkReferences },
-      db: { network }
+      callBytecode: { linkReferences: callLinkReferences = [] } = {},
+      createBytecode: { linkReferences: createLinkReferences = [] } = {},
+      db: { network } = {}
     } = input;
+
+    if (!network) {
+      return;
+    }
 
     const {
       db: { contract, callBytecode, createBytecode }

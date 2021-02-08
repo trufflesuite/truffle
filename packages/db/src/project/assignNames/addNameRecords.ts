@@ -19,7 +19,7 @@ export const process = Batch.configure<{
     nameRecord: IdObject<"nameRecords">;
   };
   entry: Input<"nameRecords">;
-  result: IdObject<"nameRecords">;
+  result: IdObject<"nameRecords"> | undefined;
 }>({
   extract<_I>({
     input: {

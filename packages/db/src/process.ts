@@ -42,6 +42,35 @@ export type RequestType = Meta.Process.RequestType<Collections>;
 /**
  * @hidden
  */
+export type QueryName<
+  N extends CollectionName = CollectionName
+> = Meta.Process.QueryName<Collections, N>;
+
+/**
+ * @hidden
+ */
+export type Query<Q extends QueryName = QueryName> = Meta.Process.Query<
+  Collections,
+  Q
+>;
+
+/**
+ * @hidden
+ */
+export type MutationName<
+  N extends CollectionName = CollectionName
+> = Meta.Process.MutationName<Collections, N>;
+
+/**
+ * @hidden
+ */
+export type Mutation<
+  M extends MutationName = MutationName
+> = Meta.Process.Mutation<Collections, M>;
+
+/**
+ * @hidden
+ */
 export type ProcessRequest<
   R extends RequestType | undefined
 > = Meta.Process.ProcessRequest<Collections, R>;
@@ -88,8 +117,8 @@ export namespace ResourceProcessors {
    */
   export type Load = <N extends CollectionName>(
     collectionName: N,
-    inputs: Input<N>[]
-  ) => Process<IdObject<N>[]>;
+    inputs: (Input<N> | undefined)[]
+  ) => Process<(IdObject<N> | undefined)[]>;
 
   /**
    * `resources.get`
@@ -126,7 +155,7 @@ export namespace ResourceProcessors {
     collectionName: N,
     id: string,
     document: graphql.DocumentNode
-  ) => Process<Resource<N>>;
+  ) => Process<Resource<N> | undefined>;
 
   /**
    * `resources.find`
@@ -169,9 +198,9 @@ export namespace ResourceProcessors {
    */
   export type Find = <N extends CollectionName>(
     collectionName: N,
-    ids: string[],
+    ids: (string | undefined)[],
     document: graphql.DocumentNode
-  ) => Process<Resource<N>[]>;
+  ) => Process<(Resource<N> | undefined)[]>;
 
   /**
    * `resources.all`
