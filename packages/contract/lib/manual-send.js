@@ -11,56 +11,29 @@ async function sendTransactionManual(web3, params, promiEvent) {
     web3.currentProvider
   );
   //let's clone params and set it up properly
-  transaction = setUpParameters(params, web3);
+  const { transaction, from } = setUpParameters(params, web3);
   //now: if the from address is in the wallet, web3 will sign the transaction before
   //sending, so we have to account for that
-  const account = web3.eth.accounts.wallet[transaction.from];
-  let txHash, receipt;
-  if (account) {
-    debug("signing!");
-    //must sign when sending
-    const ethersWallet = new ethers.Wallet(
-      account.privateKey,
-      ethersProvider
-    );
-    try {
-      //send transaction using ethers, then wait for it to be mined
-      //this throws if Ganache has VM errors and it reverts
-      //it also throws on revert more generally, but with a different error...
-      receipt = await (
-        await ethersWallet.sendTransaction(transaction)
-      ).wait();
-      receipt = translateReceipt(receipt);
-      txHash = receipt.transactionHash;
-    } catch (error) {
-      ({ txHash, receipt } = handleError(error));
-      //if Ganache error we won't have the receipt and will need
-      //to get it separately
-      if (!receipt) {
-        receipt = await web3.eth.getTransactionReceipt(txHash);
-      }
+  const account = web3.eth.accounts.wallet[from];
+  const ethersSigner = account
+    ? new ethers.Wallet(account.privateKey, ethersProvider)
+    : ethersProvider.getSigner(from);
+  debug("got signer");
+  let txHash, receipt, ethersResponse;
+  try {
+    //note: the following code won't work with ethers v5.
+    //wth ethers v5, in the getSigner() case, you'll need to
+    //use sendUncheckedTransaction instead of sendTransaction.
+    //I don't know why.
+    ethersResponse = await ethersSigner.sendTransaction(transaction);
+    txHash = ethersResponse.hash;
+    receipt = await ethersProvider.waitForTransaction(txHash);
+    debug("no error");
+  } catch (error) {
+    ({ txHash, receipt } = handleError(error));
+    if (!receipt) {
+      receipt = await ethersProvider.waitForTransaction(txHash);
     }
-  } else {
-    //use eth_sendTransaction, no signing
-    //(note: earlier I tried using getSigner().sendTransaction()
-    //but it didn't work?)
-    //send tx and get hash immediately
-    debug("sending");
-    try {
-      //if Ganache has VM errors turned on, this will throw on revert
-      txHash = await ethersProvider
-        .getSigner(transaction.from)
-        .sendUncheckedTransaction(transaction);
-    } catch (error) {
-      //but, we can get the txHash from the error
-      //(this function also rethrows unexpected errors)
-      ({ txHash } = handleError(error));
-    }
-    //wait for it to be mined
-    debug("waiting");
-    await ethersProvider.waitForTransaction(txHash);
-    //get receipt via web3
-    receipt = await web3.eth.getTransactionReceipt(txHash);
   }
   debug("txHash: %s", txHash);
   promiEvent.setTransactionHash(txHash); //this here is why I wrote this function @_@
@@ -120,7 +93,10 @@ function setUpParameters(params, web3) {
   //...but ethers uses gasLimit instead of gas like web3
   transaction.gasLimit = transaction.gas;
   delete transaction.gas;
-  return transaction;
+  //also, it insists "from" be kept separate
+  const { from } = transaction;
+  delete transaction.from;
+  return { transaction, from }
 }
 
 //translate the receipt to web3 format by converting BigNumbers
