@@ -10,10 +10,11 @@ import type {
   Collections,
   MutationInput,
   MutationPayload,
-  MutableCollectionName
+  MutableCollectionName,
+  SavedInput
 } from "@truffle/db/meta/collections";
 import * as Id from "@truffle/db/meta/id";
-import type { Workspace, SavedInput, Historical } from "@truffle/db/meta/data";
+import type { Workspace, Historical } from "@truffle/db/meta/data";
 
 import type { Definition, Definitions } from "@truffle/db/meta/pouch/types";
 
