@@ -49,6 +49,7 @@ export {
   MutableCollectionName,
   NamedCollectionName,
   Input,
+  SavedInput,
   Resource,
   IdFields,
   IdObject,
