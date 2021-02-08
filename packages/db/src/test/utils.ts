@@ -27,7 +27,12 @@ export class WorkspaceClient {
 
   constructor() {
     this.workspace = attach({
-      workingDirectory: tempDir.name
+      adapter: {
+        name: "sqlite",
+        settings: {
+          directory: tempDir.name
+        }
+      }
     });
   }
 

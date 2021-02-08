@@ -1,7 +1,6 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:system");
 
-import type TruffleConfig from "@truffle/config";
 import type { ApolloServer } from "apollo-server";
 
 import * as Meta from "@truffle/db/meta";
@@ -53,11 +52,9 @@ export type ConnectOptions = Meta.ConnectOptions<Collections>;
 
 const system = Meta.forDefinitions(definitions);
 
-export const connect: (options: TruffleConfig | ConnectOptions) => Db =
-  system.connect;
+export const connect: (options?: ConnectOptions) => Db = system.connect;
 
-export const serve: (options: TruffleConfig | ConnectOptions) => ApolloServer =
-  system.serve;
+export const serve: (options?: ConnectOptions) => ApolloServer = system.serve;
 
 export type StrictIdInput<N extends CollectionName> = Meta.Id.StrictIdInput<
   Collections,
