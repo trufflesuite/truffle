@@ -135,7 +135,12 @@ export const contracts: Definition<"contracts"> = {
         ) => {
           debug("Resolving Contract.processedSource...");
 
-          const { processedSources } = await workspace.get("compilations", id);
+          const compilation = await workspace.get("compilations", id);
+          if (!compilation) {
+            return;
+          }
+
+          const { processedSources } = compilation;
 
           debug("Resolved Contract.processedSource.");
           return processedSources[processedSource.index];

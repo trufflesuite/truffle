@@ -21,12 +21,12 @@ export interface Workspace<C extends Collections> {
   find<N extends CollectionName<C>>(
     collectionName: N,
     options: (IdObject<C, N> | undefined)[] | PouchDB.Find.FindRequest<{}>
-  ): Promise<SavedInput<C, N>[]>;
+  ): Promise<(SavedInput<C, N> | undefined)[]>;
 
   get<N extends CollectionName<C>>(
     collectionName: N,
-    id: string
-  ): Promise<Historical<SavedInput<C, N>> | null>;
+    id: string | undefined
+  ): Promise<Historical<SavedInput<C, N>> | undefined>;
 
   add<N extends CollectionName<C>>(
     collectionName: N,

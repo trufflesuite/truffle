@@ -19,20 +19,25 @@ export function* process<
 
   const networks = yield* resources.load(
     "networks",
-    blocks.map(block => ({
-      name: network.name,
-      networkId: network.networkId,
-      historicBlock: block
-    }))
+    blocks.map(block =>
+      block
+        ? {
+            name: network.name,
+            networkId: network.networkId,
+            historicBlock: block
+          }
+        : undefined
+    )
   );
 
   debug("Processed adding networks for blocks.");
-  return networks.map(
-    ({ id }, index) =>
-      ({
-        ...network,
-        id,
-        historicBlock: blocks[index]
-      } as Network)
+  return networks.map((reference, index) =>
+    reference
+      ? ({
+          ...network,
+          id: reference.id,
+          historicBlock: blocks[index]
+        } as Network)
+      : undefined
   );
 }
