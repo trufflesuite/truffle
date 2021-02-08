@@ -29,10 +29,10 @@ export function* process<
   debug("Processed adding networks for blocks.");
   return networks.map(
     ({ id }, index) =>
-      (({
+      ({
         ...network,
         id,
         historicBlock: blocks[index]
-      } as unknown) /* to accommodate stub types */ as Network)
+      } as Network)
   );
 }
