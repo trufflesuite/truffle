@@ -76,13 +76,18 @@ module.exports = {
   output: {
     path: outputDir,
     filename: "[name].bundled.js",
-    library: "",
-    libraryTarget: "commonjs"
+    library: "Lib",
+    libraryTarget: "commonjs",
+    chunkLoading: "require"
   },
-  devtool: "source-map",
+  devtool: "nosources-source-map",
 
   optimization: {
     minimize: false
+    // splitChunks: {
+    //   //maxSize: 1000000
+    //   chunks: 'all'
+    // }
   },
 
   module: {
@@ -217,6 +222,6 @@ module.exports = {
     new CleanWebpackPlugin(),
 
     // Make web3 1.0 packable
-    new webpack.IgnorePlugin(/^electron$/)
+    new webpack.IgnorePlugin({ resourceRegExp: /^electron$/ })
   ]
 };
