@@ -106,7 +106,7 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
   public async find<N extends CollectionName<C>>(
     collectionName: N,
     options: (Id.IdObject<C, N> | undefined)[] | PouchDB.Find.FindRequest<{}>
-  ): Promise<SavedInput<C, N>[]> {
+  ): Promise<(SavedInput<C, N> | undefined)[]> {
     await this.ready;
 
     const log = debug.extend(`${collectionName}:find`);
@@ -118,15 +118,22 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
       const references = options;
       const unordered = await this.find<N>(collectionName, {
         selector: {
-          id: { $in: references.filter(obj => obj).map(({ id }) => id) }
+          id: {
+            $in: references
+              .filter(obj => obj)
+              .map(({ id }: Id.IdObject<C, N>) => id)
+          }
         }
       });
 
       const byId = unordered.reduce(
-        (byId, savedInput) => ({
-          ...byId,
-          [savedInput.id as string]: savedInput
-        }),
+        (byId, savedInput) =>
+          savedInput
+            ? {
+                ...byId,
+                [savedInput.id as string]: savedInput
+              }
+            : byId,
         {} as { [id: string]: SavedInput<C, N> }
       );
 
@@ -138,10 +145,11 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
     // allows searching with `id` instead of pouch's internal `_id`,
     // since we call the field `id` externally, and this approach avoids
     // an extra index
-    const fixIdSelector = selector =>
+    const fixIdSelector = (selector: PouchDB.Find.Selector) =>
       Object.entries(selector)
-        .map(([field, predicate]) =>
-          field === "id" ? { _id: predicate } : { [field]: predicate }
+        .map(
+          ([field, predicate]): PouchDB.Find.Selector =>
+            field === "id" ? { _id: predicate } : { [field]: predicate }
         )
         .reduce((a, b) => ({ ...a, ...b }), {});
 
@@ -164,9 +172,13 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
 
   public async get<N extends CollectionName<C>>(
     collectionName: N,
-    id: string
-  ): Promise<Historical<SavedInput<C, N>> | null> {
+    id: string | undefined
+  ): Promise<Historical<SavedInput<C, N>> | undefined> {
     await this.ready;
+
+    if (typeof id !== "string") {
+      return;
+    }
 
     const log = debug.extend(`${collectionName}:get`);
     log("Getting id: %s...", id);
@@ -181,7 +193,7 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
       } as Historical<SavedInput<C, N>>;
     } catch (_) {
       log("Unknown id: %s.", id);
-      return null;
+      return;
     }
   }
 
@@ -194,11 +206,12 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
     const log = debug.extend(`${collectionName}:add`);
     log("Adding...");
 
-    const resourceInputIds = input[collectionName].map(resourceInput =>
-      this.generateId<N>(collectionName, resourceInput)
-    );
+    const resourceInputIds = input[collectionName]
+      .map(resourceInput => this.generateId<N>(collectionName, resourceInput))
+      .filter((id): id is string => id !== undefined);
 
     const resourceInputById = input[collectionName]
+      .filter((_, index) => resourceInputIds[index])
       .map((resourceInput, index) => ({
         [resourceInputIds[index]]: resourceInput
       }))
@@ -249,9 +262,9 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
     const log = debug.extend(`${collectionName}:update`);
     log("Updating...");
 
-    const resourceInputIds = input[collectionName].map(resourceInput =>
-      this.generateId(collectionName, resourceInput)
-    );
+    const resourceInputIds = input[collectionName]
+      .map(resourceInput => this.generateId<M>(collectionName, resourceInput))
+      .filter((id): id is string => id !== undefined);
 
     const resourceInputById = input[collectionName]
       .map((resourceInput, index) => ({
@@ -305,6 +318,9 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
     await Promise.all(
       input[collectionName].map(async resourceInput => {
         const id = this.generateId(collectionName, resourceInput);
+        if (!id) {
+          return;
+        }
 
         const resource = await this.get(collectionName, id);
         const { _rev = undefined } = resource ? resource : {};

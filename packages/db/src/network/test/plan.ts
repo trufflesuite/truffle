@@ -87,8 +87,7 @@ export const plan = (options: {
 
               // update known latest
               latestByDescendantIndex[descendantIndex] = {
-                // @ts-ignore
-                network: { id },
+                network: { id } as IdObject<"networks">,
                 height
               };
             }

@@ -19,29 +19,41 @@ export const process = Batch.configure<{
     };
   };
   produces: {
-    callBytecode?: {
+    callBytecode: {
       linkReferences: { name: string }[];
     };
-    createBytecode?: {
+    createBytecode: {
       linkReferences: { name: string }[];
     };
   };
   entry: IdObject<"contracts">;
-  result: {
-    callBytecode?: {
-      linkReferences: { name: string }[];
-    };
-    createBytecode?: {
-      linkReferences: { name: string }[];
-    };
-  };
+  result:
+    | {
+        callBytecode: {
+          linkReferences: { name: string | null }[] | null;
+        } | null;
+        createBytecode: {
+          linkReferences: { name: string | null }[] | null;
+        } | null;
+      }
+    | undefined;
 }>({
   extract({ inputs: { artifacts }, breadcrumb: { artifactIndex } }) {
     return artifacts[artifactIndex].db.contract;
   },
 
   *process({ entries }) {
-    return yield* resources.find(
+    const contracts: (
+      | {
+          callBytecode: {
+            linkReferences: { name: string | null }[] | null;
+          } | null;
+          createBytecode: {
+            linkReferences: { name: string | null }[] | null;
+          } | null;
+        }
+      | undefined
+    )[] = yield* resources.find(
       "contracts",
       entries.map(({ id }) => id),
       gql`
@@ -61,6 +73,8 @@ export const process = Batch.configure<{
         }
       `
     );
+
+    return contracts;
   },
 
   convert<_I, _O>({ result, input }) {

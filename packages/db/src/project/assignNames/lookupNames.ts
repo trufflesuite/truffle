@@ -9,7 +9,11 @@ import gql from "graphql-tag";
 import { pascalCase } from "change-case";
 import { singular } from "pluralize";
 import { resources } from "@truffle/db/process";
-import type { IdObject, NamedCollectionName } from "@truffle/db/resources";
+import type {
+  Resource,
+  IdObject,
+  NamedCollectionName
+} from "@truffle/db/resources";
 import * as Batch from "./batch";
 
 export const process = Batch.configure<{
@@ -44,12 +48,15 @@ export const process = Batch.configure<{
     // catch unknown resources so we can abort
     const missing = results
       .map((resource, index) => !resource && entries[index].id)
-      .filter(id => id);
+      .filter((id): id is string => !!id);
     if (missing.length > 0) {
       throw new Error(`Unknown ${collectionName}: ${missing.join(", ")}`);
     }
 
-    return results.map(({ name }) => ({ name, type }));
+    return results.map(({ name }: Resource<NamedCollectionName>) => ({
+      name,
+      type
+    }));
   },
 
   convert<_I, _O>({ result, input }) {

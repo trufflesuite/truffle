@@ -197,23 +197,23 @@ abstract class DefinitionSchema<
       }
 
       extend type Query {
-        ${resources}(filter: QueryFilter): [${Resource}]
+        ${resources}(filter: QueryFilter): [${Resource}]!
         ${resource}(id: ID!): ${Resource}
         ${resource}Id(input: ${Resource}Input!): ID!
       }
 
       input ${ResourcesMutate}Input {
-        ${resources}: [${Resource}Input!]!
+        ${resources}: [${Resource}Input]!
       }
 
       type ${ResourcesMutate}Payload {
-        ${resources}: [${Resource}!]
+        ${resources}: [${Resource}]!
       }
 
       extend type Mutation {
         ${resourcesMutate}(
           input: ${ResourcesMutate}Input!
-        ): ${ResourcesMutate}Payload
+        ): ${ResourcesMutate}Payload!
       }
     `
     ];

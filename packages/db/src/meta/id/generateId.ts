@@ -15,8 +15,12 @@ export const forDefinitions = <C extends Collections>(
   definitions: Definitions<C>
 ): GenerateId<C> => <N extends CollectionName<C>>(
   collectionName: N,
-  input: Input<C, N>
+  input: Input<C, N> | undefined
 ) => {
+  if (!input) {
+    return;
+  }
+
   const { idFields } = definitions[collectionName];
 
   const plucked = idFields.reduce(
