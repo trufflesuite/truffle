@@ -14,7 +14,7 @@ describe("Project.contractInstances", () => {
       /*
        * Setup
        */
-      const db = connect({ workingDirectory: "", adapter: { name: "memory" } });
+      const db = connect({ adapter: { name: "memory" } });
       const { run } = Run.forDb(db);
       const project = await Project.initialize({
         db,
