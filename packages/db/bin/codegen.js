@@ -1,4 +1,4 @@
-const fs = require("fs");
+const fse = require("fs-extra");
 const path = require("path");
 const { generateNamespace: generate } = require("@gql2ts/from-schema");
 const { camelCase, pascalCase } = require("change-case");
@@ -24,10 +24,10 @@ ${interfaces}
 `;
 
 const interfaceBuilder = (name, body) => {
-  const isRoot = (name) => name === "Query" || name === "Mutation";
-  const isResource = (name) => camelCase(plural(name)) in definitions;
-  const isInput =
-    (name) => name.endsWith("Input") && isResource(name.slice(0, -5));
+  const isRoot = name => name === "Query" || name === "Mutation";
+  const isResource = name => camelCase(plural(name)) in definitions;
+  const isInput = name =>
+    name.endsWith("Input") && isResource(name.slice(0, -5));
 
   if (isRoot(name)) {
     return `/**
@@ -51,9 +51,9 @@ interface ${name} ${body}`;
   }
 
   return `interface ${name} ${body}`;
-}
+};
 
-const generateInterfaceName = (name) => pascalCase(name);
+const generateInterfaceName = name => pascalCase(name);
 
 const dataModel = generate(
   "_DataModel",
@@ -69,8 +69,14 @@ const dataModel = generate(
   }
 );
 
-fs.writeFileSync(path.join(__dirname, "..", "types", "schema.d.ts"), dataModel);
+fse.writeFileSync(
+  path.join(__dirname, "..", "types", "schema.d.ts"),
+  dataModel
+);
 
-fs.writeFileSync(
-  path.join(__dirname, "..", "dist", "schema.sdl"), printSchema(schema)
+fse.ensureDirSync(path.join(__dirname, "..", "dist"));
+
+fse.writeFileSync(
+  path.join(__dirname, "..", "dist", "schema.sdl"),
+  printSchema(schema)
 );
