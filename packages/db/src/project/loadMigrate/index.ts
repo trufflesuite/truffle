@@ -16,7 +16,7 @@ import * as GetContracts from "./contracts";
 import * as AddContractInstances from "./contractInstances";
 export { GetContracts, AddContractInstances };
 
-export type Artifact = ContractObject & {
+export type Artifact = {
   networks?: {
     [networkId: string]: {
       db?: {

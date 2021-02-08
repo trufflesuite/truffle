@@ -1,3 +1,4 @@
+import type { Query } from "@truffle/db/process";
 import { generateId, Migrations, WorkspaceClient } from "./utils";
 import { AddNetworks, GetNetwork, GetAllNetworks } from "./network.graphql";
 
@@ -48,23 +49,28 @@ describe("Network", () => {
   });
 
   test("can be queried", async () => {
-    const getNetworkResult = await wsClient.execute(GetNetwork, {
+    const getNetworkResult = (await wsClient.execute(GetNetwork, {
       id: expectedId
-    });
+    })) as Query<"network">;
 
     expect(getNetworkResult).toHaveProperty("network");
 
     const { network } = getNetworkResult;
+    expect(network).toBeDefined();
     expect(network).toHaveProperty("id");
     expect(network).toHaveProperty("networkId");
 
+    // @ts-ignore
     const { id, networkId } = network;
     expect(id).toEqual(expectedId);
     expect(networkId).toEqual(variables.networkId);
   });
 
   test("can retrieve all networks", async () => {
-    const getAllNetworksResult = await wsClient.execute(GetAllNetworks, {});
+    const getAllNetworksResult = (await wsClient.execute(
+      GetAllNetworks,
+      {}
+    )) as Query<"networks">;
 
     expect(getAllNetworksResult).toHaveProperty("networks");
 
