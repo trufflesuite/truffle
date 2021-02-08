@@ -34,6 +34,7 @@
   },
   "devDependencies": {
     "@truffle/box": "^2.1.5",
+    "@truffle/config": "^1.2.34",
     "@truffle/contract": "^4.3.6",
     "@truffle/core": "^5.1.65",
     "@truffle/interface-adapter": "^0.4.18",
