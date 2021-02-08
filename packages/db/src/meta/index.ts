@@ -20,10 +20,11 @@ export {
   Input,
   IdFields,
   MutableResource,
-  NamedResource
+  NamedResource,
+  SavedInput
 } from "./collections";
 export { Db, ConnectOptions } from "./interface";
-export { SavedInput, Workspace } from "./data";
+export { Workspace } from "./data";
 export { Definition, Definitions } from "./definitions";
 
 import * as Graph from "./graph";
