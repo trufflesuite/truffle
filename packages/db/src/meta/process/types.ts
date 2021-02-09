@@ -122,6 +122,7 @@ export type QueryName<
     | CollectionProperty<"names", C, K>["resources"];
 }[N];
 
+// borrowed from https://fettblog.eu/typescript-union-to-intersection
 type UnionToIntersection<T> = (T extends any ? (x: T) => any : never) extends (
   x: infer R
 ) => any
