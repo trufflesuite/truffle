@@ -30,7 +30,7 @@ export function* process(options: {
     },
     latest: { id }
   } = options;
-  const { ancestors: networks } = yield* resources.get(
+  const latest = yield* resources.get(
     "networks",
     id,
     gql`
@@ -48,6 +48,10 @@ export function* process(options: {
     }
   `
   );
+  if (!latest) {
+    throw new Error("Error getting network ancestors");
+  }
+  const { ancestors: networks } = latest;
 
   debug("networks %O", networks);
 

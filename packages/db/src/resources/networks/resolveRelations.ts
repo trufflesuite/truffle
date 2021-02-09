@@ -72,15 +72,20 @@ export function resolveRelations(relationship: "ancestor" | "descendant") {
       debug("unsearchedGenealogies %o", unsearchedGenealogies);
 
       // conduct this iteration's genealogy search
-      const networkGenealogies: Input<
-        "networkGenealogies"
-      >[] = await workspace.find("networkGenealogies", {
-        selector: {
-          [`${reverseRelationship}.id`]: {
-            $in: unsearchedGenealogies.map(({ id }) => id)
+      const networkGenealogies: Input<"networkGenealogies">[] = (
+        await workspace.find("networkGenealogies", {
+          selector: {
+            [`${reverseRelationship}.id`]: {
+              $in: unsearchedGenealogies.map(({ id }) => id)
+            }
           }
-        }
-      });
+        })
+      ).filter(
+        (
+          networkGenealogy
+        ): networkGenealogy is SavedInput<"networkGenealogies"> =>
+          !!networkGenealogy
+      );
       debug("networkGenealogies %o", networkGenealogies);
 
       // track any superlatives
@@ -103,7 +108,7 @@ export function resolveRelations(relationship: "ancestor" | "descendant") {
       // [reverseRelationship], we next must search all the [relationship]s,
       // except for those we already know about as a relation
       unsearchedGenealogies = networkGenealogies
-        .map(({ [relationship]: { id } }) => ({ id }))
+        .map(({ [relationship]: { id } }) => ({ id } as IdObject<"networks">))
         .filter(requiresSearch);
 
       // add these to the current batch for possible network lookup

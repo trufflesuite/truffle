@@ -12,6 +12,7 @@
     "module": "commonjs",
     "outDir": "./dist",
     "strictBindCallApply": true,
+    "strictNullChecks": true,
     "paths": {
       "@truffle/db": ["./src"],
       "@truffle/db/*": ["./src/*"],

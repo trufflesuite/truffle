@@ -17,16 +17,16 @@ export const process = Batch.Contracts.configure<{
   };
   source: {};
   resources: {
-    callBytecode: IdObject<"bytecodes">;
-    createBytecode: IdObject<"bytecodes">;
+    callBytecode: IdObject<"bytecodes"> | undefined;
+    createBytecode: IdObject<"bytecodes"> | undefined;
   };
   entry: {
     callBytecode: Input<"bytecodes">;
     createBytecode: Input<"bytecodes">;
   };
   result: {
-    callBytecode: IdObject<"bytecodes">;
-    createBytecode: IdObject<"bytecodes">;
+    callBytecode: IdObject<"bytecodes"> | undefined;
+    createBytecode: IdObject<"bytecodes"> | undefined;
   };
 }>({
   extract({
