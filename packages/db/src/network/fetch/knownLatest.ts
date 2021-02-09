@@ -24,7 +24,7 @@ export function* process<
     network: { id }
   } = options;
 
-  const { descendants, ...network } = yield* resources.get(
+  const resource = yield* resources.get(
     "networks",
     id,
     gql`
@@ -51,6 +51,10 @@ export function* process<
     }
   `
   );
+  if (!resource) {
+    return;
+  }
+  const { descendants, ...network } = resource;
   debug("descendants %O", descendants);
 
   for (const descendant of descendants.reverse()) {

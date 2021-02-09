@@ -20,10 +20,10 @@ export type Config = {
   artifact?: {};
 
   requires?: {};
-  produces: {};
+  produces: {} | undefined;
 
-  entry?: any;
-  result?: any;
+  entry: any;
+  result: any;
 };
 
 export type Network<C extends Config> = C["network"] & {

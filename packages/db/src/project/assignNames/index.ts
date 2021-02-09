@@ -6,7 +6,11 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:assignNames");
 
 import type { Process } from "@truffle/db/process";
-import type { IdObject, NamedCollectionName } from "@truffle/db/resources";
+import type {
+  IdObject,
+  Resource,
+  NamedCollectionName
+} from "@truffle/db/resources";
 
 import * as Batch from "./batch";
 export { Batch };
@@ -20,10 +24,10 @@ export { LookupNames, GetCurrent, AddNameRecords, UpdateProjectNames };
 /**
  * generator function to load nameRecords and project names into Truffle DB
  */
-export function* process(options: {
+export function* process<N extends NamedCollectionName>(options: {
   project: IdObject<"projects">;
   assignments: {
-    [N in NamedCollectionName]?: IdObject<N>[];
+    [K in N]: IdObject<K>[];
   };
 }): Process<{
   project: IdObject<"projects">;
@@ -40,9 +44,14 @@ export function* process(options: {
   const { project } = options;
 
   const assignments = Object.entries(options.assignments)
-    .map(([collectionName, resources]) => ({
-      [collectionName]: resources.map(resource => ({ resource }))
-    }))
+    .map(
+      ([collectionName, resources]: [
+        NamedCollectionName,
+        Resource<NamedCollectionName>[]
+      ]) => ({
+        [collectionName]: resources.map(resource => ({ resource }))
+      })
+    )
     .reduce((a, b) => ({ ...a, ...b }), {});
 
   const withNameAndType = yield* LookupNames.process({

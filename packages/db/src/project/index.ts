@@ -6,11 +6,12 @@ import type { WorkflowCompileResult } from "@truffle/compile-common";
 import type { ContractObject } from "@truffle/contract-schema/spec";
 
 import * as Process from "@truffle/db/process";
-import type {
+import {
   Db,
   NamedCollectionName,
   Input,
-  IdObject
+  IdObject,
+  toIdObject
 } from "@truffle/db/resources";
 
 import * as Network from "@truffle/db/network";
@@ -261,7 +262,7 @@ export class ConnectedProject extends Project {
     const { networkId } = network.genesis;
 
     const transactionHashes = options.artifacts.map(
-      ({ networks }) => (networks[networkId] || {}).transactionHash
+      ({ networks = {} }) => (networks[networkId] || {}).transactionHash
     );
 
     const networks = await network.includeTransactions({ transactionHashes });
@@ -271,12 +272,13 @@ export class ConnectedProject extends Project {
       network: {
         networkId: network.knownLatest.networkId
       },
+      // @ts-ignore HACK to avoid making LoadMigrate.process generic
       artifacts: options.artifacts.map((artifact, index) => ({
         ...artifact,
         networks: {
           ...artifact.networks,
           [networkId]: {
-            ...artifact.networks[networkId],
+            ...(artifact.networks || {})[networkId],
             ...(networks[index]
               ? {
                   db: {
@@ -290,9 +292,7 @@ export class ConnectedProject extends Project {
     });
 
     return {
-      network: {
-        id: network.knownLatest.id
-      },
+      network: toIdObject<"networks">(network.knownLatest),
       artifacts
     };
   }

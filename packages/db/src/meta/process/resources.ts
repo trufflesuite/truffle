@@ -22,20 +22,20 @@ export interface ResourceProcessorsOptions<C extends Collections> {
 export interface ResourceProcessors<C extends Collections> {
   load: <N extends CollectionName<C>>(
     collectionName: N,
-    inputs: Input<C, N>[]
-  ) => Process<C, IdObject<C, N>[]>;
+    inputs: (Input<C, N> | undefined)[]
+  ) => Process<C, (IdObject<C, N> | undefined)[]>;
 
   get: <N extends CollectionName<C>>(
     collectionName: N,
     id: string,
     document: graphql.DocumentNode
-  ) => Process<C, Resource<C, N>>;
+  ) => Process<C, Resource<C, N> | undefined>;
 
   find: <N extends CollectionName<C>>(
     collectionName: N,
-    ids: string[],
+    ids: (string | undefined)[],
     document: graphql.DocumentNode
-  ) => Process<C, Resource<C, N>[]>;
+  ) => Process<C, (Resource<C, N> | undefined)[]>;
 
   all: <N extends CollectionName<C>>(
     collectionName: N,
@@ -83,7 +83,7 @@ export const resourceProcessorsForDefinitions = <C extends Collections>(
         type: "graphql",
         request: gql`
           mutation Load${Resources}(
-            $inputs: [${Resource}Input!]!
+            $inputs: [${Resource}Input]!
           ) {
             ${resourcesMutate}(input: { ${resources}: $inputs }) {
               ${resources} {

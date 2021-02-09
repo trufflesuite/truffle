@@ -13,5 +13,8 @@ export function* process(options: {
 }): Process<IdObject<"projects">> {
   const { input } = options;
   const [project] = yield* resources.load("projects", [input]);
+  if (!project) {
+    throw new Error("Error loading Project");
+  }
   return project;
 }
