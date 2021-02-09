@@ -12,7 +12,26 @@ import * as Meta from "@truffle/db/meta";
 import type { IdObject, Input } from "@truffle/db/resources";
 import { resources } from "@truffle/db/process";
 
-export const process = Meta.Batch.configure<{
+export const process = <
+  _I extends
+    | {
+        contents: string;
+        sourcePath: string; // normal sources
+      }
+    | {
+        contents: string;
+        name: string; // generated sources
+      },
+  _O extends _I & {
+    db?: {
+      source: IdObject<"sources"> | undefined;
+    };
+  }
+>(
+  inputs
+) => configure(inputs);
+
+const configure = Meta.Batch.configure<{
   structure: (Omit<Common.Compilation, "sources" | "contracts"> & {
     sources: (Common.Source & _)[];
     contracts: (Omit<
@@ -47,8 +66,8 @@ export const process = Meta.Batch.configure<{
   entry: Input<"sources">;
   result: IdObject<"sources"> | undefined;
   output: {
-    db: {
-      source: IdObject<"sources">;
+    db?: {
+      source: IdObject<"sources"> | undefined;
     };
   };
 }>({
@@ -123,13 +142,20 @@ export const process = Meta.Batch.configure<{
     return yield* resources.load("sources", entries);
   },
 
-  initialize<_I, _O>({ inputs }) {
+  // @ts-ignore
+  initialize({ inputs }) {
     return inputs.map(compilation => ({
-      ...compilation
+      ...compilation,
+      sources: compilation.sources.map(source => ({
+        ...source
+      })),
+      contracts: compilation.contracts.map(contract => ({
+        ...contract
+      }))
     }));
   },
 
-  convert<_I, _O>({ result, input }) {
+  convert({ result, input }) {
     return {
       ...input,
       db: {
@@ -138,7 +164,7 @@ export const process = Meta.Batch.configure<{
     };
   },
 
-  merge<I, O>({ outputs, breadcrumb, output }) {
+  merge({ outputs, breadcrumb, output }) {
     const { compilationIndex, sourcePointer } = breadcrumb;
 
     const compilationsBefore = outputs.slice(0, compilationIndex);
@@ -151,11 +177,15 @@ export const process = Meta.Batch.configure<{
       const contract = compilation.contracts[contractIndex];
       const contractsAfter = compilation.contracts.slice(contractIndex + 1);
 
+      // @ts-ignore this will always be defined because we are looking it up
+      // via breadcrumb
       const generatedSourcesBefore = contract[property].slice(
         0,
         generatedSourceIndex
       );
       const generatedSource = output;
+      // @ts-ignore this will always be defined because we are looking it up
+      // via breadcrumb
       const generatedSourcesAfter = contract[property].slice(
         generatedSourceIndex + 1
       );
@@ -183,7 +213,7 @@ export const process = Meta.Batch.configure<{
 
     const { sourceIndex } = sourcePointer;
     const sourcesBefore = compilation.sources.slice(0, sourceIndex);
-    const source: I & O = output;
+    const source = output;
     const sourcesAfter = compilation.sources.slice(sourceIndex + 1);
 
     return [

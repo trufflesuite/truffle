@@ -54,7 +54,6 @@ export function* process(
   compilations: Compilation[];
   contracts: Contract[];
 }> {
-  // @ts-ignore
   const withSources = yield* AddSources.process(result.compilations);
 
   // @ts-ignore
@@ -65,6 +64,7 @@ export function* process(
     withSourcesAndBytecodes
   );
 
+  // @ts-ignore
   const withContracts = yield* AddContracts.process(withCompilations);
 
   const compilations = withContracts;
@@ -73,7 +73,7 @@ export function* process(
     // @ts-ignore
     compilations,
     contracts: compilations.reduce(
-      (a, { contracts }) => [...a, ...contracts],
+      (a, { contracts }) => [...a, ...contracts] as Contract[],
       []
     )
   };
