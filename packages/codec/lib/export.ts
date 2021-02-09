@@ -103,9 +103,6 @@ function compatibleNativizeAbified(
           ).toString();
       }
     }
-    case "fixed":
-    case "ufixed":
-      return undefined;
     case "array":
       return (<Format.Values.ArrayValue>result).value.map(value =>
         compatibleNativizeAbified(value, numberFormatter)
@@ -122,6 +119,8 @@ function compatibleNativizeAbified(
         }
       }
       return nativized;
+    case "fixed":
+    case "ufixed":
     case "function":
       return undefined;
   }
