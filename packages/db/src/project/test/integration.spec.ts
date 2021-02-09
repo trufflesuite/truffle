@@ -248,10 +248,14 @@ const AddContracts = gql`
           }
         }
         callBytecodeGeneratedSources {
-          name
+          source {
+            sourcePath
+          }
         }
         createBytecodeGeneratedSources {
-          name
+          source {
+            sourcePath
+          }
         }
       }
     }
@@ -306,15 +310,19 @@ const GetWorkspaceContract = gql`
         }
       }
       callBytecodeGeneratedSources {
-        name
+        source {
+          sourcePath
+          contents
+        }
         ast {
           json
         }
         language
-        contents
       }
       createBytecodeGeneratedSources {
-        name
+        source {
+          sourcePath
+        }
       }
       compilation {
         compiler {
@@ -832,7 +840,10 @@ describe("Compilation", () => {
             compilation: Resource<"compilations">;
             createBytecode: Resource<"bytecodes">;
             callBytecode: Resource<"bytecodes">;
-            callBytecodeGeneratedSources: DataModel.GeneratedSource[];
+            callBytecodeGeneratedSources: (
+              | DataModel.ProcessedSource
+              | undefined
+            )[];
           };
         };
       };
@@ -848,9 +859,9 @@ describe("Compilation", () => {
           .deployedGeneratedSources) {
           const generatedSource = callBytecodeGeneratedSources[id];
           expect(generatedSource).toBeDefined();
-          expect(generatedSource.name).toEqual(name);
-          expect(generatedSource.ast.json).toEqual(JSON.stringify(ast));
-          expect(generatedSource.contents).toEqual(contents);
+          expect(generatedSource.source.sourcePath).toEqual(name);
+          expect(generatedSource.ast?.json).toEqual(JSON.stringify(ast));
+          expect(generatedSource.source.contents).toEqual(contents);
           expect(generatedSource.language).toEqual(language);
         }
       }

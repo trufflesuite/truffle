@@ -106,12 +106,15 @@ export const process = Batch.Contracts.configure<{
 });
 
 function toGeneratedSourcesInput({ generatedSources }) {
+  debug("generatedSources %O", generatedSources);
   const processedGeneratedSources = (generatedSources || []).reduce(
-    (generatedSources: (DataModel.GeneratedSource | undefined)[], input) => {
+    (
+      generatedSources: (DataModel.ProcessedSourceInput | undefined)[],
+      input
+    ) => {
       generatedSources[input.id] = {
+        source: input.db.source,
         ast: { json: JSON.stringify(input.ast) },
-        contents: input.contents,
-        name: input.name,
         language: input.language
       };
       return generatedSources;
