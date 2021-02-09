@@ -60,7 +60,6 @@ export const AddContracts = gql`
     $abi: String!
     $name: String!
     $ast: String!
-    $id: Int!
     $contents: String!
     $language: String!
   ) {
@@ -77,7 +76,6 @@ export const AddContracts = gql`
               {
                 name: $name
                 ast: { json: $ast }
-                id: $id
                 contents: $contents
                 language: $language
               }
