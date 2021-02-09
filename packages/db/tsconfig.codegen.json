@@ -1,8 +1,10 @@
 {
   "extends": "./tsconfig.base.json",
+  "ts-node": {
+    "transpileOnly": true
+  },
   "include": [
     "src/**/*",
-    "test/**/*",
-    "types/stub.d.ts"
+    "test/**/*"
   ]
 }

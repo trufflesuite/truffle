@@ -45,7 +45,7 @@ describe("Memory-based Workspace", () => {
     const workspace2 = attach({ adapter: memoryAdapter });
 
     // and don't get data out!
-    expect(await workspace2.get("bytecodes", id)).toBeNull();
+    expect(await workspace2.get("bytecodes", id)).toBeUndefined();
   });
 });
 

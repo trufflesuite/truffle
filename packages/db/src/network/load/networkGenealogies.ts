@@ -56,21 +56,25 @@ export function* process(options: {
   };
 }): Process<IdObject<"networkGenealogies">[]> {
   debug("Processing loading network genealogies...");
-  const {
-    settings: { disableIndex = false }
-  } = options;
-
-  if (!options.networks.length) {
-    return;
-  }
+  const { settings: { disableIndex = false } = {} } = options;
 
   // sort by historic block height
   const inputNetworks = collectNetworks(options);
 
+  if (!inputNetworks.length) {
+    return [];
+  }
+
   const earliestInputNetwork = inputNetworks[0];
   const latestInputNetwork = inputNetworks[inputNetworks.length - 1];
 
-  const commonOptions = { disableIndex, exclude: inputNetworks };
+  const commonOptions: Pick<
+    Parameters<typeof Query.Relation.process>[0],
+    "disableIndex" | "exclude"
+  > = {
+    disableIndex,
+    exclude: inputNetworks.map(network => toIdObject<"networks">(network))
+  };
 
   // find anchors
   //
@@ -78,19 +82,19 @@ export function* process(options: {
   const earliestInputNetworkAncestor = yield* Query.Relation.process({
     ...commonOptions,
     relationship: "ancestor",
-    network: earliestInputNetwork
+    network: toIdObject<"networks">(earliestInputNetwork)
   });
 
   const latestInputNetworkAncestor = yield* Query.Relation.process({
     ...commonOptions,
     relationship: "ancestor",
-    network: latestInputNetwork
+    network: toIdObject<"networks">(latestInputNetwork)
   });
 
   const latestInputNetworkDescendant = yield* Query.Relation.process({
     ...commonOptions,
     relationship: "descendant",
-    network: latestInputNetwork
+    network: toIdObject<"networks">(latestInputNetwork)
   });
 
   // find ancestor to latest input network and use that to find ancestors
@@ -122,19 +126,22 @@ export function* process(options: {
   );
 
   debug("Processing loading network genealogies...");
-  return results;
+  return results.filter(
+    (resource): resource is IdObject<"networkGenealogies"> => !!resource
+  );
 }
 
 /**
  * Given a sparsely-populated list of networks from the same blockchain, sort
  * networks by block height.
  */
-function collectNetworks(options: {
-  networks: (Pick<Resource<"networks">, "id" | "historicBlock"> | undefined)[];
-}): Pick<Resource<"networks">, "id" | "historicBlock">[] {
+function collectNetworks<
+  Network extends Pick<Resource<"networks">, "id" | "historicBlock">
+>(options: { networks: (Network | undefined)[] }): Network[] {
+  debug("networks %O", options.networks);
   // start by ordering non-null networks by block height
   const networks = options.networks
-    .filter(network => !!network)
+    .filter((network): network is Network => !!network)
     .sort((a, b) => a.historicBlock.height - b.historicBlock.height);
 
   // return sorted networks
@@ -163,7 +170,7 @@ function collectPairwiseGenealogies<
   };
 
   const initialAccumulator: ResultAccumulator = {
-    ancestor: toIdObject(networks[0]),
+    ancestor: toIdObject<"networks">(networks[0]),
     networkGenealogies: []
   };
 
@@ -174,7 +181,7 @@ function collectPairwiseGenealogies<
       { ancestor, networkGenealogies }: ResultAccumulator,
       descendant: Network
     ): ResultAccumulator => ({
-      ancestor: toIdObject(descendant),
+      ancestor: toIdObject<"networks">(descendant),
       networkGenealogies:
         ancestor.id === descendant.id
           ? networkGenealogies
@@ -182,7 +189,7 @@ function collectPairwiseGenealogies<
               ...networkGenealogies,
               {
                 ancestor,
-                descendant: toIdObject(descendant)
+                descendant: toIdObject<"networks">(descendant)
               }
             ]
     }),

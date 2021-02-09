@@ -50,7 +50,7 @@ export const process = Batch.Compilations.configure<{
     compilation: IdObject<"compilations">;
   };
   entry: Input<"compilations">;
-  result: IdObject<"compilations">;
+  result: IdObject<"compilations"> | undefined;
 }>({
   extract({ input }) {
     return toCompilationInput({
@@ -97,14 +97,14 @@ function toCompilationInput(options: {
 function toProcessedSourceInputs(options: {
   sources: Source[];
   sourceIndexes: string[];
-}): DataModel.ProcessedSourceInput[] {
+}): (DataModel.ProcessedSourceInput | null)[] {
   return options.sourceIndexes.map(sourcePath => {
     const source = options.sources.find(
       source => source.sourcePath === sourcePath
     );
 
     if (!source) {
-      return;
+      return null;
     }
 
     const ast = source.ast ? { json: JSON.stringify(source.ast) } : undefined;
@@ -121,14 +121,14 @@ function toProcessedSourceInputs(options: {
 function toSourceInputs(options: {
   sources: Source[];
   sourceIndexes: string[];
-}): IdObject<"sources">[] {
+}): (IdObject<"sources"> | null)[] {
   return options.sourceIndexes.map(sourcePath => {
     const compiledSource = options.sources.find(
       source => source.sourcePath === sourcePath
     );
 
     if (!compiledSource) {
-      return;
+      return null;
     }
 
     const {
@@ -144,9 +144,9 @@ function toSourceMapInputs(options: {
 }): DataModel.SourceMapInput[] {
   return options.contracts
     .map(contract => {
-      const sourceMaps = [];
+      const sourceMaps: DataModel.SourceMapInput[] = [];
 
-      if (contract.sourceMap) {
+      if (contract.sourceMap && contract.db.createBytecode) {
         sourceMaps.push({
           bytecode: contract.db.createBytecode,
           data: contract.sourceMap
@@ -168,19 +168,41 @@ function toSourceMapInputs(options: {
 function toImmutableReferencesInputs(options: {
   contracts: Contract[];
 }): DataModel.ImmutableReferenceInput[] {
-  const immutableReferences = options.contracts
-    .filter(({ immutableReferences }) => {
+  const immutableReferences: DataModel.ImmutableReferenceInput[] = options.contracts
+    .filter(contract => contract)
+    .filter(({ immutableReferences = {} }) => {
       return Object.keys(immutableReferences).length > 0;
     })
     .map(contract => {
-      return Object.entries(contract.immutableReferences).map(reference => {
-        return {
-          astNode: reference[0],
-          bytecode: contract.db.createBytecode,
-          length: reference[1][0].length,
-          offsets: reference[1].map(({ start }) => start)
-        };
-      });
+      return Object.entries(contract.immutableReferences)
+        .map(([astNode, slices]):
+          | DataModel.ImmutableReferenceInput
+          | undefined => {
+          // HACK start/length might actually be required, but contract-schema
+          // is wrong?
+          const definedSlices = slices.filter(
+            (slice): slice is { start: number; length: number } =>
+              typeof slice.start === "number" &&
+              typeof slice.length === "number"
+          );
+
+          if (definedSlices.length === 0) {
+            return;
+          }
+
+          return {
+            astNode,
+            bytecode: contract.db.createBytecode,
+            length: definedSlices[0].length,
+            offsets: definedSlices.map(({ start }) => start)
+          };
+        })
+        .filter(
+          (
+            immutableReference
+          ): immutableReference is DataModel.ImmutableReferenceInput =>
+            !!immutableReference
+        );
     })
     .flat();
 

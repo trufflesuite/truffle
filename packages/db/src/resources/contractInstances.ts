@@ -112,11 +112,16 @@ export const contractInstances: Definition<"contractInstances"> = {
             "bytecodes",
             callBytecode.bytecode.id
           );
+          if (!bytecode) {
+            return;
+          }
           const linkValues = callBytecode.linkValues.map(
             ({ value, linkReference }) => {
               return {
                 value: value,
-                linkReference: bytecode.linkReferences[linkReference.index]
+                linkReference: (bytecode.linkReferences || [])[
+                  linkReference.index
+                ]
               };
             }
           );
@@ -141,7 +146,9 @@ export const contractInstances: Definition<"contractInstances"> = {
             ({ value, linkReference }) => {
               return {
                 value: value,
-                linkReference: bytecode.linkReferences[linkReference.index]
+                linkReference: (bytecode?.linkReferences || [])[
+                  linkReference.index
+                ]
               };
             }
           );

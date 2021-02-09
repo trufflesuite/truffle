@@ -24,7 +24,12 @@ export function* process(options: {
   alreadyTried: string[];
   disableIndex?: boolean;
 }): Process<DataModel.CandidateSearchResult> {
-  const { relationship, network, alreadyTried, disableIndex } = options;
+  const {
+    relationship,
+    network: { id },
+    alreadyTried,
+    disableIndex
+  } = options;
 
   // determine GraphQL query to invoke based on requested relationship
   const query =
@@ -34,9 +39,9 @@ export function* process(options: {
   // query graphql for new candidates
   let result;
   try {
-    ({ [query]: result } = yield* resources.get(
+    const network = yield* resources.get(
       "networks",
-      network.id,
+      id,
       gql`
         fragment Possible_${relationship}s_${fragmentIndex++} on Network {
           ${query}(
@@ -56,7 +61,12 @@ export function* process(options: {
           }
         }
       `
-    ));
+    );
+    if (!network) {
+      throw new Error(`Error getting ${query}`);
+    }
+
+    ({ [query]: result } = network);
   } catch (error) {
     debug("error %o", error);
   }

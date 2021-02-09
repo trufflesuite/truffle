@@ -63,8 +63,8 @@ export type StrictIdInput<N extends CollectionName> = Meta.Id.StrictIdInput<
 
 export type GenerateId = <N extends CollectionName>(
   collectionName: N,
-  input: StrictIdInput<N> | Input<N>
-) => string;
+  input: StrictIdInput<N> | Input<N> | undefined
+) => string | undefined;
 
 export const generateId: GenerateId = system.generateId;
 

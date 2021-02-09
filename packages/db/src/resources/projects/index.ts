@@ -3,7 +3,7 @@ const debug = logger("db:resources:projects");
 
 import gql from "graphql-tag";
 
-import type { Definition } from "@truffle/db/resources/types";
+import type { IdObject, Definition } from "@truffle/db/resources/types";
 import { resolveNameRecords } from "./resolveNameRecords";
 import { resolveContractInstances } from "./resolveContractInstances";
 
@@ -23,10 +23,10 @@ export const projects: Definition<"projects"> = {
       directory: String!
 
       contract(name: String!): Contract
-      contracts: [Contract]!
+      contracts: [Contract!]!
 
       network(name: String!): Network
-      networks: [Network]!
+      networks: [Network!]!
 
       contractInstance(
         contract: ResourceNameInput!
@@ -35,9 +35,9 @@ export const projects: Definition<"projects"> = {
       contractInstances(
         contract: ResourceNameInput
         network: ResourceNameInput
-      ): [ContractInstance]
+      ): [ContractInstance!]!
 
-      resolve(type: String, name: String): [NameRecord] # null means unknown type
+      resolve(type: String, name: String): [NameRecord!] # null means unknown type
     }
 
     input ProjectInput {
@@ -90,7 +90,11 @@ export const projects: Definition<"projects"> = {
 
           const result = await workspace.find(
             "networks",
-            nameRecords.map(({ resource }) => resource)
+            nameRecords.map(nameRecord =>
+              nameRecord
+                ? (nameRecord.resource as IdObject<"networks">)
+                : undefined
+            )
           );
 
           debug("Resolved Project.networks.");
@@ -129,7 +133,11 @@ export const projects: Definition<"projects"> = {
 
           const result = await workspace.find(
             "contracts",
-            nameRecords.map(({ resource }) => resource)
+            nameRecords.map(nameRecord =>
+              nameRecord
+                ? (nameRecord.resource as IdObject<"contracts">)
+                : undefined
+            )
           );
 
           debug("Resolved Project.contracts.");

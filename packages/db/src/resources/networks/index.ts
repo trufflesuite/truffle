@@ -40,7 +40,7 @@ export const networks: Definition<"networks"> = {
         includeSelf: Boolean # default false
         onlyEarliest: Boolean # default false
         batchSize: Int # default 10
-      ): [Network]!
+      ): [Network!]!
 
       descendants(
         limit: Int # default all
@@ -48,7 +48,7 @@ export const networks: Definition<"networks"> = {
         includeSelf: Boolean # default false
         onlyLatest: Boolean # default false
         batchSize: Int # default 10
-      ): [Network]!
+      ): [Network!]!
 
       possibleAncestors(
         alreadyTried: [ID]!
@@ -82,8 +82,8 @@ export const networks: Definition<"networks"> = {
     }
 
     type CandidateSearchResult {
-      networks: [Network]!
-      alreadyTried: [ID]! #will include all networks returned
+      networks: [Network!]!
+      alreadyTried: [ID!]! #will include all networks returned
     }
   `,
   resolvers: {

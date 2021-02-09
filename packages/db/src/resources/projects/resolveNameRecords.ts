@@ -22,7 +22,7 @@ export async function resolveNameRecords(
   const { name, type } = inputs;
   const { workspace } = context;
 
-  const results = await workspace.find("projectNames", {
+  const projectNames = await workspace.find("projectNames", {
     selector: {
       "project.id": id,
       "key.name": name,
@@ -32,8 +32,12 @@ export async function resolveNameRecords(
 
   const nameRecords = await workspace.find(
     "nameRecords",
-    results.map(({ nameRecord }) => nameRecord)
+    projectNames.map(
+      projectName => projectName?.nameRecord as IdObject<"nameRecords">
+    )
   );
 
-  return nameRecords;
+  return nameRecords.filter(
+    (nameRecord): nameRecord is SavedInput<"nameRecords"> => !!nameRecord
+  );
 }
