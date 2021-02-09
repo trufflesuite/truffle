@@ -63,7 +63,6 @@ describe("Contract", () => {
       abi: JSON.stringify(Migrations.abi),
       name: "#utility.yul",
       ast: JSON.stringify(Migrations.ast),
-      id: 3,
       contents: Migrations.source,
       language: "Yul"
     };
@@ -94,7 +93,6 @@ describe("Contract", () => {
     expect(createBytecodeGeneratedSources).toEqual([]);
     expect(callBytecodeGeneratedSources[0].name).toEqual(variables.name);
     expect(callBytecodeGeneratedSources[0].ast.json).toEqual(variables.ast);
-    expect(callBytecodeGeneratedSources[0].id).toEqual(variables.id);
     expect(callBytecodeGeneratedSources[0].contents).toEqual(
       variables.contents
     );

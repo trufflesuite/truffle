@@ -39,7 +39,6 @@ export const contracts: Definition<"contracts"> = {
 
     type GeneratedSource {
       ast: AST!
-      id: Int!
       contents: String!
       name: String!
       language: String!
@@ -63,7 +62,6 @@ export const contracts: Definition<"contracts"> = {
 
     input GeneratedSourceInput {
       ast: ASTInput!
-      id: Int!
       contents: String!
       name: String!
       language: String!
