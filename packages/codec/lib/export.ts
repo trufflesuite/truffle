@@ -62,8 +62,6 @@ function compatibleNativizeAbified(
 ): any {
   if (result.kind === "error") {
     switch (result.error.kind) {
-      case "BoolOutOfRangeError":
-        return true;
       case "IndexedReferenceTypeError":
         //strictly speaking for arrays ethers will fail to decode
         //rather than do this, but, eh
