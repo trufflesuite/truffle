@@ -176,6 +176,11 @@ export function compatibleNativizeEventArgs(
       result[name] = nativized;
     }
   }
+  //note: if you have an argument named __length__, what ethers
+  //actually does is... weird.  we're just going to do this instead,
+  //which is simpler and probably more useful, even if it's not strictly
+  //the same (I *seriously* doubt anyone was relying on the old behavior,
+  //because it's, uh, not very useful)
   result.__length__ = decoding.arguments.length;
   return result;
 }
