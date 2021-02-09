@@ -5,7 +5,7 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:project:loadCompile:contracts");
 
-import type { Input, IdObject } from "@truffle/db/resources";
+import type { DataModel, Input, IdObject } from "@truffle/db/resources";
 import { resources } from "@truffle/db/process";
 import * as Batch from "./batch";
 
@@ -55,10 +55,10 @@ export const process = Batch.Contracts.configure<{
       )
     };
 
-    const createBytecodeGeneratedSources = toGeneratedSourceInput({
+    const createBytecodeGeneratedSources = toGeneratedSourcesInput({
       generatedSources: input.generatedSources
     });
-    const callBytecodeGeneratedSources = toGeneratedSourceInput({
+    const callBytecodeGeneratedSources = toGeneratedSourcesInput({
       generatedSources: input.deployedGeneratedSources
     });
 
@@ -89,18 +89,19 @@ export const process = Batch.Contracts.configure<{
   }
 });
 
-function toGeneratedSourceInput({ generatedSources }) {
-  const processedGeneratedSources = generatedSources
-    ? generatedSources.map(source => {
-        return {
-          ast: { json: JSON.stringify(source.ast) },
-          id: source.id,
-          contents: source.contents,
-          name: source.name,
-          language: source.language
-        };
-      })
-    : [];
+function toGeneratedSourcesInput({ generatedSources }) {
+  const processedGeneratedSources = (generatedSources || []).reduce(
+    (generatedSources: (DataModel.GeneratedSource | undefined)[], input) => {
+      generatedSources[input.id] = {
+        ast: { json: JSON.stringify(input.ast) },
+        contents: input.contents,
+        name: input.name,
+        language: input.language
+      };
+      return generatedSources;
+    },
+    []
+  );
 
   return processedGeneratedSources;
 }
