@@ -80,10 +80,8 @@ describe("Project", () => {
       compilationId: "123",
       bytecodeId: "1234",
       abi: JSON.stringify(Migrations.abi),
-      name: "#utility.yul",
+      generatedSourceId: "",
       ast: JSON.stringify(Migrations.ast),
-      id: 3,
-      contents: Migrations.source,
       language: "Yul"
     });
 

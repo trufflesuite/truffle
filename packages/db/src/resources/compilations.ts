@@ -50,7 +50,7 @@ export const compilations: Definition<"compilations"> = {
 
     type ProcessedSource {
       source: Source!
-      contracts: [Contract]!
+      contracts: [Contract!]
       ast: AST
       language: String!
     }
