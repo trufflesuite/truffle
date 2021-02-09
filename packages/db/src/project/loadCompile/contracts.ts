@@ -20,6 +20,20 @@ export const process = Batch.Contracts.configure<{
     contractName: string;
     abi: any;
     sourcePath: string;
+    generatedSources?: {
+      id: number;
+      name: string;
+      language: string;
+      contents: string;
+      ast: any;
+    }[];
+    deployedGeneratedSources?: {
+      id: number;
+      ast: any;
+      contents: string;
+      language: string;
+      name: string;
+    }[];
     db: {
       callBytecode: IdObject<"bytecodes">;
       createBytecode: IdObject<"bytecodes">;
@@ -42,7 +56,9 @@ export const process = Batch.Contracts.configure<{
 
     const {
       contractName: name,
-      db: { createBytecode, callBytecode }
+      db: { createBytecode, callBytecode },
+      generatedSources,
+      deployedGeneratedSources
     } = input;
 
     const abi = {
@@ -56,10 +72,10 @@ export const process = Batch.Contracts.configure<{
     };
 
     const createBytecodeGeneratedSources = toGeneratedSourcesInput({
-      generatedSources: input.generatedSources
+      generatedSources: generatedSources
     });
     const callBytecodeGeneratedSources = toGeneratedSourcesInput({
-      generatedSources: input.deployedGeneratedSources
+      generatedSources: deployedGeneratedSources
     });
 
     return {
