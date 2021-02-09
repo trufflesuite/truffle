@@ -54,7 +54,7 @@
     "ttypescript": "^1.5.7",
     "typedoc": "0.15.0",
     "typedoc-plugin-external-module-name": "^2.1.0",
-    "typescript": "3.9.6"
+    "typescript": "3.9.8"
   },
   "keywords": [
     "abi",

@@ -38,7 +38,7 @@
     "mocha": "8.1.2",
     "sinon": "^9.0.2",
     "ts-node": "^9.0.0",
-    "typescript": "3.9.6"
+    "typescript": "3.9.8"
   },
   "keywords": [
     "config",

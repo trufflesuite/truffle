@@ -34,7 +34,7 @@
     "sinon": "^9.0.2",
     "tmp": "^0.2.1",
     "ts-node": "^9.0.0",
-    "typescript": "3.9.6",
+    "typescript": "3.9.8",
     "web3": "1.2.9"
   },
   "publishConfig": {

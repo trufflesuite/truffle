@@ -22,7 +22,7 @@
     "@types/node": "12.12.21",
     "mocha": "8.1.2",
     "ts-node": "^9.0.0",
-    "typescript": "3.9.6"
+    "typescript": "3.9.8"
   },
   "publishConfig": {
     "access": "public"
