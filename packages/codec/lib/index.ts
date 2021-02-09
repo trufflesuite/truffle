@@ -278,7 +278,11 @@ export {
 } from "./types";
 export * from "./common";
 
-export { abifyCalldataDecoding, abifyLogDecoding } from "./abify";
+export {
+  abifyCalldataDecoding,
+  abifyLogDecoding,
+  abifyReturndataDecoding
+} from "./abify";
 
 // data locations - common
 import * as Basic from "./basic";
