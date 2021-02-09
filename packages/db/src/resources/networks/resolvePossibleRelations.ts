@@ -1,7 +1,7 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:resources:networks:resolvePossibleRelations");
 
-import type { Resource, IdObject, Workspace } from "../types";
+import type { Resource, SavedInput, IdObject, Workspace } from "../types";
 
 export const resolvePossibleAncestors = resolvePossibleRelations("ancestor");
 export const resolvePossibleDescendants = resolvePossibleRelations(
@@ -73,13 +73,14 @@ export function resolvePossibleRelations(
       const excluded = new Set(alreadyTried);
 
       return (await workspace.find("networks", query))
-        .filter(({ historicBlock: { height } }) =>
+        .filter(network => network)
+        .filter(({ historicBlock: { height } }: SavedInput<"networks">) =>
           relationship === "ancestor"
             ? height < network.historicBlock.height
             : height > network.historicBlock.height
         )
-        .filter(({ id }) => !excluded.has(id))
-        .sort((a, b) =>
+        .filter(({ id }: SavedInput<"networks">) => !excluded.has(id))
+        .sort((a: SavedInput<"networks">, b: SavedInput<"networks">) =>
           relationship === "ancestor"
             ? b.historicBlock.height - a.historicBlock.height
             : a.historicBlock.height - b.historicBlock.height
@@ -106,7 +107,10 @@ export function resolvePossibleRelations(
     return {
       networks,
       alreadyTried: [
-        ...new Set([...alreadyTried, ...networks.map(({ id }) => id)])
+        ...new Set([
+          ...alreadyTried,
+          ...networks.map(({ id }: SavedInput<"networks">) => id)
+        ])
       ]
     };
   };

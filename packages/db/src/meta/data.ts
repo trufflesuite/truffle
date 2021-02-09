@@ -6,10 +6,10 @@ import PouchDB from "pouchdb";
 import type {
   Collections,
   CollectionName,
-  Input,
   MutableCollectionName,
   MutationInput,
-  MutationPayload
+  MutationPayload,
+  SavedInput
 } from "./collections";
 import type { IdObject } from "./id";
 
@@ -21,12 +21,12 @@ export interface Workspace<C extends Collections> {
   find<N extends CollectionName<C>>(
     collectionName: N,
     options: (IdObject<C, N> | undefined)[] | PouchDB.Find.FindRequest<{}>
-  ): Promise<SavedInput<C, N>[]>;
+  ): Promise<(SavedInput<C, N> | undefined)[]>;
 
   get<N extends CollectionName<C>>(
     collectionName: N,
-    id: string
-  ): Promise<Historical<SavedInput<C, N>> | null>;
+    id: string | undefined
+  ): Promise<Historical<SavedInput<C, N>> | undefined>;
 
   add<N extends CollectionName<C>>(
     collectionName: N,
@@ -43,15 +43,6 @@ export interface Workspace<C extends Collections> {
     input: MutationInput<C, M>
   ): Promise<void>;
 }
-
-export type SavedInput<
-  C extends Collections = Collections,
-  N extends CollectionName<C> = CollectionName<C>
-> = {
-  [K in keyof Input<C, N> | "id"]: K extends keyof Input<C, N>
-    ? Input<C, N>[K]
-    : string;
-};
 
 export type History = PouchDB.Core.IdMeta & PouchDB.Core.GetMeta;
 

@@ -28,14 +28,17 @@ export const process = Batch.configure<{
     return { name, type };
   },
 
-  *process({ entries, inputs: { project } }) {
+  *process({
+    entries,
+    inputs: {
+      project: { id }
+    }
+  }) {
     const nameRecords: (Resource<"nameRecords"> | undefined)[] = [];
     for (const { name, type } of entries) {
-      const {
-        resolve: [nameRecord]
-      } = yield* resources.get(
+      const project = yield* resources.get(
         "projects",
-        project.id,
+        id,
         gql`
         fragment Resolve_${type}_${name} on Project {
           resolve(type: "${type}", name: "${name}") {
@@ -51,6 +54,14 @@ export const process = Batch.configure<{
         }
       `
       );
+
+      if (!project || !project.resolve) {
+        continue;
+      }
+
+      const {
+        resolve: [nameRecord]
+      } = project;
 
       nameRecords.push(nameRecord);
     }

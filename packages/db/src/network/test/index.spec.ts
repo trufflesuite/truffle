@@ -7,6 +7,7 @@ import * as fc from "fast-check";
 
 import * as Arbitrary from "test/arbitraries/networks";
 
+import { Query } from "@truffle/db/process";
 import * as Network from "..";
 
 import { mockProvider } from "./mockProvider";
@@ -80,7 +81,7 @@ describe("Network", () => {
 
         const {
           data: { networks }
-        } = await db.execute(
+        } = (await db.execute(
           gql`
             query {
               networks {
@@ -95,7 +96,7 @@ describe("Network", () => {
             }
           `,
           {}
-        );
+        )) as { data: Query<"networks"> };
         debug("networks %O", networks);
 
         const ids = new Set(

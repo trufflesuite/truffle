@@ -1,3 +1,4 @@
+import type { Query, Mutation } from "@truffle/db/process";
 import { generateId, Migrations, WorkspaceClient } from "./utils";
 import { AddSource } from "./source.graphql";
 import {
@@ -19,7 +20,10 @@ describe("Compilation", () => {
       contents: Migrations.source,
       sourcePath: Migrations.sourcePath
     };
-    const sourceResult = await wsClient.execute(AddSource, sourceVariables);
+    const sourceResult = (await wsClient.execute(
+      AddSource,
+      sourceVariables
+    )) as Mutation<"sourcesAdd">;
     sourceId = sourceResult.sourcesAdd.sources[0].id;
 
     const shimmedBytecode = Shims.LegacyToNew.forBytecode(Migrations.bytecode);
@@ -88,17 +92,19 @@ describe("Compilation", () => {
       sources: [{ id: sourceId }]
     });
 
-    const getCompilationResult = await wsClient.execute(GetCompilation, {
+    const getCompilationResult = (await wsClient.execute(GetCompilation, {
       id: expectedId
-    });
+    })) as Query<"compilation">;
 
     expect(getCompilationResult).toHaveProperty("compilation");
 
     const { compilation } = getCompilationResult;
+    expect(compilation).toBeDefined();
     expect(compilation).toHaveProperty("id");
     expect(compilation).toHaveProperty("compiler");
     expect(compilation).toHaveProperty("sources");
 
+    // @ts-ignore covered by toBeDefined()
     const { sources, immutableReferences } = compilation;
 
     for (let source of sources) {
@@ -118,10 +124,10 @@ describe("Compilation", () => {
   });
 
   test("can retrieve all compilations", async () => {
-    const allCompilationsResult = await wsClient.execute(
+    const allCompilationsResult = (await wsClient.execute(
       GetAllCompilations,
       {}
-    );
+    )) as Query<"compilations">;
 
     expect(allCompilationsResult).toHaveProperty("compilations");
 

@@ -29,7 +29,7 @@ export const process = Batch.Contracts.configure<{
     contract: IdObject<"contracts">;
   };
   entry: Input<"contracts">;
-  result: IdObject<"contracts">;
+  result: IdObject<"contracts"> | undefined;
 }>({
   extract({ input, inputs, breadcrumb }) {
     debug("inputs %o", inputs);

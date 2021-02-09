@@ -79,7 +79,9 @@ export const nameRecords: Definition<"nameRecords"> = {
           debug("previous %o", previous);
           while (previous && (typeof limit !== "number" || depth < limit)) {
             const nameRecord = await workspace.get("nameRecords", previous.id);
-            // @ts-ignore
+            if (!nameRecord) {
+              break;
+            }
             nameRecords.push(nameRecord);
 
             previous = nameRecord.previous;
