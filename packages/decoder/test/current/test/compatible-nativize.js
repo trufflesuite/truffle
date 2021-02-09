@@ -90,7 +90,10 @@ describe("compatibleNativize", function () {
           const decodings = await decoder.decodeReturnValue(entry, data);
           assert.lengthOf(decodings, 1);
           const decoding = decodings[0];
-          const nativized = Codec.Export.compatibleNativizeReturn(decoding);
+          const nativized = Codec.Export.compatibleNativizeReturn(
+            decoding,
+            decoder.getWireDecoder().getUserDefinedTypes() //hack?
+          );
           assert.deepEqual(nativized, expected[entry.name]);
         } else {
           //send a transaction, decode the events
@@ -106,7 +109,10 @@ describe("compatibleNativize", function () {
           const decodings = await decoder.decodeLog(log);
           assert.lengthOf(decodings, 1);
           const decoding = decodings[0];
-          const nativized = Codec.Export.compatibleNativizeEventArgs(decoding);
+          const nativized = Codec.Export.compatibleNativizeEventArgs(
+            decoding,
+            decoder.getWireDecoder().getUserDefinedTypes() //hack?
+          );
           assert.deepEqual(nativized, expected[entry.name]);
         }
       }

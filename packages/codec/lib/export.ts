@@ -41,10 +41,11 @@ type NumberFormatter = (n: BigInt) => any //not parameterized since we output an
  */
 export function compatibleNativize(
   result: Format.Values.Result,
+  userDefinedTypes: Format.Types.TypesById,
   numberFormatter: NumberFormatter = x => x
 ): any {
   return compatibleNativizeAbified(
-    Abify.abifyResult(result),
+    Abify.abifyResult(result, userDefinedTypes),
     numberFormatter
   );
 }
@@ -137,18 +138,27 @@ function compatibleNativizeAbified(
  */
 export function compatibleNativizeReturn(
   decoding: ReturndataDecoding,
+  userDefinedTypes: Format.Types.TypesById,
   numberFormatter: NumberFormatter = x => x
 ): any {
   if (decoding.kind !== "return") {
     return undefined;
   }
   if (decoding.arguments.length === 1) {
-    return compatibleNativize(decoding.arguments[0].value);
+    return compatibleNativize(
+      decoding.arguments[0].value,
+      userDefinedTypes,
+      numberFormatter
+    );
   }
   const result: any = {};
   for (let i = 0; i < decoding.arguments.length; i++) {
     const { name, value } = decoding.arguments[i];
-    const nativized = compatibleNativize(value, numberFormatter);
+    const nativized = compatibleNativize(
+      value,
+      userDefinedTypes,
+      numberFormatter
+    );
     result[i] = nativized;
     if (name) {
       result[name] = nativized;
@@ -165,12 +175,17 @@ export function compatibleNativizeReturn(
  */
 export function compatibleNativizeEventArgs(
   decoding: LogDecoding,
+  userDefinedTypes: Format.Types.TypesById,
   numberFormatter: NumberFormatter = x => x
 ): any {
   const result: any = {};
   for (let i = 0; i < decoding.arguments.length; i++) {
     const { name, value } = decoding.arguments[i];
-    const nativized = compatibleNativize(value, numberFormatter);
+    const nativized = compatibleNativize(
+      value,
+      userDefinedTypes,
+      numberFormatter
+    );
     result[i] = nativized;
     if (name) {
       result[name] = nativized;
