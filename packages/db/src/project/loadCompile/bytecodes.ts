@@ -55,10 +55,7 @@ export const process = Batch.Contracts.configure<{
     }));
   },
 
-  convert<_I, _O>({
-    result: { callBytecode, createBytecode },
-    input: contract
-  }) {
+  convert({ result: { callBytecode, createBytecode }, input: contract }) {
     return {
       ...contract,
       db: {

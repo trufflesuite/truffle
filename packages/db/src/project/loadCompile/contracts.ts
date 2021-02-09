@@ -40,7 +40,7 @@ export const process = Batch.Contracts.configure<{
     };
   };
   resources: {
-    contract: IdObject<"contracts">;
+    contract: IdObject<"contracts"> | undefined;
   };
   entry: Input<"contracts">;
   result: IdObject<"contracts"> | undefined;
@@ -94,7 +94,7 @@ export const process = Batch.Contracts.configure<{
     return yield* resources.load("contracts", entries);
   },
 
-  convert<_I, _O>({ result, input: contract }) {
+  convert({ result, input: contract }) {
     return {
       ...contract,
       db: {

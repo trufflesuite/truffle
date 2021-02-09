@@ -47,25 +47,25 @@ export type Configure<C extends Collections = Collections> = <B extends Batch>(
  *
  */
 export const configure: Configure = <B extends Batch>(options: Options<B>) => {
-  const {
-    process,
-    extract,
-    convert,
-    iterate,
-    find,
-    initialize,
-    merge
-  } = options;
-
   return function* <I extends Input<B>, O extends Output<B>>(
     inputs: Inputs<B, I>
   ): Process<Collections, Outputs<B, O>> {
+    const {
+      process,
+      extract,
+      convert,
+      iterate,
+      find,
+      initialize,
+      merge
+    } = options as Options<B, I, O>;
+
     // iterate over inputs, collect entries and breadcrumbs
     const entries: Entries<B> = [];
     const breadcrumbs: Breadcrumbs<B> = {};
-    for (const { input, breadcrumb } of iterate<I, O>({ inputs })) {
+    for (const { input, breadcrumb } of iterate({ inputs })) {
       // extract entry
-      const entry: Entry<B> = extract<I, O>({ input, inputs, breadcrumb });
+      const entry: Entry<B> = extract({ input, inputs, breadcrumb });
 
       breadcrumbs[entries.length] = breadcrumb;
 
@@ -79,17 +79,17 @@ export const configure: Configure = <B extends Batch>(options: Options<B>) => {
       (outputs: Outputs<B, O>, result: Result<B>, index: number) => {
         const breadcrumb = breadcrumbs[index];
         // find original input based on breadcrumb
-        const input = find<I, O>({ inputs, breadcrumb });
+        const input = find({ inputs, breadcrumb });
 
         // convert result and input material to output
-        const output = convert<I, O>({ result, input, inputs });
+        const output = convert({ result, input, inputs });
 
         // merge in output
-        return merge<I, O>({ outputs, output, breadcrumb });
+        return merge({ outputs, output, breadcrumb });
       },
 
       // initialize outputs as starting point
-      initialize<I, O>({ inputs })
+      initialize({ inputs })
     );
   };
 };
@@ -97,13 +97,17 @@ export const configure: Configure = <B extends Batch>(options: Options<B>) => {
 /**
  * Describes a batch process for querying and/or mutating resources
  */
-export type Options<B extends Batch> = {
+export type Options<
+  B extends Batch,
+  I extends Input<B> = Input<B>,
+  O extends Output<B> = Output<B>
+> = {
   /**
    * Describes how to traverse the particular Inputs structure to produce
    * an Iterable of each Input along with a breadcrumb to describe how to
    * place that input in the parent structure.
    */
-  iterate<I extends Input<B>, _O extends Output<B>>(options: {
+  iterate(options: {
     inputs: Inputs<B, I>;
   }): Iterable<{
     input: I;
@@ -112,14 +116,11 @@ export type Options<B extends Batch> = {
 
   /**
    */
-  find<I extends Input<B>, _O extends Output<B>>(options: {
-    inputs: Inputs<B, I>;
-    breadcrumb: Breadcrumb<B>;
-  }): I;
+  find(options: { inputs: Inputs<B, I>; breadcrumb: Breadcrumb<B> }): I;
 
   /**
    */
-  extract<I extends Input<B>, _O extends Output<B>>(options: {
+  extract(options: {
     input: I;
     inputs: Inputs<B, I>;
     breadcrumb: Breadcrumb<B>;
@@ -127,28 +128,22 @@ export type Options<B extends Batch> = {
 
   /**
    */
-  process<I extends Input<B>, _O extends Output<B>>(options: {
+  process(options: {
     entries: Entries<B>;
     inputs: Inputs<B, I>;
   }): Process<Collections, Results<B>>;
 
   /**
    */
-  initialize<I extends Input<B>, O extends Output<B>>(options: {
-    inputs: Inputs<B, I>;
-  }): Outputs<B, O>;
+  initialize(options: { inputs: Inputs<B, I> }): Outputs<B, O>;
 
   /**
    */
-  convert<I extends Input<B>, O extends Output<B>>(options: {
-    result: Result<B>;
-    inputs: Inputs<B, I>;
-    input: I;
-  }): O;
+  convert(options: { result: Result<B>; inputs: Inputs<B, I>; input: I }): O;
 
   /**
    */
-  merge<_I extends Input<B>, O extends Output<B>>(options: {
+  merge(options: {
     outputs: Outputs<B, O>;
     breadcrumb: Breadcrumb<B>;
     output: O;

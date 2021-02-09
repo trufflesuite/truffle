@@ -63,7 +63,7 @@ export namespace Compilations {
     inputs: Base.Inputs<Batch<C>, I>
   ) => Process<Base.Outputs<Batch<C>, I & O>>) =>
     Base.configure<Batch<C>>({
-      *iterate<_I>({ inputs }) {
+      *iterate({ inputs }) {
         for (const [compilationIndex, compilation] of inputs.entries()) {
           yield {
             input: compilation,
@@ -72,13 +72,13 @@ export namespace Compilations {
         }
       },
 
-      find<_I>({ inputs, breadcrumb }) {
+      find({ inputs, breadcrumb }) {
         const { compilationIndex } = breadcrumb;
 
         return inputs[compilationIndex];
       },
 
-      initialize<_I, _O>({ inputs }) {
+      initialize({ inputs }) {
         return inputs.map(input => ({
           ...input,
           db: {
@@ -87,12 +87,12 @@ export namespace Compilations {
         }));
       },
 
-      merge<I, O>({ outputs, breadcrumb, output }) {
+      merge({ outputs, breadcrumb, output }) {
         debug("outputs %o", outputs);
         const { compilationIndex } = breadcrumb;
 
         const compilationsBefore = outputs.slice(0, compilationIndex);
-        const compilation: I & O = output;
+        const compilation = output;
         const compilationsAfter = outputs.slice(compilationIndex + 1);
 
         return [...compilationsBefore, compilation, ...compilationsAfter];
@@ -104,9 +104,10 @@ export namespace Compilations {
 
 export namespace Contracts {
   export type Structure<C extends Config> = (Omit<
-    Compilation<C>,
+    Common.Compilation,
     "contracts"
-  > & { contracts: _[] })[];
+  > &
+    C["compilation"] & { contracts: (Common.CompiledContract & _)[] })[];
 
   export type Breadcrumb<_C extends Config> = {
     compilationIndex: number;
@@ -135,7 +136,7 @@ export namespace Contracts {
     inputs: Base.Inputs<Batch<C>, I>
   ) => Process<Base.Outputs<Batch<C>, I & O>>) =>
     Base.configure<Batch<C>>({
-      *iterate<_I>({ inputs }) {
+      *iterate({ inputs }) {
         for (const [compilationIndex, { contracts }] of inputs.entries()) {
           for (const [contractIndex, contract] of contracts.entries()) {
             yield {
@@ -146,20 +147,20 @@ export namespace Contracts {
         }
       },
 
-      find<_I>({ inputs, breadcrumb }) {
+      find({ inputs, breadcrumb }) {
         const { compilationIndex, contractIndex } = breadcrumb;
 
         return inputs[compilationIndex].contracts[contractIndex];
       },
 
-      initialize<I, O>({ inputs }) {
+      initialize({ inputs }) {
         return inputs.map(compilation => ({
           ...compilation,
-          contracts: [] as (I & O)[]
+          contracts: []
         }));
       },
 
-      merge<I, O>({ outputs, breadcrumb, output }) {
+      merge({ outputs, breadcrumb, output }) {
         const { compilationIndex, contractIndex } = breadcrumb;
 
         const compilationsBefore = outputs.slice(0, compilationIndex);
@@ -167,7 +168,7 @@ export namespace Contracts {
         const compilationsAfter = outputs.slice(compilationIndex + 1);
 
         const contractsBefore = compilation.contracts.slice(0, contractIndex);
-        const contract: I & O = output;
+        const contract = output;
         const contractsAfter = compilation.contracts.slice(contractIndex + 1);
 
         return [
