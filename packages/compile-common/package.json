@@ -16,7 +16,7 @@
     "@truffle/contract-schema": "^3.3.3",
     "@types/fs-extra": "^8.1.0",
     "@types/mocha": "^5.2.7",
-    "typescript": "3.9.6"
+    "typescript": "3.9.8"
   },
   "dependencies": {
     "@truffle/contract-sources": "^0.1.10",

@@ -45,7 +45,7 @@
     "lodash.clonedeep": "^4.5.0",
     "lodash.flatten": "^4.4.0",
     "tmp": "^0.2.1",
-    "typescript": "3.9.6"
+    "typescript": "3.9.8"
   },
   "keywords": [
     "abi",

@@ -28,7 +28,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "typescript": "^3.9.7"
+    "typescript": "^3.9.8"
   },
   "dependencies": {
     "@truffle/config": "^1.2.34"
