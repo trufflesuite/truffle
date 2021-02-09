@@ -57,11 +57,11 @@ export const contracts: Definition<"contracts"> = {
       processedSource: IndexReferenceInput
       createBytecode: ResourceReferenceInput
       callBytecode: ResourceReferenceInput
-      callBytecodeGeneratedSources: [GeneratedInput]
-      createBytecodeGeneratedSources: [GeneratedInput]
+      callBytecodeGeneratedSources: [GeneratedSourceInput]
+      createBytecodeGeneratedSources: [GeneratedSourceInput]
     }
 
-    input GeneratedInput {
+    input GeneratedSourceInput {
       ast: ASTInput!
       id: Int!
       contents: String!
