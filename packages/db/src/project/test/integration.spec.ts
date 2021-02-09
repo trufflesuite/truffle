@@ -36,26 +36,8 @@ const compilationResult = require(path.join(
   "compilationOutput.json"
 ));
 
-const fixturesDirectory = path.join(
-  __dirname,
-  "compilationSources",
-  "build",
-  "contracts"
-);
 const tempDir = tmp.dirSync({ unsafeCleanup: true });
 tmp.setGracefulCleanup();
-
-// minimal config
-const config = {
-  contracts_build_directory: fixturesDirectory,
-  working_directory: tempDir.name,
-  db: {
-    enabled: true,
-    adapter: {
-      name: "memory"
-    }
-  }
-};
 
 const compilationConfig = {
   contracts_directory: path.join(__dirname, "compilationSources"),
@@ -112,7 +94,11 @@ const migrationConfig = Config.detect({
 });
 migrationConfig.network = "development";
 
-const db = connect(config as any);
+const db = connect({
+  adapter: {
+    name: "memory"
+  }
+});
 
 const artifacts = [
   require(path.join(
