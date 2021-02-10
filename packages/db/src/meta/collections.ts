@@ -107,6 +107,11 @@ export type IdFields<
   N extends CollectionName<C> = CollectionName<C>
 > = CollectionProperty<"idFields", C, N>;
 
+export type IdField<
+  C extends Collections,
+  N extends CollectionName<C>
+> = CollectionProperty<"idFields", C, N>[number];
+
 export type FilteredCollectionName<C extends Collections, F = undefined> = {
   [K in CollectionName<C>]: Resource<C, K, F> extends never ? never : K;
 }[CollectionName<C>];

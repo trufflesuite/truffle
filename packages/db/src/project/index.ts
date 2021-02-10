@@ -268,6 +268,11 @@ export class ConnectedProject extends Project {
     const networks = await network.includeTransactions({ transactionHashes });
     debug("networks %O", networks);
 
+    // if there are any missing networks, fetch the latest as backup data
+    if (networks.find((network): network is undefined => !!network)) {
+      await network.includeLatest();
+    }
+
     const { artifacts } = await this.run(LoadMigrate.process, {
       network: {
         networkId: network.knownLatest.networkId
@@ -282,7 +287,7 @@ export class ConnectedProject extends Project {
             ...(networks[index]
               ? {
                   db: {
-                    network: networks[index]
+                    network: networks[index] || network.knownLatest
                   }
                 }
               : {})

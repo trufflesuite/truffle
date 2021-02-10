@@ -51,7 +51,7 @@ export {
   Input,
   SavedInput,
   Resource,
-  IdFields,
+  IdField,
   IdObject,
   toIdObject,
   Workspace

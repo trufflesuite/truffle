@@ -157,7 +157,7 @@
  *   - [[Process.resources]], a set of four generator functions that encode
  *     logic for storing and retrieving resources for a given `collectionName`.
  *
- *   - [[Process.Run.forDb()]], to construct an `async` helper that facilitates
+ *   - [[Process.Run.forDb | Process.Run.forDb()]], to construct an `async` helper that facilitates
  *     requests/responses from/to the above generator functions against a given
  *     [[Db]] instance.
  *
@@ -297,7 +297,8 @@ export const serve = _System.serve;
  * Compute an ID for a given collection name and input. This accepts either
  * a full [[Resources.Input | `Resources.Input<"<collectionName>">`]]
  * representation or an object containing only the relevant subset of
- * [[Resources.IdFields | `Resources.IdFields<"<collectionName>">`]].
+ * ID fields
+ * (see [[Resources.IdField | `Resources.IdField<"<collectionName>">`]]).
  */
 export const generateId = _System.generateId;
 

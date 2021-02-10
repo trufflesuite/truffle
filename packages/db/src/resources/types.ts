@@ -248,11 +248,23 @@ export type Resource<N extends CollectionName = CollectionName> = Meta.Resource<
   N
 >;
 
+/**
+ * Type for a given collection name that represents how a resource of that
+ * collection is saved: this is the raw [[Input]] with added `id`.
+ *
+ * @category Internal
+ */
 export type SavedInput<
   N extends CollectionName = CollectionName
 > = Meta.SavedInput<Collections, N>;
 
-export type IdFields<N extends CollectionName = CollectionName> = Meta.IdFields<
+/**
+ * Type union representing the field names on a given collection name that
+ * are used to generate the ID
+ *
+ * @category Internal
+ */
+export type IdField<N extends CollectionName = CollectionName> = Meta.IdField<
   Collections,
   N
 >;

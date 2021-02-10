@@ -18,7 +18,7 @@ export {
   MutableCollectionName,
   Resource,
   Input,
-  IdFields,
+  IdField,
   MutableResource,
   NamedResource,
   SavedInput

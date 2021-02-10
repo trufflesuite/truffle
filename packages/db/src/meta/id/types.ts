@@ -1,16 +1,11 @@
 import type {
   Collections,
   CollectionName,
-  IdFields,
+  IdField,
   Input,
   Resource,
   SavedInput
 } from "@truffle/db/meta/collections";
-
-type IdField<C extends Collections, N extends CollectionName<C>> = IdFields<
-  C,
-  N
->[number];
 
 export type StrictIdInput<
   C extends Collections,
