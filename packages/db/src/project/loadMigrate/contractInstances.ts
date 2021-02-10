@@ -19,10 +19,10 @@ export const process = Batch.configure<{
   };
   requires: {
     callBytecode?: {
-      linkReferences: { name: string }[];
+      linkReferences: { name: string | null }[] | null;
     };
     createBytecode?: {
-      linkReferences: { name: string }[];
+      linkReferences: { name: string | null }[] | null;
     };
     db?: {
       network: IdObject<"networks">;
@@ -77,7 +77,8 @@ export const process = Batch.configure<{
     return yield* resources.load("contractInstances", entries);
   },
 
-  convert<_I, _O>({ result, input }) {
+  // @ts-ignore to overcome limitations in contract-schema
+  convert({ result, input }) {
     return {
       ...input,
       db: {
@@ -90,7 +91,7 @@ export const process = Batch.configure<{
 
 function link(
   bytecode: IdObject<"bytecodes">,
-  linkReferences: { name: string }[],
+  linkReferences: { name: string | null }[] | null,
   links?: { [name: string]: string }
 ): DataModel.LinkedBytecodeInput {
   if (!links) {
@@ -104,7 +105,7 @@ function link(
     value,
     linkReference: {
       bytecode,
-      index: linkReferences.findIndex(
+      index: (linkReferences || []).findIndex(
         linkReference => name === linkReference.name
       )
     }
