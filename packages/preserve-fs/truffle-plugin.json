@@ -1,0 +1,6 @@
+{
+  "preserve": {
+    "defaultTag": "path",
+    "loader": "."
+  }
+}
