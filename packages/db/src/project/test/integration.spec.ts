@@ -247,6 +247,16 @@ const AddContracts = gql`
             length
           }
         }
+        callBytecodeGeneratedSources {
+          source {
+            sourcePath
+          }
+        }
+        createBytecodeGeneratedSources {
+          source {
+            sourcePath
+          }
+        }
       }
     }
   }
@@ -297,6 +307,21 @@ const GetWorkspaceContract = gql`
         }
         ast {
           json
+        }
+      }
+      callBytecodeGeneratedSources {
+        source {
+          sourcePath
+          contents
+        }
+        ast {
+          json
+        }
+        language
+      }
+      createBytecodeGeneratedSources {
+        source {
+          sourcePath
         }
       }
       compilation {
@@ -561,7 +586,9 @@ describe("Compilation", () => {
       name: "Migrations",
       abi: { json: JSON.stringify(artifacts[1].abi) },
       createBytecode: bytecodeIds[0],
-      callBytecode: callBytecodeIds[0]
+      callBytecode: callBytecodeIds[0],
+      callBytecodeGeneratedSources: [],
+      createBytecodeGeneratedSources: []
     };
 
     await db.execute(AddContracts, {
@@ -802,7 +829,8 @@ describe("Compilation", () => {
               compiler: { version }
             },
             createBytecode,
-            callBytecode
+            callBytecode,
+            callBytecodeGeneratedSources
           }
         }
       } = (await db.execute(GetWorkspaceContract, contractIds[index])) as {
@@ -812,6 +840,10 @@ describe("Compilation", () => {
             compilation: Resource<"compilations">;
             createBytecode: Resource<"bytecodes">;
             callBytecode: Resource<"bytecodes">;
+            callBytecodeGeneratedSources: (
+              | DataModel.ProcessedSource
+              | undefined
+            )[];
           };
         };
       };
@@ -820,6 +852,19 @@ describe("Compilation", () => {
         artifacts[index].bytecode
       );
       expect(createBytecode.bytes).toEqual(artifactsCreateBytecode.bytes);
+
+      //only test generatedSources for solc compiled contracts
+      if (name !== "VyperStorage") {
+        for (const { id, name, ast, contents, language } of artifacts[index]
+          .deployedGeneratedSources) {
+          const generatedSource = callBytecodeGeneratedSources[id];
+          expect(generatedSource).toBeDefined();
+          expect(generatedSource.source.sourcePath).toEqual(name);
+          expect(generatedSource.ast?.json).toEqual(JSON.stringify(ast));
+          expect(generatedSource.source.contents).toEqual(contents);
+          expect(generatedSource.language).toEqual(language);
+        }
+      }
 
       const artifactsCallBytecode = Shims.LegacyToNew.forBytecode(
         artifacts[index].deployedBytecode

@@ -47,7 +47,7 @@ export const process = Batch.Compilations.configure<{
   source: Source;
   contract: Contract;
   resources: {
-    compilation: IdObject<"compilations">;
+    compilation: IdObject<"compilations"> | undefined;
   };
   entry: Input<"compilations">;
   result: IdObject<"compilations"> | undefined;
@@ -66,7 +66,7 @@ export const process = Batch.Compilations.configure<{
     return yield* resources.load("compilations", entries);
   },
 
-  convert<_I, _O>({ result, input: compilation }) {
+  convert({ result, input: compilation }) {
     return {
       ...compilation,
       db: {
