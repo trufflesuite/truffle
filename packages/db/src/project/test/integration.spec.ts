@@ -248,10 +248,14 @@ const AddContracts = gql`
           }
         }
         callBytecodeGeneratedSources {
-          name
+          source {
+            sourcePath
+          }
         }
         createBytecodeGeneratedSources {
-          name
+          source {
+            sourcePath
+          }
         }
       }
     }
@@ -306,16 +310,19 @@ const GetWorkspaceContract = gql`
         }
       }
       callBytecodeGeneratedSources {
-        name
+        source {
+          sourcePath
+          contents
+        }
         ast {
           json
         }
-        id
         language
-        contents
       }
       createBytecodeGeneratedSources {
-        name
+        source {
+          sourcePath
+        }
       }
       compilation {
         compiler {
@@ -833,7 +840,10 @@ describe("Compilation", () => {
             compilation: Resource<"compilations">;
             createBytecode: Resource<"bytecodes">;
             callBytecode: Resource<"bytecodes">;
-            callBytecodeGeneratedSources: DataModel.GeneratedSource[];
+            callBytecodeGeneratedSources: (
+              | DataModel.ProcessedSource
+              | undefined
+            )[];
           };
         };
       };
@@ -845,21 +855,15 @@ describe("Compilation", () => {
 
       //only test generatedSources for solc compiled contracts
       if (name !== "VyperStorage") {
-        expect(callBytecodeGeneratedSources[0].name).toEqual(
-          artifacts[index].deployedGeneratedSources[0].name
-        );
-        expect(callBytecodeGeneratedSources[0].ast.json).toEqual(
-          JSON.stringify(artifacts[index].deployedGeneratedSources[0].ast)
-        );
-        expect(callBytecodeGeneratedSources[0].id).toEqual(
-          artifacts[index].deployedGeneratedSources[0].id
-        );
-        expect(callBytecodeGeneratedSources[0].contents).toEqual(
-          artifacts[index].deployedGeneratedSources[0].contents
-        );
-        expect(callBytecodeGeneratedSources[0].language).toEqual(
-          artifacts[index].deployedGeneratedSources[0].language
-        );
+        for (const { id, name, ast, contents, language } of artifacts[index]
+          .deployedGeneratedSources) {
+          const generatedSource = callBytecodeGeneratedSources[id];
+          expect(generatedSource).toBeDefined();
+          expect(generatedSource.source.sourcePath).toEqual(name);
+          expect(generatedSource.ast?.json).toEqual(JSON.stringify(ast));
+          expect(generatedSource.source.contents).toEqual(contents);
+          expect(generatedSource.language).toEqual(language);
+        }
       }
 
       const artifactsCallBytecode = Shims.LegacyToNew.forBytecode(
