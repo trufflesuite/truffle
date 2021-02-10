@@ -16,7 +16,7 @@
     "@truffle/contract-schema": "^3.3.3",
     "@types/fs-extra": "^8.1.0",
     "@types/mocha": "^5.2.7",
-    "typescript": "3.9.6"
+    "typescript": "3.9.8"
   },
   "dependencies": {
     "@truffle/contract-sources": "^0.1.10",
@@ -24,9 +24,9 @@
     "@truffle/expect": "^0.0.15",
     "colors": "^1.4.0",
     "debug": "^4.3.1",
-    "fs-extra": "^8.1.0",
+    "fs-extra": "^9.1.0",
     "mocha": "8.0.1",
-    "ts-node": "8.10.2"
+    "ts-node": "^9.0.0"
   },
   "gitHead": "6b84be7849142588ef2e3224d8a9d7c2ceeb6e4a"
 }

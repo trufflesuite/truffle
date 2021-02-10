@@ -50,8 +50,8 @@ if (userWantsGeneralHelp) {
 
 command
   .run(inputArguments, options)
-  .then(() => {
-    process.exit(0);
+  .then((returnStatus) => {
+    process.exit(returnStatus);
   })
   .catch(error => {
     if (error instanceof TaskError) {
