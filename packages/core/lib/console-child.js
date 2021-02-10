@@ -29,12 +29,7 @@ detectedConfig.networks.develop = {
   }
 };
 
-// enable Truffle to run both from the bundles out of packages/dist
-// and using the raw JS directly - we inject BUNDLE_VERSION when building
-const command =
-  typeof BUNDLE_VERSION !== "undefined"
-    ? new Command(require("./commands.bundled.js"))
-    : new Command(require("./commands"));
+const command = new Command(require("./commands"));
 
 command
   .run(inputStrings, detectedConfig)
