@@ -42,7 +42,11 @@ describe("Contract", () => {
       bytecodeId,
       abi: JSON.stringify(Migrations.abi),
       sourceMap: JSON.stringify(Migrations.sourceMap),
-      language: "Solidity"
+      language: "Solidity",
+      astNode: "1",
+      length: 5,
+      offset: 16,
+      contractBytecodeId: bytecodeId
     };
     const compilationResult = await wsClient.execute(
       AddCompilation,
@@ -79,7 +83,7 @@ describe("Contract", () => {
   });
 
   test("can be queried", async () => {
-    expectedId = generateId({
+    expectedId = generateId("contracts", {
       name: Migrations.contractName,
       abi: { json: JSON.stringify(Migrations.abi) },
       processedSource: { index: 0 },
@@ -99,7 +103,7 @@ describe("Contract", () => {
   });
 
   test("can be queried via compilation directly", async () => {
-    expectedId = generateId({
+    expectedId = generateId("contracts", {
       name: Migrations.contractName,
       abi: { json: JSON.stringify(Migrations.abi) },
       processedSource: { index: 0 },
@@ -132,7 +136,7 @@ describe("Contract", () => {
   });
 
   test("can be queried via compilation processedSources", async () => {
-    expectedId = generateId({
+    expectedId = generateId("contracts", {
       name: Migrations.contractName,
       abi: { json: JSON.stringify(Migrations.abi) },
       processedSource: { index: 0 },

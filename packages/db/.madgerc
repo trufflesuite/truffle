@@ -1,9 +1,15 @@
 {
   "excludeRegExp": [
     "\\.\\.",
+    "resources/data.ts",
     "test",
     "logger.ts"
   ],
   "fileExtensions": ["ts"],
+  "detectiveOptions": {
+    "ts": {
+      "skipTypeImports": true
+    }
+  },
   "tsConfig": "./tsconfig.base.json"
 }

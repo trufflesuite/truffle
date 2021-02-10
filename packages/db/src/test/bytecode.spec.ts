@@ -1,5 +1,13 @@
+import { logger } from "@truffle/db/logger";
+const debug = logger("db:test:bytecode");
+
 import { generateId, Migrations, WorkspaceClient } from "./utils";
-import { AddBytecode, GetAllBytecodes, GetBytecode } from "./bytecode.graphql";
+import {
+  AddBytecode,
+  GetAllBytecodes,
+  GetBytecode,
+  GetExpectedBytecodeId
+} from "./bytecode.graphql";
 import { Shims } from "@truffle/compile-common";
 
 describe("Bytecode", () => {
@@ -10,8 +18,19 @@ describe("Bytecode", () => {
   beforeEach(async () => {
     wsClient = new WorkspaceClient();
     shimmedBytecode = Shims.LegacyToNew.forBytecode(Migrations.bytecode);
-    expectedId = generateId(shimmedBytecode);
+    expectedId = generateId("bytecodes", shimmedBytecode);
     addBytecodeResult = await wsClient.execute(AddBytecode, shimmedBytecode);
+  });
+
+  test("reports expected ID for input", async () => {
+    const { bytecodeId: expectedExpectedId } = await wsClient.execute(
+      GetExpectedBytecodeId,
+      {
+        bytecodeInput: shimmedBytecode
+      }
+    );
+
+    expect(expectedExpectedId).toEqual(expectedId);
   });
 
   test("can be added", async () => {

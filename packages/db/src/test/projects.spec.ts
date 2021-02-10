@@ -153,7 +153,7 @@ describe("Project", () => {
   });
 
   test("can be queried", async () => {
-    const expectedId = generateId({
+    const expectedId = generateId("projects", {
       directory: "test/path"
     });
 
@@ -203,11 +203,11 @@ describe("Project", () => {
     const { networks, contracts } = project;
 
     expect(networks).toHaveLength(1);
-    const [ network ] = networks;
+    const [network] = networks;
     expect(network.name).toEqual("ganache");
 
     expect(contracts).toHaveLength(1);
-    const [ contract ] = contracts;
+    const [contract] = contracts;
     expect(contract.name).toEqual("Migrations");
   });
 });

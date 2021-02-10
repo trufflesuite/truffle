@@ -1,2 +1,3 @@
 dist
 types/schema.d.ts
+docs/schema.sdl

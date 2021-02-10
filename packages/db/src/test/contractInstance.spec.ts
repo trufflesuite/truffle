@@ -22,7 +22,7 @@ describe("Contract Instance", () => {
       hash: "0xcba0b90a5e65512202091c12a2e3b328f374715b9f1c8f32cb4600c726fe2aa6"
     });
 
-    expectedId = generateId({
+    expectedId = generateId("contractInstances", {
       address: address,
       network: { id: addNetworkResult.networksAdd.networks[0].id }
     });
@@ -35,7 +35,7 @@ describe("Contract Instance", () => {
           id: addNetworkResult.networksAdd.networks[0].id
         },
         contract: {
-          id: generateId({
+          id: generateId("contracts", {
             name: Migrations.contractName,
             abi: { json: JSON.stringify(Migrations.abi) },
             processedSource: { index: 0 },
@@ -50,7 +50,7 @@ describe("Contract Instance", () => {
           constructor: {
             createBytecode: {
               bytecode: {
-                id: generateId(shimmedBytecode)
+                id: generateId("bytecodes", shimmedBytecode)
               }
             }
           }

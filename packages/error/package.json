@@ -28,6 +28,6 @@
     "access": "public"
   },
   "devDependencies": {
-    "typescript": "^3.9.7"
+    "typescript": "^3.9.8"
   }
 }

@@ -5,7 +5,7 @@ describe("Network", () => {
   const wsClient = new WorkspaceClient();
   const expectedHash =
     "0xcba0b90a5e65512202091c12a2e3b328f374715b9f1c8f32cb4600c726fe2aa6";
-  const expectedId = generateId({
+  const expectedId = generateId("networks", {
     networkId: Object.keys(Migrations.networks)[0],
     historicBlock: {
       height: 1,

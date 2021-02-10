@@ -1,5 +1,5 @@
-pragma solidity >=0.5.6;
-pragma experimental ABIEncoderV2;
+//SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
 library SquareLib {
   struct MagicSquare {
@@ -12,14 +12,12 @@ library SquareLib {
     pure
     returns (MagicSquare memory square)
   {
-    uint256 i;
-
     square = MagicSquare({
       rows: new uint256[][](n),
       n: n
     });
 
-    for (i = 0; i < n; i++) {
+    for (uint256 i = 0; i < n; i++) {
       square.rows[i] = new uint256[](n);
     }
   }
@@ -42,13 +40,12 @@ library SquareLib {
       newX = (x + 2) % square.n;
       newY = (square.n + y - 1) % square.n;
       lastI = i - 1;
-      return (newX, newY, lastI);
     }
-
-    square.rows[x][y] = i;
-    newX = (square.n + x - 1) % square.n;
-    newY = (y + 1) % square.n;
-    lastI = i;
-    return (newX, newY, lastI);
+    else {
+      square.rows[x][y] = i;
+      newX = (square.n + x - 1) % square.n;
+      newY = (y + 1) % square.n;
+      lastI = i;
+    }
   }
 }

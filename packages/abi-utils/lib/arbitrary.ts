@@ -241,6 +241,7 @@ const ArrayDynamic = fc.memo(n => Type(n - 1).map(type => `${type}[]`));
 
 const reservedWords = new Set([
   "Error",
+  "Panic",
   "_",
   "abi",
   "abstract",

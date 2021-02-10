@@ -74,17 +74,13 @@ const Build = {
       );
     } else if (typeof builder === "string") {
       builder = new CommandBuilder(builder);
-    } else if (typeof builder !== "function") {
-      if (builder.build == null) {
-        throw new BuildError(
-          "Build configuration can no longer be specified as an object. Please see our documentation for an updated list of supported build configurations."
-        );
-      }
-    } else {
+    } else if (typeof builder === "function") {
       // If they've only provided a build function, use that.
-      builder = {
-        build: builder
-      };
+      builder = { build: builder };
+    } else if (builder.build == null) {
+      throw new BuildError(
+        "Build configuration can no longer be specified as an object. Please see our documentation for an updated list of supported build configurations."
+      );
     }
 
     // Use our own clean method unless the builder supplies one.

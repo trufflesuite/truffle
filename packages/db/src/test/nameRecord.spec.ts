@@ -33,7 +33,7 @@ describe("Name Record", () => {
       }
     };
 
-    expectedId = generateId(variables);
+    expectedId = generateId("nameRecords", variables);
 
     addNameRecordResult = await wsClient.execute(AddNameRecord, variables);
   });

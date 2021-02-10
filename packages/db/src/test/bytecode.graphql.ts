@@ -1,5 +1,11 @@
 import gql from "graphql-tag";
 
+export const GetExpectedBytecodeId = gql`
+  query GetExpectedBytecodeId($bytecodeInput: BytecodeInput!) {
+    bytecodeId(input: $bytecodeInput)
+  }
+`;
+
 export const GetAllBytecodes = gql`
   query GetAllBytecodes {
     bytecodes {

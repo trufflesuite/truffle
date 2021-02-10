@@ -1,3 +1,3 @@
 export function isExplicitlyRelative(importPath: string): boolean {
-  return importPath.startsWith(".");
+  return importPath.startsWith("./") || importPath.startsWith("../");
 }

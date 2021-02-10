@@ -105,6 +105,7 @@ module.exports = {
     // module that's a dependency of Truffle instead.
     /^original-require$/,
     /^mocha$/,
+    /^@truffle\/debugger/, //no longer part of the bundle to keep size down
     // this is the commands portion shared by cli.js and console-child.js
     /^\.\/commands.bundled.js$/
   ],
@@ -196,10 +197,7 @@ module.exports = {
         from: path.join(truffleLibraryDirectory, "AssertUintArray.sol")
       },
       {
-        from: path.join(truffleLibraryDirectory, "NewSafeSend.sol")
-      },
-      {
-        from: path.join(truffleLibraryDirectory, "OldSafeSend.sol")
+        from: path.join(truffleLibraryDirectory, "SafeSend.sol")
       },
       {
         from: path.join(

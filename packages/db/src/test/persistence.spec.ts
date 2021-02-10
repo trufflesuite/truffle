@@ -1,5 +1,5 @@
 import path from "path";
-import { attach } from "@truffle/db/workspace";
+import { attach } from "@truffle/db/system";
 import { generateId } from "./utils";
 
 import tmp from "tmp";
@@ -10,21 +10,21 @@ const bytecode = {
   linkReferences: []
 };
 
-const id = generateId(bytecode);
+const id = generateId("bytecodes", bytecode);
 
 const memoryAdapter = {
-  name: "memory"
+  name: "memory" as const
 };
 
 const fsAdapter = {
-  name: "fs",
+  name: "fs" as const,
   settings: {
     directory: path.join(tempDir.name, "json")
   }
 };
 
 const sqliteAdapter = {
-  name: "sqlite",
+  name: "sqlite" as const,
   settings: {
     directory: path.join(tempDir.name, "sqlite")
   }

@@ -73,4 +73,26 @@ describe("Solidity Tests", function () {
         });
     });
   });
+
+  describe("compatibility", function () {
+    before(async () => {
+      await initSandbox("ImportEverything.sol");
+    });
+
+    it("compile with latest Solidity", function () {
+      this.timeout(70000);
+
+      return CommandRunner.run(
+        "test",
+        config.with({ solc: { version: "native" } })
+      )
+        .then(() => {
+          const output = logger.contents();
+          assert(output.includes("1 passing"));
+        })
+        .catch(error => {
+          assert(false, `An error occurred: ${error}`);
+        });
+    });
+  });
 });

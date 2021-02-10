@@ -1,0 +1,34 @@
+[
+  {
+    "inputs": [],
+    "name": "conversionRate",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "amountEther",
+        "type": "uint256"
+      }
+    ],
+    "name": "convertEthValueToNumberTokens",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "convertedAmount",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

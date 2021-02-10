@@ -4,7 +4,7 @@ import { AddSource, GetSource, GetAllSources } from "./source.graphql";
 describe("Source", () => {
   let wsClient, addSourceResult;
 
-  const expectedId = generateId({
+  const expectedId = generateId("sources", {
     contents: Migrations.source,
     sourcePath: Migrations.sourcePath
   });

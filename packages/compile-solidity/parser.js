@@ -1,4 +1,4 @@
-const debug = require("debug")("compile:parser"); // eslint-disable-line no-unused-vars
+const debug = require("debug")("compile:parser");
 
 // Warning issued by a pre-release compiler version, ignored by this component.
 const preReleaseCompilerWarning =

@@ -244,8 +244,8 @@ library AssertInt {
             neg = true;
         }
         while (n > 0) {
-            bts[i++] = _utoa(uint8(uint(n % radix))); // Turn it to ascii.
-            n /= radix;
+            bts[i++] = _utoa(uint8(uint(n) % radix)); // Turn it to ascii.
+            n = int(uint(n) / radix);
         }
         // Reverse
         uint size = i;

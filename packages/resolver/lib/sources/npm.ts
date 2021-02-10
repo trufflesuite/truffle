@@ -73,8 +73,14 @@ export class NPM implements ResolverSource {
   // i.e., if some_module/contracts/MyContract.sol imported "./AnotherContract.sol",
   // we're going to resolve it to some_module/contracts/AnotherContract.sol, ensuring
   // that when this path is evaluated this source is used again.
-  resolveDependencyPath(import_path: string, dependency_path: string) {
-    var dirname = path.dirname(import_path);
-    return path.join(dirname, dependency_path);
+  resolveDependencyPath(importPath: string, dependencyPath: string) {
+    if (
+      !(dependencyPath.startsWith("./") || dependencyPath.startsWith("../"))
+    ) {
+      //if it's *not* a relative path, return it unchanged
+      return dependencyPath;
+    }
+    var dirname = path.dirname(importPath);
+    return path.join(dirname, dependencyPath);
   }
 }

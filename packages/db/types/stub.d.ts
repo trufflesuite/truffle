@@ -1,8 +1,9 @@
 // tslint:disable
 // graphql typescript definitions
 
-declare namespace DataModel {
+declare namespace _DataModel {
   type ResourceReferenceInput = any;
+  type ResourceNameInput = any;
   type Block = any;
   type BlockInput = any;
   type Bytecode = any;
@@ -50,6 +51,7 @@ declare namespace DataModel {
   type NetworkGenealogy = any;
   type NetworkGenealogyInput = any;
   type CandidateSearchResult = any;
+  type ImmutableReferenceInput = any;
 
   type Query = any;
   type Mutation = any;

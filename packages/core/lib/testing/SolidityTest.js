@@ -6,8 +6,6 @@ const { Shims } = require("@truffle/compile-common");
 const RangeUtils = require("@truffle/compile-solidity/compilerSupplier/rangeUtils");
 const debug = require("debug")("lib:testing:soliditytest");
 
-let SafeSend;
-
 const SolidityTest = {
   async define(abstraction, dependencyPaths, runner, mocha) {
     const self = this;
@@ -111,9 +109,6 @@ const SolidityTest = {
     const config = runner.config;
     let solcVersion = config.compilers.solc.version;
     solcVersion = RangeUtils.resolveToRange(solcVersion);
-    SafeSend = RangeUtils.rangeContainsAtLeast(solcVersion, "0.5.0")
-      ? "NewSafeSend.sol"
-      : "OldSafeSend.sol";
 
     const truffleLibraries = [
       "truffle/Assert.sol",
@@ -130,7 +125,7 @@ const SolidityTest = {
       "truffle/AssertUint.sol",
       "truffle/AssertUintArray.sol",
       "truffle/DeployedAddresses.sol",
-      `truffle/${SafeSend}`
+      `truffle/SafeSend.sol`
     ];
 
     const { compilations } = await Compile.sourcesWithDependencies({
@@ -187,7 +182,7 @@ const SolidityTest = {
       runner.config.resolver.require(`truffle/${name}.sol`)
     );
 
-    SafeSend = runner.config.resolver.require(SafeSend);
+    const SafeSend = runner.config.resolver.require("SafeSend");
 
     debug("deploying test libs");
     for (const testLib of testAbstractions) {
@@ -215,11 +210,9 @@ const SolidityTest = {
     }
 
     if (balance !== 0) {
-      await deployer.deploy(SafeSend, deployed.address, {
-        value: balance
-      });
+      await deployer.deploy(SafeSend);
       const safeSend = await SafeSend.deployed();
-      await safeSend.deliver();
+      await safeSend.deliver(deployed.address, { value: balance });
     }
 
     debug("deployed %s", abstraction.contract_name);

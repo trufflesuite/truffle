@@ -84,6 +84,12 @@ export class FS implements ResolverSource {
 
   // Here we're resolving from local files to local files, all absolute.
   resolveDependencyPath(importPath: string, dependencyPath: string) {
+    if (
+      !(dependencyPath.startsWith("./") || dependencyPath.startsWith("../"))
+    ) {
+      //if it's *not* a relative path, return it unchanged
+      return dependencyPath;
+    }
     const dirname = path.dirname(importPath);
     return path.resolve(path.join(dirname, dependencyPath));
   }

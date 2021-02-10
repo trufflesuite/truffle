@@ -9,7 +9,7 @@ const Provider = require("@truffle/provider");
 
 const Environment = {
   // It's important config is a Config object and not a vanilla object
-  detect: async function(config) {
+  detect: async function (config) {
     expect.options(config, ["networks"]);
 
     helpers.setUpConfig(config);
@@ -26,7 +26,7 @@ const Environment = {
   },
 
   // Ensure you call Environment.detect() first.
-  fork: async function(config) {
+  fork: async function (config) {
     expect.options(config, ["from", "provider", "networks", "network"]);
 
     const interfaceAdapter = createInterfaceAdapter({
@@ -34,7 +34,14 @@ const Environment = {
       networkType: config.networks[config.network].type
     });
 
-    const accounts = await interfaceAdapter.getAccounts();
+    let accounts;
+    try {
+      accounts = await interfaceAdapter.getAccounts();
+    } catch {
+      // don't prevent Truffle from working if user doesn't provide some way
+      // to sign transactions (e.g. no reason to disallow debugging)
+      accounts = [];
+    }
     const block = await interfaceAdapter.getBlock("latest");
 
     const upstreamNetwork = config.network;
@@ -65,7 +72,7 @@ const Environment = {
 
     config.networks[network] = {
       network_id: ganacheOptions.network_id,
-      provider: function() {
+      provider: function () {
         return new Web3.providers.HttpProvider(url, { keepAlive: false });
       }
     };
@@ -80,8 +87,13 @@ const helpers = {
   setFromOnConfig: async (config, interfaceAdapter) => {
     if (config.from) return;
 
-    const accounts = await interfaceAdapter.getAccounts();
-    config.networks[config.network].from = accounts[0];
+    try {
+      const accounts = await interfaceAdapter.getAccounts();
+      config.networks[config.network].from = accounts[0];
+    } catch {
+      // don't prevent Truffle from working if user doesn't provide some way
+      // to sign transactions (e.g. no reason to disallow debugging)
+    }
   },
 
   detectAndSetNetworkId: async (config, interfaceAdapter) => {

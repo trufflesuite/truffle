@@ -58,6 +58,12 @@ export class GlobalNPM implements ResolverSource {
   // we're going to resolve it to some_module/contracts/AnotherContract.sol, ensuring
   // that when this path is evaluated this source is used again.
   resolveDependencyPath(importPath: string, dependencyPath: string) {
+    if (
+      !(dependencyPath.startsWith("./") || dependencyPath.startsWith("../"))
+    ) {
+      //if it's *not* a relative path, return it unchanged
+      return dependencyPath;
+    }
     var dirname = path.dirname(importPath);
     return path.join(dirname, dependencyPath);
   }
