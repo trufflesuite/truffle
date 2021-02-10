@@ -15,6 +15,13 @@ describe("Contract", () => {
   let compilationId;
   let sourceId;
   let bytecodeId;
+  const generatedSource = {
+    name: "#utility.yul",
+    contents: "secret_sauce() { }",
+    ast: { node: "yep" },
+    language: "Yul"
+  };
+  let generatedSourceId;
   let expectedId;
 
   beforeEach(async () => {
@@ -27,6 +34,12 @@ describe("Contract", () => {
     };
     const sourceResult = await wsClient.execute(AddSource, sourceVariables);
     sourceId = sourceResult.sourcesAdd.sources[0].id;
+
+    const generatedSourceResult = await wsClient.execute(AddSource, {
+      sourcePath: generatedSource.name,
+      contents: generatedSource.contents
+    });
+    generatedSourceId = generatedSourceResult.sourcesAdd.sources[0].id;
 
     //add bytecode and get id
     const shimmedBytecode = Shims.LegacyToNew.forBytecode(Migrations.bytecode);
@@ -58,10 +71,14 @@ describe("Contract", () => {
   test("can be added", async () => {
     const variables = {
       contractName: Migrations.contractName,
-      compilationId: compilationId,
-      bytecodeId: bytecodeId,
-      abi: JSON.stringify(Migrations.abi)
+      compilationId,
+      bytecodeId,
+      abi: JSON.stringify(Migrations.abi),
+      generatedSourceId,
+      ast: JSON.stringify(generatedSource.ast),
+      language: generatedSource.language
     };
+
     const addContractsResult = await wsClient.execute(AddContracts, variables);
 
     expect(addContractsResult).toHaveProperty("contractsAdd");
@@ -78,8 +95,24 @@ describe("Contract", () => {
     expect(contract).toHaveProperty("name");
     expect(contract).toHaveProperty("processedSource");
 
-    const { processedSource } = contract;
+    const {
+      processedSource,
+      callBytecodeGeneratedSources,
+      createBytecodeGeneratedSources
+    } = contract;
     expect(processedSource).toHaveProperty("ast");
+
+    expect(createBytecodeGeneratedSources).toEqual([]);
+    expect(callBytecodeGeneratedSources[0].source.sourcePath).toEqual(
+      generatedSource.name
+    );
+    expect(callBytecodeGeneratedSources[0].ast.json).toEqual(variables.ast);
+    expect(callBytecodeGeneratedSources[0].source.contents).toEqual(
+      generatedSource.contents
+    );
+    expect(callBytecodeGeneratedSources[0].language).toEqual(
+      variables.language
+    );
   });
 
   test("can be queried", async () => {
@@ -100,6 +133,7 @@ describe("Contract", () => {
     expect(contract).toHaveProperty("name");
     expect(contract).toHaveProperty("processedSource");
     expect(contract).toHaveProperty("abi");
+    expect(contract).toHaveProperty("callBytecodeGeneratedSources");
   });
 
   test("can be queried via compilation directly", async () => {

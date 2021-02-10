@@ -79,7 +79,10 @@ describe("Project", () => {
       contractName: "Migrations",
       compilationId: "123",
       bytecodeId: "1234",
-      abi: JSON.stringify(Migrations.abi)
+      abi: JSON.stringify(Migrations.abi),
+      generatedSourceId: "",
+      ast: JSON.stringify(Migrations.ast),
+      language: "Yul"
     });
 
     debug("addContractResult %O", addContractResult.contractsAdd.contracts);
