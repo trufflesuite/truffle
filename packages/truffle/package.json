@@ -16,7 +16,7 @@
   "scripts": {
     "analyze": "./scripts/analyze.sh",
     "build": "yarn build-cli",
-    "build-cli": "node --max-old-space-size=8192 ./node_modules/webpack/bin/webpack --config ./webpack.config.js",
+    "build-cli": "node ./scripts/webpack5hack.js && node --max-old-space-size=8192 ./node_modules/webpack/bin/webpack --config ./webpack.config.js",
     "postinstall": "node ./scripts/postinstall.js",
     "prepare": "yarn build",
     "publish:byoc": "node ./scripts/prereleaseVersion.js byoc-safe byoc",
@@ -38,7 +38,7 @@
     "@truffle/debugger": "^8.0.12",
     "@truffle/interface-adapter": "^0.4.18",
     "clean-webpack-plugin": "^3.0.0",
-    "copy-webpack-plugin": "^5.1.1",
+    "copy-webpack-plugin": "^7.0.0",
     "eslint": "^5.7.0",
     "fs-extra": "^8.1.0",
     "ganache-core": "2.13.0",
