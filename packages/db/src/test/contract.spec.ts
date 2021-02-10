@@ -15,6 +15,13 @@ describe("Contract", () => {
   let compilationId;
   let sourceId;
   let bytecodeId;
+  const generatedSource = {
+    name: "#utility.yul",
+    contents: "secret_sauce() { }",
+    ast: { node: "yep" },
+    language: "Yul"
+  };
+  let generatedSourceId;
   let expectedId;
 
   beforeEach(async () => {
@@ -27,6 +34,12 @@ describe("Contract", () => {
     };
     const sourceResult = await wsClient.execute(AddSource, sourceVariables);
     sourceId = sourceResult.sourcesAdd.sources[0].id;
+
+    const generatedSourceResult = await wsClient.execute(AddSource, {
+      sourcePath: generatedSource.name,
+      contents: generatedSource.contents
+    });
+    generatedSourceId = generatedSourceResult.sourcesAdd.sources[0].id;
 
     //add bytecode and get id
     const shimmedBytecode = Shims.LegacyToNew.forBytecode(Migrations.bytecode);
@@ -58,14 +71,12 @@ describe("Contract", () => {
   test("can be added", async () => {
     const variables = {
       contractName: Migrations.contractName,
-      compilationId: compilationId,
-      bytecodeId: bytecodeId,
+      compilationId,
+      bytecodeId,
       abi: JSON.stringify(Migrations.abi),
-      name: "#utility.yul",
-      ast: JSON.stringify(Migrations.ast),
-      id: 3,
-      contents: Migrations.source,
-      language: "Yul"
+      generatedSourceId,
+      ast: JSON.stringify(generatedSource.ast),
+      language: generatedSource.language
     };
 
     const addContractsResult = await wsClient.execute(AddContracts, variables);
@@ -92,11 +103,12 @@ describe("Contract", () => {
     expect(processedSource).toHaveProperty("ast");
 
     expect(createBytecodeGeneratedSources).toEqual([]);
-    expect(callBytecodeGeneratedSources[0].name).toEqual(variables.name);
+    expect(callBytecodeGeneratedSources[0].source.sourcePath).toEqual(
+      generatedSource.name
+    );
     expect(callBytecodeGeneratedSources[0].ast.json).toEqual(variables.ast);
-    expect(callBytecodeGeneratedSources[0].id).toEqual(variables.id);
-    expect(callBytecodeGeneratedSources[0].contents).toEqual(
-      variables.contents
+    expect(callBytecodeGeneratedSources[0].source.contents).toEqual(
+      generatedSource.contents
     );
     expect(callBytecodeGeneratedSources[0].language).toEqual(
       variables.language
