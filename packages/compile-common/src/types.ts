@@ -50,6 +50,14 @@ export interface LinkReference {
   length: number;
 }
 
+export interface GeneratedSource {
+  id: number;
+  name: string;
+  language: string;
+  contents: string;
+  ast: any;
+}
+
 export type CompiledContract = {
   contractName: string;
   sourcePath: string;
@@ -69,8 +77,8 @@ export type CompiledContract = {
   devdoc: object;
   userdoc: object;
   immutableReferences: ImmutableReferences;
-  generatedSources: any;
-  deployedGeneratedSources: any;
+  generatedSources?: GeneratedSource[];
+  deployedGeneratedSources?: GeneratedSource[];
   db?: {};
 };
 
