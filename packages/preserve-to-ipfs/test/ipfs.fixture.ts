@@ -35,8 +35,7 @@ export const tests: Test[] = [
       },
       {
         type: "resolve",
-        payload:
-          "\u001b[1mQmfDmsHTywy6L9Ne5RXsj5YumDedfBLMvCvmaxjBoe6w4d\u001b[22m",
+        payload: /QmfDmsHTywy6L9Ne5RXsj5YumDedfBLMvCvmaxjBoe6w4d/,
         scope: ["@truffle/preserve-to-ipfs", "Uploading...", "Root CID"]
       },
       {
@@ -101,8 +100,7 @@ export const tests: Test[] = [
       },
       {
         type: "resolve",
-        payload:
-          "\u001b[1mQmSxBNxCBBAVKvPBTmuqGjinuY771zyoNf7xX836nxnQeg\u001b[22m",
+        payload: /QmSxBNxCBBAVKvPBTmuqGjinuY771zyoNf7xX836nxnQeg/,
         scope: ["@truffle/preserve-to-ipfs", "Uploading...", "Root CID"]
       },
       {
@@ -194,8 +192,7 @@ export const tests: Test[] = [
       },
       {
         type: "resolve",
-        payload:
-          "\u001b[1mQmTXQNMfCiPWNPhapqXVeSpej8oaVco7uN1UUqLGwJ4Lk6\u001b[22m",
+        payload: /QmTXQNMfCiPWNPhapqXVeSpej8oaVco7uN1UUqLGwJ4Lk6/,
         scope: ["@truffle/preserve-to-ipfs", "Uploading...", "Root CID"]
       },
       {
@@ -310,8 +307,7 @@ export const tests: Test[] = [
       },
       {
         type: "resolve",
-        payload:
-          "\u001b[1mQmYrFAyZaY9VenxNxw2WTnc22S4aNhANSBkT728i2cUNFj\u001b[22m",
+        payload: /QmYrFAyZaY9VenxNxw2WTnc22S4aNhANSBkT728i2cUNFj/,
         scope: ["@truffle/preserve-to-ipfs", "Uploading...", "Root CID"]
       },
       {
