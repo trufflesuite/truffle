@@ -33,6 +33,8 @@ export const contracts: Definition<"contracts"> = {
       processedSource: ProcessedSource
       createBytecode: Bytecode
       callBytecode: Bytecode
+      callBytecodeGeneratedSources: [ProcessedSource]
+      createBytecodeGeneratedSources: [ProcessedSource]
     }
 
     type ABI {
@@ -47,6 +49,8 @@ export const contracts: Definition<"contracts"> = {
       processedSource: IndexReferenceInput
       createBytecode: ResourceReferenceInput
       callBytecode: ResourceReferenceInput
+      callBytecodeGeneratedSources: [ProcessedSourceInput]
+      createBytecodeGeneratedSources: [ProcessedSourceInput]
     }
 
     input IndexReferenceInput {
