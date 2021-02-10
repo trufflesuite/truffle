@@ -163,7 +163,7 @@ class Console extends EventEmitter {
     const spawnOptions = { stdio: ["inherit", "inherit", "pipe"] };
 
     const spawnInput = "--network " + options.network + " -- " + inputStrings;
-    let spawnResult = spawnSync(
+    const spawnResult = spawnSync(
       "node",
       ["--no-deprecation", childPath, spawnInput],
       spawnOptions
