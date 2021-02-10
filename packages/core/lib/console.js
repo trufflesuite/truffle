@@ -163,11 +163,18 @@ class Console extends EventEmitter {
     const spawnOptions = { stdio: ["inherit", "inherit", "pipe"] };
 
     const spawnInput = "--network " + options.network + " -- " + inputStrings;
-    spawnSync(
+    let spawnResult = spawnSync(
       "node",
       ["--no-deprecation", childPath, spawnInput],
       spawnOptions
     );
+
+    if (spawnResult.stderr) {
+      // Theoretically stderr can contain multiple errors. 
+      // So let's just print it instead of throwing through
+      // the error handling mechanism. Bad call? 
+      console.log(spawnResult.stderr.toString());
+    }
 
     // re-provision to ensure any changes are available in the repl
     this.provision();
