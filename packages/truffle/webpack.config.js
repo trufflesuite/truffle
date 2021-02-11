@@ -76,7 +76,6 @@ module.exports = {
   output: {
     path: outputDir,
     filename: "[name].bundled.js",
-    library: "truffle",
     libraryTarget: "commonjs",
     chunkLoading: "require"
   },
