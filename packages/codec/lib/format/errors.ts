@@ -31,7 +31,8 @@ export type ErrorResult =
   | TypeErrorResult
   | TupleErrorResult
   | FunctionExternalErrorResult
-  | FunctionInternalErrorResult;
+  | FunctionInternalErrorResult
+  | OptionsErrorResult;
 
 /**
  * One of the underlying errors contained in an [[ErrorResult]]
@@ -701,7 +702,27 @@ export interface MalformedInternalFunctionError {
 }
 
 /*
- * SECTION 7: Generic errors
+ * SECTION 7: Options
+ */
+
+/**
+ * An options error.  This should never happen,
+ * as options are never decoded, but it's included for
+ * completeness.
+ */
+export interface OptionsErrorResult {
+  type: Types.OptionsType;
+  kind: "error";
+  error: GenericError | OptionsError;
+}
+
+/**
+ * The options type has no type-specific errors at the moment
+ */
+export type OptionsError = never;
+
+/*
+ * SECTION 8: Generic errors
  */
 
 /**
@@ -713,6 +734,7 @@ export type GenericError =
   | UserDefinedTypeNotFoundError
   | IndexedReferenceTypeError
   | ReadError;
+
 /**
  * A read error
  *
@@ -724,6 +746,7 @@ export type ReadError =
   | ReadErrorBytes
   | ReadErrorStorage
   | UnusedImmutableError;
+
 /**
  * An error resulting from overlarge length or pointer values
  *
@@ -849,7 +872,7 @@ export interface OverlargePointersNotImplementedError {
   pointerAsBN: BN;
 }
 
-/* SECTION 8: Internal use errors */
+/* SECTION 9: Internal use errors */
 /* you should never see these returned.
  * they are only for internal use. */
 

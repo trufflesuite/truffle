@@ -274,7 +274,15 @@ export {
   StorageRequest,
   CodeRequest,
   LogOptions,
-  ExtrasAllowed
+  ExtrasAllowed,
+  WrapRequest,
+  IntegerWrapRequest,
+  DecimalWrapRequest,
+  AddressWrapRequest,
+  WrapResponse,
+  IntegerWrapResponse,
+  DecimalWrapResponse,
+  AddressWrapResponse
 } from "./types";
 export * from "./common";
 
@@ -399,3 +407,6 @@ export { Evm };
 
 import * as Export from "./export";
 export { Export };
+
+import * as Wrap from "./wrap";
+export { Wrap };
