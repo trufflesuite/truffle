@@ -7,13 +7,14 @@ import {
   Compilations,
   Contexts,
   LogDecoding,
-  StateVariable
+  StateVariable,
+  ExtrasAllowed
 } from "@truffle/codec";
 import Web3 from "web3";
 
-//this used to be defined here, so let's continue
+//StateVariable used to be defined here, so let's continue
 //to export it
-export { StateVariable };
+export { StateVariable, ExtrasAllowed };
 
 /**
  * This type represents information about a Truffle project that can be used to
@@ -154,6 +155,26 @@ export interface EventOptions {
    * address as undefined.
    */
   address?: string;
+  /**
+   * Used to indicate whether "extra" event decodings -- event decodings from
+   * non-library contracts other than the one that appears to have emitted
+   * the event -- should be returned.  Defaults to `"off"`.
+   */
+  extras?: ExtrasAllowed;
+}
+
+/**
+ * The type of the options parameter to [[WireDecoder.decodeLog|decodeLog()]].
+ * This type may be expanded in the future.
+ * @category Inputs
+ */
+export interface DecodeLogOptions {
+  /**
+   * Used to indicate whether "extra" event decodings -- event decodings from
+   * non-library contracts other than the one that appears to have emitted
+   * the event -- should be returned.  Defaults to `"off"`.
+   */
+  extras?: ExtrasAllowed;
 }
 
 /**

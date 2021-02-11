@@ -35,7 +35,8 @@ describe("Over-the-wire decoding", function () {
       abstractions.WireTest,
       abstractions.WireTestParent,
       abstractions.WireTestLibrary,
-      abstractions.WireTestAbstract
+      abstractions.WireTestAbstract,
+      abstractions.WireTestRedHerring
     ];
   });
 
@@ -793,6 +794,78 @@ describe("Over-the-wire decoding", function () {
     );
   });
 
+  it("respects the extras option", async function () {
+    const deployedContract = await abstractions.WireTest.deployed();
+    const delegate = await abstractions.WireTestRedHerring.deployed();
+
+    const decoder = await Decoder.forProject(web3.currentProvider,
+      Contracts
+    );
+
+    const extrasTestNone = await deployedContract.extrasTestNone(
+      delegate.address
+    );
+    const extrasTestSome = await deployedContract.extrasTestSome();
+
+    const noneBlock = extrasTestNone.receipt.blockNumber;
+    const someBlock = extrasTestSome.receipt.blockNumber;
+
+    const noneTestEvents = await decoder.events({
+      fromBlock: noneBlock,
+      toBlock: noneBlock
+    });
+
+    const someTestEvents = await decoder.events({
+      fromBlock: someBlock,
+      toBlock: someBlock
+    });
+
+    const noneTestEventsExtras = await decoder.events({
+      fromBlock: noneBlock,
+      toBlock: noneBlock,
+      extras: "on"
+    });
+
+    const someTestEventsExtras = await decoder.events({
+      fromBlock: someBlock,
+      toBlock: someBlock,
+      extras: "on"
+    });
+
+    const noneTestEventsMaybe = await decoder.events({
+      fromBlock: noneBlock,
+      toBlock: noneBlock,
+      extras: "necessary"
+    });
+
+    const someTestEventsMaybe = await decoder.events({
+      fromBlock: someBlock,
+      toBlock: someBlock,
+      extras: "necessary"
+    });
+
+    assert.lengthOf(someTestEvents, 1);
+    assert.lengthOf(someTestEventsExtras, 1);
+    assert.lengthOf(someTestEventsMaybe, 1);
+    assert.lengthOf(noneTestEvents, 1);
+    assert.lengthOf(noneTestEventsExtras, 1);
+    assert.lengthOf(noneTestEventsMaybe, 1);
+
+    const someDecodings = someTestEvents[0].decodings;
+    const someDecodingsExtras = someTestEventsExtras[0].decodings;
+    const someDecodingsMaybe = someTestEventsMaybe[0].decodings;
+    const noneDecodings = noneTestEvents[0].decodings;
+    const noneDecodingsExtras = noneTestEventsExtras[0].decodings;
+    const noneDecodingsMaybe = noneTestEventsMaybe[0].decodings;
+
+    testNoneWithoutExtras(noneDecodings);
+    testNoneWithExtras(noneDecodingsExtras);
+    testNoneWithExtras(noneDecodingsMaybe); //with no ordinary interpretations, extras should appear
+    testSomeWithoutExtras(someDecodings);
+    testSomeWithExtras(someDecodingsExtras);
+    testSomeWithoutExtras(someDecodingsMaybe); //there are no ordinary interpretations, so no extras
+  });
+
   it("Decodes return values", async function () {
     const { WireTest } = abstractions;
     let deployedContract = await WireTest.deployed();
@@ -831,7 +904,7 @@ describe("Over-the-wire decoding", function () {
       "WireTest.Ternary.No"
     );
 
-    //now: let's try decoding a self-destruct :)
+    //now: let's try decoding a self-destruct :D
     let sdAbiEntry = WireTest.abi.find(
       ({ type, name }) => type === "function" && name === "boom"
     );
@@ -920,3 +993,66 @@ describe("Over-the-wire decoding", function () {
     );
   });
 });
+
+function testNoneWithoutExtras(decodings) {
+  //no normal decodings, no extras, so should be empty
+  assert.lengthOf(decodings, 0);
+}
+
+function testNoneWithExtras(decodings) {
+  //just the extra decoding
+  assert.lengthOf(decodings, 1);
+  const decoding = decodings[0];
+  assert.strictEqual(decoding.kind, "event");
+  assert.strictEqual(decoding.class.typeName, "WireTestRedHerring");
+  assert.strictEqual(decoding.definedIn.typeName, "WireTestRedHerring");
+  assert.strictEqual(decoding.abi.name, "NonAmbiguousEvent");
+  assert.strictEqual(decoding.decodingMode, "full");
+  assert.lengthOf(decoding.arguments, 0);
+}
+
+function testSomeWithoutExtras(decodings) {
+  //just the normal decoding
+  assert.lengthOf(decodings, 1);
+  const decoding = decodings[0];
+  assert.strictEqual(decoding.kind, "event");
+  assert.strictEqual(decoding.class.typeName, "WireTest");
+  assert.strictEqual(decoding.definedIn.typeName, "WireTest");
+  assert.strictEqual(decoding.abi.name, "SemiAmbiguousEvent");
+  assert.strictEqual(decoding.decodingMode, "full");
+  assert.deepEqual(
+    decoding.arguments.map(({ value }) =>
+      Codec.Format.Utils.Inspect.nativize(value)
+    ),
+    [1, 2]
+  );
+}
+
+function testSomeWithExtras(decodings) {
+  //just the normal decoding and extras
+  assert.lengthOf(decodings, 2);
+  const decoding = decodings[0];
+  assert.strictEqual(decoding.kind, "event");
+  assert.strictEqual(decoding.class.typeName, "WireTest");
+  assert.strictEqual(decoding.definedIn.typeName, "WireTest");
+  assert.strictEqual(decoding.abi.name, "SemiAmbiguousEvent");
+  assert.strictEqual(decoding.decodingMode, "full");
+  assert.deepEqual(
+    decoding.arguments.map(({ value }) =>
+      Codec.Format.Utils.Inspect.nativize(value)
+    ),
+    [1, 2]
+  );
+  const extraDecoding = decodings[1];
+  assert.strictEqual(extraDecoding.kind, "event");
+  assert.strictEqual(extraDecoding.class.typeName, "WireTestRedHerring");
+  assert.strictEqual(extraDecoding.definedIn.typeName, "WireTestRedHerring");
+  assert.strictEqual(extraDecoding.abi.name, "SemiAmbiguousEvent");
+  assert.strictEqual(extraDecoding.decodingMode, "full");
+  assert.deepEqual(
+    extraDecoding.arguments.map(({ value }) =>
+      Codec.Format.Utils.Inspect.nativize(value)
+    ),
+    [2, 1]
+  );
+}
