@@ -16,5 +16,9 @@ module.exports = {
 
     // or files that use a test extension prefix
     "<rootDir>/@(lib|test)/**/*.@(test|spec).@(ts|js)"
+  ],
+  modulePathIgnorePatterns: [
+    "npm-cache",
+    ".npm"
   ]
 };

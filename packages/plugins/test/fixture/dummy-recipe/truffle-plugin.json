@@ -1,6 +1,6 @@
 {
   "preserve": {
-    "tag": "ipfs",
+    "tag": "dummy-recipe",
     "recipe": "."
   }
 }

@@ -1,7 +1,7 @@
 const TruffleError = require("@truffle/error");
 const originalRequire = require("original-require");
 import path from "path";
-import { PluginConfig, PluginDefinitions, TruffleConfig } from "./interfaces";
+import { PluginConfig, PluginDefinitions, TruffleConfig } from "./types";
 import { Plugin } from "./Plugin";
 import { normalizeConfigPlugins } from "./utils";
 
@@ -34,6 +34,41 @@ export class Plugins {
     return pluginsForCommand;
   }
 
+  /**
+   * Given a truffle-config-like, find and return all plugins that define any command
+   */
+  static listAllCommandPlugins(config: TruffleConfig): Plugin[] {
+    const allPlugins = Plugins.listAll(config);
+
+    const pluginsWithCommands = allPlugins.filter(plugin =>
+      plugin.commands.length > 0
+    );
+
+    return pluginsWithCommands;
+  }
+
+  /**
+   * Given a truffle-config-like, find and return all plugins that define a loader
+   */
+  static listAllLoaders(config: TruffleConfig): Plugin[] {
+    const allPlugins = Plugins.listAll(config);
+
+    const loaders = allPlugins.filter(plugin => plugin.definesLoader());
+
+    return loaders;
+  }
+
+  /**
+   * Given a truffle-config-like, find and return all plugins that define a recipe
+   */
+  static listAllRecipes(config: TruffleConfig): Plugin[] {
+    const allPlugins = Plugins.listAll(config);
+
+    const recipes = allPlugins.filter(plugin => plugin.definesRecipe());
+
+    return recipes;
+  }
+
   /*
    * internals
    */
@@ -42,13 +77,6 @@ export class Plugins {
     originalRequire("app-module-path").addPath(
       path.resolve(config.working_directory, "node_modules")
     );
-
-    // possible TODO: add app-module-path as dependency of originalRequire
-    // external interface something like:
-    //
-    //   originalRequire.addPath("<path-to-truffle-plugin>")
-    //
-    // and then make originalRequire handle `path.resolve(..., "node_modules")`
 
     const plugins = normalizeConfigPlugins(config.plugins || []);
 
@@ -60,9 +88,12 @@ export class Plugins {
   ): PluginDefinitions {
     let pluginConfigs: PluginDefinitions = {};
 
-    for (const { module } of plugins) {
+    for (const { module, tag } of plugins) {
       try {
         const required = originalRequire(`${module}/truffle-plugin.json`);
+
+        const defaultTag = required.preserve && required.preserve.tag;
+        required.tag = tag || defaultTag || undefined;
 
         pluginConfigs[module] = required;
       } catch (_) {

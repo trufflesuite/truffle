@@ -1,0 +1,7 @@
+{
+  "name": "dummy-loader",
+  "version": "0.1.0",
+  "description": "Dummy preserve loader for testing",
+  "main": "index.js",
+  "license": "MIT"
+}

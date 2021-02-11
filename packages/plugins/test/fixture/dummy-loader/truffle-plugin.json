@@ -1,6 +1,6 @@
 {
   "preserve": {
-    "tag": "path",
+    "tag": "dummy-loader",
     "loader": "."
   }
 }

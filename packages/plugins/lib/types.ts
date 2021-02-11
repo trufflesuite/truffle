@@ -5,6 +5,7 @@ export type RawPluginConfig = PluginConfig | string;
 // internal representation of a particular plugin configuration
 export interface PluginConfig {
   module: string;
+  tag?: string;
 }
 
 // Partial representation of the truffle-config object
@@ -25,7 +26,16 @@ export interface PluginDefinitions {
 
 // As defined in a plugin's truffle-plugin.json file
 export interface PluginDefinition {
+  // `truffle run` plugin
   commands?: {
     [commandName: string]: string;
+  };
+
+  // `truffle preserve` plugin
+  tag?: string;
+  preserve?: {
+    tag?: string;
+    recipe?: string;
+    loader?: string;
   };
 }
