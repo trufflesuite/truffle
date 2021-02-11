@@ -737,7 +737,9 @@ describe("Compilation", () => {
       Object.entries(artifacts[0].immutableReferences)[0][1][0].start
     );
 
-    let shimmedBytecode = Shims.LegacyToNew.forBytecode(artifacts[0].bytecode);
+    let shimmedBytecode = Shims.LegacyToNew.forBytecode(
+      artifacts[0].deployedBytecode
+    );
     // @ts-ignore
     expect(solcCompilation.immutableReferences[0].bytecode.bytes).toEqual(
       shimmedBytecode.bytes
