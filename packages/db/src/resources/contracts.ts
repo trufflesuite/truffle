@@ -28,7 +28,7 @@ export const contracts: Definition<"contracts"> = {
   typeDefs: gql`
     type Contract implements Resource & Named {
       name: String!
-      abi: ABI
+      abi: ABI!
       compilation: Compilation
       processedSource: ProcessedSource
       createBytecode: Bytecode
