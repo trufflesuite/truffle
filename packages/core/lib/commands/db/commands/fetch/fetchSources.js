@@ -4,7 +4,6 @@ const { Compile } = require("@truffle/compile-solidity");
 const Fetchers = require("@truffle/source-fetcher").default;
 
 async function fetchSources(config, address) {
-  const badFetchers = []; //similar
   const addressesToSkip = new Set(); //addresses we know we can't get source for
 
   //note: this should always be a subset of unknownAddresses! [see below]
@@ -64,6 +63,7 @@ async function fetchSources(config, address) {
       //break out of the fetcher loop, since *no* fetcher will work here
       break;
     }
+    debug("options %O", options);
 
     //compile the sources
     const externalConfig = config.with({

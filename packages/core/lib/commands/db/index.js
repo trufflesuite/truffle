@@ -18,10 +18,7 @@ const command = {
   command: "db",
   description: "Database interface commands",
   builder: function (yargs) {
-    return yargs
-      .command(serveCommand)
-      .command(fetchCommand)
-      .demandCommand();
+    return yargs.command(serveCommand).command(fetchCommand).demandCommand();
   },
 
   subCommands: {
@@ -48,7 +45,7 @@ const command = {
         break;
 
       case "fetch":
-        fetchCommand.run(args, done);
+        await fetchCommand.run(args);
         break;
 
       default:

@@ -29,7 +29,8 @@ export const projects: Definition<"projects"> = {
       networks: [Network!]!
 
       contractInstance(
-        contract: ResourceNameInput!
+        contract: ResourceNameInput
+        address: Address
         network: ResourceNameInput!
       ): ContractInstance
       contractInstances(

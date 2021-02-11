@@ -17,6 +17,7 @@ export function* process<
   debug("Processing adding networks for blocks...");
   const { network, blocks } = options;
 
+  debug("blocks %o", blocks);
   const networks = yield* resources.load(
     "networks",
     blocks.map(block =>
@@ -29,6 +30,7 @@ export function* process<
         : undefined
     )
   );
+  debug("networks %o", networks);
 
   debug("Processed adding networks for blocks.");
   return networks.map((reference, index) =>

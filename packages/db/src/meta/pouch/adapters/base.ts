@@ -206,9 +206,9 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
     const log = debug.extend(`${collectionName}:add`);
     log("Adding...");
 
-    const resourceInputIds = input[collectionName]
-      .map(resourceInput => this.generateId<N>(collectionName, resourceInput))
-      .filter((id): id is string => id !== undefined);
+    const resourceInputIds = input[collectionName].map(
+      resourceInput => this.generateId<N>(collectionName, resourceInput) || ""
+    );
 
     const resourceInputById = input[collectionName]
       .filter((_, index) => resourceInputIds[index])

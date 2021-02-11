@@ -76,8 +76,11 @@ export class WireDecoder {
           contract.deployedBytecode
         );
         const bytecode = Shims.NewToLegacy.forBytecode(contract.bytecode);
+        debug("contractName %s", contract.contractName);
+        debug("deployedBytecode %O", deployedBytecode);
         if (deployedBytecode && deployedBytecode !== "0x") {
           deployedContext = Utils.makeContext(contract, node, compilation);
+          debug("deployedContext %O", deployedContext);
           this.contexts[deployedContext.context] = deployedContext;
           //note that we don't set up deployedContexts until after normalization!
         }

@@ -36,6 +36,7 @@ export function findContext(
 export function matchContext(context: Context, givenBinary: string): boolean {
   let { binary, isConstructor } = context;
   let lengthDifference = givenBinary.length - binary.length;
+  debug("lengthDifference %O", lengthDifference);
   //first: if it's not a constructor, they'd better be equal in length.
   //if it is a constructor, the given binary must be at least as long,
   //and the difference must be a multiple of 64
@@ -44,6 +45,7 @@ export function matchContext(context: Context, givenBinary: string): boolean {
     lengthDifference < 0 ||
     lengthDifference % (2 * Evm.Utils.WORD_SIZE) !== 0
   ) {
+    debug("false for length difference");
     return false;
   }
   for (let i = 0; i < binary.length; i++) {
@@ -56,6 +58,8 @@ export function matchContext(context: Context, givenBinary: string): boolean {
       binary[i] !== "." &&
       binary[i].toLowerCase() !== givenBinary[i].toLowerCase()
     ) {
+      debug("false after %o characters", i);
+      debug("binary %s", binary);
       return false;
     }
   }

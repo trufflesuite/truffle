@@ -383,6 +383,7 @@ function processContracts({
 }
 
 function formatLinkReferences(linkReferences) {
+  debug("linkReferences %O", linkReferences);
   // convert to flat list
   const libraryLinkReferences = Object.values(linkReferences)
     .map(fileLinks =>

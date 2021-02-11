@@ -1,7 +1,5 @@
 const debug = require("debug")("lib:commands:db:commands:fetch");
 
-const { callbackify } = require("util");
-
 const command = {
   command: "fetch",
   description: "Fetch verified contracts and save to @truffle/db",
@@ -22,7 +20,7 @@ const command = {
     ]
   },
 
-  run: callbackify(async function (argv) {
+  run: async function (argv) {
     const OS = require("os");
     const Config = require("@truffle/config");
     const { Environment } = require("@truffle/environment");
@@ -48,14 +46,17 @@ const command = {
     await Environment.detect(config);
 
     const { contractName, result } = await fetchSources(config, address);
+    debug("result %O", result);
 
-    const db = connect(config);
-    const project = await Project.initialize({
-      db,
-      project: {
-        directory: config.working_directory
-      }
-    });
+    const db = connect(config.db);
+    const project = (
+      await Project.initialize({
+        db,
+        project: {
+          directory: config.working_directory
+        }
+      })
+    ).connect({ provider: config.provider });
 
     const { contracts } = await project.loadCompile({ result });
 
@@ -69,7 +70,27 @@ const command = {
         contracts: [contract.db.contract]
       }
     });
-  })
+
+    const { network } = await project.loadMigrate({
+      network: { name: config.network },
+      artifacts: [
+        {
+          ...contract,
+          networks: {
+            [config.network_id]: {
+              address
+            }
+          }
+        }
+      ]
+    });
+
+    await project.assignNames({
+      assignments: {
+        networks: [network]
+      }
+    });
+  }
 };
 
 module.exports = command;

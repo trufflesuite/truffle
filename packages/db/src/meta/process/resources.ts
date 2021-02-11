@@ -1,5 +1,5 @@
 import { logger } from "@truffle/db/logger";
-const debug = logger("db:process");
+const debug = logger("db:meta:process:resources");
 
 import gql from "graphql-tag";
 import * as graphql from "graphql";

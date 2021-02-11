@@ -192,7 +192,7 @@ function toImmutableReferencesInputs(options: {
 
           return {
             astNode,
-            bytecode: contract.db.createBytecode,
+            bytecode: contract.db.callBytecode,
             length: definedSlices[0].length,
             offsets: definedSlices.map(({ start }) => start)
           };
