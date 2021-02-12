@@ -1,4 +1,4 @@
-import { Plugin, Plugins } from "../lib";
+import { Plugin, Plugins, TruffleConfig } from "../lib";
 import path from "path";
 const originalRequire = require("original-require");
 
@@ -36,6 +36,16 @@ describe("Plugins", () => {
       ];
 
       expect(allPlugins).toEqual(expectedPlugins);
+    });
+
+    it("should list no plugins if none are defined in a Truffle config object", () => {
+      const config = {
+        working_directory: __dirname,
+      };
+
+      const allPlugins = Plugins.listAll(config as TruffleConfig);
+
+      expect(allPlugins).toEqual([]);
     });
 
     it("should filter duplicate plugins", () => {
