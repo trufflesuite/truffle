@@ -31,12 +31,16 @@ function createMultistepSelectors(stepSelector) {
      * .inInternalSourceOrYul
      */
     inInternalSourceOrYul: createLeaf(
-      ["./source", "./astNode"],
-      //note: the first of these won't actually happen atm, as source id
-      //of -1 would instead result in source.id === undefined, but I figure
-      //I'll include that condition in case I end up changing this later
-      (source, node) =>
-        !node || source.internal || node.nodeType.startsWith("Yul")
+      ["./source", "./astNode", "/current/context"],
+      (source, node, { isConstructor }) =>
+        !node ||
+        source.internal ||
+        node.nodeType.startsWith("Yul") ||
+        (isConstructor && node.nodeType === "ContractDefinition") //HACK
+      //HACK: this last case is to handle a Solidity bug where code that in
+      //deployed contexts is unmapped, in constructor contexts can instead
+      //get mapped to the contract definition node.  I'm worried that this
+      //might screw things up for optimized code, but... we'll see?
     )
   };
 }
@@ -54,7 +58,10 @@ let txlog = createSelectorTree({
     /**
      * txlog.proc.transactionLog
      */
-    transactionLog: createLeaf(["/state"], state => state.proc.transactionLog.byPointer),
+    transactionLog: createLeaf(
+      ["/state"],
+      state => state.proc.transactionLog.byPointer
+    )
   },
 
   /**
@@ -115,8 +122,7 @@ let txlog = createSelectorTree({
     waitingForFunctionDefinition: createLeaf(
       ["./node"],
       node =>
-        (node.type === "callinternal" ||
-          node.type === "callexternal") &&
+        (node.type === "callinternal" || node.type === "callexternal") &&
         node.waitingForFunctionDefinition
     ),
 
@@ -125,9 +131,7 @@ let txlog = createSelectorTree({
      */
     waitingForInternalCallToAbsorb: createLeaf(
       ["./node"],
-      node =>
-        node.type === "callexternal" &&
-        node.absorbNextInternalCall
+      node => node.type === "callexternal" && node.absorbNextInternalCall
     ),
 
     /**
@@ -160,9 +164,8 @@ let txlog = createSelectorTree({
      * (there should always be something on the stack when this
      * selector is used)
      */
-    externalReturnPointer: createLeaf(
-      ["./pointerStack"],
-      stack => stack[stack.length - 1].replace(/\/actions\/\d+$/, "")
+    externalReturnPointer: createLeaf(["./pointerStack"], stack =>
+      stack[stack.length - 1].replace(/\/actions\/\d+$/, "")
     ),
 
     /**
@@ -365,23 +368,17 @@ let txlog = createSelectorTree({
      * txlog.views.transactionLog
      * contains the actual transformed transaction log ready for use!
      */
-    transactionLog: createLeaf(
-      ["/proc/transactionLog"],
-      log => {
-        const tie = node =>
-          node.actions
-            ? {
+    transactionLog: createLeaf(["/proc/transactionLog"], log => {
+      const tie = node =>
+        node.actions
+          ? {
               ...node,
-              actions: node.actions.map(
-                pointer => tie(log[pointer])
-              )
+              actions: node.actions.map(pointer => tie(log[pointer]))
             }
-            : node;
-        return tie(log[""]); //"" is always the root node
-      }
-    )
+          : node;
+      return tie(log[""]); //"" is always the root node
+    })
   }
-
 });
 
 function locateParameters(parameters, top) {

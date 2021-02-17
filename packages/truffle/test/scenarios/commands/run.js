@@ -39,7 +39,7 @@ describe("truffle run [ @standalone ]", () => {
       });
 
       it("whines about having no plugins configured", async () => {
-        await CommandRunner.run("run mock", config);
+        await assert.rejects(CommandRunner.run("run mock", config));
         const output = logger.contents();
         assert(output.includes("Error: No plugins detected"));
       }).timeout(10000);
@@ -51,58 +51,43 @@ describe("truffle run [ @standalone ]", () => {
           await loadSandboxLogger(
             "../../sources/run/mockProjectWithBadPluginFormat"
           );
-          try {
-            await CommandRunner.run("run mock", config);
-          } catch (_error) {
-            const output = logger.contents();
-            assert(output.includes("Error: Plugins configured incorrectly."));
-          }
+          await assert.rejects(CommandRunner.run("run mock", config));
+          const output = logger.contents();
+          assert(output.includes("Error: Plugins configured incorrectly."));
         }).timeout(10000);
 
         it("throws error when plugins configured but not installed", async () => {
           await loadSandboxLogger(
             "../../sources/run/mockProjectWithMissingPluginModule"
           );
-          try {
-            await CommandRunner.run("run mock", config);
-          } catch (_error) {
-            const output = logger.contents();
-            assert(output.includes("listed as a plugin, but not found"));
-          }
+          await assert.rejects(CommandRunner.run("run mock", config));
+          const output = logger.contents();
+          assert(output.includes("listed as a plugin, but not found"));
         }).timeout(10000);
 
         it("throws error when plugins are missing truffle-plugin.json", async () => {
           await loadSandboxLogger(
             "../../sources/run/mockProjectWithMissingPluginConfig"
           );
-          try {
-            await CommandRunner.run("run mock", config);
-          } catch (_error) {
-            const output = logger.contents();
-            assert(output.includes("Error: truffle-plugin.json not found"));
-          }
+          await assert.rejects(CommandRunner.run("run mock", config));
+          const output = logger.contents();
+          assert(output.includes("Error: truffle-plugin.json not found"));
         }).timeout(10000);
 
         it("throws error when configured/installed plugins don't support the given arg/command", async () => {
           await loadSandboxLogger("../../sources/run/mockProjectWithPlugin");
-          try {
-            await CommandRunner.run("run mock", config);
-          } catch (_error) {
-            const output = logger.contents();
-            assert(output.includes("command not supported"));
-          }
+          await assert.rejects(CommandRunner.run("run mock", config));
+          const output = logger.contents();
+          assert(output.includes("command not supported"));
         }).timeout(20000);
 
         it("throws error if command in truffle-plugin.json uses an absolute path", async () => {
           await loadSandboxLogger(
             "../../sources/run/mockProjectWithAbsolutePath"
           );
-          try {
-            await CommandRunner.run("run mock", config);
-          } catch (_error) {
-            const output = logger.contents();
-            assert(output.includes("Error: Absolute paths not allowed!"));
-          }
+          await assert.rejects(CommandRunner.run("run mock", config));
+          const output = logger.contents();
+          assert(output.includes("Error: Absolute paths not allowed!"));
         }).timeout(10000);
       });
 
