@@ -11,7 +11,7 @@ const versionInfo = version.info();
 const XRegExp = require("xregexp");
 
 // pre-flight check: Node version compatibility
-const minimumNodeVersion = "8.9.4";
+const minimumNodeVersion = "10.23.3";
 if (!semver.satisfies(process.version, ">=" + minimumNodeVersion)) {
   console.log(
     "Error: Node version not supported. You are currently using version " +
