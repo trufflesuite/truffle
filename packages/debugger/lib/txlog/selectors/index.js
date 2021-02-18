@@ -31,14 +31,14 @@ function createMultistepSelectors(stepSelector) {
      * .inInternalSourceOrYul
      */
     inInternalSourceOrYul: createLeaf(
-      ["./source", "./astNode", "/current/context"],
-      (source, node, { isConstructor }) =>
+      ["./source", "./astNode"],
+      (source, node) =>
         !node || source.internal || node.nodeType.startsWith("Yul")
-        || (isConstructor && node.nodeType === "ContractDefinition") //HACK
-        //HACK: this last case is to handle a Solidity bug where code that in
-        //deployed contexts is unmapped, in constructor contexts can instead
-        //get mapped to the contract definition node.  I'm worried that this
-        //might screw things up for optimized code, but... we'll see?
+        || node.nodeType === "ContractDefinition" //HACK
+        //HACK: this last case is to handle a Solidity bug where code that
+        //should be unmapped instead gets mapped to the to the contract
+        //definition node.  I'm worried that this might screw things up for
+        //optimized code, but... we'll see?
     )
   };
 }
