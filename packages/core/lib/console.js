@@ -278,7 +278,7 @@ class Console extends EventEmitter {
           // All good? Return the value (e.g., eval'd script or assignment)
           runScript(
             vm.createScript(
-              'console.log("The expression evaluates to a Promise; ...")'
+              'console.log("The expression evaluates to a Promise; auto-resolving:")'
             )
           );
           callback(null, value);
