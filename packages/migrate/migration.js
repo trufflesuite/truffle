@@ -105,7 +105,7 @@ class Migration {
 
         let receipt;
         if (web3) receipt = await migrations.setCompleted(this.number);
-        if (tezos) receipt = await migrations.main(this.number);
+        if (tezos) receipt = await migrations.default(this.number);
 
         if (!this.dryRun) {
           const data = { receipt, message };
