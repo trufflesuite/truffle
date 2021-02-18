@@ -1,5 +1,6 @@
 var provision = function(abstraction, options) {
   var self = this; // eslint-disable-line no-unused-vars
+  const { web3, tezos } = abstraction.interfaceAdapter;
   if (options.provider) {
     abstraction.setProvider({ provider: options.provider });
   }
@@ -16,12 +17,17 @@ var provision = function(abstraction, options) {
     abstraction.ens = options.ens;
   }
 
-  if (abstraction.interfaceAdapter.tezos) {
+  /**
+   * Not sure if this check is required
+   * or we directly can the wallet
+   * TODO: find a better place for this
+   */
+  if (tezos && tezos.signer.constructor.name === "NoopSigner") {
     abstraction.interfaceAdapter.setWallet(options);
   }
 
-  if (abstraction.interfaceAdapter.web3) {
-    ["from", "gas", "gasPrice"].forEach((key) => {
+  if (web3) {
+    ["from", "gas", "gasPrice"].forEach(key => {
       if (options[key]) {
         var obj = {};
         obj[key] = options[key];
