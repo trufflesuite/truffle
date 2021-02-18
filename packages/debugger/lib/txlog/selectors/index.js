@@ -196,8 +196,12 @@ let txlog = createSelectorTree({
      * txlog.current.onFunctionDefinition
      */
     onFunctionDefinition: createLeaf(
-      ["./astNode", "./isSourceRangeFinal"],
-      (node, ready) => ready && node && node.nodeType === "FunctionDefinition"
+      ["./astNode", "./isSourceRangeFinal", "/next/inInternalSourceOrYul"],
+      (node, ready, isNextInternal) =>
+        ready &&
+        node &&
+        node.nodeType === "FunctionDefinition" &&
+        !isNextInternal //need to make sure we're not just jumping to a generated source or unmapped code
     ),
 
     /**
