@@ -203,7 +203,9 @@ const execute = {
             .sendTransaction(web3, params, promiEvent, context) //the crazy things we do for stacktracing...
             .then(receipt => {
               if (promiEvent.debug) {
-                promiEvent.resolve(receipt);
+                // in this case, we need to manually invoke the handler since it
+                // hasn't been set up (hack?)
+                handlers.receipt(context, receipt);
               }
               //otherwise, just let the handlers handle things
             })
