@@ -7,7 +7,7 @@ const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 const { assert } = chai;
 
-describe.only("preserve", () => {
+describe("preserve", () => {
   // Add mockPlugins folder to require path so stub plugins can be found
   originalRequire("app-module-path").addPath(
     path.resolve(__dirname, "../../mockPlugins")
@@ -21,7 +21,14 @@ describe.only("preserve", () => {
     "_": ["./test/mockPlugins/dummy-loader"],
     "environments": {
       development: {
-        "dummy-recipe": {}
+        "dummy-recipe": {
+          selectedEnvironment: "development"
+        }
+      },
+      production: {
+        "dummy-recipe": {
+          selectedEnvironment: "production"
+        }
       }
     }
   };
@@ -103,15 +110,20 @@ describe.only("preserve", () => {
         console.log = originalConsoleLog;
       });
 
-      it("should call the preserve plugin and propagate environment options", async () => {
+      it("should call the preserve plugin with default environment options", async () => {
         const options = { ...defaultOptions };
-        options.environments.development["dummy-recipe"] = {
-          address: "http://localhost:5001"
-        };
 
         await preserveCommand.run(options);
 
-        assert.include(output, "http://localhost:5001");
+        assert.include(output, "Provided environment name: development");
+      });
+
+      it("should call the preserve plugin with custom environment options", async () => {
+        const options = { ...defaultOptions, environment: "production" };
+
+        await preserveCommand.run(options);
+
+        assert.include(output, "Provided environment name: production");
       });
     });
   });

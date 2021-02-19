@@ -5,11 +5,13 @@ class Recipe {
   dependencies = [];
 
   constructor(environment) {
-    this.address = environment.address;
+    this.environmentName = environment.selectedEnvironment;
   }
 
   async *preserve({ controls }) {
-    yield* controls.log({ message: `Provided address: ${this.address}` });
+    yield* controls.log({
+      message: `Provided environment name: ${this.environmentName}`
+    });
     return "Successfully called dummy-recipe:preserve()";
   }
 }

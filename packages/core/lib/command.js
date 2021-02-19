@@ -1,9 +1,9 @@
 const TaskError = require("./errors/taskerror");
 const yargs = require("yargs/yargs");
-const {bundled, core} = require("../lib/version").info();
+const { bundled, core } = require("../lib/version").info();
 const OS = require("os");
 const analytics = require("../lib/services/analytics");
-const {extractFlags} = require("./utils/utils"); // Contains utility methods
+const { extractFlags } = require("./utils/utils"); // Contains utility methods
 
 class Command {
   constructor(commands) {
@@ -74,6 +74,10 @@ class Command {
 
   async run(inputStrings, options) {
     const result = this.getCommand(inputStrings, options.noAliases);
+
+    if (typeof result.command.help === "function") {
+      result.command.help = await result.command.help(options);
+    }
 
     if (result == null) {
       throw new TaskError(

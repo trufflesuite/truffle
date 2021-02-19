@@ -3,13 +3,13 @@ const CommandRunner = require("../commandrunner");
 const MemoryLogger = require("../memorylogger");
 let config = {};
 
-describe("truffle help [ @standalone ]", function() {
+describe("truffle help [ @standalone ]", function () {
   const logger = new MemoryLogger();
-  beforeEach("set up config for logger", function() {
+  beforeEach("set up config for logger", function () {
     config.logger = logger;
   });
 
-  describe("when run without arguments", function() {
+  describe("when run without arguments", function () {
     it("displays general help", async () => {
       await CommandRunner.run("help", config);
       const output = logger.contents();
@@ -17,7 +17,7 @@ describe("truffle help [ @standalone ]", function() {
     });
   });
 
-  describe("when run with an argument", function() {
+  describe("when run with an argument", function () {
     it("tells the user if it doesn't recognize the given command", async () => {
       await CommandRunner.run("help eggplant", config);
       const output = logger.contents();
@@ -29,5 +29,17 @@ describe("truffle help [ @standalone ]", function() {
       const output = logger.contents();
       assert(output.includes("Description:  Compile contract source files"));
     }).timeout(20000);
+
+    it("displays help for the given command with help function", async () => {
+      await CommandRunner.run("help preserve", config);
+      const output = logger.contents();
+      assert(
+        output.includes(
+          "Description:  Save data to decentralized storage platforms like IPFS and Filecoin"
+        )
+      );
+      assert(output.includes("--environment"));
+      assert(output.includes("--ipfs"));
+    });
   });
 });

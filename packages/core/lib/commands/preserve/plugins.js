@@ -15,7 +15,7 @@ const getConfig = options => {
     config = Config.default().with(options);
   }
 
-  config.plugins = [...config.plugins, ...defaultPlugins];
+  config.plugins = [...(config.plugins || []), ...defaultPlugins];
 
   return config;
 };
