@@ -113,29 +113,6 @@ function translateReceipt(receipt) {
   );
 }
 
-//WARNING: copy-and-paste alert!  this function has copypaste
-//from the receipt function in handlers.js
-function truffleizeReceipt(contract, receipt) {
-  debug("translating");
-  const result = Object.assign({}, receipt); //clone
-
-  result.rawLogs = receipt.logs;
-  result.logs = receipt.logs
-    ? Utils.decodeLogs.call(contract, receipt.logs)
-    : [];
-
-  //I've cut the Reason.get & etc since that never gets called,
-  //since reverted transactions will cause throws at an earlier point
-
-  debug("translated");
-  return {
-    tx: receipt.transactionHash,
-    receipt: result,
-    logs: result.logs
-  };
-}
-
 module.exports = {
-  sendTransactionManual,
-  truffleizeReceipt
+  sendTransactionManual
 }
