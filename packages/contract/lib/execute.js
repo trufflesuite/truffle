@@ -7,7 +7,7 @@ const Reason = require("./reason");
 const handlers = require("./handlers");
 const override = require("./override");
 const reformat = require("./reformat");
-const { sendTransactionManual } = require("./manual-send");
+const { sendTransactionManual, truffleizeReceipt } = require("./manual-send");
 
 const execute = {
   // -----------------------------------  Helpers --------------------------------------------------
@@ -203,7 +203,7 @@ const execute = {
             .sendTransaction(web3, params, promiEvent, context) //the crazy things we do for stacktracing...
             .then(receipt => {
               if (promiEvent.debug) {
-                promiEvent.resolve(receipt);
+                promiEvent.resolve(truffleizeReceipt(constructor, receipt));
               }
               //otherwise, just let the handlers handle things
             })

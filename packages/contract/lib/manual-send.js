@@ -1,5 +1,6 @@
 const debug = require("debug")("contract:manual-send");
 const ethers = require("ethers");
+const Utils = require ("./utils");
 const { formatters } = require("web3-core-helpers"); //used for reproducing web3's behavior
 
 //this is less manual now, it uses ethers, whew
@@ -36,6 +37,7 @@ async function sendTransactionManual(web3, params, promiEvent) {
     }
   }
   debug("txHash: %s", txHash);
+  receipt = translateReceipt(receipt);
   promiEvent.setTransactionHash(txHash); //this here is why I wrote this function @_@
   return await handleResult(receipt, transaction.to == null);
 }
@@ -104,13 +106,36 @@ function setUpParameters(params, web3) {
 function translateReceipt(receipt) {
   return Object.assign({},
     ...Object.entries(receipt).map(([key, value]) => ({
-      [key]: ethers.BigNumber.isBigNumber(value)
+      [key]: Utils.is_big_number(value)
         ? value.toNumber()
         : value
     }))
   );
 }
 
+//WARNING: copy-and-paste alert!  this function has copypaste
+//from the receipt function in handlers.js
+function truffleizeReceipt(contract, receipt) {
+  debug("translating");
+  const result = Object.assign({}, receipt); //clone
+
+  result.rawLogs = receipt.logs;
+  result.logs = receipt.logs
+    ? Utils.decodeLogs.call(contract, receipt.logs)
+    : [];
+
+  //I've cut the Reason.get & etc since that never gets called,
+  //since reverted transactions will cause throws at an earlier point
+
+  debug("translated");
+  return {
+    tx: receipt.transactionHash,
+    receipt: result,
+    logs: result.logs
+  };
+}
+
 module.exports = {
-  sendTransactionManual
+  sendTransactionManual,
+  truffleizeReceipt
 }
