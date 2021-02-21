@@ -60,7 +60,7 @@ export const contractInstances: Definition<"contractInstances"> = {
     }
 
     input ContractInstanceCreationInput {
-      transactionHash: TransactionHash!
+      transactionHash: TransactionHash
       constructor: ConstructorInput!
     }
 
