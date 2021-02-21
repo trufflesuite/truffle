@@ -307,7 +307,10 @@ export class Network {
 
     debug("latest %O", latest);
 
-    if (latest.historicBlock.height > this._knownLatest.historicBlock.height) {
+    if (
+      latest &&
+      latest.historicBlock.height > this._knownLatest.historicBlock.height
+    ) {
       this._knownLatest = latest;
     }
 
@@ -345,7 +348,7 @@ export class Network {
     };
   }): Promise<{
     networks: (NetworkResource | undefined)[];
-    latest: NetworkResource;
+    latest: NetworkResource | undefined;
   }> {
     if (options.blocks.length === 0) {
       throw new Error("Zero blocks provided.");
@@ -374,20 +377,22 @@ export class Network {
     const definedNetworks = networks.filter(
       (network): network is NetworkResource => !!network
     );
-    const loadedLatest = definedNetworks
+    const loadedLatest: NetworkResource | undefined = definedNetworks
       .slice(1)
       .reduce(
         (a, b) => (a.historicBlock.height > b.historicBlock.height ? a : b),
         definedNetworks[0]
       );
 
-    const latest = skipKnownLatest
+    const latest = !loadedLatest
+      ? undefined
+      : skipKnownLatest
       ? loadedLatest
       : await run(Fetch.KnownLatest.process, { network: loadedLatest });
 
     return {
       networks,
-      latest: latest || loadedLatest
+      latest
     };
   }
 
