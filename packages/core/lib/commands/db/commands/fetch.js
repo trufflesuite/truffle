@@ -26,7 +26,7 @@ const command = {
     const { Environment } = require("@truffle/environment");
     const TruffleError = require("@truffle/error");
     const { connect, Project } = require("@truffle/db");
-    const { fetchSources } = require("./fetchSources");
+    const DbKit = require("@truffle/db-kit");
 
     const config = Config.detect(argv);
     if (!config.db || !config.db.enabled) {
@@ -45,51 +45,14 @@ const command = {
 
     await Environment.detect(config);
 
-    const { contractName, result } = await fetchSources(config, address);
-    debug("result %O", result);
-
-    const db = connect(config.db);
-    const project = (
-      await Project.initialize({
-        db,
-        project: {
-          directory: config.working_directory
-        }
-      })
-    ).connect({ provider: config.provider });
-
-    const { contracts } = await project.loadCompile({ result });
-
-    const contract = contracts.find(
-      contract => contract.contractName === contractName
-    );
-    debug("contract %O", contract);
-
-    await project.assignNames({
-      assignments: {
-        contracts: [contract.db.contract]
+    const project = (await Project.initialize({
+      db: connect(config.db),
+      project: {
+        directory: config.working_directory
       }
-    });
+    })).connect({ provider: config.provider });
 
-    const { network } = await project.loadMigrate({
-      network: { name: config.network },
-      artifacts: [
-        {
-          ...contract,
-          networks: {
-            [config.network_id]: {
-              address
-            }
-          }
-        }
-      ]
-    });
-
-    await project.assignNames({
-      assignments: {
-        networks: [network]
-      }
-    });
+    await DbKit.Utils.fetchExternal({ config, project, address});
   }
 };
 

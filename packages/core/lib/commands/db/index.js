@@ -12,13 +12,18 @@ const usage =
   "  serve \tStart the GraphQL server" +
   OS.EOL +
   "  fetch \tFetch verified contracts from Etherscan and/or Sourcify" +
+  OS.EOL +
+  "  decode \tDecode transaction" +
   OS.EOL;
 
 const command = {
   command: "db",
   description: "Database interface commands",
   builder: function (yargs) {
-    return yargs.command(serveCommand).command(fetchCommand).demandCommand();
+    return yargs
+      .command(serveCommand)
+      .command(fetchCommand)
+      .demandCommand();
   },
 
   subCommands: {
@@ -34,7 +39,10 @@ const command = {
 
   help: {
     usage,
-    options: [...serveCommand.help.options, ...fetchCommand.help.options]
+    options: [
+      ...serveCommand.help.options,
+      ...fetchCommand.help.options,
+    ]
   },
 
   run: async function (args) {
