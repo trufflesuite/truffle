@@ -442,6 +442,7 @@ describe("Compilation", () => {
   let compilationIds: IdObject<"compilations">[] = [];
   let netIds: IdObject<"networks">[] = [];
   let migratedNetworks: any[] = [];
+  let contractIds: any[] = [];
   let contractInstanceIds: IdObject<"contractInstances">[] = [];
   let contractInstances: any[] = [];
   let expectedSolcCompilationId;
@@ -458,23 +459,72 @@ describe("Compilation", () => {
     const networkId = await web3.eth.net.getId();
     migrationConfig.reset = true;
     await Migrate.run(migrationConfig);
+
+    sourceIds = artifacts.map(artifact => ({
+      id: generateId("sources", {
+        contents: artifact["source"],
+        sourcePath: artifact["sourcePath"]
+      })
+    } as IdObject<"sources">));
+
+    bytecodeIds = artifacts.map(artifact => ({
+      id: generateId(
+        "bytecodes", Shims.LegacyToNew.forBytecode(artifact["bytecode"])
+      )
+    } as IdObject<"bytecodes">));
+
+    callBytecodeIds = artifacts.map(artifact => ({
+      id: generateId(
+        "bytecodes", Shims.LegacyToNew.forBytecode(artifact["deployedBytecode"])
+      )
+    } as IdObject<"bytecodes">));
+
+    expectedSolcCompilationId = generateId("compilations", {
+      compiler: artifacts[0].compiler,
+      sources: [sourceIds[0], sourceIds[1], sourceIds[2]]
+    });
+    expectedVyperCompilationId = generateId("compilations", {
+      compiler: artifacts[3].compiler,
+      sources: [sourceIds[3]]
+    });
+    compilationIds.push(
+      { id: expectedSolcCompilationId } as IdObject<"compilations">,
+      { id: expectedVyperCompilationId } as IdObject<"compilations">
+    );
+
+    expectedProjectId = generateId("projects", {
+      directory: compilationConfig["working_directory"]
+    });
+
     await Promise.all(
       artifacts.map(async (contract, index) => {
-        let sourceId = generateId("sources", {
-          contents: contract["source"],
-          sourcePath: contract["sourcePath"]
-        });
-        sourceIds.push({ id: sourceId } as IdObject<"sources">);
         const shimBytecodeObject = Shims.LegacyToNew.forBytecode(
           contract["bytecode"]
         );
         const shimCallBytecodeObject = Shims.LegacyToNew.forBytecode(
           contract["deployedBytecode"]
         );
-        let bytecodeId = generateId("bytecodes", shimBytecodeObject);
-        bytecodeIds.push({ id: bytecodeId } as IdObject<"bytecodes">);
+        // @ts-ignore won't be undefined
+        let bytecodeId: string = generateId("bytecodes", shimBytecodeObject);
         let callBytecodeId = generateId("bytecodes", shimCallBytecodeObject);
-        callBytecodeIds.push({ id: callBytecodeId } as IdObject<"bytecodes">);
+
+        // @ts-ignore won't be updefined
+        let contractId: string = generateId("contracts", {
+          name: artifacts[index].contractName,
+          abi: { json: JSON.stringify(artifacts[index].abi) },
+          processedSource: {
+            index: artifacts[index].compiler.name === "solc" ? +index : 0
+          },
+          compilation: {
+            id:
+              artifacts[index].compiler.name === "solc"
+                ? expectedSolcCompilationId
+                : expectedVyperCompilationId
+          }
+        });
+        contractIds.push({
+          id: contractId
+        });
 
         const networksPath = fse
           .readFileSync(
@@ -512,10 +562,27 @@ describe("Compilation", () => {
             links: links
           });
           const contractInstanceId = generateId("contractInstances", {
-            network: {
-              id: netId
-            } as IdObject<"networks">,
-            address: networksArray[networksArray.length - 1][1]["address"]
+            contract: { id: contractId },
+            address: networksArray[networksArray.length - 1][1]["address"],
+            creation: {
+              transactionHash:
+                networksArray[networksArray.length - 1][1]["transactionHash"],
+              constructor: {
+                createBytecode: {
+                  bytecode: { id: bytecodeId },
+                  linkValues: shimBytecodeObject.linkReferences
+                    .filter((linkReference) => !!linkReference.name)
+                    .map(({ name }, index) => ({
+                      // @ts-ignore name won't be null because filter
+                      value: links[name],
+                      linkReference: {
+                        bytecode: { id: bytecodeId },
+                        index
+                      }
+                    }))
+                }
+              }
+            }
           });
           contractInstanceIds.push({ id: contractInstanceId } as IdObject<
             "contractInstances"
@@ -546,23 +613,6 @@ describe("Compilation", () => {
         }
       })
     );
-
-    expectedSolcCompilationId = generateId("compilations", {
-      compiler: artifacts[0].compiler,
-      sources: [sourceIds[0], sourceIds[1], sourceIds[2]]
-    });
-    expectedVyperCompilationId = generateId("compilations", {
-      compiler: artifacts[3].compiler,
-      sources: [sourceIds[3]]
-    });
-    compilationIds.push(
-      { id: expectedSolcCompilationId } as IdObject<"compilations">,
-      { id: expectedVyperCompilationId } as IdObject<"compilations">
-    );
-
-    expectedProjectId = generateId("projects", {
-      directory: compilationConfig["working_directory"]
-    });
 
     // setting up a fake previous contract to test previous name record
     const {
@@ -798,24 +848,8 @@ describe("Compilation", () => {
   });
 
   it("loads contracts", async () => {
-    let contractIds: IdObject<"contracts">[] = [];
-
     for (let index in artifacts) {
-      let expectedId = generateId("contracts", {
-        name: artifacts[index].contractName,
-        abi: { json: JSON.stringify(artifacts[index].abi) },
-        processedSource: {
-          index: artifacts[index].compiler.name === "solc" ? +index : 0
-        },
-        compilation: {
-          id:
-            artifacts[index].compiler.name === "solc"
-              ? expectedSolcCompilationId
-              : expectedVyperCompilationId
-        }
-      });
-
-      contractIds.push({ id: expectedId } as IdObject<"contracts">);
+      let expectedId = contractIds[index];
 
       let {
         data: {
@@ -917,6 +951,7 @@ describe("Compilation", () => {
   });
 
   it("loads contract instances", async () => {
+
     for (const contractInstanceId of contractInstanceIds) {
       let {
         data: {

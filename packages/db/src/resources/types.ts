@@ -52,7 +52,7 @@ export type Collections = {
   contractInstances: {
     resource: DataModel.ContractInstance;
     input: DataModel.ContractInstanceInput;
-    idFields: ["address", "network"];
+    idFields: ["contract", "address", "creation"];
     names: {
       resource: "contractInstance";
       Resource: "ContractInstance";

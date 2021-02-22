@@ -15,7 +15,7 @@ export const contractInstances: Definition<"contractInstances"> = {
     ResourcesMutate: "ContractInstancesAdd"
   },
   createIndexes: [{ fields: ["contract.id"] }],
-  idFields: ["address", "network"],
+  idFields: ["contract", "address", "creation"],
   typeDefs: gql`
     type ContractInstance implements Resource {
       address: Address!
@@ -29,7 +29,6 @@ export const contractInstances: Definition<"contractInstances"> = {
 
     type ContractInstanceCreation {
       transactionHash: TransactionHash
-      constructorArguments: [ConstructorArgument]
       constructor: Constructor
     }
 
@@ -39,6 +38,7 @@ export const contractInstances: Definition<"contractInstances"> = {
 
     type Constructor {
       createBytecode: LinkedBytecode
+      calldata: Bytes
     }
 
     type LinkedBytecode {
