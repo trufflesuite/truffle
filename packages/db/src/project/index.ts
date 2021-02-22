@@ -242,7 +242,7 @@ export class ConnectedProject extends Project {
    * @category Truffle-specific
    */
   async loadMigrate(options: {
-    network: Omit<Input<"networks">, "networkId" | "historicBlock">;
+    network: Pick<Input<"networks">, "name">;
     artifacts: (ContractObject & {
       db: {
         contract: IdObject<"contracts">;
@@ -266,7 +266,11 @@ export class ConnectedProject extends Project {
     );
 
     const networks = await network.includeTransactions({ transactionHashes });
-    debug("networks %O", networks);
+
+    // if there are any missing networks, fetch the latest as backup data
+    if (networks.find((network): network is undefined => !network)) {
+      await network.includeLatest();
+    }
 
     const { artifacts } = await this.run(LoadMigrate.process, {
       network: {
@@ -279,13 +283,9 @@ export class ConnectedProject extends Project {
           ...artifact.networks,
           [networkId]: {
             ...(artifact.networks || {})[networkId],
-            ...(networks[index]
-              ? {
-                  db: {
-                    network: networks[index]
-                  }
-                }
-              : {})
+            db: {
+              network: networks[index] || toIdObject(network.knownLatest)
+            }
           }
         }
       }))
