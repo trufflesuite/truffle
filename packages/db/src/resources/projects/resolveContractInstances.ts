@@ -26,6 +26,7 @@ export async function resolveContractInstances(
   project: IdObject<"projects">,
   inputs: {
     contract?: DataModel.ResourceNameInput;
+    address?: string;
     network?: DataModel.ResourceNameInput;
   },
   context: {
@@ -111,7 +112,13 @@ export async function resolveContractInstances(
     contractInstances.push(...stepContractInstances);
   }
 
-  return contractInstances;
+  if (!inputs.address) {
+    return contractInstances;
+  } else {
+    return contractInstances.filter(
+      contractInstance => contractInstance.address === inputs.address
+    );
+  }
 }
 
 /**
