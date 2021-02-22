@@ -165,6 +165,8 @@ module.exports = {
     // Put the shebang back on.
     new webpack.BannerPlugin({ banner: "#!/usr/bin/env node\n", raw: true }),
 
+    new webpack.ProgressPlugin(),
+
     // `truffle test`
     new CopyWebpackPlugin({
       patterns: [
