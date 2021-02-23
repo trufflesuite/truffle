@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Newline, Box, Text, Static } from "ink";
+import { Box, Text } from "ink";
 import SelectInput from "ink-select-input";
-import BigText from "ink-big-text";
 import type { Transaction, TransactionReceipt } from "web3-core";
 import type TruffleConfig from "@truffle/config";
 import type { Db, Project } from "@truffle/db";
@@ -134,36 +133,7 @@ export const Menu = (props: Props) => {
 
   return (
     <Box flexDirection="column">
-      <Static
-        items={[
-          <Box flexDirection="column">
-            <BigText
-              text="@truffle/db-kit"
-              font="grid"
-              colors={["yellow", "gray"]}
-            />
-            <Text>
-              <Text bold>
-                @truffle/db is a system of record for blockchain metadata.
-              </Text>
-              <Newline />
-              <Text>
-                This tool provides a few utilities to demo @truffle/db and other
-                Truffle libraries. Since this is for demo purposes, please
-                consider this package experimental and subject to future
-                deprecation: we plan to move these utilities to be part of
-                Truffle itself.
-              </Text>
-              <Newline />
-              <Text>Thanks for trying this out! We hope you enjoy.</Text>
-              <Newline />
-            </Text>
-          </Box>
-        ]}
-      >
-        {(item, index) => <Box key={index}>{item}</Box>}
-      </Static>
-      <Box flexDirection="column" marginBottom={1}>
+      <Box flexDirection="column" marginY={1}>
         <Text>Please select:</Text>
         <SelectInput
           isFocused={mode === "wait"}
