@@ -24,11 +24,29 @@ describe("Contract Instance", () => {
       hash: "0xcba0b90a5e65512202091c12a2e3b328f374715b9f1c8f32cb4600c726fe2aa6"
     });
 
-    expectedId = generateId("contractInstances", {
-      address: address,
-      network: { id: addNetworkResult.networksAdd.networks[0].id }
-    });
-    let shimmedBytecode = Shims.LegacyToNew.forBytecode(Migrations.bytecode);
+    const shimmedBytecode = Shims.LegacyToNew.forBytecode(Migrations.bytecode);
+    // @ts-ignore won't be undefined
+    const contract: IdObject<"contracts"> = {
+      id: generateId("contracts", {
+        name: Migrations.contractName,
+        abi: { json: JSON.stringify(Migrations.abi) },
+        processedSource: { index: 0 },
+        compilation: {
+          id:
+            "0x7f91bdeb02ae5fd772f829f41face7250ce9eada560e3e7fa7ed791c40d926bd"
+        }
+      })
+    };
+    const creation = {
+      transactionHash: Migrations.networks["5777"].transactionHash,
+      constructor: {
+        createBytecode: {
+          bytecode: {
+            id: generateId("bytecodes", shimmedBytecode) as string
+          }
+        }
+      }
+    };
 
     variables = [
       {
@@ -36,29 +54,16 @@ describe("Contract Instance", () => {
         network: {
           id: addNetworkResult.networksAdd.networks[0].id
         },
-        contract: {
-          id: generateId("contracts", {
-            name: Migrations.contractName,
-            abi: { json: JSON.stringify(Migrations.abi) },
-            processedSource: { index: 0 },
-            compilation: {
-              id:
-                "0x7f91bdeb02ae5fd772f829f41face7250ce9eada560e3e7fa7ed791c40d926bd"
-            }
-          })
-        },
-        creation: {
-          transactionHash: Migrations.networks["5777"].transactionHash,
-          constructor: {
-            createBytecode: {
-              bytecode: {
-                id: generateId("bytecodes", shimmedBytecode)
-              }
-            }
-          }
-        }
+        contract,
+        creation
       }
     ];
+
+    expectedId = generateId("contractInstances", {
+      contract,
+      address,
+      creation
+    });
   });
 
   test("can be added", async () => {
