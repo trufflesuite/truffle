@@ -45,7 +45,9 @@ describe("Quorum decodeParameters Overload", function() {
         );
         assert(result);
         assert(result.retVal === "0");
-        preparedGanache.server.close(resolve);
+        preparedGanache.server.close(
+          (e?: Error) => (e ? reject(e) : resolve())
+        );
       } catch (e) {
         preparedGanache.server.close(() => {
           reject(e);
@@ -66,7 +68,9 @@ describe("Quorum decodeParameters Overload", function() {
             emptyByte
           );
         });
-        preparedGanache.server.close(resolve);
+        preparedGanache.server.close(
+          (e?: Error) => (e ? reject(e) : resolve())
+        );
       } catch (e) {
         preparedGanache.server.close(() => {
           reject(e);

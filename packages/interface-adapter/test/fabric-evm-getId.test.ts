@@ -39,7 +39,9 @@ describe("fabric-evm getId Overload", function() {
         preparedGanache = await prepareGanache(true);
         const networkID = await preparedGanache.interfaceAdapter.getNetworkId();
         assert(typeof networkID === "string");
-        preparedGanache.server.close(resolve);
+        preparedGanache.server.close(
+          (e?: Error) => (e ? reject(e) : resolve())
+        );
       } catch (e) {
         preparedGanache.server.close(() => {
           reject(e);
@@ -55,7 +57,9 @@ describe("fabric-evm getId Overload", function() {
         preparedGanache = await prepareGanache(false);
         const networkID = await preparedGanache.interfaceAdapter.getNetworkId();
         assert(typeof networkID === "number");
-        preparedGanache.server.close(resolve);
+        preparedGanache.server.close(
+          (e?: Error) => (e ? reject(e) : resolve())
+        );
       } catch (e) {
         preparedGanache.server.close(() => {
           reject(e);

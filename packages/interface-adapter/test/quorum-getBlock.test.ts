@@ -47,7 +47,9 @@ describe("Quorum getBlock Overload", function() {
           block.timestamp,
           "0x" + expectedBlockTime.toString(16)
         );
-        preparedGanache.server.close(resolve);
+        preparedGanache.server.close(
+          (e?: Error) => (e ? reject(e) : resolve())
+        );
       } catch (e) {
         preparedGanache.server.close(() => {
           reject(e);
@@ -64,7 +66,9 @@ describe("Quorum getBlock Overload", function() {
         const block = await preparedGanache.interfaceAdapter.getBlock(0);
         const expectedBlockTime = new BN(genesisBlockTime.getTime()).divn(1000);
         assert.strictEqual(block.timestamp, expectedBlockTime.toNumber());
-        preparedGanache.server.close(resolve);
+        preparedGanache.server.close(
+          (e?: Error) => (e ? reject(e) : resolve())
+        );
       } catch (e) {
         preparedGanache.server.close(() => {
           reject(e);

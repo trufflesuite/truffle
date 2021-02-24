@@ -13,7 +13,7 @@ describe("vyper compiler", function() {
   };
   const config = new Config().merge(defaultSettings);
 
-  it("compiles vyper contracts", function(done) {
+  it.skip("compiles vyper contracts", function(done) {
     compile.all(config, function(err, contracts, paths) {
       assert.equal(err, null, "Compiles without error");
 
