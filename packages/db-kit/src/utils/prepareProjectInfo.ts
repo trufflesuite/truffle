@@ -67,9 +67,9 @@ function findImmutableReferences(immutableReferences, bytecode) {
     ({ bytecode: { id } }) => id === bytecode.id
   );
 
-  const mapped = forBytecode.map(({ astNode, length, offsets }) => ({
-    [astNode]: offsets.map(start => ({ start: start, length }))
-  }));
-
-  return mapped.reduce((a, b) => ({ ...a, ...b }), {});
+  const result = {};
+  for (const { astNode, length, offsets } of forBytecode) {
+    result[astNode] = offsets.map(start => ({ start, length }));
+  }
+  return result;
 }
