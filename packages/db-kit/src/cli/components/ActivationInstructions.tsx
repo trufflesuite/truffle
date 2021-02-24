@@ -43,7 +43,7 @@ export const ActivationInstructions = () => (
     </Box>
     <Text>
       By default, @truffle/db stores information for all your Truffle projects
-      in one place. For your current user, this will be directory:
+      in one place. For your current user, this will be this directory:
       <Newline />
       <Text bold> {defaultDirectory}</Text>
       <Newline />
