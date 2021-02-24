@@ -19,7 +19,7 @@ export const Arguments = ({ args }: Props) => {
     <DefinitionList
       entries={entries}
       spaceBetween={1}
-      nameComponent={({ children }) => <Text bold>{children}</Text>}
+      NameComponent={({ children }) => <Text bold>{children}</Text>}
     />
   );
 };

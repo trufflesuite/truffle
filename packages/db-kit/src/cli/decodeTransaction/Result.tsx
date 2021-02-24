@@ -98,7 +98,7 @@ export const DecodeTransactionResult = ({
     ) : (
       <DefinitionList
         spaceBetween={1}
-        nameComponent={({ children }) => <Text dimColor>{children}</Text>}
+        NameComponent={({ children }) => <Text dimColor>{children}</Text>}
         entries={eventEntries}
       />
     );

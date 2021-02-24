@@ -35,15 +35,17 @@ export const StateVariables = ({ contract, variables }: Props) => {
     <DefinitionList
       entries={entries}
       spaceBetween={1}
-      entryComponent={({ nameComponent, name, node }) => {
+      EntryComponent={({ NameComponent, name, node }) => {
         return (
           <Box flexDirection="column">
-            {nameComponent({ children: <Text>{name}: </Text> })}
+            <NameComponent>
+              <Text>{name}: </Text>
+            </NameComponent>
             <Box marginLeft={2}>{node}</Box>
           </Box>
         );
       }}
-      nameComponent={({ children }) => <Text bold>{children}</Text>}
+      NameComponent={({ children }) => <Text bold>{children}</Text>}
     />
   );
 };

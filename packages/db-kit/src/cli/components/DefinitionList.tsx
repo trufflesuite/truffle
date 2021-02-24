@@ -9,12 +9,12 @@ export interface Props {
 
   spaceBetween?: number;
 
-  entryComponent?: EntryComponent;
-  nameComponent?: NameComponent;
+  EntryComponent?: EntryComponent;
+  NameComponent?: NameComponent;
 }
 
 export type EntryComponent = FC<{
-  nameComponent: FC;
+  NameComponent: FC;
   width: number;
   maxNameWidth: number;
   name: string;
@@ -28,14 +28,14 @@ const DefaultNameComponent: NameComponent = ({ children }) => (
 );
 
 const DefaultEntryComponent: EntryComponent = ({
-  nameComponent, maxNameWidth, name, node
+  NameComponent, maxNameWidth, name, node
 }) => {
-  const nameElement = nameComponent({ children: <Text>{name}: </Text> });
-
   return (
     <Box>
       <Box width={maxNameWidth} justifyContent="flex-end" flexShrink={0}>
-        {nameElement}
+        <NameComponent>
+          <Text>{name}: </Text>
+        </NameComponent>
       </Box>
       <Box width="100%">{node}</Box>
     </Box>
@@ -45,8 +45,8 @@ const DefaultEntryComponent: EntryComponent = ({
 export const DefinitionList = ({
   entries,
   spaceBetween = 0,
-  nameComponent = DefaultNameComponent,
-  entryComponent = DefaultEntryComponent
+  NameComponent = DefaultNameComponent,
+  EntryComponent = DefaultEntryComponent
 }: Props) => {
   const [width, setWidth] = useState(0);
   const ref = useRef();
@@ -63,17 +63,15 @@ export const DefinitionList = ({
     // @ts-ignore
     <Box ref={ref} flexDirection="column">
       {...entries.map(({ name, node }, index) => {
-        const entryElement = entryComponent({
-          width,
-          maxNameWidth,
-          nameComponent,
-          name,
-          node
-        });
-
         return (
           <Box key={index} marginTop={index === 0 ? 0 : spaceBetween}>
-            {entryElement}
+            <EntryComponent {...{
+              NameComponent,
+              width,
+              maxNameWidth,
+              name,
+              node
+            }} />
           </Box>
         );
       })}
