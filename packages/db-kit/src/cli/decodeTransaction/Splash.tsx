@@ -125,20 +125,18 @@ export const DecodeTransactionSplash = ({
     status => status !== "ok"
   );
 
-  const body = decoder ? (
+  const body = decoder && (
     <Box flexDirection="column">
       <Box justifyContent="center" marginBottom={1}>
         <Divider width={10} />
       </Box>
       <Result decoder={decoder} transaction={transaction} receipt={receipt} />
     </Box>
-  ) : (
-    <></>
   );
 
   return (
     <Box flexDirection="column">
-      {showLoaders ? (
+      {showLoaders && (
         <Box
           key="loaders"
           flexDirection="column"
@@ -154,8 +152,6 @@ export const DecodeTransactionSplash = ({
             {...spinners}
           </Box>
         </Box>
-      ) : (
-        <></>
       )}
       {body}
     </Box>

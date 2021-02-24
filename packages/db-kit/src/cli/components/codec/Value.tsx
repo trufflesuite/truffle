@@ -41,12 +41,10 @@ export const Value = ({ result, indexed = false }: Props) => {
           {Format.Types.typeStringWithoutLocation(result.type)}
         </Text>
       </Text>
-      {indexed ? (
+      {indexed && (
         <Text dimColor italic>
           {"<indexed>"}
         </Text>
-      ) : (
-        <></>
       )}
     </Box>
   );

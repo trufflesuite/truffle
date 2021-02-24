@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { ReactNode, useState, useEffect } from "react";
 import { Box, Text } from "ink";
 import SelectInput from "ink-select-input";
 import type { Transaction, TransactionReceipt } from "web3-core";
@@ -79,7 +79,7 @@ export const Menu = (props: Props) => {
     setMode(value);
   };
 
-  const [element, setElement] = useState(<></>);
+  const [element, setElement] = useState<ReactNode>(null);
   const [inputProps, setInputProps] = useState<
     ModeInputProps<MenuModes, ModeName<MenuModes>> | undefined
   >(undefined);
@@ -108,13 +108,11 @@ export const Menu = (props: Props) => {
             ...inputProps,
             onSubmit: setInputProps
           })}
-          {inputProps ? (
+          {inputProps && (
             definition.screenComponent({
               ...props,
               ...inputProps
             })
-          ) : (
-            <></>
           )}
         </Box>
       );
