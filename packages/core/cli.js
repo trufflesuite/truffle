@@ -12,8 +12,8 @@ const XRegExp = require("xregexp");
 const omelette = require("omelette");
 
 // pre-flight check: Node version compatibility
-const minimumNodeVersion = "8.9.4";
-if (!semver.satisfies(process.version, ">=" + minimumNodeVersion)) {
+const minimumNodeVersion = "10.9.0";
+if (!semver.gte(process.version, minimumNodeVersion)) {
   console.log(
     "Error: Node version not supported. You are currently using version " +
       process.version.slice(1) +
@@ -31,13 +31,7 @@ if (!semver.satisfies(process.version, ">=" + minimumNodeVersion)) {
 }
 
 const Command = require("./lib/command");
-
-// enable Truffle to run both from the bundles out of packages/dist
-// and using the raw JS directly - we inject BUNDLE_VERSION when building
-const command =
-  typeof BUNDLE_VERSION !== "undefined"
-    ? new Command(require("./commands.bundled.js"))
-    : new Command(require("./lib/commands"));
+const command = new Command(require("./lib/commands"));
 
 // This should be removed when issue is resolved upstream:
 // https://github.com/ethereum/web3.js/issues/1648
@@ -81,8 +75,8 @@ if (userWantsCleanupShellInitFile) {
 
 command
   .run(inputArguments, options)
-  .then(() => {
-    process.exit(0);
+  .then((returnStatus) => {
+    process.exit(returnStatus);
   })
   .catch(error => {
     if (error instanceof TaskError) {

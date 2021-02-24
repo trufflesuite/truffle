@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "1.2.34",
+  "version": "1.2.35",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -17,9 +17,9 @@
   },
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@truffle/error": "^0.0.11",
+    "@truffle/error": "^0.0.12",
     "@truffle/events": "^0.0.9",
-    "@truffle/provider": "^0.2.25",
+    "@truffle/provider": "^0.2.26",
     "configstore": "^4.0.0",
     "find-up": "^2.1.0",
     "lodash.assignin": "^4.2.0",
@@ -38,7 +38,7 @@
     "mocha": "8.1.2",
     "sinon": "^9.0.2",
     "ts-node": "^9.0.0",
-    "typescript": "3.9.6"
+    "typescript": "3.9.8"
   },
   "keywords": [
     "config",

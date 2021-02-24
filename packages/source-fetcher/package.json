@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.3.2",
+  "version": "0.3.3",
   "main": "dist/index.js",
   "files": [
     "dist"
@@ -30,7 +30,7 @@
   "devDependencies": {
     "@types/debug": "^4.1.5",
     "@types/request-promise-native": "^1.0.17",
-    "typescript": "3.9.6"
+    "typescript": "3.9.8"
   },
   "keywords": [
     "ethereum",
