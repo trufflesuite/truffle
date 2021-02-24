@@ -1,4 +1,4 @@
-import React, { ReactNode, useState, useRef, useEffect } from "react";
+import React, { FC, ReactNode, useState, useRef, useEffect } from "react";
 import { Box, Text, measureElement } from "ink";
 
 export interface Props {
@@ -9,22 +9,27 @@ export interface Props {
 
   spaceBetween?: number;
 
-  entryComponent?: (props: {
-    nameComponent: (props: React.PropsWithChildren<{}>) => ReactNode;
-    width: number;
-    maxNameWidth: number;
-    name: string;
-    node: ReactNode;
-  }) => ReactNode;
-
-  nameComponent?: (props: React.PropsWithChildren<{}>) => ReactNode;
+  entryComponent?: EntryComponent;
+  nameComponent?: NameComponent;
 }
 
-const DefaultNameComponent = ({ children }: React.PropsWithChildren<{}>) => (
+export type EntryComponent = FC<{
+  nameComponent: FC;
+  width: number;
+  maxNameWidth: number;
+  name: string;
+  node: ReactNode;
+}>;
+
+export type NameComponent = FC<{}>;
+
+const DefaultNameComponent: NameComponent = ({ children }) => (
   <Text italic>{children}</Text>
 );
 
-const DefaultEntryComponent = ({ nameComponent, maxNameWidth, name, node }) => {
+const DefaultEntryComponent: EntryComponent = ({
+  nameComponent, maxNameWidth, name, node
+}) => {
   const nameElement = nameComponent({ children: <Text>{name}: </Text> });
 
   return (
