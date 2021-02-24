@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "3.3.3",
+  "version": "3.3.4",
   "main": "index.js",
   "directories": {
     "spec": "./spec"
@@ -22,7 +22,7 @@
   "dependencies": {
     "ajv": "^6.10.0",
     "crypto-js": "^3.1.9-1",
-    "debug": "^4.1.0"
+    "debug": "^4.3.1"
   },
   "devDependencies": {
     "json-schema-to-typescript": "^5.5.0",

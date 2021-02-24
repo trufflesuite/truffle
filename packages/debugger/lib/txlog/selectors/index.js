@@ -32,11 +32,13 @@ function createMultistepSelectors(stepSelector) {
      */
     inInternalSourceOrYul: createLeaf(
       ["./source", "./astNode"],
-      //note: the first of these won't actually happen atm, as source id
-      //of -1 would instead result in source.id === undefined, but I figure
-      //I'll include that condition in case I end up changing this later
       (source, node) =>
         !node || source.internal || node.nodeType.startsWith("Yul")
+        || node.nodeType === "ContractDefinition" //HACK
+        //HACK: this last case is to handle a Solidity bug where code that
+        //should be unmapped instead gets mapped to the to the contract
+        //definition node.  I'm worried that this might screw things up for
+        //optimized code, but... we'll see?
     )
   };
 }
@@ -194,8 +196,12 @@ let txlog = createSelectorTree({
      * txlog.current.onFunctionDefinition
      */
     onFunctionDefinition: createLeaf(
-      ["./astNode", "./isSourceRangeFinal"],
-      (node, ready) => ready && node && node.nodeType === "FunctionDefinition"
+      ["./astNode", "./isSourceRangeFinal", "/next/inInternalSourceOrYul"],
+      (node, ready, isNextInternal) =>
+        ready &&
+        node &&
+        node.nodeType === "FunctionDefinition" &&
+        !isNextInternal //need to make sure we're not just jumping to a generated source or unmapped code
     ),
 
     /**

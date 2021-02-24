@@ -142,7 +142,11 @@ const handlers = {
       logs: receipt.logs
     });
 
-    this.removeListener("receipt", handlers.receipt);
+    //HACK: adding this conditional for when the handler is invoked
+    //manually during stacktracing
+    if (this.removeListener) {
+      this.removeListener("receipt", handlers.receipt);
+    }
   }
 };
 

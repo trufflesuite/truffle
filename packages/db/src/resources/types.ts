@@ -248,6 +248,10 @@ export type Resource<N extends CollectionName = CollectionName> = Meta.Resource<
   N
 >;
 
+export type SavedInput<
+  N extends CollectionName = CollectionName
+> = Meta.SavedInput<Collections, N>;
+
 export type IdFields<N extends CollectionName = CollectionName> = Meta.IdFields<
   Collections,
   N
