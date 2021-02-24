@@ -16,18 +16,6 @@ var provision = function(abstraction, options) {
     abstraction.ens = options.ens;
   }
 
-  /**
-   * Not sure if this check is required
-   * or we directly can the wallet
-   * TODO: find a better place for this
-   */
-  if (
-    abstraction.interfaceAdapter.tezos &&
-    abstraction.interfaceAdapter.tezos.signer.constructor.name === "NoopSigner"
-  ) {
-    abstraction.interfaceAdapter.setWallet(options);
-  }
-
   if (abstraction.interfaceAdapter.web3) {
     ["from", "gas", "gasPrice"].forEach(key => {
       if (options[key]) {

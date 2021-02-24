@@ -1,7 +1,7 @@
 import { InterfaceAdapter, BlockType } from "../types";
 import Config from "@truffle/config";
 import { Provider } from "web3/providers";
-import { TezosToolkit, SetProviderOptions, } from "@taquito/taquito";
+import { TezosToolkit, SetProviderOptions, Signer, } from "@taquito/taquito";
 import { importKey } from "@taquito/signer";
 
 export interface TezosAdapterOptions {
@@ -11,6 +11,7 @@ export interface TezosAdapterOptions {
 }
 
 export class TezosAdapter implements InterfaceAdapter {
+  private static signer: Signer;
   public tezos: TezosToolkit;
   constructor({ provider, config}: TezosAdapterOptions) {
     this.setProvider({ provider, config });
@@ -82,7 +83,7 @@ export class TezosAdapter implements InterfaceAdapter {
     if(!this.tezos) {
       this.tezos = new TezosToolkit(currentHost)
     }
-    return this.tezos.setProvider({ rpc: currentHost, config });
+    return this.tezos.setProvider({ rpc: currentHost, signer: TezosAdapter.signer, config });
   }
 
   public async setWallet(config: Config) {
@@ -101,33 +102,33 @@ export class TezosAdapter implements InterfaceAdapter {
       // email, password, mnemonic, & secret are all REQUIRED.
       if (Array.isArray(mnemonic)) mnemonic = mnemonic.join(" ");
       try {
-        return await importKey(
+        await importKey(
           this.tezos,
           networks[network].email,
           networks[network].password,
           mnemonic,
           networks[network].secret
         );
+        TezosAdapter.signer = this.tezos.signer;
       } catch (error) {
         throw Error(
           `Faucet account invalid or incorrectly imported in truffle config file (config.networks[${network}]).`
         );
       }
-    }
-
-    if (secretKey) {
+    } else if (secretKey) {
       try {
-        return await importKey(this.tezos, secretKey);
+        await importKey(this.tezos, secretKey);
+        TezosAdapter.signer = this.tezos.signer;
       } catch (error) {
         throw Error(
           `Secret key invalid or incorrectly imported in truffle config file (config.networks[${network}].secretKey).`
         );
       }
+    } else  {
+      // TODO: add logic to check if user is importing a psk w/ password
+      throw Error(
+        `No faucet account or secret key detected in truffle config file (config.networks[${network}]).`
+      );
     }
-
-    // TODO: add logic to check if user is importing a psk w/ password
-    throw Error(
-      `No faucet account or secret key detected in truffle config file (config.networks[${network}]).`
-    );
   }
 }
