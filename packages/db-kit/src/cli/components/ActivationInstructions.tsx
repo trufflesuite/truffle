@@ -13,19 +13,6 @@ const simpleInstructions = `module.exports = {
   }
 };`;
 
-const customInstructions = `module.exports = {
-  // ... rest of truffle-config.js ...
-  db: {
-    enabled: true,
-    adapter: {
-      name: "sqlite",
-      settings: {
-        directory: ".db"
-      }
-    }
-  }
-};`;
-
 const defaultDirectory = path.join(
   TruffleConfig.getTruffleDataDirectory(),
   ".db"
@@ -57,24 +44,10 @@ export const ActivationInstructions = () => (
     <Text>
       By default, @truffle/db stores information for all your Truffle projects
       in one place. For your current user, this will be directory:
-    </Text>
-    <Text bold> {defaultDirectory}</Text>
-    <Text>
       <Newline />
-      If you'd like to configure @truffle/db to store each project separately,
-      add this to your truffle-config.js instead:
+      <Text bold> {defaultDirectory}</Text>
+      <Newline />
     </Text>
-    <Box flexDirection="column" marginY={1} marginX={2}>
-      <Text>
-        <Text color="gray">``` </Text>
-        <Text italic bold>
-          truffle-config.js:{" "}
-        </Text>
-        <Text italic>Custom persistence location</Text>
-      </Text>
-      <SyntaxHighlight language="javascript" code={customInstructions} />
-      <Text color="gray">```</Text>
-    </Box>
     <Text bold>
       Once you've added this, please re-run this same command. Thank you!
     </Text>
