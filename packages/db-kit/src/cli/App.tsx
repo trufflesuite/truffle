@@ -31,44 +31,33 @@ export const App = ({
     }
   });
 
-  let element = <></>;
-
-  if (!error && project && db && config) {
-    element = (
-      <Menu
-        config={config}
-        db={db}
-        project={project}
-        onDone={() => setShouldQuit(true)}
-      />
-    );
-  } else if (!error) {
-    element = (
+  return (
+    <Box flexDirection="column">
+      <Header />
+      {!error && project && db && config && // success case
+        <Menu
+          config={config}
+          db={db}
+          project={project}
+          onDone={() => setShouldQuit(true)}
+        />}
+    {!error && !(project && db && config) && // still loading case
       <Text>
         <Text color="green">
           <Spinner />
         </Text>
         {" Reading truffle-config and connecting to network..."}
-      </Text>
-    );
-  } else if (error instanceof DbNotEnabledError) {
-    element = <ActivationInstructions />;
-  } else {
-    element = (
+      </Text>}
+    {error && error instanceof DbNotEnabledError && // specific error case
+      <ActivationInstructions />}
+    {error && !(error instanceof DbNotEnabledError) && // unknown error case
       <Text>
         <Newline />
         <Text color="red" bold>
           Unhandled exception:{" "}
         </Text>
         <Text>{util.inspect(error)}</Text>
-      </Text>
-    );
-  }
-
-  return (
-    <Box flexDirection="column">
-      <Header />
-      {element}
+      </Text>}
     </Box>
   );
 };
