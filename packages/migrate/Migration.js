@@ -110,7 +110,7 @@ class Migration {
         .contracts()
         .map(abstraction => abstraction._json);
       if (this.config.db && this.config.db.enabled && artifacts.length > 0) {
-        const db = connect(this.config);
+        const db = connect(this.config.db);
         const project = await Project.initialize({
           db,
           project: {
