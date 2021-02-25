@@ -11,7 +11,7 @@ import TruffleConfig from "@truffle/config";
 
 const compiler = {
   name: "smartpy",
-  version: "trufflesuite/smartpy-basic:0.0.2",
+  version: "trufflesuite/smartpy-basic:latest"
 };
 
 const SMARTPY_PATTERN = "**/*.py";
@@ -72,7 +72,7 @@ compile.display = (
       paths = Object.keys(paths);
     }
 
-    paths.sort().forEach((contract) => {
+    paths.sort().forEach(contract => {
       if (path.isAbsolute(contract)) {
         contract = `.${path.sep}${path.relative(working_directory, contract)}`;
       }
@@ -145,16 +145,16 @@ function execSmartPy(
       "compile",
       fullInternalSourcePath,
       `${entryPoint ? entryPoint : contractName}()`,
-      options.contracts_build_directory,
+      options.contracts_build_directory
     ]);
 
     let stderr = "";
 
-    docker.stderr.on("data", (data) => {
+    docker.stderr.on("data", data => {
       stderr += data;
     });
 
-    docker.on("close", (code) => {
+    docker.on("close", code => {
       if (code != 0 || stderr != "") {
         reject(
           `${stderr}\n${colors.red(
@@ -194,7 +194,7 @@ async function compileAll(options: TruffleConfig, callback: CompileCallback) {
       options.contracts_build_directory
     );
 
-    currentBuildDirectoryContents.forEach((file) => {
+    currentBuildDirectoryContents.forEach(file => {
       const currentFilePath = `${options.contracts_build_directory}/${file}`;
       if (file.includes(".py")) {
         return fs.unlinkSync(currentFilePath);
@@ -223,7 +223,7 @@ async function compileAll(options: TruffleConfig, callback: CompileCallback) {
       sourcePath,
       source: sourceContents,
       michelson,
-      compiler,
+      compiler
     };
 
     contracts.push(contractDefinition);
@@ -249,7 +249,7 @@ function compileSmartPy(options: TruffleConfig, callback: CompileCallback) {
   // no SmartPy files found, no need to check SmartPy
   if (options.paths.length === 0) return callback(null, {}, []);
 
-  checkSmartPy((err) => {
+  checkSmartPy(err => {
     if (err) return callback(err);
 
     return compileAll(options, callback);
@@ -259,10 +259,7 @@ function compileSmartPy(options: TruffleConfig, callback: CompileCallback) {
 // append .py pattern to contracts_directory in options and return updated options
 function updateContractsDirectory(options: TruffleConfig) {
   return options.with({
-    contracts_directory: path.join(
-      options.contracts_directory,
-      SMARTPY_PATTERN
-    ),
+    contracts_directory: path.join(options.contracts_directory, SMARTPY_PATTERN)
   });
 }
 
