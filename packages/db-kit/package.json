@@ -34,7 +34,7 @@
     "build:dist": "ttsc",
     "build:docs": "typedoc",
     "madge": "madge ./src/index.ts",
-    "test": "jest --verbose --detectOpenHandles --forceExit"
+    "test": "jest --verbose --detectOpenHandles --forceExit --passWithNoTests"
   },
   "devDependencies": {
     "@types/jest": "^26.0.20",
