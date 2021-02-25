@@ -12,7 +12,8 @@ export function* process(): Process<any, { web3: "net_version" }> {
 
   const response = yield {
     type: "web3",
-    method: "net_version"
+    method: "net_version",
+    params: []
   };
 
   const { result } = response;
