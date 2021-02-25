@@ -73,7 +73,7 @@ export interface GraphQlRequest {
 export interface Web3Request {
   type: "web3";
   method: string;
-  params?: any[];
+  params: any[];
 }
 
 export type ProcessRequest<
