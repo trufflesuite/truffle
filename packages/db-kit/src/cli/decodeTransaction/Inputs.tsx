@@ -33,7 +33,7 @@ export const DecodeTransactionInputs = ({ config, onSubmit }: Props) => {
         addresses
       });
     }
-  }, [transaction, addresses]);
+  }, [onSubmit, transactionHash, transaction, receipt, addresses]);
 
   const spinners = [
     ...(!transactionHash || transaction

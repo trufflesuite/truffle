@@ -18,7 +18,7 @@ export const DecodeAddressInputs = ({ onSubmit }: Props) => {
         address
       });
     }
-  }, [address]);
+  }, [address, onSubmit]);
 
   return (
     <Box flexDirection="column">

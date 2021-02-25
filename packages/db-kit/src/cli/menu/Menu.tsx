@@ -63,7 +63,7 @@ export const definitions: Definitions<MenuModes> = {
       return <DecodeAddress.Splash {...props} />;
     }
   },
-  quit: {
+  "quit": {
     label: "Quit",
     effect: ({ onDone }) => {
       onDone();
@@ -117,7 +117,7 @@ export const Menu = (props: Props) => {
         </Box>
       );
     }
-  }, [mode, inputProps]);
+  }, [config, db, onDone, project, props, mode, inputProps]);
 
   const selectItems =
     mode === "wait"
