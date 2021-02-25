@@ -28,7 +28,10 @@ const DefaultNameComponent: NameComponent = ({ children }) => (
 );
 
 const DefaultEntryComponent: EntryComponent = ({
-  NameComponent, maxNameWidth, name, node
+  NameComponent,
+  maxNameWidth,
+  name,
+  node
 }) => {
   return (
     <Box>
@@ -65,13 +68,15 @@ export const DefinitionList = ({
       {...entries.map(({ name, node }, index) => {
         return (
           <Box key={index} marginTop={index === 0 ? 0 : spaceBetween}>
-            <EntryComponent {...{
-              NameComponent,
-              width,
-              maxNameWidth,
-              name,
-              node
-            }} />
+            <EntryComponent
+              {...{
+                NameComponent,
+                width,
+                maxNameWidth,
+                name,
+                node
+              }}
+            />
           </Box>
         );
       })}

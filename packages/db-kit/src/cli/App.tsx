@@ -34,30 +34,39 @@ export const App = ({
   return (
     <Box flexDirection="column">
       <Header />
-      {!error && project && db && config && // success case
-        <Menu
-          config={config}
-          db={db}
-          project={project}
-          onDone={() => setShouldQuit(true)}
-        />}
-    {!error && !(project && db && config) && // still loading case
-      <Text>
-        <Text color="green">
-          <Spinner />
-        </Text>
-        {" Reading truffle-config and connecting to network..."}
-      </Text>}
-    {error && error instanceof DbNotEnabledError && // specific error case
-      <ActivationInstructions />}
-    {error && !(error instanceof DbNotEnabledError) && // unknown error case
-      <Text>
-        <Newline />
-        <Text color="red" bold>
-          Unhandled exception:{" "}
-        </Text>
-        <Text>{util.inspect(error)}</Text>
-      </Text>}
+      {!error &&
+      project &&
+      db &&
+      config && ( // success case
+          <Menu
+            config={config}
+            db={db}
+            project={project}
+            onDone={() => setShouldQuit(true)}
+          />
+        )}
+      {!error &&
+      !(project && db && config) && ( // still loading case
+          <Text>
+            <Text color="green">
+              <Spinner />
+            </Text>
+            {" Reading truffle-config and connecting to network..."}
+          </Text>
+        )}
+      {error &&
+      error instanceof DbNotEnabledError && <ActivationInstructions /> // specific error case
+      }
+      {error &&
+      !(error instanceof DbNotEnabledError) && ( // unknown error case
+          <Text>
+            <Newline />
+            <Text color="red" bold>
+              Unhandled exception:{" "}
+            </Text>
+            <Text>{util.inspect(error)}</Text>
+          </Text>
+        )}
     </Box>
   );
 };

@@ -1,3 +1,5 @@
+import type React from "react";
+
 export type Modes = {
   [modeName: string]: (
     | {
@@ -54,10 +56,10 @@ export type Definition<M extends Modes, N extends ModeName<M>> = {
   : {}) &
   (Mode<M, N>["rendersComponent"] extends true
     ? {
-        propsInputComponent: (
+        PropsInputComponent: (
           props: ModeInputComponentProps<M, N>
         ) => React.ReactNode;
-        screenComponent: (props: ModeProps<M, N>) => React.ReactNode;
+        ScreenComponent: (props: ModeProps<M, N>) => React.ReactNode;
       }
     : {});
 

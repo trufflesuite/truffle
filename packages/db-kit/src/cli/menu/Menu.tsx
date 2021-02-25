@@ -47,21 +47,13 @@ export type MenuModes = {
 export const definitions: Definitions<MenuModes> = {
   "decode-transaction": {
     label: "Decode transaction",
-    propsInputComponent: props => {
-      return <DecodeTransaction.Inputs {...props} />;
-    },
-    screenComponent: props => {
-      return <DecodeTransaction.Splash {...props} />;
-    }
+    PropsInputComponent: DecodeTransaction.Inputs,
+    ScreenComponent: DecodeTransaction.Splash
   },
   "decode-address": {
     label: "Decode contract address",
-    propsInputComponent: props => {
-      return <DecodeAddress.Inputs {...props} />;
-    },
-    screenComponent: props => {
-      return <DecodeAddress.Splash {...props} />;
-    }
+    PropsInputComponent: DecodeAddress.Inputs,
+    ScreenComponent: DecodeAddress.Splash
   },
   "quit": {
     label: "Quit",
@@ -100,20 +92,17 @@ export const Menu = (props: Props) => {
       definition.effect({ config, db, project, onDone });
     }
 
-    if (definition.screenComponent) {
+    if (definition.ScreenComponent) {
+      const { PropsInputComponent, ScreenComponent } = definition;
+
       setElement(
         <Box flexDirection="column">
-          {definition.propsInputComponent({
-            ...props,
-            ...inputProps,
-            onSubmit: setInputProps
-          })}
-          {inputProps && (
-            definition.screenComponent({
-              ...props,
-              ...inputProps
-            })
-          )}
+          <PropsInputComponent
+            {...props}
+            {...inputProps}
+            onSubmit={setInputProps}
+          />
+          {inputProps && <ScreenComponent {...props} {...inputProps} />}
         </Box>
       );
     }

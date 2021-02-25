@@ -11,7 +11,7 @@ export interface EventProps {
   decoding: LogDecoding | undefined;
 }
 
-const UnknownEvent = ({ log }: Omit<EventProps, "decoding">) =>
+const UnknownEvent = ({ log }: Omit<EventProps, "decoding">) => (
   <Box flexDirection="column">
     <Text bold>Unknown event</Text>
     <Text italic>Address:</Text>
@@ -39,7 +39,8 @@ const UnknownEvent = ({ log }: Omit<EventProps, "decoding">) =>
         </Box>
       ))
     )}
-  </Box>;
+  </Box>
+);
 
 export const Event = ({ log, decoding }: EventProps) => {
   if (!decoding) {
