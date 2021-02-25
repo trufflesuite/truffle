@@ -104,7 +104,7 @@ const WorkflowCompile = {
 
     if (options.db && options.db.enabled === true && contracts.length > 0) {
       debug("saving to @truffle/db");
-      const db = connect(config);
+      const db = connect(config.db);
       const project = await Project.initialize({
         db,
         project: {
@@ -129,7 +129,7 @@ const WorkflowCompile = {
       return;
     }
 
-    const db = connect(config);
+    const db = connect(config.db);
     const project = await Project.initialize({
       db,
       project: {
