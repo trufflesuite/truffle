@@ -202,10 +202,8 @@ let txlog = createSelectorTree({
         (ready || stepsRemaining <= 2) && //HACK: see below
         node &&
         node.nodeType === "FunctionDefinition" &&
-        (!isNextInternal || stepsRemaining <= 1) //need to make sure we're not just jumping to a generated source or unmapped code
-        //however if there are no steps remaining that will trip isNextInternal which we don't want,
-        //so we have to account for that too
-        //we also account for this up top because the last step will never be processed, so...
+        !isNextInternal //need to make sure we're not just jumping to a generated source or unmapped code
+        //hack above: the last step doesn't get processed, so...
     ),
 
     /**
