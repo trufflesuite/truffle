@@ -1,0 +1,14 @@
+{
+  "excludeRegExp": [
+    "\\.\\.",
+    "resources/data.ts",
+    "test"
+  ],
+  "fileExtensions": ["ts", "tsx"],
+  "detectiveOptions": {
+    "ts": {
+      "skipTypeImports": true
+    }
+  },
+  "tsConfig": "./tsconfig.json"
+}
