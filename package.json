@@ -17,6 +17,7 @@
     "@typescript-eslint/parser": "^4.2.0",
     "coveralls": "^3.0.2",
     "eslint": "^7.9.0",
+    "eslint-plugin-react-hooks": "^4.2.0",
     "husky": "^4.3.0",
     "lerna": "^3.16.4",
     "lerna-update-wizard": "^0.16.0",
@@ -42,6 +43,10 @@
       "eslint --fix"
     ],
     "*.ts": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "*.tsx": [
       "prettier --write",
       "eslint --fix"
     ]

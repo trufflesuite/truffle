@@ -20,10 +20,10 @@ export type Config = {
   artifact?: {};
 
   requires?: {};
-  produces: {};
+  produces: {} | undefined;
 
-  entry?: any;
-  result?: any;
+  entry: any;
+  result: any;
 };
 
 export type Network<C extends Config> = C["network"] & {
@@ -92,7 +92,7 @@ export const configure = <C extends Config>(
   inputs: Base.Inputs<Batch<C>, I>
 ) => Process<Base.Outputs<Batch<C>, I & O>>) =>
   Base.configure<Batch<C>>({
-    *iterate<_I>({
+    *iterate({
       inputs: {
         artifacts,
         network: { networkId }
@@ -116,7 +116,7 @@ export const configure = <C extends Config>(
       }
     },
 
-    find<_I>({
+    find({
       inputs: {
         artifacts,
         network: { networkId }
@@ -124,39 +124,32 @@ export const configure = <C extends Config>(
       breadcrumb
     }) {
       const { artifactIndex } = breadcrumb;
-      return artifacts[artifactIndex].networks[networkId];
+      return (artifacts[artifactIndex].networks || {})[networkId];
     },
 
-    initialize<I, O>({ inputs: { artifacts, network } }) {
+    initialize({ inputs: { artifacts, network } }) {
       return {
         network,
-        artifacts: artifacts.map(
-          artifact =>
-            ({
-              ...artifact,
+        artifacts: artifacts.map(artifact => ({
+          ...artifact,
 
-              networks: {
-                ...artifact.networks
-              } as { [networkId: string]: I & O }
-            } as Artifact<C> & { networks?: { [networkId: string]: I & O } })
-        )
+          networks: {
+            ...artifact.networks
+          }
+        }))
       };
     },
 
-    merge<I, O>({ outputs: { network, artifacts }, breadcrumb, output }) {
+    merge({ outputs: { network, artifacts }, breadcrumb, output }) {
       debug("output %o", output);
       const { networkId } = network;
       const { artifactIndex } = breadcrumb;
-      const artifactsBefore: (Artifact<C> & {
-        networks?: { [networkId: string]: I & O };
-      })[] = artifacts.slice(0, artifactIndex);
+      const artifactsBefore = artifacts.slice(0, artifactIndex);
       const artifact = artifacts[artifactIndex];
-      const artifactsAfter: (Artifact<C> & {
-        networks?: { [networkId: string]: I & O };
-      })[] = artifacts.slice(artifactIndex + 1);
+      const artifactsAfter = artifacts.slice(artifactIndex + 1);
 
-      const artifactNetwork: I & O = {
-        ...artifact.networks[networkId],
+      const artifactNetwork = {
+        ...(artifact.networks || {})[networkId],
         ...output
       };
 

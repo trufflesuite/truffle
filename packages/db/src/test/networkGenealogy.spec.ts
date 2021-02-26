@@ -1,6 +1,7 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:test:networkGenealogy");
 
+import type { SavedInput } from "@truffle/db/resources";
 import { generateId, WorkspaceClient } from "./utils";
 import {
   FindAncestors,
@@ -79,7 +80,7 @@ describe("Network Genealogy", () => {
         possibleMatches = result.network.possibleDescendants.networks;
       }
 
-      const networks = [];
+      const networks: SavedInput<"networks">[] = [];
       // spoofing the logic that will be happening in  the loaders to check whether
       // there's a match to make this a possible match
       for (const match of possibleMatches) {

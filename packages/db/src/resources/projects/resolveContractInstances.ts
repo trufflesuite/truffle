@@ -26,6 +26,7 @@ export async function resolveContractInstances(
   project: IdObject<"projects">,
   inputs: {
     contract?: DataModel.ResourceNameInput;
+    address?: string;
     network?: DataModel.ResourceNameInput;
   },
   context: {
@@ -49,38 +50,61 @@ export async function resolveContractInstances(
     nameRecords: contractNameRecords,
     workspace
   })) {
-    let stepContractInstances = await workspace.find("contractInstances", {
-      selector: {
-        "contract.id": { $in: contracts.map(({ id }) => id) }
-      }
-    });
+    let stepContractInstances = (
+      await workspace.find("contractInstances", {
+        selector: {
+          "contract.id": {
+            $in: contracts
+              .filter(
+                (contract): contract is IdObject<"contracts"> => !!contract
+              )
+              .map(({ id }) => id)
+          }
+        }
+      })
+    ).filter(
+      (contractInstance): contractInstance is SavedInput<"contractInstances"> =>
+        !!contractInstance
+    );
 
     if (inputs.network) {
       const ancestors = await filterProjectNetworkAncestors({
         project,
         network: inputs.network,
-        candidates: stepContractInstances.map(({ network }) => network),
+        candidates: stepContractInstances.map(
+          ({ network }) => network as IdObject<"networks">
+        ),
         workspace,
         info
       });
 
       const ancestorIds = new Set([...ancestors.map(({ id }) => id)]);
-      stepContractInstances = stepContractInstances.filter(({ network }) =>
-        ancestorIds.has(network.id)
+      stepContractInstances = stepContractInstances.filter(
+        ({ network }) => network && ancestorIds.has(network.id)
       );
     }
 
-    const byContractId = stepContractInstances.reduce(
-      (byContractId, contractInstance) => ({
-        ...byContractId,
-        [contractInstance.contract.id]: contractInstance
-      }),
-      {}
-    );
+    const byContractId = stepContractInstances
+      .filter(
+        (
+          contractInstance
+        ): contractInstance is SavedInput<"contractInstances"> & {
+          contract: IdObject<"contracts">;
+        } => !!contractInstance.contract
+      )
+      .reduce(
+        (byContractId, contractInstance) => ({
+          ...byContractId,
+          [contractInstance.contract.id]: contractInstance
+        }),
+        {}
+      );
 
-    const found = contracts.map(({ id }, index) =>
-      id in byContractId ? index : undefined
-    );
+    const found = contracts
+      .map((contract, index) =>
+        contract && contract.id in byContractId ? index : undefined
+      )
+      .filter((index): index is number => typeof index === "number");
 
     debug("skipping found indexes: %O", found);
     skip(...found);
@@ -88,7 +112,13 @@ export async function resolveContractInstances(
     contractInstances.push(...stepContractInstances);
   }
 
-  return contractInstances;
+  if (!inputs.address) {
+    return contractInstances;
+  } else {
+    return contractInstances.filter(
+      contractInstance => contractInstance.address === inputs.address
+    );
+  }
 }
 
 /**
@@ -116,7 +146,7 @@ async function* findResourcesHistories<
   let { nameRecords } = options;
 
   do {
-    const skip = (...indexes: (number | undefined)[]) => {
+    const skip = (...indexes: number[]) => {
       for (const index of indexes) {
         if (typeof index === "number") {
           nameRecords[index] = undefined;
@@ -137,7 +167,9 @@ async function* findResourcesHistories<
     nameRecords = await workspace.find(
       "nameRecords",
       nameRecords.map(nameRecord =>
-        nameRecord && nameRecord.previous ? nameRecord.previous : undefined
+        nameRecord && nameRecord.previous
+          ? (nameRecord.previous as IdObject<"nameRecords">)
+          : undefined
       )
     );
   } while (nameRecords.find(nameRecord => nameRecord));
@@ -167,7 +199,9 @@ async function filterProjectNetworkAncestors(options: {
     return [];
   }
 
-  const candidates = await workspace.find("networks", candidateReferences);
+  const candidates = (
+    await workspace.find("networks", candidateReferences)
+  ).filter((network): network is SavedInput<"networks"> => !!network);
 
   // find earliest among candidates to specify minimumHeight to ancestors query
   const earliestCandidate = candidates
@@ -203,8 +237,10 @@ async function filterProjectNetworkAncestors(options: {
 
   // filter candidates
   const ancestorIds = new Set([...ancestors.map(({ id }) => id)]);
-  // @ts-ignore for the stubs
-  return candidates.filter(({ id }) => ancestorIds.has(id));
+  return candidates.filter(
+    (candidate): candidate is IdObject<"networks"> =>
+      candidate && ancestorIds.has(candidate.id)
+  );
 }
 
 /**

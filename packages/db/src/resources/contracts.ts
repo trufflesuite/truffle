@@ -5,7 +5,7 @@ import gql from "graphql-tag";
 import { pascalCase } from "change-case";
 import { normalize } from "@truffle/abi-utils";
 
-import { Definition } from "./types";
+import { SavedInput, Definition } from "./types";
 
 export const contracts: Definition<"contracts"> = {
   names: {
@@ -33,6 +33,8 @@ export const contracts: Definition<"contracts"> = {
       processedSource: ProcessedSource
       createBytecode: Bytecode
       callBytecode: Bytecode
+      callBytecodeGeneratedSources: [ProcessedSource]
+      createBytecodeGeneratedSources: [ProcessedSource]
     }
 
     type ABI {
@@ -47,6 +49,8 @@ export const contracts: Definition<"contracts"> = {
       processedSource: IndexReferenceInput
       createBytecode: ResourceReferenceInput
       callBytecode: ResourceReferenceInput
+      callBytecodeGeneratedSources: [ProcessedSourceInput]
+      createBytecodeGeneratedSources: [ProcessedSourceInput]
     }
 
     input IndexReferenceInput {
@@ -117,10 +121,17 @@ export const contracts: Definition<"contracts"> = {
   resolvers: {
     Contract: {
       compilation: {
-        resolve: async ({ compilation: { id } }, _, { workspace }) => {
+        resolve: async (
+          contract: SavedInput<"contracts">,
+          _,
+          { workspace }
+        ) => {
           debug("Resolving Contract.compilation...");
+          if (!contract.compilation) {
+            return;
+          }
 
-          const result = workspace.get("compilations", id);
+          const result = workspace.get("compilations", contract.compilation.id);
 
           debug("Resolved Contract.compilation.");
           return result;
@@ -128,17 +139,25 @@ export const contracts: Definition<"contracts"> = {
       },
       processedSource: {
         fragment: `... on Contract { compilation { id } }`,
-        resolve: async (
-          { processedSource, compilation: { id } },
-          _,
-          { workspace }
-        ) => {
+        async resolve(contract: SavedInput<"contracts">, _, { workspace }) {
           debug("Resolving Contract.processedSource...");
+          if (!contract.compilation || !contract.processedSource) {
+            return;
+          }
 
-          const { processedSources } = await workspace.get("compilations", id);
+          const compilation = await workspace.get(
+            "compilations",
+            contract.compilation.id
+          );
+          if (!compilation) {
+            return;
+          }
+
+          const { processedSources } = compilation;
+          debug("processedSources %O", processedSources);
 
           debug("Resolved Contract.processedSource.");
-          return processedSources[processedSource.index];
+          return processedSources[contract.processedSource.index];
         }
       },
       createBytecode: {

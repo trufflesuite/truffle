@@ -5,7 +5,6 @@ import gql from "graphql-tag";
 import { print } from "graphql/language/printer";
 import { GraphQLSchema, DocumentNode, ExecutionResult, execute } from "graphql";
 import { ApolloServer } from "apollo-server";
-import type TruffleConfig from "@truffle/config";
 
 import type { Collections } from "./collections";
 import type { Workspace } from "./data";
@@ -22,7 +21,6 @@ export interface Db<_C extends Collections> {
 }
 
 export interface ConnectOptions<_C extends Collections> {
-  workingDirectory: string;
   adapter?: Pouch.Adapters.AdapterOptions;
 }
 
@@ -32,13 +30,11 @@ export const forAttachAndSchema = <C extends Collections>(options: {
 }) => {
   const { attach, schema } = options;
 
-  const connect = (config: TruffleConfig | ConnectOptions<C>): Db<C> => {
-    const options =
-      "working_directory" in config // TruffleConfig case
-        ? toConnectOptions(config)
-        : (config as ConnectOptions<C>);
-
-    const workspace = attach(options);
+  const connect = (connectOptions?: ConnectOptions<C>): Db<C> => {
+    const attachOptions = {
+      adapter: (connectOptions || {}).adapter
+    }
+    const workspace = attach(attachOptions);
 
     return {
       async execute(
@@ -69,13 +65,11 @@ export const forAttachAndSchema = <C extends Collections>(options: {
     };
   };
 
-  const serve = (config: TruffleConfig | ConnectOptions<C>) => {
-    const options =
-      "working_directory" in config // TruffleConfig case
-        ? toConnectOptions(config)
-        : (config as ConnectOptions<C>);
-
-    const workspace = attach(options);
+  const serve = (serveOptions?: ConnectOptions<C>) => {
+    const attachOptions = {
+      adapter: (serveOptions || {}).adapter
+    }
+    const workspace = attach(attachOptions);
 
     return new ApolloServer({
       tracing: true,
@@ -86,12 +80,3 @@ export const forAttachAndSchema = <C extends Collections>(options: {
 
   return { connect, serve };
 };
-
-function toConnectOptions<C extends Collections>(
-  config: TruffleConfig
-): ConnectOptions<C> {
-  return {
-    workingDirectory: config.working_directory,
-    adapter: (config.db || {}).adapter
-  };
-}

@@ -75,6 +75,6 @@ describe("truffle build [ @standalone ]", () => {
           )
         );
       }
-    });
+    }).timeout(20000);
   });
 });

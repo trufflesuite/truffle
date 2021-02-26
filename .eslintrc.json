@@ -3,6 +3,9 @@
     "es6": true,
     "node": true
   },
+  "extends": [
+    "plugin:react-hooks/recommended"
+  ],
   "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint"],
   "parserOptions": {

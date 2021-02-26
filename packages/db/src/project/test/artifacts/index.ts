@@ -8,11 +8,10 @@ import type { Resolver } from "@truffle/resolver";
 import { Environment } from "@truffle/environment";
 import { ContractObject } from "@truffle/contract-schema/spec";
 
-import { initialize, Project }from "@truffle/db/project";
+import { initialize, Project } from "@truffle/db/project";
 import { Resource, Db, IdObject, toIdObject } from "@truffle/db/resources";
 import { resources } from "@truffle/db/process";
 import { WorkflowCompileResult } from "@truffle/compile-common/src/types";
-import WorkflowCompile from "@truffle/workflow-compile";
 
 export class ArtifactsLoader {
   private db: Db;
@@ -21,18 +20,13 @@ export class ArtifactsLoader {
 
   constructor(db: Db, config?: Partial<Config>) {
     this.db = db;
+    // @ts-ignore
     this.compilationConfig = config;
     // @ts-ignore
     this.resolver = new TruffleResolver(config);
   }
 
-  async load(): Promise<void> {
-    debug("Compiling...");
-    const result: WorkflowCompileResult = await WorkflowCompile.compile(
-      this.compilationConfig
-    );
-    debug("Compiled.");
-
+  async load(result: WorkflowCompileResult): Promise<void> {
     debug("Initializing project...");
     const project = await initialize({
       project: {
@@ -61,7 +55,7 @@ export class ArtifactsLoader {
     });
 
     debug("Loading networks...");
-    const networks = [];
+    const networks: IdObject<"networks">[] = [];
     for (const name of Object.keys(config.networks)) {
       try {
         debug("Connecting to network name: %s", name);
@@ -125,9 +119,9 @@ export class ArtifactsLoader {
       debug("Required artifact for %s.", name);
 
       artifact.db = {
-        contract: toIdObject(contract),
-        callBytecode: toIdObject(callBytecode),
-        createBytecode: toIdObject(createBytecode)
+        contract: toIdObject<"contracts">(contract),
+        callBytecode: toIdObject<"bytecodes">(callBytecode),
+        createBytecode: toIdObject<"bytecodes">(createBytecode)
       };
 
       return artifact;

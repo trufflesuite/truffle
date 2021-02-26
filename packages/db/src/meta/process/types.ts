@@ -73,7 +73,7 @@ export interface GraphQlRequest {
 export interface Web3Request {
   type: "web3";
   method: string;
-  params?: any[];
+  params: any[];
 }
 
 export type ProcessRequest<
@@ -102,9 +102,9 @@ export type Process<
   C extends Collections,
   T = any,
   R extends RequestType<C> | undefined = undefined
-> = R extends undefined
-  ? Generator<ProcessRequest<C, R>, T, any> // HACK to get TS to play nice, sorry
-  : Generator<ProcessRequest<C, R>, T, ProcessResponse<C, R>>;
+> = R extends RequestType<C>
+  ? Generator<ProcessRequest<C, R>, T, ProcessResponse<C, R>>
+  : Generator<ProcessRequest<C, R>, T, any>; // HACK to get TS to play nice, sorry
 
 export type Processor<
   C extends Collections,
@@ -122,19 +122,38 @@ export type QueryName<
     | CollectionProperty<"names", C, K>["resources"];
 }[N];
 
-export type Query<C extends Collections> = {
-  [N in CollectionName<C>]: {
-    [Q in QueryName<C, N>]: Q extends CollectionProperty<
-      "names",
-      C,
-      N
-    >["resource"]
-      ? Resource<C, N> | null
-      : Q extends CollectionProperty<"names", C, N>["resources"]
-      ? (Resource<C, N> | null)[] | null
-      : never;
-  };
-}[CollectionName<C>];
+// borrowed from https://fettblog.eu/typescript-union-to-intersection
+type UnionToIntersection<T> = (T extends any ? (x: T) => any : never) extends (
+  x: infer R
+) => any
+  ? R
+  : never;
+
+type CollectionQuery<
+  C extends Collections,
+  N extends CollectionName<C> = CollectionName<C>
+> = UnionToIntersection<
+  {
+    [K in N]: {
+      [Q in QueryName<C, K>]: Q extends CollectionProperty<
+        "names",
+        C,
+        K
+      >["resource"]
+        ? Resource<C, K> | null
+        : Q extends CollectionProperty<"names", C, K>["resources"]
+        ? Resource<C, K>[]
+        : never;
+    };
+  }[N]
+>;
+
+export type Query<
+  C extends Collections,
+  Q extends QueryName<C> = QueryName<C>
+> = {
+  [K in Q]: K extends keyof CollectionQuery<C> ? CollectionQuery<C>[K] : never;
+};
 
 export type MutationName<
   C extends Collections,
@@ -143,8 +162,22 @@ export type MutationName<
   [K in N]: CollectionProperty<"names", C, K>["resourcesMutate"];
 }[N];
 
-export type Mutation<C extends Collections> = {
-  [N in CollectionName<C>]: {
-    [M in MutationName<C, N>]: MutationPayload<C, N> | null;
-  };
-}[CollectionName<C>];
+type CollectionMutation<
+  C extends Collections,
+  N extends CollectionName<C> = CollectionName<C>
+> = UnionToIntersection<
+  {
+    [K in N]: {
+      [M in MutationName<C, K>]: MutationPayload<C, N>;
+    };
+  }[N]
+>;
+
+export type Mutation<
+  C extends Collections,
+  M extends MutationName<C> = MutationName<C>
+> = {
+  [K in M]: K extends keyof CollectionMutation<C>
+    ? CollectionMutation<C>[K]
+    : never;
+};

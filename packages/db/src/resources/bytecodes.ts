@@ -20,7 +20,7 @@ export const bytecodes: Definition<"bytecodes"> = {
   typeDefs: gql`
     type Bytecode implements Resource {
       bytes: Bytes!
-      linkReferences: [LinkReference]
+      linkReferences: [LinkReference!]
       instructions(count: Int): [Instruction!]
     }
 
@@ -42,7 +42,7 @@ export const bytecodes: Definition<"bytecodes"> = {
 
     input BytecodeInput {
       bytes: Bytes!
-      linkReferences: [LinkReferenceInput]
+      linkReferences: [LinkReferenceInput!]
     }
 
     input LinkReferenceInput {

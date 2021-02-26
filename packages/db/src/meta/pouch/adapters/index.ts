@@ -68,7 +68,7 @@ export type ConcretizeResult<
 > = Generic.ConcretizeResult<C, Adapters, N>;
 
 export const concretize = <C extends Collections, N extends AdapterName>(
-  options: AttachOptions<N>
+  options: AttachOptions<N> = {}
 ): ConcretizeResult<C, N> => {
   const { adapter: { name, settings } = { name: "sqlite" } } = options;
 
@@ -77,25 +77,25 @@ export const concretize = <C extends Collections, N extends AdapterName>(
     case "couch": {
       return {
         constructor: Couch.Databases,
-        settings: settings || Couch.getDefaultSettings(options)
+        settings: settings || Couch.getDefaultSettings()
       };
     }
     case "fs": {
       return {
         constructor: Fs.Databases,
-        settings: settings || Fs.getDefaultSettings(options)
+        settings: settings || Fs.getDefaultSettings()
       };
     }
     case "sqlite": {
       return {
         constructor: Sqlite.Databases,
-        settings: settings || Sqlite.getDefaultSettings(options)
+        settings: settings || Sqlite.getDefaultSettings()
       };
     }
     case "memory": {
       return {
         constructor: Memory.Databases,
-        settings: settings || Memory.getDefaultSettings(options)
+        settings: settings || Memory.getDefaultSettings()
       };
     }
     default: {

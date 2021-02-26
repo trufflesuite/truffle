@@ -14,6 +14,8 @@ import Web3 from "web3";
 import * as fse from "fs-extra";
 import * as tmp from "tmp";
 import { Shims } from "@truffle/compile-common";
+import type { DataModel, Resource, IdObject } from "@truffle/db/resources";
+import type { Query, Mutation } from "@truffle/db/process";
 
 let server;
 const port = 8545;
@@ -28,38 +30,14 @@ afterAll(async done => {
   setTimeout(() => server.close(done), 500);
 });
 
-// mocking the truffle-workflow-compile to avoid jest timing issues
-// and also to keep from adding more time to Travis testing
-jest.mock("@truffle/workflow-compile", () => ({
-  compile: function () {
-    return require(path.join(
-      __dirname,
-      "workflowCompileOutputMock",
-      "compilationOutput.json"
-    ));
-  }
-}));
-
-const fixturesDirectory = path.join(
+const compilationResult = require(path.join(
   __dirname,
-  "compilationSources",
-  "build",
-  "contracts"
-);
+  "workflowCompileOutputMock",
+  "compilationOutput.json"
+));
+
 const tempDir = tmp.dirSync({ unsafeCleanup: true });
 tmp.setGracefulCleanup();
-
-// minimal config
-const config = {
-  contracts_build_directory: fixturesDirectory,
-  working_directory: tempDir.name,
-  db: {
-    enabled: true,
-    adapter: {
-      name: "memory"
-    }
-  }
-};
 
 const compilationConfig = {
   contracts_directory: path.join(__dirname, "compilationSources"),
@@ -116,7 +94,11 @@ const migrationConfig = Config.detect({
 });
 migrationConfig.network = "development";
 
-const db = connect(config as any);
+const db = connect({
+  adapter: {
+    name: "memory"
+  }
+});
 
 const artifacts = [
   require(path.join(
@@ -265,6 +247,16 @@ const AddContracts = gql`
             length
           }
         }
+        callBytecodeGeneratedSources {
+          source {
+            sourcePath
+          }
+        }
+        createBytecodeGeneratedSources {
+          source {
+            sourcePath
+          }
+        }
       }
     }
   }
@@ -315,6 +307,21 @@ const GetWorkspaceContract = gql`
         }
         ast {
           json
+        }
+      }
+      callBytecodeGeneratedSources {
+        source {
+          sourcePath
+          contents
+        }
+        ast {
+          json
+        }
+        language
+      }
+      createBytecodeGeneratedSources {
+        source {
+          sourcePath
         }
       }
       compilation {
@@ -429,14 +436,15 @@ const GetWorkspaceContractInstance = gql`
 `;
 
 describe("Compilation", () => {
-  let sourceIds = [];
-  let bytecodeIds = [];
-  let callBytecodeIds = [];
-  let compilationIds = [];
-  let netIds = [];
-  let migratedNetworks = [];
-  let contractInstanceIds = [];
-  let contractInstances = [];
+  let sourceIds: IdObject<"sources">[] = [];
+  let bytecodeIds: IdObject<"bytecodes">[] = [];
+  let callBytecodeIds: IdObject<"bytecodes">[] = [];
+  let compilationIds: IdObject<"compilations">[] = [];
+  let netIds: IdObject<"networks">[] = [];
+  let migratedNetworks: any[] = [];
+  let contractIds: any[] = [];
+  let contractInstanceIds: IdObject<"contractInstances">[] = [];
+  let contractInstances: any[] = [];
   let expectedSolcCompilationId;
   let expectedVyperCompilationId;
   let contractNameRecordId;
@@ -451,23 +459,72 @@ describe("Compilation", () => {
     const networkId = await web3.eth.net.getId();
     migrationConfig.reset = true;
     await Migrate.run(migrationConfig);
+
+    sourceIds = artifacts.map(artifact => ({
+      id: generateId("sources", {
+        contents: artifact["source"],
+        sourcePath: artifact["sourcePath"]
+      })
+    } as IdObject<"sources">));
+
+    bytecodeIds = artifacts.map(artifact => ({
+      id: generateId(
+        "bytecodes", Shims.LegacyToNew.forBytecode(artifact["bytecode"])
+      )
+    } as IdObject<"bytecodes">));
+
+    callBytecodeIds = artifacts.map(artifact => ({
+      id: generateId(
+        "bytecodes", Shims.LegacyToNew.forBytecode(artifact["deployedBytecode"])
+      )
+    } as IdObject<"bytecodes">));
+
+    expectedSolcCompilationId = generateId("compilations", {
+      compiler: artifacts[0].compiler,
+      sources: [sourceIds[0], sourceIds[1], sourceIds[2]]
+    });
+    expectedVyperCompilationId = generateId("compilations", {
+      compiler: artifacts[3].compiler,
+      sources: [sourceIds[3]]
+    });
+    compilationIds.push(
+      { id: expectedSolcCompilationId } as IdObject<"compilations">,
+      { id: expectedVyperCompilationId } as IdObject<"compilations">
+    );
+
+    expectedProjectId = generateId("projects", {
+      directory: compilationConfig["working_directory"]
+    });
+
     await Promise.all(
       artifacts.map(async (contract, index) => {
-        let sourceId = generateId("sources", {
-          contents: contract["source"],
-          sourcePath: contract["sourcePath"]
-        });
-        sourceIds.push({ id: sourceId });
         const shimBytecodeObject = Shims.LegacyToNew.forBytecode(
           contract["bytecode"]
         );
         const shimCallBytecodeObject = Shims.LegacyToNew.forBytecode(
           contract["deployedBytecode"]
         );
-        let bytecodeId = generateId("bytecodes", shimBytecodeObject);
-        bytecodeIds.push({ id: bytecodeId });
+        // @ts-ignore won't be undefined
+        let bytecodeId: string = generateId("bytecodes", shimBytecodeObject);
         let callBytecodeId = generateId("bytecodes", shimCallBytecodeObject);
-        callBytecodeIds.push({ id: callBytecodeId });
+
+        // @ts-ignore won't be updefined
+        let contractId: string = generateId("contracts", {
+          name: artifacts[index].contractName,
+          abi: { json: JSON.stringify(artifacts[index].abi) },
+          processedSource: {
+            index: artifacts[index].compiler.name === "solc" ? +index : 0
+          },
+          compilation: {
+            id:
+              artifacts[index].compiler.name === "solc"
+                ? expectedSolcCompilationId
+                : expectedVyperCompilationId
+          }
+        });
+        contractIds.push({
+          id: contractId
+        });
 
         const networksPath = fse
           .readFileSync(
@@ -481,16 +538,16 @@ describe("Compilation", () => {
           )
           .toString();
         let networks = JSON.parse(networksPath.toString()).networks;
-        const networksArray = Object.entries(networks);
+        const networksArray: any = Object.entries(networks);
 
         if (networksArray.length > 0) {
           const links = networksArray[networksArray.length - 1][1]["links"];
           const transaction = await web3.eth.getTransaction(
             networksArray[networksArray.length - 1][1]["transactionHash"]
           );
-          const historicBlock = {
-            height: transaction.blockNumber,
-            hash: transaction.blockHash
+          const historicBlock: DataModel.Block = {
+            height: transaction.blockNumber as number,
+            hash: transaction.blockHash as string
           };
 
           const netId = generateId("networks", {
@@ -498,19 +555,38 @@ describe("Compilation", () => {
             historicBlock: historicBlock
           });
           debug("netId %o", netId);
-          netIds.push({ id: netId });
+          netIds.push({ id: netId } as IdObject<"networks">);
           migratedNetworks.push({
             networkId: networkId,
             historicBlock: historicBlock,
             links: links
           });
           const contractInstanceId = generateId("contractInstances", {
-            network: {
-              id: netId
-            },
-            address: networksArray[networksArray.length - 1][1]["address"]
+            contract: { id: contractId },
+            address: networksArray[networksArray.length - 1][1]["address"],
+            creation: {
+              transactionHash:
+                networksArray[networksArray.length - 1][1]["transactionHash"],
+              constructor: {
+                createBytecode: {
+                  bytecode: { id: bytecodeId },
+                  linkValues: shimBytecodeObject.linkReferences
+                    .filter((linkReference) => !!linkReference.name)
+                    .map(({ name }, index) => ({
+                      // @ts-ignore name won't be null because filter
+                      value: links[name],
+                      linkReference: {
+                        bytecode: { id: bytecodeId },
+                        index
+                      }
+                    }))
+                }
+              }
+            }
           });
-          contractInstanceIds.push({ id: contractInstanceId });
+          contractInstanceIds.push({ id: contractInstanceId } as IdObject<
+            "contractInstances"
+          >);
           contractInstances.push({
             address: networksArray[networksArray.length - 1][1]["address"],
             network: {
@@ -538,35 +614,18 @@ describe("Compilation", () => {
       })
     );
 
-    expectedSolcCompilationId = generateId("compilations", {
-      compiler: artifacts[0].compiler,
-      sources: [sourceIds[0], sourceIds[1], sourceIds[2]]
-    });
-    expectedVyperCompilationId = generateId("compilations", {
-      compiler: artifacts[3].compiler,
-      sources: [sourceIds[3]]
-    });
-    compilationIds.push(
-      { id: expectedSolcCompilationId },
-      { id: expectedVyperCompilationId }
-    );
-
-    expectedProjectId = generateId("projects", {
-      directory: compilationConfig["working_directory"]
-    });
-
     // setting up a fake previous contract to test previous name record
     const {
       data: {
         projectsAdd: { projects }
       }
-    } = await db.execute(AddProjects, {
+    } = (await db.execute(AddProjects, {
       projects: [
         {
           directory: compilationConfig["working_directory"]
         }
       ]
-    });
+    })) as { data: Mutation<"projectsAdd"> };
 
     expect(projects).toHaveLength(1);
     projectId = projects[0].id;
@@ -577,7 +636,9 @@ describe("Compilation", () => {
       name: "Migrations",
       abi: { json: JSON.stringify(artifacts[1].abi) },
       createBytecode: bytecodeIds[0],
-      callBytecode: callBytecodeIds[0]
+      callBytecode: callBytecodeIds[0],
+      callBytecodeGeneratedSources: [],
+      createBytecodeGeneratedSources: []
     };
 
     await db.execute(AddContracts, {
@@ -598,9 +659,9 @@ describe("Compilation", () => {
 
     // add this fake name record, which differs in its abi, so that a previous contract
     // with this name exists for testing; also adding as a name head here
-    const contractNameRecord = await db.execute(AddNameRecords, {
+    const contractNameRecord = (await db.execute(AddNameRecords, {
       nameRecords: [previousContractNameRecord]
-    });
+    })) as { data: Mutation<"nameRecordsAdd"> };
 
     contractNameRecordId =
       contractNameRecord.data.nameRecordsAdd.nameRecords[0].id;
@@ -621,7 +682,7 @@ describe("Compilation", () => {
     });
 
     const loader = new ArtifactsLoader(db, compilationConfig);
-    await loader.load();
+    await loader.load(compilationResult);
   }, 10000);
 
   afterAll(async () => {
@@ -667,31 +728,42 @@ describe("Compilation", () => {
 
   it("loads compilations", async () => {
     const compilationsQuery = await Promise.all(
-      compilationIds.map(compilationId => {
-        let compilation = db.execute(GetWorkspaceCompilation, compilationId);
+      compilationIds.map(async compilationId => {
+        let compilation = (await db.execute(
+          GetWorkspaceCompilation,
+          compilationId
+        )) as { data: Query<"compilation"> };
         return compilation;
       })
     );
 
-    const solcCompilation = compilationsQuery[0].data.compilation;
+    const solcCompilation = compilationsQuery[0].data.compilation as Resource<
+      "compilations"
+    >;
 
     expect(solcCompilation.compiler.version).toEqual(
       artifacts[0].compiler.version
     );
     expect(solcCompilation.sources.length).toEqual(3);
     solcCompilation.sources.map((source, index) => {
+      // @ts-ignore
       expect(source.id).toEqual(sourceIds[index].id);
-      expect(source["contents"]).toEqual(artifacts[index].source);
+      // @ts-ignore
+      expect(source.contents).toEqual(artifacts[index].source);
+      // @ts-ignore
       expect(solcCompilation.processedSources[index].source.contents).toEqual(
         artifacts[index].source
       );
+      // @ts-ignore
       expect(solcCompilation.processedSources[index].language).toEqual(
         "Solidity"
       );
 
       expect(
+        // @ts-ignore
         solcCompilation.sourceMaps.find(
-          ({ data }) => data === artifacts[index].sourceMap
+          sourceMap =>
+            sourceMap && sourceMap.data === artifacts[index].sourceMap
         )
       ).toBeDefined();
     });
@@ -700,32 +772,48 @@ describe("Compilation", () => {
     expect(solcCompilation.immutableReferences[0]).toHaveProperty("astNode");
     expect(solcCompilation.immutableReferences[0]).toHaveProperty("length");
     expect(solcCompilation.immutableReferences[0]).toHaveProperty("offsets");
+    // @ts-ignore
     expect(solcCompilation.immutableReferences[0].astNode).toEqual(
       Object.entries(artifacts[0].immutableReferences)[0][0]
     );
+    // @ts-ignore
     expect(solcCompilation.immutableReferences[0].length).toEqual(
+      // @ts-ignore
       Object.entries(artifacts[0].immutableReferences)[0][1][0].length
     );
+    // @ts-ignore
     expect(solcCompilation.immutableReferences[0].offsets[0]).toEqual(
+      // @ts-ignore
       Object.entries(artifacts[0].immutableReferences)[0][1][0].start
     );
 
-    let shimmedBytecode = Shims.LegacyToNew.forBytecode(artifacts[0].bytecode);
+    let shimmedBytecode = Shims.LegacyToNew.forBytecode(
+      artifacts[0].deployedBytecode
+    );
+    // @ts-ignore
     expect(solcCompilation.immutableReferences[0].bytecode.bytes).toEqual(
       shimmedBytecode.bytes
     );
 
     const vyperCompilation = compilationsQuery[1].data.compilation;
+    // @ts-ignore
     expect(vyperCompilation.compiler.version).toEqual(
       artifacts[3].compiler.version
     );
+    // @ts-ignore
     expect(vyperCompilation.sources.length).toEqual(1);
+    // @ts-ignore
     expect(vyperCompilation.sources[0].id).toEqual(sourceIds[3].id);
+    // @ts-ignore
     expect(vyperCompilation.sources[0].contents).toEqual(artifacts[3].source);
+    // @ts-ignore
     expect(vyperCompilation.processedSources[0].source.contents).toEqual(
+      // @ts-ignore
       artifacts[3].source
     );
+    // @ts-ignore
     expect(vyperCompilation.processedSources[0].language).toEqual("Vyper");
+    // @ts-ignore
     expect(vyperCompilation.immutableReferences).toEqual([]);
   });
 
@@ -735,7 +823,9 @@ describe("Compilation", () => {
         data: {
           source: { contents, sourcePath }
         }
-      } = await db.execute(GetWorkspaceSource, sourceIds[index]);
+      } = (await db.execute(GetWorkspaceSource, sourceIds[index])) as {
+        data: Query<"source"> & { source: Resource<"sources"> };
+      };
 
       expect(contents).toEqual(artifacts[index].source);
       expect(sourcePath).toEqual(artifacts[index].sourcePath);
@@ -748,7 +838,9 @@ describe("Compilation", () => {
         data: {
           bytecode: { bytes }
         }
-      } = await db.execute(GetWorkspaceBytecode, bytecodeIds[index]);
+      } = (await db.execute(GetWorkspaceBytecode, bytecodeIds[index])) as {
+        data: Query<"bytecode"> & { bytecode: Resource<"bytecodes"> };
+      };
 
       let shimmedBytecode = Shims.LegacyToNew.forBytecode(
         artifacts[index].bytecode
@@ -758,24 +850,8 @@ describe("Compilation", () => {
   });
 
   it("loads contracts", async () => {
-    let contractIds = [];
-
     for (let index in artifacts) {
-      let expectedId = generateId("contracts", {
-        name: artifacts[index].contractName,
-        abi: { json: JSON.stringify(artifacts[index].abi) },
-        processedSource: {
-          index: artifacts[index].compiler.name === "solc" ? +index : 0
-        },
-        compilation: {
-          id:
-            artifacts[index].compiler.name === "solc"
-              ? expectedSolcCompilationId
-              : expectedVyperCompilationId
-        }
-      });
-
-      contractIds.push({ id: expectedId });
+      let expectedId = contractIds[index];
 
       let {
         data: {
@@ -789,15 +865,42 @@ describe("Compilation", () => {
               compiler: { version }
             },
             createBytecode,
-            callBytecode
+            callBytecode,
+            callBytecodeGeneratedSources
           }
         }
-      } = await db.execute(GetWorkspaceContract, contractIds[index]);
+      } = (await db.execute(GetWorkspaceContract, contractIds[index])) as {
+        data: Query<"contract"> & {
+          contract: Resource<"contracts"> & {
+            processedSource: DataModel.ProcessedSource;
+            compilation: Resource<"compilations">;
+            createBytecode: Resource<"bytecodes">;
+            callBytecode: Resource<"bytecodes">;
+            callBytecodeGeneratedSources: (
+              | DataModel.ProcessedSource
+              | undefined
+            )[];
+          };
+        };
+      };
 
       const artifactsCreateBytecode = Shims.LegacyToNew.forBytecode(
         artifacts[index].bytecode
       );
       expect(createBytecode.bytes).toEqual(artifactsCreateBytecode.bytes);
+
+      //only test generatedSources for solc compiled contracts
+      if (name !== "VyperStorage") {
+        for (const { id, name, ast, contents, language } of artifacts[index]
+          .deployedGeneratedSources) {
+          const generatedSource = callBytecodeGeneratedSources[id];
+          expect(generatedSource).toBeDefined();
+          expect(generatedSource.source.sourcePath).toEqual(name);
+          expect(generatedSource.ast?.json).toEqual(JSON.stringify(ast));
+          expect(generatedSource.source.contents).toEqual(contents);
+          expect(generatedSource.language).toEqual(language);
+        }
+      }
 
       const artifactsCallBytecode = Shims.LegacyToNew.forBytecode(
         artifacts[index].deployedBytecode
@@ -813,11 +916,19 @@ describe("Compilation", () => {
         data: {
           project: { resolve }
         }
-      } = await db.execute(ResolveProjectName, {
+      } = (await db.execute(ResolveProjectName, {
         projectId,
         name: artifacts[index].contractName,
         type: "Contract"
-      });
+      })) as {
+        data: Query<"project"> & {
+          project: Resource<"projects"> & {
+            resolve: (Resource<"nameRecords"> & {
+              resource: IdObject;
+            })[];
+          };
+        };
+      };
 
       const nameRecord = resolve[0];
 
@@ -831,7 +942,9 @@ describe("Compilation", () => {
         data: {
           network: { name, networkId, historicBlock }
         }
-      } = await db.execute(GetWorkspaceNetwork, netIds[index]);
+      } = (await db.execute(GetWorkspaceNetwork, netIds[index])) as {
+        data: Query<"network"> & { network: Resource<"networks"> };
+      };
 
       expect(name).toEqual("development");
       expect(networkId).toEqual(migratedNetworks[index]["networkId"]);
@@ -840,6 +953,7 @@ describe("Compilation", () => {
   });
 
   it("loads contract instances", async () => {
+
     for (const contractInstanceId of contractInstanceIds) {
       let {
         data: {
@@ -858,7 +972,21 @@ describe("Compilation", () => {
             callBytecode: { bytecode }
           }
         }
-      } = await db.execute(GetWorkspaceContractInstance, contractInstanceId);
+      } = (await db.execute(
+        GetWorkspaceContractInstance,
+        contractInstanceId
+      )) as {
+        data: Query<"contractInstance"> & {
+          contractInstance: Resource<"contractInstances"> & {
+            contract: Resource<"contracts">;
+            creation: DataModel.ContractInstanceCreation & {
+              constructor: {
+                createBytecode: DataModel.LinkedBytecode;
+              };
+            };
+          };
+        };
+      };
 
       const contractInstance = contractInstances.find(
         contractInstance => name === contractInstance.contract.name

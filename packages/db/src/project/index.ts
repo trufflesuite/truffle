@@ -6,11 +6,12 @@ import type { WorkflowCompileResult } from "@truffle/compile-common";
 import type { ContractObject } from "@truffle/contract-schema/spec";
 
 import * as Process from "@truffle/db/process";
-import type {
+import {
   Db,
   NamedCollectionName,
   Input,
-  IdObject
+  IdObject,
+  toIdObject
 } from "@truffle/db/resources";
 
 import * as Network from "@truffle/db/network";
@@ -241,7 +242,7 @@ export class ConnectedProject extends Project {
    * @category Truffle-specific
    */
   async loadMigrate(options: {
-    network: Omit<Input<"networks">, "networkId" | "historicBlock">;
+    network: Pick<Input<"networks">, "name">;
     artifacts: (ContractObject & {
       db: {
         contract: IdObject<"contracts">;
@@ -261,38 +262,37 @@ export class ConnectedProject extends Project {
     const { networkId } = network.genesis;
 
     const transactionHashes = options.artifacts.map(
-      ({ networks }) => (networks[networkId] || {}).transactionHash
+      ({ networks = {} }) => (networks[networkId] || {}).transactionHash
     );
 
     const networks = await network.includeTransactions({ transactionHashes });
-    debug("networks %O", networks);
+
+    // if there are any missing networks, fetch the latest as backup data
+    if (networks.find((network): network is undefined => !network)) {
+      await network.includeLatest();
+    }
 
     const { artifacts } = await this.run(LoadMigrate.process, {
       network: {
         networkId: network.knownLatest.networkId
       },
+      // @ts-ignore HACK to avoid making LoadMigrate.process generic
       artifacts: options.artifacts.map((artifact, index) => ({
         ...artifact,
         networks: {
           ...artifact.networks,
           [networkId]: {
-            ...artifact.networks[networkId],
-            ...(networks[index]
-              ? {
-                  db: {
-                    network: networks[index]
-                  }
-                }
-              : {})
+            ...(artifact.networks || {})[networkId],
+            db: {
+              network: networks[index] || toIdObject(network.knownLatest)
+            }
           }
         }
       }))
     });
 
     return {
-      network: {
-        id: network.knownLatest.id
-      },
+      network: toIdObject<"networks">(network.knownLatest),
       artifacts
     };
   }

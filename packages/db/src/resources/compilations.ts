@@ -50,7 +50,7 @@ export const compilations: Definition<"compilations"> = {
 
     type ProcessedSource {
       source: Source!
-      contracts: [Contract]!
+      contracts: [Contract!]
       ast: AST
       language: String!
     }
@@ -66,7 +66,7 @@ export const compilations: Definition<"compilations"> = {
 
     input CompilationInput {
       compiler: CompilerInput!
-      processedSources: [ProcessedSourceInput]
+      processedSources: [ProcessedSourceInput]!
       sources: [ResourceReferenceInput]!
       sourceMaps: [SourceMapInput]
       immutableReferences: [ImmutableReferenceInput]

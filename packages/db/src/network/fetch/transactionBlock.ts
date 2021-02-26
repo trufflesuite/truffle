@@ -10,7 +10,7 @@ import type { DataModel } from "@truffle/db/resources";
 
 export function* process(options: {
   transactionHash: string;
-}): Process<DataModel.Block, { web3: "eth_getTransactionByHash" }> {
+}): Process<DataModel.Block | undefined, { web3: "eth_getTransactionByHash" }> {
   const { transactionHash } = options;
 
   const response = yield {

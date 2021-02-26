@@ -22,7 +22,8 @@ import {
   DataModel,
   Input,
   Resource,
-  IdObject
+  IdObject,
+  toIdObject
 } from "@truffle/db/resources";
 
 import * as Fetch from "./fetch";
@@ -139,6 +140,10 @@ export async function initialize(options: InitializeOptions): Promise<Network> {
     settings
   });
 
+  if (!genesis) {
+    throw new Error("Unable to fetch genesis block");
+  }
+
   return new Network({ genesis, latest, run });
 }
 
@@ -185,7 +190,7 @@ export class Network {
     options: {
       settings?: IncludeSettings;
     } = {}
-  ): Promise<IdObject<"networks">> {
+  ): Promise<IdObject<"networks"> | undefined> {
     const { settings } = options;
 
     const block = await this.run(Fetch.Block.process, {
@@ -211,7 +216,7 @@ export class Network {
    * @category Methods
    */
   async includeTransactions(options: {
-    transactionHashes: string[];
+    transactionHashes: (string | undefined)[];
     settings?: IncludeSettings;
   }): Promise<(IdObject<"networks"> | undefined)[]> {
     if (options.transactionHashes.length === 0) {
@@ -221,9 +226,10 @@ export class Network {
     const { transactionHashes } = options;
 
     const blocks = await Promise.all(
-      transactionHashes.map(
-        async transactionHash =>
-          await this.run(Fetch.TransactionBlock.process, { transactionHash })
+      transactionHashes.map(async transactionHash =>
+        transactionHash
+          ? await this.run(Fetch.TransactionBlock.process, { transactionHash })
+          : undefined
       )
     );
 
@@ -272,23 +278,23 @@ export class Network {
   async includeBlocks<
     Block extends DataModel.Block | Omit<DataModel.Block, "hash">
   >(options: {
-    blocks: Block[];
+    blocks: (Block | undefined)[];
     settings?: IncludeSettings;
-  }): Promise<IdObject<"networks">[]> {
+  }): Promise<(IdObject<"networks"> | undefined)[]> {
     if (options.blocks.length === 0) {
       return [];
     }
 
     const { settings } = options;
 
-    const blocks: DataModel.Block[] = await Promise.all(
-      options.blocks.map(
-        async block =>
-          // @ts-ignore tsc doesn't like the stub types
-          await this.run(Fetch.Block.process, {
-            block,
-            settings: { skipComplete: true }
-          })
+    const blocks: (DataModel.Block | undefined)[] = await Promise.all(
+      options.blocks.map(async block =>
+        block
+          ? await this.run(Fetch.Block.process, {
+              block,
+              settings: { skipComplete: true }
+            })
+          : undefined
       )
     );
 
@@ -301,11 +307,16 @@ export class Network {
 
     debug("latest %O", latest);
 
-    if (latest.historicBlock.height > this._knownLatest.historicBlock.height) {
+    if (
+      latest &&
+      latest.historicBlock.height > this._knownLatest.historicBlock.height
+    ) {
       this._knownLatest = latest;
     }
 
-    return networks.map(({ id }) => ({ id }));
+    return networks.map((network: NetworkResource | undefined) =>
+      toIdObject<"networks">(network)
+    );
   }
 
   /*
@@ -330,14 +341,14 @@ export class Network {
   static async collectBlocks(options: {
     run: Process.ProcessorRunner;
     network: Pick<Input<"networks">, "name" | "networkId">;
-    blocks: DataModel.Block[];
+    blocks: (DataModel.Block | undefined)[];
     settings?: {
       skipKnownLatest?: boolean;
       disableIndex?: boolean;
     };
   }): Promise<{
-    networks: NetworkResource[];
-    latest: NetworkResource;
+    networks: (NetworkResource | undefined)[];
+    latest: NetworkResource | undefined;
   }> {
     if (options.blocks.length === 0) {
       throw new Error("Zero blocks provided.");
@@ -363,18 +374,26 @@ export class Network {
     });
 
     debug("networks %O", networks);
-    const loadedLatest = networks
+    const definedNetworks = networks.filter(
+      (network): network is NetworkResource => !!network
+    );
+    const loadedLatest: NetworkResource | undefined = definedNetworks
       .slice(1)
       .reduce(
         (a, b) => (a.historicBlock.height > b.historicBlock.height ? a : b),
-        networks[0]
+        definedNetworks[0]
       );
 
-    const latest = skipKnownLatest
+    const latest = !loadedLatest
+      ? undefined
+      : skipKnownLatest
       ? loadedLatest
       : await run(Fetch.KnownLatest.process, { network: loadedLatest });
 
-    return { networks, latest };
+    return {
+      networks,
+      latest
+    };
   }
 
   /**

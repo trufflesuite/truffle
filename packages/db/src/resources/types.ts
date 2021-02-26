@@ -52,7 +52,7 @@ export type Collections = {
   contractInstances: {
     resource: DataModel.ContractInstance;
     input: DataModel.ContractInstanceInput;
-    idFields: ["address", "network"];
+    idFields: ["contract", "address", "creation"];
     names: {
       resource: "contractInstance";
       Resource: "ContractInstance";
@@ -273,17 +273,23 @@ export type IdFields<N extends CollectionName = CollectionName> = Meta.IdFields<
  * ```
  * @category Primary
  */
-export type IdObject<
-  N extends CollectionName | undefined = undefined
-> = Meta.IdObject<Collections, N>;
+export type IdObject<N extends CollectionName = CollectionName> = Meta.IdObject<
+  Collections,
+  N
+>;
 
 /**
  * Convert a given [[Resource]] to an [[IdObject]]
  *
  * @category Primary
  */
-export const toIdObject = <N extends CollectionName>(resource) =>
-  Meta.toIdObject<Collections, N>(resource);
+export const toIdObject = <
+  N extends CollectionName,
+  R extends Resource<N> | SavedInput<N> = Resource<N> | SavedInput<N>,
+  I extends Pick<R, "id"> | null | undefined = Pick<R, "id"> | null | undefined
+>(
+  resource: I
+) => Meta.toIdObject<Collections, N, R, I>(resource);
 
 /**
  * Type akin to [[CollectionName]] but only includes mutable collections

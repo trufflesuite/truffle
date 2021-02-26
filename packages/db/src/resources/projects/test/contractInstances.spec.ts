@@ -6,7 +6,7 @@ import gql from "graphql-tag";
 import { connect } from "@truffle/db";
 import * as Project from "@truffle/db/project";
 import { resources, Run } from "@truffle/db/process";
-import { Resource } from "@truffle/db/resources";
+import type { IdObject, Input, Resource } from "@truffle/db/resources";
 
 describe("Project.contractInstances", () => {
   describe("for networks with differing contract revisions", () => {
@@ -14,7 +14,7 @@ describe("Project.contractInstances", () => {
       /*
        * Setup
        */
-      const db = connect({ workingDirectory: "", adapter: { name: "memory" } });
+      const db = connect({ adapter: { name: "memory" } });
       const { run } = Run.forDb(db);
       const project = await Project.initialize({
         db,
@@ -34,21 +34,21 @@ describe("Project.contractInstances", () => {
        */
       {
         // create network resources
-        const vnets = await run(resources.load, "networks", [
+        const vnets = (await run(resources.load, "networks", [
           { ...vnet, historicBlock: { height: 0, hash: "v0" } },
           { ...vnet, historicBlock: { height: 1, hash: "v1" } },
           { ...vnet, historicBlock: { height: 2, hash: "v2" } }
-        ]);
+        ])) as IdObject<"networks">[];
         await run(resources.load, "networkGenealogies", [
           { ancestor: vnets[0], descendant: vnets[1] },
           { ancestor: vnets[1], descendant: vnets[2] }
-        ]);
+        ] as Input<"networkGenealogies">[]);
 
         // create contracts
-        const contracts = await run(resources.load, "contracts", [
+        const contracts = (await run(resources.load, "contracts", [
           { ...A, abi: { json: JSON.stringify("a1") } },
           { ...B, abi: { json: JSON.stringify("b1") } }
-        ]);
+        ])) as IdObject<"contracts">[];
 
         // assign names
         await project.assignNames({
@@ -72,21 +72,21 @@ describe("Project.contractInstances", () => {
        */
       {
         // create network resources
-        const wnets = await run(resources.load, "networks", [
+        const wnets = (await run(resources.load, "networks", [
           { ...wnet, historicBlock: { height: 0, hash: "w0" } },
           { ...wnet, historicBlock: { height: 1, hash: "w1" } },
           { ...wnet, historicBlock: { height: 2, hash: "w2" } }
-        ]);
+        ])) as IdObject<"networks">[];
         await run(resources.load, "networkGenealogies", [
           { ancestor: wnets[0], descendant: wnets[1] },
           { ancestor: wnets[1], descendant: wnets[2] }
         ]);
 
         // create contracts
-        const contracts = await run(resources.load, "contracts", [
+        const contracts = (await run(resources.load, "contracts", [
           { ...A, abi: { json: JSON.stringify("a2") } },
           { ...B, abi: { json: JSON.stringify("b2") } }
-        ]);
+        ])) as IdObject<"contracts">[];
 
         // assign names
         await project.assignNames({
@@ -130,28 +130,37 @@ describe("Project.contractInstances", () => {
        * vnet should have the old versions
        */
       {
-        // @ts-ignore
-        const { contractInstances }: Resource<"projects"> = await run(
+        const { contractInstances } = (await run(
           resources.get,
           "projects",
           project.id,
           forNetwork("vnet")
-        );
+        )) as Resource<"projects">;
 
         const a = contractInstances.find(
+          // @ts-ignore covered by expectations
           ({ contract: { name } }) => name === "A"
         );
 
+        expect(a).toBeDefined();
+        // @ts-ignore
         expect(a.address).toEqual("v-a");
+        // @ts-ignore
         expect(a.network.networkId).toEqual("v");
+        // @ts-ignore
         expect(a.contract.abi.json).toEqual(JSON.stringify("a1"));
 
         const b = contractInstances.find(
+          // @ts-ignore covered by expectations
           ({ contract: { name } }) => name === "B"
         );
 
+        expect(b).toBeDefined();
+        // @ts-ignore
         expect(b.address).toEqual("v-b");
+        // @ts-ignore
         expect(b.network.networkId).toEqual("v");
+        // @ts-ignore
         expect(b.contract.abi.json).toEqual(JSON.stringify("b1"));
       }
 
@@ -168,19 +177,29 @@ describe("Project.contractInstances", () => {
         );
 
         const a = contractInstances.find(
+          // @ts-ignore covered by expectations
           ({ contract: { name } }) => name === "A"
         );
 
+        expect(a).toBeDefined();
+        // @ts-ignore
         expect(a.address).toEqual("w-a");
+        // @ts-ignore
         expect(a.network.networkId).toEqual("w");
+        // @ts-ignore
         expect(a.contract.abi.json).toEqual(JSON.stringify("a2"));
 
         const b = contractInstances.find(
+          // @ts-ignore covered by expectations
           ({ contract: { name } }) => name === "B"
         );
 
+        expect(b).toBeDefined();
+        // @ts-ignore
         expect(b.address).toEqual("w-b");
+        // @ts-ignore
         expect(b.network.networkId).toEqual("w");
+        // @ts-ignore
         expect(b.contract.abi.json).toEqual(JSON.stringify("b2"));
       }
     });

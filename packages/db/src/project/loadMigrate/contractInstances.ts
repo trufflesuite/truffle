@@ -19,10 +19,10 @@ export const process = Batch.configure<{
   };
   requires: {
     callBytecode?: {
-      linkReferences: { name: string }[];
+      linkReferences: { name: string | null }[] | null;
     };
     createBytecode?: {
-      linkReferences: { name: string }[];
+      linkReferences: { name: string | null }[] | null;
     };
     db?: {
       network: IdObject<"networks">;
@@ -33,8 +33,8 @@ export const process = Batch.configure<{
       contractInstance: IdObject<"contractInstances">;
     };
   };
-  entry: Input<"contractInstances">;
-  result: IdObject<"contractInstances">;
+  entry: Input<"contractInstances"> | undefined;
+  result: IdObject<"contractInstances"> | undefined;
 }>({
   extract({ input, inputs, breadcrumb }) {
     const { artifacts } = inputs;
@@ -46,10 +46,14 @@ export const process = Batch.configure<{
       address,
       transactionHash,
       links,
-      callBytecode: { linkReferences: callLinkReferences },
-      createBytecode: { linkReferences: createLinkReferences },
-      db: { network }
+      callBytecode: { linkReferences: callLinkReferences = [] } = {},
+      createBytecode: { linkReferences: createLinkReferences = [] } = {},
+      db: { network } = {}
     } = input;
+
+    if (!network) {
+      return;
+    }
 
     const {
       db: { contract, callBytecode, createBytecode }
@@ -73,7 +77,8 @@ export const process = Batch.configure<{
     return yield* resources.load("contractInstances", entries);
   },
 
-  convert<_I, _O>({ result, input }) {
+  // @ts-ignore to overcome limitations in contract-schema
+  convert({ result, input }) {
     return {
       ...input,
       db: {
@@ -86,7 +91,7 @@ export const process = Batch.configure<{
 
 function link(
   bytecode: IdObject<"bytecodes">,
-  linkReferences: { name: string }[],
+  linkReferences: { name: string | null }[] | null,
   links?: { [name: string]: string }
 ): DataModel.LinkedBytecodeInput {
   if (!links) {
@@ -100,7 +105,7 @@ function link(
     value,
     linkReference: {
       bytecode,
-      index: linkReferences.findIndex(
+      index: (linkReferences || []).findIndex(
         linkReference => name === linkReference.name
       )
     }
