@@ -5,6 +5,7 @@ import { createSelectorTree, createLeaf } from "reselect-tree";
 
 import data from "lib/data/selectors";
 import evm from "lib/evm/selectors";
+import trace from "lib/trace/selectors";
 import solidity from "lib/solidity/selectors";
 
 import * as Codec from "@truffle/codec";
@@ -196,12 +197,13 @@ let txlog = createSelectorTree({
      * txlog.current.onFunctionDefinition
      */
     onFunctionDefinition: createLeaf(
-      ["./astNode", "./isSourceRangeFinal", "/next/inInternalSourceOrYul"],
-      (node, ready, isNextInternal) =>
-        ready &&
+      ["./astNode", "./isSourceRangeFinal", "/next/inInternalSourceOrYul", trace.stepsRemaining],
+      (node, ready, isNextInternal, stepsRemaining) =>
+        (ready || stepsRemaining <= 2) && //HACK: see below
         node &&
         node.nodeType === "FunctionDefinition" &&
         !isNextInternal //need to make sure we're not just jumping to a generated source or unmapped code
+        //hack above: the last step doesn't get processed, so...
     ),
 
     /**
