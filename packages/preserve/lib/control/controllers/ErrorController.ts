@@ -114,5 +114,7 @@ export abstract class ErrorController
     yield this.emit<Events.Stop>({
       type: "stop"
     });
+
+    this._state = State.Error;
   }
 }
