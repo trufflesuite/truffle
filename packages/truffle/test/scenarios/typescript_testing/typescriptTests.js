@@ -36,4 +36,4 @@ describe("Typescript Tests", () => {
       assert(output.includes("8 passing"));
     }).timeout(70000);
   });
-}).timeout(10000);
+}).timeout(30000);

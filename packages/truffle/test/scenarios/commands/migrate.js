@@ -24,6 +24,6 @@ describe("truffle migrate", () => {
   describe("when run on the most basic truffle project", () => {
     it("doesn't throw", async () => {
       await CommandRunner.run("migrate", config);
-    }).timeout(20000);
+    }).timeout(60000);
   });
 });

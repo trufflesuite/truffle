@@ -72,7 +72,7 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
   });
 
   beforeEach("set up sandbox and do initial compile", async function() {
-    this.timeout(30000);
+    this.timeout(90000);
 
     const conf = await sandbox.create(project);
     config = conf;
@@ -120,7 +120,7 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
   // ------------------------------------------------------------
 
   it("Updates only Root when Root is touched", async function() {
-    this.timeout(30000);
+    this.timeout(90000);
 
     touchSource("Root");
 
@@ -175,7 +175,7 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
   // ------------------------------------------------------------
 
   it("Updates Root and Library when Library is touched", async function() {
-    this.timeout(30000);
+    this.timeout(90000);
 
     touchSource("LibraryA");
 
@@ -230,7 +230,7 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
   // ------------------------------------------------------------
 
   it("Updates Branch and Root when Branch is touched", async function() {
-    this.timeout(30000);
+    this.timeout(90000);
 
     touchSource("Branch");
 
@@ -285,7 +285,7 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
   // ------------------------------------------------------------
 
   it("Updates LeafA, Branch and Root when LeafA is touched", async function() {
-    this.timeout(30000);
+    this.timeout(90000);
 
     touchSource("LeafA");
 
@@ -340,7 +340,7 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
   // ------------------------------------------------------------
 
   it("Updates everything except LibraryA when LeafC is touched", async function() {
-    this.timeout(30000);
+    this.timeout(90000);
 
     touchSource("LeafC");
 

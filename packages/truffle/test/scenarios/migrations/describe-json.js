@@ -106,7 +106,7 @@ describe("truffle migrate --describe-json", () => {
     it("runs the migration without throwing", async () => {
       await CommandRunner.run("migrate --reset", config);
       contents = logger.contents();
-    }).timeout(20000);
+    }).timeout(60000);
 
     it("does not include any `MIGRATION_STATUS` lines", done => {
       assert(!contents.includes("MIGRATION_STATUS"));
@@ -128,7 +128,7 @@ describe("truffle migrate --describe-json", () => {
             .filter(line => line.includes("MIGRATION_STATUS"))
             .map(line => JSON.parse(line.replace("MIGRATION_STATUS:", "")))
         );
-      }).timeout(20000);
+      }).timeout(60000);
 
       verifyMigrationStatuses(statuses, "replacing");
     });
@@ -158,7 +158,7 @@ describe("truffle migrate --describe-json", () => {
             .filter(line => line.includes("MIGRATION_STATUS"))
             .map(line => JSON.parse(line.replace("MIGRATION_STATUS:", "")))
         );
-      }).timeout(20000);
+      }).timeout(60000);
 
       verifyMigrationStatuses(statuses, "deploying");
     });

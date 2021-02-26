@@ -17,7 +17,7 @@ describe("migrate (dry-run)", function() {
   after(done => Server.stop(done));
 
   before(async function() {
-    this.timeout(10000);
+    this.timeout(30000);
     config = await sandbox.create(project);
     config.network = "development";
     config.logger = logger;

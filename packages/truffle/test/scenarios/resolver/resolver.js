@@ -43,7 +43,7 @@ describe("Solidity Imports [ @standalone ]", function() {
 
   describe("success", function() {
     before(function() {
-      this.timeout(10000);
+      this.timeout(30000);
       return sandbox.create(project, "truffleproject").then(conf => {
         config = conf;
         config.network = "development";
@@ -55,7 +55,7 @@ describe("Solidity Imports [ @standalone ]", function() {
     });
 
     it("resolves solidity imports located outside the working directory", async function() {
-      this.timeout(30000);
+      this.timeout(90000);
 
       await CommandRunner.run("compile", config);
       const output = logger.contents();
@@ -70,7 +70,7 @@ describe("Solidity Imports [ @standalone ]", function() {
 
   describe("failure", function() {
     before(function() {
-      this.timeout(10000);
+      this.timeout(30000);
       return sandbox.create(project, "errorproject").then(conf => {
         config = conf;
         config.network = "development";
@@ -82,7 +82,7 @@ describe("Solidity Imports [ @standalone ]", function() {
     });
 
     it("fails gracefully if an import is not found", async function() {
-      this.timeout(30000);
+      this.timeout(90000);
 
       try {
         await CommandRunner.run("compile", config);

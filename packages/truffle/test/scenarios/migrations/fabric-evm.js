@@ -66,4 +66,4 @@ describe("migrate with [ @fabric-evm ] interface", () => {
 
     console.log(output);
   }).timeout(70000);
-}).timeout(10000);
+}).timeout(30000);

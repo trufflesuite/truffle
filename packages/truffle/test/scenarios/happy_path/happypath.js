@@ -32,7 +32,7 @@ describe("Happy path (truffle unbox)", function() {
   });
 
   it("will compile", async function() {
-    this.timeout(20000);
+    this.timeout(60000);
 
     await CommandRunner.run("compile", config);
 

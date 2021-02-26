@@ -10,7 +10,7 @@ describe("truffle build [ @standalone ]", () => {
 
   describe("when there is no build script in config", () => {
     beforeEach("set up sandbox", function() {
-      this.timeout(10000);
+      this.timeout(30000);
       project = path.join(
         __dirname,
         "../../sources/build/projectWithoutBuildScript"
@@ -27,18 +27,18 @@ describe("truffle build [ @standalone ]", () => {
       } catch (error) {
         assert(false, "An error should not have occurred.");
       }
-    }).timeout(30000);
+    }).timeout(90000);
 
     it("whines about having no build config", async () => {
       await CommandRunner.run("build", config);
       const output = logger.contents();
       assert(output.includes("No build configuration found."));
-    }).timeout(20000);
+    }).timeout(60000);
   });
 
   describe("when there is a proper build config", () => {
     beforeEach("set up sandbox", function() {
-      this.timeout(10000);
+      this.timeout(30000);
       project = path.join(
         __dirname,
         "../../sources/build/projectWithBuildScript"
@@ -57,7 +57,7 @@ describe("truffle build [ @standalone ]", () => {
 
   describe("when there is an object in the build config", () => {
     beforeEach("set up sandbox", function() {
-      this.timeout(10000);
+      this.timeout(30000);
       project = path.join(
         __dirname,
         "../../sources/build/projectWithObjectInBuildScript"

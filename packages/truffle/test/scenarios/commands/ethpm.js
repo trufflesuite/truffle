@@ -22,7 +22,7 @@ describe("truffle publish", function() {
   });
 
   before("set up sandbox", function() {
-    this.timeout(10000);
+    this.timeout(30000);
     return sandbox.create(project).then(conf => {
       config = conf;
       config.network = "development";
@@ -36,7 +36,7 @@ describe("truffle publish", function() {
   // This test only validates package assembly. We expect it to run logic up to the attempt to
   // publish to the network and fail.
   it.skip("Can locate all the sources to publish", function(done) {
-    this.timeout(30000);
+    this.timeout(90000);
 
     CommandRunner.run("compile", config, function(err) {
       if (err) {

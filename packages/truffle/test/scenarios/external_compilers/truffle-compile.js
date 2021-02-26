@@ -26,7 +26,7 @@ describe("`truffle compile` as external", function() {
   });
 
   before("set up sandbox", function() {
-    this.timeout(10000);
+    this.timeout(30000);
     return sandbox.create(project).then(conf => {
       config = conf;
       config.network = "development";
@@ -38,7 +38,7 @@ describe("`truffle compile` as external", function() {
   });
 
   it("will compile", async function() {
-    this.timeout(20000);
+    this.timeout(60000);
 
     await CommandRunner.run("compile --compiler=external", config);
     assert(

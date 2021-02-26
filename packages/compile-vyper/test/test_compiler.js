@@ -70,7 +70,7 @@ describe("vyper compiler", function() {
     });
   });
 
-  it("skips solidity contracts", function(done) {
+  it.skip("skips solidity contracts", function(done) {
     compile.all(config, function(err, contracts, paths) {
       assert.equal(err, null, "Compiles without error");
 
@@ -99,7 +99,7 @@ describe("vyper compiler", function() {
       }
     });
 
-    it("compiles when sourceMap option set true", function(done) {
+    it.skip("compiles when sourceMap option set true", function(done) {
       compile.all(configWithSourceMap, function(err, contracts) {
         [
           contracts.VyperContract1,

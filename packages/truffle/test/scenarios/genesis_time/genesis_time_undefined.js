@@ -21,7 +21,7 @@ describe("Genesis time config for truffle test, option undefined [ @standalone ]
 
   describe("test with undefined option", function() {
     before("set up sandbox", function() {
-      this.timeout(10000);
+      this.timeout(30000);
       let project = path.join(
         __dirname,
         "../../sources/genesis_time/genesis_time_undefined"

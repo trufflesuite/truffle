@@ -21,7 +21,7 @@ describe("truffle exec [ @standalone ]", function() {
   });
 
   beforeEach("set up sandbox", function() {
-    this.timeout(10000);
+    this.timeout(30000);
     return sandbox.create(project).then(conf => {
       config = conf;
       config.network = "development";
@@ -33,7 +33,7 @@ describe("truffle exec [ @standalone ]", function() {
   });
 
   it("runs script after compiling", async function() {
-    this.timeout(30000);
+    this.timeout(90000);
     await CommandRunner.run("compile", config);
     assert(
       fs.existsSync(
@@ -48,7 +48,7 @@ describe("truffle exec [ @standalone ]", function() {
 
   // Check accuracy of next test
   it("errors when run without compiling", async function() {
-    this.timeout(30000);
+    this.timeout(90000);
     try {
       await CommandRunner.run("exec script.js", config);
       assert(false, "An error should have occurred.");
@@ -58,7 +58,7 @@ describe("truffle exec [ @standalone ]", function() {
   });
 
   it("succeeds when -c flag is set", async function() {
-    this.timeout(30000);
+    this.timeout(90000);
     await CommandRunner.run("exec -c script.js", config);
     const output = logger.contents();
     assert(output.includes("5"));

@@ -17,7 +17,7 @@ describe("production", function() {
     const logger = new MemoryLogger();
 
     before(async function() {
-      this.timeout(10000);
+      this.timeout(30000);
       config = await sandbox.create(project);
       config.network = "ropsten";
       config.logger = logger;
@@ -76,7 +76,7 @@ describe("production", function() {
     const logger = new MemoryLogger();
 
     before(async function() {
-      this.timeout(10000);
+      this.timeout(30000);
       config = await sandbox.create(project);
       config.network = "fakeRopsten";
       config.logger = logger;

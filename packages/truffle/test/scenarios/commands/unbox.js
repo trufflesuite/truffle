@@ -30,7 +30,7 @@ describe("truffle unbox [ @standalone ]", () => {
         ),
         "Migrations.ligo does not exist"
       );
-    }).timeout(20000);
+    }).timeout(120000);
   });
 
   describe("when run with arguments", () => {
@@ -42,7 +42,7 @@ describe("truffle unbox [ @standalone ]", () => {
             config
           );
           assert(fse.existsSync(path.join(tempDir.name, "truffle-config.js")));
-        }).timeout(20000);
+        }).timeout(60000);
       });
 
       describe("full url + branch", () => {
@@ -52,7 +52,7 @@ describe("truffle unbox [ @standalone ]", () => {
             config
           );
           assert(fse.existsSync(path.join(tempDir.name, "truffle-config.js")));
-        }).timeout(20000);
+        }).timeout(60000);
       });
 
       describe("full url + branch + relativePath", () => {
@@ -72,14 +72,14 @@ describe("truffle unbox [ @standalone ]", () => {
               )
             )
           );
-        }).timeout(20000);
+        }).timeout(60000);
       });
 
       describe("origin/master", () => {
         it("unboxes successfully", async () => {
           await CommandRunner.run("unbox truffle-box/bare-box", config);
           assert(fse.existsSync(path.join(tempDir.name, "truffle-config.js")));
-        }).timeout(20000);
+        }).timeout(60000);
       });
 
       describe("origin/master#branch", () => {
@@ -89,7 +89,7 @@ describe("truffle unbox [ @standalone ]", () => {
             config
           );
           assert(fse.existsSync(path.join(tempDir.name, "truffle-config.js")));
-        }).timeout(20000);
+        }).timeout(60000);
       });
 
       describe("origin/master#branch:relativePath", () => {
@@ -109,28 +109,28 @@ describe("truffle unbox [ @standalone ]", () => {
               )
             )
           );
-        }).timeout(20000);
+        }).timeout(60000);
       });
 
       describe("official truffle box", () => {
         it("unboxes successfully", async () => {
           await CommandRunner.run("unbox bare", config);
           assert(fse.existsSync(path.join(tempDir.name, "truffle-config.js")));
-        }).timeout(20000);
+        }).timeout(60000);
       });
 
       describe("official truffle-box", () => {
         it("unboxes successfully", async () => {
           await CommandRunner.run("unbox bare-box", config);
           assert(fse.existsSync(path.join(tempDir.name, "truffle-config.js")));
-        }).timeout(20000);
+        }).timeout(60000);
       });
 
       describe("official truffle box + branch", () => {
         it("unboxes successfully", async () => {
           await CommandRunner.run("unbox bare#truffle-test-branch", config);
           assert(fse.existsSync(path.join(tempDir.name, "truffle-config.js")));
-        }).timeout(20000);
+        }).timeout(60000);
       });
 
       describe("official truffle box + branch + relativePath", () => {
@@ -150,7 +150,7 @@ describe("truffle unbox [ @standalone ]", () => {
               )
             )
           );
-        }).timeout(20000);
+        }).timeout(60000);
       });
 
       describe("git@ ssh", () => {
@@ -160,7 +160,7 @@ describe("truffle unbox [ @standalone ]", () => {
             config
           );
           assert(fse.existsSync(path.join(tempDir.name, "truffle-config.js")));
-        }).timeout(20000);
+        }).timeout(60000);
       });
 
       describe("with an invalid git@ ssh", () => {
@@ -174,7 +174,7 @@ describe("truffle unbox [ @standalone ]", () => {
             const output = logger.contents();
             assert(output.includes("doesn't exist."));
           }
-        }).timeout(20000);
+        }).timeout(60000);
       });
 
       describe("git@ ssh + branch", () => {
@@ -184,7 +184,7 @@ describe("truffle unbox [ @standalone ]", () => {
             config
           );
           assert(fse.existsSync(path.join(tempDir.name, "truffle-config.js")));
-        }).timeout(20000);
+        }).timeout(60000);
       });
 
       describe("git@ ssh + branch + relativePath", () => {
@@ -204,7 +204,7 @@ describe("truffle unbox [ @standalone ]", () => {
               )
             )
           );
-        }).timeout(20000);
+        }).timeout(60000);
       });
 
       describe("when run with a path", () => {
@@ -219,7 +219,7 @@ describe("truffle unbox [ @standalone ]", () => {
               path.join(tempDir.name, myPath, "truffle-config.js")
             )
           );
-        }).timeout(20000);
+        }).timeout(60000);
       });
     });
 
@@ -236,7 +236,7 @@ describe("truffle unbox [ @standalone ]", () => {
             const output = logger.contents();
             assert(output.includes("doesn't exist."));
           }
-        }).timeout(20000);
+        }).timeout(60000);
       });
 
       describe("invalid origin/master", () => {
@@ -248,7 +248,7 @@ describe("truffle unbox [ @standalone ]", () => {
             const output = logger.contents();
             assert(output.includes("doesn't exist."));
           }
-        }).timeout(20000);
+        }).timeout(60000);
       });
 
       describe("invalid official truffle box", () => {
@@ -260,7 +260,7 @@ describe("truffle unbox [ @standalone ]", () => {
             const output = logger.contents();
             assert(output.includes("doesn't exist."));
           }
-        }).timeout(20000);
+        }).timeout(60000);
       });
 
       describe("invalid git@ ssh", () => {
@@ -275,7 +275,7 @@ describe("truffle unbox [ @standalone ]", () => {
             const output = logger.contents();
             assert(output.includes("doesn't exist."));
           }
-        }).timeout(20000);
+        }).timeout(60000);
       });
 
       describe("absolutePaths", () => {
@@ -287,7 +287,7 @@ describe("truffle unbox [ @standalone ]", () => {
             const output = logger.contents();
             assert(output.includes("not allowed!"));
           }
-        }).timeout(20000);
+        }).timeout(60000);
       });
 
       describe("invalid box format", () => {
@@ -299,7 +299,7 @@ describe("truffle unbox [ @standalone ]", () => {
             const output = logger.contents();
             assert(output.includes("invalid format"));
           }
-        }).timeout(20000);
+        }).timeout(60000);
       });
     });
   });

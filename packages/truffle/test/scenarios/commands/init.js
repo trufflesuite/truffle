@@ -20,12 +20,12 @@ describe("truffle init [ @standalone ]", () => {
 
   it("does not error", async () => {
     await CommandRunner.run("init", config);
-  }).timeout(30000);
+  }).timeout(90000);
 
   it("unboxes a project with a truffle config", async () => {
     await CommandRunner.run("init", config);
     assert(fse.existsSync(path.join(tempDir.name, "truffle-config.js")));
-  }).timeout(20000);
+  }).timeout(120000);
 
   describe("when a path is provided", () => {
     it("initializes with a relative path", async () => {
@@ -34,12 +34,12 @@ describe("truffle init [ @standalone ]", () => {
       assert(
         fse.existsSync(path.join(tempDir.name, myPath, "truffle-config.js"))
       );
-    }).timeout(20000);
+    }).timeout(120000);
 
     it("initializes with an absolute path", async () => {
       const myPath = path.join(tempDir.name, "somethingElse");
       await CommandRunner.run(`init ${myPath}`, config);
       assert(fse.existsSync(path.join(myPath, "truffle-config.js")));
-    }).timeout(20000);
+    }).timeout(120000);
   });
 });

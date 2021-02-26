@@ -25,11 +25,11 @@ describe("truffle run [ @standalone ]", () => {
       await CommandRunner.run("run", config);
       const output = logger.contents();
       assert(output.includes("Usage:        truffle run [<command>]"));
-    }).timeout(20000);
+    }).timeout(60000);
 
     it("should not error", async () => {
       await CommandRunner.run("run", config);
-    }).timeout(20000);
+    }).timeout(60000);
   });
 
   describe("when run with an argument", () => {
@@ -42,7 +42,7 @@ describe("truffle run [ @standalone ]", () => {
         await CommandRunner.run("run mock", config);
         const output = logger.contents();
         assert(output.includes("Error: No plugins detected"));
-      }).timeout(10000);
+      }).timeout(30000);
     });
 
     describe("with plugins configured", () => {
@@ -57,7 +57,7 @@ describe("truffle run [ @standalone ]", () => {
             const output = logger.contents();
             assert(output.includes("Error: Plugins configured incorrectly."));
           }
-        }).timeout(10000);
+        }).timeout(30000);
 
         it("throws error when plugins configured but not installed", async () => {
           await loadSandboxLogger(
@@ -69,7 +69,7 @@ describe("truffle run [ @standalone ]", () => {
             const output = logger.contents();
             assert(output.includes("listed as a plugin, but not found"));
           }
-        }).timeout(10000);
+        }).timeout(30000);
 
         it("throws error when plugins are missing truffle-plugin.json", async () => {
           await loadSandboxLogger(
@@ -81,7 +81,7 @@ describe("truffle run [ @standalone ]", () => {
             const output = logger.contents();
             assert(output.includes("Error: truffle-plugin.json not found"));
           }
-        }).timeout(10000);
+        }).timeout(30000);
 
         it("throws error when configured/installed plugins don't support the given arg/command", async () => {
           await loadSandboxLogger("../../sources/run/mockProjectWithPlugin");
@@ -91,7 +91,7 @@ describe("truffle run [ @standalone ]", () => {
             const output = logger.contents();
             assert(output.includes("command not supported"));
           }
-        }).timeout(20000);
+        }).timeout(60000);
 
         it("throws error if command in truffle-plugin.json uses an absolute path", async () => {
           await loadSandboxLogger(
@@ -103,7 +103,7 @@ describe("truffle run [ @standalone ]", () => {
             const output = logger.contents();
             assert(output.includes("Error: Absolute paths not allowed!"));
           }
-        }).timeout(10000);
+        }).timeout(30000);
       });
 
       describe("when plugins configured and installed that support a given argument", () => {
@@ -117,14 +117,14 @@ describe("truffle run [ @standalone ]", () => {
           await CommandRunner.run("run mock", config);
           const output = logger.contents();
           assert(output.includes("Running truffle-mock!"));
-        }).timeout(20000);
+        }).timeout(60000);
 
         it("does not warn about unsupported options", async () => {
           await CommandRunner.run("run mock --option value", config);
           const output = logger.contents();
           assert(!output.includes("Warning:"));
-        }).timeout(20000);
+        }).timeout(60000);
       });
     });
-  }).timeout(10000);
+  }).timeout(30000);
 });

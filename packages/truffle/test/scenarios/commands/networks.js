@@ -8,7 +8,7 @@ describe("truffle networks", () => {
   let config, projectPath;
 
   before("before all setup", function(done) {
-    this.timeout(10000);
+    this.timeout(30000);
     projectPath = path.join(__dirname, "../../sources/networks/metacoin");
     sandbox
       .create(projectPath)
@@ -25,7 +25,7 @@ describe("truffle networks", () => {
   describe("when run on a simple project", () => {
     it("doesn't throw", async () => {
       await CommandRunner.run("networks", config);
-    }).timeout(20000);
+    }).timeout(60000);
   });
 
   describe("when run with --clean", () => {

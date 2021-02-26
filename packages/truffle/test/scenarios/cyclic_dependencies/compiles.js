@@ -36,7 +36,7 @@ describe("Cyclic Dependencies [ @standalone ]", function() {
   });
 
   it("will compile cyclic dependencies that Solidity is fine with (no `new`'s)", async function() {
-    this.timeout(20000);
+    this.timeout(60000);
 
     await CommandRunner.run("compile", config);
 
@@ -50,4 +50,4 @@ describe("Cyclic Dependencies [ @standalone ]", function() {
       fs.existsSync(path.join(config.contracts_build_directory, "Pong.json"))
     );
   });
-}).timeout(10000);
+}).timeout(30000);

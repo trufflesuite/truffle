@@ -28,6 +28,6 @@ describe("truffle deploy (alias for migrate)", () => {
       } catch (error) {
         assert(fail, `An error: ${error}`);
       }
-    }).timeout(20000);
+    }).timeout(60000);
   });
 });
