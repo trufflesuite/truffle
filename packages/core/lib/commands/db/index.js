@@ -4,12 +4,9 @@ const serveCommand = require("./commands/serve");
 const usage =
   "truffle db <sub-command> [options]" +
   OS.EOL +
-  OS.EOL +
   "  Available sub-commands: " +
   OS.EOL +
-  OS.EOL +
-  "  serve \tStart the GraphQL server" +
-  OS.EOL;
+  "                serve \tStart the GraphQL server";
 
 const command = {
   command: "db",
