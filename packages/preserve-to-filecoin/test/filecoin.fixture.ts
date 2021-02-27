@@ -8,6 +8,10 @@ export interface Test {
 
 const happyPathEvents = [
   {
+    type: "begin",
+    scope: ["@truffle/preserve-to-filecoin"]
+  },
+  {
     type: "log",
     message: "Preserving to Filecoin...",
     scope: ["@truffle/preserve-to-filecoin"]
@@ -22,6 +26,7 @@ const happyPathEvents = [
   },
   {
     type: "succeed",
+    result: expect.any(Object),
     scope: [
       "@truffle/preserve-to-filecoin",
       "Connecting to Filecoin node at http://localhost:7777/rpc/v0..."
@@ -34,6 +39,7 @@ const happyPathEvents = [
   },
   {
     type: "succeed",
+    result: ["t01000"],
     scope: ["@truffle/preserve-to-filecoin", "Retrieving miners..."]
   },
   {
@@ -52,6 +58,8 @@ const happyPathEvents = [
   },
   {
     type: "resolve",
+    payload: expect.any(String),
+    resolution: expect.any(Object),
     scope: [
       "@truffle/preserve-to-filecoin",
       "Proposing storage deal...",
@@ -70,6 +78,11 @@ const happyPathEvents = [
   {
     type: "succeed",
     scope: ["@truffle/preserve-to-filecoin", "Waiting for deal to finish..."]
+  },
+  {
+    type: "succeed",
+    result: expect.any(Object),
+    scope: ["@truffle/preserve-to-filecoin"]
   }
 ];
 

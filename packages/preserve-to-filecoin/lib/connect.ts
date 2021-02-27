@@ -23,7 +23,12 @@ export async function* connect(
 
   const client = createLotusClient({ url, token });
 
-  yield* task.succeed();
+  try {
+    const version = await client.common.version();
+    yield* task.succeed({ result: version });
+  } catch (error) {
+    yield* task.fail({ error });
+  }
 
   return client;
 }

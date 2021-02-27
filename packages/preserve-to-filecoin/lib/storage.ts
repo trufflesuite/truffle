@@ -43,16 +43,20 @@ export async function* proposeStorageDeal(
     MinBlocksDuration: 518400 // Min 180 days
   };
 
-  const result = await client.client.startDeal(storageProposal);
+  try {
+    const result = await client.client.startDeal(storageProposal);
 
-  const dealCid = new CID(result["/"]);
+    const dealCid = new CID(result["/"]);
 
-  yield* dealCidResolution.resolve({
-    resolution: dealCid,
-    payload: chalk.bold(dealCid.toString())
-  });
+    yield* dealCidResolution.resolve({
+      resolution: dealCid,
+      payload: chalk.bold(dealCid.toString())
+    });
 
-  yield* task.succeed();
+    yield* task.succeed();
 
-  return { dealCid };
+    return { dealCid };
+  } catch (error) {
+    yield* task.fail({ error });
+  }
 }

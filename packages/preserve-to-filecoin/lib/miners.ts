@@ -16,9 +16,11 @@ export async function* getMiners(
     message: "Retrieving miners..."
   });
 
-  const miners = await client.state.listMiners();
-
-  yield* task.succeed();
-
-  return miners;
+  try {
+    const miners = await client.state.listMiners();
+    yield* task.succeed({ result: miners });
+    return miners;
+  } catch (error) {
+    yield* task.fail({ error });
+  }
 }

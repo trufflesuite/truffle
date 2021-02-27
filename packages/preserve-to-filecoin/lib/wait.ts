@@ -14,18 +14,18 @@ export async function* wait(options: WaitOptions): Preserve.Process<void> {
   const { client, dealCid, controls } = options;
   const { step } = controls;
 
-  const wait = yield* step({
+  const task = yield* step({
     message: "Waiting for deal to finish..."
   });
 
   try {
     await waitForDealToFinish(dealCid, client);
   } catch (error) {
-    yield* wait.fail({ error });
+    yield* task.fail({ error });
     return;
   }
 
-  yield* wait.succeed();
+  yield* task.succeed();
 }
 
 export async function getDealState(
