@@ -112,7 +112,9 @@ class CompilerSupplier {
           .filter(build => build["prerelease"])
           .map(build => build["longVersion"]);
 
-        const releases = Object.keys(list.releases);
+        const { rsort } = semver;
+        // ensure releases are listed in descending order
+        const releases = rsort(Object.keys(list.releases));
 
         return {
           prereleases: prereleases,

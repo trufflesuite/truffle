@@ -3,6 +3,7 @@ const debug = debugModule("compile-common:profiler");
 const findContracts = require("@truffle/contract-sources");
 const expect = require("@truffle/expect");
 
+import type TruffleConfig from "@truffle/config";
 import { updated } from "./updated";
 import { UnresolvedSource } from "./resolveAllSources";
 import { requiredSources, RequiredSourcesOptions } from "./requiredSources";
@@ -81,6 +82,26 @@ export class Profiler {
     );
 
     debug("invoking requiredSources");
+    return await requiredSources({
+      resolve,
+      parseImports: this.config.parseImports,
+      shouldIncludePath: this.config.shouldIncludePath,
+      updatedPaths,
+      allPaths
+    });
+  }
+
+  async requiredSourcesForSingleFile(options: TruffleConfig) {
+    expect.options(options, ["path", "base_path", "resolver"]);
+
+    const { resolver, path, base_path: basePath } = options;
+
+    const resolve = ({ filePath, importedFrom }: UnresolvedSource) =>
+      resolver.resolve(filePath, importedFrom);
+
+    const allPaths = convertToAbsolutePaths([path], basePath);
+    const updatedPaths = allPaths;
+
     return await requiredSources({
       resolve,
       parseImports: this.config.parseImports,

@@ -29,7 +29,8 @@ export class Truffle implements ResolverSource {
       // Ensure we have a mapping for source files and abstraction files
       // to prevent any compile errors in tests.
       sourceFiles.forEach((file: string) => {
-        const name = path.basename(file, ".sol");
+        // we need to account for .json and .abi.json files
+        const name = path.basename(path.basename(path.basename(file, ".sol"), ".json"), ".abi");
         if (blacklist.has(name)) return;
         mapping[name] = false;
       });
