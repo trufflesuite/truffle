@@ -5,6 +5,7 @@ import {
   ConstructorOptions as BaseConstructorOptions,
   IBaseController
 } from "./BaseController";
+import { transitionToState, validStates } from "./decorators";
 
 export namespace Options {
   export interface Fail {
@@ -53,12 +54,8 @@ export abstract class ErrorController
     this.stop = this.stop.bind(this);
   }
 
+  @validStates([State.Active])
   async *fail({ error, cascade = true }: Options.Fail = {}) {
-    // only meaningful to fail if we're currently active
-    if (this._state !== State.Active) {
-      return;
-    }
-
     // stop all children
     for (const child of this.children) {
       yield* child.stop();
@@ -77,12 +74,8 @@ export abstract class ErrorController
     }
   }
 
+  @validStates([State.Active])
   async *abort({ cascade = true }: Options.Abort = {}) {
-    // only meaningful to stop if we're currently active
-    if (this._state !== State.Active) {
-      return;
-    }
-
     // stop all children
     for (const child of this.children) {
       yield* child.stop();
@@ -100,12 +93,9 @@ export abstract class ErrorController
     }
   }
 
+  @validStates([State.Active])
+  @transitionToState(State.Error)
   async *stop({}: Options.Stop = {}) {
-    // only meaningful to stop if we're currently active
-    if (this._state !== State.Active) {
-      return;
-    }
-
     // stop all children
     for (const child of this.children) {
       yield* child.stop();
@@ -114,7 +104,5 @@ export abstract class ErrorController
     yield this.emit<Events.Stop>({
       type: "stop"
     });
-
-    this._state = State.Error;
   }
 }

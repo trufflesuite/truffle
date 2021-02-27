@@ -1,5 +1,6 @@
 import { Events } from "../events";
 import { Process, State } from "../types";
+import { transitionToState, validStates } from "./decorators";
 import {
   ErrorController,
   ConstructorOptions as ErrorControllerConstructorOptions,
@@ -41,35 +42,25 @@ export class ValueResolutionController
     this.extend = this.extend.bind(this);
   }
 
+  @validStates([State.Active])
   async *update({ payload }: Options.Update = {}) {
-    // only meaningful to succeed if we're currently active
-    if (this._state !== State.Active) {
-      return;
-    }
-
     yield this.emit<Events.Update>({
       type: "update",
       payload
     });
-
-    this._state = State.Done;
   }
 
+  @validStates([State.Active])
+  @transitionToState(State.Done)
   async *resolve({ resolution, payload }: Options.Resolve = {}) {
-    // only meaningful to succeed if we're currently active
-    if (this._state !== State.Active) {
-      return;
-    }
-
     yield this.emit<Events.Resolve>({
       type: "resolve",
       resolution,
       payload
     });
-
-    this._state = State.Done;
   }
 
+  @validStates([State.Active])
   async *extend({ identifier, message }: Options.Extend) {
     const parent = this;
 
