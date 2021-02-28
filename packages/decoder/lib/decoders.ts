@@ -505,19 +505,6 @@ export class WireDecoder {
     return Codec.abifyLogDecoding(decoding, this.userDefinedTypes);
   }
 
-  /**
-   * Takes a [[ReturndataDecoding]], which may have been produced in full mode
-   * or ABI mode, and converts it to its ABI mode equivalent.  See the README
-   * for more information.
-   *
-   * Please only use on decodings produced by this same decoder instance; use
-   * on decodings produced by other instances may not work consistently.
-   * @param decoding The decoding to abify
-   */
-  public abifyReturndataDecoding(decoding: ReturndataDecoding): ReturndataDecoding {
-    return Codec.abifyReturndataDecoding(decoding, this.userDefinedTypes);
-  }
-
   //normally, this function gets the code of the given address at the given block,
   //and checks this against the known contexts to determine the contract type
   //however, if this fails and constructorBinary is passed in, it will then also
@@ -1033,13 +1020,6 @@ export class ContractDecoder {
    */
   public abifyLogDecoding(decoding: LogDecoding): LogDecoding {
     return this.wireDecoder.abifyLogDecoding(decoding);
-  }
-
-  /**
-   * See [[WireDecoder.abifyReturndataDecoding]].
-   */
-  public abifyReturndataDecoding(decoding: ReturndataDecoding): ReturndataDecoding {
-    return this.wireDecoder.abifyReturndataDecoding(decoding);
   }
 
   //the following functions are for internal use
@@ -1711,13 +1691,6 @@ export class ContractInstanceDecoder {
    */
   public abifyLogDecoding(decoding: LogDecoding): LogDecoding {
     return this.wireDecoder.abifyLogDecoding(decoding);
-  }
-
-  /**
-   * See [[WireDecoder.abifyReturndataDecoding]].
-   */
-  public abifyReturndataDecoding(decoding: ReturndataDecoding): ReturndataDecoding {
-    return this.wireDecoder.abifyReturndataDecoding(decoding);
   }
 
   /**
