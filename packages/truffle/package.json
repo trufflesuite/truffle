@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.2.0",
+  "version": "5.2.1",
   "main": "./build/library.bundled.js",
   "bin": {
     "truffle": "./build/cli.bundled.js"
@@ -61,7 +61,7 @@
     "yargs": "^8.0.2"
   },
   "optionalDependencies": {
-    "@truffle/db": "^0.5.0"
+    "@truffle/db": "^0.5.1"
   },
   "publishConfig": {
     "access": "public"
