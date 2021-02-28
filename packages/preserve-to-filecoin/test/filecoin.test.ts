@@ -20,11 +20,9 @@ describe("preserve", () => {
       const target = { source: "content string" };
       const cid = await preserveToIpfs(target, ipfsAddress);
 
-      const emittedEvents = await preserveToFilecoinWithEvents(
-        target,
-        cid,
-        filecoinAddress
-      );
+      const emittedEvents = await preserveToFilecoinWithEvents(target, cid, {
+        address: filecoinAddress
+      });
 
       const expectedEvents = [
         { type: "begin", scope: ["@truffle/preserve-to-filecoin"] },
@@ -55,11 +53,9 @@ describe("preserve", () => {
 
       const cid = await preserveToIpfs(target, ipfsAddress);
 
-      const emittedEvents = await preserveToFilecoinWithEvents(
-        target,
-        cid,
-        "http://localhost:8888/rpc/v0"
-      );
+      const emittedEvents = await preserveToFilecoinWithEvents(target, cid, {
+        address: "http://localhost:8888/rpc/v0"
+      });
 
       const expectedEvents = [
         { type: "begin", scope: ["@truffle/preserve-to-filecoin"] },
@@ -111,7 +107,9 @@ describe("preserve", () => {
       });
 
       it("stores to Filecoin correctly", async () => {
-        const dealCid = await preserveToFilecoin(target, cid, filecoinAddress);
+        const dealCid = await preserveToFilecoin(target, cid, {
+          address: filecoinAddress
+        });
 
         const client = createLotusClient({ url: filecoinAddress });
         const state = await getDealState(dealCid, client);
@@ -120,11 +118,9 @@ describe("preserve", () => {
       });
 
       it("emits the correct events", async () => {
-        const emittedEvents = await preserveToFilecoinWithEvents(
-          target,
-          cid,
-          filecoinAddress
-        );
+        const emittedEvents = await preserveToFilecoinWithEvents(target, cid, {
+          address: filecoinAddress
+        });
         expect(emittedEvents).toMatchObject(events);
       });
 

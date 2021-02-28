@@ -1,7 +1,7 @@
 import * as Preserve from "@truffle/preserve";
 import * as PreserveToIpfs from "@truffle/preserve-to-ipfs";
 import CID from "cids";
-import { Recipe } from "../../lib";
+import { ConstructorOptions, Recipe } from "../../lib";
 import { asyncToArray } from "iter-tools";
 
 export const preserveToIpfs = async (
@@ -23,9 +23,9 @@ export const preserveToIpfs = async (
 export const preserveToFilecoin = async (
   target: Preserve.Target,
   cid: CID,
-  address: string
+  environment: ConstructorOptions
 ) => {
-  const recipe = new Recipe({ address });
+  const recipe = new Recipe(environment);
 
   const { dealCid } = await Preserve.Control.run(
     {
@@ -44,9 +44,9 @@ export const preserveToFilecoin = async (
 export const preserveToFilecoinWithEvents = async (
   target: Preserve.Target,
   cid: CID,
-  address: string
+  environment: ConstructorOptions
 ) => {
-  const recipe = new Recipe({ address });
+  const recipe = new Recipe(environment);
 
   const emittedEvents = await asyncToArray(
     Preserve.Control.control(
