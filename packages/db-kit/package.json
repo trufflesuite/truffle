@@ -1,6 +1,6 @@
 {
   "name": "@truffle/db-kit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Utility belt for Truffle and @truffle/db",
   "keywords": [
     "smart-contract",
