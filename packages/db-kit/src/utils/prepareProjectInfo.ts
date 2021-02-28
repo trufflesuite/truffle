@@ -18,7 +18,7 @@ export async function prepareProjectInfo({
       // sources
       sources: compilation.processedSources.map(
         ({ ast, source: { id, contents: source, sourcePath }, language }) => ({
-          ast: JSON.parse(ast.json),
+          ast: ast && JSON.parse(ast.json),
           compiler: compilation.compiler,
           id,
           language,
