@@ -7,7 +7,11 @@ const {
   Web3Shim,
   createInterfaceAdapter
 } = require("@truffle/interface-adapter");
-const {connect, Project} = require("@truffle/db");
+
+let Db;
+try {
+  Db = require("@truffle/db");
+} catch {}
 
 const ResolverIntercept = require("./ResolverIntercept");
 
@@ -91,7 +95,7 @@ class Migration {
         const message = `Saving migration to chain.`;
 
         if (!this.dryRun) {
-          const data = {message: message};
+          const data = { message: message };
           await this.emitter.emit("startTransaction", data);
         }
 
@@ -99,7 +103,7 @@ class Migration {
         const receipt = await migrations.setCompleted(this.number);
 
         if (!this.dryRun) {
-          const data = {receipt: receipt, message: message};
+          const data = { receipt: receipt, message: message };
           await this.emitter.emit("endTransaction", data);
         }
       }
@@ -109,9 +113,14 @@ class Migration {
       let artifacts = resolver
         .contracts()
         .map(abstraction => abstraction._json);
-      if (this.config.db && this.config.db.enabled && artifacts.length > 0) {
-        const db = connect(this.config.db);
-        const project = await Project.initialize({
+      if (
+        Db &&
+        this.config.db &&
+        this.config.db.enabled &&
+        artifacts.length > 0
+      ) {
+        const db = Db.connect(this.config.db);
+        const project = await Db.Project.initialize({
           db,
           project: {
             directory: this.config.working_directory
@@ -119,7 +128,7 @@ class Migration {
         });
 
         const result = await project
-          .connect({provider: this.config.provider})
+          .connect({ provider: this.config.provider })
           .loadMigrate({
             network: {
               name: this.config.network
@@ -217,7 +226,7 @@ class Migration {
     const resolver = new ResolverIntercept(options.resolver);
 
     // Initial context.
-    const context = {web3, interfaceAdapter, config: this.config};
+    const context = { web3, interfaceAdapter, config: this.config };
 
     const deployer = new Deployer({
       logger,
@@ -231,7 +240,7 @@ class Migration {
       ens: options.ens
     });
 
-    return {interfaceAdapter, resolver, context, deployer};
+    return { interfaceAdapter, resolver, context, deployer };
   }
 
   /**
