@@ -280,7 +280,11 @@ export {
 } from "./types";
 export * from "./common";
 
-export { abifyCalldataDecoding, abifyLogDecoding } from "./abify";
+export {
+  abifyCalldataDecoding,
+  abifyLogDecoding,
+  abifyReturndataDecoding
+} from "./abify";
 
 // data locations - common
 import * as Basic from "./basic";
@@ -394,3 +398,6 @@ export { Pointer };
 
 import * as Evm from "./evm";
 export { Evm };
+
+import * as Export from "./export";
+export { Export };
