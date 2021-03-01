@@ -91,8 +91,7 @@ describe("compatibleNativize", function () {
           assert.lengthOf(decodings, 1);
           const decoding = decodings[0];
           const nativized = Codec.Export.compatibleNativizeReturn(
-            decoding,
-            decoder.getWireDecoder().getUserDefinedTypes() //hack?
+            decoding
           );
           assert.deepEqual(nativized, expected[entry.name]);
         } else {
@@ -110,8 +109,7 @@ describe("compatibleNativize", function () {
           assert.lengthOf(decodings, 1);
           const decoding = decodings[0];
           const nativized = Codec.Export.compatibleNativizeEventArgs(
-            decoding,
-            decoder.getWireDecoder().getUserDefinedTypes() //hack?
+            decoding
           );
           assert.deepEqual(nativized, expected[entry.name]);
         }

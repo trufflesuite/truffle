@@ -1,17 +1,23 @@
 import debugModule from "debug";
 const debug = debugModule("codec:export");
 
-import * as Abify from "./abify";
 import * as Format from "@truffle/codec/format";
 import {
   LogDecoding,
   ReturndataDecoding
 } from "@truffle/codec/types";
+import * as Conversion from "@truffle/codec/conversion";
 
 import { ResultInspector, nativize } from "@truffle/codec/format/utils/inspect";
 export { ResultInspector, nativize };
 
 type NumberFormatter = (n: BigInt) => any //not parameterized since we output any anyway
+
+//HACK; this was going to be parameterized
+//but TypeScript didn't like that, so, whatever
+interface MixedArray extends Array<any> {
+  [key: string]: any
+}
 
 /**
  * This function is similar to [[Format.Utils.Inspect.nativize|nativize]], but
@@ -41,87 +47,83 @@ type NumberFormatter = (n: BigInt) => any //not parameterized since we output an
  */
 export function compatibleNativize(
   result: Format.Values.Result,
-  userDefinedTypes: Format.Types.TypesById,
   numberFormatter: NumberFormatter = x => x
 ): any {
-  return compatibleNativizeAbified(
-    Abify.abifyResult(result, userDefinedTypes),
-    numberFormatter
-  );
-}
-
-//HACK; this was going to be parameterized
-//but TypeScript didn't like that, so, whatever
-interface MixedArray extends Array<any> {
-  [key: string]: any
-}
-
-function compatibleNativizeAbified(
-  result: Format.Values.Result,
-  numberFormatter: NumberFormatter
-): any {
-  if (result.kind === "error") {
-    switch (result.error.kind) {
-      case "IndexedReferenceTypeError":
-        //strictly speaking for arrays ethers will fail to decode
-        //rather than do this, but, eh
-        return result.error.raw;
-      default:
-        return undefined;
-    }
-  }
-  switch (result.type.typeClass) {
-    case "uint":
-    case "int":
-      const asBN = (<Format.Values.UintValue | Format.Values.IntValue>(
-        result
-      )).value.asBN;
-      //BN is binary-based, so we convert by means of a hex string in order
-      //to avoid having to do a binary-decimal conversion and back :P
-      const asBigInt = !asBN.isNeg()
-        ? BigInt("0x" + asBN.toString(16))
-        : -BigInt("0x" + asBN.neg().toString(16)); //can't directly make negative BigInt from hex string
-      return numberFormatter(asBigInt);
-    case "bool":
-      return (<Format.Values.BoolValue>result).value.asBoolean;
-    case "bytes":
-      return (<Format.Values.BytesValue>result).value.asHex;
-    case "address":
-      return (<Format.Values.AddressValue>result).value.asAddress;
-    case "string": {
-      let coercedResult = <Format.Values.StringValue>result;
-      switch (coercedResult.value.kind) {
-        case "valid":
-          return coercedResult.value.asString;
-        case "malformed":
-          // this will turn malformed utf-8 into replacement characters (U+FFFD) (WARNING)
-          // note we need to cut off the 0x prefix
-          return Buffer.from(
-            coercedResult.value.asHex.slice(2),
-            "hex"
-          ).toString();
+  //note: the original version of this function began by calling abify,
+  //but we don't do that here because abify requires a userDefinedTypes
+  //parameter and we don't want that.
+  //However, it only needs that to handle getting the types right.  Since
+  //we don't care about that here, we instead do away with abify and handle
+  //such matters ourselves (which is less convenient, yeah).
+  switch (result.kind) {
+    case "error":
+      switch (result.error.kind) {
+        case "IndexedReferenceTypeError":
+          //strictly speaking for arrays ethers will fail to decode
+          //rather than do this, but, eh
+          return result.error.raw;
+        case "EnumOutOfRangeError":
+          return numberFormatter(Conversion.toBigInt(result.error.rawAsBN));
+        default:
+          return undefined;
       }
-    }
-    case "array":
-      return (<Format.Values.ArrayValue>result).value.map(value =>
-        compatibleNativizeAbified(value, numberFormatter)
-      );
-    case "tuple":
-      //in this case, we need the result to be an array, but also
-      //to have the field names (where extant) as keys
-      const nativized: MixedArray = [];
-      for (const { name, value } of (<Format.Values.TupleValue>result).value) {
-        const nativizedValue = compatibleNativizeAbified(value, numberFormatter);
-        nativized.push(nativizedValue);
-        if (name) {
-          nativized[name] = nativizedValue;
+    case "value":
+      switch (result.type.typeClass) {
+        case "uint":
+        case "int":
+          const asBN = (<Format.Values.UintValue | Format.Values.IntValue>(
+            result
+          )).value.asBN;
+          return numberFormatter(Conversion.toBigInt(asBN));
+        case "enum":
+          const numericAsBN = (<Format.Values.EnumValue>(result)).value.numericAsBN;
+          return numberFormatter(Conversion.toBigInt(numericAsBN));
+        case "bool":
+          return (<Format.Values.BoolValue>result).value.asBoolean;
+        case "bytes":
+          return (<Format.Values.BytesValue>result).value.asHex;
+        case "address":
+          return (<Format.Values.AddressValue>result).value.asAddress;
+        case "contract":
+          return (<Format.Values.ContractValue>result).value.address;
+        case "string": {
+          let coercedResult = <Format.Values.StringValue>result;
+          switch (coercedResult.value.kind) {
+            case "valid":
+              return coercedResult.value.asString;
+            case "malformed":
+              // this will turn malformed utf-8 into replacement characters (U+FFFD) (WARNING)
+              // note we need to cut off the 0x prefix
+              return Buffer.from(
+                coercedResult.value.asHex.slice(2),
+                "hex"
+              ).toString();
+          }
         }
+        case "array":
+          return (<Format.Values.ArrayValue>result).value.map(value =>
+            compatibleNativize(value, numberFormatter)
+          );
+        case "tuple":
+        case "struct":
+          //in this case, we need the result to be an array, but also
+          //to have the field names (where extant) as keys
+          const nativized: MixedArray = [];
+          const pairs = (<Format.Values.TupleValue|Format.Values.StructValue>result).value;
+          for (const { name, value } of pairs) {
+            const nativizedValue = compatibleNativize(value, numberFormatter);
+            nativized.push(nativizedValue);
+            if (name) {
+              nativized[name] = nativizedValue;
+            }
+          }
+          return nativized;
+        case "fixed":
+        case "ufixed":
+        case "function":
+        default:
+          return undefined;
       }
-      return nativized;
-    case "fixed":
-    case "ufixed":
-    case "function":
-      return undefined;
   }
 }
 
@@ -136,7 +138,6 @@ function compatibleNativizeAbified(
  */
 export function compatibleNativizeReturn(
   decoding: ReturndataDecoding,
-  userDefinedTypes: Format.Types.TypesById,
   numberFormatter: NumberFormatter = x => x
 ): any {
   if (decoding.kind !== "return") {
@@ -145,7 +146,6 @@ export function compatibleNativizeReturn(
   if (decoding.arguments.length === 1) {
     return compatibleNativize(
       decoding.arguments[0].value,
-      userDefinedTypes,
       numberFormatter
     );
   }
@@ -154,7 +154,6 @@ export function compatibleNativizeReturn(
     const { name, value } = decoding.arguments[i];
     const nativized = compatibleNativize(
       value,
-      userDefinedTypes,
       numberFormatter
     );
     result[i] = nativized;
@@ -173,7 +172,6 @@ export function compatibleNativizeReturn(
  */
 export function compatibleNativizeEventArgs(
   decoding: LogDecoding,
-  userDefinedTypes: Format.Types.TypesById,
   numberFormatter: NumberFormatter = x => x
 ): any {
   const result: any = {};
@@ -181,7 +179,6 @@ export function compatibleNativizeEventArgs(
     const { name, value } = decoding.arguments[i];
     const nativized = compatibleNativize(
       value,
-      userDefinedTypes,
       numberFormatter
     );
     result[i] = nativized;
