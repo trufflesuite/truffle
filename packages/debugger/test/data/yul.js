@@ -101,7 +101,7 @@ describe("Assembly decoding", function () {
       );
 
     let variables = numberize(
-      Codec.Format.Utils.Inspect.nativizeVariables(await bugger.variables())
+      Codec.Format.Utils.Inspect.unsafeNativizeVariables(await bugger.variables())
     );
 
     let expectedResult = {
@@ -119,7 +119,7 @@ describe("Assembly decoding", function () {
     await bugger.continueUntilBreakpoint();
 
     variables = numberize(
-      Codec.Format.Utils.Inspect.nativizeVariables(await bugger.variables())
+      Codec.Format.Utils.Inspect.unsafeNativizeVariables(await bugger.variables())
     );
 
     expectedResult = {
@@ -138,7 +138,7 @@ describe("Assembly decoding", function () {
     await bugger.continueUntilBreakpoint();
 
     variables = numberize(
-      Codec.Format.Utils.Inspect.nativizeVariables(await bugger.variables())
+      Codec.Format.Utils.Inspect.unsafeNativizeVariables(await bugger.variables())
     );
 
     expectedResult = {

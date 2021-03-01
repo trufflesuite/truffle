@@ -10,7 +10,7 @@ const Codec = require("@truffle/codec");
 
 const { prepareContracts } = require("../../helpers");
 
-describe("compatibleNativize", function () {
+describe("nativize (ethers format)", function () {
 
   let provider;
   let abstractions;
@@ -90,7 +90,7 @@ describe("compatibleNativize", function () {
           const decodings = await decoder.decodeReturnValue(entry, data);
           assert.lengthOf(decodings, 1);
           const decoding = decodings[0];
-          const nativized = Codec.Export.compatibleNativizeReturn(
+          const nativized = Codec.Export.nativizeReturn(
             decoding
           );
           assert.deepEqual(nativized, expected[entry.name]);
@@ -108,7 +108,7 @@ describe("compatibleNativize", function () {
           const decodings = await decoder.decodeLog(log);
           assert.lengthOf(decodings, 1);
           const decoding = decodings[0];
-          const nativized = Codec.Export.compatibleNativizeEventArgs(
+          const nativized = Codec.Export.nativizeEventArgs(
             decoding
           );
           assert.deepEqual(nativized, expected[entry.name]);

@@ -8,8 +8,8 @@ import {
 } from "@truffle/codec/types";
 import * as Conversion from "@truffle/codec/conversion";
 
-import { ResultInspector, nativize } from "@truffle/codec/format/utils/inspect";
-export { ResultInspector, nativize };
+import { ResultInspector, unsafeNativize } from "@truffle/codec/format/utils/inspect";
+export { ResultInspector, unsafeNativize };
 
 type NumberFormatter = (n: BigInt) => any //not parameterized since we output any anyway
 
@@ -20,18 +20,44 @@ interface MixedArray extends Array<any> {
 }
 
 /**
- * This function is similar to [[Format.Utils.Inspect.nativize|nativize]], but
- * is intended to match the way that Truffle Contract currently returns values
- * (based on the Ethers decoder).  As such, it only handles ABI types, and in
- * addition does not handle the types fixed, ufixed, or function.  Note that in
- * these cases it returns `undefined` rather than throwing, as we want this
- * function to be used in contexts where it had better not throw.  It also does
- * not handle circularities, for similar reasons.
+ * Options for the nativize function.
+ */
+export interface NativizeOptions {
+  /**
+   * This is a function that is used to describe how to format
+   * integer values.  It should take as input the number as a BigInt.
+   * By default, it's the identity function (i.e., it formats the numbers
+   * as BigInts), but by setting it you could instead format numbers as
+   * a BN, BigNumber, string, etc.
+   */
+  numberFormatter?: NumberFormatter;
+  /**
+   * The format for the nativized result.  Currently the only supported
+   * format is "ethers", which nativizes things in a way compatible with how
+   * Ethers decodes values.  This format is quite limited, but more may be
+   * added in the future.  There is also the separate function
+   * [[Format.Utils.Inspect.unsafeNativize|unsafeNativize]], although that is,
+   * as noted, unsafe.
+   */
+  format?: "ethers";
+}
+
+/**
+ * This function is similar to
+ * [[Format.Utils.Inspect.unsafeNativize|unsafeNativize]], but is intended to
+ * be safe, and also allows for different output formats.  The only currently
+ * supported format is "ethers", which is intended to match the way that
+ * Truffle Contract currently returns values (based on the Ethers decoder).  As
+ * such, it only handles ABI types, and in addition does not handle the types
+ * fixed, ufixed, or function.  Note that in these cases it returns `undefined`
+ * rather than throwing, as we want this function to be used in contexts where
+ * it had better not throw.  It also does not handle circularities, for similar
+ * reasons.
  *
- * To handle numeric types, this function takes an optional second argument,
- * numberFormatter, that tells it how to handle numbers; this function should
- * take a BigInt as input.  By default, this function will be the identity,
- * and so numbers will be represented as BigInts.
+ * To handle numeric types, this function takes an optional numberFormatter
+ * option that tells it how to handle numbers; this function should take a
+ * BigInt as input.  By default, this function will be the identity, and so
+ * numbers will be represented as BigInts.
  *
  * Note that this function begins by calling abify, so out-of-range enums (that
  * aren't so out-of-range as to be padding errors) will not return `undefined`.
@@ -45,7 +71,19 @@ interface MixedArray extends Array<any> {
  * indexed variables of reference type will be nativized to an undecoded hex
  * string.
  */
-export function compatibleNativize(
+export function nativize(
+  result: Format.Values.Result,
+  options: NativizeOptions = {}
+): any {
+  const numberFormatter = options.numberFormatter || (x => x);
+  const format = options.format || "ethers";
+  switch (format) {
+    case "ethers":
+      return ethersCompatibleNativize(result, numberFormatter);
+  }
+}
+
+function ethersCompatibleNativize(
   result: Format.Values.Result,
   numberFormatter: NumberFormatter = x => x
 ): any {
@@ -102,7 +140,7 @@ export function compatibleNativize(
         }
         case "array":
           return (<Format.Values.ArrayValue>result).value.map(value =>
-            compatibleNativize(value, numberFormatter)
+            ethersCompatibleNativize(value, numberFormatter)
           );
         case "tuple":
         case "struct":
@@ -111,7 +149,7 @@ export function compatibleNativize(
           const nativized: MixedArray = [];
           const pairs = (<Format.Values.TupleValue|Format.Values.StructValue>result).value;
           for (const { name, value } of pairs) {
-            const nativizedValue = compatibleNativize(value, numberFormatter);
+            const nativizedValue = ethersCompatibleNativize(value, numberFormatter);
             nativized.push(nativizedValue);
             if (name) {
               nativized[name] = nativizedValue;
@@ -128,7 +166,7 @@ export function compatibleNativize(
 }
 
 /**
- * This function is similar to [[compatibleNativize]], but takes
+ * This function is similar to [[nativize]], but takes
  * a [[ReturndataDecoding]].  If there's only one returned value, it
  * will be run through compatibleNativize but otherwise unaltered;
  * otherwise the results will be put in an object.
@@ -136,7 +174,19 @@ export function compatibleNativize(
  * Note that if the ReturndataDecoding is not a [[ReturnDecoding]],
  * this will just return `undefined`.
  */
-export function compatibleNativizeReturn(
+export function nativizeReturn(
+  decoding: ReturndataDecoding,
+  options: NativizeOptions = {}
+): any {
+  const numberFormatter = options.numberFormatter || (x => x);
+  const format = options.format || "ethers";
+  switch (format) {
+    case "ethers":
+      return ethersCompatibleNativizeReturn(decoding, numberFormatter);
+  }
+}
+
+function ethersCompatibleNativizeReturn(
   decoding: ReturndataDecoding,
   numberFormatter: NumberFormatter = x => x
 ): any {
@@ -144,7 +194,7 @@ export function compatibleNativizeReturn(
     return undefined;
   }
   if (decoding.arguments.length === 1) {
-    return compatibleNativize(
+    return ethersCompatibleNativize(
       decoding.arguments[0].value,
       numberFormatter
     );
@@ -152,7 +202,7 @@ export function compatibleNativizeReturn(
   const result: any = {};
   for (let i = 0; i < decoding.arguments.length; i++) {
     const { name, value } = decoding.arguments[i];
-    const nativized = compatibleNativize(
+    const nativized = ethersCompatibleNativize(
       value,
       numberFormatter
     );
@@ -170,14 +220,26 @@ export function compatibleNativizeReturn(
  * that this does not return the entire event info, but just the
  * `args` for the event.
  */
-export function compatibleNativizeEventArgs(
+export function nativizeEventArgs(
+  decoding: LogDecoding,
+  options: NativizeOptions = {}
+): any {
+  const numberFormatter = options.numberFormatter || (x => x);
+  const format = options.format || "ethers";
+  switch (format) {
+    case "ethers":
+      return ethersCompatibleNativizeEventArgs(decoding, numberFormatter);
+  }
+}
+
+function ethersCompatibleNativizeEventArgs(
   decoding: LogDecoding,
   numberFormatter: NumberFormatter = x => x
 ): any {
   const result: any = {};
   for (let i = 0; i < decoding.arguments.length; i++) {
     const { name, value } = decoding.arguments[i];
-    const nativized = compatibleNativize(
+    const nativized = ethersCompatibleNativize(
       value,
       numberFormatter
     );

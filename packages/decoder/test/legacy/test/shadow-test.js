@@ -53,37 +53,37 @@ describe("Shadowed storage variables", function() {
 
     let decodedX = await decoder.variable("x");
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(decodedX),
+      Codec.Format.Utils.Inspect.unsafeNativize(decodedX),
       expectedDerivedX
     );
     let decodedY = await decoder.variable("y");
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(decodedY),
+      Codec.Format.Utils.Inspect.unsafeNativize(decodedY),
       expectedBaseY
     );
     let decodedZ = await decoder.variable("z");
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(decodedZ),
+      Codec.Format.Utils.Inspect.unsafeNativize(decodedZ),
       expectedDerivedZ
     );
     let decodedBaseX = await decoder.variable("ShadowBase.x");
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(decodedBaseX),
+      Codec.Format.Utils.Inspect.unsafeNativize(decodedBaseX),
       expectedBaseX
     );
     let decodedDerivedX = await decoder.variable("ShadowDerived.x");
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(decodedDerivedX),
+      Codec.Format.Utils.Inspect.unsafeNativize(decodedDerivedX),
       expectedDerivedX
     );
     let decodedBaseY = await decoder.variable("ShadowBase.y");
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(decodedBaseY),
+      Codec.Format.Utils.Inspect.unsafeNativize(decodedBaseY),
       expectedBaseY
     );
     let decodedDerivedZ = await decoder.variable("ShadowDerived.z");
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(decodedDerivedZ),
+      Codec.Format.Utils.Inspect.unsafeNativize(decodedDerivedZ),
       expectedDerivedZ
     );
   });

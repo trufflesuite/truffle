@@ -98,7 +98,7 @@ describe("Immutable state variables", function () {
 
     await bugger.continueUntilBreakpoint();
 
-    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
+    const variables = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
       await bugger.variables()
     );
 
@@ -134,7 +134,7 @@ describe("Immutable state variables", function () {
 
     await bugger.continueUntilBreakpoint();
 
-    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
+    const variables = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
       await bugger.variables()
     );
 

@@ -153,14 +153,14 @@ describe("Transaction log (visualizer)", function () {
     assert.equal(call.contractName, "VizTest");
     assert.equal(call.returnKind, "return");
     debug("arguments: %O", call.arguments);
-    let inputs = Codec.Format.Utils.Inspect.nativizeVariables(
+    let inputs = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
       byName(call.arguments)
     );
     debug("nativized: %O", inputs);
     assert.deepEqual(inputs, {
       x: 108
     });
-    let outputs = Codec.Format.Utils.Inspect.nativizeVariables(
+    let outputs = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
       byName(call.returnValues)
     );
     assert.deepEqual(outputs, {
@@ -172,13 +172,13 @@ describe("Transaction log (visualizer)", function () {
     assert.equal(call.functionName, "called");
     assert.equal(call.contractName, "VizTest");
     assert.equal(call.returnKind, "return");
-    inputs = Codec.Format.Utils.Inspect.nativizeVariables(
+    inputs = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
       byName(call.arguments)
     );
     assert.deepEqual(inputs, {
       x: 108
     });
-    outputs = Codec.Format.Utils.Inspect.nativizeVariables(
+    outputs = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
       byName(call.returnValues)
     );
     assert.deepEqual(outputs, {
@@ -208,14 +208,14 @@ describe("Transaction log (visualizer)", function () {
     assert.isUndefined(call.functionName);
     assert.equal(call.contractName, "Secondary");
     assert.equal(call.returnKind, "return");
-    let inputs = Codec.Format.Utils.Inspect.nativizeVariables(
+    let inputs = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
       byName(call.arguments)
     );
     assert.deepEqual(inputs, {
       y: 108
     });
     debug("immuts: %O", call.returnImmutables);
-    let outputs = Codec.Format.Utils.Inspect.nativizeVariables(
+    let outputs = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
       byName(call.returnImmutables)
     );
     assert.deepEqual(outputs, {
@@ -229,7 +229,7 @@ describe("Transaction log (visualizer)", function () {
     assert.equal(call.contractName, "Secondary");
     assert.equal(call.returnKind, "return");
     assert.lengthOf(call.arguments, 0);
-    outputs = Codec.Format.Utils.Inspect.nativizeVariables(
+    outputs = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
       byName(call.returnValues)
     );
     assert.include(outputs, {
@@ -272,13 +272,13 @@ describe("Transaction log (visualizer)", function () {
     assert.equal(call.functionName, "loudIncrement");
     assert.equal(call.contractName, "VizLibrary");
     assert.equal(call.returnKind, "return");
-    let inputs = Codec.Format.Utils.Inspect.nativizeVariables(
+    let inputs = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
       byName(call.arguments)
     );
     assert.deepEqual(inputs, {
       x: 1
     });
-    let outputs = Codec.Format.Utils.Inspect.nativizeVariables(
+    let outputs = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
       byName(call.returnValues)
     );
     assert.deepEqual(outputs, {
@@ -350,13 +350,13 @@ describe("Transaction log (visualizer)", function () {
     assert.equal(call.functionName, "called");
     assert.equal(call.contractName, "VizTest");
     assert.equal(call.returnKind, "return");
-    let inputs = Codec.Format.Utils.Inspect.nativizeVariables(
+    let inputs = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
       byName(call.arguments)
     );
     assert.deepEqual(inputs, {
       x: 4
     });
-    let outputs = Codec.Format.Utils.Inspect.nativizeVariables(
+    let outputs = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
       byName(call.returnValues)
     );
     assert.deepEqual(outputs, {
@@ -405,7 +405,7 @@ describe("Transaction log (visualizer)", function () {
     assert.equal(call.error.kind, "revert");
     assert.lengthOf(call.error.arguments, 1);
     assert.equal(
-      Codec.Format.Utils.Inspect.nativize(call.error.arguments[0].value),
+      Codec.Format.Utils.Inspect.unsafeNativize(call.error.arguments[0].value),
       "Oops!"
     );
   });

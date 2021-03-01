@@ -124,21 +124,21 @@ describe("Over-the-wire decoding", function () {
     assert.lengthOf(constructorDecoding.arguments, 3);
     assert.strictEqual(constructorDecoding.arguments[0].name, "status");
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         constructorDecoding.arguments[0].value
       ),
       true
     );
     assert.strictEqual(constructorDecoding.arguments[1].name, "info");
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         constructorDecoding.arguments[1].value
       ),
       "0xdeadbeef"
     );
     assert.strictEqual(constructorDecoding.arguments[2].name, "whoknows");
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         constructorDecoding.arguments[2].value
       ),
       "WireTest.Ternary.MaybeSo"
@@ -150,17 +150,17 @@ describe("Over-the-wire decoding", function () {
     assert.lengthOf(emitStuffDecoding.arguments, 3);
     assert.strictEqual(emitStuffDecoding.arguments[0].name, "p");
     assert.deepEqual(
-      Codec.Format.Utils.Inspect.nativize(emitStuffDecoding.arguments[0].value),
+      Codec.Format.Utils.Inspect.unsafeNativize(emitStuffDecoding.arguments[0].value),
       emitStuffArgs[0]
     );
     assert.strictEqual(emitStuffDecoding.arguments[1].name, "precompiles");
     assert.deepEqual(
-      Codec.Format.Utils.Inspect.nativize(emitStuffDecoding.arguments[1].value),
+      Codec.Format.Utils.Inspect.unsafeNativize(emitStuffDecoding.arguments[1].value),
       emitStuffArgs[1]
     );
     assert.strictEqual(emitStuffDecoding.arguments[2].name, "strings");
     assert.deepEqual(
-      Codec.Format.Utils.Inspect.nativize(emitStuffDecoding.arguments[2].value),
+      Codec.Format.Utils.Inspect.unsafeNativize(emitStuffDecoding.arguments[2].value),
       emitStuffArgs[2]
     );
 
@@ -170,12 +170,12 @@ describe("Over-the-wire decoding", function () {
     assert.lengthOf(moreStuffDecoding.arguments, 2);
     assert.strictEqual(moreStuffDecoding.arguments[0].name, "notThis");
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(moreStuffDecoding.arguments[0].value),
+      Codec.Format.Utils.Inspect.unsafeNativize(moreStuffDecoding.arguments[0].value),
       moreStuffArgs[0]
     );
     assert.strictEqual(moreStuffDecoding.arguments[1].name, "bunchOfInts");
     assert.deepEqual(
-      Codec.Format.Utils.Inspect.nativize(moreStuffDecoding.arguments[1].value),
+      Codec.Format.Utils.Inspect.unsafeNativize(moreStuffDecoding.arguments[1].value),
       moreStuffArgs[1]
     );
 
@@ -185,14 +185,14 @@ describe("Over-the-wire decoding", function () {
     assert.lengthOf(globalTestDecoding.arguments, 2);
     assert.strictEqual(globalTestDecoding.arguments[0].name, "s");
     assert.deepEqual(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         globalTestDecoding.arguments[0].value
       ),
       globalTestArgs[0]
     );
     assert.strictEqual(globalTestDecoding.arguments[1].name, "e");
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         globalTestDecoding.arguments[1].value
       ),
       "GlobalEnum.Yes"
@@ -204,7 +204,7 @@ describe("Over-the-wire decoding", function () {
     assert.lengthOf(inheritedDecoding.arguments, 1);
     assert.isUndefined(inheritedDecoding.arguments[0].name);
     assert.deepEqual(
-      Codec.Format.Utils.Inspect.nativize(inheritedDecoding.arguments[0].value),
+      Codec.Format.Utils.Inspect.unsafeNativize(inheritedDecoding.arguments[0].value),
       inheritedArg
     );
 
@@ -221,12 +221,12 @@ describe("Over-the-wire decoding", function () {
     assert.lengthOf(getterDecoding1.arguments, 2);
     assert.isUndefined(getterDecoding1.arguments[0].name);
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(getterDecoding1.arguments[0].value),
+      Codec.Format.Utils.Inspect.unsafeNativize(getterDecoding1.arguments[0].value),
       getter1Args[0]
     );
     assert.isUndefined(getterDecoding1.arguments[1].name);
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(getterDecoding1.arguments[1].value),
+      Codec.Format.Utils.Inspect.unsafeNativize(getterDecoding1.arguments[1].value),
       getter1Args[1]
     );
 
@@ -236,12 +236,12 @@ describe("Over-the-wire decoding", function () {
     assert.lengthOf(getterDecoding2.arguments, 2);
     assert.isUndefined(getterDecoding2.arguments[0].name);
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(getterDecoding2.arguments[0].value),
+      Codec.Format.Utils.Inspect.unsafeNativize(getterDecoding2.arguments[0].value),
       getter2Args[0]
     );
     assert.isUndefined(getterDecoding2.arguments[1].name);
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(getterDecoding2.arguments[1].value),
+      Codec.Format.Utils.Inspect.unsafeNativize(getterDecoding2.arguments[1].value),
       getter2Args[1]
     );
 
@@ -341,21 +341,21 @@ describe("Over-the-wire decoding", function () {
     assert.lengthOf(constructorEventDecoding.arguments, 3);
     assert.strictEqual(constructorEventDecoding.arguments[0].name, "bit");
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         constructorEventDecoding.arguments[0].value
       ),
       true
     );
     assert.isUndefined(constructorEventDecoding.arguments[1].name);
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         constructorEventDecoding.arguments[1].value
       ),
       "0xdeadbeef"
     );
     assert.isUndefined(constructorEventDecoding.arguments[2].name);
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         constructorEventDecoding.arguments[2].value
       ),
       "WireTest.Ternary.MaybeSo"
@@ -368,21 +368,21 @@ describe("Over-the-wire decoding", function () {
     assert.lengthOf(emitStuffEventDecoding.arguments, 3);
     assert.isUndefined(emitStuffEventDecoding.arguments[0].name);
     assert.deepEqual(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         emitStuffEventDecoding.arguments[0].value
       ),
       emitStuffArgs[0]
     );
     assert.isUndefined(emitStuffEventDecoding.arguments[1].name);
     assert.deepEqual(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         emitStuffEventDecoding.arguments[1].value
       ),
       emitStuffArgs[1]
     );
     assert.isUndefined(emitStuffEventDecoding.arguments[2].name);
     assert.deepEqual(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         emitStuffEventDecoding.arguments[2].value
       ),
       emitStuffArgs[2]
@@ -395,14 +395,14 @@ describe("Over-the-wire decoding", function () {
     assert.lengthOf(moreStuffEventDecoding.arguments, 2);
     assert.isUndefined(moreStuffEventDecoding.arguments[0].name);
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         moreStuffEventDecoding.arguments[0].value
       ),
       moreStuffArgs[0]
     );
     assert.strictEqual(moreStuffEventDecoding.arguments[1].name, "data");
     assert.deepEqual(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         moreStuffEventDecoding.arguments[1].value
       ),
       moreStuffArgs[1]
@@ -415,14 +415,14 @@ describe("Over-the-wire decoding", function () {
     assert.lengthOf(globalTestEventDecoding.arguments, 2);
     assert.isUndefined(globalTestEventDecoding.arguments[0].name);
     assert.deepEqual(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         globalTestEventDecoding.arguments[0].value
       ),
       globalTestArgs[0]
     );
     assert.isUndefined(globalTestEventDecoding.arguments[1].name);
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         globalTestEventDecoding.arguments[1].value
       ),
       "GlobalEnum.Yes"
@@ -444,34 +444,34 @@ describe("Over-the-wire decoding", function () {
     assert.lengthOf(indexTestEventDecoding.arguments, 5);
     assert.isUndefined(indexTestEventDecoding.arguments[0].name);
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         indexTestEventDecoding.arguments[0].value
       ),
       indexTestArgs[0]
     );
     assert.isUndefined(indexTestEventDecoding.arguments[1].name);
     assert.deepEqual(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         indexTestEventDecoding.arguments[1].value
       ),
       indexTestArgs[1]
     );
     assert.isUndefined(indexTestEventDecoding.arguments[2].name);
     assert.deepEqual(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         indexTestEventDecoding.arguments[2].value
       ),
       indexTestArgs[2]
     );
     assert.isUndefined(indexTestEventDecoding.arguments[3].name);
     assert.isUndefined(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         indexTestEventDecoding.arguments[3].value
       ) //can't decode indexed reference type!
     );
     assert.isUndefined(indexTestEventDecoding.arguments[4].name);
     assert.deepEqual(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         indexTestEventDecoding.arguments[4].value
       ),
       indexTestArgs[4]
@@ -490,7 +490,7 @@ describe("Over-the-wire decoding", function () {
     assert.lengthOf(libraryTestEventDecoding.arguments, 1);
     assert.isUndefined(libraryTestEventDecoding.arguments[0].name);
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         libraryTestEventDecoding.arguments[0].value
       ),
       libraryTestArg
@@ -501,7 +501,7 @@ describe("Over-the-wire decoding", function () {
     assert.lengthOf(dangerEventDecoding.arguments, 1);
     assert.isUndefined(dangerEventDecoding.arguments[0].name);
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         dangerEventDecoding.arguments[0].value
       ),
       `WireTest(${address}).danger`
@@ -553,12 +553,12 @@ describe("Over-the-wire decoding", function () {
     );
     assert.lengthOf(ambiguityTestContractDecoding.arguments, 2);
     assert.isUndefined(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         ambiguityTestContractDecoding.arguments[0].value
       )
     );
     assert.deepEqual(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         ambiguityTestContractDecoding.arguments[1].value
       ),
       [32, 3, 17, 18, 19]
@@ -572,13 +572,13 @@ describe("Over-the-wire decoding", function () {
     );
     assert.lengthOf(ambiguityTestLibraryDecoding.arguments, 2);
     assert.deepEqual(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         ambiguityTestLibraryDecoding.arguments[0].value
       ),
       [17, 18, 19]
     );
     assert.isUndefined(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         ambiguityTestLibraryDecoding.arguments[1].value
       )
     );
@@ -591,12 +591,12 @@ describe("Over-the-wire decoding", function () {
     assert.strictEqual(unambiguousDecodings[0].class.typeName, "WireTest");
     assert.lengthOf(unambiguousDecodings[0].arguments, 2);
     assert.isUndefined(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         unambiguousDecodings[0].arguments[0].value
       )
     );
     assert.deepEqual(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         unambiguousDecodings[0].arguments[1].value
       ),
       [32, 1e12, 17, 18, 19]
@@ -605,12 +605,12 @@ describe("Over-the-wire decoding", function () {
     assert.strictEqual(unambiguousDecodings[1].class.typeName, "WireTest");
     assert.lengthOf(unambiguousDecodings[1].arguments, 2);
     assert.isUndefined(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         unambiguousDecodings[1].arguments[0].value
       )
     );
     assert.deepEqual(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         unambiguousDecodings[1].arguments[1].value
       ),
       [32, 3, 257, 257, 257]
@@ -619,12 +619,12 @@ describe("Over-the-wire decoding", function () {
     assert.strictEqual(unambiguousDecodings[2].class.typeName, "WireTest");
     assert.lengthOf(unambiguousDecodings[2].arguments, 2);
     assert.isUndefined(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         unambiguousDecodings[2].arguments[0].value
       )
     );
     assert.deepEqual(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         unambiguousDecodings[2].arguments[1].value
       ),
       [64, 0, 2, 1, 1]
@@ -636,13 +636,13 @@ describe("Over-the-wire decoding", function () {
     );
     assert.lengthOf(unambiguousDecodings[3].arguments, 2);
     assert.deepEqual(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         unambiguousDecodings[3].arguments[0].value
       ),
       [107]
     );
     assert.isUndefined(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         unambiguousDecodings[3].arguments[1].value
       )
     );
@@ -683,7 +683,7 @@ describe("Over-the-wire decoding", function () {
     assert.lengthOf(anonymousTestEvents[0].decodings[0].arguments, 4);
     assert.deepEqual(
       anonymousTestEvents[0].decodings[0].arguments.map(({ value }) =>
-        Codec.Format.Utils.Inspect.nativize(value)
+        Codec.Format.Utils.Inspect.unsafeNativize(value)
       ),
       [257, 1, 1, 1]
     );
@@ -701,7 +701,7 @@ describe("Over-the-wire decoding", function () {
     assert.lengthOf(anonymousTestEvents[1].decodings[0].arguments, 4);
     assert.deepEqual(
       anonymousTestEvents[1].decodings[0].arguments.map(({ value }) =>
-        Codec.Format.Utils.Inspect.nativize(value)
+        Codec.Format.Utils.Inspect.unsafeNativize(value)
       ),
       [1, 2, 3, 4]
     );
@@ -717,7 +717,7 @@ describe("Over-the-wire decoding", function () {
     assert.lengthOf(anonymousTestEvents[1].decodings[1].arguments, 4);
     assert.deepEqual(
       anonymousTestEvents[1].decodings[1].arguments.map(({ value }) =>
-        Codec.Format.Utils.Inspect.nativize(value)
+        Codec.Format.Utils.Inspect.unsafeNativize(value)
       ),
       [1, 2, 3, 4]
     );
@@ -732,7 +732,7 @@ describe("Over-the-wire decoding", function () {
     assert.lengthOf(anonymousTestEvents[2].decodings[0].arguments, 3);
     assert.deepEqual(
       anonymousTestEvents[2].decodings[0].arguments.map(({ value }) =>
-        Codec.Format.Utils.Inspect.nativize(value)
+        Codec.Format.Utils.Inspect.unsafeNativize(value)
       ),
       [1, 2, 3]
     );
@@ -750,7 +750,7 @@ describe("Over-the-wire decoding", function () {
     assert.deepEqual(
       anonymousTestEvents[2].decodings[1].arguments
         .slice(1)
-        .map(({ value }) => Codec.Format.Utils.Inspect.nativize(value)),
+        .map(({ value }) => Codec.Format.Utils.Inspect.unsafeNativize(value)),
       [1, 2, 3]
     );
     assert(
@@ -771,7 +771,7 @@ describe("Over-the-wire decoding", function () {
     );
     assert.lengthOf(anonymousTestEvents[3].decodings[0].arguments, 1);
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         anonymousTestEvents[3].decodings[0].arguments[0].value
       ),
       "0xfe"
@@ -788,7 +788,7 @@ describe("Over-the-wire decoding", function () {
     assert.lengthOf(specifiedNameDecoding.arguments, 4);
     assert.deepEqual(
       specifiedNameDecoding.arguments.map(({ value }) =>
-        Codec.Format.Utils.Inspect.nativize(value)
+        Codec.Format.Utils.Inspect.unsafeNativize(value)
       ),
       [1, 2, 3, 4]
     );
@@ -892,7 +892,7 @@ describe("Over-the-wire decoding", function () {
     assert.strictEqual(decoding.decodingMode, "full");
     assert.lengthOf(decoding.arguments, 2);
     assert.deepEqual(
-      Codec.Format.Utils.Inspect.nativize(decoding.arguments[0].value),
+      Codec.Format.Utils.Inspect.unsafeNativize(decoding.arguments[0].value),
       {
         x: -1,
         y: "0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
@@ -900,7 +900,7 @@ describe("Over-the-wire decoding", function () {
       }
     );
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(decoding.arguments[1].value),
+      Codec.Format.Utils.Inspect.unsafeNativize(decoding.arguments[1].value),
       "WireTest.Ternary.No"
     );
 
@@ -957,7 +957,7 @@ describe("Over-the-wire decoding", function () {
     assert.strictEqual(decoding.decodingMode, "full");
     assert.lengthOf(decoding.arguments, 1);
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(decoding.arguments[0].value),
+      Codec.Format.Utils.Inspect.unsafeNativize(decoding.arguments[0].value),
       1
     );
 
@@ -988,7 +988,7 @@ describe("Over-the-wire decoding", function () {
     assert.strictEqual(decoding.decodingMode, "full");
     assert.lengthOf(decoding.arguments, 1);
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(decoding.arguments[0].value),
+      Codec.Format.Utils.Inspect.unsafeNativize(decoding.arguments[0].value),
       2
     );
   });
@@ -1022,7 +1022,7 @@ function testSomeWithoutExtras(decodings) {
   assert.strictEqual(decoding.decodingMode, "full");
   assert.deepEqual(
     decoding.arguments.map(({ value }) =>
-      Codec.Format.Utils.Inspect.nativize(value)
+      Codec.Format.Utils.Inspect.unsafeNativize(value)
     ),
     [1, 2]
   );
@@ -1039,7 +1039,7 @@ function testSomeWithExtras(decodings) {
   assert.strictEqual(decoding.decodingMode, "full");
   assert.deepEqual(
     decoding.arguments.map(({ value }) =>
-      Codec.Format.Utils.Inspect.nativize(value)
+      Codec.Format.Utils.Inspect.unsafeNativize(value)
     ),
     [1, 2]
   );
@@ -1051,7 +1051,7 @@ function testSomeWithExtras(decodings) {
   assert.strictEqual(extraDecoding.decodingMode, "full");
   assert.deepEqual(
     extraDecoding.arguments.map(({ value }) =>
-      Codec.Format.Utils.Inspect.nativize(value)
+      Codec.Format.Utils.Inspect.unsafeNativize(value)
     ),
     [2, 1]
   );

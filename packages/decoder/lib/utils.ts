@@ -15,13 +15,13 @@ const { Shims } = require("@truffle/compile-common");
 //NOTE: Definitely do not use this in real code!  For tests only!
 //for convenience: invokes the nativize method on all the given variables, and changes them to
 //the old format
-export function nativizeDecoderVariables(
+export function unsafeNativizeDecoderVariables(
   variables: Types.StateVariable[]
 ): { [name: string]: any } {
   return Object.assign(
     {},
     ...variables.map(({ name, value }) => ({
-      [name]: Codec.Format.Utils.Inspect.nativize(value)
+      [name]: Codec.Format.Utils.Inspect.unsafeNativize(value)
     }))
   );
   //note that the assignments are processed in order, so if multiple have same name, later

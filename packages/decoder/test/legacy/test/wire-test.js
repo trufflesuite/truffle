@@ -85,7 +85,7 @@ describe("Over-the-wire decoding (legacy features)", function () {
     );
     assert.lengthOf(overrideTestEvents[1].decodings[0].arguments, 1);
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         overrideTestEvents[1].decodings[0].arguments[0].value
       ),
       107
@@ -107,7 +107,7 @@ describe("Over-the-wire decoding (legacy features)", function () {
     );
     assert.lengthOf(overrideTestEvents[2].decodings[0].arguments, 1);
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         overrideTestEvents[2].decodings[0].arguments[0].value
       ),
       683
@@ -129,7 +129,7 @@ describe("Over-the-wire decoding (legacy features)", function () {
     );
     assert.lengthOf(overrideTestEvents[3].decodings[0].arguments, 1);
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         overrideTestEvents[3].decodings[0].arguments[0].value
       ),
       107
@@ -151,7 +151,7 @@ describe("Over-the-wire decoding (legacy features)", function () {
     );
     assert.lengthOf(overrideTestEvents[4].decodings[0].arguments, 1);
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(
+      Codec.Format.Utils.Inspect.unsafeNativize(
         overrideTestEvents[4].decodings[0].arguments[0].value
       ),
       683

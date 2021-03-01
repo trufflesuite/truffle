@@ -4,7 +4,7 @@ const Ganache = require("ganache-core");
 const path = require("path");
 
 const Decoder = require("../../..");
-const { nativizeDecoderVariables } = require("../../../dist/utils");
+const { unsafeNativizeDecoderVariables } = require("../../../dist/utils");
 const { prepareContracts } = require("../../helpers");
 
 describe("State variable decoding", function () {
@@ -49,7 +49,7 @@ describe("State variable decoding", function () {
 
     assert.equal(initialState.class.typeName, "DecodingSample");
 
-    const variables = nativizeDecoderVariables(initialVariables);
+    const variables = unsafeNativizeDecoderVariables(initialVariables);
 
     assert.notStrictEqual(typeof variables.varUint, "undefined");
 
@@ -152,7 +152,7 @@ describe("State variable decoding", function () {
     );
 
     const initialVariables = await decoder.variables();
-    const variables = nativizeDecoderVariables(initialVariables);
+    const variables = unsafeNativizeDecoderVariables(initialVariables);
 
     assert.equal(variables.varString, "two");
   });

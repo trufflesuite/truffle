@@ -224,7 +224,7 @@ describe("Variable IDs", function () {
     await bugger.continueUntilBreakpoint();
     while (!bugger.view(trace.finished)) {
       values.push(
-        Codec.Format.Utils.Inspect.nativize(await bugger.variable("nbang"))
+        Codec.Format.Utils.Inspect.unsafeNativize(await bugger.variable("nbang"))
       );
       await bugger.continueUntilBreakpoint();
     }
@@ -259,10 +259,10 @@ describe("Variable IDs", function () {
     await bugger.continueUntilBreakpoint();
     while (!bugger.view(trace.finished)) {
       xValues.push(
-        Codec.Format.Utils.Inspect.nativize(await bugger.variable("x"))
+        Codec.Format.Utils.Inspect.unsafeNativize(await bugger.variable("x"))
       );
       tempValues.push(
-        Codec.Format.Utils.Inspect.nativize(await bugger.variable("temp"))
+        Codec.Format.Utils.Inspect.unsafeNativize(await bugger.variable("temp"))
       );
       await bugger.continueUntilBreakpoint();
     }

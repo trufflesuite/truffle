@@ -66,7 +66,7 @@ describe("Globally-defined constants", function () {
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     //file-level constants should be available right away
-    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
+    const variables = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
       await bugger.variables()
     );
 
