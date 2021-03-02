@@ -1,0 +1,14 @@
+{
+  "name": "@truffle/preserve",
+  "mode": "modules",
+  "module": "commonjs",
+  "theme": "../../node_modules/@trufflesuite/typedoc-default-themes/bin/default/",
+  "includeDeclarations": false,
+  "ignoreCompilerErrors": true,
+  "preserveConstEnums": true,
+  "excludeExternals": true,
+  "exclude": [
+    "**/test/*"
+  ],
+  "target": "ES6"
+}
