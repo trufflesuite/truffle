@@ -72,16 +72,16 @@ const releases = {
 // she needs a resolver!
 config.resolver = new Resolver(config);
 
-describe("compileWithPragmaAnalysis", () => {
-  before(() => {
+describe("compileWithPragmaAnalysis", function () {
+  before(function () {
     sinon.stub(CompilerSupplier.prototype, "getReleases").returns(releases);
   });
-  after(() => {
+  after(function () {
     CompilerSupplier.prototype.getReleases.restore();
   });
 
-  describe("solidity files with no imports", () => {
-    before(() => {
+  describe("solidity files with no imports", function () {
+    before(function () {
       paths = [
         path.join(sourceDirectory, "noImports", "SourceWith0.5.0.sol"),
         path.join(sourceDirectory, "noImports", "SourceWith0.6.0.sol"),
@@ -91,16 +91,16 @@ describe("compileWithPragmaAnalysis", () => {
 
     // note that it will find the newest version of Solidity that satisifes
     // each pragma expression and then do one compilation per version
-    it("will make one compilation per compiler version", async () => {
-      const {compilations} = await compileWithPragmaAnalysis({
+    it("will make one compilation per compiler version", async function () {
+      const { compilations } = await compileWithPragmaAnalysis({
         options: config,
         paths
       });
       assert.equal(compilations.length, 3);
     });
 
-    it("will compile files with the same version together", async () => {
-      const {compilations} = await compileWithPragmaAnalysis({
+    it("will compile files with the same version together", async function () {
+      const { compilations } = await compileWithPragmaAnalysis({
         options: config,
         paths: paths.concat(
           path.join(sourceDirectory, "noImports", "OtherSourceWith0.7.0.sol")
@@ -110,9 +110,9 @@ describe("compileWithPragmaAnalysis", () => {
     });
   });
 
-  describe("solidity files with imports", () => {
-    it("compiles both files with imports and without", async () => {
-      const {compilations} = await compileWithPragmaAnalysis({
+  describe("solidity files with imports", function () {
+    it("compiles both files with imports and without", async function () {
+      const { compilations } = await compileWithPragmaAnalysis({
         options: config,
         paths: paths.concat([
           path.join(sourceDirectory, "withImports", "C.sol")
@@ -121,8 +121,8 @@ describe("compileWithPragmaAnalysis", () => {
       assert.equal(compilations.length, 3);
     });
 
-    it("finds a version that satisfies all pragmas if it exists", async () => {
-      const {compilations} = await compileWithPragmaAnalysis({
+    it("finds a version that satisfies all pragmas if it exists", async function () {
+      const { compilations } = await compileWithPragmaAnalysis({
         options: config,
         paths: [path.join(sourceDirectory, "withImports", "C.sol")]
       });
@@ -130,7 +130,7 @@ describe("compileWithPragmaAnalysis", () => {
       assert(compilations[0].compiler.version.startsWith("0.6.12"));
     });
 
-    it("throws an error if it cannot find one that satisfies", async () => {
+    it("throws an error if it cannot find one that satisfies", async function () {
       try {
         await compileWithPragmaAnalysis({
           options: config,
@@ -148,8 +148,8 @@ describe("compileWithPragmaAnalysis", () => {
     });
   });
 
-  describe("when there is a semver expression error", () => {
-    it("throws an error when it can't determine parser version", async () => {
+  describe("when there is a semver expression error", function () {
+    it("throws an error when it can't determine parser version", async function () {
       try {
         await compileWithPragmaAnalysis({
           options: config,
@@ -165,7 +165,7 @@ describe("compileWithPragmaAnalysis", () => {
       }
     });
 
-    it("throws an error when import has bad semver", async () => {
+    it("throws an error when import has bad semver", async function () {
       try {
         await compileWithPragmaAnalysis({
           options: config,
