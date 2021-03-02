@@ -1,7 +1,7 @@
 const debug = require("debug")("workflow-compile");
 const fse = require("fs-extra");
-const {prepareConfig} = require("./utils");
-const {Shims} = require("@truffle/compile-common");
+const { prepareConfig } = require("./utils");
+const { Shims } = require("@truffle/compile-common");
 
 const SUPPORTED_COMPILERS = {
   solc: require("@truffle/compile-solidity").Compile,
@@ -9,7 +9,10 @@ const SUPPORTED_COMPILERS = {
   external: require("@truffle/external-compile").Compile
 };
 
-const {connect, Project} = require("@truffle/db");
+let Db;
+try {
+  Db = require("@truffle/db");
+} catch {}
 
 async function compile(config) {
   // determine compiler(s) to use
@@ -56,7 +59,7 @@ async function compile(config) {
   }, []);
 
   // return WorkflowCompileResult
-  return {contracts, sources, compilations};
+  return { contracts, sources, compilations };
 }
 
 const WorkflowCompile = {
@@ -65,7 +68,7 @@ const WorkflowCompile = {
 
     if (config.events) config.events.emit("compile:start");
 
-    const {contracts, sources, compilations} = await compile(config);
+    const { contracts, sources, compilations } = await compile(config);
 
     const compilers = compilations
       .reduce((a, compilation) => {
@@ -92,27 +95,32 @@ const WorkflowCompile = {
   },
 
   async compileAndSave(options) {
-    const {contracts, sources, compilations} = await this.compile(options);
+    const { contracts, sources, compilations } = await this.compile(options);
 
-    return await this.save(options, {contracts, sources, compilations});
+    return await this.save(options, { contracts, sources, compilations });
   },
 
-  async save(options, {contracts, sources, compilations}) {
+  async save(options, { contracts, sources, compilations }) {
     const config = prepareConfig(options);
 
     await fse.ensureDir(config.contracts_build_directory);
 
-    if (options.db && options.db.enabled === true && contracts.length > 0) {
+    if (
+      Db &&
+      options.db &&
+      options.db.enabled === true &&
+      contracts.length > 0
+    ) {
       debug("saving to @truffle/db");
-      const db = connect(config.db);
-      const project = await Project.initialize({
+      const db = Db.connect(config.db);
+      const project = await Db.Project.initialize({
         db,
         project: {
           directory: config.working_directory
         }
       });
-      ({contracts, compilations} = await project.loadCompile({
-        result: {contracts, sources, compilations}
+      ({ contracts, compilations } = await project.loadCompile({
+        result: { contracts, sources, compilations }
       }));
     }
 
@@ -125,12 +133,12 @@ const WorkflowCompile = {
   async assignNames(options, { contracts }) {
     const config = prepareConfig(options);
 
-    if (!config.db || !config.db.enabled || contracts.length === 0) {
+    if (!Db || !config.db || !config.db.enabled || contracts.length === 0) {
       return;
     }
 
-    const db = connect(config.db);
-    const project = await Project.initialize({
+    const db = Db.connect(config.db);
+    const project = await Db.Project.initialize({
       db,
       project: {
         directory: config.working_directory
