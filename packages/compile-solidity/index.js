@@ -8,16 +8,44 @@ const { normalizeOptions } = require("./normalizeOptions");
 const { compileWithPragmaAnalysis } = require("./compileWithPragmaAnalysis");
 const { reportSources } = require("./reportSources");
 const expect = require("@truffle/expect");
+const partition = require("lodash.partition");
+const fs = require("fs-extra");
 
 const Compile = {
   // this takes an object with keys being the name and values being source
   // material as well as an options object
   async sources({ sources, options }) {
     options = Config.default().merge(options);
-    const compilation = await run(sources, normalizeOptions(options));
-    return compilation.contracts.length > 0
-      ? { compilations: [compilation] }
-      : { compilations: [] };
+    options = normalizeOptions(options);
+    //note: "solidity" here includes JSON as well!
+    const [yulNames, solidityNames] = partition(Object.keys(sources), name =>
+      name.endsWith(".yul")
+    );
+    const soliditySources = Object.assign(
+      {},
+      ...solidityNames.map(name => ({ [name]: sources[name] }))
+    );
+    let solidityCompilations = [];
+    let yulCompilations = [];
+    if (solidityNames.length > 0) {
+      debug("Compiling Solidity (specified sources)");
+      const compilation = await run(soliditySources, options);
+      debug("Compiled Solidity");
+      if (compilation.contracts.length > 0) {
+        solidityCompilations = [compilation];
+      }
+    }
+    for (const name of yulNames) {
+      debug("Compiling Yul (specified sources)");
+      const compilation = await run(
+        { [name]: sources[name] },
+        options,
+        "Yul"
+      );
+      debug("Compiled Yul");
+      yulCompilations.push(compilation);
+    }
+    return { compilations: [...solidityCompilations, ...yulCompilations] };
   },
 
   async all(options) {
@@ -63,54 +91,74 @@ const Compile = {
     ]);
 
     options = Config.default().merge(options);
+    options = normalizeOptions(options);
+
+    //note: solidityPaths here still includes JSON as well!
+    const [yulPaths, solidityPaths] = partition(paths, path =>
+      path.endsWith(".yul")
+    );
 
     debug("invoking profiler");
+    //only invoke profiler on Solidity, not Yul
     const { allSources, compilationTargets } = await Profiler.requiredSources(
       options.with({
-        paths,
+        paths: solidityPaths,
         base_path: options.contracts_directory,
         resolver: options.resolver
       })
     );
-    debug("allSources: %O", allSources);
     debug("compilationTargets: %O", compilationTargets);
 
-    // we can exit if there are no Solidity files to compile since
+    // we can exit if there are no Solidity/Yul files to compile since
     // it indicates that we only have Vyper-related JSON
     const solidityTargets = compilationTargets.filter(fileName =>
       fileName.endsWith(".sol")
     );
-    if (solidityTargets.length === 0) {
+    if (solidityTargets.length === 0 && yulPaths.length === 0) {
       return { compilations: [] };
     }
 
-    reportSources({ paths: compilationTargets, options });
+    reportSources({ paths: [...compilationTargets, ...yulPaths], options });
 
-    // when there are no sources, don't call run
-    if (Object.keys(allSources).length === 0) {
-      return { compilations: [] };
+    let solidityCompilations = [];
+    let yulCompilations = [];
+
+    // only call run if there are sources to run on!
+    if (Object.keys(allSources).length > 0) {
+      const solidityOptions = options.with({ compilationTargets });
+      debug("Compiling Solidity");
+      const compilation = await run(allSources, solidityOptions);
+      debug("Solidity compiled successfully");
+
+      // returns CompilerResult - see @truffle/compile-common
+      if (compilation.contracts.length > 0) {
+        solidityCompilations = [compilation];
+      }
     }
 
-    options.compilationTargets = compilationTargets;
-    const { sourceIndexes, sources, contracts, compiler } = await run(
-      allSources,
-      normalizeOptions(options)
-    );
+    for (const path of yulPaths) {
+      const yulOptions = options.with({ compilationTargets: [path] });
+      //load up Yul sources, since they weren't loaded up earlier
+      //(we'll just use FS for this rather than going through the resolver,
+      //for simplicity, since there are no imports to worry about)
+      const yulSource = fs.readFileSync(path, { encoding: "utf8" })
+      debug("Compiling Yul");
+      const compilation = await run(
+        { [path]: yulSource },
+        yulOptions,
+        "Yul"
+      );
+      debug("Yul compiled successfully");
 
-    const { name, version } = compiler;
-    // returns CompilerResult - see @truffle/compile-common
-    return contracts.length > 0
-      ? {
-          compilations: [
-            {
-              sourceIndexes,
-              sources,
-              contracts,
-              compiler: { name, version }
-            }
-          ]
-        }
-      : { compilations: [] };
+      // returns CompilerResult - see @truffle/compile-common
+      if (compilation.contracts.length > 0) {
+        yulCompilations.push(compilation);
+      }
+    }
+
+    return {
+      compilations: [...solidityCompilations, ...yulCompilations]
+    };
   },
 
   async sourcesWithPragmaAnalysis({ paths, options }) {

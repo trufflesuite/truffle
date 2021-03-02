@@ -7,7 +7,7 @@ const CompilerSupplier = require("./compilerSupplier");
 // this function returns a Compilation - legacy/index.js and ./index.js
 // both check to make sure rawSources exist before calling this method
 // however, there is a check here that returns null if no sources exist
-async function run(rawSources, options) {
+async function run(rawSources, options, language = "Solidity") {
   if (Object.keys(rawSources).length === 0) {
     return null;
   }
@@ -24,6 +24,7 @@ async function run(rawSources, options) {
   const compilerInput = prepareCompilerInput({
     sources,
     targets,
+    language,
     settings: options.compilers.solc.settings,
     modelCheckerSettings: options.compilers.solc.modelCheckerSettings
   });
@@ -33,6 +34,7 @@ async function run(rawSources, options) {
     compilerInput,
     options
   });
+  debug("compilerOutput: %O", compilerOutput);
 
   // handle warnings as errors if options.strict
   // log if not options.quiet
@@ -58,7 +60,8 @@ async function run(rawSources, options) {
   const outputSources = processAllSources({
     sources,
     compilerOutput,
-    originalSourcePaths
+    originalSourcePaths,
+    language
   });
   const sourceIndexes = outputSources.map(source => source.sourcePath);
   return {
@@ -78,11 +81,16 @@ async function run(rawSources, options) {
 }
 
 function orderABI({ abi, contractName, ast }) {
-  // AST can have multiple contract definitions, make sure we have the
-  // one that matches our contract
+  if (!abi) {
+    return []; //Yul doesn't return ABIs, but we require something
+  }
+
   if (!ast || !ast.nodes) {
     return abi;
   }
+
+  // AST can have multiple contract definitions, make sure we have the
+  // one that matches our contract
   const contractDefinition = ast.nodes.find(
     ({ nodeType, name }) =>
       nodeType === "ContractDefinition" && name === contractName
@@ -124,11 +132,12 @@ function orderABI({ abi, contractName, ast }) {
 function prepareCompilerInput({
   sources,
   targets,
+  language,
   settings,
   modelCheckerSettings
 }) {
   return {
-    language: "Solidity",
+    language,
     sources: prepareSources({ sources }),
     settings: {
       evmVersion: settings.evmVersion,
@@ -268,7 +277,7 @@ function detectErrors({
  * aggregate source information based on compiled output;
  * this can include sources that do not define any contracts
  */
-function processAllSources({ sources, compilerOutput, originalSourcePaths }) {
+function processAllSources({ sources, compilerOutput, originalSourcePaths, language }) {
   if (!compilerOutput.sources) return [];
   let outputSources = [];
   for (const [sourcePath, { id, ast, legacyAST }] of Object.entries(
@@ -279,7 +288,7 @@ function processAllSources({ sources, compilerOutput, originalSourcePaths }) {
       contents: sources[sourcePath],
       ast,
       legacyAST,
-      language: "Solidity"
+      language
     };
   }
   return outputSources;
@@ -304,8 +313,9 @@ function processContracts({
           contractName,
           contract,
           source: {
-            ast: compilerOutput.sources[sourcePath].ast,
-            legacyAST: compilerOutput.sources[sourcePath].legacyAST,
+            //some versions of Yul don't have sources in output
+            ast: ((compilerOutput.sources || {})[sourcePath] || {}).ast,
+            legacyAST: ((compilerOutput.sources || {})[sourcePath] || {}).legacyAST,
             contents: sources[sourcePath],
             sourcePath
           }
