@@ -1,0 +1,54 @@
+{
+  "name": "@truffle/encoder",
+  "version": "0.1.0-0",
+  "description": "Recognizes user input for Soldiity values, resolves overloads, and encodes to binary",
+  "author": "Harry Altman",
+  "license": "MIT",
+  "homepage": "https://github.com/trufflesuite/truffle#readme",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/encoder",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "main": "dist/index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepare": "yarn build",
+    "start": "tsc --watch",
+    "test": "mocha"
+  },
+  "types": "dist/index.d.ts",
+  "keywords": [
+    "abi",
+    "contract",
+    "encoder",
+    "ethereum",
+    "solidity",
+    "overload",
+    "resolution"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@ensdomains/ensjs": "^2.0.0",
+    "@ethersproject/address": "^5.0.10",
+    "@ethersproject/bignumber": "^5.0.14",
+    "@truffle/abi-utils": "^0.1.6",
+    "@truffle/codec": "^0.10.3",
+    "big.js": "^6.0.3",
+    "bignumber.js": "^9.0.1",
+    "bn.js": "^4.12.0",
+    "debug": "^4.3.1",
+    "web3": "1.3.5",
+    "web3-utils": "1.3.5"
+  },
+  "devDependencies": {
+    "@truffle/contract-schema": "^3.3.4",
+    "@types/debug": "^4.1.5",
+    "@types/web3": "^1.0.20",
+    "typescript": "3.9.8"
+  }
+}
