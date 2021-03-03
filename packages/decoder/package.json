@@ -1,10 +1,10 @@
 {
   "name": "@truffle/decoder",
-  "description": "A decoder and encoder for Solidity variables of all sorts",
+  "description": "A decoder for Solidity variables of all sorts",
   "license": "MIT",
   "author": "Mike Seese and Harry Altman",
   "homepage": "https://github.com/trufflesuite/truffle#readme",
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/codec",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/decoder",
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
@@ -43,6 +43,7 @@
     "ganache-core": "2.13.0",
     "lodash.clonedeep": "^4.5.0",
     "lodash.flatten": "^4.4.0",
+    "mocha": "8.1.2",
     "tmp": "^0.2.1",
     "typescript": "3.9.8"
   },
