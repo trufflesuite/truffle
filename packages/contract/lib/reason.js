@@ -10,7 +10,7 @@ const reason = {
    * @param  {InterfaceAdapter}      interfaceAdapter a new helpful friend
    * @return {String|Undefined}      decoded reason string
    */
-  _extract: function(res, web3, _interfaceAdapter) {
+  _extract: function (res, web3, _interfaceAdapter) {
     //I'm not sure why interfaceAdapter is here if it's not used,
     //so I just put an underscore in front of its name for now...
     if (!res || (!res.error && !res.result)) return;
@@ -51,7 +51,7 @@ const reason = {
    * @param  {Object} interfaceAdapter
    * @return {String|Undefined}
    */
-  get: function(params, web3, interfaceAdapter) {
+  get: function (params, web3, interfaceAdapter) {
     const packet = {
       jsonrpc: "2.0",
       method: "eth_call",

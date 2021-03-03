@@ -683,9 +683,7 @@ export function typeStringWithoutLocation(dataType: Type): string {
       //combining these cases for simplicity
       switch (dataType.kind) {
         case "local":
-          return `${dataType.typeClass} ${dataType.definingContractName}.${
-            dataType.typeName
-          }`;
+          return `${dataType.typeClass} ${dataType.definingContractName}.${dataType.typeName}`;
         case "global":
           return `${dataType.typeClass} ${dataType.typeName}`;
       }

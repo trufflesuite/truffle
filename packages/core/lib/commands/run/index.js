@@ -25,9 +25,7 @@ const command = {
     }
 
     const customCommand = options._[0];
-
     checkPluginConfig(config);
-
     return await promisify(Run.run.bind(Run))(customCommand, config);
   }
 };

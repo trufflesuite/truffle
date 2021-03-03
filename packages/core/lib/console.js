@@ -160,9 +160,10 @@ class Console extends EventEmitter {
     // stderr is piped here because we don't need to repeatedly see the parent
     // errors/warnings in child process - specifically the error re: having
     // multiple config files
-    const spawnOptions = { stdio: ["inherit", "inherit", "pipe"] };
+    const spawnOptions = {stdio: ["inherit", "inherit", "pipe"]};
 
     const spawnInput = "--network " + options.network + " -- " + inputStrings;
+
     const spawnResult = spawnSync(
       "node",
       ["--no-deprecation", childPath, spawnInput],
@@ -170,9 +171,9 @@ class Console extends EventEmitter {
     );
 
     if (spawnResult.stderr) {
-      // Theoretically stderr can contain multiple errors. 
+      // Theoretically stderr can contain multiple errors.
       // So let's just print it instead of throwing through
-      // the error handling mechanism. Bad call? 
+      // the error handling mechanism. Bad call?
       console.log(spawnResult.stderr.toString());
     }
 

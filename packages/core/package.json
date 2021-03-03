@@ -40,6 +40,8 @@
     "@truffle/resolver": "^7.0.3",
     "@truffle/source-fetcher": "^0.3.4",
     "@truffle/workflow-compile": "^3.2.1",
+    "@truffle/ethpm-v1": "^1.0.0",
+    "@truffle/ethpm-v3": "^3.0.0",
     "app-module-path": "^2.2.0",
     "chai": "^4.2.0",
     "colors": "^1.4.0",

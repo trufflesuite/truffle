@@ -61,7 +61,7 @@ class TruffleConfig {
     Object.defineProperty(this, propertyName, {
       get:
         descriptor.get ||
-        function() {
+        function () {
           // value is specified
           if (propertyName in self._values) {
             return self._values[propertyName];
@@ -77,7 +77,7 @@ class TruffleConfig {
         },
       set:
         descriptor.set ||
-        function(value) {
+        function (value) {
           self._values[propertyName] = descriptor.transform
             ? descriptor.transform(value)
             : value;

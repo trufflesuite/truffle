@@ -10,9 +10,9 @@ const command = {
         description:
           "Initialize project in the current directory regardless of its " +
           "state. Be careful, this\n                    will potentially overwrite files " +
-          "that exist in the directory.",
-      },
-    ],
+          "that exist in the directory."
+      }
+    ]
   },
   run: async function (options) {
     const {copyFiles} = require("./copyFiles");

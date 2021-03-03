@@ -18,7 +18,7 @@ var color = Base.color;
  * Expose `Spec`.
  */
 
-exports = module.exports = function(logger) {
+exports = module.exports = function (logger) {
   /**
    * Inherit from `Base.prototype`.
    */
@@ -41,28 +41,28 @@ exports = module.exports = function(logger) {
       return Array(indents).join("  ");
     }
 
-    runner.on("start", function() {
+    runner.on("start", function () {
       logger.log();
     });
 
-    runner.on("suite", function(suite) {
+    runner.on("suite", function (suite) {
       ++indents;
       logger.log(color("suite", "%s%s"), indent(), suite.title);
     });
 
-    runner.on("suite end", function() {
+    runner.on("suite end", function () {
       --indents;
       if (indents === 1) {
         logger.log();
       }
     });
 
-    runner.on("pending", function(test) {
+    runner.on("pending", function (test) {
       var fmt = indent() + color("pending", "  - %s");
       logger.log(fmt, test.title);
     });
 
-    runner.on("pass", function(test) {
+    runner.on("pass", function (test) {
       var fmt;
       if (test.speed === "fast") {
         fmt =
@@ -80,17 +80,17 @@ exports = module.exports = function(logger) {
       }
     });
 
-    runner.on("fail", function(test) {
+    runner.on("fail", function (test) {
       logger.log(indent() + color("fail", "  %d) %s"), ++n, test.title);
     });
 
-    runner.on("end", function() {
+    runner.on("end", function () {
       self.epilogue();
     });
   }
 
   // This is a direct copy of Base.epilogue, replacing logger with logger.
-  Spec.prototype.epilogue = function() {
+  Spec.prototype.epilogue = function () {
     var stats = this.stats;
     var fmt;
 
@@ -131,9 +131,9 @@ exports = module.exports = function(logger) {
     return objToString.call(a) === objToString.call(b);
   }
 
-  Spec.prototype.list = function(failures) {
+  Spec.prototype.list = function (failures) {
     logger.log();
-    failures.forEach(function(test, i) {
+    failures.forEach(function (test, i) {
       // format
       var fmt =
         color("error title", "  %s) %s:\n") +

@@ -11,8 +11,8 @@ const promptOverwrites = async (contentCollisions, logger = console) => {
         type: "confirm",
         name: "overwrite",
         message: `Overwrite ${file}?`,
-        default: false,
-      },
+        default: false
+      }
     ];
 
     const { overwrite } = await inquirer.prompt(overwriting);

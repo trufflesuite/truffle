@@ -67,7 +67,7 @@ const build = config => {
 
   config.logger.log("Rebuilding...");
 
-  Build.build(config, function(error) {
+  Build.build(config, function (error) {
     printSummary(config, error);
   });
 };

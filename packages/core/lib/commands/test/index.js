@@ -47,11 +47,11 @@ const command = {
   },
   help: {
     usage:
-      `truffle test [<test_file>] [--compile-all[-debug]] [--compile-none] ` +
-      `[--network <name>]${OS.EOL}                             ` +
-      `[--verbose-rpc] [--show-events] [--debug] ` +
-      `[--debug-global <identifier>] [--bail]${OS.EOL}                      ` +
-      `       [--stacktrace[-extra]]`,
+      `truffle test [<test_file>] [--compile-all[-debug]] [--network <name>] [--compile-none]${OS.EOL}` +
+      `                             ` + // spacing to align with previous line
+      `[--show-events] [--debug] [--debug-global <identifier>] [--verbose-rpc]${OS.EOL}` +
+      `                             ` + // spacing to align with previous line
+      `[--bail] [--stacktrace[-extra]]`,
     options: [
       {
         option: "<test_file>",

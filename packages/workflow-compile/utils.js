@@ -37,5 +37,5 @@ function multiPromisify(func) {
 
 module.exports = {
   prepareConfig,
-  multiPromisify,
+  multiPromisify
 };

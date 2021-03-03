@@ -175,7 +175,8 @@ const SolidityTest = {
       "AssertString",
       "AssertUint",
       "AssertUintArray",
-      "DeployedAddresses"
+      "DeployedAddresses",
+      "Console"
     ];
 
     const testAbstractions = testLibraries.map(name =>

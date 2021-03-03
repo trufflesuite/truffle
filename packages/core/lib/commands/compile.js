@@ -93,6 +93,7 @@ const command = {
         JSON.stringify(compilationOutput),
         {encoding: "utf8"}
       );
+
     }
 
     const result = await WorkflowCompile.save(config, compilationOutput);
