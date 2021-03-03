@@ -47,6 +47,7 @@ export interface Bytecode {
 export interface LinkReference {
   offsets: number[];
   name: string | null; // this will be the contractName of the library or some other identifier
+  sourcePath: string | null; //the sourcePath of the source where the library is defined
   length: number;
 }
 

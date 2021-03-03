@@ -73,6 +73,7 @@ export function forBytecode(bytecode: string): Bytecode {
       linkReferences.push({
         offsets: [offset],
         name,
+        sourcePath: null,
         length
       });
 

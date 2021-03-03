@@ -363,11 +363,11 @@ function processContracts({
           legacyAST,
           bytecode: zeroLinkReferences({
             bytes: bytecode,
-            linkReferences: formatLinkReferences(linkReferences)
+            linkReferences: formatLinkReferences(linkReferences, originalSourcePaths)
           }),
           deployedBytecode: zeroLinkReferences({
             bytes: deployedBytecode,
-            linkReferences: formatLinkReferences(deployedLinkReferences)
+            linkReferences: formatLinkReferences(deployedLinkReferences, originalSourcePaths)
           }),
           immutableReferences, //ideally this would be part of the deployedBytecode object,
           //but compatibility makes that impossible
@@ -382,22 +382,24 @@ function processContracts({
   );
 }
 
-function formatLinkReferences(linkReferences) {
+function formatLinkReferences(linkReferences, originalSourcePaths) {
   // convert to flat list
-  const libraryLinkReferences = Object.values(linkReferences)
-    .map(fileLinks =>
+  const libraryLinkReferences = Object.entries(linkReferences)
+    .map(([sourcePath, fileLinks]) =>
       Object.entries(fileLinks).map(([name, links]) => ({
         name,
-        links
+        links,
+        sourcePath: originalSourcePaths[sourcePath]
       }))
     )
     .reduce((a, b) => [...a, ...b], []);
 
   // convert to { offsets, length, name } format
-  return libraryLinkReferences.map(({ name, links }) => ({
+  return libraryLinkReferences.map(({ name, links, sourcePath }) => ({
     offsets: links.map(({ start }) => start),
     length: links[0].length, // HACK just assume they're going to be the same
-    name
+    name,
+    sourcePath
   }));
 }
 

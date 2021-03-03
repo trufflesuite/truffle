@@ -100,7 +100,8 @@ describe("Shims.LegacyToNew.forBytecode", () => {
         {
           offsets: [1],
           length: 8,
-          name: "hello"
+          name: "hello",
+          sourcePath: null as null
         }
       ]
     };
@@ -119,12 +120,14 @@ describe("Shims.LegacyToNew.forBytecode", () => {
         {
           offsets: [0],
           length: 4,
-          name: "hi"
+          name: "hi",
+          sourcePath: null as null
         },
         {
           offsets: [5],
           length: 4,
-          name: "there"
+          name: "there",
+          sourcePath: null as null
         }
       ]
     };
