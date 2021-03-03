@@ -84,7 +84,7 @@ const Compile = {
       return { compilations: [] };
     }
 
-    displaySources({ paths: compilationTargets, options });
+    reportSources({ paths: compilationTargets, options });
 
     // when there are no sources, don't call run
     if (Object.keys(allSources).length === 0) {
