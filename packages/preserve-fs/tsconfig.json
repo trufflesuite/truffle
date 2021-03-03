@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "declaration": true,
+    "target": "es6",
+    "noImplicitAny": true,
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "outDir": "dist",
+    "baseUrl": ".",
+    "lib": ["es2017"],
+    "paths": {
+    },
+    "rootDir": ".",
+    "types": [
+      "jest",
+      "node"
+    ]
+  },
+  "include": [
+    "./lib/**/*.ts",
+    "./test/**/*.ts"
+  ]
+}
