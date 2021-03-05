@@ -263,6 +263,7 @@ export {
   EventDecoding,
   AnonymousDecoding,
   ReturnDecoding,
+  RawReturnDecoding,
   BytecodeDecoding,
   UnknownBytecodeDecoding,
   SelfDestructDecoding,
