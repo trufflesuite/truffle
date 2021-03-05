@@ -5,7 +5,6 @@ import {
   Format,
   Ast,
   Compilations,
-  Contexts,
   LogDecoding,
   StateVariable,
   ExtrasAllowed
@@ -109,14 +108,6 @@ export interface CodeCache {
 export interface CompilationAndContract {
   compilation: Compilations.Compilation;
   contract: Compilations.Contract;
-}
-
-export interface ContractAndContexts {
-  compilationId: string;
-  contract: Compilations.Contract;
-  node: Ast.AstNode;
-  deployedContext?: Contexts.Context;
-  constructorContext?: Contexts.Context;
 }
 
 export interface ContractInfo {

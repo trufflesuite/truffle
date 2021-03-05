@@ -8,6 +8,7 @@ import {
   GeneratedSources
 } from "@truffle/contract-schema/spec";
 import * as Common from "@truffle/compile-common";
+import * as Format from "@truffle/codec/format";
 import { Compilation, Contract, Source, VyperSourceMap } from "./types";
 
 export function shimCompilations(
@@ -151,7 +152,9 @@ export function shimContracts(
       }
       //if that didn't work, try the source map
       if (index === undefined && (sourceMap || deployedSourceMap)) {
-        const sourceMapString = simpleShimSourceMap(deployedSourceMap || sourceMap);
+        const sourceMapString = simpleShimSourceMap(
+          deployedSourceMap || sourceMap
+        );
         index = extractPrimarySource(sourceMapString);
       }
       //else leave undefined for now
@@ -434,4 +437,67 @@ export function simpleShimSourceMap(
       return sourceMap; //Solidity case
     }
   }
+}
+
+/**
+ * collects user defined types for a given set of compilations,
+ * returning both the definition nodes and the type objects
+ */
+export function collectUserDefinedTypes(
+  compilations: Compilation[]
+): {
+  definitions: { [compilationId: string]: Ast.AstNodes };
+  types: Format.Types.TypesById;
+} {
+  let references: { [compilationId: string]: Ast.AstNodes } = {};
+  let types: Format.Types.TypesById = {};
+  for (const compilation of compilations) {
+    references[compilation.id] = {};
+    for (const source of compilation.sources) {
+      if (!source) {
+        continue; //remember, sources could be empty if shimmed!
+      }
+      const { ast, compiler, language } = source;
+      if (language === "Solidity" && ast) {
+        //don't check Yul or Vyper sources!
+        for (const node of ast.nodes) {
+          if (
+            node.nodeType === "StructDefinition" ||
+            node.nodeType === "EnumDefinition" ||
+            node.nodeType === "ContractDefinition"
+          ) {
+            references[compilation.id][node.id] = node;
+            //we don't have all the references yet, but we actually don't need them :)
+            const dataType = Ast.Import.definitionToStoredType(
+              node,
+              compilation.id,
+              compiler,
+              references[compilation.id]
+            );
+            types[dataType.id] = dataType;
+          }
+          if (node.nodeType === "ContractDefinition") {
+            for (const subNode of node.nodes) {
+              if (
+                subNode.nodeType === "StructDefinition" ||
+                subNode.nodeType === "EnumDefinition"
+              ) {
+                references[compilation.id][subNode.id] = subNode;
+                //we don't have all the references yet, but we only need the
+                //reference to the defining contract, which we just added above!
+                const dataType = Ast.Import.definitionToStoredType(
+                  subNode,
+                  compilation.id,
+                  compiler,
+                  references[compilation.id]
+                );
+                types[dataType.id] = dataType;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return { definitions: references, types };
 }

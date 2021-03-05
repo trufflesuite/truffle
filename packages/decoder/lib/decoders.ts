@@ -33,8 +33,8 @@ import {
   InvalidAddressError,
   VariableNotFoundError
 } from "./errors";
-//sorry for the untyped imports, but...
-const { Shims } = require("@truffle/compile-common");
+import { Shims } from "@truffle/compile-common";
+//sorry for the untyped import, but...
 const SourceMapUtils = require("@truffle/source-map-utils");
 
 /**
@@ -49,7 +49,7 @@ export class WireDecoder {
   private compilations: Compilations.Compilation[];
   private contexts: Contexts.Contexts = {}; //all contexts
   private deployedContexts: Contexts.Contexts = {};
-  private contractsAndContexts: DecoderTypes.ContractAndContexts[] = [];
+  private contractsAndContexts: Contexts.ContractAndContexts[] = [];
 
   private referenceDeclarations: { [compilationId: string]: Ast.AstNodes };
   private userDefinedTypes: Format.Types.TypesById;
@@ -63,88 +63,19 @@ export class WireDecoder {
   constructor(compilations: Compilations.Compilation[], provider: Provider) {
     this.web3 = new Web3(provider);
     this.compilations = compilations;
-
-    for (const compilation of this.compilations) {
-      for (const contract of compilation.contracts) {
-        const node: Ast.AstNode = Compilations.Utils.getContractNode(
-          contract,
-          compilation
-        );
-        let deployedContext: Contexts.Context | undefined = undefined;
-        let constructorContext: Contexts.Context | undefined = undefined;
-        const deployedBytecode = Shims.NewToLegacy.forBytecode(
-          contract.deployedBytecode
-        );
-        const bytecode = Shims.NewToLegacy.forBytecode(contract.bytecode);
-        if (deployedBytecode && deployedBytecode !== "0x") {
-          deployedContext = Utils.makeContext(contract, node, compilation);
-          this.contexts[deployedContext.context] = deployedContext;
-          //note that we don't set up deployedContexts until after normalization!
-        }
-        if (bytecode && bytecode !== "0x") {
-          constructorContext = Utils.makeContext(
-            contract,
-            node,
-            compilation,
-            true
-          );
-          this.contexts[constructorContext.context] = constructorContext;
-        }
-        this.contractsAndContexts.push({
-          contract,
-          node,
-          deployedContext,
-          constructorContext,
-          compilationId: compilation.id
-        });
-      }
-    }
-    debug("known contexts: %o", Object.keys(this.contexts));
-
-    this.contexts = Contexts.Utils.normalizeContexts(this.contexts);
-    this.deployedContexts = Object.assign(
-      {},
-      ...Object.values(this.contexts).map(context =>
-        !context.isConstructor ? { [context.context]: context } : {}
-      )
-    );
-
-    for (const contractAndContexts of this.contractsAndContexts) {
-      //change everything to normalized version
-      if (contractAndContexts.deployedContext) {
-        contractAndContexts.deployedContext = this.contexts[
-          contractAndContexts.deployedContext.context
-        ]; //get normalized version
-      }
-      if (contractAndContexts.constructorContext) {
-        contractAndContexts.constructorContext = this.contexts[
-          contractAndContexts.constructorContext.context
-        ]; //get normalized version
-      }
-    }
+    let allocationInfo: AbiData.Allocate.ContractAllocationInfo[];
 
     ({
       definitions: this.referenceDeclarations,
       types: this.userDefinedTypes
-    } = this.collectUserDefinedTypes());
+    } = Compilations.Utils.collectUserDefinedTypes(this.compilations));
 
-    const allocationInfo: AbiData.Allocate.ContractAllocationInfo[] = this.contractsAndContexts.map(
-      ({
-        contract: { abi, compiler, immutableReferences },
-        compilationId,
-        node,
-        deployedContext,
-        constructorContext
-      }) => ({
-        abi: Abi.normalize(abi),
-        compilationId,
-        compiler,
-        contractNode: node,
-        deployedContext,
-        constructorContext,
-        immutableReferences
-      })
-    );
+    ({
+      contexts: this.contexts,
+      deployedContexts: this.deployedContexts,
+      contractsAndContexts: this.contractsAndContexts,
+      allocationInfo
+    } = AbiData.Allocate.Utils.collectAllocationInfo(this.compilations));
 
     this.allocations = {};
     this.allocations.abi = AbiData.Allocate.getAbiAllocations(
@@ -172,63 +103,6 @@ export class WireDecoder {
       this.allocations.storage
     );
     debug("done with allocation");
-  }
-
-  private collectUserDefinedTypes(): {
-    definitions: { [compilationId: string]: Ast.AstNodes };
-    types: Format.Types.TypesById;
-  } {
-    let references: { [compilationId: string]: Ast.AstNodes } = {};
-    let types: Format.Types.TypesById = {};
-    for (const compilation of this.compilations) {
-      references[compilation.id] = {};
-      for (const source of compilation.sources) {
-        if (!source) {
-          continue; //remember, sources could be empty if shimmed!
-        }
-        const { ast, compiler, language } = source;
-        if (language === "Solidity" && ast) {
-          //don't check Yul or Vyper sources!
-          for (const node of ast.nodes) {
-            if (
-              node.nodeType === "StructDefinition" ||
-              node.nodeType === "EnumDefinition" ||
-              node.nodeType === "ContractDefinition"
-            ) {
-              references[compilation.id][node.id] = node;
-              //we don't have all the references yet, but we actually don't need them :)
-              const dataType = Ast.Import.definitionToStoredType(
-                node,
-                compilation.id,
-                compiler,
-                references[compilation.id]
-              );
-              types[dataType.id] = dataType;
-            }
-            if (node.nodeType === "ContractDefinition") {
-              for (const subNode of node.nodes) {
-                if (
-                  subNode.nodeType === "StructDefinition" ||
-                  subNode.nodeType === "EnumDefinition"
-                ) {
-                  references[compilation.id][subNode.id] = subNode;
-                  //we don't have all the references yet, but we only need the
-                  //reference to the defining contract, which we just added above!
-                  const dataType = Ast.Import.definitionToStoredType(
-                    subNode,
-                    compilation.id,
-                    compiler,
-                    references[compilation.id]
-                  );
-                  types[dataType.id] = dataType;
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-    return { definitions: references, types };
   }
 
   /**
@@ -790,7 +664,7 @@ export class ContractDecoder {
       this.contract.deployedBytecode &&
       this.contract.deployedBytecode !== "0x"
     ) {
-      const unnormalizedContext = Utils.makeContext(
+      const unnormalizedContext = Contexts.Utils.makeContext(
         this.contract,
         this.contractNode,
         this.compilation
@@ -810,7 +684,7 @@ export class ContractDecoder {
               compilationId: this.compilation.id,
               compiler,
               contractNode: this.contractNode,
-              deployedContext: Utils.makeContext(
+              deployedContext: Contexts.Utils.makeContext(
                 {
                   ...this.contract,
                   deployedBytecode: "0x" //only time this should ever appear in a context!
@@ -1196,7 +1070,7 @@ export class ContractInstanceDecoder {
         ...this.contract,
         deployedBytecode: this.contractCode
       };
-      const extraContext = Utils.makeContext(
+      const extraContext = Contexts.Utils.makeContext(
         contractWithCode,
         this.contractNode,
         this.compilation
