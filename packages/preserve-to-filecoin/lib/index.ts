@@ -7,15 +7,22 @@ import * as Preserve from "@truffle/preserve";
 
 import { connect } from "./connect";
 import { getMiners } from "./miners";
-import { proposeStorageDeal } from "./storage";
+import { proposeStorageDeal, StorageDealOptions } from "./storage";
 import { wait } from "./wait";
 
-export const defaultAddress: string = "ws://localhost:7777/rpc/v0";
+export const defaultAddress = "http://localhost:7777/rpc/v0";
+
+export const defaultStorageDealOptions = {
+  minerCount: 1,
+  epochPrice: "250",
+  duration: 518400, // 180 days
+};
 
 export interface ConstructorOptions
   extends Preserve.Recipes.ConstructorOptions {
   address: string;
   token?: string;
+  storageDealOptions?: StorageDealOptions;
 }
 
 export interface PreserveOptions extends Preserve.Recipes.PreserveOptions {
@@ -34,14 +41,19 @@ export class Recipe implements Preserve.Recipe {
 
   private address: string;
   private token?: string;
+  private storageDealOptions?: StorageDealOptions;
 
   constructor(options: ConstructorOptions) {
     this.address = options.address || defaultAddress;
     this.token = options.token;
+    this.storageDealOptions = {
+      ...defaultStorageDealOptions,
+      ...options.storageDealOptions
+    };
   }
 
   async *preserve(options: PreserveOptions): Preserve.Process<Result> {
-    const { address: url, token } = this;
+    const { address: url, token, storageDealOptions } = this;
     const { target, results, controls } = options;
     const { log } = controls;
 
@@ -62,6 +74,7 @@ export class Recipe implements Preserve.Recipe {
     const { dealCid } = yield* proposeStorageDeal({
       cid,
       client,
+      storageDealOptions,
       miners,
       controls
     });

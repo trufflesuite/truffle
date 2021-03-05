@@ -1,8 +1,9 @@
 import CID from "cids";
 import * as Preserve from "@truffle/preserve";
-import { dealstates, terminalStates, DealState } from "./dealstates";
+import { terminalStates, DealState } from "./dealstates";
 import { LotusClient } from "filecoin.js";
 import delay from "delay";
+import { DealInfo } from "filecoin.js/builds/dist/providers/Types";
 
 export interface WaitOptions {
   client: LotusClient;
@@ -28,23 +29,29 @@ export async function* wait(options: WaitOptions): Preserve.Process<void> {
   yield* task.succeed();
 }
 
-export async function getDealState(
+export async function getDealInfo(
   dealCid: CID,
   client: LotusClient
-): Promise<DealState> {
-  const clientDeals = await client.client.listDeals();
+): Promise<DealInfo> {
+  const dealCidParameter = {
+    "/": dealCid.toString()
+  };
 
-  const [deal] = clientDeals.filter(d => {
-    return d.ProposalCid["/"] == dealCid.toString();
-  });
+  const dealInfo = await client.client.getDealInfo(dealCidParameter);
 
-  return dealstates[deal.State];
+  return dealInfo;
+}
+
+export async function getDealState(dealInfo: DealInfo, client: LotusClient): Promise<DealState> {
+  const dealState = await client.client.getDealStatus(dealInfo.State);
+
+  return dealState as DealState;
 }
 
 async function waitForDealToFinish(
   dealCid: CID,
   client: LotusClient
-): Promise<"Active"> {
+): Promise<"StorageDealActive"> {
   const maxRetries = 600;
   const intervalSeconds = 1;
 
@@ -52,12 +59,13 @@ async function waitForDealToFinish(
     await delay(intervalSeconds * 1000);
 
     // TODO: Maybe report on the current state while waiting.
-    const state = await getDealState(dealCid, client);
+    const dealInfo = await getDealInfo(dealCid, client);
+    const state = await getDealState(dealInfo, client);
 
-    if (state === "Active") return state;
+    if (state === "StorageDealActive") return state;
 
     if (terminalStates.includes(state)) {
-      throw new Error(`Deal failed with state: ${state}`);
+      throw new Error(`Deal failed: ${dealInfo.Message}`);
     }
   }
 

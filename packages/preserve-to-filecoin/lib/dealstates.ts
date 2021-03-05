@@ -4,111 +4,111 @@ export type DealState = typeof dealstates[number];
 // Comments on deal states are also taken from that file.
 export const dealstates = [
   // Unknown means the current status of a deal is undefined
-  "Unknown",
+  "StorageDealUnknown",
 
   // ProposalNotFound is a status returned in responses when the deal itself cannot
   // be located
-  "ProposalNotFound",
+  "StorageDealProposalNotFound",
 
   // ProposalRejected is returned by a StorageProvider when it chooses not to accept
   // a DealProposal
-  "ProposalRejected",
+  "StorageDealProposalRejected",
 
   // ProposalAccepted indicates an intent to accept a storage deal proposal
-  "ProposalAccepted",
+  "StorageDealProposalAccepted",
 
   // Staged means a deal has been published and data is ready to be put into a sector
-  "Staged",
+  "StorageDealStaged",
 
   // Sealing means a deal is in a sector that is being sealed
-  "Sealing",
+  "StorageDealSealing",
 
   // Finalizing means a deal is in a sealed sector and we're doing final
   // housekeeping before marking it active
-  "Finalizing",
+  "StorageDealFinalizing",
 
   // Active means a deal is in a sealed sector and the miner is proving the data
   // for the deal
-  "Active",
+  "StorageDealActive",
 
   // Expired means a deal has passed its final epoch and is expired
-  "Expired",
+  "StorageDealExpired",
 
   // Slashed means the deal was in a sector that got slashed from failing to prove
-  "Slashed",
+  "StorageDealSlashed",
 
   // Rejecting means the Provider has rejected the deal, and will send a rejection response
-  "Rejecting",
+  "StorageDealRejecting",
 
   // Failing means something has gone wrong in a deal. Once data is cleaned up the deal will finalize on
   // Error
-  "Failing",
+  "StorageDealFailing",
 
   // FundsReserved means we've deposited funds as necessary to create a deal, ready to move forward
-  "FundsReserved",
+  "StorageDealFundsReserved",
 
   // CheckForAcceptance means the client is waiting for a provider to seal and publish a deal
-  "CheckForAcceptance",
+  "StorageDealCheckForAcceptance",
 
   // Validating means the provider is validating that deal parameters are good for a proposal
-  "Validating",
+  "StorageDealValidating",
 
   // AcceptWait means the provider is running any custom decision logic to decide whether or not to accept the deal
-  "AcceptWait",
+  "StorageDealAcceptWait",
 
   // StartDataTransfer means data transfer is beginning
-  "StartDataTransfer",
+  "StorageDealStartDataTransfer",
 
   // Transferring means data is being sent from the client to the provider via the data transfer module
-  "Transferring",
+  "StorageDealTransferring",
 
   // WaitingForData indicates either a manual transfer
   // or that the provider has not received a data transfer request from the client
-  "WaitingForData",
+  "StorageDealWaitingForData",
 
   // VerifyData means data has been transferred and we are attempting to verify it against the PieceCID
-  "VerifyData",
+  "StorageDealVerifyData",
 
   // ReserveProviderFunds means that provider is making sure it has adequate funds for the deal in the StorageMarketActor
-  "ReserveProviderFunds",
+  "StorageDealReserveProviderFunds",
 
   // ReserveClientFunds means that client is making sure it has adequate funds for the deal in the StorageMarketActor
-  "ReserveClientFunds",
+  "StorageDealReserveClientFunds",
 
   // ProviderFunding means that the provider has deposited funds in the StorageMarketActor and it is waiting
   // to see the funds appear in its balance
-  "ProviderFunding",
+  "StorageDealProviderFunding",
 
   // ClientFunding means that the client has deposited funds in the StorageMarketActor and it is waiting
   // to see the funds appear in its balance
-  "ClientFunding",
+  "StorageDealClientFunding",
 
   // Publish means the deal is ready to be published on chain
-  "Publish",
+  "StorageDealPublish",
 
   // Publishing means the deal has been published but we are waiting for it to appear on chain
-  "Publishing",
+  "StorageDealPublishing",
 
   // Error means the deal has failed due to an error, and no further updates will occur
-  "Error",
+  "StorageDealError",
 
   // ProviderTransferAwaitRestart means the provider has restarted while data
   // was being transferred from client to provider, and will wait for the client to
   // resume the transfer
-  "ProviderTransferAwaitRestart",
+  "StorageDealProviderTransferAwaitRestart",
 
   // ClientTransferRestart means a storage deal data transfer from client to provider will be restarted
   // by the client
-  "ClientTransferRestart",
+  "StorageDealClientTransferRestart",
 
   // AwaitingPreCommit means a deal is ready and must be pre-committed
-  "AwaitingPreCommit"
+  "StorageDealAwaitingPreCommit"
 ] as const;
 
 export const terminalStates = [
   // go-fil-markets/storagemarket/types.go
-  "ProposalNotFound",
-  "ProposalRejected",
-  "Expired",
-  "Error"
+  "StorageDealProposalNotFound",
+  "StorageDealProposalRejected",
+  "StorageDealExpired",
+  "StorageDealError"
 ];

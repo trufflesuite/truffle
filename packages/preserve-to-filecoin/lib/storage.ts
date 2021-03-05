@@ -3,10 +3,18 @@ import CID from "cids";
 import * as Preserve from "@truffle/preserve";
 import { LotusClient } from "filecoin.js";
 
+export interface StorageDealOptions {
+  walletAddress?: string;
+  epochPrice?: string;
+  duration?: number;
+  minerCount?: number;
+}
+
 export interface ProposeStorageDealOptions {
   cid: CID;
   client: LotusClient;
   miners: string[];
+  storageDealOptions: StorageDealOptions;
   controls: Preserve.Controls;
 }
 
@@ -17,7 +25,8 @@ export interface StorageProposalResult {
 export async function* proposeStorageDeal(
   options: ProposeStorageDealOptions
 ): Preserve.Process<StorageProposalResult> {
-  const { cid, client, miners, controls } = options;
+  const { cid, client, storageDealOptions, miners, controls } = options;
+  const { walletAddress, epochPrice, duration } = storageDealOptions;
   const { step } = controls;
 
   const task = yield* step({
@@ -28,19 +37,18 @@ export async function* proposeStorageDeal(
     identifier: "Deal CID"
   });
 
-  const defaultWalletAddress = await client.wallet.getDefaultAddress();
+  const wallet = walletAddress || await client.wallet.getDefaultAddress();
 
-  // TODO: Make some of these values configurable
   // TODO: Allow making a deal with multiple miners
   const storageProposal = {
     Data: {
       TransferType: "graphsync",
       Root: { "/": cid.toString() }
     },
-    Wallet: defaultWalletAddress,
+    Wallet: wallet,
     Miner: miners[0],
-    EpochPrice: "2500",
-    MinBlocksDuration: 518400 // Min 180 days
+    EpochPrice: epochPrice,
+    MinBlocksDuration: duration
   };
 
   try {

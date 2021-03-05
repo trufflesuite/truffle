@@ -24,7 +24,7 @@ export const preserveToFilecoin = async (
   target: Preserve.Target,
   cid: CID,
   environment: ConstructorOptions
-) => {
+): Promise<CID> => {
   const recipe = new Recipe(environment);
 
   const { dealCid } = await Preserve.Control.run(
