@@ -4,8 +4,10 @@ const Ganache = require("ganache-core");
 const path = require("path");
 
 const Decoder = require("../../..");
-const { unsafeNativizeDecoderVariables } = require("../../../dist/utils");
-const { prepareContracts } = require("../../helpers");
+const {
+  prepareContracts,
+  unsafeNativizeDecoderVariables
+} = require("../../helpers");
 
 describe("State variable decoding", function () {
   let provider;

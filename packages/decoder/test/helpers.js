@@ -12,6 +12,19 @@ const flatten = require("lodash.flatten");
 const tmp = require("tmp");
 tmp.setGracefulCleanup();
 
+function nativizeDecoderVariables(variables) {
+  return Object.assign(
+    {},
+    ...variables.map(({ name, value }) => ({
+      [name]: Codec.Format.Utils.Inspect.nativize(value)
+    }))
+  );
+  //note that the assignments are processed in order, so if multiple have same name, later
+  //(i.e. more derived) will overwrite earlier (i.e. baser)... be aware!  I mean, this is the
+  //right way to do overwriting, but it's still overwriting so still dangerous.
+  //don't use this in real code!
+}
+
 async function prepareContracts(provider, projectDir) {
 
   const temporaryDirectory = tmp.dirSync({
@@ -82,5 +95,6 @@ async function migrate(config) {
 }
 
 module.exports = {
-  prepareContracts
+  prepareContracts,
+  nativizeDecoderVariables
 }
