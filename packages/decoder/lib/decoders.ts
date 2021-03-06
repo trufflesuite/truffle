@@ -21,11 +21,11 @@ import {
   decodeReturndata
 } from "@truffle/codec";
 import * as Encoder from "@truffle/encoder";
-import * as DecoderTypes from "./types";
+import type * as DecoderTypes from "./types";
 import Web3 from "web3";
-import { ContractObject as Artifact } from "@truffle/contract-schema/spec";
+import type { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import BN from "bn.js";
-import { Provider } from "web3/providers";
+import type { Provider } from "web3/providers";
 import {
   ContractBeingDecodedHasNoNodeError,
   ContractAllocationFailedError,

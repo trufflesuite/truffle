@@ -153,7 +153,7 @@ export {
 import { NoProjectInfoError } from "./errors";
 export { NoProjectInfoError };
 
-export {
+export type {
   ContractState,
   StateVariable,
   DecodedLog,
@@ -165,12 +165,12 @@ export {
   Log,
   BlockSpecifier
 } from "./types";
-import { ProjectInfo } from "./types";
+import type { ProjectInfo } from "./types";
 export { ProjectInfo };
 
-import { Provider } from "web3/providers";
-import { ContractObject as Artifact } from "@truffle/contract-schema/spec";
-import { ContractConstructorObject, ContractInstanceObject } from "./types";
+import type { Provider } from "web3/providers";
+import type { ContractObject as Artifact } from "@truffle/contract-schema/spec";
+import type { ContractConstructorObject, ContractInstanceObject } from "./types";
 
 import { Compilations } from "@truffle/codec";
 

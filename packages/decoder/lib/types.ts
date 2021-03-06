@@ -1,7 +1,7 @@
-import BN from "bn.js";
-import { ContractObject as Artifact } from "@truffle/contract-schema/spec";
-import TruffleConfig from "@truffle/config";
-import {
+import type BN from "bn.js";
+import type { ContractObject as Artifact } from "@truffle/contract-schema/spec";
+import type TruffleConfig from "@truffle/config";
+import type {
   Format,
   Ast,
   Compilations,
@@ -9,7 +9,7 @@ import {
   StateVariable,
   ExtrasAllowed
 } from "@truffle/codec";
-import Web3 from "web3";
+import type Web3 from "web3";
 
 //StateVariable used to be defined here, so let's continue
 //to export it
