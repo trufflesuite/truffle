@@ -1,4 +1,3 @@
-const IpfsdCtl = require("ipfsd-ctl");
 import createIpfsClient from "ipfs-http-client";
 
 import * as Preserve from "@truffle/preserve";
@@ -8,6 +7,7 @@ import { tests } from "./ipfs.fixture";
 import { fetch } from "./utils/fetch";
 import { asyncToArray } from "iter-tools";
 import { IpfsClient } from "../lib/ipfs-adapter";
+import { describeForNode12 } from "./utils/conditional";
 
 const IPFS_BIN = `${__dirname}/../node_modules/.bin/jsipfs`;
 
@@ -18,7 +18,9 @@ interface IpfsNode {
   stop(): Promise<void>;
 }
 
-describe("preserve", () => {
+describeForNode12("preserve", () => {
+  const IpfsdCtl = require("ipfsd-ctl");
+
   let node: IpfsNode;
   let address: string;
 
