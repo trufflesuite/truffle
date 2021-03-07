@@ -75,14 +75,14 @@ class Command {
   async run(inputStrings, options) {
     const result = this.getCommand(inputStrings, options.noAliases);
 
-    if (typeof result.command.help === "function") {
-      result.command.help = await result.command.help(options);
-    }
-
     if (result == null) {
       throw new TaskError(
         "Cannot find command based on input: " + JSON.stringify(inputStrings)
       );
+    }
+
+    if (typeof result.command.help === "function") {
+      result.command.help = await result.command.help(options);
     }
 
     const argv = result.argv;
