@@ -19,14 +19,14 @@ export async function* wait(options: WaitOptions): Preserve.Process<void> {
     message: "Waiting for deal to finish..."
   });
 
+  const state = yield* task.declare({ identifier: "Deal State" });
+
   try {
-    await waitForDealToFinish(dealCid, client);
+    yield* waitForDealToFinish(dealCid, client, state);
+    yield* task.succeed();
   } catch (error) {
     yield* task.fail({ error });
-    return;
   }
-
-  yield* task.succeed();
 }
 
 export async function getDealInfo(
@@ -48,23 +48,35 @@ export async function getDealState(dealInfo: DealInfo, client: LotusClient): Pro
   return dealState as DealState;
 }
 
-async function waitForDealToFinish(
+async function * waitForDealToFinish(
   dealCid: CID,
-  client: LotusClient
-): Promise<"StorageDealActive"> {
+  client: LotusClient,
+  task: Preserve.Control.ValueResolutionController
+): Preserve.Process<void> {
   const maxRetries = 600;
   const intervalSeconds = 1;
 
   for (let retries = 0; retries < maxRetries; retries++) {
     await delay(intervalSeconds * 1000);
 
-    // TODO: Maybe report on the current state while waiting.
     const dealInfo = await getDealInfo(dealCid, client);
     const state = await getDealState(dealInfo, client);
 
-    if (state === "StorageDealActive") return state;
+    yield* task.update({ payload: state });
+
+    if (state === "StorageDealActive") {
+      yield* task.resolve({
+        resolution: state,
+        payload: state
+      });
+      return;
+    }
 
     if (terminalStates.includes(state)) {
+      yield* task.resolve({
+        resolution: state,
+        payload: state
+      });
       throw new Error(`Deal failed: ${dealInfo.Message}`);
     }
   }
