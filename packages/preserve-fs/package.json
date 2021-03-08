@@ -1,33 +1,35 @@
 {
-  "name": "@truffle/preserve",
-  "version": "0.1.1",
-  "description": "Library for functionality for `truffle preserve` command",
+  "name": "@truffle/preserve-fs",
+  "version": "0.1.0",
+  "description": "Truffle `preserve` command support for arbitrary files and directories",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "truffle-plugin.json"
   ],
   "scripts": {
     "build": "tsc",
     "prepare": "yarn build",
-    "test": "jest --verbose --detectOpenHandles",
-    "docs": "./scripts/generate-docs"
+    "test": "jest --verbose --detectOpenHandles"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/preserve",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/preserve-directory",
   "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
+    "@types/fs-extra": "^9.0.1",
     "@types/jest": "^26.0.0",
     "@types/node": "^14.0.13",
-    "iter-tools": "^7.0.2",
+    "fs-extra": "^9.0.1",
     "jest": "^26.0.1",
+    "tmp-promise": "^3.0.2",
     "ts-jest": "^26.1.0",
     "typescript": "^3.8.3"
   },
   "dependencies": {
-    "spinnies": "^0.5.1"
+    "@truffle/preserve": "^0.1.1"
   }
 }
