@@ -4,6 +4,7 @@ const semver = require("semver");
 const Profiler = require("./profiler");
 const fse = require("fs-extra");
 const { run } = require("./run");
+const { reportSources } = require("./reportSources");
 const OS = require("os");
 const cloneDeep = require("lodash.clonedeep");
 
@@ -117,6 +118,8 @@ const compileWithPragmaAnalysis = async ({ paths, options }) => {
       ...allSources
     };
   }
+
+  reportSources({ paths: filteredPaths, options });
 
   const compilations = [];
   for (const compilerVersion in versionsAndSources) {

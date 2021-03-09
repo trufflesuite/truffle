@@ -1,5 +1,4 @@
 const debug = require("debug")("compile");
-const path = require("path");
 const findContracts = require("@truffle/contract-sources");
 const Config = require("@truffle/config");
 const Profiler = require("./profiler");
@@ -7,6 +6,7 @@ const CompilerSupplier = require("./compilerSupplier");
 const { run } = require("./run");
 const { normalizeOptions } = require("./normalizeOptions");
 const { compileWithPragmaAnalysis } = require("./compileWithPragmaAnalysis");
+const { reportSources } = require("./reportSources");
 const expect = require("@truffle/expect");
 
 const Compile = {
@@ -84,7 +84,7 @@ const Compile = {
       return { compilations: [] };
     }
 
-    Compile.display(compilationTargets, options);
+    reportSources({ paths: compilationTargets, options });
 
     // when there are no sources, don't call run
     if (Object.keys(allSources).length === 0) {
@@ -115,35 +115,6 @@ const Compile = {
 
   async sourcesWithPragmaAnalysis({ paths, options }) {
     return compileWithPragmaAnalysis({ paths, options });
-  },
-
-  display(paths, options) {
-    if (options.quiet !== true) {
-      if (!Array.isArray(paths)) {
-        paths = Object.keys(paths);
-      }
-
-      const blacklistRegex = /^truffle\//;
-
-      const sources = paths
-        .sort()
-        .map(contract => {
-          if (path.isAbsolute(contract)) {
-            contract =
-              "." +
-              path.sep +
-              path.relative(options.working_directory, contract);
-          }
-          if (contract.match(blacklistRegex) || contract.endsWith(".json")) {
-            return;
-          }
-          return contract;
-        })
-        .filter(contract => contract);
-      options.events.emit("compile:sourcesToCompile", {
-        sourceFileNames: sources
-      });
-    }
   }
 };
 
