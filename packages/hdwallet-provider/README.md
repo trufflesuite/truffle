@@ -53,14 +53,14 @@ let provider = new HDWalletProvider({
 // Or, alternatively pass in a zero-based address index.
 provider = new HDWalletProvider({
   mnemonic: mnemonicPhrase,
-  provider: "http://localhost:8545",
+  providerOrUrl: "http://localhost:8545",
   addressIndex: 5
 });
 
 // Or, use your own hierarchical derivation path
 provider = new HDWalletProvider({
   mnemonic: mnemonicPhrase,
-  provider: "http://localhost:8545",
+  providerOrUrl: "http://localhost:8545",
   numberOfAddresses: 1,
   shareNonce: true,
   derivationPath: "m/44'/137'/0'/0/"
