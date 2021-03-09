@@ -2,12 +2,11 @@ import createIpfsClient from "ipfs-http-client";
 
 import * as Preserve from "@truffle/preserve";
 
-import { Recipe } from "../lib";
 import { tests } from "./ipfs.fixture";
 import { fetch } from "./utils/fetch";
-import { asyncToArray } from "iter-tools";
 import { IpfsClient } from "../lib/ipfs-adapter";
 import { describeForNode12 } from "./utils/conditional";
+import { preserveToIpfs, preserveToIpfsWithEvents } from "./utils/preserve";
 
 const IPFS_BIN = `${__dirname}/../node_modules/.bin/jsipfs`;
 
@@ -52,15 +51,7 @@ describeForNode12("preserve", () => {
       });
 
       it("saves correctly to IPFS", async () => {
-        const recipe = new Recipe({ address });
-
-        // Call the preserve-to-ipfs preserve function through the Preserve controller.
-        const { cid } = await Preserve.Control.run(
-          {
-            method: recipe.preserve.bind(recipe)
-          },
-          { target }
-        );
+        const cid = await preserveToIpfs(target, address);
 
         const retrieved = await fetch({ cid, ipfs });
 
@@ -70,16 +61,7 @@ describeForNode12("preserve", () => {
       });
 
       it("emits the correct events", async () => {
-        const recipe = new Recipe({ address });
-
-        const emittedEvents = await asyncToArray(
-          recipe.preserve({
-            target,
-            controls: new Preserve.Control.StepsController({
-              scope: ["@truffle/preserve-to-ipfs"]
-            })
-          })
-        );
+        const emittedEvents = await preserveToIpfsWithEvents(target, address);
 
         expect(emittedEvents).toMatchObject(events);
       });

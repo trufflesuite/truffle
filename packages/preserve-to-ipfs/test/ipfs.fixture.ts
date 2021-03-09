@@ -1,4 +1,5 @@
 import * as Preserve from "@truffle/preserve";
+import CID from "cids";
 
 export interface Test {
   name: string;
@@ -17,12 +18,16 @@ export const tests: Test[] = [
     },
     events: [
       {
+        type: "begin",
+        scope: ["@truffle/preserve-to-ipfs"]
+      },
+      {
         type: "log",
         message: "Preserving to IPFS...",
         scope: ["@truffle/preserve-to-ipfs"]
       },
-      { type: "step" },
-      { type: "succeed" },
+      expect.objectContaining({ type: "step" }),
+      expect.objectContaining({ type: "succeed" }),
       {
         type: "step",
         message: "Uploading...",
@@ -35,12 +40,18 @@ export const tests: Test[] = [
       },
       {
         type: "resolve",
-        payload: /QmfDmsHTywy6L9Ne5RXsj5YumDedfBLMvCvmaxjBoe6w4d/,
+        resolution: expect.objectContaining({ cid: expect.any(CID) }),
+        payload: expect.stringMatching("QmfDmsHTywy6L9Ne5RXsj5YumDedfBLMvCvmaxjBoe6w4d"),
         scope: ["@truffle/preserve-to-ipfs", "Uploading...", "Root CID"]
       },
       {
         type: "succeed",
         scope: ["@truffle/preserve-to-ipfs", "Uploading..."]
+      },
+      {
+        type: "succeed",
+        result: expect.objectContaining({ cid: expect.any(CID) }),
+        scope: ["@truffle/preserve-to-ipfs"]
       }
     ]
   },
@@ -62,12 +73,16 @@ export const tests: Test[] = [
     },
     events: [
       {
+        type: "begin",
+        scope: ["@truffle/preserve-to-ipfs"]
+      },
+      {
         type: "log",
         message: "Preserving to IPFS...",
         scope: ["@truffle/preserve-to-ipfs"]
       },
-      { type: "step" },
-      { type: "succeed" },
+      expect.objectContaining({ type: "step" }),
+      expect.objectContaining({ type: "succeed" }),
       {
         type: "step",
         message: "Uploading...",
@@ -90,22 +105,30 @@ export const tests: Test[] = [
       },
       {
         type: "resolve",
-        payload: "QmXYDi9PbJjafcuRHDyLT4CtRmjtiDxEjaM2aYCtmKNZaj",
+        resolution: expect.objectContaining({ cid: expect.any(CID) }),
+        payload: expect.stringMatching("QmXYDi9PbJjafcuRHDyLT4CtRmjtiDxEjaM2aYCtmKNZaj"),
         scope: ["@truffle/preserve-to-ipfs", "Uploading...", "Root CID", "./a"]
       },
       {
         type: "resolve",
-        payload: "QmZyUAuPMneEWTdKbkRUuo8JuVW5qiCzUHLKqptzgqkVCq",
+        resolution: expect.objectContaining({ cid: expect.any(CID) }),
+        payload: expect.stringMatching("QmZyUAuPMneEWTdKbkRUuo8JuVW5qiCzUHLKqptzgqkVCq"),
         scope: ["@truffle/preserve-to-ipfs", "Uploading...", "Root CID", "./b"]
       },
       {
         type: "resolve",
-        payload: /QmSxBNxCBBAVKvPBTmuqGjinuY771zyoNf7xX836nxnQeg/,
+        resolution: expect.objectContaining({ cid: expect.any(CID) }),
+        payload: expect.stringMatching("QmSxBNxCBBAVKvPBTmuqGjinuY771zyoNf7xX836nxnQeg"),
         scope: ["@truffle/preserve-to-ipfs", "Uploading...", "Root CID"]
       },
       {
         type: "succeed",
         scope: ["@truffle/preserve-to-ipfs", "Uploading..."]
+      },
+      {
+        type: "succeed",
+        result: expect.objectContaining({ cid: expect.any(CID) }),
+        scope: ["@truffle/preserve-to-ipfs"]
       }
     ]
   },
@@ -134,12 +157,16 @@ export const tests: Test[] = [
     },
     events: [
       {
+        type: "begin",
+        scope: ["@truffle/preserve-to-ipfs"]
+      },
+      {
         type: "log",
         message: "Preserving to IPFS...",
         scope: ["@truffle/preserve-to-ipfs"]
       },
-      { type: "step" },
-      { type: "succeed" },
+      expect.objectContaining({ type: "step" }),
+      expect.objectContaining({ type: "succeed" }),
       {
         type: "step",
         message: "Uploading...",
@@ -172,7 +199,8 @@ export const tests: Test[] = [
       },
       {
         type: "resolve",
-        payload: "QmfDmsHTywy6L9Ne5RXsj5YumDedfBLMvCvmaxjBoe6w4d",
+        resolution: expect.objectContaining({ cid: expect.any(CID) }),
+        payload: expect.stringMatching("QmfDmsHTywy6L9Ne5RXsj5YumDedfBLMvCvmaxjBoe6w4d"),
         scope: [
           "@truffle/preserve-to-ipfs",
           "Uploading...",
@@ -182,7 +210,8 @@ export const tests: Test[] = [
       },
       {
         type: "resolve",
-        payload: "QmQLd9KEkw5eLKfr9VwfthiWbuqa9LXhRchWqD4kRPPWEf",
+        resolution: expect.objectContaining({ cid: expect.any(CID) }),
+        payload: expect.stringMatching("QmQLd9KEkw5eLKfr9VwfthiWbuqa9LXhRchWqD4kRPPWEf"),
         scope: [
           "@truffle/preserve-to-ipfs",
           "Uploading...",
@@ -192,12 +221,18 @@ export const tests: Test[] = [
       },
       {
         type: "resolve",
-        payload: /QmTXQNMfCiPWNPhapqXVeSpej8oaVco7uN1UUqLGwJ4Lk6/,
+        resolution: expect.objectContaining({ cid: expect.any(CID) }),
+        payload: expect.stringMatching("QmTXQNMfCiPWNPhapqXVeSpej8oaVco7uN1UUqLGwJ4Lk6"),
         scope: ["@truffle/preserve-to-ipfs", "Uploading...", "Root CID"]
       },
       {
         type: "succeed",
         scope: ["@truffle/preserve-to-ipfs", "Uploading..."]
+      },
+      {
+        type: "succeed",
+        result: expect.objectContaining({ cid: expect.any(CID) }),
+        scope: ["@truffle/preserve-to-ipfs"]
       }
     ]
   },
@@ -239,12 +274,16 @@ export const tests: Test[] = [
     },
     events: [
       {
+        type: "begin",
+        scope: ["@truffle/preserve-to-ipfs"]
+      },
+      {
         type: "log",
         message: "Preserving to IPFS...",
         scope: ["@truffle/preserve-to-ipfs"]
       },
-      { type: "step" },
-      { type: "succeed" },
+      expect.objectContaining({ type: "step" }),
+      expect.objectContaining({ type: "succeed" }),
       {
         type: "step",
         message: "Uploading...",
@@ -282,7 +321,8 @@ export const tests: Test[] = [
       },
       {
         type: "resolve",
-        payload: "QmWTBjXt6YirUL3ABZLUJH4E8f9mHTnNaVPxmhFSuSnWqw",
+        resolution: expect.objectContaining({ cid: expect.any(CID) }),
+        payload: expect.stringMatching("QmWTBjXt6YirUL3ABZLUJH4E8f9mHTnNaVPxmhFSuSnWqw"),
         scope: [
           "@truffle/preserve-to-ipfs",
           "Uploading...",
@@ -292,7 +332,8 @@ export const tests: Test[] = [
       },
       {
         type: "resolve",
-        payload: "Qmcv7sqMq3ZmE3k4k8p9b2KwAiqJ1X7nahzGrh4RZHPd3X",
+        resolution: expect.objectContaining({ cid: expect.any(CID) }),
+        payload: expect.stringMatching("Qmcv7sqMq3ZmE3k4k8p9b2KwAiqJ1X7nahzGrh4RZHPd3X"),
         scope: [
           "@truffle/preserve-to-ipfs",
           "Uploading...",
@@ -302,17 +343,24 @@ export const tests: Test[] = [
       },
       {
         type: "resolve",
-        payload: "QmQLd9KEkw5eLKfr9VwfthiWbuqa9LXhRchWqD4kRPPWEf",
+        resolution: expect.objectContaining({ cid: expect.any(CID) }),
+        payload: expect.stringMatching("QmQLd9KEkw5eLKfr9VwfthiWbuqa9LXhRchWqD4kRPPWEf"),
         scope: ["@truffle/preserve-to-ipfs", "Uploading...", "Root CID", "./b"]
       },
       {
         type: "resolve",
-        payload: /QmYrFAyZaY9VenxNxw2WTnc22S4aNhANSBkT728i2cUNFj/,
+        resolution: expect.objectContaining({ cid: expect.any(CID) }),
+        payload: expect.stringMatching("QmYrFAyZaY9VenxNxw2WTnc22S4aNhANSBkT728i2cUNFj"),
         scope: ["@truffle/preserve-to-ipfs", "Uploading...", "Root CID"]
       },
       {
         type: "succeed",
         scope: ["@truffle/preserve-to-ipfs", "Uploading..."]
+      },
+      {
+        type: "succeed",
+        result: expect.objectContaining({ cid: expect.any(CID) }),
+        scope: ["@truffle/preserve-to-ipfs"]
       }
     ]
   }
