@@ -63,7 +63,9 @@ async function run(rawSources, options, language = "Solidity") {
     originalSourcePaths,
     language
   });
-  const sourceIndexes = outputSources.map(source => source.sourcePath);
+  const sourceIndexes = outputSources
+    ? outputSources.map(source => source.sourcePath)
+    : undefined; //leave undefined if sources undefined
   return {
     sourceIndexes,
     contracts: processContracts({
@@ -278,7 +280,20 @@ function detectErrors({
  * this can include sources that do not define any contracts
  */
 function processAllSources({ sources, compilerOutput, originalSourcePaths, language }) {
-  if (!compilerOutput.sources) return [];
+  if (!compilerOutput.sources) {
+    const entries = Object.entries(sources);
+    if (entries.length === 1) {
+      //special case for handling Yul
+      const [sourcePath, contents] = entries[0];
+      return [{
+        sourcePath: originalSourcePaths[sourcePath],
+        contents,
+        language
+      }]
+    } else {
+      return [];
+    }
+  }
   let outputSources = [];
   for (const [sourcePath, { id, ast, legacyAST }] of Object.entries(
     compilerOutput.sources

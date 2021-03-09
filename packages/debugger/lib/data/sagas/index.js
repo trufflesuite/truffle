@@ -163,6 +163,7 @@ export function* decodeReturnValue() {
   }
   //at this point, result.value holds the final value
   debug("done decoding");
+  debug("decoded value: %O", result.value);
   return result.value;
 }
 
