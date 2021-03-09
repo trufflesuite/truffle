@@ -48,6 +48,7 @@ export const bytecodes: Definition<"bytecodes"> = {
     input LinkReferenceInput {
       offsets: [Int!]!
       name: String
+      sourcePath: String
       length: Int!
     }
   `,
