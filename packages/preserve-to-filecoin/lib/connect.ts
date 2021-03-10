@@ -24,8 +24,13 @@ export async function* connect(
   const client = createLotusClient({ url, token });
 
   try {
-    const version = await client.common.version();
-    yield* task.succeed({ result: version });
+    // TODO: Ideally I'd retrieve the version instead of ID, but that RPC method
+    // is broken in textile's localnet.
+    const id = await client.common.id();
+    yield* task.succeed({
+      result: id,
+      message: `Connected to Filecoin node at ${url}`
+    });
   } catch (error) {
     yield* task.fail({ error });
   }

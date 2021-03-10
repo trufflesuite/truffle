@@ -1,4 +1,5 @@
 import * as Preserve from "@truffle/preserve";
+import CID from "cids";
 
 export interface Test {
   name: string;
@@ -26,7 +27,8 @@ const happyPathEvents = [
   },
   {
     type: "succeed",
-    result: expect.any(Object),
+    result: expect.any(String),
+    message: "Connected to Filecoin node at http://localhost:7777/rpc/v0",
     scope: [
       "@truffle/preserve-to-filecoin",
       "Connecting to Filecoin node at http://localhost:7777/rpc/v0..."
@@ -59,7 +61,7 @@ const happyPathEvents = [
   {
     type: "resolve",
     payload: expect.any(String),
-    resolution: expect.any(Object),
+    resolution: expect.any(CID),
     scope: [
       "@truffle/preserve-to-filecoin",
       "Proposing storage deal...",
@@ -76,12 +78,42 @@ const happyPathEvents = [
     scope: ["@truffle/preserve-to-filecoin", "Waiting for deal to finish..."]
   },
   {
+    type: "declare",
+    message: "Deal State",
+    scope: [
+      "@truffle/preserve-to-filecoin",
+      "Waiting for deal to finish...",
+      "Deal State"
+    ]
+  },
+  // There could be more than one update in here when using Lotus,
+  // but for Ganache there should only be one.
+  {
+    type: "update",
+    payload: "StorageDealActive",
+    scope: [
+      "@truffle/preserve-to-filecoin",
+      "Waiting for deal to finish...",
+      "Deal State"
+    ]
+  },
+  {
+    type: "resolve",
+    resolution: "StorageDealActive",
+    payload: "StorageDealActive",
+    scope: [
+      "@truffle/preserve-to-filecoin",
+      "Waiting for deal to finish...",
+      "Deal State"
+    ]
+  },
+  {
     type: "succeed",
     scope: ["@truffle/preserve-to-filecoin", "Waiting for deal to finish..."]
   },
   {
     type: "succeed",
-    result: expect.any(Object),
+    result: { dealCid: expect.any(CID) },
     scope: ["@truffle/preserve-to-filecoin"]
   }
 ];

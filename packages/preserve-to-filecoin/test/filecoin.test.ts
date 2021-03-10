@@ -7,13 +7,26 @@ import {
   preserveToFilecoinWithEvents,
   preserveToIpfs
 } from "./utils/preserve";
+import Ganache from "ganache";
 
 jest.setTimeout(200000);
 
 describe("preserve", () => {
-  // Default IPFS and Filecoin nodes exposed by Powergate localnet
+  // Default IPFS and Filecoin nodes exposed by Ganache
   const ipfsAddress = "http://localhost:5001/api/v0";
   const filecoinAddress = "http://localhost:7777/rpc/v0";
+
+  let ganacheServer: any;
+
+  beforeAll(async () => {
+    ganacheServer = Ganache.server({ flavor: "filecoin" });
+    await ganacheServer.provider.blockchain.waitForReady();
+    await ganacheServer.listen(7777);
+  });
+
+  afterAll(async () => {
+    await ganacheServer?.close();
+  });
 
   describe("error handling", () => {
     it("should fail when providing content instead of container", async () => {
@@ -107,79 +120,82 @@ describe("preserve", () => {
       const emittedEvents = await preserveToFilecoinWithEvents(target, cid, {
         address: filecoinAddress,
         storageDealOptions: {
-          walletAddress: 'f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy'
+          walletAddress: "f17uoq6tp427uzv7fztkbsnn64iwotfrristwpryy"
         }
       });
 
       const expectedEvents = [
-        { type: 'begin', scope: [ '@truffle/preserve-to-filecoin' ] },
+        { type: "begin", scope: ["@truffle/preserve-to-filecoin"] },
         {
-          type: 'log',
-          message: 'Preserving to Filecoin...',
-          scope: [ '@truffle/preserve-to-filecoin' ]
+          type: "log",
+          message: "Preserving to Filecoin...",
+          scope: ["@truffle/preserve-to-filecoin"]
         },
         {
-          type: 'step',
-          message: 'Connecting to Filecoin node at http://localhost:7777/rpc/v0...',
+          type: "step",
+          message:
+            "Connecting to Filecoin node at http://localhost:7777/rpc/v0...",
           scope: [
-            '@truffle/preserve-to-filecoin',
-            'Connecting to Filecoin node at http://localhost:7777/rpc/v0...'
+            "@truffle/preserve-to-filecoin",
+            "Connecting to Filecoin node at http://localhost:7777/rpc/v0..."
           ]
         },
         {
-          type: 'succeed',
+          type: "succeed",
           result: expect.any(String),
           scope: [
-            '@truffle/preserve-to-filecoin',
-            'Connecting to Filecoin node at http://localhost:7777/rpc/v0...'
+            "@truffle/preserve-to-filecoin",
+            "Connecting to Filecoin node at http://localhost:7777/rpc/v0..."
           ]
         },
         {
-          type: 'step',
-          message: 'Retrieving miners...',
-          scope: [ '@truffle/preserve-to-filecoin', 'Retrieving miners...' ]
+          type: "step",
+          message: "Retrieving miners...",
+          scope: ["@truffle/preserve-to-filecoin", "Retrieving miners..."]
         },
         {
-          type: 'succeed',
-          result: [ 'f01000' ],
-          scope: [ '@truffle/preserve-to-filecoin', 'Retrieving miners...' ]
+          type: "succeed",
+          result: ["t01000"],
+          scope: ["@truffle/preserve-to-filecoin", "Retrieving miners..."]
         },
         {
-          type: 'step',
-          message: 'Proposing storage deal...',
-          scope: [ '@truffle/preserve-to-filecoin', 'Proposing storage deal...' ]
+          type: "step",
+          message: "Proposing storage deal...",
+          scope: ["@truffle/preserve-to-filecoin", "Proposing storage deal..."]
         },
         {
-          type: 'declare',
-          message: 'Deal CID',
+          type: "declare",
+          message: "Deal CID",
           scope: [
-            '@truffle/preserve-to-filecoin',
-            'Proposing storage deal...',
-            'Deal CID'
+            "@truffle/preserve-to-filecoin",
+            "Proposing storage deal...",
+            "Deal CID"
           ]
         },
         {
-          type: 'stop',
+          type: "stop",
           scope: [
-            '@truffle/preserve-to-filecoin',
-            'Proposing storage deal...',
-            'Deal CID'
+            "@truffle/preserve-to-filecoin",
+            "Proposing storage deal...",
+            "Deal CID"
           ]
         },
         {
-          type: 'fail',
+          type: "fail",
           error: expect.objectContaining({
-            message: expect.stringMatching(/provided address doesn't exist in wallet|Ganache doesn't have the private key for account/)
+            message: expect.stringMatching(
+              /provided address doesn't exist in wallet|Ganache doesn't have the private key for account/
+            )
           }),
-          scope: [ '@truffle/preserve-to-filecoin', 'Proposing storage deal...' ]
+          scope: ["@truffle/preserve-to-filecoin", "Proposing storage deal..."]
         },
-        { type: 'abort', scope: [ '@truffle/preserve-to-filecoin' ] }
+        { type: "abort", scope: ["@truffle/preserve-to-filecoin"] }
       ];
 
       expect(emittedEvents).toMatchObject(expectedEvents);
     });
 
-    describe("Lotus policy (does not work with Ganache)", () => {
+    describe.skip("Lotus policy (does not work with Ganache)", () => {
       it("should fail when storage duration is < 518400 blocks", async () => {
         const target = {
           source: {
@@ -202,85 +218,94 @@ describe("preserve", () => {
         });
 
         const expectedEvents = [
-          { type: 'begin', scope: [ '@truffle/preserve-to-filecoin' ] },
+          { type: "begin", scope: ["@truffle/preserve-to-filecoin"] },
           {
-            type: 'log',
-            message: 'Preserving to Filecoin...',
-            scope: [ '@truffle/preserve-to-filecoin' ]
+            type: "log",
+            message: "Preserving to Filecoin...",
+            scope: ["@truffle/preserve-to-filecoin"]
           },
           {
-            type: 'step',
-            message: 'Connecting to Filecoin node at http://localhost:7777/rpc/v0...',
+            type: "step",
+            message:
+              "Connecting to Filecoin node at http://localhost:7777/rpc/v0...",
             scope: [
-              '@truffle/preserve-to-filecoin',
-              'Connecting to Filecoin node at http://localhost:7777/rpc/v0...'
+              "@truffle/preserve-to-filecoin",
+              "Connecting to Filecoin node at http://localhost:7777/rpc/v0..."
             ]
           },
           {
-            type: 'succeed',
+            type: "succeed",
             result: expect.any(String),
             scope: [
-              '@truffle/preserve-to-filecoin',
-              'Connecting to Filecoin node at http://localhost:7777/rpc/v0...'
+              "@truffle/preserve-to-filecoin",
+              "Connecting to Filecoin node at http://localhost:7777/rpc/v0..."
             ]
           },
           {
-            type: 'step',
-            message: 'Retrieving miners...',
-            scope: [ '@truffle/preserve-to-filecoin', 'Retrieving miners...' ]
+            type: "step",
+            message: "Retrieving miners...",
+            scope: ["@truffle/preserve-to-filecoin", "Retrieving miners..."]
           },
           {
-            type: 'succeed',
-            result: [ 'f01000' ],
-            scope: [ '@truffle/preserve-to-filecoin', 'Retrieving miners...' ]
+            type: "succeed",
+            result: ["f01000"],
+            scope: ["@truffle/preserve-to-filecoin", "Retrieving miners..."]
           },
           {
-            type: 'step',
-            message: 'Proposing storage deal...',
-            scope: [ '@truffle/preserve-to-filecoin', 'Proposing storage deal...' ]
-          },
-          {
-            type: 'declare',
-            message: 'Deal CID',
+            type: "step",
+            message: "Proposing storage deal...",
             scope: [
-              '@truffle/preserve-to-filecoin',
-              'Proposing storage deal...',
-              'Deal CID'
+              "@truffle/preserve-to-filecoin",
+              "Proposing storage deal..."
             ]
           },
           {
-            type: 'resolve',
+            type: "declare",
+            message: "Deal CID",
+            scope: [
+              "@truffle/preserve-to-filecoin",
+              "Proposing storage deal...",
+              "Deal CID"
+            ]
+          },
+          {
+            type: "resolve",
             resolution: expect.any(CID),
             payload: expect.any(String),
             scope: [
-              '@truffle/preserve-to-filecoin',
-              'Proposing storage deal...',
-              'Deal CID'
+              "@truffle/preserve-to-filecoin",
+              "Proposing storage deal...",
+              "Deal CID"
             ]
           },
           {
-            type: 'succeed',
-            scope: [ '@truffle/preserve-to-filecoin', 'Proposing storage deal...' ]
-          },
-          {
-            type: 'step',
-            message: 'Waiting for deal to finish...',
+            type: "succeed",
             scope: [
-              '@truffle/preserve-to-filecoin',
-              'Waiting for deal to finish...'
+              "@truffle/preserve-to-filecoin",
+              "Proposing storage deal..."
             ]
           },
           {
-            type: 'fail',
+            type: "step",
+            message: "Waiting for deal to finish...",
+            scope: [
+              "@truffle/preserve-to-filecoin",
+              "Waiting for deal to finish..."
+            ]
+          },
+          {
+            type: "fail",
             error: expect.objectContaining({
-              message: expect.stringContaining("Deal failed: unexpected deal status while waiting for data request: 11 (StorageDealFailing). Provider message: deal rejected: deal duration out of bounds")
+              message: expect.stringContaining(
+                "Deal failed: unexpected deal status while waiting for data request: 11 (StorageDealFailing). Provider message: deal rejected: deal duration out of bounds"
+              )
             }),
             scope: [
-              '@truffle/preserve-to-filecoin',
-              'Waiting for deal to finish...'
+              "@truffle/preserve-to-filecoin",
+              "Waiting for deal to finish..."
             ]
           },
-          { type: 'abort', scope: [ '@truffle/preserve-to-filecoin' ] }
+          { type: "abort", scope: ["@truffle/preserve-to-filecoin"] }
         ];
 
         expect(emittedEvents).toMatchObject(expectedEvents);
@@ -308,85 +333,94 @@ describe("preserve", () => {
         });
 
         const expectedEvents = [
-          { type: 'begin', scope: [ '@truffle/preserve-to-filecoin' ] },
+          { type: "begin", scope: ["@truffle/preserve-to-filecoin"] },
           {
-            type: 'log',
-            message: 'Preserving to Filecoin...',
-            scope: [ '@truffle/preserve-to-filecoin' ]
+            type: "log",
+            message: "Preserving to Filecoin...",
+            scope: ["@truffle/preserve-to-filecoin"]
           },
           {
-            type: 'step',
-            message: 'Connecting to Filecoin node at http://localhost:7777/rpc/v0...',
+            type: "step",
+            message:
+              "Connecting to Filecoin node at http://localhost:7777/rpc/v0...",
             scope: [
-              '@truffle/preserve-to-filecoin',
-              'Connecting to Filecoin node at http://localhost:7777/rpc/v0...'
+              "@truffle/preserve-to-filecoin",
+              "Connecting to Filecoin node at http://localhost:7777/rpc/v0..."
             ]
           },
           {
-            type: 'succeed',
+            type: "succeed",
             result: expect.any(String),
             scope: [
-              '@truffle/preserve-to-filecoin',
-              'Connecting to Filecoin node at http://localhost:7777/rpc/v0...'
+              "@truffle/preserve-to-filecoin",
+              "Connecting to Filecoin node at http://localhost:7777/rpc/v0..."
             ]
           },
           {
-            type: 'step',
-            message: 'Retrieving miners...',
-            scope: [ '@truffle/preserve-to-filecoin', 'Retrieving miners...' ]
+            type: "step",
+            message: "Retrieving miners...",
+            scope: ["@truffle/preserve-to-filecoin", "Retrieving miners..."]
           },
           {
-            type: 'succeed',
-            result: [ 'f01000' ],
-            scope: [ '@truffle/preserve-to-filecoin', 'Retrieving miners...' ]
+            type: "succeed",
+            result: ["f01000"],
+            scope: ["@truffle/preserve-to-filecoin", "Retrieving miners..."]
           },
           {
-            type: 'step',
-            message: 'Proposing storage deal...',
-            scope: [ '@truffle/preserve-to-filecoin', 'Proposing storage deal...' ]
-          },
-          {
-            type: 'declare',
-            message: 'Deal CID',
+            type: "step",
+            message: "Proposing storage deal...",
             scope: [
-              '@truffle/preserve-to-filecoin',
-              'Proposing storage deal...',
-              'Deal CID'
+              "@truffle/preserve-to-filecoin",
+              "Proposing storage deal..."
             ]
           },
           {
-            type: 'resolve',
+            type: "declare",
+            message: "Deal CID",
+            scope: [
+              "@truffle/preserve-to-filecoin",
+              "Proposing storage deal...",
+              "Deal CID"
+            ]
+          },
+          {
+            type: "resolve",
             resolution: expect.any(CID),
             payload: expect.any(String),
             scope: [
-              '@truffle/preserve-to-filecoin',
-              'Proposing storage deal...',
-              'Deal CID'
+              "@truffle/preserve-to-filecoin",
+              "Proposing storage deal...",
+              "Deal CID"
             ]
           },
           {
-            type: 'succeed',
-            scope: [ '@truffle/preserve-to-filecoin', 'Proposing storage deal...' ]
-          },
-          {
-            type: 'step',
-            message: 'Waiting for deal to finish...',
+            type: "succeed",
             scope: [
-              '@truffle/preserve-to-filecoin',
-              'Waiting for deal to finish...'
+              "@truffle/preserve-to-filecoin",
+              "Proposing storage deal..."
             ]
           },
           {
-            type: 'fail',
+            type: "step",
+            message: "Waiting for deal to finish...",
+            scope: [
+              "@truffle/preserve-to-filecoin",
+              "Waiting for deal to finish..."
+            ]
+          },
+          {
+            type: "fail",
             error: expect.objectContaining({
-              message: expect.stringContaining("Deal failed: unexpected deal status while waiting for data request: 11 (StorageDealFailing). Provider message: deal rejected: storage price per epoch less than asking price")
+              message: expect.stringContaining(
+                "Deal failed: unexpected deal status while waiting for data request: 11 (StorageDealFailing). Provider message: deal rejected: storage price per epoch less than asking price"
+              )
             }),
             scope: [
-              '@truffle/preserve-to-filecoin',
-              'Waiting for deal to finish...'
+              "@truffle/preserve-to-filecoin",
+              "Waiting for deal to finish..."
             ]
           },
-          { type: 'abort', scope: [ '@truffle/preserve-to-filecoin' ] }
+          { type: "abort", scope: ["@truffle/preserve-to-filecoin"] }
         ];
 
         expect(emittedEvents).toMatchObject(expectedEvents);
