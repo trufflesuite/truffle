@@ -207,6 +207,31 @@ let txlog = createSelectorTree({
     ),
 
     /**
+     * txlog.current.currentFunctionIsAsExpected
+     *
+     * Does the function we're currently in according to the AST,
+     * match the function we're currently in according to the txlog?
+     * (if we're in a modifier we'll ignore this check)
+     */
+    currentFunctionIsAsExpected: createLeaf(
+      ["./node", data.current.function, data.current.contract],
+      (txlogNode, currentFunction, contractNode) =>
+      currentFunction && 
+      (
+        currentFunction.nodeType === "ContractDefinition" ||
+        currentFunction.nodeType === "ModifierDefinition" ||
+        (
+          currentFunction.nodeType === "FunctionDefinition" &&
+          currentFunction.name === txlogNode.functionName &&
+          (
+            txlogNode.kind === "callexternal" ||
+            (contractNode && contractNode.name === txlogNode.contractName)
+          )
+        )
+      )
+    ),
+
+    /**
      * txlog.current.compilationId
      */
     compilationId: createLeaf([data.current.compilationId], identity),
