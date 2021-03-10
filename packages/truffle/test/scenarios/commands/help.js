@@ -30,7 +30,7 @@ describe("truffle help [ @standalone ]", function () {
       assert(output.includes("Description:  Compile contract source files"));
     }).timeout(20000);
 
-    it("displays help for the given command with help function", async () => {
+    it("displays help for the given command with help function [ @>=12 ]", async () => {
       await CommandRunner.run("help preserve", config);
       const output = logger.contents();
       assert(

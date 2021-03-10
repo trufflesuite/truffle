@@ -15,7 +15,7 @@ const loadSandboxLogger = source => {
   });
 };
 
-describe("truffle preserve [ @standalone ]", () => {
+describe("truffle preserve [ @standalone @>=12 ]", () => {
   // These tests are basically duplicates from "truffle run", but for "truffle preserve"
   describe("plugin error handling", () => {
     it("should throw when plugins are configured but not installed", async () => {
