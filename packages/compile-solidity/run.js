@@ -245,7 +245,10 @@ function detectErrors({
 
   const rawWarnings = options.strict
     ? [] // none of those in strict mode
-    : outputErrors.filter(({ severity }) => severity === "warning");
+    : outputErrors.filter(({ severity, message }) =>
+      severity === "warning" &&
+      message !== "Yul is still experimental. Please use the output with care." //filter out Yul warning
+    );
 
   // extract messages
   let errors = rawErrors.map(({ formattedMessage }) => formattedMessage).join();
