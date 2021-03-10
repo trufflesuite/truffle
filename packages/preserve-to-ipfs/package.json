@@ -20,10 +20,10 @@
     "access": "public"
   },
   "devDependencies": {
+    "@ganache/filecoin": "^0.1.2",
     "@types/jest": "^26.0.20",
     "@types/node": "^14.14.22",
-    "ipfs": "^0.53.2",
-    "ipfsd-ctl": "^7.2.0",
+    "ganache": "^3.0.0-filecoin.3",
     "jest": "^26.6.3",
     "semver": "^7.3.4",
     "ts-jest": "^26.5.0",
