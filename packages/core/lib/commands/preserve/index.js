@@ -3,8 +3,14 @@ module.exports = {
   description:
     "Save data to decentralized storage platforms like IPFS and Filecoin",
   help: async options => {
+    const TruffleError = require("@truffle/error");
     const { Plugins } = require("@truffle/plugins");
     const { getConfig } = require("./plugins");
+    const semver = require("semver");
+
+    if (!semver.satisfies(process.version, ">=12")) {
+      throw new TruffleError(`The current version of Node (${process.version}) does not support \`truffle preserve\`, please update to Node >=12`);
+    }
 
     const config = getConfig(options);
 
@@ -35,6 +41,11 @@ module.exports = {
     const { Plugins } = require("@truffle/plugins");
     const { getConfig, constructPlugins } = require("./plugins");
     const { preserve, ConsoleReporter } = require("@truffle/preserve");
+    const semver = require("semver");
+
+    if (!semver.satisfies(process.version, ">=12")) {
+      throw new TruffleError(`The current version of Node (${process.version}) does not support \`truffle preserve\`, please update to Node >=12`);
+    }
 
     const config = getConfig(options);
 
