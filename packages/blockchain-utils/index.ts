@@ -84,8 +84,8 @@ const Blockchain = {
     return new Promise((resolve, reject) => {
       const parsedUri = this.parse(uri);
 
-      const expected_genesis = parsedUri.genesis_hash;
-      const expected_block = parsedUri.block_hash;
+      const expectedGenesis = parsedUri.genesis_hash;
+      const expectedBlock = parsedUri.block_hash;
 
       this.getBlockByNumber(
         "0x0",
@@ -93,10 +93,10 @@ const Blockchain = {
         (err: Error, { result }: JsonRPCResponse) => {
           if (err) return reject(err);
           const block = result;
-          if (block.hash !== expected_genesis) return resolve(false);
+          if (block.hash !== expectedGenesis) return resolve(false);
 
           this.getBlockByHash(
-            expected_block,
+            expectedBlock,
             provider,
             (err: Error, { result }: JsonRPCResponse) => {
               // Treat an error as if the block didn't exist. This is because

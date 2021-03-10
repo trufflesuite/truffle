@@ -3,7 +3,7 @@ var util = require("./util");
 
 describe("Network Object [ @geth ]", function () {
   var Example;
-  var network_id;
+  var networkId;
 
   it("errors when setting an invalid provider", function (done) {
     try {
@@ -19,19 +19,19 @@ describe("Network Object [ @geth ]", function () {
     var NewExample = await util.createExample();
 
     const result = await util.setUpProvider(NewExample);
-    network_id = await result.web3.eth.net.getId();
+    networkId = await result.web3.eth.net.getId();
 
-    assert.equal(NewExample.network_id, null);
+    assert.equal(NewExample.networkId, null);
 
     const example = await NewExample.new(1);
     // We have a network id in this case, with new(), since it was detected,
     // but no further configuration.
-    assert.equal(NewExample.network_id, network_id);
-    assert.equal(NewExample.toJSON().networks[network_id], null);
+    assert.equal(NewExample.networkId, networkId);
+    assert.equal(NewExample.toJSON().networks[networkId], null);
 
     NewExample.address = example.address;
     assert.equal(
-      NewExample.toJSON().networks[network_id].address,
+      NewExample.toJSON().networks[networkId].address,
       example.address
     );
   });

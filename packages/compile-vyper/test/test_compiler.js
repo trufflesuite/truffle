@@ -29,7 +29,7 @@ describe("vyper compiler", function () {
       );
     });
 
-    const hex_regex = /^([0-9a-fA-F]{2})*$/;
+    const hexRegex = /^([0-9a-fA-F]{2})*$/;
 
     contracts.forEach((contract, index) => {
       assert.notEqual(
@@ -49,11 +49,11 @@ describe("vyper compiler", function () {
       );
 
       assert(
-        hex_regex.test(contract.bytecode.bytes),
+        hexRegex.test(contract.bytecode.bytes),
         "Bytecode is a valid hex string w/o prefix"
       );
       assert(
-        hex_regex.test(contract.deployedBytecode.bytes),
+        hexRegex.test(contract.deployedBytecode.bytes),
         "Deployed bytecode is a valid hex string w/o prefix"
       );
 
