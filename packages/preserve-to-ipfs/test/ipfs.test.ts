@@ -5,13 +5,12 @@ import * as Preserve from "@truffle/preserve";
 import { tests } from "./ipfs.fixture";
 import { fetch } from "./utils/fetch";
 import { IpfsClient } from "../lib/ipfs-adapter";
-import { describeForNode12 } from "./utils/conditional";
 import { preserveToIpfs, preserveToIpfsWithEvents } from "./utils/preserve";
 import Ganache from "ganache";
 
 jest.setTimeout(20000);
 
-describeForNode12("preserve", () => {
+describe("preserve", () => {
   // Default IPFS nodes exposed by Ganache
   const address = "http://localhost:5001/api/v0";
 
