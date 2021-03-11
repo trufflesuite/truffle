@@ -57,7 +57,9 @@ function* updateTransactionLogSaga() {
       }
     } else if (jumpDirection === "o") {
       const internal = yield select(txlog.current.inInternalSourceOrYul); //don't log jumps out of internal sources or Yul
-      if (!internal) {
+      const astMatchesTxLog = yield select(txlog.current.currentFunctionIsAsExpected); //don't log returns from the wrong function...?
+      //(I've added this second check due to a strange case Amal found, hopefully this doesn't screw anything up)
+      if (!internal && astMatchesTxLog) {
         //in this case, we have to do decoding & fn identification
         const newPointer = yield select(txlog.current.internalReturnPointer);
         const outputAllocations = yield select(
