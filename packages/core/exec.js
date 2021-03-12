@@ -2,9 +2,9 @@
 var path = require("path");
 var spawn = require("child_process").spawn;
 
-var cli_path = path.resolve(path.join(__dirname, "./cli.js"));
+var cliPath = path.resolve(path.join(__dirname, "./cli.js"));
 
-var args = [cli_path, "exec"];
+var args = [cliPath, "exec"];
 
 Array.prototype.push.apply(args, process.argv.slice(2));
 

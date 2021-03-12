@@ -14,7 +14,7 @@ describe("Custom options", () => {
       prefix: "tmp-test-contract-",
     });
 
-    const expected_filepath = path.join(tempDir.name, "Example.json");
+    const expectedFilepath = path.join(tempDir.name, "Example.json");
 
     artifactor = new Artifactor(tempDir.name);
 
@@ -29,7 +29,7 @@ describe("Custom options", () => {
         "x-from-dependency": "somedep",
       })
       .then(() => {
-        const json = requireNoCache(expected_filepath);
+        const json = requireNoCache(expectedFilepath);
         Example = contract(json);
 
         assert.equal(Example["x-from-dependency"], "somedep");

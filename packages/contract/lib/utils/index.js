@@ -132,14 +132,14 @@ const Utils = {
   getTxParams(methodABI, args) {
     const constructor = this;
 
-    const expected_arg_count = methodABI ? methodABI.inputs.length : 0;
+    const expectedArgCount = methodABI ? methodABI.inputs.length : 0;
 
     let tx_params = {};
-    const last_arg = args[args.length - 1];
+    const lastArg = args[args.length - 1];
 
     if (
-      args.length === expected_arg_count + 1 &&
-      Utils.isTxParams(last_arg)
+      args.length === expectedArgCount + 1 &&
+      Utils.isTxParams(lastArg)
     ) {
       tx_params = args.pop();
     }
@@ -152,10 +152,10 @@ const Utils = {
   checkLibraries() {
     const constructor = this;
     const regex = /__[^_]+_+/g;
-    let unlinked_libraries = constructor.binary.match(regex);
+    let unlinkedLibraries = constructor.binary.match(regex);
 
-    if (unlinked_libraries !== null) {
-      unlinked_libraries = unlinked_libraries
+    if (unlinkedLibraries !== null) {
+      unlinkedLibraries = unlinkedLibraries
         .map((
           name // Remove underscores
         ) => name.replace(/_/g, ""))
@@ -174,7 +174,7 @@ const Utils = {
         constructor.contractName
       } contains unresolved libraries. You must deploy and link the following libraries before you can deploy a new version of ${
         constructor.contractName
-      }: ${unlinked_libraries}`;
+      }: ${unlinkedLibraries}`;
 
       throw new Error(error);
     }

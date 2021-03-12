@@ -116,12 +116,12 @@ describe.skip("EthPM integration", function () {
         packages: ["owned"]
       })
     );
-    const expected_install_directory = path.resolve(
+    const expectedInstallDirectory = path.resolve(
       path.join(config.working_directory, "installed_contracts", "owned")
     );
 
-    assertFile(path.join(expected_install_directory, "ethpm.json"));
-    assertFile(path.join(expected_install_directory, "contracts", "owned.sol"));
+    assertFile(path.join(expectedInstallDirectory, "ethpm.json"));
+    assertFile(path.join(expectedInstallDirectory, "contracts", "owned.sol"));
   });
 
   it("successfully installs and provisions a package with dependencies from EthPM", async function () {
@@ -138,24 +138,24 @@ describe.skip("EthPM integration", function () {
         packages: ["transferable"]
       })
     );
-    const expected_install_directory = path.resolve(
+    const expectedInstallDirectory = path.resolve(
       path.join(config.working_directory, "installed_contracts")
     );
 
     assertFile(
-      path.join(expected_install_directory, "transferable", "ethpm.json")
+      path.join(expectedInstallDirectory, "transferable", "ethpm.json")
     );
     assertFile(
       path.join(
-        expected_install_directory,
+        expectedInstallDirectory,
         "transferable",
         "contracts",
         "transferable.sol"
       )
     );
-    assertFile(path.join(expected_install_directory, "owned", "ethpm.json"));
+    assertFile(path.join(expectedInstallDirectory, "owned", "ethpm.json"));
     assertFile(
-      path.join(expected_install_directory, "owned", "contracts", "owned.sol")
+      path.join(expectedInstallDirectory, "owned", "contracts", "owned.sol")
     );
 
     // Write a contract that uses transferable, so it will be compiled.
