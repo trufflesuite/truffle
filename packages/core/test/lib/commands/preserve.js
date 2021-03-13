@@ -4,10 +4,16 @@ const preserveCommand = require("../../../lib/commands/preserve");
 
 const chai = require("chai");
 const chaiAsPromised = require("chai-as-promised");
+const semver = require("semver");
 chai.use(chaiAsPromised);
 const { assert } = chai;
 
-describe("preserve", () => {
+// Skip preserve tests on Node 10
+const conditionalDescribe = semver.satisfies(process.version, ">=12")
+  ? describe
+  : describe.skip;
+
+conditionalDescribe("preserve", () => {
   // Add mockPlugins folder to require path so stub plugins can be found
   originalRequire("app-module-path").addPath(
     path.resolve(__dirname, "../../mockPlugins")

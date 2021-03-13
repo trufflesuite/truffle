@@ -1,10 +1,7 @@
 class Recipe {
-  static help = "Dummy Recipe";
-
-  name = "dummy-recipe";
-  dependencies = [];
-
   constructor(environment) {
+    this.name = "dummy-recipe";
+    this.dependencies = [];
     this.environmentName = environment.selectedEnvironment;
   }
 
@@ -15,5 +12,7 @@ class Recipe {
     return "Successfully called dummy-recipe:preserve()";
   }
 }
+
+Recipe.help = "Dummy Recipe";
 
 module.exports = { Recipe };
