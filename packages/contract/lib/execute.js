@@ -524,8 +524,12 @@ const execute = {
   //input works the same as input to web3.sendTransaction
   //(well, OK, it's lacking some things there too, but again, good enough
   //for our purposes)
-  sendTransaction: function (web3, params, promiEvent, context) {
-    //first off: if we don't need the debugger, let's not risk any errors on our part,
+  sendTransaction: async function (web3, params, promiEvent, context) {
+    // get the chainId to be compliant with EIP-155
+    const chainId = await web3.eth.net.getId();
+    params.chainId = chainId;
+
+    //if we don't need the debugger, let's not risk any errors on our part,
     //and just have web3 do everything
     if (!promiEvent || !promiEvent.debug) {
       const deferred = web3.eth.sendTransaction(params);
