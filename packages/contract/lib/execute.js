@@ -526,8 +526,9 @@ const execute = {
   //for our purposes)
   sendTransaction: async function (web3, params, promiEvent, context) {
     // get the chainId to be compliant with EIP-155
+    // Geth wants this value in base 16 prefixed by "0x"
     const chainId = await web3.eth.net.getId();
-    params.chainId = chainId;
+    params.chainId = `0x${chainId.toString(16)}`;
 
     //if we don't need the debugger, let's not risk any errors on our part,
     //and just have web3 do everything
