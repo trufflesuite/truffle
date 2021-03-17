@@ -19,6 +19,7 @@ export interface WrapOptions {
   userDefinedTypes?: Format.Types.TypesById;
   name?: string;
   loose?: boolean;
+  oldOptionsBehavior?: boolean; //to not break Truffle Contract
 }
 
 export interface ResolveOptions {

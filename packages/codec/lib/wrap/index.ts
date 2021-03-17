@@ -90,6 +90,7 @@ function* wrapForMethodRaw(
     return yield* wrapMultiple(method.inputs, inputs, {
       userDefinedTypes,
       loose: true,
+      oldOptionsBehavior: true, //HACK
       name: "<arguments>"
     });
   } else if (allowOptions && method.inputs.length === inputs.length - 1) {
@@ -102,6 +103,7 @@ function* wrapForMethodRaw(
     return yield* wrapMultiple(inputsWithOptions, inputs, {
       userDefinedTypes,
       loose: true,
+      oldOptionsBehavior: true, //HACK
       name: "<arguments>"
     });
   } else {
@@ -154,6 +156,7 @@ export function* resolveAndWrap(
         yield* wrap({ typeClass: "options" }, lastInput, {
           name: "<options>",
           loose: true,
+          oldOptionsBehavior: true, //HACK
           userDefinedTypes
         })
       );

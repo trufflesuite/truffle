@@ -198,9 +198,12 @@ export class Encoder {
       Codec.Conversion.toBytes(resolution.method.selector),
       this.allocations.abi
     );
+    //note that the data option on resolution.options is ignored;
+    //perhaps we can change this in Truffle 6, but for now we keep this
+    //for compatibility
     return {
+      ...resolution.options,
       data: Codec.Conversion.toHexString(data),
-      ...resolution.options
     };
   }
 
@@ -216,9 +219,12 @@ export class Encoder {
       Codec.Conversion.toBytes(resolution.method.selector),
       this.allocations.abi
     );
+    //note that the data option on resolution.options is ignored;
+    //perhaps we can change this in Truffle 6, but for now we keep this
+    //for compatibility
     return {
-      data: Codec.Conversion.toHexString(data),
-      ...resolution.options
+      ...resolution.options,
+      data: Codec.Conversion.toHexString(data)
     };
   }
 
@@ -478,7 +484,7 @@ export class ContractEncoder {
       inputs,
       options
     );
-    if (this.toAddress && !resolution.options.to) {
+    if (this.toAddress) {
       resolution.options.to = this.toAddress;
     }
     return resolution;
@@ -495,8 +501,13 @@ export class ContractEncoder {
       inputs,
       options
     );
-    if (this.toAddress && !encoded.to && abi.type === "function") {
+    //note that if this.toAddress is set, the to option is ignored
+    //perhaps we can change this in Truffle 6, but for now we keep this
+    //for compatibility
+    if (this.toAddress && abi.type === "function") {
       encoded.to = this.toAddress;
+    } else if (abi.type === "constructor") {
+      encoded.to = undefined;
     }
     return encoded;
   }
@@ -516,7 +527,10 @@ export class ContractEncoder {
       inputs,
       options
     );
-    if (this.toAddress && !encoded.to) {
+    //note that if this.toAddress is set, the to option is ignored
+    //perhaps we can change this in Truffle 6, but for now we keep this
+    //for compatibility
+    if (this.toAddress) {
       encoded.to = this.toAddress;
     }
     return encoded;

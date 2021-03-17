@@ -1751,12 +1751,27 @@ function* wrapTxOptions(
       ...specialKeys
     ];
     const badKey = Object.keys(input).find(key => !allKeys.includes(key));
-    if (badKey !== undefined) {
+    const goodKey = Object.keys(input).find(key => allKeys.includes(key));
+    if (badKey !== undefined && !wrapOptions.oldOptionsBehavior) {
+      //note we allow extra keys if oldOptionsBehavior is on -- this is a HACK
+      //to preserve existing behavior of Truffle Contract (perhaps we can
+      //change this in Truffle 6)
       throw new TypeMismatchError(
         dataType,
         input,
         wrapOptions.name,
         `Transaction options included unknown option ${badKey}`
+      );
+    }
+    if (wrapOptions.oldOptionsBehavior && goodKey === undefined) {
+      //similarly, if oldOptionsBehavior is on, we require at least
+      //one *legit* key (again, HACK to preserve existing behavior,
+      //maybe remove this in Truffle 6)
+      throw new TypeMismatchError(
+        dataType,
+        input,
+        wrapOptions.name,
+        `Transaction options included no recognized options`
       );
     }
     //otherwise, if all keys are transaction options, let's process them...
