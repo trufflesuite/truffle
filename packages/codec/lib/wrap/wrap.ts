@@ -39,7 +39,7 @@ const Web3Utils = require("web3-utils"); //importing untyped, sorry!
 function wrongArrayLengthMessage(expected: number | BN, got: number): string {
   return `Incorrect array length (expected ${expected.toString()} entries, got ${got})`;
 }
-const base64Pattern = /([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{2}([A-Za-z0-9+/]|=)=)?/; //Vim's syntax highlighting is wrong here
+const base64Pattern = /^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{2}([A-Za-z0-9+/]|=)=)?$/; //Vim's syntax highlighting is wrong here
 function base64Length(base64: string): number {
   const [_, endingEquals] = base64.match(/(=*)$/); //note this match always succeeds
   return (base64.length * 3) / 4 - endingEquals.length;
@@ -436,7 +436,7 @@ function* wrapFunctionExternal(
       );
     }
     address = input.slice(0, EvmUtils.ADDRESS_SIZE * 2 + 2).toLowerCase(); //bypass checksum validation here
-    selector = "0x" + input.slice(EvmUtils.ADDRESS_SIZE * 2 + 2);
+    selector = "0x" + input.slice(EvmUtils.ADDRESS_SIZE * 2 + 2).toLowerCase();
   } else if (isString(input)) {
     return yield* wrapFunctionExternal(dataType, input.valueOf(), wrapOptions);
   } else {

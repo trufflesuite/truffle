@@ -42,6 +42,7 @@ const outOfRangeMessage = "Input is outside the range of this numeric type";
 const outOfRangeEnumMessage = "Input is outside the range of this enum type";
 export const checksumFailedMessage =
   "Address checksum failed (use all lowercase or all uppercase to circumvent)";
+const invalidUtf16Message = "Input string was not valid UTF-16";
 
 export function wrappedTypeMessage(dataType: Format.Types.Type): string {
   return `Input is a wrapped value of type ${Format.Types.typeString(
@@ -58,7 +59,7 @@ function tooPreciseMessage(expected: number, got: number): string {
   return `Input has too many decimal places for type (expected ${expected} decimal places, got ${got} decimal places)`;
 }
 export function notABytestringMessage(what: string): string {
-  return `${what} is not a valid bytestring`;
+  return `${what} is not a valid bytestring (even-length hex string)`;
 }
 export function wrongLengthMessage(
   what: string,
@@ -223,7 +224,7 @@ export function wrapString(
       dataType,
       input,
       wrapOptions.name,
-      "Input string was not valid UTF-16"
+      invalidUtf16Message
     );
   }
   return {
@@ -284,7 +285,7 @@ export function wrapBytes(
   } else if (Utils.isTypeValueInput(input)) {
     //2. is it a type/value?
     //if so wrap input.value (with loose on so strings will work)
-    if (!input.type.match(/^bytes\d*$/)) {
+    if (!input.type.match(/^byte(s\d*)?$/)) {
       throw new TypeMismatchError(
         dataType,
         input,
@@ -292,11 +293,18 @@ export function wrapBytes(
         specifiedTypeMessage(input.type)
       );
     }
+    debug("input.type: %s", input.type);
     let length: number | null = null;
-    let match = input.type.match("^bytes(d+)$");
+    let match = input.type.match(/^bytes(\d+)$/);
+    debug("match: %O", match);
     if (match) {
       length = Number(match[1]);
+    } else if (input.type === "byte") {
+      //if type is byte, set length to 1;
+      //otherwise it's type bytes so leave it null
+      length = 1;
     }
+    debug("length: %o", length);
     if (
       (length === null && dataType.kind === "dynamic") ||
       (dataType.kind === "static" && length === dataType.length)
@@ -323,8 +331,8 @@ export function wrapBytes(
           "Input was not a valid even-length hex string"
         );
       }
-      asHex = input;
-      //furthe validation and padding come later
+      asHex = input.toLowerCase();
+      //further validation and padding come later
     } else {
       throw new TypeMismatchError(
         dataType,
@@ -343,9 +351,18 @@ export function wrapBytes(
     checkUint8ArrayLike(input, dataType, wrapOptions.name); //will throw appropriate errors
     asHex = Conversion.toHexString(new Uint8Array(input)); //I am surprised TS accepts this!
   } else if (Utils.isEncodingTextInput(input)) {
-    switch(input.encoding) {
+    switch (input.encoding) {
       case "utf8":
-        asHex = Conversion.toHexString(Conversion.stringToBytes(input.text));
+        try {
+          asHex = Conversion.toHexString(Conversion.stringToBytes(input.text));
+        } catch {
+          throw new TypeMismatchError(
+            dataType,
+            input,
+            wrapOptions.name,
+            invalidUtf16Message
+          );
+        }
         break;
       default:
         throw new TypeMismatchError(
@@ -574,6 +591,17 @@ export function* wrapIntegerOrEnum(
     }
   } else if (typeof input === "string") {
     //hoo boy...
+    if(input.trim() === "") {
+      //bigint accepts this but we shouldn't
+      throw new TypeMismatchError(
+        dataType,
+        input,
+        wrapOptions.name,
+        dataType.typeClass === "enum"
+          ? badEnumMessage
+          : nonNumericMessage
+      );
+    }
     try {
       //first: is it just an integer numeric string that BigInt
       //will accept? [we'll juse BigInt as it accepts more than BN does]
@@ -633,8 +661,12 @@ export function* wrapIntegerOrEnum(
           } catch {
             positiveAsBN = null;
           }
-          if (positiveAsBN === null || positiveString.match(/^(-|\s)/)) {
-            //no double negation, and no space after the minus!
+          if (
+            positiveAsBN === null ||
+            positiveString === "" ||
+            positiveString.match(/^(-|\s)/)
+          ) {
+            //no double negation, no bare "-", and no space after the minus!
             //(we do this as a string check, rather than checking if
             //positiveAsBN is >=0, in order to prevent entering e.g. "--" or "- 2")
             throw new TypeMismatchError(
@@ -778,7 +810,7 @@ export function* wrapIntegerOrEnum(
       const fullType = <Format.Types.EnumType>(
         Format.Types.fullType(dataType, wrapOptions.userDefinedTypes)
       );
-      if (asBN.gten(fullType.options.length)) {
+      if (asBN.isNeg() || asBN.gten(fullType.options.length)) {
         throw new TypeMismatchError(
           dataType,
           input,
@@ -827,7 +859,7 @@ function checkUint8ArrayLike(
       typeof input[index] !== "number" ||
       input[index] < 0 ||
       input[index] >= 256 ||
-      !Number.isFinite(input[index])
+      !Number.isInteger(input[index])
     ) {
       throw new TypeMismatchError(
         dataType,
