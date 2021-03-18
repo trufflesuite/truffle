@@ -56,12 +56,11 @@ conditionalDescribe("preserve", () => {
         {
           option: "--ipfs",
           description: "Preserve to IPFS"
+        },
+        {
+          option: "--filecoin",
+          description: "Preserve to Filecoin"
         }
-        // TODO: Uncomment when preserve-to-filecoin is integrated
-        // {
-        //   option: "--filecoin",
-        //   description: "Preserve to Filecoin"
-        // }
       ];
 
       assert.deepEqual(help.options, expectedFlags);

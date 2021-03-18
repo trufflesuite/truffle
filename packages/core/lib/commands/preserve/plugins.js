@@ -2,9 +2,8 @@ const Config = require("@truffle/config");
 
 const defaultPlugins = [
   "@truffle/preserve-fs",
-  "@truffle/preserve-to-ipfs"
-  // TODO: Uncomment this when preserve-to-filecoin is integrated
-  // "@truffle/preserve-to-filecoin"
+  "@truffle/preserve-to-ipfs",
+  "@truffle/preserve-to-filecoin"
 ];
 
 const getConfig = options => {
