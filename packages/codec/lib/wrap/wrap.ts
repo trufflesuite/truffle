@@ -995,7 +995,16 @@ function* wrapDecimal(
   if (typeof input === "number") {
     //numeric case
     if (Number.isFinite(input)) {
-      asBig = new Big(input);
+      if (Utils.isSafeNumber(dataType, input)) {
+        asBig = new Big(input);
+      } else {
+        throw new TypeMismatchError(
+          dataType,
+          input,
+          wrapOptions.name,
+          "Given number is outside the safe range for this data type (possible loss of precision); use a numeric string, bigint, or big number class instead"
+        );
+      }
     } else {
       throw new TypeMismatchError(
         dataType,

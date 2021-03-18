@@ -1,5 +1,6 @@
 import {
   NumericType,
+  DecimalType,
   TypeValueInput,
   ContractInput,
   FunctionExternalInput,
@@ -36,6 +37,12 @@ export function minValue(dataType: NumericType): Big {
   }
   const minIntegerValue = new Big(0).minus(new Big(2).pow(dataType.bits));
   return Conversion.shiftBigDown(minIntegerValue, places(dataType));
+}
+
+export function isSafeNumber(dataType: DecimalType, input: number): boolean {
+  const scaledUp = input * (10**dataType.places);
+  return Number.MIN_SAFE_INTEGER <= scaledUp &&
+    scaledUp <= Number.MAX_SAFE_INTEGER;
 }
 
 export function isTypeValueInput(input: any): input is TypeValueInput {
