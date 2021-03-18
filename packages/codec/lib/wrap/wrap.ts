@@ -992,12 +992,10 @@ function* wrapDecimal(
   wrapOptions: WrapOptions
 ): Generator<DecimalWrapRequest, DecimalValue, WrapResponse> {
   let asBig: Big;
-  let binary: boolean = false;
   if (typeof input === "number") {
     //numeric case
     if (Number.isFinite(input)) {
       asBig = new Big(input);
-      binary = true;
     } else {
       throw new TypeMismatchError(
         dataType,
@@ -1183,17 +1181,12 @@ function* wrapDecimal(
   }
   //validate and return
   if (Conversion.countDecimalPlaces(asBig) > dataType.places) {
-    if (!binary || !wrapOptions.loose) {
-      //we only allow rounding for binary input, not decimal input
-      throw new TypeMismatchError(
-        dataType,
-        input,
-        wrapOptions.name,
-        tooPreciseMessage(dataType.places, Conversion.countDecimalPlaces(asBig))
-      );
-    } else {
-      asBig = asBig.round(dataType.places, 2); //the constant 2 here is the rounding mode ROUND_HALF_EVEN
-    }
+    throw new TypeMismatchError(
+      dataType,
+      input,
+      wrapOptions.name,
+      tooPreciseMessage(dataType.places, Conversion.countDecimalPlaces(asBig))
+    );
   }
   if (
     asBig.gt(Utils.maxValue(dataType)) ||
