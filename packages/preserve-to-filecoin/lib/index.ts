@@ -13,7 +13,6 @@ import { wait } from "./wait";
 export const defaultAddress = "http://localhost:7777/rpc/v0";
 
 export const defaultStorageDealOptions = {
-  minerCount: 1,
   epochPrice: "250",
   duration: 518400, // 180 days
 };

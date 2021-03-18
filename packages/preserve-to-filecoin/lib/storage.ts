@@ -7,7 +7,6 @@ export interface StorageDealOptions {
   walletAddress?: string;
   epochPrice?: string;
   duration?: number;
-  minerCount?: number;
 }
 
 export interface ProposeStorageDealOptions {
