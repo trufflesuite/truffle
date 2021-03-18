@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "declaration": true,
+    "target": "es6",
+    // We disable this because of IPFS dependencies that don't adhere
+    "noImplicitAny": false,
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "outDir": "dist",
+    "baseUrl": ".",
+    "lib": ["es2017", "dom"],
+    "skipLibCheck": true,
+    "paths": {
+    },
+    "rootDir": ".",
+    "types": [
+      "jest",
+      "node"
+    ]
+  },
+  "include": [
+    "./lib/**/*.ts",
+    "./test/**/*.ts",
+  ]
+}

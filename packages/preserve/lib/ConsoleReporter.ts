@@ -34,9 +34,11 @@ export class ConsoleReporter {
     // get current text
     const { text, indent } = this.spinners.pick(key);
 
+    const errorMessage = error.message ? `Error: ${error.message}` : error.toString();
+
     const options = error
       ? {
-          text: `${text}\n${" ".repeat(indent)}${chalk.red(error.toString())}`
+          text: `${text}\n${" ".repeat(indent)}${chalk.red(errorMessage)}`
         }
       : {};
 
@@ -129,7 +131,7 @@ export class ConsoleReporter {
 
     const [name] = text.split(":");
 
-    const options = payload ? { text: `${name}: ${payload}` } : {};
+    const options = payload ? { text: `${name}: ${payload}` } : { text };
 
     this.spinners.update(key, {
       ...options,
@@ -146,7 +148,7 @@ export class ConsoleReporter {
 
     const [name] = text.split(":");
 
-    const options = payload ? { text: `${name}: ${payload}` } : {};
+    const options = payload ? { text: `${name}: ${payload}` } : { text };
 
     this.spinners.update(key, options);
   }
