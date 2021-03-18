@@ -1,0 +1,6 @@
+{
+  "preserve": {
+    "defaultTag": "ipfs",
+    "recipe": "."
+  }
+}
