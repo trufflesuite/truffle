@@ -60,6 +60,10 @@ conditionalDescribe("preserve", () => {
         {
           option: "--filecoin",
           description: "Preserve to Filecoin"
+        },
+        {
+          option: "--buckets",
+          description: "Preserve to Textile Buckets"
         }
       ];
 

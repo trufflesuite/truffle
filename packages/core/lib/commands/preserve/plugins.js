@@ -3,7 +3,8 @@ const Config = require("@truffle/config");
 const defaultPlugins = [
   "@truffle/preserve-fs",
   "@truffle/preserve-to-ipfs",
-  "@truffle/preserve-to-filecoin"
+  "@truffle/preserve-to-filecoin",
+  "@truffle/preserve-to-buckets"
 ];
 
 const getConfig = options => {

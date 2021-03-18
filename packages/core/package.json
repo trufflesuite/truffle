@@ -38,6 +38,7 @@
     "@truffle/preserve-fs": "^0.1.0",
     "@truffle/preserve-to-ipfs": "^0.1.0",
     "@truffle/preserve-to-filecoin": "^0.1.0",
+    "@truffle/preserve-to-buckets": "^0.1.0",
     "@truffle/provider": "^0.2.27",
     "@truffle/provisioner": "^0.2.14",
     "@truffle/require": "^2.0.59",
