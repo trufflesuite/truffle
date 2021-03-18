@@ -11,7 +11,7 @@
   "scripts": {
     "build": "tsc",
     "prepare": "yarn build",
-    "test": "jest --verbose --detectOpenHandles"
+    "test": "./scripts/test.sh"
   },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/preserve-to-buckets",
   "author": "Rosco Kalis <roscokalis@gmail.com>",
