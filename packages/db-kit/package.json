@@ -71,6 +71,7 @@
     "ink-syntax-highlight": "^1.0.1",
     "ink-text-input": "^4.0.1",
     "meow": "^9.0.0",
-    "react": "^17.0.1"
+    "react": "^17.0.1",
+    "source-map-support": "^0.5.19"
   }
 }
