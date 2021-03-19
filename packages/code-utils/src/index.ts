@@ -1,4 +1,3 @@
-import "source-map-support/register";
 import parseOpcode from "./opcodes";
 import { Instruction, OpcodeTable, opcodeObject, opcodes } from "./types";
 export { Instruction, OpcodeTable, opcodeObject, opcodes };

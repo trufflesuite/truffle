@@ -13,8 +13,7 @@
   },
   "types": "./dist/src/index.d.ts",
   "dependencies": {
-    "cbor": "^5.1.0",
-    "source-map-support": "^0.5.19"
+    "cbor": "^5.1.0"
   },
   "devDependencies": {
     "@types/cbor": "^5.0.1",
