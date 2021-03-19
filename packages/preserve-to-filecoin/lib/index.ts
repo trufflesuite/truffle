@@ -24,19 +24,23 @@ export interface ConstructorOptions
   storageDealOptions?: StorageDealOptions;
 }
 
-export interface PreserveOptions extends Preserve.Recipes.PreserveOptions {
-  target: Preserve.Target;
-  results: Map<string, any>;
+export interface PreserveOptions extends Preserve.Recipes.ExecuteOptions {
+  inputs: {
+    "fs-target": Preserve.Target;
+    "ipfs-cid": CID;
+  };
 }
 
 export interface Result {
-  dealCid: CID;
+  "filecoin-deal-cid": CID;
 }
 
 export class Recipe implements Preserve.Recipe {
   name = "@truffle/preserve-to-filecoin";
   static help = "Preserve to Filecoin";
-  dependencies: string[] = ["@truffle/preserve-to-ipfs"];
+
+  inputLabels = ["fs-target", "ipfs-cid"];
+  outputLabels = ["filecoin-deal-cid"];
 
   private address: string;
   private token?: string;
@@ -51,18 +55,18 @@ export class Recipe implements Preserve.Recipe {
     };
   }
 
-  async *preserve(options: PreserveOptions): Preserve.Process<Result> {
+  async *execute(options: PreserveOptions): Preserve.Process<Result> {
     const { address: url, token, storageDealOptions } = this;
-    const { target, results, controls } = options;
+    const { inputs, controls } = options;
     const { log } = controls;
 
-    if (Preserve.Targets.Sources.isContent(target.source)) {
+    if (Preserve.Targets.Sources.isContent(inputs["fs-target"].source)) {
       throw new Error(
         "@truffle/preserve-to-filecoin only supports preserving directories at this time."
       );
     }
 
-    const { cid } = results.get("@truffle/preserve-to-ipfs");
+    const cid = inputs["ipfs-cid"];
 
     yield* log({ message: "Preserving to Filecoin..." });
 
@@ -80,6 +84,6 @@ export class Recipe implements Preserve.Recipe {
 
     yield* wait({ client, dealCid, controls });
 
-    return { dealCid };
+    return { "filecoin-deal-cid": dealCid };
   }
 }

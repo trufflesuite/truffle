@@ -148,7 +148,7 @@ export const tests: Test[] = [
       },
       {
         type: 'succeed',
-        result: { cid: expect.any(Object) },
+        result: { "ipfs-cid": expect.any(Object) },
         scope: [ '@truffle/preserve-to-buckets' ]
       }
     ]

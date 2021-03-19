@@ -10,6 +10,7 @@ export interface Test {
   files: File[];
   targeted: string; // path to target (will be prefixed)
   expected: Preserve.Targets.Stringified.Target;
+  events: (Preserve.Control.Event & any)[]
 }
 
 export const tests: Test[] = [
@@ -24,7 +25,22 @@ export const tests: Test[] = [
     targeted: "a",
     expected: {
       source: "a"
-    }
+    },
+    events: [
+      { type: 'begin', scope: [ '@truffle/preserve-fs' ] },
+      {
+        type: 'log',
+        message: 'Loading target...',
+        scope: [ '@truffle/preserve-fs' ]
+      },
+      expect.objectContaining({ type: "step" }),
+      expect.objectContaining({ type: "succeed" }),
+      {
+        type: 'succeed',
+        result: { 'fs-target': expect.any(Object) },
+        scope: [ '@truffle/preserve-fs' ]
+      }
+    ]
   },
   {
     name: "extra-files",
@@ -45,7 +61,22 @@ export const tests: Test[] = [
     targeted: "b",
     expected: {
       source: "b"
-    }
+    },
+    events: [
+      { type: 'begin', scope: [ '@truffle/preserve-fs' ] },
+      {
+        type: 'log',
+        message: 'Loading target...',
+        scope: [ '@truffle/preserve-fs' ]
+      },
+      expect.objectContaining({ type: "step" }),
+      expect.objectContaining({ type: "succeed" }),
+      {
+        type: 'succeed',
+        result: { 'fs-target': expect.any(Object) },
+        scope: [ '@truffle/preserve-fs' ]
+      }
+    ]
   },
   {
     name: "single-directory",
@@ -73,7 +104,26 @@ export const tests: Test[] = [
           }
         ]
       }
-    }
+    },
+    events: [
+      { type: 'begin', scope: [ '@truffle/preserve-fs' ] },
+      {
+        type: 'log',
+        message: 'Loading target...',
+        scope: [ '@truffle/preserve-fs' ]
+      },
+      expect.objectContaining({ type: "step" }),
+      expect.objectContaining({ type: "step" }),
+      expect.objectContaining({ type: "succeed" }),
+      expect.objectContaining({ type: "step" }),
+      expect.objectContaining({ type: "succeed" }),
+      expect.objectContaining({ type: "succeed" }),
+      {
+        type: 'succeed',
+        result: { 'fs-target': expect.any(Object) },
+        scope: [ '@truffle/preserve-fs' ]
+      }
+    ]
   },
   {
     name: "sub-directory",
@@ -101,6 +151,23 @@ export const tests: Test[] = [
           }
         ]
       }
-    }
+    },
+    events: [
+      { type: 'begin', scope: [ '@truffle/preserve-fs' ] },
+      {
+        type: 'log',
+        message: 'Loading target...',
+        scope: [ '@truffle/preserve-fs' ]
+      },
+      expect.objectContaining({ type: "step" }),
+      expect.objectContaining({ type: "step" }),
+      expect.objectContaining({ type: "succeed" }),
+      expect.objectContaining({ type: "succeed" }),
+      {
+        type: 'succeed',
+        result: { 'fs-target': expect.any(Object) },
+        scope: [ '@truffle/preserve-fs' ]
+      }
+    ]
   }
 ];

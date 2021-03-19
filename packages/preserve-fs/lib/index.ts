@@ -5,18 +5,28 @@
 import * as Preserve from "@truffle/preserve";
 
 import { targetPath } from "./fs";
-import { LoadOptions } from "./types";
+import { ExecuteOptions, ExecuteResult } from "./types";
 
-export class Loader implements Preserve.Loader {
+export class Recipe implements Preserve.Recipe {
   name = "@truffle/preserve-fs";
 
-  async *load(options: LoadOptions): Preserve.Process<Preserve.Target> {
-    const { controls } = options;
+  inputLabels: ["path"];
+  outputLabels: ["fs-target"];
 
+  async *execute(options: ExecuteOptions): Preserve.Process<ExecuteResult> {
+    const { controls } = options;
     const { log } = controls;
 
     yield* log({ message: "Loading target..." });
 
-    return yield* targetPath(options);
+    const targetPathOptions = {
+      controls: controls,
+      path: options.inputs.path,
+      verbose: options.settings.verbose ?? true
+    };
+
+    const fsTarget = yield* targetPath(targetPathOptions);
+
+    return { "fs-target": fsTarget };
   }
 }

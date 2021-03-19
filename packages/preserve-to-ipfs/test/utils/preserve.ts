@@ -8,11 +8,11 @@ export const preserveToIpfs = async (
 ) => {
   const recipe = new Recipe({ address });
 
-  const { cid }: Result = await Preserve.Control.run(
+  const { "ipfs-cid": cid }: Result = await Preserve.Control.run(
     {
-      method: recipe.preserve.bind(recipe)
+      method: recipe.execute.bind(recipe)
     },
-    { target }
+    { inputs: { "fs-target": target } }
   );
 
   return cid;
@@ -28,9 +28,9 @@ export const preserveToIpfsWithEvents = async (
     Preserve.Control.control(
       {
         name: recipe.name,
-        method: recipe.preserve.bind(recipe)
+        method: recipe.execute.bind(recipe)
       },
-      { target }
+      { inputs: { "fs-target": target } }
     )
   );
 

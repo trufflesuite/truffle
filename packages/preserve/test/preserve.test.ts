@@ -9,21 +9,13 @@ import {
   vowelsRecipe
 } from "./preserve.fixture";
 
-const mapByName = <T extends { name: string }>(entities: T[]): Map<string, T> =>
-  new Map(entities.map(entity => [entity.name, entity]));
-
-const loaders = mapByName([simpleLoader]);
-const recipes = mapByName([vowelsRecipe, vowelsCounterRecipe]);
+const recipes = [simpleLoader, vowelsRecipe, vowelsCounterRecipe];
 
 it("preserves via a single recipe", async () => {
   const events = await asyncToArray(
     preserve({
-      request: {
-        loader: simpleLoader.name,
-        recipe: vowelsRecipe.name
-      },
-      loaders,
-      recipes
+      request: { recipe: vowelsRecipe },
+      recipes,
     })
   );
 
@@ -33,12 +25,8 @@ it("preserves via a single recipe", async () => {
 it("preserves via a recipe that depends on another recipe", async () => {
   const allEvents = await asyncToArray(
     preserve({
-      request: {
-        loader: simpleLoader.name,
-        recipe: vowelsCounterRecipe.name
-      },
-      loaders,
-      recipes
+      request: { recipe: vowelsCounterRecipe },
+      recipes,
     })
   );
 

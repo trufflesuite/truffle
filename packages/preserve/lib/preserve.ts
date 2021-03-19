@@ -1,132 +1,97 @@
-import { Loader } from "./loaders";
 import { Recipe } from "./recipes";
 import { control, Event } from "./control";
+const TruffleError = require("@truffle/error");
 
 export interface Request {
-  loader: string; // package name
-  recipe: string; // package name
+  recipe: Recipe;
   settings?: Map<string, any>; // map package name to settings
+  inputs?: any;
 }
 
 export interface PreserveOptions {
   request: Request;
-  loaders: Map<string, Loader>;
-  recipes: Map<string, Recipe>;
+  recipes: Recipe[]; // List of all recipes
 }
 
 export async function* preserve(
   options: PreserveOptions
 ): AsyncIterable<Event> {
-  const { request, loaders, recipes } = options;
+  const { request, recipes } = options;
+  const { recipe } = request;
 
   if (!("settings" in request)) {
     request.settings = new Map([]);
   }
 
-  assertLoaderExists({
-    name: request.loader,
-    modules: loaders
-  });
+  if (!("inputs" in request)) {
+    request.inputs = {};
+  }
 
-  /*
-   * setup
-   */
-  const loader = loaders.get(request.loader);
-  const recipe = recipes.get(request.recipe);
-
-  /*
-   * loading
-   */
-  const loaderSettings = request.settings.get(request.loader);
-
-  const target = yield* control(
-    {
-      name: loader.name,
-      method: loader.load.bind(loader)
-    },
-    loaderSettings
-  );
+  const inputLabels = Object.keys(request.inputs);
 
   /*
    * planning
    * (use BFS)
    */
-  const visited: Set<string> = new Set([]);
-  const queue: string[] = [recipe.name];
+  const queue: Recipe[] = [recipe];
+  let plan: Recipe[] = [];
 
-  const plan: Recipe[] = [];
   while (queue.length > 0) {
-    const current = recipes.get(queue.shift());
-
-    assertRecipeExists({
-      name: current.name,
-      modules: recipes
-    });
+    const current = queue.shift();
 
     plan.unshift(current);
 
-    const unvisited = current.dependencies.filter(
-      dependency => !visited.has(dependency)
-    );
-
-    for (const name of unvisited) {
-      visited.add(name);
-      queue.push(name);
+    for (const label of current.inputLabels) {
+      const plugin = getRecipeForLabel(label, inputLabels, recipes);
+      if (plugin) queue.push(plugin);
     }
   }
+
+  // Filter out duplicates afterwards so that we only keep the first occurrance of the plugin
+  plan = plan.filter((plugin, index) => index === plan.findIndex(other => other.name === plugin.name));
 
   /*
    * execution
    */
-  let results: Map<string, any> = new Map([]);
+
+  // Populate initial preserve inputs with provided inputs
+  let inputs = { ...request.inputs };
 
   for (const recipe of plan) {
-    const settings = request.settings.get(recipe.name);
+    const settings = request.settings.get(recipe.name) || {};
 
-    // for the result
-    const result = yield* control(
-      {
-        name: recipe.name,
-        method: recipe.preserve.bind(recipe)
-      },
-      {
-        target,
-        results,
-        settings
-      }
-    );
+    const { name } = recipe;
+    const method = recipe.execute.bind(recipe);
 
-    if (!result) {
-      return;
+    const results = yield* control({ name, method }, { inputs, settings });
+
+    // Add all result key + values to the inputs object for the next plugin
+    for (const [key, value] of Object.entries(results || {})) {
+      inputs[key] = value;
     }
-
-    results.set(recipe.name, result);
   }
 }
 
-type AssertModuleExistsOptions<T extends Loader | Recipe> = {
-  name: string;
-  kind?: string;
-  modules: Map<string, T>;
-};
+const getRecipeForLabel = (
+  label: string,
+  inputLabels: string[],
+  plugins: Recipe[]
+) => {
+  // If the label exists in the initial inputLabels it is provided without recipe
+  if (inputLabels.includes(label)) return;
 
-const assertModuleExists = <T extends Loader | Recipe>(
-  options: AssertModuleExistsOptions<T>
-): void => {
-  const { name, kind = "module", modules } = options;
+  const pluginsForLabel = plugins
+    .filter(plugin => plugin.outputLabels.includes(label));
 
-  if (!modules.has(name)) {
-    throw new Error(
-      `Unknown ${kind} with name ${name}. ` +
-        `Possible choices: [${Array.from(modules.keys()).join(", ")}]`
-    );
+  if (pluginsForLabel.length === 0) {
+    throw new TruffleError(`No plugins found that output the label "${label}".`);
   }
+
+  if (pluginsForLabel.length > 1) {
+    console.warn(`Warning: multiple plugins found that output the label "${label}".`);
+  }
+
+  const [plugin] = pluginsForLabel;
+
+  return plugin;
 };
-
-const assertLoaderExists = (
-  options: Omit<AssertModuleExistsOptions<Loader>, "kind">
-): void => assertModuleExists({ ...options, kind: "loader" });
-
-const assertRecipeExists = (
-  options: Omit<AssertModuleExistsOptions<Recipe>, "kind">
-): void => assertModuleExists({ ...options, kind: "recipe" });
