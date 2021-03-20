@@ -11,8 +11,13 @@ import {
 } from "./encoders";
 export { ProjectEncoder, ContractEncoder, ContractInstanceEncoder };
 
-import type { ProjectInfo, EnsSettings, EncoderInfoInternal } from "./types";
-export { ProjectInfo, EnsSettings };
+import type {
+  ProjectInfo,
+  EnsSettings,
+  EncoderInfoInternal,
+  TxAndAbi
+} from "./types";
+export { ProjectInfo, EnsSettings, TxAndAbi };
 export type { ResolveOptions } from "./types";
 import type {
   ContractInstanceObject,

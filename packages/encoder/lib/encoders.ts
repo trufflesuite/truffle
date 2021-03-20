@@ -202,7 +202,7 @@ export class ProjectEncoder {
       this.allocations.abi
     );
     //note that the data option on resolution.options is ignored;
-    //perhaps we can change this in Truffle 6, but for now we keep this
+    //perhaps we can change this in the future, but for now we keep this
     //for compatibility
     return {
       ...resolution.options,
@@ -214,7 +214,7 @@ export class ProjectEncoder {
     methods: Codec.Wrap.Method[],
     inputs: any[],
     options: Types.ResolveOptions = {}
-  ): Promise<Codec.Options> {
+  ): Promise<Types.TxAndAbi> {
     debug("resolve & encode");
     const resolution = await this.resolveAndWrap(methods, inputs, options);
     const data = Codec.AbiData.Encode.encodeTupleAbiWithSelector(
@@ -223,11 +223,14 @@ export class ProjectEncoder {
       this.allocations.abi
     );
     //note that the data option on resolution.options is ignored;
-    //perhaps we can change this in Truffle 6, but for now we keep this
+    //perhaps we can change this in the future, but for now we keep this
     //for compatibility
     return {
-      ...resolution.options,
-      data: Codec.Conversion.toHexString(data)
+      tx: {
+        ...resolution.options,
+        data: Codec.Conversion.toHexString(data)
+      },
+      abi: <Abi.FunctionEntry>resolution.method.abi
     };
   }
 
@@ -516,7 +519,7 @@ export class ContractEncoder {
     abis: Abi.FunctionEntry[],
     inputs: any[],
     options: Types.ResolveOptions = {}
-  ): Promise<Codec.Options> {
+  ): Promise<Types.TxAndAbi> {
     const methods = abis.map(abi => this.getMethod(abi));
     //note we can't just write abis.map(this.getMethod)
     //because this would be undefined inside of it... I could
@@ -657,7 +660,7 @@ export class ContractInstanceEncoder {
     abis: Abi.FunctionEntry[],
     inputs: any[],
     options: Types.ResolveOptions = {}
-  ): Promise<Codec.Options> {
+  ): Promise<Types.TxAndAbi> {
     const encoded = await this.contractEncoder.resolveAndEncode(
       abis,
       inputs,
@@ -666,7 +669,7 @@ export class ContractInstanceEncoder {
     //note that the to options is simply overridden
     //perhaps we can change this in the future, but for now we keep this
     //for compatibility
-    encoded.to = this.toAddress;
+    encoded.tx.to = this.toAddress;
     return encoded;
   }
 }

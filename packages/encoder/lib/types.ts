@@ -2,9 +2,16 @@ import type { Provider } from "web3/providers";
 import type { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import type { Compilations, Format, Evm } from "@truffle/codec";
 import type TruffleConfig from "@truffle/config";
+import type * as Codec from "@truffle/codec";
+import type * as Abi from "@truffle/abi-utils";
 
 export interface ResolveOptions {
   allowOptions?: boolean;
+}
+
+export interface TxAndAbi {
+  tx: Codec.Options;
+  abi: Abi.FunctionEntry;
 }
 
 export interface EncoderInfoInternal {
