@@ -7,13 +7,13 @@ the same low-level decoding functionality that Truffle Debugger uses.  However,
 it has additional functionality that the debugger does not need, and the
 debugger has additional functionality that this decoder does not need.
 
-The interface is split into three classes: The wire decoder, the contract
-decoder, and the contract instance decoder.  The wire decoder is associated to
+The interface is split into three classes: The project decoder, the contract
+decoder, and the contract instance decoder.  The project decoder is associated to
 the project as a whole and decodes transaction calldata and events.  The
 contract decoder is associated to a specific contract class.  It has all the
-capabilities of the wire decoder, but in addition it acts as a factory for
+capabilities of the project decoder, but in addition it acts as a factory for
 contract instance decoders.  The contract instance decoder is associated to a
-specific contract instance; it too has all the capabilities of the wire decoder,
+specific contract instance; it too has all the capabilities of the project decoder,
 but it can also decode the state variables for the specific instance.  (In
 addition, in the case that the contract does not include a `deployedBytecode`
 field in its artifact, which can hinder decoding certain things, the contract
@@ -29,7 +29,7 @@ expect to see improvements soon.
 
 Create a decoder with one of the various constructor functions.
 
-For a wire decoder, use the [[forProject|`forProject`]] function.
+For a project decoder, use the [[forProject|`forProject`]] function.
 
 For a contract decoder, use the [[forArtifact|`forArtifact`]] or
 [[forContract|`forContract`]] function.
@@ -75,7 +75,7 @@ caveats about what may or may not be fully decodable.
 
 ### Basic usage examples
 
-#### Decoding a log with the wire decoder
+#### Decoding a log with the project decoder
 
 This usage example is for a project with two contracts, `Contract1` and
 `Contract2`.
@@ -89,10 +89,10 @@ const decoder = await Decoder.forProject(provider, [contract1, contract2]);
 const decodings = await decoder.decodeLog(log);
 ```
 
-The usage of [[WireDecoder.decodeTransaction|decodeTransaction]] is similar.
+The usage of [[ProjectDecoder.decodeTransaction|decodeTransaction]] is similar.
 
 For getting already-decoded logs meeting appropriate conditions, see
-[[WireDecoder.events]].
+[[ProjectDecoder.events]].
 
 #### Decoding state variables with the contract instance decoder
 
@@ -139,9 +139,9 @@ documentation for these individual functions.
 import {
   ContractDecoder,
   ContractInstanceDecoder,
-  WireDecoder
+  ProjectDecoder
 } from "./decoders";
-export { ContractDecoder, ContractInstanceDecoder, WireDecoder };
+export { ContractDecoder, ContractInstanceDecoder, ProjectDecoder };
 
 export {
   ContractBeingDecodedHasNoNodeError,
@@ -165,8 +165,8 @@ export type {
   Log,
   BlockSpecifier
 } from "./types";
-import type { ProjectInfo } from "./types";
-export { ProjectInfo };
+import type { ProjectInfo, EnsSettings } from "./types";
+export { ProjectInfo, EnsSettings };
 
 import type { Provider } from "web3/providers";
 import type { ContractObject as Artifact } from "@truffle/contract-schema/spec";
@@ -180,7 +180,7 @@ import path from "path";
 /**
  * **This function is asynchronous.**
  *
- * Constructs a wire decoder for the project.
+ * Constructs a project decoder for the project.
  * @param provider The Web3 provider object to use.
  * @param projectInfo Information about the project or contracts being decoded.
  *   This may come in several forms; see the [[ProjectInfo]] documentation for
@@ -195,9 +195,10 @@ import path from "path";
 export async function forProject(
   provider: Provider,
   projectInfo?: ProjectInfo | Artifact[]
-): Promise<WireDecoder> {
+): Promise<ProjectDecoder> {
   let compilations = infoToCompilations(projectInfo);
-  return new WireDecoder(compilations, provider);
+  let ensSettings = ensSettingsForInfo(projectInfo);
+  return new ProjectDecoder(compilations, provider, ensSettings);
 }
 
 /**
@@ -232,8 +233,8 @@ export async function forArtifact(
   projectInfo?: ProjectInfo | Artifact[]
 ): Promise<ContractDecoder> {
   let compilations = infoToCompilations(projectInfo, artifact);
-  let wireDecoder = await forProject(provider, { compilations });
-  return await wireDecoder.forArtifact(artifact);
+  let projectDecoder = await forProject(provider, { compilations });
+  return await projectDecoder.forArtifact(artifact);
 }
 
 /**
@@ -417,8 +418,23 @@ export async function forAddress(
   provider: Provider,
   projectInfo: ProjectInfo | Artifact[]
 ): Promise<ContractInstanceDecoder> {
-  let wireDecoder = await forProject(provider, projectInfo);
-  return await wireDecoder.forAddress(address);
+  let projectDecoder = await forProject(provider, projectInfo);
+  return await projectDecoder.forAddress(address);
+}
+
+//warning: copypasted from @truffle/encoder!
+//Also hidden similarly to the one below :)
+/**
+ * @category Provider-based constructor
+ */
+function ensSettingsForInfo(
+  projectInfo: ProjectInfo | Artifact[] | undefined
+): EnsSettings | undefined {
+  return projectInfo
+    ? Array.isArray(projectInfo)
+      ? undefined
+      : projectInfo.ens
+    : undefined;
 }
 
 //Note: this function doesn't actually go in this category, but
@@ -428,7 +444,7 @@ export async function forAddress(
  * @category Provider-based Constructor
  */
 function infoToCompilations(
-  info: ProjectInfo | Artifact[],
+  info: ProjectInfo | Artifact[] | undefined,
   primaryArtifact?: Artifact
 ): Compilations.Compilation[] {
   if (!info) {

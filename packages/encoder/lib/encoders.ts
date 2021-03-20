@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("encoder:encoder");
+const debug = debugModule("encoder:encoders");
 
 import { FixedNumber as EthersFixedNumber } from "@ethersproject/bignumber";
 import { getAddress } from "@ethersproject/address";
@@ -10,6 +10,12 @@ import Big from "big.js";
 import type { Provider } from "web3/providers";
 import Web3 from "web3";
 import * as Utils from "./utils";
+import {
+  NoInternalInfoError,
+  UnlinkedContractError,
+  InvalidAddressError,
+  ContractNotFoundError
+} from "./errors";
 //sorry for untyped imports!
 const { default: ENS, getEnsAddress } = require("@ensdomains/ensjs");
 const Web3Utils = require("web3-utils");
@@ -20,7 +26,7 @@ interface ENSCache {
   [name: string]: string;
 }
 
-export class Encoder {
+export class ProjectEncoder {
   private provider: Provider | null;
   private ens: any | null; //any should be ENS, sorry >_>
   private registryAddress: string | undefined = undefined;
@@ -35,17 +41,14 @@ export class Encoder {
     return this.allocations;
   }
 
-  constructor(info: Types.EncoderInfo) {
+  constructor(info: Types.EncoderInfoInternal) {
     //first, set up the basic info that we need to run
     if (info.userDefinedTypes && info.allocations) {
       this.userDefinedTypes = info.userDefinedTypes;
       this.allocations = info.allocations;
     } else {
       if (!info.compilations) {
-        //I don't think we really need a typed error here...
-        throw new Error(
-          "Neither userDefinedTypes nor compilations was specified"
-        );
+        throw new NoInternalInfoError();
       }
       let definitions: { [compilationId: string]: Codec.Ast.AstNodes };
       ({
@@ -385,56 +388,70 @@ export class Encoder {
     return new ContractEncoder(this, contract);
   }
 
-  public async forContractAt(
-    contract: Types.ContractConstructorObject,
-    address: string
-  ): Promise<ContractEncoder> {
-    return new ContractEncoder(this, contract, address);
-  }
-
   public async forInstance(
-    contract: Types.ContractInstanceObject
-  ): Promise<ContractEncoder> {
-    return await this.forContractAt(contract.constructor, contract.address);
+    contract: Types.ContractConstructorObject,
+    address?: string
+  ): Promise<ContractInstanceEncoder> {
+    const contractEncoder = await this.forContract(contract);
+    if (address === undefined) {
+      address = (await contract.deployed()).address;
+    }
+    return new ContractInstanceEncoder(contractEncoder, address);
   }
 }
 
 export class ContractEncoder {
-  private encoder: Encoder;
-  private toAddress: string | undefined;
+  private projectEncoder: ProjectEncoder;
+  private contract: Types.ContractConstructorObject;
   private constructorBinary: string;
-  private constructorContextHash: string;
-  private deployedContextHash: string;
+  private constructorContextHash: string | undefined;
+  private deployedContextHash: string | undefined;
 
   constructor(
-    encoder: Encoder,
-    contract: Types.ContractConstructorObject,
-    toAddress?: string
+    projectEncoder: ProjectEncoder,
+    contract: Types.ContractConstructorObject
   ) {
-    this.encoder = encoder;
+    this.projectEncoder = projectEncoder;
+    this.contract = contract;
     if (contract.binary.match(/0x([0-9a-fA-F]{2})*/)) {
       this.constructorBinary = contract.binary; //has link references resolved
     } else {
-      throw new Error("Contract object has not had its libraries linked");
+      throw new UnlinkedContractError(
+        contract.contractName,
+        contract.bytecode,
+        contract.deployedBytecode
+      );
     }
-    this.constructorContextHash = Codec.Conversion.toHexString(
-      Codec.Evm.Utils.keccak256({
-        type: "string",
-        value: contract.bytecode //has link references unresolved
-      })
-    );
+    if (contract.bytecode && contract.bytecode !== "0x") {
+      this.constructorContextHash = Codec.Conversion.toHexString(
+        Codec.Evm.Utils.keccak256({
+          type: "string",
+          value: contract.bytecode //has link references unresolved
+        })
+      );
+    }
+    if (contract.deployedBytecode && contract.deployedBytecode !== "0x") {
     this.deployedContextHash = Codec.Conversion.toHexString(
-      Codec.Evm.Utils.keccak256({
-        type: "string",
-        value: contract.deployedBytecode //has link references unresolved
-      })
-    );
-    if (toAddress !== undefined) {
-      if (Web3Utils.isAddress(toAddress)) {
-        this.toAddress = Web3Utils.toChecksumAddress(toAddress);
-      } else {
-        throw new Error("Specified to address is not a valid address");
-      }
+        Codec.Evm.Utils.keccak256({
+          type: "string",
+          value: contract.deployedBytecode //has link references unresolved
+        })
+      );
+    }
+    //finally: check that we have any necessary allocations for this contract!
+    const allocations = this.projectEncoder.getAllocations();
+    if ((
+      this.constructorContextHash &&
+      !allocations.calldata.constructorAllocations[this.constructorContextHash]
+      ) || (
+      this.deployedContextHash &&
+      !allocations.calldata.functionAllocations[this.deployedContextHash]
+    )) {
+      throw new ContractNotFoundError(
+        contract.contractName,
+        contract.bytecode,
+        contract.deployedBytecode
+      );
     }
   }
 
@@ -442,14 +459,14 @@ export class ContractEncoder {
     dataType: Codec.Format.Types.ElementaryType,
     input: any
   ): Promise<Codec.Format.Values.ElementaryValue> {
-    return await this.encoder.wrapElementaryValue(dataType, input);
+    return await this.projectEncoder.wrapElementaryValue(dataType, input);
   }
 
   public async wrap(
     dataType: Codec.Format.Types.Type,
     input: any
   ): Promise<Codec.Format.Values.Value> {
-    return await this.encoder.wrap(dataType, input);
+    return await this.projectEncoder.wrap(dataType, input);
   }
 
   public async wrapForTransaction(
@@ -458,15 +475,11 @@ export class ContractEncoder {
     options: Types.ResolveOptions = {}
   ): Promise<Codec.Wrap.Resolution> {
     const method = this.getMethod(abi);
-    const resolution = await this.encoder.wrapForTransaction(
+    return await this.projectEncoder.wrapForTransaction(
       method,
       inputs,
       options
     );
-    if (this.toAddress && !resolution.options.to && abi.type === "function") {
-      resolution.options.to = this.toAddress;
-    }
-    return resolution;
   }
 
   public async resolveAndWrap(
@@ -479,15 +492,11 @@ export class ContractEncoder {
     //because this would be undefined inside of it... I could
     //write abis.map(this.getMethod.bind(this)), but I find the
     //arrow way to be more readable
-    const resolution = await this.encoder.resolveAndWrap(
+    return await this.projectEncoder.resolveAndWrap(
       methods,
       inputs,
       options
     );
-    if (this.toAddress) {
-      resolution.options.to = this.toAddress;
-    }
-    return resolution;
   }
 
   public async encodeTransaction(
@@ -496,20 +505,11 @@ export class ContractEncoder {
     options: Types.ResolveOptions = {}
   ): Promise<Codec.Options> {
     const method = this.getMethod(abi);
-    const encoded = await this.encoder.encodeTransaction(
+    return await this.projectEncoder.encodeTransaction(
       method,
       inputs,
       options
     );
-    //note that if this.toAddress is set, the to option is ignored
-    //perhaps we can change this in Truffle 6, but for now we keep this
-    //for compatibility
-    if (this.toAddress && abi.type === "function") {
-      encoded.to = this.toAddress;
-    } else if (abi.type === "constructor") {
-      encoded.to = undefined;
-    }
-    return encoded;
   }
 
   public async resolveAndEncode(
@@ -522,24 +522,24 @@ export class ContractEncoder {
     //because this would be undefined inside of it... I could
     //write abis.map(this.getMethod.bind(this)), but I find the
     //arrow way to be more readable
-    const encoded = await this.encoder.resolveAndEncode(
+    return await this.projectEncoder.resolveAndEncode(
       methods,
       inputs,
       options
     );
-    //note that if this.toAddress is set, the to option is ignored
-    //perhaps we can change this in Truffle 6, but for now we keep this
-    //for compatibility
-    if (this.toAddress) {
-      encoded.to = this.toAddress;
+  }
+
+  public async forInstance(address?: string): Promise<ContractInstanceEncoder> {
+    if (address === undefined) {
+      address = (await this.contract.deployed()).address;
     }
-    return encoded;
+    return new ContractInstanceEncoder(this, address);
   }
 
   private getMethod(
     abi: Abi.FunctionEntry | Abi.ConstructorEntry
   ): Codec.Wrap.Method {
-    const allocations = this.encoder.getAllocations();
+    const allocations = this.projectEncoder.getAllocations();
     debug("got allocations");
     switch (abi.type) {
       case "constructor": {
@@ -573,5 +573,100 @@ export class ContractEncoder {
         };
       }
     }
+  }
+}
+
+export class ContractInstanceEncoder {
+  private contractEncoder: ContractEncoder;
+  private toAddress: string;
+
+  constructor(contractEncoder: ContractEncoder, toAddress: string) {
+    this.contractEncoder = contractEncoder;
+    if (!Web3Utils.isAddress(toAddress)) {
+      throw new InvalidAddressError(toAddress);
+    }
+    this.toAddress = Web3Utils.toChecksumAddress(toAddress);
+  }
+
+  public async wrapElementaryValue(
+    dataType: Codec.Format.Types.ElementaryType,
+    input: any
+  ): Promise<Codec.Format.Values.ElementaryValue> {
+    return await this.contractEncoder.wrapElementaryValue(dataType, input);
+  }
+
+  public async wrap(
+    dataType: Codec.Format.Types.Type,
+    input: any
+  ): Promise<Codec.Format.Values.Value> {
+    return await this.contractEncoder.wrap(dataType, input);
+  }
+
+  public async wrapForTransaction(
+    abi: Abi.FunctionEntry | Abi.ConstructorEntry,
+    inputs: any[],
+    options: Types.ResolveOptions = {}
+  ): Promise<Codec.Wrap.Resolution> {
+    const resolution = await this.contractEncoder.wrapForTransaction(
+      abi,
+      inputs,
+      options
+    );
+    if (!resolution.options.to && abi.type === "function") {
+      resolution.options.to = this.toAddress;
+    }
+    return resolution;
+  }
+
+  public async resolveAndWrap(
+    abis: Abi.FunctionEntry[],
+    inputs: any[],
+    options: Types.ResolveOptions = {}
+  ): Promise<Codec.Wrap.Resolution> {
+    const resolution = await this.contractEncoder.resolveAndWrap(
+      abis,
+      inputs,
+      options
+    );
+    resolution.options.to = this.toAddress;
+    return resolution;
+  }
+
+  public async encodeTransaction(
+    abi: Abi.FunctionEntry | Abi.ConstructorEntry,
+    inputs: any[],
+    options: Types.ResolveOptions = {}
+  ): Promise<Codec.Options> {
+    const encoded = await this.contractEncoder.encodeTransaction(
+      abi,
+      inputs,
+      options
+    );
+    //note that the to options is simply overridden
+    //perhaps we can change this in the future, but for now we keep this
+    //for compatibility
+    if (abi.type === "function") {
+      encoded.to = this.toAddress;
+    } else if (abi.type === "constructor") {
+      encoded.to = undefined;
+    }
+    return encoded;
+  }
+
+  public async resolveAndEncode(
+    abis: Abi.FunctionEntry[],
+    inputs: any[],
+    options: Types.ResolveOptions = {}
+  ): Promise<Codec.Options> {
+    const encoded = await this.contractEncoder.resolveAndEncode(
+      abis,
+      inputs,
+      options
+    );
+    //note that the to options is simply overridden
+    //perhaps we can change this in the future, but for now we keep this
+    //for compatibility
+    encoded.to = this.toAddress;
+    return encoded;
   }
 }

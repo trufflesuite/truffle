@@ -5,10 +5,13 @@ import type {
   Format,
   Ast,
   Compilations,
+  Contexts,
+  Evm,
   LogDecoding,
   StateVariable,
-  ExtrasAllowed
+  ExtrasAllowed,
 } from "@truffle/codec";
+import type { Provider } from "web3/providers";
 import type Web3 from "web3";
 
 //StateVariable used to be defined here, so let's continue
@@ -18,11 +21,16 @@ export { StateVariable, ExtrasAllowed };
 /**
  * This type represents information about a Truffle project that can be used to
  * construct and initialize a decoder for that project.  This information may
- * be passed in various ways; this type is given here as an interface rahter
- * than a union, but note that really you only need to include one of these
- * fields.  (The `compilations` field will be used if present, then `artifacts`
- * if not, etc.)  Further options for how to specify project information are
- * intended to be added in the future.
+ * be passed in various ways; this type is given here as an interface rather
+ * than a union, but note that (aside from `ens`, which is special)
+ * you only need to include one of these fields.  (The `compilations` field
+ * will be used if present, then `artifacts` if not, then finally `config`.)
+ * Further options for how to specify project information are intended to be
+ * added in the future.
+ *
+ * There's also the `ens` field, which can be used to enable ENS resolution
+ * when watching mapping keys.  In the future this will also be used for
+ * ENS reverse resolution when decoding addresses.
  * @category Inputs
  */
 export interface ProjectInfo {
@@ -46,6 +54,34 @@ export interface ProjectInfo {
    * the future.
    */
   config?: TruffleConfig;
+  /**
+   * This field can be included to enable or disable ENS resolution (and, in
+   * the future, reverse resolution) and specify how it should be performed.
+   * If absent, ENS resolution will be performed using the decoder's usual
+   * provider.
+   */
+  ens?: EnsSettings;
+}
+
+//WARNING: copypasted from @truffle/encoder!
+/**
+ * This type indicates settings to be used for ENS resolution (and, in the
+ * future, reverse resolution).
+ * @Category Inputs
+ */
+export interface EnsSettings {
+  /**
+   * The provider to use for ENS resolution; set this to `null` to disable
+   * ENS resolution.  If absent, will default to the decoder's provider,
+   * and ENS resolution will be enabled.
+   */
+  provider?: Provider | null;
+  /**
+   * The ENS registry address to use; if absent, will use the default one
+   * for the current network.  If there is no default registry for the
+   * current network, ENS resolution will be disabled.
+   */
+  registryAddress?: string;
 }
 
 /**

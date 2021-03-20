@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { WireDecoder, forProject } from "@truffle/decoder";
+import { ProjectDecoder, forProject } from "@truffle/decoder";
 import type { Db, Resources } from "@truffle/db";
 import TruffleConfig from "@truffle/config";
 
@@ -15,14 +15,14 @@ export interface UseDecoderOptions {
 }
 
 export interface DecoderInfo {
-  decoder: WireDecoder | undefined;
+  decoder: ProjectDecoder | undefined;
   statusByAddress: {
     [address: string]: Status;
   };
 }
 
 export function useDecoder(options: UseDecoderOptions): DecoderInfo {
-  const [decoder, setDecoder] = useState<WireDecoder | undefined>();
+  const [decoder, setDecoder] = useState<ProjectDecoder | undefined>();
   const { done, compilations, statusByAddress } = useCompilations(options);
 
   useEffect(() => {
