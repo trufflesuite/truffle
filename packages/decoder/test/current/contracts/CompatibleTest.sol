@@ -36,4 +36,8 @@ contract CompatibleNativizeTest {
   function emitStringPair() public {
     emit StringPair(Pair("hello", "goodbye"));
   }
+
+  function returnFunction() public view returns (function() external) {
+    return this.emitString;
+  }
 }

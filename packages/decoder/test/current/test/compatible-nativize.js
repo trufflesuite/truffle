@@ -44,6 +44,11 @@ describe("nativize (ethers format)", function () {
     keyedArray.w = "hello";
     keyedArray.z = "goodbye";
 
+    const emitStringSelector = Web3.utils.soliditySha3({
+      type: "string",
+      value: "emitString()"
+    }).slice(2, 10); //I've sliced off the 0x
+
     let expected = {
       returnString: "hello",
       emitString: {
@@ -69,7 +74,8 @@ describe("nativize (ethers format)", function () {
         '0': keyedArray,
         z: keyedArray,
         __length__: 1
-      }
+      },
+      returnFunction: instance.address.toLowerCase() + emitStringSelector
     };
     expected.returnStringPair.w = "hello";
     expected.returnStringPair.z = "goodbye";
