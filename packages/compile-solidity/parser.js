@@ -46,9 +46,10 @@ module.exports = {
       ({ message }) => !message.includes(preReleaseCompilerWarning)
     );
 
+    debug("errors: %O", errors);
+
     // Filter out our forced import, then get the import paths of the rest.
     const imports = errors
-      .filter(({ message }) => !message.includes(failingImportFileName))
       .map(({ formattedMessage, message }) => {
         // Multiline import check which works for solcjs and solc
         // solcjs: ^ (Relevant source part starts here and spans across multiple lines)
@@ -71,7 +72,7 @@ module.exports = {
           if (matches) return matches[2];
         }
       })
-      .filter(match => match !== undefined);
+      .filter(match => match !== undefined && match !== failingImportFileName);
 
     return imports;
   }
