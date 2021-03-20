@@ -125,7 +125,7 @@ function ethersCompatibleNativize(
         case "contract":
           return (<Format.Values.ContractValue>result).value.address;
         case "string": {
-          let coercedResult = <Format.Values.StringValue>result;
+          const coercedResult = <Format.Values.StringValue>result;
           switch (coercedResult.value.kind) {
             case "valid":
               return coercedResult.value.asString;
@@ -156,9 +156,19 @@ function ethersCompatibleNativize(
             }
           }
           return nativized;
+        case "function":
+          switch (result.type.visibility) {
+            case "external":
+              const coercedResult = <Format.Values.FunctionExternalValue>result;
+              //ethers per se doesn't handle this, but web3's hacked version will
+              //sometimes decode these as just a bytes24, so let's do that
+              return coercedResult.value.contract.address.toLowerCase() +
+                coercedResult.value.selector.slice(2);
+            case "internal":
+              return undefined;
+          }
         case "fixed":
         case "ufixed":
-        case "function":
         default:
           return undefined;
       }
