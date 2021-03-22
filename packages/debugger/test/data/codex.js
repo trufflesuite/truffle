@@ -119,7 +119,7 @@ describe("Codex", function () {
     await bugger.continueUntilBreakpoint(); //run till end
     debug("made it to end of transaction");
 
-    const surface = Codec.Format.Utils.Inspect.nativize(
+    const surface = Codec.Format.Utils.Inspect.unsafeNativize(
       await bugger.variable("surface")
     );
 
@@ -136,7 +136,7 @@ describe("Codex", function () {
 
     await bugger.continueUntilBreakpoint(); //run till end
 
-    const x = Codec.Format.Utils.Inspect.nativize(await bugger.variable("x"));
+    const x = Codec.Format.Utils.Inspect.unsafeNativize(await bugger.variable("x"));
 
     assert.equal(x, 1);
   });
@@ -151,7 +151,7 @@ describe("Codex", function () {
 
     await bugger.continueUntilBreakpoint(); //run till end
 
-    const x = Codec.Format.Utils.Inspect.nativize(await bugger.variable("x"));
+    const x = Codec.Format.Utils.Inspect.unsafeNativize(await bugger.variable("x"));
 
     assert.equal(x, 1);
   });

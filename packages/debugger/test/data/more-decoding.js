@@ -341,7 +341,7 @@ describe("Further Decoding", function () {
 
     await bugger.continueUntilBreakpoint();
 
-    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
+    const variables = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
       await bugger.variables()
     );
 
@@ -378,7 +378,7 @@ describe("Further Decoding", function () {
 
     await bugger.continueUntilBreakpoint();
 
-    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
+    const variables = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
       await bugger.variables()
     );
     debug("variables %O", variables);
@@ -418,7 +418,7 @@ describe("Further Decoding", function () {
 
     await bugger.continueUntilBreakpoint();
 
-    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
+    const variables = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
       await bugger.variables()
     );
 
@@ -447,7 +447,7 @@ describe("Further Decoding", function () {
     //we're only testing storage so run till end
     await bugger.continueUntilBreakpoint();
 
-    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
+    const variables = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
       await bugger.variables()
     );
 
@@ -505,7 +505,7 @@ describe("Further Decoding", function () {
 
     await bugger.continueUntilBreakpoint(); //run till end
 
-    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
+    const variables = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
       await bugger.variables()
     );
     debug("variables %O", variables);
@@ -528,7 +528,7 @@ describe("Further Decoding", function () {
 
     await bugger.continueUntilBreakpoint(); //run till end
 
-    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
+    const variables = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
       await bugger.variables()
     );
     debug("variables %O", variables);
@@ -559,7 +559,7 @@ describe("Further Decoding", function () {
 
     await bugger.continueUntilBreakpoint();
 
-    const circular = Codec.Format.Utils.Inspect.nativize(
+    const circular = Codec.Format.Utils.Inspect.unsafeNativize(
       await bugger.variable("circular")
     );
 
@@ -586,7 +586,7 @@ describe("Further Decoding", function () {
 
       await bugger.continueUntilBreakpoint();
 
-      const variables = Codec.Format.Utils.Inspect.nativizeVariables(
+      const variables = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
         await bugger.variables()
       );
       debug("variables %O", variables);
@@ -616,7 +616,7 @@ describe("Further Decoding", function () {
 
       await bugger.continueUntilBreakpoint();
 
-      const variables = Codec.Format.Utils.Inspect.nativizeVariables(
+      const variables = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
         await bugger.variables()
       );
       debug("variables %O", variables);
@@ -646,7 +646,7 @@ describe("Further Decoding", function () {
 
       await bugger.continueUntilBreakpoint();
 
-      const variables = Codec.Format.Utils.Inspect.nativizeVariables(
+      const variables = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
         await bugger.variables()
       );
       debug("variables %O", variables);

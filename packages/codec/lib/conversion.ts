@@ -46,6 +46,14 @@ export function toSignedBN(bytes: Uint8Array): BN {
   }
 }
 
+export function toBigInt(value: BN): BigInt {
+  //BN is binary-based, so we convert by means of a hex string in order
+  //to avoid having to do a binary-decimal conversion and back :P
+  return !value.isNeg()
+    ? BigInt("0x" + value.toString(16))
+    : -BigInt("0x" + value.neg().toString(16)); //can't directly make negative BigInt from hex string
+}
+
 export function toBig(value: BN | number): Big {
   //note: going through string may seem silly but it's actually not terrible here,
   //since BN (& number) is binary-based and Big is decimal-based

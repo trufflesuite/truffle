@@ -110,7 +110,7 @@ describe("Return value decoding", function () {
     assert.strictEqual(outputs[0].name, "x");
     assert.isUndefined(outputs[1].name);
     const values = outputs.map(({ value }) =>
-      Codec.Format.Utils.Inspect.nativize(value)
+      Codec.Format.Utils.Inspect.unsafeNativize(value)
     );
     assert.deepEqual(values, [-1, -2]);
   });
@@ -138,7 +138,7 @@ describe("Return value decoding", function () {
     assert.strictEqual(immutables[0].name, "minus");
     assert.strictEqual(immutables[0].class.typeName, "ReturnValues");
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(immutables[0].value),
+      Codec.Format.Utils.Inspect.unsafeNativize(immutables[0].value),
       -1
     );
   });
@@ -187,7 +187,7 @@ describe("Return value decoding", function () {
     assert.strictEqual(immutables[0].name, "minus");
     assert.strictEqual(immutables[0].class.typeName, "Default");
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.nativize(immutables[0].value),
+      Codec.Format.Utils.Inspect.unsafeNativize(immutables[0].value),
       -1
     );
   });
@@ -241,7 +241,7 @@ describe("Return value decoding", function () {
     assert.strictEqual(decoding.abi.name, "Error");
     const outputs = decoding.arguments;
     assert.lengthOf(outputs, 1);
-    const message = Codec.Format.Utils.Inspect.nativize(outputs[0].value);
+    const message = Codec.Format.Utils.Inspect.unsafeNativize(outputs[0].value);
     assert.strictEqual(message, "Noise!");
   });
 
@@ -270,7 +270,7 @@ describe("Return value decoding", function () {
     assert.strictEqual(decoding.abi.name, "Panic");
     const outputs = decoding.arguments;
     assert.lengthOf(outputs, 1);
-    const panicCode = Codec.Format.Utils.Inspect.nativize(outputs[0].value);
+    const panicCode = Codec.Format.Utils.Inspect.unsafeNativize(outputs[0].value);
     assert.strictEqual(panicCode, 1);
   });
 });

@@ -80,7 +80,7 @@ async function prepareDebugger(testName, sources) {
 }
 
 async function decode(name) {
-  return Codec.Format.Utils.Inspect.nativize(await this.session.variable(name));
+  return Codec.Format.Utils.Inspect.unsafeNativize(await this.session.variable(name));
 }
 
 export function describeDecoding(testName, fixtures, selector, generateSource) {

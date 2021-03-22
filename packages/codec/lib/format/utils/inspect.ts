@@ -409,16 +409,16 @@ function enumFullName(value: Format.Values.EnumValue): string {
  * WARNING! Do NOT use this function in real code unless you
  * absolutely have to!  Using it in controlled tests is fine,
  * but do NOT use it in real code if you have any better option!
- * See [[nativize]] for why!
+ * See [[unsafeNativize]] for why!
  */
-export function nativizeVariables(variables: {
+export function unsafeNativizeVariables(variables: {
   [name: string]: Format.Values.Result;
 }): { [name: string]: any } {
   return Object.assign(
     {},
     ...Object.entries(variables).map(([name, value]) => {
       try {
-        return { [name]: nativize(value) };
+        return { [name]: unsafeNativize(value) };
       } catch (_) {
         return undefined; //I guess??
       }
@@ -452,11 +452,11 @@ export function nativizeVariables(variables: {
  * this code and dehackify it for your use case, which hopefully is more
  * manageable than the one that caused us to write this.
  */
-export function nativize(result: Format.Values.Result): any {
-  return nativizeWithTable(result, []);
+export function unsafeNativize(result: Format.Values.Result): any {
+  return unsafeNativizeWithTable(result, []);
 }
 
-function nativizeWithTable(
+function unsafeNativizeWithTable(
   result: Format.Values.Result,
   seenSoFar: any[]
 ): any {
@@ -469,9 +469,9 @@ function nativizeWithTable(
         return undefined;
     }
   }
-  //NOTE: for simplicity, only arrays & structs will call nativizeWithTable;
-  //other containers will just call nativize because they can get away with it
-  //(only things that can *be* circular need nativizeWithTable, not things that
+  //NOTE: for simplicity, only arrays & structs will call unsafeNativizeWithTable;
+  //other containers will just call unsafeNativize because they can get away with it
+  //(only things that can *be* circular need unsafeNativizeWithTable, not things that
   //can merely *contain* circularities)
   switch (result.type.typeClass) {
     case "uint":
@@ -519,7 +519,7 @@ function nativizeWithTable(
         //now, we can't use a map here, or we'll screw things up!
         //we want to *mutate* output, not replace it with a new object
         for (let index in output) {
-          output[index] = nativizeWithTable(output[index], [
+          output[index] = unsafeNativizeWithTable(output[index], [
             output,
             ...seenSoFar
           ]);
@@ -533,7 +533,7 @@ function nativizeWithTable(
       return Object.assign(
         {},
         ...(<Format.Values.MappingValue>result).value.map(({ key, value }) => ({
-          [nativize(key).toString()]: nativize(value)
+          [unsafeNativize(key).toString()]: unsafeNativize(value)
         }))
       );
     case "struct": {
@@ -552,7 +552,7 @@ function nativizeWithTable(
         //now, we can't use a map here, or we'll screw things up!
         //we want to *mutate* output, not replace it with a new object
         for (let name in output) {
-          output[name] = nativizeWithTable(output[name], [
+          output[name] = unsafeNativizeWithTable(output[name], [
             output,
             ...seenSoFar
           ]);
@@ -569,7 +569,7 @@ function nativizeWithTable(
             {},
             ...(<Format.Values.TypeValueContract>result).value.map(
               ({ name, value }) => ({
-                [name]: nativize(value)
+                [name]: unsafeNativize(value)
               })
             )
           );
@@ -577,20 +577,20 @@ function nativizeWithTable(
           return Object.assign(
             {},
             ...(<Format.Values.TypeValueEnum>result).value.map(enumValue => ({
-              [enumValue.value.name]: nativize(enumValue)
+              [enumValue.value.name]: unsafeNativize(enumValue)
             }))
           );
       }
     case "tuple":
       return (<Format.Values.TupleValue>result).value.map(({ value }) =>
-        nativize(value)
+        unsafeNativize(value)
       );
     case "magic":
       return Object.assign(
         {},
         ...Object.entries(
           (<Format.Values.MagicValue>result).value
-        ).map(([key, value]) => ({ [key]: nativize(value) }))
+        ).map(([key, value]) => ({ [key]: unsafeNativize(value) }))
       );
     case "enum":
       return enumFullName(<Format.Values.EnumValue>result);

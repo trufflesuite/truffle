@@ -73,22 +73,22 @@ describe("Reset Button", function () {
     });
 
     variables[0].push(
-      Codec.Format.Utils.Inspect.nativizeVariables(await bugger.variables())
+      Codec.Format.Utils.Inspect.unsafeNativizeVariables(await bugger.variables())
     );
     await bugger.continueUntilBreakpoint(); //advance to line 10
     variables[0].push(
-      Codec.Format.Utils.Inspect.nativizeVariables(await bugger.variables())
+      Codec.Format.Utils.Inspect.unsafeNativizeVariables(await bugger.variables())
     );
     await bugger.continueUntilBreakpoint(); //advance to the end
     variables[0].push(
-      Codec.Format.Utils.Inspect.nativizeVariables(await bugger.variables())
+      Codec.Format.Utils.Inspect.unsafeNativizeVariables(await bugger.variables())
     );
 
     //now, reset and do it again
     await bugger.reset();
 
     variables[1].push(
-      Codec.Format.Utils.Inspect.nativizeVariables(await bugger.variables())
+      Codec.Format.Utils.Inspect.unsafeNativizeVariables(await bugger.variables())
     );
     await bugger.addBreakpoint({
       sourceId,
@@ -96,11 +96,11 @@ describe("Reset Button", function () {
     });
     await bugger.continueUntilBreakpoint(); //advance to line 10
     variables[1].push(
-      Codec.Format.Utils.Inspect.nativizeVariables(await bugger.variables())
+      Codec.Format.Utils.Inspect.unsafeNativizeVariables(await bugger.variables())
     );
     await bugger.continueUntilBreakpoint(); //advance to the end
     variables[1].push(
-      Codec.Format.Utils.Inspect.nativizeVariables(await bugger.variables())
+      Codec.Format.Utils.Inspect.unsafeNativizeVariables(await bugger.variables())
     );
 
     assert.deepEqual(variables[1], variables[0]);

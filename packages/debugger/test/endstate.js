@@ -90,7 +90,7 @@ describe("End State", function () {
     await bugger.continueUntilBreakpoint(); //no breakpoints set so advances to end
 
     assert.ok(bugger.view(evm.transaction.status));
-    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
+    const variables = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
       await bugger.variables()
     );
     assert.include(variables, { x: 107 });
