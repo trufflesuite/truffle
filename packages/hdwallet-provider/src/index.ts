@@ -1,4 +1,3 @@
-import "source-map-support/register";
 import * as bip39 from "ethereum-cryptography/bip39";
 import { wordlist } from "ethereum-cryptography/bip39/wordlists/english";
 import * as EthUtil from "ethereumjs-util";

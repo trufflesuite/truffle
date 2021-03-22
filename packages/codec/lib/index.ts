@@ -60,8 +60,6 @@
  * @module @truffle/codec
  */ /** */
 
-import "source-map-support/register";
-
 //So, what shall codec export...?
 
 //First: export the data format

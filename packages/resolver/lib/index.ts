@@ -1,5 +1,3 @@
-import "source-map-support/register";
-
 import { Resolver } from "./resolver";
 import { ResolverSource, ResolvedSource } from "./source";
 

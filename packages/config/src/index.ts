@@ -1,4 +1,3 @@
-import "source-map-support/register";
 import path from "path";
 import assignIn from "lodash.assignin";
 import merge from "lodash.merge";

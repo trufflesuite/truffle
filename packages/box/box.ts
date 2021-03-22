@@ -1,4 +1,3 @@
-import "source-map-support/register";
 import utils from "./lib/utils";
 import tmp from "tmp";
 import path from "path";

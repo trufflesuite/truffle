@@ -1,4 +1,3 @@
-import "source-map-support/register";
 import { Provider, Callback, JsonRPCResponse } from "web3/providers";
 import { parsedUriObject } from "typings";
 

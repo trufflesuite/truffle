@@ -263,8 +263,6 @@
 import debugModule from "debug";
 const debug = debugModule("db");
 
-require("source-map-support/register");
-
 import * as Network from "./network";
 export { Network };
 
