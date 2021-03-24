@@ -207,6 +207,9 @@ export class ProjectEncoder {
     return {
       ...resolution.options,
       data: Codec.Conversion.toHexString(data),
+      to: method.abi.type !== "constructor"
+        ? resolution.options.to
+        : undefined
     };
   }
 
