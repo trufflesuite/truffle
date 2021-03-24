@@ -5,15 +5,44 @@ import type TruffleConfig from "@truffle/config";
 import type * as Codec from "@truffle/codec";
 import type * as Abi from "@truffle/abi-utils";
 
+/**
+ * This type contains options to be used when preparing transactions
+ * or resolving overloads.  Currently the only allowed option is one for
+ * whether to allow a transaction options argument on the end.
+ * @Category Inputs
+ */
 export interface ResolveOptions {
+  /**
+   * This field, if set to true, allows an optional transaction options
+   * argument after the other arguments.
+   */
   allowOptions?: boolean;
 }
 
+/**
+ * This type is a pair containing both a set of transaction options (as might
+ * be sent to web3), including `data`, and an ABI for that transaction.  Only
+ * function transactions are covered here at the moment, because this is meant
+ * to be used with overload resolution as the return type.
+ * @Category Inputs
+ */
 export interface TxAndAbi {
+  /**
+   * This field holds the transaction options.
+   */
   tx: Codec.Options;
+  /**
+   * This field holds the ABI for the transaction.  Because this is intended
+   * as a return type for overload resolution, only function ABI entries can go
+   * here.
+   */
   abi: Abi.FunctionEntry;
 }
 
+/**
+ * @protected
+ * @Category Inputs
+ */
 export interface EncoderInfoInternal {
   userDefinedTypes?: Format.Types.TypesById;
   allocations?: Evm.AllocationInfo;

@@ -67,7 +67,7 @@ export interface Options {
   gasPrice?: BN;
   value?: BN;
   /**
-   * This should be an even-length hex string
+   * This should be a bytestring (even-length hex string, with "0x")
    */
   data?: string;
   nonce?: BN;

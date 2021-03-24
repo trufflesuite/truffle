@@ -11,6 +11,10 @@ export class NoProjectInfoError extends Error {
   }
 }
 
+/**
+ * @category Exception
+ * @protected
+ */
 export class NoInternalInfoError extends Error {
   constructor() {
     super("No compilations provided, but userDefinedTypes or allocations is missing");
@@ -37,6 +41,8 @@ export class InvalidAddressError extends Error {
 }
 
 /**
+ * This error indicates that you attempted to create a contract encoder for
+ * a contract object that has not had all of its libraries linked.
  * @category Exception
  */
 export class UnlinkedContractError extends Error {

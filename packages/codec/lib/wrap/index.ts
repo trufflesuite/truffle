@@ -12,6 +12,7 @@ import {
   TypeMismatchError,
   BadResponseTypeError
 } from "./errors";
+export * from "./errors";
 import { wrap } from "./wrap";
 import * as Common from "@truffle/codec/common";
 

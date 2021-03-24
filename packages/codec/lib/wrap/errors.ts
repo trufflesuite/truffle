@@ -2,6 +2,12 @@ import { Method, Resolution } from "./types";
 import { WrapRequest, WrapResponse } from "../types";
 import * as Format from "@truffle/codec/format";
 
+/**
+ * This error indicates that no overloads matched when performing
+ * overload resolution.  If there was only one plausible match,
+ * a [[TypeMismatchError]] will be thrown instead.
+ * @category Errors
+ */
 export class NoOverloadsMatchedError extends Error {
   methods: Method[];
   inputs: any[];
@@ -20,6 +26,12 @@ export class NoOverloadsMatchedError extends Error {
   }
 }
 
+/**
+ * This error indicates that multiple overloads matched during
+ * overload resolution, but none of them was the unique best
+ * overload.
+ * @category Errors
+ */
 export class NoUniqueBestOverloadError extends Error {
   resolutions: Resolution[];
   constructor(resolutions: Resolution[]) {
@@ -32,6 +44,11 @@ export class NoUniqueBestOverloadError extends Error {
   }
 }
 
+/**
+ * This error indicates that the given input could not be recognized as the
+ * type it was supposed to be.
+ * @category Errors
+ */
 export class TypeMismatchError extends Error {
   variableName: string;
   reason: string;

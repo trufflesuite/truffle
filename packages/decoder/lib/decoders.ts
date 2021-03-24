@@ -1451,7 +1451,8 @@ export class ContractInstanceDecoder {
    *   keys are specified by value; struct members are specified by name.
    *
    *   Values (for array indices and mapping keys) may be given in any format
-   *   understood by Truffle Encoder.
+   *   understood by Truffle Encoder; see the documentation for
+   *   [[Encoder.ProjectEncoder.wrap|ProjectEncoder.wrap]] for details.
    *
    *   Note that if the path to a given mapping key
    *   includes mapping keys above it, any ancestors will also be watched

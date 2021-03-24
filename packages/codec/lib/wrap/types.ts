@@ -2,16 +2,37 @@ import * as Format from "@truffle/codec/format";
 import * as Abi from "@truffle/abi-utils";
 import * as Common from "@truffle/codec/common";
 
+/**
+ * @Category Interfaces
+ */
 export interface Resolution {
   method: Method;
   arguments: Format.Values.Value[];
   options: Common.Options;
 }
 
+/**
+ * This type represents a contract method or constructor.  Note that it's not a
+ * method for a specific instance, so there's no address field.
+ * @Category Interfaces
+ */
 export interface Method {
-  name?: string; //omitted for constructors
-  selector: string; //bytecode for constructors
+  /**
+   * The method name; omitted for constructors.
+   */
+  name?: string;
+  /**
+   * The method selector; for a constructor, this is instead the (linked)
+   * constructor bytecode.
+   */
+  selector: string;
+  /**
+   * The types of the inputs (each of which may optionally have a name).
+   */
   inputs: Format.Types.OptionallyNamedType[];
+  /**
+   * The ABI entry for the method.
+   */
   abi: Abi.FunctionEntry | Abi.ConstructorEntry;
 }
 

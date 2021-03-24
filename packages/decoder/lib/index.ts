@@ -8,20 +8,20 @@ it has additional functionality that the debugger does not need, and the
 debugger has additional functionality that this decoder does not need.
 
 The interface is split into three classes: The project decoder, the contract
-decoder, and the contract instance decoder.  The project decoder is associated to
-the project as a whole and decodes transaction calldata and events.  The
+decoder, and the contract instance decoder.  The project decoder is associated
+to the project as a whole and decodes transaction calldata and events.  The
 contract decoder is associated to a specific contract class.  It has all the
-capabilities of the project decoder, but in addition it acts as a factory for
-contract instance decoders.  The contract instance decoder is associated to a
-specific contract instance; it too has all the capabilities of the project decoder,
-but it can also decode the state variables for the specific instance.  (In
-addition, in the case that the contract does not include a `deployedBytecode`
-field in its artifact, which can hinder decoding certain things, the contract
-instance decoder can sometimes work around this where the other decoders
-cannot.)
+capabilities of the project decoder, but it can also decode return values from
+calls made by the given contract class.  The contract instance decoder is
+associated to a specific contract instance; it again has all the capabilities
+of the project decoder and contract decoder, but it can also decode the state
+variables for the specific instance.  (In addition, in the case that the
+contract does not include a `deployedBytecode` field in its artifact, which can
+hinder decoding certain things, the contract instance decoder can sometimes
+work around this where the other decoders cannot.)
 
-This documentation describes the current state of the decoder, but you should
-expect to see improvements soon.
+This documentation describes the current state of the decoder, but further
+improvements are planned.
 
 ## Usage
 

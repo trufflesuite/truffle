@@ -26,6 +26,12 @@ interface ENSCache {
   [name: string]: string;
 }
 
+/**
+ * The ProjectEncoder class.  Can wrap values; can also encode transactions and
+ * resolve overloads if sufficient information is provided.  See below for a
+ * method listing.
+ * @category Encoder
+ */
 export class ProjectEncoder {
   private provider: Provider | null;
   private ens: any | null; //any should be ENS, sorry >_>
@@ -41,6 +47,9 @@ export class ProjectEncoder {
     return this.allocations;
   }
 
+  /**
+   * @protected
+   */
   constructor(info: Types.EncoderInfoInternal) {
     //first, set up the basic info that we need to run
     if (info.userDefinedTypes && info.allocations) {
@@ -109,6 +118,14 @@ export class ProjectEncoder {
     }
   }
 
+  /**
+   * **This method is asynchronous.**
+   *
+   * This is a restricted version of [[wrap]], which only handles elementary
+   * types and values (those that can be used as mapping keys in Solidity);
+   * it's present here for type convenience.  See the [[wrap]] documentation
+   * for further information.
+   */
   public async wrapElementaryValue(
     dataType: Codec.Format.Types.ElementaryType,
     input: any
@@ -118,6 +135,235 @@ export class ProjectEncoder {
     );
   }
 
+  /**
+   * **This method is asynchronous.**
+   *
+   * This method recognizes user input for a given data type and attempts
+   * to interpret it as a value of that type.  It will throw a
+   * [[Codec.Wrap.TypeMismatchError|TypeMismatchError]] if it cannot do this.
+   *
+   * The `input` argument may come in a number of forms, depending on the
+   * target data type.  A list of the specific inputs accepted for each type is
+   * below.  However first we must note a few generic forms that inputs are
+   * accepted in.
+   *
+   * Inputs may be given as an object of the form `{ type: ..., value: ... }`
+   * (additional fields not allowed), where `type` is a string describing the
+   * type, and `value` is anything that would be accepted for that type.  This
+   * form of input is not very useful with *this* method, but it is useful when
+   * performing overload resolution (see [[resolveAndWrap]]) to restrict the
+   * overloads that will be selected from.  Note that for arrays, `type` should
+   * simply be `"array"`; for structs and tuples, `"struct"` or `"tuple"`; for
+   * addresses and contracts, `"address"` or `"contract"`; for external
+   * functions, `"function"`; for transaction options, `"options"`; and for
+   * enums, `"enum"`.  For other Solidity types, it should be the name of the
+   * type; note that `"uint"`, `"int"`, `"fixed"`, `"ufixed"`, and `"byte"` are
+   * accepted.
+   *
+   * Note that input in the form of a [[Codec.Format.Values.Value|Value]] is
+   * accepted, so long as the type is appropriate, but error results are
+   * typically not accepted (exceptions are discussed below).
+   *
+   * Now then, the list of accepted inputs by type, excluding the above:
+   *
+   * **Strings**: The input may be a string (or `String`), or it may be a
+   * [[Codec.Format.Values.StringValue|StringValue]].  (The latter is the only
+   * way to input invalid UTF-8.)  Strings with invalid UTF-16 will not be
+   * accepted.
+   *
+   * **Bytestrings**: Bytestrings can be given in several forms.  Note that for
+   * all forms of input, if the specified type is `bytesN`, it is OK if the
+   * length of the input is shorter than N bytes; it will automatically be
+   * right-padded with zero bytes in this case.  (The exception is if the input
+   * is a [[Codec.Format.Values.BytesValue|BytesValue]] and strict checking is
+   * on; see [[wrapAndResolve]].)  Bytestrings may be given as `"0x"`-prefixed
+   * even-length hex strings (a `String` may be used in place of a string).
+   * They may also be given as a `Uint8Array`, or anything resembling a
+   * `Uint8Array` -- any object with a `length` field which is a `number`, and
+   * which has fields from `0` to `length-1` all `number`s from 0 to 255, will
+   * be accepted.  Input may also be given as a
+   * [[Codec.Format.Values.BytesValue|BytesValue]]; the specific type does not
+   * have to match unless strict checking is on.  Finally, a bytestring may be
+   * given as an object with just the fields `text` and `encoding`; in this
+   * case, `text` should be a string (it must not have invalid UTF-16) and
+   * `encoding` an encoding to encode it as.  The only supported encoding
+   * currently is `"utf8"`.
+   *
+   * **Integer types**: Input for integer types may take a variety of forms.
+   * The input may be a `number` (or `Number`); note that if so it must be a
+   * safe integer.  For larger integers, you must use other forms of input.
+   * For instance, the input may be a `BigInt`.  The input may also be one
+   * of several recognized big number classes:
+   *   * [`BN`](https://github.com/indutny/bn.js)
+   *   * [`Big`](https://github.com/MikeMcl/Big.js)
+   *   * MikeMcl's [`BigNumber`](https://github.com/MikeMcl/bignumber.js)
+   *   * Ethers's [`BigNumber` or `FixedNumber`](https://www.npmjs.com/package/@ethersproject/bignumber)
+   * Of course, any numeric input, no matter the format, must be integral.
+   * Input may also take the form of a numeric string (or `String`).
+   * The string may be decimal, but it may also be hexadecimal with `"0x"`
+   * prefix, octal with `"0o"` prefix, or binary with `"0xb"` prefix.
+   * You can also use a negated hexadecimal, octal, or binary string to
+   * represent a negative number.  Whitespace before or after the number is OK.
+   * For decimal strings, scientific notation (e.g. `1.1e4`) is also accepted.
+   * It is also possible to affix one of the units `"wei"`, `"gwei"`,
+   * `"shannon"`, `"finney"`, `"szabo"`, or `"ether"` (these are case-insensitive)
+   * onto a decimal numeric string (you may include space inbetween the
+   * quantity and the unit) to act as a multiplier (where here the
+   * assumption is that 1 wei means the number 1).  You may also use a
+   * unit by itself, with no specified quantity, to mean 1 of that unit.
+   * (E.g., an input of `"wei"` will be interpreted as 1.)  Note that it's OK
+   * if the quantity before the unit is not itself an integer, so long as the
+   * overall resulting quantity is an integer; e.g., "1.1 gwei" is legal integer
+   * input.  In addition to giving the input in any of these obviously numeric
+   * forms, the input may also be given a a `Uint8Array` or anything that
+   * mimics one (see above about bytestrings); in this case the input will
+   * be interpreted as the big-endian byte representation of an unsigned
+   * integer (or in other words, it will be interpreted as base 256).
+   * Negative numbers cannot be represented in this way.
+   * Finally, the input may be given as a
+   * [[Codec.Format.Values.UintValue|UintValue]],
+   * [[Codec.Format.Values.IntValue|IntValue]],
+   * [[Codec.Format.Values.UfixedValue|UfixedValue]],
+   * [[Codec.Format.Values.FixedValue|FixedValue]], or
+   * [[Codec.Format.Values.EnumValue|EnumValue]]; the type is not required to
+   * match unless strict checking is on (see [[resolveAndWrap]]), in which case
+   * the type must match exactly.  In addition, the input may also be a
+   * [[Codec.Format.Values.EnumErrorResult|EnumErrorResult]] so long as
+   * the error is a
+   * [[Codec.Format.Values.EnumOutOfRangeError|EnumOutOfRangeError]];
+   * other types of error results are not accepted.
+   *
+   * **Enums**: Enums accept all the same forms of input as integer types.
+   * However, if the encoder is aware that a particular argument or field is in
+   * fact an enum and not just an integer, it accepts one additional form of
+   * input; the input may be a string (or `String`) containing the name of the
+   * enumerated option.  So, for instance, given the following Solidity code:
+   * ```solidity
+   * contract MyContract {
+   *   enum Ternary {
+   *     No, Yes, Maybe
+   *   }
+   * }
+   * ```
+   * then `"Yes"` would be a valid input for an enum of type
+   * `MyContract.Ternary`.  Moreover, `"Ternary.Yes"` and
+   * `"MyContract.Ternary.Yes"` would also work; these latter forms will only
+   * match enum types with the appropriate name and optionally defining
+   * contract, so you can use these to restrict matching for overload
+   * resolution, much like type/value input.  Note these forms do not require
+   * the enum to be defined inside of a contract; those defined outside of
+   * contracts are supported too, so long as the encoder was initialized to
+   * know about them.
+   *
+   * **Addresses and contracts**: Input may be given as a hex string
+   * representing 20 bytes, with capitalization according to the Ethereum
+   * address checksum.  The `"0x"` prefix is optional.  If the hex string
+   * is all lowercase or all uppercase, however, then the checksum check will
+   * be skipped, and the input accepted regardless.  Input may also be given
+   * as an ICAP address; again, the checksum must be correct.  Finally, if ENS
+   * resolution has been configured, input may be given as an ENS name.
+   * All of these may also be given as `String`s instead of strings.
+   * Input may also be given as an object with an `address` field, although the
+   * contents of that address field must be a `"0x"`-prefixed hex string (not
+   * `String`), and not any other address format.  Input may also be given
+   * as a [[Codec.Format.Values.AddressValue|AddressValue]] or
+   * [[Codec.Format.Values.ContractValue|ContractValue]]; the specific type
+   * does not matter.
+   *
+   * **Booleans**: Almost any input is accepted (as long as it's not type/value
+   * input for a different type), but how it is interpreted depends on the
+   * input.  A boolean will be interpreted in the obvious way, and a `Boolean`
+   * will be unwrapped.  A string will be considered true unless it is falsy or
+   * is equal (ignoring case) to the string `"false"`.  A `String` will be
+   * considered true if and only if the underlying string is.  A number will be
+   * considered true so long as it is truthy, and a `Number` will be considered
+   * true if and only if the underlying number is.  A
+   * [[Codec.Format.Values.BoolValue|BoolValue]] will be considered true so
+   * long as it represents a true value.  Moreover, two types of
+   * [[Codec.Format.Values.BoolErrorResult|BoolErrorResult]] also count as
+   * true: Those where the error is a
+   * [[Codec.Format.Values.BoolOutOfRangeError|BoolOutOfRangeError]] and
+   * those where the error is a
+   * [[Codec.Format.Values.BoolPaddingError|BoolPaddingError]].  All other
+   * error results, and all [[Codec.Format.Values.Value|Values]] that are not
+   * [[Codec.Format.Values.BoolValue|BoolValues]], will be rejected.  All other
+   * inputs will be considered true so long as they are truthy.
+   *
+   * **Decimal fixed-point types**: Input for fixed-point decimal types is
+   * similar to input for integer types.  The differences are as follows:
+   *   * Units are not accepted in numeric strings (or `String`s).
+   *   * Hexadecimal, octal, and binary strings (or `String`s) are not
+   *     accepted.
+   *   * `Uint8Array`s, or objects that mimic them, are not accepted.
+   *   * Numeric values do not have to be integral.
+   * Note that if the input is a `number` (or `Number`) or MikeMcl
+   * [BigNumber](https://github.com/MikeMcl/bignumber.js), it must be a finite
+   * value.  Also, the number of decimal places in the input may not exceed the
+   * number of decimal places allowed in the type.  Finally, just as integer
+   * types do not allow `number`s (or `Number`s) that are unsafe integers as
+   * input, decimal types will not accept a `number` (or `Number`) as input if
+   * that `number` is outside the safe range for that type, i.e., it is large
+   * enough that there may be loss of precision.  (This means that `1` is not
+   * valid input for a `fixed128x18`!)  Using other, safer, forms of input is
+   * encouraged.
+   *
+   * **Arrays**: The input may be an array, or it may be a
+   * [[Codec.Format.Values.ArrayValue|ArrayValue]].  In the latter case,
+   * whether it is static-length or dynamic-length does not need to match
+   * (unless strict checking is on, see [[resolveAndWrap]]).
+   *
+   * **Structs and tuples**: The input can be given either as an array or as an
+   * object.  If given as an array, the elements should be the members of the
+   * struct/tuple, in order.  If given as an object, it should be keyed by the
+   * struct or tuple's field names; if any of the elements of the tuple are
+   * unnamed, then input cannot be given as an object.  (Note that if the
+   * tuple's fields are precisely `type` and `value`, you will either want to make
+   * sure you do not give `type` as a native string (a `String` instead will work),
+   * or else that you give your input in some other form, such as an array...)
+   * Input may also be given as a [[Codec.Format.Values.StructValue|StructValue]]
+   * or [[Codec.Format.Values.TupleValue|TupleValue]]; the specific type
+   * does not matter.
+   *
+   * **External function pointers**: These may be given as an object with fields
+   * `address` and `selector` (additional fields are allowed); the `address`
+   * field may be anything that would be recognized as an address (see above),
+   * and the `selector` field may be anything that would be recgonized as a
+   * `bytes4` (see above).  Alternatively, this may be given as a bytestring
+   * (even length `"0x"`-prefixed hex string or `String`) of 24 bytes,
+   * specifying the address followed by the selector; in this case, the address
+   * does not need to be checksummed.  Finally, input may of course also be
+   * given as a
+   * [[Codec.Format.Values.FunctionExternalValue|FunctionExternalValue]];
+   * its more specific type does not matter.
+   *
+   * * Transaction options: These are given as an object with fields for the
+   * desired options (you can leave options out or have them be `undefined` and
+   * they'll be ignored).  Note that, in order to maintain compatibility with
+   * older versions of Truffle, additional keys are accepted, but there must be
+   * at least one key that belongs in a transaction options object.  Note that
+   * if any field exists, and is not `undefined`, but the value of that field
+   * cannot be interpreted as input of the appropriate type, the input will be
+   * rejected.  Otherwise, inputs for each field can be anything that the
+   * encoder will understand for this field.  Accepted fields are:
+   *   * `gas`, `gasPrice`, `value`, `nonce`: These take integer input
+   *     (see above).
+   *   * `from`, `to`: These take address input (see above)
+   *   * `data`: This takes `bytes` input (see above)
+   *   * `overwrite`: This takes boolean input (see above)
+   *   * `privateFor`: This one is a special case, and requires a specific
+   *     form of input.  Input must be an array of base64-encoded
+   *     bytestrings (as strings or `String`s), each with a decoded length of
+   *     32 bytes.
+   * In addition, input may also be given as a
+   * [[Codec.Format.Values.OptionsValue|OptionsValue]].
+   *
+   * @param dataType The data type that the given value is to be interpreted
+   *   as.
+   * @param input The value to be interpreted.  This can take a number of
+   *   forms depending on the data type, as documented above.
+   * @return The interpreted value wrapped as a [[Codec.Format.Values.Value|Value]]
+   *   object.
+   */
   public async wrap(
     dataType: Codec.Format.Types.Type,
     input: any
@@ -130,6 +376,25 @@ export class ProjectEncoder {
     );
   }
 
+  /**
+   * **This method is asynchronous.**
+   *
+   * This method recognizes user input for a transaction.  It will throw
+   * a [[Codec.Wrap.TypeMismatchError|TypeMismatchError]] if it cannot do this.
+   *
+   * If the `allowOptions` flag is set in the `options` argument, the input may
+   * contain an additional transaction options argument after the other
+   * arguments.
+   *
+   * @param method Contains information about the method (or constructor) being
+   *   used for the transaction.
+   * @param inputs An array of the inputs to the transaction.  May include a
+   *   transaction options argument on the end if the `allowOptions` flag is
+   *   set.
+   * @param options Contains options to control the operation of this method.
+   * @return The interpretation of the input, as a
+   *   [[Codec.Wrap.Resolution|Resolution]] object.
+   */
   public async wrapForTransaction(
     method: Codec.Wrap.Method,
     inputs: any[],
@@ -144,6 +409,82 @@ export class ProjectEncoder {
     );
   }
 
+  /**
+   * **This method is asynchronous.**
+   *
+   * This method attempts to perform overload resolution given user input
+   * to one of several possible methods.  If the given input matches more than
+   * one of these methods, it will attempt to select the best match.
+   *
+   * If it is not possible for the given input to match any of the given methods,
+   * either a [[Codec.Wrap.TypeMismatchError|TypeMismatchError]] or a 
+   * [[Codec.Wrap.NoOverloadsMatchedError|NoOverloadsMatchedError]] will be
+   * thrown.  If more than one overload matches but none can be considered the
+   * unique best, you will get a
+   * [[Codec.Wrap.NoUniqueBestOverloadError|NoUniqueBestOverloadError]].
+   *
+   * If the `allowOptions` flag is set in the `options` argument, the input may
+   * contain an additional transaction options argument after the other
+   * arguments.
+   *
+   * If it is necessary to perform overload resolution by type rather than
+   * simply by length, the encoder will select among the overloads that
+   * could work the one it considers to be the best match.  To be the best
+   * match, it must be a best match for each argument.  An overload is
+   * a best match for a given argument if the type it would assign that
+   * argument is highest-priority among all types it could assign that
+   * argument (selected from overloads that match overall).
+   *
+   * Note that when doing this the match checker will be somewhat stricter than
+   * usual; if a value is given as a [[Codec.Format.Values.Value|Value]], it
+   * will only match its specific type, rather than being allowed to match
+   * other types as usual (unless it is itself wrapped in a type/value pair).
+   *
+   * The overall order of priority of types is as follows:
+   * 1. addresses and contracts
+   * 2. arrays
+   * 3. external function pointers
+   * 4. transaction options
+   * 5. structs and tuples
+   * 6. bytestrings (`bytesN` and `bytes`)
+   * 7. numeric types
+   * 8. `enum`s
+   * 9. `string`
+   * 10. `bool`
+   *
+   * (Note that if the encoder does not know that a certain argument is
+   * supposed to be an enum, it will of course just be treated as the
+   * underlying numeric type.)
+   *
+   * Moreover, within each category there is a priority ordering (which is
+   * not always total).  Specifically:
+   * * For arrays, if `S` has priority over `T`, then `S[]` has priority
+   *   over `T[]`, and `S[n]` has priority over `T[n]`.  Moreover, `S[n]`
+   *   has priority over `S[]` and so also over `T[]`.
+   * * Structs and tuples act the same as the overall arguments list; for
+   *   one such type `S` to have priority over another type `T`, each
+   *   member type of `S` must have priority over the corresponding member type
+   *   of `T` (correspondence being determined by the order of the members).
+   * * `bytesN` has priority over `bytesM` if `N<=M`, and has priority over
+   *   `bytes`
+   * * A numeric type `S` has priority over a numeric type `T` if the values
+   *   representable by `S` are a subset of those representable by `T`.
+   *
+   * If you are not getting the overload you want, you can use explicit
+   * type-value input as discussed in the documentation for [[wrap]], or you
+   * can skip overload resolution and explicitly select an overload by other
+   * means.  For enums you may also specify the enum type as documented in
+   * [[wrap]].
+   *
+   * @param methods An array of [[Codec.Wrap.Method|Method]] objects we are
+   *   attempting to decide between.
+   * @param inputs An array of the inputs to the transaction.  May include a
+   *   transaction options argument on the end if the `allowOptions` flag is
+   *   set.
+   * @param options Contains options to control the operation of this method.
+   * @return The interpretation of the input and the resolved method, as a
+   *   [[Codec.Wrap.Resolution|Resolution]] object.
+   */
   public async resolveAndWrap(
     methods: Codec.Wrap.Method[],
     inputs: any[],
@@ -189,6 +530,22 @@ export class ProjectEncoder {
     }
   }
 
+  /**
+   * **This method is asynchronous.**
+   *
+   * This method is similar to [[wrapForTransaction]], except instead of
+   * returning a [[Codec.Wrap.Resolution|Resolution]] object, it returns
+   * the resulting transaction options, including the encoded `data`.
+   * Note any options not specified in a transaction options parameter
+   * will be simply omitted; it is up to the caller to set these as
+   * appropriate afterwards.
+   *
+   * If the transaction options parameter has a `data` option, this option will
+   * be recognized but ignored.  Similarly, when encoding a contract creation,
+   * the `to` option will be similarly ignored.
+   *
+   * See [[wrapForTransaction]] for documentation of the inputs.
+   */
   public async encodeTransaction(
     method: Codec.Wrap.Method,
     inputs: any[],
@@ -213,6 +570,22 @@ export class ProjectEncoder {
     };
   }
 
+  /**
+   * **This method is asynchronous.**
+   *
+   * This method is similar to [[resolveAndWrap]], except instead of
+   * returning a [[Codec.Wrap.Resolution|Resolution]] object, it returns
+   * a pair containing the ABI for the resolved method together with
+   * the resulting transaction options, including the encoded `data`.
+   * Note any options not specified in a transaction options parameter
+   * will be simply omitted; it is up to the caller to set these as
+   * appropriate afterwards.
+   *
+   * If the transaction options parameter has a `data` option, this option will
+   * be recognized but ignored.
+   *
+   * See [[wrapForTransaction]] for documentation of the inputs.
+   */
   public async resolveAndEncode(
     methods: Codec.Wrap.Method[],
     inputs: any[],
@@ -388,12 +761,35 @@ export class ProjectEncoder {
     return address;
   }
 
+  /**
+   * **This method is asynchronous.**
+   *
+   * Constructs a contract encoder for a given contract in this project.
+   * @param contract The contract the encoder is for.  It should have all of
+   *   its libraries linked.
+   *
+   *   Note: The contract must be one that the encoder knows about;
+   *   otherwise you will have problems.
+   */
   public async forContract(
     contract: Types.ContractConstructorObject
   ): Promise<ContractEncoder> {
     return new ContractEncoder(this, contract);
   }
 
+  /**
+   * **This method is asynchronous.**
+   *
+   * Constructs a contract instance encoder for a given contract instance.
+   * @param contract The contract the encoder is for.  It should have all of
+   *   its libraries linked.
+   *
+   *   Note: The contract must be one that the encoder knows about;
+   *   otherwise you will have problems.
+   * @param address The address of the contract instance.
+   *   If omitted, it will be autodetected.
+   *   If an invalid address is provided, this method will throw an exception.
+   */
   public async forInstance(
     contract: Types.ContractConstructorObject,
     address?: string
@@ -406,6 +802,12 @@ export class ProjectEncoder {
   }
 }
 
+/**
+ * The ContractEncoder class.
+ * Can encode transactions, resolve overloads, and wrap values.
+ * See below for a method listing.
+ * @category Encoder
+ */
 export class ContractEncoder {
   private projectEncoder: ProjectEncoder;
   private contract: Types.ContractConstructorObject;
@@ -413,6 +815,9 @@ export class ContractEncoder {
   private constructorContextHash: string | undefined;
   private deployedContextHash: string | undefined;
 
+  /**
+   * @protected
+   */
   constructor(
     projectEncoder: ProjectEncoder,
     contract: Types.ContractConstructorObject
@@ -461,6 +866,9 @@ export class ContractEncoder {
     }
   }
 
+  /**
+   * See [[ProjectEncoder.wrapElementaryValue]].
+   */
   public async wrapElementaryValue(
     dataType: Codec.Format.Types.ElementaryType,
     input: any
@@ -468,6 +876,9 @@ export class ContractEncoder {
     return await this.projectEncoder.wrapElementaryValue(dataType, input);
   }
 
+  /**
+   * See [[ProjectEncoder.wrap]].
+   */
   public async wrap(
     dataType: Codec.Format.Types.Type,
     input: any
@@ -475,6 +886,22 @@ export class ContractEncoder {
     return await this.projectEncoder.wrap(dataType, input);
   }
 
+  /**
+   * **This method is asynchronous.**
+   *
+   * This method works similarly to [[ProjectEncoder.wrapForTransaction]].
+   * However, instead of a Method object, it simply takes the ABI entry for
+   * the transaction being prepared.  Note that the ABI must be one associated
+   * with this contract, or the function will not work.
+   *
+   * Note that use of the encoder for transactions to be sent to libraries is
+   * presently not supported and may have unreliable results.  Limited support
+   * for this is planned for future versions.
+   *
+   * See [[ProjectEncoder.wrapForTransaction]] for further details.
+   *
+   * @param abi The ABI entry for the transaction being prepared.
+   */
   public async wrapForTransaction(
     abi: Abi.FunctionEntry | Abi.ConstructorEntry,
     inputs: any[],
@@ -488,6 +915,24 @@ export class ContractEncoder {
     );
   }
 
+  /**
+   * **This method is asynchronous.**
+   *
+   * This method works similarly to [[ProjectEncoder.resolveAndWrap]].
+   * However, instead of an array of Method objects, it simply takes an array
+   * of the ABI entries for the possible overloads.  Only function ABI entries
+   * may be passed to this method, not constructor ABI entries.  Note that the
+   * ABIs must be one associated with this contract, or the function will not
+   * work.
+   *
+   * Note that use of the encoder for transactions to be sent to libraries is
+   * presently not supported and may have unreliable results.  Limited support
+   * for this is planned for future versions.
+   *
+   * See [[ProjectEncoder.resolveAndWrap]] for further details.
+   *
+   * @param abis The ABI entries for the overloads to be resolved between.
+   */
   public async resolveAndWrap(
     abis: Abi.FunctionEntry[],
     inputs: any[],
@@ -505,6 +950,22 @@ export class ContractEncoder {
     );
   }
 
+  /**
+   * **This method is asynchronous.**
+   *
+   * This method works similarly to [[ProjectEncoder.encodeTransaction]].
+   * However, instead of a Method object, it simply takes the ABI entry for
+   * the transaction being prepared.  Note that the ABI must be one associated
+   * with this contract, or the function will not work.
+   *
+   * Note that use of the encoder for transactions to be sent to libraries is
+   * presently not supported and may have unreliable results.  Limited support
+   * for this is planned for future versions.
+   *
+   * See [[ProjectEncoder.encodeTransaction]] for further details.
+   *
+   * @param abi The ABI entry for the transaction being prepared.
+   */
   public async encodeTransaction(
     abi: Abi.FunctionEntry | Abi.ConstructorEntry,
     inputs: any[],
@@ -518,6 +979,24 @@ export class ContractEncoder {
     );
   }
 
+  /**
+   * **This method is asynchronous.**
+   *
+   * This method works similarly to [[ProjectEncoder.resolveAndEncode]].
+   * However, instead of an array of Method objects, it simply takes an array
+   * of the ABI entries for the possible overloads.  Only function ABI entries
+   * may be passed to this method, not constructor ABI entries.  Note that the
+   * ABIs must be one associated with this contract, or the function will not
+   * work.
+   *
+   * Note that use of the encoder for transactions to be sent to libraries is
+   * presently not supported and may have unreliable results.  Limited support
+   * for this is planned for future versions.
+   *
+   * See [[ProjectEncoder.resolveAndEncode]] for further details.
+   *
+   * @param abis The ABI entries for the overloads to be resolved between.
+   */
   public async resolveAndEncode(
     abis: Abi.FunctionEntry[],
     inputs: any[],
@@ -535,6 +1014,15 @@ export class ContractEncoder {
     );
   }
 
+  /**
+   * **This method is asynchronous.**
+   *
+   * Constructs a contract instance encoder for a given instance of the
+   * contract this encoder is for.
+   * @param address The address of the contract instance.
+   *   If omitted, it will be autodetected.
+   *   If an invalid address is provided, this method will throw an exception.
+   */
   public async forInstance(address?: string): Promise<ContractInstanceEncoder> {
     if (address === undefined) {
       address = (await this.contract.deployed()).address;
@@ -582,10 +1070,21 @@ export class ContractEncoder {
   }
 }
 
+/**
+ * The ContractInstanceEncoder class.
+ * Can encode transactions, resolve overloads, and wrap values.
+ * Differs from the [[ContractEncoder]] only in that it carries
+ * a `to` address for non-constructor transactions.
+ * See below for a method listing.
+ * @category Encoder
+ */
 export class ContractInstanceEncoder {
   private contractEncoder: ContractEncoder;
   private toAddress: string;
 
+  /**
+   * @protected
+   */
   constructor(contractEncoder: ContractEncoder, toAddress: string) {
     this.contractEncoder = contractEncoder;
     if (!Web3Utils.isAddress(toAddress)) {
@@ -594,6 +1093,9 @@ export class ContractInstanceEncoder {
     this.toAddress = Web3Utils.toChecksumAddress(toAddress);
   }
 
+  /**
+   * See [[ProjectEncoder.wrapElementaryValue]].
+   */
   public async wrapElementaryValue(
     dataType: Codec.Format.Types.ElementaryType,
     input: any
@@ -601,6 +1103,9 @@ export class ContractInstanceEncoder {
     return await this.contractEncoder.wrapElementaryValue(dataType, input);
   }
 
+  /**
+   * See [[ProjectEncoder.wrap]].
+   */
   public async wrap(
     dataType: Codec.Format.Types.Type,
     input: any
@@ -608,6 +1113,15 @@ export class ContractInstanceEncoder {
     return await this.contractEncoder.wrap(dataType, input);
   }
 
+  /**
+   * **This method is asynchronous.**
+   *
+   * This method functions identically to [[ContractEncoder.wrapForTransaction]],
+   * except that, when preparing a function transaction, the `to` option is
+   * automatically set to this contract instance's address.  If an explicit
+   * `to` address is passed as a transaction option, it will be recognized
+   * but ignored.
+   */
   public async wrapForTransaction(
     abi: Abi.FunctionEntry | Abi.ConstructorEntry,
     inputs: any[],
@@ -624,6 +1138,14 @@ export class ContractInstanceEncoder {
     return resolution;
   }
 
+  /**
+   * **This method is asynchronous.**
+   *
+   * This method functions identically to [[ContractEncoder.resolveAndWrap]],
+   * except that the `to` option is automatically set to this contract
+   * instance's address.  If an explicit `to` address is passed as a
+   * transaction option, it will be recognized but ignored.
+   */
   public async resolveAndWrap(
     abis: Abi.FunctionEntry[],
     inputs: any[],
@@ -638,6 +1160,15 @@ export class ContractInstanceEncoder {
     return resolution;
   }
 
+  /**
+   * **This method is asynchronous.**
+   *
+   * This method functions identically to [[ContractEncoder.encodeTransaction]],
+   * except that, when preparing a function transaction, the `to` option is
+   * automatically set to this contract instance's address.  If an explicit
+   * `to` address is passed as a transaction option, it will be recognized
+   * but ignored.
+   */
   public async encodeTransaction(
     abi: Abi.FunctionEntry | Abi.ConstructorEntry,
     inputs: any[],
@@ -659,6 +1190,14 @@ export class ContractInstanceEncoder {
     return encoded;
   }
 
+  /**
+   * **This method is asynchronous.**
+   *
+   * This method functions identically to [[ContractEncoder.resolveAndEncode]],
+   * except that the `to` option is automatically set to this contract
+   * instance's address.  If an explicit `to` address is passed as a
+   * transaction option, it will be recognized but ignored.
+   */
   public async resolveAndEncode(
     abis: Abi.FunctionEntry[],
     inputs: any[],
