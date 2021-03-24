@@ -21,6 +21,7 @@ for (let org of orgs) {
   const userPermissionsObject = getPkgPermissions(username);
 
   for (const pkg in permissions) {
+    if (pkg.startsWith("ganache")) continue;
     if (!userPermissionsObject[pkg])
       throw new Error(`You don't have permissions to publish ${pkg}`);
     if (permissions[pkg] !== userPermissionsObject[pkg])
