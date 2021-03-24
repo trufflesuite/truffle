@@ -29,6 +29,9 @@ module.exports = Contract => ({
     // save properties
     this.currentProvider = provider;
     this.networkType = networkType;
+
+    //invalidate cached chain ID
+    this._chainId = undefined;
   },
 
   setProvider(provider) {
