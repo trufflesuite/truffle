@@ -40,16 +40,12 @@ export class Plugin {
    * `truffle preserve` support
    */
 
-  get tag(): string {
-    return this.definition.tag || this.module;
+  get tag(): string | undefined {
+    return this.definition.tag;
   }
 
   definesRecipe(): boolean {
     return !!(this.definition.preserve && this.definition.preserve.recipe);
-  }
-
-  definesLoader(): boolean {
-    return !!(this.definition.preserve && this.definition.preserve.loader);
   }
 
   loadRecipe(): any {
@@ -60,16 +56,6 @@ export class Plugin {
     }
 
     return this.loadModule(this.definition.preserve.recipe).Recipe;
-  }
-
-  loadLoader(): any {
-    if (!this.definesLoader()) {
-      throw new TruffleError(
-        `Plugin ${this.module} does not define a \`truffle preserve\` loader.`
-      );
-    }
-
-    return this.loadModule(this.definition.preserve.loader).Loader;
   }
 
   /*

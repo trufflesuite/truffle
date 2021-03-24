@@ -173,28 +173,11 @@ describe("Plugins", () => {
             tag: "dummy-recipe",
             preserve: { tag: "dummy-recipe", recipe: "." }
           }
-        })
-      ];
-
-      expect(foundPlugins).toEqual(expectedPlugins);
-    });
-  });
-
-  describe("listAllLoaders()", () => {
-    it("should list all plugins that implement a loader", () => {
-      const config = {
-        working_directory: __dirname,
-        plugins: ["dummy-plugin-1", "dummy-recipe", "dummy-loader"]
-      };
-
-      const foundPlugins = Plugins.listAllLoaders(config);
-
-      const expectedPlugins = [
+        }),
         new Plugin({
           module: "dummy-loader",
           definition: {
-            tag: "dummy-loader",
-            preserve: { tag: "dummy-loader", loader: "." }
+            preserve: { recipe: "." }
           }
         })
       ];

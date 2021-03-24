@@ -17,7 +17,7 @@ export async function* control<R, O extends HasControls>(
   const controller = new StepsController({ scope });
 
   const controls = {
-    log: controller.log,
+    update: controller.update,
     declare: controller.declare,
     step: controller.step
   };

@@ -1,6 +1,5 @@
 {
   "preserve": {
-    "tag": "dummy-loader",
-    "loader": "."
+    "recipe": "."
   }
 }

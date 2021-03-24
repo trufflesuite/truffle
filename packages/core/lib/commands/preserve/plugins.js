@@ -20,30 +20,16 @@ const getConfig = options => {
   return config;
 };
 
-const constructPlugins = (plugins, environment) => {
-  const recipes = new Map([]);
-  const loaders = new Map([]);
-
-  for (const plugin of plugins) {
+const constructRecipes = (plugins, environment) => {
+  return plugins.map(plugin => {
     const options = (environment || {})[plugin.tag] || {};
-
-    if (plugin.definesLoader()) {
-      const constructor = plugin.loadLoader();
-      const loader = new constructor(options);
-      loaders.set(plugin.module, loader);
-    }
-
-    if (plugin.definesRecipe()) {
-      const constructor = plugin.loadRecipe();
-      const recipe = new constructor(options);
-      recipes.set(plugin.module, recipe);
-    }
-  }
-
-  return { recipes, loaders };
+    const Recipe = plugin.loadRecipe();
+    const recipe = new Recipe(options);
+    return recipe;
+  });
 };
 
 module.exports = {
   getConfig,
-  constructPlugins
+  constructRecipes
 };

@@ -27,18 +27,18 @@ export const tests: Test[] = [
       source: "a"
     },
     events: [
-      { type: 'begin', scope: [ '@truffle/preserve-fs' ] },
+      { type: "begin", scope: [ "@truffle/preserve-fs" ] },
       {
-        type: 'log',
-        message: 'Loading target...',
-        scope: [ '@truffle/preserve-fs' ]
+        type: "update",
+        message: "Loading target...",
+        scope: [ "@truffle/preserve-fs" ]
       },
       expect.objectContaining({ type: "step" }),
       expect.objectContaining({ type: "succeed" }),
       {
-        type: 'succeed',
-        result: { 'fs-target': expect.any(Object) },
-        scope: [ '@truffle/preserve-fs' ]
+        type: "succeed",
+        result: { "fs-target": expect.any(Object) },
+        scope: [ "@truffle/preserve-fs" ]
       }
     ]
   },
@@ -63,18 +63,18 @@ export const tests: Test[] = [
       source: "b"
     },
     events: [
-      { type: 'begin', scope: [ '@truffle/preserve-fs' ] },
+      { type: "begin", scope: [ "@truffle/preserve-fs" ] },
       {
-        type: 'log',
-        message: 'Loading target...',
-        scope: [ '@truffle/preserve-fs' ]
+        type: "update",
+        message: "Loading target...",
+        scope: [ "@truffle/preserve-fs" ]
       },
       expect.objectContaining({ type: "step" }),
       expect.objectContaining({ type: "succeed" }),
       {
-        type: 'succeed',
-        result: { 'fs-target': expect.any(Object) },
-        scope: [ '@truffle/preserve-fs' ]
+        type: "succeed",
+        result: { "fs-target": expect.any(Object) },
+        scope: [ "@truffle/preserve-fs" ]
       }
     ]
   },
@@ -106,11 +106,11 @@ export const tests: Test[] = [
       }
     },
     events: [
-      { type: 'begin', scope: [ '@truffle/preserve-fs' ] },
+      { type: "begin", scope: [ "@truffle/preserve-fs" ] },
       {
-        type: 'log',
-        message: 'Loading target...',
-        scope: [ '@truffle/preserve-fs' ]
+        type: "update",
+        message: "Loading target...",
+        scope: [ "@truffle/preserve-fs" ]
       },
       expect.objectContaining({ type: "step" }),
       expect.objectContaining({ type: "step" }),
@@ -119,9 +119,9 @@ export const tests: Test[] = [
       expect.objectContaining({ type: "succeed" }),
       expect.objectContaining({ type: "succeed" }),
       {
-        type: 'succeed',
-        result: { 'fs-target': expect.any(Object) },
-        scope: [ '@truffle/preserve-fs' ]
+        type: "succeed",
+        result: { "fs-target": expect.any(Object) },
+        scope: [ "@truffle/preserve-fs" ]
       }
     ]
   },
@@ -153,20 +153,20 @@ export const tests: Test[] = [
       }
     },
     events: [
-      { type: 'begin', scope: [ '@truffle/preserve-fs' ] },
+      { type: "begin", scope: [ "@truffle/preserve-fs" ] },
       {
-        type: 'log',
-        message: 'Loading target...',
-        scope: [ '@truffle/preserve-fs' ]
+        type: "update",
+        message: "Loading target...",
+        scope: [ "@truffle/preserve-fs" ]
       },
       expect.objectContaining({ type: "step" }),
       expect.objectContaining({ type: "step" }),
       expect.objectContaining({ type: "succeed" }),
       expect.objectContaining({ type: "succeed" }),
       {
-        type: 'succeed',
-        result: { 'fs-target': expect.any(Object) },
-        scope: [ '@truffle/preserve-fs' ]
+        type: "succeed",
+        result: { "fs-target": expect.any(Object) },
+        scope: [ "@truffle/preserve-fs" ]
       }
     ]
   }

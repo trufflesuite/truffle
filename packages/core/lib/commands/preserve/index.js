@@ -16,10 +16,12 @@ module.exports = {
 
     const recipes = Plugins.listAllRecipes(config);
 
-    const recipeFlags = recipes.map(recipe => ({
-      option: `--${recipe.tag}`,
-      description: recipe.loadRecipe().help
-    }));
+    // If a recipe does not define a tag, it is not an end-user recipe
+    const recipeFlags = recipes.filter(recipe => recipe.tag !== undefined)
+      .map(recipe => ({
+        option: `--${recipe.tag}`,
+        description: recipe.loadRecipe().help
+      }));
 
     const flags = [
       {
@@ -39,7 +41,7 @@ module.exports = {
   run: async options => {
     const TruffleError = require("@truffle/error");
     const { Plugins } = require("@truffle/plugins");
-    const { getConfig, constructPlugins } = require("./plugins");
+    const { getConfig, constructRecipes } = require("./plugins");
     const { preserve, ConsoleReporter } = require("@truffle/preserve");
     const semver = require("semver");
 
@@ -57,22 +59,18 @@ module.exports = {
       );
     }
 
+    const plugins = Plugins.listAllRecipes(config);
     const environment = environments[config.environment || "development"];
-
-    const allPlugins = Plugins.listAll(config);
-
-    const { recipes, loaders } = constructPlugins(allPlugins, environment);
+    const recipes = constructRecipes(plugins, environment);
 
     // check for tag in options (instead of config, for maybe extra safety)
-    const recipePlugin = allPlugins.find(
-      plugin => plugin.definesRecipe() && plugin.tag in options
-    );
+    const recipePlugin = plugins.find(plugin => plugin.tag in options);
 
     if (!recipePlugin) {
       throw new TruffleError("No (valid) recipe specified");
     }
 
-    const recipe = recipePlugin.module;
+    const [recipe] = constructRecipes([recipePlugin], environment);
 
     if (config._.length === 0) {
       throw new TruffleError("No preserve target specified");
@@ -86,17 +84,14 @@ module.exports = {
 
       const reporter = new ConsoleReporter({ console: config.logger });
 
+      // The specified path and the truffle config are passed as initial inputs
+      // that can be used by any recipe.
+      const inputs = { path, config };
+
       await reporter.report(
         preserve({
           recipes,
-          loaders,
-          request: {
-            recipe,
-            loader: "@truffle/preserve-fs",
-            settings: new Map([
-              ["@truffle/preserve-fs", { path, verbose: true }]
-            ])
-          }
+          request: { recipe, inputs }
         })
       );
 

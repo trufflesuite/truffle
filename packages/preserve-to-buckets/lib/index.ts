@@ -48,7 +48,7 @@ export class Recipe implements Preserve.Recipe {
     options: Preserve.Recipes.ExecuteOptions
   ): Preserve.Process<Result> {
     const { inputs, controls } = options;
-    const { log } = controls;
+    const { update } = controls;
     const { key, secret, bucketName } = this;
 
     const target = Preserve.Targets.normalize(inputs["fs-target"]);
@@ -59,7 +59,7 @@ export class Recipe implements Preserve.Recipe {
       );
     }
 
-    yield* log({ message: "Preserving to Textile Buckets..." });
+    yield* update({ message: "Preserving to Textile Buckets..." });
 
     const { buckets, bucketKey } = yield* connect({ key, secret, bucketName, controls });
 

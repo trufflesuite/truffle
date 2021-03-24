@@ -22,7 +22,7 @@ export const tests: Test[] = [
         scope: ["@truffle/preserve-to-ipfs"]
       },
       {
-        type: "log",
+        type: "update",
         message: "Preserving to IPFS...",
         scope: ["@truffle/preserve-to-ipfs"]
       },
@@ -77,7 +77,7 @@ export const tests: Test[] = [
         scope: ["@truffle/preserve-to-ipfs"]
       },
       {
-        type: "log",
+        type: "update",
         message: "Preserving to IPFS...",
         scope: ["@truffle/preserve-to-ipfs"]
       },
@@ -161,7 +161,7 @@ export const tests: Test[] = [
         scope: ["@truffle/preserve-to-ipfs"]
       },
       {
-        type: "log",
+        type: "update",
         message: "Preserving to IPFS...",
         scope: ["@truffle/preserve-to-ipfs"]
       },
@@ -278,7 +278,7 @@ export const tests: Test[] = [
         scope: ["@truffle/preserve-to-ipfs"]
       },
       {
-        type: "log",
+        type: "update",
         message: "Preserving to IPFS...",
         scope: ["@truffle/preserve-to-ipfs"]
       },

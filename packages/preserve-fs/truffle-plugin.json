@@ -1,6 +1,5 @@
 {
   "preserve": {
-    "tag": "path",
-    "loader": "."
+    "recipe": "."
   }
 }

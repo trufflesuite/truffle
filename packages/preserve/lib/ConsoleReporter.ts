@@ -73,16 +73,6 @@ export class ConsoleReporter {
     });
   }
 
-  private log(event: Control.Events.Log) {
-    const { message } = event;
-
-    const { key } = eventProperties(event);
-
-    this.spinners.update(key, {
-      text: `${message}`
-    });
-  }
-
   private succeed(event: Control.Events.Succeed) {
     const { message } = event;
 
@@ -115,7 +105,6 @@ export class ConsoleReporter {
     const { message } = event;
 
     this.spinners.add(key, {
-      text: chalk.cyan(message),
       indent,
       succeedColor: "white",
       failColor: "white"
@@ -140,15 +129,20 @@ export class ConsoleReporter {
   }
 
   private update(event: Control.Events.Update) {
-    const { payload } = event;
+    const { payload, message } = event;
 
     const { key } = eventProperties(event);
 
     const { text } = this.spinners.pick(key);
 
+    if (!payload && !message) return;
+
     const [name] = text.split(":");
 
-    const options = payload ? { text: `${name}: ${payload}` } : { text };
+    // Update the value resolution with a payload or the step with message
+    const options = message
+      ? { text: message }
+      : { text: `${name}: ${payload}` };
 
     this.spinners.update(key, options);
   }

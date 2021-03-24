@@ -48,17 +48,6 @@ export class Plugins {
   }
 
   /**
-   * Given a truffle-config-like, find and return all plugins that define a loader
-   */
-  static listAllLoaders(config: TruffleConfig): Plugin[] {
-    const allPlugins = Plugins.listAll(config);
-
-    const loaders = allPlugins.filter(plugin => plugin.definesLoader());
-
-    return loaders;
-  }
-
-  /**
    * Given a truffle-config-like, find and return all plugins that define a recipe
    */
   static listAllRecipes(config: TruffleConfig): Plugin[] {

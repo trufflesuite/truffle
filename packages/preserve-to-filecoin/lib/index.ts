@@ -58,7 +58,7 @@ export class Recipe implements Preserve.Recipe {
   async *execute(options: PreserveOptions): Preserve.Process<Result> {
     const { address: url, token, storageDealOptions } = this;
     const { inputs, controls } = options;
-    const { log } = controls;
+    const { update } = controls;
 
     if (Preserve.Targets.Sources.isContent(inputs["fs-target"].source)) {
       throw new Error(
@@ -68,7 +68,7 @@ export class Recipe implements Preserve.Recipe {
 
     const cid = inputs["ipfs-cid"];
 
-    yield* log({ message: "Preserving to Filecoin..." });
+    yield* update({ message: "Preserving to Filecoin..." });
 
     const client = yield* connect({ url, token, controls });
 

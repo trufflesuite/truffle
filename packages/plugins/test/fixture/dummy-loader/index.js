@@ -1,8 +1,9 @@
 const Loader = {
   name: "dummy-loader",
-  dependencies: [],
+  inputLabels: [],
+  outputLabels: [],
 
-  load() {
+  execute() {
     return "Successfully called dummy-loader:load()";
   }
 };

@@ -1,14 +1,16 @@
-class Loader {
+class Recipe {
   constructor() {
     this.name = "dummy-loader";
-    this.dependencies = [];
+    this.inputLabels = ["path"];
+    this.outputLabels = ["message"];
   }
 
-  load(path, verbose) {
-    return `Successfully called dummy-loader:load(${path}, ${verbose})`;
+  async *execute({ inputs }) {
+    console.log(`Provided path: ${inputs.path}`);
+    return { message: "Hello World!" };
   }
 }
 
-Loader.help = "Dummy Loader";
+Recipe.help = "Dummy Loader";
 
-module.exports = { Loader };
+module.exports = { Recipe };

@@ -1,14 +1,15 @@
 class Recipe {
   constructor(environment) {
     this.name = "dummy-recipe";
-    this.dependencies = [];
+    this.inputLabels = ["message"];
+    this.outputLabels = [];
     this.environmentName = environment.selectedEnvironment;
   }
 
-  async *preserve({ controls }) {
-    yield* controls.log({
-      message: `Provided environment name: ${this.environmentName}`
-    });
+  async *execute({ inputs }) {
+    console.log(`Provided environment name: ${this.environmentName}`);
+    console.log(`Provided message: ${inputs.message}`);
+
     return "Successfully called dummy-recipe:preserve()";
   }
 }
