@@ -13,7 +13,7 @@ describe("truffle deploy (alias for migrate)", () => {
       .then(conf => {
         config = conf;
         config.network = "development";
-        config.logger = console;
+        config.logger = { log: () => {} };
       })
       .then(() => Server.start(done));
   });
