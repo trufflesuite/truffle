@@ -11,18 +11,17 @@ run_geth() {
     -p 8546:8546 \
     -p 30303:30303 \
     ethereum/client-go:stable \
-    --rpc \
-    --rpcaddr '0.0.0.0' \
-    --rpcport 8545 \
-    --rpccorsdomain '*' \
+    --http \
+    --http.addr '0.0.0.0' \
+    --http.port 8545 \
+    --http.corsdomain '*' \
     --ws \
-    --wsaddr '0.0.0.0' \
-    --wsorigins '*' \
+    --ws.addr '0.0.0.0' \
+    --ws.origins '*' \
     --nodiscover \
     --dev \
     --dev.period 0 \
     --allow-insecure-unlock \
-    --targetgaslimit '7000000' \
     js ./scripts/geth-accounts.js \
     > /dev/null &
 }
