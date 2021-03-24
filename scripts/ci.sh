@@ -10,19 +10,18 @@ run_geth() {
     -p 8545:8545 \
     -p 8546:8546 \
     -p 30303:30303 \
-    ethereum/client-go:v1.9.25 \
-    --rpc \
-    --rpcaddr '0.0.0.0' \
-    --rpcport 8545 \
-    --rpccorsdomain '*' \
+    ethereum/client-go:stable \
+    --http \
+    --http.addr '0.0.0.0' \
+    --http.port 8545 \
+    --http.corsdomain '*' \
     --ws \
-    --wsaddr '0.0.0.0' \
-    --wsorigins '*' \
+    --ws.addr '0.0.0.0' \
+    --ws.origins '*' \
     --nodiscover \
     --dev \
     --dev.period 0 \
     --allow-insecure-unlock \
-    --targetgaslimit '7000000' \
     js ./scripts/geth-accounts.js \
     > /dev/null &
 }
@@ -40,7 +39,7 @@ if [ "$INTEGRATION" = true ]; then
 elif [ "$GETH" = true ]; then
 
   sudo apt install -y jq
-  docker pull ethereum/client-go:v1.9.25
+  docker pull ethereum/client-go:stable
   run_geth
   sleep 30
   lerna run --scope truffle test --stream -- --exit
