@@ -9,11 +9,8 @@ const inputStrings = input[1];
 
 //detect config so we can get the provider and resolver without having to serialize
 //and deserialize them
-const args = yargs(input[0]).argv;
-const detectedConfig = Config.detect({
-  network: args.network,
-  config: args.config
-});
+const { network, config } = yargs(input[0]).argv;
+const detectedConfig = Config.detect({ network, config });
 const customConfig = detectedConfig.networks.develop || {};
 
 //need host and port for provider url
