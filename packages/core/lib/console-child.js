@@ -9,7 +9,11 @@ const inputStrings = input[1];
 
 //detect config so we can get the provider and resolver without having to serialize
 //and deserialize them
-const detectedConfig = Config.detect({network: yargs(input[0]).argv.network});
+const args = yargs(input[0]).argv;
+const detectedConfig = Config.detect({
+  network: args.network,
+  config: args.config
+});
 const customConfig = detectedConfig.networks.develop || {};
 
 //need host and port for provider url
@@ -25,7 +29,7 @@ detectedConfig.networks.develop = {
   port: customConfig.port || 9545,
   network_id: customConfig.network_id || 5777,
   provider: function () {
-    return new Web3.providers.HttpProvider(url, {keepAlive: false});
+    return new Web3.providers.HttpProvider(url, { keepAlive: false });
   }
 };
 
