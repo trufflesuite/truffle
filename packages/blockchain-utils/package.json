@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.0.27",
+  "version": "0.0.28",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -16,7 +16,6 @@
     "test": "mocha --exit -r ts-node/register test/**/*.test.ts"
   },
   "types": "./typings/index.d.ts",
-  "dependencies": {},
   "devDependencies": {
     "@types/assert": "^1.4.2",
     "@types/mocha": "^5.2.7",
