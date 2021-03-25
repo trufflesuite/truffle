@@ -161,18 +161,12 @@ class Console extends EventEmitter {
     // errors/warnings in child process - specifically the error re: having
     // multiple config files
     const spawnOptions = { stdio: ["inherit", "inherit", "pipe"] };
-    let spawnInput;
-    if (options.config) {
-      spawnInput =
-        "--config " +
-        options.config +
-        " --network " +
-        options.network +
-        " -- " +
-        inputStrings;
-    } else {
-      spawnInput = "--network " + options.network + " -- " + inputStrings;
-    }
+    const settings = ["config", "network"]
+      .filter(setting => options[setting])
+      .map(setting => `--${setting} ${options[setting]}`)
+      .join(" ");
+
+    const spawnInput = `${settings} -- ${inputStrings}`;
 
     const spawnResult = spawnSync(
       "node",
