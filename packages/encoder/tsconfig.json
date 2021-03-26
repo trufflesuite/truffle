@@ -5,6 +5,7 @@
     "esModuleInterop": true,
     "target": "es2016",
     "downlevelIteration": true,
+    "skipLibCheck": true,
     "noImplicitAny": true,
     "moduleResolution": "node",
     "sourceMap": true,
@@ -25,6 +26,9 @@
     },
     "typeRoots": [
       "./typings"
+    ],
+    "types": [
+      "jest"
     ]
 
   },

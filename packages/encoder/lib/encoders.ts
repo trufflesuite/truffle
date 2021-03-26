@@ -53,6 +53,14 @@ export class ProjectEncoder {
   }
 
   /**
+   * Just used for testing, currently
+   * @protected
+   */
+  public getUserDefinedTypes(): Codec.Format.Types.TypesById {
+    return this.userDefinedTypes;
+  }
+
+  /**
    * @protected
    */
   public getNetworkId(): number | null {
@@ -850,6 +858,14 @@ export class ContractEncoder {
   private constructorBinary: string | undefined;
   private constructorContextHash: string | undefined;
   private deployedContextHash: string | undefined;
+
+  /**
+   * Just used for testing, currently
+   * @protected
+   */
+  public getProjectEncoder(): ProjectEncoder {
+    return this.projectEncoder;
+  }
 
   /**
    * @protected
