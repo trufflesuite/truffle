@@ -1,0 +1,6 @@
+{
+  "preserve": {
+    "tag": "buckets",
+    "recipe": "."
+  }
+}
