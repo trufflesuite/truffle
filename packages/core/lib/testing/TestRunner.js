@@ -60,8 +60,20 @@ class TestRunner {
       await this.resetState();
     }
 
-    this.decoder = await Decoder.forProject(this.provider, {
-      config: this.config
+    //set up decoder
+    let files = fs
+      .readdirSync(this.config.contracts_build_directory)
+      .filter(file => path.extname(file) === ".json");
+    let data = files.map(file =>
+      fs.readFileSync(
+        path.join(this.config.contracts_build_directory, file),
+        "utf8"
+      )
+    );
+    let artifacts = data.map(text => JSON.parse(text));
+    this.decoder = await Decoder.forProject({
+      provider: this.provider,
+      projectInfo: { artifacts }
     });
   }
 

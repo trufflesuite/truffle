@@ -147,11 +147,10 @@ describe("State variable decoding", function () {
     const { DecodingSample } = abstractions;
     const deployedContract = await DecodingSample.deployed();
     const address = deployedContract.address;
-    const decoder = await Decoder.forAddress(
-      address,
-      DecodingSample.web3.currentProvider,
-      [DecodingSample]
-    );
+    const decoder = await Decoder.forAddress(address, {
+      provider: DecodingSample.web3.currentProvider,
+      projectInfo: { artifacts: [DecodingSample] }
+    });
 
     const initialVariables = await decoder.variables();
     const variables = unsafeNativizeDecoderVariables(initialVariables);

@@ -121,15 +121,11 @@ export class MemberNotFoundError extends Error {
     variable: string | number,
     indices: any[]
   ) {
-    const message = `Member ${
-      memberName
-    } does not exist on struct type ${
-      Format.Types.typeStringWithoutLocation(structType)
-    } in attempting to access variable ${
-      variable
-    }$, indexSequence ${
-      indices.join(", ")
-    }`;
+    const message = `Member ${memberName} does not exist on struct type ${Format.Types.typeStringWithoutLocation(
+      structType
+    )} in attempting to access variable ${variable}$, indexSequence ${indices.join(
+      ", "
+    )}`;
     super(message);
     this.memberName = memberName;
     this.structType = structType;
@@ -157,15 +153,9 @@ export class ArrayIndexOutOfBoundsError extends Error {
     variable: string | number,
     indices: any[]
   ) {
-    const message = `Index ${
-      index
-    } is out of bounds for array of length ${
-      length
-    } in attempting to access variable ${
-      variable
-    }, index sequence ${
-      indices.join(", ")
-    }`;
+    const message = `Index ${index} is out of bounds for array of length ${length} in attempting to access variable ${variable}, index sequence ${indices.join(
+      ", "
+    )}`;
     super(message);
     this.index = index.clone();
     this.length = length.clone();
@@ -176,13 +166,11 @@ export class ArrayIndexOutOfBoundsError extends Error {
 }
 
 /**
- * This error indicates that the user attempted to instantiate a decoder
- * with no project information (by explicitly overriding the default).
- * @category Exception
+ * This error indicates that no provider was passed to the decoder.
  */
-export class NoProjectInfoError extends Error {
+export class NoProviderError extends Error {
   constructor() {
-    super("No project information specified.");
-    this.name = "NoProjectInfoError";
+    super("No provider was given for the decoder to use.");
+    this.name = "NoProviderError";
   }
 }

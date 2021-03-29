@@ -41,24 +41,50 @@ export class InvalidAddressError extends Error {
 }
 
 /**
- * This error indicates that you attempted to create a contract encoder for
- * a contract object that has not had all of its libraries linked.
+ * This error indicates that you attempted to encode a contract creation
+ * transaction for a contract that has not had all of its libraries linked.
  * @category Exception
  */
 export class UnlinkedContractError extends Error {
   public contractName: string;
   public bytecode: string;
-  public deployedBytecode: string;
   constructor(
     contractName: string,
     bytecode: string,
-    deployedBytecode: string
   ) {
     super(`Contract ${contractName} has not had all its libraries linked`);
     this.contractName = contractName;
     this.bytecode = bytecode;
-    this.deployedBytecode = deployedBytecode;
     this.name = "UnlinkedContractError";
+  }
+}
+
+/**
+ * This error indicates that you attempted to encode a contract creation
+ * transaction for a contract that lacks constructor bytecode.
+ * @category Exception
+ */
+export class NoBytecodeError extends Error {
+  public contractName: string;
+  constructor(
+    contractName: string,
+  ) {
+    super(`Contract ${contractName} has missing or empty constructor bytecode`);
+    this.contractName = contractName;
+    this.name = "NoBytecodeError";
+  }
+}
+
+/**
+ * This error indicates that the user attempted to do something that
+ * requires a network ID (e.g.: autodetect an address for a deployed
+ * contract) when no network ID or provider was set.
+ * @category Exception
+ */
+export class NoNetworkError extends Error {
+  constructor() {
+    super("This operation requires a provider or network ID.");
+    this.name = "NoNetworkError";
   }
 }
 

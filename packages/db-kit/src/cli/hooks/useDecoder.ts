@@ -28,7 +28,9 @@ export function useDecoder(options: UseDecoderOptions): DecoderInfo {
   useEffect(() => {
     if (compilations) {
       prepareProjectInfo({ compilations })
-        .then(projectInfo => forProject(options.config.provider, projectInfo))
+        .then(projectInfo =>
+          forProject({ provider: options.config.provider, projectInfo })
+        )
         .then(setDecoder);
     }
   }, [done]);

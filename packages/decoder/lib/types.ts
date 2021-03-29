@@ -1,15 +1,12 @@
 import type BN from "bn.js";
 import type { ContractObject as Artifact } from "@truffle/contract-schema/spec";
-import type TruffleConfig from "@truffle/config";
 import type {
   Format,
   Ast,
   Compilations,
-  Contexts,
-  Evm,
   LogDecoding,
   StateVariable,
-  ExtrasAllowed,
+  ExtrasAllowed
 } from "@truffle/codec";
 import type { Provider } from "web3/providers";
 import type Web3 from "web3";
@@ -19,41 +16,30 @@ import type Web3 from "web3";
 export { StateVariable, ExtrasAllowed };
 
 /**
- * This type represents information about a Truffle project that can be used to
- * construct and initialize a decoder for that project.  This information may
- * be passed in various ways; this type is given here as an interface rather
- * than a union, but note that (aside from `ens`, which is special)
- * you only need to include one of these fields.  (The `compilations` field
- * will be used if present, then `artifacts` if not, then finally `config`.)
- * Further options for how to specify project information are intended to be
- * added in the future.
- *
- * There's also the `ens` field, which can be used to enable ENS resolution
- * when watching mapping keys.  In the future this will also be used for
- * ENS reverse resolution when decoding addresses.
- * @category Inputs
+ * This type contains information needed to initialize the decoder.
+ * @Category Inputs
  */
-export interface ProjectInfo {
+export interface DecoderSettings {
   /**
-   * An list of compilations, as specified in codec; this method of specifying
-   * a project is mostly intended for internal Truffle use for now, but you can
-   * see the documentation of the Compilations type if you want to use it.
+   * Information about the project or contracts being decoded.
+   * This may come in several forms; see the type documentation for
+   * more information.  The simplest way to use this to set it to
+   * `{ artifacts: <array of artifacts in project> }`.
+   *
+   * This may be left out if an artifact or contract has been passed
+   * in by some other means, in which case the decoder will be made
+   * based purely on that single contract, but it's recommended to pass in
+   * project info for all your contracts to get the decoder's full power.
    */
-  compilations?: Compilations.Compilation[];
+  projectInfo?: Compilations.ProjectInfo;
   /**
-   * A list of contract artifacts for contracts in the project.
-   * Contract constructor objects may be substituted for artifacts, so if
-   * you're not sure which you're dealing with, it's OK.
+   * The provider for the decoder to use.  This is required when using a
+   * provider-based constructor; otherwise an exception will be thrown.
+   * If the decoder is initialized with a Truffle Contract-based constructor,
+   * this is not expected to be passed.  If it is passed, it will override
+   * the use of the given contract's provider.
    */
-  artifacts?: Artifact[];
-  /**
-   * The project's config object.  If present, and it has the
-   * `contracts_build_directory` property, the decoder will automatically read
-   * all the artifacts from there and use those as the project information.
-   * Further, smarter use of the config object are intended to be added in
-   * the future.
-   */
-  config?: TruffleConfig;
+  provider?: Provider;
   /**
    * This field can be included to enable or disable ENS resolution (and, in
    * the future, reverse resolution) and specify how it should be performed.

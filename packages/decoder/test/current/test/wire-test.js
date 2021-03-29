@@ -11,25 +11,25 @@ const Codec = require("@truffle/codec");
 const { prepareContracts } = require("../../helpers");
 
 describe("Over-the-wire decoding", function () {
-
   let provider;
   let abstractions;
-  let compilations;
   let web3;
 
   let Contracts;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({seed: "decoder", gasLimit: 7000000});
+    provider = Ganache.provider({ seed: "decoder", gasLimit: 7000000 });
     web3 = new Web3(provider);
   });
 
   before("Prepare contracts and artifacts", async function () {
     this.timeout(30000);
 
-    const prepared = await prepareContracts(provider, path.resolve(__dirname, ".."));
+    const prepared = await prepareContracts(
+      provider,
+      path.resolve(__dirname, "..")
+    );
     abstractions = prepared.abstractions;
-    compilations = prepared.compilations;
 
     Contracts = [
       abstractions.WireTest,
@@ -41,11 +41,18 @@ describe("Over-the-wire decoding", function () {
   });
 
   it("should correctly decode transactions and events", async function () {
-    let deployedContract = await abstractions.WireTest.new(true, "0xdeadbeef", 2);
+    let deployedContract = await abstractions.WireTest.new(
+      true,
+      "0xdeadbeef",
+      2
+    );
     let address = deployedContract.address;
     let constructorHash = deployedContract.transactionHash;
 
-    const decoder = await Decoder.forProject(web3.currentProvider, Contracts);
+    const decoder = await Decoder.forProject({
+      provider: web3.currentProvider,
+      projectInfo: { artifacts: Contracts }
+    });
 
     let deployedContractNoConstructor = await abstractions.WireTestParent.new();
     let defaultConstructorHash = deployedContractNoConstructor.transactionHash;
@@ -150,17 +157,23 @@ describe("Over-the-wire decoding", function () {
     assert.lengthOf(emitStuffDecoding.arguments, 3);
     assert.strictEqual(emitStuffDecoding.arguments[0].name, "p");
     assert.deepEqual(
-      Codec.Format.Utils.Inspect.unsafeNativize(emitStuffDecoding.arguments[0].value),
+      Codec.Format.Utils.Inspect.unsafeNativize(
+        emitStuffDecoding.arguments[0].value
+      ),
       emitStuffArgs[0]
     );
     assert.strictEqual(emitStuffDecoding.arguments[1].name, "precompiles");
     assert.deepEqual(
-      Codec.Format.Utils.Inspect.unsafeNativize(emitStuffDecoding.arguments[1].value),
+      Codec.Format.Utils.Inspect.unsafeNativize(
+        emitStuffDecoding.arguments[1].value
+      ),
       emitStuffArgs[1]
     );
     assert.strictEqual(emitStuffDecoding.arguments[2].name, "strings");
     assert.deepEqual(
-      Codec.Format.Utils.Inspect.unsafeNativize(emitStuffDecoding.arguments[2].value),
+      Codec.Format.Utils.Inspect.unsafeNativize(
+        emitStuffDecoding.arguments[2].value
+      ),
       emitStuffArgs[2]
     );
 
@@ -170,12 +183,16 @@ describe("Over-the-wire decoding", function () {
     assert.lengthOf(moreStuffDecoding.arguments, 2);
     assert.strictEqual(moreStuffDecoding.arguments[0].name, "notThis");
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.unsafeNativize(moreStuffDecoding.arguments[0].value),
+      Codec.Format.Utils.Inspect.unsafeNativize(
+        moreStuffDecoding.arguments[0].value
+      ),
       moreStuffArgs[0]
     );
     assert.strictEqual(moreStuffDecoding.arguments[1].name, "bunchOfInts");
     assert.deepEqual(
-      Codec.Format.Utils.Inspect.unsafeNativize(moreStuffDecoding.arguments[1].value),
+      Codec.Format.Utils.Inspect.unsafeNativize(
+        moreStuffDecoding.arguments[1].value
+      ),
       moreStuffArgs[1]
     );
 
@@ -204,7 +221,9 @@ describe("Over-the-wire decoding", function () {
     assert.lengthOf(inheritedDecoding.arguments, 1);
     assert.isUndefined(inheritedDecoding.arguments[0].name);
     assert.deepEqual(
-      Codec.Format.Utils.Inspect.unsafeNativize(inheritedDecoding.arguments[0].value),
+      Codec.Format.Utils.Inspect.unsafeNativize(
+        inheritedDecoding.arguments[0].value
+      ),
       inheritedArg
     );
 
@@ -221,12 +240,16 @@ describe("Over-the-wire decoding", function () {
     assert.lengthOf(getterDecoding1.arguments, 2);
     assert.isUndefined(getterDecoding1.arguments[0].name);
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.unsafeNativize(getterDecoding1.arguments[0].value),
+      Codec.Format.Utils.Inspect.unsafeNativize(
+        getterDecoding1.arguments[0].value
+      ),
       getter1Args[0]
     );
     assert.isUndefined(getterDecoding1.arguments[1].name);
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.unsafeNativize(getterDecoding1.arguments[1].value),
+      Codec.Format.Utils.Inspect.unsafeNativize(
+        getterDecoding1.arguments[1].value
+      ),
       getter1Args[1]
     );
 
@@ -236,12 +259,16 @@ describe("Over-the-wire decoding", function () {
     assert.lengthOf(getterDecoding2.arguments, 2);
     assert.isUndefined(getterDecoding2.arguments[0].name);
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.unsafeNativize(getterDecoding2.arguments[0].value),
+      Codec.Format.Utils.Inspect.unsafeNativize(
+        getterDecoding2.arguments[0].value
+      ),
       getter2Args[0]
     );
     assert.isUndefined(getterDecoding2.arguments[1].name);
     assert.strictEqual(
-      Codec.Format.Utils.Inspect.unsafeNativize(getterDecoding2.arguments[1].value),
+      Codec.Format.Utils.Inspect.unsafeNativize(
+        getterDecoding2.arguments[1].value
+      ),
       getter2Args[1]
     );
 
@@ -511,7 +538,10 @@ describe("Over-the-wire decoding", function () {
   it("disambiguates events when possible and not when impossible", async function () {
     let deployedContract = await abstractions.WireTest.deployed();
 
-    const decoder = await Decoder.forProject(web3.currentProvider, Contracts);
+    const decoder = await Decoder.forProject({
+      provider: web3.currentProvider,
+      projectInfo: { artifacts: Contracts }
+    });
 
     //HACK HACK -- we're going to repeatedly apply the hack from above
     //because ethers also can't handle ambiguous events
@@ -651,7 +681,10 @@ describe("Over-the-wire decoding", function () {
   it("Handles anonymous events", async function () {
     let deployedContract = await abstractions.WireTest.deployed();
 
-    const decoder = await Decoder.forProject(web3.currentProvider, Contracts);
+    const decoder = await Decoder.forProject({
+      provider: web3.currentProvider,
+      projectInfo: { artifacts: Contracts }
+    });
 
     //thankfully, ethers ignores anonymous events,
     //so we don't need to use that hack here
@@ -798,9 +831,10 @@ describe("Over-the-wire decoding", function () {
     const deployedContract = await abstractions.WireTest.deployed();
     const delegate = await abstractions.WireTestRedHerring.deployed();
 
-    const decoder = await Decoder.forProject(web3.currentProvider,
-      Contracts
-    );
+    const decoder = await Decoder.forProject({
+      provider: web3.currentProvider,
+      projectInfo: { artifacts: Contracts }
+    });
 
     const extrasTestNone = await deployedContract.extrasTestNone(
       delegate.address
@@ -870,7 +904,9 @@ describe("Over-the-wire decoding", function () {
     const { WireTest } = abstractions;
     let deployedContract = await WireTest.deployed();
 
-    const decoder = await Decoder.forContract(WireTest, Contracts);
+    const decoder = await Decoder.forContract(WireTest, {
+      projectInfo: { artifacts: Contracts }
+    });
 
     let abiEntry = WireTest.abi.find(
       ({ type, name }) => type === "function" && name === "returnsStuff"
@@ -934,7 +970,7 @@ describe("Over-the-wire decoding", function () {
     let decoder = await Decoder.forContractAt(
       WireTestParent,
       deployedContract.address,
-      Contracts
+      { projectInfo: { artifacts: Contracts } }
     );
 
     let abiEntry = WireTestParent.abi.find(
@@ -965,7 +1001,7 @@ describe("Over-the-wire decoding", function () {
     decoder = await Decoder.forContractAt(
       WireTestAbstract,
       deployedContract.address,
-      Contracts
+      { projectInfo: { artifacts: Contracts } }
     );
 
     abiEntry = WireTestAbstract.abi.find(

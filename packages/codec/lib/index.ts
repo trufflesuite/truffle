@@ -247,7 +247,11 @@ export {
   decodeReturndata,
   decodeRevert
 } from "./core";
-export { DecodingError, StopDecodingError } from "./errors";
+export {
+  DecodingError,
+  StopDecodingError,
+  NoProjectInfoError
+} from "./errors";
 
 //now: what types should we export? (other than the ones from ./format)
 //public-facing types for the interface

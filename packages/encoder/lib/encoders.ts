@@ -13,9 +13,13 @@ import * as Utils from "./utils";
 import {
   NoInternalInfoError,
   UnlinkedContractError,
+  NoBytecodeError,
   InvalidAddressError,
+  NoNetworkError,
   ContractNotFoundError
 } from "./errors";
+import type { ContractObject as Artifact } from "@truffle/contract-schema/spec";
+import { Shims } from "@truffle/compile-common";
 //sorry for untyped imports!
 const { default: ENS, getEnsAddress } = require("@ensdomains/ensjs");
 const Web3Utils = require("web3-utils");
@@ -39,12 +43,20 @@ export class ProjectEncoder {
   private ensCache: ENSCache = {};
   private allocations: Codec.Evm.AllocationInfo;
   private userDefinedTypes: Codec.Format.Types.TypesById;
+  private networkId: number | null;
 
   /**
    * @protected
    */
   public getAllocations(): Codec.Evm.AllocationInfo {
     return this.allocations;
+  }
+
+  /**
+   * @protected
+   */
+  public getNetworkId(): number | null {
+    return this.networkId;
   }
 
   /**
@@ -84,6 +96,8 @@ export class ProjectEncoder {
         this.registryAddress = info.registryAddress;
       }
     }
+
+    this.networkId = info.networkId || null;
   }
 
   /**
@@ -417,7 +431,7 @@ export class ProjectEncoder {
    * one of these methods, it will attempt to select the best match.
    *
    * If it is not possible for the given input to match any of the given methods,
-   * either a [[Codec.Wrap.TypeMismatchError|TypeMismatchError]] or a 
+   * either a [[Codec.Wrap.TypeMismatchError|TypeMismatchError]] or a
    * [[Codec.Wrap.NoOverloadsMatchedError|NoOverloadsMatchedError]] will be
    * thrown.  If more than one overload matches but none can be considered the
    * unique best, you will get a
@@ -561,13 +575,14 @@ export class ProjectEncoder {
     //note that the data option on resolution.options is ignored;
     //perhaps we can change this in the future, but for now we keep this
     //for compatibility
-    return {
+    let encoded = {
       ...resolution.options,
-      data: Codec.Conversion.toHexString(data),
-      to: method.abi.type !== "constructor"
-        ? resolution.options.to
-        : undefined
+      data: Codec.Conversion.toHexString(data)
     };
+    if (method.abi.type === "constructor") {
+      delete encoded.to;
+    }
+    return encoded;
   }
 
   /**
@@ -765,7 +780,23 @@ export class ProjectEncoder {
    * **This method is asynchronous.**
    *
    * Constructs a contract encoder for a given contract in this project.
-   * @param contract The contract the encoder is for.  It should have all of
+   * @param artifact The contract the encoder is for.  If you want to
+   *   encode contract creation transactions, it must have all of
+   *   its libraries linked.
+   *
+   *   Note: The contract must be one that the encoder knows about;
+   *   otherwise you will have problems.
+   */
+  public async forArtifact(artifact: Artifact): Promise<ContractEncoder> {
+    return new ContractEncoder(this, artifact);
+  }
+
+  /**
+   * **This method is asynchronous.**
+   *
+   * Constructs a contract encoder for a given contract in this project.
+   * @param contract The contract the encoder is for.  If you want to
+   *   encode contract creation transactions, it must have all of
    *   its libraries linked.
    *
    *   Note: The contract must be one that the encoder knows about;
@@ -781,23 +812,24 @@ export class ProjectEncoder {
    * **This method is asynchronous.**
    *
    * Constructs a contract instance encoder for a given contract instance.
-   * @param contract The contract the encoder is for.  It should have all of
-   *   its libraries linked.
+   * @param artifact The artifact for the contract the encoder is for.  If you
+   *   want to encode contract creation transactions, it must have all of its
+   *   libraries linked.
    *
    *   Note: The contract must be one that the encoder knows about;
    *   otherwise you will have problems.
    * @param address The address of the contract instance.
-   *   If omitted, it will be autodetected.
+   *   If omitted, but the project encoder has a provider or network ID,
+   *   it will be autodetected.  If there is no provider or network ID,
+   *   it must be included.
+   *
    *   If an invalid address is provided, this method will throw an exception.
    */
   public async forInstance(
-    contract: Types.ContractConstructorObject,
+    artifact: Artifact,
     address?: string
   ): Promise<ContractInstanceEncoder> {
-    const contractEncoder = await this.forContract(contract);
-    if (address === undefined) {
-      address = (await contract.deployed()).address;
-    }
+    const contractEncoder = await this.forArtifact(artifact);
     return new ContractInstanceEncoder(contractEncoder, address);
   }
 }
@@ -810,54 +842,57 @@ export class ProjectEncoder {
  */
 export class ContractEncoder {
   private projectEncoder: ProjectEncoder;
-  private contract: Types.ContractConstructorObject;
-  private constructorBinary: string;
+  private contract: Artifact;
+  private constructorBinary: string | undefined;
   private constructorContextHash: string | undefined;
   private deployedContextHash: string | undefined;
 
   /**
    * @protected
    */
-  constructor(
-    projectEncoder: ProjectEncoder,
-    contract: Types.ContractConstructorObject
-  ) {
+  constructor(projectEncoder: ProjectEncoder, contract: Artifact) {
     this.projectEncoder = projectEncoder;
     this.contract = contract;
-    if (contract.binary.match(/0x([0-9a-fA-F]{2})*/)) {
-      this.constructorBinary = contract.binary; //has link references resolved
-    } else {
-      throw new UnlinkedContractError(
-        contract.contractName,
-        contract.bytecode,
-        contract.deployedBytecode
-      );
-    }
-    if (contract.bytecode && contract.bytecode !== "0x") {
+    //set up constructor binary w/resolved link references
+    const networkId = this.projectEncoder.getNetworkId();
+    const coercedContract = <Types.ContractConstructorObject>contract;
+    const bytecode = Shims.NewToLegacy.forBytecode(contract.bytecode); //sorry, codec still uses legacy, to be changed in future
+    const deployedBytecode = Shims.NewToLegacy.forBytecode(
+      contract.deployedBytecode
+    );
+    //determine linked bytecode -- we'll determine it ourself rather than
+    //using contract.binary
+    const links = networkId !== null
+      ? (contract.networks[networkId] || {links: {}}).links || {}
+      : {};
+    this.constructorBinary = Utils.link(bytecode, links);
+    //now, set up context hashes
+    if (bytecode && bytecode !== "0x") {
       this.constructorContextHash = Codec.Conversion.toHexString(
         Codec.Evm.Utils.keccak256({
           type: "string",
-          value: contract.bytecode //has link references unresolved
+          value: bytecode //has link references unresolved
         })
       );
     }
-    if (contract.deployedBytecode && contract.deployedBytecode !== "0x") {
-    this.deployedContextHash = Codec.Conversion.toHexString(
+    if (deployedBytecode && deployedBytecode !== "0x") {
+      this.deployedContextHash = Codec.Conversion.toHexString(
         Codec.Evm.Utils.keccak256({
           type: "string",
-          value: contract.deployedBytecode //has link references unresolved
+          value: deployedBytecode //has link references unresolved
         })
       );
     }
     //finally: check that we have any necessary allocations for this contract!
     const allocations = this.projectEncoder.getAllocations();
-    if ((
-      this.constructorContextHash &&
-      !allocations.calldata.constructorAllocations[this.constructorContextHash]
-      ) || (
-      this.deployedContextHash &&
-      !allocations.calldata.functionAllocations[this.deployedContextHash]
-    )) {
+    if (
+      (this.constructorContextHash &&
+        !allocations.calldata.constructorAllocations[
+          this.constructorContextHash
+        ]) ||
+      (this.deployedContextHash &&
+        !allocations.calldata.functionAllocations[this.deployedContextHash])
+    ) {
       throw new ContractNotFoundError(
         contract.contractName,
         contract.bytecode,
@@ -943,11 +978,7 @@ export class ContractEncoder {
     //because this would be undefined inside of it... I could
     //write abis.map(this.getMethod.bind(this)), but I find the
     //arrow way to be more readable
-    return await this.projectEncoder.resolveAndWrap(
-      methods,
-      inputs,
-      options
-    );
+    return await this.projectEncoder.resolveAndWrap(methods, inputs, options);
   }
 
   /**
@@ -972,11 +1003,7 @@ export class ContractEncoder {
     options: Types.ResolveOptions = {}
   ): Promise<Codec.Options> {
     const method = this.getMethod(abi);
-    return await this.projectEncoder.encodeTransaction(
-      method,
-      inputs,
-      options
-    );
+    return await this.projectEncoder.encodeTransaction(method, inputs, options);
   }
 
   /**
@@ -1007,11 +1034,7 @@ export class ContractEncoder {
     //because this would be undefined inside of it... I could
     //write abis.map(this.getMethod.bind(this)), but I find the
     //arrow way to be more readable
-    return await this.projectEncoder.resolveAndEncode(
-      methods,
-      inputs,
-      options
-    );
+    return await this.projectEncoder.resolveAndEncode(methods, inputs, options);
   }
 
   /**
@@ -1025,7 +1048,11 @@ export class ContractEncoder {
    */
   public async forInstance(address?: string): Promise<ContractInstanceEncoder> {
     if (address === undefined) {
-      address = (await this.contract.deployed()).address;
+      const networkId = this.projectEncoder.getNetworkId();
+      if (networkId === null) {
+        throw new NoNetworkError();
+      }
+      address = this.contract.networks[networkId].address;
     }
     return new ContractInstanceEncoder(this, address);
   }
@@ -1037,6 +1064,19 @@ export class ContractEncoder {
     debug("got allocations");
     switch (abi.type) {
       case "constructor": {
+        debug("constructor binary: %s", this.constructorBinary);
+        //first check that we have constructor binary, and that it's all linked
+        if (!this.constructorBinary || this.constructorBinary === "0x") {
+          throw new NoBytecodeError(
+            this.contract.contractName
+          );
+        } else if (!this.constructorBinary.match(/^0x([0-9a-fA-F]{2})+$/)) {
+          throw new UnlinkedContractError(
+            this.contract.contractName,
+            this.contract.bytecode
+          );
+        }
+        //otherwise, we're good to go!
         const allocation =
           allocations.calldata.constructorAllocations[
             this.constructorContextHash
@@ -1185,7 +1225,7 @@ export class ContractInstanceEncoder {
     if (abi.type === "function") {
       encoded.to = this.toAddress;
     } else if (abi.type === "constructor") {
-      encoded.to = undefined;
+      delete encoded.to;
     }
     return encoded;
   }

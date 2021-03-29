@@ -1,9 +1,9 @@
 import type { Provider } from "web3/providers";
 import type { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import type { Compilations, Format, Evm } from "@truffle/codec";
-import type TruffleConfig from "@truffle/config";
 import type * as Codec from "@truffle/codec";
 import type * as Abi from "@truffle/abi-utils";
+import type Web3 from "web3";
 
 /**
  * This type contains options to be used when preparing transactions
@@ -40,59 +40,68 @@ export interface TxAndAbi {
 }
 
 /**
- * @protected
+ * @hidden
  * @Category Inputs
  */
 export interface EncoderInfoInternal {
   userDefinedTypes?: Format.Types.TypesById;
   allocations?: Evm.AllocationInfo;
   compilations?: Compilations.Compilation[];
+  networkId?: number | null;
   provider?: Provider;
   registryAddress?: string;
 }
 
-//WARNING: the following is copypasted from @truffle/decoder!!
-
+//warning: copypasted from @truffle/decoder!
 /**
- * This type represents information about a Truffle project that can be used to
- * construct and initialize a encoder for that project.  This information may
- * be passed in various ways; this type is given here as an interface rather
- * than a union, but note that (aside from `ens`, which is special)
- * you only need to include one of these fields.  (The `compilations` field
- * will be used if present, then `artifacts` if not, then finally `config`.)
- * Further options for how to specify project information are intended to be
- * added in the future.
- *
- * There's also the `ens` field, which can be used to enable ENS resolution
- * when watching mapping keys.  In the future this will also be used for
- * ENS reverse resolution when decoding addresses.
- * @category Inputs
+ * This type contains information needed to initialize the encoder.
+ * @Category Inputs
  */
-export interface ProjectInfo {
+export interface EncoderSettings {
   /**
-   * An list of compilations, as specified in codec; this method of specifying
-   * a project is mostly intended for internal Truffle use for now, but you can
-   * see the documentation of the Compilations type if you want to use it.
+   * Information about the project or contracts being decoded.
+   * This may come in several forms; see the type documentation for
+   * more information.  The simplest way to use this to set it to
+   * `{ artifacts: <array of artifacts in project> }`.
+   *
+   * This may be left out if an artifact or contract has been passed
+   * in by some other means, in which case the encoder will be made
+   * based purely on that single contract, but it's recommended to pass in
+   * project info for all your contracts to get the encoder's full power.
    */
-  compilations?: Compilations.Compilation[];
+  projectInfo?: Compilations.ProjectInfo;
   /**
-   * A list of contract artifacts for contracts in the project.
-   * Contract constructor objects may be substituted for artifacts, so if
-   * you're not sure which you're dealing with, it's OK.
+   * Optionally include a provider; if given, this allows the encoder to know
+   * the current network ID and thereby perform any necessary library linking
+   * when encoding a contract creation.  If you attempt to encode a contract
+   * creation transaction for a contract that still has unlinked libraries,
+   * and do not provide the information needed to link them, an exception will
+   * be thrown.
+   *
+   * There is no need to include this when using a Truffle Contract based
+   * constructor, as it will use the contract's provider, but if you do include
+   * it, it will override that provider.
+   *
+   * Including this will also turn on ENS resolution unless it is turned off in
+   * the ENS settings (see below).
    */
-  artifacts?: Artifact[];
+  provider?: Provider;
   /**
-   * The project's config object.  If present, and it has the
-   * `contracts_build_directory` property, the encoder will automatically read
-   * all the artifacts from there and use those as the project information.
-   * Further, smarter use of the config object are intended to be added in
-   * the future.
+   * Optionally include a network ID; this is used for the same purposes as the
+   * provider (see above), but won't turn on ENS resolution.
+   *
+   * There is no need to include this when using a Truffle Contract based
+   * constructor, as it will use the contract's network ID, but if you do include
+   * it, it will override that network ID.
+   *
+   * If this is passed in addition to provider, this network ID will override the
+   * one from provider.
    */
-  config?: TruffleConfig;
+  networkId?: number;
   /**
    * This field can be included to enable or disable ENS resolution and specify
-   * how it should be performed.
-   * If absent, ENS resolution will not be activated.
+   * how it should be performed.  If absent, but a provider was given above,
+   * ENS resolution will be performed using that.
    */
   ens?: EnsSettings;
 }
@@ -103,8 +112,9 @@ export interface ProjectInfo {
  */
 export interface EnsSettings {
   /**
-   * The provider to use for ENS resolution; if set to `null` or left absent,
-   * ENS resolution will not be activated.
+   * The provider to use for ENS resolution; set this to `null` to disable
+   * ENS resolution.  If absent, will default to the encoders's usual provider,
+   * if there is one, or to `null`, if not.
    */
   provider?: Provider | null;
   /**
@@ -117,8 +127,8 @@ export interface EnsSettings {
 
 //HACK
 export interface ContractConstructorObject extends Artifact {
-  binary: string; //this exists as a getter
-  deployed: () => Promise<ContractInstanceObject>;
+  network_id: string; //also getter
+  web3: Web3;
 }
 
 //HACK

@@ -33,7 +33,8 @@ import {
   InvalidAddressError,
   VariableNotFoundError,
   MemberNotFoundError,
-  ArrayIndexOutOfBoundsError
+  ArrayIndexOutOfBoundsError,
+  NoProviderError
 } from "./errors";
 import { Shims } from "@truffle/compile-common";
 //sorry for the untyped import, but...
@@ -45,8 +46,6 @@ const SourceMapUtils = require("@truffle/source-map-utils");
  */
 export class ProjectDecoder {
   private web3: Web3;
-
-  private network: string;
 
   private compilations: Compilations.Compilation[];
   private contexts: Contexts.Contexts = {}; //all contexts
@@ -69,6 +68,9 @@ export class ProjectDecoder {
     provider: Provider,
     ensSettings?: DecoderTypes.EnsSettings
   ) {
+    if (!provider) {
+      throw new NoProviderError();
+    }
     this.web3 = new Web3(provider);
     this.compilations = compilations;
     this.ensSettings = ensSettings || {};
@@ -397,7 +399,9 @@ export class ProjectDecoder {
    * on decodings produced by other instances may not work consistently.
    * @param decoding The decoding to abify
    */
-  public abifyReturndataDecoding(decoding: ReturndataDecoding): ReturndataDecoding {
+  public abifyReturndataDecoding(
+    decoding: ReturndataDecoding
+  ): ReturndataDecoding {
     return Codec.abifyReturndataDecoding(decoding, this.userDefinedTypes);
   }
 
@@ -929,7 +933,9 @@ export class ContractDecoder {
   /**
    * See [[WireDecoder.abifyReturndataDecoding]].
    */
-  public abifyReturndataDecoding(decoding: ReturndataDecoding): ReturndataDecoding {
+  public abifyReturndataDecoding(
+    decoding: ReturndataDecoding
+  ): ReturndataDecoding {
     return this.projectDecoder.abifyReturndataDecoding(decoding);
   }
 
@@ -1108,15 +1114,20 @@ export class ContractInstanceDecoder {
 
     //set up encoder for wrapping elementary values.
     //we pass it a provider, so it can handle ENS names.
-    let { provider: ensProvider, registryAddress } = this.projectDecoder.getEnsSettings();
+    let {
+      provider: ensProvider,
+      registryAddress
+    } = this.projectDecoder.getEnsSettings();
     if (ensProvider === undefined) {
       //note: NOT if it's null, if it's null we leave it null
       ensProvider = this.web3.currentProvider;
     }
     this.encoder = await Encoder.forProjectInternal({
       provider: ensProvider,
+      registryAddress,
       userDefinedTypes: this.userDefinedTypes,
-      allocations: this.allocations
+      allocations: this.allocations,
+      networkId: parseInt(this.contractNetwork) //not actually needed but may as well
     });
 
     //finally: set up internal functions table (only if source order is reliable;
@@ -1600,7 +1611,9 @@ export class ContractInstanceDecoder {
   /**
    * See [[WireDecoder.abifyReturndataDecoding]].
    */
-  public abifyReturndataDecoding(decoding: ReturndataDecoding): ReturndataDecoding {
+  public abifyReturndataDecoding(
+    decoding: ReturndataDecoding
+  ): ReturndataDecoding {
     return this.projectDecoder.abifyReturndataDecoding(decoding);
   }
 
@@ -1671,13 +1684,20 @@ export class ContractInstanceDecoder {
     let dataType: Format.Types.Type;
     switch (parentType.typeClass) {
       case "array":
-        const wrappedIndex = <Format.Values.UintValue>(await this.encoder.wrapElementaryValue(
-          { typeClass: "uint", bits: 256 },
-          rawIndex
-        ));
+        const wrappedIndex = <Format.Values.UintValue>(
+          await this.encoder.wrapElementaryValue(
+            { typeClass: "uint", bits: 256 },
+            rawIndex
+          )
+        );
         const index = wrappedIndex.value.asBN;
         if (parentType.kind === "static" && index.gte(parentType.length)) {
-          throw new ArrayIndexOutOfBoundsError(index, parentType.length, variable, indices);
+          throw new ArrayIndexOutOfBoundsError(
+            index,
+            parentType.length,
+            variable,
+            indices
+          );
         }
         dataType = parentType.baseType;
         let size = Storage.Allocate.storageSize(
@@ -1711,7 +1731,12 @@ export class ContractInstanceDecoder {
           parentType.id
         ].members.find(({ name }) => name === rawIndex); //there should be exactly one
         if (!allocation) {
-          throw new MemberNotFoundError(rawIndex, parentType, variable, indices);
+          throw new MemberNotFoundError(
+            rawIndex,
+            parentType,
+            variable,
+            indices
+          );
         }
         slot = {
           path: parentSlot,

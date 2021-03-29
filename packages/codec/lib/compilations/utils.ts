@@ -9,7 +9,14 @@ import {
 } from "@truffle/contract-schema/spec";
 import * as Common from "@truffle/compile-common";
 import * as Format from "@truffle/codec/format";
-import { Compilation, Contract, Source, VyperSourceMap } from "./types";
+import {
+  Compilation,
+  Contract,
+  Source,
+  VyperSourceMap,
+  ProjectInfo
+} from "./types";
+import { NoProjectInfoError } from "../errors";
 
 export function shimCompilations(
   inputCompilations: Common.Compilation[],
@@ -500,4 +507,21 @@ export function collectUserDefinedTypes(
     }
   }
   return { definitions: references, types };
+}
+
+export function infoToCompilations(
+  projectInfo: ProjectInfo | undefined
+): Compilation[] {
+  if (!projectInfo) {
+    throw new NoProjectInfoError();
+  }
+  if (projectInfo.compilations) {
+    return projectInfo.compilations;
+  } else if (projectInfo.commonCompilations) {
+    return shimCompilations(projectInfo.commonCompilations);
+  } else if (projectInfo.artifacts) {
+    return shimArtifacts(projectInfo.artifacts);
+  } else {
+    throw new NoProjectInfoError();
+  }
 }
