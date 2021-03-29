@@ -9,6 +9,7 @@ import {
   ValueResolutionController
 } from "./ValueResolutionController";
 import { Process, State } from "../types";
+import { transitionToState, validStates } from "./decorators";
 
 export namespace Options {
   export interface Begin {
@@ -62,34 +63,25 @@ export class StepsController
     this.step = this.step.bind(this);
   }
 
+  @validStates([State.Pending])
+  @transitionToState(State.Active)
   async *begin() {
-    // can only begin not begun yet
-    if (this._state !== State.Pending) {
-      return;
-    }
-
     yield this.emit<Events.Begin>({
       type: "begin"
     });
-
-    this._state = State.Active;
   }
 
+  @validStates([State.Active])
+  @transitionToState(State.Done)
   async *succeed({ result, message }: Options.Succeed = {}) {
-    // only meaningful to succeed if we're currently active
-    if (this._state !== State.Active) {
-      return;
-    }
-
     yield this.emit<Events.Succeed>({
       type: "succeed",
       result,
       message
     });
-
-    this._state = State.Done;
   }
 
+  @validStates([State.Active])
   async *log({ message }: Options.Log) {
     yield this.emit<Events.Log>({
       type: "log",
@@ -97,6 +89,7 @@ export class StepsController
     });
   }
 
+  @validStates([State.Active])
   async *declare({ identifier, message }: Options.Declare) {
     const parent = this;
 
@@ -116,6 +109,7 @@ export class StepsController
     return child;
   }
 
+  @validStates([State.Active])
   async *step({ identifier, message }: Options.Step) {
     const parent = this;
 

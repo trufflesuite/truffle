@@ -6,11 +6,11 @@
     "target": "es6",
     "noImplicitAny": true,
     "moduleResolution": "node",
-    "experimentalDecorators": true,
     "sourceMap": true,
     "outDir": "dist",
     "baseUrl": ".",
-    "lib": ["es2017"],
+    "lib": ["es2017", "dom"],
+    "skipLibCheck": true,
     "paths": {
     },
     "rootDir": ".",
@@ -21,7 +21,6 @@
   },
   "include": [
     "./lib/**/*.ts",
-    "./test/**/*.ts",
-    "./typings/**/*.d.ts"
+    "lib/test/**/*.ts",
   ]
 }

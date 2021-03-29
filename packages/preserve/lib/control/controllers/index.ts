@@ -13,3 +13,5 @@ export { Steps };
 export { ValueResolutionController } from "./ValueResolutionController";
 import * as ValueResolution from "./ValueResolutionController";
 export { ValueResolution };
+
+export * from "./decorators";

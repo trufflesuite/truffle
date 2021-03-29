@@ -113,7 +113,7 @@ export class ConsoleReporter {
     const { message } = event;
 
     this.spinners.add(key, {
-      text: message,
+      text: chalk.cyan(message),
       indent,
       succeedColor: "white",
       failColor: "white"
@@ -127,7 +127,9 @@ export class ConsoleReporter {
 
     const { text } = this.spinners.pick(key);
 
-    const options = payload ? { text: `${chalk.cyan(text)}: ${payload}` } : {};
+    const [name] = text.split(":");
+
+    const options = payload ? { text: `${name}: ${payload}` } : {};
 
     this.spinners.update(key, {
       ...options,
@@ -142,7 +144,9 @@ export class ConsoleReporter {
 
     const { text } = this.spinners.pick(key);
 
-    const options = payload ? { text: `${chalk.cyan(text)}: ${payload}` } : {};
+    const [name] = text.split(":");
+
+    const options = payload ? { text: `${name}: ${payload}` } : {};
 
     this.spinners.update(key, options);
   }
