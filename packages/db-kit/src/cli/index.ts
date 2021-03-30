@@ -11,10 +11,14 @@ const cli = meow(
 
       Options
         --network  Name of network to connect to
+        --config Path to configuration file
 `,
   {
     flags: {
       network: {
+        type: "string"
+      },
+      config: {
         type: "string"
       }
     }
@@ -22,13 +26,14 @@ const cli = meow(
 );
 
 export async function start() {
-  const { network: name } = cli.flags;
+  const { network: name, config: configPath } = cli.flags;
 
   const { waitUntilExit } = render(
     React.createElement(App, {
       network: {
         name
-      }
+      },
+      configPath
     })
   );
 

@@ -12,17 +12,19 @@ import { Menu } from "./menu";
 
 export interface Props {
   network?: Pick<Resources.Resource<"networks">, "name">;
+  configPath?: string;
 }
 
 export const App = ({
   network = {
     name: "development"
-  }
+  },
+  configPath
 }: Props) => {
   const { exit } = useApp();
   const [shouldQuit, setShouldQuit] = useState<boolean>(false);
 
-  const config = useConfig({ network });
+  const config = useConfig({ network, configPath });
   const { db, project, error } = useDb({ config });
 
   useEffect(() => {
@@ -54,8 +56,10 @@ export const App = ({
             {" Reading truffle-config and connecting to network..."}
           </Text>
         )}
-      {error &&
-      error instanceof DbNotEnabledError && <ActivationInstructions /> // specific error case
+      {
+        error && error instanceof DbNotEnabledError && (
+          <ActivationInstructions />
+        ) // specific error case
       }
       {error &&
       !(error instanceof DbNotEnabledError) && ( // unknown error case
