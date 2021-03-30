@@ -1,14 +1,20 @@
 {
   "name": "@truffle/preserve",
-  "mode": "modules",
-  "module": "commonjs",
   "theme": "../../node_modules/@trufflesuite/typedoc-default-themes/bin/default/",
-  "includeDeclarations": false,
-  "ignoreCompilerErrors": true,
-  "preserveConstEnums": true,
   "excludeExternals": true,
   "exclude": [
     "**/test/*"
   ],
-  "target": "ES6"
+  "out": "./dist/docs",
+  "readme": "./docs/README.md",
+  "media": "./docs/media",
+  "json": "./dist/api.json",
+  "tsconfig": "./docs/tsconfig.json",
+  "entryPoints": [
+    "../preserve/lib/index.ts",
+    "../preserve-fs/lib/index.ts",
+    "../preserve-to-ipfs/lib/index.ts",
+    "../preserve-to-filecoin/lib/index.ts",
+    "../preserve-to-buckets/lib/index.ts"
+  ]
 }
