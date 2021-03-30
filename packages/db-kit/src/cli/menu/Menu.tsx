@@ -6,7 +6,7 @@ import type TruffleConfig from "@truffle/config";
 import type { WireDecoder } from "@truffle/decoder";
 import type { Db, Project } from "@truffle/db";
 
-import { Definitions, Mode } from "./types";
+import { Mode } from "./types";
 
 import * as DecodeAddress from "@truffle/db-kit/cli/decodeAddress";
 import * as DecodeTransaction from "@truffle/db-kit/cli/decodeTransaction";
@@ -19,9 +19,10 @@ export interface MenuProps {
 }
 
 export type MenuModes = {
+  wait: {};
   "decode-transaction": {
-    producesEffect: false;
-    rendersComponent: true;
+    selectable: true;
+    rendered: true;
     inputProps: {
       transactionHash: string;
       transaction: Transaction;
@@ -33,8 +34,8 @@ export type MenuModes = {
     };
   };
   "decode-address": {
-    producesEffect: false;
-    rendersComponent: true;
+    selectable: true;
+    rendered: true;
     inputProps: {
       address: string;
     };
@@ -44,8 +45,8 @@ export type MenuModes = {
     inputPropName: "address";
   };
   quit: {
-    rendersComponent: false;
-    producesEffect: true;
+    selectable: true;
+    effecting: true;
   };
 };
 
@@ -54,7 +55,8 @@ export type MenuConfig = {
   modes: MenuModes;
 };
 
-export const definitions: Definitions<MenuConfig> = {
+export const definitions: Mode.Definitions<MenuConfig> = {
+  "wait": {},
   "decode-transaction": {
     label: "Decode transaction",
     components: DecodeTransaction
@@ -89,18 +91,13 @@ export const Menu = (props: MenuProps) => {
   }, [mode]);
 
   useEffect(() => {
-    const definition = definitions[mode];
+    const definition: Mode.Definition<MenuConfig> = definitions[mode];
 
-    if (mode === "wait") {
-      setElement(<></>);
-      return;
-    }
-
-    if (Mode.producesEffect(definition)) {
+    if (Mode.effecting(definition)) {
       definition.effect({ config, db, project, onDone });
     }
 
-    if (Mode.rendersComponent(definition)) {
+    if (Mode.rendered(definition)) {
       const { Inputs, Container, Screen } = definition.components;
 
       setElement(
@@ -114,15 +111,21 @@ export const Menu = (props: MenuProps) => {
     }
   }, [config, db, onDone, project, props, mode, inputProps]);
 
+  const selectableItems: { label: string; value: string }[] = [];
+  for (const [name, definition] of Object.entries(definitions)) {
+    if (Mode.selectable(definition)) {
+      const { label } = definition;
+      selectableItems.push({
+        label,
+        value: name
+      });
+    }
+  }
+
   const selectItems =
     mode === "wait"
-      ? Object.entries(definitions).map(([value, { label }]) => ({
-          label,
-          value
-        }))
-      : Object.entries(definitions)
-          .map(([value, { label }]) => ({ label, value }))
-          .filter(({ value }) => value === mode);
+      ? selectableItems
+      : selectableItems.filter(({ value }) => value === mode);
 
   return (
     <Box flexDirection="column">

@@ -3,23 +3,25 @@ import type React from "react";
 export type Config = {
   props: {};
   modes: {
-    [modeName: string]: (
+    [modeName: string]: {
+      selectable?: boolean;
+    } & (
       | {
-          producesEffect: true;
+          effecting: true;
           effectProps?: {};
         }
       | {
-          producesEffect: false;
+          effecting?: false;
         }
     ) &
       (
         | {
-            rendersComponent: true;
+            rendered: true;
             inputProps?: {};
             screenProps?: {};
           }
         | {
-            rendersComponent: false;
+            rendered?: false;
           }
       );
   };
@@ -31,7 +33,35 @@ export type Props<C extends Config> = C["props"];
 export namespace Mode {
   export type Name<C extends Config> = string & keyof Modes<C>;
 
-  export type Mode<C extends Config, N extends Name<C> = Name<C>> = Modes<C>[N];
+  export type Mode<
+    C extends Config,
+    N extends Name<C> = Name<C>,
+    F = undefined
+  > = F extends ModeFilter
+    ? Extract<Mode<C, N>, { [K in F["is"]]: true }> extends never
+      ? never
+      : Extract<Mode<C, N>, { [K in F["is"]]: true }>
+    : Modes<C>[N];
+
+  export type ModeFilter = {
+    is: PropertyName<{ extends: boolean }>;
+  };
+
+  export type PropertyFilter = {
+    extends: any;
+  };
+
+  export type PropertyName<F extends PropertyFilter = PropertyFilter> = {
+    [P in string & keyof Mode<Config>]: F["extends"] extends Property<P, Config>
+      ? P
+      : never;
+  }[string & keyof Mode<Config>];
+
+  export type Property<
+    P extends PropertyName,
+    C extends Config = Config,
+    N extends Name<C> = Name<C>
+  > = Mode<C, N>[P];
 
   export type InputProps<
     C extends Config,
@@ -80,38 +110,63 @@ export namespace Mode {
     ) => React.ReactElement | null;
   }
 
-  export type EffectDefinition<C extends Config, _N extends Name<C>> = {
+  export type LabelDefinition<
+    C extends Config,
+    _N extends Name<C> | undefined = undefined
+  > = {
+    label: string;
+  };
+
+  export type EffectDefinition<
+    C extends Config,
+    _N extends Name<C> | undefined = undefined
+  > = {
     effect: (props: Props<C>) => void;
   };
 
-  export type ComponentsDefinition<C extends Config, N extends Name<C>> = {
-    components: {
-      Inputs: Mode.Inputs.Component<C, N>;
-      Container: Mode.Container.Component<C, N>;
-      Screen: Mode.Screen.Component<C, N>;
-    };
+  export type FilteredName<C extends Config, F = undefined> = {
+    [N in Name<C>]: Mode<C, N, F> extends never ? never : N;
+  }[Name<C>];
+
+  export type ComponentsDefinition<
+    C extends Config,
+    N extends Name<C> | undefined = undefined
+  > = N extends Name<C>
+    ? {
+        components: {
+          Inputs: Mode.Inputs.Component<C, N>;
+          Container: Mode.Container.Component<C, N>;
+          Screen: Mode.Screen.Component<C, N>;
+        };
+      }
+    : {
+        [N in Name<C>]: ComponentsDefinition<C, N>;
+      }[FilteredName<C, { is: "rendered" }>];
+
+  export type Definition<
+    C extends Config,
+    N extends Name<C> | undefined = undefined
+  > = N extends Name<C>
+    ? (Mode<C, N>["selectable"] extends true ? LabelDefinition<C, N> : {}) &
+        (Mode<C, N>["effecting"] extends true ? EffectDefinition<C, N> : {}) &
+        (Mode<C, N>["rendered"] extends true ? ComponentsDefinition<C, N> : {})
+    : Definitions<C>[Mode.Name<C>];
+
+  export type Definitions<C extends Config> = {
+    [N in Mode.Name<C>]: Mode.Definition<C, N>;
   };
 
-  export type Definition<C extends Config, N extends Name<C>> = {
-    label: string;
-  } & (Mode<C, N>["producesEffect"] extends true
-    ? EffectDefinition<C, N>
-    : {}) &
-    (Mode<C, N>["rendersComponent"] extends true
-      ? ComponentsDefinition<C, N>
-      : {});
+  export const selectable = <C extends Config>(
+    definition: Definition<C>
+  ): definition is Definition<C> & LabelDefinition<C> => "label" in definition;
 
-  export const producesEffect = <C extends Config, N extends Name<C>>(
-    definition: Definition<C, N>
-  ): definition is Definition<C, N> & EffectDefinition<C, N> =>
+  export const effecting = <C extends Config>(
+    definition: Definition<C>
+  ): definition is Definition<C> & EffectDefinition<C> =>
     "effect" in definition;
 
-  export const rendersComponent = <C extends Config, N extends Name<C>>(
-    definition: Definition<C, N>
-  ): definition is Definition<C, N> & ComponentsDefinition<C, N> =>
+  export const rendered = <C extends Config>(
+    definition: Definition<C>
+  ): definition is Definition<C> & ComponentsDefinition<C> =>
     "components" in definition;
 }
-
-export type Definitions<C extends Config> = {
-  [N in Mode.Name<C>]: Mode.Definition<C, N>;
-};
