@@ -11,9 +11,13 @@ export const preserveToBuckets = async (
   const result = await Preserve.Control.run(
     {
       name: recipe.name,
-      method: recipe.preserve.bind(recipe)
+      method: recipe.execute.bind(recipe)
     },
-    { target: target }
+    {
+      inputs: {
+        "fs-target": target,
+      }
+    }
   );
 
   return result;
@@ -29,9 +33,13 @@ export const preserveToBucketsWithEvents = async (
     Preserve.Control.control(
       {
         name: recipe.name,
-        method: recipe.preserve.bind(recipe)
+        method: recipe.execute.bind(recipe)
       },
-      { target }
+      {
+        inputs: {
+          "fs-target": target,
+        }
+      }
     )
   );
 

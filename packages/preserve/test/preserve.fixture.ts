@@ -1,33 +1,30 @@
-import { Loader, Process, Recipe, Target } from "../lib";
+import { Process, Recipe } from "../lib";
 import { ValueResolutionController } from "../lib/control";
-import { stringify } from "../lib/targets";
 
-export const simpleTarget: Target = {
-  source: "hello, world!"
-};
+export const simpleTarget = "hello, world!";
 
-export const simpleLoader: Loader = {
+export const simpleLoader: Recipe = {
   name: "simple-loader",
 
-  async *load() {
-    return simpleTarget;
+  inputLabels: [],
+  outputLabels: ["string"],
+
+  async *execute() {
+    return { string: simpleTarget };
   }
 };
 
 export const vowelsRecipe: Recipe = {
   name: "vowels-recipe",
 
-  dependencies: [],
+  inputLabels: ["string"],
+  outputLabels: ["vowels"],
 
-  async *preserve({ target, controls }): Process<{ vowels: string }> {
+  async *execute({ inputs, controls }): Process<{ vowels: string }> {
     const { log, step } = controls;
     yield* log({ message: "Filtering vowels..." });
 
     const vowels = new Set(["a", "e", "i", "o", "u"]);
-
-    // for testing purposes, this only handles the case of a Content target
-    // (no Containers)
-    const source = (await stringify(target)).source as string;
 
     const finalize = yield* step({
       identifier: "finalize",
@@ -37,7 +34,7 @@ export const vowelsRecipe: Recipe = {
     yield* finalize.succeed();
 
     return {
-      vowels: source
+      vowels: (inputs.string as string)
         .split("")
         .filter(character => vowels.has(character))
         .join("")
@@ -48,9 +45,10 @@ export const vowelsRecipe: Recipe = {
 export const vowelsCounterRecipe: Recipe = {
   name: "vowels-counter-recipe",
 
-  dependencies: [vowelsRecipe.name],
+  inputLabels: ["vowels"],
+  outputLabels: ["vowels-count"],
 
-  async *preserve({ results, controls }): Process<{ count: number }> {
+  async *execute({ inputs, controls }): Process<{ "vowels-count": number }> {
     const { log, declare } = controls;
 
     yield* log({ message: "Counting vowels..." });
@@ -65,7 +63,7 @@ export const vowelsCounterRecipe: Recipe = {
       });
     }
 
-    const { vowels } = results.get(vowelsRecipe.name) as { vowels: string };
+    const { vowels } = inputs;
 
     const counts = allVowels
       .map(vowel => ({ [vowel]: { count: 0 } }))
@@ -82,7 +80,7 @@ export const vowelsCounterRecipe: Recipe = {
     }
 
     return {
-      count: vowels.length
+      "vowels-count": vowels.length
     };
   }
 };
@@ -95,7 +93,7 @@ export const expectedEventsForVowelsRecipe = [
   {
     type: "succeed",
     scope: ["simple-loader"],
-    result: { source: "hello, world!" }
+    result: { string: "hello, world!" }
   },
   {
     type: "begin",
@@ -185,6 +183,6 @@ export const expectedEventsForVowelsCounterRecipe = [
   {
     type: "succeed",
     scope: ["vowels-counter-recipe"],
-    result: { count: 3 }
+    result: { "vowels-count": 3 }
   }
 ];

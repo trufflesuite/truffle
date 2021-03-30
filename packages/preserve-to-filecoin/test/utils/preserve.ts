@@ -10,11 +10,15 @@ export const preserveToIpfs = async (
 ) => {
   const recipe = new PreserveToIpfs.Recipe({ address });
 
-  const { cid }: PreserveToIpfs.Result = await Preserve.Control.run(
+  const { "ipfs-cid": cid }: PreserveToIpfs.Result = await Preserve.Control.run(
     {
-      method: recipe.preserve.bind(recipe)
+      method: recipe.execute.bind(recipe)
     },
-    { target }
+    {
+      inputs: {
+        "fs-target": target
+      }
+    }
   );
 
   return cid;
@@ -27,14 +31,16 @@ export const preserveToFilecoin = async (
 ): Promise<CID> => {
   const recipe = new Recipe(environment);
 
-  const { dealCid } = await Preserve.Control.run(
+  const { "filecoin-deal-cid": dealCid } = await Preserve.Control.run(
     {
       name: recipe.name,
-      method: recipe.preserve.bind(recipe)
+      method: recipe.execute.bind(recipe)
     },
     {
-      target: target,
-      results: new Map([["@truffle/preserve-to-ipfs", { cid }]])
+      inputs: {
+        "fs-target": target,
+        "ipfs-cid": cid,
+      }
     }
   );
 
@@ -52,11 +58,13 @@ export const preserveToFilecoinWithEvents = async (
     Preserve.Control.control(
       {
         name: recipe.name,
-        method: recipe.preserve.bind(recipe)
+        method: recipe.execute.bind(recipe)
       },
       {
-        target: target,
-        results: new Map([["@truffle/preserve-to-ipfs", { cid }]])
+        inputs: {
+          "fs-target": target,
+          "ipfs-cid": cid,
+        }
       }
     )
   );

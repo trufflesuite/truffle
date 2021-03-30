@@ -113,7 +113,7 @@ const happyPathEvents = [
   },
   {
     type: "succeed",
-    result: { dealCid: expect.any(CID) },
+    result: { "filecoin-deal-cid": expect.any(CID) },
     scope: ["@truffle/preserve-to-filecoin"]
   }
 ];

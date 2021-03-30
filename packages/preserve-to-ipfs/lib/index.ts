@@ -8,8 +8,14 @@ import * as Preserve from "@truffle/preserve";
 import { connect } from "./connect";
 import { upload } from "./upload";
 
+export interface ExecuteOptions extends Preserve.Recipes.ExecuteOptions{
+  inputs: {
+    "fs-target": Preserve.Target
+  }
+}
+
 export interface Result {
-  cid: CID;
+  "ipfs-cid": CID;
 }
 
 export interface ConstructorOptions
@@ -24,7 +30,8 @@ export class Recipe implements Preserve.Recipe {
 
   static help = "Preserve to IPFS";
 
-  dependencies: string[] = [];
+  inputLabels = ["fs-target"];
+  outputLabels = ["ipfs-cid"];
 
   private address: string;
 
@@ -32,21 +39,21 @@ export class Recipe implements Preserve.Recipe {
     this.address = options.address || defaultAddress;
   }
 
-  async *preserve(
-    options: Preserve.Recipes.PreserveOptions
+  async *execute(
+    options: Preserve.Recipes.ExecuteOptions
   ): Preserve.Process<Result> {
     const { address } = this;
-    const { target: rawTarget, controls } = options;
+    const { inputs, controls } = options;
     const { log } = controls;
 
     yield* log({ message: "Preserving to IPFS..." });
 
     const ipfs = yield* connect({ address, controls });
 
-    const { source } = Preserve.Targets.normalize(rawTarget);
+    const { source } = Preserve.Targets.normalize(inputs["fs-target"]);
 
     const { cid } = yield* upload({ source, ipfs, controls });
 
-    return { cid };
+    return { "ipfs-cid": cid };
   }
 }

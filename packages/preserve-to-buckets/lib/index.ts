@@ -3,6 +3,7 @@
  */ /** */
 
 import * as Preserve from "@truffle/preserve";
+import CID from "cids";
 import { clear } from "./clear";
 import { connect } from "./connect";
 import { upload } from "./upload";
@@ -10,8 +11,12 @@ import { upload } from "./upload";
 // @textile/hub requires a WebSocket API to be available on the global object
 if (typeof global !== "undefined") (global as any).WebSocket = require('isomorphic-ws');
 
-export interface Result {
+export interface ExecuteOptions {
+  "fs-target": Preserve.Target
+}
 
+export interface Result {
+  "ipfs-cid": CID
 }
 
 export interface ConstructorOptions
@@ -26,7 +31,8 @@ export class Recipe implements Preserve.Recipe {
 
   static help = "Preserve to Textile Buckets";
 
-  dependencies: string[] = [];
+  inputLabels = ["fs-target"];
+  outputLabels = ["ipfs-cid"];
 
   private key: string;
   private secret: string;
@@ -38,14 +44,14 @@ export class Recipe implements Preserve.Recipe {
     this.bucketName = options.bucketName;
   }
 
-  async *preserve(
-    options: Preserve.Recipes.PreserveOptions
+  async *execute(
+    options: Preserve.Recipes.ExecuteOptions
   ): Preserve.Process<Result> {
-    const { target: rawTarget, controls } = options;
+    const { inputs, controls } = options;
     const { log } = controls;
     const { key, secret, bucketName } = this;
 
-    const target = Preserve.Targets.normalize(rawTarget);
+    const target = Preserve.Targets.normalize(inputs["fs-target"]);
 
     if (Preserve.Targets.Sources.isContent(target.source)) {
       throw new Error(
@@ -61,6 +67,6 @@ export class Recipe implements Preserve.Recipe {
 
     const { cid } = yield* upload({ target, buckets, bucketKey, controls });
 
-    return { cid };
+    return { "ipfs-cid": cid };
   }
 }

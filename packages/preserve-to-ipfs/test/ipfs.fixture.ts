@@ -50,7 +50,7 @@ export const tests: Test[] = [
       },
       {
         type: "succeed",
-        result: expect.objectContaining({ cid: expect.any(CID) }),
+        result: expect.objectContaining({ "ipfs-cid": expect.any(CID) }),
         scope: ["@truffle/preserve-to-ipfs"]
       }
     ]
@@ -127,7 +127,7 @@ export const tests: Test[] = [
       },
       {
         type: "succeed",
-        result: expect.objectContaining({ cid: expect.any(CID) }),
+        result: expect.objectContaining({ "ipfs-cid": expect.any(CID) }),
         scope: ["@truffle/preserve-to-ipfs"]
       }
     ]
@@ -231,7 +231,7 @@ export const tests: Test[] = [
       },
       {
         type: "succeed",
-        result: expect.objectContaining({ cid: expect.any(CID) }),
+        result: expect.objectContaining({ "ipfs-cid": expect.any(CID) }),
         scope: ["@truffle/preserve-to-ipfs"]
       }
     ]
@@ -359,7 +359,7 @@ export const tests: Test[] = [
       },
       {
         type: "succeed",
-        result: expect.objectContaining({ cid: expect.any(CID) }),
+        result: expect.objectContaining({ "ipfs-cid": expect.any(CID) }),
         scope: ["@truffle/preserve-to-ipfs"]
       }
     ]
