@@ -102,8 +102,6 @@ export class ConsoleReporter {
   private declare(event: Control.Events.Declare) {
     const { key, indent } = eventProperties(event);
 
-    const { message } = event;
-
     this.spinners.add(key, {
       indent,
       succeedColor: "white",
