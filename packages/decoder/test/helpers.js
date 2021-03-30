@@ -1,9 +1,7 @@
 const debugModule = require("debug");
 const debug = debugModule("decoder:test:helpers");
 
-const fs = require("fs");
 const WorkflowCompile = require("@truffle/workflow-compile");
-const Web3 = require("web3");
 const Migrate = require("@truffle/migrate");
 const Codec = require("@truffle/codec");
 const Config = require("@truffle/config");
@@ -12,11 +10,11 @@ const flatten = require("lodash.flatten");
 const tmp = require("tmp");
 tmp.setGracefulCleanup();
 
-function nativizeDecoderVariables(variables) {
+function unsafeNativizeDecoderVariables(variables) {
   return Object.assign(
     {},
     ...variables.map(({ name, value }) => ({
-      [name]: Codec.Format.Utils.Inspect.nativize(value)
+      [name]: Codec.Format.Utils.Inspect.unsafeNativize(value)
     }))
   );
   //note that the assignments are processed in order, so if multiple have same name, later
@@ -26,24 +24,21 @@ function nativizeDecoderVariables(variables) {
 }
 
 async function prepareContracts(provider, projectDir) {
-
   const temporaryDirectory = tmp.dirSync({
     unsafeCleanup: true,
     prefix: "test-"
   }).name;
 
-  let config = Config.detect({ working_directory: projectDir }).merge(
-    {
-      contracts_build_directory: temporaryDirectory,
-      networks: {
-        decoder: {
-          provider,
-          network_id: "*"
-        }
-      },
-      network: "decoder"
-    }
-  );
+  let config = Config.detect({ working_directory: projectDir }).merge({
+    contracts_build_directory: temporaryDirectory,
+    networks: {
+      decoder: {
+        provider,
+        network_id: "*"
+      }
+    },
+    network: "decoder"
+  });
 
   await Environment.detect(config);
 
@@ -56,7 +51,9 @@ async function prepareContracts(provider, projectDir) {
     abstractions[name] = config.resolver.require(name);
   }
 
-  const compilations = Codec.Compilations.Utils.shimCompilations(rawCompilations);
+  const compilations = Codec.Compilations.Utils.shimCompilations(
+    rawCompilations
+  );
 
   return {
     abstractions,
@@ -96,5 +93,5 @@ async function migrate(config) {
 
 module.exports = {
   prepareContracts,
-  nativizeDecoderVariables
-}
+  unsafeNativizeDecoderVariables
+};
