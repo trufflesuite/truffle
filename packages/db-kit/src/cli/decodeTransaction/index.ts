@@ -1,3 +1,3 @@
 export { DecodeTransactionInputs as Inputs } from "./Inputs";
-export { DecodeTransactionSplash as Splash } from "./Splash";
-export { DecodeTransactionResult as Result } from "./Result";
+export { DecodeTransactionContainer as Container } from "./Container";
+export { DecodeTransactionScreen as Screen } from "./Screen";

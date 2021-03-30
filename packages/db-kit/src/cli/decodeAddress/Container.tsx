@@ -3,37 +3,36 @@ import { Box, Text } from "ink";
 import Spinner from "ink-spinner";
 import Divider from "ink-divider";
 
-import type { Transaction, TransactionReceipt } from "web3-core";
 import type TruffleConfig from "@truffle/config";
 import type { Db, Resources } from "@truffle/db";
+import type { WireDecoder } from "@truffle/decoder";
 
 import { useDecoder } from "@truffle/db-kit/cli/hooks";
-
-import { DecodeTransactionResult as Result } from "./Result";
 
 export interface Props {
   config: TruffleConfig;
   db: Db;
   project: Resources.IdObject<"projects">;
-  transaction: Transaction;
-  receipt: TransactionReceipt;
-  addresses: string[];
+  address: string;
+  Screen: (props: {
+    decoder: WireDecoder;
+    address: string;
+  }) => React.ReactElement | null;
 }
 
-export const DecodeTransactionSplash = ({
+export const DecodeAddressContainer = ({
   config,
   db,
   project,
-  transaction,
-  receipt,
-  addresses
+  address,
+  Screen
 }: Props) => {
   const { decoder, statusByAddress } = useDecoder({
     config,
     db,
     project,
     network: { name: config.network },
-    addresses
+    addresses: [address]
   });
 
   const spinners = Object.entries(statusByAddress).map(([address, status]) => {
@@ -130,7 +129,7 @@ export const DecodeTransactionSplash = ({
       <Box justifyContent="center" marginBottom={1}>
         <Divider width={10} />
       </Box>
-      <Result decoder={decoder} transaction={transaction} receipt={receipt} />
+      <Screen decoder={decoder} address={address} />
     </Box>
   );
 

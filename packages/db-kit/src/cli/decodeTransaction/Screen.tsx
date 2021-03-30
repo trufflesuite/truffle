@@ -17,7 +17,7 @@ export interface Props {
   receipt: TransactionReceipt;
 }
 
-export const DecodeTransactionResult = ({
+export const DecodeTransactionScreen = ({
   decoder,
   transaction,
   receipt

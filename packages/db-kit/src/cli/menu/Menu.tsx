@@ -1,16 +1,17 @@
-import React, { ReactNode, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Box, Text } from "ink";
 import SelectInput from "ink-select-input";
 import type { Transaction, TransactionReceipt } from "web3-core";
 import type TruffleConfig from "@truffle/config";
+import type { WireDecoder } from "@truffle/decoder";
 import type { Db, Project } from "@truffle/db";
 
-import type { Definitions, ModeInputProps, ModeName } from "./types";
+import { Definitions, Mode } from "./types";
 
 import * as DecodeAddress from "@truffle/db-kit/cli/decodeAddress";
 import * as DecodeTransaction from "@truffle/db-kit/cli/decodeTransaction";
 
-export interface Props {
+export interface MenuProps {
   config: TruffleConfig;
   db: Db;
   project: Project.Project;
@@ -21,39 +22,46 @@ export type MenuModes = {
   "decode-transaction": {
     producesEffect: false;
     rendersComponent: true;
-    props: Props & {
+    inputProps: {
       transactionHash: string;
       transaction: Transaction;
       receipt: TransactionReceipt;
       addresses: string[];
     };
-    inputPropName: "transactionHash" | "transaction" | "receipt" | "addresses";
+    screenProps: {
+      decoder: WireDecoder;
+    };
   };
   "decode-address": {
     producesEffect: false;
     rendersComponent: true;
-    props: Props & {
+    inputProps: {
       address: string;
+    };
+    screenProps: {
+      decoder: WireDecoder;
     };
     inputPropName: "address";
   };
   quit: {
     rendersComponent: false;
     producesEffect: true;
-    props: Props;
   };
 };
 
-export const definitions: Definitions<MenuModes> = {
+export type MenuConfig = {
+  props: MenuProps;
+  modes: MenuModes;
+};
+
+export const definitions: Definitions<MenuConfig> = {
   "decode-transaction": {
     label: "Decode transaction",
-    PropsInputComponent: DecodeTransaction.Inputs,
-    ScreenComponent: DecodeTransaction.Splash
+    components: DecodeTransaction
   },
   "decode-address": {
     label: "Decode contract address",
-    PropsInputComponent: DecodeAddress.Inputs,
-    ScreenComponent: DecodeAddress.Splash
+    components: DecodeAddress
   },
   "quit": {
     label: "Quit",
@@ -63,17 +71,17 @@ export const definitions: Definitions<MenuModes> = {
   }
 };
 
-export const Menu = (props: Props) => {
+export const Menu = (props: MenuProps) => {
   const { config, db, project, onDone } = props;
-  const [mode, setMode] = useState<"wait" | ModeName<MenuModes>>("wait");
+  const [mode, setMode] = useState<"wait" | Mode.Name<MenuConfig>>("wait");
 
   const handleSelect = ({ value }) => {
     setMode(value);
   };
 
-  const [element, setElement] = useState<ReactNode>(null);
+  const [element, setElement] = useState<React.ReactElement | null>(null);
   const [inputProps, setInputProps] = useState<
-    ModeInputProps<MenuModes, ModeName<MenuModes>> | undefined
+    Mode.InputProps<MenuConfig, Mode.Name<MenuConfig>> | undefined
   >(undefined);
 
   useEffect(() => {
@@ -88,21 +96,19 @@ export const Menu = (props: Props) => {
       return;
     }
 
-    if (definition.effect) {
+    if (Mode.producesEffect(definition)) {
       definition.effect({ config, db, project, onDone });
     }
 
-    if (definition.ScreenComponent) {
-      const { PropsInputComponent, ScreenComponent } = definition;
+    if (Mode.rendersComponent(definition)) {
+      const { Inputs, Container, Screen } = definition.components;
 
       setElement(
         <Box flexDirection="column">
-          <PropsInputComponent
-            {...props}
-            {...inputProps}
-            onSubmit={setInputProps}
-          />
-          {inputProps && <ScreenComponent {...props} {...inputProps} />}
+          <Inputs {...props} {...inputProps} onSubmit={setInputProps} />
+          {inputProps && (
+            <Container Screen={Screen} {...props} {...inputProps} />
+          )}
         </Box>
       );
     }

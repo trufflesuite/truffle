@@ -16,7 +16,7 @@ export interface Props {
   address: string;
 }
 
-export const DecodeAddressResult = ({ decoder, address }: Props) => {
+export const DecodeAddressScreen = ({ decoder, address }: Props) => {
   const [width, setWidth] = useState(80);
   const ref = useRef();
 
