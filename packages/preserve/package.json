@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "prepare": "yarn build",
+    "prepare": "yarn build && yarn docs",
     "test": "jest --verbose --detectOpenHandles",
     "docs": "../../node_modules/typedoc/bin/typedoc --options ./docs/typedoc.json"
   },
