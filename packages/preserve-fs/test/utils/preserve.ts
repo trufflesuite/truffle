@@ -1,7 +1,6 @@
 import * as Preserve from "@truffle/preserve";
-import { Recipe } from "../../lib";
+import { Recipe, ExecuteResult } from "../../lib";
 import { asyncToArray } from "iter-tools";
-import { ExecuteResult } from "lib/types";
 
 export const preserve = async (
   inputs: { path: string },

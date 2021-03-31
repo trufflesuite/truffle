@@ -5,7 +5,6 @@ export type EventName =
   | "abort"
   | "stop"
   | "begin"
-  | "log"
   | "succeed"
   | "step"
   | "declare"
@@ -38,11 +37,6 @@ export namespace Events {
     message?: string;
   }
 
-  export interface Log extends Event {
-    type: "log";
-    message: string;
-  }
-
   export interface Succeed extends Event {
     type: "succeed";
     result?: any;
@@ -69,5 +63,6 @@ export namespace Events {
   export interface Update extends Event {
     type: "update";
     payload?: string;
+    message?: string;
   }
 }

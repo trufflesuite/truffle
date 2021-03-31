@@ -1,9 +1,9 @@
 const TaskError = require("./errors/taskerror");
 const yargs = require("yargs/yargs");
-const {bundled, core} = require("../lib/version").info();
+const { bundled, core } = require("../lib/version").info();
 const OS = require("os");
 const analytics = require("../lib/services/analytics");
-const {extractFlags} = require("./utils/utils"); // Contains utility methods
+const { extractFlags } = require("./utils/utils"); // Contains utility methods
 
 class Command {
   constructor(commands) {
@@ -79,6 +79,10 @@ class Command {
       throw new TaskError(
         "Cannot find command based on input: " + JSON.stringify(inputStrings)
       );
+    }
+
+    if (typeof result.command.help === "function") {
+      result.command.help = await result.command.help(options);
     }
 
     const argv = result.argv;

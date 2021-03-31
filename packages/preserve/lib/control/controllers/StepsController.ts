@@ -16,7 +16,7 @@ export namespace Options {
     message?: string;
   }
 
-  export interface Log {
+  export interface Update {
     message: string;
   }
 
@@ -40,7 +40,7 @@ export interface ConstructorOptions extends ErrorControllerConstructorOptions {}
 
 export interface IStepsController extends IErrorController {
   begin(options?: Options.Begin): Process<void, Events.Begin>;
-  log(options: Options.Log): Process<void, Events.Log>;
+  update(options: Options.Update): Process<void, Events.Update>;
   succeed(options?: Options.Succeed): Process<void, Events.Succeed>;
   declare(
     options: Options.Declare
@@ -58,7 +58,7 @@ export class StepsController
     // so we can pass these around as functions
     this.begin = this.begin.bind(this);
     this.succeed = this.succeed.bind(this);
-    this.log = this.log.bind(this);
+    this.update = this.update.bind(this);
     this.declare = this.declare.bind(this);
     this.step = this.step.bind(this);
   }
@@ -82,9 +82,9 @@ export class StepsController
   }
 
   @validStates([State.Active])
-  async *log({ message }: Options.Log) {
-    yield this.emit<Events.Log>({
-      type: "log",
+  async *update({ message }: Options.Update) {
+    yield this.emit<Events.Update>({
+      type: "update",
       message
     });
   }

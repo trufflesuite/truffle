@@ -1,7 +1,7 @@
 const TruffleError = require("@truffle/error");
 const originalRequire = require("original-require");
 import path from "path";
-import { PluginConstructorOptions, PluginDefinition } from "./interfaces";
+import { PluginConstructorOptions, PluginDefinition } from "./types";
 
 export class Plugin {
   constructor({ module, definition }: PluginConstructorOptions) {
@@ -34,6 +34,28 @@ export class Plugin {
     }
 
     return this.loadModule(commandLocalPath);
+  }
+
+  /*
+   * `truffle preserve` support
+   */
+
+  get tag(): string | undefined {
+    return this.definition.tag;
+  }
+
+  definesRecipe(): boolean {
+    return !!(this.definition.preserve && this.definition.preserve.recipe);
+  }
+
+  loadRecipe(): any {
+    if (!this.definesRecipe()) {
+      throw new TruffleError(
+        `Plugin ${this.module} does not define a \`truffle preserve\` recipe.`
+      );
+    }
+
+    return this.loadModule(this.definition.preserve.recipe).Recipe;
   }
 
   /*

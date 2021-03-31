@@ -85,4 +85,118 @@ describe("Plugin", () => {
       );
     });
   });
+
+  describe("get tag()", () => {
+    it("should return tag if provided", () => {
+      const plugin = new Plugin({
+        module: "dummy-recipe",
+        definition: {
+          tag: "tag-override",
+          preserve: { tag: "dummy-recipe", recipe: "." }
+        }
+      });
+
+      expect(plugin.tag).toEqual("tag-override");
+    });
+
+    it("should return undefined if no tag is defined", () => {
+      const plugin = new Plugin({
+        module: "dummy-loader",
+        definition: {
+          preserve: { recipe: "." }
+        }
+      });
+
+      expect(plugin.tag).toEqual(undefined);
+    });
+  });
+
+  describe("definesRecipe()", () => {
+    it("should return true if the plugin definition defines a recipe", () => {
+      const plugin = new Plugin({
+        module: "dummy-recipe",
+        definition: {
+          tag: "dummy-recipe",
+          preserve: { tag: "dummy-recipe", recipe: "." }
+        }
+      });
+
+      const definesRecipe = plugin.definesRecipe();
+
+      expect(definesRecipe).toBeTruthy();
+    });
+
+    it("should return false if the plugin definition does not define a recipe", () => {
+      const plugin = new Plugin({
+        module: "dummy-loader",
+        definition: {
+          tag: "dummy-loader",
+          preserve: { tag: "dummy-loader", loader: "." }
+        }
+      });
+
+      const definesRecipe = plugin.definesRecipe();
+
+      expect(definesRecipe).toBeFalsy();
+    });
+
+    it("should return false if the plugin is not a preserve plugin", () => {
+      const plugin = new Plugin({
+        module: "dummy-plugin-1",
+        definition: { commands: { "dummy-command-1": "index.js" } }
+      });
+
+      const definesRecipe = plugin.definesRecipe();
+
+      expect(definesRecipe).toBeFalsy();
+    });
+  });
+
+  describe("loadRecipe()", () => {
+    it("should load recipe defined in the plugin definition", () => {
+      const plugin = new Plugin({
+        module: "dummy-recipe",
+        definition: {
+          tag: "dummy-recipe",
+          preserve: { tag: "dummy-recipe", recipe: "." }
+        }
+      });
+
+      const loadedRecipe = plugin.loadRecipe();
+
+      expect(loadedRecipe.name).toEqual("dummy-recipe");
+
+      const recipeResult = loadedRecipe.preserve();
+
+      expect(recipeResult).toEqual(
+        "Successfully called dummy-recipe:preserve()"
+      );
+    });
+
+    it("should throw when no recipe is defined in the plugin definition", () => {
+      const plugin = new Plugin({
+        module: "dummy-loader",
+        definition: {
+          tag: "dummy-loader",
+          preserve: { tag: "dummy-loader", loader: "." }
+        }
+      });
+
+      const expectedError = /does not define a `truffle preserve` recipe/;
+      expect(() => plugin.loadRecipe()).toThrow(expectedError);
+    });
+
+    it("should throw when recipe's source module is an absolute path", () => {
+      const plugin = new Plugin({
+        module: "dummy-recipe",
+        definition: {
+          tag: "dummy-recipe",
+          preserve: { tag: "dummy-recipe", recipe: "/index.js" }
+        }
+      });
+
+      const expectedError = /Absolute paths not allowed/;
+      expect(() => plugin.loadRecipe()).toThrow(expectedError);
+    });
+  });
 });

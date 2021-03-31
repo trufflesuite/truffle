@@ -61,7 +61,11 @@
     "yargs": "^8.0.2"
   },
   "optionalDependencies": {
-    "@truffle/db": "^0.5.6"
+    "@truffle/db": "^0.5.6",
+    "@truffle/preserve-fs": "^0.1.0",
+    "@truffle/preserve-to-ipfs": "^0.1.0",
+    "@truffle/preserve-to-filecoin": "^0.1.0",
+    "@truffle/preserve-to-buckets": "^0.1.0"
   },
   "publishConfig": {
     "access": "public"

@@ -21,8 +21,8 @@ export const vowelsRecipe: Recipe = {
   outputLabels: ["vowels"],
 
   async *execute({ inputs, controls }): Process<{ vowels: string }> {
-    const { log, step } = controls;
-    yield* log({ message: "Filtering vowels..." });
+    const { update, step } = controls;
+    yield* update({ message: "Filtering vowels..." });
 
     const vowels = new Set(["a", "e", "i", "o", "u"]);
 
@@ -49,9 +49,9 @@ export const vowelsCounterRecipe: Recipe = {
   outputLabels: ["vowels-count"],
 
   async *execute({ inputs, controls }): Process<{ "vowels-count": number }> {
-    const { log, declare } = controls;
+    const { update, declare } = controls;
 
-    yield* log({ message: "Counting vowels..." });
+    yield* update({ message: "Counting vowels..." });
 
     const allVowels = ["a", "e", "i", "o", "u"];
 
@@ -100,7 +100,7 @@ export const expectedEventsForVowelsRecipe = [
     scope: ["vowels-recipe"]
   },
   {
-    type: "log",
+    type: "update",
     scope: ["vowels-recipe"],
     message: "Filtering vowels..."
   },
@@ -126,7 +126,7 @@ export const expectedEventsForVowelsCounterRecipe = [
     scope: ["vowels-counter-recipe"]
   },
   {
-    type: "log",
+    type: "update",
     scope: ["vowels-counter-recipe"],
     message: "Counting vowels..."
   },

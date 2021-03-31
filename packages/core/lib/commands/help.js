@@ -15,14 +15,14 @@ const command = {
   run: async function (options) {
     const commands = require("./index");
     if (options._.length === 0) {
-      this.displayCommandHelp("help");
+      await this.displayCommandHelp("help", options);
       return;
     }
     const selectedCommand = options._[0];
     const subCommand = options._[1];
 
     if (commands[selectedCommand]) {
-      this.displayCommandHelp(selectedCommand, subCommand);
+      await this.displayCommandHelp(selectedCommand, subCommand, options);
       return;
     } else {
       console.log(`\n  Cannot find the given command '${selectedCommand}'`);
@@ -34,8 +34,8 @@ const command = {
       return;
     }
   },
-  displayCommandHelp: function (selectedCommand, subCommand) {
-    let commands = require("./index");
+  displayCommandHelp: async function (selectedCommand, subCommand, options) {
+    const commands = require("./index");
     let commandHelp, commandDescription;
 
     const chosenCommand = commands[selectedCommand];
@@ -46,6 +46,10 @@ const command = {
     } else {
       commandHelp = chosenCommand.help;
       commandDescription = chosenCommand.description;
+    }
+
+    if (typeof commandHelp === "function") {
+      commandHelp = await commandHelp(options);
     }
 
     console.log(`\n  Usage:        ${commandHelp.usage}`);

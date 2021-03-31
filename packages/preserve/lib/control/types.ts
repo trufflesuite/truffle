@@ -12,7 +12,7 @@ export interface HasControls {
   controls: Controls;
 }
 
-export type Controls = Pick<StepsController, "log" | "declare" | "step">;
+export type Controls = Pick<StepsController, "update" | "declare" | "step">;
 
 export type Process<
   R extends any = any,

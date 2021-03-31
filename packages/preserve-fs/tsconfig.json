@@ -9,7 +9,7 @@
     "sourceMap": true,
     "outDir": "dist",
     "baseUrl": ".",
-    "lib": ["es2017"],
+    "lib": ["es2017", "dom"],
     "paths": {
     },
     "rootDir": ".",
@@ -20,6 +20,6 @@
   },
   "include": [
     "./lib/**/*.ts",
-    "./test/**/*.ts"
+    "./test/**/*.ts",
   ]
 }

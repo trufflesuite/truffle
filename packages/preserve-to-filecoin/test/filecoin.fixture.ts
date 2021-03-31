@@ -13,7 +13,7 @@ const happyPathEvents = [
     scope: ["@truffle/preserve-to-filecoin"]
   },
   {
-    type: "log",
+    type: "update",
     message: "Preserving to Filecoin...",
     scope: ["@truffle/preserve-to-filecoin"]
   },

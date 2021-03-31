@@ -44,9 +44,9 @@ export class Recipe implements Preserve.Recipe {
   ): Preserve.Process<Result> {
     const { address } = this;
     const { inputs, controls } = options;
-    const { log } = controls;
+    const { update } = controls;
 
-    yield* log({ message: "Preserving to IPFS..." });
+    yield* update({ message: "Preserving to IPFS..." });
 
     const ipfs = yield* connect({ address, controls });
 
