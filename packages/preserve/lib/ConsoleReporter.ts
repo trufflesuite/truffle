@@ -102,7 +102,10 @@ export class ConsoleReporter {
   private declare(event: Control.Events.Declare) {
     const { key, indent } = eventProperties(event);
 
+    const { message } = event;
+
     this.spinners.add(key, {
+      text: chalk.cyan(message),
       indent,
       succeedColor: "white",
       failColor: "white"
