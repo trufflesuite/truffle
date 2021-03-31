@@ -7,7 +7,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.2.7-preserves.3",
+  "version": "5.2.7-preserves.4",
   "bin": {
     "truffle": "./cli.js",
     "truffle-exec": "./exec.js"
@@ -33,12 +33,12 @@
     "@truffle/expect": "^0.0.15",
     "@truffle/interface-adapter": "^0.4.20",
     "@truffle/migrate": "^3.2.19",
-    "@truffle/plugins": "^0.1.3-preserves.3",
-    "@truffle/preserve": "^0.1.3-preserves.3",
-    "@truffle/preserve-fs": "^0.1.2-preserves.3",
-    "@truffle/preserve-to-buckets": "^0.1.2-preserves.3",
-    "@truffle/preserve-to-filecoin": "^0.1.2-preserves.3",
-    "@truffle/preserve-to-ipfs": "^0.1.2-preserves.3",
+    "@truffle/plugins": "^0.1.3-preserves.4",
+    "@truffle/preserve": "^0.1.3-preserves.4",
+    "@truffle/preserve-fs": "^0.1.2-preserves.4",
+    "@truffle/preserve-to-buckets": "^0.1.2-preserves.4",
+    "@truffle/preserve-to-filecoin": "^0.1.2-preserves.4",
+    "@truffle/preserve-to-ipfs": "^0.1.2-preserves.4",
     "@truffle/provider": "^0.2.27",
     "@truffle/provisioner": "^0.2.14",
     "@truffle/require": "^2.0.59",
