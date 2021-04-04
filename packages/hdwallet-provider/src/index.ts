@@ -47,6 +47,7 @@ class HDWalletProvider {
       shareNonce = true,
       derivationPath = `m/44'/60'/0'/0/`,
       pollingInterval = 4000,
+      chainId = null,
 
       // what's left is either a mnemonic or a list of private keys
       ...signingAuthority
@@ -142,6 +143,9 @@ class HDWalletProvider {
           }
         },
         signTransaction(txParams: any, cb: any) {
+          if (chainId !== null) {
+              txParams.chainId = chainId;
+          }
           let pkey;
           const from = txParams.from.toLowerCase();
           if (tmp_wallets[from]) {
