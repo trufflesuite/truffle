@@ -320,7 +320,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
           "Should preserve hijacked error message"
         );
         assert(
-          e.hijackedStack.includes("/lib/abi-coder.js:"),
+          e.hijackedStack.includes("/src.ts/abi-coder.ts:"),
           "Should preserve hijacked stack details"
         );
       }
