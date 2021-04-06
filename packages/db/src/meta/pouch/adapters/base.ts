@@ -211,30 +211,31 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
     );
 
     const resourceInputById = input[collectionName]
-      .filter((_, index) => resourceInputIds[index])
       .map((resourceInput, index) => ({
         [resourceInputIds[index]]: resourceInput
       }))
       .reduce((a, b) => ({ ...a, ...b }), {});
 
     const resources = await Promise.all(
-      Object.entries(resourceInputById).map(async ([id, resourceInput]) => {
-        // check for existing
-        const resource = await this.get(collectionName, id);
-        if (resource) {
-          return resource;
-        }
+      Object.entries(resourceInputById)
+        .filter(([id]) => id)
+        .map(async ([id, resourceInput]) => {
+          // check for existing
+          const resource = await this.get(collectionName, id);
+          if (resource) {
+            return resource;
+          }
 
-        await this.collections[collectionName].put({
-          ...resourceInput,
-          _id: id
-        });
+          await this.collections[collectionName].put({
+            ...resourceInput,
+            _id: id
+          });
 
-        return {
-          ...resourceInput,
-          id
-        } as SavedInput<C, N>;
-      })
+          return {
+            ...resourceInput,
+            id
+          } as SavedInput<C, N>;
+        })
     );
 
     const resourcesById = resources
@@ -273,22 +274,24 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
       .reduce((a, b) => ({ ...a, ...b }), {});
 
     const resources = await Promise.all(
-      Object.entries(resourceInputById).map(async ([id, resourceInput]) => {
-        // check for existing
-        const resource = await this.get(collectionName, id);
-        const { _rev = undefined } = resource ? resource : {};
+      Object.entries(resourceInputById)
+        .filter(([id]) => id)
+        .map(async ([id, resourceInput]) => {
+          // check for existing
+          const resource = await this.get(collectionName, id);
+          const { _rev = undefined } = resource ? resource : {};
 
-        await this.collections[collectionName].put({
-          ...resourceInput,
-          _rev,
-          _id: id
-        });
+          await this.collections[collectionName].put({
+            ...resourceInput,
+            _rev,
+            _id: id
+          });
 
-        return {
-          ...resourceInput,
-          id
-        } as SavedInput<C, M>;
-      })
+          return {
+            ...resourceInput,
+            id
+          } as SavedInput<C, M>;
+        })
     );
 
     const resourcesById = resources
