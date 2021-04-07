@@ -3,7 +3,7 @@ import { wordlist } from "ethereum-cryptography/bip39/wordlists/english";
 import * as EthUtil from "ethereumjs-util";
 import ethJSWallet from "ethereumjs-wallet";
 import { hdkey as EthereumHDKey } from "ethereumjs-wallet";
-import Transaction from "ethereumjs-tx";
+import { Transaction } from "ethereumjs-tx";
 // @ts-ignore
 import ProviderEngine from "@trufflesuite/web3-provider-engine";
 import FiltersSubprovider from "@trufflesuite/web3-provider-engine/subproviders/filters";
@@ -36,6 +36,7 @@ class HDWalletProvider {
   private walletHdpath: string;
   private wallets: { [address: string]: ethJSWallet };
   private addresses: string[];
+  private chainId?: number | string;
 
   public engine: ProviderEngine;
 
@@ -47,6 +48,7 @@ class HDWalletProvider {
       shareNonce = true,
       derivationPath = `m/44'/60'/0'/0/`,
       pollingInterval = 4000,
+      chainId,
 
       // what's left is either a mnemonic or a list of private keys
       ...signingAuthority
@@ -126,30 +128,37 @@ class HDWalletProvider {
       );
     }
 
-    const tmp_accounts = this.addresses;
-    const tmp_wallets = this.wallets;
+    const tmpAccounts = this.addresses;
+    const tmpWallets = this.wallets;
 
     this.engine.addProvider(
       new HookedSubprovider({
         getAccounts(cb: any) {
-          cb(null, tmp_accounts);
+          cb(null, tmpAccounts);
         },
         getPrivateKey(address: string, cb: any) {
-          if (!tmp_wallets[address]) {
+          if (!tmpWallets[address]) {
             return cb("Account not found");
           } else {
-            cb(null, tmp_wallets[address].getPrivateKey().toString("hex"));
+            cb(null, tmpWallets[address].getPrivateKey().toString("hex"));
           }
         },
         signTransaction(txParams: any, cb: any) {
+          // we need to rename the 'gas' field
+          txParams.gasLimit = txParams.gas;
+          delete txParams.gas;
+
           let pkey;
           const from = txParams.from.toLowerCase();
-          if (tmp_wallets[from]) {
-            pkey = tmp_wallets[from].getPrivateKey();
+          if (tmpWallets[from]) {
+            pkey = tmpWallets[from].getPrivateKey();
           } else {
             cb("Account not found");
           }
-          const tx = new Transaction(txParams);
+          const chain = (chainId && typeof chainId === "string") ?
+            parseInt(chainId) :
+            chainId;
+          const tx = new Transaction(txParams, { chain });
           tx.sign(pkey as Buffer);
           const rawTx = `0x${tx.serialize().toString("hex")}`;
           cb(null, rawTx);
@@ -159,10 +168,10 @@ class HDWalletProvider {
           if (!dataIfExists) {
             cb("No data to sign");
           }
-          if (!tmp_wallets[from]) {
+          if (!tmpWallets[from]) {
             cb("Account not found");
           }
-          let pkey = tmp_wallets[from].getPrivateKey();
+          let pkey = tmpWallets[from].getPrivateKey();
           const dataBuff = EthUtil.toBuffer(dataIfExists);
           const msgHashBuff = EthUtil.hashPersonalMessage(dataBuff);
           const sig = EthUtil.ecsign(msgHashBuff, pkey);
