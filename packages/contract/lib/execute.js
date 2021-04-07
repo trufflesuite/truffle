@@ -525,20 +525,6 @@ const execute = {
   //(well, OK, it's lacking some things there too, but again, good enough
   //for our purposes)
   sendTransaction: async function (web3, params, promiEvent, context) {
-    // get the chainId to be compliant with EIP-155
-    // Geth wants this value in base 16 prefixed by "0x"
-    let chainId;
-    if (context.contract._chainId) {
-      chainId = context.contract._chainId;
-    } else {
-      chainId = await web3.eth.net.getId();
-      chainId = `0x${chainId.toString(16)}`;
-      //cache it in a field on the contract
-      //(I'd do this in setProvider instead of here, but that's not async)
-      context.contract._chainId = chainId;
-    }
-    params.chainId = chainId;
-
     //if we don't need the debugger, let's not risk any errors on our part,
     //and just have web3 do everything
     if (!promiEvent || !promiEvent.debug) {
