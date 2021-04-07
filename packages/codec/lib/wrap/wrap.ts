@@ -306,15 +306,17 @@ function* wrapTuple(
         })
       });
     }
-    if (unusedKeys.size > 0) {
-      //choose one arbitrarily
-      const exampleKey = unusedKeys.values().next().value;
-      throw new TypeMismatchError(
-        dataType,
-        input,
-        wrapOptions.name,
-        `Unknown key ${exampleKey} included`
-      );
+    if (!wrapOptions.loose) {
+      if (unusedKeys.size > 0) {
+        //choose one arbitrarily
+        const exampleKey = unusedKeys.values().next().value;
+        throw new TypeMismatchError(
+          dataType,
+          input,
+          wrapOptions.name,
+          `Unknown key ${exampleKey} included`
+        );
+      }
     }
   } else {
     //we don't know what it is

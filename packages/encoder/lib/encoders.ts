@@ -334,6 +334,7 @@ export class ProjectEncoder {
    * tuple's fields are precisely `type` and `value`, you will either want to make
    * sure you do not give `type` as a native string (a `String` instead will work),
    * or else that you give your input in some other form, such as an array...)
+   * Additional keys are also allowed unless strict checking is on.
    * Input may also be given as a [[Codec.Format.Values.StructValue|StructValue]]
    * or [[Codec.Format.Values.TupleValue|TupleValue]]; the specific type
    * does not matter.
@@ -450,7 +451,8 @@ export class ProjectEncoder {
    * argument (selected from overloads that match overall).
    *
    * Note that when doing this the match checker will be somewhat stricter than
-   * usual; if a value is given as a [[Codec.Format.Values.Value|Value]], it
+   * usual; inputs for structs/tuples will not be allowed to contain extra
+   * keys, and if a value is given as a [[Codec.Format.Values.Value|Value]], it
    * will only match its specific type, rather than being allowed to match
    * other types as usual (unless it is itself wrapped in a type/value pair).
    *
