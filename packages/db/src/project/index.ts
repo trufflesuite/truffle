@@ -9,6 +9,7 @@ import * as Process from "@truffle/db/process";
 import {
   Db,
   NamedCollectionName,
+  Resource,
   Input,
   IdObject,
   toIdObject
@@ -277,23 +278,61 @@ export class ConnectedProject extends Project {
         networkId: network.knownLatest.networkId
       },
       // @ts-ignore HACK to avoid making LoadMigrate.process generic
-      artifacts: options.artifacts.map((artifact, index) => ({
-        ...artifact,
-        networks: {
-          ...artifact.networks,
-          [networkId]: {
-            ...(artifact.networks || {})[networkId],
-            db: {
-              network: networks[index] || toIdObject(network.knownLatest)
-            }
-          }
-        }
-      }))
+      artifacts: this.populateNetworks({
+        artifacts: options.artifacts,
+        knownLatest: network.knownLatest,
+        networks
+      })
     });
 
     return {
       network: toIdObject<"networks">(network.knownLatest),
       artifacts
     };
+  }
+
+  private populateNetworks<
+    Artifact extends ContractObject & {
+      db: {
+        contract: IdObject<"contracts">;
+        callBytecode: IdObject<"bytecodes">;
+        createBytecode: IdObject<"bytecodes">;
+      };
+    }
+  >(options: {
+    knownLatest: Pick<Resource<"networks">, "id" | "networkId">;
+    networks: (IdObject<"networks"> | undefined)[];
+    artifacts: Artifact[];
+  }): (Artifact & {
+    networks?: {
+      [networkId: string]: {
+        db?: {
+          network?: IdObject<"networks">;
+        };
+      };
+    };
+  })[] {
+    const { knownLatest, networks, artifacts } = options;
+    const { networkId } = knownLatest;
+
+    return artifacts.map((artifact, index) => {
+      const network = (artifact.networks || {})[networkId] || {};
+      if (!network.address) {
+        return artifact;
+      }
+
+      return {
+        ...artifact,
+        networks: {
+          ...artifact.networks,
+          [networkId]: {
+            ...(artifact.networks || {})[networkId],
+            db: {
+              network: networks[index] || toIdObject(knownLatest)
+            }
+          }
+        }
+      };
+    });
   }
 }

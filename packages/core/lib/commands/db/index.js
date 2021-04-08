@@ -1,5 +1,6 @@
 const OS = require("os");
 const serveCommand = require("./commands/serve");
+const queryCommand = require("./commands/query");
 
 const usage =
   "truffle db <sub-command> [options]" +
@@ -19,6 +20,10 @@ const command = {
     serve: {
       help: serveCommand.help,
       description: serveCommand.description
+    },
+    query: {
+      help: queryCommand.help,
+      description: queryCommand.description
     }
   },
 
@@ -32,6 +37,10 @@ const command = {
     switch (subCommand) {
       case "serve":
         await serveCommand.run(args);
+        break;
+
+      case "query":
+        await queryCommand.run(args);
         break;
 
       default:
