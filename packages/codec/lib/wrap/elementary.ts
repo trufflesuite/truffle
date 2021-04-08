@@ -456,10 +456,17 @@ export function* wrapIntegerOrEnum(
       const bits = bitsAsString ? Number(bitsAsString) : 256; //defaults to 256
       //(not using the WORD_SIZE constant due to fixed types bringing its applicability
       //here into question)
-      if (
-        dataType.typeClass === typeClass &&
-        (<Format.Types.IntType | Format.Types.UintType>dataType).bits === bits
-      ) {
+      const requiredTypeClass = dataType.typeClass !== "enum"
+        ? dataType.typeClass
+        : "uint"; //allow underlying uint type to work for enums
+      //(we handle "enum" given as type in a separate case below)
+      const requiredBits = dataType.typeClass !== "enum"
+        ? dataType.bits
+        : 8 * Math.ceil(Math.log2((<Format.Types.EnumType>Format.Types.fullType(
+          dataType,
+          wrapOptions.userDefinedTypes
+        )).options.length) / 8); //compute required bits for enum type (sorry)
+      if (requiredTypeClass === typeClass && requiredBits === bits) {
         return yield* wrapIntegerOrEnum(dataType, input.value, {
           ...wrapOptions,
           loose: true

@@ -170,9 +170,9 @@ export class ProjectEncoder {
    * simply be `"array"`; for structs and tuples, `"struct"` or `"tuple"`; for
    * addresses and contracts, `"address"` or `"contract"`; for external
    * functions, `"function"`; for transaction options, `"options"`; and for
-   * enums, `"enum"`.  For other Solidity types, it should be the name of the
-   * type; note that `"uint"`, `"int"`, `"fixed"`, `"ufixed"`, and `"byte"` are
-   * accepted.
+   * enums, it can be either `"enum"` (or the underlying uint type).  For other
+   * Solidity types, it should be the name of the type; note that `"uint"`,
+   * `"int"`, `"fixed"`, `"ufixed"`, and `"byte"` are accepted.
    *
    * Note that input in the form of a [[Codec.Format.Values.Value|Value]] is
    * accepted, so long as the type is appropriate, but error results are
