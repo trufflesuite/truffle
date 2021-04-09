@@ -4,7 +4,7 @@ const debug = debugModule("encoder:encoders");
 import { FixedNumber as EthersFixedNumber } from "@ethersproject/bignumber";
 import { getAddress } from "@ethersproject/address";
 import * as Codec from "@truffle/codec";
-import * as Abi from "@truffle/abi-utils";
+import type * as Abi from "@truffle/abi-utils";
 import * as Types from "./types";
 import Big from "big.js";
 import type { Provider } from "web3/providers";
@@ -27,7 +27,7 @@ const Web3Utils = require("web3-utils");
 const nonIntegerMessage = "Input value was not an integer";
 
 interface ENSCache {
-  [name: string]: string;
+  [name: string]: string | null;
 }
 
 /**
@@ -518,19 +518,16 @@ export class ProjectEncoder {
     generator: Generator<Codec.WrapRequest, T, Codec.WrapResponse>
   ): Promise<T> {
     let response: Codec.WrapResponse | undefined = undefined;
-    while (true) {
+    let next = generator.next();
+    while (next.done === false) {
       debug("response: %O", response);
-      const next = generator.next(response);
-      switch (next.done) {
-        case true:
-          debug("returning: %O", next.value);
-          return next.value;
-        case false:
-          const request = next.value;
-          debug("request: %O", request);
-          response = await this.respond(request);
-      }
+      const request = next.value;
+      debug("request: %O", request);
+      response = await this.respond(request);
+      next = generator.next(response);
     }
+    debug("returning: %O", next.value);
+    return next.value;
   }
 
   private async respond(
@@ -762,7 +759,7 @@ export class ProjectEncoder {
     if (input in this.ensCache) {
       return this.ensCache[input];
     }
-    let address: string;
+    let address: string | null;
     try {
       address = await this.ens.name(input).getAddress();
     } catch {
@@ -832,7 +829,7 @@ export class ProjectEncoder {
     address?: string
   ): Promise<ContractInstanceEncoder> {
     const contractEncoder = await this.forArtifact(artifact);
-    return new ContractInstanceEncoder(contractEncoder, address);
+    return await contractEncoder.forInstance(address);
   }
 }
 

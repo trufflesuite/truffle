@@ -254,7 +254,7 @@ export async function forContract(
 ): Promise<ContractEncoder> {
   return await forArtifact(contract, {
     provider: contract.web3.currentProvider,
-    networkId: parseInt(contract.network_id) || null, //NaN is falsy :)
+    networkId: parseInt(contract.network_id) || undefined, //NaN is falsy :)
     ...settings
   });
 }

@@ -48,7 +48,7 @@ export interface EncoderInfoInternal {
   allocations?: Evm.AllocationInfo;
   compilations?: Compilations.Compilation[];
   networkId?: number | null;
-  provider?: Provider;
+  provider?: Provider | null;
   registryAddress?: string;
 }
 
