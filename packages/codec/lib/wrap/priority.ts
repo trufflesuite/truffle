@@ -29,12 +29,12 @@ export function isMoreSpecific(
   userDefinedTypes: Format.Types.TypesById
 ): boolean {
   const typeClasses = [
-    ["address", "contract"],
-    ["array"],
-    ["function"],
     ["options"],
+    ["array"],
     ["struct", "tuple"],
+    ["address", "contract"],
     ["bytes"],
+    ["function"],
     ["uint", "int", "fixed", "ufixed"],
     ["enum"],
     ["string"],
@@ -56,9 +56,18 @@ export function isMoreSpecific(
   }
   //otherwise, indices are equal, defer to tiebreaker
   switch (type1.typeClass) {
+    case "options":
+      return isMoreSpecificOptions(type1, <Format.Types.OptionsType>type2);
     case "address":
     case "contract":
       return isMoreSpecificAddress(type1, <AddressLikeType>type2);
+    case "function":
+      return isMoreSpecificFunction(
+        //we haven't actually checked visibility, so we'll have to coerce
+        <Format.Types.FunctionExternalType>type1,
+        <Format.Types.FunctionExternalType>type2,
+        userDefinedTypes
+      );
     case "array":
       return isMoreSpecificArray(
         type1,
@@ -76,15 +85,6 @@ export function isMoreSpecific(
       return isMoreSpecificEnum(type1, <Format.Types.EnumType>type2);
     case "string":
       return isMoreSpecificString(type1, <Format.Types.StringType>type2);
-    case "function":
-      return isMoreSpecificFunction(
-        //we haven't actually checked visibility, so we'll have to coerce
-        <Format.Types.FunctionExternalType>type1,
-        <Format.Types.FunctionExternalType>type2,
-        userDefinedTypes
-      );
-    case "options":
-      return isMoreSpecificOptions(type1, <Format.Types.OptionsType>type2);
     case "struct":
     case "tuple":
       return isMoreSpecificTuple(
@@ -150,7 +150,13 @@ function isMoreSpecificNumeric(
   return (
     maxValue(type1).lte(maxValue(type2)) &&
     minValue(type1).gte(minValue(type2)) &&
-    places(type1) <= places(type2)
+    places(type1) <= places(type2) &&
+    //note: I don't know whether this final bit is actually necessary
+    //since we don't actually know yet whether fixedNx0 will be legal
+    !(
+      (type1.typeClass === "fixed" || type1.typeClass === "ufixed") &&
+      (type2.typeClass === "int" || type2.typeClass === "uint")
+    )
   );
 }
 

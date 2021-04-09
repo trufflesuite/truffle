@@ -457,12 +457,12 @@ export class ProjectEncoder {
    * other types as usual (unless it is itself wrapped in a type/value pair).
    *
    * The overall order of priority of types is as follows:
-   * 1. addresses and contracts
+   * 1. transaction options
    * 2. arrays
-   * 3. external function pointers
-   * 4. transaction options
-   * 5. structs and tuples
-   * 6. bytestrings (`bytesN` and `bytes`)
+   * 3. structs and tuples
+   * 4. addresses and contracts
+   * 5. bytestrings (`bytesN` and `bytes`)
+   * 6. external function pointers
    * 7. numeric types
    * 8. `enum`s
    * 9. `string`
