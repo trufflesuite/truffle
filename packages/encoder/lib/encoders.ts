@@ -477,10 +477,15 @@ export class ProjectEncoder {
    * * For arrays, if `S` has priority over `T`, then `S[]` has priority
    *   over `T[]`, and `S[n]` has priority over `T[n]`.  Moreover, `S[n]`
    *   has priority over `S[]` and so also over `T[]`.
-   * * Structs and tuples act the same as the overall arguments list; for
+   * * Structs and tuples mostly act the same as the overall arguments list; for
    *   one such type `S` to have priority over another type `T`, each
    *   member type of `S` must have priority over the corresponding member type
    *   of `T` (correspondence being determined by the order of the members).
+   *   However, if the two types `S` and `T` also have exactly the same
+   *   component names (and each has all of its components named), then
+   *   this will also be checked with correspondence by name instead of
+   *   position, and `S` will only be considered more specific than `T` if
+   *   both checks pass.
    * * `bytesN` has priority over `bytesM` if `N<=M`, and has priority over
    *   `bytes`
    * * A numeric type `S` has priority over a numeric type `T` if the values

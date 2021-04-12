@@ -1,3 +1,6 @@
+import debugModule from "debug";
+const debug = debugModule("codec:wrap:priority");
+
 import * as Format from "@truffle/codec/format";
 import { AddressLikeType, NumericType, TupleLikeType } from "./types";
 import { Mutability } from "@truffle/codec/common";
@@ -18,7 +21,8 @@ export function isMoreSpecificMultiple(
     typeClass: "tuple",
     memberTypes: types2
   };
-  return isMoreSpecific(combinedType1, combinedType2, userDefinedTypes);
+  return isMoreSpecific(combinedType1, combinedType2, userDefinedTypes, true);
+  //that last flag is so we ignore variable names at top level
 }
 
 //is input 1 more specific than input 2?
@@ -26,7 +30,8 @@ export function isMoreSpecificMultiple(
 export function isMoreSpecific(
   type1: Format.Types.Type,
   type2: Format.Types.Type,
-  userDefinedTypes: Format.Types.TypesById
+  userDefinedTypes: Format.Types.TypesById,
+  ignoreComponentNames: boolean = false //this flag is *not* applied recursively!
 ): boolean {
   const typeClasses = [
     ["options"],
@@ -90,7 +95,8 @@ export function isMoreSpecific(
       return isMoreSpecificTuple(
         type1,
         <Format.Types.TupleType>type2,
-        userDefinedTypes
+        userDefinedTypes,
+        ignoreComponentNames
       );
     case "bool":
       return isMoreSpecificBool(type1, <Format.Types.BoolType>type2);
@@ -269,33 +275,77 @@ function isMutabilityMoreSpecific(
 function isMoreSpecificTuple(
   type1: TupleLikeType,
   type2: TupleLikeType,
-  userDefinedTypes: Format.Types.TypesById
+  userDefinedTypes: Format.Types.TypesById,
+  ignoreComponentNames: boolean = false
 ): boolean {
+  debug("type1: %O", type1);
+  debug("type2: %O", type2);
+  const fullType1 = (<TupleLikeType>Format.Types.fullType(
+    type1,
+    userDefinedTypes
+  ));
+  const fullType2 = (<TupleLikeType>Format.Types.fullType(
+    type2,
+    userDefinedTypes
+  ));
   const types1: Format.Types.Type[] = (<Format.Types.OptionallyNamedType[]>(
-    (<TupleLikeType>Format.Types.fullType(type1, userDefinedTypes)).memberTypes
-  )).map(member => member.type);
+    fullType1.memberTypes)).map(member => member.type);
   const types2: Format.Types.Type[] = (<Format.Types.OptionallyNamedType[]>(
-    (<TupleLikeType>Format.Types.fullType(type2, userDefinedTypes)).memberTypes
-  )).map(member => member.type);
+    fullType2.memberTypes)).map(member => member.type);
   //lengths must match
   if (types1.length !== types2.length) {
     return false;
   }
   //individual types must satisfy isMoreSpecific
   for (let i = 0; i < types1.length; i++) {
+    //note we do *not* pass along the ignoreComponentNames flag
     if (!isMoreSpecific(types1[i], types2[i], userDefinedTypes)) {
       return false;
     }
   }
-  //finally: structs more specific than tuples, different equivalent
-  //structs incomparable
-  return (
-    (type1.typeClass === "tuple" && type2.typeClass === "tuple") ||
-    (type1.typeClass === "struct" && type2.typeClass === "tuple") ||
-    (type1.typeClass === "struct" &&
-      type2.typeClass === "struct" &&
-      type1.id === type2.id)
-  );
+  if (!ignoreComponentNames) {
+    debug("checking by name");
+    //if this flag is not set, *and* the component names match,
+    //(and all exist)
+    //then compare by component names in addition to by position
+    let names1: string[] = (<Format.Types.OptionallyNamedType[]>(
+      fullType1.memberTypes)).map(member => member.name);
+    let names2: string[] = (<Format.Types.OptionallyNamedType[]>(
+      fullType2.memberTypes)).map(member => member.name);
+    //we just created these via a map so it's OK to sort in-place
+    names1.sort();
+    names2.sort();
+    let namesEqual: boolean = true;
+    for (let i = 0; i < names1.length; i++) {
+      if (!names1[i] || !names2[i] || names1[i] !== names2[i]) {
+        namesEqual = false;
+        break;
+      }
+    }
+    if (namesEqual) {
+      debug("names equal");
+      for(let i = 0; i < types1.length; i++) {
+        const type1 = types1[i];
+        const name = fullType1.memberTypes[i].name;
+        const type2 = fullType2.memberTypes.find(
+          ({ name: name2 }) => name2 === name
+        ).type;
+        debug("name: %s", name);
+        debug("type1: %O", type1);
+        debug("type2: %O", type2);
+        if (!isMoreSpecific(type1, type2, userDefinedTypes)) {
+          debug("returning false");
+          return false;
+        }
+      }
+      debug("name check ok");
+    }
+  }
+  return true;
+  //I was going to make structs more specific than their underlying
+  //tuples, and different equivalent structs incomparable, but I
+  //couldn't find a good way to do that, so whatever, they're all
+  //just equivalent, it won't come up
 }
 
 function isMoreSpecificOptions(
