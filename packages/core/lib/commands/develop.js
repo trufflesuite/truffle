@@ -123,9 +123,11 @@ const command = {
       config.logger.log();
     }
 
-    if (!options.log) {
-      return await command.runConsole(config, ganacheOptions);
+    if (options.log) {
+      // leave the process open so that logging can take place
+      return new Promise(() => {});
     }
+    return await command.runConsole(config, ganacheOptions);
   }
 };
 
