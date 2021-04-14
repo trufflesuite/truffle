@@ -4035,10 +4035,10 @@
   dependencies:
     "@babel/types" "^7.3.0"
 
-"@types/big.js@^4.0.5":
-  version "4.0.5"
-  resolved "https://registry.yarnpkg.com/@types/big.js/-/big.js-4.0.5.tgz#62c61697646269e39191f24e55e8272f05f21fc0"
-  integrity sha512-D9KFrAt05FDSqLo7PU9TDHfDgkarlwdkuwFsg7Zm4xl62tTNaz+zN+Tkcdx2wGLBbSMf8BnoMhOVeUGUaJfLKg==
+"@types/big.js@^6.0.2":
+  version "6.0.2"
+  resolved "https://registry.yarnpkg.com/@types/big.js/-/big.js-6.0.2.tgz#a86938c1bb4511e69d91f69823cacc3f48ff1fa3"
+  integrity sha512-7NdmOT3zjtghMofDwP1nAJCJWVjc/96V5msXRAZ4lPrvpGlajA95VQec7OXwA2wQaVmhjt+F5ko8pjvQU1tTFA==
 
 "@types/bignumber.js@^5.0.0":
   version "5.0.0"
@@ -4072,6 +4072,13 @@
   version "4.11.6"
   resolved "https://registry.yarnpkg.com/@types/bn.js/-/bn.js-4.11.6.tgz#c306c70d9358aaea33cd4eda092a742b9505967c"
   integrity sha512-pqr857jrp2kPuO9uRjZ3PwnJTjoQy+fcdxvBTvHm6dkmEL9q+hDD/2j/0ELOBPtPnS8LjCX0gI9nbl8lVkadpg==
+  dependencies:
+    "@types/node" "*"
+
+"@types/bn.js@^5.1.0":
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/@types/bn.js/-/bn.js-5.1.0.tgz#32c5d271503a12653c62cf4d2b45e6eab8cebc68"
+  integrity sha512-QSSVYj7pYFN49kW77o2s9xTCwZ8F2xLbjLLSEVh8D2F4JUhZtPAGOFLTD+ffqksBx/u4cE/KImFjyhqCjn/LIA==
   dependencies:
     "@types/node" "*"
 
@@ -12643,6 +12650,13 @@ fast-check@^2.12.1:
   dependencies:
     pure-rand "^4.1.1"
 
+fast-check@^2.14.0:
+  version "2.14.0"
+  resolved "https://registry.yarnpkg.com/fast-check/-/fast-check-2.14.0.tgz#13e891977a7cc1ba87aa3883c75053990c02fb21"
+  integrity sha512-4hm0ioyEVCwgjBLBqriwAFYu3/yc7pNH9fBfvzi6JRWRs4R3mwZwrr/d4MHbY0fTBJ0Uakg4TaMAAQ8Cnt2+KQ==
+  dependencies:
+    pure-rand "^4.1.1"
+
 fast-deep-equal@^1.0.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/fast-deep-equal/-/fast-deep-equal-1.1.0.tgz#c053477817c86b51daa853c81e059b733d023614"
@@ -17588,6 +17602,11 @@ jest-fast-check@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/jest-fast-check/-/jest-fast-check-1.0.1.tgz#efc8f9041579474b2f37597fd99bceceee0d1449"
   integrity sha512-zH1pYivl34+rNmF9A63tPmABJmTs3/uUPMBQrXpj/T+D1FxpgSPUF+vEVzxSF8oOAhvSWv0QM4MHjX/rvPqJsw==
+
+jest-fast-check@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/jest-fast-check/-/jest-fast-check-1.0.2.tgz#d670b0a5e646777e6cf54b9b9758342e5f021439"
+  integrity sha512-XuPENBGUN2gaTdPxgPJwFsYp0oj+MieRLpBha0flMxfI01zPHgGkZjGSLThimmsU5XFTGhJYZGVnift7UmsSuw==
 
 jest-get-type@^22.4.3:
   version "22.4.3"
