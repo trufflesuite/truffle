@@ -1,8 +1,19 @@
 const debug = require("debug")("provider");
 const Web3 = require("web3");
+const parseUrl = require("url-parse");
 const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const wrapper = require("./wrapper");
 const DEFAULT_NETWORK_CHECK_TIMEOUT = 5000;
+
+function buildUrl(host, port) {
+  let parsedHost = parseUrl(host);
+  if (!parsedHost.protocol) {
+    parsedHost.set("protocol", "http");
+    parsedHost = parseUrl(parsedHost.href);
+  }
+  parsedHost.set("port", port);
+  return parsedHost.href;
+}
 
 module.exports = {
   wrap: function (provider, options) {
@@ -26,7 +37,7 @@ module.exports = {
       );
     } else {
       provider = new Web3.providers.HttpProvider(
-        options.url || `http://${options.host}:${options.port}`,
+        options.url || buildUrl(options.host, options.port),
         { keepAlive: false }
       );
     }
@@ -34,17 +45,18 @@ module.exports = {
   },
 
   testConnection: function (options) {
-    let networkCheckTimeout, networkType;
+    let networkCheckTimeout, networkType, networkConfig;
     const { networks, network } = options;
     if (networks && networks[network]) {
+      networkConfig = networks[network];
       networkCheckTimeout =
-        networks[network].networkCheckTimeout || DEFAULT_NETWORK_CHECK_TIMEOUT;
-      networkType = networks[network].type;
+      networkConfig.networkCheckTimeout || DEFAULT_NETWORK_CHECK_TIMEOUT;
+      networkType = networkConfig.type;
     } else {
       networkCheckTimeout = DEFAULT_NETWORK_CHECK_TIMEOUT;
     }
     const provider = this.getProvider(options);
-    const interfaceAdapter = createInterfaceAdapter({ provider, networkType });
+    const interfaceAdapter = createInterfaceAdapter({ provider, networkType, network_config: networkConfig });
     return new Promise((resolve, reject) => {
       const noResponseFromNetworkCall = setTimeout(() => {
         const errorMessage =

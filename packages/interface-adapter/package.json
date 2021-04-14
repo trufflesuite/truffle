@@ -20,6 +20,8 @@
   },
   "types": "dist/index.d.ts",
   "dependencies": {
+    "@taquito/signer": "^7.2.0-beta.2",
+    "@taquito/taquito": "^7.2.0-beta.2",
     "bn.js": "^5.1.3",
     "ethers": "^4.0.32",
     "web3": "1.3.5"

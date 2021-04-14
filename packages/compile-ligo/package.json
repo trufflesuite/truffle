@@ -1,0 +1,36 @@
+{
+  "name": "@truffle/compile-ligo",
+  "version": "0.1.0",
+  "description": "LIGO compiler support",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/compile-ligo",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "prepare": "yarn build",
+    "test": "mocha -r ts-node/register test/*.ts",
+    "watch": "tsc -w"
+  },
+  "dependencies": {
+    "@truffle/compile-common": "^0.7.2",
+    "@truffle/config": "^1.2.37"
+  },
+  "devDependencies": {
+    "@types/mocha": "^8.0.0",
+    "@types/node": "12.12.21",
+    "mocha": "8.0.1",
+    "ts-node": "^9.0.0",
+    "typescript": "^3.9.8"
+  },
+  "keywords": [
+    "compile",
+    "tezos",
+    "truffle",
+    "ligo"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "6b84be7849142588ef2e3224d8a9d7c2ceeb6e4a"
+}

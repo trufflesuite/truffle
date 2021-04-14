@@ -23,7 +23,8 @@ export async function getImports({
   shouldIncludePath,
   parseImports
 }: GetImportsOptions): Promise<string[]> {
-  if (!shouldIncludePath(filePath)) return [];
+  // No imports in vyper!
+  if (!shouldIncludePath(filePath) || !parseImports) return [];
 
   debug("filePath: %s", filePath);
 

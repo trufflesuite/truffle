@@ -62,6 +62,7 @@ async function run(rawSources, options) {
   });
   const sourceIndexes = outputSources.map(source => source.sourcePath);
   return {
+    architecture: "evm",
     sourceIndexes,
     contracts: processContracts({
       sources,

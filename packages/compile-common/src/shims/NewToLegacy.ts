@@ -1,7 +1,8 @@
-import { LinkReference, CompiledContract } from "../types";
+import { LinkReference, EvmCompiledContract } from "../types";
 
-export function forContract(contract: CompiledContract): any {
+export function forContract(contract: EvmCompiledContract): any {
   const {
+    architecture,
     contractName,
     sourcePath,
     source,
@@ -23,6 +24,7 @@ export function forContract(contract: CompiledContract): any {
   } = contract;
 
   return {
+    architecture,
     contract_name: contractName,
     sourcePath,
     source,

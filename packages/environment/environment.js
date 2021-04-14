@@ -17,7 +17,8 @@ const Environment = {
 
     const interfaceAdapter = createInterfaceAdapter({
       provider: config.provider,
-      networkType: config.networks[config.network].type
+      networkType: config.networks[config.network].type,
+      network_config: config.network_config
     });
 
     await Provider.testConnection(config);
@@ -31,7 +32,8 @@ const Environment = {
 
     const interfaceAdapter = createInterfaceAdapter({
       provider: config.provider,
-      networkType: config.networks[config.network].type
+      networkType: config.networks[config.network].type,
+      network_config: config.network_config
     });
 
     let accounts;
@@ -88,7 +90,7 @@ const helpers = {
     if (config.from) return;
 
     try {
-      const accounts = await interfaceAdapter.getAccounts();
+      const accounts = await interfaceAdapter.getAccounts(config);
       config.networks[config.network].from = accounts[0];
     } catch {
       // don't prevent Truffle from working if user doesn't provide some way

@@ -367,40 +367,46 @@ class Reporter {
   async postDeploy(data) {
     let message;
     if (data.deployed) {
-      const tx = await data.contract.interfaceAdapter.getTransaction(
-        data.receipt.transactionHash
-      );
+      // TODO BGC Temporary, until we resolve how to refactor reporting
+      if (data.contract._json.architecture === "tezos") {
 
-      const block = await data.contract.interfaceAdapter.getBlock(
-        data.receipt.blockNumber
-      );
-
-      // if geth returns null, try again!
-      if (!block) return this.postDeploy(data);
-
-      data.timestamp = block.timestamp;
-
-      const balance = await data.contract.interfaceAdapter.getBalance(tx.from);
-
-      const gasPrice = new web3Utils.BN(tx.gasPrice);
-      const gas = new web3Utils.BN(data.receipt.gasUsed);
-      const value = new web3Utils.BN(tx.value);
-      const cost = gasPrice.mul(gas).add(value);
-
-      data.gasPrice = web3Utils.fromWei(gasPrice, "gwei");
-      data.gas = gas.toString(10);
-      data.from = tx.from;
-      data.value = web3Utils.fromWei(value, "ether");
-      data.cost = web3Utils.fromWei(cost, "ether");
-      data.balance = web3Utils.fromWei(balance, "ether");
-
-      this.currentGasTotal = this.currentGasTotal.add(gas);
-      this.currentCostTotal = this.currentCostTotal.add(cost);
-      this.currentAddress = this.from;
-      this.deployments++;
-
-      if (this.summary[this.currentFileIndex]) {
-        this.summary[this.currentFileIndex].deployments.push(data);
+      }
+      else {
+        const tx = await data.contract.interfaceAdapter.getTransaction(
+          data.receipt.transactionHash
+        );
+  
+        const block = await data.contract.interfaceAdapter.getBlock(
+          data.receipt.blockNumber
+        );
+  
+        // if geth returns null, try again!
+        if (!block) return this.postDeploy(data);
+  
+        data.timestamp = block.timestamp;
+  
+        const balance = await data.contract.interfaceAdapter.getBalance(tx.from);
+  
+        const gasPrice = new web3Utils.BN(tx.gasPrice);
+        const gas = new web3Utils.BN(data.receipt.gasUsed);
+        const value = new web3Utils.BN(tx.value);
+        const cost = gasPrice.mul(gas).add(value);
+  
+        data.gasPrice = web3Utils.fromWei(gasPrice, "gwei");
+        data.gas = gas.toString(10);
+        data.from = tx.from;
+        data.value = web3Utils.fromWei(value, "ether");
+        data.cost = web3Utils.fromWei(cost, "ether");
+        data.balance = web3Utils.fromWei(balance, "ether");
+  
+        this.currentGasTotal = this.currentGasTotal.add(gas);
+        this.currentCostTotal = this.currentCostTotal.add(cost);
+        this.currentAddress = this.from;
+        this.deployments++;
+  
+        if (this.summary[this.currentFileIndex]) {
+          this.summary[this.currentFileIndex].deployments.push(data);
+        }
       }
 
       message = this.messages.steps("deployed", data);

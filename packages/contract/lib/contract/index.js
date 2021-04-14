@@ -13,6 +13,12 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
 }
 
 (function (module) {
+  /*
+    Accepts:
+    - (EVM) Contract object created with web3.eth.Contract
+    - (EVM) Address
+    - (Tezos) Tezos contract object
+  */
   // Accepts a contract object created with web3.eth.Contract or an address.
   function Contract(contract) {
     var instance = this;

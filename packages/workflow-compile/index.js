@@ -6,6 +6,7 @@ const { Shims } = require("@truffle/compile-common");
 const SUPPORTED_COMPILERS = {
   solc: require("@truffle/compile-solidity").Compile,
   vyper: require("@truffle/compile-vyper").Compile,
+  ligo: require("@truffle/compile-ligo").Compile,
   external: require("@truffle/external-compile").Compile
 };
 
@@ -124,7 +125,7 @@ const WorkflowCompile = {
       }));
     }
 
-    const artifacts = contracts.map(Shims.NewToLegacy.forContract);
+    const artifacts = contracts.map(Shims.ArchitectureMapper.forContract);
     await config.artifactor.saveAll(artifacts);
 
     return { contracts, sources, compilations };

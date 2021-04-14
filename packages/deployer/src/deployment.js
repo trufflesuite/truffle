@@ -390,7 +390,7 @@ class Deployment {
       }
       // Finish: Ensure the address and tx-hash are set on the contract.
       contract.address = instance.address;
-      contract.transactionHash = instance.transactionHash;
+      contract.transactionHash = instance.transactionHash || state.transactionHash;
       return instance;
     };
   }

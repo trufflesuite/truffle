@@ -2,6 +2,9 @@ const utils = require("../utils");
 const web3Utils = require("web3-utils");
 
 module.exports = {
+  architecture: function() {
+    return this._json.architecture;
+  },
   contract_name: {
     get: function () {
       return this.contractName;
@@ -75,6 +78,12 @@ module.exports = {
     set: function (val) {
       this._json.abi = val;
     }
+  },
+  initialStorage: function() {
+    return this._json.initialStorage;
+  },
+  michelson: function() {
+    return this._json.michelson;
   },
   metadata: function () {
     return this._json.metadata;

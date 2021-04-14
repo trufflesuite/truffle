@@ -5,6 +5,10 @@
   "description": "Describes a contract consumable by Truffle, possibly including deployed instances on networks",
   "type": "object",
   "properties": {
+    "architecture": {
+      "$ref": "#/definitions/Architecture",
+      "description": "Architecture of the contract"
+    },
     "contractName": {
       "$ref": "#/definitions/ContractName",
       "description": "Name used to identify the contract",
@@ -16,6 +20,14 @@
     },
     "metadata": {
       "$ref": "#/definitions/Metadata"
+    },
+    "initialStorage": {
+      "$ref": "#/definitions/InitialStorage",
+      "description": "Initial storage values sent with Tezos contract-creation transaction data"
+    },
+    "michelson": {
+      "$ref": "#/definitions/Michelson",
+      "description": "Michelson sent as Tezos contract-creation transaction data"
     },
     "bytecode": {
       "$ref": "#/definitions/Bytecode",
@@ -132,6 +144,9 @@
   },
   "additionalProperties": false,
   "definitions": {
+    "Architecture": {
+      "type":  "string"
+    },
     "ContractName": {
       "type": "string",
       "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$"
@@ -140,6 +155,12 @@
       "type": "object"
     },
     "Metadata": {
+      "type": "string"
+    },
+    "InitialStorage": {
+      "type":  "string"
+    },
+    "Michelson": {
       "type": "string"
     },
     "NetworkType": {
