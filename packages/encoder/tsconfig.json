@@ -5,6 +5,7 @@
     "esModuleInterop": true,
     "target": "es2016",
     "downlevelIteration": true,
+    "strictNullChecks": true,
     "skipLibCheck": true,
     "noImplicitAny": true,
     "moduleResolution": "node",

@@ -46,16 +46,40 @@ export class InvalidAddressError extends Error {
  * @category Exception
  */
 export class UnlinkedContractError extends Error {
-  public contractName: string;
-  public bytecode: string;
+  public contractName: string | undefined;
+  public bytecode: string | undefined;
   constructor(
-    contractName: string,
-    bytecode: string,
+    contractName: string | undefined,
+    bytecode: string | undefined,
   ) {
-    super(`Contract ${contractName} has not had all its libraries linked`);
+    const nameString = contractName !== undefined
+      ? contractName + " "
+      : "";
+    super(`Contract ${nameString}has not had all its libraries linked`);
     this.contractName = contractName;
     this.bytecode = bytecode;
     this.name = "UnlinkedContractError";
+  }
+}
+
+/**
+ * This error indicates that you attempted to use address autodetection
+ * for a contract that isn't deployed to the current network.
+ * @category Exception
+ */
+export class ContractNotDeployedError extends Error {
+  public contractName: string | undefined;
+  public networkId: number;
+  constructor(
+    contractName: string | undefined,
+    networkId: number
+  ) {
+    const nameString = contractName !== undefined
+      ? contractName + " "
+      : "";
+    super(`Contract ${nameString}has not been deployed to network ${networkId} with deployer; address must be given explicitly`);
+    this.contractName = contractName;
+    this.name = "ContractNotDeployedError";
   }
 }
 
@@ -65,11 +89,14 @@ export class UnlinkedContractError extends Error {
  * @category Exception
  */
 export class NoBytecodeError extends Error {
-  public contractName: string;
+  public contractName: string | undefined;
   constructor(
-    contractName: string,
+    contractName: string | undefined,
   ) {
-    super(`Contract ${contractName} has missing or empty constructor bytecode`);
+    const nameString = contractName !== undefined
+      ? contractName + " "
+      : "";
+    super(`Contract ${nameString}has missing or empty constructor bytecode`);
     this.contractName = contractName;
     this.name = "NoBytecodeError";
   }
@@ -94,15 +121,18 @@ export class NoNetworkError extends Error {
  * @category Exception
  */
 export class ContractNotFoundError extends Error {
-  public contractName: string;
-  public bytecode: string;
-  public deployedBytecode: string;
+  public contractName: string | undefined;
+  public bytecode: string | undefined;
+  public deployedBytecode: string | undefined;
   constructor(
-    contractName: string,
-    bytecode: string,
-    deployedBytecode: string,
+    contractName: string | undefined,
+    bytecode: string | undefined,
+    deployedBytecode: string | undefined,
   ) {
-    super(`Contract ${contractName} could not be found in the project information`);
+    const nameString = contractName !== undefined
+      ? contractName + " "
+      : "";
+    super(`Contract ${nameString}could not be found in the project information`);
     this.contractName = contractName;
     this.bytecode = bytecode;
     this.deployedBytecode = deployedBytecode;

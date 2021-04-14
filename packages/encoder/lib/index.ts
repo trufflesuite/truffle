@@ -163,7 +163,8 @@ export {
   InvalidAddressError,
   NoInternalInfoError,
   UnlinkedContractError,
-  ContractNotFoundError
+  ContractNotFoundError,
+  ContractNotDeployedError
 } from "./errors";
 import { NoProjectInfoError } from "./errors";
 export { NoProjectInfoError };

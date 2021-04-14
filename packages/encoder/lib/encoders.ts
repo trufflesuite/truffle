@@ -16,7 +16,8 @@ import {
   NoBytecodeError,
   InvalidAddressError,
   NoNetworkError,
-  ContractNotFoundError
+  ContractNotFoundError,
+  ContractNotDeployedError
 } from "./errors";
 import type { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import { Shims } from "@truffle/compile-common";
@@ -530,13 +531,13 @@ export class ProjectEncoder {
   private async driveGenerator<T>(
     generator: Generator<Codec.WrapRequest, T, Codec.WrapResponse>
   ): Promise<T> {
-    let response: Codec.WrapResponse | undefined = undefined;
+    let response: Codec.WrapResponse;
     let next = generator.next();
-    while (next.done === false) {
-      debug("response: %O", response);
+    while (!next.done) {
       const request = next.value;
       debug("request: %O", request);
       response = await this.respond(request);
+      debug("response: %O", response);
       next = generator.next(response);
     }
     debug("returning: %O", next.value);
@@ -579,7 +580,7 @@ export class ProjectEncoder {
   ): Promise<Codec.Options> {
     debug("encoding transaction");
     const resolution = await this.wrapForTransaction(method, inputs, options);
-    const data = Codec.AbiData.Encode.encodeTupleAbiWithSelector(
+    const data = <Uint8Array>Codec.AbiData.Encode.encodeTupleAbiWithSelector(
       resolution.arguments,
       Codec.Conversion.toBytes(resolution.method.selector),
       this.allocations.abi
@@ -620,7 +621,7 @@ export class ProjectEncoder {
   ): Promise<Types.TxAndAbi> {
     debug("resolve & encode");
     const resolution = await this.resolveAndWrap(methods, inputs, options);
-    const data = Codec.AbiData.Encode.encodeTupleAbiWithSelector(
+    const data = <Uint8Array>Codec.AbiData.Encode.encodeTupleAbiWithSelector(
       resolution.arguments,
       Codec.Conversion.toBytes(resolution.method.selector),
       this.allocations.abi
@@ -883,7 +884,7 @@ export class ContractEncoder {
     //determine linked bytecode -- we'll determine it ourself rather than
     //using contract.binary
     const links = networkId !== null
-      ? (contract.networks[networkId] || {links: {}}).links || {}
+      ? ((contract.networks || {})[networkId] || {links: {}}).links || {}
       : {};
     this.constructorBinary = Utils.link(bytecode, links);
     //now, set up context hashes
@@ -907,10 +908,12 @@ export class ContractEncoder {
     const allocations = this.projectEncoder.getAllocations();
     if (
       (this.constructorContextHash &&
+        //@ts-ignore: allocations.calldata was set up earlier
         !allocations.calldata.constructorAllocations[
           this.constructorContextHash
         ]) ||
       (this.deployedContextHash &&
+        //@ts-ignore: allocations.calldata was set up earlier
         !allocations.calldata.functionAllocations[this.deployedContextHash])
     ) {
       throw new ContractNotFoundError(
@@ -1072,7 +1075,13 @@ export class ContractEncoder {
       if (networkId === null) {
         throw new NoNetworkError();
       }
-      address = this.contract.networks[networkId].address;
+      address = (this.contract.networks || {})[networkId].address;
+      if (address === undefined) {
+        throw new ContractNotDeployedError(
+          this.contract.contractName,
+          networkId
+        );
+      }
     }
     return new ContractInstanceEncoder(this, address);
   }
@@ -1098,8 +1107,9 @@ export class ContractEncoder {
         }
         //otherwise, we're good to go!
         const allocation =
+          //@ts-ignore: We set this up and checked this earlier
           allocations.calldata.constructorAllocations[
-            this.constructorContextHash
+            <string>this.constructorContextHash
           ].input;
         const inputs = allocation.arguments.map(
           input => ({ type: input.type, name: input.name || undefined }) //convert "" to undefined
@@ -1111,8 +1121,9 @@ export class ContractEncoder {
         };
       }
       case "function": {
-        const selector = Codec.AbiData.Utils.abiSelector(abi);
-        const allocation =
+        const selector: string = Codec.AbiData.Utils.abiSelector(abi);
+        const allocation: Codec.AbiData.Allocate.CalldataAllocation =
+          //@ts-ignore: This is set up earlier
           allocations.calldata.functionAllocations[this.deployedContextHash][
             selector
           ].input;

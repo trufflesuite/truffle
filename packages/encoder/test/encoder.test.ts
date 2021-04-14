@@ -26,7 +26,10 @@ import { prepareContracts } from "./helpers";
 
 //deepEqual doesn't seem to work for BNs here, so we'll do this
 //manually instead :-/
-function checkEqTx(result: { [name: string]: any }, expected: { [name: string]: any }): void {
+function checkEqTx(
+  result: { [name: string]: any },
+  expected: { [name: string]: any }
+): void {
   assert.hasAllKeys(result, expected);
   for (const [key, value] of Object.entries(result)) {
     if (BN.isBN(expected[key])) {
@@ -64,10 +67,12 @@ describe("Wrapping, encoding, and overload resolution", () => {
       sources[sourcePath] = await fs.readFile(sourcePath, "utf8");
     }
 
-    (
-      { artifacts, compilations, config, registryAddress }
-        = await prepareContracts(sources, addresses, provider)
-    );
+    ({
+      artifacts,
+      compilations,
+      config,
+      registryAddress
+    } = await prepareContracts(sources, addresses, provider));
   }, 50000);
 
   describe("Encoding", () => {
@@ -80,8 +85,10 @@ describe("Wrapping, encoding, and overload resolution", () => {
         encoder = await Encoder.forArtifact(artifacts.TestContract, {
           projectInfo: { compilations }
         });
-        abi = <Abi.FunctionEntry>Abi.normalize(artifacts.TestContract.abi).find(
-          entry => entry.type === "function" && entry.name === "takesString"
+        abi = <Abi.FunctionEntry>(
+          Abi.normalize(artifacts.TestContract.abi).find(
+            entry => entry.type === "function" && entry.name === "takesString"
+          )
         );
         selector = Codec.AbiData.Utils.abiSelector(abi);
       });
@@ -255,8 +262,10 @@ describe("Wrapping, encoding, and overload resolution", () => {
         let selector: string;
 
         beforeAll(() => {
-          abi = <Abi.FunctionEntry>Abi.normalize(artifacts.TestContract.abi).find(
-            entry => entry.type === "function" && entry.name === "takesBytes"
+          abi = <Abi.FunctionEntry>(
+            Abi.normalize(artifacts.TestContract.abi).find(
+              entry => entry.type === "function" && entry.name === "takesBytes"
+            )
           );
           selector = Codec.AbiData.Utils.abiSelector(abi);
         });
@@ -585,8 +594,11 @@ describe("Wrapping, encoding, and overload resolution", () => {
         let selector: string;
 
         beforeAll(() => {
-          abi = <Abi.FunctionEntry>Abi.normalize(artifacts.TestContract.abi).find(
-            entry => entry.type === "function" && entry.name === "takesBytes32"
+          abi = <Abi.FunctionEntry>(
+            Abi.normalize(artifacts.TestContract.abi).find(
+              entry =>
+                entry.type === "function" && entry.name === "takesBytes32"
+            )
           );
           selector = Codec.AbiData.Utils.abiSelector(abi);
         });
@@ -943,8 +955,10 @@ describe("Wrapping, encoding, and overload resolution", () => {
         let selector: string;
 
         beforeAll(() => {
-          abi = <Abi.FunctionEntry>Abi.normalize(artifacts.TestContract.abi).find(
-            entry => entry.type === "function" && entry.name === "takesBytes1"
+          abi = <Abi.FunctionEntry>(
+            Abi.normalize(artifacts.TestContract.abi).find(
+              entry => entry.type === "function" && entry.name === "takesBytes1"
+            )
           );
           selector = Codec.AbiData.Utils.abiSelector(abi);
         });
@@ -1291,8 +1305,10 @@ describe("Wrapping, encoding, and overload resolution", () => {
         encoder = await Encoder.forArtifact(artifacts.TestContract, {
           projectInfo: { compilations }
         });
-        abi = <Abi.FunctionEntry>Abi.normalize(artifacts.TestContract.abi).find(
-          entry => entry.type === "function" && entry.name === "takesBool"
+        abi = <Abi.FunctionEntry>(
+          Abi.normalize(artifacts.TestContract.abi).find(
+            entry => entry.type === "function" && entry.name === "takesBool"
+          )
         );
         selector = Codec.AbiData.Utils.abiSelector(abi);
       });
@@ -1574,8 +1590,10 @@ describe("Wrapping, encoding, and overload resolution", () => {
         encoder = await Encoder.forArtifact(artifacts.DecimalTest, {
           projectInfo: { compilations }
         });
-        abi = <Abi.FunctionEntry>Abi.normalize(artifacts.DecimalTest.abi).find(
-          entry => entry.type === "function" && entry.name === "takesDecimal"
+        abi = <Abi.FunctionEntry>(
+          Abi.normalize(artifacts.DecimalTest.abi).find(
+            entry => entry.type === "function" && entry.name === "takesDecimal"
+          )
         );
         //decimal = fixed168x10
         //10^10 = 0x2540be400
@@ -1583,13 +1601,17 @@ describe("Wrapping, encoding, and overload resolution", () => {
         //10^9 = 0x3b9aca00
         //negates to 0xf..fc4653600
         selector = Codec.AbiData.Utils.abiSelector(abi);
-        const userDefinedTypes =
-          encoder.getProjectEncoder().getUserDefinedTypes();
-        enumType = <Codec.Format.Types.EnumType>Object.values(userDefinedTypes).find(
-          type => type.typeClass === "enum" &&
-            type.typeName === "Color" &&
-            type.kind === "local" &&
-            type.definingContractName === "TestContract"
+        const userDefinedTypes = encoder
+          .getProjectEncoder()
+          .getUserDefinedTypes();
+        enumType = <Codec.Format.Types.EnumType>(
+          Object.values(userDefinedTypes).find(
+            type =>
+              type.typeClass === "enum" &&
+              type.typeName === "Color" &&
+              type.kind === "local" &&
+              type.definingContractName === "TestContract"
+          )
         );
       });
 
@@ -1743,9 +1765,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
       });
 
       it("Encodes numeric strings", async () => {
-        const { data } = await encoder.encodeTransaction(abi, [
-          " -.1 "
-        ]);
+        const { data } = await encoder.encodeTransaction(abi, [" -.1 "]);
         assert.strictEqual(
           data,
           selector +
@@ -1754,9 +1774,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
       });
 
       it("Encodes scientific notation", async () => {
-        const { data } = await encoder.encodeTransaction(abi, [
-          " -1e-1 "
-        ]);
+        const { data } = await encoder.encodeTransaction(abi, [" -1e-1 "]);
         assert.strictEqual(
           data,
           selector +
@@ -1839,10 +1857,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
       });
 
       it("Encodes wrapped enum values", async () => {
-        const wrapped = await encoder.wrapElementaryValue(
-          enumType,
-          1
-        );
+        const wrapped = await encoder.wrapElementaryValue(enumType, 1);
         const { data } = await encoder.encodeTransaction(abi, [wrapped]);
         assert.strictEqual(
           data,
@@ -1871,10 +1886,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects out-of-range input (string, positive)", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            ["1e41"]
-          );
+          await encoder.encodeTransaction(abi, ["1e41"]);
           assert.fail("Out-of-range input should cause exception");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -1885,10 +1897,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects out-of-range input (string, negative)", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            ["-1e41"]
-          );
+          await encoder.encodeTransaction(abi, ["-1e41"]);
           assert.fail("Out-of-range input should cause exception");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -1899,10 +1908,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects out-of-range input (bigint, positive)", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            [BigInt(10) ** BigInt(41)]
-          );
+          await encoder.encodeTransaction(abi, [BigInt(10) ** BigInt(41)]);
           assert.fail("Out-of-range input should cause exception");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -1913,10 +1919,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects out-of-range input (bigint, negative)", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            [-(BigInt(10) ** BigInt(41))]
-          );
+          await encoder.encodeTransaction(abi, [-(BigInt(10) ** BigInt(41))]);
           assert.fail("Out-of-range input should cause exception");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -1927,10 +1930,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects out-of-range input (BN, positive)", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            [new BN(10).pow(new BN(41))]
-          );
+          await encoder.encodeTransaction(abi, [new BN(10).pow(new BN(41))]);
           assert.fail("Out-of-range input should cause exception");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -1941,10 +1941,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects out-of-range input (BN, negative)", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            [new BN(10).pow(new BN(41)).neg()]
-          );
+          await encoder.encodeTransaction(abi, [
+            new BN(10).pow(new BN(41)).neg()
+          ]);
           assert.fail("Out-of-range input should cause exception");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -1955,10 +1954,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects out-of-range input (Big, positive)", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            [new Big("1e41")]
-          );
+          await encoder.encodeTransaction(abi, [new Big("1e41")]);
           assert.fail("Out-of-range input should cause exception");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -1969,10 +1965,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects out-of-range input (Big, negative)", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            [new Big("-1e41")]
-          );
+          await encoder.encodeTransaction(abi, [new Big("-1e41")]);
           assert.fail("Out-of-range input should cause exception");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -1983,10 +1976,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects out-of-range input (BigNumber, positive)", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            [new BigNumber("1e41")]
-          );
+          await encoder.encodeTransaction(abi, [new BigNumber("1e41")]);
           assert.fail("Out-of-range input should cause exception");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -1997,10 +1987,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects out-of-range input (BigNumber, negative)", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            [new BigNumber("-1e41")]
-          );
+          await encoder.encodeTransaction(abi, [new BigNumber("-1e41")]);
           assert.fail("Out-of-range input should cause exception");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -2011,10 +1998,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects out-of-range input (Ethers BigNumber, positive)", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            [EthersBigNumber.from(10).pow(41)]
-          );
+          await encoder.encodeTransaction(abi, [
+            EthersBigNumber.from(10).pow(41)
+          ]);
           assert.fail("Out-of-range input should cause exception");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -2085,7 +2071,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
             { typeClass: "ufixed", bits: 168, places: 10 },
             -1
           );
-          assert.fail("Negative input for unsigned type should cause exception");
+          assert.fail(
+            "Negative input for unsigned type should cause exception"
+          );
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
             throw error;
@@ -2095,10 +2083,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects non-finite input (number)", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            [NaN]
-          );
+          await encoder.encodeTransaction(abi, [NaN]);
           assert.fail("Non-finite input should cause exception");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -2109,10 +2094,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects non-finite input (BigNumber)", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            [new BigNumber(NaN)]
-          );
+          await encoder.encodeTransaction(abi, [new BigNumber(NaN)]);
           assert.fail("Non-finite input should cause exception");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -2123,10 +2105,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects unsafe number input (positive)", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            [1000000]
-          );
+          await encoder.encodeTransaction(abi, [1000000]);
           assert.fail("Unsafe input should cause exception");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -2137,10 +2116,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects unsafe number input (negative)", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            [-1000000]
-          );
+          await encoder.encodeTransaction(abi, [-1000000]);
           assert.fail("Unsafe input should cause exception");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -2151,10 +2127,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects too-precise input (number)", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            [1e-11]
-          );
+          await encoder.encodeTransaction(abi, [1e-11]);
           assert.fail("Too many decimal places should be rejected");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -2165,10 +2138,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects too-precise input (string)", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            ["1e-11"]
-          );
+          await encoder.encodeTransaction(abi, ["1e-11"]);
           assert.fail("Too many decimal places should be rejected");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -2179,10 +2149,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects too-precise input (Big)", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            [new Big("1e-11")]
-          );
+          await encoder.encodeTransaction(abi, [new Big("1e-11")]);
           assert.fail("Too many decimal places should be rejected");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -2193,10 +2160,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects too-precise input (BigNumber)", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            [new BigNumber("1e-11")]
-          );
+          await encoder.encodeTransaction(abi, [new BigNumber("1e-11")]);
           assert.fail("Too many decimal places should be rejected");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -2221,10 +2185,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects input with a unit", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            ["1 wei"]
-          );
+          await encoder.encodeTransaction(abi, ["1 wei"]);
           assert.fail("Units not allowed on decimals");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -2235,10 +2196,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects input that is a unit", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            ["wei"]
-          );
+          await encoder.encodeTransaction(abi, ["wei"]);
           assert.fail("Units not allowed as decimals");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -2249,10 +2207,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects hexadecimal input", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            ["0x1"]
-          );
+          await encoder.encodeTransaction(abi, ["0x1"]);
           assert.fail("Hex not allowed for decimals");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -2263,10 +2218,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects just whitespace", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            [" "]
-          );
+          await encoder.encodeTransaction(abi, [" "]);
           assert.fail("Non-numeric string got accepted");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -2277,10 +2229,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects other non-numeric strings", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            ["garbage"]
-          );
+          await encoder.encodeTransaction(abi, ["garbage"]);
           assert.fail("Non-numeric string got accepted");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -2291,10 +2240,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects Uint8Arrays", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            [new Uint8Array(1)]
-          );
+          await encoder.encodeTransaction(abi, [new Uint8Array(1)]);
           assert.fail("Uint8Arrays not allowed as decimals");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -2305,10 +2251,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects other non-numeric input (test: null)", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            [null]
-          );
+          await encoder.encodeTransaction(abi, [null]);
           assert.fail("Null should not be encoded as a number");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -2319,10 +2262,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects other non-numeric input (test: undefined)", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            [undefined]
-          );
+          await encoder.encodeTransaction(abi, [undefined]);
           assert.fail("Undefined should not be encoded as a number");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -2333,10 +2273,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects other non-numeric input (test: {})", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            [{}]
-          );
+          await encoder.encodeTransaction(abi, [{}]);
           assert.fail("Empty object should not be encoded as a number");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -2358,8 +2295,12 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects type/value pair for wrong type (fixed128x18)", async () => {
         try {
-          await encoder.encodeTransaction(abi, [{ type: "fixed128x18", value: "1" }]);
-          assert.fail("Value specified as fixed128x18 got encoded as fixed168x10");
+          await encoder.encodeTransaction(abi, [
+            { type: "fixed128x18", value: "1" }
+          ]);
+          assert.fail(
+            "Value specified as fixed128x18 got encoded as fixed168x10"
+          );
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
             throw error;
@@ -2413,25 +2354,35 @@ describe("Wrapping, encoding, and overload resolution", () => {
         encoder = await Encoder.forArtifact(artifacts.TestContract, {
           projectInfo: { compilations }
         });
-        const userDefinedTypes =
-          encoder.getProjectEncoder().getUserDefinedTypes();
-        enumType = <Codec.Format.Types.EnumType>Object.values(userDefinedTypes).find(
-          type => type.typeClass === "enum" &&
-            type.typeName === "Color" &&
-            type.kind === "local" &&
-            type.definingContractName === "TestContract"
+        const userDefinedTypes = encoder
+          .getProjectEncoder()
+          .getUserDefinedTypes();
+        enumType = <Codec.Format.Types.EnumType>(
+          Object.values(userDefinedTypes).find(
+            type =>
+              type.typeClass === "enum" &&
+              type.typeName === "Color" &&
+              type.kind === "local" &&
+              type.definingContractName === "TestContract"
+          )
         );
-        alternateEnumType = <Codec.Format.Types.EnumType>Object.values(userDefinedTypes).find(
-          type => type.typeClass === "enum" &&
-            type.typeName === "MinusColor" &&
-            type.kind === "local" &&
-            type.definingContractName === "TestContract"
+        alternateEnumType = <Codec.Format.Types.EnumType>(
+          Object.values(userDefinedTypes).find(
+            type =>
+              type.typeClass === "enum" &&
+              type.typeName === "MinusColor" &&
+              type.kind === "local" &&
+              type.definingContractName === "TestContract"
+          )
         );
-        shortEnumType = <Codec.Format.Types.EnumType>Object.values(userDefinedTypes).find(
-          type => type.typeClass === "enum" &&
-            type.typeName === "ShortEnum" &&
-            type.kind === "local" &&
-            type.definingContractName === "TestContract"
+        shortEnumType = <Codec.Format.Types.EnumType>(
+          Object.values(userDefinedTypes).find(
+            type =>
+              type.typeClass === "enum" &&
+              type.typeName === "ShortEnum" &&
+              type.kind === "local" &&
+              type.definingContractName === "TestContract"
+          )
         );
       });
 
@@ -2440,8 +2391,10 @@ describe("Wrapping, encoding, and overload resolution", () => {
         let selector: string;
 
         beforeAll(() => {
-          abi = <Abi.FunctionEntry>Abi.normalize(artifacts.TestContract.abi).find(
-            entry => entry.type === "function" && entry.name === "takesInt8"
+          abi = <Abi.FunctionEntry>(
+            Abi.normalize(artifacts.TestContract.abi).find(
+              entry => entry.type === "function" && entry.name === "takesInt8"
+            )
           );
           selector = Codec.AbiData.Utils.abiSelector(abi);
         });
@@ -2521,7 +2474,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes negative Bigs", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [new Big("-1")]);
+          const { data } = await encoder.encodeTransaction(abi, [
+            new Big("-1")
+          ]);
           assert.strictEqual(
             data,
             selector +
@@ -2596,9 +2551,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes numeric strings", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [
-            " 1 "
-          ]);
+          const { data } = await encoder.encodeTransaction(abi, [" 1 "]);
           assert.strictEqual(
             data,
             selector +
@@ -2607,9 +2560,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes negative numeric strings", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [
-            " -1 "
-          ]);
+          const { data } = await encoder.encodeTransaction(abi, [" -1 "]);
           assert.strictEqual(
             data,
             selector +
@@ -2618,9 +2569,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes hexadecimal strings", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [
-            " 0xa "
-          ]);
+          const { data } = await encoder.encodeTransaction(abi, [" 0xa "]);
           assert.strictEqual(
             data,
             selector +
@@ -2629,9 +2578,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes negated hexadecimal strings", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [
-            " -0xa "
-          ]);
+          const { data } = await encoder.encodeTransaction(abi, [" -0xa "]);
           assert.strictEqual(
             data,
             selector +
@@ -2640,9 +2587,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes octal strings", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [
-            " 0o10 "
-          ]);
+          const { data } = await encoder.encodeTransaction(abi, [" 0o10 "]);
           assert.strictEqual(
             data,
             selector +
@@ -2651,9 +2596,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes negated octal strings", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [
-            " -0o10 "
-          ]);
+          const { data } = await encoder.encodeTransaction(abi, [" -0o10 "]);
           assert.strictEqual(
             data,
             selector +
@@ -2662,9 +2605,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes binary strings", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [
-            " 0b10 "
-          ]);
+          const { data } = await encoder.encodeTransaction(abi, [" 0b10 "]);
           assert.strictEqual(
             data,
             selector +
@@ -2673,9 +2614,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes negated binary strings", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [
-            " -0b10 "
-          ]);
+          const { data } = await encoder.encodeTransaction(abi, [" -0b10 "]);
           assert.strictEqual(
             data,
             selector +
@@ -2684,9 +2623,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes scientific notation", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [
-            " -1e0 "
-          ]);
+          const { data } = await encoder.encodeTransaction(abi, [" -1e0 "]);
           assert.strictEqual(
             data,
             selector +
@@ -2695,9 +2632,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes numeric strings with units", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [
-            " 2 wei "
-          ]);
+          const { data } = await encoder.encodeTransaction(abi, [" 2 wei "]);
           assert.strictEqual(
             data,
             selector +
@@ -2706,9 +2641,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes numeric strings with units (no space)", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [
-            " 2wei "
-          ]);
+          const { data } = await encoder.encodeTransaction(abi, [" 2wei "]);
           assert.strictEqual(
             data,
             selector +
@@ -2717,9 +2650,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes negative numeric strings with units", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [
-            " -2 wei "
-          ]);
+          const { data } = await encoder.encodeTransaction(abi, [" -2 wei "]);
           assert.strictEqual(
             data,
             selector +
@@ -2728,9 +2659,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes numeric strings that are units", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [
-            " wei "
-          ]);
+          const { data } = await encoder.encodeTransaction(abi, [" wei "]);
           assert.strictEqual(
             data,
             selector +
@@ -2835,10 +2764,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes wrapped enum values", async () => {
-          const wrapped = await encoder.wrapElementaryValue(
-            enumType,
-            1
-          );
+          const wrapped = await encoder.wrapElementaryValue(enumType, 1);
           const { data } = await encoder.encodeTransaction(abi, [wrapped]);
           assert.strictEqual(
             data,
@@ -2867,10 +2793,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects out-of-range input (number, positive)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [128]
-            );
+            await encoder.encodeTransaction(abi, [128]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -2881,10 +2804,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects out-of-range input (number, negative)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [-129]
-            );
+            await encoder.encodeTransaction(abi, [-129]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -2895,10 +2815,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects out-of-range input (string, positive)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              ["128"]
-            );
+            await encoder.encodeTransaction(abi, ["128"]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -2909,10 +2826,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects out-of-range input (string, negative)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              ["-129"]
-            );
+            await encoder.encodeTransaction(abi, ["-129"]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -2923,10 +2837,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects out-of-range input (bigint, positive)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [BigInt(128)]
-            );
+            await encoder.encodeTransaction(abi, [BigInt(128)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -2937,10 +2848,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects out-of-range input (bigint, negative)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [BigInt(-129)]
-            );
+            await encoder.encodeTransaction(abi, [BigInt(-129)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -2951,10 +2859,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects out-of-range input (BN, positive)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [new BN(128)]
-            );
+            await encoder.encodeTransaction(abi, [new BN(128)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -2965,10 +2870,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects out-of-range input (BN, negative)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [new BN(-129)]
-            );
+            await encoder.encodeTransaction(abi, [new BN(-129)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -2979,10 +2881,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects out-of-range input (Big, positive)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [new Big(128)]
-            );
+            await encoder.encodeTransaction(abi, [new Big(128)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -2993,10 +2892,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects out-of-range input (Big, negative)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [new Big(-129)]
-            );
+            await encoder.encodeTransaction(abi, [new Big(-129)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3007,10 +2903,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects out-of-range input (BigNumber, positive)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [new BigNumber(128)]
-            );
+            await encoder.encodeTransaction(abi, [new BigNumber(128)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3021,10 +2914,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects out-of-range input (BigNumber, negative)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [new BigNumber(-129)]
-            );
+            await encoder.encodeTransaction(abi, [new BigNumber(-129)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3035,10 +2925,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects out-of-range input (Ethers BigNumber, positive)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [EthersBigNumber.from(128)]
-            );
+            await encoder.encodeTransaction(abi, [EthersBigNumber.from(128)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3049,10 +2936,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects out-of-range input (Ethers BigNumber, negative)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [EthersBigNumber.from(-129)]
-            );
+            await encoder.encodeTransaction(abi, [EthersBigNumber.from(-129)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3063,10 +2947,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects out-of-range input (Ethers FixedNumber, positive)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [FixedNumber.from(128)]
-            );
+            await encoder.encodeTransaction(abi, [FixedNumber.from(128)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3077,10 +2958,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects out-of-range input (Ethers FixedNumber, negative)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [FixedNumber.from(-129)]
-            );
+            await encoder.encodeTransaction(abi, [FixedNumber.from(-129)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3091,10 +2969,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects out-of-range input (Uint8Array)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [new Uint8Array([128])]
-            );
+            await encoder.encodeTransaction(abi, [new Uint8Array([128])]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3105,10 +2980,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects non-finite input (number)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [NaN]
-            );
+            await encoder.encodeTransaction(abi, [NaN]);
             assert.fail("Non-finite input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3119,10 +2991,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects non-finite input (BigNumber)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [new BigNumber(NaN)]
-            );
+            await encoder.encodeTransaction(abi, [new BigNumber(NaN)]);
             assert.fail("Non-finite input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3133,10 +3002,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects non-integer input (number)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [1.5]
-            );
+            await encoder.encodeTransaction(abi, [1.5]);
             assert.fail("Non-integer input should be rejected");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3147,10 +3013,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects non-integer input (string)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              ["1.5"]
-            );
+            await encoder.encodeTransaction(abi, ["1.5"]);
             assert.fail("Non-integer input should be rejected");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3161,10 +3024,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects non-integer input (Big)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [new Big(1.5)]
-            );
+            await encoder.encodeTransaction(abi, [new Big(1.5)]);
             assert.fail("Non-integer input should be rejected");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3175,10 +3035,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects non-integer input (BigNumber)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [new BigNumber(1.5)]
-            );
+            await encoder.encodeTransaction(abi, [new BigNumber(1.5)]);
             assert.fail("Non-integer input should be rejected");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3189,10 +3046,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects non-integer input (Ethers FixedNumber)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [FixedNumber.from("1.5")]
-            );
+            await encoder.encodeTransaction(abi, [FixedNumber.from("1.5")]);
             assert.fail("Non-integer input should be rejected");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3203,10 +3057,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects just whitespace", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [" "]
-            );
+            await encoder.encodeTransaction(abi, [" "]);
             assert.fail("Non-numeric string got accepted");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3217,10 +3068,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects bare minus sign", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              ["-"]
-            );
+            await encoder.encodeTransaction(abi, ["-"]);
             assert.fail("Non-numeric string got accepted");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3231,10 +3079,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects double negatives", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              ["--0"]
-            );
+            await encoder.encodeTransaction(abi, ["--0"]);
             assert.fail("Non-numeric string got accepted");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3245,10 +3090,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects double minus sign", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              ["--"]
-            );
+            await encoder.encodeTransaction(abi, ["--"]);
             assert.fail("Non-numeric string got accepted");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3259,10 +3101,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects unrecognized unit", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              ["2 kwei"]
-            );
+            await encoder.encodeTransaction(abi, ["2 kwei"]);
             assert.fail("Unrecognized unit got accepted");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3273,10 +3112,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects invalid hexadecimal", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              ["0xg"]
-            );
+            await encoder.encodeTransaction(abi, ["0xg"]);
             assert.fail("Bad hexadecimal got accepted");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3287,10 +3123,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects invalid octal", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              ["0xo"]
-            );
+            await encoder.encodeTransaction(abi, ["0xo"]);
             assert.fail("Bad octal got accepted");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3301,10 +3134,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects invalid binary", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              ["0b2"]
-            );
+            await encoder.encodeTransaction(abi, ["0b2"]);
             assert.fail("Bad binary got accepted");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3392,10 +3222,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects other non-numeric strings", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              ["garbage"]
-            );
+            await encoder.encodeTransaction(abi, ["garbage"]);
             assert.fail("Non-numeric string got accepted");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3406,10 +3233,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects other non-numeric input (test: null)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [null]
-            );
+            await encoder.encodeTransaction(abi, [null]);
             assert.fail("Null should not be encoded as a number");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3420,10 +3244,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects other non-numeric input (test: undefined)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [undefined]
-            );
+            await encoder.encodeTransaction(abi, [undefined]);
             assert.fail("Undefined should not be encoded as a number");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3434,10 +3255,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects other non-numeric input (test: {})", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [{}]
-            );
+            await encoder.encodeTransaction(abi, [{}]);
             assert.fail("Empty object should not be encoded as a number");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3448,7 +3266,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects type/value pair for wrong type (string)", async () => {
           try {
-            await encoder.encodeTransaction(abi, [{ type: "string", value: "1" }]);
+            await encoder.encodeTransaction(abi, [
+              { type: "string", value: "1" }
+            ]);
             assert.fail("Value specified as string got encoded as int8");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3459,7 +3279,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects type/value pair for wrong type (uint8)", async () => {
           try {
-            await encoder.encodeTransaction(abi, [{ type: "uint8", value: "1" }]);
+            await encoder.encodeTransaction(abi, [
+              { type: "uint8", value: "1" }
+            ]);
             assert.fail("Value specified as uint8 got encoded as int8");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3470,7 +3292,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects type/value pair for wrong type (int256)", async () => {
           try {
-            await encoder.encodeTransaction(abi, [{ type: "int256", value: "1" }]);
+            await encoder.encodeTransaction(abi, [
+              { type: "int256", value: "1" }
+            ]);
             assert.fail("Value specified as int256 got encoded as int8");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3517,7 +3341,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
           };
           try {
             await encoder.encodeTransaction(abi, [wrapped]);
-            assert.fail("Error result (of general sort) got encoded as integer");
+            assert.fail(
+              "Error result (of general sort) got encoded as integer"
+            );
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
               throw error;
@@ -3528,21 +3354,18 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       describe("8-bit unsigned", () => {
         let abi: Abi.FunctionEntry;
-        let selector: string;
 
         beforeAll(() => {
-          abi = <Abi.FunctionEntry>Abi.normalize(artifacts.TestContract.abi).find(
-            entry => entry.type === "function" && entry.name === "takesUint8"
+          abi = <Abi.FunctionEntry>(
+            Abi.normalize(artifacts.TestContract.abi).find(
+              entry => entry.type === "function" && entry.name === "takesUint8"
+            )
           );
-          selector = Codec.AbiData.Utils.abiSelector(abi);
         });
 
         it("Rejects out-of-range input (number, positive)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [256]
-            );
+            await encoder.encodeTransaction(abi, [256]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3553,10 +3376,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects negative input (number)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [-1]
-            );
+            await encoder.encodeTransaction(abi, [-1]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3567,10 +3387,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects out-of-range input (string, positive)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              ["256"]
-            );
+            await encoder.encodeTransaction(abi, ["256"]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3581,10 +3398,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects negative input (string)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              ["-1"]
-            );
+            await encoder.encodeTransaction(abi, ["-1"]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3595,10 +3409,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects out-of-range input (bigint, positive)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [BigInt(256)]
-            );
+            await encoder.encodeTransaction(abi, [BigInt(256)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3609,10 +3420,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects negative input (bigint)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [BigInt(-1)]
-            );
+            await encoder.encodeTransaction(abi, [BigInt(-1)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3623,10 +3431,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects out-of-range input (BN, positive)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [new BN(256)]
-            );
+            await encoder.encodeTransaction(abi, [new BN(256)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3637,10 +3442,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects negative input (BN)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [new BN(-1)]
-            );
+            await encoder.encodeTransaction(abi, [new BN(-1)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3651,10 +3453,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects out-of-range input (Big, positive)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [new Big(256)]
-            );
+            await encoder.encodeTransaction(abi, [new Big(256)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3665,10 +3464,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects negative input (Big)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [new Big(-1)]
-            );
+            await encoder.encodeTransaction(abi, [new Big(-1)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3679,10 +3475,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects out-of-range input (BigNumber, positive)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [new BigNumber(256)]
-            );
+            await encoder.encodeTransaction(abi, [new BigNumber(256)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3693,10 +3486,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects negative input (BigNumber)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [new BigNumber(-1)]
-            );
+            await encoder.encodeTransaction(abi, [new BigNumber(-1)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3707,10 +3497,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects out-of-range input (Ethers BigNumber, positive)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [EthersBigNumber.from(256)]
-            );
+            await encoder.encodeTransaction(abi, [EthersBigNumber.from(256)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3721,10 +3508,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects negative input (Ethers BigNumber)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [EthersBigNumber.from(-1)]
-            );
+            await encoder.encodeTransaction(abi, [EthersBigNumber.from(-1)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3735,10 +3519,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects out-of-range input (Ethers FixedNumber, positive)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [FixedNumber.from(256)]
-            );
+            await encoder.encodeTransaction(abi, [FixedNumber.from(256)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3749,10 +3530,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects negative input (Ethers FixedNumber)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [FixedNumber.from(-1)]
-            );
+            await encoder.encodeTransaction(abi, [FixedNumber.from(-1)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3767,16 +3545,16 @@ describe("Wrapping, encoding, and overload resolution", () => {
         let selector: string;
 
         beforeAll(() => {
-          abi = <Abi.FunctionEntry>Abi.normalize(artifacts.TestContract.abi).find(
-            entry => entry.type === "function" && entry.name === "takesInt"
+          abi = <Abi.FunctionEntry>(
+            Abi.normalize(artifacts.TestContract.abi).find(
+              entry => entry.type === "function" && entry.name === "takesInt"
+            )
           );
           selector = Codec.AbiData.Utils.abiSelector(abi);
         });
 
         it("Encodes values with units", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [
-            " 16 gwei "
-          ]);
+          const { data } = await encoder.encodeTransaction(abi, [" 16 gwei "]);
           assert.strictEqual(
             data,
             selector +
@@ -3785,9 +3563,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes values that are units", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [
-            " gwei "
-          ]);
+          const { data } = await encoder.encodeTransaction(abi, [" gwei "]);
           assert.strictEqual(
             data,
             selector +
@@ -3856,10 +3632,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects unsafe integer input (positive)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [2**53]
-            );
+            await encoder.encodeTransaction(abi, [2 ** 53]);
             assert.fail("Unsafe input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3870,10 +3643,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects unsafe integer input (negative)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [-(2**53)]
-            );
+            await encoder.encodeTransaction(abi, [-(2 ** 53)]);
             assert.fail("Unsafe input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3895,7 +3665,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects type/value pair for wrong type (int8)", async () => {
           try {
-            await encoder.encodeTransaction(abi, [{ type: "int8", value: "1" }]);
+            await encoder.encodeTransaction(abi, [
+              { type: "int8", value: "1" }
+            ]);
             assert.fail("Value specified as int8 got encoded as int256");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3906,7 +3678,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects type/value pair for wrong type (uint256)", async () => {
           try {
-            await encoder.encodeTransaction(abi, [{ type: "uint256", value: "1" }]);
+            await encoder.encodeTransaction(abi, [
+              { type: "uint256", value: "1" }
+            ]);
             assert.fail("Value specified as uint256 got encoded as int256");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3917,7 +3691,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects type/value pair for wrong type (uint)", async () => {
           try {
-            await encoder.encodeTransaction(abi, [{ type: "uint", value: "1" }]);
+            await encoder.encodeTransaction(abi, [
+              { type: "uint", value: "1" }
+            ]);
             assert.fail("Value specified as uint got encoded as int");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3932,8 +3708,10 @@ describe("Wrapping, encoding, and overload resolution", () => {
         let selector: string;
 
         beforeAll(() => {
-          abi = <Abi.FunctionEntry>Abi.normalize(artifacts.TestContract.abi).find(
-            entry => entry.type === "function" && entry.name === "takesUint"
+          abi = <Abi.FunctionEntry>(
+            Abi.normalize(artifacts.TestContract.abi).find(
+              entry => entry.type === "function" && entry.name === "takesUint"
+            )
           );
           selector = Codec.AbiData.Utils.abiSelector(abi);
         });
@@ -3988,7 +3766,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects type/value pair for wrong type (uint8)", async () => {
           try {
-            await encoder.encodeTransaction(abi, [{ type: "uint8", value: "1" }]);
+            await encoder.encodeTransaction(abi, [
+              { type: "uint8", value: "1" }
+            ]);
             assert.fail("Value specified as uint8 got encoded as uint256");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -3999,7 +3779,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects type/value pair for wrong type (int256)", async () => {
           try {
-            await encoder.encodeTransaction(abi, [{ type: "int256", value: "1" }]);
+            await encoder.encodeTransaction(abi, [
+              { type: "int256", value: "1" }
+            ]);
             assert.fail("Value specified as int256 got encoded as uint256");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4027,12 +3809,17 @@ describe("Wrapping, encoding, and overload resolution", () => {
         let globalSelector: string;
 
         beforeAll(() => {
-          abi = <Abi.FunctionEntry>Abi.normalize(artifacts.TestContract.abi).find(
-            entry => entry.type === "function" && entry.name === "takesColor"
+          abi = <Abi.FunctionEntry>(
+            Abi.normalize(artifacts.TestContract.abi).find(
+              entry => entry.type === "function" && entry.name === "takesColor"
+            )
           );
           selector = Codec.AbiData.Utils.abiSelector(abi);
-          globalAbi = <Abi.FunctionEntry>Abi.normalize(artifacts.TestContract.abi).find(
-            entry => entry.type === "function" && entry.name === "takesGlobalColor"
+          globalAbi = <Abi.FunctionEntry>(
+            Abi.normalize(artifacts.TestContract.abi).find(
+              entry =>
+                entry.type === "function" && entry.name === "takesGlobalColor"
+            )
           );
           globalSelector = Codec.AbiData.Utils.abiSelector(globalAbi);
         });
@@ -4118,9 +3905,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes numeric strings", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [
-            " 1 "
-          ]);
+          const { data } = await encoder.encodeTransaction(abi, [" 1 "]);
           assert.strictEqual(
             data,
             selector +
@@ -4129,9 +3914,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes hexadecimal strings", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [
-            " 0x1 "
-          ]);
+          const { data } = await encoder.encodeTransaction(abi, [" 0x1 "]);
           assert.strictEqual(
             data,
             selector +
@@ -4140,9 +3923,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes octal strings", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [
-            " 0o1 "
-          ]);
+          const { data } = await encoder.encodeTransaction(abi, [" 0o1 "]);
           assert.strictEqual(
             data,
             selector +
@@ -4151,9 +3932,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes binary strings", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [
-            " 0b1 "
-          ]);
+          const { data } = await encoder.encodeTransaction(abi, [" 0b1 "]);
           assert.strictEqual(
             data,
             selector +
@@ -4162,9 +3941,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes scientific notation", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [
-            " 1e0 "
-          ]);
+          const { data } = await encoder.encodeTransaction(abi, [" 1e0 "]);
           assert.strictEqual(
             data,
             selector +
@@ -4173,9 +3950,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes numeric strings with units", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [
-            " 2 wei "
-          ]);
+          const { data } = await encoder.encodeTransaction(abi, [" 2 wei "]);
           assert.strictEqual(
             data,
             selector +
@@ -4184,9 +3959,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes numeric strings with units (no space)", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [
-            " 2wei "
-          ]);
+          const { data } = await encoder.encodeTransaction(abi, [" 2wei "]);
           assert.strictEqual(
             data,
             selector +
@@ -4195,9 +3968,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes numeric strings that are units", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [
-            " wei "
-          ]);
+          const { data } = await encoder.encodeTransaction(abi, [" wei "]);
           assert.strictEqual(
             data,
             selector +
@@ -4206,9 +3977,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes enum option names", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [
-            "Red"
-          ]);
+          const { data } = await encoder.encodeTransaction(abi, ["Red"]);
           assert.strictEqual(
             data,
             selector +
@@ -4217,9 +3986,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes enum option names with specified enum", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [
-            "Color.Red"
-          ]);
+          const { data } = await encoder.encodeTransaction(abi, ["Color.Red"]);
           assert.strictEqual(
             data,
             selector +
@@ -4239,9 +4006,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes global enum option names", async () => {
-          const { data } = await encoder.encodeTransaction(globalAbi, [
-            "Red"
-          ]);
+          const { data } = await encoder.encodeTransaction(globalAbi, ["Red"]);
           assert.strictEqual(
             data,
             globalSelector +
@@ -4368,10 +4133,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes wrapped enum values (same)", async () => {
-          const wrapped = await encoder.wrapElementaryValue(
-            enumType,
-            1
-          );
+          const wrapped = await encoder.wrapElementaryValue(enumType, 1);
           const { data } = await encoder.encodeTransaction(abi, [wrapped]);
           assert.strictEqual(
             data,
@@ -4413,10 +4175,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects out-of-range input (number, positive)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [8]
-            );
+            await encoder.encodeTransaction(abi, [8]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4427,10 +4186,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects negative input (number)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [-1]
-            );
+            await encoder.encodeTransaction(abi, [-1]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4441,10 +4197,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects out-of-range input (string, positive)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              ["8"]
-            );
+            await encoder.encodeTransaction(abi, ["8"]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4455,10 +4208,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects negative input (string)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              ["-1"]
-            );
+            await encoder.encodeTransaction(abi, ["-1"]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4469,10 +4219,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects out-of-range input (bigint, positive)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [BigInt(8)]
-            );
+            await encoder.encodeTransaction(abi, [BigInt(8)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4483,10 +4230,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects negative input (bigint)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [BigInt(-1)]
-            );
+            await encoder.encodeTransaction(abi, [BigInt(-1)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4497,10 +4241,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects out-of-range input (BN, positive)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [new BN(8)]
-            );
+            await encoder.encodeTransaction(abi, [new BN(8)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4511,10 +4252,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects negative input (BN)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [new BN(-1)]
-            );
+            await encoder.encodeTransaction(abi, [new BN(-1)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4525,10 +4263,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects out-of-range input (Big, positive)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [new Big(8)]
-            );
+            await encoder.encodeTransaction(abi, [new Big(8)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4539,10 +4274,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects negative input (Big)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [new Big(-1)]
-            );
+            await encoder.encodeTransaction(abi, [new Big(-1)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4553,10 +4285,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects out-of-range input (BigNumber, positive)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [new BigNumber(8)]
-            );
+            await encoder.encodeTransaction(abi, [new BigNumber(8)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4567,10 +4296,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects negative input (BigNumber)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [new BigNumber(-1)]
-            );
+            await encoder.encodeTransaction(abi, [new BigNumber(-1)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4581,10 +4307,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects out-of-range input (Ethers BigNumber, positive)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [EthersBigNumber.from(8)]
-            );
+            await encoder.encodeTransaction(abi, [EthersBigNumber.from(8)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4595,10 +4318,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects negative input (Ethers BigNumber)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [EthersBigNumber.from(-1)]
-            );
+            await encoder.encodeTransaction(abi, [EthersBigNumber.from(-1)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4609,10 +4329,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects out-of-range input (Ethers FixedNumber, positive)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [FixedNumber.from(8)]
-            );
+            await encoder.encodeTransaction(abi, [FixedNumber.from(8)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4623,10 +4340,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects negative input (Ethers FixedNumber)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [FixedNumber.from(-1)]
-            );
+            await encoder.encodeTransaction(abi, [FixedNumber.from(-1)]);
             assert.fail("Out-of-range input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4637,10 +4351,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects non-finite input (number)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [NaN]
-            );
+            await encoder.encodeTransaction(abi, [NaN]);
             assert.fail("Non-finite input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4651,10 +4362,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects non-finite input (BigNumber)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [new BigNumber(NaN)]
-            );
+            await encoder.encodeTransaction(abi, [new BigNumber(NaN)]);
             assert.fail("Non-finite input should cause exception");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4665,10 +4373,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects non-integer input (number)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [1.5]
-            );
+            await encoder.encodeTransaction(abi, [1.5]);
             assert.fail("Non-integer input should be rejected");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4679,10 +4384,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects non-integer input (string)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              ["1.5"]
-            );
+            await encoder.encodeTransaction(abi, ["1.5"]);
             assert.fail("Non-integer input should be rejected");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4693,10 +4395,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects non-integer input (Big)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [new Big(1.5)]
-            );
+            await encoder.encodeTransaction(abi, [new Big(1.5)]);
             assert.fail("Non-integer input should be rejected");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4707,10 +4406,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects non-integer input (BigNumber)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [new BigNumber(1.5)]
-            );
+            await encoder.encodeTransaction(abi, [new BigNumber(1.5)]);
             assert.fail("Non-integer input should be rejected");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4721,10 +4417,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects non-integer input (Ethers FixedNumber)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [FixedNumber.from("1.5")]
-            );
+            await encoder.encodeTransaction(abi, [FixedNumber.from("1.5")]);
             assert.fail("Non-integer input should be rejected");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4735,10 +4428,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects just whitespace", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [" "]
-            );
+            await encoder.encodeTransaction(abi, [" "]);
             assert.fail("Non-numeric string got accepted");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4749,10 +4439,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects bare minus sign", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              ["-"]
-            );
+            await encoder.encodeTransaction(abi, ["-"]);
             assert.fail("Non-numeric string got accepted");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4763,10 +4450,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects double negatives", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              ["--0"]
-            );
+            await encoder.encodeTransaction(abi, ["--0"]);
             assert.fail("Non-numeric string got accepted");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4777,10 +4461,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects double minus sign", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              ["--"]
-            );
+            await encoder.encodeTransaction(abi, ["--"]);
             assert.fail("Non-numeric string got accepted");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4791,10 +4472,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects unrecognized unit", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              ["2 kwei"]
-            );
+            await encoder.encodeTransaction(abi, ["2 kwei"]);
             assert.fail("Unrecognized unit got accepted");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4805,10 +4483,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects invalid hexadecimal", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              ["0xg"]
-            );
+            await encoder.encodeTransaction(abi, ["0xg"]);
             assert.fail("Bad hexadecimal got accepted");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4819,10 +4494,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects invalid octal", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              ["0xo"]
-            );
+            await encoder.encodeTransaction(abi, ["0xo"]);
             assert.fail("Bad octal got accepted");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4833,10 +4505,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects invalid binary", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              ["0b2"]
-            );
+            await encoder.encodeTransaction(abi, ["0b2"]);
             assert.fail("Bad binary got accepted");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4924,10 +4593,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects options with whitespace", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [" Red "]
-            );
+            await encoder.encodeTransaction(abi, [" Red "]);
             assert.fail("Option with whitespace accepted");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4938,10 +4604,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects options for wrong enum", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              ["Short"]
-            );
+            await encoder.encodeTransaction(abi, ["Short"]);
             assert.fail("Option for wrong enum accepted");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4952,10 +4615,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects option with wrong enum specified", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              ["MinusColor.Red"]
-            );
+            await encoder.encodeTransaction(abi, ["MinusColor.Red"]);
             assert.fail("Option for wrong enum accepted");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4966,10 +4626,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects option with wrong contract specified", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              ["AuxContract.Color.Red"]
-            );
+            await encoder.encodeTransaction(abi, ["AuxContract.Color.Red"]);
             assert.fail("Option for wrong contract accepted");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4980,10 +4637,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects other strings", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              ["garbage"]
-            );
+            await encoder.encodeTransaction(abi, ["garbage"]);
             assert.fail("Non-numeric, non-option string got accepted");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -4994,10 +4648,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects other input (test: null)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [null]
-            );
+            await encoder.encodeTransaction(abi, [null]);
             assert.fail("Null should not be encoded as a number");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -5008,10 +4659,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects other input (test: undefined)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [undefined]
-            );
+            await encoder.encodeTransaction(abi, [undefined]);
             assert.fail("Undefined should not be encoded as a number");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -5022,10 +4670,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects other input (test: {})", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [{}]
-            );
+            await encoder.encodeTransaction(abi, [{}]);
             assert.fail("Empty object should not be encoded as a number");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -5036,7 +4681,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects type/value pair for wrong type (uint16)", async () => {
           try {
-            await encoder.encodeTransaction(abi, [{ type: "uint16", value: "1" }]);
+            await encoder.encodeTransaction(abi, [
+              { type: "uint16", value: "1" }
+            ]);
             assert.fail("Value specified as uint16 got encoded as uint8 enum");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -5072,7 +4719,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
           };
           try {
             await encoder.encodeTransaction(abi, [wrapped]);
-            assert.fail("Error result (of general sort) got encoded as integer");
+            assert.fail(
+              "Error result (of general sort) got encoded as integer"
+            );
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
               throw error;
@@ -5095,19 +4744,26 @@ describe("Wrapping, encoding, and overload resolution", () => {
           projectInfo: { compilations },
           ens: { provider: config.provider, registryAddress }
         });
-        abi = <Abi.FunctionEntry>Abi.normalize(artifacts.TestContract.abi).find(
-          entry => entry.type === "function" && entry.name === "takesAddress"
+        abi = <Abi.FunctionEntry>(
+          Abi.normalize(artifacts.TestContract.abi).find(
+            entry => entry.type === "function" && entry.name === "takesAddress"
+          )
         );
         selector = Codec.AbiData.Utils.abiSelector(abi);
-        contractAbi = <Abi.FunctionEntry>Abi.normalize(artifacts.TestContract.abi).find(
-          entry => entry.type === "function" && entry.name === "takesContract"
+        contractAbi = <Abi.FunctionEntry>(
+          Abi.normalize(artifacts.TestContract.abi).find(
+            entry => entry.type === "function" && entry.name === "takesContract"
+          )
         );
         contractSelector = Codec.AbiData.Utils.abiSelector(contractAbi);
-        const userDefinedTypes =
-          encoder.getProjectEncoder().getUserDefinedTypes();
-        contractType = <Codec.Format.Types.ContractType>Object.values(userDefinedTypes).find(
-          type => type.typeClass === "contract" &&
-            type.typeName === "TestContract"
+        const userDefinedTypes = encoder
+          .getProjectEncoder()
+          .getUserDefinedTypes();
+        contractType = <Codec.Format.Types.ContractType>(
+          Object.values(userDefinedTypes).find(
+            type =>
+              type.typeClass === "contract" && type.typeName === "TestContract"
+          )
         );
       });
 
@@ -5167,10 +4823,12 @@ describe("Wrapping, encoding, and overload resolution", () => {
       });
 
       it("Encodes objects with an address field", async () => {
-        const { data } = await encoder.encodeTransaction(abi, [{
-          address: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D",
-          garbage: "garbage"
-        }]);
+        const { data } = await encoder.encodeTransaction(abi, [
+          {
+            address: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D",
+            garbage: "garbage"
+          }
+        ]);
         assert.strictEqual(
           data,
           selector +
@@ -5179,9 +4837,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
       });
 
       it("Encodes ENS names", async () => {
-        const { data } = await encoder.encodeTransaction(abi, [
-          "locate.gold"
-        ]);
+        const { data } = await encoder.encodeTransaction(abi, ["locate.gold"]);
         assert.strictEqual(
           data,
           selector +
@@ -5202,7 +4858,10 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Encodes type/value pairs (address)", async () => {
         const { data } = await encoder.encodeTransaction(abi, [
-          { type: "address", value: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D" }
+          {
+            type: "address",
+            value: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D"
+          }
         ]);
         assert.strictEqual(
           data,
@@ -5213,7 +4872,10 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Encodes type/value pairs (contract)", async () => {
         const { data } = await encoder.encodeTransaction(abi, [
-          { type: "contract", value: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D" }
+          {
+            type: "contract",
+            value: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D"
+          }
         ]);
         assert.strictEqual(
           data,
@@ -5250,10 +4912,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects bad checksum w/ mixed-case", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            ["0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901d"]
-          );
+          await encoder.encodeTransaction(abi, [
+            "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901d"
+          ]);
           assert.fail("Bad checksum should not be encoded");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -5264,10 +4925,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects bad ICAP checksum", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            ["XE18HOWVEXINGLYQUICKDAFTZEBRASJUMP"]
-          );
+          await encoder.encodeTransaction(abi, [
+            "XE18HOWVEXINGLYQUICKDAFTZEBRASJUMP"
+          ]);
           assert.fail("Bad ICAP checksum should not be encoded");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -5278,10 +4938,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects incorrect length (long)", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            ["0x0010ca7e901d10ca7e901d10ca7e901d10ca7e901d"]
-          );
+          await encoder.encodeTransaction(abi, [
+            "0x0010ca7e901d10ca7e901d10ca7e901d10ca7e901d"
+          ]);
           assert.fail("Wrong-length address should not be encoded");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -5292,10 +4951,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects incorrect length (short)", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            ["0xca7e901d10ca7e901d10ca7e901d10ca7e901d"]
-          );
+          await encoder.encodeTransaction(abi, [
+            "0xca7e901d10ca7e901d10ca7e901d10ca7e901d"
+          ]);
           assert.fail("Wrong-length address should not be encoded");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -5306,10 +4964,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects incorrect length (long, no prefix)", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            ["0010ca7e901d10ca7e901d10ca7e901d10ca7e901d"]
-          );
+          await encoder.encodeTransaction(abi, [
+            "0010ca7e901d10ca7e901d10ca7e901d10ca7e901d"
+          ]);
           assert.fail("Wrong-length address should not be encoded");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -5320,10 +4977,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects incorrect length (short, no prefix)", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            ["ca7e901d10ca7e901d10ca7e901d10ca7e901d"]
-          );
+          await encoder.encodeTransaction(abi, [
+            "ca7e901d10ca7e901d10ca7e901d10ca7e901d"
+          ]);
           assert.fail("Wrong-length address should not be encoded");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -5334,10 +4990,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects unknown ENS name", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            ["garbage.eth"]
-          );
+          await encoder.encodeTransaction(abi, ["garbage.eth"]);
           assert.fail("Unknown ENS names should not be encoded");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -5348,13 +5001,12 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects objects with a selector field", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            [{
+          await encoder.encodeTransaction(abi, [
+            {
               address: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D",
               selector: "0xdeadbeef"
-            }]
-          );
+            }
+          ]);
           assert.fail("Contract objects must not have selector field");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -5365,10 +5017,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects other input (test: null)", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            [null]
-          );
+          await encoder.encodeTransaction(abi, [null]);
           assert.fail("Null should not be encoded as an address");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -5379,10 +5028,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects other input (test: undefined)", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            [undefined]
-          );
+          await encoder.encodeTransaction(abi, [undefined]);
           assert.fail("Undefined should not be encoded as an address");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -5393,10 +5039,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects other input (test: {})", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            [{}]
-          );
+          await encoder.encodeTransaction(abi, [{}]);
           assert.fail("Empty object should not be encoded as an address");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -5407,10 +5050,12 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects type/value pair for wrong type", async () => {
         try {
-          await encoder.encodeTransaction(abi, [{
-            type: "bytes20",
-            value: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D"
-          }]);
+          await encoder.encodeTransaction(abi, [
+            {
+              type: "bytes20",
+              value: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D"
+            }
+          ]);
           assert.fail("Value specified as bytes20 got encoded as address");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -5469,8 +5114,11 @@ describe("Wrapping, encoding, and overload resolution", () => {
         let selector: string;
 
         beforeAll(() => {
-          abi = <Abi.FunctionEntry>Abi.normalize(artifacts.TestContract.abi).find(
-            entry => entry.type === "function" && entry.name === "takesStaticArray"
+          abi = <Abi.FunctionEntry>(
+            Abi.normalize(artifacts.TestContract.abi).find(
+              entry =>
+                entry.type === "function" && entry.name === "takesStaticArray"
+            )
           );
           selector = Codec.AbiData.Utils.abiSelector(abi);
         });
@@ -5494,9 +5142,12 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes type/value pairs", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [{
-            type: "array", value: [1, 2]
-          }]);
+          const { data } = await encoder.encodeTransaction(abi, [
+            {
+              type: "array",
+              value: [1, 2]
+            }
+          ]);
           assert.strictEqual(
             data,
             selector +
@@ -5505,9 +5156,12 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes type/value pairs with type on element", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [{
-            type: "array", value: [{ type: "uint8", value: 1 }, 2]
-          }]);
+          const { data } = await encoder.encodeTransaction(abi, [
+            {
+              type: "array",
+              value: [{ type: "uint8", value: 1 }, 2]
+            }
+          ]);
           assert.strictEqual(
             data,
             selector +
@@ -5558,10 +5212,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects an array with a bad element", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [[1, 2.5]]
-            );
+            await encoder.encodeTransaction(abi, [[1, 2.5]]);
             assert.fail("Array with bad element got encoded anyway");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -5572,10 +5223,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects array of incorrect length (long)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [[1, 2, 3]]
-            );
+            await encoder.encodeTransaction(abi, [[1, 2, 3]]);
             assert.fail("Overlong array got encoded");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -5586,10 +5234,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects array of incorrect length (short)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [[1]]
-            );
+            await encoder.encodeTransaction(abi, [[1]]);
             assert.fail("Short array got encoded");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -5600,10 +5245,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects other input (test: null)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [null]
-            );
+            await encoder.encodeTransaction(abi, [null]);
             assert.fail("Null should not be encoded as an array");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -5614,10 +5256,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects other input (test: undefined)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [undefined]
-            );
+            await encoder.encodeTransaction(abi, [undefined]);
             assert.fail("Undefined should not be encoded as an array");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -5628,10 +5267,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects other input (test: {})", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [{}]
-            );
+            await encoder.encodeTransaction(abi, [{}]);
             assert.fail("Empty object should not be encoded as an array");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -5642,11 +5278,12 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects array with element of wrong specified type", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [[ { type: "uint256", value: 1 }, 2]]
+            await encoder.encodeTransaction(abi, [
+              [{ type: "uint256", value: 1 }, 2]
+            ]);
+            assert.fail(
+              "Array element specified as uint256 got encoded as uint8"
             );
-            assert.fail("Array element specified as uint256 got encoded as uint8");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
               throw error;
@@ -5656,10 +5293,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects type/value pair with wrong type", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [{ type: "tuple" , value: [1, 2] }]
-            );
+            await encoder.encodeTransaction(abi, [
+              { type: "tuple", value: [1, 2] }
+            ]);
             assert.fail("Value specified as tuple got encoded as array");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -5673,8 +5309,8 @@ describe("Wrapping, encoding, and overload resolution", () => {
             {
               typeClass: "tuple",
               memberTypes: [
-                { type: { typeClass: "uint", bits: 8 }},
-                { type: { typeClass: "uint", bits: 8 }}
+                { type: { typeClass: "uint", bits: 8 } },
+                { type: { typeClass: "uint", bits: 8 } }
               ]
             },
             [1, 2]
@@ -5720,8 +5356,10 @@ describe("Wrapping, encoding, and overload resolution", () => {
         let selector: string;
 
         beforeAll(() => {
-          abi = <Abi.FunctionEntry>Abi.normalize(artifacts.TestContract.abi).find(
-            entry => entry.type === "function" && entry.name === "takesArray"
+          abi = <Abi.FunctionEntry>(
+            Abi.normalize(artifacts.TestContract.abi).find(
+              entry => entry.type === "function" && entry.name === "takesArray"
+            )
           );
           selector = Codec.AbiData.Utils.abiSelector(abi);
         });
@@ -5745,9 +5383,12 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes type/value pairs", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [{
-            type: "array", value: [1, 2]
-          }]);
+          const { data } = await encoder.encodeTransaction(abi, [
+            {
+              type: "array",
+              value: [1, 2]
+            }
+          ]);
           assert.strictEqual(
             data,
             selector +
@@ -5756,9 +5397,12 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes type/value pairs with type on element", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [{
-            type: "array", value: [{ type: "uint8", value: 1 }, 2]
-          }]);
+          const { data } = await encoder.encodeTransaction(abi, [
+            {
+              type: "array",
+              value: [{ type: "uint8", value: 1 }, 2]
+            }
+          ]);
           assert.strictEqual(
             data,
             selector +
@@ -5809,10 +5453,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects an array with a bad element", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [[1, 2.5]]
-            );
+            await encoder.encodeTransaction(abi, [[1, 2.5]]);
             assert.fail("Array with bad element got encoded anyway");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -5823,10 +5464,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects other input (test: null)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [null]
-            );
+            await encoder.encodeTransaction(abi, [null]);
             assert.fail("Null should not be encoded as an array");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -5837,10 +5475,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects other input (test: undefined)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [undefined]
-            );
+            await encoder.encodeTransaction(abi, [undefined]);
             assert.fail("Undefined should not be encoded as an array");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -5851,10 +5486,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects other input (test: {})", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [{}]
-            );
+            await encoder.encodeTransaction(abi, [{}]);
             assert.fail("Empty object should not be encoded as an array");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -5865,11 +5497,12 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects array with element of wrong specified type", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [[ { type: "uint256", value: 1 }, 2]]
+            await encoder.encodeTransaction(abi, [
+              [{ type: "uint256", value: 1 }, 2]
+            ]);
+            assert.fail(
+              "Array element specified as uint256 got encoded as uint8"
             );
-            assert.fail("Array element specified as uint256 got encoded as uint8");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
               throw error;
@@ -5879,10 +5512,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects type/value pair with wrong type", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [{ type: "tuple" , value: [1, 2] }]
-            );
+            await encoder.encodeTransaction(abi, [
+              { type: "tuple", value: [1, 2] }
+            ]);
             assert.fail("Value specified as tuple got encoded as array");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -5896,8 +5528,8 @@ describe("Wrapping, encoding, and overload resolution", () => {
             {
               typeClass: "tuple",
               memberTypes: [
-                { type: { typeClass: "uint", bits: 8 }},
-                { type: { typeClass: "uint", bits: 8 }}
+                { type: { typeClass: "uint", bits: 8 } },
+                { type: { typeClass: "uint", bits: 8 } }
               ]
             },
             [1, 2]
@@ -5948,19 +5580,26 @@ describe("Wrapping, encoding, and overload resolution", () => {
         encoder = await Encoder.forArtifact(artifacts.TestContract, {
           projectInfo: { compilations }
         });
-        const userDefinedTypes =
-          encoder.getProjectEncoder().getUserDefinedTypes();
-        staticStructType = <Codec.Format.Types.StructType>Object.values(userDefinedTypes).find(
-          type => type.typeClass === "struct" &&
-            type.typeName === "ByteAndNum" &&
-            type.kind === "local" &&
-            type.definingContractName === "TestContract"
+        const userDefinedTypes = encoder
+          .getProjectEncoder()
+          .getUserDefinedTypes();
+        staticStructType = <Codec.Format.Types.StructType>(
+          Object.values(userDefinedTypes).find(
+            type =>
+              type.typeClass === "struct" &&
+              type.typeName === "ByteAndNum" &&
+              type.kind === "local" &&
+              type.definingContractName === "TestContract"
+          )
         );
-        dynamicStructType = <Codec.Format.Types.StructType>Object.values(userDefinedTypes).find(
-          type => type.typeClass === "struct" &&
-            type.typeName === "NumAndString" &&
-            type.kind === "local" &&
-            type.definingContractName === "TestContract"
+        dynamicStructType = <Codec.Format.Types.StructType>(
+          Object.values(userDefinedTypes).find(
+            type =>
+              type.typeClass === "struct" &&
+              type.typeName === "NumAndString" &&
+              type.kind === "local" &&
+              type.definingContractName === "TestContract"
+          )
         );
       });
 
@@ -5969,8 +5608,11 @@ describe("Wrapping, encoding, and overload resolution", () => {
         let selector: string;
 
         beforeAll(() => {
-          abi = <Abi.FunctionEntry>Abi.normalize(artifacts.TestContract.abi).find(
-            entry => entry.type === "function" && entry.name === "takesStaticStruct"
+          abi = <Abi.FunctionEntry>(
+            Abi.normalize(artifacts.TestContract.abi).find(
+              entry =>
+                entry.type === "function" && entry.name === "takesStaticStruct"
+            )
           );
           selector = Codec.AbiData.Utils.abiSelector(abi);
         });
@@ -5985,7 +5627,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes objects (possibly with extra keys)", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [{ x: "0xff", y: 1, garbage: "garbage" }]);
+          const { data } = await encoder.encodeTransaction(abi, [
+            { x: "0xff", y: 1, garbage: "garbage" }
+          ]);
           assert.strictEqual(
             data,
             selector +
@@ -5994,7 +5638,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes objects regardless of key order", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [{ garbage: "garbage", y: 1, x: "0xff" }]);
+          const { data } = await encoder.encodeTransaction(abi, [
+            { garbage: "garbage", y: 1, x: "0xff" }
+          ]);
           assert.strictEqual(
             data,
             selector +
@@ -6003,9 +5649,12 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes type/value pairs (struct)", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [{
-            type: "struct", value: { x: "0xff", y: 1 }
-          }]);
+          const { data } = await encoder.encodeTransaction(abi, [
+            {
+              type: "struct",
+              value: { x: "0xff", y: 1 }
+            }
+          ]);
           assert.strictEqual(
             data,
             selector +
@@ -6014,9 +5663,12 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes type/value pairs (tuple)", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [{
-            type: "tuple", value: { x: "0xff", y: 1 }
-          }]);
+          const { data } = await encoder.encodeTransaction(abi, [
+            {
+              type: "tuple",
+              value: { x: "0xff", y: 1 }
+            }
+          ]);
           assert.strictEqual(
             data,
             selector +
@@ -6050,10 +5702,11 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes wrapped struct values", async () => {
-          const wrapped = await encoder.wrap(
-            staticStructType,
-            { x: "0xff", y: 1, garbage: "garbage" }
-          );
+          const wrapped = await encoder.wrap(staticStructType, {
+            x: "0xff",
+            y: 1,
+            garbage: "garbage"
+          });
           const { data } = await encoder.encodeTransaction(abi, [wrapped]);
           assert.strictEqual(
             data,
@@ -6064,10 +5717,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects an array with a bad element", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [[255, 1]]
-            );
+            await encoder.encodeTransaction(abi, [[255, 1]]);
             assert.fail("Array with bad element got encoded anyway");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -6078,10 +5728,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects array of incorrect length (long)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [["0xff", 2, undefined]]
-            );
+            await encoder.encodeTransaction(abi, [["0xff", 2, undefined]]);
             assert.fail("Overlong array got encoded");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -6092,10 +5739,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects array of incorrect length (short)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [["0xff"]]
-            );
+            await encoder.encodeTransaction(abi, [["0xff"]]);
             assert.fail("Short array got encoded");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -6106,10 +5750,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects object with missing keys", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [{ x: "0xff" }]
-            );
+            await encoder.encodeTransaction(abi, [{ x: "0xff" }]);
             assert.fail("Missing key should cause error");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -6120,10 +5761,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects object with bad values", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [{ x: 255, y: 1 }]
-            );
+            await encoder.encodeTransaction(abi, [{ x: 255, y: 1 }]);
             assert.fail("Error in element should cause error");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -6134,10 +5772,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects other input (test: null)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [null]
-            );
+            await encoder.encodeTransaction(abi, [null]);
             assert.fail("Null should not be encoded as a struct");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -6148,10 +5783,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects other input (test: undefined)", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [undefined]
-            );
+            await encoder.encodeTransaction(abi, [undefined]);
             assert.fail("Undefined should not be encoded as a struct");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -6162,10 +5794,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects type/value pair with wrong type", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [{ type: "array" , value: ["0xff", "1"] }]
-            );
+            await encoder.encodeTransaction(abi, [
+              { type: "array", value: ["0xff", "1"] }
+            ]);
             assert.fail("Value specified as array got encoded as struct");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
@@ -6194,10 +5825,10 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Rejects wrapped value for wrong type (wrong struct)", async () => {
-          const wrapped = await encoder.wrap(
-            dynamicStructType,
-            { x: 1, y: "ABC" }
-          );
+          const wrapped = await encoder.wrap(dynamicStructType, {
+            x: 1,
+            y: "ABC"
+          });
           try {
             await encoder.encodeTransaction(abi, [wrapped]);
             assert.fail("Value wrapped as array got encoded as struct");
@@ -6234,8 +5865,10 @@ describe("Wrapping, encoding, and overload resolution", () => {
         let selector: string;
 
         beforeAll(() => {
-          abi = <Abi.FunctionEntry>Abi.normalize(artifacts.TestContract.abi).find(
-            entry => entry.type === "function" && entry.name === "takesStruct"
+          abi = <Abi.FunctionEntry>(
+            Abi.normalize(artifacts.TestContract.abi).find(
+              entry => entry.type === "function" && entry.name === "takesStruct"
+            )
           );
           selector = Codec.AbiData.Utils.abiSelector(abi);
         });
@@ -6250,7 +5883,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes objects", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [{ x: "1", y: "ABC" }]);
+          const { data } = await encoder.encodeTransaction(abi, [
+            { x: "1", y: "ABC" }
+          ]);
           assert.strictEqual(
             data,
             selector +
@@ -6259,7 +5894,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes objects regardless of key order", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [{y: "ABC", x: 1 }]);
+          const { data } = await encoder.encodeTransaction(abi, [
+            { y: "ABC", x: 1 }
+          ]);
           assert.strictEqual(
             data,
             selector +
@@ -6268,9 +5905,12 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes type/value pairs (struct)", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [{
-            type: "struct", value: { x: 1, y: "ABC" }
-          }]);
+          const { data } = await encoder.encodeTransaction(abi, [
+            {
+              type: "struct",
+              value: { x: 1, y: "ABC" }
+            }
+          ]);
           assert.strictEqual(
             data,
             selector +
@@ -6279,9 +5919,12 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes type/value pairs (tuple)", async () => {
-          const { data } = await encoder.encodeTransaction(abi, [{
-            type: "tuple", value: { x: 1, y: "ABC" }
-          }]);
+          const { data } = await encoder.encodeTransaction(abi, [
+            {
+              type: "tuple",
+              value: { x: 1, y: "ABC" }
+            }
+          ]);
           assert.strictEqual(
             data,
             selector +
@@ -6315,10 +5958,10 @@ describe("Wrapping, encoding, and overload resolution", () => {
         });
 
         it("Encodes wrapped struct values", async () => {
-          const wrapped = await encoder.wrap(
-            dynamicStructType,
-            { x: 1, y: "ABC" }
-          );
+          const wrapped = await encoder.wrap(dynamicStructType, {
+            x: 1,
+            y: "ABC"
+          });
           const { data } = await encoder.encodeTransaction(abi, [wrapped]);
           assert.strictEqual(
             data,
@@ -6326,12 +5969,10 @@ describe("Wrapping, encoding, and overload resolution", () => {
               "00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000034142430000000000000000000000000000000000000000000000000000000000"
           );
         });
-
       });
     });
 
     describe("External function pointers", () => {
-
       let encoder: Encoder.ContractEncoder;
       let abi: Abi.FunctionEntry;
       let selector: string;
@@ -6340,58 +5981,70 @@ describe("Wrapping, encoding, and overload resolution", () => {
         encoder = await Encoder.forArtifact(artifacts.TestContract, {
           projectInfo: { compilations }
         });
-        abi = <Abi.FunctionEntry>Abi.normalize(artifacts.TestContract.abi).find(
-          entry => entry.type === "function" && entry.name === "takesFunction"
+        abi = <Abi.FunctionEntry>(
+          Abi.normalize(artifacts.TestContract.abi).find(
+            entry => entry.type === "function" && entry.name === "takesFunction"
+          )
         );
         selector = Codec.AbiData.Utils.abiSelector(abi);
       });
 
       it("Encodes objects w/ address & selector", async () => {
-        const { data } = await encoder.encodeTransaction(abi, [{
-          address: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D",
-          selector: "0xdeadbeef",
-          garbage: "garbage"
-        }]);
+        const { data } = await encoder.encodeTransaction(abi, [
+          {
+            address: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D",
+            selector: "0xdeadbeef",
+            garbage: "garbage"
+          }
+        ]);
         assert.strictEqual(
           data,
-          selector + "10ca7e901d10ca7e901d10ca7e901d10ca7e901ddeadbeef0000000000000000"
+          selector +
+            "10ca7e901d10ca7e901d10ca7e901d10ca7e901ddeadbeef0000000000000000"
         );
       });
 
       it("Encodes objects w/ address & selector (unusual forms for these)", async () => {
-        const { data } = await encoder.encodeTransaction(abi, [{
-          address: { address: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D" },
-          selector: [222, 173, 190, 239],
-          garbage: "garbage"
-        }]);
+        const { data } = await encoder.encodeTransaction(abi, [
+          {
+            address: { address: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D" },
+            selector: [222, 173, 190, 239],
+            garbage: "garbage"
+          }
+        ]);
         assert.strictEqual(
           data,
-          selector + "10ca7e901d10ca7e901d10ca7e901d10ca7e901ddeadbeef0000000000000000"
+          selector +
+            "10ca7e901d10ca7e901d10ca7e901d10ca7e901ddeadbeef0000000000000000"
         );
       });
 
       it("Encodes bytestrings of length 24 & ignores checksum", async () => {
         const { data } = await encoder.encodeTransaction(abi, [
-          "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901ddeadbeef",
+          "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901ddeadbeef"
         ]);
         assert.strictEqual(
           data,
-          selector + "10ca7e901d10ca7e901d10ca7e901d10ca7e901ddeadbeef0000000000000000"
+          selector +
+            "10ca7e901d10ca7e901d10ca7e901d10ca7e901ddeadbeef0000000000000000"
         );
       });
 
       it("Encodes type/value pairs", async () => {
-        const { data } = await encoder.encodeTransaction(abi, [{
-          type: "function",
-          value: {
-            address: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D",
-            selector: "0xdeadbeef",
-            garbage: "garbage"
+        const { data } = await encoder.encodeTransaction(abi, [
+          {
+            type: "function",
+            value: {
+              address: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D",
+              selector: "0xdeadbeef",
+              garbage: "garbage"
+            }
           }
-        }]);
+        ]);
         assert.strictEqual(
           data,
-          selector + "10ca7e901d10ca7e901d10ca7e901d10ca7e901ddeadbeef0000000000000000"
+          selector +
+            "10ca7e901d10ca7e901d10ca7e901d10ca7e901ddeadbeef0000000000000000"
         );
       });
 
@@ -6411,17 +6064,20 @@ describe("Wrapping, encoding, and overload resolution", () => {
         const { data } = await encoder.encodeTransaction(abi, [wrapped]);
         assert.strictEqual(
           data,
-          selector + "10ca7e901d10ca7e901d10ca7e901d10ca7e901ddeadbeef0000000000000000"
+          selector +
+            "10ca7e901d10ca7e901d10ca7e901d10ca7e901ddeadbeef0000000000000000"
         );
       });
 
       it("Rejects address with bad checksum", async () => {
         try {
-          await encoder.encodeTransaction(abi, [{
-            address: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901d",
-            selector: "0xdeadbeef",
-            garbage: "garbage"
-          }]);
+          await encoder.encodeTransaction(abi, [
+            {
+              address: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901d",
+              selector: "0xdeadbeef",
+              garbage: "garbage"
+            }
+          ]);
           assert.fail("Encoded function pointer with bad checksum");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -6432,11 +6088,13 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects selector with wrong length", async () => {
         try {
-          await encoder.encodeTransaction(abi, [{
-            address: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D",
-            selector: "0xdeadbeef00",
-            garbage: "garbage"
-          }]);
+          await encoder.encodeTransaction(abi, [
+            {
+              address: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D",
+              selector: "0xdeadbeef00",
+              garbage: "garbage"
+            }
+          ]);
           assert.fail("Encoded function pointer with overlong selector");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -6447,10 +6105,12 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects missing selector field", async () => {
         try {
-          await encoder.encodeTransaction(abi, [{
-            address: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D",
-            garbage: "garbage"
-          }]);
+          await encoder.encodeTransaction(abi, [
+            {
+              address: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D",
+              garbage: "garbage"
+            }
+          ]);
           assert.fail("Encoded function pointer w/o selector");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -6461,10 +6121,12 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects missing address field", async () => {
         try {
-          await encoder.encodeTransaction(abi, [{
-            selector: "0xdeadbeef",
-            garbage: "garbage"
-          }]);
+          await encoder.encodeTransaction(abi, [
+            {
+              selector: "0xdeadbeef",
+              garbage: "garbage"
+            }
+          ]);
           assert.fail("Encoded function pointer w/o address");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -6476,7 +6138,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
       it("Rejects wrong-length bytestring", async () => {
         try {
           await encoder.encodeTransaction(abi, [
-            "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901ddeadbeef00",
+            "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901ddeadbeef00"
           ]);
           assert.fail("Encoded external function pointer of wrong length");
         } catch (error) {
@@ -6488,10 +6150,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects other input (test: null)", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            [null]
-          );
+          await encoder.encodeTransaction(abi, [null]);
           assert.fail("Null should not be encoded as a function pointer");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -6502,10 +6161,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects other input (test: undefined)", async () => {
         try {
-          await encoder.encodeTransaction(
-            abi,
-            [undefined]
-          );
+          await encoder.encodeTransaction(abi, [undefined]);
           assert.fail("Undefined should not be encoded as a function pointer");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -6516,13 +6172,15 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects type/value pair with wrong type", async () => {
         try {
-          await encoder.encodeTransaction(abi, [{
-            type: "struct",
-            value: {
-              address: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D",
-              selector: "0xdeadbeef"
+          await encoder.encodeTransaction(abi, [
+            {
+              type: "struct",
+              value: {
+                address: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D",
+                selector: "0xdeadbeef"
+              }
             }
-          }]);
+          ]);
           assert.fail("Value specified as struct got encoded as function");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -6602,24 +6260,32 @@ describe("Wrapping, encoding, and overload resolution", () => {
         encoder = await Encoder.forArtifact(artifacts.TestContract, {
           projectInfo: { compilations }
         });
-        abi = <Abi.FunctionEntry>Abi.normalize(artifacts.TestContract.abi).find(
-          entry => entry.type === "function" && entry.name === "takesVoid"
+        abi = <Abi.FunctionEntry>(
+          Abi.normalize(artifacts.TestContract.abi).find(
+            entry => entry.type === "function" && entry.name === "takesVoid"
+          )
         );
         selector = Codec.AbiData.Utils.abiSelector(abi);
       });
 
       it("Encodes transaction options", async () => {
-        const result = await encoder.encodeTransaction(abi, [{
-          gas: 1,
-          gasPrice: 2,
-          value: 3,
-          nonce: 4,
-          from: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D",
-          to: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D",
-          data: "0x0bad",
-          overwrite: true,
-          privateFor: ["ThisIsAFakeExamplePublicKeySoAnswerMeNow2+2="]
-        }], { allowOptions: true });
+        const result = await encoder.encodeTransaction(
+          abi,
+          [
+            {
+              gas: 1,
+              gasPrice: 2,
+              value: 3,
+              nonce: 4,
+              from: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D",
+              to: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D",
+              data: "0x0bad",
+              overwrite: true,
+              privateFor: ["ThisIsAFakeExamplePublicKeySoAnswerMeNow2+2="]
+            }
+          ],
+          { allowOptions: true }
+        );
         const expected = {
           gas: new BN(1),
           gasPrice: new BN(2),
@@ -6635,11 +6301,17 @@ describe("Wrapping, encoding, and overload resolution", () => {
       });
 
       it("Encodes transaction options with extra & missing keys", async () => {
-        const result = await encoder.encodeTransaction(abi, [{
-          from: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D",
-          privateFor: ["ThisIsAFakeExamplePublicKeySoAnswerMeNow2+2="],
-          garbage: "garbage"
-        }], { allowOptions: true });
+        const result = await encoder.encodeTransaction(
+          abi,
+          [
+            {
+              from: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D",
+              privateFor: ["ThisIsAFakeExamplePublicKeySoAnswerMeNow2+2="],
+              garbage: "garbage"
+            }
+          ],
+          { allowOptions: true }
+        );
         const expected = {
           from: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D",
           data: selector,
@@ -6649,16 +6321,22 @@ describe("Wrapping, encoding, and overload resolution", () => {
       });
 
       it("Encodes transaction options in unusual forms", async () => {
-        const result = await encoder.encodeTransaction(abi, [{
-          gas: "1e9",
-          gasPrice: "2 gwei",
-          value: "3 finney",
-          nonce: EthersBigNumber.from(4),
-          from: { address: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D" },
-          to: "0x10CA7E901D10CA7E901D10CA7E901D10CA7E901D",
-          data: [255],
-          overwrite: new Boolean(false)
-        }], { allowOptions: true });
+        const result = await encoder.encodeTransaction(
+          abi,
+          [
+            {
+              gas: "1e9",
+              gasPrice: "2 gwei",
+              value: "3 finney",
+              nonce: EthersBigNumber.from(4),
+              from: { address: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D" },
+              to: "0x10CA7E901D10CA7E901D10CA7E901D10CA7E901D",
+              data: [255],
+              overwrite: new Boolean(false)
+            }
+          ],
+          { allowOptions: true }
+        );
         const expected = {
           gas: new BN(1e9),
           gasPrice: new BN(2e9),
@@ -6673,14 +6351,20 @@ describe("Wrapping, encoding, and overload resolution", () => {
       });
 
       it("Encodes type/value pair", async () => {
-        const result = await encoder.encodeTransaction(abi, [{
-          type: "options",
-          value: {
-            from: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D",
-            privateFor: ["ThisIsAFakeExamplePublicKeySoAnswerMeNow2+2="],
-            garbage: "garbage"
-          }
-        }], { allowOptions: true });
+        const result = await encoder.encodeTransaction(
+          abi,
+          [
+            {
+              type: "options",
+              value: {
+                from: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D",
+                privateFor: ["ThisIsAFakeExamplePublicKeySoAnswerMeNow2+2="],
+                garbage: "garbage"
+              }
+            }
+          ],
+          { allowOptions: true }
+        );
         const expected = {
           from: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D",
           data: selector,
@@ -6697,11 +6381,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
             privateFor: ["ThisIsAFakeExamplePublicKeySoAnswerMeNow2+2="]
           }
         );
-        const result = await encoder.encodeTransaction(
-          abi,
-          [wrapped],
-          { allowOptions: true }
-        );
+        const result = await encoder.encodeTransaction(abi, [wrapped], {
+          allowOptions: true
+        });
         const expected = {
           from: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D",
           data: selector,
@@ -6712,9 +6394,15 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects bad integer option", async () => {
         try {
-          await encoder.encodeTransaction(abi, [{
-            value: "2.5 wei"
-          }], { allowOptions: true });
+          await encoder.encodeTransaction(
+            abi,
+            [
+              {
+                value: "2.5 wei"
+              }
+            ],
+            { allowOptions: true }
+          );
           assert.fail("Encoded bad value option");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -6725,9 +6413,15 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects bad address option", async () => {
         try {
-          await encoder.encodeTransaction(abi, [{
-            from: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901d",
-          }], { allowOptions: true });
+          await encoder.encodeTransaction(
+            abi,
+            [
+              {
+                from: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901d"
+              }
+            ],
+            { allowOptions: true }
+          );
           assert.fail("Encoded bad from option");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -6738,9 +6432,15 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects bad bytes option", async () => {
         try {
-          await encoder.encodeTransaction(abi, [{
-            data: "0xf"
-          }], { allowOptions: true });
+          await encoder.encodeTransaction(
+            abi,
+            [
+              {
+                data: "0xf"
+              }
+            ],
+            { allowOptions: true }
+          );
           assert.fail("Encoded bad data option");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -6751,9 +6451,15 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects bad privateFor option (array null)", async () => {
         try {
-          await encoder.encodeTransaction(abi, [{
-            privateFor: null
-          }], { allowOptions: true });
+          await encoder.encodeTransaction(
+            abi,
+            [
+              {
+                privateFor: null
+              }
+            ],
+            { allowOptions: true }
+          );
           assert.fail("Encoded bad privateFor option");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -6764,9 +6470,15 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects bad privateFor option (string null)", async () => {
         try {
-          await encoder.encodeTransaction(abi, [{
-            privateFor: [null]
-          }], { allowOptions: true });
+          await encoder.encodeTransaction(
+            abi,
+            [
+              {
+                privateFor: [null]
+              }
+            ],
+            { allowOptions: true }
+          );
           assert.fail("Encoded bad privateFor option");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -6777,9 +6489,15 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects bad privateFor option (not base64)", async () => {
         try {
-          await encoder.encodeTransaction(abi, [{
-            privateFor: ["This-String-Contains-Bad-Characters-You-See="]
-          }], { allowOptions: true });
+          await encoder.encodeTransaction(
+            abi,
+            [
+              {
+                privateFor: ["This-String-Contains-Bad-Characters-You-See="]
+              }
+            ],
+            { allowOptions: true }
+          );
           assert.fail("Encoded bad privateFor option");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -6790,9 +6508,15 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects bad privateFor option (too short)", async () => {
         try {
-          await encoder.encodeTransaction(abi, [{
-            privateFor: ["ThisIsAFakeExamplePublicKeySoAnswerMeNow"]
-          }], { allowOptions: true });
+          await encoder.encodeTransaction(
+            abi,
+            [
+              {
+                privateFor: ["ThisIsAFakeExamplePublicKeySoAnswerMeNow"]
+              }
+            ],
+            { allowOptions: true }
+          );
           assert.fail("Encoded bad privateFor option");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -6803,9 +6527,15 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects bad privateFor option (too long)", async () => {
         try {
-          await encoder.encodeTransaction(abi, [{
-            privateFor: ["ThisIsAFakeExamplePublicKeySoAnswerMeNowThis"]
-          }], { allowOptions: true });
+          await encoder.encodeTransaction(
+            abi,
+            [
+              {
+                privateFor: ["ThisIsAFakeExamplePublicKeySoAnswerMeNowThis"]
+              }
+            ],
+            { allowOptions: true }
+          );
           assert.fail("Encoded bad privateFor option");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -6816,9 +6546,15 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects object with no relevant keys", async () => {
         try {
-          await encoder.encodeTransaction(abi, [{
-            garbage: "garbage"
-          }], { allowOptions: true });
+          await encoder.encodeTransaction(
+            abi,
+            [
+              {
+                garbage: "garbage"
+              }
+            ],
+            { allowOptions: true }
+          );
           assert.fail("Options had no valid options as keys");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -6829,7 +6565,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects other input (test: undefined)", async () => {
         try {
-          await encoder.encodeTransaction(abi, [undefined], { allowOptions: true });
+          await encoder.encodeTransaction(abi, [undefined], {
+            allowOptions: true
+          });
           assert.fail("Undefined got encoded as options");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -6851,14 +6589,20 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects type/value pair with wrong tpe", async () => {
         try {
-          await encoder.encodeTransaction(abi, [{
-            type: "tuple",
-            value: {
-              from: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D",
-              privateFor: ["ThisIsAFakeExamplePublicKeySoAnswerMeNow2+2="],
-              garbage: "garbage"
-            }
-          }], { allowOptions: true });
+          await encoder.encodeTransaction(
+            abi,
+            [
+              {
+                type: "tuple",
+                value: {
+                  from: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D",
+                  privateFor: ["ThisIsAFakeExamplePublicKeySoAnswerMeNow2+2="],
+                  garbage: "garbage"
+                }
+              }
+            ],
+            { allowOptions: true }
+          );
           assert.fail("Value specified as tuple got encoded as options");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -6871,21 +6615,21 @@ describe("Wrapping, encoding, and overload resolution", () => {
         const wrapped = await encoder.wrap(
           {
             typeClass: "tuple",
-            memberTypes: [{
-              name: "from",
-              type: { typeClass: "address", kind: "general" }
-            }]
+            memberTypes: [
+              {
+                name: "from",
+                type: { typeClass: "address", kind: "general" }
+              }
+            ]
           },
           {
             from: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D"
           }
         );
         try {
-          const result = await encoder.encodeTransaction(
-            abi,
-            [wrapped],
-            { allowOptions: true }
-          );
+          await encoder.encodeTransaction(abi, [wrapped], {
+            allowOptions: true
+          });
           assert.fail("Value wrapped as tuple got encoded as options");
         } catch (error) {
           if (error.name !== "TypeMismatchError") {
@@ -6896,7 +6640,6 @@ describe("Wrapping, encoding, and overload resolution", () => {
     });
 
     describe("Multiple arguments", () => {
-
       let encoder: Encoder.ContractEncoder;
 
       beforeAll(async () => {
@@ -6909,8 +6652,11 @@ describe("Wrapping, encoding, and overload resolution", () => {
         let abi: Abi.FunctionEntry;
         let selector: string;
         beforeAll(() => {
-          abi = <Abi.FunctionEntry>Abi.normalize(artifacts.TestContract.abi).find(
-            entry => entry.type === "function" && entry.name === "takesMultiple"
+          abi = <Abi.FunctionEntry>(
+            Abi.normalize(artifacts.TestContract.abi).find(
+              entry =>
+                entry.type === "function" && entry.name === "takesMultiple"
+            )
           );
           selector = Codec.AbiData.Utils.abiSelector(abi);
         });
@@ -6919,7 +6665,8 @@ describe("Wrapping, encoding, and overload resolution", () => {
           const { data } = await encoder.encodeTransaction(abi, [1, 2]);
           assert.strictEqual(
             data,
-            selector + "00000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000002"
+            selector +
+              "00000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000002"
           );
         });
 
@@ -6931,10 +6678,11 @@ describe("Wrapping, encoding, and overload resolution", () => {
           );
           assert.strictEqual(
             data,
-            selector + "00000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000002"
+            selector +
+              "00000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000002"
           );
           assert(BN.isBN(value));
-          assert(value.eqn(1));
+          assert((<BN>value).eqn(1));
         });
 
         it("Rejects if there's a bad argument", async () => {
@@ -6972,12 +6720,12 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
         it("Rejects if additional argument but not options", async () => {
           try {
-            await encoder.encodeTransaction(
-              abi,
-              [1, 2, 3],
-              { allowOptions: true }
+            await encoder.encodeTransaction(abi, [1, 2, 3], {
+              allowOptions: true
+            });
+            assert.fail(
+              "Additional argument should be rejected if not options"
             );
-            assert.fail("Additional argument should be rejected if not options");
           } catch (error) {
             if (error.name !== "TypeMismatchError") {
               throw error;
@@ -7006,8 +6754,12 @@ describe("Wrapping, encoding, and overload resolution", () => {
         let selector: string;
 
         beforeAll(() => {
-          abi = <Abi.FunctionEntry>Abi.normalize(artifacts.TestContract.abi).find(
-            entry => entry.type === "function" && entry.name === "takesMultipleDynamic"
+          abi = <Abi.FunctionEntry>(
+            Abi.normalize(artifacts.TestContract.abi).find(
+              entry =>
+                entry.type === "function" &&
+                entry.name === "takesMultipleDynamic"
+            )
           );
           selector = Codec.AbiData.Utils.abiSelector(abi);
         });
@@ -7016,10 +6768,10 @@ describe("Wrapping, encoding, and overload resolution", () => {
           const { data } = await encoder.encodeTransaction(abi, [1, "ABC"]);
           assert.strictEqual(
             data,
-            selector + "0000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000034142430000000000000000000000000000000000000000000000000000000000"
+            selector +
+              "0000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000034142430000000000000000000000000000000000000000000000000000000000"
           );
         });
-
       });
     });
 
@@ -7032,8 +6784,10 @@ describe("Wrapping, encoding, and overload resolution", () => {
         encoder = await Encoder.forArtifact(artifacts.TestContract, {
           projectInfo: { compilations }
         });
-        abi = <Abi.ConstructorEntry>Abi.normalize(artifacts.TestContract.abi).find(
-          entry => entry.type === "constructor"
+        abi = <Abi.ConstructorEntry>(
+          Abi.normalize(artifacts.TestContract.abi).find(
+            entry => entry.type === "constructor"
+          )
         );
         bytecode = Shims.NewToLegacy.forBytecode(
           artifacts.TestContract.bytecode
@@ -7062,8 +6816,10 @@ describe("Wrapping, encoding, and overload resolution", () => {
     describe("Overall priority", () => {
       let abis: Abi.FunctionEntry[];
       beforeAll(() => {
-        abis = <Abi.FunctionEntry[]>Abi.normalize(artifacts.TestContract.abi).filter(
-          entry => entry.type === "function" && entry.name === "overloaded"
+        abis = <Abi.FunctionEntry[]>(
+          Abi.normalize(artifacts.TestContract.abi).filter(
+            entry => entry.type === "function" && entry.name === "overloaded"
+          )
         );
       });
 
@@ -7082,11 +6838,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
       });
 
       it("Prefers arrays to structs and tuples", async () => {
-        const { abi, tx } = await encoder.resolveAndEncode(
-          abis,
-          [["0xff"]],
-          { allowOptions: true }
-        );
+        const { abi, tx } = await encoder.resolveAndEncode(abis, [["0xff"]], {
+          allowOptions: true
+        });
         assert.lengthOf(abi.inputs, 1);
         assert.strictEqual(abi.inputs[0].type, "uint8[]");
         const selector = Codec.AbiData.Utils.abiSelector(abi);
@@ -7123,8 +6877,11 @@ describe("Wrapping, encoding, and overload resolution", () => {
         );
         assert.lengthOf(abi.inputs, 1);
         assert.strictEqual(abi.inputs[0].type, "tuple");
-        assert.lengthOf(abi.inputs[0].components, 1);
-        assert.strictEqual(abi.inputs[0].components[0].type, "uint8");
+        assert.lengthOf(<Abi.Parameter[]>abi.inputs[0].components, 1);
+        assert.strictEqual(
+          (<Abi.Parameter[]>abi.inputs[0].components)[0].type,
+          "uint8"
+        );
         const selector = Codec.AbiData.Utils.abiSelector(abi);
         assert.strictEqual(
           tx.data,
@@ -7166,11 +6923,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
       });
 
       it("Prefers bytestrings to numeric types", async () => {
-        const { abi, tx } = await encoder.resolveAndEncode(
-          abis,
-          ["0xff"],
-          { allowOptions: true }
-        );
+        const { abi, tx } = await encoder.resolveAndEncode(abis, ["0xff"], {
+          allowOptions: true
+        });
         assert.lengthOf(abi.inputs, 1);
         assert.strictEqual(abi.inputs[0].type, "bytes32");
         const selector = Codec.AbiData.Utils.abiSelector(abi);
@@ -7184,10 +6939,12 @@ describe("Wrapping, encoding, and overload resolution", () => {
       it("Prefers external function pointers to bools", async () => {
         const { abi, tx } = await encoder.resolveAndEncode(
           abis,
-          [{
-            address: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D",
-            selector: "0xdeadbeef"
-          }],
+          [
+            {
+              address: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D",
+              selector: "0xdeadbeef"
+            }
+          ],
           { allowOptions: true }
         );
         assert.lengthOf(abi.inputs, 1);
@@ -7201,11 +6958,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
       });
 
       it("Prefers (non-enum) numbers to enums", async () => {
-        const { abi, tx } = await encoder.resolveAndEncode(
-          abis,
-          [1],
-          { allowOptions: true }
-        );
+        const { abi, tx } = await encoder.resolveAndEncode(abis, [1], {
+          allowOptions: true
+        });
         assert.lengthOf(abi.inputs, 1);
         assert.strictEqual(abi.inputs[0].type, "uint256");
         const selector = Codec.AbiData.Utils.abiSelector(abi);
@@ -7217,11 +6972,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
       });
 
       it("Prefers enums to strings", async () => {
-        const { abi, tx } = await encoder.resolveAndEncode(
-          abis,
-          ["Red"],
-          { allowOptions: true }
-        );
+        const { abi, tx } = await encoder.resolveAndEncode(abis, ["Red"], {
+          allowOptions: true
+        });
         assert.lengthOf(abi.inputs, 1);
         assert.strictEqual(abi.inputs[0].type, "uint8");
         const selector = Codec.AbiData.Utils.abiSelector(abi);
@@ -7233,11 +6986,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
       });
 
       it("Prefers strings to bools", async () => {
-        const { abi, tx } = await encoder.resolveAndEncode(
-          abis,
-          [""],
-          { allowOptions: true }
-        );
+        const { abi, tx } = await encoder.resolveAndEncode(abis, [""], {
+          allowOptions: true
+        });
         assert.lengthOf(abi.inputs, 1);
         assert.strictEqual(abi.inputs[0].type, "string");
         const selector = Codec.AbiData.Utils.abiSelector(abi);
@@ -7249,11 +7000,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
       });
 
       it("Encodes as bool as last resort", async () => {
-        const { abi, tx } = await encoder.resolveAndEncode(
-          abis,
-          [{}],
-          { allowOptions: true }
-        );
+        const { abi, tx } = await encoder.resolveAndEncode(abis, [{}], {
+          allowOptions: true
+        });
         assert.lengthOf(abi.inputs, 1);
         assert.strictEqual(abi.inputs[0].type, "bool");
         const selector = Codec.AbiData.Utils.abiSelector(abi);
@@ -7282,11 +7031,13 @@ describe("Wrapping, encoding, and overload resolution", () => {
       it("Prefers transaction options to structs", async () => {
         const { abi, tx } = await encoder.resolveAndEncode(
           abis,
-          [{
-            overwrite: true,
-            x: "0xff",
-            y: 1
-          }],
+          [
+            {
+              overwrite: true,
+              x: "0xff",
+              y: 1
+            }
+          ],
           { allowOptions: true }
         );
         assert.lengthOf(abi.inputs, 0);
@@ -7298,10 +7049,12 @@ describe("Wrapping, encoding, and overload resolution", () => {
       it("Prefers transaction options to addresses", async () => {
         const { abi, tx } = await encoder.resolveAndEncode(
           abis,
-          [{
-            overwrite: true,
-            address: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D"
-          }],
+          [
+            {
+              overwrite: true,
+              address: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D"
+            }
+          ],
           { allowOptions: true }
         );
         assert.lengthOf(abi.inputs, 0);
@@ -7309,15 +7062,17 @@ describe("Wrapping, encoding, and overload resolution", () => {
         const expected = { overwrite: true, data: selector };
         assert.deepEqual(tx, expected);
       });
- 
+
       it("Prefers transaction options to bytestrings", async () => {
         const { abi, tx } = await encoder.resolveAndEncode(
           abis,
-          [{
-            overwrite: true,
-            encoding: "utf8",
-            text: "ABC"
-          }],
+          [
+            {
+              overwrite: true,
+              encoding: "utf8",
+              text: "ABC"
+            }
+          ],
           { allowOptions: true }
         );
         assert.lengthOf(abi.inputs, 0);
@@ -7325,15 +7080,17 @@ describe("Wrapping, encoding, and overload resolution", () => {
         const expected = { overwrite: true, data: selector };
         assert.deepEqual(tx, expected);
       });
- 
+
       it("Prefers transaction options to external function pointers", async () => {
         const { abi, tx } = await encoder.resolveAndEncode(
           abis,
-          [{
-            overwrite: true,
-            address: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D",
-            selector: "0xdeadbeef"
-          }],
+          [
+            {
+              overwrite: true,
+              address: "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D",
+              selector: "0xdeadbeef"
+            }
+          ],
           { allowOptions: true }
         );
         assert.lengthOf(abi.inputs, 0);
@@ -7362,11 +7119,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
       });
 
       it("Prefers numbers to strings", async () => {
-        const { abi, tx } = await encoder.resolveAndEncode(
-          abis,
-          ["256"],
-          { allowOptions: true }
-        );
+        const { abi, tx } = await encoder.resolveAndEncode(abis, ["256"], {
+          allowOptions: true
+        });
         assert.lengthOf(abi.inputs, 1);
         assert.strictEqual(abi.inputs[0].type, "uint256");
         const selector = Codec.AbiData.Utils.abiSelector(abi);
@@ -7376,23 +7131,23 @@ describe("Wrapping, encoding, and overload resolution", () => {
             "0000000000000000000000000000000000000000000000000000000000000100"
         );
       });
-
     });
 
     describe("Array priority", () => {
       let abis: Abi.FunctionEntry[];
       beforeAll(() => {
-        abis = <Abi.FunctionEntry[]>Abi.normalize(artifacts.TestContract.abi).filter(
-          entry => entry.type === "function" && entry.name === "overloadedArray"
+        abis = <Abi.FunctionEntry[]>(
+          Abi.normalize(artifacts.TestContract.abi).filter(
+            entry =>
+              entry.type === "function" && entry.name === "overloadedArray"
+          )
         );
       });
 
       it("Prefers static length to dynamic length", async () => {
-        const { abi, tx } = await encoder.resolveAndEncode(
-          abis,
-          [[256, 256]],
-          { allowOptions: true }
-        );
+        const { abi, tx } = await encoder.resolveAndEncode(abis, [[256, 256]], {
+          allowOptions: true
+        });
         assert.lengthOf(abi.inputs, 1);
         assert.strictEqual(abi.inputs[0].type, "uint256[2]");
         const selector = Codec.AbiData.Utils.abiSelector(abi);
@@ -7404,11 +7159,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
       });
 
       it("Prefers more specific base type", async () => {
-        const { abi, tx } = await encoder.resolveAndEncode(
-          abis,
-          [[1]],
-          { allowOptions: true }
-        );
+        const { abi, tx } = await encoder.resolveAndEncode(abis, [[1]], {
+          allowOptions: true
+        });
         assert.lengthOf(abi.inputs, 1);
         assert.strictEqual(abi.inputs[0].type, "uint8[]");
         const selector = Codec.AbiData.Utils.abiSelector(abi);
@@ -7420,11 +7173,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
       });
 
       it("Falls back on less specific type if necessary", async () => {
-        const { abi, tx } = await encoder.resolveAndEncode(
-          abis,
-          [[256]],
-          { allowOptions: true }
-        );
+        const { abi, tx } = await encoder.resolveAndEncode(abis, [[256]], {
+          allowOptions: true
+        });
         assert.lengthOf(abi.inputs, 1);
         assert.strictEqual(abi.inputs[0].type, "uint256[]");
         const selector = Codec.AbiData.Utils.abiSelector(abi);
@@ -7437,11 +7188,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects if no unique best overload", async () => {
         try {
-          await encoder.resolveAndEncode(
-            abis,
-            [[1, 1]],
-            { allowOptions: true }
-          );
+          await encoder.resolveAndEncode(abis, [[1, 1]], {
+            allowOptions: true
+          });
           assert.fail("Should reject if no unique best");
         } catch (error) {
           if (error.name !== "NoUniqueBestOverloadError") {
@@ -7454,8 +7203,11 @@ describe("Wrapping, encoding, and overload resolution", () => {
     describe("Struct priority", () => {
       let abis: Abi.FunctionEntry[];
       beforeAll(() => {
-        abis = <Abi.FunctionEntry[]>Abi.normalize(artifacts.TestContract.abi).filter(
-          entry => entry.type === "function" && entry.name === "overloadedStruct"
+        abis = <Abi.FunctionEntry[]>(
+          Abi.normalize(artifacts.TestContract.abi).filter(
+            entry =>
+              entry.type === "function" && entry.name === "overloadedStruct"
+          )
         );
       });
 
@@ -7467,9 +7219,15 @@ describe("Wrapping, encoding, and overload resolution", () => {
         );
         assert.lengthOf(abi.inputs, 1);
         assert.strictEqual(abi.inputs[0].type, "tuple");
-        assert.lengthOf(abi.inputs[0].components, 2);
-        assert.strictEqual(abi.inputs[0].components[0].type, "uint8");
-        assert.strictEqual(abi.inputs[0].components[1].type, "uint256");
+        assert.lengthOf(<Abi.Parameter[]>abi.inputs[0].components, 2);
+        assert.strictEqual(
+          (<Abi.Parameter[]>abi.inputs[0].components)[0].type,
+          "uint8"
+        );
+        assert.strictEqual(
+          (<Abi.Parameter[]>abi.inputs[0].components)[1].type,
+          "uint256"
+        );
         const selector = Codec.AbiData.Utils.abiSelector(abi);
         assert.strictEqual(
           tx.data,
@@ -7486,9 +7244,15 @@ describe("Wrapping, encoding, and overload resolution", () => {
         );
         assert.lengthOf(abi.inputs, 1);
         assert.strictEqual(abi.inputs[0].type, "tuple");
-        assert.lengthOf(abi.inputs[0].components, 2);
-        assert.strictEqual(abi.inputs[0].components[0].type, "uint256");
-        assert.strictEqual(abi.inputs[0].components[1].type, "uint256");
+        assert.lengthOf(<Abi.Parameter[]>abi.inputs[0].components, 2);
+        assert.strictEqual(
+          (<Abi.Parameter[]>abi.inputs[0].components)[0].type,
+          "uint256"
+        );
+        assert.strictEqual(
+          (<Abi.Parameter[]>abi.inputs[0].components)[1].type,
+          "uint256"
+        );
         const selector = Codec.AbiData.Utils.abiSelector(abi);
         assert.strictEqual(
           tx.data,
@@ -7499,11 +7263,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects if no unique best overload", async () => {
         try {
-          await encoder.resolveAndEncode(
-            abis,
-            [{ x: 1, y: 1 }],
-            { allowOptions: true }
-          );
+          await encoder.resolveAndEncode(abis, [{ x: 1, y: 1 }], {
+            allowOptions: true
+          });
           assert.fail("Should reject if no unique best");
         } catch (error) {
           if (error.name !== "NoUniqueBestOverloadError") {
@@ -7516,17 +7278,18 @@ describe("Wrapping, encoding, and overload resolution", () => {
     describe("Multiple argument priority", () => {
       let abis: Abi.FunctionEntry[];
       beforeAll(() => {
-        abis = <Abi.FunctionEntry[]>Abi.normalize(artifacts.TestContract.abi).filter(
-          entry => entry.type === "function" && entry.name === "overloadedMulti"
+        abis = <Abi.FunctionEntry[]>(
+          Abi.normalize(artifacts.TestContract.abi).filter(
+            entry =>
+              entry.type === "function" && entry.name === "overloadedMulti"
+          )
         );
       });
 
       it("Prefers more specific components to less specific components", async () => {
-        const { abi, tx } = await encoder.resolveAndEncode(
-          abis,
-          [1, 256],
-          { allowOptions: true }
-        );
+        const { abi, tx } = await encoder.resolveAndEncode(abis, [1, 256], {
+          allowOptions: true
+        });
         assert.lengthOf(abi.inputs, 2);
         assert.strictEqual(abi.inputs[0].type, "uint8");
         assert.strictEqual(abi.inputs[1].type, "uint256");
@@ -7539,11 +7302,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
       });
 
       it("Falls back on less specific type if necessary", async () => {
-        const { abi, tx } = await encoder.resolveAndEncode(
-          abis,
-          [256, 256],
-          { allowOptions: true }
-        );
+        const { abi, tx } = await encoder.resolveAndEncode(abis, [256, 256], {
+          allowOptions: true
+        });
         assert.lengthOf(abi.inputs, 2);
         assert.strictEqual(abi.inputs[0].type, "uint256");
         assert.strictEqual(abi.inputs[1].type, "uint256");
@@ -7557,11 +7318,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Rejects if no unique best overload", async () => {
         try {
-          await encoder.resolveAndEncode(
-            abis,
-            [1, 1],
-            { allowOptions: true }
-          );
+          await encoder.resolveAndEncode(abis, [1, 1], { allowOptions: true });
           assert.fail("Should reject if no unique best");
         } catch (error) {
           if (error.name !== "NoUniqueBestOverloadError") {
@@ -7574,17 +7331,18 @@ describe("Wrapping, encoding, and overload resolution", () => {
     describe("Bytes priority", () => {
       let abis: Abi.FunctionEntry[];
       beforeAll(() => {
-        abis = <Abi.FunctionEntry[]>Abi.normalize(artifacts.TestContract.abi).filter(
-          entry => entry.type === "function" && entry.name === "overloadedBytes"
+        abis = <Abi.FunctionEntry[]>(
+          Abi.normalize(artifacts.TestContract.abi).filter(
+            entry =>
+              entry.type === "function" && entry.name === "overloadedBytes"
+          )
         );
       });
 
       it("Prefers shorter length to longer length", async () => {
-        const { abi, tx } = await encoder.resolveAndEncode(
-          abis,
-          ["0xff"],
-          { allowOptions: true }
-        );
+        const { abi, tx } = await encoder.resolveAndEncode(abis, ["0xff"], {
+          allowOptions: true
+        });
         assert.lengthOf(abi.inputs, 1);
         assert.strictEqual(abi.inputs[0].type, "bytes1");
         const selector = Codec.AbiData.Utils.abiSelector(abi);
@@ -7596,11 +7354,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
       });
 
       it("Prefers static to dynamic", async () => {
-        const { abi, tx } = await encoder.resolveAndEncode(
-          abis,
-          ["0xf00f"],
-          { allowOptions: true }
-        );
+        const { abi, tx } = await encoder.resolveAndEncode(abis, ["0xf00f"], {
+          allowOptions: true
+        });
         assert.lengthOf(abi.inputs, 1);
         assert.strictEqual(abi.inputs[0].type, "bytes4");
         const selector = Codec.AbiData.Utils.abiSelector(abi);
@@ -7631,17 +7387,18 @@ describe("Wrapping, encoding, and overload resolution", () => {
     describe("Numeric priority", () => {
       let abis: Abi.FunctionEntry[];
       beforeAll(() => {
-        abis = <Abi.FunctionEntry[]>Abi.normalize(artifacts.TestContract.abi).filter(
-          entry => entry.type === "function" && entry.name === "overloadedNumeric"
+        abis = <Abi.FunctionEntry[]>(
+          Abi.normalize(artifacts.TestContract.abi).filter(
+            entry =>
+              entry.type === "function" && entry.name === "overloadedNumeric"
+          )
         );
       });
 
       it("Prefers uint8 to int16", async () => {
-        const { abi, tx } = await encoder.resolveAndEncode(
-          abis,
-          [128],
-          { allowOptions: true }
-        );
+        const { abi, tx } = await encoder.resolveAndEncode(abis, [128], {
+          allowOptions: true
+        });
         assert.lengthOf(abi.inputs, 1);
         assert.strictEqual(abi.inputs[0].type, "uint8");
         const selector = Codec.AbiData.Utils.abiSelector(abi);
@@ -7653,11 +7410,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
       });
 
       it("Prefers int8 to int16", async () => {
-        const { abi, tx } = await encoder.resolveAndEncode(
-          abis,
-          [-1],
-          { allowOptions: true }
-        );
+        const { abi, tx } = await encoder.resolveAndEncode(abis, [-1], {
+          allowOptions: true
+        });
         assert.lengthOf(abi.inputs, 1);
         assert.strictEqual(abi.inputs[0].type, "int8");
         const selector = Codec.AbiData.Utils.abiSelector(abi);
@@ -7669,11 +7424,9 @@ describe("Wrapping, encoding, and overload resolution", () => {
       });
 
       it("Falls back on int16 if necessary", async () => {
-        const { abi, tx } = await encoder.resolveAndEncode(
-          abis,
-          [-129],
-          { allowOptions: true }
-        );
+        const { abi, tx } = await encoder.resolveAndEncode(abis, [-129], {
+          allowOptions: true
+        });
         assert.lengthOf(abi.inputs, 1);
         assert.strictEqual(abi.inputs[0].type, "int16");
         const selector = Codec.AbiData.Utils.abiSelector(abi);
@@ -7686,11 +7439,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Won't choose between int8 and uint8", async () => {
         try {
-          await encoder.resolveAndEncode(
-            abis,
-            [1],
-            { allowOptions: true }
-          );
+          await encoder.resolveAndEncode(abis, [1], { allowOptions: true });
           assert.fail("Should reject if no unique best");
         } catch (error) {
           if (error.name !== "NoUniqueBestOverloadError") {
