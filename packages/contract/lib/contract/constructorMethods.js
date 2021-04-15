@@ -29,9 +29,6 @@ module.exports = Contract => ({
     // save properties
     this.currentProvider = provider;
     this.networkType = networkType;
-
-    //invalidate cached chain ID
-    this._chainId = undefined;
   },
 
   setProvider(provider) {
@@ -49,9 +46,7 @@ module.exports = Contract => ({
 
     if (!this.bytecode || this.bytecode === "0x") {
       throw new Error(
-        `${
-          this.contractName
-        } error: contract binary not set. Can't deploy new instance.\n` +
+        `${this.contractName} error: contract binary not set. Can't deploy new instance.\n` +
           `This contract may be abstract, not implement an abstract parent's methods completely\n` +
           `or not invoke an inherited contract's constructor correctly\n`
       );
@@ -209,16 +204,17 @@ module.exports = Contract => ({
         }
         return;
       default:
-        const invalidInput = `Input to the link method is in the incorrect` +
+        const invalidInput =
+          `Input to the link method is in the incorrect` +
           ` format. Input must be one of the following:${OS.EOL}` +
           `    - a library name and address                 > ("MyLibrary", ` +
-            `"0x123456789...")${OS.EOL}` +
+          `"0x123456789...")${OS.EOL}` +
           `    - a contract type                            > ` +
-            `(MyContract)${OS.EOL}` +
+          `(MyContract)${OS.EOL}` +
           `    - a contract instance                        > ` +
-            `(myContract)${OS.EOL}` +
+          `(myContract)${OS.EOL}` +
           `    - an object with library names and addresses > ({ <libName>: ` +
-            `<address>, <libName2>: <address2>, ... })${OS.EOL}`;
+          `<address>, <libName2>: <address2>, ... })${OS.EOL}`;
         throw new Error(invalidInput);
     }
   },
