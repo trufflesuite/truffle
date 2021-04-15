@@ -44,6 +44,10 @@ describe("CompilerSupplier", function () {
         path.join(__dirname, "./sources/v0.5.x/Version5Pragma.sol"),
         "utf-8"
       );
+      const version6Pragma = await fse.readFile(
+        path.join(__dirname, "./sources/v0.6.x/Version6Pragma.sol"),
+        "utf-8"
+      );
 
       const versionLatestPragma = await fse.readFile(
         path.join(__dirname, "./sources/v0.8.x/Version8Pragma.sol"), //update when necessary
@@ -54,6 +58,7 @@ describe("CompilerSupplier", function () {
       oldPragmaFloatSource = { "OldPragmaFloat.sol": oldPragmaFloat };
       version4PragmaSource = { "NewPragma.sol": version4Pragma };
       version5PragmaSource = { "Version5Pragma.sol": version5Pragma };
+      version6PragmaSource = { "Version6Pragma.sol": version6Pragma };
       versionLatestPragmaSource = { "Version8Pragma.sol": versionLatestPragma }; //update when necessary
     });
 
@@ -116,7 +121,7 @@ describe("CompilerSupplier", function () {
     it("compiles w/ local path solc when options specify path", async function () {
       const pathToSolc = path.join(
         __dirname,
-        "../../../node_modules/solc/index.js"
+        "../node_modules/solc/index.js"
       );
 
       options.compilers = {
@@ -128,14 +133,14 @@ describe("CompilerSupplier", function () {
       const localPathOptions = Config.default().merge(options);
 
       const { compilations } = await Compile.sources({
-        sources: version5PragmaSource,
+        sources: version6PragmaSource,
         options: localPathOptions
       });
-      const Version5Pragma = findOne(
-        "Version5Pragma",
+      const Version6Pragma = findOne(
+        "Version6Pragma",
         compilations[0].contracts
       );
-      assert(Version5Pragma.contractName === "Version5Pragma");
+      assert(Version6Pragma.contractName === "Version6Pragma");
     });
 
     it("caches releases and uses them if available", async function () {
