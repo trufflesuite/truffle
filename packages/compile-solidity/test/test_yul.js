@@ -13,7 +13,7 @@ describe("Yul compilation", function () {
     contracts_build_directory: path.join(__dirname, "./does/not/matter"), //nothing is actually written, but resolver demands it
     compilers: {
       solc: {
-        version: "0.6.8",
+        version: "0.6.4",
         settings: {
           optimizer: {
             enabled: false,
