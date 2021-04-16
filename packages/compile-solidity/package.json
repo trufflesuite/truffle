@@ -28,7 +28,7 @@
     "request-promise": "^4.2.2",
     "require-from-string": "^2.0.2",
     "semver": "^7.3.4",
-    "solc": "^0.6.0"
+    "solc": "0.6.8"
   },
   "devDependencies": {
     "@truffle/artifactor": "^4.0.101",
