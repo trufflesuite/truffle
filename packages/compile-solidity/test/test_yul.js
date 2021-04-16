@@ -27,7 +27,7 @@ describe("Yul compilation", function () {
   options.resolver = new Resolver(options);
 
   it("Compiles both Solidty and Yul", async function () {
-    this.timeout(50000);
+    this.timeout(90000);
     const paths = [
       "SoliditySource.sol",
       "YulSource1.yul",
