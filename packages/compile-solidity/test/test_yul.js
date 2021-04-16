@@ -13,7 +13,7 @@ describe("Yul compilation", function () {
     contracts_build_directory: path.join(__dirname, "./does/not/matter"), //nothing is actually written, but resolver demands it
     compilers: {
       solc: {
-        version: "0.6.4",
+        version: "0.5.17",
         settings: {
           optimizer: {
             enabled: false,
@@ -63,7 +63,5 @@ describe("Yul compilation", function () {
     //do they all have source & sourcePath?
     assert.ok(compilations[0].contracts[0].source);
     assert.ok(compilations[0].contracts[0].sourcePath);
-    //do they all have a source map?
-    assert.ok(compilations[0].contracts[0].sourceMap);
   });
 });
