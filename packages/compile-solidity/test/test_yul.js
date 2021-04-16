@@ -26,10 +26,9 @@ describe("Yul compilation", function () {
   };
   options.resolver = new Resolver(options);
 
-  it("Compiles both Solidity and Yul", async function () {
+  it("Compiles Yul", async function () {
     this.timeout(120000);
     const paths = [
-      "SoliditySource.sol",
       "YulSource.yul",
     ].map(filePath => path.join(options.contracts_directory, filePath));
 
@@ -38,55 +37,33 @@ describe("Yul compilation", function () {
       options
     });
 
-    //are there 2 compilations?
-    assert.equal(compilations.length, 2);
+    //is there 1 compilation?
+    assert.equal(compilations.length, 1);
     //do all compilations have sources?
-    assert.ok(compilations.every(compilation => compilation.sources));
-    assert.ok(
-      compilations.every(compilation => compilation.sources.length === 1)
-    );
+    assert.ok(compilations[0].sources);
+    assert.equal(compilations[0].sources.length, 1);
     //do all compilations have contracts?
-    assert.ok(compilations.every(compilation => compilation.contracts));
-    assert.ok(
-      compilations.every(compilation => compilation.contracts.length === 1)
-    );
+    assert.ok(compilations[0].contracts);
+    assert.equal(compilations[0].contracts.length, 1);
     //do they all have compiler?
-    assert.ok(compilations.every(compilation => compilation.compiler));
-    //is first compilation Solidity?
-    assert.equal(compilations[0].sources[0].language, "Solidity");
-    //are the other ones Yul?
-    assert.equal(compilations[1].sources[0].language, "Yul");
+    assert.ok(compilations[0].compiler);
+    //are they Yul?
+    assert.equal(compilations[0].sources[0].language, "Yul");
     //do they all have contents and sourcePath?
-    assert.ok(
-      compilations.every(compilation => compilation.sources[0].contents)
-    );
-    assert.ok(
-      compilations.every(compilation => compilation.sources[0].sourcePath)
-    );
+    assert.ok(compilations[0].sources[0].contents);
+    assert.ok(compilations[0].sources[0].sourcePath);
     //do they all have a contract name?
-    assert.ok(
-      compilations.every(compilation => compilation.contracts[0].contractName)
-    );
+    assert.ok(compilations[0].contracts[0].contractName);
     //do they all have an ABI?
-    assert.ok(compilations.every(compilation => compilation.contracts[0].abi));
-    //does the Solidity source have non-empty ABI?
-    assert.notEqual(compilations[0].contracts[0].abi.length, 0);
+    assert.ok(compilations[0].contracts[0].abi);
     //do the Yul sources have empty ABI?
-    assert.equal(compilations[1].contracts[0].abi.length, 0);
+    assert.equal(compilations[0].contracts[0].abi.length, 0);
     //do they all have constructor bytecode?
-    assert.ok(
-      compilations.every(compilation => compilation.contracts[0].bytecode.bytes)
-    );
+    assert.ok(compilations[0].contracts[0].bytecode.bytes);
     //do they all have source & sourcePath?
-    assert.ok(
-      compilations.every(compilation => compilation.contracts[0].source)
-    );
-    assert.ok(
-      compilations.every(compilation => compilation.contracts[0].sourcePath)
-    );
+    assert.ok(compilations[0].contracts[0].source);
+    assert.ok(compilations[0].contracts[0].sourcePath);
     //do they all have a source map?
-    assert.ok(
-      compilations.every(compilation => compilation.contracts[0].sourceMap)
-    );
+    assert.ok(compilations[0].contracts[0].sourceMap);
   });
 });
