@@ -1,4 +1,4 @@
-object "YulContract1" {
+object "YulContract" {
   code {
     let size := datasize("runtime")
     datacopy(0, dataoffset("runtime"), size)

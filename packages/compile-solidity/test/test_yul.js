@@ -30,8 +30,7 @@ describe("Yul compilation", function () {
     this.timeout(90000);
     const paths = [
       "SoliditySource.sol",
-      "YulSource1.yul",
-      "YulSource2.yul"
+      "YulSource.yul",
     ].map(filePath => path.join(options.contracts_directory, filePath));
 
     const { compilations } = await Compile.sourcesWithDependencies({
@@ -39,8 +38,8 @@ describe("Yul compilation", function () {
       options
     });
 
-    //are there 3 compilations?
-    assert.equal(compilations.length, 3);
+    //are there 2 compilations?
+    assert.equal(compilations.length, 2);
     //do all compilations have sources?
     assert.ok(compilations.every(compilation => compilation.sources));
     assert.ok(
@@ -55,9 +54,8 @@ describe("Yul compilation", function () {
     assert.ok(compilations.every(compilation => compilation.compiler));
     //is first compilation Solidity?
     assert.equal(compilations[0].sources[0].language, "Solidity");
-    //are the other two Yul?
+    //are the other ones Yul?
     assert.equal(compilations[1].sources[0].language, "Yul");
-    assert.equal(compilations[2].sources[0].language, "Yul");
     //do they all have contents and sourcePath?
     assert.ok(
       compilations.every(compilation => compilation.sources[0].contents)
@@ -73,9 +71,8 @@ describe("Yul compilation", function () {
     assert.ok(compilations.every(compilation => compilation.contracts[0].abi));
     //does the Solidity source have non-empty ABI?
     assert.notEqual(compilations[0].contracts[0].abi.length, 0);
-    //does the Yul sources have empty ABI?
+    //do the Yul sources have empty ABI?
     assert.equal(compilations[1].contracts[0].abi.length, 0);
-    assert.equal(compilations[2].contracts[0].abi.length, 0);
     //do they all have constructor bytecode?
     assert.ok(
       compilations.every(compilation => compilation.contracts[0].bytecode.bytes)
