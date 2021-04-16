@@ -358,13 +358,7 @@ function processContracts({
                 generatedSources,
                 object: bytecode
               },
-              deployedBytecode: {
-                sourceMap: deployedSourceMap,
-                linkReferences: deployedLinkReferences,
-                generatedSources: deployedGeneratedSources,
-                immutableReferences,
-                object: deployedBytecode
-              }
+              deployedBytecode: deployedBytecodeInfo //destructured below
             },
             abi,
             metadata,
@@ -386,7 +380,7 @@ function processContracts({
           sourcePath: originalSourcePaths[transformedSourcePath],
           source,
           sourceMap,
-          deployedSourceMap,
+          deployedSourceMap: (deployedBytecodeInfo || {}).sourceMap,
           ast,
           legacyAST,
           bytecode: zeroLinkReferences({
@@ -394,13 +388,14 @@ function processContracts({
             linkReferences: formatLinkReferences(linkReferences)
           }),
           deployedBytecode: zeroLinkReferences({
-            bytes: deployedBytecode,
-            linkReferences: formatLinkReferences(deployedLinkReferences)
+            bytes: (deployedBytecodeInfo || {}).object,
+            linkReferences: formatLinkReferences((deployedBytecodeInfo || {}).linkReferences)
           }),
-          immutableReferences, //ideally this would be part of the deployedBytecode object,
+          immutableReferences: (deployedBytecodeInfo || {}).immutableReferences,
+          //ideally immutable references would be part of the deployedBytecode object,
           //but compatibility makes that impossible
           generatedSources,
-          deployedGeneratedSources,
+          deployedGeneratedSources: (deployedBytecodeInfo || {}).generatedSources,
           compiler: {
             name: "solc",
             version: solcVersion
@@ -411,6 +406,10 @@ function processContracts({
 }
 
 function formatLinkReferences(linkReferences) {
+  if (!linkReferences) {
+    return [];
+  }
+
   // convert to flat list
   const libraryLinkReferences = Object.values(linkReferences)
     .map(fileLinks =>
@@ -431,6 +430,9 @@ function formatLinkReferences(linkReferences) {
 
 // takes linkReferences in output format (not Solidity's format)
 function zeroLinkReferences({ bytes, linkReferences }) {
+  if (bytes === undefined) {
+    return undefined;
+  }
   // inline link references - start by flattening the offsets
   const flattenedLinkReferences = linkReferences
     // map each link ref to array of link refs with only one offset
