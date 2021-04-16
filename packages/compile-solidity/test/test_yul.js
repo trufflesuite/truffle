@@ -27,7 +27,7 @@ describe("Yul compilation", function () {
   options.resolver = new Resolver(options);
 
   it("Compiles Yul", async function () {
-    this.timeout(120000);
+    this.timeout(150000);
     const paths = [
       "YulSource.yul",
     ].map(filePath => path.join(options.contracts_directory, filePath));
