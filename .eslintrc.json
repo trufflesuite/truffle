@@ -21,6 +21,7 @@
     "@typescript-eslint/semi": [ "error", "always" ],
     "no-mixed-operators": "warn",
     "no-tabs": "warn",
-    "no-useless-escape": "warn"
+    "no-useless-escape": "warn",
+    "no-undef": ["error", { "typeof": true }]
   }
 }
