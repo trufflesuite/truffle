@@ -124,11 +124,13 @@ export async function requiredSources({
     debug("filesToProcess: %O", filesToProcess);
     const file = filesToProcess.shift();
     debug("file: %s", file);
-    required.push(file);
-    for (const importPath of resolved[file].imports) {
-      debug("importPath: %s", importPath);
-      if (!required.includes(importPath)) { //don't go into a loop!
-        filesToProcess.push(importPath);
+    if (resolved[file]) {
+      required.push(file);
+      for (const importPath of resolved[file].imports) {
+        debug("importPath: %s", importPath);
+        if (!required.includes(importPath)) { //don't go into a loop!
+          filesToProcess.push(importPath);
+        }
       }
     }
   }
