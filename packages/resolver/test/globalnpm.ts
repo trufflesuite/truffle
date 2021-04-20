@@ -27,17 +27,17 @@ describe("globalnpm", () => {
       getInstalledPathSyncStub.restore();
     });
 
-    it("should return null if the import_path starts with '.'", () => {
+    it("returns null if the import_path starts with '.'", () => {
       const result = globalNpm.require("./A.sol");
       assert.deepEqual(result, null);
     });
 
-    it("should return null if the import_path is absolute path", () => {
+    it("returns null if the import_path is absolute path", () => {
       const result = globalNpm.require("/A.sol");
       assert.deepEqual(result, null);
     });
 
-    it("should return the contents of json if the import_path exists", () => {
+    it("returns the contents of json (in build/contracts)", () => {
       syncStub.withArgs("package").returns(true);
       getInstalledPathSyncStub
         .withArgs("package")
@@ -45,12 +45,28 @@ describe("globalnpm", () => {
           path.resolve(__dirname, "fixtures/globalnpm/node_modules/package")
         );
 
-      const result = globalNpm.require("package/contracts/Test.sol");
+      const result = globalNpm.require("package/Test.sol");
 
       assert.deepEqual(result, {});
     });
 
-    it("should return undefined if the import_path does not exist", () => {
+    it("returns the contents of json (in build dir)", () => {
+      syncStub.withArgs("otherPackage").returns(true);
+      getInstalledPathSyncStub
+        .withArgs("otherPackage")
+        .returns(
+          path.resolve(
+            __dirname,
+            "fixtures/globalnpm/node_modules/otherPackage"
+          )
+        );
+
+      const result = globalNpm.require("otherPackage/OtherTest.sol");
+
+      assert.deepEqual(result.wallace, "grommit");
+    });
+
+    it("returns undefined if the import_path does not exist", () => {
       const read_file_sync_stub = sinon.stub(fs, "readFileSync");
 
       syncStub.withArgs("package").returns(false);
@@ -63,7 +79,7 @@ describe("globalnpm", () => {
       read_file_sync_stub.restore();
     });
 
-    it("should return null if readFileSync throws Error", () => {
+    it("returns null if readFileSync throws Error", () => {
       const readFileSyncStub = sinon.stub(fs, "readFileSync");
 
       syncStub.withArgs("package").returns(true);
@@ -99,7 +115,7 @@ describe("globalnpm", () => {
       getInstalledPathSyncStub.restore();
     });
 
-    it("should return the contents of solidity file if the import_path exists", async () => {
+    it("returns the contents of solidity file if the import_path exists", async () => {
       syncStub.withArgs("package").returns(true);
       getInstalledPathSyncStub
         .withArgs("package")
@@ -115,7 +131,7 @@ describe("globalnpm", () => {
       assert.strictEqual(filePath, "package/contracts/Test.sol");
     });
 
-    it("should return undefined body if the package does not exist", async () => {
+    it("returns undefined body if the package does not exist", async () => {
       syncStub.withArgs("package").returns(false);
       getInstalledPathSyncStub
         .withArgs("package")
@@ -131,7 +147,7 @@ describe("globalnpm", () => {
       assert.strictEqual(filePath, "package/contracts/Test.sol");
     });
 
-    it("should return undefined body if readFileSync throws Error", async () => {
+    it("returns undefined body if readFileSync throws Error", async () => {
       const readFileSyncStub = sinon.stub(fs, "readFileSync");
 
       syncStub.withArgs("package").returns(true);

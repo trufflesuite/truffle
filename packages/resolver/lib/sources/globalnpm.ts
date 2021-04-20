@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs";
 const detectInstalled: any = require("detect-installed");
-const get_installed_path: any = require("get-installed-path");
+const getInstalledPath: any = require("get-installed-path");
 
 import { ResolverSource } from "../source";
 
@@ -10,41 +10,58 @@ export class GlobalNPM implements ResolverSource {
     if (importPath.indexOf(".") === 0 || path.isAbsolute(importPath)) {
       return null;
     }
-    const contract_name = path.basename(importPath, ".sol");
+    const contractName = path.basename(importPath, ".sol");
 
-    let [package_name] = importPath.split("/", 1);
-    if (detectInstalled.sync(package_name)) {
-      const regex = new RegExp(`/${package_name}$`);
-      const global_package_path = get_installed_path
-        .getInstalledPathSync(package_name)
+    let [packageName] = importPath.split("/", 1);
+    if (detectInstalled.sync(packageName)) {
+      const regex = new RegExp(`/${packageName}$`);
+      const globalPackagePath = getInstalledPath
+        .getInstalledPathSync(packageName)
         .replace(regex, "");
-      const expected_path = path.join(
-        global_package_path,
-        package_name,
-        "build",
-        "contracts",
-        contract_name + ".json"
+
+      const result = this.resolveAndParse(
+        globalPackagePath,
+        packageName,
+        contractName
       );
-      try {
-        const result = fs.readFileSync(expected_path, "utf8");
-        return JSON.parse(result);
-      } catch (e) {
-        return null;
+      // result is null if it fails to resolve
+      if (result) {
+        return result;
       }
     }
+    return null;
+  }
+
+  resolveAndParse(basePath: string, packageName: string, contractName: string) {
+    const packagePath = path.join(basePath, packageName);
+    const subDirs = [`build${path.sep}contracts`, "build"];
+    for (const subDir of subDirs) {
+      const possiblePath = path.join(
+        packagePath,
+        subDir,
+        `${contractName}.json`
+      );
+      try {
+        const result = fs.readFileSync(possiblePath, "utf8");
+        return JSON.parse(result);
+      } catch (e) {
+        continue;
+      }
+    }
+    return null;
   }
 
   async resolve(importPath: string) {
-    let [package_name] = importPath.split("/", 1);
+    let [packageName] = importPath.split("/", 1);
     let body;
-    if (detectInstalled.sync(package_name)) {
-      const regex = new RegExp(`/${package_name}$`);
-      const global_package_path = get_installed_path
-        .getInstalledPathSync(package_name)
+    if (detectInstalled.sync(packageName)) {
+      const regex = new RegExp(`/${packageName}$`);
+      const globalPackagePath = getInstalledPath
+        .getInstalledPathSync(packageName)
         .replace(regex, "");
-      const expected_path = path.join(global_package_path, importPath);
+      const expectedPath = path.join(globalPackagePath, importPath);
       try {
-        body = fs.readFileSync(expected_path, { encoding: "utf8" });
+        body = fs.readFileSync(expectedPath, { encoding: "utf8" });
       } catch (err) {}
     }
 
