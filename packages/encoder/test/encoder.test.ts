@@ -279,6 +279,15 @@ describe("Wrapping, encoding, and overload resolution", () => {
           );
         });
 
+        it("Encodes hex strings (0X)", async () => {
+          const { data } = await encoder.encodeTransaction(abi, ["0XDeAdBeEf"]);
+          assert.strictEqual(
+            data,
+            selector +
+              "00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000004deadbeef00000000000000000000000000000000000000000000000000000000"
+          );
+        });
+
         it("Encodes boxed hex strings", async () => {
           const { data } = await encoder.encodeTransaction(abi, [
             new String("0xDeAdBeEf")
@@ -2577,6 +2586,15 @@ describe("Wrapping, encoding, and overload resolution", () => {
           );
         });
 
+        it("Encodes hexadecimal strings (uppercase)", async () => {
+          const { data } = await encoder.encodeTransaction(abi, [" 0XA "]);
+          assert.strictEqual(
+            data,
+            selector +
+              "000000000000000000000000000000000000000000000000000000000000000a"
+          );
+        });
+
         it("Encodes negated hexadecimal strings", async () => {
           const { data } = await encoder.encodeTransaction(abi, [" -0xa "]);
           assert.strictEqual(
@@ -4791,7 +4809,7 @@ describe("Wrapping, encoding, and overload resolution", () => {
 
       it("Encodes addresses in all uppercase", async () => {
         const { data } = await encoder.encodeTransaction(abi, [
-          "0x10CA7E901D10CA7E901D10CA7E901D10CA7E901D"
+          "0X10CA7E901D10CA7E901D10CA7E901D10CA7E901D"
         ]);
         assert.strictEqual(
           data,

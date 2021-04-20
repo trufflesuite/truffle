@@ -69,9 +69,9 @@ export function wrongLengthMessage(
   return `Input ${what} was ${got} bytes instead of ${expected} bytes`;
 }
 
-const hexStringPattern = /^0x[0-9a-fA-F]*$/;
+const hexStringPattern = /^0[xX][0-9a-fA-F]*$/;
 const shortHexStringPattern = /^[0-9a-fA-F]*$/;
-export const byteStringPattern = /^0x([0-9a-fA-F]{2})*$/;
+export const byteStringPattern = /^0[xX]([0-9a-fA-F]{2})*$/;
 
 export function wrapBool(
   dataType: Format.Types.BoolType,

@@ -149,7 +149,7 @@ const BytesInput = (value: Uint8Array) => {
   let representations: any[] = [
     value, //Uint8Array,
     Codec.Conversion.toHexString(value), //string (lowercase)
-    "0x" + Codec.Conversion.toHexString(value).toUpperCase().slice(2), //string (uppercase)
+    "0X" + Codec.Conversion.toHexString(value).toUpperCase().slice(2), //string (uppercase)
   ];
   //I wanted to do mixed-case but uh that turned out to be harder than expected
   try {
@@ -177,7 +177,7 @@ const AddressInput = (value: string) => {
     value, //lowercase, no prefix
     value.toUpperCase(), //uppercase, no prefix
     "0x" + value, //lowercase w/prefix
-    "0x" + value.toUpperCase(), //uppercase w/prefix
+    "0X" + value.toUpperCase(), //uppercase w/prefix
     Web3Utils.toChecksumAddress("0x" + value), //checksum case w/prefix
     Web3Utils.toChecksumAddress("0x" + value).slice(2), //checksum case w/o prefix
     { address: "0x" + value } //object
