@@ -1,9 +1,12 @@
+import BN from "bn.js";
 import { Web3Shim } from "../../shim";
 import {
   InterfaceAdapter,
   EvmBlockType,
   Provider,
-  Transaction
+  Transaction,
+  TransactionReceipt,
+  TransactionReportData
 } from "../types";
 
 export interface Web3InterfaceAdapterOptions {
@@ -52,5 +55,31 @@ export class Web3InterfaceAdapter implements InterfaceAdapter {
 
   public getBlockNumber() {
     return this.web3.eth.getBlockNumber();
+  }
+
+  public async getTransactionReportData(receipt: TransactionReceipt): Promise<TransactionReportData> {
+    const tx = await this.getTransaction(receipt.transactionHash);
+    const block = await this.getBlock(receipt.blockNumber);
+
+    if (!block) return null;
+
+    const balance = await this.getBalance(tx.from);
+    const gasPrice = new BN(tx.gasPrice);
+    const gas = new BN(receipt.gasUsed);
+    const value = new BN(tx.value);
+    const cost = gasPrice.mul(gas).add(value);
+
+    return {
+      timestamp: block.timestamp,
+      from: tx.from,
+      balance: Web3Shim.utils.fromWei(balance, "ether"),
+      gasUnit: "gwei",
+      gasPrice: Web3Shim.utils.fromWei(gasPrice, "gwei"),
+      gas,
+      mainUnit: "ETH",
+      value: Web3Shim.utils.fromWei(value, "ether"),
+      cost,
+      convertCost: (val: BN) => Web3Shim.utils.fromWei(val, "ether")
+    };
   }
 }

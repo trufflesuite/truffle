@@ -53,6 +53,8 @@ function verifyMigrationStatuses(statuses, deployingStatusString) {
     assert.equal(status.data.contract.address.slice(0, 2), "0x");
     assert.equal(status.data.contract.address.length, 42);
     assert.equal(status.data.deployed, true);
+    assert.equal(status.data.gasUnit, "gwei");
+    assert.equal(status.data.mainUnit, "ETH");
     cost = parseFloat(status.data.cost);
     assert(cost > 0);
     done();

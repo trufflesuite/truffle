@@ -128,17 +128,17 @@ class Reporter {
    * started running. Calling this method resets the gas counters for migrations totals
    */
   getTotals() {
-    const gas = this.currentGasTotal.clone();
-    const cost = web3Utils.fromWei(this.currentCostTotal, "ether");
+    const gas = this.currentGasTotal.toString(10);
+    const cost = this.convertCost(this.currentCostTotal);
     this.finalCostTotal = this.finalCostTotal.add(this.currentCostTotal);
 
     this.currentGasTotal = new web3Utils.BN(0);
     this.currentCostTotal = new web3Utils.BN(0);
 
     return {
-      gas: gas.toString(10),
-      cost: cost,
-      finalCost: web3Utils.fromWei(this.finalCostTotal, "ether"),
+      gas,
+      cost,
+      finalCost: this.convertCost(this.finalCostTotal),
       deployments: this.deployments.toString()
     };
   }
@@ -309,17 +309,19 @@ class Reporter {
    * @param  {Boolean} isLast  true if this the last file in the sequence.
    */
   async postMigrate(isLast) {
+    const totals = this.getTotals();
     let data = {};
     data.number = this.summary[this.currentFileIndex].number;
-    data.cost = this.getTotals().cost;
+    data.cost = totals.cost;
+    data.mainUnit = this.mainUnit;
     this.summary[this.currentFileIndex].totalCost = data.cost;
 
     let message = this.messages.steps("postMigrate", data);
     this.deployer.logger.log(message);
 
     if (isLast) {
-      data.totalDeployments = this.getTotals().deployments;
-      data.finalCost = this.getTotals().finalCost;
+      data.totalDeployments = totals.deployments;
+      data.finalCost = totals.finalCost;
 
       this.summary.totalDeployments = data.totalDeployments;
       this.summary.finalCost = data.finalCost;
@@ -367,35 +369,21 @@ class Reporter {
   async postDeploy(data) {
     let message;
     if (data.deployed) {
-      const tx = await data.contract.interfaceAdapter.getTransaction(
-        data.receipt.transactionHash
-      );
+      const { convertCost, ...txData } = await data.contract.interfaceAdapter.getTransactionReportData(data.receipt);
 
-      const block = await data.contract.interfaceAdapter.getBlock(
-        data.receipt.blockNumber
-      );
+      // if it returns null, try again!
+      if (!txData) return this.postDeploy(data);
 
-      // if geth returns null, try again!
-      if (!block) return this.postDeploy(data);
+      data = {
+        ...data,
+        ...txData,
+        cost: convertCost(txData.cost)
+      };
 
-      data.timestamp = block.timestamp;
-
-      const balance = await data.contract.interfaceAdapter.getBalance(tx.from);
-
-      const gasPrice = new web3Utils.BN(tx.gasPrice);
-      const gas = new web3Utils.BN(data.receipt.gasUsed);
-      const value = new web3Utils.BN(tx.value);
-      const cost = gasPrice.mul(gas).add(value);
-
-      data.gasPrice = web3Utils.fromWei(gasPrice, "gwei");
-      data.gas = gas.toString(10);
-      data.from = tx.from;
-      data.value = web3Utils.fromWei(value, "ether");
-      data.cost = web3Utils.fromWei(cost, "ether");
-      data.balance = web3Utils.fromWei(balance, "ether");
-
-      this.currentGasTotal = this.currentGasTotal.add(gas);
-      this.currentCostTotal = this.currentCostTotal.add(cost);
+      this.mainUnit = data.mainUnit;
+      this.convertCost = convertCost;
+      this.currentGasTotal = this.currentGasTotal.add(txData.gas);
+      this.currentCostTotal = this.currentCostTotal.add(txData.cost);
       this.currentAddress = this.from;
       this.deployments++;
 

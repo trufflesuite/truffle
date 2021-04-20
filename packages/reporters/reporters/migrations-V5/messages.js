@@ -278,9 +278,9 @@ class MigrationsMessages {
           `   > ${"account:".padEnd(20)} ${data.from}\n` +
           `   > ${"balance:".padEnd(20)} ${data.balance}\n` +
           `   > ${"gas used:".padEnd(20)} ${self.decAndHex(data.gas)}\n` +
-          `   > ${"gas price:".padEnd(20)} ${data.gasPrice} gwei\n` +
-          `   > ${"value sent:".padEnd(20)} ${data.value} ETH\n` +
-          `   > ${"total cost:".padEnd(20)} ${data.cost} ETH\n`;
+          `   > ${"gas price:".padEnd(20)} ${data.gasPrice} ${data.gasUnit}\n` +
+          `   > ${"value sent:".padEnd(20)} ${data.value} ${data.mainUnit}\n` +
+          `   > ${"total cost:".padEnd(20)} ${data.cost} ${data.mainUnit}\n`;
 
         if (reporter.confirmations !== 0)
           output += self.underline(
@@ -415,7 +415,7 @@ class MigrationsMessages {
         output +=
           self.underline(37) +
           "\n" +
-          `   > ${"Total cost:".padEnd(15)} ${data.cost.padStart(15)} ETH\n`;
+          `   > ${"Total cost:".padEnd(15)} ${data.cost.padStart(15)} ${data.mainUnit}\n`;
 
         if (self.describeJson) {
           output +=
@@ -437,7 +437,7 @@ class MigrationsMessages {
           self.doubleline("Summary") +
           "\n" +
           `> ${"Total deployments:".padEnd(20)} ${data.totalDeployments}\n` +
-          `> ${"Final cost:".padEnd(20)} ${data.finalCost} ETH\n`;
+          `> ${"Final cost:".padEnd(20)} ${data.finalCost} ${data.mainUnit}\n`;
 
         if (self.describeJson) {
           output +=
