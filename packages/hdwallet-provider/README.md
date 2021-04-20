@@ -28,14 +28,15 @@ Parameters:
 
 | Parameter | Type | Default | Required | Description |
 | ------ | ---- | ------- | ----------- | ----------- |
-| `mnemonic` | `object\|string` | null | [ ] | Object containing `phrase` and `password` (optional) properties. `phrase` is a 12 word mnemonic string which addresses are created from. Alternately the value for mnemonic can be a string with your mnemonic phrase. |
-| `privateKeys` | `string[]` | null | [ ] | Array containing 1 or more private keys. |
+| `mnemonic` | `object\|string` | `null` | [ ] | Object containing `phrase` and `password` (optional) properties. `phrase` is a 12 word mnemonic string which addresses are created from. Alternately the value for mnemonic can be a string with your mnemonic phrase. |
+| `privateKeys` | `string[]` | `null` | [ ] | Array containing 1 or more private keys. |
 | `providerOrUrl` | `string\|object` | `null` | [x] | URI or Ethereum client to send all other non-transaction-related Web3 requests |
 | `addressIndex` | `number` | `0` | [ ] | If specified, will tell the provider to manage the address at the index specified |
 | `numberOfAddresses` | `number` | `1` | [ ] | If specified, will create `numberOfAddresses` addresses when instantiated |
 | `shareNonce` | `boolean` | `true` | [ ] | If `false`, a new WalletProvider will track its own nonce-state |
 | `derivationPath` | `string` | `"m/44'/60'/0'/0/"` | [ ] | If specified, will tell the wallet engine what derivation path should use to derive addresses. |
 | `pollingInterval` | `number` | `4000` | [ ] | If specified, will tell the wallet engine to use a custom interval when polling to track blocks. Specified in milliseconds. |
+| `chainId` | `number/|string` | `undefined` | [ ] | Specify to enable signed transactions that are EIP-155 compliant for major chains. |
 
 Some examples can be found below:
 
@@ -105,12 +106,13 @@ Parameters:
 
 | Parameter | Type | Default | Required | Description |
 | ------ | ---- | ------- | ----------- | ----------- |
-| `mnemonic`/`privateKeys` | `string`/`string[]` | null | [x] | 12 word mnemonic which addresses are created from or array of private keys. |
+| `mnemonic`/`privateKeys` | `string`/`string[]` | `null` | [x] | 12 word mnemonic which addresses are created from or array of private keys. |
 | `providerOrUrl` | `string\|object` | `null` | [x] | URI or Ethereum client to send all other non-transaction-related Web3 requests |
 | `addressIndex` | `number` | `0` | [ ] | If specified, will tell the provider to manage the address at the index specified |
 | `numberOfAddresses` | `number` | `1` | [ ] | If specified, will create `numberOfAddresses` addresses when instantiated |
 | `shareNonce` | `boolean` | `true` | [ ] | If `false`, a new WalletProvider will track its own nonce-state |
 | `derivationPath` | `string` | `"m/44'/60'/0'/0/"` | [ ] | If specified, will tell the wallet engine what derivation path should use to derive addresses. |
+| `chainId` | `number/|string` | `undefined` | [ ] | Specify to enable signed transactions that are EIP-155 compliant for major chains. |
 
 Instead of a mnemonic, you can alternatively provide a private key or array of
 private keys as the first parameter. When providing an array, `addressIndex`
