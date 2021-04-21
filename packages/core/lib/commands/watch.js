@@ -59,6 +59,7 @@ const command = {
     config.logger.log(
       colors.green("Watching for a change in project files...")
     );
+    return new Promise(() => {});
   }
 };
 
