@@ -146,7 +146,11 @@ export const ConstructorEntry = () =>
     .tuple(
       fc.record({
         type: fc.constant("constructor"),
-        inputs: fc.array(Parameter())
+        inputs: fc.array(Parameter(), { maxLength: 10 }).filter(inputs => {
+          // names that are not blank should be unique
+          const names = inputs.map(({ name }) => name).filter(name => name !== "");
+          return names.length === new Set(names).size;
+        })
       }),
       fc
         .tuple(
