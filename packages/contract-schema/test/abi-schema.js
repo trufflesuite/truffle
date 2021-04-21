@@ -144,6 +144,128 @@ describe("ABI Schema", function() {
     });
   });
 
+  describe("error definition", function() {
+    it("validates with all fields valid", function() {
+      var abi = [
+        {
+          type: "error",
+          name: "InsufficientBalance",
+          inputs: [
+            {
+              name: "needed",
+              type: "uint256",
+            },
+            {
+              name: "actual",
+              type: "uint256",
+            }
+          ]
+        }
+      ];
+
+      assert(validate(abi));
+    });
+
+    it("cannot omit type", function() {
+      var abi = [
+        {
+          name: "InsufficientBalance",
+          inputs: [
+            {
+              name: "needed",
+              type: "uint256",
+            },
+            {
+              name: "actual",
+              type: "uint256",
+            }
+          ]
+        }
+      ];
+
+      assert(!validate(abi));
+    });
+
+    it("cannot omit name", function() {
+      var abi = [
+        {
+          type: "error",
+          inputs: [
+            {
+              name: "needed",
+              type: "uint256",
+            },
+            {
+              name: "actual",
+              type: "uint256",
+            }
+          ]
+        }
+      ];
+
+      assert(!validate(abi));
+    });
+
+    it("cannot omit inputs", function() {
+      var abi = [
+        {
+          type: "error",
+          name: "InsufficientBalance"
+        }
+      ];
+
+      assert(!validate(abi));
+    });
+  });
+
+  describe("normal function definition", function() {
+    it("can omit type, outputs, constant, and payable", function() {
+      var abi = [
+        {
+          name: "press",
+          inputs: [
+            {
+              name: "button",
+              type: "uint256"
+            }
+          ],
+          stateMutability: "nonpayable"
+        }
+      ];
+
+      assert(validate(abi));
+      assert.equal(abi[0].type, "function");
+      assert.equal(abi[0].stateMutability, "nonpayable");
+      assert.deepEqual(abi[0].outputs, []);
+    });
+
+    it("cannot omit name", function() {
+      var abi = [
+        {
+          type: "function",
+          outputs: [],
+          inputs: [],
+          stateMutability: "nonpayable"
+        }
+      ];
+
+      assert(!validate(abi));
+    });
+
+    it("cannot omit inputs", function() {
+      var abi = [
+        {
+          name: "pressButton",
+          type: "function",
+          outputs: [],
+          stateMutability: "nonpayable"
+        }
+      ];
+
+      assert(!validate(abi));
+    });
+  });
+
   describe("constructor function definition", function() {
     it("can omit constant, and payable", function() {
       var abi = [
