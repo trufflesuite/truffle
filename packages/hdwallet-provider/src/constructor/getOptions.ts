@@ -78,7 +78,8 @@ const fromArguments = (
     addressIndex,
     numberOfAddresses,
     shareNonce,
-    derivationPath
+    derivationPath,
+    chainId
   ] = args;
 
   const signingAuthority = getSigningAuthorityOptions(
@@ -91,7 +92,8 @@ const fromArguments = (
     addressIndex,
     numberOfAddresses,
     shareNonce,
-    derivationPath
+    derivationPath,
+    chainId
   };
 };
 

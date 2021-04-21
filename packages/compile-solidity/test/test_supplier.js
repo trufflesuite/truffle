@@ -18,6 +18,7 @@ describe("CompilerSupplier", function () {
     let oldPragmaFloatSource; // ^0.4.15
     let version4PragmaSource; // ^0.4.21
     let version5PragmaSource; // ^0.5.0
+    let version6PragmaSource; // ^0.6.0
     let versionLatestPragmaSource; // Currently: ^0.8.0
     let compileConfig;
 

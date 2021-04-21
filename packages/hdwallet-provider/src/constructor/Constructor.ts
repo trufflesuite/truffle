@@ -7,7 +7,8 @@ import {
   NumberOfAddresses,
   PollingInterval,
   ShareNonce,
-  DerivationPath
+  DerivationPath,
+  ChainId
 } from "./types";
 
 /*
@@ -42,6 +43,7 @@ export interface CommonOptions {
   shareNonce?: ShareNonce;
   derivationPath?: DerivationPath;
   pollingInterval?: PollingInterval;
+  chainId?: ChainId;
 }
 
 export type Options = SigningAuthority & CommonOptions;

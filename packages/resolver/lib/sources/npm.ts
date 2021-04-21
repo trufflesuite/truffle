@@ -27,20 +27,12 @@ export class NPM implements ResolverSource {
       if (!basePath) {
         continue;
       }
-      const expectedPath = path.join(
-        basePath,
-        "node_modules",
-        packageName,
-        "build",
-        "contracts",
-        contractName + ".json"
-      );
-      try {
-        const result = fs.readFileSync(expectedPath, "utf8");
-        return JSON.parse(result);
-      } catch (e) {
-        continue;
+      const result = this.resolveAndParse(basePath, packageName, contractName);
+      // result is null if it fails to resolve
+      if (result) {
+        return result;
       }
+      continue;
     }
     return null;
   }
@@ -66,6 +58,25 @@ export class NPM implements ResolverSource {
       }
     }
     return { body, filePath: import_path };
+  }
+
+  resolveAndParse(basePath: string, packageName: string, contractName: string) {
+    const packagePath = path.join(basePath, "node_modules", packageName);
+    const subDirs = [`build${path.sep}contracts`, "build"];
+    for (const subDir of subDirs) {
+      const possiblePath = path.join(
+        packagePath,
+        subDir,
+        `${contractName}.json`
+      );
+      try {
+        const result = fs.readFileSync(possiblePath, "utf8");
+        return JSON.parse(result);
+      } catch (e) {
+        continue;
+      }
+    }
+    return null;
   }
 
   // We're resolving package paths to other package paths, not absolute paths.

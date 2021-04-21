@@ -3,8 +3,8 @@ const solc = require("solc");
 const Schema = require("../");
 const debug = require("debug")("test:solc");
 
-describe("solc", function() {
-  const exampleSolidity = `pragma solidity ^0.5.0;
+describe("solc", function () {
+  const exampleSolidity = `pragma solidity ^0.6.0;
 
 contract A {
   uint x;
@@ -19,7 +19,7 @@ contract B {
 }
 `;
 
-  it("processes solc standard JSON output correctly", function() {
+  it("processes solc standard JSON output correctly", function () {
     this.timeout(5000);
 
     const solcIn = JSON.stringify({
@@ -42,10 +42,7 @@ contract B {
               "devdoc",
               "userdoc"
             ],
-            "": [
-              "ast",
-              "legacyAST"
-            ]
+            "": ["ast", "legacyAST"]
           }
         }
       }
@@ -73,7 +70,7 @@ contract B {
       userdoc: rawA.userdoc
     };
 
-    Object.keys(expected).forEach(function(key) {
+    Object.keys(expected).forEach(function (key) {
       const expectedValue = expected[key];
       const actualValue = A[key];
 

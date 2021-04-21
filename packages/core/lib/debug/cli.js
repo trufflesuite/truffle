@@ -46,7 +46,11 @@ class CLIDebugger {
     const fetchSpinner = ora(
       "Getting and compiling external sources..."
     ).start();
-    const { badAddresses, badFetchers } = await new DebugExternalHandler(
+    const {
+      badAddresses,
+      badFetchers,
+      badCompilationAddresses
+    } = await new DebugExternalHandler(
       bugger,
       this.config
     ).fetch(); //note: mutates bugger!

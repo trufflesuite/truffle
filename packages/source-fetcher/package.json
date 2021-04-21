@@ -29,7 +29,7 @@
   "devDependencies": {
     "@types/debug": "^4.1.5",
     "@types/request-promise-native": "^1.0.17",
-    "typescript": "3.9.8"
+    "typescript": "^4.1.4"
   },
   "keywords": [
     "ethereum",

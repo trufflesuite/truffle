@@ -18,7 +18,7 @@
     "@types/fs-extra": "^8.1.0",
     "@types/mocha": "^5.2.7",
     "@types/node": "12.12.21",
-    "typescript": "3.9.8"
+    "typescript": "^4.1.4"
   },
   "dependencies": {
     "@truffle/contract-sources": "^0.1.11",
