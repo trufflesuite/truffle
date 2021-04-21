@@ -26097,20 +26097,6 @@ solc@0.6.0:
     semver "^5.5.0"
     tmp "0.0.33"
 
-solc@0.6.0:
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/solc/-/solc-0.6.0.tgz#061a36075087b5ca16e1c4fc4fad565aa2851fe4"
-  integrity sha512-fYVRKbJLbg0oETBuAJN/ts0X/hj2YgOAl3ly3nrm/qhleVr22ecl3OSXW3hRmOWvH81hJ2KHRYRQWgqioK6d0A==
-  dependencies:
-    command-exists "^1.2.8"
-    commander "3.0.2"
-    fs-extra "^0.30.0"
-    js-sha3 "0.8.0"
-    memorystream "^0.3.1"
-    require-from-string "^2.0.0"
-    semver "^5.5.0"
-    tmp "0.0.33"
-
 solc@^0.4.20:
   version "0.4.26"
   resolved "https://registry.yarnpkg.com/solc/-/solc-0.4.26.tgz#5390a62a99f40806b86258c737c1cf653cc35cb5"
@@ -28072,6 +28058,11 @@ typescript@3.6.x:
   version "3.6.4"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.6.4.tgz#b18752bb3792bc1a0281335f7f6ebf1bbfc5b91d"
   integrity sha512-unoCll1+l+YK4i4F8f22TaNVPRHcD9PA3yCuZ8g5e0qGqlVlJ/8FSateOLLSagn+Yg5+ZwuPkL8LFUc0Jcvksg==
+
+typescript@3.9.8:
+  version "3.9.8"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.9.8.tgz#7d937ba4e4044af7fa83d127b982f8f61ca816a4"
+  integrity sha512-nDbnFkUZZjkQ92qwKX+C+jtk4OGfU8H9toSEs3uAsl8cxLjG2sqQm6leF/pLWvm9FAEJ6KHkYMAbHYaY2ITeVg==
 
 typescript@^3.0.3, typescript@^3.7.5, typescript@^3.8.3, typescript@^3.9.5:
   version "3.9.7"
