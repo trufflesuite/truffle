@@ -8,7 +8,7 @@ type Item<A> = A extends (infer I)[] ? I : never;
 
 export const normalizeEntry = (looseEntry: Item<SchemaAbi> | Entry): Entry => {
   if (looseEntry.type === "event" || looseEntry.type === "error") {
-    // nothing gets normalized for events or errorsright now
+    // nothing gets normalized for events or errors right now
     return looseEntry as Entry;
   }
 
