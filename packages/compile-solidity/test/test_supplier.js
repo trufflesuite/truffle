@@ -18,6 +18,7 @@ describe("CompilerSupplier", function () {
     let oldPragmaFloatSource; // ^0.4.15
     let version4PragmaSource; // ^0.4.21
     let version5PragmaSource; // ^0.5.0
+    let version6PragmaSource; // ^0.6.0
     let versionLatestPragmaSource; // Currently: ^0.8.0
     let compileConfig;
 
@@ -44,7 +45,10 @@ describe("CompilerSupplier", function () {
         path.join(__dirname, "./sources/v0.5.x/Version5Pragma.sol"),
         "utf-8"
       );
-
+      const version6Pragma = await fse.readFile(
+        path.join(__dirname, "./sources/v0.6.x/Version6Pragma.sol"),
+        "utf-8"
+      );
       const versionLatestPragma = await fse.readFile(
         path.join(__dirname, "./sources/v0.8.x/Version8Pragma.sol"), //update when necessary
         "utf-8"
@@ -54,6 +58,7 @@ describe("CompilerSupplier", function () {
       oldPragmaFloatSource = { "OldPragmaFloat.sol": oldPragmaFloat };
       version4PragmaSource = { "NewPragma.sol": version4Pragma };
       version5PragmaSource = { "Version5Pragma.sol": version5Pragma };
+      version6PragmaSource = { "Version6Pragma.sol": version6Pragma };
       versionLatestPragmaSource = { "Version8Pragma.sol": versionLatestPragma }; //update when necessary
     });
 
@@ -128,14 +133,14 @@ describe("CompilerSupplier", function () {
       const localPathOptions = Config.default().merge(options);
 
       const { compilations } = await Compile.sources({
-        sources: version5PragmaSource,
+        sources: version6PragmaSource,
         options: localPathOptions
       });
-      const Version5Pragma = findOne(
-        "Version5Pragma",
+      const Version6Pragma = findOne(
+        "Version6Pragma",
         compilations[0].contracts
       );
-      assert(Version5Pragma.contractName === "Version5Pragma");
+      assert(Version6Pragma.contractName === "Version6Pragma");
     });
 
     it("caches releases and uses them if available", async function () {
