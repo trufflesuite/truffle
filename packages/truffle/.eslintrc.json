@@ -1,0 +1,13 @@
+{
+  "overrides": [
+    {
+      "files": [
+        "**/test/scenarios.js",
+        "**/test/scenarios/**/*.js"
+      ],
+      "env": {
+        "mocha": true
+      }
+    }
+  ]
+}
