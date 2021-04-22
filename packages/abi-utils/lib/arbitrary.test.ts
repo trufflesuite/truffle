@@ -26,6 +26,10 @@ const arbitraries = {
     arbitrary: Arbitrary.EventEntry(),
     schema: withDefinitions(abiSchema.definitions.Event)
   },
+  ErrorEntry: {
+    arbitrary: Arbitrary.ErrorEntry(),
+    schema: withDefinitions(abiSchema.definitions.Error)
+  },
   FunctionEntry: {
     arbitrary: Arbitrary.FunctionEntry(),
     schema: withDefinitions(abiSchema.definitions.NormalFunction)
