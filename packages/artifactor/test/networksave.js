@@ -32,7 +32,7 @@ describe("if artifact file doesn't already exist...", () => {
     // make sure the artifact file doesn't already exist
     assert(!fs.existsSync(expected_filepath));
 
-    artifactor = new Artifactor(tempDir.name);
+    const artifactor = new Artifactor(tempDir.name);
 
     artifactor
       .save({
@@ -43,7 +43,7 @@ describe("if artifact file doesn't already exist...", () => {
       })
       .then(() => {
         const json = requireNoCache(expected_filepath);
-        Example = contract(json);
+        const Example = contract(json);
 
         assert.deepStrictEqual(Example.networks, firstNetworkObj);
       })
@@ -57,7 +57,7 @@ describe("if artifact file already exists...", () => {
     // make sure the artifact file already exists
     assert(fs.existsSync(expected_filepath));
 
-    artifactor = new Artifactor(tempDir.name);
+    const artifactor = new Artifactor(tempDir.name);
 
     artifactor
       .save({
@@ -68,7 +68,7 @@ describe("if artifact file already exists...", () => {
       })
       .then(() => {
         const json = requireNoCache(expected_filepath);
-        Example = contract(json);
+        const Example = contract(json);
 
         assert.deepStrictEqual(Example.networks[2], secondNetworkObj[2]);
         assert.deepStrictEqual(Example.networks[3], firstNetworkObj[3]);
@@ -82,7 +82,7 @@ describe("if artifact file already exists...", () => {
     // make sure the artifact file already exists
     assert(fs.existsSync(expected_filepath));
 
-    artifactor = new Artifactor(tempDir.name);
+    const artifactor = new Artifactor(tempDir.name);
 
     artifactor
       .save({
@@ -93,7 +93,7 @@ describe("if artifact file already exists...", () => {
       })
       .then(() => {
         const json = requireNoCache(expected_filepath);
-        Example = contract(json);
+        const Example = contract(json);
 
         assert.deepStrictEqual(Example.networks[2], thirdNetworkObj[2]);
         assert.notDeepEqual(Example.networks[2], secondNetworkObj[2]);

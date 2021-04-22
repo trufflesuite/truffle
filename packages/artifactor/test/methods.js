@@ -4,7 +4,7 @@ const Artifactor = require("../");
 
 describe("Artifactor.save", () => {
   it("throws if passed an artifact without a contractName", () => {
-    artifactor = new Artifactor("/some/path");
+    const artifactor = new Artifactor("/some/path");
 
     artifactor
       .save({
@@ -23,7 +23,7 @@ describe("Artifactor.save", () => {
 describe("Artifactor.saveAll", () => {
   it("warns if there are duplicate contract names and input is an array", () => {
     let consoleWarnSpy = sinon.spy(console, "warn");
-    artifactor = new Artifactor("/some/path");
+    const artifactor = new Artifactor("/some/path");
 
     artifactor
       .saveAll([
@@ -56,7 +56,7 @@ describe("Artifactor.saveAll", () => {
   });
 
   it("throws if this.destination doesn't exist", () => {
-    artifactor = new Artifactor("/some/path");
+    const artifactor = new Artifactor("/some/path");
 
     artifactor
       .saveAll({
@@ -75,7 +75,7 @@ describe("Artifactor.saveAll", () => {
   });
 
   it("throws if this.destination doesn't exist(array passed)", () => {
-    artifactor = new Artifactor("/some/path");
+    const artifactor = new Artifactor("/some/path");
 
     artifactor
       .saveAll([
