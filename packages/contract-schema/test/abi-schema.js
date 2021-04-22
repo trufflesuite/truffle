@@ -96,53 +96,6 @@ describe("ABI Schema", function() {
       assert(!validate(abi));
     });
   });
-  describe("normal function definition", function() {
-    it("can omit type, outputs, constant, and payable", function() {
-      var abi = [
-        {
-          name: "press",
-          inputs: [
-            {
-              name: "button",
-              type: "uint256"
-            }
-          ],
-          stateMutability: "nonpayable"
-        }
-      ];
-
-      assert(validate(abi));
-      assert.equal(abi[0].type, "function");
-      assert.equal(abi[0].stateMutability, "nonpayable");
-      assert.deepEqual(abi[0].outputs, []);
-    });
-
-    it("cannot omit name", function() {
-      var abi = [
-        {
-          type: "function",
-          outputs: [],
-          inputs: [],
-          stateMutability: "nonpayable"
-        }
-      ];
-
-      assert(!validate(abi));
-    });
-
-    it("cannot omit inputs", function() {
-      var abi = [
-        {
-          name: "pressButton",
-          type: "function",
-          outputs: [],
-          stateMutability: "nonpayable"
-        }
-      ];
-
-      assert(!validate(abi));
-    });
-  });
 
   describe("error definition", function() {
     it("validates with all fields valid", function() {
