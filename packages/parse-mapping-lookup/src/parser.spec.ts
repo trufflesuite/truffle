@@ -62,13 +62,13 @@ const testCases = [
     })
   },
   {
-    expression: `m[0].k[1]`,
+    expression: `m$[0]._k[1]`,
     result: expression({
-      root: identifier({ name: "m" }),
+      root: identifier({ name: "m$" }),
       pointer: pointer({
         path: [
           access({ index: literal({ value: "0" }) }),
-          lookup({ property: identifier({ name: "k" }) }),
+          lookup({ property: identifier({ name: "_k" }) }),
           access({ index: literal({ value: "1" }) })
         ]
       })

@@ -33,7 +33,7 @@ import {
  * Identifier
  */
 
-const identifierP = regexp(/[a-zA-Z][a-zA-Z0-9]*/).pipe(
+const identifierP = regexp(/[a-zA-Z_$][a-zA-Z0-9_$]*/).pipe(
   map(([name]) => identifier({ name }))
 );
 
