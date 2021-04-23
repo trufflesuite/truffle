@@ -25,18 +25,18 @@ async function verifyVCSURL(url: string) {
       .replace("github.com", "raw.githubusercontent.com")
       .replace(/#.*/, "")}/master/truffle-box.json`
   );
-
-  const { status } = await axios.head(
-    `https://${configURL.host}${configURL.path}`
-  );
-  if (status === 404) {
-    throw new Error(
-      `Truffle Box at URL ${url} doesn't exist. If you believe this is an error, please contact Truffle support.`
-    );
-  } else if (status !== 200) {
-    throw new Error(
-      "Error connecting to github.com. Please check your internet connection and try again."
-    );
+  try {
+    await axios.head(`https://${configURL.host}${configURL.path}`);
+  } catch (error) {
+    if (error.response.status === 404) {
+      throw new Error(
+        `Truffle Box at URL ${url} doesn't exist. If you believe this is an error, please contact Truffle support.`
+      );
+    } else {
+      throw new Error(
+        "Error connecting to github.com. Please check your internet connection and try again."
+      );
+    }
   }
 }
 
