@@ -12,7 +12,7 @@ export class ContractInstance {
     private readonly strategy: IContractStrategy,
     private readonly contract: ContractAbstraction<ContractProvider>
   ) {
-    this.methods = strategy.collectMethods(contract);
+    this.methods = strategy.collectMethods(contract, { migrationContract: _json.contractName === "Migrations" });
 
     for (const method in this.methods) {
       this[method] = this.methods[method];

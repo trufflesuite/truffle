@@ -20,13 +20,15 @@ export class TezosContractStrategy implements IContractStrategy {
     });
   }
 
-  collectMethods(contractInstance: ContractAbstraction<ContractProvider>): { [key: string]: any; } {
+  collectMethods(contractInstance: ContractAbstraction<ContractProvider>, settings: { migrationContract: boolean } = { migrationContract: false }): { [key: string]: any; } {
     const methods: { [key: string]: any; } = {};
     for (const method in contractInstance.methods) {
-      const sendTransaction = (...args: any) => {
+      const sendTransaction = async (...args: any) => {
         const [txArguments, _txParams] = this.prepareCall(args);
 
-        return contractInstance.methods[method](txArguments).send();
+        const transaction = await contractInstance.methods[method](txArguments).send();
+        await transaction.confirmation();
+        return transaction;
       };
 
       methods[method] = Object.assign(
@@ -42,6 +44,33 @@ export class TezosContractStrategy implements IContractStrategy {
         }
       );
     }
+
+    if (settings.migrationContract) {
+      const lastCompletedMigration = async () => {
+        const storage: any = await contractInstance.storage();
+        return storage.last_completed_migration;
+      };
+  
+      methods['last_completed_migration'] = Object.assign(
+        lastCompletedMigration,
+        {
+          call: lastCompletedMigration
+        });
+  
+      // TODO BGC: This could be achieved by changing Migrations.ligo contract
+      const setCompleted = async (...args: any) => {
+        const transaction = await contractInstance.methods.default(args[0]).send();
+        await transaction.confirmation();
+        return transaction;
+      };
+  
+      methods['setCompleted'] = Object.assign(
+        setCompleted,
+        {
+          sendTransaction: setCompleted
+        });
+    }
+
     return methods;
   }
 

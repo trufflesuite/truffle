@@ -368,10 +368,7 @@ class Reporter {
     let message;
     if (data.deployed) {
       // TODO BGC Temporary, until we resolve how to refactor reporting
-      if (data.contract._json.architecture === "tezos") {
-
-      }
-      else {
+      if (data.contract._json.architecture !== "tezos") {
         const tx = await data.contract.interfaceAdapter.getTransaction(
           data.receipt.transactionHash
         );

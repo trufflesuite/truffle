@@ -12,7 +12,7 @@ export interface IContractStrategy {
   // sendTransaction(): any;
   // call(): any;
 
-  collectMethods(contractInstance: any): { [key: string]: any; };
+  collectMethods(contractInstance: any, settings: { migrationContract: boolean }): { [key: string]: any; };
   collectAdditionalProperties(contractInstance: any): { [key: string]: any; };
 
   estimateGasNew(txArgs: any[], txParams: { [key: string]: any }): any;

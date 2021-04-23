@@ -11,7 +11,8 @@ export class ContractConstructor {
     estimateGas: (txArgs: any[]) => void;
   };
 
-  constructor(private _json: { [key: string]: any }, config: any) {
+  // TODO BGC Address config not being passed
+  constructor(private _json: { [key: string]: any }, config?: any) {
     this._json.gasMultiplier = this._json.gasMultiplier || 1.25;
     this.network_id = config.network_id;
 
@@ -48,7 +49,7 @@ export class ContractConstructor {
   }
 
   public isDeployed(): boolean {
-    return false;
+    return this.network_id && !!this._json.networks[this.network_id]?.address;
   }
 
   public get contract_name(): string {
