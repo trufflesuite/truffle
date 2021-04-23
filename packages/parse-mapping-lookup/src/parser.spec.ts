@@ -2,8 +2,8 @@ import { parse } from "@truffle/parse-mapping-lookup/parser";
 
 import {
   expression,
-  access,
-  lookup,
+  indexAccess,
+  memberLookup,
   identifier,
   pointer,
   literal
@@ -15,7 +15,7 @@ const testCases = [
     result: expression({
       root: identifier({ name: "m" }),
       pointer: pointer({
-        path: [access({ index: literal({ value: "0" }) })]
+        path: [indexAccess({ index: literal({ value: "0" }) })]
       })
     })
   },
@@ -25,8 +25,8 @@ const testCases = [
       root: identifier({ name: "m" }),
       pointer: pointer({
         path: [
-          access({ index: literal({ value: "0" }) }),
-          access({ index: literal({ value: "1" }) })
+          indexAccess({ index: literal({ value: "0" }) }),
+          indexAccess({ index: literal({ value: "1" }) })
         ]
       })
     })
@@ -36,7 +36,7 @@ const testCases = [
     result: expression({
       root: identifier({ name: "m" }),
       pointer: pointer({
-        path: [access({ index: literal({ value: "hello" }) })]
+        path: [indexAccess({ index: literal({ value: "hello" }) })]
       })
     })
   },
@@ -45,7 +45,7 @@ const testCases = [
     result: expression({
       root: identifier({ name: "m" }),
       pointer: pointer({
-        path: [access({ index: literal({ value: '"' }) })]
+        path: [indexAccess({ index: literal({ value: '"' }) })]
       })
     })
   },
@@ -55,8 +55,8 @@ const testCases = [
       root: identifier({ name: "s" }),
       pointer: pointer({
         path: [
-          lookup({ property: identifier({ name: "m" }) }),
-          access({ index: literal({ value: "0" }) })
+          memberLookup({ property: identifier({ name: "m" }) }),
+          indexAccess({ index: literal({ value: "0" }) })
         ]
       })
     })
@@ -67,9 +67,9 @@ const testCases = [
       root: identifier({ name: "m$" }),
       pointer: pointer({
         path: [
-          access({ index: literal({ value: "0" }) }),
-          lookup({ property: identifier({ name: "_k" }) }),
-          access({ index: literal({ value: "1" }) })
+          indexAccess({ index: literal({ value: "0" }) }),
+          memberLookup({ property: identifier({ name: "_k" }) }),
+          indexAccess({ index: literal({ value: "1" }) })
         ]
       })
     })

@@ -21,11 +21,11 @@ import {
 } from "parjs/combinators";
 
 import {
-  access,
+  indexAccess,
   expression,
   identifier,
   literal,
-  lookup,
+  memberLookup,
   pointer
 } from "./ast";
 
@@ -91,28 +91,28 @@ const literalP = numberP.pipe(
 );
 
 /*
- * Lookup
+ * MemberLookup
  */
 
-const lookupP = string(".").pipe(
+const memberLookupP = string(".").pipe(
   then(identifierP),
-  map(([_, property]) => lookup({ property }))
+  map(([_, property]) => memberLookup({ property }))
 );
 
 /*
- * Access
+ * IndexAccess
  */
 
-const accessP = literalP.pipe(
+const indexAccessP = literalP.pipe(
   between(string("["), string("]")),
-  map(index => access({ index }))
+  map(index => indexAccess({ index }))
 );
 
 /*
  * Pointer
  */
 
-const stepP = lookupP.pipe(or(accessP));
+const stepP = memberLookupP.pipe(or(indexAccessP));
 
 const pointerP = stepP.pipe(
   then(stepP.pipe(many())),

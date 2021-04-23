@@ -49,7 +49,7 @@ export interface Pointer {
   path: Step[];
 }
 
-export type Step = Access | Lookup;
+export type Step = IndexAccess | MemberLookup;
 
 export const pointer = (options: { path: Step[] }): Pointer => {
   const { path } = options;
@@ -60,35 +60,37 @@ export const pointer = (options: { path: Step[] }): Pointer => {
 };
 
 /*
- * Lookup
+ * MemberLookup
  */
 
-export interface Lookup {
-  kind: "lookup";
+export interface MemberLookup {
+  kind: "member-lookup";
   property: Identifier;
 }
 
-export const lookup = (options: { property: Identifier }): Lookup => {
+export const memberLookup = (options: {
+  property: Identifier;
+}): MemberLookup => {
   const { property } = options;
   return {
-    kind: "lookup",
+    kind: "member-lookup",
     property
   };
 };
 
 /*
- * Access
+ * IndexAccess
  */
 
-export interface Access {
-  kind: "access";
+export interface IndexAccess {
+  kind: "index-access";
   index: Literal;
 }
 
-export const access = (options: { index: Literal }): Access => {
+export const indexAccess = (options: { index: Literal }): IndexAccess => {
   const { index } = options;
   return {
-    kind: "access",
+    kind: "index-access",
     index
   };
 };
