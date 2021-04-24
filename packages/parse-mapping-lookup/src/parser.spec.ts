@@ -75,6 +75,17 @@ const testCases = [
         ]
       })
     })
+  },
+  {
+    expression: `m["\\x41"]`,
+    result: expression({
+      root: identifier({ name: "m" }),
+      pointer: pointer({
+        path: [
+          indexAccess({ index: stringLiteral({ value: "A" }) })
+        ]
+      })
+    })
   }
 ];
 
