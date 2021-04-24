@@ -8,7 +8,8 @@ import {
   pointer,
   numberLiteral,
   stringLiteral,
-  booleanLiteral
+  booleanLiteral,
+  hexLiteral
 } from "@truffle/parse-mapping-lookup/ast";
 
 const testCases = [
@@ -86,13 +87,38 @@ const testCases = [
         ]
       })
     })
+  },
+  {
+    expression: `m[`,
+    errors: true
+  },
+  {
+    expression: `m[hex"deadbeef"]`,
+    result: expression({
+      root: identifier({ name: "m" }),
+      pointer: pointer({
+        path: [
+          indexAccess({ index: hexLiteral({ value: "0xdeadbeef" }) })
+        ]
+      })
+    })
+  },
+  {
+    expression: `m[hex"deadbee"]`,
+    errors: true
   }
 ];
 
 describe("@truffle/parse-mapping-lookup", () => {
-  for (const { expression, result: expected } of testCases) {
+  for (const { expression, errors = false, result: expected } of testCases) {
     it(`parses: ${expression}`, () => {
-      const result = parse(expression);
+      let result;
+      try {
+        result = parse(expression);
+      } catch (error) {
+        expect(errors).toEqual(true);
+        return;
+      }
 
       expect(result).toEqual(expected);
     });

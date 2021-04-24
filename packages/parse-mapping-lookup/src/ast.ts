@@ -168,10 +168,16 @@ export interface StringLiteral extends Literal {
   value: string;
 }
 
+export interface HexLiteral extends Literal {
+  type: "hex";
+  value: string;
+}
+
 export const {
   booleanLiteral,
   numberLiteral,
-  stringLiteral
+  stringLiteral,
+  hexLiteral
 } = LiteralGenerics.makeConstructors<{
   boolean: {
     interface: BooleanLiteral;
@@ -185,8 +191,13 @@ export const {
     interface: StringLiteral;
     value: string;
   };
+  hex: {
+    interface: HexLiteral;
+    value: string;
+  }
 }>({
   boolean: {},
   number: {},
-  string: {}
+  string: {},
+  hex: {}
 } as const);

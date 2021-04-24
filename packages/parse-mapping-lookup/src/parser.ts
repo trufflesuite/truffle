@@ -7,13 +7,16 @@ import {
   noCharOf,
   stringLen,
   string,
+  digit,
   int,
   float
 } from "parjs";
 import {
   qthen,
   map,
+  exactly,
   many,
+  manyBetween,
   stringify,
   between,
   or,
@@ -27,6 +30,7 @@ import {
   numberLiteral,
   stringLiteral,
   booleanLiteral,
+  hexLiteral,
   memberLookup,
   pointer
 } from "./ast";
@@ -98,24 +102,32 @@ namespace Strings {
   export const stringP = stringEntriesP.pipe(many(), stringify(), between('"'));
 }
 
-const numberP = int().pipe(
+const numberLiteralP = int().pipe(
   or(float()),
   map(value => numberLiteral({ value: value.toString() }))
 );
 
-const stringP = Strings.stringP.pipe(
+const stringLiteralP = Strings.stringP.pipe(
   map(value => stringLiteral({ value }))
 );
 
-const booleanP = string("true").pipe(
+const booleanLiteralP = string("true").pipe(
   or(string("false")),
   map((value: "true" | "false") => booleanLiteral({ value: value === "true" }))
 );
 
-const literalP = numberP.pipe(
+const hexLiteralP = digit(16).pipe(exactly(2)).pipe(
+  map(pair => pair.join("")),
+  manyBetween(string(`hex"`), string(`"`)),
+  map(pairs => pairs.join("")),
+  map(value => hexLiteral({ value: `0x${value}` }))
+);
+
+const literalP = numberLiteralP.pipe(
   or(
-    stringP,
-    booleanP
+    stringLiteralP,
+    booleanLiteralP,
+    hexLiteralP
   )
 );
 
