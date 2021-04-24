@@ -98,17 +98,18 @@ export const indexAccess = (options: { index: Literal }): IndexAccess => {
 namespace LiteralGenerics {
   type Literals = {
     [type: string]: {
-      interface: {
-        kind: "literal";
-        type: string;
-        value: any;
-      };
+      kind: "literal";
+      type: string;
       value: any;
     }
   };
 
   type LiteralName<L extends Literals> = string & keyof L;
-  type Literal<L extends Literals, N extends LiteralName<L>> = L[N];
+  type Literal<L extends Literals, N extends LiteralName<L>> = {
+    kind: "literal";
+    type: N;
+    value: L[N]["value"];
+  };
 
   type Definition<L extends Literals, _N extends LiteralName<L>> = {};
   type Definitions<L extends Literals> = {
@@ -116,7 +117,7 @@ namespace LiteralGenerics {
   };
 
   type Constructor<L extends Literals, N extends LiteralName<L>> =
-    (options: { value: Literal<L, N>["value"] }) => Literal<L, N>["interface"];
+    (options: Pick<Literal<L, N>, "value">) => Literal<L, N>;
 
   export type ConstructorName<L extends Literals, N extends LiteralName<L>> =
     `${N}Literal`;
@@ -130,8 +131,8 @@ namespace LiteralGenerics {
 
   const makeConstructor = <L extends Literals, N extends LiteralName<L>>(
     type: N
-  ): Constructor<L, N> => ({ value }) => ({
-    kind: "literal",
+  ): Constructor<L, N> => ({ value }: Pick<Literal<L, N>, "value">) => ({
+    kind: "literal" as const,
     type,
     value
   });
@@ -177,24 +178,12 @@ export const {
   booleanLiteral,
   numberLiteral,
   stringLiteral,
-  hexLiteral
+  hexLiteral,
 } = LiteralGenerics.makeConstructors<{
-  boolean: {
-    interface: BooleanLiteral;
-    value: boolean;
-  };
-  number: {
-    interface: NumberLiteral;
-    value: string;
-  };
-  string: {
-    interface: StringLiteral;
-    value: string;
-  };
-  hex: {
-    interface: HexLiteral;
-    value: string;
-  }
+  boolean: BooleanLiteral;
+  number: NumberLiteral;
+  string: StringLiteral;
+  hex: HexLiteral;
 }>({
   boolean: {},
   number: {},
