@@ -95,19 +95,98 @@ export const indexAccess = (options: { index: Literal }): IndexAccess => {
   };
 };
 
+namespace LiteralGenerics {
+  type Literals = {
+    [type: string]: {
+      interface: {
+        kind: "literal";
+        type: string;
+        value: any;
+      };
+      value: any;
+    }
+  };
+
+  type LiteralName<L extends Literals> = string & keyof L;
+  type Literal<L extends Literals, N extends LiteralName<L>> = L[N];
+
+  type Definition<L extends Literals, _N extends LiteralName<L>> = {};
+  type Definitions<L extends Literals> = {
+    [N in LiteralName<L>]: Definition<L, N>;
+  };
+
+  type Constructor<L extends Literals, N extends LiteralName<L>> =
+    (options: { value: Literal<L, N>["value"] }) => Literal<L, N>["interface"];
+
+  export type ConstructorName<L extends Literals, N extends LiteralName<L>> =
+    `${N}Literal`;
+  type UnionToIntersection<U> =
+    (U extends any ? (k: U)=>void : never) extends ((k: infer I)=>void) ? I : never;
+  export type Constructors<L extends Literals> = UnionToIntersection<{
+    [N in LiteralName<L>]: {
+      [K in ConstructorName<L, N>]: Constructor<L, N>;
+    }
+  }[LiteralName<L>]>;
+
+  const makeConstructor = <L extends Literals, N extends LiteralName<L>>(
+    type: N
+  ): Constructor<L, N> => ({ value }) => ({
+    kind: "literal",
+    type,
+    value
+  });
+
+  export const makeConstructors = <L extends Literals>(
+    definitions: Definitions<L>
+  ): Constructors<L> => Object.keys(definitions)
+    .map(type => ({ [`${type}Literal`]: makeConstructor(type) }))
+    .reduce((a, b) => ({ ...a, ...b }), {}) as Constructors<L>;
+}
+
 /*
  * Literal
  */
 
 export interface Literal {
   kind: "literal";
+  type: string;
+  value: any;
+}
+
+export interface BooleanLiteral extends Literal {
+  type: "boolean";
+  value: boolean;
+}
+
+export interface NumberLiteral extends Literal {
+  type: "number";
   value: string;
 }
 
-export const literal = (options: { value: string }): Literal => {
-  const { value } = options;
-  return {
-    kind: "literal",
-    value
+export interface StringLiteral extends Literal {
+  type: "string";
+  value: string;
+}
+
+export const {
+  booleanLiteral,
+  numberLiteral,
+  stringLiteral
+} = LiteralGenerics.makeConstructors<{
+  boolean: {
+    interface: BooleanLiteral;
+    value: boolean;
   };
-};
+  number: {
+    interface: NumberLiteral;
+    value: string;
+  };
+  string: {
+    interface: StringLiteral;
+    value: string;
+  };
+}>({
+  boolean: {},
+  number: {},
+  string: {}
+} as const);

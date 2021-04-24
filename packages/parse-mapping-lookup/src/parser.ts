@@ -24,7 +24,9 @@ import {
   indexAccess,
   expression,
   identifier,
-  literal,
+  numberLiteral,
+  stringLiteral,
+  booleanLiteral,
   memberLookup,
   pointer
 } from "./ast";
@@ -81,13 +83,25 @@ namespace Strings {
   export const stringP = stringEntriesP.pipe(many(), stringify(), between('"'));
 }
 
-const numberP = int().pipe(or(float()));
+const numberP = int().pipe(
+  or(float()),
+  map(value => numberLiteral({ value: value.toString() }))
+);
 
-const stringP = Strings.stringP;
+const stringP = Strings.stringP.pipe(
+  map(value => stringLiteral({ value }))
+);
+
+const booleanP = string("true").pipe(
+  or(string("false")),
+  map((value: "true" | "false") => booleanLiteral({ value: value === "true" }))
+);
 
 const literalP = numberP.pipe(
-  or(stringP),
-  map(value => literal({ value: value.toString() }))
+  or(
+    stringP,
+    booleanP
+  )
 );
 
 /*
