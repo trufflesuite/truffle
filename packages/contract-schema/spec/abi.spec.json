@@ -6,6 +6,7 @@
   "type": "array",
   "items": { "oneOf": [
     { "$ref": "#/definitions/Event" },
+    { "$ref": "#/definitions/Error" },
     { "$ref": "#/definitions/ConstructorFunction" },
     { "$ref": "#/definitions/FallbackFunction" },
     { "$ref": "#/definitions/ReceiveFunction" },
@@ -147,6 +148,23 @@
         "anonymous": { "type": "boolean" }
       },
       "required": ["type", "name", "inputs", "anonymous"],
+      "additionalProperties": false
+    },
+
+    "Error": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["error"]
+        },
+        "name": { "$ref": "#/definitions/Name" },
+        "inputs": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Parameter" }
+        }
+      },
+      "required": ["type", "name", "inputs"],
       "additionalProperties": false
     },
 

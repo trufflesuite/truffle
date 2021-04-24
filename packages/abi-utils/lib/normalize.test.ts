@@ -41,12 +41,14 @@ describe("normalize", () => {
   );
 
   testProp(
-    `always includes "stateMutability" for entries that aren't events`,
+    `always includes "stateMutability" for entries that aren't events or errors`,
     [Arbitrary.Abi()],
     looseAbi => {
       const abi = normalize(looseAbi);
 
-      expect(abi.filter(({ type }) => type !== "event")).toSatisfyAll(
+      expect(
+        abi.filter(({ type }) => type !== "event" && type !== "error")
+      ).toSatisfyAll(
         entry => "stateMutability" in entry
       );
     }

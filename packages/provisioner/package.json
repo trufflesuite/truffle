@@ -1,6 +1,6 @@
 {
   "name": "@truffle/provisioner",
-  "version": "0.2.15",
+  "version": "0.2.16",
   "description": "Provision contract objects for use from multiple sources",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -31,6 +31,6 @@
     "typescript": "^4.1.4"
   },
   "dependencies": {
-    "@truffle/config": "^1.2.37"
+    "@truffle/config": "^1.2.38"
   }
 }
