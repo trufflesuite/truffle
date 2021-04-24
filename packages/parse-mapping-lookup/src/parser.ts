@@ -15,6 +15,7 @@ import {
   qthen,
   map,
   exactly,
+  maybe,
   many,
   manyBetween,
   stringify,
@@ -31,6 +32,7 @@ import {
   stringLiteral,
   booleanLiteral,
   hexLiteral,
+  enumLiteral,
   memberLookup,
   pointer
 } from "./ast";
@@ -123,11 +125,38 @@ const hexLiteralP = digit(16).pipe(exactly(2)).pipe(
   map(value => hexLiteral({ value: `0x${value}` }))
 );
 
+const enumLiteralP = identifierP.pipe(
+  then(
+    string(".").pipe(
+      qthen(identifierP)
+    ),
+    string(".").pipe(
+      qthen(identifierP),
+      maybe()
+    )
+  ),
+).pipe(
+  map(args => {
+    if (args[2]) {
+      const [contract, enumeration, member] = args;
+      return enumLiteral({
+        value: { contract, enumeration, member }
+      });
+    } else {
+      const [enumeration, member] = args;
+      return enumLiteral({
+        value: { enumeration, member }
+      });
+    }
+  })
+);
+
 const literalP = numberLiteralP.pipe(
   or(
     stringLiteralP,
     booleanLiteralP,
-    hexLiteralP
+    hexLiteralP,
+    enumLiteralP
   )
 );
 

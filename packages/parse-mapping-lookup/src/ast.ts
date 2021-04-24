@@ -174,19 +174,31 @@ export interface HexLiteral extends Literal {
   value: string;
 }
 
+export interface EnumLiteral extends Literal {
+  type: "enum";
+  value: {
+    contract?: Identifier;
+    enumeration: Identifier;
+    member: Identifier;
+  };
+}
+
 export const {
   booleanLiteral,
   numberLiteral,
   stringLiteral,
   hexLiteral,
+  enumLiteral
 } = LiteralGenerics.makeConstructors<{
   boolean: BooleanLiteral;
   number: NumberLiteral;
   string: StringLiteral;
   hex: HexLiteral;
+  enum: EnumLiteral;
 }>({
   boolean: {},
   number: {},
   string: {},
-  hex: {}
+  hex: {},
+  enum: {}
 } as const);

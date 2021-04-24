@@ -9,7 +9,8 @@ import {
   numberLiteral,
   stringLiteral,
   booleanLiteral,
-  hexLiteral
+  hexLiteral,
+  enumLiteral
 } from "@truffle/parse-mapping-lookup/ast";
 
 const testCases = [
@@ -105,6 +106,47 @@ const testCases = [
   },
   {
     expression: `m[hex"deadbee"]`,
+    errors: true
+  },
+  {
+    expression: `m[Direction.North]`,
+    result: expression({
+      root: identifier({ name: "m" }),
+      pointer: pointer({
+        path: [
+          indexAccess({
+            index: enumLiteral({
+              value: {
+                enumeration: identifier({ name: "Direction" }),
+                member: identifier({ name: "North" })
+              }
+            })
+          })
+        ]
+      })
+    })
+  },
+  {
+    expression: `m[Geography.Direction.North]`,
+    result: expression({
+      root: identifier({ name: "m" }),
+      pointer: pointer({
+        path: [
+          indexAccess({
+            index: enumLiteral({
+              value: {
+                contract: identifier({ name: "Geography" }),
+                enumeration: identifier({ name: "Direction" }),
+                member: identifier({ name: "North" })
+              }
+            })
+          })
+        ]
+      })
+    })
+  },
+  {
+    expression: `m[North]`,
     errors: true
   }
 ];
