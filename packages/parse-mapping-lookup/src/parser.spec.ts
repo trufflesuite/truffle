@@ -111,16 +111,17 @@ const testCases = [
 
 describe("@truffle/parse-mapping-lookup", () => {
   for (const { expression, errors = false, result: expected } of testCases) {
-    it(`parses: ${expression}`, () => {
-      let result;
-      try {
-        result = parse(expression);
-      } catch (error) {
-        expect(errors).toEqual(true);
-        return;
-      }
-
-      expect(result).toEqual(expected);
-    });
+    if (errors) {
+      it(`fails to parse: ${expression}`, () => {
+        expect(() => {
+          return parse(expression);
+        }).toThrow();
+      });
+    } else {
+      it(`parses: ${expression}`, () => {
+        const result = parse(expression);
+        expect(result).toEqual(expected);
+      });
+    }
   }
 });
