@@ -73,9 +73,9 @@ If you'd like to update a dependency to the same version across all packages, yo
 +    `master`: Stable, released version (v5)
 +    `beta`: Released beta version
 +    `develop`: Work targeting stable release (v5)
-+    `next`: Upcoming feature development and most new work
++    `next`: Not currently in use
 
-Please make pull requests against `next` for any substantial changes. Small changes and bugfixes can be considered for `develop`.
+Please make pull requests against `develop`.
 
 There is a bit more information in the [CONTRIBUTING.md](./CONTRIBUTING.md) file.
 
