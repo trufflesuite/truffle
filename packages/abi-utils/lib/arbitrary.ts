@@ -42,6 +42,17 @@ export const EventEntry = () =>
     anonymous: fc.boolean()
   });
 
+export const ErrorEntry = () =>
+  fc.record({
+    type: fc.constant("error"),
+    name: ErrorName(),
+    inputs: fc.array(Parameter(), { maxLength: 10 }).filter(inputs => {
+      // names that are not blank should be unique
+      const names = inputs.map(({ name }) => name).filter(name => name !== "");
+      return names.length === new Set(names).size;
+    })
+  });
+
 export const FunctionEntry = () =>
   fc
     .tuple(
@@ -135,7 +146,11 @@ export const ConstructorEntry = () =>
     .tuple(
       fc.record({
         type: fc.constant("constructor"),
-        inputs: fc.array(Parameter())
+        inputs: fc.array(Parameter(), { maxLength: 10 }).filter(inputs => {
+          // names that are not blank should be unique
+          const names = inputs.map(({ name }) => name).filter(name => name !== "");
+          return names.length === new Set(names).size;
+        })
       }),
       fc
         .tuple(
@@ -168,7 +183,7 @@ export const Abi = () =>
       ConstructorEntry(),
       FallbackEntry(),
       ReceiveEntry(),
-      fc.array(fc.oneof(FunctionEntry(), EventEntry()))
+      fc.array(fc.oneof(FunctionEntry(), EventEntry(), ErrorEntry()))
     )
     .chain(([constructor, fallback, receive, entries]) =>
       fc.shuffledSubarray([constructor, fallback, receive, ...entries])
@@ -277,6 +292,7 @@ const reservedWords = new Set([
   "else",
   "emit",
   "enum",
+  "error",
   "ether",
   "event",
   "external",
@@ -395,6 +411,8 @@ const ParameterName = () =>
   );
 const EventName = () =>
   fakerToArb("{{hacker.verb}} {{hacker.noun}}", pascalCase);
+const ErrorName = () =>
+  fakerToArb("{{hacker.noun}} {{hacker.noun}}", pascalCase);
 const FunctionName = () => fakerToArb("{{hacker.verb}} {{hacker.noun}}");
 
 const TypeRecord = (): fc.Arbitrary<any> =>
