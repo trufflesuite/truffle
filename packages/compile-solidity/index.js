@@ -11,6 +11,32 @@ const expect = require("@truffle/expect");
 const partition = require("lodash.partition");
 const fs = require("fs-extra");
 
+async function compileYulPaths(yulPaths, options) {
+  let yulCompilations = [];
+  for (const path of yulPaths) {
+    const yulOptions = options.with({ compilationTargets: [path] });
+    //load up Yul sources, since they weren't loaded up earlier
+    //(we'll just use FS for this rather than going through the resolver,
+    //for simplicity, since there are no imports to worry about)
+    const yulSource = fs.readFileSync(path, { encoding: "utf8" });
+    debug("Compiling Yul");
+    const compilation = await run({ [path]: yulSource }, yulOptions, "Yul");
+    debug("Yul compiled successfully");
+
+    // returns CompilerResult - see @truffle/compile-common
+    if (compilation.contracts.length > 0) {
+      yulCompilations.push(compilation);
+    }
+  }
+  if (yulPaths.length > 0 && !options.quiet) {
+    //replacement for individual Yul warnings
+    options.logger.log(
+      "> Warning: Yul is still experimental. Avoid using it in live deployments."
+    );
+  }
+  return yulCompilations;
+}
+
 const Compile = {
   // this takes an object with keys being the name and values being source
   // material as well as an options object
@@ -117,8 +143,6 @@ const Compile = {
     reportSources({ paths: [...compilationTargets, ...yulPaths], options });
 
     let solidityCompilations = [];
-    let yulCompilations = [];
-
     // only call run if there are sources to run on!
     if (Object.keys(allSources).length > 0) {
       const solidityOptions = options.with({ compilationTargets });
@@ -132,27 +156,7 @@ const Compile = {
       }
     }
 
-    for (const path of yulPaths) {
-      const yulOptions = options.with({ compilationTargets: [path] });
-      //load up Yul sources, since they weren't loaded up earlier
-      //(we'll just use FS for this rather than going through the resolver,
-      //for simplicity, since there are no imports to worry about)
-      const yulSource = fs.readFileSync(path, { encoding: "utf8" });
-      debug("Compiling Yul");
-      const compilation = await run({ [path]: yulSource }, yulOptions, "Yul");
-      debug("Yul compiled successfully");
-
-      // returns CompilerResult - see @truffle/compile-common
-      if (compilation.contracts.length > 0) {
-        yulCompilations.push(compilation);
-      }
-    }
-    if (yulPaths.length > 0 && !options.quiet) {
-      //replacement for individual Yul warnings
-      options.logger.log(
-        "> Warning: Yul is still experimental. Avoid using it in live deployments."
-      );
-    }
+    const yulCompilations = await compileYulPaths(yulPaths, options);
 
     return {
       compilations: [...solidityCompilations, ...yulCompilations]
