@@ -113,7 +113,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
   ): Promise<string> {
     return await this.requestWithRetries<string>({
       url: `https://${this.domain}/contract/${this.networkId}/${address}/sources/${sourcePath}`,
-      responseType: "json",
+      responseType: "text",
       method: "get"
     });
   }
