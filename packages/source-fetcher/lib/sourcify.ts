@@ -29,7 +29,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
   private readonly networkName: string; //not really used as a class member atm
   //but may be in the future
 
-  private readonly domain: string = "contractrepo.komputing.org";
+  private readonly domain: string = "repo.sourcify.dev";
 
   constructor(networkId: number) {
     this.networkId = networkId;
@@ -53,7 +53,9 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     address: string
   ): Promise<Types.SourceInfo | null> {
     const metadata = await this.getMetadata(address);
+    debug("metadata: %O", metadata);
     if (!metadata) {
+      debug("no metadata");
       return null;
     }
     let sources: Types.SourcesByPath;
@@ -93,11 +95,12 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
   ): Promise<Types.SolcMetadata | null> {
     try {
       return await this.requestWithRetries<Types.SolcMetadata>({
-        uri: `https://${this.domain}/contract/${this.networkId}/${address}/metadata.json`,
+        uri: `https://${this.domain}/contracts/full_match/${this.networkId}/${address}/metadata.json`,
         json: true //turns on auto-parsing
       });
     } catch (error) {
       //is this a 404 error? if so just return null
+      debug("error: %O", error);
       if (error.statusCode === 404) {
         return null;
       }
