@@ -1,4 +1,4 @@
-const request = require("request-promise");
+const axios = require("axios");
 const fs = require("fs");
 const { execSync } = require("child_process");
 const ora = require("ora");
@@ -36,8 +36,8 @@ class Docker extends LoadingStrategy {
   }
 
   getDockerTags() {
-    return request(this.config.dockerTagsUrl)
-      .then(list => JSON.parse(list).results.map(item => item.name))
+    return axios.get(this.config.dockerTagsUrl)
+      .then(response => response.data.results.map(item => item.name))
       .catch(error => {
         throw this.errors("noRequest", this.config.dockerTagsUrl, error);
       });

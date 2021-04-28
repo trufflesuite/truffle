@@ -12,7 +12,7 @@ import {
   removeLibraries,
   InvalidNetworkError
 } from "./common";
-import request from "request-promise-native";
+import axios, { AxiosResponse } from "axios";
 
 //this looks awkward but the TS docs actually suggest this :P
 const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
@@ -91,20 +91,22 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
 
   private async makeRequest(address: string): Promise<EtherscanSuccess> {
     //not putting a try/catch around this; if it throws, we throw
-    const response: EtherscanResponse = await request({
-      uri: `https://api${this.suffix}.etherscan.io/api`,
-      qs: {
-        module: "contract",
-        action: "getsourcecode",
-        address,
-        apikey: this.apiKey
-      },
-      json: true //turns on auto-parsing :)
-    });
-    if (response.status === "0") {
-      throw new Error(response.result);
+    const response: AxiosResponse<EtherscanResponse> = await axios.get(
+      `https://api${this.suffix}.etherscan.io/api`,
+      {
+        params: {
+          module: "contract",
+          action: "getsourcecode",
+          address,
+          apikey: this.apiKey
+        },
+        responseType: "json"
+      }
+    );
+    if (response.data.status === "0") {
+      throw new Error(response.data.result);
     }
-    return response;
+    return response.data;
   }
 
   private static processResult(
