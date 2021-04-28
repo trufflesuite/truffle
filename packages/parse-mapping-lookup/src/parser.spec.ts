@@ -1,5 +1,4 @@
-import { parse } from "@truffle/parse-mapping-lookup/parser";
-
+import { parseExpression } from "@truffle/parse-mapping-lookup/parser";
 import {
   expression,
   indexAccess,
@@ -16,7 +15,7 @@ const testCases = [
     result: expression({
       root: identifier({ name: "m" }),
       pointer: pointer({
-        path: [indexAccess({ index: valueLiteral({ value: "0" }) })]
+        path: [indexAccess({ index: valueLiteral({ contents: "0" }) })]
       })
     })
   },
@@ -25,7 +24,7 @@ const testCases = [
     result: expression({
       root: identifier({ name: "m" }),
       pointer: pointer({
-        path: [indexAccess({ index: valueLiteral({ value: "0x0" }) })]
+        path: [indexAccess({ index: valueLiteral({ contents: "0x0" }) })]
       })
     })
   },
@@ -34,7 +33,7 @@ const testCases = [
     result: expression({
       root: identifier({ name: "m" }),
       pointer: pointer({
-        path: [indexAccess({ index: stringLiteral({ value: "hello" }) })]
+        path: [indexAccess({ index: stringLiteral({ contents: "hello" }) })]
       })
     })
   },
@@ -43,7 +42,7 @@ const testCases = [
     result: expression({
       root: identifier({ name: "m" }),
       pointer: pointer({
-        path: [indexAccess({ index: stringLiteral({ value: '"' }) })]
+        path: [indexAccess({ index: stringLiteral({ contents: '"' }) })]
       })
     })
   },
@@ -54,7 +53,7 @@ const testCases = [
       pointer: pointer({
         path: [
           memberLookup({ property: identifier({ name: "m" }) }),
-          indexAccess({ index: valueLiteral({ value: "0" }) })
+          indexAccess({ index: valueLiteral({ contents: "0" }) })
         ]
       })
     })
@@ -65,9 +64,9 @@ const testCases = [
       root: identifier({ name: "m$" }),
       pointer: pointer({
         path: [
-          indexAccess({ index: valueLiteral({ value: "false" }) }),
+          indexAccess({ index: valueLiteral({ contents: "false" }) }),
           memberLookup({ property: identifier({ name: "_k" }) }),
-          indexAccess({ index: valueLiteral({ value: "true" }) })
+          indexAccess({ index: valueLiteral({ contents: "true" }) })
         ]
       })
     })
@@ -77,7 +76,7 @@ const testCases = [
     result: expression({
       root: identifier({ name: "m" }),
       pointer: pointer({
-        path: [indexAccess({ index: stringLiteral({ value: "A" }) })]
+        path: [indexAccess({ index: stringLiteral({ contents: "A" }) })]
       })
     })
   },
@@ -90,7 +89,9 @@ const testCases = [
     result: expression({
       root: identifier({ name: "m" }),
       pointer: pointer({
-        path: [indexAccess({ index: valueLiteral({ value: `hex"deadbeef"` }) })]
+        path: [
+          indexAccess({ index: valueLiteral({ contents: `hex"deadbeef"` }) })
+        ]
       })
     })
   },
@@ -101,9 +102,7 @@ const testCases = [
       pointer: pointer({
         path: [
           indexAccess({
-            index: valueLiteral({
-              value: "Direction.North"
-            })
+            index: valueLiteral({ contents: "Direction.North" })
           })
         ]
       })
@@ -115,14 +114,14 @@ describe("@truffle/parse-mapping-lookup", () => {
   for (const { expression, errors = false, result: expected } of testCases) {
     if (errors) {
       it(`fails to parse: ${expression}`, () => {
-        expect(() => {
-          return parse(expression);
-        }).toThrow();
+        const result = parseExpression(expression);
+        expect(result.isOk).toBeFalsy();
       });
     } else {
       it(`parses: ${expression}`, () => {
-        const result = parse(expression);
-        expect(result).toEqual(expected);
+        const result = parseExpression(expression);
+        expect(result.isOk).toBeTruthy();
+        expect(result.value).toEqual(expected);
       });
     }
   }
