@@ -60,6 +60,10 @@ export function* defineType(node, sourceId) {
   yield put(actions.defineType(node, sourceId));
 }
 
+export function* defineEventOrError(node, sourceId) {
+  yield put(actions.defineEventOrError(node, sourceId));
+}
+
 function* tickSaga() {
   yield* variablesAndMappingsSaga();
   yield* trace.signalTickSagaCompletion();
@@ -131,6 +135,7 @@ export function* decodeReturnValue() {
   const contexts = yield select(data.views.contexts);
   const status = yield select(data.current.returnStatus); //may be undefined
   const returnAllocation = yield select(data.current.returnAllocation); //may be null
+  const errorId = yield select(data.current.errorId);
   debug("returnAllocation: %O", returnAllocation);
 
   const decoder = Codec.decodeReturndata(
@@ -141,7 +146,8 @@ export function* decodeReturnValue() {
       contexts
     },
     returnAllocation,
-    status
+    status,
+    errorId
   );
 
   debug("beginning decoding");
@@ -1054,6 +1060,12 @@ export function* recordAllocations() {
     userDefinedTypes,
     abiAllocations
   );
+  const returndataAllocations = Codec.AbiData.Allocate.getReturndataAllocations(
+    contracts,
+    referenceDeclarations,
+    userDefinedTypes,
+    abiAllocations
+  );
   const stateAllocations = Codec.Storage.Allocate.getStateAllocations(
     contracts,
     referenceDeclarations,
@@ -1066,6 +1078,7 @@ export function* recordAllocations() {
       memoryAllocations,
       abiAllocations,
       calldataAllocations,
+      returndataAllocations,
       stateAllocations
     )
   );

@@ -61,19 +61,28 @@ export interface CalldataAllocations {
 }
 
 export interface CalldataConstructorAllocations {
-  [contextHash: string]: CalldataAndReturndataAllocation; //note: just constructor ones
+  [contextHash: string]: ConstructorCalldataAndReturndataAllocation; //note: just constructor ones
 }
 
 export interface CalldataFunctionAllocations {
   [contextHash: string]: {
-    [selector: string]: CalldataAndReturndataAllocation; //note: just function ones
+    [selector: string]: FunctionCalldataAndReturndataAllocation; //note: just function ones
   };
 }
 
-export interface CalldataAndReturndataAllocation {
+export interface ConstructorCalldataAndReturndataAllocation {
   input: CalldataAllocation;
-  output: ReturndataAllocation; //return data will be discussed below
+  output: ConstructorReturndataAllocation;
 }
+
+export interface FunctionCalldataAndReturndataAllocation {
+  input: CalldataAllocation;
+  output: ReturnValueReturndataAllocation;
+}
+
+export type CalldataAndReturndataAllocation =
+  | FunctionCalldataAndReturndataAllocation
+  | ConstructorCalldataAndReturndataAllocation;
 
 export interface CalldataAllocation {
   abi: Abi.FunctionEntry | Abi.ConstructorEntry;
@@ -118,6 +127,7 @@ export interface EventAllocation {
   abi: Abi.EventEntry;
   contextHash: string;
   definedIn?: Format.Types.ContractType; //is omitted if we don't know
+  id?: string; //is omitted if we don't know
   anonymous: boolean;
   arguments: EventArgumentAllocation[];
   allocationMode: DecodingMode;
@@ -130,40 +140,53 @@ export interface EventArgumentAllocation {
 }
 
 //now let's go back and fill in returndata
-export type ReturndataKind = FunctionReturndataKind | ConstructorReturndataKind;
-
-export type FunctionReturndataKind =
-  | "return"
-  | "revert"
-  | "failure"
-  | "selfdestruct";
-export type ConstructorReturndataKind = "bytecode";
-export type AdditionalReturndataKind = "returnmessage";
+export interface ReturndataAllocations {
+  [selector: string]: RevertReturndataAllocation[]
+}
 
 export type ReturndataAllocation =
-  | FunctionReturndataAllocation
+  | ReturnValueReturndataAllocation
+  | RevertReturndataAllocation
   | ConstructorReturndataAllocation
-  | AdditionalReturndataAllocation;
+  | MessageReturndataAllocation
+  | BlankReturndataAllocation;
 
-export interface FunctionReturndataAllocation {
-  kind: FunctionReturndataKind;
+export interface ReturnValueReturndataAllocation {
+  kind: "return";
+  selector: Uint8Array; //must be empty, but requred for type niceness
+  arguments: ReturndataArgumentAllocation[];
+  allocationMode: DecodingMode;
+}
+
+export interface RevertReturndataAllocation {
+  kind: "revert";
   selector: Uint8Array;
-  abi?: Abi.ErrorEntry; //only included when kind === "revert", but
-  //I'm not going to bother putting that in the type system
+  abi: Abi.ErrorEntry;
+  id?: string; //may be omitted if we don't know
+  definedIn?: Format.Types.ContractType | null; //may be omitted if unknown
+  //note that null means it's a "free error", while undefined means we don't
+  //know
   arguments: ReturndataArgumentAllocation[];
   allocationMode: DecodingMode;
 }
 
 export interface ConstructorReturndataAllocation {
-  kind: ConstructorReturndataKind;
+  kind: "bytecode";
   selector: Uint8Array; //must be empty, but is required for type niceness
   immutables?: ReturnImmutableAllocation[];
   delegatecallGuard: boolean;
   allocationMode: DecodingMode;
 }
 
-export interface AdditionalReturndataAllocation {
-  kind: AdditionalReturndataKind;
+export interface BlankReturndataAllocation {
+  kind: "failure" | "selfdestruct";
+  selector: Uint8Array; //must be empty, but is required for type niceness
+  arguments: []; //must be empty, but required for type niceness
+  allocationMode: DecodingMode;
+}
+
+export interface MessageReturndataAllocation {
+  kind: "returnmessage";
   selector: Uint8Array; //must be empty, but is required for type niceness
   allocationMode: DecodingMode;
 }
@@ -190,8 +213,8 @@ export interface EventAllocationTemporary {
 }
 
 export interface CalldataAllocationTemporary {
-  constructorAllocation?: CalldataAndReturndataAllocation;
+  constructorAllocation?: ConstructorCalldataAndReturndataAllocation;
   functionAllocations: {
-    [selector: string]: CalldataAndReturndataAllocation;
+    [selector: string]: FunctionCalldataAndReturndataAllocation;
   };
 }

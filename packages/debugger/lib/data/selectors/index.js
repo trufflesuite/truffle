@@ -11,6 +11,7 @@ import { stableKeccak256, makePath } from "lib/helpers";
 import trace from "lib/trace/selectors";
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
+import stacktrace from "lib/stacktrace/selectors";
 
 import * as Codec from "@truffle/codec";
 
@@ -338,11 +339,16 @@ const data = createSelectorTree({
      * for simplicity, we will assume that generated sources never define types!
      */
     referenceDeclarations: createLeaf(
-      ["./scopes/inlined", "/info/userDefinedTypes", solidity.views.sources],
-      (scopes, userDefinedTypes, sources) =>
+      [
+        "./scopes/inlined",
+        "/info/userDefinedTypes",
+        "/info/eventsAndErrors",
+        solidity.views.sources
+      ],
+      (scopes, userDefinedTypes, eventsAndErrors, sources) =>
         merge(
           {},
-          ...userDefinedTypes.map(({ id, sourceId }) => {
+          ...userDefinedTypes.concat(eventsAndErrors).map(({ id, sourceId }) => {
             const source = sources[sourceId];
             return source.internal
               ? {} //exclude these
@@ -449,7 +455,12 @@ const data = createSelectorTree({
       /*
        * data.info.allocations.calldata
        */
-      calldata: createLeaf(["/state"], state => state.info.allocations.calldata)
+      calldata: createLeaf(["/state"], state => state.info.allocations.calldata),
+
+      /*
+       * data.info.allocations.returndata
+       */
+      returndata: createLeaf(["/state"], state => state.info.allocations.returndata)
     },
 
     /**
@@ -458,6 +469,14 @@ const data = createSelectorTree({
     userDefinedTypes: createLeaf(
       ["/state"],
       state => state.info.userDefinedTypes
+    ),
+
+    /**
+     * data.info.eventsAndErrors
+     */
+    eventsAndErrors: createLeaf(
+      ["/state"],
+      state => state.info.eventsAndErrors
     )
   },
 
@@ -996,6 +1015,57 @@ const data = createSelectorTree({
       ["./context"],
       ({ abi }) => (Object.keys(abi).length > 0 ? 1 : 0)
       //note ABI here has been transformed to include functions only
+    ),
+
+    /**
+     * data.current.errorNodeId
+     * note: we can't get the actual node from stacktrace,
+     * it only stores the ID
+     */
+    errorNodeId: createLeaf(
+      [stacktrace.current.innerReturnPosition, stacktrace.current.lastPosition],
+      (innerLocation, lastLocation) => ((innerLocation || lastLocation).node || {}).id
+    ),
+
+    /**
+     * data.current.errorNode
+     * note: we can't get the actual node from stacktrace,
+     * it only stores the ID
+     */
+    errorNode: createLeaf(
+      ["./errorNodeId", "/current/scopes/inlined"],
+      (id, scopes) => id !== undefined ? scopes[id].definition : null
+    ),
+
+    /**
+     * data.current.errorId
+     * returns a codec-style ID, not just an AST ID
+     * does not assume that the error is on the correct node...
+     * this could be factored into two selectors (one that finds
+     * the node and one that makes the ID)
+     */
+    errorId: createLeaf(
+      ["./errorNode", "./compilationId"],
+      (errorNode, compilationId) => {
+        if (errorNode === null) {
+          return undefined;
+        }
+        switch (errorNode.nodeType) {
+          case "RevertStatement":
+            //I don't think this case should happen, but I'm including it
+            //for extra certainty
+            errorNode = errorNode.errorCall;
+            //DELIBERATE FALL-THROUGH
+          case "FunctionCall":
+            //this should work for both qualified & unqualified errors
+            const errorId = errorNode.expression.referencedDeclaration;
+            return Codec.Contexts.Import.makeTypeId(errorId, compilationId);
+          default:
+            //I'm not going to try to handle other cases that maybe could
+            //occur with the optimizer on
+            return undefined;
+        }
+      }
     ),
 
     /**

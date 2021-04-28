@@ -43,6 +43,8 @@ function generateReport(callstack, location, status, message) {
       report[0].message = message.Error;
     } else if (message.Panic !== undefined) {
       report[0].panic = message.Panic;
+    } else if (message.custom !== undefined) {
+      report[0].custom = message.custom;
     }
   }
   return report;
@@ -76,10 +78,11 @@ function createMultistepSelectors(stepSelector) {
      * .strippedLocation
      */
     strippedLocation: createLeaf(
-      ["./location/source", "./location/sourceRange"],
-      ({ id, sourcePath, internal }, sourceRange) => ({
+      ["./location/source", "./location/sourceRange", "./location/node"],
+      ({ id, sourcePath, internal }, sourceRange, node) => ({
         source: { id, sourcePath, internal },
-        sourceRange
+        sourceRange,
+        node: node ? { id: node.id } : null
       })
     ),
 
@@ -228,8 +231,11 @@ let stacktrace = createSelectorTree({
 
     /**
      * stacktrace.current.revertString
-     * Crudely decodes the current revert string, OR the current panic.
-     * Returns { Error: <string> } or { Panic: <BN> }
+     * Crudely decodes the current revert string, OR the current panic,
+     * *or* an indication of a custom error (but not what, we can't do
+     * that here)
+     * Returns { Error: <string> } or { Panic: <BN> } or { custom: true }
+     * (or undefined)
      * Not meant to account for crazy things, just there to produce
      * a simple string or number.
      * NOTE: if panic code is overlarge, we'll use -1 instead to indicate
@@ -268,6 +274,8 @@ let stacktrace = createSelectorTree({
             default:
               return undefined;
           }
+        } else if (revertDecodings.length === 0) {
+          return { custom: true };
         } else {
           return undefined;
         }

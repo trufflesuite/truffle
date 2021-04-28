@@ -409,6 +409,14 @@ export interface RevertMessageDecoding {
    */
   abi: Abi.ErrorEntry;
   /**
+   * The class of the contract that (according to this decoding) defined the
+   * error type, as a Format.Types.ContractType.  This will be `null` if the
+   * error was defined outside of the contract or it's one of the builtin
+   * `Error(string)` or `Panic(uint)` types.
+   * May be omitted if we can't determine it, as may occur in ABI mode.
+   */
+  definedIn?: Format.Types.ContractType | null;
+  /**
    * Indicates that this kind of decoding indicates an unsuccessful return.
    */
   status: false;
@@ -597,4 +605,10 @@ export interface LogOptions {
    * the event -- should be returned.  Defaults to `"off"`.
    */
   extras?: ExtrasAllowed;
+  /**
+   * If passed, restricts to events with the given ID.  This is meant for
+   * internal use by Truffle Debugger; you probably don't want to bother
+   * with this option.
+   */
+  id?: string;
 }

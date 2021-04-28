@@ -61,14 +61,24 @@ export function defineType(node, sourceId) {
   };
 }
 
+export const DEFINE_EVENT_OR_ERROR = "DATA_DEFINE_EVENT_OR_ERROR";
+export function defineEventOrError(node, sourceId) {
+  return {
+    type: DEFINE_EVENT_OR_ERROR,
+    node,
+    sourceId
+  };
+}
+
 export const ALLOCATE = "DATA_ALLOCATE";
-export function allocate(storage, memory, abi, calldata, state) {
+export function allocate(storage, memory, abi, calldata, returndata, state) {
   return {
     type: ALLOCATE,
     storage,
     memory,
     abi,
     calldata,
+    returndata,
     state
   };
 }
