@@ -101,7 +101,7 @@ namespace LiteralGenerics {
       kind: "literal";
       type: string;
       value: any;
-    }
+    };
   };
 
   type LiteralName<L extends Literals> = string & keyof L;
@@ -116,18 +116,24 @@ namespace LiteralGenerics {
     [N in LiteralName<L>]: Definition<L, N>;
   };
 
-  type Constructor<L extends Literals, N extends LiteralName<L>> =
-    (options: Pick<Literal<L, N>, "value">) => Literal<L, N>;
+  type Constructor<L extends Literals, N extends LiteralName<L>> = (
+    options: Pick<Literal<L, N>, "value">
+  ) => Literal<L, N>;
 
-  export type ConstructorName<L extends Literals, N extends LiteralName<L>> =
-    `${N}Literal`;
-  type UnionToIntersection<U> =
-    (U extends any ? (k: U)=>void : never) extends ((k: infer I)=>void) ? I : never;
-  export type Constructors<L extends Literals> = UnionToIntersection<{
-    [N in LiteralName<L>]: {
-      [K in ConstructorName<L, N>]: Constructor<L, N>;
-    }
-  }[LiteralName<L>]>;
+  // prettier-ignore
+  export type ConstructorName<L extends Literals, N extends LiteralName<L>> = `${N}Literal`;
+  type UnionToIntersection<U> = (
+    U extends any ? (k: U) => void : never
+  ) extends (k: infer I) => void
+    ? I
+    : never;
+  export type Constructors<L extends Literals> = UnionToIntersection<
+    {
+      [N in LiteralName<L>]: {
+        [K in ConstructorName<L, N>]: Constructor<L, N>;
+      };
+    }[LiteralName<L>]
+  >;
 
   const makeConstructor = <L extends Literals, N extends LiteralName<L>>(
     type: N
@@ -139,9 +145,10 @@ namespace LiteralGenerics {
 
   export const makeConstructors = <L extends Literals>(
     definitions: Definitions<L>
-  ): Constructors<L> => Object.keys(definitions)
-    .map(type => ({ [`${type}Literal`]: makeConstructor(type) }))
-    .reduce((a, b) => ({ ...a, ...b }), {}) as Constructors<L>;
+  ): Constructors<L> =>
+    Object.keys(definitions)
+      .map(type => ({ [`${type}Literal`]: makeConstructor(type) }))
+      .reduce((a, b) => ({ ...a, ...b }), {}) as Constructors<L>;
 }
 
 /*
@@ -154,51 +161,23 @@ export interface Literal {
   value: any;
 }
 
-export interface BooleanLiteral extends Literal {
-  type: "boolean";
-  value: boolean;
-}
-
-export interface NumberLiteral extends Literal {
-  type: "number";
-  value: string;
-}
-
 export interface StringLiteral extends Literal {
   type: "string";
   value: string;
 }
 
-export interface HexLiteral extends Literal {
+export interface ValueLiteral extends Literal {
   type: "hex";
   value: string;
 }
 
-export interface EnumLiteral extends Literal {
-  type: "enum";
-  value: {
-    contract?: Identifier;
-    enumeration: Identifier;
-    member: Identifier;
-  };
-}
-
 export const {
-  booleanLiteral,
-  numberLiteral,
   stringLiteral,
-  hexLiteral,
-  enumLiteral
+  valueLiteral
 } = LiteralGenerics.makeConstructors<{
-  boolean: BooleanLiteral;
-  number: NumberLiteral;
   string: StringLiteral;
-  hex: HexLiteral;
-  enum: EnumLiteral;
+  value: ValueLiteral;
 }>({
-  boolean: {},
-  number: {},
   string: {},
-  hex: {},
-  enum: {}
+  value: {}
 } as const);

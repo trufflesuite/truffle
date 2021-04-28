@@ -6,11 +6,8 @@ import {
   memberLookup,
   identifier,
   pointer,
-  numberLiteral,
   stringLiteral,
-  booleanLiteral,
-  hexLiteral,
-  enumLiteral
+  valueLiteral
 } from "@truffle/parse-mapping-lookup/ast";
 
 const testCases = [
@@ -19,19 +16,16 @@ const testCases = [
     result: expression({
       root: identifier({ name: "m" }),
       pointer: pointer({
-        path: [indexAccess({ index: numberLiteral({ value: "0" }) })]
+        path: [indexAccess({ index: valueLiteral({ value: "0" }) })]
       })
     })
   },
   {
-    expression: `m[0][1]`,
+    expression: `m[0x0]`,
     result: expression({
       root: identifier({ name: "m" }),
       pointer: pointer({
-        path: [
-          indexAccess({ index: numberLiteral({ value: "0" }) }),
-          indexAccess({ index: numberLiteral({ value: "1" }) })
-        ]
+        path: [indexAccess({ index: valueLiteral({ value: "0x0" }) })]
       })
     })
   },
@@ -60,7 +54,7 @@ const testCases = [
       pointer: pointer({
         path: [
           memberLookup({ property: identifier({ name: "m" }) }),
-          indexAccess({ index: numberLiteral({ value: "0" }) })
+          indexAccess({ index: valueLiteral({ value: "0" }) })
         ]
       })
     })
@@ -71,9 +65,9 @@ const testCases = [
       root: identifier({ name: "m$" }),
       pointer: pointer({
         path: [
-          indexAccess({ index: booleanLiteral({ value: false }) }),
+          indexAccess({ index: valueLiteral({ value: "false" }) }),
           memberLookup({ property: identifier({ name: "_k" }) }),
-          indexAccess({ index: booleanLiteral({ value: true }) })
+          indexAccess({ index: valueLiteral({ value: "true" }) })
         ]
       })
     })
@@ -83,9 +77,7 @@ const testCases = [
     result: expression({
       root: identifier({ name: "m" }),
       pointer: pointer({
-        path: [
-          indexAccess({ index: stringLiteral({ value: "A" }) })
-        ]
+        path: [indexAccess({ index: stringLiteral({ value: "A" }) })]
       })
     })
   },
@@ -98,15 +90,9 @@ const testCases = [
     result: expression({
       root: identifier({ name: "m" }),
       pointer: pointer({
-        path: [
-          indexAccess({ index: hexLiteral({ value: "0xdeadbeef" }) })
-        ]
+        path: [indexAccess({ index: valueLiteral({ value: `hex"deadbeef"` }) })]
       })
     })
-  },
-  {
-    expression: `m[hex"deadbee"]`,
-    errors: true
   },
   {
     expression: `m[Direction.North]`,
@@ -115,39 +101,13 @@ const testCases = [
       pointer: pointer({
         path: [
           indexAccess({
-            index: enumLiteral({
-              value: {
-                enumeration: identifier({ name: "Direction" }),
-                member: identifier({ name: "North" })
-              }
+            index: valueLiteral({
+              value: "Direction.North"
             })
           })
         ]
       })
     })
-  },
-  {
-    expression: `m[Geography.Direction.North]`,
-    result: expression({
-      root: identifier({ name: "m" }),
-      pointer: pointer({
-        path: [
-          indexAccess({
-            index: enumLiteral({
-              value: {
-                contract: identifier({ name: "Geography" }),
-                enumeration: identifier({ name: "Direction" }),
-                member: identifier({ name: "North" })
-              }
-            })
-          })
-        ]
-      })
-    })
-  },
-  {
-    expression: `m[North]`,
-    errors: true
   }
 ];
 

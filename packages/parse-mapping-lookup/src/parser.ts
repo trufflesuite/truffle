@@ -1,23 +1,11 @@
 import debugModule from "debug";
 const debug = debugModule("parse-mapping-lookup:parser");
 
-import {
-  regexp,
-  anyCharOf,
-  noCharOf,
-  stringLen,
-  string,
-  digit,
-  int,
-  float
-} from "parjs";
+import { regexp, anyCharOf, noCharOf, stringLen, string } from "parjs";
 import {
   qthen,
   map,
-  exactly,
-  maybe,
   many,
-  manyBetween,
   stringify,
   between,
   or,
@@ -28,11 +16,8 @@ import {
   indexAccess,
   expression,
   identifier,
-  numberLiteral,
   stringLiteral,
-  booleanLiteral,
-  hexLiteral,
-  enumLiteral,
+  valueLiteral,
   memberLookup,
   pointer
 } from "./ast";
@@ -64,7 +49,7 @@ namespace Strings {
     "r": "\r",
     "t": "\t",
     "v": "\v",
-    "/": "/",
+    "/": "/"
   };
 
   const escapeCharP = anyCharOf(Object.keys(escapeChars).join()).pipe(
@@ -92,9 +77,7 @@ namespace Strings {
 
   // Any escape sequence begins with a \
   const escapeP = string("\\").pipe(
-    qthen(
-      escapeCharP.pipe(or(unicodeEscapeP, hexEscapeP))
-    )
+    qthen(escapeCharP.pipe(or(unicodeEscapeP, hexEscapeP)))
   );
 
   // Here we process regular characters vs escape sequences
@@ -104,61 +87,16 @@ namespace Strings {
   export const stringP = stringEntriesP.pipe(many(), stringify(), between('"'));
 }
 
-const numberLiteralP = int().pipe(
-  or(float()),
-  map(value => numberLiteral({ value: value.toString() }))
-);
-
 const stringLiteralP = Strings.stringP.pipe(
   map(value => stringLiteral({ value }))
 );
 
-const booleanLiteralP = string("true").pipe(
-  or(string("false")),
-  map((value: "true" | "false") => booleanLiteral({ value: value === "true" }))
+const valueLiteralP = noCharOf("]").pipe(
+  many(),
+  map(value => valueLiteral({ value: value.join("") }))
 );
 
-const hexLiteralP = digit(16).pipe(exactly(2)).pipe(
-  map(pair => pair.join("")),
-  manyBetween(string(`hex"`), string(`"`)),
-  map(pairs => pairs.join("")),
-  map(value => hexLiteral({ value: `0x${value}` }))
-);
-
-const enumLiteralP = identifierP.pipe(
-  then(
-    string(".").pipe(
-      qthen(identifierP)
-    ),
-    string(".").pipe(
-      qthen(identifierP),
-      maybe()
-    )
-  ),
-).pipe(
-  map(args => {
-    if (args[2]) {
-      const [contract, enumeration, member] = args;
-      return enumLiteral({
-        value: { contract, enumeration, member }
-      });
-    } else {
-      const [enumeration, member] = args;
-      return enumLiteral({
-        value: { enumeration, member }
-      });
-    }
-  })
-);
-
-const literalP = numberLiteralP.pipe(
-  or(
-    stringLiteralP,
-    booleanLiteralP,
-    hexLiteralP,
-    enumLiteralP
-  )
-);
+const literalP = stringLiteralP.pipe(or(valueLiteralP));
 
 /*
  * MemberLookup
