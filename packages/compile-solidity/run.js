@@ -7,7 +7,7 @@ const CompilerSupplier = require("./compilerSupplier");
 // this function returns a Compilation - legacy/index.js and ./index.js
 // both check to make sure rawSources exist before calling this method
 // however, there is a check here that returns null if no sources exist
-async function run(rawSources, options) {
+async function run(rawSources, options, language = "Solidity") {
   if (Object.keys(rawSources).length === 0) {
     return null;
   }
@@ -24,6 +24,7 @@ async function run(rawSources, options) {
   const compilerInput = prepareCompilerInput({
     sources,
     targets,
+    language,
     settings: options.compilers.solc.settings,
     modelCheckerSettings: options.compilers.solc.modelCheckerSettings
   });
@@ -33,6 +34,7 @@ async function run(rawSources, options) {
     compilerInput,
     options
   });
+  debug("compilerOutput: %O", compilerOutput);
 
   // handle warnings as errors if options.strict
   // log if not options.quiet
@@ -58,9 +60,12 @@ async function run(rawSources, options) {
   const outputSources = processAllSources({
     sources,
     compilerOutput,
-    originalSourcePaths
+    originalSourcePaths,
+    language
   });
-  const sourceIndexes = outputSources.map(source => source.sourcePath);
+  const sourceIndexes = outputSources
+    ? outputSources.map(source => source.sourcePath)
+    : undefined; //leave undefined if sources undefined
   return {
     sourceIndexes,
     contracts: processContracts({
@@ -78,11 +83,16 @@ async function run(rawSources, options) {
 }
 
 function orderABI({ abi, contractName, ast }) {
-  // AST can have multiple contract definitions, make sure we have the
-  // one that matches our contract
+  if (!abi) {
+    return []; //Yul doesn't return ABIs, but we require something
+  }
+
   if (!ast || !ast.nodes) {
     return abi;
   }
+
+  // AST can have multiple contract definitions, make sure we have the
+  // one that matches our contract
   const contractDefinition = ast.nodes.find(
     ({ nodeType, name }) =>
       nodeType === "ContractDefinition" && name === contractName
@@ -124,11 +134,12 @@ function orderABI({ abi, contractName, ast }) {
 function prepareCompilerInput({
   sources,
   targets,
+  language,
   settings,
   modelCheckerSettings
 }) {
   return {
-    language: "Solidity",
+    language,
     sources: prepareSources({ sources }),
     settings: {
       evmVersion: settings.evmVersion,
@@ -234,7 +245,10 @@ function detectErrors({
 
   const rawWarnings = options.strict
     ? [] // none of those in strict mode
-    : outputErrors.filter(({ severity }) => severity === "warning");
+    : outputErrors.filter(({ severity, message }) =>
+      severity === "warning" &&
+      message !== "Yul is still experimental. Please use the output with care." //filter out Yul warning
+    );
 
   // extract messages
   let errors = rawErrors.map(({ formattedMessage }) => formattedMessage).join();
@@ -268,8 +282,21 @@ function detectErrors({
  * aggregate source information based on compiled output;
  * this can include sources that do not define any contracts
  */
-function processAllSources({ sources, compilerOutput, originalSourcePaths }) {
-  if (!compilerOutput.sources) return [];
+function processAllSources({ sources, compilerOutput, originalSourcePaths, language }) {
+  if (!compilerOutput.sources) {
+    const entries = Object.entries(sources);
+    if (entries.length === 1) {
+      //special case for handling Yul
+      const [sourcePath, contents] = entries[0];
+      return [{
+        sourcePath: originalSourcePaths[sourcePath],
+        contents,
+        language
+      }]
+    } else {
+      return [];
+    }
+  }
   let outputSources = [];
   for (const [sourcePath, { id, ast, legacyAST }] of Object.entries(
     compilerOutput.sources
@@ -279,7 +306,7 @@ function processAllSources({ sources, compilerOutput, originalSourcePaths }) {
       contents: sources[sourcePath],
       ast,
       legacyAST,
-      language: "Solidity"
+      language
     };
   }
   return outputSources;
@@ -304,8 +331,9 @@ function processContracts({
           contractName,
           contract,
           source: {
-            ast: compilerOutput.sources[sourcePath].ast,
-            legacyAST: compilerOutput.sources[sourcePath].legacyAST,
+            //some versions of Yul don't have sources in output
+            ast: ((compilerOutput.sources || {})[sourcePath] || {}).ast,
+            legacyAST: ((compilerOutput.sources || {})[sourcePath] || {}).legacyAST,
             contents: sources[sourcePath],
             sourcePath
           }
@@ -330,13 +358,7 @@ function processContracts({
                 generatedSources,
                 object: bytecode
               },
-              deployedBytecode: {
-                sourceMap: deployedSourceMap,
-                linkReferences: deployedLinkReferences,
-                generatedSources: deployedGeneratedSources,
-                immutableReferences,
-                object: deployedBytecode
-              }
+              deployedBytecode: deployedBytecodeInfo //destructured below
             },
             abi,
             metadata,
@@ -358,7 +380,7 @@ function processContracts({
           sourcePath: originalSourcePaths[transformedSourcePath],
           source,
           sourceMap,
-          deployedSourceMap,
+          deployedSourceMap: (deployedBytecodeInfo || {}).sourceMap,
           ast,
           legacyAST,
           bytecode: zeroLinkReferences({
@@ -366,13 +388,14 @@ function processContracts({
             linkReferences: formatLinkReferences(linkReferences)
           }),
           deployedBytecode: zeroLinkReferences({
-            bytes: deployedBytecode,
-            linkReferences: formatLinkReferences(deployedLinkReferences)
+            bytes: (deployedBytecodeInfo || {}).object,
+            linkReferences: formatLinkReferences((deployedBytecodeInfo || {}).linkReferences)
           }),
-          immutableReferences, //ideally this would be part of the deployedBytecode object,
+          immutableReferences: (deployedBytecodeInfo || {}).immutableReferences,
+          //ideally immutable references would be part of the deployedBytecode object,
           //but compatibility makes that impossible
           generatedSources,
-          deployedGeneratedSources,
+          deployedGeneratedSources: (deployedBytecodeInfo || {}).generatedSources,
           compiler: {
             name: "solc",
             version: solcVersion
@@ -383,6 +406,10 @@ function processContracts({
 }
 
 function formatLinkReferences(linkReferences) {
+  if (!linkReferences) {
+    return [];
+  }
+
   // convert to flat list
   const libraryLinkReferences = Object.values(linkReferences)
     .map(fileLinks =>
@@ -403,6 +430,9 @@ function formatLinkReferences(linkReferences) {
 
 // takes linkReferences in output format (not Solidity's format)
 function zeroLinkReferences({ bytes, linkReferences }) {
+  if (bytes === undefined) {
+    return undefined;
+  }
   // inline link references - start by flattening the offsets
   const flattenedLinkReferences = linkReferences
     // map each link ref to array of link refs with only one offset

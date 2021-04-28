@@ -2,27 +2,28 @@ const CompilerSupplier = require("./compilerSupplier");
 const Config = require("@truffle/config");
 const semver = require("semver");
 const Profiler = require("./profiler");
-const fse = require("fs-extra");
 const { run } = require("./run");
 const { reportSources } = require("./reportSources");
 const OS = require("os");
 const cloneDeep = require("lodash.clonedeep");
 
 const getSemverExpression = source => {
-  return source.match(/pragma solidity(.*);/)[1] ?
-    source.match(/pragma solidity(.*);/)[1].trim() :
-    undefined;
+  return source.match(/pragma solidity(.*);/)[1]
+    ? source.match(/pragma solidity(.*);/)[1].trim()
+    : undefined;
 };
 
 const getSemverExpressions = sources => {
-  return sources.map(source => getSemverExpression(source)).filter(expression => expression);
+  return sources
+    .map(source => getSemverExpression(source))
+    .filter(expression => expression);
 };
 
 const validateSemverExpressions = semverExpressions => {
-  const { validRange } = semver;
   for (const expression of semverExpressions) {
     if (semver.validRange(expression) === null) {
-      const message = `Invalid semver expression (${expression}) found in` +
+      const message =
+        `Invalid semver expression (${expression}) found in` +
         `one of your contract's imports.`;
       throw new Error(message);
     }
@@ -50,6 +51,14 @@ const throwCompilerVersionNotFound = ({ path, semverExpressions }) => {
 };
 
 const compileWithPragmaAnalysis = async ({ paths, options }) => {
+  //don't compile if there's yul
+  const yulPath = paths.find(path => path.endsWith(".yul"));
+  if (yulPath !== undefined) {
+    throw new Error(
+      `Paths to compile includes Yul source ${yulPath}.  ` +
+        `Pragma analysis is not supported when compiling Yul.`
+    );
+  }
   const filteredPaths = paths.filter(
     path => path.endsWith(".sol") || path.endsWith(".json")
   );
@@ -73,7 +82,8 @@ const compileWithPragmaAnalysis = async ({ paths, options }) => {
       semverExpressions: [getSemverExpression(source)]
     });
     if (!parserVersion) {
-      const m = `Could not find a pragma expression in ${path}. To use the ` +
+      const m =
+        `Could not find a pragma expression in ${path}. To use the ` +
         `"pragma" compiler setting your contracts must contain a pragma ` +
         `expression.`;
       throw new Error(m);
@@ -129,10 +139,7 @@ const compileWithPragmaAnalysis = async ({ paths, options }) => {
     compilationOptions.compilers.solc.version = compilerVersion;
 
     const config = Config.default().with(compilationOptions);
-    const compilation = await run(
-      versionsAndSources[compilerVersion],
-      config
-    );
+    const compilation = await run(versionsAndSources[compilerVersion], config);
     if (compilation.contracts.length > 0) {
       compilations.push(compilation);
     }
