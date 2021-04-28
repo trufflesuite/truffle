@@ -5,8 +5,8 @@ import {
   memberLookup,
   identifier,
   pointer,
-  stringLiteral,
-  valueLiteral
+  string,
+  value
 } from "@truffle/parse-mapping-lookup/ast";
 
 const testCases = [
@@ -15,7 +15,7 @@ const testCases = [
     result: expression({
       root: identifier({ name: "m" }),
       pointer: pointer({
-        path: [indexAccess({ index: valueLiteral({ contents: "0" }) })]
+        path: [indexAccess({ index: value({ contents: "0" }) })]
       })
     })
   },
@@ -24,7 +24,7 @@ const testCases = [
     result: expression({
       root: identifier({ name: "m" }),
       pointer: pointer({
-        path: [indexAccess({ index: valueLiteral({ contents: "0x0" }) })]
+        path: [indexAccess({ index: value({ contents: "0x0" }) })]
       })
     })
   },
@@ -33,7 +33,7 @@ const testCases = [
     result: expression({
       root: identifier({ name: "m" }),
       pointer: pointer({
-        path: [indexAccess({ index: stringLiteral({ contents: "hello" }) })]
+        path: [indexAccess({ index: string({ contents: "hello" }) })]
       })
     })
   },
@@ -42,7 +42,7 @@ const testCases = [
     result: expression({
       root: identifier({ name: "m" }),
       pointer: pointer({
-        path: [indexAccess({ index: stringLiteral({ contents: '"' }) })]
+        path: [indexAccess({ index: string({ contents: '"' }) })]
       })
     })
   },
@@ -53,7 +53,7 @@ const testCases = [
       pointer: pointer({
         path: [
           memberLookup({ property: identifier({ name: "m" }) }),
-          indexAccess({ index: valueLiteral({ contents: "0" }) })
+          indexAccess({ index: value({ contents: "0" }) })
         ]
       })
     })
@@ -64,9 +64,9 @@ const testCases = [
       root: identifier({ name: "m$" }),
       pointer: pointer({
         path: [
-          indexAccess({ index: valueLiteral({ contents: "false" }) }),
+          indexAccess({ index: value({ contents: "false" }) }),
           memberLookup({ property: identifier({ name: "_k" }) }),
-          indexAccess({ index: valueLiteral({ contents: "true" }) })
+          indexAccess({ index: value({ contents: "true" }) })
         ]
       })
     })
@@ -76,7 +76,7 @@ const testCases = [
     result: expression({
       root: identifier({ name: "m" }),
       pointer: pointer({
-        path: [indexAccess({ index: stringLiteral({ contents: "A" }) })]
+        path: [indexAccess({ index: string({ contents: "A" }) })]
       })
     })
   },
@@ -89,9 +89,7 @@ const testCases = [
     result: expression({
       root: identifier({ name: "m" }),
       pointer: pointer({
-        path: [
-          indexAccess({ index: valueLiteral({ contents: `hex"deadbeef"` }) })
-        ]
+        path: [indexAccess({ index: value({ contents: `hex"deadbeef"` }) })]
       })
     })
   },
@@ -102,7 +100,7 @@ const testCases = [
       pointer: pointer({
         path: [
           indexAccess({
-            index: valueLiteral({ contents: "Direction.North" })
+            index: value({ contents: "Direction.North" })
           })
         ]
       })

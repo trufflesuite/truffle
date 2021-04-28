@@ -5,8 +5,8 @@ import { Forms, definitions } from "./grammar";
 import { Node, makeConstructors } from "./meta";
 
 export type Identifier = Node<Forms, "identifier">;
-export type StringLiteral = Node<Forms, "stringLiteral">;
-export type ValueLiteral = Node<Forms, "valueLiteral">;
+export type String = Node<Forms, "string">;
+export type Value = Node<Forms, "value">;
 export type IndexAccess = Node<Forms, "indexAccess">;
 export type MemberLookup = Node<Forms, "memberLookup">;
 export type Pointer = Node<Forms, "pointer">;
@@ -16,8 +16,8 @@ const constructors = makeConstructors<Forms>({ definitions });
 
 export const {
   identifier,
-  stringLiteral,
-  valueLiteral,
+  string,
+  value,
   indexAccess,
   memberLookup,
   pointer,

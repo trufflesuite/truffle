@@ -9,14 +9,14 @@ export type Forms = {
   identifier: {
     name: { type: string };
   };
-  stringLiteral: {
+  string: {
     contents: { type: string };
   };
-  valueLiteral: {
+  value: {
     contents: { type: string };
   };
   indexAccess: {
-    index: { kind: "stringLiteral" | "valueLiteral" };
+    index: { kind: "string" | "value" };
   };
   memberLookup: {
     property: { kind: "identifier" };
@@ -36,18 +36,18 @@ export const definitions: Definitions<Forms> = {
       map(([name]) => construct({ name }))
     ),
 
-  stringLiteral: ({ construct }) =>
+  string: ({ construct }) =>
     solidityString.pipe(map(contents => construct({ contents }))),
 
-  valueLiteral: ({ construct }) =>
+  value: ({ construct }) =>
     noCharOf("]").pipe(
       many(),
       map(characters => construct({ contents: characters.join("") }))
     ),
 
   indexAccess: ({ construct, tie }) =>
-    tie("stringLiteral").pipe(
-      or(tie("valueLiteral")),
+    tie("string").pipe(
+      or(tie("value")),
       between(string("["), string("]")),
       map(index => construct({ index }))
     ),
