@@ -41,8 +41,8 @@ export const definitions: Definitions<Forms> = {
 
   value: ({ construct }) =>
     noCharOf("]").pipe(
-      many(),
-      map(characters => construct({ contents: characters.join("") }))
+      then(noCharOf("]").pipe(many())),
+      map(([first, rest]) => construct({ contents: [first, ...rest].join("") }))
     ),
 
   indexAccess: ({ construct, tie }) =>

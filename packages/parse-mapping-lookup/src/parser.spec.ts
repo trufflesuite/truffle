@@ -87,6 +87,12 @@ const testCases = [
     }
   },
   {
+    expression: `m[1].s[]`,
+    trace: {
+      position: 7
+    }
+  },
+  {
     expression: `m[hex"deadbeef"]`,
     value: expression({
       root: identifier({ name: "m" }),
