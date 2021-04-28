@@ -12,7 +12,7 @@ import {
 const testCases = [
   {
     expression: `m[0]`,
-    result: expression({
+    value: expression({
       root: identifier({ name: "m" }),
       pointer: pointer({
         path: [indexAccess({ index: value({ contents: "0" }) })]
@@ -21,7 +21,7 @@ const testCases = [
   },
   {
     expression: `m[0x0]`,
-    result: expression({
+    value: expression({
       root: identifier({ name: "m" }),
       pointer: pointer({
         path: [indexAccess({ index: value({ contents: "0x0" }) })]
@@ -30,7 +30,7 @@ const testCases = [
   },
   {
     expression: `m["hello"]`,
-    result: expression({
+    value: expression({
       root: identifier({ name: "m" }),
       pointer: pointer({
         path: [indexAccess({ index: string({ contents: "hello" }) })]
@@ -39,7 +39,7 @@ const testCases = [
   },
   {
     expression: `m["\\""]`,
-    result: expression({
+    value: expression({
       root: identifier({ name: "m" }),
       pointer: pointer({
         path: [indexAccess({ index: string({ contents: '"' }) })]
@@ -48,7 +48,7 @@ const testCases = [
   },
   {
     expression: `s.m[0]`,
-    result: expression({
+    value: expression({
       root: identifier({ name: "s" }),
       pointer: pointer({
         path: [
@@ -60,7 +60,7 @@ const testCases = [
   },
   {
     expression: `m$[false]._k[true]`,
-    result: expression({
+    value: expression({
       root: identifier({ name: "m$" }),
       pointer: pointer({
         path: [
@@ -73,7 +73,7 @@ const testCases = [
   },
   {
     expression: `m["\\x41"]`,
-    result: expression({
+    value: expression({
       root: identifier({ name: "m" }),
       pointer: pointer({
         path: [indexAccess({ index: string({ contents: "A" }) })]
@@ -82,11 +82,13 @@ const testCases = [
   },
   {
     expression: `m[`,
-    errors: true
+    trace: {
+      position: 2
+    }
   },
   {
     expression: `m[hex"deadbeef"]`,
-    result: expression({
+    value: expression({
       root: identifier({ name: "m" }),
       pointer: pointer({
         path: [indexAccess({ index: value({ contents: `hex"deadbeef"` }) })]
@@ -95,7 +97,7 @@ const testCases = [
   },
   {
     expression: `m[Direction.North]`,
-    result: expression({
+    value: expression({
       root: identifier({ name: "m" }),
       pointer: pointer({
         path: [
@@ -109,14 +111,22 @@ const testCases = [
 ];
 
 describe("@truffle/parse-mapping-lookup", () => {
-  for (const { expression, errors = false, result: expected } of testCases) {
-    if (errors) {
+  for (const testCase of testCases) {
+    const { expression } = testCase;
+    if (testCase.trace) {
+      const { trace: expected } = testCase;
+
       it(`fails to parse: ${expression}`, () => {
         const result = parseExpression(expression);
-        expect(result.isOk).toBeFalsy();
+        expect(result.isOk).toBe(false);
+        expect(
+          // @ts-ignore
+          result.trace
+        ).toMatchObject(expected);
       });
     } else {
       it(`parses: ${expression}`, () => {
+        const { value: expected } = testCase;
         const result = parseExpression(expression);
         expect(result.isOk).toBeTruthy();
         expect(result.value).toEqual(expected);

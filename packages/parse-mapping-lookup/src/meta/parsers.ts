@@ -30,9 +30,12 @@ export type MakeParserCombinatorOptions<
 const makeParserCombinator = <F extends Forms, K extends FormKind<F>>(
   options: MakeParserCombinatorOptions<F, K>
 ): ParserCombinator<F, K> => {
-  const { definition: parser, tie, construct } = options;
+  const { kind, definition: parser, tie, construct } = options;
 
-  return parser({ construct, tie });
+  const combinator = parser({ construct, tie });
+  return Object.assign(combinator, {
+    type: `ast:${kind}`
+  });
 };
 
 // prettier-ignore
