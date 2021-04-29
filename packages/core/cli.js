@@ -1,8 +1,25 @@
 #!/usr/bin/env node
 require("source-map-support/register");
 
-const semver = require("semver"); // to validate Node version
+const Config = require("@truffle/config");
+const userConfig = Config.getUserConfig();
+const analyticsEnabled = userConfig.get("enableAnalytics");
 
+const sendAnalyticsIfEnabled = (exception) => {
+  if (analyticsEnabled) {
+    const analytics = require("./lib/services/analytics");
+    const version = require("./lib/version");
+    const versionInfo = version.info();
+    analytics.send({
+      exception: "TaskError - display general help message",
+      version: versionInfo.bundle
+        ? versionInfo.bundle
+        : "(unbundled) " + versionInfo.core
+    });
+  }
+}
+
+const semver = require("semver"); // to validate Node version
 // pre-flight check: Node version compatibility
 const minimumNodeVersion = "10.9.0";
 if (!semver.gte(process.version, minimumNodeVersion)) {
@@ -13,17 +30,10 @@ if (!semver.gte(process.version, minimumNodeVersion)) {
       minimumNodeVersion +
       " or higher."
   );
-
-  const analytics = require("./lib/services/analytics");
-  const version = require("./lib/version");
-  const versionInfo = version.info();
-  analytics.send({
-    exception: "wrong node version",
-    version: versionInfo.bundle || "(unbundled) " + versionInfo.core
-  });
-
+  sendAnalyticsIfEnabled("wrong node version");
   process.exit(1);
 }
+
 const Command = require("./lib/command");
 const command = new Command(require("./lib/commands"));
 
@@ -52,33 +62,17 @@ command
     const XRegExp = require("xregexp");
     const TaskError = require("./lib/errors/taskerror");
     const TruffleError = require("@truffle/error");
-    const analytics = require("./lib/services/analytics");
     const version = require("./lib/version");
     const versionInfo = version.info();
     if (error instanceof TaskError) {
-      analytics.send({
-        exception: "TaskError - display general help message",
-        version: versionInfo.bundle
-          ? versionInfo.bundle
-          : "(unbundled) " + versionInfo.core
-      });
+      sendAnalyticsIfEnabled("TaskError - display general help message");
       command.displayGeneralHelp();
     } else if (error instanceof TruffleError) {
-      analytics.send({
-        exception: "TruffleError - missing configuration file",
-        version: versionInfo.bundle
-          ? versionInfo.bundle
-          : "(unbundled) " + versionInfo.core
-      });
+      sendAnalyticsIfEnabled("TruffleError - missing configuration file");
       console.log(error.message);
       version.logTruffleAndNode(options.logger);
     } else if (typeof error === "number") {
-      analytics.send({
-        exception: "Numbered Error - " + error,
-        version: versionInfo.bundle
-          ? versionInfo.bundle
-          : "(unbundled) " + versionInfo.core
-      });
+      sendAnalyticsIfEnabled("Numbered Error - " + error);
       // If a number is returned, exit with that number.
       process.exit(error);
     } else {
@@ -93,12 +87,7 @@ command
         let removedInfo = new XRegExp(XRegExp.escape(identifyingInfo), "g");
         errorData = errorData.replace(removedInfo, "");
       }
-      analytics.send({
-        exception: "Other Error - " + errorData,
-        version: versionInfo.bundle
-          ? versionInfo.bundle
-          : "(unbundled) " + versionInfo.core
-      });
+      sendAnalyticsIfEnabled("Other Error - " + errorData);
       // Bubble up all other unexpected errors.
       console.log(error.stack || error.message || error.toString());
       version.logTruffleAndNode(options.logger);

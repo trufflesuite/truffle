@@ -1,17 +1,15 @@
-const TaskError = require("./errors/taskerror");
 const yargs = require("yargs/yargs");
-const { bundled, core } = require("../lib/version").info();
 const OS = require("os");
-const analytics = require("../lib/services/analytics");
 const { extractFlags } = require("./utils/utils"); // Contains utility methods
 
 class Command {
-  constructor(commands) {
+  constructor(commands, analyticsEnabled) {
     this.commands = commands;
+    this.analyticsEnabled = analyticsEnabled;
 
     let args = yargs();
 
-    Object.keys(this.commands).forEach(function (command) {
+    Object.keys(this.commands).forEach(command => {
       args = args.command(commands[command]);
     });
 
@@ -76,6 +74,7 @@ class Command {
     const result = this.getCommand(inputStrings, options.noAliases);
 
     if (result == null) {
+      const TaskError = require("./errors/taskerror");
       throw new TaskError(
         "Cannot find command based on input: " + JSON.stringify(inputStrings)
       );
@@ -131,16 +130,21 @@ class Command {
 
     const newOptions = Object.assign({}, clone, argv);
 
-    analytics.send({
-      command: result.name ? result.name : "other",
-      args: result.argv._,
-      version: bundled || "(unbundled) " + core
-    });
+    if (this.analyticsEnabled) {
+      const analytics = require("./services/analytics");
+      const { bundled, core } = require("../lib/version").info();
+      analytics.send({
+        command: result.name ? result.name : "other",
+        args: result.argv._,
+        version: bundled || "(unbundled) " + core
+      });
+    }
 
     return await result.command.run(newOptions);
   }
 
   displayGeneralHelp() {
+    const { bundled, core } = require("../lib/version").info();
     this.args
       .usage(
         "Truffle v" +
