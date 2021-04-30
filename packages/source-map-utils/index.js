@@ -39,7 +39,11 @@ var SourceMapUtils = {
   getHumanReadableSourceMap: function (sourceMap) {
     const instructions = sourceMap.split(";");
 
-    let processedInstruction = {}; //persists across instructions for when info doesn't change
+    let processedInstruction = {
+      start: 0,
+      length: 0,
+      file: 0
+    }; //persists across instructions for when info doesn't change
     let processedSourceMap = [];
 
     //JS doesn't have scan, so we'll do this scan manually

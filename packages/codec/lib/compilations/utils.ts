@@ -130,7 +130,7 @@ export function shimContracts(
       source,
       ast: <Ast.AstNode>ast,
       compiler,
-      language: inferLanguage(<Ast.AstNode>ast, compiler)
+      language: inferLanguage(<Ast.AstNode>ast, compiler, sourcePath)
     };
     //ast needs to be coerced because schema doesn't quite match our types here...
 
@@ -303,7 +303,7 @@ function extractPrimarySource(sourceMap: string | undefined): number {
     return 0; //in this case (e.g. a Vyper contract with an old-style
     //source map) we infer that it was compiled by itself
   }
-  return parseInt(sourceMap.match(/^[^:]+:[^:]+:([^:]+):/)[1]);
+  return parseInt(sourceMap.match(/^[^:]*:[^:]*:([^:]*):/)[1] || "0");
 }
 
 function normalizeGeneratedSources(
@@ -348,7 +348,8 @@ function isGeneratedSources(
 //HACK, maybe?
 function inferLanguage(
   ast: Ast.AstNode | undefined,
-  compiler: Compiler.CompilerVersion
+  compiler: Compiler.CompilerVersion,
+  sourcePath: string
 ): string | undefined {
   if (ast) {
     if (ast.nodeType === "SourceUnit") {
@@ -364,8 +365,11 @@ function inferLanguage(
     if (compiler.name === "vyper") {
       return "Vyper";
     } else if (compiler.name === "solc") {
-      //if it's solc but no AST, just assume it's Solidity
-      return "Solidity";
+      if (sourcePath.endsWith(".yul")) {
+        return "Yul";
+      } else {
+        return "Solidity";
+      }
     } else {
       return undefined;
     }

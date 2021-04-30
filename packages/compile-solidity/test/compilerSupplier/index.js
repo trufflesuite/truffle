@@ -1,6 +1,6 @@
 const assert = require("assert");
 const sinon = require("sinon");
-const request = require("request-promise");
+const axios = require("axios");
 const CompilerSupplier = require("../../compilerSupplier");
 const {
   Docker,
@@ -12,6 +12,45 @@ const Config = require("@truffle/config");
 const config = new Config();
 let supplier;
 const supplierOptions = { events: config.events };
+
+const allVersions = {
+  builds: [
+    {
+      path: "soljson-v0.1.1+commit.6ff4cd6.js",
+      version: "0.1.1",
+      build: "commit.6ff4cd6",
+      longVersion: "0.1.1+commit.6ff4cd6",
+      keccak256:
+        "0xd8b8c64f4e9de41e6604e6ac30274eff5b80f831f8534f0ad85ec0aff466bb25",
+      urls: [
+        "bzzr://8f3c028825a1b72645f46920b67dca9432a87fc37a8940a2b2ce1dd6ddc2e29b"
+      ]
+    },
+    {
+      path: "soljson-v0.5.1+commit.c8a2cb62.js",
+      version: "0.5.1",
+      build: "commit.c8a2cb62",
+      longVersion: "0.5.1+commit.c8a2cb62",
+      keccak256:
+        "0xa70b3d4acf77a303efa93c3ddcadd55b8762c7be109fd8f259ec7d6be654f03e",
+      urls: [
+        "bzzr://e662d71e9b8e1b0311c129b962e678e5dd63487ad9b020ee539d7f74cd7392c9"
+      ]
+    }
+  ],
+  releases: {
+    "0.5.4": "soljson-v0.5.4+commit.9549d8ff.js",
+    "0.5.3": "soljson-v0.5.3+commit.10d17f24.js",
+    "0.5.2": "soljson-v0.5.2+commit.1df8f40c.js",
+    "0.5.1": "soljson-v0.5.1+commit.c8a2cb62.js",
+    "0.5.0": "soljson-v0.5.0+commit.1d4f565a.js",
+    "0.4.25": "soljson-v0.4.25+commit.59dbf8f1.js",
+    "0.4.24": "soljson-v0.4.24+commit.e67f0147.js",
+    "0.4.23": "soljson-v0.4.23+commit.124ca40d.js",
+    "0.4.22": "soljson-v0.4.22+commit.4cb486ee.js"
+  },
+  latestRelease: "0.5.4"
+};
 
 describe("CompilerSupplier", () => {
   describe("load()", () => {
@@ -28,17 +67,9 @@ describe("CompilerSupplier", () => {
         Docker.prototype.load.restore();
       });
 
-      it("calls load on the Docker strategy", done => {
-        supplier
-          .load()
-          .then(({ solc }) => {
-            assert(solc === "called Docker");
-            done();
-          })
-          .catch(() => {
-            assert(false);
-            done();
-          });
+      it("calls load on the Docker strategy", async function () {
+        const { solc } = await supplier.load();
+        assert(solc === "called Docker");
       });
     });
 
@@ -54,17 +85,9 @@ describe("CompilerSupplier", () => {
         Native.prototype.load.restore();
       });
 
-      it("calls load on the Native strategy", done => {
-        supplier
-          .load()
-          .then(({ solc }) => {
-            assert(solc === "called Native");
-            done();
-          })
-          .catch(() => {
-            assert(false);
-            done();
-          });
+      it("calls load on the Native strategy", async function() {
+        const { solc } = await supplier.load();
+        assert(solc === "called Native");
       });
     });
 
@@ -72,25 +95,16 @@ describe("CompilerSupplier", () => {
       beforeEach(() => {
         supplierOptions.solcConfig = { version: undefined };
         supplier = new CompilerSupplier(supplierOptions);
-        sinon
-          .stub(VersionRange.prototype, "load")
+        sinon.stub(VersionRange.prototype, "load")
           .returns("called VersionRange");
       });
       afterEach(() => {
         VersionRange.prototype.load.restore();
       });
 
-      it("calls load on the VersionRange strategy", done => {
-        supplier
-          .load()
-          .then(({ solc }) => {
-            assert(solc === "called VersionRange");
-            done();
-          })
-          .catch(() => {
-            assert(false);
-            done();
-          });
+      it("calls load on the VersionRange strategy", async function () {
+        const { solc } = await supplier.load();
+        assert(solc === "called VersionRange");
       });
     });
 
@@ -122,45 +136,39 @@ describe("CompilerSupplier", () => {
 
     describe("when a user specifies the compiler url root", () => {
       beforeEach(() => {
+        sinon.stub(VersionRange.prototype, "getSolcVersions")
+          .returns(allVersions);
         sinon.stub(VersionRange.prototype, "addFileToCache");
         sinon.stub(VersionRange.prototype, "versionIsCached").returns(false);
         sinon.stub(VersionRange.prototype, "fileIsCached").returns(false);
         sinon.stub(VersionRange.prototype, "compilerFromString");
-        sinon
-          .stub(request, "get")
+        sinon.stub(axios, "get")
           .withArgs(
-            "https://ethereum.github.io/solc-bin/bin/soljson-v0.5.0+commit.1d4f565a.js"
+            "https://ethereum.github.io/solc-bin/bin/soljson-v0.5.1+commit.c8a2cb62.js"
           )
-          .returns("response");
+          .returns({ data: "response" });
       });
       afterEach(() => {
+        VersionRange.prototype.getSolcVersions.restore();
         VersionRange.prototype.addFileToCache.restore();
         VersionRange.prototype.versionIsCached.restore();
         VersionRange.prototype.fileIsCached.restore();
         VersionRange.prototype.compilerFromString.restore();
-        request.get.restore();
+        axios.get.restore();
       });
 
-      it("loads VersionRange with the user specified urls", done => {
+      it("loads VersionRange with the user specified urls", async function () {
         // This doesn't really verify that user provided list is being used but this in combination with next test does.
         // I am not sure what's the best way to check if user specified list is being used.
         supplierOptions.solcConfig = {
-          version: "0.5.0",
+          version: "0.5.1",
           compilerRoots: ["https://ethereum.github.io/solc-bin/bin/"]
         };
         supplier = new CompilerSupplier(supplierOptions);
-        supplier
-          .load()
-          .then(() => {
-            assert(
-              VersionRange.prototype.compilerFromString.calledWith("response")
-            );
-            done();
-          })
-          .catch(() => {
-            assert(false);
-            done();
-          });
+        await supplier.load();
+        assert(
+          VersionRange.prototype.compilerFromString.calledWith("response")
+        );
       }).timeout(30000);
 
       it("throws an error on incorrect user url", done => {

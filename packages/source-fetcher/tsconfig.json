@@ -17,8 +17,8 @@
     "typeRoots": [
       "./typings",
       "../../**/node_modules/@types/debug"
-    ]
-
+    ],
+    "types": ["node"]
   },
   "include": [
     "./lib/**/*.ts",

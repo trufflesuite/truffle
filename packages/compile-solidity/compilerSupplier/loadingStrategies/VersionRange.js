@@ -2,7 +2,7 @@ const debug = require("debug")("compile:compilerSupplier");
 const requireFromString = require("require-from-string");
 const fs = require("fs");
 const originalRequire = require("original-require");
-const request = require("request-promise");
+const axios = require("axios").default;
 const semver = require("semver");
 const solcWrap = require("solc/wrapper");
 const LoadingStrategy = require("./LoadingStrategy");
@@ -89,7 +89,6 @@ class VersionRange extends LoadingStrategy {
     const fileName = this.getSolcVersionFileName(commit, allVersions);
 
     if (!fileName) throw new Error("No matching version found");
-
     return this.getSolcByUrlAndCache(fileName);
   }
 
@@ -103,10 +102,10 @@ class VersionRange extends LoadingStrategy {
       attemptNumber: index + 1
     });
     try {
-      const response = await request.get(url, { gzip: true, timeout: 30000 });
+      const response = await axios.get(url);
       events.emit("downloadCompiler:succeed");
-      this.addFileToCache(response, fileName);
-      return this.compilerFromString(response);
+      this.addFileToCache(response.data, fileName);
+      return this.compilerFromString(response.data);
     } catch (error) {
       events.emit("downloadCompiler:fail");
       if (index >= this.config.compilerRoots.length - 1) {
@@ -148,10 +147,10 @@ class VersionRange extends LoadingStrategy {
 
     // trim trailing slashes from compilerRoot
     const url = `${compilerRoots[index].replace(/\/+$/, "")}/list.json`;
-    return request(url, { gzip: true, timeout: 30000 })
-      .then(list => {
+    return axios.get(url)
+      .then(response => {
         events.emit("fetchSolcList:succeed");
-        return JSON.parse(list);
+        return response.data;
       })
       .catch(error => {
         events.emit("fetchSolcList:fail");

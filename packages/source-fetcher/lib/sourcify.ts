@@ -4,7 +4,7 @@ const debug = debugModule("source-fetcher:sourcify");
 import {Fetcher, FetcherConstructor} from "./types";
 import * as Types from "./types";
 import {networksById, removeLibraries, InvalidNetworkError} from "./common";
-import request from "request-promise-native";
+import axios, { AxiosResponse } from "axios";
 
 //this looks awkward but the TS docs actually suggest this :P
 const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
@@ -29,7 +29,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
   private readonly networkName: string; //not really used as a class member atm
   //but may be in the future
 
-  private readonly domain: string = "contractrepo.komputing.org";
+  private readonly domain: string = "repo.sourcify.dev";
 
   constructor(networkId: number) {
     this.networkId = networkId;
@@ -53,7 +53,9 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     address: string
   ): Promise<Types.SourceInfo | null> {
     const metadata = await this.getMetadata(address);
+    debug("metadata: %O", metadata);
     if (!metadata) {
+      debug("no metadata");
       return null;
     }
     let sources: Types.SourcesByPath;
@@ -93,12 +95,14 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
   ): Promise<Types.SolcMetadata | null> {
     try {
       return await this.requestWithRetries<Types.SolcMetadata>({
-        uri: `https://${this.domain}/contract/${this.networkId}/${address}/metadata.json`,
-        json: true //turns on auto-parsing
+        url: `https://${this.domain}/contracts/full_match/${this.networkId}/${address}/metadata.json`,
+        method: "get",
+        responseType: "json"
       });
     } catch (error) {
       //is this a 404 error? if so just return null
-      if (error.statusCode === 404) {
+      debug("error: %O", error);
+      if (error.response.status === 404) {
         return null;
       }
       //otherwise, we've got a problem; rethrow the error
@@ -111,7 +115,9 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     sourcePath: string
   ): Promise<string> {
     return await this.requestWithRetries<string>({
-      uri: `https://${this.domain}/contract/${this.networkId}/${address}/sources/${sourcePath}`
+      url: `https://${this.domain}/contracts/full_match/${this.networkId}/${address}/sources/${sourcePath}`,
+      responseType: "text",
+      method: "get"
     });
   }
 
@@ -121,12 +127,12 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     const allowedAttempts = 2; //for now, we'll just retry once if it fails
     let lastError;
     for (let attempt = 0; attempt < allowedAttempts; attempt++) {
-      const responsePromise = request(requestObject);
       try {
-        return await responsePromise;
+        const response: AxiosResponse = await axios(requestObject);
+        return response.data;
       } catch (error) {
         //check: is this a 404 error? if so give up
-        if (error.statusCode === 404) {
+        if (error.response.status === 404) {
           throw error;
         }
         //otherwise, just go back to the top of the loop to retry
