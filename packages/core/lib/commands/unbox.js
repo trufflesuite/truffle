@@ -12,7 +12,7 @@ const command = {
   description: "Download a Truffle Box, a pre-built Truffle project",
   builder: {},
   help: {
-    usage: "truffle unbox [destination] [<box_name>] [--force]",
+    usage: "truffle unbox [<box_name>] [destination] [--force]",
     options: [
       {
         option: "destination",
