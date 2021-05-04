@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.4;
 pragma experimental ABIEncoderV2;
 
 contract WireTestParent {
@@ -151,7 +151,7 @@ contract WireTest is WireTestParent, WireTestAbstract {
 
   event AnonUints(uint indexed, uint indexed, uint indexed, uint indexed) anonymous;
   event NonAnon(uint indexed, uint indexed, uint indexed);
-  event ObviouslyAnon(byte) anonymous;
+  event ObviouslyAnon(bytes1) anonymous;
 
   function anonymousTest() public {
     //first test: unambiguous
@@ -179,7 +179,7 @@ contract WireTest is WireTestParent, WireTestAbstract {
   }
 
   function boom() public returns (uint) {
-    selfdestruct(address(this));
+    selfdestruct(payable(address((this))));
   }
 
   event SemiAmbiguousEvent(uint indexed, uint);
@@ -192,6 +192,26 @@ contract WireTest is WireTestParent, WireTestAbstract {
     return test.delegatecall(
       abi.encodeWithSignature("run()")
     );
+  }
+
+  error UnambiguousError(int, int);
+
+  function throwUnambiguous() public pure {
+    revert UnambiguousError(-1, -2);
+  }
+
+  function callAndThrow() public pure {
+    WireTestLibrary.throwUnambiguous();
+  }
+
+  error h9316(bytes32);
+
+  function throwAmbiguous() public pure {
+    revert h9316(hex"");
+  }
+
+  function callAndThrowAmbiguous() public pure {
+    WireTestLibrary.throwAmbiguous();
   }
 
 }
@@ -213,6 +233,18 @@ library WireTestLibrary {
   }
 
   event AnonUint8s(uint8 indexed, uint8 indexed, uint8 indexed, uint8 indexed) anonymous;
+
+  error LibraryError();
+
+  function throwUnambiguous() external pure {
+    revert LibraryError();
+  }
+
+  error b27072(uint);
+
+  function throwAmbiguous() external pure {
+    revert b27072(0);
+  }
 }
 
 contract WireTestRedHerring {
