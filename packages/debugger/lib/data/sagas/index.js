@@ -403,12 +403,22 @@ function* variablesAndMappingsSaga() {
 
     case "YulFunctionDefinition": {
       const nextPointer = yield select(data.next.pointer);
-      if (nextPointer === null || !nextPointer.startsWith(`${pointer}/body/`)) {
+      if (
+        nextPointer === null ||
+        !(
+          nextPointer.startsWith(`${pointer}/body/`) ||
+          nextPointer.startsWith(`${pointer}/returnVariables`)
+        )
+      ) {
         //in this case, we're seeing the function
         //as it's being defined, rather than as it's
         //being called
         //notice the final slash; when you enter a function, you go *strictly inside*
         //its body (if you hit the body node itself you are seeing the definition)
+        //(as of Solidity 0.8.4, you may also go to the return parameters; rather
+        //than switch on the version, and use a different mechanism for that,
+        //we'll use the same mechanism but alter the condition above to account
+        //for that)
         break;
       }
       //yul parameters are a bit weird.
@@ -416,10 +426,15 @@ function* variablesAndMappingsSaga() {
       //first inputs then outputs (and we skip handling the outputs),
       //yul parameters have the inputs go top to bottom,
       //and the outputs go bottom to top (again with the outputs on top)
-      //note we need to handle both inputs and outputs here
-      const returnSuffixes = (node.returnVariables || []).map(
-        (_, index, vars) => `/returnVariables/${vars.length - 1 - index}`
-      );
+      //For Solidity <0.8.4, we needs we need to handle both inputs and outputs
+      //here; for Solidity >=0.8.4, we handle only inputs here and handle
+      //outputs separately
+      let returnSuffixes = [];
+      if (nextPointer.startsWith(`${pointer}/body/`)) {
+        returnSuffixes = (node.returnVariables || []).map(
+          (_, index, vars) => `/returnVariables/${vars.length - 1 - index}`
+        );
+      }
       const parameterSuffixes = (node.parameters || []).map(
         (_, index) => `/parameters/${index}`
       );
@@ -484,6 +499,7 @@ function* variablesAndMappingsSaga() {
       yield put(actions.assign(assignments));
       break;
     }
+
     case "ContractDefinition": {
       const allocations = yield select(data.current.allocations.state);
       const allocation = allocations[node.id];
@@ -538,6 +554,7 @@ function* variablesAndMappingsSaga() {
       yield put(actions.assign(assignments));
       break;
     }
+
     case "FunctionTypeName": {
       //HACK
       //for some reasons, for declarations of local variables of function type,
@@ -589,6 +606,7 @@ function* variablesAndMappingsSaga() {
       yield put(actions.assign(assignments));
       break;
     }
+
     case "YulFunctionCall": {
       const nextPointer = yield select(data.next.pointer);
       if (nextPointer !== null && nextPointer.startsWith(pointer)) {
@@ -644,6 +662,30 @@ function* variablesAndMappingsSaga() {
       yield put(actions.assign(assignments));
       break;
     }
+
+    case "YulTypedName": {
+      //this case is used to handle output parameters in Yul in
+      //Solidity >=0.8.4
+      const sourceIndex = yield select(data.current.sourceIndex);
+      const sourceAndPointer = makePath(sourceIndex, pointer);
+      const assignment = makeAssignment(
+        {
+          compilationId,
+          internalFor,
+          astRef: sourceAndPointer,
+          stackframe: currentDepth,
+          modifierDepth: inModifier ? modifierDepth : null
+        },
+        {
+          location: "stack",
+          from: top, //all Yul variables are size 1
+          to: top
+        }
+      );
+      yield put(actions.assign({ [assignment.id]: assignment }));
+      break;
+    }
+
     case "IndexAccess": {
       // to track `mapping` types known indices
       // (and also *some* known indices for arrays)
@@ -786,6 +828,7 @@ function* variablesAndMappingsSaga() {
 
       break;
     }
+
     case "MemberAccess": {
       //we're going to start by doing the same thing as in the default case
       //(see below) -- getting things ready for an assignment.  Then we're
@@ -874,6 +917,7 @@ function* variablesAndMappingsSaga() {
       );
       break;
     }
+
     default:
       if (node.id === undefined || node.typeDescriptions == undefined) {
         break;
