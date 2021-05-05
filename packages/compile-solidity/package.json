@@ -4,7 +4,11 @@
   "license": "MIT",
   "author": "Tim Coulter <tim@trufflesuite.com>",
   "homepage": "https://github.com/trufflesuite/compile-solidity#readme",
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/compile-solidity",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/compile-solidity"
+  },
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },

@@ -6,7 +6,11 @@
   "scripts": {
     "prepare": "exit 0"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/contract-sources",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/contract-sources"
+  },
   "keywords": [
     "ethereum",
     "contracts",

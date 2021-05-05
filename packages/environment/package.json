@@ -5,7 +5,11 @@
   "license": "MIT",
   "author": "Faina Shalts",
   "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/environment#readme",
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/environment",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/environment"
+  },
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },

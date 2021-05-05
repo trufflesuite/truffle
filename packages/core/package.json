@@ -3,7 +3,11 @@
   "description": "Core code for Truffle command line tool",
   "author": "consensys.net",
   "homepage": "https://github.com/trufflesuite/truffle#readme",
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/core",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/core"
+  },
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },

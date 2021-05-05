@@ -6,7 +6,8 @@
   "homepage": "https://github.com/trufflesuite/truffle#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/trufflesuite/truffle.git"
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/db"
   },
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
