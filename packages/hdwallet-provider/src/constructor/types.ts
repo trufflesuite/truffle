@@ -17,7 +17,8 @@ export type PollingInterval = number;
 export type ShareNonce = boolean;
 export type DerivationPath = string;
 export type ChainId = number;
+export type Hardfork = string;
 export type ChainSettings = {
-  hardfork?: string;
+  hardfork?: Hardfork;
   chainId?: ChainId;
 };

@@ -6,8 +6,6 @@ import { hdkey as EthereumHDKey } from "ethereumjs-wallet";
 import { Transaction } from "ethereumjs-tx";
 import Common from "ethereumjs-common";
 
-
-
 // @ts-ignore
 import ProviderEngine from "@trufflesuite/web3-provider-engine";
 import FiltersSubprovider from "@trufflesuite/web3-provider-engine/subproviders/filters";
@@ -19,9 +17,6 @@ import RpcProvider from "@trufflesuite/web3-provider-engine/subproviders/rpc";
 // @ts-ignore
 import WebsocketProvider from "@trufflesuite/web3-provider-engine/subproviders/websocket";
 
-
-
-
 import Url from "url";
 import { JSONRPCRequestPayload, JSONRPCErrorCallback } from "ethereum-protocol";
 import { Callback, JsonRPCResponse } from "web3/providers";
@@ -29,6 +24,7 @@ import { ConstructorArguments } from "./constructor/ConstructorArguments";
 import { getOptions } from "./constructor/getOptions";
 import { getPrivateKeys } from "./constructor/getPrivateKeys";
 import { getMnemonic } from "./constructor/getMnemonic";
+import { ChainId, ChainSettings, Hardfork } from "./constructor/types";
 
 // Important: do not use debug module. Reason: https://github.com/trufflesuite/truffle/issues/2374#issuecomment-536109086
 
@@ -44,9 +40,9 @@ class HDWalletProvider {
   private walletHdpath: string;
   private wallets: { [address: string]: ethJSWallet };
   private addresses: string[];
-  private chainId?: number;
-  private chainSettings: any;
-  private hardfork: string;
+  private chainId?: ChainId;
+  private chainSettings: ChainSettings;
+  private hardfork: Hardfork;
   private initialized: Promise<any>;
 
   public engine: ProviderEngine;
