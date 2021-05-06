@@ -43,7 +43,7 @@ class HDWalletProvider {
   private chainId?: ChainId;
   private chainSettings: ChainSettings;
   private hardfork: Hardfork;
-  private initialized: Promise<any>;
+  private initialized: Promise<void>;
 
   public engine: ProviderEngine;
 
