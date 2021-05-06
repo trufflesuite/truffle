@@ -4,7 +4,11 @@
   "license": "MIT",
   "author": "Harry Altman <harry@trufflesuite.com>",
   "homepage": "https://github.com/trufflesuite/truffle#readme",
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/source-fetcher",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/source-fetcher"
+  },
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },

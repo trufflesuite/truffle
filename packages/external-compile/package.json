@@ -4,7 +4,11 @@
   "license": "MIT",
   "author": "g. nicholas d'andrea <gnidan@users.noreply.github.com>",
   "homepage": "https://github.com/trufflesuite/truffle#readme",
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/external-compile",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/external-compile"
+  },
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },

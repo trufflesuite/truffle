@@ -4,7 +4,11 @@
   "license": "MIT",
   "author": "Mike Seese and Harry Altman",
   "homepage": "https://github.com/trufflesuite/truffle#readme",
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/codec",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/decoder"
+  },
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },

@@ -13,7 +13,15 @@
     "prepare": "yarn build",
     "test": "./scripts/test.sh"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/preserve-to-ipfs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/preserve-to-ipfs"
+  },
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/preserve-to-ipfs#readme",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
   "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
   "license": "MIT",
   "publishConfig": {

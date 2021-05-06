@@ -4,7 +4,11 @@
   "description": "Common compiler integration support infrastructure for Truffle",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
-  "repository": "https://github.com/trufflesuite/truffle/tree/develop/packages/compile-common",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/compile-common"
+  },
   "license": "MIT",
   "scripts": {
     "build": "tsc",

@@ -4,7 +4,11 @@
   "license": "MIT",
   "author": "Tim Coulter <tim@trufflesuite.com>",
   "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/config#readme",
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/config",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/config"
+  },
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },

@@ -6,6 +6,15 @@
   "keywords": [],
   "author": "Nick D'Andrea and Tyler Feickert",
   "license": "ISC",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/events#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/events"
+  },
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
   "scripts": {
     "prepare": "exit 0"
   },
