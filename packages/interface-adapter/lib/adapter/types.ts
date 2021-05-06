@@ -19,17 +19,16 @@ export type BlockType = EvmBlockType | any;
 export type Transaction = EvmTransaction | any;
 export type TransactionReceipt = EvmTransactionReceipt | any;
 export type TxHash = string;
-export type TransactionReportData = {
+export type TransactionCostReport = {
   timestamp: number;
   from: string;
   balance: string;
   gasUnit: string;
   gasPrice: string;
   gas: BN;
-  mainUnit: string;
+  valueUnit: string;
   value: string;
   cost: BN;
-  convertCost: (val: BN) => string;
 };
 
 export interface InterfaceAdapter {
@@ -42,5 +41,6 @@ export interface InterfaceAdapter {
   getCode(address: string): Promise<string>;
   getAccounts(): Promise<string[]>;
   estimateGas(transactionConfig: Transaction): Promise<number>;
-  getTransactionReportData(receipt: TransactionReceipt): Promise<TransactionReportData>;
+  getTransactionCostReport(receipt: TransactionReceipt): Promise<TransactionCostReport>;
+  displayCost(value: BN): string;
 }

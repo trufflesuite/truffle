@@ -6,7 +6,7 @@ import {
   Provider,
   Transaction,
   TransactionReceipt,
-  TransactionReportData
+  TransactionCostReport
 } from "../types";
 
 export interface Web3InterfaceAdapterOptions {
@@ -57,7 +57,7 @@ export class Web3InterfaceAdapter implements InterfaceAdapter {
     return this.web3.eth.getBlockNumber();
   }
 
-  public async getTransactionReportData(receipt: TransactionReceipt): Promise<TransactionReportData> {
+  public async getTransactionCostReport(receipt: TransactionReceipt): Promise<TransactionCostReport> {
     const tx = await this.getTransaction(receipt.transactionHash);
     const block = await this.getBlock(receipt.blockNumber);
 
@@ -76,10 +76,13 @@ export class Web3InterfaceAdapter implements InterfaceAdapter {
       gasUnit: "gwei",
       gasPrice: Web3Shim.utils.fromWei(gasPrice, "gwei"),
       gas,
-      mainUnit: "ETH",
+      valueUnit: "ETH",
       value: Web3Shim.utils.fromWei(value, "ether"),
-      cost,
-      convertCost: (val: BN) => Web3Shim.utils.fromWei(val, "ether")
+      cost
     };
+  }
+
+  public displayCost(value: BN) {
+    return Web3Shim.utils.fromWei(value, "ether");
   }
 }

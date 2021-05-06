@@ -127,9 +127,9 @@ class Reporter {
    * Retrieves gas usage totals per migrations file / totals since the reporter
    * started running. Calling this method resets the gas counters for migrations totals
    */
-  getTotals() {
+  getTotals(interfaceAdapter) {
     const gas = this.currentGasTotal.toString(10);
-    const cost = this.convertCost(this.currentCostTotal);
+    const cost = interfaceAdapter.displayCost(this.currentCostTotal);
     this.finalCostTotal = this.finalCostTotal.add(this.currentCostTotal);
 
     this.currentGasTotal = new web3Utils.BN(0);
@@ -138,7 +138,7 @@ class Reporter {
     return {
       gas,
       cost,
-      finalCost: this.convertCost(this.finalCostTotal),
+      finalCost: interfaceAdapter.displayCost(this.finalCostTotal),
       deployments: this.deployments.toString()
     };
   }
@@ -306,27 +306,28 @@ class Reporter {
 
   /**
    * Run after a migrations file has completed and the migration has been saved.
-   * @param  {Boolean} isLast  true if this the last file in the sequence.
+   * @param  {Object} data
    */
-  async postMigrate(isLast) {
-    const totals = this.getTotals();
-    let data = {};
-    data.number = this.summary[this.currentFileIndex].number;
-    data.cost = totals.cost;
-    data.mainUnit = this.mainUnit;
-    this.summary[this.currentFileIndex].totalCost = data.cost;
+  async postMigrate(data) {
+    const totals = this.getTotals(data.interfaceAdapter);
+    this.summary[this.currentFileIndex].totalCost = totals.cost;
 
-    let message = this.messages.steps("postMigrate", data);
+    let messageData = {
+      number: this.summary[this.currentFileIndex].number,
+      cost: totals.cost,
+      valueUnit: this.valueUnit,
+    };
+    let message = this.messages.steps("postMigrate", messageData);
     this.deployer.logger.log(message);
 
-    if (isLast) {
-      data.totalDeployments = totals.deployments;
-      data.finalCost = totals.finalCost;
+    if (data.isLast) {
+      messageData.totalDeployments = totals.deployments;
+      messageData.finalCost = totals.finalCost;
 
-      this.summary.totalDeployments = data.totalDeployments;
-      this.summary.finalCost = data.finalCost;
+      this.summary.totalDeployments = messageData.totalDeployments;
+      this.summary.finalCost = messageData.finalCost;
 
-      message = this.messages.steps("lastMigrate", data);
+      message = this.messages.steps("lastMigrate", messageData);
       this.deployer.logger.log(message);
     }
   }
@@ -369,21 +370,20 @@ class Reporter {
   async postDeploy(data) {
     let message;
     if (data.deployed) {
-      const { convertCost, ...txData } = await data.contract.interfaceAdapter.getTransactionReportData(data.receipt);
+      const txCostReport = await data.contract.interfaceAdapter.getTransactionCostReport(data.receipt);
 
       // if it returns null, try again!
-      if (!txData) return this.postDeploy(data);
+      if (!txCostReport) return this.postDeploy(data);
 
       data = {
         ...data,
-        ...txData,
-        cost: convertCost(txData.cost)
+        ...txCostReport,
+        cost: data.contract.interfaceAdapter.displayCost(txCostReport.cost)
       };
 
-      this.mainUnit = data.mainUnit;
-      this.convertCost = convertCost;
-      this.currentGasTotal = this.currentGasTotal.add(txData.gas);
-      this.currentCostTotal = this.currentCostTotal.add(txData.cost);
+      this.valueUnit = data.valueUnit;
+      this.currentGasTotal = this.currentGasTotal.add(txCostReport.gas);
+      this.currentCostTotal = this.currentCostTotal.add(txCostReport.cost);
       this.currentAddress = this.from;
       this.deployments++;
 
