@@ -105,7 +105,7 @@ class HDWalletProvider {
     const tmpWallets = this.wallets;
 
     // if user supplied the chain id, use that - otherwise fetch it
-    if (chainId || (chainSettings && chainSettings.chainId)) {
+    if (typeof chainId !== "undefined" || (chainSettings && typeof chainSettings.chainId !== "undefined")) {
       this.chainId = chainId || chainSettings.chainId;
       this.initialized = Promise.resolve();
     } else {
@@ -222,13 +222,17 @@ class HDWalletProvider {
   }
 
   private initialize(): Promise<void> {
-    return new Promise(resolve => {
-      this.sendAsync({
+    return new Promise((resolve, reject) => {
+      this.engine.sendAsync({
         jsonrpc: '2.0',
         id: Date.now(),
         method: 'eth_chainId',
         params: []
-      }, (_error, response) => {
+      // @ts-ignore
+      }, (error, response) => {
+        if (error) {
+          reject(error);
+        }
         if (response && response.result) {
           this.chainId = response.result;
         }
@@ -301,14 +305,9 @@ class HDWalletProvider {
     payload: JSONRPCRequestPayload,
     callback: JSONRPCErrorCallback | Callback<JsonRPCResponse>
   ): void {
-    // @ts-ignore
-    if (this.initialized) {
-      this.initialized.then(() => {
-        this.engine.sendAsync.call(this.engine, payload, callback);
-      });
-    } else {
+    this.initialized.then(() => {
       this.engine.sendAsync.call(this.engine, payload, callback);
-    }
+    });
   }
 
   public getAddress(idx?: number): string {
