@@ -18,7 +18,7 @@ import RpcProvider from "@trufflesuite/web3-provider-engine/subproviders/rpc";
 import WebsocketProvider from "@trufflesuite/web3-provider-engine/subproviders/websocket";
 
 import Url from "url";
-import { JSONRPCRequestPayload, JSONRPCErrorCallback } from "ethereum-protocol";
+import { JSONRPCRequestPayload, JSONRPCErrorCallback, JSONRPCResponsePayload } from "ethereum-protocol";
 import { Callback, JsonRPCResponse } from "web3/providers";
 import { ConstructorArguments } from "./constructor/ConstructorArguments";
 import { getOptions } from "./constructor/getOptions";
@@ -228,8 +228,7 @@ class HDWalletProvider {
         id: Date.now(),
         method: 'eth_chainId',
         params: []
-      // @ts-ignore
-      }, (error, response) => {
+    }, (error: any, response: JSONRPCResponsePayload) => {
         if (error) {
           reject(error);
         }
