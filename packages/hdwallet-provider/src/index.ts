@@ -5,6 +5,9 @@ import ethJSWallet from "ethereumjs-wallet";
 import { hdkey as EthereumHDKey } from "ethereumjs-wallet";
 import { Transaction } from "ethereumjs-tx";
 import Common from "ethereumjs-common";
+
+
+
 // @ts-ignore
 import ProviderEngine from "@trufflesuite/web3-provider-engine";
 import FiltersSubprovider from "@trufflesuite/web3-provider-engine/subproviders/filters";
@@ -15,6 +18,10 @@ import ProviderSubprovider from "@trufflesuite/web3-provider-engine/subproviders
 import RpcProvider from "@trufflesuite/web3-provider-engine/subproviders/rpc";
 // @ts-ignore
 import WebsocketProvider from "@trufflesuite/web3-provider-engine/subproviders/websocket";
+
+
+
+
 import Url from "url";
 import { JSONRPCRequestPayload, JSONRPCErrorCallback } from "ethereum-protocol";
 import { Callback, JsonRPCResponse } from "web3/providers";
@@ -222,7 +229,7 @@ class HDWalletProvider {
     return new Promise(resolve => {
       this.sendAsync({
         jsonrpc: '2.0',
-        id: 999999,
+        id: Date.now(),
         method: 'eth_chainId',
         params: []
       }, (_error, response) => {
