@@ -52,7 +52,20 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
   async fetchSourcesForAddress(
     address: string
   ): Promise<Types.SourceInfo | null> {
-    const metadata = await this.getMetadata(address);
+    let result = await this.fetchSourcesForAddressAndMatchType(address, "full");
+    if (!result) {
+      //if we got nothing when trying a full match, try for a partial match
+      result = await this.fetchSourcesForAddressAndMatchType(address, "partial");
+    }
+    //if partial match also fails, just return null
+    return result;
+  }
+
+  private async fetchSourcesForAddressAndMatchType(
+    address: string,
+    matchType: "full" | "partial"
+  ): Promise<Types.SourceInfo | null> {
+    const metadata = await this.getMetadata(address, matchType);
     debug("metadata: %O", metadata);
     if (!metadata) {
       debug("no metadata");
@@ -67,7 +80,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
             [sourcePath]:
               source !== undefined
                 ? source //sourcify doesn't support this yet but they're planning it
-                : await this.getSource(address, sourcePath)
+                : await this.getSource(address, sourcePath, matchType)
           })
         )
       ))
@@ -87,11 +100,12 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
   }
 
   private async getMetadata(
-    address: string
+    address: string,
+    matchType: "full" | "partial"
   ): Promise<Types.SolcMetadata | null> {
     try {
       return await this.requestWithRetries<Types.SolcMetadata>({
-        url: `https://${this.domain}/contracts/full_match/${this.networkId}/${address}/metadata.json`,
+        url: `https://${this.domain}/contracts/${matchType}_match/${this.networkId}/${address}/metadata.json`,
         method: "get",
         responseType: "json"
       });
@@ -108,10 +122,11 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
 
   private async getSource(
     address: string,
-    sourcePath: string
+    sourcePath: string,
+    matchType: "full" | "partial"
   ): Promise<string> {
     return await this.requestWithRetries<string>({
-      url: `https://${this.domain}/contracts/full_match/${this.networkId}/${address}/sources/${sourcePath}`,
+      url: `https://${this.domain}/contracts/${matchType}_match/${this.networkId}/${address}/sources/${sourcePath}`,
       responseType: "text",
       method: "get"
     });
