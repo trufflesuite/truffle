@@ -113,7 +113,7 @@ class HDWalletProvider {
     }
 
     // EIP155 compliant transactions are enabled for hardforks later
-    // than "spurious dragon"
+    // than or equal to "spurious dragon"
     this.hardfork = (chainSettings && chainSettings.hardfork) ?
       chainSettings.hardfork :
       "istanbul";
