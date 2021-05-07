@@ -20,7 +20,8 @@ const command = {
           `rpc activity. You will\n                    need to open a ` +
           `different Truffle develop or console session to interact via the repl.`
       }
-    ]
+    ],
+    allowedGlobalOptions: ["--config <file>"]
   },
   runConsole: async (config, ganacheOptions) => {
     const Console = require("../console");

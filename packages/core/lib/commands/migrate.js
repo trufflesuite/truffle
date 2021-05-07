@@ -47,7 +47,7 @@ const command = {
   },
   help: {
     usage:
-      "truffle migrate [--reset] [--f <number>] [--to <number>] [--network <name>]\n" +
+      "truffle migrate [--reset] [--f <number>] [--to <number>]\n" +
       "                                " + // spacing to align with previous line
       "[--compile-all] [--compile-none] [--verbose-rpc] [--interactive]\n" +
       "                                " + // spacing to align with previous line
@@ -103,7 +103,8 @@ const command = {
         description:
           "Adds extra verbosity to the status of an ongoing migration"
       },
-    ]
+    ],
+    allowedGlobalOptions: ["--network <name>", "--config <file>"]
   },
 
   determineDryRunSettings: function (config, options) {

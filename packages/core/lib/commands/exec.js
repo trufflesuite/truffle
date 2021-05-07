@@ -15,7 +15,7 @@ const command = {
     }
   },
   help: {
-    usage: "truffle exec <script.js> [--network <name>] [--compile]",
+    usage: "truffle exec <script.js> [--compile]",
     options: [
       {
         option: "<script.js>",
@@ -27,7 +27,8 @@ const command = {
         option: "--compile",
         description: "Compile contracts before executing the script."
       }
-    ]
+    ],
+    allowedGlobalOptions: ["--network <name>", "--config <file>"]
   },
   run: async function (options) {
     const Config = require("@truffle/config");

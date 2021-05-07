@@ -4,7 +4,7 @@ const command = {
     "Run a console with contract abstractions and commands available",
   builder: {},
   help: {
-    usage: "truffle console [--network <name>] [--verbose-rpc]",
+    usage: "truffle console [--verbose-rpc]",
     options: [
       {
         option: "--network <name>",
@@ -16,7 +16,8 @@ const command = {
         description:
           "Log communication between Truffle and the Ethereum client."
       }
-    ]
+    ],
+    allowedGlobalOptions: ["--network <name>", "--config <file>"]
   },
   run: async function (options) {
     const Config = require("@truffle/config");

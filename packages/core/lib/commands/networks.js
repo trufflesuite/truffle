@@ -17,7 +17,8 @@ var command = {
         description:
           "Remove all network artifacts that aren't associated with a named network."
       }
-    ]
+    ],
+    allowedGlobalOptions: []
   },
   run: async function (options) {
     const Config = require("@truffle/config");
