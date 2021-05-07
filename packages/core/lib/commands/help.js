@@ -9,7 +9,8 @@ const command = {
         option: "<command>",
         description: "Name of the command to display information for."
       }
-    ]
+    ],
+    allowedGlobalOptions: []
   },
   builder: {},
   run: async function (options) {
@@ -54,9 +55,9 @@ const command = {
       commandHelp = await commandHelp(options);
     }
 
-    const addOptions = commonOptions(chosenCommand.command);
-    
-    const validOptionsUsage = addOptions.map(({ option }) => "[" + option + "]" ).join(" ");
+    const allowedGlobalOptions = commonOptions.filter((option) => commandHelp.allowedGlobalOptions.includes(option.option));
+
+    const validOptionsUsage = allowedGlobalOptions.map(({ option }) => "[" + option + "]" ).join(" ");
 
     const commandHelpUsage = commandHelp.usage + " " + validOptionsUsage;
 
@@ -64,7 +65,7 @@ const command = {
     console.log(`  Description:  ${commandDescription}`);
 
     if (commandHelp.options.length > 0) {
-      const allValidOptions = [...commandHelp.options, ...addOptions];
+      const allValidOptions = [...commandHelp.options, ...allowedGlobalOptions];
 
       console.log(`  Options: `);
       for (const option of allValidOptions) {

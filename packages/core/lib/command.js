@@ -109,8 +109,9 @@ class Command {
     // Method `extractFlags(args)` : Extracts the `--option` flags from arguments
     const inputOptions = extractFlags(inputStrings);
 
-    //adding config and network options to the commands they make sense for
-    const allValidOptions = [...result.command.help.options, ...commandOptions(result.command.command)];
+    //adding allowed global options as enumerated in each command
+    const allowedGlobalOptions = commandOptions.filter((option) => result.command.help.allowedGlobalOptions.includes(option.option));
+    const allValidOptions = [...result.command.help.options, ...allowedGlobalOptions];
 
 
 
