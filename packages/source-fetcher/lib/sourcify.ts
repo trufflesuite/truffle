@@ -59,24 +59,19 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
       return null;
     }
     let sources: Types.SourcesByPath;
-    if (metadata.language === "Solidity") {
-      sources = Object.assign(
-        {},
-        ...(await Promise.all(
-          Object.entries(metadata.sources).map(
-            async ([sourcePath, {content: source}]) => ({
-              [sourcePath]:
-                source !== undefined
-                  ? source //sourcify doesn't support this yet but they're planning it
-                  : await this.getSource(address, sourcePath)
-            })
-          )
-        ))
-      );
-    } else {
-      //don't bother attempting to fetch sources if it's Yul
-      sources = {};
-    }
+    sources = Object.assign(
+      {},
+      ...(await Promise.all(
+        Object.entries(metadata.sources).map(
+          async ([sourcePath, {content: source}]) => ({
+            [sourcePath]:
+              source !== undefined
+                ? source //sourcify doesn't support this yet but they're planning it
+                : await this.getSource(address, sourcePath)
+          })
+        )
+      ))
+    );
     return {
       contractName: Object.values(metadata.settings.compilationTarget)[0],
       sources,
