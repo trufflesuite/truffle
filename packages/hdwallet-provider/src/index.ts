@@ -144,13 +144,9 @@ class HDWalletProvider {
           } else {
             cb("Account not found");
           }
-          const chain = (self.chainId && typeof self.chainId === "string") ?
-          // @ts-ignore
-            parseInt(self.chainId) :
-            self.chainId;
+          const chain = self.chainId;
           const KNOWN_CHAIN_IDS = new Set([1, 3, 4, 5, 42]);
           let txOptions;
-          // @ts-ignore
           if (chain && KNOWN_CHAIN_IDS.has(chain)) {
             txOptions = { chain };
           } else if (chain) {
