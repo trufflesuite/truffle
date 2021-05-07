@@ -1,10 +1,10 @@
 import debugModule from "debug";
 const debug = debugModule("source-fetcher:sourcify");
 
-import {Fetcher, FetcherConstructor} from "./types";
+import { Fetcher, FetcherConstructor } from "./types";
 import * as Types from "./types";
-import {networksById, removeLibraries, InvalidNetworkError} from "./common";
-import axios, { AxiosResponse } from "axios";
+import { networksById, removeLibraries, InvalidNetworkError } from "./common";
+import axios from "axios";
 
 //this looks awkward but the TS docs actually suggest this :P
 const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
@@ -124,8 +124,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     let lastError;
     for (let attempt = 0; attempt < allowedAttempts; attempt++) {
       try {
-        const response: AxiosResponse = await axios(requestObject);
-        return response.data;
+        return (await axios(requestObject)).data;
       } catch (error) {
         //check: is this a 404 error? if so give up
         if (error.response.status === 404) {
