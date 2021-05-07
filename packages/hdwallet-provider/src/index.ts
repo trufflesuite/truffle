@@ -229,6 +229,11 @@ class HDWalletProvider {
           reject(error);
         }
         if (response && response.result) {
+          if (isNaN(parseInt(response.result, 16))) {
+            const message = "When requesting the chain id from the node, it" +
+              `returned the malformed result ${response.result}.`;
+            throw new Error(message);
+          }
           this.chainId = response.result;
         }
         resolve();
