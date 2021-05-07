@@ -52,7 +52,7 @@ const command = {
         internal: true,
         description:
           "Save the raw compiler results into <output-file>, overwriting any existing content."
-      },
+      }
     ]
   },
   run: async function (options) {

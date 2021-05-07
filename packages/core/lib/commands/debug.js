@@ -57,7 +57,7 @@ const command = {
         option: "--compile-none",
         description:
           "Forces the debugger to use artifacts even if it detects a problem.  Dangerous; may cause errors."
-      },
+      }
     ]
   },
   run: async function (options) {

@@ -121,7 +121,6 @@ class Command {
       })
       .filter(item => item != null);
 
-
     let invalidOptions = inputOptions.filter(
       opt => !validOptions.includes(opt)
     );

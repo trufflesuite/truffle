@@ -102,7 +102,7 @@ const command = {
         option: "--describe-json",
         description:
           "Adds extra verbosity to the status of an ongoing migration"
-      },
+      }
     ]
   },
 
