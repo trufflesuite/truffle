@@ -78,6 +78,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
       sources = {};
     }
     return {
+      contractName: Object.values(metadata.settings.compilationTarget)[0],
       sources,
       options: {
         language: metadata.language,
