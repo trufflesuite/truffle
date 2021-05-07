@@ -147,9 +147,9 @@ class HDWalletProvider {
           const chain = self.chainId;
           const KNOWN_CHAIN_IDS = new Set([1, 3, 4, 5, 42]);
           let txOptions;
-          if (chain && KNOWN_CHAIN_IDS.has(chain)) {
+          if (typeof chain !== "undefined" && KNOWN_CHAIN_IDS.has(chain)) {
             txOptions = { chain };
-          } else if (chain) {
+          } else if (typeof chain !== "undefined") {
             const common = Common.forCustomChain(
               1,
               {
