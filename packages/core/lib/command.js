@@ -4,7 +4,7 @@ const { bundled, core } = require("../lib/version").info();
 const OS = require("os");
 const analytics = require("../lib/services/analytics");
 const { extractFlags } = require("./utils/utils"); // Contains utility methods
-const commandOptions = require("../lib/commands/command-options");
+const commandOptions = require("./command-options");
 
 class Command {
   constructor(commands) {

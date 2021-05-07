@@ -37,7 +37,7 @@ const command = {
   },
   displayCommandHelp: async function (selectedCommand, subCommand, options) {
     const commands = require("./index");
-    const commonOptions = require("./command-options");
+    const commonOptions = require("../command-options");
 
     let commandHelp, commandDescription;
 
