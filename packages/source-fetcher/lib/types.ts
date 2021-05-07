@@ -74,7 +74,7 @@ export interface SolcSpecializations {
 }
 
 export interface VyperSpecializations {
-  constructorArguments?: string; //encoded, as hex string, w/o 0x in front
+  constructorArguments: string; //encoded, as hex string, w/o 0x in front
 }
 
 export interface SolcSources {

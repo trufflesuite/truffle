@@ -85,6 +85,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
         )
       ))
     );
+    const constructorArguments = await this.getConstructorArgs(address, matchType);
     return {
       contractName: Object.values(metadata.settings.compilationTarget)[0],
       sources,
@@ -93,6 +94,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
         version: metadata.compiler.version,
         settings: removeLibraries(metadata.settings),
         specializations: {
+          constructorArguments,
           libraries: metadata.settings.libraries
         }
       }
@@ -130,6 +132,28 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
       responseType: "text",
       method: "get"
     });
+  }
+
+  private async getConstructorArgs(
+    address: string,
+    matchType: "full" | "partial"
+  ): Promise<string | undefined> {
+    try {
+      const constructorArgs = await this.requestWithRetries<string>({
+        url: `https://${this.domain}/contracts/${matchType}_match/${this.networkId}/${address}/constructor-args.txt`,
+        method: "get",
+        responseType: "text"
+      });
+      return constructorArgs.slice(2); //remove initial "0x"
+    } catch (error) {
+      //is this a 404 error? if so just return undefined
+      debug("error: %O", error);
+      if (error.response.status === 404) {
+        return undefined;
+      }
+      //otherwise, we've got a problem; rethrow the error
+      throw error;
+    }
   }
 
   private async requestWithRetries<T>(
