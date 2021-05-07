@@ -39,10 +39,6 @@ const command = {
           "Transaction ID to use for debugging.  Mandatory if --fetch-external is passed."
       },
       {
-        option: "--network",
-        description: "Network to connect to."
-      },
-      {
         option: "--fetch-external",
         description:
           "Allows debugging of external contracts with verified sources.  Alias: -x"
@@ -61,7 +57,7 @@ const command = {
         option: "--compile-none",
         description:
           "Forces the debugger to use artifacts even if it detects a problem.  Dangerous; may cause errors."
-      }
+      },
     ]
   },
   run: async function (options) {

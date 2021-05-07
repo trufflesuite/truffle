@@ -36,6 +36,8 @@ const command = {
   },
   displayCommandHelp: async function (selectedCommand, subCommand, options) {
     const commands = require("./index");
+    const commonOptions = require("./command-options");
+
     let commandHelp, commandDescription;
 
     const chosenCommand = commands[selectedCommand];
@@ -52,12 +54,20 @@ const command = {
       commandHelp = await commandHelp(options);
     }
 
-    console.log(`\n  Usage:        ${commandHelp.usage}`);
+    const addOptions = commonOptions(chosenCommand.command);
+    
+    const validOptionsUsage = addOptions.map(({ option }) => "[" + option + "]" ).join(" ");
+
+    const commandHelpUsage = commandHelp.usage + " " + validOptionsUsage;
+
+    console.log(`\n  Usage:        ${commandHelpUsage}`);
     console.log(`  Description:  ${commandDescription}`);
 
     if (commandHelp.options.length > 0) {
+      const allValidOptions = [...commandHelp.options, ...addOptions];
+
       console.log(`  Options: `);
-      for (const option of commandHelp.options) {
+      for (const option of allValidOptions) {
         if (option.internal) {
           continue;
         }

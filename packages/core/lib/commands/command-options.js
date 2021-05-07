@@ -1,6 +1,6 @@
 const addOptions = function(command) {
   let options;
-  const networkCommands = ["compile", "console", "debug", "deploy", "migrate"];
+  const networkCommands = ["compile", "console", "debug", "deploy", "migrate", "exec"];
 
   // need to distinguish the develop command here because it doesn't make sense for it to have a network option
   // but maybe there could be a relevant config value

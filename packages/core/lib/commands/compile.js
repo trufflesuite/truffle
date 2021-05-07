@@ -32,12 +32,6 @@ const command = {
           "Compile all contracts instead of only the contracts changed since last compile."
       },
       {
-        option: "--network <name>",
-        description:
-          "Specify the network to use, saving artifacts specific to that network. " +
-          " Network name must exist in the\n                    configuration."
-      },
-      {
         option: "--list <filter>",
         description:
           "List all recent stable releases from solc-bin.  If filter is specified then it will display only " +
@@ -58,7 +52,7 @@ const command = {
         internal: true,
         description:
           "Save the raw compiler results into <output-file>, overwriting any existing content."
-      }
+      },
     ]
   },
   run: async function (options) {
