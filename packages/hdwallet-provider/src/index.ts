@@ -297,7 +297,7 @@ class HDWalletProvider {
     callback: JSONRPCErrorCallback | Callback<JsonRPCResponse>
   ): Promise<void> {
     await this.initialized;
-    return this.engine.send.call(this.engine, payload, callback);
+    return this.engine.send(payload, callback);
   }
 
   public sendAsync(
@@ -305,7 +305,7 @@ class HDWalletProvider {
     callback: JSONRPCErrorCallback | Callback<JsonRPCResponse>
   ): void {
     this.initialized.then(() => {
-      this.engine.sendAsync.call(this.engine, payload, callback);
+      this.engine.sendAsync(payload, callback);
     });
   }
 
