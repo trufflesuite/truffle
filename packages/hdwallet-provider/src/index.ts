@@ -234,7 +234,7 @@ class HDWalletProvider {
               `returned the malformed result ${response.result}.`;
             throw new Error(message);
           }
-          this.chainId = response.result;
+          this.chainId = parseInt(response.result, 16);
         }
         resolve();
       });
