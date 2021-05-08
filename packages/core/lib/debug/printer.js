@@ -635,7 +635,7 @@ class DebugPrinter {
     //if we're not in the single-variable case, we'll need to do some
     //things to Javascriptify our variables so that the JS syntax for
     //using them is closer to the Solidity syntax
-    let context = Codec.Format.Utils.Inspect.nativizeVariables(variables);
+    let context = Codec.Format.Utils.Inspect.unsafeNativizeVariables(variables);
 
     //HACK -- we can't use "this" as a variable name, so we're going to
     //find an available replacement name, and then modify the context
