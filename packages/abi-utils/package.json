@@ -1,6 +1,6 @@
 {
   "name": "@truffle/abi-utils",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Utilities for working with ABIs",
   "keywords": [
     "ethereum",
@@ -20,7 +20,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/trufflesuite/truffle.git"
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/abi-utils"
   },
   "scripts": {
     "prepare": "tsc",
@@ -30,7 +31,7 @@
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "devDependencies": {
-    "@truffle/contract-schema": "^3.4.0",
+    "@truffle/contract-schema": "^3.4.1",
     "@types/faker": "^5.1.2",
     "@types/jest": "^26.0.20",
     "@types/jest-json-schema": "^2.1.2",

@@ -3,8 +3,16 @@
   "description": "Reporters for Truffle modules",
   "license": "MIT",
   "author": "",
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/reporters",
-  "version": "1.1.3",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/reporters"
+  },
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/provisioner#reporters",
+  "version": "1.1.4",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0"

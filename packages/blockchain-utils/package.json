@@ -4,11 +4,15 @@
   "license": "MIT",
   "author": "Tim Coulter <tim@trufflesuite.com>",
   "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/blockchain-utils#readme",
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/blockchain-utils",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/blockchain-utils"
+  },
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.0.29",
+  "version": "0.0.30",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",

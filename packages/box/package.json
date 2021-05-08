@@ -3,8 +3,12 @@
   "description": "Truffle project boilerplate utility",
   "license": "MIT",
   "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/box",
-  "version": "2.1.10",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/box"
+  },
+  "version": "2.1.11",
   "main": "dist/box.js",
   "scripts": {
     "build": "tsc",
@@ -13,7 +17,7 @@
   },
   "types": "./typings/index.d.ts",
   "dependencies": {
-    "@truffle/config": "^1.2.38",
+    "@truffle/config": "^1.2.39",
     "axios": "^0.21.1",
     "download-git-repo": "^3.0.2",
     "fs-extra": "^9.1.0",

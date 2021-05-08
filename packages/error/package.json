@@ -1,6 +1,6 @@
 {
   "name": "@truffle/error",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "Simple module that allows native Error objects to be extended",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -11,7 +11,11 @@
     "build": "tsc",
     "prepare": "yarn build"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/error",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/error"
+  },
   "keywords": [
     "ethereum",
     "truffle",

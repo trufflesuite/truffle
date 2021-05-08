@@ -1,6 +1,6 @@
 {
   "name": "@truffle/preserve-to-filecoin",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Truffle `preserve` command support for Filecoin",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
@@ -13,7 +13,15 @@
     "prepare": "yarn build",
     "test": "./scripts/test.sh"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/preserve-to-filecoin",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/preserve-to-filecoin"
+  },
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/preserve-to-filecoin#readme",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
   "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
   "license": "MIT",
   "publishConfig": {
@@ -21,7 +29,7 @@
   },
   "devDependencies": {
     "@ganache/filecoin": "^0.1.2",
-    "@truffle/preserve-to-ipfs": "^0.2.1",
+    "@truffle/preserve-to-ipfs": "^0.2.2",
     "@types/jest": "^26.0.20",
     "@types/node": "^14.14.25",
     "ganache": "^3.0.0-filecoin.3",
@@ -30,7 +38,7 @@
     "typescript": "^4.1.4"
   },
   "dependencies": {
-    "@truffle/preserve": "^0.2.1",
+    "@truffle/preserve": "^0.2.2",
     "cids": "^1.1.5",
     "delay": "^5.0.0",
     "filecoin.js": "^0.0.5-alpha",

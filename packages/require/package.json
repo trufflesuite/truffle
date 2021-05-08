@@ -4,20 +4,24 @@
   "license": "MIT",
   "author": "Tim Coulter <tim@trufflesuite.com>",
   "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/require#readme",
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/require",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/require"
+  },
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "2.0.61",
+  "version": "2.0.62",
   "main": "require.js",
   "scripts": {
     "prepare": "exit 0",
     "test": "mocha"
   },
   "dependencies": {
-    "@truffle/config": "^1.2.38",
-    "@truffle/expect": "^0.0.15",
-    "@truffle/interface-adapter": "^0.4.22",
+    "@truffle/config": "^1.2.39",
+    "@truffle/expect": "^0.0.16",
+    "@truffle/interface-adapter": "^0.4.23",
     "original-require": "^1.0.1",
     "web3": "1.3.5"
   },

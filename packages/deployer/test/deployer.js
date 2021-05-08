@@ -38,7 +38,7 @@ describe("Deployer (sync)", function() {
     await utils.compile();
 
     Example = utils.getContract("Example", provider, networkId, owner);
-    ExampleRevert = utils.getContract(
+    const ExampleRevert = utils.getContract(
       "ExampleRevert",
       provider,
       networkId,
@@ -47,7 +47,7 @@ describe("Deployer (sync)", function() {
     UsesExample = utils.getContract("UsesExample", provider, networkId, owner);
     UsesLibrary = utils.getContract("UsesLibrary", provider, networkId, owner);
     IsLibrary = utils.getContract("IsLibrary", provider, networkId, owner);
-    Abstract = utils.getContract("Abstract", provider, networkId, owner);
+    const Abstract = utils.getContract("Abstract", provider, networkId, owner);
 
     options = {
       contracts: [
@@ -230,7 +230,7 @@ describe("Deployer (sync)", function() {
       await usesLibrary.fireIsLibraryEvent(5);
       await usesLibrary.fireUsesLibraryEvent(7);
 
-      eventOptions = { fromBlock: 0, toBlock: "latest" };
+      const eventOptions = { fromBlock: 0, toBlock: "latest" };
       const events = await usesLibrary.getPastEvents("allEvents", eventOptions);
 
       assert(events[0].args.eventID.toNumber() === 5);

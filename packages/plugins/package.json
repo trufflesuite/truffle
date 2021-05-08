@@ -1,6 +1,6 @@
 {
   "name": "@truffle/plugins",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Truffle plugin support",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
@@ -12,7 +12,15 @@
     "prepare": "yarn build",
     "test": "jest --verbose --detectOpenHandles"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/plugins",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/plugins"
+  },
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/plugins#readme",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
   "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
   "license": "MIT",
   "publishConfig": {

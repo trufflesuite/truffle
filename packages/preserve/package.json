@@ -1,6 +1,6 @@
 {
   "name": "@truffle/preserve",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Library for functionality for `truffle preserve` command",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
@@ -13,7 +13,15 @@
     "test": "jest --verbose --detectOpenHandles",
     "docs": "../../node_modules/typedoc/bin/typedoc --options ./docs/typedoc.json"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/preserve",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/preserve"
+  },
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/preserve#readme",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
   "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
   "license": "MIT",
   "publishConfig": {

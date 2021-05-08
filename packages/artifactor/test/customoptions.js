@@ -16,7 +16,7 @@ describe("Custom options", () => {
 
     const expectedFilepath = path.join(tempDir.name, "Example.json");
 
-    artifactor = new Artifactor(tempDir.name);
+    const artifactor = new Artifactor(tempDir.name);
 
     artifactor
       .save({
@@ -30,7 +30,7 @@ describe("Custom options", () => {
       })
       .then(() => {
         const json = requireNoCache(expectedFilepath);
-        Example = contract(json);
+        const Example = contract(json);
 
         assert.equal(Example["x-from-dependency"], "somedep");
       })

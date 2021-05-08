@@ -1,10 +1,14 @@
 {
   "name": "@truffle/compile-common",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "description": "Common compiler integration support infrastructure for Truffle",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
-  "repository": "https://github.com/trufflesuite/truffle/tree/develop/packages/compile-common",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/compile-common"
+  },
   "license": "MIT",
   "scripts": {
     "build": "tsc",
@@ -13,17 +17,17 @@
     "watch": "tsc -w"
   },
   "devDependencies": {
-    "@truffle/config": "^1.2.38",
-    "@truffle/contract-schema": "^3.4.0",
+    "@truffle/config": "^1.2.39",
+    "@truffle/contract-schema": "^3.4.1",
     "@types/fs-extra": "^8.1.0",
     "@types/mocha": "^5.2.7",
     "@types/node": "12.12.21",
     "typescript": "^4.1.4"
   },
   "dependencies": {
-    "@truffle/contract-sources": "^0.1.11",
-    "@truffle/error": "^0.0.13",
-    "@truffle/expect": "^0.0.15",
+    "@truffle/contract-sources": "^0.1.12",
+    "@truffle/error": "^0.0.14",
+    "@truffle/expect": "^0.0.16",
     "colors": "^1.4.0",
     "debug": "^4.3.1",
     "mocha": "8.0.1",

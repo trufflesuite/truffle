@@ -1,6 +1,6 @@
 {
   "name": "@truffle/provisioner",
-  "version": "0.2.16",
+  "version": "0.2.17",
   "description": "Provision contract objects for use from multiple sources",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -11,7 +11,11 @@
     "build": "tsc",
     "prepare": "yarn build"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/provisioner",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/provisioner"
+  },
   "keywords": [
     "ethereum",
     "truffle",
@@ -31,6 +35,6 @@
     "typescript": "^4.1.4"
   },
   "dependencies": {
-    "@truffle/config": "^1.2.38"
+    "@truffle/config": "^1.2.39"
   }
 }

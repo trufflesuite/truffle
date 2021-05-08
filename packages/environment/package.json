@@ -5,21 +5,25 @@
   "license": "MIT",
   "author": "Faina Shalts",
   "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/environment#readme",
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/environment",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/environment"
+  },
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.2.52",
+  "version": "0.2.53",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0"
   },
   "dependencies": {
-    "@truffle/artifactor": "^4.0.103",
-    "@truffle/error": "^0.0.13",
-    "@truffle/expect": "^0.0.15",
-    "@truffle/interface-adapter": "^0.4.22",
-    "@truffle/resolver": "^7.0.9",
+    "@truffle/artifactor": "^4.0.104",
+    "@truffle/error": "^0.0.14",
+    "@truffle/expect": "^0.0.16",
+    "@truffle/interface-adapter": "^0.4.23",
+    "@truffle/resolver": "^7.0.10",
     "ganache-core": "2.13.0",
     "node-ipc": "^9.1.1",
     "source-map-support": "^0.5.19",

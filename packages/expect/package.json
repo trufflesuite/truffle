@@ -4,11 +4,15 @@
   "license": "MIT",
   "author": "Tim Coulter <tim@trufflesuite.com>",
   "homepage": "https://github.com/trufflesuite/truffle/blob/master/packages/expect#readme",
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/expect",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/expect"
+  },
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.0.15",
+  "version": "0.0.16",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0",

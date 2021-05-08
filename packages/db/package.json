@@ -6,12 +6,13 @@
   "homepage": "https://github.com/trufflesuite/truffle#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/trufflesuite/truffle.git"
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/db"
   },
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.5.9",
+  "version": "0.5.10",
   "main": "dist/src/index.js",
   "files": [
     "dist",
@@ -35,9 +36,9 @@
     "test": "jest --verbose --detectOpenHandles --forceExit"
   },
   "dependencies": {
-    "@truffle/abi-utils": "^0.2.0",
-    "@truffle/code-utils": "^1.2.26",
-    "@truffle/config": "^1.2.38",
+    "@truffle/abi-utils": "^0.2.1",
+    "@truffle/code-utils": "^1.2.27",
+    "@truffle/config": "^1.2.39",
     "apollo-server": "^2.18.2",
     "debug": "^4.3.1",
     "fs-extra": "^9.1.0",
@@ -57,9 +58,9 @@
   },
   "devDependencies": {
     "@gql2ts/from-schema": "^2.0.0-4",
-    "@truffle/compile-common": "^0.7.3",
-    "@truffle/contract-schema": "^3.4.0",
-    "@truffle/workflow-compile": "^3.2.8",
+    "@truffle/compile-common": "^0.7.4",
+    "@truffle/contract-schema": "^3.4.1",
+    "@truffle/workflow-compile": "^3.2.9",
     "@types/debug": "^4.1.5",
     "@types/express": "^4.16.0",
     "@types/graphql": "^14.5.0",
