@@ -224,19 +224,20 @@ class HDWalletProvider {
         id: Date.now(),
         method: 'eth_chainId',
         params: []
-    }, (error: any, response: JSONRPCResponsePayload) => {
+    }, (error: any, response: JSONRPCResponsePayload & { error?: any }) => {
         if (error) {
           reject(error);
           return;
+        } else if (response.error) {
+          reject(response.error);
+          return;
         }
-        if (response && response.result) {
-          if (isNaN(parseInt(response.result, 16))) {
-            const message = "When requesting the chain id from the node, it" +
-              `returned the malformed result ${response.result}.`;
-            throw new Error(message);
-          }
-          this.chainId = parseInt(response.result, 16);
+        if (isNaN(parseInt(response.result, 16))) {
+          const message = "When requesting the chain id from the node, it" +
+            `returned the malformed result ${response.result}.`;
+          throw new Error(message);
         }
+        this.chainId = parseInt(response.result, 16);
         resolve();
       });
     });
