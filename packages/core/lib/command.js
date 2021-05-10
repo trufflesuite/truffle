@@ -110,7 +110,8 @@ class Command {
     const inputOptions = extractFlags(inputStrings);
 
     //adding allowed global options as enumerated in each command
-    const allowedGlobalOptions = result.command.help.allowedGlobalOptions.map(tag => commandOptions[tag].option ? commandOptions[tag] : "");
+    const allowedGlobalOptions = result.command.help.allowedGlobalOptions.filter(tag=> tag in commandOptions).map(tag => commandOptions[tag]);
+
     const allValidOptions = [...result.command.help.options, ...allowedGlobalOptions];
 
     const validOptions = allValidOptions

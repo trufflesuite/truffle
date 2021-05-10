@@ -37,7 +37,7 @@ const command = {
   },
   displayCommandHelp: async function (selectedCommand, subCommand, options) {
     const commands = require("./index");
-    const commonOptions = require("../command-options");
+    const commandOptions = require("../command-options");
 
     let commandHelp, commandDescription;
 
@@ -55,7 +55,7 @@ const command = {
       commandHelp = await commandHelp(options);
     }
 
-    const allowedGlobalOptions = commandHelp.allowedGlobalOptions.map(tag => commonOptions[tag].option ? commonOptions[tag] : "");
+    const allowedGlobalOptions = commandHelp.allowedGlobalOptions.filter(tag=> tag in commandOptions).map(tag => commandOptions[tag]);
     const validOptionsUsage = allowedGlobalOptions.map(option => "[" + option.option + "]" ).join(" ");
 
     const commandHelpUsage = commandHelp.usage + " " + validOptionsUsage;
