@@ -97,7 +97,8 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
       return await this.requestWithRetries<Types.SolcMetadata>({
         url: `https://${this.domain}/contracts/full_match/${this.networkId}/${address}/metadata.json`,
         method: "get",
-        responseType: "json"
+        responseType: "json",
+        maxRedirects: 50
       });
     } catch (error) {
       //is this a 404 error? if so just return null
@@ -117,7 +118,8 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     return await this.requestWithRetries<string>({
       url: `https://${this.domain}/contracts/full_match/${this.networkId}/${address}/sources/${sourcePath}`,
       responseType: "text",
-      method: "get"
+      method: "get",
+      maxRedirects: 50
     });
   }
 
