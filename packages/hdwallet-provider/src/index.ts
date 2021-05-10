@@ -227,6 +227,7 @@ class HDWalletProvider {
     }, (error: any, response: JSONRPCResponsePayload) => {
         if (error) {
           reject(error);
+          return;
         }
         if (response && response.result) {
           if (isNaN(parseInt(response.result, 16))) {
