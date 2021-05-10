@@ -21,7 +21,7 @@ const command = {
           `different Truffle develop or console session to interact via the repl.`
       }
     ],
-    allowedGlobalOptions: ["--config <file>"]
+    allowedGlobalOptions: ["config"]
   },
   runConsole: async (config, ganacheOptions) => {
     const Console = require("../console");

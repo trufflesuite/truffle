@@ -55,9 +55,8 @@ const command = {
       commandHelp = await commandHelp(options);
     }
 
-    const allowedGlobalOptions = commonOptions.filter((option) => commandHelp.allowedGlobalOptions.includes(option.option));
-
-    const validOptionsUsage = allowedGlobalOptions.map(({ option }) => "[" + option + "]" ).join(" ");
+    const allowedGlobalOptions = commandHelp.allowedGlobalOptions.map(tag => commonOptions[tag].option ? commonOptions[tag] : "");
+    const validOptionsUsage = allowedGlobalOptions.map(option => "[" + option.option + "]" ).join(" ");
 
     const commandHelpUsage = commandHelp.usage + " " + validOptionsUsage;
 

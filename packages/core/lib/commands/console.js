@@ -12,7 +12,7 @@ const command = {
           "Log communication between Truffle and the Ethereum client."
       }
     ],
-    allowedGlobalOptions: ["--network <name>", "--config <file>"]
+    allowedGlobalOptions: ["network", "config"]
   },
   run: async function (options) {
     const Config = require("@truffle/config");

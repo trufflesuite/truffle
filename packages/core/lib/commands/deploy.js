@@ -8,7 +8,7 @@ const command = {
     usage:
       "truffle deploy [--reset] [-f <number>] [--compile-all] [--verbose-rpc]",
     options: migrate.help.options,
-    allowedGlobalOptions: ["--network <name>", "--config <file>"]
+    allowedGlobalOptions: ["network", "config"]
   },
   run: migrate.run
 };

@@ -28,7 +28,7 @@ const command = {
         description: "Compile contracts before executing the script."
       }
     ],
-    allowedGlobalOptions: ["--network <name>", "--config <file>"]
+    allowedGlobalOptions: ["network", "config"]
   },
   run: async function (options) {
     const Config = require("@truffle/config");

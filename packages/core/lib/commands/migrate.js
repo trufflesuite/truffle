@@ -104,7 +104,7 @@ const command = {
           "Adds extra verbosity to the status of an ongoing migration"
       },
     ],
-    allowedGlobalOptions: ["--network <name>", "--config <file>"]
+    allowedGlobalOptions: ["network", "config"]
   },
 
   determineDryRunSettings: function (config, options) {

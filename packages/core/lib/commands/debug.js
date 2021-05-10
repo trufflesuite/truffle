@@ -59,7 +59,7 @@ const command = {
           "Forces the debugger to use artifacts even if it detects a problem.  Dangerous; may cause errors."
       },
     ],
-    allowedGlobalOptions: ["--network <name>", "--config <file>"]
+    allowedGlobalOptions: ["network", "config"]
   },
   run: async function (options) {
     const { promisify } = require("util");

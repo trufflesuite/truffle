@@ -115,7 +115,7 @@ const command = {
         description: "Shortcut for --stacktrace --compile-all-debug."
       }
     ],
-    allowedGlobalOptions: ["--network <name>", "--config <file>"]
+    allowedGlobalOptions: ["network", "config"]
   },
   run: async function (options) {
     const Config = require("@truffle/config");
