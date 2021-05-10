@@ -293,12 +293,13 @@ class HDWalletProvider {
   };
 
 
-  public async send(
+  public send(
     payload: JSONRPCRequestPayload,
     callback: JSONRPCErrorCallback | Callback<JsonRPCResponse>
-  ): Promise<void> {
-    await this.initialized;
-    return this.engine.send(payload, callback);
+  ): void {
+    this.initialized.then(() => {
+      this.engine.send(payload, callback);
+    });
   }
 
   public sendAsync(
