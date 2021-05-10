@@ -76,12 +76,6 @@ const command = {
           "cause errors on large\n                    contracts."
       },
       {
-        option: "--network <name>",
-        description:
-          "Specify the network to use, using artifacts specific to that network. Network " +
-          "name must exist\n                    in the configuration."
-      },
-      {
         option: "--verbose-rpc",
         description:
           "Log communication between Truffle and the Ethereum client."
@@ -120,7 +114,8 @@ const command = {
         option: "--stacktrace-extra",
         description: "Shortcut for --stacktrace --compile-all-debug."
       }
-    ]
+    ],
+    allowedGlobalOptions: ["--network <name>", "--config <file>"]
   },
   run: async function (options) {
     const Config = require("@truffle/config");

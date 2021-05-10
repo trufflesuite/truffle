@@ -24,7 +24,7 @@ const command = {
   },
   help: {
     usage:
-      "truffle compile [--list <filter>] [--all] [--network <name>] [--quiet]",
+      "truffle compile [--list <filter>] [--all] [--quiet]",
     options: [
       {
         option: "--all",

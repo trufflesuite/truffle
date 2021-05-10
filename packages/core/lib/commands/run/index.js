@@ -9,7 +9,8 @@ const command = {
         option: "<command>",
         description: "Name of the third-party command to run."
       }
-    ]
+    ],
+    allowedGlobalOptions: []
   },
   async run(options) {
     const { promisify } = require("util");

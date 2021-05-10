@@ -13,6 +13,7 @@ const command = {
           "that exist in the directory.",
       },
     ],
+    allowedGlobalOptions: []
   },
   run: async function (options) {
     const {copyFiles} = require("./copyFiles");

@@ -29,7 +29,8 @@ const command = {
 
   help: {
     usage,
-    options: []
+    options: [],
+    allowedGlobalOptions: []
   },
 
   run: async function (args) {
