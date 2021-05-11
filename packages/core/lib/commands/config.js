@@ -22,7 +22,8 @@ const command = {
         option: "set",
         description: "Set a Truffle config option value."
       }
-    ]
+    ],
+    allowedGlobalOptions: []
   },
   userLevelSettings: ["analytics"],
   builder: {

@@ -24,18 +24,12 @@ const command = {
   },
   help: {
     usage:
-      "truffle compile [--list <filter>] [--all] [--network <name>] [--quiet]",
+      "truffle compile [--list <filter>] [--all] [--quiet]",
     options: [
       {
         option: "--all",
         description:
           "Compile all contracts instead of only the contracts changed since last compile."
-      },
-      {
-        option: "--network <name>",
-        description:
-          "Specify the network to use, saving artifacts specific to that network. " +
-          " Network name must exist in the\n                    configuration."
       },
       {
         option: "--list <filter>",
@@ -58,8 +52,9 @@ const command = {
         internal: true,
         description:
           "Save the raw compiler results into <output-file>, overwriting any existing content."
-      }
-    ]
+      },
+    ],
+    allowedGlobalOptions: ["network", "config"]
   },
   run: async function (options) {
     const TruffleError = require("@truffle/error");

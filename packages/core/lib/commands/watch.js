@@ -8,7 +8,8 @@ const command = {
   builder: {},
   help: {
     usage: "truffle watch",
-    options: []
+    options: [],
+    allowedGlobalOptions: []
   },
   run: async function (options) {
     const OS = require("os");

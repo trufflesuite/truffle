@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.3.4",
+  "version": "5.3.6",
   "main": "./build/library.bundled.js",
   "bin": {
     "truffle": "./build/cli.bundled.js"
@@ -32,17 +32,17 @@
     "test:raw": "NO_BUILD=true mocha"
   },
   "dependencies": {
-    "@truffle/debugger": "^8.0.23",
+    "@truffle/debugger": "^8.0.25",
     "app-module-path": "^2.2.0",
     "mocha": "8.1.2",
     "original-require": "^1.0.1"
   },
   "devDependencies": {
-    "@truffle/box": "^2.1.10",
-    "@truffle/config": "^1.2.38",
-    "@truffle/contract": "^4.3.15",
-    "@truffle/core": "^5.3.4",
-    "@truffle/interface-adapter": "^0.4.22",
+    "@truffle/box": "^2.1.12",
+    "@truffle/config": "^1.2.39",
+    "@truffle/contract": "^4.3.16",
+    "@truffle/core": "^5.3.6",
+    "@truffle/interface-adapter": "^0.4.23",
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^7.0.0",
     "eslint": "^5.7.0",
@@ -65,11 +65,11 @@
     "yargs": "^8.0.2"
   },
   "optionalDependencies": {
-    "@truffle/db": "^0.5.9",
-    "@truffle/preserve-fs": "^0.2.1",
-    "@truffle/preserve-to-buckets": "^0.2.1",
-    "@truffle/preserve-to-filecoin": "^0.2.1",
-    "@truffle/preserve-to-ipfs": "^0.2.1"
+    "@truffle/db": "^0.5.11",
+    "@truffle/preserve-fs": "^0.2.2",
+    "@truffle/preserve-to-buckets": "^0.2.2",
+    "@truffle/preserve-to-filecoin": "^0.2.2",
+    "@truffle/preserve-to-ipfs": "^0.2.2"
   },
   "publishConfig": {
     "access": "public"

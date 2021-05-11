@@ -47,7 +47,7 @@ const command = {
   },
   help: {
     usage:
-      "truffle migrate [--reset] [--f <number>] [--to <number>] [--network <name>]\n" +
+      "truffle migrate [--reset] [--f <number>] [--to <number>]\n" +
       "                                " + // spacing to align with previous line
       "[--compile-all] [--compile-none] [--verbose-rpc] [--interactive]\n" +
       "                                " + // spacing to align with previous line
@@ -69,12 +69,6 @@ const command = {
         option: "--to <number>",
         description:
           "Run contracts to a specific migration. The number refers to the prefix of the migration file."
-      },
-      {
-        option: "--network <name>",
-        description:
-          "Specify the network to use, saving artifacts specific to that network. " +
-          "Network name must exist\n                    in the configuration."
       },
       {
         option: "--compile-all",
@@ -108,8 +102,9 @@ const command = {
         option: "--describe-json",
         description:
           "Adds extra verbosity to the status of an ongoing migration"
-      }
-    ]
+      },
+    ],
+    allowedGlobalOptions: ["network", "config"]
   },
 
   determineDryRunSettings: function (config, options) {

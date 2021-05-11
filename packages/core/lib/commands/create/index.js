@@ -26,7 +26,8 @@ const command = {
         option: "<ArtifactName>",
         description: "Name of new artifact. (required)"
       }
-    ]
+    ],
+    allowedGlobalOptions: []
   },
   run: async function (options) {
     const Config = require("@truffle/config");

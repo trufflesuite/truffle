@@ -36,7 +36,7 @@ class Docker extends LoadingStrategy {
   }
 
   getDockerTags() {
-    return axios.get(this.config.dockerTagsUrl)
+    return axios.get(this.config.dockerTagsUrl, { maxRedirects: 50 })
       .then(response => response.data.results.map(item => item.name))
       .catch(error => {
         throw this.errors("noRequest", this.config.dockerTagsUrl, error);

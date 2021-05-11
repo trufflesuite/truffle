@@ -35,6 +35,7 @@ const command = {
           "that exist in the directory.",
       },
     ],
+    allowedGlobalOptions: []
   },
   async run(options) {
     const Config = require("@truffle/config");
