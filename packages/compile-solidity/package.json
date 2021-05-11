@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.3.1",
+  "version": "5.3.2",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0",
@@ -36,7 +36,7 @@
   },
   "devDependencies": {
     "@truffle/artifactor": "^4.0.104",
-    "@truffle/box": "^2.1.11",
+    "@truffle/box": "^2.1.12",
     "@truffle/resolver": "^7.0.10",
     "babel-core": "^6.26.0",
     "babel-polyfill": "^6.26.0",
