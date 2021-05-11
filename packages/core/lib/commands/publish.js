@@ -4,7 +4,8 @@ const command = {
   builder: {},
   help: {
     usage: "truffle publish",
-    options: []
+    options: [],
+    allowedGlobalOptions: []
   },
   run: async function (options) {
     const Config = require("@truffle/config");

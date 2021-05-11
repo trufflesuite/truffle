@@ -4,7 +4,8 @@ const command = {
   builder: {},
   help: {
     usage: "truffle db query <query>",
-    options: []
+    options: [],
+    allowedGlobalOptions: []
   },
 
   /* This command does starts an express derived server that invokes

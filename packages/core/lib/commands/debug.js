@@ -30,17 +30,13 @@ const command = {
   },
   help: {
     usage:
-      "truffle debug [<transaction_hash>] [--network <network>] [--fetch-external]" + OS.EOL +
+      "truffle debug [<transaction_hash>] [--fetch-external]" + OS.EOL +
       "                             [--compile-tests|--compile-all|--compile-none]",
     options: [
       {
         option: "<transaction_hash>",
         description:
           "Transaction ID to use for debugging.  Mandatory if --fetch-external is passed."
-      },
-      {
-        option: "--network",
-        description: "Network to connect to."
       },
       {
         option: "--fetch-external",
@@ -61,8 +57,9 @@ const command = {
         option: "--compile-none",
         description:
           "Forces the debugger to use artifacts even if it detects a problem.  Dangerous; may cause errors."
-      }
-    ]
+      },
+    ],
+    allowedGlobalOptions: ["network", "config"]
   },
   run: async function (options) {
     const { promisify } = require("util");

@@ -35,7 +35,8 @@ module.exports = {
     return {
       usage:
         "truffle preserve [--environment=<environment>] <target-path>... --<recipe-tag>",
-      options: flags
+      options: flags,
+      allowedGlobalOptions: []
     };
   },
   run: async options => {
