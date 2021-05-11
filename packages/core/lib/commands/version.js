@@ -4,7 +4,8 @@ const command = {
   builder: {},
   help: {
     usage: "truffle version",
-    options: []
+    options: [],
+    allowedGlobalOptions: []
   },
   run: async function (options) {
     const version = require("../version");

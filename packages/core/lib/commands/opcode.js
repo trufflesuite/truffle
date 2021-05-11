@@ -15,7 +15,8 @@ const command = {
         description:
           "Name of the contract to print opcodes for. Must be a contract name, not a file name. (required)"
       }
-    ]
+    ],
+    allowedGlobalOptions: []
   },
   run: async function (options) {
     const Config = require("@truffle/config");

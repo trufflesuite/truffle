@@ -4,6 +4,7 @@ const { bundled, core } = require("../lib/version").info();
 const OS = require("os");
 const analytics = require("../lib/services/analytics");
 const { extractFlags } = require("./utils/utils"); // Contains utility methods
+const commandOptions = require("./command-options");
 
 class Command {
   constructor(commands) {
@@ -107,7 +108,13 @@ class Command {
     if (!Array.isArray(inputStrings)) inputStrings = inputStrings.split(" ");
     // Method `extractFlags(args)` : Extracts the `--option` flags from arguments
     const inputOptions = extractFlags(inputStrings);
-    const validOptions = result.command.help.options
+
+    //adding allowed global options as enumerated in each command
+    const allowedGlobalOptions = result.command.help.allowedGlobalOptions.filter(tag=> tag in commandOptions).map(tag => commandOptions[tag]);
+
+    const allValidOptions = [...result.command.help.options, ...allowedGlobalOptions];
+
+    const validOptions = allValidOptions
       .map(item => {
         let opt = item.option.split(" ")[0];
         return opt.startsWith("--") ? opt : null;

@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "3.2.23",
+  "version": "3.2.24",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0",
@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "@truffle/reporters": "^1.1.4",
-    "@truffle/workflow-compile": "^3.2.9",
+    "@truffle/workflow-compile": "^3.2.10",
     "ganache-core": "2.13.0",
     "mocha": "8.1.2",
     "sinon": "^9.0.2",

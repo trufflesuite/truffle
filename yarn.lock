@@ -4208,14 +4208,6 @@
   dependencies:
     bignumber.js "7.2.1"
 
-"@types/ethereumjs-tx@^1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@types/ethereumjs-tx/-/ethereumjs-tx-1.0.1.tgz#31a46b858a51ec4395959b2ae37f5064a8688fbd"
-  integrity sha512-UtucmY/WoMCDhNebyFJQ+AevyFGeTgh8UYZE1aWqIRkk90E+eKWgGV2lAVjkg/gXqxLkJYZ0RcV1J09K9xlSvw==
-  dependencies:
-    "@types/bn.js" "*"
-    "@types/node" "*"
-
 "@types/ethereumjs-util@^5.2.0":
   version "5.2.0"
   resolved "https://registry.yarnpkg.com/@types/ethereumjs-util/-/ethereumjs-util-5.2.0.tgz#f49fe8114789ec0871721392c09318c3eb56671b"

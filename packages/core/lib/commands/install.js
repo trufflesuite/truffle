@@ -16,7 +16,8 @@ const command = {
           "When specified, will install a specific version of the package, otherwise " +
           "will install\n                    the latest version."
       }
-    ]
+    ],
+    allowedGlobalOptions: []
   },
   run: async function (options) {
     const Config = require("@truffle/config");

@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "3.2.9",
+  "version": "3.2.10",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0",
@@ -21,7 +21,7 @@
   "dependencies": {
     "@truffle/artifactor": "^4.0.104",
     "@truffle/compile-common": "^0.7.4",
-    "@truffle/compile-solidity": "^5.3.1",
+    "@truffle/compile-solidity": "^5.3.2",
     "@truffle/compile-vyper": "^3.1.7",
     "@truffle/config": "^1.2.39",
     "@truffle/expect": "^0.0.16",

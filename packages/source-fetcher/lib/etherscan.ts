@@ -100,7 +100,8 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
           address,
           apikey: this.apiKey
         },
-        responseType: "json"
+        responseType: "json",
+        maxRedirects: 50
       }
     );
     if (response.data.status === "0") {
