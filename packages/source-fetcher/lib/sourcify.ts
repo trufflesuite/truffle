@@ -144,7 +144,8 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
       const constructorArgs = await this.requestWithRetries<string>({
         url: `https://${this.domain}/contracts/${matchType}_match/${this.networkId}/${address}/constructor-args.txt`,
         method: "get",
-        responseType: "text"
+        responseType: "text",
+        maxRedirects: 50
       });
       return constructorArgs.slice(2); //remove initial "0x"
     } catch (error) {
