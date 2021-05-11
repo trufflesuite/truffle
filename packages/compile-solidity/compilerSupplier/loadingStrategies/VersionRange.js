@@ -102,7 +102,10 @@ class VersionRange extends LoadingStrategy {
       attemptNumber: index + 1
     });
     try {
-      const response = await axios.get(url);
+      const response = await axios.get(
+        url,
+        { maxRedirects: 50 }
+      );
       events.emit("downloadCompiler:succeed");
       this.addFileToCache(response.data, fileName);
       return this.compilerFromString(response.data);
@@ -147,7 +150,7 @@ class VersionRange extends LoadingStrategy {
 
     // trim trailing slashes from compilerRoot
     const url = `${compilerRoots[index].replace(/\/+$/, "")}/list.json`;
-    return axios.get(url)
+    return axios.get(url, { maxRedirects: 50 })
       .then(response => {
         events.emit("fetchSolcList:succeed");
         return response.data;
