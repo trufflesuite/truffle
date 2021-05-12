@@ -91,7 +91,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
 
   private async makeRequest(address: string): Promise<EtherscanSuccess> {
     //not putting a try/catch around this; if it throws, we throw
-    const response = (await axios.get(
+    const response: EtherscanResponse = (await axios.get(
       `https://api${this.suffix}.etherscan.io/api`,
       {
         params: {
