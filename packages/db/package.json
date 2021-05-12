@@ -47,6 +47,7 @@
     "graphql-tools": "^6.2.4",
     "json-stable-stringify": "^1.0.1",
     "jsondown": "^1.0.0",
+    "morphism": "^1.12.3",
     "pascal-case": "^2.0.1",
     "pluralize": "^8.0.0",
     "pouchdb": "7.1.1",
