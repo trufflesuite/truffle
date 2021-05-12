@@ -18,6 +18,11 @@ import type { Workspace, Historical } from "@truffle/db/meta/data";
 
 import type { Definition, Definitions } from "@truffle/db/meta/pouch/types";
 
+export interface DatabasesOptions<C extends Collections> {
+  definitions: Definitions<C>;
+  settings: any;
+}
+
 /**
  * Aggegrates logic for interacting wth a set of PouchDB databases identified
  * by resource collection name.
@@ -29,7 +34,7 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
 
   private ready: Promise<void>;
 
-  constructor(options) {
+  constructor(options: DatabasesOptions<C>) {
     this.setup(options.settings);
 
     this.definitions = options.definitions;
