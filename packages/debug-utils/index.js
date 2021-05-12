@@ -56,7 +56,9 @@ const commandReference = {
   "T": "unload transaction",
   "s": "print stacktrace",
   "g": "turn on generated sources",
-  "G": "turn off generated sources except via `;`"
+  "G": "turn off generated sources except via `;`",
+  "y": "(if at end) reset & continue to final error",
+  "Y": "reset & continue to previous error"
 };
 
 const shortCommandReference = {
@@ -82,7 +84,9 @@ const shortCommandReference = {
   "T": "unload",
   "s": "stacktrace",
   "g": "turn on generated sources",
-  "G": "turn off generated sources"
+  "G": "turn off generated sources",
+  "y": "reset & go to final error",
+  "Y": "reset & go to previous error"
 };
 
 const truffleColors = {
@@ -336,7 +340,8 @@ var DebugUtils = {
 
     var commandSections = [
       ["o", "i", "u", "n"],
-      ["c"],
+      ["c", "Y"],
+      ["y"],
       [";"],
       ["g", "G"],
       ["p"],

@@ -7,7 +7,7 @@ const ora = require("ora");
 
 const DebugUtils = require("@truffle/debug-utils");
 const selectors = require("@truffle/debugger").selectors;
-const { session, solidity, trace, evm, controller } = selectors;
+const { session, solidity, stacktrace, trace, evm, controller } = selectors;
 
 const analytics = require("../services/analytics");
 const repl = require("repl");
@@ -365,6 +365,48 @@ class DebugInterpreter {
         this.printer.print("");
       }
     }
+    if (cmd === "y") {
+      if (this.session.view(session.status.loaded)) {
+        if (this.session.view(trace.finished)) {
+          if (!this.session.view(evm.current.step.isExceptionalHalting)) {
+            const errorIndex = this.session.view(stacktrace.current.innerReturnIndex);
+            if (errorIndex !== null) {
+              const stepSpinner = ora("Stepping...").start();
+              await this.session.reset();
+              await this.session.advance(errorIndex);
+              stepSpinner.stop();
+            } else {
+              this.printer.print("No error to return to.");
+            }
+          } else {
+            this.printer.print("You are already at the final error.");
+            this.printer.print("Use the `Y` command to return to the previous error.");
+            this.printer.print("");
+          }
+        } else {
+          this.printer.print("This command is only usable at end of transaction; did you mean `Y`?");
+        }
+      } else {
+        this.printer.print("No transaction loaded.");
+        this.printer.print("");
+      }
+    }
+    if (cmd === "Y") {
+      if (this.session.view(session.status.loaded)) {
+        const errorIndex = this.session.view(stacktrace.current.innerReturnIndex);
+        if (errorIndex !== null) {
+          const stepSpinner = ora("Stepping...").start();
+          await this.session.reset();
+          await this.session.advance(errorIndex);
+          stepSpinner.stop();
+        } else {
+          this.printer.print("No previous error to return to.");
+        }
+      } else {
+        this.printer.print("No transaction loaded.");
+        this.printer.print("");
+      }
+    }
     if (cmd === "t") {
       if (!this.fetchExternal) {
         if (!this.session.view(session.status.loaded)) {
@@ -571,6 +613,8 @@ class DebugInterpreter {
       case "u":
       case "n":
       case "c":
+      case "y":
+      case "Y":
         if (!this.session.view(trace.finishedOrUnloaded)) {
           if (!this.session.view(solidity.current.source).source) {
             this.printer.printInstruction();
@@ -627,7 +671,8 @@ class DebugInterpreter {
       cmd !== "T" &&
       cmd !== "g" &&
       cmd !== "G" &&
-      cmd !== "s"
+      cmd !== "s" &&
+      cmd !== "y"
     ) {
       this.lastCommand = cmd;
     }

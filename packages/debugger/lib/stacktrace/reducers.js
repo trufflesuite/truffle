@@ -129,12 +129,26 @@ function innerReturnStatus(state = null, action) {
   }
 }
 
+function innerReturnIndex(state = null, action) {
+  switch (action.type) {
+    case actions.EXTERNAL_RETURN:
+      //we use index null to mean don't update
+      return action.index !== null ? action.index : state;
+    case actions.RESET:
+    case actions.UNLOAD_TRANSACTION:
+      return null;
+    default:
+      return state;
+  }
+}
+
 const proc = combineReducers({
   callstack,
   returnCounter,
   lastPosition,
   innerReturnPosition,
-  innerReturnStatus
+  innerReturnStatus,
+  innerReturnIndex
 });
 
 const reducer = combineReducers({
