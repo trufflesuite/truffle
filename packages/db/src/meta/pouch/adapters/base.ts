@@ -8,49 +8,20 @@ import PouchDBFind from "pouchdb-find";
 import type {
   CollectionName,
   Collections,
-  MutationInput,
-  MutationPayload,
-  MutableCollectionName,
-  Input,
-  SavedInput
 } from "@truffle/db/meta/collections";
 import * as Id from "@truffle/db/meta/id";
 import type { Historical } from "@truffle/db/meta/data";
 
-import type { Definition, Definitions } from "@truffle/db/meta/pouch/types";
+import type {
+  Adapter,
+  Definition,
+  Definitions
+} from "@truffle/db/meta/pouch/types";
 
 export interface DatabasesOptions<C extends Collections> {
   definitions: Definitions<C>;
   settings: any;
 }
-
-export interface Adapter<C extends Collections> {
-  every<N extends CollectionName<C>, I extends { id: string }>(
-    collectionName: N
-  ): Promise<Historical<I>[]>;
-
-  retrieve<N extends CollectionName<C>, I extends { id: string }>(
-    collectionName: N,
-    references: (Pick<I, "id"> | undefined)[]
-  ): Promise<(Historical<I> | undefined)[]>;
-
-  search<N extends CollectionName<C>, I extends { id: string }>(
-    collectionName: N,
-    options: PouchDB.Find.FindRequest<{}>
-  ): Promise<Historical<I>[]>;
-
-  record<N extends CollectionName<C>, I extends { id: string }>(
-    collectionName: N,
-    inputs: (I | undefined)[],
-    options: { overwrite?: boolean }
-  ): Promise<(Historical<I> | undefined)[]>;
-
-  forget<N extends CollectionName<C>, I extends { id: string }>(
-    collectionName: N,
-    references: (Pick<I, "id"> | undefined)[]
-  ): Promise<void>;
-}
-
 
 /**
  * Aggegrates logic for interacting wth a set of PouchDB databases identified
@@ -303,161 +274,6 @@ export abstract class Databases<C extends Collections> implements Adapter<C> {
     );
   }
 
-  public async all<N extends CollectionName<C>>(
-    collectionName: N
-  ): Promise<Historical<SavedInput<C, N>>[]> {
-    const log = debug.extend(`${collectionName}:all`);
-    log("Fetching all...");
-
-    try {
-      const result = await this.every<N, SavedInput<C, N>>(collectionName);
-
-      log("Found.");
-      return result;
-    } catch (error) {
-      log("Error fetching all %s, got error: %O", collectionName, error);
-      throw error;
-    }
-  }
-
-  public async find<N extends CollectionName<C>>(
-    collectionName: N,
-    options: (Id.IdObject<C, N> | undefined)[] | PouchDB.Find.FindRequest<{}>
-  ): Promise<(Historical<SavedInput<C, N>> | undefined)[]> {
-    await this.ready;
-
-    const log = debug.extend(`${collectionName}:find`);
-    log("Finding...");
-
-    try {
-      // handle convenient interface for getting a bunch of IDs while preserving
-      // order of input request
-      if (Array.isArray(options)) {
-        const references = options;
-
-        return await this.retrieve<N, SavedInput<C, N>>(
-          collectionName,
-          references as (Pick<SavedInput<C, N>, "id"> | undefined)[]
-        );
-      }
-
-      const result = await this.search<N, SavedInput<C, N>>(
-        collectionName,
-        options
-      );
-
-      log("Found.");
-      return result;
-    } catch (error) {
-      log("Error fetching all %s, got error: %O", collectionName, error);
-      throw error;
-    }
-  }
-
-  public async get<N extends CollectionName<C>>(
-    collectionName: N,
-    id: string | undefined
-  ): Promise<Historical<SavedInput<C, N>> | undefined> {
-    if (typeof id === "undefined") {
-      return;
-    }
-    const [savedInput] = await this.retrieve<N, SavedInput<C, N>>(
-      collectionName,
-      [{ id }]
-    );
-
-    return savedInput;
-  }
-
-  public async add<N extends CollectionName<C>>(
-    collectionName: N,
-    input: MutationInput<C, N>
-  ): Promise<MutationPayload<C, N>> {
-    const log = debug.extend(`${collectionName}:add`);
-    log("Adding...");
-
-    const inputsWithIds = input[collectionName].map(
-      input => this.attachId(collectionName, input)
-    );
-
-    const addedInputs = await this.record<N, SavedInput<C, N>>(
-      collectionName,
-      inputsWithIds,
-      { overwrite: false }
-    );
-
-    log(
-      "Added ids: %o",
-      addedInputs
-        .filter((input): input is Historical<SavedInput<C, N>> => !!input)
-        .map(({ id }) => id)
-    );
-
-    return {
-      [collectionName]: addedInputs
-    } as MutationPayload<C, N>;
-  }
-
-  public async update<M extends MutableCollectionName<C>>(
-    collectionName: M,
-    input: MutationInput<C, M>
-  ): Promise<MutationPayload<C, M>> {
-    const log = debug.extend(`${collectionName}:update`);
-    log("Updating...");
-
-    const inputsWithIds = input[collectionName].map(
-      input => this.attachId(collectionName, input)
-    );
-
-    const updatedInputs = await this.record<M, SavedInput<C, M>>(
-      collectionName,
-      inputsWithIds,
-      { overwrite: true }
-    );
-
-    log(
-      "Updated ids: %o",
-      updatedInputs
-        .filter((input): input is Historical<SavedInput<C, M>> => !!input)
-        .map(({ id }) => id)
-    );
-
-    return {
-      [collectionName]: updatedInputs
-    } as MutationPayload<C, M>;
-  }
-
-  public async remove<M extends MutableCollectionName<C>>(
-    collectionName: M,
-    input: MutationInput<C, M>
-  ): Promise<void> {
-    const log = debug.extend(`${collectionName}:remove`);
-    log("Removing...");
-
-    const inputsWithIds = input[collectionName].map(
-      input => this.attachId(collectionName, input)
-    );
-
-    await this.forget(collectionName, inputsWithIds);
-
-    log("Removed.");
-  }
-
-  private attachId<N extends CollectionName<C>>(
-    collectionName: N,
-    input: Input<C, N> | undefined
-  ) {
-    const id = this.generateId<N>(collectionName, input);
-
-    if (typeof id === "undefined") {
-      return;
-    }
-
-    return {
-      ...input,
-      id
-    } as SavedInput<C, N>;
-  }
 }
 
 type CollectionDatabases<C extends Collections> = {
