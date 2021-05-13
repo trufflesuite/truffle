@@ -1,10 +1,10 @@
 import debugModule from "debug";
 const debug = debugModule("source-fetcher:sourcify");
 
-import {Fetcher, FetcherConstructor} from "./types";
+import { Fetcher, FetcherConstructor } from "./types";
 import * as Types from "./types";
-import {networksById, removeLibraries, InvalidNetworkError} from "./common";
-import axios, { AxiosResponse } from "axios";
+import { networksById, removeLibraries, InvalidNetworkError } from "./common";
+import axios from "axios";
 
 //this looks awkward but the TS docs actually suggest this :P
 const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
@@ -52,38 +52,49 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
   async fetchSourcesForAddress(
     address: string
   ): Promise<Types.SourceInfo | null> {
-    const metadata = await this.getMetadata(address);
+    let result = await this.fetchSourcesForAddressAndMatchType(address, "full");
+    if (!result) {
+      //if we got nothing when trying a full match, try for a partial match
+      result = await this.fetchSourcesForAddressAndMatchType(address, "partial");
+    }
+    //if partial match also fails, just return null
+    return result;
+  }
+
+  private async fetchSourcesForAddressAndMatchType(
+    address: string,
+    matchType: "full" | "partial"
+  ): Promise<Types.SourceInfo | null> {
+    const metadata = await this.getMetadata(address, matchType);
     debug("metadata: %O", metadata);
     if (!metadata) {
       debug("no metadata");
       return null;
     }
     let sources: Types.SourcesByPath;
-    if (metadata.language === "Solidity") {
-      sources = Object.assign(
-        {},
-        ...(await Promise.all(
-          Object.entries(metadata.sources).map(
-            async ([sourcePath, {content: source}]) => ({
-              [sourcePath]:
-                source !== undefined
-                  ? source //sourcify doesn't support this yet but they're planning it
-                  : await this.getSource(address, sourcePath)
-            })
-          )
-        ))
-      );
-    } else {
-      //don't bother attempting to fetch sources if it's Yul
-      sources = {};
-    }
+    sources = Object.assign(
+      {},
+      ...(await Promise.all(
+        Object.entries(metadata.sources).map(
+          async ([sourcePath, {content: source}]) => ({
+            [sourcePath]:
+              source !== undefined
+                ? source //sourcify doesn't support this yet but they're planning it
+                : await this.getSource(address, sourcePath, matchType)
+          })
+        )
+      ))
+    );
+    const constructorArguments = await this.getConstructorArgs(address, matchType);
     return {
+      contractName: Object.values(metadata.settings.compilationTarget)[0],
       sources,
       options: {
         language: metadata.language,
         version: metadata.compiler.version,
         settings: removeLibraries(metadata.settings),
         specializations: {
+          constructorArguments,
           libraries: metadata.settings.libraries
         }
       }
@@ -91,11 +102,12 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
   }
 
   private async getMetadata(
-    address: string
+    address: string,
+    matchType: "full" | "partial"
   ): Promise<Types.SolcMetadata | null> {
     try {
       return await this.requestWithRetries<Types.SolcMetadata>({
-        url: `https://${this.domain}/contracts/full_match/${this.networkId}/${address}/metadata.json`,
+        url: `https://${this.domain}/contracts/${matchType}_match/${this.networkId}/${address}/metadata.json`,
         method: "get",
         responseType: "json",
         maxRedirects: 50
@@ -113,14 +125,38 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
 
   private async getSource(
     address: string,
-    sourcePath: string
+    sourcePath: string,
+    matchType: "full" | "partial"
   ): Promise<string> {
     return await this.requestWithRetries<string>({
-      url: `https://${this.domain}/contracts/full_match/${this.networkId}/${address}/sources/${sourcePath}`,
+      url: `https://${this.domain}/contracts/${matchType}_match/${this.networkId}/${address}/sources/${sourcePath}`,
       responseType: "text",
       method: "get",
       maxRedirects: 50
     });
+  }
+
+  private async getConstructorArgs(
+    address: string,
+    matchType: "full" | "partial"
+  ): Promise<string | undefined> {
+    try {
+      const constructorArgs = await this.requestWithRetries<string>({
+        url: `https://${this.domain}/contracts/${matchType}_match/${this.networkId}/${address}/constructor-args.txt`,
+        method: "get",
+        responseType: "text",
+        maxRedirects: 50
+      });
+      return constructorArgs.slice(2); //remove initial "0x"
+    } catch (error) {
+      //is this a 404 error? if so just return undefined
+      debug("error: %O", error);
+      if (error.response.status === 404) {
+        return undefined;
+      }
+      //otherwise, we've got a problem; rethrow the error
+      throw error;
+    }
   }
 
   private async requestWithRetries<T>(
@@ -130,8 +166,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     let lastError;
     for (let attempt = 0; attempt < allowedAttempts; attempt++) {
       try {
-        const response: AxiosResponse = await axios(requestObject);
-        return response.data;
+        return (await axios(requestObject)).data;
       } catch (error) {
         //check: is this a 404 error? if so give up
         if (error.response.status === 404) {
