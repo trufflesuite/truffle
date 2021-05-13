@@ -49,7 +49,8 @@ class DebugInterpreter {
     const currentLocation = this.session.view(controller.current.location);
     const breakpoints = this.session.view(controller.breakpoints);
 
-    const currentNode = currentLocation.astRef;
+    const currentStart = currentLocation.sourceRange.start;
+    const currentLength = currentLocation.sourceRange.length;
     const currentSourceId = currentLocation.source
       ? currentLocation.source.id
       : null;
@@ -64,12 +65,14 @@ class DebugInterpreter {
     if (args.length === 0) {
       //no arguments, want currrent node
       debug("node case");
-      if (currentNode === null) {
+      if (currentSourceId === null) {
         this.printer.print("Cannot determine current location.");
         return;
       }
-      breakpoint.node = currentNode;
-      breakpoint.line = currentLine;
+      breakpoint.start = currentStart;
+      breakpoint.line = currentLine; //this isn't necessary for the
+      //breakpoint to work, but we use it for printing messages
+      breakpoint.length = currentLength;
       breakpoint.sourceId = currentSourceId;
     }
 
