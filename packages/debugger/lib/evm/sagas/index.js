@@ -215,7 +215,7 @@ export function* callstackAndCodexSaga() {
 }
 
 export function* reset() {
-  let initialCall = yield select(evm.transaction.initialCall);
+  const initialCall = yield select(evm.transaction.initialCall);
   yield put(actions.reset());
   yield put(initialCall);
 }
