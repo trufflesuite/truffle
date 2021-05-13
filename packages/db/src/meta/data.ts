@@ -44,7 +44,7 @@ export interface Workspace<C extends Collections> {
   ): Promise<void>;
 }
 
-export type History = PouchDB.Core.IdMeta & PouchDB.Core.GetMeta;
+export type History = Pick<PouchDB.Core.GetMeta, "_rev">;
 
 export type Historical<T> = {
   [K in keyof T | keyof History]: K extends keyof History

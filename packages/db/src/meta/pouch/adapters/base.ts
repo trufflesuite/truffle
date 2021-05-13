@@ -11,10 +11,11 @@ import type {
   MutationInput,
   MutationPayload,
   MutableCollectionName,
+  Input,
   SavedInput
 } from "@truffle/db/meta/collections";
 import * as Id from "@truffle/db/meta/id";
-import type { Workspace, Historical } from "@truffle/db/meta/data";
+import type { Historical } from "@truffle/db/meta/data";
 
 import type { Definition, Definitions } from "@truffle/db/meta/pouch/types";
 
@@ -23,11 +24,39 @@ export interface DatabasesOptions<C extends Collections> {
   settings: any;
 }
 
+export interface Adapter<C extends Collections> {
+  every<N extends CollectionName<C>, I extends { id: string }>(
+    collectionName: N
+  ): Promise<Historical<I>[]>;
+
+  retrieve<N extends CollectionName<C>, I extends { id: string }>(
+    collectionName: N,
+    references: (Pick<I, "id"> | undefined)[]
+  ): Promise<(Historical<I> | undefined)[]>;
+
+  search<N extends CollectionName<C>, I extends { id: string }>(
+    collectionName: N,
+    options: PouchDB.Find.FindRequest<{}>
+  ): Promise<Historical<I>[]>;
+
+  record<N extends CollectionName<C>, I extends { id: string }>(
+    collectionName: N,
+    inputs: (I | undefined)[],
+    options: { overwrite?: boolean }
+  ): Promise<(Historical<I> | undefined)[]>;
+
+  forget<N extends CollectionName<C>, I extends { id: string }>(
+    collectionName: N,
+    references: (Pick<I, "id"> | undefined)[]
+  ): Promise<void>;
+}
+
+
 /**
  * Aggegrates logic for interacting wth a set of PouchDB databases identified
  * by resource collection name.
  */
-export abstract class Databases<C extends Collections> implements Workspace<C> {
+export abstract class Databases<C extends Collections> implements Adapter<C> {
   private collections: CollectionDatabases<C>;
   private definitions: Definitions<C>;
   private generateId: Id.GenerateId<C>;
@@ -81,71 +110,61 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
     }
   }
 
-  public async all<N extends CollectionName<C>>(
+  public async every<N extends CollectionName<C>, I extends { id: string }>(
     collectionName: N
-  ): Promise<SavedInput<C, N>[]> {
+  ): Promise<Historical<I>[]> {
     await this.ready;
 
-    const log = debug.extend(`${collectionName}:all`);
-    log("Fetching all...");
+    const { rows }: any = await this.collections[collectionName].allDocs({
+      include_docs: true
+    });
 
-    try {
-      const { rows }: any = await this.collections[collectionName].allDocs({
-        include_docs: true
-      });
+    const result = rows
+      // make sure we include `id` in the response as well
+      .map(({ doc }) => ({ ...doc, id: doc["_id"] }))
+      // but filter out any views
+      .filter(({ views }) => !views);
 
-      const result = rows
-        // make sure we include `id` in the response as well
-        .map(({ doc }) => ({ ...doc, id: doc["_id"] }))
-        // but filter out any views
-        .filter(({ views }) => !views);
-
-      log("Found.");
-      return result;
-    } catch (error) {
-      log("Error fetching all %s, got error: %O", collectionName, error);
-      throw error;
-    }
+    return result;
   }
 
-  public async find<N extends CollectionName<C>>(
+  public async retrieve<N extends CollectionName<C>, I extends { id: string }>(
     collectionName: N,
-    options: (Id.IdObject<C, N> | undefined)[] | PouchDB.Find.FindRequest<{}>
-  ): Promise<(SavedInput<C, N> | undefined)[]> {
+    references: (Pick<I, "id"> | undefined)[]
+  ) {
     await this.ready;
 
-    const log = debug.extend(`${collectionName}:find`);
-    log("Finding...");
-
-    // handle convenient interface for getting a bunch of IDs while preserving
-    // order of input request
-    if (Array.isArray(options)) {
-      const references = options;
-      const unordered = await this.find<N>(collectionName, {
-        selector: {
-          id: {
-            $in: references
-              .filter(obj => obj)
-              .map(({ id }: Id.IdObject<C, N>) => id)
-          }
+    const unordered = await this.search<N, I>(collectionName, {
+      selector: {
+        id: {
+          $in: references
+            .filter((obj): obj is Pick<I, "id"> => !!obj)
+            .map(({ id }) => id)
         }
-      });
+      }
+    });
 
-      const byId = unordered.reduce(
-        (byId, savedInput) =>
-          savedInput
-            ? {
-                ...byId,
-                [savedInput.id as string]: savedInput
-              }
-            : byId,
-        {} as { [id: string]: SavedInput<C, N> }
-      );
+    const byId = unordered.reduce(
+      (byId, savedInput) =>
+        savedInput
+          ? {
+              ...byId,
+              [savedInput.id as string]: savedInput
+            }
+          : byId,
+      {} as { [id: string]: Historical<I> }
+    );
 
-      return references.map(reference =>
-        reference ? byId[reference.id] : undefined
-      );
-    }
+    return references.map(reference =>
+      reference ? byId[reference.id] : undefined
+    );
+  }
+
+  public async search<N extends CollectionName<C>, I extends { id: string }>(
+    collectionName: N,
+    options: PouchDB.Find.FindRequest<{}>
+  ) {
+    await this.ready;
 
     // allows searching with `id` instead of pouch's internal `_id`,
     // since we call the field `id` externally, and this approach avoids
@@ -158,14 +177,174 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
         )
         .reduce((a, b) => ({ ...a, ...b }), {});
 
-    try {
-      const { docs }: any = await this.collections[collectionName].find({
-        ...options,
-        selector: fixIdSelector(options.selector)
-      });
+    const { docs }: any = await this.collections[collectionName].find({
+      ...options,
+      selector: fixIdSelector(options.selector)
+    });
 
-      // make sure we include `id` in the response as well
-      const result = docs.map(doc => ({ ...doc, id: doc["_id"] }));
+    // make sure we include `id` in the response as well
+    const result: Historical<I>[] = docs.map(doc => {
+      const {
+        _id,
+        _rev,
+        ...retrievedInput
+      } = doc;
+
+      return {
+        ...retrievedInput,
+        _rev,
+        id: _id
+      };
+    });
+
+    return result;
+  }
+
+  public async record<N extends CollectionName<C>, I extends { id: string }>(
+    collectionName: N,
+    inputs: (I | undefined)[],
+    options: { overwrite?: boolean } = {}
+  ) {
+    await this.ready;
+
+    const { overwrite = false } = options;
+
+    const inputsById: {
+      [id: string]: I
+    } = inputs
+      .filter((input): input is I => !!input)
+      .map((input) => ({
+        [input.id]: input
+      }))
+      .reduce((a, b) => ({ ...a, ...b }), {} as { [id: string]: I });
+
+    const currentInputsById: {
+      [id: string]: Historical<I>;
+    } = (await this.retrieve<N, I>(
+      collectionName,
+      Object.keys(inputsById).map(id => ({ id }))
+    ))
+      .filter((currentInput): currentInput is Historical<I> => !!currentInput)
+      .map(currentInput => ({ [currentInput.id]: currentInput }))
+      .reduce(
+        (a, b) => ({ ...a, ...b }),
+        {} as { [id: string]: Historical<I> }
+      );
+
+    const savedInputsById: {
+      [id: string]: Historical<I>
+    } = (
+      await Promise.all(
+        Object.entries(inputsById)
+          .map(async ([id, input]) => {
+            const currentInput = currentInputsById[id];
+
+            if (currentInput && !overwrite) {
+              return currentInput;
+            }
+
+            const { _rev = undefined } = currentInput || {};
+
+            const { rev } = await this.collections[collectionName].put({
+              ...input,
+              _rev,
+              _id: id
+            });
+
+            return {
+              ...input,
+              _rev: rev,
+              id
+            } as Historical<I>;
+          })
+      )
+    )
+      .map(savedInput => ({ [savedInput.id]: savedInput }))
+      .reduce(
+        (a, b) => ({ ...a, ...b }),
+        {} as { [id: string]: Historical<I> }
+      );
+
+    return inputs.map(input => input && savedInputsById[input.id]);
+  }
+
+  public async forget<N extends CollectionName<C>, I extends { id: string }>(
+    collectionName: N,
+    references: (Pick<I, "id"> | undefined)[]
+  ) {
+    await this.ready;
+
+    const retrievedInputs = await this.retrieve<N, I>(
+      collectionName,
+      references
+    );
+
+    const retrievedInputsById = retrievedInputs
+      .filter(
+        (retrievedInput): retrievedInput is Historical<I> => !!retrievedInput
+      )
+      .map(retrievedInput => ({
+        [retrievedInput.id]: retrievedInput
+      }))
+      .reduce(
+        (a, b) => ({ ...a, ...b }),
+        {} as { [id: string]: Historical<I> }
+      );
+
+    await Promise.all(
+      Object.values(retrievedInputsById)
+        .map(async ({ id, _rev }) => {
+          await this.collections[collectionName].put({
+            _rev,
+            _id: id,
+            _deleted: true
+          });
+        })
+    );
+  }
+
+  public async all<N extends CollectionName<C>>(
+    collectionName: N
+  ): Promise<Historical<SavedInput<C, N>>[]> {
+    const log = debug.extend(`${collectionName}:all`);
+    log("Fetching all...");
+
+    try {
+      const result = await this.every<N, SavedInput<C, N>>(collectionName);
+
+      log("Found.");
+      return result;
+    } catch (error) {
+      log("Error fetching all %s, got error: %O", collectionName, error);
+      throw error;
+    }
+  }
+
+  public async find<N extends CollectionName<C>>(
+    collectionName: N,
+    options: (Id.IdObject<C, N> | undefined)[] | PouchDB.Find.FindRequest<{}>
+  ): Promise<(Historical<SavedInput<C, N>> | undefined)[]> {
+    await this.ready;
+
+    const log = debug.extend(`${collectionName}:find`);
+    log("Finding...");
+
+    try {
+      // handle convenient interface for getting a bunch of IDs while preserving
+      // order of input request
+      if (Array.isArray(options)) {
+        const references = options;
+
+        return await this.retrieve<N, SavedInput<C, N>>(
+          collectionName,
+          references as (Pick<SavedInput<C, N>, "id"> | undefined)[]
+        );
+      }
+
+      const result = await this.search<N, SavedInput<C, N>>(
+        collectionName,
+        options
+      );
 
       log("Found.");
       return result;
@@ -179,171 +358,105 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
     collectionName: N,
     id: string | undefined
   ): Promise<Historical<SavedInput<C, N>> | undefined> {
-    await this.ready;
-
-    if (typeof id !== "string") {
+    if (typeof id === "undefined") {
       return;
     }
+    const [savedInput] = await this.retrieve<N, SavedInput<C, N>>(
+      collectionName,
+      [{ id }]
+    );
 
-    const log = debug.extend(`${collectionName}:get`);
-    log("Getting id: %s...", id);
-
-    try {
-      const result = await this.collections[collectionName].get(id);
-
-      log("Got id: %s.", id);
-      return {
-        ...result,
-        id
-      } as Historical<SavedInput<C, N>>;
-    } catch (_) {
-      log("Unknown id: %s.", id);
-      return;
-    }
+    return savedInput;
   }
 
   public async add<N extends CollectionName<C>>(
     collectionName: N,
     input: MutationInput<C, N>
   ): Promise<MutationPayload<C, N>> {
-    await this.ready;
-
     const log = debug.extend(`${collectionName}:add`);
     log("Adding...");
 
-    const resourceInputIds = input[collectionName].map(
-      resourceInput => this.generateId<N>(collectionName, resourceInput) || ""
+    const inputsWithIds = input[collectionName].map(
+      input => this.attachId(collectionName, input)
     );
 
-    const resourceInputById = input[collectionName]
-      .map((resourceInput, index) => ({
-        [resourceInputIds[index]]: resourceInput
-      }))
-      .reduce((a, b) => ({ ...a, ...b }), {});
-
-    const resources = await Promise.all(
-      Object.entries(resourceInputById)
-        .filter(([id]) => id)
-        .map(async ([id, resourceInput]) => {
-          // check for existing
-          const resource = await this.get(collectionName, id);
-          if (resource) {
-            return resource;
-          }
-
-          await this.collections[collectionName].put({
-            ...resourceInput,
-            _id: id
-          });
-
-          return {
-            ...resourceInput,
-            id
-          } as SavedInput<C, N>;
-        })
+    const addedInputs = await this.record<N, SavedInput<C, N>>(
+      collectionName,
+      inputsWithIds,
+      { overwrite: false }
     );
-
-    const resourcesById = resources
-      .map(resource => ({
-        [resource.id as string]: resource
-      }))
-      .reduce((a, b) => ({ ...a, ...b }), {});
 
     log(
       "Added ids: %o",
-      resources.map(({ id }) => id)
+      addedInputs
+        .filter((input): input is Historical<SavedInput<C, N>> => !!input)
+        .map(({ id }) => id)
     );
 
-    return ({
-      [collectionName]: resourceInputIds.map(id => resourcesById[id])
-    } as unknown) as MutationPayload<C, N>;
+    return {
+      [collectionName]: addedInputs
+    } as MutationPayload<C, N>;
   }
 
   public async update<M extends MutableCollectionName<C>>(
     collectionName: M,
     input: MutationInput<C, M>
   ): Promise<MutationPayload<C, M>> {
-    await this.ready;
-
     const log = debug.extend(`${collectionName}:update`);
     log("Updating...");
 
-    const resourceInputIds = input[collectionName].map(
-      resourceInput => this.generateId<M>(collectionName, resourceInput) || ""
+    const inputsWithIds = input[collectionName].map(
+      input => this.attachId(collectionName, input)
     );
 
-    const resourceInputById = input[collectionName]
-      .map((resourceInput, index) => ({
-        [resourceInputIds[index]]: resourceInput
-      }))
-      .reduce((a, b) => ({ ...a, ...b }), {});
-
-    const resources = await Promise.all(
-      Object.entries(resourceInputById)
-        .filter(([id]) => id)
-        .map(async ([id, resourceInput]) => {
-          // check for existing
-          const resource = await this.get(collectionName, id);
-          const { _rev = undefined } = resource ? resource : {};
-
-          await this.collections[collectionName].put({
-            ...resourceInput,
-            _rev,
-            _id: id
-          });
-
-          return {
-            ...resourceInput,
-            id
-          } as SavedInput<C, M>;
-        })
+    const updatedInputs = await this.record<M, SavedInput<C, M>>(
+      collectionName,
+      inputsWithIds,
+      { overwrite: true }
     );
-
-    const resourcesById = resources
-      .map(resource => ({
-        [resource.id as string]: resource
-      }))
-      .reduce((a, b) => ({ ...a, ...b }), {});
 
     log(
       "Updated ids: %o",
-      resources.map(({ id }) => id)
+      updatedInputs
+        .filter((input): input is Historical<SavedInput<C, M>> => !!input)
+        .map(({ id }) => id)
     );
-    return ({
-      [collectionName]: resourceInputIds.map(id => resourcesById[id])
-    } as unknown) as MutationPayload<C, M>;
+
+    return {
+      [collectionName]: updatedInputs
+    } as MutationPayload<C, M>;
   }
 
   public async remove<M extends MutableCollectionName<C>>(
     collectionName: M,
     input: MutationInput<C, M>
   ): Promise<void> {
-    await this.ready;
-
     const log = debug.extend(`${collectionName}:remove`);
     log("Removing...");
 
-    await Promise.all(
-      input[collectionName].map(async resourceInput => {
-        const id = this.generateId(collectionName, resourceInput);
-        if (!id) {
-          return;
-        }
-
-        const resource = await this.get(collectionName, id);
-        const { _rev = undefined } = resource ? resource : {};
-
-        if (_rev) {
-          await this.collections[collectionName].put({
-            _rev,
-            _id: id,
-            _deleted: true
-          });
-        }
-      })
+    const inputsWithIds = input[collectionName].map(
+      input => this.attachId(collectionName, input)
     );
 
+    await this.forget(collectionName, inputsWithIds);
+
     log("Removed.");
+  }
+
+  private attachId<N extends CollectionName<C>>(
+    collectionName: N,
+    input: Input<C, N> | undefined
+  ) {
+    const id = this.generateId<N>(collectionName, input);
+
+    if (typeof id === "undefined") {
+      return;
+    }
+
+    return {
+      ...input,
+      id
+    } as SavedInput<C, N>;
   }
 }
 
