@@ -409,4 +409,41 @@ describe("Transaction log (visualizer)", function () {
       "Oops!"
     );
   });
+
+  it("Resets properly", async function () {
+    this.timeout(12000);
+    let instance = await abstractions.VizTest.deployed();
+    let receipt = await instance.testCall(108);
+    let txHash = receipt.tx;
+
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      compilations
+    });
+
+    await bugger.continueUntilBreakpoint(); //run till end
+    await bugger.reset();
+
+    const root = bugger.view(txlog.views.transactionLog);
+    assert.equal(root.type, "transaction");
+    assert.isDefined(root.origin); //not going to bother checking specific address
+    assert.lengthOf(root.actions, 1);
+    let call = root.actions[0];
+    assert.equal(call.type, "callexternal");
+    assert.equal(call.kind, "function");
+    assert.equal(call.address, instance.address);
+    assert.equal(call.functionName, "testCall");
+    assert.equal(call.contractName, "VizTest");
+    assert.notProperty(call, "returnKind");
+    let inputs = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
+      byName(call.arguments)
+    );
+    assert.deepEqual(inputs, {
+      x: 108
+    });
+    assert.notProperty(call, "returnValues");
+    assert.lengthOf(call.actions, 0);
+    assert.isTrue(call.waitingForFunctionDefinition);
+    assert.isTrue(call.absorbNextInternalCall);
+  });
 });
