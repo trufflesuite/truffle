@@ -12,7 +12,7 @@ import {
   removeLibraries,
   InvalidNetworkError
 } from "./common";
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 
 //this looks awkward but the TS docs actually suggest this :P
 const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
@@ -91,7 +91,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
 
   private async makeRequest(address: string): Promise<EtherscanSuccess> {
     //not putting a try/catch around this; if it throws, we throw
-    const response: AxiosResponse<EtherscanResponse> = await axios.get(
+    const response: EtherscanResponse = (await axios.get(
       `https://api${this.suffix}.etherscan.io/api`,
       {
         params: {
@@ -103,11 +103,11 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
         responseType: "json",
         maxRedirects: 50
       }
-    );
-    if (response.data.status === "0") {
-      throw new Error(response.data.result);
+    )).data;
+    if (response.status === "0") {
+      throw new Error(response.result);
     }
-    return response.data;
+    return response;
   }
 
   private static processResult(
