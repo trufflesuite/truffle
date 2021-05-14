@@ -23,7 +23,7 @@
     "@types/node": "12.12.21",
     "mocha": "8.0.1",
     "ts-node": "^9.0.0",
-    "typescript": "^3.9.8"
+    "typescript": "^4.1.4"
   },
   "keywords": [
     "contract",

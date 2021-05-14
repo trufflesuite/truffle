@@ -2,7 +2,7 @@ import { ContractAbstraction, ContractProvider } from "@taquito/taquito";
 import { createInterfaceAdapter, TezosAdapter } from "@truffle/interface-adapter";
 import { IContractStrategy } from "./IContractStrategy";
 import { ContractInstance } from "../ContractInstance";
-import { isTxParams } from "./utils";
+import { isTxParams, makeCallableObject } from "./utils";
 import { PrepareCallSettings, TxParams } from "./types";
 const Web3PromiEvent = require("web3-core-promievent");
 
@@ -31,9 +31,9 @@ export class TezosContractStrategy implements IContractStrategy {
         return transaction;
       };
 
-      methods[method] = Object.assign(
-        sendTransaction,
-        {
+      methods[method] = makeCallableObject({
+        function: sendTransaction,
+        object: {
           sendTransaction,
           estimateGas: (txArgs: any[], txParams: { [key: string]: any }) => {
             return this.estimateGas(contractInstance, method, txArgs, txParams);
@@ -42,7 +42,7 @@ export class TezosContractStrategy implements IContractStrategy {
             return contractInstance.methods[method](txArgs).toTransferParams({});
           }
         }
-      );
+      });
     }
 
     if (settings.migrationContract) {
@@ -50,12 +50,13 @@ export class TezosContractStrategy implements IContractStrategy {
         const storage: any = await contractInstance.storage();
         return storage.last_completed_migration;
       };
-  
-      methods['last_completed_migration'] = Object.assign(
-        lastCompletedMigration,
-        {
+
+      methods['last_completed_migration'] = makeCallableObject({
+        function: lastCompletedMigration,
+        object: {
           call: lastCompletedMigration
-        });
+        }
+      });
   
       // TODO BGC: This could be achieved by changing Migrations.ligo contract
       const setCompleted = async (...args: any) => {
@@ -63,12 +64,13 @@ export class TezosContractStrategy implements IContractStrategy {
         await transaction.confirmation();
         return transaction;
       };
-  
-      methods['setCompleted'] = Object.assign(
-        setCompleted,
-        {
+
+      methods['setCompleted'] = makeCallableObject({
+        function: setCompleted,
+        object: {
           sendTransaction: setCompleted
-        });
+        }
+      });
     }
 
     return methods;
@@ -109,8 +111,8 @@ export class TezosContractStrategy implements IContractStrategy {
       throw new Error(`Invalid address passed to ${this._json.contractName}.at(): ${address}`);
     }
 
-    const contractInstance = await this.interfaceAdapter.tezos.contract.at(address);
-    return new ContractInstance(this._json, this, contractInstance);
+    const taquitoContractInstance = await this.interfaceAdapter.tezos.contract.at(address);
+    return new ContractInstance(this._json, this, taquitoContractInstance);
   }
 
   prepareCall(args: any[], settings: PrepareCallSettings = {}): [any[], { [key: string]: any }] {

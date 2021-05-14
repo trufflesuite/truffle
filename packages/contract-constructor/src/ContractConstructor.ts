@@ -1,5 +1,6 @@
 import { IContractStrategy } from "./contract-strategies/IContractStrategy";
 import { TezosContractStrategy } from "./contract-strategies/TezosContractStrategy";
+import { makeCallableObject } from "./contract-strategies/utils";
 import { ContractInstance } from "./ContractInstance";
 
 export class ContractConstructor {
@@ -30,14 +31,14 @@ export class ContractConstructor {
       return this.strategy.deploy(txArguments, txParams);
     };
 
-    this.new = Object.assign(
-      deployNewContract,
-      {
+    this.new = makeCallableObject({
+      function: deployNewContract,
+      object: {
         estimateGas: (...txArgs: any[]) => {
           return this.strategy.estimateGasNew(txArgs, {});
         }
       }
-    );
+    });
   }
 
   public at(address: string): Promise<ContractInstance> {
