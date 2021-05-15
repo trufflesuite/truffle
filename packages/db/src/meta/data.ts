@@ -26,7 +26,7 @@ export interface Workspace<C extends Collections> {
   get<N extends CollectionName<C>>(
     collectionName: N,
     id: string | undefined
-  ): Promise<Historical<SavedInput<C, N>> | undefined>;
+  ): Promise<SavedInput<C, N> | undefined>;
 
   add<N extends CollectionName<C>>(
     collectionName: N,
@@ -43,13 +43,3 @@ export interface Workspace<C extends Collections> {
     input: MutationInput<C, M>
   ): Promise<void>;
 }
-
-export type History = Pick<PouchDB.Core.GetMeta, "_rev">;
-
-export type Historical<T> = {
-  [K in keyof T | keyof History]: K extends keyof History
-    ? History[K]
-    : K extends keyof T
-    ? T[K]
-    : never;
-};

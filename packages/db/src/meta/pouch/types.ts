@@ -4,33 +4,36 @@ const debug = logger("db:meta:pouch:types");
 import PouchDB from "pouchdb";
 
 import type { Collections, CollectionName } from "@truffle/db/meta/collections";
-import type { Historical } from "@truffle/db/meta/data";
 import type * as Id from "@truffle/db/meta/id";
 
+export type History = PouchDB.Core.IdMeta & PouchDB.Core.GetMeta;
+
+export type Historical<T> = T & History;
+
 export interface Adapter<C extends Collections> {
-  every<N extends CollectionName<C>, I extends { id: string }>(
+  every<N extends CollectionName<C>, I extends PouchDB.Core.IdMeta>(
     collectionName: N
   ): Promise<Historical<I>[]>;
 
-  retrieve<N extends CollectionName<C>, I extends { id: string }>(
+  retrieve<N extends CollectionName<C>, I extends PouchDB.Core.IdMeta>(
     collectionName: N,
-    references: (Pick<I, "id"> | undefined)[]
+    references: (Pick<I, "_id"> | undefined)[]
   ): Promise<(Historical<I> | undefined)[]>;
 
-  search<N extends CollectionName<C>, I extends { id: string }>(
+  search<N extends CollectionName<C>, I extends PouchDB.Core.IdMeta>(
     collectionName: N,
     options: PouchDB.Find.FindRequest<{}>
   ): Promise<Historical<I>[]>;
 
-  record<N extends CollectionName<C>, I extends { id: string }>(
+  record<N extends CollectionName<C>, I extends PouchDB.Core.IdMeta>(
     collectionName: N,
     inputs: (I | undefined)[],
     options: { overwrite?: boolean }
   ): Promise<(Historical<I> | undefined)[]>;
 
-  forget<N extends CollectionName<C>, I extends { id: string }>(
+  forget<N extends CollectionName<C>, I extends PouchDB.Core.IdMeta>(
     collectionName: N,
-    references: (Pick<I, "id"> | undefined)[]
+    references: (Pick<I, "_id"> | undefined)[]
   ): Promise<void>;
 }
 
