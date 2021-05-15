@@ -9,7 +9,9 @@ import type { CollectionName, Collections } from "@truffle/db/meta/collections";
 import * as Id from "@truffle/db/meta/id";
 
 import type {
-  Historical,
+  Record,
+  SavedRecord,
+  RecordReference,
   Adapter,
   Definition,
   Definitions
@@ -78,60 +80,59 @@ export abstract class Databases<C extends Collections> implements Adapter<C> {
     }
   }
 
-  public async every<
-    N extends CollectionName<C>,
-    I extends PouchDB.Core.IdMeta
-  >(collectionName: N): Promise<Historical<I>[]> {
+  public async every<N extends CollectionName<C>, I>(
+    collectionName: N
+  ): Promise<SavedRecord<I>[]> {
     await this.ready;
 
     const { rows }: any = await this.collections[collectionName].allDocs({
       include_docs: true
     });
 
-    const result = rows
-      .map(({ doc }) => doc)
-      // filter out any views
-      .filter(({ views }) => !views);
-
-    return result;
+    return (
+      rows
+        .map(({ doc }) => doc)
+        // filter out any views
+        .filter(({ views }) => !views)
+    );
   }
 
-  public async retrieve<
-    N extends CollectionName<C>,
-    I extends PouchDB.Core.IdMeta
-  >(collectionName: N, references: (Pick<I, "_id"> | undefined)[]) {
+  public async retrieve<N extends CollectionName<C>, I>(
+    collectionName: N,
+    records: (Pick<Record<I>, "_id"> | undefined)[]
+  ) {
     await this.ready;
 
-    const unordered = await this.search<N, I>(collectionName, {
+    const unorderedSavedRecords = await this.search<N, I>(collectionName, {
       selector: {
         _id: {
-          $in: references
-            .filter((obj): obj is Pick<I, "_id"> => !!obj)
+          $in: records
+            .filter((obj): obj is Pick<Record<I>, "_id"> => !!obj)
             .map(({ _id }) => _id)
         }
       }
     });
 
-    const byId = unordered.reduce(
-      (byId, savedInput) =>
-        savedInput
+    const savedRecordById = unorderedSavedRecords.reduce(
+      (byId, savedRecord) =>
+        savedRecord
           ? {
               ...byId,
-              [savedInput._id as string]: savedInput
+              [savedRecord._id as string]: savedRecord
             }
           : byId,
-      {} as { [id: string]: Historical<I> }
+      {} as { [id: string]: SavedRecord<I> }
     );
 
-    return references.map(reference =>
-      reference ? byId[reference._id] : undefined
+    return records.map(record =>
+      record ? savedRecordById[record._id] : undefined
     );
   }
 
-  public async search<
-    N extends CollectionName<C>,
-    I extends PouchDB.Core.IdMeta
-  >(collectionName: N, options: PouchDB.Find.FindRequest<{}>) {
+  public async search<N extends CollectionName<C>, I>(
+    collectionName: N,
+    options: PouchDB.Find.FindRequest<{}>
+  ) {
     await this.ready;
 
     // allows searching with `id` instead of pouch's internal `_id`,
@@ -150,108 +151,103 @@ export abstract class Databases<C extends Collections> implements Adapter<C> {
       selector: fixIdSelector(options.selector)
     });
 
-    const result: Historical<I>[] = docs;
+    const savedRecords: SavedRecord<I>[] = docs;
 
-    return result;
+    return savedRecords;
   }
 
-  public async record<
-    N extends CollectionName<C>,
-    I extends PouchDB.Core.IdMeta
-  >(
+  public async record<N extends CollectionName<C>, I>(
     collectionName: N,
-    inputs: (I | undefined)[],
+    records: (Record<I> | undefined)[],
     options: { overwrite?: boolean } = {}
   ) {
     await this.ready;
 
     const { overwrite = false } = options;
 
-    const inputsById: {
-      [id: string]: I;
-    } = inputs
-      .filter((input): input is I => !!input)
-      .map(input => ({
-        [input._id]: input
+    const recordsById: {
+      [id: string]: Record<I>;
+    } = records
+      .filter((record): record is Record<I> => !!record)
+      .map(record => ({
+        [record._id]: record
       }))
-      .reduce((a, b) => ({ ...a, ...b }), {} as { [id: string]: I });
+      .reduce((a, b) => ({ ...a, ...b }), {} as { [id: string]: Record<I> });
 
-    const currentInputsById: {
-      [id: string]: Historical<I>;
+    const existingSavedRecordById: {
+      [id: string]: SavedRecord<I>;
     } = (
       await this.retrieve<N, I>(
         collectionName,
-        Object.keys(inputsById).map(_id => ({ _id }))
+        Object.keys(recordsById).map(_id => ({ _id } as Pick<Record<I>, "_id">))
       )
     )
-      .filter((currentInput): currentInput is Historical<I> => !!currentInput)
-      .map(currentInput => ({ [currentInput._id]: currentInput }))
-      .reduce(
-        (a, b) => ({ ...a, ...b }),
-        {} as { [id: string]: Historical<I> }
-      );
-
-    const savedInputsById: {
-      [id: string]: Historical<I>;
-    } = (
-      await Promise.all(
-        Object.entries(inputsById).map(async ([_id, input]) => {
-          const currentInput = currentInputsById[_id];
-
-          if (currentInput && !overwrite) {
-            return currentInput;
-          }
-
-          const { _rev = undefined } = currentInput || {};
-
-          const { rev } = await this.collections[collectionName].put({
-            ...input,
-            _rev,
-            _id
-          });
-
-          return {
-            ...input,
-            _rev: rev,
-            _id
-          } as Historical<I>;
-        })
-      )
-    )
-      .map(savedInput => ({ [savedInput._id]: savedInput }))
-      .reduce(
-        (a, b) => ({ ...a, ...b }),
-        {} as { [id: string]: Historical<I> }
-      );
-
-    return inputs.map(input => input && savedInputsById[input._id]);
-  }
-
-  public async forget<
-    N extends CollectionName<C>,
-    I extends PouchDB.Core.IdMeta
-  >(collectionName: N, references: (Pick<I, "_id"> | undefined)[]) {
-    await this.ready;
-
-    const retrievedInputs = await this.retrieve<N, I>(
-      collectionName,
-      references
-    );
-
-    const retrievedInputsById = retrievedInputs
       .filter(
-        (retrievedInput): retrievedInput is Historical<I> => !!retrievedInput
+        (existingSavedRecord): existingSavedRecord is SavedRecord<I> =>
+          !!existingSavedRecord
       )
-      .map(retrievedInput => ({
-        [retrievedInput._id]: retrievedInput
+      .map(existingSavedRecord => ({
+        [existingSavedRecord._id]: existingSavedRecord
       }))
       .reduce(
         (a, b) => ({ ...a, ...b }),
-        {} as { [id: string]: Historical<I> }
+        {} as { [id: string]: SavedRecord<I> }
+      );
+
+    const savedRecordById: {
+      [id: string]: SavedRecord<I>;
+    } = (
+      await Promise.all(
+        Object.entries(recordsById).map(async ([_id, record]) => {
+          const existingSavedRecord = existingSavedRecordById[_id];
+
+          if (existingSavedRecord && !overwrite) {
+            return existingSavedRecord;
+          }
+
+          const { _rev = undefined } = existingSavedRecord || {};
+
+          const { rev } = await this.collections[collectionName].put({
+            ...record,
+            _rev
+          });
+
+          return {
+            ...record,
+            _rev: rev
+          } as SavedRecord<I>;
+        })
+      )
+    )
+      .map(savedRecord => ({ [savedRecord._id]: savedRecord }))
+      .reduce(
+        (a, b) => ({ ...a, ...b }),
+        {} as { [id: string]: SavedRecord<I> }
+      );
+
+    return records.map(record => record && savedRecordById[record._id]);
+  }
+
+  public async forget<N extends CollectionName<C>, T>(
+    collectionName: N,
+    references: (RecordReference<T> | undefined)[]
+  ) {
+    await this.ready;
+
+    const savedRecords = await this.retrieve<N, T>(collectionName, references);
+
+    const savedRecordById = savedRecords
+      .filter((savedRecord): savedRecord is SavedRecord<T> => !!savedRecord)
+      .map(savedRecord => ({
+        [savedRecord._id]: savedRecord
+      }))
+      .reduce(
+        (a, b) => ({ ...a, ...b }),
+        {} as { [id: string]: SavedRecord<T> }
       );
 
     await Promise.all(
-      Object.values(retrievedInputsById).map(async ({ _id, _rev }) => {
+      Object.values(savedRecordById).map(async ({ _id, _rev }) => {
         await this.collections[collectionName].put({
           _rev,
           _id,

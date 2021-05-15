@@ -6,34 +6,78 @@ import PouchDB from "pouchdb";
 import type { Collections, CollectionName } from "@truffle/db/meta/collections";
 import type * as Id from "@truffle/db/meta/id";
 
-export type History = PouchDB.Core.IdMeta & PouchDB.Core.GetMeta;
+type Identified = PouchDB.Core.IdMeta;
+type Retrieved = PouchDB.Core.GetMeta;
 
-export type Historical<T> = T & History;
+/**
+ * An object is a Record<T> if it has identification info
+ * (i.e., `{ _id: string }`)
+ */
+export type Record<T> = T & Identified;
 
+/**
+ * SavedRecord<T> objects additionally contain PouchDB revision info, etc.
+ */
+export type SavedRecord<T> = Record<T> & Retrieved;
+
+/**
+ * A reference has only identification information
+ */
+export type RecordReference<T> = Pick<Record<T>, "_id">;
+
+/**
+ * Low-level interface for PouchDB adapters - allows basic CRUD operations
+ * for arbitrary (weakly-typed) data types.
+ */
 export interface Adapter<C extends Collections> {
-  every<N extends CollectionName<C>, I extends PouchDB.Core.IdMeta>(
+  /**
+   * Retrieve and return every saved record for a given collection name
+   */
+  every<N extends CollectionName<C>, T>(
     collectionName: N
-  ): Promise<Historical<I>[]>;
+  ): Promise<SavedRecord<T>[]>;
 
-  retrieve<N extends CollectionName<C>, I extends PouchDB.Core.IdMeta>(
+  /**
+   * Retrieve specific saved records of a given collection name by list of
+   * references.
+   *
+   * @param references - Can be sparse
+   * @return - Items in list correspond to `references` by index (also sparse)
+   */
+  retrieve<N extends CollectionName<C>, T>(
     collectionName: N,
-    references: (Pick<I, "_id"> | undefined)[]
-  ): Promise<(Historical<I> | undefined)[]>;
+    references: (RecordReference<T> | undefined)[]
+  ): Promise<(SavedRecord<T> | undefined)[]>;
 
-  search<N extends CollectionName<C>, I extends PouchDB.Core.IdMeta>(
+  /**
+   * Search for saved records of a given collection name by PouchDB find
+   * syntax
+   */
+  search<N extends CollectionName<C>, T>(
     collectionName: N,
     options: PouchDB.Find.FindRequest<{}>
-  ): Promise<Historical<I>[]>;
+  ): Promise<SavedRecord<T>[]>;
 
-  record<N extends CollectionName<C>, I extends PouchDB.Core.IdMeta>(
+  /**
+   * Create or update saved records of a given collection name.
+   *
+   * @param records - Can be sparse
+   * @return - Items in list correspond to `records` by index (also sparse)
+   */
+  record<N extends CollectionName<C>, T>(
     collectionName: N,
-    inputs: (I | undefined)[],
+    records: (Record<T> | undefined)[],
     options: { overwrite?: boolean }
-  ): Promise<(Historical<I> | undefined)[]>;
+  ): Promise<(SavedRecord<T> | undefined)[]>;
 
-  forget<N extends CollectionName<C>, I extends PouchDB.Core.IdMeta>(
+  /**
+   * Delete saved records
+   *
+   * @param references - Can be sparse
+   */
+  forget<N extends CollectionName<C>, T>(
     collectionName: N,
-    references: (Pick<I, "_id"> | undefined)[]
+    references: (RecordReference<T> | undefined)[]
   ): Promise<void>;
 }
 

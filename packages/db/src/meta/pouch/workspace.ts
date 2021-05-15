@@ -16,7 +16,8 @@ import * as Id from "@truffle/db/meta/id";
 import type { Workspace } from "@truffle/db/meta/data";
 
 import type {
-  Historical,
+  Record,
+  RecordReference,
   Adapter,
   Definitions
 } from "@truffle/db/meta/pouch/types";
@@ -42,12 +43,14 @@ export class AdapterWorkspace<C extends Collections> implements Workspace<C> {
     log("Fetching all...");
 
     try {
-      const records = await this.adapter.every<N, Historical<Input<C, N>>>(
+      const savedRecords = await this.adapter.every<N, Input<C, N>>(
         collectionName
       );
 
       log("Found.");
-      return records.map(record => this.unmarshal(collectionName, record));
+      return savedRecords.map(savedRecord =>
+        this.unmarshal(collectionName, savedRecord)
+      );
     } catch (error) {
       log("Error fetching all %s, got error: %O", collectionName, error);
       throw error;
@@ -64,21 +67,20 @@ export class AdapterWorkspace<C extends Collections> implements Workspace<C> {
     try {
       // handle convenient interface for getting a bunch of IDs while preserving
       // order of input request
-      const records = Array.isArray(options)
-        ? await this.adapter.retrieve<N, Historical<Input<C, N>>>(
+      const savedRecords = Array.isArray(options)
+        ? await this.adapter.retrieve<N, Input<C, N>>(
             collectionName,
             options.map(reference =>
-              reference ? { _id: reference.id } : undefined
-            ) as (Pick<Historical<Input<C, N>>, "_id"> | undefined)[]
+              reference
+                ? ({ _id: reference.id } as RecordReference<Input<C, N>>)
+                : undefined
+            )
           )
-        : await this.adapter.search<N, Historical<Input<C, N>>>(
-            collectionName,
-            options
-          );
+        : await this.adapter.search<N, Input<C, N>>(collectionName, options);
 
       log("Found.");
-      return records.map(record =>
-        record ? this.unmarshal(collectionName, record) : undefined
+      return savedRecords.map(savedRecord =>
+        savedRecord ? this.unmarshal(collectionName, savedRecord) : undefined
       );
     } catch (error) {
       log("Error fetching all %s, got error: %O", collectionName, error);
@@ -93,13 +95,14 @@ export class AdapterWorkspace<C extends Collections> implements Workspace<C> {
     if (typeof id === "undefined") {
       return;
     }
-    const [savedInput] = await this.adapter.retrieve<
-      N,
-      Historical<Input<C, N>>
-    >(collectionName, [{ _id: id } as Pick<Historical<Input<C, N>>, "_id">]);
 
-    if (savedInput) {
-      return this.unmarshal(collectionName, savedInput);
+    const [savedRecord] = await this.adapter.retrieve<N, Input<C, N>>(
+      collectionName,
+      [{ _id: id } as RecordReference<Input<C, N>>]
+    );
+
+    if (savedRecord) {
+      return this.unmarshal(collectionName, savedRecord);
     }
   }
 
@@ -110,18 +113,18 @@ export class AdapterWorkspace<C extends Collections> implements Workspace<C> {
     const log = debug.extend(`${collectionName}:add`);
     log("Adding...");
 
-    const inputsWithIds = input[collectionName].map(input =>
+    const records = input[collectionName].map(input =>
       input ? this.marshal(collectionName, input) : undefined
     );
 
-    const records = await this.adapter.record<N, Historical<Input<C, N>>>(
+    const savedRecords = await this.adapter.record<N, Input<C, N>>(
       collectionName,
-      inputsWithIds,
+      records,
       { overwrite: false }
     );
 
-    const addedInputs = records.map(record =>
-      record ? this.unmarshal(collectionName, record) : undefined
+    const addedInputs = savedRecords.map(savedRecord =>
+      savedRecord ? this.unmarshal(collectionName, savedRecord) : undefined
     );
 
     log(
@@ -143,18 +146,18 @@ export class AdapterWorkspace<C extends Collections> implements Workspace<C> {
     const log = debug.extend(`${collectionName}:update`);
     log("Updating...");
 
-    const inputsWithIds = input[collectionName].map(input =>
+    const records = input[collectionName].map(input =>
       input ? this.marshal(collectionName, input) : undefined
     );
 
-    const records = await this.adapter.record<M, Historical<Input<C, M>>>(
+    const savedRecords = await this.adapter.record<M, Input<C, M>>(
       collectionName,
-      inputsWithIds,
+      records,
       { overwrite: true }
     );
 
-    const updatedInputs = records.map(record =>
-      record ? this.unmarshal(collectionName, record) : undefined
+    const updatedInputs = savedRecords.map(savedRecord =>
+      savedRecord ? this.unmarshal(collectionName, savedRecord) : undefined
     );
 
     log(
@@ -176,11 +179,11 @@ export class AdapterWorkspace<C extends Collections> implements Workspace<C> {
     const log = debug.extend(`${collectionName}:remove`);
     log("Removing...");
 
-    const inputsWithIds = input[collectionName].map(input =>
+    const records = input[collectionName].map(input =>
       input ? this.marshal(collectionName, input) : undefined
     );
 
-    await this.adapter.forget(collectionName, inputsWithIds);
+    await this.adapter.forget(collectionName, records);
 
     log("Removed.");
   }
@@ -188,7 +191,7 @@ export class AdapterWorkspace<C extends Collections> implements Workspace<C> {
   private marshal<N extends CollectionName<C>>(
     collectionName: N,
     input: Input<C, N>
-  ): Historical<Input<C, N>> {
+  ): Record<Input<C, N>> {
     const id = this.generateId<N>(collectionName, input);
 
     if (typeof id === "undefined") {
@@ -198,14 +201,14 @@ export class AdapterWorkspace<C extends Collections> implements Workspace<C> {
     return {
       ...input,
       _id: id
-    } as Historical<Input<C, N>>;
+    };
   }
 
   private unmarshal<N extends CollectionName<C>>(
     collectionName: N,
     record: any
   ): SavedInput<C, N> {
-    const id = (record as Historical<Input<C, N>>)._id;
+    const id = (record as Record<Input<C, N>>)._id;
 
     // remove internal properties:
     //   - PouchDB properties (begin with _)
