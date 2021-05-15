@@ -13,8 +13,10 @@
     "outDir": "./dist",
     "strictBindCallApply": true,
     "strictNullChecks": true,
+    "resolveJsonModule": true,
     "paths": {
       "@truffle/db": ["./src"],
+      "@truffle/db/package.json": ["./package.json"],
       "@truffle/db/*": ["./src/*"],
       "test/*": ["./test/*"]
     },

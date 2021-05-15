@@ -121,10 +121,14 @@
       }
     },
     "moduleNameMapper": {
-      "^@truffle/db/(.*)": "<rootDir>/src/$1",
+      "^@truffle/db/package.json": "<rootDir>/package.json",
+      "^@truffle/db/((?!(package\\.json$))(.*))$": "<rootDir>/src/$1",
       "^@truffle/db$": "<rootDir>/src",
       "^test/(.*)": "<rootDir>/test/$1"
     },
+    "modulePathIgnorePatterns": [
+      "<rootDir>/dist/package.json"
+    ],
     "testMatch": [
       "<rootDir>/src/**/test/index.(ts|js)",
       "<rootDir>/test/**/test/index.(ts|js)",
