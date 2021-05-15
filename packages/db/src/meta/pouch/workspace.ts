@@ -2,7 +2,9 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:meta:pouch:workspace");
 
 import type PouchDB from "pouchdb";
+import * as semver from "semver";
 
+import { version } from "@truffle/db/package.json";
 import type {
   CollectionName,
   Collections,
@@ -214,6 +216,7 @@ export class AdapterWorkspace<C extends Collections> implements Workspace<C> {
 
     return {
       ...input,
+      $db: version,
       _id: id
     };
   }
@@ -224,9 +227,26 @@ export class AdapterWorkspace<C extends Collections> implements Workspace<C> {
   ): SavedInput<C, N> {
     const id = (record as Record<Input<C, N>>)._id;
 
+    const versioned = "$db" in record;
+    if (!versioned) {
+      throw new Error(
+        `Saved "${collectionName}" resource missing schema version, id: ${id}`
+      );
+    }
+
+    const allowedRange = `^${record.$db as string}`;
+
+    const compatible = versioned && semver.satisfies(version, allowedRange);
+    if (!compatible) {
+      throw new Error(
+        `Invalid schema version ${allowedRange} for "${collectionName}" ` +
+          `resource, id: ${id}. (Current @truffle/db version: ${version})`
+      );
+    }
+
     // remove internal properties:
     //   - PouchDB properties (begin with _)
-    //   - ours (begin with $, reserved for future use)
+    //   - ours (begin with $)
     const fieldNamePattern = /^[^_$]/;
     const input: Input<C, N> = Object.entries(record)
       .filter(([propertyName]) => propertyName.match(fieldNamePattern))

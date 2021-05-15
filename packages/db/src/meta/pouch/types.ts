@@ -7,13 +7,14 @@ import type { Collections, CollectionName } from "@truffle/db/meta/collections";
 import type * as Id from "@truffle/db/meta/id";
 
 type Identified = PouchDB.Core.IdMeta;
+type Versioned = { $db: string };
 type Retrieved = PouchDB.Core.GetMeta;
 
 /**
- * An object is a Record<T> if it has identification info
+ * An object is a Record<T> if it has identification info and versioning
  * (i.e., `{ _id: string }`)
  */
-export type Record<T> = T & Identified;
+export type Record<T> = T & Identified & Versioned;
 
 /**
  * SavedRecord<T> objects additionally contain PouchDB revision info, etc.
