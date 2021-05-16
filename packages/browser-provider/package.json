@@ -1,0 +1,43 @@
+{
+  "name": "@truffle/browser-provider",
+  "version": "0.1.0",
+  "description": "Web3 provider that uses a browser-based web3 wallet for signing",
+  "main": "dist/lib/index.js",
+  "types": "dist/lib/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepare": "yarn build",
+    "test": "jest --verbose --detectOpenHandles"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/browser-provider"
+  },
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/browser-provider#readme",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "author": "Rosco Kalis <roscokalis@gmail.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.0",
+    "@types/node": "^14.0.13",
+    "@types/web3": "^1.0.20",
+    "@types/ws": "^7.4.4",
+    "ethereum-protocol": "^1.0.1",
+    "jest": "^26.0.1",
+    "ts-jest": "^26.1.0",
+    "typescript": "^4.1.4"
+  },
+  "dependencies": {
+    "delay": "^5.0.0",
+    "ws": "^7.4.5"
+  }
+}
