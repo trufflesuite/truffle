@@ -1,24 +1,19 @@
 import WebSocket from "ws";
-import { base64ToJson, jsonToBase64 } from "./utils";
-import { MessageType } from "./types";
+import { base64ToJson, jsonToBase64, sendAndAwait } from "./utils";
 
 class Server {
-  wss: WebSocket.Server;
+  providerServer: WebSocket.Server;
+  frontendServer: WebSocket.Server;
+  frontendSocket: WebSocket;
   connections = 0;
 
-  start(port: number) {
-    this.wss = new WebSocket.Server({ port });
-
-    this.wss.on("connection", (socket: WebSocket) => {
+  start(port: number, frontendPort: number) {
+    this.providerServer = new WebSocket.Server({ port });
+    this.providerServer.on("connection", (socket: WebSocket) => {
       this.connections++;
 
       socket.on("message", (data: WebSocket.Data) => {
-        if (typeof data !== "string") return;
-        const jsonMessage = base64ToJson(data);
-
-        if (jsonMessage.type === MessageType.REQUEST) {
-          this.processRequest(socket, jsonMessage);
-        }
+        this.processRequest(socket, data);
       });
 
       socket.on("close", () => {
@@ -27,17 +22,31 @@ class Server {
         }
       });
     });
+
+    this.frontendServer = new WebSocket.Server({ port: frontendPort });
+    this.frontendServer.on("connection", (socket: WebSocket) => {
+      this.frontendSocket = socket;
+
+      socket.on("close", () => {
+        process.exit(1);
+      });
+    });
   }
 
-  async processRequest(socket: WebSocket, request: any) {
+  async processRequest(socket: WebSocket, data: WebSocket.Data) {
+    if (!this.frontendSocket) {
+      socket.close(1, "No connection to frontend");
+      return;
+    }
+
+    if (typeof data !== "string") return;
+    const decodedData = base64ToJson(data);
+
+    const responsePayload = await sendAndAwait(this.frontendSocket, decodedData.payload);
+
     const response = {
-      type: MessageType.RESPONSE,
-      id: request.id,
-      payload: {
-        jsonrpc: "2.0",
-        id: 1,
-        result: 1,
-      }
+      id: decodedData.id,
+      payload: responsePayload
     };
 
     const encodedResponse = jsonToBase64(response);
@@ -47,4 +56,4 @@ class Server {
 }
 
 const server = new Server();
-server.start(8080);
+server.start(8080, 8081);
