@@ -219,7 +219,7 @@ function transactionLog(state = DEFAULT_TX_LOG, action) {
         currentPointer = currentPointer.replace(/\/actions\/\d+$/, "") //cut off end
       ) {
         debug("currentNode!");
-        let currentNode = {...newState.byPointer[currentPointer]}; //clone
+        let currentNode = { ...newState.byPointer[currentPointer] }; //clone
         if (!currentNode.returnKind) {
           //set the return kind on any nodes popped along the way that don't have
           //one already to note that they failed to return due to a call they made
@@ -233,25 +233,35 @@ function transactionLog(state = DEFAULT_TX_LOG, action) {
       //now handle the external call.
       //note that currentPointer now points to it.
       debug("finalNode!");
-      let finalNode = {...newState.byPointer[currentPointer]}; //clone
+      let finalNode = { ...newState.byPointer[currentPointer] }; //clone
       //first let's set the returnKind if there isn't one already
       //(in which case we can infer it was unwound).
       if (!finalNode.returnKind) {
         finalNode.returnKind = "unwind";
       }
-      //now let's set its return variables if applicable.
+      //now let's set its return variables (or return data) if applicable.
       if (
-        finalNode.kind === "function" &&
         action.type === actions.EXTERNAL_RETURN &&
         action.decodings
       ) {
-        const decoding = action.decodings.find(
-          decoding => decoding.kind === "return"
-        );
-        if (decoding) {
-          //we'll trust this method over the method resulting from an internal return,
-          //*if* it produces a valid return-value decoding.  if it doesn't, we ignore it.
-          finalNode.returnValues = decoding.arguments;
+        if (finalNode.kind === "function") {
+          //functions get returnValues
+          const decoding = action.decodings.find(
+            decoding => decoding.kind === "return"
+          );
+          if (decoding) {
+            //we'll trust this method over the method resulting from an internal return,
+            //*if* it produces a valid return-value decoding.  if it doesn't, we ignore it.
+            finalNode.returnValues = decoding.arguments;
+          }
+        } else if (finalNode.kind === "message") {
+          //messages get returnData
+          const decoding = action.decodings.find(
+            decoding => decoding.kind === "returnmessage"
+          );
+          if (decoding) {
+            finalNode.returnData = decoding.data;
+          }
         }
       }
       //also, set immutables if applicable -- note that we do *not* attempt to set
