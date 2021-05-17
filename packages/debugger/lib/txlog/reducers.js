@@ -239,30 +239,29 @@ function transactionLog(state = DEFAULT_TX_LOG, action) {
       if (!finalNode.returnKind) {
         finalNode.returnKind = "unwind";
       }
-      //now let's set its return variables (or return data) if applicable.
+      //now let's set its return variables if applicable.
       if (
+        finalNode.kind === "function" &&
         action.type === actions.EXTERNAL_RETURN &&
         action.decodings
       ) {
-        if (finalNode.kind === "function") {
-          //functions get returnValues
-          const decoding = action.decodings.find(
-            decoding => decoding.kind === "return"
-          );
-          if (decoding) {
-            //we'll trust this method over the method resulting from an internal return,
-            //*if* it produces a valid return-value decoding.  if it doesn't, we ignore it.
-            finalNode.returnValues = decoding.arguments;
-          }
-        } else if (finalNode.kind === "message") {
-          //messages get returnData
-          const decoding = action.decodings.find(
-            decoding => decoding.kind === "returnmessage"
-          );
-          if (decoding) {
-            finalNode.returnData = decoding.data;
-          }
+        //functions get returnValues
+        const decoding = action.decodings.find(
+          decoding => decoding.kind === "return"
+        );
+        if (decoding) {
+          //we'll trust this method over the method resulting from an internal return,
+          //*if* it produces a valid return-value decoding.  if it doesn't, we ignore it.
+          finalNode.returnValues = decoding.arguments;
         }
+      }
+      //and we'll set raw return data if applicable
+      //(we don't use codec here to increase robustness)
+      if (
+        finalNode.kind === "message" &&
+        action.type === actions.EXTERNAL_RETURN
+      ) {
+        finalNode.returnData = action.returnData;
       }
       //also, set immutables if applicable -- note that we do *not* attempt to set
       //these the internal way, as we don't have a reliable way of doing that
