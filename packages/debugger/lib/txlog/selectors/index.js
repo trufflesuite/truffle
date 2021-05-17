@@ -70,6 +70,11 @@ let txlog = createSelectorTree({
     origin: createLeaf([evm.transaction.globals.tx], tx => tx.origin),
 
     /**
+     * txlog.transaction.initialCall
+     */
+    initialCall: createLeaf(["/state"], state => state.transaction.initialCall),
+
+    /**
      * txlog.transaction.absorbFirstInternalCall
      */
     absorbFirstInternalCall: createLeaf(

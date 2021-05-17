@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:txlog:reducers");
 
-import {combineReducers} from "redux";
+import { combineReducers } from "redux";
 
 import * as actions from "./actions";
 
@@ -22,7 +22,7 @@ const DEFAULT_TX_LOG = {
 };
 
 function transactionLog(state = DEFAULT_TX_LOG, action) {
-  const {pointer, newPointer} = action;
+  const { pointer, newPointer } = action;
   const node = state.byPointer[pointer];
   switch (action.type) {
     case actions.RECORD_ORIGIN:
@@ -69,7 +69,7 @@ function transactionLog(state = DEFAULT_TX_LOG, action) {
       //pop the top call from the stack if it's internal (and set its return values)
       //if the top call is instead external, just set its return values if appropriate.
       //(this is how we handle internal/external return absorption)
-      const modifiedNode = {...node};
+      const modifiedNode = { ...node };
       if (modifiedNode.type === "callinternal") {
         modifiedNode.returnKind = "return";
         modifiedNode.returnValues = action.variables;
@@ -180,7 +180,7 @@ function transactionLog(state = DEFAULT_TX_LOG, action) {
     case actions.REVERT:
     case actions.SELFDESTRUCT: {
       //first: set the returnKind and other info
-      let modifiedNode = {...node};
+      let modifiedNode = { ...node };
       if (
         modifiedNode.type === "callexternal" &&
         modifiedNode.kind === "library"
@@ -276,7 +276,7 @@ function transactionLog(state = DEFAULT_TX_LOG, action) {
       return newState;
     }
     case actions.IDENTIFY_FUNCTION_CALL: {
-      const {functionNode, contractNode, variables} = action;
+      const { functionNode, contractNode, variables } = action;
       const functionName = functionNode.name || undefined; //replace "" with undefined
       const contractName =
         contractNode && contractNode.nodeType === "ContractDefinition"
@@ -311,6 +311,17 @@ function transactionLog(state = DEFAULT_TX_LOG, action) {
         }
       };
     }
+    case actions.RESET: //we'll reset everything and re-put initial action afterwards
+      //...well, almost everything.  we'll leave the origin in place.
+      return {
+        byPointer: {
+          "": {
+            type: "transaction",
+            origin: state.byPointer[""].origin, //keep origin
+            actions: []
+          }
+        }
+      };
     case actions.UNLOAD_TRANSACTION:
       return DEFAULT_TX_LOG;
     default:
@@ -329,8 +340,7 @@ function currentNodePointer(state = "", action) {
     case actions.SELFDESTRUCT:
       //note that instant calls/creates are not included!
       return action.newPointer;
-    case actions.RESET:
-      return "/actions/0"; //reset to status after initial call
+    case actions.RESET: //we'll reset everything and re-put initial action afterwards
     case actions.UNLOAD_TRANSACTION:
       return "";
     default:
@@ -350,10 +360,29 @@ function pointerStack(state = [], action) {
     case actions.REVERT:
     case actions.SELFDESTRUCT:
       return state.slice(0, -1);
-    case actions.RESET:
-      return ["/actions/0"]; //reset to status after initial call
+    case actions.RESET: //we'll reset everything and re-put initial action afterwards
     case actions.UNLOAD_TRANSACTION:
       return [];
+    default:
+      return state;
+  }
+}
+
+function initialCall(state = null, action) {
+  switch (action.type) {
+    case actions.EXTERNAL_CALL:
+    case actions.CREATE:
+      //we only want to save the initial call, so return
+      //the current state if it's not null
+      //(we can skip instant case here, initial call is never instant)
+      if (state !== null) {
+        return state;
+      } else {
+        //we'll just store the action itself in the state
+        return action;
+      }
+    case actions.UNLOAD_TRANSACTION:
+      return null;
     default:
       return state;
   }
@@ -365,8 +394,13 @@ const proc = combineReducers({
   pointerStack
 });
 
+const transaction = combineReducers({
+  initialCall
+});
+
 const reducer = combineReducers({
-  proc
+  proc,
+  transaction
 });
 
 export default reducer;
