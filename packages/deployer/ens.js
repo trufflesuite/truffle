@@ -1,4 +1,4 @@
-const ENSJS = require("ethereum-ens");
+const { getEnsAddress, default: ENSJS } = require("@ensdomains/ensjs");
 const contract = require("@truffle/contract");
 const { sha3 } = require("web3-utils");
 const { hash } = require("eth-ens-namehash");
@@ -13,11 +13,8 @@ class ENS {
   determineENSRegistryAddress() {
     if (this.ensSettings.registryAddress) {
       return this.ensSettings.registryAddress;
-    } else if (
-      this.ensjs &&
-      this.ensjs.registryPromise._rejectionHandler0._address
-    ) {
-      return this.ensjs.registryPromise._rejectionHandler0._address;
+    } else if (this.ensjs) {
+      return this.ensjs.ens.address;
     } else {
       const message =
         `Truffle could not locate the address of the ENS ` +
@@ -38,57 +35,45 @@ class ENS {
     return ensRegistry;
   }
 
-  async ensureRegistryExists(from) {
-    // See if registry exists on network by resolving an arbitrary address
-    // If no registry exists then deploy one
-    try {
-      await this.ensjs.owner("0x0");
-    } catch (error) {
-      const noRegistryFound =
-        error.message ===
-        "This contract object doesn't have address set yet, please set an address first.";
-      if (noRegistryFound) {
-        await this.deployNewDevENSRegistry(from);
-        this.setENSJS();
-      } else {
-        throw error;
-      }
-    }
-  }
-
   async ensureResolverExists({ from, name }) {
     // See if the resolver is set, if not then set it
-    let resolvedAddress, publicResolver;
-    try {
-      resolvedAddress = await this.ensjs.resolver(name).addr();
+    const resolverAddress = await this.ensjs.name(name).getResolver();
+    // names with no set resolver have 0x0 returned
+    if (resolverAddress !== "0x0000000000000000000000000000000000000000") {
+      const resolvedAddress = await this.ensjs.name(name).getAddress("ETH");
       return { resolvedAddress };
-    } catch (error) {
-      if (error.message !== "ENS name not found") throw error;
-      const PublicResolverArtifact = require("@ensdomains/resolver")
-        .PublicResolver;
-      const PublicResolver = contract(PublicResolverArtifact);
-      PublicResolver.setProvider(this.provider);
-
-      let registryAddress = this.determineENSRegistryAddress();
-
-      publicResolver = await PublicResolver.new(registryAddress, { from });
-      await this.ensjs.setResolver(name, publicResolver.address, { from });
-      return { resolvedAddress: null };
     }
+    // deploy a resolver if
+    const PublicResolverArtifact = require("@ensdomains/resolver")
+      .PublicResolver;
+    const PublicResolver = contract(PublicResolverArtifact);
+    PublicResolver.setProvider(this.provider);
+
+    let registryAddress = this.determineENSRegistryAddress();
+
+    const publicResolver = await PublicResolver.new(registryAddress, { from });
+    await this.ensjs.name(name).setResolver(publicResolver.address, { from });
+    return { resolvedAddress: null };
   }
 
   async setAddress(name, addressOrContract, { from }) {
     this.validateSetAddressInputs({ addressOrContract, name, from });
     const address = this.parseAddress(addressOrContract);
-    this.setENSJS();
-    await this.ensureRegistryExists(from);
+    try {
+      this.setENSJS();
+    } catch (error) {
+      if (error.message.includes("error instantiating the ENS")) {
+        await this.deployNewDevENSRegistry(from);
+        this.setENSJS();
+      }
+    }
 
     // In the case where there is a registry deployed by the user,
     // set permissions so that the resolver can be set by the user
     if (this.devRegistry) await this.setNameOwner({ from, name });
 
     // Find the owner of the name and compare it to the "from" field
-    const nameOwner = await this.ensjs.owner(name);
+    const nameOwner = await this.ensjs.name(name).getOwner();
 
     if (nameOwner !== from) {
       const message =
@@ -105,7 +90,7 @@ class ENS {
     // If the resolver points to a different address or is not set,
     // then set it to the specified address
     if (resolvedAddress !== address) {
-      await this.ensjs.resolver(name).setAddr(address);
+      await this.ensjs.name(name).setAddress("ETH", address);
     }
   }
 
@@ -166,7 +151,19 @@ class ENS {
   }
 
   setENSJS() {
-    this.ensjs = new ENSJS(this.provider, this.ensSettings.registryAddress);
+    try {
+      this.ensjs = new ENSJS({
+        provider: this.provider,
+        ensAddress:
+          this.ensSettings.registryAddress ||
+          getEnsAddress(this.ensSettings.networkId)
+      });
+    } catch (error) {
+      const message =
+        `There was an error instantiating the ENS library. ` +
+        `Please ensure you have the correct ENS registry address.`;
+      throw new Error(message + error.message);
+    }
   }
 }
 
