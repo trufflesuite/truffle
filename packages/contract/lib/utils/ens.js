@@ -23,12 +23,15 @@ module.exports = {
     } else {
       args = inputArgs;
     }
-    const params = await this.convertENSParamsNames({
-      inputParams,
-      web3,
-      registryAddress,
-      networkId
-    });
+    let params;
+    if (inputParams) {
+      params = await this.convertENSParamsNames({
+        inputParams,
+        web3,
+        registryAddress,
+        networkId
+      });
+    }
     return { args, params };
   },
 
@@ -73,24 +76,24 @@ module.exports = {
   },
 
   convertENSParamsNames: async function ({
-    params,
+    inputParams,
     web3,
     registryAddress,
     networkId
   }) {
-    if (params.from && !isAddress(params.from)) {
+    if (inputParams.from && !isAddress(inputParams.from)) {
       const ensjs = this.getNewENSJS({
         provider: web3.currentProvider,
         registryAddress,
         networkId
       });
-      const newFrom = await this.resolveNameToAddress(params.from, ensjs);
+      const newFrom = await this.resolveNameToAddress(inputParams.from, ensjs);
       return {
-        ...params,
+        ...inputParams,
         from: newFrom
       };
     } else {
-      return params;
+      return inputParams;
     }
   }
 };
