@@ -42,7 +42,25 @@ module.exports = {
     });
   },
 
-  resolveNameToAddress: async function (name, ensjs) {
+  resolveNameToAddress: async function ({
+    name,
+    provider,
+    registryAddress,
+    networkId
+  }) {
+    let ensjs;
+    try {
+      ensjs = this.getNewENSJS({
+        provider,
+        registryAddress,
+        networkId
+      });
+    } catch (error) {
+      const message =
+        "There was a problem initializing the ENS library." +
+        "Please ensure you have the address of the registry set correctly.";
+      throw new Error(message + error.message);
+    }
     return await ensjs.name(name).getAddress("ETH");
   },
 
@@ -54,11 +72,6 @@ module.exports = {
     networkId
   }) {
     if (methodABI.inputs.length === 0) return inputArgs;
-    const ensjs = this.getNewENSJS({
-      provider: web3.currentProvider,
-      registryAddress,
-      networkId
-    });
 
     const convertedNames = inputArgs.map((argument, index) => {
       if (index + 1 > methodABI.inputs.length) {
@@ -67,7 +80,12 @@ module.exports = {
         // Check all address arguments for ENS names
         const argIsAddress = isAddress(argument);
         if (argIsAddress) return argument;
-        return this.resolveNameToAddress(argument, ensjs);
+        return this.resolveNameToAddress({
+          name: argument,
+          provider: web3.currentProvider,
+          registryAddress,
+          networkId
+        });
       } else {
         return argument;
       }
@@ -82,12 +100,12 @@ module.exports = {
     networkId
   }) {
     if (inputParams.from && !isAddress(inputParams.from)) {
-      const ensjs = this.getNewENSJS({
+      const newFrom = await this.resolveNameToAddress({
+        name: inputParams.from,
         provider: web3.currentProvider,
-        registryAddress,
-        networkId
+        networkId,
+        registryAddress
       });
-      const newFrom = await this.resolveNameToAddress(inputParams.from, ensjs);
       return {
         ...inputParams,
         from: newFrom

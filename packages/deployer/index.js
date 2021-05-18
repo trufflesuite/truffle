@@ -24,11 +24,15 @@ class Deployer extends Deployment {
     this.basePath = options.basePath || process.cwd();
     this.known_contracts = {};
     if (options.ens && options.ens.enabled) {
+      const registryAddress = this.networks[this.network].registry
+        ? this.networks[this.network].registry.address
+        : null;
       this.ens = new ENS({
         provider: options.provider,
         ensSettings: {
           ...options.ens,
-          networkId: options.network_id
+          networkId: options.network_id,
+          registryAddress
         }
       });
     }
