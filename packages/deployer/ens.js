@@ -4,15 +4,17 @@ const { sha3 } = require("web3-utils");
 const { hash } = require("eth-ens-namehash");
 
 class ENS {
-  constructor({ provider, ensSettings }) {
-    this.ensSettings = ensSettings;
+  constructor({ provider, networkId, ens }) {
+    this.networkId = networkId;
     this.provider = provider;
     this.devRegistry = null;
+    // we need a reference to the ens field to update it for @truffle/contract
+    this.ens = ens;
   }
 
   determineENSRegistryAddress() {
-    if (this.ensSettings.registryAddress) {
-      return this.ensSettings.registryAddress;
+    if (this.ens.registryAddress) {
+      return this.ens.registryAddress;
     } else if (this.ensjs) {
       return this.ensjs.ens.address;
     } else {
@@ -29,7 +31,7 @@ class ENS {
     const ENSRegistry = contract(ENSRegistryArtifact);
     ENSRegistry.setProvider(this.provider);
     const ensRegistry = await ENSRegistry.new({ from });
-    this.ensSettings.registryAddress = ensRegistry.address;
+    this.ens.registryAddress = ensRegistry.address;
     this.devRegistry = ensRegistry;
     this.setENSJS();
     return ensRegistry;
@@ -151,18 +153,20 @@ class ENS {
   }
 
   setENSJS() {
+    let ensAddress;
     try {
+      ensAddress = this.ens.registryAddress || getEnsAddress(this.networkId);
+
       this.ensjs = new ENSJS({
         provider: this.provider,
-        ensAddress:
-          this.ensSettings.registryAddress ||
-          getEnsAddress(this.ensSettings.networkId)
+        ensAddress
       });
     } catch (error) {
       const message =
         `There was an error instantiating the ENS library. ` +
-        `Please ensure you have the correct ENS registry address.`;
-      throw new Error(message + error.message);
+        `Please ensure you have the correct ENS registry address. Truffle` +
+        `is currently using ${ensAddress}.`;
+      throw new Error(`${message} - ${error.message}`);
     }
   }
 }

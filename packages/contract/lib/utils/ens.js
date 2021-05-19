@@ -58,8 +58,9 @@ module.exports = {
     } catch (error) {
       const message =
         "There was a problem initializing the ENS library." +
-        "Please ensure you have the address of the registry set correctly.";
-      throw new Error(message + error.message);
+        "Please ensure you have the address of the registry set correctly." +
+        ` Truffle is currently using ${registryAddress}.`;
+      throw new Error(`${message} - ${error.message}`);
     }
     return await ensjs.name(name).getAddress("ETH");
   },
