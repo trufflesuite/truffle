@@ -73,9 +73,14 @@ export abstract class Databases<C extends Collections> implements Adapter<C> {
   ) {
     const collection = this.collections[collectionName];
 
-    const { createIndexes } = definition;
+    const indexes = [
+      ...definition.createIndexes,
 
-    for (let index of createIndexes || []) {
+      // add index for resource schema version
+      { fields: ["$db"] }
+    ];
+
+    for (let index of indexes) {
       await collection.createIndex({ index });
     }
   }
