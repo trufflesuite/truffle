@@ -1,6 +1,4 @@
-import { compile } from "./compile";
-import { compileAdapter } from "./compileAdapter";
+import { TezosCompiler } from "@truffle/compile-common";
+import { LigoCompileStrategy } from "./compileStrategy";
 
-const fileExtensions = ["ligo", "mligo", "religo"];
-
-export { compile, compileAdapter, fileExtensions };
+export const Compile = new TezosCompiler(new LigoCompileStrategy());

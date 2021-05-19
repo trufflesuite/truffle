@@ -3,15 +3,10 @@ import * as path from "path";
 const findContracts = require("@truffle/contract-sources");
 
 import { Profiler } from "../profiler";
-import { Compiler, CompilerResult } from "../types";
+import { Compiler, CompilerResult, ICompileStrategy } from "../types";
 
-export class BaseCompiler implements Compiler {
-  // TODO BGC Replace any with generic types
-  constructor(
-    private readonly fileExtensions: string[],
-    private readonly compile: (paths: string[]) => Promise<any>,
-    private readonly compileAdapter: (compileResult: any) => CompilerResult
-    ) {}
+export class TezosCompiler implements Compiler {
+  constructor(private readonly compileStrategy: ICompileStrategy) {}
 
   async all(options: any): Promise<CompilerResult> {
     const paths = [
@@ -24,7 +19,8 @@ export class BaseCompiler implements Compiler {
     return this.sourcesWithDependencies({ paths, options });
   }
 
-  async necessary(options: object): Promise<CompilerResult> {
+  async necessary(options: any): Promise<CompilerResult> {
+    // TODO BGC Create only one profiler at constructor and reuse
     // Profiler to gather updated files
     const profiler = new Profiler({});
     const paths = await profiler.updated(options);
@@ -35,7 +31,7 @@ export class BaseCompiler implements Compiler {
     return this.sourcesWithDependencies({ paths, options });
   }
 
-  async sources({ sources, options }: { sources: object; options: any; }): Promise<CompilerResult> {
+  sources({ sources, options }: { sources: object; options: any; }): Promise<CompilerResult> {
     const paths = Object.keys(sources);
     return this.compileFiles(options, paths);
   }
@@ -46,7 +42,7 @@ export class BaseCompiler implements Compiler {
 
   private async compileFiles(options: any, paths: string[]): Promise<CompilerResult> {
     const shouldIncludePath = (filePath: string) => {
-      return this.fileExtensions.map(fileExtension => `.${fileExtension}`).includes(path.extname(filePath));
+      return this.compileStrategy.fileExtensions.map(fileExtension => `.${fileExtension}`).includes(path.extname(filePath));
     };
 
     const fileFilterProfiler = new Profiler({
@@ -60,9 +56,33 @@ export class BaseCompiler implements Compiler {
         resolver: options.resolver
       })
     );
+
+    this.display(options, paths);
   
-    const compileResult = await this.compile(Object.keys(fileFilterProfilerResult.allSources));
-  
-    return this.compileAdapter(compileResult);
+    return this.compileStrategy.compile(Object.keys(fileFilterProfilerResult.allSources));
+  }
+
+  private display(options: any, paths: string[]) {
+    if (options.quiet !== true && options.events) {
+      if (!Array.isArray(paths)) {
+        paths = Object.keys(paths);
+      }
+    
+      const sourceFileNames = paths
+        .sort()
+        .map(contract => {
+          if (path.isAbsolute(contract)) {
+            return `.${path.sep}${path.relative(
+              options.working_directory,
+              contract
+            )}`;
+          }
+
+          return contract;
+        })
+        .filter(contract => contract);
+
+      options.events.emit("compile:sourcesToCompile", { sourceFileNames });
+    }
   }
 }

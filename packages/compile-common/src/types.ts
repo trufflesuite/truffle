@@ -126,3 +126,8 @@ export interface Compiler {
     options: object;
   }) => Promise<CompilerResult>;
 }
+
+export interface ICompileStrategy {
+  fileExtensions: string[],
+  compile: (paths: string[]) => Promise<CompilerResult>
+}
