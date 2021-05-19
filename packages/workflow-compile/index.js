@@ -1,14 +1,8 @@
 const debug = require("debug")("workflow-compile");
 const fse = require("fs-extra");
 const { prepareConfig } = require("./utils");
-const { Shims } = require("@truffle/compile-common");
-
-const SUPPORTED_COMPILERS = {
-  solc: require("@truffle/compile-solidity").Compile,
-  vyper: require("@truffle/compile-vyper").Compile,
-  ligo: require("@truffle/compile-ligo").Compile,
-  external: require("@truffle/external-compile").Compile
-};
+const { Shims, BaseCompiler } = require("@truffle/compile-common");
+const compileLigo = require("@truffle/compile-ligo");
 
 let Db;
 try {
@@ -16,6 +10,13 @@ try {
 } catch {}
 
 async function compile(config) {
+  const SUPPORTED_COMPILERS = {
+    solc: require("@truffle/compile-solidity").Compile,
+    vyper: require("@truffle/compile-vyper").Compile,
+    external: require("@truffle/external-compile").Compile,
+    ligo: new BaseCompiler(compileLigo.fileExtensions, compileLigo.compile, compileLigo.compileAdapter)
+  };
+
   // determine compiler(s) to use
   //
   const compilers = config.compiler
@@ -33,8 +34,8 @@ async function compile(config) {
 
       const compileMethod =
         config.all === true || config.compileAll === true
-          ? Compile.all
-          : Compile.necessary;
+          ? Compile.all.bind(Compile)
+          : Compile.necessary.bind(Compile);
 
       return await compileMethod(config);
     })

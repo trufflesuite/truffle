@@ -14,7 +14,7 @@ const compiler = {
   version: "next"
 };
 
-const compileLigo = async (paths: string[], entryPoint: string = "main") => {
+const compile = async (paths: string[], entryPoint: string = "main") => {
   // TODO BGC Decide how to handle error
   await exec("docker run --rm -i ligolang/ligo:next --help");
 
@@ -117,4 +117,4 @@ const compileLigoFile = (sourcePath: any, entryPoint: string) => {
   });
 };
 
-export { compileLigo };
+export { compile };

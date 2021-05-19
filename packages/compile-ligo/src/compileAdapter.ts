@@ -26,7 +26,7 @@ const buildCompiledContract = (resultEntry: any): TezosCompiledContract => {
   };
 };
 
-const compilerAdapter =  (ligoCompilerResult: {
+const compileAdapter =  (ligoCompilerResult: {
   result: any;
   paths: string[];
   compiler: {
@@ -46,4 +46,4 @@ const compilerAdapter =  (ligoCompilerResult: {
   };
 };
 
-export { compilerAdapter };
+export { compileAdapter };
