@@ -115,7 +115,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     } catch (error) {
       //is this a 404 error? if so just return null
       debug("error: %O", error);
-      if (error.response.status === 404) {
+      if (error.response && error.response.status === 404) {
         return null;
       }
       //otherwise, we've got a problem; rethrow the error
@@ -151,7 +151,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     } catch (error) {
       //is this a 404 error? if so just return undefined
       debug("error: %O", error);
-      if (error.response.status === 404) {
+      if (error.response && error.response.status === 404) {
         return undefined;
       }
       //otherwise, we've got a problem; rethrow the error
@@ -169,7 +169,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
         return (await axios(requestObject)).data;
       } catch (error) {
         //check: is this a 404 error? if so give up
-        if (error.response.status === 404) {
+        if (error.response && error.response.status === 404) {
           throw error;
         }
         //otherwise, just go back to the top of the loop to retry
