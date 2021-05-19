@@ -785,14 +785,8 @@ var DebugUtils = {
       case "Solidity":
         return chromafi(code, options);
       case "Yul":
-        //HACK: stick the code in an assembly block since we don't
-        //have a separate Yul language for HLJS at the moment,
-        //colorize it there, then extract it after colorization
-        const wrappedCode = "assembly {\n" + code + "\n}";
-        const colorizedWrapped = chromafi(wrappedCode, options);
-        const firstNewLine = colorizedWrapped.indexOf("\n");
-        const lastNewLine = colorizedWrapped.lastIndexOf("\n");
-        return colorizedWrapped.slice(firstNewLine + 1, lastNewLine);
+        options.lang = "yul"; //registered along with Solidity :)
+        return chromafi(code, options);
       case "Vyper":
         options.lang = "python"; //HACK -- close enough for now!
         return chromafi(code, options);
