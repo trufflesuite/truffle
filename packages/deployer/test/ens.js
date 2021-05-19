@@ -44,7 +44,7 @@ describe("ENS class", () => {
   beforeEach(async () => {
     options = {
       provider,
-      ensSettings: {
+      ens: {
         enabled: true
       }
     };
