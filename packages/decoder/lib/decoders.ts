@@ -180,7 +180,7 @@ export class WireDecoder {
     debug("done with allocation");
   }
 
-  /**
+  /*
    * (comment copypasted from the debugger)
    * "Tagged outputs" means user-defined things that are output by a contract
    * (not input to a contract), and which are distinguished by (potentially
