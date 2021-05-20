@@ -1070,8 +1070,8 @@ function getReturndataAllocationsForContract(
   compilationId: string,
   compiler: Compiler.CompilerVersion | undefined
 ): RevertReturndataAllocation[] {
-  let useAST = Boolean(contractNode && contractNode.usedErrors);
-  if (useAST) {
+  let useAst = Boolean(contractNode && contractNode.usedErrors);
+  if (useAst) {
     const errorNodes = contractNode.usedErrors.map(
       errorNodeId => referenceDeclarations[errorNodeId]
     );
@@ -1084,9 +1084,9 @@ function getReturndataAllocationsForContract(
         )
       );
     } catch {
-      useAST = false;
+      useAst = false;
     }
-    if (useAST) { //i.e. if the above operation succeeded
+    if (useAst) { //i.e. if the above operation succeeded
       return contractNode.usedErrors.map(
         errorNodeId => referenceDeclarations[errorNodeId]
       ).map((errorNode, index) => allocateError(
@@ -1100,7 +1100,7 @@ function getReturndataAllocationsForContract(
       ));
     }
   }
-  if (!useAST) { //deliberately *not* an else!
+  if (!useAst) { //deliberately *not* an else!
     return abi
       .filter((abiEntry: Abi.Entry) => abiEntry.type === "error")
       .filter(
