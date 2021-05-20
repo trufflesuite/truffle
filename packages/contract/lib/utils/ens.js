@@ -3,14 +3,14 @@ const { isAddress } = require("web3-utils");
 
 module.exports = {
   convertENSNames: async function ({
-    ensSettings,
+    ens,
     inputArgs,
     methodABI,
     inputParams,
     web3,
     networkId
   }) {
-    const { registryAddress } = ensSettings;
+    const { registryAddress } = ens;
     let args;
     if (inputArgs.length && methodABI) {
       args = await this.convertENSArgsNames({

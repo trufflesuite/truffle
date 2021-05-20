@@ -26,10 +26,8 @@ const methodABI = {
   type: "function"
 };
 const args = ["my.ens.name", 555, { from: "the.other.name" }];
-const ensSettings = {
-  enabled: true,
-  networkId: 1
-};
+const ensSettings = { enabled: true };
+const networkId = 1;
 
 describe("convertENSNames", () => {
   beforeEach(() => {
@@ -53,8 +51,9 @@ describe("convertENSNames", () => {
 
   it("converts ens names in address fields to addresses", async () => {
     let result = await ens.convertENSNames({
+      networkId,
       inputArgs: args,
-      ensSettings,
+      ens,
       methodABI,
       web3: Web3
     });
@@ -62,8 +61,9 @@ describe("convertENSNames", () => {
   });
   it("does not change non-address arguments", async () => {
     let result = await ens.convertENSNames({
+      networkId,
       inputArgs: args,
-      ensSettings,
+      ens,
       methodABI,
       web3: Web3
     });
@@ -71,9 +71,10 @@ describe("convertENSNames", () => {
   });
   it("converts ens names in the from field of the tx object", async () => {
     let result = await ens.convertENSNames({
+      networkId,
       inputArgs: args,
       inputParams: { from: "the.other.name" },
-      ensSettings,
+      ens,
       methodABI,
       web3: Web3
     });
