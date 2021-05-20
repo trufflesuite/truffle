@@ -369,7 +369,7 @@ class DebugInterpreter {
       if (this.session.view(session.status.loaded)) {
         if (this.session.view(trace.finished)) {
           if (!this.session.view(evm.current.step.isExceptionalHalting)) {
-            const errorIndex = this.session.view(stacktrace.current.innerReturnIndex);
+            const errorIndex = this.session.view(stacktrace.current.innerErrorIndex);
             if (errorIndex !== null) {
               const stepSpinner = ora("Stepping...").start();
               await this.session.reset();
@@ -393,7 +393,7 @@ class DebugInterpreter {
     }
     if (cmd === "Y") {
       if (this.session.view(session.status.loaded)) {
-        const errorIndex = this.session.view(stacktrace.current.innerReturnIndex);
+        const errorIndex = this.session.view(stacktrace.current.innerErrorIndex);
         if (errorIndex !== null) {
           const stepSpinner = ora("Stepping...").start();
           await this.session.reset();
