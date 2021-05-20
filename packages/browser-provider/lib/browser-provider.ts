@@ -29,13 +29,23 @@ export class BrowserProvider {
     this.send(payload, callback);
   }
 
+  public terminate() {
+    this.socket.close();
+  }
+
   private async sendInternal(payload: JSONRPCRequestPayload): Promise<JsonRPCResponse> {
     await this.ready();
-    return await sendAndAwait(this.socket, payload);
+    const response = await sendAndAwait(this.socket, payload);
+
+    if (response.error) {
+      throw(response.error);
+    }
+
+    return response;
   }
 
   private async ready() {
-    if (this.socket && this.socket.OPEN) return;
+    if (this.socket && this.socket.readyState === WebSocket.OPEN) return;
     this.socket = await connectToWebServerWithRetries(this.port);
   }
 }
