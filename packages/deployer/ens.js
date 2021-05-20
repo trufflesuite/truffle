@@ -45,7 +45,7 @@ class ENS {
       const resolvedAddress = await this.ensjs.name(name).getAddress("ETH");
       return { resolvedAddress };
     }
-    // deploy a resolver if
+    // deploy a resolver if one isn't set
     const PublicResolverArtifact = require("@ensdomains/resolver")
       .PublicResolver;
     const PublicResolver = contract(PublicResolverArtifact);
