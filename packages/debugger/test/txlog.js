@@ -36,8 +36,9 @@ contract VizTest {
     payable(tx.origin).transfer(1);
   }
 
-  fallback() external {
-    called(msg.data.length);
+  fallback(bytes calldata input) external returns (bytes memory) {
+    called(input.length);
+    return hex"beefdead";
   }
 
   function testRevert() public {
@@ -344,6 +345,7 @@ describe("Transaction log (visualizer)", function () {
     assert.equal(call.contractName, "VizTest");
     assert.equal(call.data, "0xdeadbeef");
     assert.equal(call.returnKind, "return");
+    assert.equal(call.returnData, "0xbeefdead");
     assert.lengthOf(call.actions, 1);
     call = call.actions[0];
     assert.equal(call.type, "callinternal");

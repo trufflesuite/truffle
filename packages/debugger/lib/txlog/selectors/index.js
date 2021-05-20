@@ -348,6 +348,11 @@ let txlog = createSelectorTree({
     beneficiary: createLeaf([evm.current.step.beneficiary], identity),
 
     /**
+     * txlog.current.returnData
+     */
+    returnData: createLeaf([evm.current.step.returnValue], identity),
+
+    /**
      * txlog.current.inputParameterAllocations
      */
     inputParameterAllocations: createLeaf(

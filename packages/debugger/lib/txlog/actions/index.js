@@ -134,12 +134,13 @@ export function instantCreate(
 }
 
 export const EXTERNAL_RETURN = "TXLOG_EXTERNAL_RETURN";
-export function externalReturn(pointer, newPointer, decodings) {
+export function externalReturn(pointer, newPointer, decodings, returnData) {
   return {
     type: EXTERNAL_RETURN,
     pointer,
     newPointer,
-    decodings
+    decodings,
+    returnData
   };
 }
 
