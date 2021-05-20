@@ -56,7 +56,9 @@ const commandReference = {
   "T": "unload transaction",
   "s": "print stacktrace",
   "g": "turn on generated sources",
-  "G": "turn off generated sources except via `;`"
+  "G": "turn off generated sources except via `;`",
+  "y": "(if at end) reset & continue to final error",
+  "Y": "reset & continue to previous error"
 };
 
 const shortCommandReference = {
@@ -82,7 +84,9 @@ const shortCommandReference = {
   "T": "unload",
   "s": "stacktrace",
   "g": "turn on generated sources",
-  "G": "turn off generated sources"
+  "G": "turn off generated sources",
+  "y": "reset & go to final error",
+  "Y": "reset & go to previous error"
 };
 
 const truffleColors = {
@@ -336,7 +340,8 @@ var DebugUtils = {
 
     var commandSections = [
       ["o", "i", "u", "n"],
-      ["c"],
+      ["c", "Y"],
+      ["y"],
       [";"],
       ["g", "G"],
       ["p"],
@@ -785,14 +790,8 @@ var DebugUtils = {
       case "Solidity":
         return chromafi(code, options);
       case "Yul":
-        //HACK: stick the code in an assembly block since we don't
-        //have a separate Yul language for HLJS at the moment,
-        //colorize it there, then extract it after colorization
-        const wrappedCode = "assembly {\n" + code + "\n}";
-        const colorizedWrapped = chromafi(wrappedCode, options);
-        const firstNewLine = colorizedWrapped.indexOf("\n");
-        const lastNewLine = colorizedWrapped.lastIndexOf("\n");
-        return colorizedWrapped.slice(firstNewLine + 1, lastNewLine);
+        options.lang = "yul"; //registered along with Solidity :)
+        return chromafi(code, options);
       case "Vyper":
         options.lang = "python"; //HACK -- close enough for now!
         return chromafi(code, options);

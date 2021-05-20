@@ -72,7 +72,7 @@ class CLIDebugger {
       }
       if (badCompilationAddresses.length > 0) {
         warningStrings.push(
-          `Errors occurred while compiling sources for addresses ${badCompilations.join(
+          `Errors occurred while compiling sources for addresses ${badCompilationAddresses.join(
             ", "
           )}.`
         );

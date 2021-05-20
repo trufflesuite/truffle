@@ -8,16 +8,16 @@
     "url": "https://github.com/trufflesuite/truffle.git",
     "directory": "packages/compile-vyper"
   },
-  "version": "3.1.7",
+  "version": "3.1.8",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0",
     "test": "mocha"
   },
   "dependencies": {
-    "@truffle/compile-common": "^0.7.4",
-    "@truffle/config": "^1.2.39",
-    "@truffle/resolver": "^7.0.10",
+    "@truffle/compile-common": "^0.7.5",
+    "@truffle/config": "^1.2.40",
+    "@truffle/resolver": "^7.0.11",
     "colors": "^1.4.0",
     "debug": "^4.3.1",
     "lodash.partition": "^4.6.0",

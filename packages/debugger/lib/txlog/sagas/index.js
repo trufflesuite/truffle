@@ -31,8 +31,11 @@ function* updateTransactionLogSaga() {
         yield put(actions.selfdestruct(pointer, newPointer, beneficiary));
       } else {
         const decodings = yield* data.decodeReturnValue();
+        const rawData = yield select(txlog.current.returnData);
         debug("external return: %o %o", pointer, newPointer);
-        yield put(actions.externalReturn(pointer, newPointer, decodings));
+        yield put(
+          actions.externalReturn(pointer, newPointer, decodings, rawData)
+        );
       }
     } else {
       const error = (yield* data.decodeReturnValue())[0]; //NOTE: we will do this a better way in the future!
@@ -236,7 +239,9 @@ function callKind(context, calldata, instant) {
 }
 
 export function* reset() {
+  const initialCall = yield select(txlog.transaction.initialCall);
   yield put(actions.reset());
+  yield put(initialCall);
 }
 
 export function* unload() {
