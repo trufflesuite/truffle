@@ -129,7 +129,7 @@ function innerReturnStatus(state = null, action) {
   }
 }
 
-function innerReturnIndex(state = null, action) {
+function innerErrorIndex(state = null, action) {
   switch (action.type) {
     case actions.EXTERNAL_RETURN:
       //we use index null to mean don't update
@@ -148,7 +148,7 @@ const proc = combineReducers({
   lastPosition,
   innerReturnPosition,
   innerReturnStatus,
-  innerReturnIndex
+  innerErrorIndex
 });
 
 const reducer = combineReducers({

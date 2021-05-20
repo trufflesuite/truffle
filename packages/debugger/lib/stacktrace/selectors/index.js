@@ -146,12 +146,12 @@ let stacktrace = createSelectorTree({
     ),
 
     /**
-     * stacktrace.current.innerReturnIndex
+     * stacktrace.current.innerErrorIndex
      * Index of the most recent error (but not this)
      */
-    innerReturnIndex: createLeaf(
+    innerErrorIndex: createLeaf(
       ["/state"],
-      state => state.proc.innerReturnIndex
+      state => state.proc.innerErrorIndex
     ),
 
     ...createMultistepSelectors(solidity.current),
@@ -169,11 +169,12 @@ let stacktrace = createSelectorTree({
      * initial index for that error)
      * 2. we're not on the last step (we don't want to accidentally
      * save the final step as the last error, it would be confusing)
+     * 3. the return status is actually false
      */
     updateIndex: createLeaf(
-      ["./returnCounter", trace.stepsRemaining],
-      (returnCounter, stepsRemaining) =>
-        returnCounter === 0 && stepsRemaining > 1
+      ["./returnCounter", trace.stepsRemaining, "./returnStatus"],
+      (returnCounter, stepsRemaining, returnStatus) =>
+        returnCounter === 0 && stepsRemaining > 1 && !returnStatus
     ),
 
     /**
