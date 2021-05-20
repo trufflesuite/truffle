@@ -1,6 +1,6 @@
 import { spawn } from "child_process";
 import delay from "delay";
-import { JSONRPCRequestPayload, JSONRPCResponsePayload } from "ethereum-protocol";
+import { JSONRPCRequestPayload } from "ethereum-protocol";
 import WebSocket from "ws";
 
 export const jsonToBase64 = (json: any) => {
@@ -29,7 +29,7 @@ export const sendAndAwait = (socket: WebSocket, payload: JSONRPCRequestPayload) 
     payload
   };
 
-  return new Promise<JSONRPCResponsePayload>((resolve, reject) => {
+  return new Promise<any>((resolve, reject) => {
     socket.on("message", (data: WebSocket.Data) => {
       if (typeof data !== "string") return;
       const response = base64ToJson(data);
@@ -53,17 +53,26 @@ export const sendAndAwait = (socket: WebSocket, payload: JSONRPCRequestPayload) 
 };
 
 export const startWebServer = (port: number) => {
-  const webServerPath = `${__dirname}/wss-server`;
+  const webServerPath = `${__dirname}/web-server`;
 
   const executable = runningJest() ? "ts-node" : "node";
 
-  spawn(executable, [webServerPath, String(port)], {
+  return spawn(executable, [webServerPath, String(port)], {
     detached: true,
     stdio: "ignore"
   });
 };
 
-export const connectToWebServerWithRetries = async (port: number, retries = 5) => {
+export const startFrontend = () => {
+  return spawn("node", ["./node_modules/react-scripts/scripts/start.js"], {
+    detached: true,
+    stdio: "ignore",
+    // TODO: Make this path relative
+    cwd: "/Users/rosco/browser-provider-frontend"
+  });
+};
+
+export const connectToWebServerWithRetries = async (port: number, retries = 50) => {
   for (let tryCount = 0; tryCount < retries; tryCount++) {
     try {
       return await connectToWebServer(port);

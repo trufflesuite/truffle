@@ -10,7 +10,7 @@
   "scripts": {
     "build": "tsc",
     "prepare": "yarn build",
-    "test": "jest --verbose --detectOpenHandles"
+    "test": "jest --verbose"
   },
   "repository": {
     "type": "git",
@@ -34,7 +34,8 @@
     "ethereum-protocol": "^1.0.1",
     "jest": "^26.0.1",
     "ts-jest": "^26.1.0",
-    "typescript": "^4.1.4"
+    "typescript": "^4.1.4",
+    "web3": "^1.3.6"
   },
   "dependencies": {
     "delay": "^5.0.0",
