@@ -3,6 +3,7 @@ const debug = debugModule("debugger:stacktrace:selectors");
 
 import { createSelectorTree, createLeaf } from "reselect-tree";
 
+import trace from "lib/trace/selectors";
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
 
@@ -144,7 +145,36 @@ let stacktrace = createSelectorTree({
       state => state.proc.innerReturnStatus
     ),
 
+    /**
+     * stacktrace.current.innerReturnIndex
+     * Index of the most recent error (but not this)
+     */
+    innerReturnIndex: createLeaf(
+      ["/state"],
+      state => state.proc.innerReturnIndex
+    ),
+
     ...createMultistepSelectors(solidity.current),
+
+    /**
+     * stacktrace.current.index
+     */
+    index: createLeaf([trace.index], identity),
+
+    /**
+     * stacktrace.current.updateIndex
+     * We only want to update the index if:
+     * 1. the return counter is 0 (we're not in the middle of an
+     * error already being thrown -- we want to keep it at the
+     * initial index for that error)
+     * 2. we're not on the last step (we don't want to accidentally
+     * save the final step as the last error, it would be confusing)
+     */
+    updateIndex: createLeaf(
+      ["./returnCounter", trace.stepsRemaining],
+      (returnCounter, stepsRemaining) =>
+        returnCounter === 0 && stepsRemaining > 1
+    ),
 
     /**
      * stacktrace.current.willJumpIn
