@@ -126,7 +126,7 @@ export class WireDecoder {
     ({
       definitions: this.referenceDeclarations,
       types: this.userDefinedTypes
-    } = this.collectUserDefinedTypesEventsAndErrors());
+    } = this.collectUserDefinedTypesAndTaggedOutputs());
 
     const allocationInfo: AbiData.Allocate.ContractAllocationInfo[] = this.contractsAndContexts.map(
       ({
@@ -180,7 +180,18 @@ export class WireDecoder {
     debug("done with allocation");
   }
 
-  private collectUserDefinedTypesEventsAndErrors(): {
+  /**
+   * (comment copypasted from the debugger)
+   * "Tagged outputs" means user-defined things that are output by a contract
+   * (not input to a contract), and which are distinguished by (potentially
+   * ambiguous) selectors.  So, events and custom errors are tagged outputs.  
+   * Function arguments are not tagged outputs (they're not outputs).
+   * Return values are not tagged outputs (they don't have a selector).
+   * Built-in errors (Error(string) and Panic(uint))... OK I guess those could
+   * be considered tagged outputs, but we're only looking at user-defined ones
+   * here.
+   */
+  private collectUserDefinedTypesAndTaggedOutputs(): {
     definitions: { [compilationId: string]: Ast.AstNodes };
     types: Format.Types.TypesById;
   } {

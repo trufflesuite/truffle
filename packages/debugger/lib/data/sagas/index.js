@@ -60,8 +60,8 @@ export function* defineType(node, sourceId) {
   yield put(actions.defineType(node, sourceId));
 }
 
-export function* defineEventOrError(node, sourceId) {
-  yield put(actions.defineEventOrError(node, sourceId));
+export function* defineTaggedOutput(node, sourceId) {
+  yield put(actions.defineTaggedOutput(node, sourceId));
 }
 
 function* tickSaga() {
@@ -426,7 +426,7 @@ function* variablesAndMappingsSaga() {
       //first inputs then outputs (and we skip handling the outputs),
       //yul parameters have the inputs go top to bottom,
       //and the outputs go bottom to top (again with the outputs on top)
-      //For Solidity <0.8.4, we needs we need to handle both inputs and outputs
+      //For Solidity <0.8.4, we need to handle both inputs and outputs
       //here; for Solidity >=0.8.4, we handle only inputs here and handle
       //outputs separately
       let returnSuffixes = [];

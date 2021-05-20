@@ -342,13 +342,13 @@ const data = createSelectorTree({
       [
         "./scopes/inlined",
         "/info/userDefinedTypes",
-        "/info/eventsAndErrors",
+        "/info/taggedOutputs",
         solidity.views.sources
       ],
-      (scopes, userDefinedTypes, eventsAndErrors, sources) =>
+      (scopes, userDefinedTypes, taggedOutputs, sources) =>
         merge(
           {},
-          ...userDefinedTypes.concat(eventsAndErrors).map(({ id, sourceId }) => {
+          ...userDefinedTypes.concat(taggedOutputs).map(({ id, sourceId }) => {
             const source = sources[sourceId];
             return source.internal
               ? {} //exclude these
@@ -472,11 +472,19 @@ const data = createSelectorTree({
     ),
 
     /**
-     * data.info.eventsAndErrors
+     * data.info.taggedOutputs
+     * "Tagged outputs" means user-defined things that are output by a contract
+     * (not input to a contract), and which are distinguished by (potentially
+     * ambiguous) selectors.  So, events and custom errors are tagged outputs.  
+     * Function arguments are not tagged outputs (they're not outputs).
+     * Return values are not tagged outputs (they don't have a selector).
+     * Built-in errors (Error(string) and Panic(uint))... OK I guess those could
+     * be considered tagged outputs, but we're only looking at user-defined ones
+     * here.
      */
-    eventsAndErrors: createLeaf(
+    taggedOutputs: createLeaf(
       ["/state"],
-      state => state.info.eventsAndErrors
+      state => state.info.taggedOutputs
     )
   },
 

@@ -56,7 +56,7 @@ function* handleEnter(sourceId, sourceIndex, node, pointer, parentId) {
     case "EventDefinition":
     case "ErrorDefinition":
       debug("%s recording type %o", pointer, node);
-      yield* data.defineEventOrError(node, sourceId);
+      yield* data.defineTaggedOutput(node, sourceId);
       break;
   }
 }

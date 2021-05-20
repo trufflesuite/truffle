@@ -61,10 +61,10 @@ export function defineType(node, sourceId) {
   };
 }
 
-export const DEFINE_EVENT_OR_ERROR = "DATA_DEFINE_EVENT_OR_ERROR";
-export function defineEventOrError(node, sourceId) {
+export const DEFINE_TAGGED_OUTPUT = "DATA_DEFINE_TAGGED_OUTPUT";
+export function defineTaggedOutput(node, sourceId) {
   return {
-    type: DEFINE_EVENT_OR_ERROR,
+    type: DEFINE_TAGGED_OUTPUT,
     node,
     sourceId
   };

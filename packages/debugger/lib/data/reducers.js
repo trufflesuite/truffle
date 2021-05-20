@@ -84,9 +84,9 @@ function userDefinedTypes(state = [], action) {
 }
 
 //just going to treat this like userDefinedTypes
-function eventsAndErrors(state = [], action) {
+function taggedOutputs(state = [], action) {
   switch (action.type) {
-    case actions.DEFINE_EVENT_OR_ERROR:
+    case actions.DEFINE_TAGGED_OUTPUT:
       return [...state, { id: action.node.id, sourceId: action.sourceId }];
     default:
       return state;
@@ -121,7 +121,7 @@ function allocations(state = DEFAULT_ALLOCATIONS, action) {
 const info = combineReducers({
   scopes,
   userDefinedTypes,
-  eventsAndErrors,
+  taggedOutputs,
   allocations
 });
 
