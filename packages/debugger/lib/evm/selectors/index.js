@@ -157,7 +157,13 @@ function createStepSelectors(step, state = null) {
     touchesStorage: createLeaf(
       ["./isStore", "isLoad"],
       (stores, loads) => stores || loads
-    )
+    ),
+
+    /*
+     * .isPop
+     * used by data
+     */
+    isPop: createLeaf(["./trace"], step => step.op === "POP")
   };
 
   if (state) {

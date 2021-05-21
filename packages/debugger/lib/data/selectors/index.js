@@ -1507,7 +1507,12 @@ const data = createSelectorTree({
     callContext: createLeaf(
       [evm.current.step.callContext],
       debuggerContextToDecoderContext
-    )
+    ),
+
+    /**
+     * data.current.isPop
+     */
+    isPop: createLeaf([evm.current.step.isPop], identity)
   },
 
   /**
