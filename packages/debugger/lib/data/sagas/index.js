@@ -363,6 +363,15 @@ function* variablesAndMappingsSaga() {
       //the rest hopefully will be caught by the modifier preamble
       //(in fact they won't all be, but...)
 
+      //HACK: prevent parameter allocation while popping
+      //sometimes Solidity's sourcemapping will jump back to the function
+      //definition after a bare block while it pops the stack a bit.
+      //we don't want to allocate then, so we'll break out if the current
+      //instruction is a POP.
+      if (yield select(data.current.isPop)) {
+        break;
+      }
+
       //HACK: filter out some garbage
       //this filters out the case where we're really in an invocation of a
       //modifier or base constructor, but have temporarily hit the definition

@@ -148,6 +148,23 @@ contract ModifierTest {
 }
 `;
 
+const __POPQUIZ = `
+pragma solidity ^0.8.0;
+
+contract PopTest {
+
+  event Here(uint);
+
+  function run(uint x) public {
+    {
+      uint something = 3;
+      emit Here(something);
+    }
+    emit Here(x); //BREAK
+  }
+}
+`;
+
 const __MIGRATION = `
 let Intervening = artifacts.require("Intervening");
 let Inner = artifacts.require("Inner");
@@ -155,6 +172,7 @@ let AddressTest = artifacts.require("AddressTest");
 let FactorialTest = artifacts.require("FactorialTest");
 let InterveningLib = artifacts.require("InterveningLib");
 let ModifierTest = artifacts.require("ModifierTest");
+let PopTest = artifacts.require("PopTest");
 
 module.exports = async function(deployer) {
   await deployer.deploy(InterveningLib);
@@ -165,6 +183,7 @@ module.exports = async function(deployer) {
   await deployer.deploy(AddressTest);
   await deployer.deploy(FactorialTest);
   await deployer.deploy(ModifierTest);
+  await deployer.deploy(PopTest);
 };
 `;
 
@@ -173,7 +192,8 @@ let sources = {
   "AddressTest.sol": __ADDRESS,
   "Intervening.sol": __INTERVENING,
   "InterveningLib.sol": __INTERVENINGLIB,
-  "ModifierTest.sol": __MODIFIERS
+  "ModifierTest.sol": __MODIFIERS,
+  "PopTest.sol": __POPQUIZ
 };
 
 let migrations = {
@@ -309,5 +329,28 @@ describe("Variable IDs", function () {
     });
     await bugger.continueUntilBreakpoint();
     assert.property(await bugger.variables(), "flag");
+  });
+
+  it("Is not thrown off by bare blocks", async function () {
+    this.timeout(3000);
+    let instance = await abstractions.PopTest.deployed();
+    let receipt = await instance.run(107);
+    let txHash = receipt.tx;
+
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+
+    debug("sourceId %d", bugger.view(solidity.current.source).id);
+
+    let sourceId = bugger.view(solidity.current.source).id;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
+      sourceId,
+      line: lineOf("BREAK", source)
+    });
+    await bugger.continueUntilBreakpoint();
+    assert.strictEqual(
+      Codec.Format.Utils.Inspect.unsafeNativize(await bugger.variable("x")),
+      107
+    );
   });
 });
