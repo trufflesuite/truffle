@@ -40,7 +40,7 @@
     "@truffle/migrate": "^3.2.25",
     "@truffle/provider": "^0.2.31",
     "@truffle/workflow-compile": "^3.2.11",
-    "@types/big.js": "^4.0.5",
+    "@types/big.js": "^6.0.2",
     "@types/bn.js": "^4.11.4",
     "@types/debug": "^4.1.5",
     "@types/web3": "^1.0.20",
