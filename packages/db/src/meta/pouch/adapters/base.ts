@@ -100,7 +100,7 @@ export abstract class Databases<C extends Collections> implements Adapter<C> {
   public async retrieve<N extends CollectionName<C>, T>(
     collectionName: N,
     records: (Pick<Record<T>, "_id"> | undefined)[]
-  ) {
+  ): Promise<(SavedRecord<T> | undefined)[]> {
     await this.ready;
 
     const unorderedSavedRecords = await this.search<N, T>(collectionName, {
@@ -132,7 +132,7 @@ export abstract class Databases<C extends Collections> implements Adapter<C> {
   public async search<N extends CollectionName<C>, T>(
     collectionName: N,
     options: PouchDB.Find.FindRequest<{}>
-  ) {
+  ): Promise<SavedRecord<T>[]> {
     await this.ready;
 
     // allows searching with `id` instead of pouch's internal `_id`,
@@ -160,7 +160,7 @@ export abstract class Databases<C extends Collections> implements Adapter<C> {
     collectionName: N,
     records: (Record<T> | undefined)[],
     options: { overwrite?: boolean } = {}
-  ) {
+  ): Promise<(SavedRecord<T> | undefined)[]> {
     await this.ready;
 
     const { overwrite = false } = options;
@@ -231,7 +231,7 @@ export abstract class Databases<C extends Collections> implements Adapter<C> {
   public async delete<N extends CollectionName<C>, T>(
     collectionName: N,
     references: (RecordReference<T> | undefined)[]
-  ) {
+  ): Promise<void> {
     await this.ready;
 
     const savedRecords = await this.retrieve<N, T>(collectionName, references);
