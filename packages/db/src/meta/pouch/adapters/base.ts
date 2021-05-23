@@ -80,9 +80,9 @@ export abstract class Databases<C extends Collections> implements Adapter<C> {
     }
   }
 
-  public async every<N extends CollectionName<C>, I>(
+  public async every<N extends CollectionName<C>, T>(
     collectionName: N
-  ): Promise<SavedRecord<I>[]> {
+  ): Promise<SavedRecord<T>[]> {
     await this.ready;
 
     const { rows }: any = await this.collections[collectionName].allDocs({
@@ -97,17 +97,17 @@ export abstract class Databases<C extends Collections> implements Adapter<C> {
     );
   }
 
-  public async retrieve<N extends CollectionName<C>, I>(
+  public async retrieve<N extends CollectionName<C>, T>(
     collectionName: N,
-    records: (Pick<Record<I>, "_id"> | undefined)[]
+    records: (Pick<Record<T>, "_id"> | undefined)[]
   ) {
     await this.ready;
 
-    const unorderedSavedRecords = await this.search<N, I>(collectionName, {
+    const unorderedSavedRecords = await this.search<N, T>(collectionName, {
       selector: {
         _id: {
           $in: records
-            .filter((obj): obj is Pick<Record<I>, "_id"> => !!obj)
+            .filter((obj): obj is Pick<Record<T>, "_id"> => !!obj)
             .map(({ _id }) => _id)
         }
       }
@@ -121,7 +121,7 @@ export abstract class Databases<C extends Collections> implements Adapter<C> {
               [savedRecord._id as string]: savedRecord
             }
           : byId,
-      {} as { [id: string]: SavedRecord<I> }
+      {} as { [id: string]: SavedRecord<T> }
     );
 
     return records.map(record =>
@@ -129,7 +129,7 @@ export abstract class Databases<C extends Collections> implements Adapter<C> {
     );
   }
 
-  public async search<N extends CollectionName<C>, I>(
+  public async search<N extends CollectionName<C>, T>(
     collectionName: N,
     options: PouchDB.Find.FindRequest<{}>
   ) {
@@ -151,14 +151,14 @@ export abstract class Databases<C extends Collections> implements Adapter<C> {
       selector: fixIdSelector(options.selector)
     });
 
-    const savedRecords: SavedRecord<I>[] = docs;
+    const savedRecords: SavedRecord<T>[] = docs;
 
     return savedRecords;
   }
 
-  public async record<N extends CollectionName<C>, I>(
+  public async record<N extends CollectionName<C>, T>(
     collectionName: N,
-    records: (Record<I> | undefined)[],
+    records: (Record<T> | undefined)[],
     options: { overwrite?: boolean } = {}
   ) {
     await this.ready;
@@ -166,24 +166,24 @@ export abstract class Databases<C extends Collections> implements Adapter<C> {
     const { overwrite = false } = options;
 
     const recordsById: {
-      [id: string]: Record<I>;
+      [id: string]: Record<T>;
     } = records
-      .filter((record): record is Record<I> => !!record)
+      .filter((record): record is Record<T> => !!record)
       .map(record => ({
         [record._id]: record
       }))
-      .reduce((a, b) => ({ ...a, ...b }), {} as { [id: string]: Record<I> });
+      .reduce((a, b) => ({ ...a, ...b }), {} as { [id: string]: Record<T> });
 
     const existingSavedRecordById: {
-      [id: string]: SavedRecord<I>;
+      [id: string]: SavedRecord<T>;
     } = (
-      await this.retrieve<N, I>(
+      await this.retrieve<N, T>(
         collectionName,
-        Object.keys(recordsById).map(_id => ({ _id } as Pick<Record<I>, "_id">))
+        Object.keys(recordsById).map(_id => ({ _id } as Pick<Record<T>, "_id">))
       )
     )
       .filter(
-        (existingSavedRecord): existingSavedRecord is SavedRecord<I> =>
+        (existingSavedRecord): existingSavedRecord is SavedRecord<T> =>
           !!existingSavedRecord
       )
       .map(existingSavedRecord => ({
@@ -191,11 +191,11 @@ export abstract class Databases<C extends Collections> implements Adapter<C> {
       }))
       .reduce(
         (a, b) => ({ ...a, ...b }),
-        {} as { [id: string]: SavedRecord<I> }
+        {} as { [id: string]: SavedRecord<T> }
       );
 
     const savedRecordById: {
-      [id: string]: SavedRecord<I>;
+      [id: string]: SavedRecord<T>;
     } = (
       await Promise.all(
         Object.entries(recordsById).map(async ([_id, record]) => {
@@ -215,14 +215,14 @@ export abstract class Databases<C extends Collections> implements Adapter<C> {
           return {
             ...record,
             _rev: rev
-          } as SavedRecord<I>;
+          } as SavedRecord<T>;
         })
       )
     )
       .map(savedRecord => ({ [savedRecord._id]: savedRecord }))
       .reduce(
         (a, b) => ({ ...a, ...b }),
-        {} as { [id: string]: SavedRecord<I> }
+        {} as { [id: string]: SavedRecord<T> }
       );
 
     return records.map(record => record && savedRecordById[record._id]);
