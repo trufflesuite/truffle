@@ -64,7 +64,7 @@ export interface Adapter<C extends Collections> {
    * @param records - Can be sparse
    * @return - Items in list correspond to `records` by index (also sparse)
    */
-  record<N extends CollectionName<C>, T>(
+  save<N extends CollectionName<C>, T>(
     collectionName: N,
     records: (Record<T> | undefined)[],
     options: { overwrite?: boolean }

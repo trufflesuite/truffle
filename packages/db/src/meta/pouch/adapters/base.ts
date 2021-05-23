@@ -142,7 +142,7 @@ export abstract class Databases<C extends Collections> implements Adapter<C> {
     return savedRecords;
   }
 
-  public async record<N extends CollectionName<C>, T>(
+  public async save<N extends CollectionName<C>, T>(
     collectionName: N,
     records: (Record<T> | undefined)[],
     options: { overwrite?: boolean } = {}

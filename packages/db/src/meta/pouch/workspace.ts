@@ -131,7 +131,7 @@ export class AdapterWorkspace<C extends Collections> implements Workspace<C> {
       input ? this.marshal(collectionName, input) : undefined
     );
 
-    const savedRecords = await this.adapter.record<N, Input<C, N>>(
+    const savedRecords = await this.adapter.save<N, Input<C, N>>(
       collectionName,
       records,
       { overwrite: false }
@@ -164,7 +164,7 @@ export class AdapterWorkspace<C extends Collections> implements Workspace<C> {
       input ? this.marshal(collectionName, input) : undefined
     );
 
-    const savedRecords = await this.adapter.record<M, Input<C, M>>(
+    const savedRecords = await this.adapter.save<M, Input<C, M>>(
       collectionName,
       records,
       { overwrite: true }
