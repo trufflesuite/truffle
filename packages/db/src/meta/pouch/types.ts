@@ -75,7 +75,7 @@ export interface Adapter<C extends Collections> {
    *
    * @param references - Can be sparse
    */
-  forget<N extends CollectionName<C>, T>(
+  delete<N extends CollectionName<C>, T>(
     collectionName: N,
     references: (RecordReference<T> | undefined)[]
   ): Promise<void>;

@@ -183,7 +183,7 @@ export class AdapterWorkspace<C extends Collections> implements Workspace<C> {
       input ? this.marshal(collectionName, input) : undefined
     );
 
-    await this.adapter.forget(collectionName, records);
+    await this.adapter.delete(collectionName, records);
 
     log("Removed.");
   }

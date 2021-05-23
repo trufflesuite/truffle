@@ -228,7 +228,7 @@ export abstract class Databases<C extends Collections> implements Adapter<C> {
     return records.map(record => record && savedRecordById[record._id]);
   }
 
-  public async forget<N extends CollectionName<C>, T>(
+  public async delete<N extends CollectionName<C>, T>(
     collectionName: N,
     references: (RecordReference<T> | undefined)[]
   ) {
