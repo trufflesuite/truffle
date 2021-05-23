@@ -64,6 +64,17 @@ export class AdapterWorkspace<C extends Collections> implements Workspace<C> {
     const log = debug.extend(`${collectionName}:find`);
     log("Finding...");
 
+    // allows searching with `id` instead of pouch's internal `_id`,
+    // since we call the field `id` externally, and this approach avoids
+    // an extra index
+    const fixIdSelector = (selector: PouchDB.Find.Selector) =>
+      Object.entries(selector)
+        .map(
+          ([field, predicate]): PouchDB.Find.Selector =>
+            field === "id" ? { _id: predicate } : { [field]: predicate }
+        )
+        .reduce((a, b) => ({ ...a, ...b }), {});
+
     try {
       // handle convenient interface for getting a bunch of IDs while preserving
       // order of input request
@@ -76,7 +87,10 @@ export class AdapterWorkspace<C extends Collections> implements Workspace<C> {
                 : undefined
             )
           )
-        : await this.adapter.search<N, Input<C, N>>(collectionName, options);
+        : await this.adapter.search<N, Input<C, N>>(collectionName, {
+            ...options,
+            selector: fixIdSelector(options.selector)
+          });
 
       log("Found.");
       return savedRecords.map(savedRecord =>

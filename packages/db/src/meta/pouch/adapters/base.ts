@@ -135,21 +135,7 @@ export abstract class Databases<C extends Collections> implements Adapter<C> {
   ): Promise<SavedRecord<T>[]> {
     await this.ready;
 
-    // allows searching with `id` instead of pouch's internal `_id`,
-    // since we call the field `id` externally, and this approach avoids
-    // an extra index
-    const fixIdSelector = (selector: PouchDB.Find.Selector) =>
-      Object.entries(selector)
-        .map(
-          ([field, predicate]): PouchDB.Find.Selector =>
-            field === "id" ? { _id: predicate } : { [field]: predicate }
-        )
-        .reduce((a, b) => ({ ...a, ...b }), {});
-
-    const { docs }: any = await this.collections[collectionName].find({
-      ...options,
-      selector: fixIdSelector(options.selector)
-    });
+    const { docs }: any = await this.collections[collectionName].find(options);
 
     const savedRecords: SavedRecord<T>[] = docs;
 
