@@ -19,7 +19,7 @@ import type {
 
 export interface DatabasesOptions<C extends Collections> {
   definitions: Definitions<C>;
-  settings: any;
+  settings: any; // subclasses define their own settings type
 }
 
 /**
