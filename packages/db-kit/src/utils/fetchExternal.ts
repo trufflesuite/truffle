@@ -40,7 +40,7 @@ export async function fetchExternal({
     network: { name: config.network },
     artifacts: [
       {
-        ...Common.Shims.NewToLegacy.forContract(contract),
+        ...Common.Shims.ArchitectureMapper.forContract(contract),
         networks: {
           [config.network_id]: {
             address

@@ -29,6 +29,7 @@ export function forContract(contract: any): CompiledContract {
   } = contract;
 
   return {
+    architecture: "evm", // TODO BGC: Pick correct one
     contractName: contract_name || contractName,
     sourcePath,
     source,

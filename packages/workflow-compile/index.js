@@ -6,7 +6,9 @@ const { Shims } = require("@truffle/compile-common");
 const SUPPORTED_COMPILERS = {
   solc: require("@truffle/compile-solidity").Compile,
   vyper: require("@truffle/compile-vyper").Compile,
-  external: require("@truffle/external-compile").Compile
+  external: require("@truffle/external-compile").Compile,
+  ligo: require("@truffle/compile-ligo").Compile,
+  michelson: require("@truffle/compile-michelson").Compile
 };
 
 let Db;
@@ -32,8 +34,8 @@ async function compile(config) {
 
       const compileMethod =
         config.all === true || config.compileAll === true
-          ? Compile.all
-          : Compile.necessary;
+          ? Compile.all.bind(Compile)
+          : Compile.necessary.bind(Compile);
 
       return await compileMethod(config);
     })
@@ -124,7 +126,7 @@ const WorkflowCompile = {
       }));
     }
 
-    const artifacts = contracts.map(Shims.NewToLegacy.forContract);
+    const artifacts = contracts.map(Shims.ArchitectureMapper.forContract);
     await config.artifactor.saveAll(artifacts);
 
     return { contracts, sources, compilations };

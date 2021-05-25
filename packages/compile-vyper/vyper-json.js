@@ -94,6 +94,7 @@ function compileJson({ sources: rawSources, options, version, command }) {
   });
   const sourceIndexes = outputSources.map(source => source.sourcePath);
   const compilation = {
+    architecture: "evm",
     sourceIndexes,
     contracts: processContracts({
       sources,

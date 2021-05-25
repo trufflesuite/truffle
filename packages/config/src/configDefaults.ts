@@ -57,6 +57,12 @@ export const getInitialConfig = ({
       },
       vyper: {
         settings: {}
+      },
+      ligo: {
+        settings: {}
+      },
+      michelson: {
+        settings: {}
       }
     },
     logger: console
