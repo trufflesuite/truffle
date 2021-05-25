@@ -53,7 +53,7 @@ describe("convertENSNames", () => {
     let result = await ens.convertENSNames({
       networkId,
       inputArgs: args,
-      ens,
+      ens: ensSettings,
       methodABI,
       web3: Web3
     });
@@ -63,7 +63,7 @@ describe("convertENSNames", () => {
     let result = await ens.convertENSNames({
       networkId,
       inputArgs: args,
-      ens,
+      ens: ensSettings,
       methodABI,
       web3: Web3
     });
@@ -74,7 +74,7 @@ describe("convertENSNames", () => {
       networkId,
       inputArgs: args,
       inputParams: { from: "the.other.name" },
-      ens,
+      ens: ensSettings,
       methodABI,
       web3: Web3
     });
