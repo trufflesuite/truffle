@@ -60,6 +60,9 @@ export const getInitialConfig = ({
       },
       ligo: {
         settings: {}
+      },
+      michelson: {
+        settings: {}
       }
     },
     logger: console

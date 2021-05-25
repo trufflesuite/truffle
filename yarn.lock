@@ -3204,6 +3204,11 @@
   resolved "https://registry.yarnpkg.com/@taquito/michel-codec/-/michel-codec-7.2.0-beta.2.tgz#d1031c60d09abceb7acc8a1dfcc60124fdb6714e"
   integrity sha512-3kENFAAJ97StRWxjiTmCIByJh/+OAwNEso7utoU103J3Qe4ZN3TkmVLqWtMYxNYSuwA4VG+b8fPJx1yL351AEQ==
 
+"@taquito/michel-codec@^9.0.1":
+  version "9.0.1"
+  resolved "https://registry.yarnpkg.com/@taquito/michel-codec/-/michel-codec-9.0.1.tgz#bd066b6218dcc155ffc641877806465cf2f77a14"
+  integrity sha512-zUdE6P76p89dUZLjUz3aBaKy7qgGJv8Vkt7QaIcP0FmO78RIV796gaXVXfm9UByXeHnUG1ca3JYX2SKD/iYWpA==
+
 "@taquito/michelson-encoder@^7.2.0-beta.2":
   version "7.2.0-beta.2"
   resolved "https://registry.yarnpkg.com/@taquito/michelson-encoder/-/michelson-encoder-7.2.0-beta.2.tgz#2bb3debaf6b62f51225afbe2123453d5f1d5dc50"

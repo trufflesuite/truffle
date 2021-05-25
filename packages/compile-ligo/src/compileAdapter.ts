@@ -22,7 +22,7 @@ const buildCompiledContract = (resultEntry: any): TezosCompiledContract => {
     metadata: "",
     compiler,
     michelson: resultEntry.michelson,
-    initialStorage: "" // TODO BGC
+    initialStorage: ""
   };
 };
 

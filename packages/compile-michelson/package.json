@@ -1,10 +1,10 @@
 {
-  "name": "@truffle/compile-ligo",
+  "name": "@truffle/compile-michelson",
   "version": "0.1.0",
-  "description": "LIGO compiler support",
+  "description": "Michelson compiler support",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/compile-ligo",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/compile-michelson",
   "license": "MIT",
   "scripts": {
     "build": "tsc",
@@ -13,6 +13,7 @@
     "watch": "tsc -w"
   },
   "dependencies": {
+    "@taquito/michel-codec": "^9.0.1",
     "@truffle/compile-common": "^0.7.2"
   },
   "devDependencies": {
@@ -26,7 +27,7 @@
     "compile",
     "tezos",
     "truffle",
-    "ligo"
+    "michelson"
   ],
   "publishConfig": {
     "access": "public"
