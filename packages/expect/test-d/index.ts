@@ -85,3 +85,20 @@ interface Options {
     expectNotType<number>(quantity);
   }
 }
+
+// expect.one with more than one
+{
+  const options: Options = { size: "small", design: "neon", quantity: 5 };
+  expect.one(options, ["size", "quantity"]);
+
+  expectAssignable<{ size: string } | { quantity: number }>(options);
+  expectNotAssignable<{ size: string; quantity: number }>(options);
+
+  {
+    expect.has(options, "size");
+    const { size, quantity } = options;
+
+    expectType<string>(size);
+    expectNotType<number>(quantity);
+  }
+}
