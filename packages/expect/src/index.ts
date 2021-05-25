@@ -8,7 +8,7 @@ const Expect = {
   },
 
   one(options, expected_keys) {
-    const found = [];
+    const found: number[] = [];
 
     expected_keys.forEach(key => {
       if (options[key] != null) {
@@ -32,4 +32,4 @@ const Expect = {
   }
 };
 
-module.exports = Expect;
+export default Expect;
