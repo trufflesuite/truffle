@@ -1,4 +1,4 @@
-import BN from "bn.js";
+import type BN from "bn.js";
 import {
   Block as EvmBlock,
   BlockType as EvmBlockType,
