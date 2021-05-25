@@ -19,7 +19,9 @@
     "clean": "rm -rf ./dist",
     "prepare": "yarn build",
     "build:dist": "ttsc",
-    "test": "mocha"
+    "test:code": "mocha",
+    "test:types": "tsd",
+    "test": "yarn test:types && yarn test:code"
   },
   "types": "dist/src/index.d.ts",
   "files": [
@@ -28,6 +30,7 @@
   "devDependencies": {
     "@types/node": "12.12.21",
     "mocha": "8.1.2",
+    "tsd": "^0.15.1",
     "ttypescript": "^1.5.7",
     "typescript": "^4.1.4",
     "typescript-transform-paths": "^2.1.0"
