@@ -1,0 +1,46 @@
+{
+  "name": "@truffle/browser-provider-server",
+  "version": "0.1.0",
+  "description": "Server that powers the BrowserProvider",
+  "main": "dist/lib/index.js",
+  "types": "dist/lib/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepare": "yarn build",
+    "test": "jest --verbose"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/browser-provider-server"
+  },
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/browser-provider-server#readme",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "author": "Rosco Kalis <roscokalis@gmail.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.0",
+    "@types/node": "^14.0.13",
+    "@types/web3": "^1.0.20",
+    "@types/ws": "^7.4.4",
+    "ethereum-protocol": "^1.0.1",
+    "express": "^4.17.1",
+    "jest": "^26.0.1",
+    "ts-jest": "^26.1.0",
+    "typescript": "^4.1.4"
+  },
+  "dependencies": {
+    "@truffle/dashboard": "^0.1.0",
+    "delay": "^5.0.0",
+    "open": "^8.2.0",
+    "ws": "^7.4.5"
+  }
+}
