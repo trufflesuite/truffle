@@ -1,0 +1,51 @@
+{
+  "name": "@truffle/dashboard",
+  "version": "0.1.0",
+  "main": "build/server/index.js",
+  "types": "build/server/index.d.ts",
+  "files": [
+    "build"
+  ],
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "scripts": {
+    "start": "DISABLE_ESLINT_PLUGIN=true SKIP_PREFLIGHT_CHECK=true react-scripts start",
+    "build:react": "DISABLE_ESLINT_PLUGIN=true SKIP_PREFLIGHT_CHECK=true react-scripts build",
+    "build:server": "tsc -p tsconfig.server.json",
+    "build": "yarn build:react && yarn build:server",
+    "prepare": "yarn build"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^5.11.4",
+    "@testing-library/react": "^11.1.0",
+    "@testing-library/user-event": "^12.1.10",
+    "@types/ethereum-protocol": "^1.0.1",
+    "@types/jest": "^26.0.15",
+    "@types/node": "^12.0.0",
+    "@types/react": "^17.0.0",
+    "@types/react-dom": "^17.0.0",
+    "@types/web3": "^1.0.20",
+    "delay": "^5.0.0",
+    "ethers": "^5.1.4",
+    "ethereum-protocol": "^1.0.1",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-scripts": "4.0.3",
+    "typescript": "^4.1.2",
+    "web-vitals": "^1.0.1",
+    "web3modal": "^1.9.3"
+  }
+}

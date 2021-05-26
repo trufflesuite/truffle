@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "jsx": "react",
+    "sourceMap": true,
+    "declaration": true,
+    "esModuleInterop": true,
+    "lib": ["esnext", "dom"],
+    "skipLibCheck": true,
+    "target": "es6",
+    "moduleResolution": "node",
+    "downlevelIteration": true,
+    "allowSyntheticDefaultImports": true,
+    "module": "commonjs",
+    "outDir": "./dist",
+    "strictBindCallApply": true,
+    "strictNullChecks": true,
+    "rootDir": ".",
+    "baseUrl": ".",
+    "types": [
+      "jest",
+      "react",
+      "node"
+    ]
+  },
+  "include": [
+    "lib/**/*",
+    "test/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

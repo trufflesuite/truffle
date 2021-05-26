@@ -1,1 +1,1 @@
-export { BrowserProvider } from './browser-provider';
+export { BrowserProvider } from "./BrowserProvider";
