@@ -47,18 +47,23 @@ export function one<O extends {}, K extends string>(
   options: O,
   expectedKeys: K[]
 ): asserts options is HasOne<O, K> {
-  let found = false;
-
-  for (const key of expectedKeys) {
+  const found = expectedKeys.some(key => {
     try {
       has(options, key);
 
-      found = true;
-      break;
-    } catch {
-      continue;
+      return true;
+    } catch (error) {
+      if (
+        !error.message.includes(
+          `Expected parameter '${key}' not passed to function.`
+        )
+      ) {
+        throw error;
+      }
+
+      return false;
     }
-  }
+  });
 
   // If this doesn't work in all cases, perhaps we should
   // create an expect.onlyOne() function.
