@@ -8,15 +8,15 @@ import { DecodingMode } from "@truffle/codec/types";
 import { ImmutableReferences } from "@truffle/contract-schema/spec";
 import * as Format from "@truffle/codec/format";
 
-//for passing to calldata/event/state allocation functions
+//for passing to calldata/returndata/event/state allocation functions
 export interface ContractAllocationInfo {
-  abi?: Abi.Abi; //needed for events & calldata
-  contractNode: Ast.AstNode; //needed for all 3
-  deployedContext?: Contexts.Context; //needed for events & calldata
-  constructorContext?: Contexts.Context; //needed for calldata
+  abi?: Abi.Abi; //needed for all but state
+  contractNode: Ast.AstNode; //needed for all
+  deployedContext?: Contexts.Context; //needed for all
+  constructorContext?: Contexts.Context; //needed for calldata & returndata; eventually will be needed for events
   immutableReferences?: ImmutableReferences; //needed for state
-  compiler: Compiler.CompilerVersion; //needed for all 3
-  compilationId?: string; //needed for all 3
+  compiler: Compiler.CompilerVersion; //needed for all
+  compilationId?: string; //needed for all
 }
 
 export interface AbiSizeInfo {
@@ -141,7 +141,9 @@ export interface EventArgumentAllocation {
 
 //now let's go back and fill in returndata
 export interface ReturndataAllocations {
-  [selector: string]: RevertReturndataAllocation[]
+  [contextHash: string]: { //NOTE: contextHash here can also be "" to represent no context
+    [selector: string]: RevertReturndataAllocation[];
+  };
 }
 
 export type ReturndataAllocation =

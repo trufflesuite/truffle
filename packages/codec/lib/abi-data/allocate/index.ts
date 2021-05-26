@@ -1125,7 +1125,19 @@ export function getReturndataAllocations(
   userDefinedTypes: Format.Types.TypesById,
   abiAllocations: AbiAllocations
 ): ReturndataAllocations {
-  let bySignature: { [signature: string]: RevertReturndataAllocation[] } = {};
+  let allContexts: string[] = [].concat(
+    ...contracts.map(({ deployedContext, constructorContext }) =>
+      [deployedContext, constructorContext]
+  )).filter(x => x) //filter out nonexistent contexts
+  .map(context => context.context);
+  allContexts.push(""); //HACK: add fictional empty-string context to represent no-context
+  //holds allocations for a given context
+  let selfAllocations: { [contextHash: string]: RevertReturndataAllocation[] } = {};
+  //holds allocations for *other* contexts
+  let additionalAllocations: { [contextHash: string]: RevertReturndataAllocation[] } = {};
+  //now: process the allocations for each contract. we'll add each contract's
+  //allocations to *its* entries in allocations, and to every *other* entry
+  //in additionalAllocations.
   for (const contract of contracts) {
     const contractAllocations = getReturndataAllocationsForContract(
       contract.abi,
@@ -1136,45 +1148,135 @@ export function getReturndataAllocations(
       contract.compilationId,
       contract.compiler
     );
-    for (const allocation of contractAllocations) {
-      const signature = AbiDataUtils.abiSignature(allocation.abi);
-      if (bySignature[signature]) {
-        if (bySignature[signature].length === 0) {
-          //if there's nothing there so far, add it
-          bySignature[signature] = [allocation];
-        } else if (allocation.id) {
-          //if there's something there already:
-          //1. if this has a new ID, add it, and remove any ID-less ones
-          //2. if this has an existing ID, ignore it
-          //3. if this has no ID, add it only if there's nothing (so we don't end up in this block)
-          //(so there should only be an IDless one if it's the only entry)
-          if (bySignature[signature][0].id === undefined) {
-            //if there are any w/no ID, it should be the only one
-            bySignature[signature] = [allocation];
-          } else {
-            //if the ones there have IDs, then we need to check whether this ID is new
-            if (!bySignature[signature].map(allocation => allocation.id).includes(allocation.id)) {
-              bySignature[signature].push(allocation);
-            }
-          }
-        }
-      } else {
-        //if there's nothing there thus far, add it
-        bySignature[signature] = [allocation];
+    const contexts: string[] = [ //contexts for this contract
+      contract.deployedContext,
+      contract.constructorContext
+    ].filter(x => x) //filter out nonexistent contexts
+    .map(context => context.context);
+    const otherContexts: string[] = allContexts.filter( //contexts for all other contracts
+      contextHash => !contexts.includes(contextHash)
+    );
+    //add them to selfAllocations
+    for (const contextHash of contexts) {
+      selfAllocations[contextHash] = contractAllocations;
+    }
+    //add them to additionalAllocations
+    for (const contextHash of otherContexts) {
+      if (additionalAllocations[contextHash] === undefined) {
+        additionalAllocations[contextHash] = [];
       }
+      additionalAllocations[contextHash] =
+        additionalAllocations[contextHash].concat(contractAllocations);
     }
   }
-  let allocations: ReturndataAllocations = {};
-  for (const [signature, signatureAllocations] of Object.entries(bySignature)) {
-    const selector = Web3Utils.soliditySha3({ type: "string", value: signature })
-      .slice(0, 2 + 2 * Evm.Utils.SELECTOR_SIZE); //arithmetic to account for hex string
-    if (!allocations[selector]) {
-      allocations[selector] = [];
+  let allocations: ReturndataAllocations = Object.assign(
+    {},
+    ...allContexts.map(contextHash => ({ [contextHash]: {} }))
+  );
+  //now: perform coalescense!
+  for (const contract of contracts) {
+    //we're setting up contexts again, sorry >_>
+    const contexts: string[] = [ //contexts for this contract
+      contract.deployedContext,
+      contract.constructorContext
+    ].filter(x => x) //filter out nonexistent contexts
+    .map(context => context.context);
+    for (const contextHash of contexts) {
+      allocations[contextHash] = coalesceReturndataAllocations(
+        selfAllocations[contextHash] || [],
+        additionalAllocations[contextHash] || []
+      );
+      debug("allocations: %O", allocations[contextHash]);
     }
-    allocations[selector] = allocations[selector].concat(signatureAllocations);
   }
+  //...also coalesce the fake "" context
+  allocations[""] = coalesceReturndataAllocations(
+    [],
+    additionalAllocations[""] || []
+  );
+  /*
+  for (const [contextHash, contextAllocations] of Object.entries(allAllocations)) {
+    for (const [signature, signatureAllocations] of Object.entries(contextAllocations)) {
+      const selector = Web3Utils.soliditySha3({ type: "string", value: signature })
+        .slice(0, 2 + 2 * Evm.Utils.SELECTOR_SIZE); //arithmetic to account for hex string
+      if (!allocations[contextHash][selector]) {
+        allocations[contextHash][selector] = [];
+      }
+      allocations[contextHash][selector] = allocations[contextHash][selector].concat(signatureAllocations);
+    }
+  }
+  */
   debug("error allocations: %O", allocations);
   return allocations;
+}
+
+function coalesceReturndataAllocations(
+  selfAllocations: RevertReturndataAllocation[],
+  additionalAllocations: RevertReturndataAllocation[]
+): { [selector: string]: RevertReturndataAllocation[] } {
+  let bySelector: { [selector: string]: RevertReturndataAllocation[] } = {};
+  //start with the additional allocations; we want to process
+  //the self allocations last, due to special handling of no-ID allocations there
+  for (const allocation of additionalAllocations) {
+    const signature = AbiDataUtils.abiSignature(allocation.abi);
+    const selector = Web3Utils.soliditySha3({ type: "string", value: signature })
+      .slice(0, 2 + 2 * Evm.Utils.SELECTOR_SIZE); //arithmetic to account for hex string
+    if (bySelector[selector]) {
+      //note: at this point, for any given signature, there should only be a
+      //no-ID allocation for that signature if it's the only one
+      if (allocation.id !== undefined) {
+        //delete anything with that signature but w/o an ID, or with this same ID
+        bySelector[selector] = bySelector[selector].filter(
+          ({ abi, id }) => !(AbiDataUtils.abiSignature(abi) === signature
+          && (id === undefined || id === allocation.id))
+        );
+        //add this allocation
+        bySelector[selector].push(allocation);
+      } else if (
+        !bySelector[selector].some(
+          ({ abi }) => AbiDataUtils.abiSignature(abi) === signature
+        )
+      ) {
+        //only add ID-less ones if there isn't anything of that signature already
+        bySelector[selector].push(allocation);
+      }
+    } else {
+      //if there's nothing there thus far, add it
+      bySelector[selector] = [allocation];
+    }
+  }
+  //store for later: # of allocs per selector
+  const selectorCounts: { [selector: string]: number } =
+    Object.assign({},
+      ...Object.entries(bySelector).map(
+        ([selector, allocations]) => ({
+          [selector]: allocations.length
+        })
+      )
+    );
+  //now we're going to perform a modified version of this procedure for the self allocations:
+  //1. we're going to add to the front, not the back
+  //2. we can add an ID-less one even if there are already ones with IDs there
+  //(sorry for the copypaste)
+  for (const allocation of selfAllocations) {
+    const signature = AbiDataUtils.abiSignature(allocation.abi);
+    const selector = Web3Utils.soliditySha3({ type: "string", value: signature })
+      .slice(0, 2 + 2 * Evm.Utils.SELECTOR_SIZE); //arithmetic to account for hex string
+    if (bySelector[selector]) {
+      //delete anything with that signature but w/o an ID, or with this same ID
+      //(if this alloc has no ID, this will only delete ID-less ones :) )
+      bySelector[selector] = bySelector[selector].filter(
+        ({ abi, id }) => !(AbiDataUtils.abiSignature(abi) === signature
+        && (id === undefined || id === allocation.id))
+      );
+      //add this allocation to front, not back!
+      bySelector[selector].unshift(allocation);
+    } else {
+      //if there's nothing there thus far, add it
+      bySelector[selector] = [allocation];
+    }
+  }
+  return bySelector;
 }
 
 function getEventAllocationsForContract(

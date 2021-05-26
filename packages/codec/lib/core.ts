@@ -597,7 +597,9 @@ export function* decodeReturndata(
 ): Generator<DecoderRequest, ReturndataDecoding[], Uint8Array> {
   let possibleAllocations: AbiData.Allocate.ReturndataAllocation[];
   const selector = Conversion.toHexString(info.state.returndata.slice(0,4));
-  const customRevertAllocations = (info.allocations.returndata || { selector: [] })[selector] || [];
+  const contextHash = (info.currentContext || { context: "" }).context; //HACK: "" is used to represent no context
+  const customRevertAllocations =
+    (((info.allocations.returndata || { [contextHash]: {} })[contextHash]) || { [selector]: [] })[selector] || [];
   if (successAllocation === null) {
     possibleAllocations = [
       ...defaultRevertAllocations,

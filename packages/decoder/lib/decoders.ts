@@ -959,7 +959,8 @@ export class ContractDecoder {
       },
       userDefinedTypes: this.userDefinedTypes,
       allocations: this.allocations,
-      contexts: { ...this.contexts, ...additionalContexts }
+      contexts: { ...this.contexts, ...additionalContexts },
+      currentContext: this.context
     };
 
     const decoder = decodeReturndata(info, allocation, status);

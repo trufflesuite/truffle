@@ -133,6 +133,7 @@ export function* decodeReturnValue() {
   const state = yield select(data.next.state); //next state has the return data
   const allocations = yield select(data.info.allocations);
   const contexts = yield select(data.views.contexts);
+  const currentContext = yield select(data.current.context);
   const status = yield select(data.current.returnStatus); //may be undefined
   const returnAllocation = yield select(data.current.returnAllocation); //may be null
   const errorId = yield select(data.current.errorId);
@@ -143,7 +144,8 @@ export function* decodeReturnValue() {
       userDefinedTypes,
       state,
       allocations,
-      contexts
+      contexts,
+      currentContext
     },
     returnAllocation,
     status,
