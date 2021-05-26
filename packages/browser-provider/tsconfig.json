@@ -1,26 +1,32 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "esModuleInterop": true,
-    "declaration": true,
-    "target": "es6",
-    "noImplicitAny": true,
-    "moduleResolution": "node",
-    "experimentalDecorators": true,
+    "jsx": "react",
     "sourceMap": true,
-    "outDir": "dist",
-    "baseUrl": ".",
-    "lib": ["es2017"],
-    "paths": {
-    },
+    "declaration": true,
+    "esModuleInterop": true,
+    "lib": ["esnext", "dom"],
+    "skipLibCheck": true,
+    "target": "es6",
+    "moduleResolution": "node",
+    "downlevelIteration": true,
+    "allowSyntheticDefaultImports": true,
+    "module": "commonjs",
+    "outDir": "./dist",
+    "strictBindCallApply": true,
+    "strictNullChecks": true,
     "rootDir": ".",
+    "baseUrl": ".",
     "types": [
       "jest",
+      "react",
       "node"
     ]
   },
   "include": [
-    "./lib/**/*.ts",
-    "./test/**/*.ts"
+    "lib/**/*",
+    "test/**/*"
+  ],
+  "exclude": [
+    "node_modules"
   ]
 }
