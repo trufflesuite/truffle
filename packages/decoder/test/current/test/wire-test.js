@@ -1087,6 +1087,24 @@ describe("Over-the-wire decoding", function () {
   
       let decodings = await decoder.decodeReturnValue(abiEntry, data);
       assert.lengthOf(decodings, 2);
+      assert.strictEqual(decodings[0].kind, "revert");
+      assert.strictEqual(decodings[0].decodingMode, "full");
+      assert.strictEqual(decodings[0].abi.name, "h9316");
+      assert.strictEqual(decodings[0].definedIn.typeName, "WireTest");
+      assert.lengthOf(decodings[0].arguments, 1);
+      assert.strictEqual(
+        Codec.Format.Utils.Inspect.unsafeNativize(decodings[0].arguments[0].value),
+        "0x0000000000000000000000000000000000000000000000000000000000000000"
+      );
+      assert.strictEqual(decodings[1].kind, "revert");
+      assert.strictEqual(decodings[1].decodingMode, "full");
+      assert.strictEqual(decodings[1].abi.name, "b27072");
+      assert.strictEqual(decodings[1].definedIn.typeName, "WireTestLibrary");
+      assert.lengthOf(decodings[1].arguments, 1);
+      assert.strictEqual(
+        Codec.Format.Utils.Inspect.unsafeNativize(decodings[1].arguments[0].value),
+        0
+      );
     });
 
     it("Decodes ambiguous custom errors from external calls", async function () {
@@ -1110,6 +1128,25 @@ describe("Over-the-wire decoding", function () {
   
       let decodings = await decoder.decodeReturnValue(abiEntry, data);
       assert.lengthOf(decodings, 2);
+      //note: what follows is copypasted from above
+      assert.strictEqual(decodings[0].kind, "revert");
+      assert.strictEqual(decodings[0].decodingMode, "full");
+      assert.strictEqual(decodings[0].abi.name, "h9316");
+      assert.strictEqual(decodings[0].definedIn.typeName, "WireTest");
+      assert.lengthOf(decodings[0].arguments, 1);
+      assert.strictEqual(
+        Codec.Format.Utils.Inspect.unsafeNativize(decodings[0].arguments[0].value),
+        "0x0000000000000000000000000000000000000000000000000000000000000000"
+      );
+      assert.strictEqual(decodings[1].kind, "revert");
+      assert.strictEqual(decodings[1].decodingMode, "full");
+      assert.strictEqual(decodings[1].abi.name, "b27072");
+      assert.strictEqual(decodings[1].definedIn.typeName, "WireTestLibrary");
+      assert.lengthOf(decodings[1].arguments, 1);
+      assert.strictEqual(
+        Codec.Format.Utils.Inspect.unsafeNativize(decodings[1].arguments[0].value),
+        0
+      );
     });
   });
 });

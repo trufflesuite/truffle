@@ -204,7 +204,7 @@ contract WireTest is WireTestParent, WireTestAbstract {
     WireTestLibrary.throwUnambiguous();
   }
 
-  error h9316(bytes32);
+  error h9316(bytes32); //ambiguous with b2072(uint)
 
   function throwAmbiguous() public pure {
     revert h9316(hex"");
@@ -240,7 +240,7 @@ library WireTestLibrary {
     revert LibraryError();
   }
 
-  error b27072(uint);
+  error b27072(uint); //ambiguous with h9316(bytes32)
 
   function throwAmbiguous() external pure {
     revert b27072(0);
