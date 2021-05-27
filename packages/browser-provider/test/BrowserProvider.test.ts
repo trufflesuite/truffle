@@ -16,7 +16,18 @@ describe("BrowserProvider", () => {
 
   it("should propagate a message to MetaMask", async () => {
     const send = promisify(provider.send.bind(provider));
-    // const result = await send({ jsonrpc: '2.0', params: [], method: 'web3_clientVersion', id: 1 });
+
+    const accounts = await send({
+      jsonrpc: "2.0",
+      method: "eth_accounts",
+      params: [],
+      id: 1
+    });
+
+    console.log("eth_accounts");
+    console.log(accounts);
+
+    const [address] = accounts?.result;
 
     const msgParams = [
       {
@@ -34,10 +45,11 @@ describe("BrowserProvider", () => {
     const result = await send({
       jsonrpc: "2.0",
       method: "eth_signTypedData",
-      params: [msgParams, "0xe126b3E5d052f1F575828f61fEBA4f4f2603652a"],
+      params: [msgParams, address],
       id: 1
     });
 
+    console.log("eth_signTypedData");
     console.log(result);
   });
 });
