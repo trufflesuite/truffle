@@ -1,14 +1,15 @@
 //these imports aren't actually necessary, but why not :)
 import util from "util";
-import {setTimeout} from "timers";
+import { setTimeout } from "timers";
 import * as Types from "./types";
 
-export const networksById: {[id: number]: string} = {
+export const networksById: { [id: number]: string } = {
   1: "mainnet",
   3: "ropsten",
   4: "rinkeby",
   5: "goerli",
-  42: "kovan"
+  42: "kovan",
+  10: "optimistic"
 };
 
 export function makeFilename(name: string, extension: string = ".sol"): string {
@@ -29,7 +30,7 @@ export const makeTimer: (
 export function removeLibraries(
   settings: Types.SolcSettings
 ): Types.SolcSettings {
-  let copySettings: Types.SolcSettings = {...settings};
+  let copySettings: Types.SolcSettings = { ...settings };
   delete copySettings.libraries;
   return copySettings;
 }
