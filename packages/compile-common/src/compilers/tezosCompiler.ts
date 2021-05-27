@@ -57,7 +57,7 @@ export class TezosCompiler implements Compiler {
       })
     );
 
-    this.display(options, paths);
+    this.display(options, fileFilterProfilerResult.compilationTargets);
 
     return this.compileStrategy.compile(Object.keys(fileFilterProfilerResult.allSources));
   }
