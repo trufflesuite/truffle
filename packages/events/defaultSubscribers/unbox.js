@@ -22,52 +22,62 @@ module.exports = {
   handlers: {
     "unbox:start": [
       function () {
+        if (this.quiet) return;
         this.logger.log(`${OS.EOL}Starting unbox...`);
         this.logger.log(`=================${OS.EOL}`);
       },
     ],
     "unbox:preparingToDownload:start": [
       function () {
+        if (this.quiet) return;
         this.spinner = this.ora("Preparing to download box").start();
       },
     ],
     "unbox:preparingToDownload:succeed": [
       function () {
+        if (this.quiet) return;
         this.spinner.succeed();
       },
     ],
     "unbox:downloadingBox:start": [
       function () {
+        if (this.quiet) return;
         this.spinner = this.ora("Downloading").start();
       },
     ],
     "unbox:downloadingBox:succeed": [
       function () {
+        if (this.quiet) return;
         this.spinner.succeed();
       },
     ],
     "unbox:cleaningTempFiles:start": [
       function () {
+        if (this.quiet) return;
         this.spinner = this.ora("Cleaning up temporary files").start();
       },
     ],
     "unbox:cleaningTempFiles:succeed": [
       function () {
+        if (this.quiet) return;
         this.spinner.succeed();
       },
     ],
     "unbox:settingUpBox:start": [
       function () {
+        if (this.quiet) return;
         this.spinner = this.ora("Setting up box").start();
       },
     ],
     "unbox:settingUpBox:succeed": [
       function () {
+        if (this.quiet) return;
         this.spinner.succeed();
       },
     ],
     "unbox:succeed": [
       function ({ boxConfig }) {
+        if (this.quiet) return;
         this.logger.log(`${OS.EOL}Unbox successful, sweet!${OS.EOL}`);
 
         const commandMessages = formatCommands(boxConfig.commands);
@@ -83,6 +93,7 @@ module.exports = {
     ],
     "unbox:fail": [
       function () {
+        if (this.quiet) return;
         this.spinner.fail();
         this.logger.log("Unbox failed!");
       },

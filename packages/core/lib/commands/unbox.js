@@ -43,6 +43,7 @@ const command = {
     const fse = require("fs-extra");
 
     const config = Config.default().with({logger: console});
+    config.merge(options);
 
     let [url, destination] = options._;
 
