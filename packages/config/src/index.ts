@@ -43,9 +43,7 @@ class TruffleConfig {
   public eventManagerOptions(config: TruffleConfig): any {
     let muteLogging;
     const { quiet, logger, subscribers } = config;
-
-    if (quiet) muteLogging = true;
-    return { logger, muteLogging, subscribers };
+    return { logger, quiet, subscribers };
   }
 
   public addProp(propertyName: string, descriptor: any): void {
