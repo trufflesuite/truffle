@@ -119,7 +119,10 @@ describe("CompilerSupplier", function () {
     });
 
     it("compiles w/ local path solc when options specify path", async function () {
-      const pathToSolc = path.join(__dirname, "../node_modules/solc/index.js");
+      const pathToSolc = path.join(
+        __dirname,
+        "../../../node_modules/solc/index.js"
+      );
 
       options.compilers = {
         solc: {
