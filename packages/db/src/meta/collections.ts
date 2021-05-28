@@ -97,9 +97,11 @@ export type SavedInput<
   C extends Collections = Collections,
   N extends CollectionName<C> = CollectionName<C>
 > = {
-  [K in keyof Input<C, N> | "id"]: K extends keyof Input<C, N>
-    ? Input<C, N>[K]
-    : string;
+  [K in keyof Input<C, N> | "id"]: K extends "id"
+    ? string
+    : K extends keyof Input<C, N>
+      ? Input<C, N>[K]
+      : never;
 };
 
 export type IdFields<

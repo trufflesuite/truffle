@@ -4,15 +4,14 @@ const defaultSubscribers = require("./defaultSubscribers");
 
 class EventManager {
   constructor(eventManagerOptions) {
-    let { logger, muteLogging, subscribers } = eventManagerOptions;
-
+    let { logger, quiet, subscribers } = eventManagerOptions;
     this.emitter = new Emittery();
     this.subscriberAggregators = [];
 
     this.initializationOptions = {
       emitter: this.emitter,
       logger,
-      muteLogging,
+      quiet,
       subscribers
     };
     this.initializeDefaultSubscribers(this.initializationOptions);

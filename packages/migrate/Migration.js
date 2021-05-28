@@ -58,18 +58,19 @@ class Migration {
     // `migrateFn` might be sync or async. We negotiate that difference in
     // `execute` through the deployer API.
     const migrateFn = fn(deployer, options.network, accounts);
-    await this._deploy(options, deployer, resolver, migrateFn);
+    await this._deploy(options, context, deployer, resolver, migrateFn);
   }
 
   /**
    * Initiates deployer sequence, then manages migrations info
    * publication to chain / artifact saving.
    * @param  {Object}   options     config and command-line
+   * @param  {Object}   context     web3 & interfaceAdapter
    * @param  {Object}   deployer    truffle module
    * @param  {Object}   resolver    truffle module
    * @param  {[type]}   migrateFn   module.exports of a migrations.js
    */
-  async _deploy(options, deployer, resolver, migrateFn) {
+  async _deploy(options, context, deployer, resolver, migrateFn) {
     try {
       await deployer.start();
 
@@ -108,7 +109,12 @@ class Migration {
         }
       }
 
-      await this.emitter.emit("postMigrate", this.isLast);
+      const eventArgs = {
+        isLast: this.isLast,
+        interfaceAdapter: context.interfaceAdapter
+      };
+
+      await this.emitter.emit("postMigrate", eventArgs);
 
       let artifacts = resolver
         .contracts()

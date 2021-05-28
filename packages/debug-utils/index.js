@@ -510,7 +510,7 @@ var DebugUtils = {
     sourceNames
   ) {
     let baseMessage;
-    if (breakpoint.node !== undefined) {
+    if (breakpoint.start !== undefined && breakpoint.length !== undefined) {
       baseMessage = here
         ? `this point in line ${breakpoint.line + 1}`
         : `a point in line ${breakpoint.line + 1}`;

@@ -1,4 +1,4 @@
-const expect = require("../index");
+const expect = require("../");
 const assert = require("assert");
 
 // object being testing

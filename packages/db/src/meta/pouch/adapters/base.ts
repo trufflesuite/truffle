@@ -5,31 +5,35 @@ import PouchDB from "pouchdb";
 import PouchDBDebug from "pouchdb-debug";
 import PouchDBFind from "pouchdb-find";
 
-import type {
-  CollectionName,
-  Collections,
-  MutationInput,
-  MutationPayload,
-  MutableCollectionName,
-  SavedInput
-} from "@truffle/db/meta/collections";
+import type { CollectionName, Collections } from "@truffle/db/meta/collections";
 import * as Id from "@truffle/db/meta/id";
-import type { Workspace, Historical } from "@truffle/db/meta/data";
 
-import type { Definition, Definitions } from "@truffle/db/meta/pouch/types";
+import type {
+  Record,
+  SavedRecord,
+  RecordReference,
+  Adapter,
+  Definition,
+  Definitions
+} from "@truffle/db/meta/pouch/types";
+
+export interface DatabasesOptions<C extends Collections> {
+  definitions: Definitions<C>;
+  settings: any; // subclasses define their own settings type
+}
 
 /**
  * Aggegrates logic for interacting wth a set of PouchDB databases identified
  * by resource collection name.
  */
-export abstract class Databases<C extends Collections> implements Workspace<C> {
+export abstract class Databases<C extends Collections> implements Adapter<C> {
   private collections: CollectionDatabases<C>;
   private definitions: Definitions<C>;
   private generateId: Id.GenerateId<C>;
 
   private ready: Promise<void>;
 
-  constructor(options) {
+  constructor(options: DatabasesOptions<C>) {
     this.setup(options.settings);
 
     this.definitions = options.definitions;
@@ -76,269 +80,167 @@ export abstract class Databases<C extends Collections> implements Workspace<C> {
     }
   }
 
-  public async all<N extends CollectionName<C>>(
+  public async every<N extends CollectionName<C>, T>(
     collectionName: N
-  ): Promise<SavedInput<C, N>[]> {
+  ): Promise<SavedRecord<T>[]> {
     await this.ready;
 
-    const log = debug.extend(`${collectionName}:all`);
-    log("Fetching all...");
+    const { rows }: any = await this.collections[collectionName].allDocs({
+      include_docs: true
+    });
 
-    try {
-      const { rows }: any = await this.collections[collectionName].allDocs({
-        include_docs: true
-      });
-
-      const result = rows
-        // make sure we include `id` in the response as well
-        .map(({ doc }) => ({ ...doc, id: doc["_id"] }))
-        // but filter out any views
-        .filter(({ views }) => !views);
-
-      log("Found.");
-      return result;
-    } catch (error) {
-      log("Error fetching all %s, got error: %O", collectionName, error);
-      throw error;
-    }
+    return (
+      rows
+        .map(({ doc }) => doc)
+        // filter out any views
+        .filter(({ views }) => !views)
+    );
   }
 
-  public async find<N extends CollectionName<C>>(
+  public async retrieve<N extends CollectionName<C>, T>(
     collectionName: N,
-    options: (Id.IdObject<C, N> | undefined)[] | PouchDB.Find.FindRequest<{}>
-  ): Promise<(SavedInput<C, N> | undefined)[]> {
+    records: (Pick<Record<T>, "_id"> | undefined)[]
+  ): Promise<(SavedRecord<T> | undefined)[]> {
     await this.ready;
 
-    const log = debug.extend(`${collectionName}:find`);
-    log("Finding...");
-
-    // handle convenient interface for getting a bunch of IDs while preserving
-    // order of input request
-    if (Array.isArray(options)) {
-      const references = options;
-      const unordered = await this.find<N>(collectionName, {
-        selector: {
-          id: {
-            $in: references
-              .filter(obj => obj)
-              .map(({ id }: Id.IdObject<C, N>) => id)
-          }
+    const unorderedSavedRecords = await this.search<N, T>(collectionName, {
+      selector: {
+        _id: {
+          $in: records
+            .filter((obj): obj is Pick<Record<T>, "_id"> => !!obj)
+            .map(({ _id }) => _id)
         }
-      });
+      }
+    });
 
-      const byId = unordered.reduce(
-        (byId, savedInput) =>
-          savedInput
-            ? {
-                ...byId,
-                [savedInput.id as string]: savedInput
-              }
-            : byId,
-        {} as { [id: string]: SavedInput<C, N> }
-      );
-
-      return references.map(reference =>
-        reference ? byId[reference.id] : undefined
-      );
-    }
-
-    // allows searching with `id` instead of pouch's internal `_id`,
-    // since we call the field `id` externally, and this approach avoids
-    // an extra index
-    const fixIdSelector = (selector: PouchDB.Find.Selector) =>
-      Object.entries(selector)
-        .map(
-          ([field, predicate]): PouchDB.Find.Selector =>
-            field === "id" ? { _id: predicate } : { [field]: predicate }
-        )
-        .reduce((a, b) => ({ ...a, ...b }), {});
-
-    try {
-      const { docs }: any = await this.collections[collectionName].find({
-        ...options,
-        selector: fixIdSelector(options.selector)
-      });
-
-      // make sure we include `id` in the response as well
-      const result = docs.map(doc => ({ ...doc, id: doc["_id"] }));
-
-      log("Found.");
-      return result;
-    } catch (error) {
-      log("Error fetching all %s, got error: %O", collectionName, error);
-      throw error;
-    }
-  }
-
-  public async get<N extends CollectionName<C>>(
-    collectionName: N,
-    id: string | undefined
-  ): Promise<Historical<SavedInput<C, N>> | undefined> {
-    await this.ready;
-
-    if (typeof id !== "string") {
-      return;
-    }
-
-    const log = debug.extend(`${collectionName}:get`);
-    log("Getting id: %s...", id);
-
-    try {
-      const result = await this.collections[collectionName].get(id);
-
-      log("Got id: %s.", id);
-      return {
-        ...result,
-        id
-      } as Historical<SavedInput<C, N>>;
-    } catch (_) {
-      log("Unknown id: %s.", id);
-      return;
-    }
-  }
-
-  public async add<N extends CollectionName<C>>(
-    collectionName: N,
-    input: MutationInput<C, N>
-  ): Promise<MutationPayload<C, N>> {
-    await this.ready;
-
-    const log = debug.extend(`${collectionName}:add`);
-    log("Adding...");
-
-    const resourceInputIds = input[collectionName].map(
-      resourceInput => this.generateId<N>(collectionName, resourceInput) || ""
+    const savedRecordById = unorderedSavedRecords.reduce(
+      (byId, savedRecord) =>
+        savedRecord
+          ? {
+              ...byId,
+              [savedRecord._id as string]: savedRecord
+            }
+          : byId,
+      {} as { [id: string]: SavedRecord<T> }
     );
 
-    const resourceInputById = input[collectionName]
-      .map((resourceInput, index) => ({
-        [resourceInputIds[index]]: resourceInput
-      }))
-      .reduce((a, b) => ({ ...a, ...b }), {});
+    return records.map(record =>
+      record ? savedRecordById[record._id] : undefined
+    );
+  }
 
-    const resources = await Promise.all(
-      Object.entries(resourceInputById)
-        .filter(([id]) => id)
-        .map(async ([id, resourceInput]) => {
-          // check for existing
-          const resource = await this.get(collectionName, id);
-          if (resource) {
-            return resource;
+  public async search<N extends CollectionName<C>, T>(
+    collectionName: N,
+    options: PouchDB.Find.FindRequest<{}>
+  ): Promise<SavedRecord<T>[]> {
+    await this.ready;
+
+    const { docs }: any = await this.collections[collectionName].find(options);
+
+    const savedRecords: SavedRecord<T>[] = docs;
+
+    return savedRecords;
+  }
+
+  public async save<N extends CollectionName<C>, T>(
+    collectionName: N,
+    records: (Record<T> | undefined)[],
+    options: { overwrite?: boolean } = {}
+  ): Promise<(SavedRecord<T> | undefined)[]> {
+    await this.ready;
+
+    const { overwrite = false } = options;
+
+    const recordsById: {
+      [id: string]: Record<T>;
+    } = records
+      .filter((record): record is Record<T> => !!record)
+      .map(record => ({
+        [record._id]: record
+      }))
+      .reduce((a, b) => ({ ...a, ...b }), {} as { [id: string]: Record<T> });
+
+    const existingSavedRecordById: {
+      [id: string]: SavedRecord<T>;
+    } = (
+      await this.retrieve<N, T>(
+        collectionName,
+        Object.keys(recordsById).map(_id => ({ _id } as Pick<Record<T>, "_id">))
+      )
+    )
+      .filter(
+        (existingSavedRecord): existingSavedRecord is SavedRecord<T> =>
+          !!existingSavedRecord
+      )
+      .map(existingSavedRecord => ({
+        [existingSavedRecord._id]: existingSavedRecord
+      }))
+      .reduce(
+        (a, b) => ({ ...a, ...b }),
+        {} as { [id: string]: SavedRecord<T> }
+      );
+
+    const savedRecordById: {
+      [id: string]: SavedRecord<T>;
+    } = (
+      await Promise.all(
+        Object.entries(recordsById).map(async ([_id, record]) => {
+          const existingSavedRecord = existingSavedRecordById[_id];
+
+          if (existingSavedRecord && !overwrite) {
+            return existingSavedRecord;
           }
 
-          await this.collections[collectionName].put({
-            ...resourceInput,
-            _id: id
+          const { _rev = undefined } = existingSavedRecord || {};
+
+          const { rev } = await this.collections[collectionName].put({
+            ...record,
+            _rev
           });
 
           return {
-            ...resourceInput,
-            id
-          } as SavedInput<C, N>;
+            ...record,
+            _rev: rev
+          } as SavedRecord<T>;
         })
-    );
+      )
+    )
+      .map(savedRecord => ({ [savedRecord._id]: savedRecord }))
+      .reduce(
+        (a, b) => ({ ...a, ...b }),
+        {} as { [id: string]: SavedRecord<T> }
+      );
 
-    const resourcesById = resources
-      .map(resource => ({
-        [resource.id as string]: resource
-      }))
-      .reduce((a, b) => ({ ...a, ...b }), {});
-
-    log(
-      "Added ids: %o",
-      resources.map(({ id }) => id)
-    );
-
-    return ({
-      [collectionName]: resourceInputIds.map(id => resourcesById[id])
-    } as unknown) as MutationPayload<C, N>;
+    return records.map(record => record && savedRecordById[record._id]);
   }
 
-  public async update<M extends MutableCollectionName<C>>(
-    collectionName: M,
-    input: MutationInput<C, M>
-  ): Promise<MutationPayload<C, M>> {
-    await this.ready;
-
-    const log = debug.extend(`${collectionName}:update`);
-    log("Updating...");
-
-    const resourceInputIds = input[collectionName].map(
-      resourceInput => this.generateId<M>(collectionName, resourceInput) || ""
-    );
-
-    const resourceInputById = input[collectionName]
-      .map((resourceInput, index) => ({
-        [resourceInputIds[index]]: resourceInput
-      }))
-      .reduce((a, b) => ({ ...a, ...b }), {});
-
-    const resources = await Promise.all(
-      Object.entries(resourceInputById)
-        .filter(([id]) => id)
-        .map(async ([id, resourceInput]) => {
-          // check for existing
-          const resource = await this.get(collectionName, id);
-          const { _rev = undefined } = resource ? resource : {};
-
-          await this.collections[collectionName].put({
-            ...resourceInput,
-            _rev,
-            _id: id
-          });
-
-          return {
-            ...resourceInput,
-            id
-          } as SavedInput<C, M>;
-        })
-    );
-
-    const resourcesById = resources
-      .map(resource => ({
-        [resource.id as string]: resource
-      }))
-      .reduce((a, b) => ({ ...a, ...b }), {});
-
-    log(
-      "Updated ids: %o",
-      resources.map(({ id }) => id)
-    );
-    return ({
-      [collectionName]: resourceInputIds.map(id => resourcesById[id])
-    } as unknown) as MutationPayload<C, M>;
-  }
-
-  public async remove<M extends MutableCollectionName<C>>(
-    collectionName: M,
-    input: MutationInput<C, M>
+  public async delete<N extends CollectionName<C>, T>(
+    collectionName: N,
+    references: (RecordReference<T> | undefined)[]
   ): Promise<void> {
     await this.ready;
 
-    const log = debug.extend(`${collectionName}:remove`);
-    log("Removing...");
+    const savedRecords = await this.retrieve<N, T>(collectionName, references);
+
+    const savedRecordById = savedRecords
+      .filter((savedRecord): savedRecord is SavedRecord<T> => !!savedRecord)
+      .map(savedRecord => ({
+        [savedRecord._id]: savedRecord
+      }))
+      .reduce(
+        (a, b) => ({ ...a, ...b }),
+        {} as { [id: string]: SavedRecord<T> }
+      );
 
     await Promise.all(
-      input[collectionName].map(async resourceInput => {
-        const id = this.generateId(collectionName, resourceInput);
-        if (!id) {
-          return;
-        }
-
-        const resource = await this.get(collectionName, id);
-        const { _rev = undefined } = resource ? resource : {};
-
-        if (_rev) {
-          await this.collections[collectionName].put({
-            _rev,
-            _id: id,
-            _deleted: true
-          });
-        }
+      Object.values(savedRecordById).map(async ({ _id, _rev }) => {
+        await this.collections[collectionName].put({
+          _rev,
+          _id,
+          _deleted: true
+        });
       })
     );
-
-    log("Removed.");
   }
 }
 

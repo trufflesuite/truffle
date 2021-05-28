@@ -4,7 +4,7 @@ const Config = require("@truffle/config");
 const sinon = require("sinon");
 const tmp = require("tmp");
 tmp.setGracefulCleanup();
-let tempDir, mockConfig;
+let tempDir, config;
 
 describe("commands/unbox.js", () => {
   const invalidBoxFormats = ["bare-box//"];
@@ -25,14 +25,11 @@ describe("commands/unbox.js", () => {
       tempDir = tmp.dirSync({
         unsafeCleanup: true
       });
-      mockConfig = Config.default().with({
-        logger: {log: () => {}},
-        working_directory: tempDir.name
+      config = Config.default().with({
+        working_directory: tempDir.name,
+        quiet: true
       });
-      mockConfig.events = {
-        emit: () => {}
-      };
-      sinon.stub(Config, "default").returns({with: () => mockConfig});
+      sinon.stub(Config, "default").returns(config);
     });
     afterEach(() => {
       Config.default.restore();
@@ -44,7 +41,7 @@ describe("commands/unbox.js", () => {
         for (const path of invalidBoxFormats) {
           promises.push(
             unbox
-              .run({_: [`${path}`]})
+              .run({ _: [`${path}`] })
               .then(() => assert.fail())
               .catch(_error => assert(true))
           );
@@ -59,9 +56,9 @@ describe("commands/unbox.js", () => {
         validBoxInput.forEach(val => {
           promises.push(
             unbox
-              .run({_: [`${val}`], force: true})
+              .run({ _: [`${val}`], force: true })
               .then(() => assert(true))
-              .catch(_error => assert.fail())
+              .catch(assert.fail)
           );
         });
         return await Promise.all(promises);
