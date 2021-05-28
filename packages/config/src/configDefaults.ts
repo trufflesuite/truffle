@@ -73,7 +73,6 @@ export const configProps = ({
 
   const defaultTXValues = {
     gas: 6721975,
-    gasPrice: 20000000000, // 20 gwei,
     from: null
   };
 
@@ -190,11 +189,7 @@ export const configProps = ({
     },
     gasPrice: {
       get() {
-        try {
-          return configObject.network_config.gasPrice;
-        } catch (e) {
-          return defaultTXValues.gasPrice;
-        }
+        return configObject.network_config.gasPrice;
       },
       set() {
         throw new Error(
