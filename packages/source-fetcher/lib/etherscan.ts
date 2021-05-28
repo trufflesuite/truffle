@@ -14,6 +14,12 @@ import {
 } from "./common";
 import axios from "axios";
 
+const etherscanCommentHeader = `/**
+ *Submitted for verification at Etherscan.io on 20XX-XX-XX
+*/
+
+`; //note we include that final newline
+
 //this looks awkward but the TS docs actually suggest this :P
 const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
   implements Fetcher {
@@ -167,7 +173,10 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
     return {
       contractName: result.ContractName,
       sources: {
-        [filename]: result.SourceCode
+        //we prepend this header comment so that line numbers in the debugger
+        //will match up with what's displayed on the website; note that other
+        //cases don't display a similar header on the website
+        [filename]: etherscanCommentHeader + result.SourceCode
       },
       options: {
         language: "Solidity",
