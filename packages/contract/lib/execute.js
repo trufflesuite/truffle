@@ -64,7 +64,6 @@ const execute = {
     if (constructor.ens && constructor.ens.enabled) {
       const { web3 } = constructor;
       const processedValues = await utils.ens.convertENSNames({
-        networkId: constructor.network_id,
         ensSettings: constructor.ens,
         inputArgs: args,
         inputParams: params,

@@ -16,7 +16,7 @@ class Deployer extends Deployment {
 
     this.emitter = emitter;
     this.chain = new DeferredChain();
-    this.logger = options.logger || { log: function () {} };
+    this.logger = options.logger || { log: function() {} };
     this.network = options.network;
     this.networks = options.networks;
     this.network_id = options.network_id;
@@ -24,13 +24,9 @@ class Deployer extends Deployment {
     this.basePath = options.basePath || process.cwd();
     this.known_contracts = {};
     if (options.ens && options.ens.enabled) {
-      options.ens.registryAddress = this.networks[this.network].registry
-        ? this.networks[this.network].registry.address
-        : null;
       this.ens = new ENS({
         provider: options.provider,
-        networkId: options.network_id,
-        ens: options.ens
+        ensSettings: options.ens
       });
     }
 
@@ -64,7 +60,7 @@ class Deployer extends Deployment {
   }
 
   then(fn) {
-    return this.queueOrExec(function () {
+    return this.queueOrExec(function() {
       return fn(this);
     });
   }
