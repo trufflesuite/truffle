@@ -189,7 +189,11 @@ export const configProps = ({
     },
     gasPrice: {
       get() {
-        return configObject.network_config.gasPrice;
+        try {
+          return configObject.network_config.gasPrice;
+        } catch (e) {
+          return null;
+        }
       },
       set() {
         throw new Error(
