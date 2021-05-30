@@ -21,6 +21,7 @@ module.exports = {
     "init:succeed": [
       function () {
         this.logger.log(`${OS.EOL}Init successful, sweet!${OS.EOL}`);
+        this.logger.log(`"Why not ry truffle create contract HelloWorld and truffle create test HelloWorld to create a new contract and its associated test?"`);
       },
     ],
     "init:fail": [
