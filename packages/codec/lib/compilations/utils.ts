@@ -19,7 +19,7 @@ export function shimCompilations(
       compilation,
       `${shimmedCompilationIdPrefix}Number(${compilationIndex})`
     )
-  ).filter(compilation => compilation);
+  );
 }
 
 function shimCompilation(
