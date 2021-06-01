@@ -91,7 +91,6 @@ export type TezosCompiledContract = {
   sourcePath: string;
   source: string;
   michelson: string;
-  initialStorage?: string;
   metadata: string;
   compiler: {
     name: string;

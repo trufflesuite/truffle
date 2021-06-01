@@ -21,8 +21,7 @@ const buildCompiledContract = (resultEntry: any): TezosCompiledContract => {
     source: resultEntry.source,
     metadata: "",
     compiler,
-    michelson: resultEntry.michelson,
-    initialStorage: ""
+    michelson: resultEntry.michelson
   };
 };
 

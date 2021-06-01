@@ -112,10 +112,6 @@
     "michelson": {
       "$ref": "#/definitions/Michelson",
       "description": "Michelson sent as Tezos contract-creation transaction data"
-    },
-    "initialStorage": {
-      "$ref": "#/definitions/InitialStorage",
-      "description": "Initial storage values sent with Tezos contract-creation transaction data"
     }
   },
   "required": [
@@ -225,9 +221,6 @@
     },
     "Michelson": {
       "type": "string"
-    },
-    "InitialStorage": {
-      "type":  "string"
     }
   }
 }

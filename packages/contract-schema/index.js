@@ -202,9 +202,6 @@ var properties = {
   db: {},
   michelson: {
     sources: ["michelson"]
-  },
-  initialStorage: {
-    sources: ["initialStorage"]
   }
 };
 
