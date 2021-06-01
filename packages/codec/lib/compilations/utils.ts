@@ -11,7 +11,7 @@ import * as Common from "@truffle/compile-common";
 import { Compilation, Contract, Source, VyperSourceMap } from "./types";
 
 export function shimCompilations(
-  inputCompilations: Common.Compilation[],
+  inputCompilations: (Common.Compilation & { contracts: Common.EvmCompiledContract[] })[],
   shimmedCompilationIdPrefix = "shimmedcompilation"
 ): Compilation[] {
   return inputCompilations.map((compilation, compilationIndex) =>
@@ -23,16 +23,11 @@ export function shimCompilations(
 }
 
 function shimCompilation(
-  inputCompilation: Common.Compilation,
+  inputCompilation: Common.Compilation & { contracts: Common.EvmCompiledContract[] },
   shimmedCompilationId = "shimmedcompilation"
 ): Compilation {
-  if (!inputCompilation.contracts.length || inputCompilation.contracts[0].architecture === "tezos") {
-    // No shimContracts for tezos
-    return null;
-  }
-
   return {
-    ...shimContracts(inputCompilation.contracts as Common.EvmCompiledContract[], {
+    ...shimContracts(inputCompilation.contracts, {
       files: inputCompilation.sourceIndexes,
       sources: inputCompilation.sources,
       shimmedCompilationId,
@@ -48,16 +43,11 @@ function shimCompilation(
  * shimArtifacts for compatibility)
  */
 export function shimArtifacts(
-  artifacts: (Artifact | Common.CompiledContract)[],
+  artifacts: (Artifact | Common.EvmCompiledContract)[],
   files?: string[],
   shimmedCompilationId = "shimmedcompilation"
 ): Compilation[] {
-  if (!artifacts.length || artifacts[0].architecture === "tezos") {
-    // No shimContracts for tezos
-    return null;
-  }
-
-  return [shimContracts(artifacts as (Artifact | Common.EvmCompiledContract)[], { files, shimmedCompilationId })];
+  return [shimContracts(artifacts, { files, shimmedCompilationId })];
 }
 
 interface CompilationOptions {
