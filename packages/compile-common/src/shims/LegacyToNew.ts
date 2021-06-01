@@ -7,6 +7,7 @@ export function forContracts(contracts: any[]): CompiledContract[] {
 
 export function forContract(contract: any): CompiledContract {
   const {
+    architecture,
     contractName,
     contract_name,
     sourcePath,
@@ -29,7 +30,7 @@ export function forContract(contract: any): CompiledContract {
   } = contract;
 
   return {
-    architecture: "evm",
+    architecture,
     contractName: contract_name || contractName,
     sourcePath,
     source,

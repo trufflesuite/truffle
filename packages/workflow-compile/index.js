@@ -126,7 +126,7 @@ const WorkflowCompile = {
       }));
     }
 
-    const artifacts = contracts.map(Shims.ArchitectureMapper.forContract);
+    const artifacts = contracts.map(Shims.NewToLegacy.forContract);
     await config.artifactor.saveAll(artifacts);
 
     return { contracts, sources, compilations };
