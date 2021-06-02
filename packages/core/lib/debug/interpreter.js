@@ -70,8 +70,12 @@ class DebugInterpreter {
     //setOrClear: true for set, false for clear
     const currentLocation = this.session.view(controller.current.location);
 
-    const currentStart = currentLocation.sourceRange.start;
-    const currentLength = currentLocation.sourceRange.length;
+    const currentStart = currentLocation.sourceRange
+      ? currentLocation.sourceRange.start
+      : null;
+    const currentLength = currentLocation.sourceRange
+      ? currentLocation.sourceRange.length
+      : null;
     const currentSourceId = currentLocation.source
       ? currentLocation.source.id
       : null;
