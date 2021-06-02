@@ -23,10 +23,10 @@ module.exports = {
         this.logger.log(`${OS.EOL}Init successful, sweet!${OS.EOL}`);
         this.logger.log(`Try our scaffold commands to get started:`);
         this.logger.log(
-          "  * truffle create contract YourContractName # scaffold a contract"
+          "  $ truffle create contract YourContractName # scaffold a contract"
         );
         this.logger.log(
-          "  * truffle create test YourTestName         # scaffold a test"
+          "  $ truffle create test YourTestName         # scaffold a test"
         );
         this.logger.log(`${OS.EOL}http://trufflesuite.com/docs${OS.EOL}`);
       }
