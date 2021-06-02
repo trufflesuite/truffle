@@ -5,8 +5,10 @@ import Config from "@truffle/config";
 import fse from "fs-extra";
 import inquirer from "inquirer";
 import { sandboxOptions, unboxOptions } from "typings";
+import debugModule from "debug";
 
-const defaultPath = "https://github.com:trufflesuite/truffle-init-default";
+const debug = debugModule("unbox");
+const defaultPath = "git@github.com:trufflesuite/truffle-init-default";
 
 /*
  * accepts a number of different url and org/repo formats and returns the
@@ -19,50 +21,75 @@ const defaultPath = "https://github.com:trufflesuite/truffle-init-default";
  *   - git@github.com:<org>/<repo>[#branch]
  *   - path to local folder (absolute, relative or ~/home)
  */
-const normalizeSourcePath = (url = defaultPath) => {
+export const normalizeSourcePath = (url = defaultPath) => {
+
+  // Process filepath resolution
+  //
   if (url.startsWith(".") || url.startsWith("/") || url.startsWith("~")) {
+    debug({ in: url, out: path.normalize(url)});
     return path.resolve(path.normalize(url));
   }
-  // remove the .git from the repo specifier
-  if (url.includes(".git")) {
-    url = url.replace(/.git$/, "");
-    url = url.replace(/.git#/, "#");
-    url = url.replace(/.git:/, ":");
-  }
 
-  // rewrite https://github.com/truffle-box/metacoin format in
-  //         https://github.com:truffle-box/metacoin format
-  if (url.match(/.com\//)) {
-    url = url.replace(/.com\//, ".com:");
-  }
+  // process https? or git prefixed input
+  //
+  if (/^(https?|git)/i.test(url) ){
+    const protocolRex = new RegExp(
+      "(?<protocol>(https://|git@))"  + 
+      "(?<service>[^@/]+)"            + // service
+      "(/|:)"                         + // separator. will be ignored in ouput
+      "(?<org>[^/#]+)"                + // org
+      "/"                             +
+      "(?<repo>[^/#]+)"               + // repo
+      "#?"                            + // optional branch separator
+      "(?<branch>[^#]+)?"             + // capture branch (undefined if unmatched)
+      "$",
+      "i"                               // case insensitive
+    );
 
-  // full URL already
-  if (url.includes("://")) {
-    return url;
-  }
-
-  if (url.includes("git@")) {
-    return url.replace("git@", "https://");
-  }
-
-  if (url.split("/").length === 2) {
-    // `org/repo`
-    return `https://github.com:${url}`;
-  }
-
-  if (!url.includes("/")) {
-    // repo name only
-    if (!url.includes("-box")) {
-      // check for branch
-      if (!url.includes("#")) {
-        url = `${url}-box`;
-      } else {
-        const index = url.indexOf("#");
-        url = `${url.substr(0, index)}-box${url.substr(index)}`;
-      }
+    const match = url.match(protocolRex);
+    if (match) {
+      const { groups: G } = match;
+      const branch = G['branch'] ? `#${G['branch']}` : '';
+      const repo = G['repo'].replace(/\.git$/i, '');
+      const result = `https://${G['service']}:${G['org']}/${repo}${branch}`;
+      debug({ in: url, out: result});
+      return result;
     }
-    return `https://github.com:truffle-box/${url}`;
+
+    debug({ in: url, error: "InvalidFormat (protocol)", hint: "did not match protocol" });
+    throw new Error("Box specified with invalid format (git/https)");
   }
+
+  // default case: process [org/] + repo + [ #branch/name/with/slashes ]
+  //
+  const orgRepoBranchRex = new RegExp(
+    "^"                             +
+    "(?<org>[^/]+/)?"               + // optional org
+    "(?<repo>[^#/]+)"               + // repo
+    "(?<branch>#[^#]+)?"            + // optional branch (undefined if unmatched)
+    "$"                               // no extras!
+  );
+
+  const match = url.match(orgRepoBranchRex);
+  if (match) {
+    const { groups: G } = match;
+
+    // `truffle-box` is the default org
+    const org = G['org'] || 'truffle-box/';
+    const branch = G['branch'] || '';
+
+    // repo should have`-box` suffix
+    let repo = G['repo'];
+    repo = repo.endsWith('-box') ? repo : `${repo}-box`;
+
+    const result = `https://github.com:${org}${repo}${branch}`;
+
+    debug({ in: url, out: result});
+    return result;
+  }
+
+  // No match, it's an error!
+  debug({ in: url, error: "InvalidFormat", hint: "matched nothing" });
   throw new Error("Box specified in invalid format");
 };
 
@@ -187,4 +214,4 @@ const Box = {
   }
 };
 
-export = Box;
+export default Box;
