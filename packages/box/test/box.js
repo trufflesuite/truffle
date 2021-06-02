@@ -29,22 +29,40 @@ describe("@truffle/box Box", () => {
       sinon.stub(Box, "checkDir").returns(Promise.resolve());
       fse.emptyDirSync(destination);
     });
+
     afterEach(() => {
       Box.checkDir.restore();
     });
 
-    it("unboxes truffle box from github", done => {
-      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, {}, config).then(
-        truffleConfig => {
-          assert.ok(truffleConfig);
+    describe("unboxes truffle box", () => {
+      it("from GitHub master branch", done => {
+        Box.unbox(TRUFFLE_BOX_DEFAULT, destination, {}, config).then(
+          truffleConfig => {
+            assert.ok(truffleConfig);
 
-          assert(
-            fse.existsSync(path.join(destination, "truffle-config.js")),
-            "Unboxed project should have truffle config."
-          );
-          done();
-        }
-      );
+            assert(
+              fse.existsSync(path.join(destination, "truffle-config.js")),
+              "Unboxed project should have truffle config."
+            );
+            done();
+          }
+        );
+      });
+
+      it("from GitHub branch with lots of slashes", done => {
+        const branchWithSlashes = `${TRUFFLE_BOX_DEFAULT}#test/name/with/slashes`;
+        Box.unbox(branchWithSlashes, destination, {}, config).then(
+          truffleConfig => {
+            assert.ok(truffleConfig);
+
+            assert(
+              fse.existsSync(path.join(destination, "truffle-config.js")),
+              "Unboxed project should have truffle config."
+            );
+            done();
+          }
+        )
+      })
     });
 
     it("unboxes truffle box from local folder", async () => {
