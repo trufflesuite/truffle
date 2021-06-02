@@ -147,6 +147,9 @@ const controller = createSelectorTree({
         let adjustedBreakpoint;
         if (breakpoint.node === undefined) {
           let line = breakpoint.line;
+          if (line < 0) {
+            line = 0; //prevents hang if user enters large negative number
+          }
           const { sourceId } = breakpoint;
           debug("breakpoint: %O", breakpoint);
           debug("sources: %o", sources);
