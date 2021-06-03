@@ -72,7 +72,6 @@ export async function requiredSources({
     };
   }
 
-
   // Seed compilationTargets with known updates
   for (const update of updatedPaths) {
     if (shouldIncludePath(update)) {
@@ -101,7 +100,7 @@ export async function requiredSources({
 
       debug("currentFile: %s", currentFile);
 
-      const imports = resolved[currentFile].imports;
+      const imports = (resolved[currentFile] || {}).imports || [];
 
       debug("imports.length: %d", imports.length);
 
@@ -128,7 +127,8 @@ export async function requiredSources({
       required.push(file);
       for (const importPath of resolved[file].imports) {
         debug("importPath: %s", importPath);
-        if (!required.includes(importPath)) { //don't go into a loop!
+        if (!required.includes(importPath)) {
+          //don't go into a loop!
           filesToProcess.push(importPath);
         }
       }
