@@ -27,20 +27,30 @@ export type LigoCompileSettings = {
   }
 };
 
-export const compile = async (paths: string[], settings: LigoCompileSettings = DEFAULT_SETTINGS) => {
+type LigoCompilerResults = {
+  sourcePath: string,
+  michelson: string
+};
+
+export type LigoCompilerOutput = {
+  results: LigoCompilerResults[],
+  compilerDetails: { name: string, version: string }
+};
+
+export const compile = async (paths: string[], settings: LigoCompileSettings = DEFAULT_SETTINGS): Promise<LigoCompilerOutput> => {
   // TODO BGC Handle error
   // Checks that the image exists and works as a ligo compiler
   await exec(`docker run --rm -i ${settings.compiler.dockerImage} --help`);
 
-  let compilationResults: { sourcePath: string, michelson: string }[] = [];
+  let results: { sourcePath: string, michelson: string }[] = [];
 
   for (const sourcePath of paths) {
     // TODO BGC Handle error
     const michelson = await compileLigoFile(sourcePath, settings);
-    compilationResults.push({ sourcePath, michelson });
+    results.push({ sourcePath, michelson });
   }
 
-  return { compilationResults, compiler: settings.compiler.details };
+  return { results, compilerDetails: settings.compiler.details };
 };
 
 // Compile single LIGO file

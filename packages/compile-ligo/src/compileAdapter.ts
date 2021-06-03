@@ -2,14 +2,10 @@ import { CompilerResult } from "@truffle/compile-common";
 import { readFileSync } from "fs";
 import path from "path";
 
-const compileAdapter =  (ligoCompilerResult: {
-  compilationResults: { sourcePath: string, michelson: string }[];
-  compiler: {
-    name: string;
-    version: string;
-  };
-}): CompilerResult => {
-  const contractDetails = ligoCompilerResult.compilationResults.map(result => {
+import { LigoCompilerOutput } from "./compile";
+
+const compileAdapter =  (ligoCompilerResult: LigoCompilerOutput): CompilerResult => {
+  const contractDetails = ligoCompilerResult.results.map(result => {
     const extension = path.extname(result.sourcePath);
     const contractName = path.basename(result.sourcePath, extension);
 
@@ -28,12 +24,12 @@ const compileAdapter =  (ligoCompilerResult: {
     compilations: [
       {
         sourceIndexes: contractDetails.map(result => result.sourcePath),
-        compiler: ligoCompilerResult.compiler,
+        compiler: ligoCompilerResult.compilerDetails,
         sources: contractDetails.map(result => {
           return {
             sourcePath: result.sourcePath,
             contents: result.source,
-            language: ligoCompilerResult.compiler.name
+            language: ligoCompilerResult.compilerDetails.name
           };
         }),
         contracts: contractDetails.map(result => {
@@ -43,7 +39,7 @@ const compileAdapter =  (ligoCompilerResult: {
             sourcePath: result.sourcePath,
             source: result.source,
             michelson: result.michelson,
-            compiler: ligoCompilerResult.compiler
+            compiler: ligoCompilerResult.compilerDetails
           };
         })
       }
