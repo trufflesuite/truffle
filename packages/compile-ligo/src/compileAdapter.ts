@@ -1,44 +1,51 @@
-import { CompilerResult, Source, TezosCompiledContract } from "@truffle/compile-common";
-
-const compiler = {
-  name: "ligo",
-  version: "next"
-};
-
-const buildSource = (resultEntry: any): Source => {
-  return {
-    sourcePath: resultEntry.sourcePath,
-    contents: resultEntry.source,
-    language: compiler.name
-  };
-};
-
-const buildCompiledContract = (resultEntry: any): TezosCompiledContract => {
-  return {
-    architecture: "tezos",
-    contractName: resultEntry.contractName,
-    sourcePath: resultEntry.sourcePath,
-    source: resultEntry.source,
-    compiler,
-    michelson: resultEntry.michelson
-  };
-};
+import { CompilerResult } from "@truffle/compile-common";
+import { readFileSync } from "fs";
+import path from "path";
 
 const compileAdapter =  (ligoCompilerResult: {
-  result: any;
-  paths: string[];
+  compilationResults: { sourcePath: string, michelson: string }[];
   compiler: {
-      name: string;
-      version: string;
+    name: string;
+    version: string;
   };
 }): CompilerResult => {
+  const contractDetails = ligoCompilerResult.compilationResults.map(result => {
+    const extension = path.extname(result.sourcePath);
+    const contractName = path.basename(result.sourcePath, extension);
+
+    const sourceBuffer = readFileSync(result.sourcePath);
+    const source = sourceBuffer.toString();
+
+    return {
+      sourcePath: result.sourcePath,
+      michelson: result.michelson,
+      contractName,
+      source
+    };
+  });
+
   return {
     compilations: [
       {
-        sourceIndexes: ligoCompilerResult.paths,
-        compiler,
-        sources: Object.values(ligoCompilerResult.result).map(buildSource),
-        contracts: Object.values(ligoCompilerResult.result).map(buildCompiledContract)
+        sourceIndexes: contractDetails.map(result => result.sourcePath),
+        compiler: ligoCompilerResult.compiler,
+        sources: contractDetails.map(result => {
+          return {
+            sourcePath: result.sourcePath,
+            contents: result.source,
+            language: ligoCompilerResult.compiler.name
+          };
+        }),
+        contracts: contractDetails.map(result => {
+          return {
+            architecture: "tezos",
+            contractName: result.contractName,
+            sourcePath: result.sourcePath,
+            source: result.source,
+            michelson: result.michelson,
+            compiler: ligoCompilerResult.compiler
+          };
+        })
       }
     ]
   };

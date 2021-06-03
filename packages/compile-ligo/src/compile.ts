@@ -1,63 +1,51 @@
 import { spawn } from "child_process";
 import colors from "colors";
-import { readFileSync } from "fs";
 import path from "path";
+import util from "util";
 
-const util = require("util");
 const exec = util.promisify(require("child_process").exec);
 
 import debugModule from "debug";
 const debug = debugModule("compile-ligo");
 
-const compiler = {
-  name: "ligo",
-  version: "next"
+const DEFAULT_SETTINGS = {
+  entryPoint: "main",
+  compiler: {
+    dockerImage: "ligolang/ligo:next",
+    details: {
+      name: "ligo",
+      version: "next"
+    }
+  }
 };
 
-const compile = async (paths: string[], entryPoint: string = "main") => {
-  // TODO BGC Decide how to handle error
-  await exec("docker run --rm -i ligolang/ligo:next --help");
+export type LigoCompileSettings = {
+  entryPoint?: string,
+  compiler?: {
+    dockerImage: string,
+    details: { name: string, version: string }
+  }
+};
 
-  let contracts: Array<any> = [];
+export const compile = async (paths: string[], settings: LigoCompileSettings = DEFAULT_SETTINGS) => {
+  // TODO BGC Handle error
+  // Checks that the image exists and works as a ligo compiler
+  await exec(`docker run --rm -i ${settings.compiler.dockerImage} --help`);
+
+  let compilationResults: { sourcePath: string, michelson: string }[] = [];
 
   for (const sourcePath of paths) {
-    let compiledContract;
-    try {
-      compiledContract = await compileLigoFile(sourcePath, entryPoint);
-    } catch (error) {
-      throw error;
-    }
-    // remove extension from filename
-    const extension = path.extname(sourcePath as string);
-    const basename = path.basename(sourcePath as string, extension);
-
-    const contractName = basename;
-
-    const sourceBuffer = readFileSync(sourcePath as string);
-    const sourceContents = sourceBuffer.toString();
-
-    const contractDefinition = {
-      contractName,
-      sourcePath,
-      source: sourceContents,
-      michelson: compiledContract,
-      compiler
-    };
-
-    contracts.push(contractDefinition);
+    // TODO BGC Handle error
+    const michelson = await compileLigoFile(sourcePath, settings);
+    compilationResults.push({ sourcePath, michelson });
   }
-  const result = contracts.reduce((result: any, contract: any) => {
-    result[contract.contractName] = contract;
 
-    return result;
-  }, {});
-
-  return { result, paths, compiler };
+  return { compilationResults, compiler: settings.compiler.details };
 };
 
 // Compile single LIGO file
-const compileLigoFile = (sourcePath: any, entryPoint: string) => {
-  return new Promise((resolve, reject) => {
+const compileLigoFile = (sourcePath: string, settings: LigoCompileSettings) => {
+  return new Promise<string>((resolve, reject) => {
     // Note that the first volume parameter passed to docker needs to have a path
     // denoted in the format of of the host filesystem. The latter volume parameter,
     // as well as the entry point, needs to be denoted in the format of the VM.
@@ -83,11 +71,11 @@ const compileLigoFile = (sourcePath: any, entryPoint: string) => {
       currentWorkingDirectory + ":/project",
       "--rm",
       "-i",
-      "ligolang/ligo:next",
+      settings.compiler.dockerImage,
       "compile-contract",
       "--michelson-format=json",
       fullInternalSourcePath,
-      entryPoint
+      settings.entryPoint
     ]);
 
     let stdout = "";
@@ -116,5 +104,3 @@ const compileLigoFile = (sourcePath: any, entryPoint: string) => {
     });
   });
 };
-
-export { compile };

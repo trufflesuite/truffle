@@ -29,6 +29,7 @@ const buildCompiledContract = (resultEntry: any): TezosCompiledContract => {
 };
 
 export class MichelsonCompileStrategy implements ICompileStrategy {
+  public compiler = "michelson";
   public fileExtensions = ["tz"];
 
   public async compile(paths: string[]): Promise<CompilerResult> {

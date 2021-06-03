@@ -3,6 +3,7 @@ import { compile } from "./compile";
 import { compileAdapter } from "./compileAdapter";
 
 export class LigoCompileStrategy implements ICompileStrategy {
+  public compiler = "ligo";
   public fileExtensions = ["ligo", "mligo", "religo"];
 
   public async compile(paths: string[]): Promise<CompilerResult> {

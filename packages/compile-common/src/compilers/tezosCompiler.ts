@@ -1,5 +1,5 @@
 import * as path from "path";
-
+import Config from "@truffle/config";
 const findContracts = require("@truffle/contract-sources");
 
 import { Profiler } from "../profiler";
@@ -41,6 +41,8 @@ export class TezosCompiler implements Compiler {
   }
 
   private async compileFiles(options: any, paths: string[]): Promise<CompilerResult> {
+    options = Config.default().merge(options);
+
     const shouldIncludePath = (filePath: string) => {
       return this.compileStrategy.fileExtensions.map(fileExtension => `.${fileExtension}`).includes(path.extname(filePath));
     };
@@ -59,7 +61,7 @@ export class TezosCompiler implements Compiler {
 
     this.display(options, fileFilterProfilerResult.compilationTargets);
 
-    return this.compileStrategy.compile(Object.keys(fileFilterProfilerResult.allSources));
+    return this.compileStrategy.compile(Object.keys(fileFilterProfilerResult.allSources), options?.compilers[this.compileStrategy.compiler]?.settings);
   }
 
   private display(options: any, paths: string[]) {
