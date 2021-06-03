@@ -4,7 +4,7 @@ const assert = require("assert");
 const Ganache = require("ganache-core");
 const ENS = require("../ens");
 const sinon = require("sinon");
-const ENSJS = require("ethereum-ens");
+const ENSJS = require("@ensdomains/ensjs").default;
 
 let ganacheOptions,
   options,
@@ -44,7 +44,9 @@ describe("ENS class", () => {
   beforeEach(async () => {
     options = {
       provider,
-      ensSettings: { enabled: true }
+      ens: {
+        enabled: true
+      }
     };
     ens = new ENS(options);
     // First address generated from the above mnemonic
@@ -99,7 +101,7 @@ describe("ENS class", () => {
 
       describe("when the name is owned by the from address", async () => {
         beforeEach(async () => {
-          registryOwnerAddress = await registry.owner("0x0");
+          const registryOwnerAddress = await registry.owner("0x0");
           addressToSet = "0x1234567890123456789012345678901234567890";
           await registry.setSubnodeOwner(
             "0x0",
@@ -107,12 +109,15 @@ describe("ENS class", () => {
             registryOwnerAddress,
             { from: registryOwnerAddress }
           );
-          ensjs = new ENSJS(provider, registryAddress);
+          ensjs = new ENSJS({
+            provider,
+            ensAddress: registryAddress
+          });
         });
 
         it("sets the resolver to resolve to the proper address", async () => {
           await ens.setAddress("namezzz", addressToSet, { from: fromAddress });
-          let resolvedAddress = await ensjs.resolver("namezzz").addr();
+          let resolvedAddress = await ensjs.name("namezzz").getAddress();
           assert(resolvedAddress === addressToSet);
         });
       });
@@ -122,18 +127,21 @@ describe("ENS class", () => {
   describe("setNameOwner({ name, from })", () => {
     beforeEach(async () => {
       const registry = await ens.deployNewDevENSRegistry(fromAddress);
-      ensjs = new ENSJS(provider, registry.address);
+      ensjs = new ENSJS({
+        provider,
+        ensAddress: registry.address
+      });
     });
 
     it("sets the owner of the given domain name", async () => {
       await ens.setNameOwner({ from: fromAddress, name: "my.test.name" });
-      const owner = await ensjs.owner("my.test.name");
+      const owner = await ensjs.name("my.test.name").getOwner();
       assert(owner === fromAddress);
     });
     it("sets the owner for the intermediary names as well", async () => {
       await ens.setNameOwner({ from: fromAddress, name: "my.test.name" });
-      const owner1 = await ensjs.owner("name");
-      const owner2 = await ensjs.owner("test.name");
+      const owner1 = await ensjs.name("name").getOwner();
+      const owner2 = await ensjs.name("test.name").getOwner();
       assert(owner1 === fromAddress && owner1 === owner2);
     });
   });
