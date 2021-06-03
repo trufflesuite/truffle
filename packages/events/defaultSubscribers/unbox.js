@@ -94,7 +94,7 @@ module.exports = {
     "unbox:fail": [
       function () {
         if (this.quiet) return;
-        this.spinner.fail();
+        if (this.spinner) this.spinner.fail();
         this.logger.log("Unbox failed!");
       },
     ],
