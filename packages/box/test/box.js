@@ -4,7 +4,7 @@ const assert = require("assert");
 const inquirer = require("inquirer");
 const sinon = require("sinon");
 const Config = require("@truffle/config");
-const Box = require("../");
+const { default: Box, normalizeSourcePath  }= require("../");
 const TRUFFLE_BOX_DEFAULT =
   "https://github.com:trufflesuite/truffle-init-default";
 const LOCAL_TRUFFLE_BOX = "./test/sources/mock-local-box";
