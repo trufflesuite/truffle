@@ -12,15 +12,15 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.3.4",
+  "version": "5.3.5",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0",
     "test": "./scripts/test.sh"
   },
   "dependencies": {
-    "@truffle/compile-common": "^0.7.6",
-    "@truffle/config": "^1.2.41",
+    "@truffle/compile-common": "^0.7.7",
+    "@truffle/config": "^1.2.42",
     "@truffle/contract-sources": "^0.1.12",
     "@truffle/expect": "^0.0.17",
     "axios": "^0.21.1",
@@ -35,9 +35,9 @@
     "solc": "0.6.0"
   },
   "devDependencies": {
-    "@truffle/artifactor": "^4.0.106",
-    "@truffle/box": "^2.1.14",
-    "@truffle/resolver": "^7.0.12",
+    "@truffle/artifactor": "^4.0.107",
+    "@truffle/box": "^2.1.15",
+    "@truffle/resolver": "^7.0.13",
     "babel-core": "^6.26.0",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
