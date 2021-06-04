@@ -22,11 +22,10 @@ const defaultPath = "git@github.com:trufflesuite/truffle-init-default";
  *   - path to local folder (absolute, relative or ~/home)
  */
 export const normalizeSourcePath = (url = defaultPath) => {
-
   // Process filepath resolution
   //
   if (url.startsWith(".") || url.startsWith("/") || url.startsWith("~")) {
-    debug({ in: url, out: path.normalize(url)});
+    debug({ in: url, out: path.normalize(url) });
     return path.resolve(path.normalize(url));
   }
 
@@ -75,8 +74,8 @@ export const normalizeSourcePath = (url = defaultPath) => {
     const { groups: G } = match;
 
     // `truffle-box` is the default org
-    const org = G['org'] || 'truffle-box/';
-    const branch = G['branch'] || '';
+    const org = G["org"] || "truffle-box/";
+    const branch = G["branch"] || "";
 
     // repo should have`-box` suffix
     let repo = G['repo'];
@@ -101,7 +100,7 @@ const parseSandboxOptions = (options: sandboxOptions) => {
       unsafeCleanup: false,
       setGracefulCleanup: false,
       logger: console,
-      force: false
+      force: false,
     };
   } else if (typeof options === "object") {
     return {
@@ -109,7 +108,7 @@ const parseSandboxOptions = (options: sandboxOptions) => {
       unsafeCleanup: options.unsafeCleanup || false,
       setGracefulCleanup: options.setGracefulCleanup || false,
       logger: options.logger || console,
-      force: options.force || false
+      force: options.force || false,
     };
   }
 };
@@ -119,14 +118,14 @@ const Box = {
     url: string,
     destination: string,
     options: unboxOptions = {},
-    config: any
+    config: any,
   ) => {
     const { events } = config;
     let tempDirCleanup;
     const logger = options.logger || { log: () => {} };
     const unpackBoxOptions = {
       logger: options.logger,
-      force: options.force
+      force: options.force,
     };
 
     try {
@@ -145,7 +144,7 @@ const Box = {
         tempDirPath,
         destination,
         boxConfig,
-        unpackBoxOptions
+        unpackBoxOptions,
       );
 
       events.emit("unbox:cleaningTempFiles:start");
@@ -173,8 +172,8 @@ const Box = {
             type: "confirm",
             name: "proceed",
             message: `Proceed anyway?`,
-            default: true
-          }
+            default: true,
+          },
         ];
         const answer = await inquirer.prompt(prompt);
         if (!answer.proceed) {
@@ -195,7 +194,7 @@ const Box = {
       unsafeCleanup,
       setGracefulCleanup,
       logger,
-      force
+      force,
     } = parseSandboxOptions(options);
 
     const boxPath = name.replace(/^default(?=#|$)/, defaultPath);
@@ -211,7 +210,7 @@ const Box = {
     const unboxOptions = { logger, force };
     await Box.unbox(boxPath, tmpDir.name, unboxOptions, config);
     return Config.load(path.join(tmpDir.name, "truffle-config.js"), {});
-  }
+  },
 };
 
 export default Box;
