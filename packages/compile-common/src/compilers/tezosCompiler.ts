@@ -6,7 +6,15 @@ import { Profiler } from "../profiler";
 import { Compiler, CompilerResult, ICompileStrategy } from "../types";
 
 export class TezosCompiler implements Compiler {
-  constructor(private readonly compileStrategy: ICompileStrategy) {}
+  private readonly profiler: Profiler;
+
+  constructor(private readonly compileStrategy: ICompileStrategy) {
+    const shouldIncludePath = (filePath: string) => {
+      return this.compileStrategy.fileExtensions.map(fileExtension => `.${fileExtension}`).includes(path.extname(filePath));
+    };
+
+    this.profiler = new Profiler({ shouldIncludePath });
+  }
 
   async all(options: any): Promise<CompilerResult> {
     const paths = [
@@ -20,10 +28,7 @@ export class TezosCompiler implements Compiler {
   }
 
   async necessary(options: any): Promise<CompilerResult> {
-    // TODO BGC Create only one profiler at constructor and reuse
-    // Profiler to gather updated files
-    const profiler = new Profiler({});
-    const paths = await profiler.updated(options);
+    const paths = await this.profiler.updated(options);
     if (paths.length === 0) {
       return { compilations: [] };
     }
@@ -43,15 +48,7 @@ export class TezosCompiler implements Compiler {
   private async compileFiles(options: any, paths: string[]): Promise<CompilerResult> {
     options = Config.default().merge(options);
 
-    const shouldIncludePath = (filePath: string) => {
-      return this.compileStrategy.fileExtensions.map(fileExtension => `.${fileExtension}`).includes(path.extname(filePath));
-    };
-
-    const fileFilterProfiler = new Profiler({
-      shouldIncludePath
-    });
-
-    const fileFilterProfilerResult = await fileFilterProfiler.requiredSources(
+    const fileFilterProfilerResult = await this.profiler.requiredSources(
       options.with({
         paths,
         base_path: options.contracts_directory,

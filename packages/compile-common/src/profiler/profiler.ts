@@ -73,7 +73,7 @@ export class Profiler {
           throw error;
         }
       }
-    }
+    };
 
     const updatedPaths = convertToAbsolutePaths(paths, basePath);
     const allPaths = convertToAbsolutePaths(
