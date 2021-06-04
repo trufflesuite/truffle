@@ -39,7 +39,7 @@ const command = {
   },
   async run(options) {
     const Config = require("@truffle/config");
-    const Box = require("@truffle/box");
+    const { default: Box } = require("@truffle/box");
     const fse = require("fs-extra");
 
     const config = Config.default().with({logger: console});

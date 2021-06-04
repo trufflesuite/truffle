@@ -1,5 +1,5 @@
 const assert = require("chai").assert;
-const Box = require("@truffle/box");
+const { default: Box } = require("@truffle/box");
 const WorkflowCompile = require("@truffle/workflow-compile");
 const Artifactor = require("@truffle/artifactor");
 const Resolver = require("@truffle/resolver");
