@@ -273,7 +273,7 @@ class DebugPrinter {
     switch (revertDecodings.length) {
       case 0:
         this.config.logger.log(
-          "There was a revert message, but it could not be decoded."
+          "There was revert data, but it could not be decoded."
         );
         break;
       case 1:
@@ -285,8 +285,10 @@ class DebugPrinter {
             );
             break;
           case "revert":
-            switch (revertDecoding.abi.name) {
-              case "Error":
+            const signature =
+              Codec.AbiData.Utils.abiSignature(revertDecoding.abi);
+            switch (signature) {
+              case "Error(string)":
                 const revertStringInfo =
                   revertDecoding.arguments[0].value.value;
                 let revertString;
@@ -311,7 +313,7 @@ class DebugPrinter {
                     break;
                 }
                 break;
-              case "Panic":
+              case "Panic(uint)":
                 const panicCode = revertDecoding.arguments[0].value.value.asBN;
                 const panicString = DebugUtils.panicString(panicCode, true); //get verbose panic string :)
                 this.config.logger.log(
@@ -321,18 +323,20 @@ class DebugPrinter {
                 );
                 break;
               default:
-                this.config.logger.log(
-                  "There was a revert message, but it was of an unrecognized type."
-                );
+                this.config.logger.log("The following error was thrown:");
+                this.config.logger.log(DebugUtils.formatCustomError(revertDecoding, 2));
             }
             break;
         }
         break;
       default:
-        //Note: This shouldn't happen
         this.config.logger.log(
-          "There was a revert message, but it could not be unambiguously decoded."
+          "There was revert data, but it could not be unambiguously decoded."
         );
+        this.config.logger.log("Possible interpretations:");
+        for (const decoding of revertDecodings) {
+          this.config.logger.log(DebugUtils.formatCustomError(revertDecoding, 2));
+        }
         break;
     }
     this.config.logger.log(
@@ -423,12 +427,16 @@ class DebugPrinter {
         }
       }
       this.config.logger.log("");
-    } else if (decodings[0].kind === "revert") {
-      //case 9: revert (with message)
+    } else if (
+      decodings[0].kind === "revert" &&
+      decodings.filter(decoding => decoding.kind === "revert").length === 1
+    ) {
+      //case 9: revert (with message) (unambiguous)
       const decoding = decodings[0];
+      const signature = Codec.AbiData.Utils.abiSignature(decoding.abi);
       this.config.logger.log("");
-      switch (decoding.abi.name) {
-        case "Error": {
+      switch (signature) {
+        case "Error(string)": {
           //case 9a: revert string
           const prefix = "Revert string: ";
           const value = decodings[0].arguments[0].value;
@@ -436,7 +444,7 @@ class DebugPrinter {
           this.config.logger.log(prefix + formatted);
           break;
         }
-        case "Panic": {
+        case "Panic(uint)": {
           //case 9b: panic code
           const prefix = "Panic code: ";
           const value = decodings[0].arguments[0].value;
@@ -446,27 +454,38 @@ class DebugPrinter {
           break;
         }
         default:
-          //case 9c: ??? this shouldn't happen
-          this.config.logger.log(
-            "There was a revert message, but it was not of a recognized type."
-          );
+          //case 9c: custom error
+          this.config.logger.log("Error thrown:");
+          this.config.logger.log(DebugUtils.formatCustomError(decodings[0], 2));
       }
       this.config.logger.log("");
+    } else if (
+      decodings[0].kind === "revert" &&
+      decodings.filter(decoding => decoding.kind === "revert").length > 1
+    ) {
+      //case 10: ambiguous revert with message
+      this.config.logger.log("Ambiguous error thrown, possible interpretations:");
+      for (const decoding of revertDecodings) {
+        if (decoding.kind !== "revert") {
+          break;
+        }
+        this.config.logger.log(DebugUtils.formatCustomError(decoding, 2));
+      }
     } else if (
       decodings[0].kind === "return" &&
       decodings[0].arguments.length > 0
     ) {
-      //case 10: actual return values to print!
+      //case 11: actual return values to print!
       this.config.logger.log("");
       const values = decodings[0].arguments;
       if (values.length === 1 && !values[0].name) {
-        //case 10a: if there's only one value and it's unnamed
+        //case 11a: if there's only one value and it's unnamed
         const value = values[0].value;
         const prefix = "Returned value: ";
         const formatted = DebugUtils.formatValue(value, prefix.length);
         this.config.logger.log(prefix + formatted);
       } else {
-        //case 10b: otherwise
+        //case 11b: otherwise
         this.config.logger.log("Returned values:");
         const prefixes = values.map(({ name }, index) =>
           name ? `${name}: ` : `Component #${index + 1}: `
@@ -484,7 +503,7 @@ class DebugPrinter {
       }
       this.config.logger.log("");
     } else if (decodings[0].kind === "returnmessage") {
-      //case 11: raw binary data
+      //case 12: raw binary data
       this.config.logger.log("");
       const fallbackOutputDefinition = this.session.view(
         data.current.fallbackOutputForContext
@@ -496,11 +515,11 @@ class DebugPrinter {
         true
       )}`;
       if (name) {
-        //case 11a: it has a name
+        //case 12a: it has a name
         this.config.logger.log("Returned values:");
         this.config.logger.log(`${name}: ${prettyData}`);
       } else {
-        //case 11b: it doesn't
+        //case 12b: it doesn't
         this.config.logger.log(`Returned value: ${prettyData}`);
       }
       //it's already a string, so we'll pass the nativized parameter

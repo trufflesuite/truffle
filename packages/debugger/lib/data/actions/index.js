@@ -61,14 +61,24 @@ export function defineType(node, sourceId) {
   };
 }
 
+export const DEFINE_TAGGED_OUTPUT = "DATA_DEFINE_TAGGED_OUTPUT";
+export function defineTaggedOutput(node, sourceId) {
+  return {
+    type: DEFINE_TAGGED_OUTPUT,
+    node,
+    sourceId
+  };
+}
+
 export const ALLOCATE = "DATA_ALLOCATE";
-export function allocate(storage, memory, abi, calldata, state) {
+export function allocate(storage, memory, abi, calldata, returndata, state) {
   return {
     type: ALLOCATE,
     storage,
     memory,
     abi,
     calldata,
+    returndata,
     state
   };
 }

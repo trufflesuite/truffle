@@ -700,9 +700,35 @@ var DebugUtils = {
       .join(OS.EOL);
   },
 
+  //note: only intended to be used for *custom* errors :)
+  formatCustomError: function (decoding, indent = 0) {
+    const name = decoding.definedIn
+      ? `${decoding.definedIn.typeName}.${decoding.abi.name}`
+      : decoding.abi.name;
+    if (decoding.arguments.length === 0) {
+      return `${name}()`;
+    }
+    const prefix = `${name}(`;
+    const formattedValues = decoding.arguments.map(
+      ({ name, value }) => {
+        const argumentPrefix = name
+          ? `${name}: `
+          : "";
+        const typeString = ` (type: ${Codec.Format.Types.typeStringWithoutLocation(
+          value.type
+        )})`;
+        return (DebugUtils.formatValue(value, argumentPrefix.length) + typeString + ",")
+          .split(/\r?\n/g)
+          .map(line => " ".repeat(indent) + line)
+          .join(OS.EOL);
+      }
+    );
+    return [prefix, ...formattedValues, ')'].join(OS.EOL);
+  },
+
   formatStacktrace: function (stacktrace, indent = 2) {
     //get message or panic code from stacktrace
-    const { message, panic } = stacktrace[0];
+    const { message, panic, custom } = stacktrace[0];
     //we want to print inner to outer, so first, let's
     //reverse
     stacktrace = stacktrace.slice().reverse(); //reverse is in-place so clone first
@@ -758,6 +784,10 @@ var DebugUtils = {
           : `Panic: ${DebugUtils.panicString(panic)} (code 0x${panic.toString(
               16
             )})`;
+      } else if (custom !== undefined) {
+        statusLine = status
+          ? `Error: Improper return (caused custom error)`
+          : `Error: Revert (custom error)`;
       } else {
         statusLine = status
           ? "Error: Improper return (may be an unexpected self-destruct)"

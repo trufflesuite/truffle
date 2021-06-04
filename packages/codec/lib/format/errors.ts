@@ -11,7 +11,7 @@ import BN from "bn.js";
 import * as Types from "./types";
 import * as Ast from "@truffle/codec/ast/types";
 import * as Storage from "@truffle/codec/storage/types";
-import { PaddingType } from "@truffle/codec/types";
+import { PaddingType } from "@truffle/codec/common";
 
 /*
  * SECTION 1: Generic types for values in general (including errors).

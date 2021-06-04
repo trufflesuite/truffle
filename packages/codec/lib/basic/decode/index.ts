@@ -6,12 +6,8 @@ import * as Conversion from "@truffle/codec/conversion";
 import * as Format from "@truffle/codec/format";
 import * as Contexts from "@truffle/codec/contexts";
 import * as Pointer from "@truffle/codec/pointer";
-import {
-  DecoderRequest,
-  DecoderOptions,
-  PaddingMode,
-  PaddingType
-} from "@truffle/codec/types";
+import { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
+import { PaddingMode, PaddingType } from "@truffle/codec/common";
 import * as Evm from "@truffle/codec/evm";
 import { handleDecodingError, StopDecodingError } from "@truffle/codec/errors";
 import { byteLength } from "@truffle/codec/basic/allocate";

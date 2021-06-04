@@ -9,6 +9,7 @@ import { MemoryAllocations } from "@truffle/codec/memory/allocate/types";
 import {
   AbiAllocations,
   CalldataAllocations,
+  ReturndataAllocations,
   EventAllocations
 } from "@truffle/codec/abi-data/allocate/types";
 import * as Contexts from "@truffle/codec/contexts/types";
@@ -47,6 +48,7 @@ export interface AllocationInfo {
   memory?: MemoryAllocations;
   abi?: AbiAllocations;
   calldata?: CalldataAllocations;
+  returndata?: ReturndataAllocations; //just for custom errors
   event?: EventAllocations;
   state?: StateAllocations;
 }

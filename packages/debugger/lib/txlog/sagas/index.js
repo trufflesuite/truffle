@@ -38,7 +38,7 @@ function* updateTransactionLogSaga() {
         );
       }
     } else {
-      const error = (yield* data.decodeReturnValue())[0]; //NOTE: we will do this a better way in the future!
+      const error = (yield* data.decodeReturnValue())[0];
       debug("revert: %o %o", pointer, newPointer);
       yield put(actions.revert(pointer, newPointer, error));
     }
