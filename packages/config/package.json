@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "1.2.41",
+  "version": "1.2.42",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -22,7 +22,7 @@
   "types": "dist/index.d.ts",
   "dependencies": {
     "@truffle/error": "^0.0.14",
-    "@truffle/events": "^0.0.11",
+    "@truffle/events": "^0.0.12",
     "@truffle/provider": "^0.2.32",
     "configstore": "^4.0.0",
     "find-up": "^2.1.0",
