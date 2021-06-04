@@ -75,11 +75,11 @@ type CompiledContractBase = {
 export type EvmCompiledContract = CompiledContractBase & {
   architecture: "evm";
   sourceMap: string;
-  metadata: string;
   deployedSourceMap: string;
   legacyAST: object;
   ast: object;
   abi: Abi;
+  metadata: string;
   bytecode: Bytecode;
   deployedBytecode: Bytecode;
   devdoc: object;
