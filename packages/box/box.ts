@@ -29,45 +29,94 @@ export const normalizeSourcePath = (url = defaultPath) => {
     return path.resolve(path.normalize(url));
   }
 
+  // preprocess to reduce regex complexity
+  // `https` is not case sensitiv, unlike `git`
+  url = url.replace(/^https/i, "https");
+
+  // branch should not end with slash
+  const invalidBranch = /\/$/;
+
   // process https? or git prefixed input
   //
-  if (/^(https?|git)/i.test(url) ){
-    const protocolRex = new RegExp(
-      "(?<protocol>(https://|git@))"  + 
-      "(?<service>[^@/]+)"            + // service
-      "(/|:)"                         + // separator. will be ignored in ouput
-      "(?<org>[^/#]+)"                + // org
-      "/"                             +
-      "(?<repo>[^/#]+)"               + // repo
-      "#?"                            + // optional branch separator
-      "(?<branch>[^#]+)?"             + // capture branch (undefined if unmatched)
+  if (/^(https?|git)/i.test(url)) {
+    // This regular expression uses named capture groups to parse input. The
+    // format is (?<the-name>the-regex)
+    //
+    // \w, the word meta character is a member of [A-Za-z0-9_]. all letters,
+    // digits and the underscore. Note \w has to be \\w to escape the backslash
+    // in a string literal.
+    //
+    const protocolRex = new RegExp([
+      // match either `htps://` or `git@`
+      "(?<protocol>(https://|git@))",
+
+      // service is 1 or many (word, dot or dash)
+      "(?<service>[\\w.-]+)",
+
+      // match either `/` or `:`
+      "(/|:)",
+
+      // org is 1 or many (word, dot or dash)
+      "(?<org>[\\w.-]+)",
+
+      "/",
+
+      // repo is 1 or many (word, dot or dash)
+      "(?<repo>[\\w.-]+)",
+
+      // branch is 1 or many (word, dot or dash) and can be optional
+      "(?<branch>#[\\w./-]+)?",
+
+      // the input string must be consumed fully at this point to match
       "$",
-      "i"                               // case insensitive
-    );
+    ].join(""));
 
     const match = url.match(protocolRex);
     if (match) {
       const { groups: G } = match;
-      const branch = G['branch'] ? `#${G['branch']}` : '';
-      const repo = G['repo'].replace(/\.git$/i, '');
-      const result = `https://${G['service']}:${G['org']}/${repo}${branch}`;
-      debug({ in: url, out: result});
+      const branch = G["branch"] ? `${G["branch"]}` : "";
+
+      if (invalidBranch.test(branch)) {
+        debug({
+          in: url,
+          error: "InvalidFormat (protocol)",
+          hint: "branch is malformed",
+        });
+        throw new Error("Box specified with invalid format (git/https)");
+      }
+
+      const repo = G["repo"].replace(/\.git$/i, "");
+      const result = `https://${G["service"]}:${G["org"]}/${repo}${branch}`;
+      debug({ in: url, out: result });
       return result;
     }
 
-    debug({ in: url, error: "InvalidFormat (protocol)", hint: "did not match protocol" });
+    debug({
+      in: url,
+      error: "InvalidFormat (protocol)",
+      hint: "did not match protocol",
+    });
     throw new Error("Box specified with invalid format (git/https)");
   }
 
   // default case: process [org/] + repo + [ #branch/name/with/slashes ]
   //
-  const orgRepoBranchRex = new RegExp(
-    "^"                             +
-    "(?<org>[^/]+/)?"               + // optional org
-    "(?<repo>[^#/]+)"               + // repo
-    "(?<branch>#[^#]+)?"            + // optional branch (undefined if unmatched)
-    "$"                               // no extras!
-  );
+  const orgRepoBranchRex = new RegExp([
+    // start match at beginning
+    "^",
+
+    // org is 1 or many (word, dot or dash) followed by a slash. org can be
+    // optional
+    "(?<org>[\\w.-]+/)?",
+
+    // repo is 1 or many (word, dot or dash)
+    "(?<repo>[\\w.-]+)",
+
+    // optional branch (undefined if unmatched)
+    "(?<branch>#[\\w./-]+)?",
+
+    "$",
+  ].join(""));
 
   const match = url.match(orgRepoBranchRex);
   if (match) {
@@ -77,13 +126,22 @@ export const normalizeSourcePath = (url = defaultPath) => {
     const org = G["org"] || "truffle-box/";
     const branch = G["branch"] || "";
 
+    if (invalidBranch.test(branch)) {
+      debug({
+        in: url,
+        error: "InvalidFormat (orgRepoBranch)",
+        hint: "branch is malformed",
+      });
+      throw new Error("Box specified with invalid format");
+    }
+
     // repo should have`-box` suffix
-    let repo = G['repo'];
-    repo = repo.endsWith('-box') ? repo : `${repo}-box`;
+    let repo = G["repo"];
+    repo = repo.endsWith("-box") ? repo : `${repo}-box`;
 
     const result = `https://github.com:${org}${repo}${branch}`;
 
-    debug({ in: url, out: result});
+    debug({ in: url, out: result });
     return result;
   }
 
