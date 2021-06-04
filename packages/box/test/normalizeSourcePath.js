@@ -3,23 +3,29 @@ const { normalizeSourcePath: normalize } = require("../");
 
 describe("@truffle/box.normalizeSourcePath unit tests", () => {
   describe("parses `git@`", () => {
-    [{
-      input: "git@github.com:truffle-box/a-box",
-      expected: "https://github.com:truffle-box/a-box",
-    }, {
-      input: "git@github.com:truffle-box/a-box#simple-branch",
-      expected: "https://github.com:truffle-box/a-box#simple-branch",
-    }, {
-      input: "git@github.com:truffle-box/a-box#some/complex/branch",
-      expected: "https://github.com:truffle-box/a-box#some/complex/branch",
-    }, {
-      input: "git@github.com/truffle-box/a-box#some/complex/branch",
-      expected: "https://github.com:truffle-box/a-box#some/complex/branch",
-    }, {
-      input: "GIT@GITHUB.COM/TRUFFLE-BOX/A-BOX#SOME/COMPLEX/BRANCH",
-      expected: "https://GITHUB.COM:TRUFFLE-BOX/A-BOX#SOME/COMPLEX/BRANCH",
-    }].forEach(({ input, expected }) => {
-      it(`pass \`${input}\``, () => {
+    [
+      {
+        input: "git@github.com:truffle-box/a-box",
+        expected: "https://github.com:truffle-box/a-box",
+      },
+      {
+        input: "git@github.com:truffle-box/a-box#simple-branch",
+        expected: "https://github.com:truffle-box/a-box#simple-branch",
+      },
+      {
+        input: "git@github.com:truffle-box/a-box#some/complex/branch",
+        expected: "https://github.com:truffle-box/a-box#some/complex/branch",
+      },
+      {
+        input: "git@github.com/truffle-box/a-box#some/complex/branch",
+        expected: "https://github.com:truffle-box/a-box#some/complex/branch",
+      },
+      {
+        input: "git@GITHUB.COM:TRUFFLE-BOX/A-BOX#SOME/COMPLEX/BRANCH",
+        expected: "https://GITHUB.COM:TRUFFLE-BOX/A-BOX#SOME/COMPLEX/BRANCH",
+      },
+    ].forEach(({ input, expected }) => {
+      it(`passes \`${input}\``, () => {
         assert.strictEqual(normalize(input), expected, "should not fail");
       });
     });
@@ -38,6 +44,16 @@ describe("@truffle/box.normalizeSourcePath unit tests", () => {
       },
       {
         input: "git@github.com:truffle-box/a-box#simple-branch#",
+        rex: protocolRex,
+      },
+      {
+        // git user is lowercase
+        input: "GIT@github.com/truffle-box/a-box",
+        rex: protocolRex,
+      },
+      {
+        // git user is lowercase
+        input: "git@github.com/truffle-box/a-box#an/invalid/branch/",
         rex: protocolRex,
       },
     ].forEach(({ input, rex }) => {
