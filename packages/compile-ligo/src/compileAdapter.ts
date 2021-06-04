@@ -29,7 +29,7 @@ const compileAdapter =  (ligoCompilerResult: LigoCompilerOutput): CompilerResult
           return {
             sourcePath: result.sourcePath,
             contents: result.source,
-            language: ligoCompilerResult.compilerDetails.name
+            language: "ligo"
           };
         }),
         contracts: contractDetails.map(result => {

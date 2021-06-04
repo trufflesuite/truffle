@@ -1,31 +1,13 @@
-import { CompilerResult, ICompileStrategy, Source, TezosCompiledContract } from "@truffle/compile-common";
+import { CompilerResult, ICompileStrategy } from "@truffle/compile-common";
 import { Parser } from '@taquito/michel-codec';
 import { readFileSync } from "fs";
 import path from "path";
+
 import { version } from "../package.json";
 
 const compiler = {
   name: "@truffle/compile-michelson",
   version: `${version}`
-};
-
-const buildSource = (resultEntry: any): Source => {
-  return {
-    sourcePath: resultEntry.sourcePath,
-    contents: resultEntry.source,
-    language: "michelson"
-  };
-};
-
-const buildCompiledContract = (resultEntry: any): TezosCompiledContract => {
-  return {
-    architecture: "tezos",
-    contractName: resultEntry.contractName,
-    sourcePath: resultEntry.sourcePath,
-    source: resultEntry.source,
-    compiler,
-    michelson: resultEntry.michelson
-  };
 };
 
 export class MichelsonCompileStrategy implements ICompileStrategy {
@@ -34,34 +16,44 @@ export class MichelsonCompileStrategy implements ICompileStrategy {
 
   public async compile(paths: string[]): Promise<CompilerResult> {
     const parser = new Parser();
-    let contracts: Array<any> = [];
-
-    for (const sourcePath of paths) {
+    const contractDetails = paths.map(sourcePath => {
       const extension = path.extname(sourcePath as string);
       const contractName = path.basename(sourcePath as string, extension);
 
       const sourceBuffer = readFileSync(sourcePath as string);
-      const sourceContents = sourceBuffer.toString();
-      const michelson = JSON.stringify(parser.parseScript(sourceContents));
+      const source = sourceBuffer.toString();
+      const michelson = JSON.stringify(parser.parseScript(source));
 
-      const contractDefinition = {
-        contractName,
+      return {
         sourcePath,
-        source: sourceContents,
         michelson,
-        compiler
+        contractName,
+        source
       };
-
-      contracts.push(contractDefinition);
-    }
+    });
 
     return {
       compilations: [
         {
           sourceIndexes: paths,
           compiler,
-          sources: Object.values(contracts).map(buildSource),
-          contracts: Object.values(contracts).map(buildCompiledContract)
+          sources: contractDetails.map(result => {
+            return {
+              sourcePath: result.sourcePath,
+              contents: result.source,
+              language: "michelson"
+            };
+          }),
+          contracts: contractDetails.map(result => {
+            return {
+              architecture: "tezos",
+              contractName: result.contractName,
+              sourcePath: result.sourcePath,
+              source: result.source,
+              michelson: result.michelson,
+              compiler: compiler
+            };
+          })
         }
       ]
     };

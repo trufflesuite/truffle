@@ -42,7 +42,7 @@ export const compile = async (paths: string[], settings: LigoCompileSettings = D
   // Checks that the image exists and works as a ligo compiler
   await exec(`docker run --rm -i ${settings.compiler.dockerImage} --help`);
 
-  let results: { sourcePath: string, michelson: string }[] = [];
+  let results: LigoCompilerResults[] = [];
 
   for (const sourcePath of paths) {
     // TODO BGC Handle error
