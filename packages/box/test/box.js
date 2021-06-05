@@ -4,14 +4,14 @@ const assert = require("assert");
 const inquirer = require("inquirer");
 const sinon = require("sinon");
 const Config = require("@truffle/config");
-const { default: Box, normalizeSourcePath  }= require("../");
+const { default: Box, normalizeSourcePath } = require("../");
 const TRUFFLE_BOX_DEFAULT =
   "https://github.com:trufflesuite/truffle-init-default";
 const LOCAL_TRUFFLE_BOX = "./test/sources/mock-local-box";
 const utils = require("../dist/lib/utils");
 let options, cleanupCallback, config;
 
-describe("@truffle/box Box", () => {
+describe.only("@truffle/box Box", () => {
   const destination = path.join(__dirname, ".truffle_test_tmp");
 
   beforeEach(() => {
@@ -19,6 +19,7 @@ describe("@truffle/box Box", () => {
     config = Config.default();
     sinon.stub(config.events, "emit");
   });
+
   afterEach(() => {
     fse.removeSync(destination);
     config.events.emit.restore();
@@ -35,34 +36,35 @@ describe("@truffle/box Box", () => {
     });
 
     describe("unboxes truffle box", () => {
-      it("from GitHub master branch", done => {
+      it("from GitHub master branch", (done) => {
         Box.unbox(TRUFFLE_BOX_DEFAULT, destination, {}, config).then(
-          truffleConfig => {
+          (truffleConfig) => {
             assert.ok(truffleConfig);
 
             assert(
               fse.existsSync(path.join(destination, "truffle-config.js")),
-              "Unboxed project should have truffle config."
+              "Unboxed project should have truffle config.",
             );
             done();
-          }
+          },
         );
       });
 
-      it("from GitHub branch with lots of slashes", done => {
-        const branchWithSlashes = `${TRUFFLE_BOX_DEFAULT}#test/name/with/slashes`;
+      it("from GitHub branch with lots of slashes", (done) => {
+        const branchWithSlashes =
+          `${TRUFFLE_BOX_DEFAULT}#test/name/with/slashes`;
         Box.unbox(branchWithSlashes, destination, {}, config).then(
-          truffleConfig => {
+          (truffleConfig) => {
             assert.ok(truffleConfig);
 
             assert(
               fse.existsSync(path.join(destination, "truffle-config.js")),
-              "Unboxed project should have truffle config."
+              "Unboxed project should have truffle config.",
             );
             done();
-          }
-        )
-      })
+          },
+        );
+      });
     });
 
     it("unboxes truffle box from local folder", async () => {
@@ -70,29 +72,29 @@ describe("@truffle/box Box", () => {
         LOCAL_TRUFFLE_BOX,
         destination,
         {},
-        config
+        config,
       );
       assert.ok(truffleConfig);
 
       assert(
         fse.existsSync(path.join(destination, "truffle-config.js")),
-        "Unboxed project should have truffle config."
+        "Unboxed project should have truffle config.",
       );
 
       // Assert the file is not there first.
       assert(
         fse.existsSync(path.join(destination, "truffle-init.json")) === false,
-        "truffle-init.json shouldn't be available to the user!"
+        "truffle-init.json shouldn't be available to the user!",
       );
 
       assert(
         fse.existsSync(path.join(destination, "build")) === false,
-        "shouldn't not copy files mentioned in .gitignore"
+        "shouldn't not copy files mentioned in .gitignore",
       );
 
       assert(
         fse.existsSync(path.join(destination, ".env")) === false,
-        "shouldn't not copy files mentioned in .gitignore"
+        "shouldn't not copy files mentioned in .gitignore",
       );
     });
 
@@ -100,17 +102,17 @@ describe("@truffle/box Box", () => {
       // Assert the file is not there first.
       assert(
         fse.existsSync(path.join(destination, "truffle-init.json")) === false,
-        "truffle-init.json shouldn't be available to the user!"
+        "truffle-init.json shouldn't be available to the user!",
       );
 
       // Now assert the README.md and the .gitignore file were removed.
       assert(
         fse.existsSync(path.join(destination, "README.md")) === false,
-        "README.md didn't get removed!"
+        "README.md didn't get removed!",
       );
       assert(
         fse.existsSync(path.join(destination, ".gitignore")) === false,
-        ".gitignore didn't get removed!"
+        ".gitignore didn't get removed!",
       );
     });
 
@@ -119,14 +121,15 @@ describe("@truffle/box Box", () => {
         cleanupCallback = sinon.spy();
         sinon.stub(utils, "downloadBox").throws();
         sinon.stub(utils, "setUpTempDirectory").returns(
-          new Promise(resolve => {
+          new Promise((resolve) => {
             resolve({
               path: destination,
-              cleanupCallback
+              cleanupCallback,
             });
-          })
+          }),
         );
       });
+
       afterEach(() => {
         utils.setUpTempDirectory.restore();
         utils.downloadBox.restore();
@@ -145,45 +148,46 @@ describe("@truffle/box Box", () => {
     beforeEach(() => {
       sinon.stub(inquirer, "prompt").returns(Promise.resolve(true));
     });
+
     afterEach(() => {
       inquirer.prompt.restore();
     });
 
-    it("unboxes truffle box when used", done => {
+    it("unboxes truffle box when used", (done) => {
       Box.unbox(TRUFFLE_BOX_DEFAULT, destination, { force: true }, config).then(
-        truffleConfig => {
+        (truffleConfig) => {
           assert.ok(truffleConfig);
 
           assert(
             fse.existsSync(path.join(destination, "truffle-config.js")),
-            "Unboxed project should have truffle config."
+            "Unboxed project should have truffle config.",
           );
           done();
-        }
+        },
       );
     });
 
-    it("runs without a prompt", done => {
+    it("runs without a prompt", (done) => {
       Box.unbox(TRUFFLE_BOX_DEFAULT, destination, { force: true }, config).then(
         () => {
           assert.strictEqual(inquirer.prompt.called, false);
           done();
-        }
+        },
       );
     });
 
-    it("overwrites redundant files if init/unbox force flag used", done => {
+    it("overwrites redundant files if init/unbox force flag used", (done) => {
       const truffleConfigPath = path.join(destination, "truffle-config.js");
 
       // preconditions
       fse.writeFileSync(
         truffleConfigPath,
         "this truffle-config.js file is different than the default box file",
-        "utf8"
+        "utf8",
       );
       assert(
         fse.existsSync(truffleConfigPath),
-        "mock truffle-config.js wasn't created!"
+        "mock truffle-config.js wasn't created!",
       );
       const mockConfig = fse.readFileSync(truffleConfigPath, "utf8");
 
@@ -191,15 +195,15 @@ describe("@truffle/box Box", () => {
         () => {
           assert(
             fse.existsSync(truffleConfigPath),
-            "truffle-config.js wasn't recreated!"
+            "truffle-config.js wasn't recreated!",
           );
           const newConfig = fse.readFileSync(truffleConfigPath, "utf8");
           assert(
             newConfig !== mockConfig,
-            "truffle-config.js wasn't overwritten!"
+            "truffle-config.js wasn't overwritten!",
           );
           done();
-        }
+        },
       );
     });
   });
@@ -216,15 +220,18 @@ describe("@truffle/box Box", () => {
       fse.ensureDirSync(contractDirPath);
       assert(
         fse.existsSync(contractDirPath),
-        "contracts folder wasn't created!"
+        "contracts folder wasn't created!",
       );
     });
+
     afterEach(() => {
       inquirer.prompt.restore();
       fse.removeSync(contractDirPath);
     });
 
-    it("prompts when redundant files/folders exist in target directory", done => {
+    it("prompts when redundant files/folders exist in target directory", (
+      done,
+    ) => {
       Box.unbox(TRUFFLE_BOX_DEFAULT, destination, options, config).then(() => {
         assert.strictEqual(inquirer.prompt.called, true);
         assert.strictEqual(inquirer.prompt.callCount, 2);
@@ -232,28 +239,28 @@ describe("@truffle/box Box", () => {
       });
     });
 
-    it("prompt questions call correctly", done => {
+    it("prompt questions call correctly", (done) => {
       Box.unbox(TRUFFLE_BOX_DEFAULT, destination, options, config).then(() => {
         assert(
           inquirer.prompt.getCall(0).args[0],
-          "Prompt questions weren't called!"
+          "Prompt questions weren't called!",
         );
         done();
       });
     });
 
-    it("overwrites redundant files when prompted and user confirms", done => {
+    it("overwrites redundant files when prompted and user confirms", (done) => {
       const truffleConfigPath = path.join(destination, "truffle-config.js");
 
       // preconditions
       fse.writeFileSync(
         truffleConfigPath,
         "this truffle-config.js file is different than the default box file",
-        "utf8"
+        "utf8",
       );
       assert(
         fse.existsSync(truffleConfigPath),
-        "mock truffle-config.js wasn't created!"
+        "mock truffle-config.js wasn't created!",
       );
       const mockConfig = fse.readFileSync(truffleConfigPath, "utf8");
 
@@ -261,12 +268,12 @@ describe("@truffle/box Box", () => {
         assert(inquirer.prompt.called);
         assert(
           fse.existsSync(truffleConfigPath),
-          "truffle-config.js wasn't recreated!"
+          "truffle-config.js wasn't recreated!",
         );
         const newConfig = fse.readFileSync(truffleConfigPath, "utf8");
         assert(
           newConfig !== mockConfig,
-          "truffle-config.js wasn't overwritten!"
+          "truffle-config.js wasn't overwritten!",
         );
         done();
       });
@@ -279,8 +286,8 @@ describe("@truffle/box Box", () => {
         log(stringToLog) {
           this.loggedStuff = this.loggedStuff + stringToLog;
         },
-        loggedStuff: ""
-      }
+        loggedStuff: "",
+      },
     };
 
     beforeEach(() => {
@@ -288,6 +295,7 @@ describe("@truffle/box Box", () => {
         .stub(inquirer, "prompt")
         .returns(Promise.resolve({ proceed: true }));
     });
+
     afterEach(() => {
       inquirer.prompt.restore();
     });
@@ -296,6 +304,7 @@ describe("@truffle/box Box", () => {
       before(() => {
         sinon.stub(fse, "readdirSync").returns([]);
       });
+
       after(() => {
         fse.readdirSync.restore();
       });
@@ -310,6 +319,7 @@ describe("@truffle/box Box", () => {
       before(() => {
         sinon.stub(fse, "readdirSync").returns(["someCrappyFile.js"]);
       });
+
       after(() => {
         fse.readdirSync.restore();
       });
@@ -325,6 +335,7 @@ describe("@truffle/box Box", () => {
         sinon.stub(fse, "readdirSync").returns(["someCrappyFile.js"]);
         sinon.stub(process, "exit").returns(1);
       });
+
       after(() => {
         fse.readdirSync.restore();
         process.exit.restore();
