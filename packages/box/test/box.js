@@ -11,7 +11,7 @@ const LOCAL_TRUFFLE_BOX = "./test/sources/mock-local-box";
 const utils = require("../dist/lib/utils");
 let options, cleanupCallback, config;
 
-describe.only("@truffle/box Box", () => {
+describe("@truffle/box Box", () => {
   const destination = path.join(__dirname, ".truffle_test_tmp");
 
   beforeEach(() => {
@@ -36,33 +36,33 @@ describe.only("@truffle/box Box", () => {
     });
 
     describe("unboxes truffle box", () => {
-      it("from GitHub master branch", (done) => {
-        Box.unbox(TRUFFLE_BOX_DEFAULT, destination, {}, config).then(
-          (truffleConfig) => {
-            assert.ok(truffleConfig);
-
-            assert(
-              fse.existsSync(path.join(destination, "truffle-config.js")),
-              "Unboxed project should have truffle config.",
-            );
-            done();
-          },
+      it("from GitHub master branch", async () => {
+        const truffleConfig = await Box.unbox(
+          TRUFFLE_BOX_DEFAULT,
+          destination,
+          {},
+          config,
+        );
+        assert.ok(truffleConfig);
+        assert(
+          fse.existsSync(path.join(destination, "truffle-config.js")),
+          "Unboxed project should have truffle config.",
         );
       });
 
-      it("from GitHub branch with lots of slashes", (done) => {
+      it("from GitHub branch with lots of slashes", async () => {
         const branchWithSlashes =
           `${TRUFFLE_BOX_DEFAULT}#test/name/with/slashes`;
-        Box.unbox(branchWithSlashes, destination, {}, config).then(
-          (truffleConfig) => {
-            assert.ok(truffleConfig);
-
-            assert(
-              fse.existsSync(path.join(destination, "truffle-config.js")),
-              "Unboxed project should have truffle config.",
-            );
-            done();
-          },
+        const truffleConfig = await Box.unbox(
+          branchWithSlashes,
+          destination,
+          {},
+          config,
+        );
+        assert.ok(truffleConfig);
+        assert(
+          fse.existsSync(path.join(destination, "truffle-config.js")),
+          "Unboxed project should have truffle config.",
         );
       });
     });
@@ -135,11 +135,12 @@ describe.only("@truffle/box Box", () => {
         utils.downloadBox.restore();
       });
 
-      it("calls the cleanup function if it is available", function (done) {
-        Box.unbox(TRUFFLE_BOX_DEFAULT, destination, {}, config).catch(() => {
+      it("calls the cleanup function if it is available", async () => {
+        try {
+          await Box.unbox(TRUFFLE_BOX_DEFAULT, destination, {}, config);
+        } catch (_) {
           assert(cleanupCallback.called);
-          done();
-        });
+        }
       });
     });
   });
@@ -153,30 +154,29 @@ describe.only("@truffle/box Box", () => {
       inquirer.prompt.restore();
     });
 
-    it("unboxes truffle box when used", (done) => {
-      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, { force: true }, config).then(
-        (truffleConfig) => {
-          assert.ok(truffleConfig);
+    it("unboxes truffle box when used", async () => {
+      truffleConfig = await Box.unbox(TRUFFLE_BOX_DEFAULT, destination, {
+        force: true,
+      }, config);
+      assert.ok(truffleConfig);
 
-          assert(
-            fse.existsSync(path.join(destination, "truffle-config.js")),
-            "Unboxed project should have truffle config.",
-          );
-          done();
-        },
+      assert(
+        fse.existsSync(path.join(destination, "truffle-config.js")),
+        "Unboxed project should have truffle config.",
       );
     });
 
-    it("runs without a prompt", (done) => {
-      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, { force: true }, config).then(
-        () => {
-          assert.strictEqual(inquirer.prompt.called, false);
-          done();
-        },
+    it("runs without a prompt", async () => {
+      await Box.unbox(
+        TRUFFLE_BOX_DEFAULT,
+        destination,
+        { force: true },
+        config,
       );
+      assert.strictEqual(inquirer.prompt.called, false);
     });
 
-    it("overwrites redundant files if init/unbox force flag used", (done) => {
+    it("overwrites redundant files if init/unbox force flag used", async () => {
       const truffleConfigPath = path.join(destination, "truffle-config.js");
 
       // preconditions
@@ -189,21 +189,23 @@ describe.only("@truffle/box Box", () => {
         fse.existsSync(truffleConfigPath),
         "mock truffle-config.js wasn't created!",
       );
-      const mockConfig = fse.readFileSync(truffleConfigPath, "utf8");
 
-      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, { force: true }, config).then(
-        () => {
-          assert(
-            fse.existsSync(truffleConfigPath),
-            "truffle-config.js wasn't recreated!",
-          );
-          const newConfig = fse.readFileSync(truffleConfigPath, "utf8");
-          assert(
-            newConfig !== mockConfig,
-            "truffle-config.js wasn't overwritten!",
-          );
-          done();
-        },
+      const mockConfig = fse.readFileSync(truffleConfigPath, "utf8");
+      await Box.unbox(
+        TRUFFLE_BOX_DEFAULT,
+        destination,
+        { force: true },
+        config,
+      );
+
+      assert(
+        fse.existsSync(truffleConfigPath),
+        "truffle-config.js wasn't recreated!",
+      );
+      const newConfig = fse.readFileSync(truffleConfigPath, "utf8");
+      assert(
+        newConfig !== mockConfig,
+        "truffle-config.js wasn't overwritten!",
       );
     });
   });
@@ -229,27 +231,21 @@ describe.only("@truffle/box Box", () => {
       fse.removeSync(contractDirPath);
     });
 
-    it("prompts when redundant files/folders exist in target directory", (
-      done,
-    ) => {
-      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, options, config).then(() => {
-        assert.strictEqual(inquirer.prompt.called, true);
-        assert.strictEqual(inquirer.prompt.callCount, 2);
-        done();
-      });
+    it("prompts when redundant files/folders exist in target directory", async () => {
+      await Box.unbox(TRUFFLE_BOX_DEFAULT, destination, options, config);
+      assert.strictEqual(inquirer.prompt.called, true);
+      assert.strictEqual(inquirer.prompt.callCount, 2);
     });
 
-    it("prompt questions call correctly", (done) => {
-      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, options, config).then(() => {
-        assert(
-          inquirer.prompt.getCall(0).args[0],
-          "Prompt questions weren't called!",
-        );
-        done();
-      });
+    it("prompt questions call correctly", async () => {
+      await Box.unbox(TRUFFLE_BOX_DEFAULT, destination, options, config);
+      assert(
+        inquirer.prompt.getCall(0).args[0],
+        "Prompt questions weren't called!",
+      );
     });
 
-    it("overwrites redundant files when prompted and user confirms", (done) => {
+    it("overwrites redundant files when prompted and user confirms", async () => {
       const truffleConfigPath = path.join(destination, "truffle-config.js");
 
       // preconditions
@@ -264,19 +260,17 @@ describe.only("@truffle/box Box", () => {
       );
       const mockConfig = fse.readFileSync(truffleConfigPath, "utf8");
 
-      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, options, config).then(() => {
-        assert(inquirer.prompt.called);
-        assert(
-          fse.existsSync(truffleConfigPath),
-          "truffle-config.js wasn't recreated!",
-        );
-        const newConfig = fse.readFileSync(truffleConfigPath, "utf8");
-        assert(
-          newConfig !== mockConfig,
-          "truffle-config.js wasn't overwritten!",
-        );
-        done();
-      });
+      await Box.unbox(TRUFFLE_BOX_DEFAULT, destination, options, config);
+      assert(inquirer.prompt.called);
+      assert(
+        fse.existsSync(truffleConfigPath),
+        "truffle-config.js wasn't recreated!",
+      );
+      const newConfig = fse.readFileSync(truffleConfigPath, "utf8");
+      assert(
+        newConfig !== mockConfig,
+        "truffle-config.js wasn't overwritten!",
+      );
     });
   });
 
