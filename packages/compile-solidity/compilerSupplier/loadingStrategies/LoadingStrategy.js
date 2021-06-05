@@ -82,11 +82,11 @@ class LoadingStrategy {
    * previous implementation, note to self - ask Tim about this)
    */
   removeListener() {
-    const listeners = process.listeners("uncaughtException");
+    const listeners = process.listeners("unhandledRejection");
     const execeptionHandler = listeners[listeners.length - 1];
 
     if (execeptionHandler) {
-      process.removeListener("uncaughtException", execeptionHandler);
+      process.removeListener("unhandledRejection", execeptionHandler);
     }
   }
 
