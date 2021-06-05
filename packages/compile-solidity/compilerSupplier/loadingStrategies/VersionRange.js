@@ -9,9 +9,10 @@ const LoadingStrategy = require("./LoadingStrategy");
 
 class VersionRange extends LoadingStrategy {
   compilerFromString(code) {
+    const markedListeners = this.markListeners();
     const soljson = requireFromString(code);
     const wrapped = solcWrap(soljson);
-    this.removeListener();
+    this.removeListener(markedListeners);
     return wrapped;
   }
 
@@ -32,11 +33,12 @@ class VersionRange extends LoadingStrategy {
   }
 
   getCachedSolcByFileName(fileName) {
+    const markedListeners = this.markListeners();
     const filePath = this.resolveCache(fileName);
     const soljson = originalRequire(filePath);
     debug("soljson %o", soljson);
     const wrapped = solcWrap(soljson);
-    this.removeListener();
+    this.removeListener(markedListeners);
     return wrapped;
   }
 
@@ -102,10 +104,7 @@ class VersionRange extends LoadingStrategy {
       attemptNumber: index + 1
     });
     try {
-      const response = await axios.get(
-        url,
-        { maxRedirects: 50 }
-      );
+      const response = await axios.get(url, { maxRedirects: 50 });
       events.emit("downloadCompiler:succeed");
       this.addFileToCache(response.data, fileName);
       return this.compilerFromString(response.data);
@@ -150,7 +149,8 @@ class VersionRange extends LoadingStrategy {
 
     // trim trailing slashes from compilerRoot
     const url = `${compilerRoots[index].replace(/\/+$/, "")}/list.json`;
-    return axios.get(url, { maxRedirects: 50 })
+    return axios
+      .get(url, { maxRedirects: 50 })
       .then(response => {
         events.emit("fetchSolcList:succeed");
         return response.data;

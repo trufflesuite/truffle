@@ -9,6 +9,8 @@ class Local extends LoadingStrategy {
   }
 
   getLocalCompiler(localPath) {
+    const markedListeners = this.markListeners();
+
     let soljson, compilerPath, wrapped;
     compilerPath = path.isAbsolute(localPath)
       ? localPath
@@ -21,7 +23,8 @@ class Local extends LoadingStrategy {
     }
     //HACK: if it has a compile function, assume it's already wrapped
     wrapped = soljson.compile ? soljson : solcWrap(soljson);
-    this.removeListener();
+
+    this.removeListener(markedListeners);
     return wrapped;
   }
 }
