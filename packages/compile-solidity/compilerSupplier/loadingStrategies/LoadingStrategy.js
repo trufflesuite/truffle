@@ -78,7 +78,10 @@ class LoadingStrategy {
   }
 
   markListeners() {
-    return new Set(process.listeners("uncaughtException"));
+    return {
+      uncaughtException: new Set(process.listeners("uncaughtException")),
+      unhandledRejection: new Set(process.listeners("unhandledRejection")),
+    };
   }
 
   /**
@@ -86,14 +89,20 @@ class LoadingStrategy {
    * Use with `markListeners()`
    */
   removeListener(markedListeners) {
-    const listeners = process.listeners("uncaughtException");
-    const newListeners = listeners.filter(
-      listener => !markedListeners.has(listener)
-    );
+    const scrub = (eventName) => {
+      const listeners = process.listeners(eventName);
+      const newListeners = listeners.filter(
+        (listener) => !markedListeners[eventName].has(listener),
+      );
 
-    for (const listener of newListeners) {
-      process.removeListener("uncaughtException", listener);
-    }
+      for (const listener of newListeners) {
+        console.log("removing ...listener");
+        process.removeListener(eventName, listener);
+      }
+    };
+
+    scrub("uncaughtException");
+    scrub("unhandledRejection");
   }
 
   resolveCache(fileName) {
