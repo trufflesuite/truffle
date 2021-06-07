@@ -84,7 +84,7 @@ export class ProjectEncoder {
       ({
         definitions,
         types: this.userDefinedTypes
-      } = Codec.Compilations.Utils.collectUserDefinedTypes(info.compilations));
+      } = Codec.Compilations.Utils.collectUserDefinedTypesAndTaggedOutputs(info.compilations));
       const {
         allocationInfo
       } = Codec.AbiData.Allocate.Utils.collectAllocationInfo(info.compilations);
