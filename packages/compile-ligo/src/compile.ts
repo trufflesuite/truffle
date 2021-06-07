@@ -19,7 +19,7 @@ const DEFAULT_SETTINGS = {
   }
 };
 
-export type LigoCompileSettings = {
+type LigoCompileSettings = {
   entryPoint?: string,
   compiler?: {
     dockerImage: string,
@@ -27,22 +27,22 @@ export type LigoCompileSettings = {
   }
 };
 
-type LigoCompilerResults = {
+type MichelsonOutput = {
   sourcePath: string,
   michelson: string
 };
 
-export type LigoCompilerOutput = {
-  results: LigoCompilerResults[],
+type LigoCompilerResult = {
+  results: MichelsonOutput[],
   compilerDetails: { name: string, version: string }
 };
 
-export const compile = async (paths: string[], settings: LigoCompileSettings = DEFAULT_SETTINGS): Promise<LigoCompilerOutput> => {
+export const compile = async (paths: string[], settings: LigoCompileSettings = DEFAULT_SETTINGS): Promise<LigoCompilerResult> => {
   // TODO BGC Handle error
   // Checks that the image exists and works as a ligo compiler
   await exec(`docker run --rm -i ${settings.compiler.dockerImage} --help`);
 
-  let results: LigoCompilerResults[] = [];
+  let results: MichelsonOutput[] = [];
 
   for (const sourcePath of paths) {
     // TODO BGC Handle error
