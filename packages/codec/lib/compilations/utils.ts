@@ -451,10 +451,19 @@ export function simpleShimSourceMap(
 }
 
 /**
- * collects user defined types for a given set of compilations,
- * returning both the definition nodes and the type objects
+ * collects user defined types & tagged outputs for a given set of compilations,
+ * returning both the definition nodes and (for the types) the type objects
+ *
+ * "Tagged outputs" means user-defined things that are output by a contract
+ * (not input to a contract), and which are distinguished by (potentially
+ * ambiguous) selectors.  So, events and custom errors are tagged outputs.  
+ * Function arguments are not tagged outputs (they're not outputs).
+ * Return values are not tagged outputs (they don't have a selector).
+ * Built-in errors (Error(string) and Panic(uint))... OK I guess those could
+ * be considered tagged outputs, but we're only looking at user-defined ones
+ * here.
  */
-export function collectUserDefinedTypes(
+export function collectUserDefinedTypesAndTaggedOutputs(
   compilations: Compilation[]
 ): {
   definitions: { [compilationId: string]: Ast.AstNodes };
@@ -486,6 +495,11 @@ export function collectUserDefinedTypes(
               references[compilation.id]
             );
             types[dataType.id] = dataType;
+          } else if (
+            node.nodeType === "EventDefinition" ||
+            node.nodeType === "ErrorDefinition"
+          ) {
+            references[compilation.id][node.id] = node;
           }
           if (node.nodeType === "ContractDefinition") {
             for (const subNode of node.nodes) {
@@ -503,6 +517,11 @@ export function collectUserDefinedTypes(
                   references[compilation.id]
                 );
                 types[dataType.id] = dataType;
+              } else if (
+                subNode.nodeType === "EventDefinition" ||
+                subNode.nodeType === "ErrorDefinition"
+              ) {
+                  references[compilation.id][subNode.id] = subNode;
               }
             }
           }

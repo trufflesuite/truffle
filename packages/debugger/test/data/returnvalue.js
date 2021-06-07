@@ -52,20 +52,96 @@ contract Default {
 }
 `;
 
+const __CUSTOMERRORS = `
+pragma solidity ^0.8.4;
+
+error Global();
+
+contract ErrorTest {
+
+  Auxiliary aux;
+
+  constructor(Auxiliary _aux) {
+    aux = _aux;
+  }
+
+  error Local(int x, int y);
+  error h9316(bytes32 x); //selector shared w/ b27072
+
+  function local() public {
+    revert Local(-1, -2);
+  }
+
+  function global() public {
+    revert Global();
+  }
+
+  function foreign() public {
+    revert Auxiliary.Foreign();
+  }
+
+  function inlined() public {
+    AuxLib.inlined();
+  }
+
+  function makeCall() public {
+    aux.fail();
+  }
+
+  function ambiguous() public {
+    revert h9316(hex"");
+  }
+
+  function ambiguousCall() public {
+    aux.ambiguous();
+  }
+}
+
+contract Auxiliary {
+  error Foreign();
+  error VeryForeign();
+  error b27072(uint x); //selector shared w/ h3916
+
+  function fail() public {
+    revert VeryForeign();
+  }
+
+  function ambiguous() public {
+    revert b27072(0);
+  }
+}
+
+library AuxLib {
+  error LibraryError();
+  function inlined() internal {
+    revert LibraryError();
+  }
+
+  function dummy() external {
+  }
+}
+`;
+
 const __MIGRATION = `
 var ReturnValues = artifacts.require("ReturnValues");
 var ReturnLibrary = artifacts.require("ReturnLibrary");
 var Default = artifacts.require("Default");
+var Auxiliary = artifacts.require("Auxiliary");
+var ErrorTest = artifacts.require("ErrorTest");
 
-module.exports = function(deployer) {
-  deployer.deploy(ReturnValues, false);
-  deployer.deploy(ReturnLibrary);
-  deployer.deploy(Default);
+module.exports = async function(deployer) {
+  await deployer.deploy(ReturnValues, false);
+  await deployer.deploy(ReturnLibrary);
+  await deployer.deploy(Default);
+  await deployer.deploy(Auxiliary);
+  const aux = await Auxiliary.deployed();
+  await deployer.deploy(ErrorTest, aux.address);
 };
 `;
 
 let sources = {
-  "ReturnValues.sol": __RETURNVALUES
+  "ReturnValues.sol": __RETURNVALUES,
+  "CustomErrors.sol": __CUSTOMERRORS
 };
 
 let migrations = {
@@ -239,8 +315,10 @@ describe("Return value decoding", function () {
     const decoding = decodings[0];
     assert.strictEqual(decoding.kind, "revert");
     assert.strictEqual(decoding.abi.name, "Error");
+    assert.isNull(decoding.definedIn);
     const outputs = decoding.arguments;
     assert.lengthOf(outputs, 1);
+    assert.isUndefined(outputs[0].name);
     const message = Codec.Format.Utils.Inspect.unsafeNativize(outputs[0].value);
     assert.strictEqual(message, "Noise!");
   });
@@ -268,9 +346,236 @@ describe("Return value decoding", function () {
     const decoding = decodings[0];
     assert.strictEqual(decoding.kind, "revert");
     assert.strictEqual(decoding.abi.name, "Panic");
+    assert.isNull(decoding.definedIn);
     const outputs = decoding.arguments;
     assert.lengthOf(outputs, 1);
+    assert.isUndefined(outputs[0].name);
     const panicCode = Codec.Format.Utils.Inspect.unsafeNativize(outputs[0].value);
     assert.strictEqual(panicCode, 1);
+  });
+
+  describe("Custom errors", function() {
+    it("Decodes custom errors", async function () {
+      this.timeout(9000);
+  
+      //HACK: because this transaction makes web3 throw, we have to extract the hash from
+      //the resulting exception (there is supposed to be a non-hacky way but it
+      //does not presently work)
+      let instance = await abstractions.ErrorTest.deployed();
+      let txHash;
+      try {
+        await instance.local(); //web3 throws on failure
+      } catch (error) {
+        txHash = error.hashes[0]; //it's the only hash involved
+      }
+  
+      let bugger = await Debugger.forTx(txHash, { provider, compilations });
+  
+      await bugger.continueUntilBreakpoint(); //run till end
+  
+      const decodings = await bugger.returnValue();
+      assert.lengthOf(decodings, 1);
+      const decoding = decodings[0];
+      assert.strictEqual(decoding.kind, "revert");
+      assert.strictEqual(decoding.decodingMode, "full");
+      assert.strictEqual(decoding.abi.name, "Local");
+      assert.strictEqual(decoding.definedIn.typeName, "ErrorTest");
+      const outputs = decoding.arguments;
+      assert.lengthOf(outputs, 2);
+      assert.strictEqual(outputs[0].name, "x");
+      assert.strictEqual(
+        Codec.Format.Utils.Inspect.unsafeNativize(outputs[0].value),
+        -1
+      );
+      assert.strictEqual(outputs[1].name, "y");
+      assert.strictEqual(
+        Codec.Format.Utils.Inspect.unsafeNativize(outputs[1].value),
+        -2
+      );
+    });
+
+    it("Decodes global custom errors", async function () {
+      this.timeout(9000);
+  
+      //HACK: because this transaction makes web3 throw, we have to extract the hash from
+      //the resulting exception (there is supposed to be a non-hacky way but it
+      //does not presently work)
+      let instance = await abstractions.ErrorTest.deployed();
+      let txHash;
+      try {
+        await instance.global(); //web3 throws on failure
+      } catch (error) {
+        txHash = error.hashes[0]; //it's the only hash involved
+      }
+  
+      let bugger = await Debugger.forTx(txHash, { provider, compilations });
+  
+      await bugger.continueUntilBreakpoint(); //run till end
+  
+      const decodings = await bugger.returnValue();
+      assert.lengthOf(decodings, 1);
+      const decoding = decodings[0];
+      assert.strictEqual(decoding.kind, "revert");
+      assert.strictEqual(decoding.decodingMode, "full");
+      assert.strictEqual(decoding.abi.name, "Global");
+      assert.isNull(decoding.definedIn);
+      const outputs = decoding.arguments;
+      assert.lengthOf(outputs, 0);
+    });
+
+    it("Decodes custom errors declared in other contracts", async function () {
+      this.timeout(9000);
+  
+      //HACK: because this transaction makes web3 throw, we have to extract the hash from
+      //the resulting exception (there is supposed to be a non-hacky way but it
+      //does not presently work)
+      let instance = await abstractions.ErrorTest.deployed();
+      let txHash;
+      try {
+        await instance.foreign(); //web3 throws on failure
+      } catch (error) {
+        txHash = error.hashes[0]; //it's the only hash involved
+      }
+  
+      let bugger = await Debugger.forTx(txHash, { provider, compilations });
+  
+      await bugger.continueUntilBreakpoint(); //run till end
+  
+      const decodings = await bugger.returnValue();
+      assert.lengthOf(decodings, 1);
+      const decoding = decodings[0];
+      assert.strictEqual(decoding.kind, "revert");
+      assert.strictEqual(decoding.decodingMode, "full");
+      assert.strictEqual(decoding.abi.name, "Foreign");
+      assert.strictEqual(decoding.definedIn.typeName, "Auxiliary");
+      const outputs = decoding.arguments;
+      assert.lengthOf(outputs, 0);
+    });
+
+    it("Decodes custom errors inlined from libraries", async function () {
+      this.timeout(9000);
+  
+      //HACK: because this transaction makes web3 throw, we have to extract the hash from
+      //the resulting exception (there is supposed to be a non-hacky way but it
+      //does not presently work)
+      let instance = await abstractions.ErrorTest.deployed();
+      let txHash;
+      try {
+        await instance.inlined(); //web3 throws on failure
+      } catch (error) {
+        txHash = error.hashes[0]; //it's the only hash involved
+      }
+  
+      let bugger = await Debugger.forTx(txHash, { provider, compilations });
+  
+      await bugger.continueUntilBreakpoint(); //run till end
+  
+      const decodings = await bugger.returnValue();
+      assert.lengthOf(decodings, 1);
+      const decoding = decodings[0];
+      assert.strictEqual(decoding.kind, "revert");
+      assert.strictEqual(decoding.decodingMode, "full");
+      assert.strictEqual(decoding.abi.name, "LibraryError");
+      assert.strictEqual(decoding.definedIn.typeName, "AuxLib");
+      const outputs = decoding.arguments;
+      assert.lengthOf(outputs, 0);
+    });
+
+    it("Decodes custom errors forwarded from external calls", async function () {
+      this.timeout(9000);
+  
+      //HACK: because this transaction makes web3 throw, we have to extract the hash from
+      //the resulting exception (there is supposed to be a non-hacky way but it
+      //does not presently work)
+      let instance = await abstractions.ErrorTest.deployed();
+      let txHash;
+      try {
+        await instance.makeCall(); //web3 throws on failure
+      } catch (error) {
+        txHash = error.hashes[0]; //it's the only hash involved
+      }
+  
+      let bugger = await Debugger.forTx(txHash, { provider, compilations });
+  
+      await bugger.continueUntilBreakpoint(); //run till end
+  
+      const decodings = await bugger.returnValue();
+      assert.lengthOf(decodings, 1);
+      const decoding = decodings[0];
+      assert.strictEqual(decoding.kind, "revert");
+      assert.strictEqual(decoding.decodingMode, "full");
+      assert.strictEqual(decoding.abi.name, "VeryForeign");
+      assert.strictEqual(decoding.definedIn.typeName, "Auxiliary");
+      const outputs = decoding.arguments;
+      assert.lengthOf(outputs, 0);
+    });
+
+    it("Decodes ambiguous custom errors using stacktrace info", async function () {
+      this.timeout(9000);
+  
+      //HACK: because this transaction makes web3 throw, we have to extract the hash from
+      //the resulting exception (there is supposed to be a non-hacky way but it
+      //does not presently work)
+      let instance = await abstractions.ErrorTest.deployed();
+      let txHash;
+      try {
+        await instance.ambiguous(); //web3 throws on failure
+      } catch (error) {
+        txHash = error.hashes[0]; //it's the only hash involved
+      }
+  
+      let bugger = await Debugger.forTx(txHash, { provider, compilations });
+  
+      await bugger.continueUntilBreakpoint(); //run till end
+  
+      const decodings = await bugger.returnValue();
+      assert.lengthOf(decodings, 1);
+      const decoding = decodings[0];
+      assert.strictEqual(decoding.kind, "revert");
+      assert.strictEqual(decoding.decodingMode, "full");
+      assert.strictEqual(decoding.abi.name, "h9316");
+      assert.strictEqual(decoding.definedIn.typeName, "ErrorTest");
+      const outputs = decoding.arguments;
+      assert.lengthOf(outputs, 1);
+      assert.strictEqual(outputs[0].name, "x");
+      assert.strictEqual(
+        Codec.Format.Utils.Inspect.unsafeNativize(outputs[0].value),
+        "0x0000000000000000000000000000000000000000000000000000000000000000"
+      );
+    });
+
+    it("Decodes ambiguous custom errors forwarded from external calls using stacktrace info", async function () {
+      this.timeout(9000);
+  
+      //HACK: because this transaction makes web3 throw, we have to extract the hash from
+      //the resulting exception (there is supposed to be a non-hacky way but it
+      //does not presently work)
+      let instance = await abstractions.ErrorTest.deployed();
+      let txHash;
+      try {
+        await instance.ambiguousCall(); //web3 throws on failure
+      } catch (error) {
+        txHash = error.hashes[0]; //it's the only hash involved
+      }
+  
+      let bugger = await Debugger.forTx(txHash, { provider, compilations });
+  
+      await bugger.continueUntilBreakpoint(); //run till end
+  
+      const decodings = await bugger.returnValue();
+      assert.lengthOf(decodings, 1);
+      const decoding = decodings[0];
+      assert.strictEqual(decoding.kind, "revert");
+      assert.strictEqual(decoding.decodingMode, "full");
+      assert.strictEqual(decoding.abi.name, "b27072");
+      assert.strictEqual(decoding.definedIn.typeName, "Auxiliary");
+      const outputs = decoding.arguments;
+      assert.lengthOf(outputs, 1);
+      assert.strictEqual(outputs[0].name, "x");
+      assert.strictEqual(
+        Codec.Format.Utils.Inspect.unsafeNativize(outputs[0].value),
+        0
+      );
+    });
   });
 });

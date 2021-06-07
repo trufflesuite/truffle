@@ -18,6 +18,21 @@ export type Mutability = "pure" | "view" | "nonpayable" | "payable";
 export type ContractKind = "contract" | "library" | "interface";
 
 /**
+ * @Category Enumerations
+ */
+export type PaddingMode = "default" | "permissive" | "zero" | "right";
+//default: check padding; the type of padding is determined by the type
+//permissive: like default, but turns off the check on certain types
+//zero: forces zero-padding even on signed types
+//right: forces right-padding on all types
+
+/**
+ * @Category Enumerations
+ */
+export type PaddingType = "left" | "right" | "signed";
+
+
+/**
  * This error indicates that the decoder was unable to locate a user-defined
  * type (struct, enum, or contract type) via its ID.  Unfortunately, we can't
  * always avoid this at the moment; we're hoping to make this more robust in

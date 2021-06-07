@@ -22,7 +22,11 @@ describe("Graceful degradation when information is missing", function () {
   let compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({ seed: "decoder", gasLimit: 7000000 });
+    provider = Ganache.provider({
+      seed: "decoder",
+      gasLimit: 7000000,
+      vmErrorsOnRPCResponse: false
+    });
     web3 = new Web3(provider);
     accounts = await web3.eth.getAccounts();
   });
@@ -351,6 +355,53 @@ describe("Graceful degradation when information is missing", function () {
       "DowngradeTest.Ternary.No"
     );
   });
+
+  describe("Custom errors", function () {
+    it("Degrades correctly when no node", async function () {
+      let mangledCompilations = clonedeep(compilations);
+      let source = mangledCompilations[0].sources.find(x => x); //find defined source
+      source.ast = undefined;
+      await runErrorTestBody(mangledCompilations);
+    });
+    it("Degrades correctly when no usedErrors", async function () {
+      let mangledCompilations = clonedeep(compilations);
+      let source = mangledCompilations[0].sources.find(x => x); //find defined source
+      let contractNode = source.ast.nodes.find(
+        node =>
+          node.nodeType === "ContractDefinition" && node.name === "DowngradeTest"
+      );
+      contractNode.usedErrors = undefined;
+      await runErrorTestBody(mangledCompilations);
+    });
+    it("Degrades correctly on no error node", async function () {
+      let mangledCompilations = clonedeep(compilations);
+      let source = mangledCompilations[0].sources.find(x => x); //find defined source
+      let contractNode = source.ast.nodes.find(
+        node =>
+          node.nodeType === "ContractDefinition" && node.name === "DowngradeTest"
+      );
+      let errorNode = contractNode.nodes.find(
+        node => node.nodeType === "ErrorDefinition" && node.name === "CustomError"
+      );
+      errorNode.nodeType = "Ninja"; //fake node type which will prevent decoder
+      //from recognizing it
+      await runErrorTestBody(mangledCompilations);
+    });
+    it("Degrades correctly on error", async function () {
+      let mangledCompilations = clonedeep(compilations);
+      let source = mangledCompilations[0].sources.find(x => x); //find defined source
+      let contractNode = source.ast.nodes.find(
+        node =>
+          node.nodeType === "ContractDefinition" && node.name === "DowngradeTest"
+      );
+      let structNode = contractNode.nodes.find(
+        node => node.nodeType === "StructDefinition" && node.name === "Pair"
+      );
+      structNode.nodeType = "Ninja"; //fake node type which will prevent decoder
+      //from recognizing it
+      await runErrorTestBody(mangledCompilations);
+    });
+  });
 });
 
 //verify the decoding for run
@@ -514,4 +565,37 @@ async function runEnumTestBody(mangledCompilations) {
     Codec.Format.Utils.Inspect.unsafeNativize(value)
   );
   assert.deepStrictEqual(nativizedArguments2, swappedTxArguments);
+}
+
+async function runErrorTestBody(mangledCompilations) {
+  const deployedContract = await abstractions.DowngradeTest.new();
+  const decoder = await Decoder.forContract(abstractions.DowngradeTest, {
+    compilations: mangledCompilations
+  });
+  let abiEntry = abstractions.DowngradeTest.abi.find(
+    ({ type, name }) => type === "function" && name === "throwCustom"
+  );
+  let selector = web3.eth.abi.encodeFunctionSignature(abiEntry);
+
+  //we need the raw return data, and contract.call() does not exist yet,
+  //so we're going to have to use web3.eth.call()
+
+  let data = await web3.eth.call({
+    to: deployedContract.address,
+    data: selector
+  });
+
+  let decodings = await decoder.decodeReturnValue(abiEntry, data);
+  assert.lengthOf(decodings, 1);
+  let decoding = decodings[0];
+  assert.strictEqual(decoding.kind, "revert");
+  assert.strictEqual(decoding.decodingMode, "abi");
+  assert.strictEqual(decoding.abi.name, "CustomError");
+  assert.isUndefined(decoding.definedIn);
+  assert.lengthOf(decoding.arguments, 1);
+  assert.strictEqual(decoding.arguments[0].name, "pair");
+  assert.deepEqual(
+    Codec.Format.Utils.Inspect.unsafeNativize(decoding.arguments[0].value),
+    [1, 2]
+  );
 }

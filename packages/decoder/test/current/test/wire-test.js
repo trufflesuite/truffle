@@ -18,7 +18,11 @@ describe("Over-the-wire decoding", function () {
   let Contracts;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({ seed: "decoder", gasLimit: 7000000 });
+    provider = Ganache.provider({
+      seed: "decoder",
+      gasLimit: 7000000,
+      vmErrorsOnRPCResponse: false
+    });
     web3 = new Web3(provider);
   });
 
@@ -1027,6 +1031,159 @@ describe("Over-the-wire decoding", function () {
       Codec.Format.Utils.Inspect.unsafeNativize(decoding.arguments[0].value),
       2
     );
+  });
+
+  describe("Custom error decoding", function () {
+    it("Decodes unambiguous custom errors", async function () {
+      const { WireTest } = abstractions;
+      const deployedContract = await WireTest.deployed();
+  
+      const decoder = await Decoder.forContract(WireTest, Contracts);
+  
+      let abiEntry = WireTest.abi.find(
+        ({ type, name }) => type === "function" && name === "throwUnambiguous"
+      );
+      let selector = web3.eth.abi.encodeFunctionSignature(abiEntry);
+  
+      //we need the raw return data, and contract.call() does not exist yet,
+      //so we're going to have to use web3.eth.call()
+  
+      let data = await web3.eth.call({
+        to: deployedContract.address,
+        data: selector
+      });
+
+      debug("data: %O", data);
+  
+      let decodings = await decoder.decodeReturnValue(abiEntry, data);
+      assert.lengthOf(decodings, 1);
+      let decoding = decodings[0];
+      assert.strictEqual(decoding.kind, "revert");
+      assert.strictEqual(decoding.decodingMode, "full");
+      assert.strictEqual(decoding.abi.name, "UnambiguousError");
+      assert.strictEqual(decoding.definedIn.typeName, "WireTest");
+      assert.lengthOf(decoding.arguments, 2);
+      assert.strictEqual(
+        Codec.Format.Utils.Inspect.unsafeNativize(decoding.arguments[0].value),
+        -1
+      );
+      assert.strictEqual(
+        Codec.Format.Utils.Inspect.unsafeNativize(decoding.arguments[1].value),
+        -2
+      );
+    });
+
+    it("Decodes unambiguous custom errors from external calls", async function () {
+      const { WireTest } = abstractions;
+      const deployedContract = await WireTest.deployed();
+  
+      const decoder = await Decoder.forContract(WireTest, Contracts);
+  
+      let abiEntry = WireTest.abi.find(
+        ({ type, name }) => type === "function" && name === "callAndThrow"
+      );
+      let selector = web3.eth.abi.encodeFunctionSignature(abiEntry);
+  
+      //we need the raw return data, and contract.call() does not exist yet,
+      //so we're going to have to use web3.eth.call()
+  
+      let data = await web3.eth.call({
+        to: deployedContract.address,
+        data: selector
+      });
+  
+      let decodings = await decoder.decodeReturnValue(abiEntry, data);
+      assert.lengthOf(decodings, 1);
+      let decoding = decodings[0];
+      assert.strictEqual(decoding.kind, "revert");
+      assert.strictEqual(decoding.decodingMode, "full");
+      assert.strictEqual(decoding.abi.name, "LibraryError");
+      assert.strictEqual(decoding.definedIn.typeName, "WireTestLibrary");
+      assert.lengthOf(decoding.arguments, 0);
+    });
+
+    it("Decodes ambiguous custom errors", async function () {
+      const { WireTest } = abstractions;
+      const deployedContract = await WireTest.deployed();
+  
+      const decoder = await Decoder.forContract(WireTest, Contracts);
+  
+      let abiEntry = WireTest.abi.find(
+        ({ type, name }) => type === "function" && name === "throwAmbiguous"
+      );
+      let selector = web3.eth.abi.encodeFunctionSignature(abiEntry);
+  
+      //we need the raw return data, and contract.call() does not exist yet,
+      //so we're going to have to use web3.eth.call()
+  
+      let data = await web3.eth.call({
+        to: deployedContract.address,
+        data: selector
+      });
+  
+      let decodings = await decoder.decodeReturnValue(abiEntry, data);
+      assert.lengthOf(decodings, 2);
+      assert.strictEqual(decodings[0].kind, "revert");
+      assert.strictEqual(decodings[0].decodingMode, "full");
+      assert.strictEqual(decodings[0].abi.name, "h9316");
+      assert.strictEqual(decodings[0].definedIn.typeName, "WireTest");
+      assert.lengthOf(decodings[0].arguments, 1);
+      assert.strictEqual(
+        Codec.Format.Utils.Inspect.unsafeNativize(decodings[0].arguments[0].value),
+        "0x0000000000000000000000000000000000000000000000000000000000000000"
+      );
+      assert.strictEqual(decodings[1].kind, "revert");
+      assert.strictEqual(decodings[1].decodingMode, "full");
+      assert.strictEqual(decodings[1].abi.name, "b27072");
+      assert.strictEqual(decodings[1].definedIn.typeName, "WireTestLibrary");
+      assert.lengthOf(decodings[1].arguments, 1);
+      assert.strictEqual(
+        Codec.Format.Utils.Inspect.unsafeNativize(decodings[1].arguments[0].value),
+        0
+      );
+    });
+
+    it("Decodes ambiguous custom errors from external calls", async function () {
+      const { WireTest } = abstractions;
+      const deployedContract = await WireTest.deployed();
+  
+      const decoder = await Decoder.forContract(WireTest, Contracts);
+  
+      let abiEntry = WireTest.abi.find(
+        ({ type, name }) => type === "function" && name === "callAndThrowAmbiguous"
+      );
+      let selector = web3.eth.abi.encodeFunctionSignature(abiEntry);
+  
+      //we need the raw return data, and contract.call() does not exist yet,
+      //so we're going to have to use web3.eth.call()
+  
+      let data = await web3.eth.call({
+        to: deployedContract.address,
+        data: selector
+      });
+  
+      let decodings = await decoder.decodeReturnValue(abiEntry, data);
+      assert.lengthOf(decodings, 2);
+      //note: what follows is copypasted from above
+      assert.strictEqual(decodings[0].kind, "revert");
+      assert.strictEqual(decodings[0].decodingMode, "full");
+      assert.strictEqual(decodings[0].abi.name, "h9316");
+      assert.strictEqual(decodings[0].definedIn.typeName, "WireTest");
+      assert.lengthOf(decodings[0].arguments, 1);
+      assert.strictEqual(
+        Codec.Format.Utils.Inspect.unsafeNativize(decodings[0].arguments[0].value),
+        "0x0000000000000000000000000000000000000000000000000000000000000000"
+      );
+      assert.strictEqual(decodings[1].kind, "revert");
+      assert.strictEqual(decodings[1].decodingMode, "full");
+      assert.strictEqual(decodings[1].abi.name, "b27072");
+      assert.strictEqual(decodings[1].definedIn.typeName, "WireTestLibrary");
+      assert.lengthOf(decodings[1].arguments, 1);
+      assert.strictEqual(
+        Codec.Format.Utils.Inspect.unsafeNativize(decodings[1].arguments[0].value),
+        0
+      );
+    });
   });
 });
 

@@ -53,6 +53,11 @@ function* handleEnter(sourceId, sourceIndex, node, pointer, parentId) {
       debug("%s recording type %o", pointer, node);
       yield* data.defineType(node, sourceId);
       break;
+    case "EventDefinition":
+    case "ErrorDefinition":
+      debug("%s recording type %o", pointer, node);
+      yield* data.defineTaggedOutput(node, sourceId);
+      break;
   }
 }
 

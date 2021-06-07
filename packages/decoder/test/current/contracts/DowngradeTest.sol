@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
 contract DowngradeTestParent {
@@ -73,6 +73,12 @@ contract DowngradeTest is DowngradeTestParent {
 
   function returnsStuff() public pure returns (Pair memory, Ternary) {
     return (Pair(107, 683), Ternary.No);
+  }
+
+  error CustomError(Pair pair);
+
+  function throwCustom() public pure {
+    revert CustomError(Pair(1, 2));
   }
 }
 

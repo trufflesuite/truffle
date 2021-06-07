@@ -457,17 +457,18 @@ export function* decodeEvent(
     }
     //if we've made it here, the allocation works!  hooray!
     debug("allocation accepted!");
+    let decoding: LogDecoding;
     if (allocation.abi.anonymous) {
-      decodings.push({
+      decoding = {
         kind: "anonymous",
         definedIn: contractType,
         class: emittingContractType,
         abi: allocation.abi,
         arguments: decodedArguments,
         decodingMode
-      });
+      };
     } else {
-      decodings.push({
+      decoding = {
         kind: "event",
         definedIn: contractType,
         class: emittingContractType,
@@ -475,7 +476,13 @@ export function* decodeEvent(
         arguments: decodedArguments,
         selector,
         decodingMode
-      });
+      };
+    }
+    decodings.push(decoding);
+    //if we've made this far (so this allocation works), and we were passed an
+    //ID, and it matches this ID, bail out & return this as the *only* decoding
+    if (options.id && allocation.id === options.id) {
+      return [decoding];
     }
   }
   return decodings;
@@ -495,7 +502,7 @@ const panicSelector: Uint8Array = Conversion.toBytes(
   })
 ).subarray(0, Evm.Utils.SELECTOR_SIZE);
 
-const defaultReturnAllocationsHighPriority: AbiData.Allocate.ReturndataAllocation[] = [
+const defaultRevertAllocations: AbiData.Allocate.ReturndataAllocation[] = [
   {
     kind: "revert" as const,
     allocationMode: "full" as const,
@@ -511,6 +518,7 @@ const defaultReturnAllocationsHighPriority: AbiData.Allocate.ReturndataAllocatio
         }
       ]
     },
+    definedIn: null,
     arguments: [
       {
         name: "",
@@ -541,6 +549,7 @@ const defaultReturnAllocationsHighPriority: AbiData.Allocate.ReturndataAllocatio
         }
       ]
     },
+    definedIn: null,
     arguments: [
       {
         name: "",
@@ -559,7 +568,7 @@ const defaultReturnAllocationsHighPriority: AbiData.Allocate.ReturndataAllocatio
   }
 ];
 
-const defaultReturnAllocationsLowPriority: AbiData.Allocate.ReturndataAllocation[] = [
+const defaultEmptyAllocations: AbiData.Allocate.ReturndataAllocation[] = [
   {
     kind: "failure" as const,
     allocationMode: "full" as const,
@@ -574,37 +583,53 @@ const defaultReturnAllocationsLowPriority: AbiData.Allocate.ReturndataAllocation
   }
 ];
 
-const defaultReturnAllocations = [
-  ...defaultReturnAllocationsHighPriority,
-  ...defaultReturnAllocationsLowPriority
-];
-
 /**
  * If there are multiple possibilities, they're always returned in
  * the order: return, revert, returnmessage, failure, empty, bytecode, unknownbytecode
+ * Moreover, within "revert", builtin ones are put above custom ones
  * @Category Decoding
  */
 export function* decodeReturndata(
   info: Evm.EvmInfo,
   successAllocation: AbiData.Allocate.ReturndataAllocation | null, //null here must be explicit
-  status?: boolean //you can pass this to indicate that you know the status
+  status?: boolean, //you can pass this to indicate that you know the status,
+  id?: string //useful when status = false
 ): Generator<DecoderRequest, ReturndataDecoding[], Uint8Array> {
   let possibleAllocations: AbiData.Allocate.ReturndataAllocation[];
+  const selector = Conversion.toHexString(info.state.returndata.slice(0,4));
+  const contextHash = (info.currentContext || { context: "" }).context; //HACK: "" is used to represent no context
+  const customRevertAllocations =
+    (((info.allocations.returndata || { [contextHash]: {} })[contextHash]) || { [selector]: [] })[selector] || [];
   if (successAllocation === null) {
-    possibleAllocations = defaultReturnAllocations;
+    possibleAllocations = [
+      ...defaultRevertAllocations,
+      ...customRevertAllocations,
+      ...defaultEmptyAllocations
+    ];
   } else {
     switch (successAllocation.kind) {
       case "return":
-        possibleAllocations = [successAllocation, ...defaultReturnAllocations];
+        possibleAllocations = [
+          successAllocation,
+          ...defaultRevertAllocations,
+          ...customRevertAllocations,
+          ...defaultEmptyAllocations
+        ];
         break;
       case "bytecode":
-        possibleAllocations = [...defaultReturnAllocations, successAllocation];
+        possibleAllocations = [
+          ...defaultRevertAllocations,
+          ...customRevertAllocations,
+          ...defaultEmptyAllocations,
+          successAllocation
+        ];
         break;
       case "returnmessage":
         possibleAllocations = [
-          ...defaultReturnAllocationsHighPriority,
+          ...defaultRevertAllocations,
+          ...customRevertAllocations,
           successAllocation,
-          ...defaultReturnAllocationsLowPriority
+          ...defaultEmptyAllocations
         ];
         break;
       //Other cases shouldn't happen so I'm leaving them to cause errors!
@@ -745,11 +770,10 @@ export function* decodeReturndata(
     //if we've made it here, the allocation works!  hooray!
     debug("allocation accepted!");
     let decoding: ReturndataDecoding;
-    let kind = allocation.kind;
-    switch (kind) {
+    switch (allocation.kind) {
       case "return":
         decoding = {
-          kind,
+          kind: "return" as const,
           status: true as const,
           arguments: decodedArguments,
           decodingMode
@@ -757,8 +781,9 @@ export function* decodeReturndata(
         break;
       case "revert":
         decoding = {
-          kind,
+          kind: "revert" as const,
           abi: allocation.abi,
+          definedIn: allocation.definedIn,
           status: false as const,
           arguments: decodedArguments,
           decodingMode
@@ -766,20 +791,25 @@ export function* decodeReturndata(
         break;
       case "selfdestruct":
         decoding = {
-          kind,
+          kind: "selfdestruct" as const,
           status: true as const,
           decodingMode
         };
         break;
       case "failure":
         decoding = {
-          kind,
+          kind: "failure" as const,
           status: false as const,
           decodingMode
         };
         break;
     }
     decodings.push(decoding);
+    //if we've made this far (so this allocation works), and we were passed an
+    //ID, and it matches this ID, bail out & return this as the *only* decoding
+    if (id && allocation.kind === "revert" && allocation.id === id) {
+      return [decoding];
+    }
   }
   return decodings;
 }
@@ -806,9 +836,7 @@ function* decodeBytecode(
   const contractType = Contexts.Import.contextToType(context);
   //now: ignore original allocation (which we didn't even pass :) )
   //and lookup allocation by context
-  const allocation = <ConstructorReturndataAllocation>(
-    info.allocations.calldata.constructorAllocations[context.context].output
-  );
+  const allocation = info.allocations.calldata.constructorAllocations[context.context].output;
   debug("bytecode allocation: %O", allocation);
   //now: add immutables if applicable
   let immutables: StateVariable[] | undefined;

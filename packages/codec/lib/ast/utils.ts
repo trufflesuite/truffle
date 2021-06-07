@@ -541,6 +541,8 @@ export function definitionToAbi(
       }
     case "EventDefinition":
       return eventDefinitionToAbi(node, referenceDeclarations);
+    case "ErrorDefinition":
+      return errorDefinitionToAbi(node, referenceDeclarations);
     case "VariableDeclaration":
       if (node.visibility === "public") {
         return getterDefinitionToAbi(node, referenceDeclarations);
@@ -631,6 +633,22 @@ function eventDefinitionToAbi(
     inputs,
     name,
     anonymous
+  };
+}
+
+function errorDefinitionToAbi(
+  node: AstNode,
+  referenceDeclarations: AstNodes
+): Abi.ErrorEntry {
+  let inputs = parametersToAbi(
+    node.parameters.parameters,
+    referenceDeclarations
+  );
+  let name = node.name;
+  return {
+    type: "error",
+    inputs,
+    name
   };
 }
 

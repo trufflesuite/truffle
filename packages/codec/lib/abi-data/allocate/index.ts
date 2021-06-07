@@ -7,11 +7,14 @@ import * as Abi from "@truffle/abi-utils";
 
 import * as Import from "@truffle/codec/abi-data/import";
 import * as AbiDataUtils from "@truffle/codec/abi-data/utils";
+const Web3Utils = require("web3-utils"); //sorry for untyped import
 import * as Evm from "@truffle/codec/evm";
 import * as Common from "@truffle/codec/common";
 import * as Compiler from "@truffle/codec/compiler";
+import * as Conversion from "@truffle/codec/conversion";
 import * as Ast from "@truffle/codec/ast";
 import * as Contexts from "@truffle/codec/contexts";
+import { makeTypeId } from "@truffle/codec/contexts/import";
 import * as Pointer from "@truffle/codec/pointer";
 import {
   AbiAllocation,
@@ -19,11 +22,15 @@ import {
   AbiMemberAllocation,
   AbiSizeInfo,
   CalldataAndReturndataAllocation,
+  FunctionCalldataAndReturndataAllocation,
+  ConstructorCalldataAndReturndataAllocation,
   CalldataAllocation,
   ReturndataAllocation,
-  FunctionReturndataAllocation,
+  ReturnValueReturndataAllocation,
+  RevertReturndataAllocation,
   ConstructorReturndataAllocation,
-  AdditionalReturndataAllocation,
+  MessageReturndataAllocation,
+  BlankReturndataAllocation,
   ReturnImmutableAllocation,
   CalldataAllocations,
   CalldataAllocationTemporary,
@@ -32,7 +39,8 @@ import {
   EventAllocation,
   EventAllocations,
   EventAllocationTemporary,
-  EventArgumentAllocation
+  EventArgumentAllocation,
+  ReturndataAllocations
 } from "./types";
 import { DecodingMode } from "@truffle/codec/types";
 import * as Format from "@truffle/codec/format";
@@ -43,11 +51,15 @@ export {
   AbiSizeInfo,
   CalldataAllocation,
   ReturndataAllocation,
-  FunctionReturndataAllocation,
+  ReturnValueReturndataAllocation,
+  RevertReturndataAllocation,
   ConstructorReturndataAllocation,
+  MessageReturndataAllocation,
+  BlankReturndataAllocation,
   CalldataAndReturndataAllocation,
   ContractAllocationInfo,
-  EventAllocation
+  EventAllocation,
+  ReturndataAllocations
 };
 
 interface AbiAllocationInfo {
@@ -62,7 +74,7 @@ interface EventParameterInfo {
   indexed: boolean;
 }
 
-export const FallbackOutputAllocation: AdditionalReturndataAllocation = {
+export const FallbackOutputAllocation: MessageReturndataAllocation = {
   kind: "returnmessage",
   selector: new Uint8Array(), //empty
   allocationMode: "full"
@@ -491,7 +503,7 @@ function allocateCalldataAndReturndata(
       );
       break;
   }
-  return { input: inputsAllocation, output: outputsAllocation };
+  return <CalldataAndReturndataAllocation>{ input: inputsAllocation, output: outputsAllocation }; //TS chokes on this for some reason
 }
 
 interface AbiAllocationAndMode {
@@ -574,6 +586,7 @@ function allocateEvent(
   compiler: Compiler.CompilerVersion | undefined
 ): EventAllocation | undefined {
   let parameterTypes: EventParameterInfo[];
+  let nodeId: string;
   let id: string;
   //first: determine the corresponding event node
   //search through base contracts, from most derived (right) to most base (left)
@@ -632,6 +645,8 @@ function allocateEvent(
     definedIn = <Format.Types.ContractType>(
       Ast.Import.definitionToStoredType(contractNode, compilationId, compiler)
     ); //can skip reference declarations argument here
+    //...and set the ID
+    id = makeTypeId(node.id, compilationId);
   } else {
     //if no node, have to fall back into ABI mode
     debug("falling back to ABI because no node");
@@ -643,7 +658,7 @@ function allocateEvent(
   let nonIndexed: EventParameterInfo[];
   let abiAllocation: AbiAllocation; //the untransformed allocation for the non-indexed parameters
   if (allocationMode === "full") {
-    let id = node.id.toString();
+    nodeId = node.id.toString();
     let parameters = node.parameters.parameters;
     parameterTypes = parameters.map(definition => ({
       //note: if node is defined, compiler had better be defined, too!
@@ -659,18 +674,18 @@ function allocateEvent(
     try {
       //now: perform the allocation for the non-indexed parameters!
       abiAllocation = allocateMembers(
-        id,
+        nodeId,
         nonIndexed,
         userDefinedTypes,
         abiAllocations
-      )[id]; //note the implicit conversion from EventParameterInfo to NameTypePair
+      )[nodeId]; //note the implicit conversion from EventParameterInfo to NameTypePair
     } catch {
       allocationMode = "abi";
     }
   }
   if (allocationMode === "abi") {
     //THIS IS DELIBERATELY NOT AN ELSE
-    id = "-1"; //fake irrelevant ID
+    nodeId = "-1"; //fake irrelevant ID
     parameterTypes = abiEntry.inputs.map(abiParameter => ({
       type: Import.abiParameterToType(abiParameter),
       name: abiParameter.name,
@@ -683,11 +698,11 @@ function allocateEvent(
     );
     //now: perform the allocation for the non-indexed parameters!
     abiAllocation = allocateMembers(
-      id,
+      nodeId,
       nonIndexed,
       userDefinedTypes,
       abiAllocations
-    )[id]; //note the implicit conversion from EventParameterInfo to NameTypePair
+    )[nodeId]; //note the implicit conversion from EventParameterInfo to NameTypePair
   }
   //now: transform the result appropriately
   const nonIndexedArgumentsAllocation = abiAllocation.members.map(member => ({
@@ -723,9 +738,83 @@ function allocateEvent(
     abi: abiEntry,
     contextHash: undefined, //leave this for later (HACK)
     definedIn,
+    id,
     arguments: argumentsAllocation,
     allocationMode,
     anonymous: abiEntry.anonymous
+  };
+}
+
+function allocateError(
+  abiEntry: Abi.ErrorEntry,
+  errorNode: Ast.AstNode | undefined,
+  referenceDeclarations: Ast.AstNodes,
+  userDefinedTypes: Format.Types.TypesById,
+  abiAllocations: AbiAllocations,
+  compilationId: string,
+  compiler: Compiler.CompilerVersion | undefined
+): RevertReturndataAllocation {
+  //first: if we got passed just a node & no abi entry,
+  let id: string | undefined = undefined;
+  let definedIn: Format.Types.ContractType | undefined | null = undefined;
+  let parametersFull: Ast.AstNode[] | undefined = undefined;
+  const parametersAbi: Abi.Parameter[] = abiEntry.inputs;
+  if (errorNode) {
+    //first, set parametersFull
+    parametersFull = errorNode.parameters.parameters;
+    //now, set id
+    id = makeTypeId(errorNode.id, compilationId);
+    //now, set definedIn
+    let contractNode: Ast.AstNode | null = null;
+    for (const node of Object.values(referenceDeclarations)) {
+      if (node.nodeType === "ContractDefinition") {
+        if (node.nodes.some((subNode: Ast.AstNode) => subNode.id === errorNode.id)) {
+          contractNode = node;
+          break;
+        }
+      }
+      //if we didn't find it, then contractNode is null
+      //(and thus so will be definedIn)
+    }
+    if (contractNode === null) {
+      definedIn = null;
+    } else {
+      definedIn = <Format.Types.ContractType>(
+        Ast.Import.definitionToStoredType(contractNode, compilationId, compiler)
+      );
+    }
+  }
+  //otherwise, leave parametersFull, id, and definedIn undefined
+  const {
+    allocation: abiAllocation,
+    mode: allocationMode
+  } = allocateDataArguments(
+    parametersFull,
+    parametersAbi,
+    userDefinedTypes,
+    abiAllocations,
+    compilationId,
+    compiler,
+    Evm.Utils.SELECTOR_SIZE //errors use a 4-byte selector
+  );
+  //finally: transform the allocation appropriately
+  const argumentsAllocation = abiAllocation.members.map(member => ({
+    ...member,
+    pointer: {
+      location: "returndata" as const,
+      start: member.pointer.start,
+      length: member.pointer.length
+    }
+  }));
+  const selector = Conversion.toBytes(AbiDataUtils.abiSelector(abiEntry));
+  return {
+    kind: "revert",
+    selector,
+    abi: abiEntry,
+    id,
+    definedIn,
+    arguments: argumentsAllocation,
+    allocationMode
   };
 }
 
@@ -768,7 +857,7 @@ function getCalldataAllocationsForContract(
     }
     switch (abiEntry.type) {
       case "constructor":
-        allocations.constructorAllocation = allocateCalldataAndReturndata(
+        allocations.constructorAllocation = <ConstructorCalldataAndReturndataAllocation>allocateCalldataAndReturndata(
           abiEntry,
           contractNode,
           referenceDeclarations,
@@ -784,7 +873,7 @@ function getCalldataAllocationsForContract(
       case "function":
         allocations.functionAllocations[
           AbiDataUtils.abiSelector(abiEntry)
-        ] = allocateCalldataAndReturndata(
+        ] = <FunctionCalldataAndReturndataAllocation>allocateCalldataAndReturndata(
           abiEntry,
           contractNode,
           referenceDeclarations,
@@ -797,7 +886,7 @@ function getCalldataAllocationsForContract(
         );
         break;
       default:
-        //skip over fallback and event
+        //skip over fallback, error, and event
         break;
     }
   }
@@ -819,7 +908,7 @@ function defaultConstructorAllocation(
   contractNode: Ast.AstNode | undefined,
   referenceDeclarations: Ast.AstNodes,
   deployedContext?: Contexts.Context
-): CalldataAndReturndataAllocation | undefined {
+): ConstructorCalldataAndReturndataAllocation | undefined {
   if (!constructorContext) {
     return undefined;
   }
@@ -972,6 +1061,224 @@ export function getCalldataAllocations(
     }
   }
   return allocations;
+}
+
+function getReturndataAllocationsForContract(
+  abi: Abi.Abi,
+  contractNode: Ast.AstNode | undefined,
+  referenceDeclarations: Ast.AstNodes,
+  userDefinedTypes: Format.Types.TypesById,
+  abiAllocations: AbiAllocations,
+  compilationId: string,
+  compiler: Compiler.CompilerVersion | undefined
+): RevertReturndataAllocation[] {
+  let useAst = Boolean(contractNode && contractNode.usedErrors);
+  if (useAst) {
+    const errorNodes = contractNode.usedErrors.map(
+      errorNodeId => referenceDeclarations[errorNodeId]
+    );
+    let abis: Abi.ErrorEntry[];
+    try {
+      abis = errorNodes.map(
+        errorNode => <Abi.ErrorEntry>Ast.Utils.definitionToAbi(
+          errorNode,
+          referenceDeclarations
+        )
+      );
+    } catch {
+      useAst = false;
+    }
+    if (useAst) { //i.e. if the above operation succeeded
+      return contractNode.usedErrors.map(
+        errorNodeId => referenceDeclarations[errorNodeId]
+      ).map((errorNode, index) => allocateError(
+        abis[index],
+        errorNode,
+        referenceDeclarations,
+        userDefinedTypes,
+        abiAllocations,
+        compilationId,
+        compiler
+      ));
+    }
+  }
+  if (!useAst) { //deliberately *not* an else!
+    return abi
+      .filter((abiEntry: Abi.Entry) => abiEntry.type === "error")
+      .filter(
+        (abiEntry: Abi.ErrorEntry) =>
+          !AbiDataUtils.abiEntryIsObviouslyIllTyped(abiEntry)
+      ) //hack workaround
+      .map((abiEntry: Abi.ErrorEntry) => allocateError(
+        abiEntry,
+        undefined,
+        referenceDeclarations,
+        userDefinedTypes,
+        abiAllocations,
+        compilationId,
+        compiler
+      ));
+  }
+}
+
+export function getReturndataAllocations(
+  contracts: ContractAllocationInfo[],
+  referenceDeclarations: { [compilationId: string]: Ast.AstNodes },
+  userDefinedTypes: Format.Types.TypesById,
+  abiAllocations: AbiAllocations
+): ReturndataAllocations {
+  let allContexts: string[] = [].concat(
+    ...contracts.map(({ deployedContext, constructorContext }) =>
+      [deployedContext, constructorContext]
+  )).filter(x => x) //filter out nonexistent contexts
+  .map(context => context.context);
+  allContexts.push(""); //HACK: add fictional empty-string context to represent no-context
+  //holds allocations for a given context
+  let selfAllocations: { [contextHash: string]: RevertReturndataAllocation[] } = {};
+  //holds allocations for *other* contexts
+  let additionalAllocations: { [contextHash: string]: RevertReturndataAllocation[] } = {};
+  //now: process the allocations for each contract. we'll add each contract's
+  //allocations to *its* entries in allocations, and to every *other* entry
+  //in additionalAllocations.
+  for (const contract of contracts) {
+    const contractAllocations = getReturndataAllocationsForContract(
+      contract.abi,
+      contract.contractNode,
+      referenceDeclarations[contract.compilationId],
+      userDefinedTypes,
+      abiAllocations,
+      contract.compilationId,
+      contract.compiler
+    );
+    const contexts: string[] = [ //contexts for this contract
+      contract.deployedContext,
+      contract.constructorContext
+    ].filter(x => x) //filter out nonexistent contexts
+    .map(context => context.context);
+    const otherContexts: string[] = allContexts.filter( //contexts for all other contracts
+      contextHash => !contexts.includes(contextHash)
+    );
+    //add them to selfAllocations
+    for (const contextHash of contexts) {
+      selfAllocations[contextHash] = contractAllocations;
+    }
+    //add them to additionalAllocations
+    for (const contextHash of otherContexts) {
+      if (additionalAllocations[contextHash] === undefined) {
+        additionalAllocations[contextHash] = [];
+      }
+      additionalAllocations[contextHash] =
+        additionalAllocations[contextHash].concat(contractAllocations);
+    }
+  }
+  let allocations: ReturndataAllocations = Object.assign(
+    {},
+    ...allContexts.map(contextHash => ({ [contextHash]: {} }))
+  );
+  //now: perform coalescense!
+  for (const contract of contracts) {
+    //we're setting up contexts again, sorry >_>
+    const contexts: string[] = [ //contexts for this contract
+      contract.deployedContext,
+      contract.constructorContext
+    ].filter(x => x) //filter out nonexistent contexts
+    .map(context => context.context);
+    for (const contextHash of contexts) {
+      allocations[contextHash] = coalesceReturndataAllocations(
+        selfAllocations[contextHash] || [],
+        additionalAllocations[contextHash] || []
+      );
+      debug("allocations: %O", allocations[contextHash]);
+    }
+  }
+  //...also coalesce the fake "" context
+  allocations[""] = coalesceReturndataAllocations(
+    [],
+    additionalAllocations[""] || []
+  );
+  /*
+  for (const [contextHash, contextAllocations] of Object.entries(allAllocations)) {
+    for (const [signature, signatureAllocations] of Object.entries(contextAllocations)) {
+      const selector = Web3Utils.soliditySha3({ type: "string", value: signature })
+        .slice(0, 2 + 2 * Evm.Utils.SELECTOR_SIZE); //arithmetic to account for hex string
+      if (!allocations[contextHash][selector]) {
+        allocations[contextHash][selector] = [];
+      }
+      allocations[contextHash][selector] = allocations[contextHash][selector].concat(signatureAllocations);
+    }
+  }
+  */
+  debug("error allocations: %O", allocations);
+  return allocations;
+}
+
+function coalesceReturndataAllocations(
+  selfAllocations: RevertReturndataAllocation[],
+  additionalAllocations: RevertReturndataAllocation[]
+): { [selector: string]: RevertReturndataAllocation[] } {
+  let bySelector: { [selector: string]: RevertReturndataAllocation[] } = {};
+  //start with the additional allocations; we want to process
+  //the self allocations last, due to special handling of no-ID allocations there
+  for (const allocation of additionalAllocations) {
+    const signature = AbiDataUtils.abiSignature(allocation.abi);
+    const selector = Web3Utils.soliditySha3({ type: "string", value: signature })
+      .slice(0, 2 + 2 * Evm.Utils.SELECTOR_SIZE); //arithmetic to account for hex string
+    if (bySelector[selector]) {
+      //note: at this point, for any given signature, there should only be a
+      //no-ID allocation for that signature if it's the only one
+      if (allocation.id !== undefined) {
+        //delete anything with that signature but w/o an ID, or with this same ID
+        bySelector[selector] = bySelector[selector].filter(
+          ({ abi, id }) => !(AbiDataUtils.abiSignature(abi) === signature
+          && (id === undefined || id === allocation.id))
+        );
+        //add this allocation
+        bySelector[selector].push(allocation);
+      } else if (
+        !bySelector[selector].some(
+          ({ abi }) => AbiDataUtils.abiSignature(abi) === signature
+        )
+      ) {
+        //only add ID-less ones if there isn't anything of that signature already
+        bySelector[selector].push(allocation);
+      }
+    } else {
+      //if there's nothing there thus far, add it
+      bySelector[selector] = [allocation];
+    }
+  }
+  //store for later: # of allocs per selector
+  const selectorCounts: { [selector: string]: number } =
+    Object.assign({},
+      ...Object.entries(bySelector).map(
+        ([selector, allocations]) => ({
+          [selector]: allocations.length
+        })
+      )
+    );
+  //now we're going to perform a modified version of this procedure for the self allocations:
+  //1. we're going to add to the front, not the back
+  //2. we can add an ID-less one even if there are already ones with IDs there
+  //(sorry for the copypaste)
+  for (const allocation of selfAllocations) {
+    const signature = AbiDataUtils.abiSignature(allocation.abi);
+    const selector = Web3Utils.soliditySha3({ type: "string", value: signature })
+      .slice(0, 2 + 2 * Evm.Utils.SELECTOR_SIZE); //arithmetic to account for hex string
+    if (bySelector[selector]) {
+      //delete anything with that signature but w/o an ID, or with this same ID
+      //(if this alloc has no ID, this will only delete ID-less ones :) )
+      bySelector[selector] = bySelector[selector].filter(
+        ({ abi, id }) => !(AbiDataUtils.abiSignature(abi) === signature
+        && (id === undefined || id === allocation.id))
+      );
+      //add this allocation to front, not back!
+      bySelector[selector].unshift(allocation);
+    } else {
+      //if there's nothing there thus far, add it
+      bySelector[selector] = [allocation];
+    }
+  }
+  return bySelector;
 }
 
 function getEventAllocationsForContract(

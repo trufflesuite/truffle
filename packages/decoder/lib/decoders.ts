@@ -79,7 +79,7 @@ export class ProjectDecoder {
     ({
       definitions: this.referenceDeclarations,
       types: this.userDefinedTypes
-    } = Compilations.Utils.collectUserDefinedTypes(this.compilations));
+    } = Compilations.Utils.collectUserDefinedTypesAndTaggedOutputs(this.compilations));
 
     ({
       contexts: this.contexts,
@@ -96,6 +96,12 @@ export class ProjectDecoder {
       this.userDefinedTypes
     ); //not used by project decoder itself, but used by contract decoder
     this.allocations.calldata = AbiData.Allocate.getCalldataAllocations(
+      allocationInfo,
+      this.referenceDeclarations,
+      this.userDefinedTypes,
+      this.allocations.abi
+    );
+    this.allocations.returndata = AbiData.Allocate.getReturndataAllocations(
       allocationInfo,
       this.referenceDeclarations,
       this.userDefinedTypes,
@@ -596,12 +602,7 @@ export class ProjectDecoder {
    * @protected
    */
   public getAllocations(): Evm.AllocationInfo {
-    return {
-      abi: this.allocations.abi,
-      storage: this.allocations.storage,
-      state: this.allocations.state,
-      calldata: this.allocations.calldata
-    };
+    return this.allocations;
   }
 
   /**
@@ -823,6 +824,7 @@ export class ContractDecoder {
       allocation = this.noBytecodeAllocations[selector].output;
     }
 
+    debug("this.allocations: %O", this.allocations);
     const bytes = Conversion.toBytes(data);
     const info: Evm.EvmInfo = {
       state: {
@@ -831,7 +833,8 @@ export class ContractDecoder {
       },
       userDefinedTypes: this.userDefinedTypes,
       allocations: this.allocations,
-      contexts: { ...this.contexts, ...additionalContexts }
+      contexts: { ...this.contexts, ...additionalContexts },
+      currentContext: this.context
     };
 
     const decoder = decodeReturndata(info, allocation, status);
