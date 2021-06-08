@@ -934,7 +934,7 @@ export class ContractDecoder {
   }
 
   /**
-   * See [[WireDecoder.abifyReturndataDecoding]].
+   * See [[ProjectDecoder.abifyReturndataDecoding]].
    */
   public abifyReturndataDecoding(
     decoding: ReturndataDecoding
@@ -1612,7 +1612,7 @@ export class ContractInstanceDecoder {
   }
 
   /**
-   * See [[WireDecoder.abifyReturndataDecoding]].
+   * See [[ProjectDecoder.abifyReturndataDecoding]].
    */
   public abifyReturndataDecoding(
     decoding: ReturndataDecoding

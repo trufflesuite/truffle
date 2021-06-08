@@ -456,7 +456,7 @@ export function simpleShimSourceMap(
  *
  * "Tagged outputs" means user-defined things that are output by a contract
  * (not input to a contract), and which are distinguished by (potentially
- * ambiguous) selectors.  So, events and custom errors are tagged outputs.  
+ * ambiguous) selectors.  So, events and custom errors are tagged outputs.
  * Function arguments are not tagged outputs (they're not outputs).
  * Return values are not tagged outputs (they don't have a selector).
  * Built-in errors (Error(string) and Panic(uint))... OK I guess those could
