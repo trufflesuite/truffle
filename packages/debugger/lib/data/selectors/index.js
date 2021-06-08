@@ -1032,7 +1032,7 @@ const data = createSelectorTree({
      */
     errorNodeId: createLeaf(
       [stacktrace.current.innerReturnPosition, stacktrace.current.lastPosition],
-      (innerLocation, lastLocation) => ((innerLocation || lastLocation).node || {}).id
+      (innerLocation, lastLocation) => ((innerLocation || lastLocation || {}).node || {}).id
     ),
 
     /**
