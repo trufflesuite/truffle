@@ -570,7 +570,7 @@ async function runEnumTestBody(mangledCompilations) {
 async function runErrorTestBody(mangledCompilations) {
   const deployedContract = await abstractions.DowngradeTest.new();
   const decoder = await Decoder.forContract(abstractions.DowngradeTest, {
-    compilations: mangledCompilations
+    projectInfo: { compilations: mangledCompilations }
   });
   let abiEntry = abstractions.DowngradeTest.abi.find(
     ({ type, name }) => type === "function" && name === "throwCustom"

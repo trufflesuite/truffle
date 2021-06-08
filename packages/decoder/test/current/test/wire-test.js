@@ -1038,7 +1038,9 @@ describe("Over-the-wire decoding", function () {
       const { WireTest } = abstractions;
       const deployedContract = await WireTest.deployed();
   
-      const decoder = await Decoder.forContract(WireTest, Contracts);
+      const decoder = await Decoder.forContract(WireTest, {
+        projectInfo: { artifacts: Contracts }
+      });
   
       let abiEntry = WireTest.abi.find(
         ({ type, name }) => type === "function" && name === "throwUnambiguous"
@@ -1077,7 +1079,9 @@ describe("Over-the-wire decoding", function () {
       const { WireTest } = abstractions;
       const deployedContract = await WireTest.deployed();
   
-      const decoder = await Decoder.forContract(WireTest, Contracts);
+      const decoder = await Decoder.forContract(WireTest, {
+        projectInfo: { artifacts: Contracts }
+      });
   
       let abiEntry = WireTest.abi.find(
         ({ type, name }) => type === "function" && name === "callAndThrow"
@@ -1106,7 +1110,9 @@ describe("Over-the-wire decoding", function () {
       const { WireTest } = abstractions;
       const deployedContract = await WireTest.deployed();
   
-      const decoder = await Decoder.forContract(WireTest, Contracts);
+      const decoder = await Decoder.forContract(WireTest, {
+        projectInfo: { artifacts: Contracts }
+      });
   
       let abiEntry = WireTest.abi.find(
         ({ type, name }) => type === "function" && name === "throwAmbiguous"
@@ -1147,7 +1153,9 @@ describe("Over-the-wire decoding", function () {
       const { WireTest } = abstractions;
       const deployedContract = await WireTest.deployed();
   
-      const decoder = await Decoder.forContract(WireTest, Contracts);
+      const decoder = await Decoder.forContract(WireTest, {
+        projectInfo: { artifacts: Contracts }
+      });
   
       let abiEntry = WireTest.abi.find(
         ({ type, name }) => type === "function" && name === "callAndThrowAmbiguous"
