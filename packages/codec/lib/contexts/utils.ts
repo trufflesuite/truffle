@@ -2,6 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:contexts:utils");
 
 import * as Evm from "@truffle/codec/evm";
+import { CompilerVersion } from "@truffle/codec/compiler";
 import { Context, Contexts } from "./types";
 import escapeRegExp from "lodash.escaperegexp";
 import * as cbor from "cbor";
@@ -193,13 +194,7 @@ export function normalizeContexts(contexts: Contexts): Contexts {
   //cbor, add it.
   for (let [contextHash, context] of Object.entries(newContexts)) {
     if (!context.compiler && contextHash in decodedCbors) {
-      const versionString = extractVersionString(decodedCbors[contextHash]);
-      if (versionString !== null) {
-        context.compiler = {
-          name: "solc", //only solc would use a cbor field named "solc"...
-          version: versionString
-        };
-      }
+      context.compiler = detectCompilerInfo(decodedCbors[contextHash]);
     }
   }
   
@@ -280,8 +275,10 @@ function isObjectWithHash(decoded: any): boolean {
   if (typeof decoded !== "object") {
     return false;
   }
-  //borc sometimes returns maps and sometimes objects,
+  //cbor sometimes returns maps and sometimes objects,
   //so let's make things consistent by converting to a map
+  //(actually, is this true? borc did this, I think cbor
+  //does too, but I haven't checked recently)
   if (!(decoded instanceof Map)) {
     decoded = new Map(Object.entries(decoded));
   }
@@ -289,32 +286,42 @@ function isObjectWithHash(decoded: any): boolean {
   return hashKeys.some(key => decoded.has(key));
 }
 
-//returns null if no version string can be extracted
-function extractVersionString(decoded: any): string | null {
+//returns undefined if no valid compiler info detected
+//(if it detects solc but no version, it will not return
+//a partial result, just undefined)
+function detectCompilerInfo(decoded: any): CompilerVersion | undefined {
   if (typeof decoded !== "object") {
-    return null;
+    return undefined;
   }
-  //borc sometimes returns maps and sometimes objects,
+  //cbor sometimes returns maps and sometimes objects,
   //so let's make things consistent by converting to a map
+  //(although see note above?)
   if (!(decoded instanceof Map)) {
     decoded = new Map(Object.entries(decoded));
   }
   if (!decoded.has("solc")) {
-    //return null if the solc version field is not present
+    //return undefined if the solc version field is not present
     //(this occurs if version <0.5.9)
-    return null;
+    //currently no other language attaches cbor info, so, yeah
+    return undefined;
   }
   const rawVersion = decoded.get("solc");
   if (typeof rawVersion === "string") {
     //for prerelease versions, the version is stored as a string.
-    return rawVersion;
+    return {
+      name: "solc",
+      version: rawVersion
+    };
   } else if (rawVersion instanceof Uint8Array && rawVersion.length === 3) {
     //for release versions, it's stored as a bytestring of length 3, with the
     //bytes being major, minor, patch. so we just join them with "." to form
     //a version string (although it's missing precise commit & etc).
-    return rawVersion.join(".");
+    return {
+      name: "solc",
+      version: rawVersion.join(".")
+    };
   } else {
-    //return null on anything else
-    return null;
+    //return undefined on anything else
+    return undefined;
   }
 }
