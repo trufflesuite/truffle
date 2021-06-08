@@ -72,7 +72,7 @@ export function normalizeContexts(contexts: Contexts): Contexts {
   debug("normalizing contexts");
 
   //first, let's clone the input
-  //(let's do a 2-deep clone because we'll be altering binary)
+  //(let's do a 2-deep clone because we'll be altering binary & compiler)
   let newContexts: Contexts = Object.assign(
     {},
     ...Object.entries(contexts).map(([contextHash, context]) => ({
@@ -165,18 +165,62 @@ export function normalizeContexts(contexts: Contexts): Contexts {
 
   debug("immutables complete");
 
+  //now: extract & decode all the cbor's.  we're going to use these for
+  //two different purposes, so let's just get them all upfront.
+  let cborInfos: { [contextHash: string]: CborInfo } = {};
+  let decodedCbors: { [contextHash: string]: any } = {};
+  //note: invalid cbor will be indicated in decodedCbors by the lack of an entry,
+  //*not* by undefined or null, since there exists cbor for those :P
+
+  for (const [contextHash, context] of Object.entries(newContexts)) {
+    const cborInfo = extractCborInfo(context.binary);
+    cborInfos[contextHash] = cborInfo;
+    if (cborInfo) {
+      try {
+        //note this *will* throw if there's data left over,
+        //which is what we want it to do
+        const decoded: any = cbor.decodeFirstSync(cborInfo.cbor);
+        decodedCbors[contextHash] = decoded;
+      } catch {
+        //just don't add it
+      }
+    }
+  }
+
+  debug("intial cbor processing complete");
+
+  //now: if a context lacks a compiler, but a version can be found in the
+  //cbor, add it.
+  for (let [contextHash, context] of Object.entries(newContexts)) {
+    if (!context.compiler && contextHash in decodedCbors) {
+      const versionString = extractVersionString(decodedCbors[contextHash]);
+      if (versionString !== null) {
+        context.compiler = {
+          name: "solc", //only solc would use a cbor field named "solc"...
+          version: versionString
+        };
+      }
+    }
+  }
+  
+  debug("versions complete");
+
   //one last step: where there's CBOR with a metadata hash, we'll allow the
   //CBOR to vary, aside from the length (note: ideally here we would *only*
   //dot-out the metadata hash part of the CBOR, but, well, it's not worth the
   //trouble to detect that; doing that could potentially get pretty involved)
   //note that if the code isn't Solidity, that's fine -- we just won't get
   //valid CBOR and will not end up adding to our list of regular expressions
-  const externalCborInfo = Object.values(newContexts)
-    .map(context => extractCborInfo(context.binary))
+  const externalCborInfos = Object.entries(cborInfos)
     .filter(
-      cborSegment => cborSegment !== null && isCborWithHash(cborSegment.cbor)
+      ([contextHash, _cborInfo]) =>
+        contextHash in decodedCbors &&
+        isObjectWithHash(decodedCbors[contextHash])
+    )
+    .map(
+      ([_contextHash, cborInfo]) => cborInfo
     );
-  const cborRegexps = externalCborInfo.map(cborInfo => ({
+  const cborRegexps = externalCborInfos.map(cborInfo => ({
     input: new RegExp(cborInfo.cborSegment, "g"), //hex string so no need for escape
     output: "..".repeat(cborInfo.cborLength) + cborInfo.cborLengthHex
   }));
@@ -232,18 +276,7 @@ function extractCborInfo(binary: string): CborInfo | null {
   };
 }
 
-function isCborWithHash(encoded: string): boolean {
-  debug("checking cbor, encoed: %s", encoded);
-  let decoded: any;
-  try {
-    //note this *will* throw if there's data left over,
-    //which is what we want it to do
-    decoded = cbor.decodeFirstSync(encoded);
-  } catch {
-    debug("invalid cbor!");
-    return false;
-  }
-  debug("decoded: %O", decoded);
+function isObjectWithHash(decoded: any): boolean {
   if (typeof decoded !== "object") {
     return false;
   }
@@ -254,4 +287,34 @@ function isCborWithHash(encoded: string): boolean {
   }
   const hashKeys = ["bzzr0", "bzzr1", "ipfs"];
   return hashKeys.some(key => decoded.has(key));
+}
+
+//returns null if no version string can be extracted
+function extractVersionString(decoded: any): string | null {
+  if (typeof decoded !== "object") {
+    return null;
+  }
+  //borc sometimes returns maps and sometimes objects,
+  //so let's make things consistent by converting to a map
+  if (!(decoded instanceof Map)) {
+    decoded = new Map(Object.entries(decoded));
+  }
+  if (!decoded.has("solc")) {
+    //return null if the solc version field is not present
+    //(this occurs if version <0.5.9)
+    return null;
+  }
+  const rawVersion = decoded.get("solc");
+  if (typeof rawVersion === "string") {
+    //for prerelease versions, the version is stored as a string.
+    return rawVersion;
+  } else if (rawVersion instanceof Uint8Array && rawVersion.length === 3) {
+    //for release versions, it's stored as a bytestring of length 3, with the
+    //bytes being major, minor, patch. so we just join them with "." to form
+    //a version string (although it's missing precise commit & etc).
+    return rawVersion.join(".");
+  } else {
+    //return null on anything else
+    return null;
+  }
 }
