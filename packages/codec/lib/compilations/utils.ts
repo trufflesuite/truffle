@@ -1,6 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:compilations:utils");
 
+import { AstNode, AstNodes } from "@truffle/codec/ast/types";
 import * as Ast from "@truffle/codec/ast";
 import * as Compiler from "@truffle/codec/compiler";
 import {
@@ -128,9 +129,9 @@ export function shimContracts(
     let sourceObject: Source = {
       sourcePath,
       source,
-      ast: <Ast.AstNode>ast,
+      ast: <AstNode>ast,
       compiler,
-      language: inferLanguage(<Ast.AstNode>ast, compiler, sourcePath)
+      language: inferLanguage(<AstNode>ast, compiler, sourcePath)
     };
     //ast needs to be coerced because schema doesn't quite match our types here...
 
@@ -215,7 +216,7 @@ export function shimContracts(
       ({ sourcePath, contents: source, ast, language }, index) => ({
         sourcePath,
         source,
-        ast: <Ast.AstNode>ast,
+        ast: <AstNode>ast,
         language,
         id: index.toString(), //HACK
         compiler //redundant but let's include it
@@ -233,7 +234,7 @@ export function shimContracts(
 }
 
 //note: this works for Vyper too!
-function sourceIndexForAst(ast: Ast.AstNode): number | undefined {
+function sourceIndexForAst(ast: AstNode): number | undefined {
   if (Array.isArray(ast)) {
     //special handling for old Vyper versions
     ast = ast[0];
@@ -249,7 +250,7 @@ function sourceIndexForAst(ast: Ast.AstNode): number | undefined {
 export function getContractNode(
   contract: Contract,
   compilation: Compilation
-): Ast.AstNode {
+): AstNode {
   const {
     contractName,
     sourceMap,
@@ -277,7 +278,7 @@ export function getContractNode(
     sourcesToCheck = sources;
   }
 
-  return sourcesToCheck.reduce((foundNode: Ast.AstNode, source: Source) => {
+  return sourcesToCheck.reduce((foundNode: AstNode, source: Source) => {
     if (foundNode || !source) {
       return foundNode;
     }
@@ -323,7 +324,7 @@ function normalizeGeneratedSources(
       sourcePath: source.name,
       source: source.contents,
       //ast needs to be coerced because schema doesn't quite match our types here...
-      ast: <Ast.AstNode>source.ast,
+      ast: <AstNode>source.ast,
       compiler: compiler,
       language: source.language
     };
@@ -347,7 +348,7 @@ function isGeneratedSources(
 
 //HACK, maybe?
 function inferLanguage(
-  ast: Ast.AstNode | undefined,
+  ast: AstNode | undefined,
   compiler: Compiler.CompilerVersion,
   sourcePath: string
 ): string | undefined {
@@ -466,10 +467,10 @@ export function simpleShimSourceMap(
 export function collectUserDefinedTypesAndTaggedOutputs(
   compilations: Compilation[]
 ): {
-  definitions: { [compilationId: string]: Ast.AstNodes };
+  definitions: { [compilationId: string]: AstNodes };
   types: Format.Types.TypesById;
 } {
-  let references: { [compilationId: string]: Ast.AstNodes } = {};
+  let references: { [compilationId: string]: AstNodes } = {};
   let types: Format.Types.TypesById = {};
   for (const compilation of compilations) {
     references[compilation.id] = {};

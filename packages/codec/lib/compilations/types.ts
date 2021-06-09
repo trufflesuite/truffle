@@ -1,5 +1,5 @@
 import * as Compiler from "@truffle/codec/compiler";
-import * as Ast from "@truffle/codec/ast";
+import { AstNode } from "@truffle/codec/ast/types";
 import {
   Abi as SchemaAbi,
   ImmutableReferences,
@@ -71,7 +71,7 @@ export interface Source {
   /**
    * The source's abstract syntax tree.
    */
-  ast?: Ast.AstNode;
+  ast?: AstNode;
   /**
    * This field is a compatibility hack only inteded for internal use.
    * (It allows the compiler to be set on a source if none is set on the
