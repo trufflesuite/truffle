@@ -85,24 +85,20 @@ class LoadingStrategy {
   }
 
   /**
-   * Cleans up error listeners left by older versions of soljson (pre-0.5.1).
+   * Cleans up error listeners left by soljson
    * Use with `markListeners()`
    */
   removeListener(markedListeners) {
-    const scrub = (eventName) => {
+    for (const eventName of ["uncaughtException", "unhandledRejection"]) {
       const listeners = process.listeners(eventName);
       const newListeners = listeners.filter(
         (listener) => !markedListeners[eventName].has(listener),
       );
 
       for (const listener of newListeners) {
-        console.log("removing ...listener");
         process.removeListener(eventName, listener);
       }
-    };
-
-    scrub("uncaughtException");
-    scrub("unhandledRejection");
+    }
   }
 
   resolveCache(fileName) {
