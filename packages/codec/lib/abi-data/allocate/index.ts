@@ -1102,7 +1102,7 @@ function getReturndataAllocationsForContract(
       ));
     }
   }
-  if (!useAst) { //deliberately *not* an else!
+  if (!useAst && abi) { //deliberately *not* an else!
     return abi
       .filter((abiEntry: Abi.Entry) => abiEntry.type === "error")
       .filter(
@@ -1119,6 +1119,8 @@ function getReturndataAllocationsForContract(
         compiler
       ));
   }
+  //otherwise just return nothing
+  return [];
 }
 
 export function getReturndataAllocations(
