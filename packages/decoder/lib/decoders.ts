@@ -1,6 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("decoder:decoders");
 
+import { promisify } from "util";
 import * as Abi from "@truffle/abi-utils";
 import * as Codec from "@truffle/codec";
 import {
@@ -42,9 +43,8 @@ const SourceMapUtils = require("@truffle/source-map-utils");
  * @category Decoder
  */
 export class WireDecoder {
-  private web3: Web3;
-
   private network: string;
+  private provider: Provider;
 
   private compilations: Compilations.Compilation[];
   private contexts: Contexts.Contexts = {}; //all contexts
@@ -61,7 +61,7 @@ export class WireDecoder {
    * @protected
    */
   constructor(compilations: Compilations.Compilation[], provider: Provider) {
-    this.web3 = new Web3(provider);
+    this.provider = provider;
     this.compilations = compilations;
 
     for (const compilation of this.compilations) {
@@ -184,7 +184,7 @@ export class WireDecoder {
    * (comment copypasted from the debugger)
    * "Tagged outputs" means user-defined things that are output by a contract
    * (not input to a contract), and which are distinguished by (potentially
-   * ambiguous) selectors.  So, events and custom errors are tagged outputs.  
+   * ambiguous) selectors.  So, events and custom errors are tagged outputs.
    * Function arguments are not tagged outputs (they're not outputs).
    * Return values are not tagged outputs (they don't have a selector).
    * Built-in errors (Error(string) and Panic(uint))... OK I guess those could
@@ -267,7 +267,12 @@ export class WireDecoder {
   ): Promise<Uint8Array> {
     //if pending, ignore the cache
     if (block === "pending") {
-      return Conversion.toBytes(await this.web3.eth.getCode(address, block));
+      return Conversion.toBytes(
+        await this.send({
+          method: "eth_getCode",
+          params: [address, block]
+        })
+      );
     }
 
     //otherwise, start by setting up any preliminary layers as needed
@@ -279,7 +284,12 @@ export class WireDecoder {
       return this.codeCache[block][address];
     }
     //otherwise, get it, cache it, and return it
-    let code = Conversion.toBytes(await this.web3.eth.getCode(address, block));
+    let code = Conversion.toBytes(
+      await this.send({
+        method: "eth_getCode",
+        params: [address, block]
+      })
+    );
     this.codeCache[block][address] = code;
     return code;
   }
@@ -297,7 +307,11 @@ export class WireDecoder {
       return "pending";
     }
 
-    return (await this.web3.eth.getBlock(block)).number;
+    const { number } = await this.send({
+      method: "eth_getBlockByNumber",
+      params: [block, false]
+    });
+    return number;
   }
 
   /**
@@ -480,10 +494,15 @@ export class WireDecoder {
     const fromBlockNumber = await this.regularizeBlock(fromBlock);
     const toBlockNumber = await this.regularizeBlock(toBlock);
 
-    const logs = await this.web3.eth.getPastLogs({
-      address,
-      fromBlock: fromBlockNumber,
-      toBlock: toBlockNumber
+    const logs: any[] = await this.send({
+      method: "eth_getLogs",
+      params: [
+        {
+          address,
+          fromBlock: fromBlockNumber,
+          toBlock: toBlockNumber
+        }
+      ]
     });
 
     let events = await Promise.all(
@@ -541,7 +560,9 @@ export class WireDecoder {
    * on decodings produced by other instances may not work consistently.
    * @param decoding The decoding to abify
    */
-  public abifyReturndataDecoding(decoding: ReturndataDecoding): ReturndataDecoding {
+  public abifyReturndataDecoding(
+    decoding: ReturndataDecoding
+  ): ReturndataDecoding {
     return Codec.abifyReturndataDecoding(decoding, this.userDefinedTypes);
   }
 
@@ -742,15 +763,23 @@ export class WireDecoder {
   /**
    * @protected
    */
-  public getWeb3(): Web3 {
-    return this.web3;
+  public getDeployedContexts(): Contexts.Contexts {
+    return this.deployedContexts;
   }
 
   /**
    * @protected
    */
-  public getDeployedContexts(): Contexts.Contexts {
-    return this.deployedContexts;
+  public async send(options: { method: string; params: any[] }): Promise<any> {
+    const { method, params } = options;
+    const { result } = await promisify(this.provider.send.bind(this.provider))({
+      jsonrpc: "2.0",
+      id: new Date().getTime(),
+      method,
+      params
+    });
+
+    return result;
   }
 }
 
@@ -760,8 +789,6 @@ export class WireDecoder {
  * @category Decoder
  */
 export class ContractDecoder {
-  private web3: Web3;
-
   private contexts: Contexts.Contexts; //note: this is deployed contexts only!
 
   private compilation: Compilations.Compilation;
@@ -793,7 +820,6 @@ export class ContractDecoder {
     this.contract = contract;
     this.compilation = compilation;
     this.wireDecoder = wireDecoder;
-    this.web3 = wireDecoder.getWeb3();
     this.contexts = wireDecoder.getDeployedContexts();
     this.userDefinedTypes = this.wireDecoder.getUserDefinedTypes();
 
@@ -875,7 +901,10 @@ export class ContractDecoder {
    * @protected
    */
   public async init(): Promise<void> {
-    this.contractNetwork = (await this.web3.eth.net.getId()).toString();
+    this.contractNetwork = await this.wireDecoder.send({
+      method: "net_version",
+      params: []
+    });
   }
 
   private get context(): Contexts.Context {
@@ -1062,7 +1091,9 @@ export class ContractDecoder {
   /**
    * See [[WireDecoder.abifyReturndataDecoding]].
    */
-  public abifyReturndataDecoding(decoding: ReturndataDecoding): ReturndataDecoding {
+  public abifyReturndataDecoding(
+    decoding: ReturndataDecoding
+  ): ReturndataDecoding {
     return this.wireDecoder.abifyReturndataDecoding(decoding);
   }
 
@@ -1124,8 +1155,6 @@ export class ContractDecoder {
  * @category Decoder
  */
 export class ContractInstanceDecoder {
-  private web3: Web3;
-
   private compilation: Compilations.Compilation;
   private contract: Compilations.Contract;
   private contractNode: Ast.AstNode;
@@ -1158,7 +1187,6 @@ export class ContractInstanceDecoder {
   constructor(contractDecoder: ContractDecoder, address?: string) {
     this.contractDecoder = contractDecoder;
     this.wireDecoder = this.contractDecoder.getWireDecoder();
-    this.web3 = this.wireDecoder.getWeb3();
     if (address !== undefined) {
       if (!Web3.utils.isAddress(address)) {
         throw new InvalidAddressError(address);
@@ -1198,7 +1226,10 @@ export class ContractInstanceDecoder {
     this.contractCode = Conversion.toHexString(
       await this.getCode(
         this.contractAddress,
-        await this.web3.eth.getBlockNumber() //not "latest" because regularized
+        await this.wireDecoder.send({
+          method: "eth_blockNumber",
+          params: []
+        })
       )
     );
 
@@ -1370,19 +1401,21 @@ export class ContractInstanceDecoder {
     block: DecoderTypes.BlockSpecifier = "latest"
   ): Promise<DecoderTypes.ContractState> {
     let blockNumber = await this.regularizeBlock(block);
+    const balance = ((await this.wireDecoder.send({
+      method: "eth_getBalance",
+      params: [this.contractAddress, blockNumber]
+    })) as string).slice(2); // remove 0x
+    const transactionCount = ((await this.wireDecoder.send({
+      method: "eth_getTransactionCount",
+      params: [this.contractAddress, blockNumber]
+    })) as string).slice(2); // remove 0x
+    debug("balance %O", balance);
     return {
       class: Contexts.Import.contextToType(this.context),
       address: this.contractAddress,
       code: this.contractCode,
-      balanceAsBN: new BN(
-        await this.web3.eth.getBalance(this.contractAddress, blockNumber)
-      ),
-      nonceAsBN: new BN(
-        await this.web3.eth.getTransactionCount(
-          this.contractAddress,
-          blockNumber
-        )
-      )
+      balanceAsBN: new BN(balance, 16),
+      nonceAsBN: new BN(transactionCount, 16)
     };
   }
 
@@ -1505,7 +1538,10 @@ export class ContractInstanceDecoder {
     //if pending, bypass the cache
     if (block === "pending") {
       return Conversion.toBytes(
-        await this.web3.eth.getStorageAt(address, slot, block),
+        await this.wireDecoder.send({
+          method: "eth_getStorageAt",
+          params: [address, slot, block]
+        }),
         Codec.Evm.Utils.WORD_SIZE
       );
     }
@@ -1523,7 +1559,10 @@ export class ContractInstanceDecoder {
     }
     //otherwise, get it, cache it, and return it
     let word = Conversion.toBytes(
-      await this.web3.eth.getStorageAt(address, slot, block),
+      await this.wireDecoder.send({
+        method: "eth_getStorageAt",
+        params: [address, slot, block]
+      }),
       Codec.Evm.Utils.WORD_SIZE
     );
     this.storageCache[block][address][slot.toString()] = word;
@@ -1740,7 +1779,9 @@ export class ContractInstanceDecoder {
   /**
    * See [[WireDecoder.abifyReturndataDecoding]].
    */
-  public abifyReturndataDecoding(decoding: ReturndataDecoding): ReturndataDecoding {
+  public abifyReturndataDecoding(
+    decoding: ReturndataDecoding
+  ): ReturndataDecoding {
     return this.wireDecoder.abifyReturndataDecoding(decoding);
   }
 
