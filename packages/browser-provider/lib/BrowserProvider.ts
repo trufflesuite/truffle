@@ -8,17 +8,15 @@ export class BrowserProvider {
   private socket: WebSocket;
 
   // TODO: fix the constructor args (probably an object with a bunch of options)
-  constructor(private port = 8080, private frontendPort = 8081) {
+  constructor(private port = 8080, private dashboardWsPort = 8081) {
     // Start a new server if not running (will silently fail if address is already in use)
     // TODO: Figure out what to do when address is already in use by different app
-    // TODO: Figure out what to do when the frontend ports are already in use
-    startServer(this.port, this.frontendPort);
+    // TODO: Figure out what to do when the dashboard ports are already in use
+    startServer(this.port, this.dashboardWsPort);
   }
 
   public send(payload: JSONRPCRequestPayload, callback: JSONRPCErrorCallback) {
-    const sendInternal = (
-      payload: JSONRPCRequestPayload
-    ) => this.sendInternal(payload);
+    const sendInternal = (payload: JSONRPCRequestPayload) => this.sendInternal(payload);
     callbackify(sendInternal)(payload, callback);
   }
 
@@ -35,7 +33,7 @@ export class BrowserProvider {
     const response = await sendAndAwait(this.socket, payload);
 
     if (response.error) {
-      throw(response.error);
+      throw response.error;
     }
 
     return response;
