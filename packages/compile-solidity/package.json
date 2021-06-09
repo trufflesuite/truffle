@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.3.5",
+  "version": "5.3.6-cheerios.0",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0",
@@ -35,9 +35,9 @@
     "solc": "0.6.0"
   },
   "devDependencies": {
-    "@truffle/artifactor": "^4.0.107",
+    "@truffle/artifactor": "^4.0.108-cheerios.0",
     "@truffle/box": "^2.1.15",
-    "@truffle/resolver": "^7.0.13",
+    "@truffle/resolver": "^7.0.14-cheerios.0",
     "babel-core": "^6.26.0",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",

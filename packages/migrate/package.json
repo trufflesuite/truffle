@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "3.2.27",
+  "version": "3.2.28-cheerios.0",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0",
@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@truffle/config": "^1.2.42",
-    "@truffle/deployer": "^3.2.27",
+    "@truffle/deployer": "^3.2.28-cheerios.0",
     "@truffle/expect": "^0.0.17",
     "@truffle/interface-adapter": "^0.5.0",
     "@truffle/reporters": "^2.0.0",
