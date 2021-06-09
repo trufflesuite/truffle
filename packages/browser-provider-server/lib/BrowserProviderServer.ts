@@ -4,25 +4,25 @@ import delay from "delay";
 import { startDashboard } from "@truffle/dashboard";
 import open from "open";
 import type { Express } from "express";
+import { Request } from "./types";
 
 export class BrowserProviderServer {
   providerServer: WebSocket.Server;
   connectedProviderCount = 0;
 
-  frontendServer: WebSocket.Server;
-  frontendSocket: WebSocket;
+  dashboardServer: WebSocket.Server;
+  dashboardSocket: WebSocket;
   dashboardExpress: Express;
 
-  start(providerPort: number, frontendPort: number) {
-    this.frontendServer = new WebSocket.Server({ host: '0.0.0.0', port: frontendPort });
-    this.frontendServer.on("connection", (socket: WebSocket) => {
-      this.frontendSocket = socket;
+  unfulfilledRequests: Map<string, Request> = new Map([]);
 
-      // TODO: Do we want to terminate the web server when the browser tab closes
-      // or do we allow the user to close and re-open again?
-      socket.on("close", () => {
-        process.exit(1);
-      });
+  start(providerPort: number, dashboardPort: number) {
+    this.dashboardServer = new WebSocket.Server({ host: '0.0.0.0', port: dashboardPort });
+    this.dashboardServer.on("connection", (socket: WebSocket) => {
+      this.dashboardSocket = socket;
+
+      // Process all backlogged (unfulfilled) requests on new dashboard connection.
+      this.unfulfilledRequests.forEach(({ socket, data }) => this.processRequest(socket, data));
     });
 
     this.providerServer = new WebSocket.Server({ host: '0.0.0.0', port: providerPort });
@@ -44,20 +44,28 @@ export class BrowserProviderServer {
     open("http://localhost:5000");
   }
 
-  // Wait until the frontend process is started and the websockets connection is established
+  // Wait until the dashboard process is started and the websocket connection is established
   async ready() {
-    if (this.frontendSocket) return;
+    if (this.dashboardSocket) return;
     await delay(1000);
     await this.ready();
   }
 
   async processRequest(socket: WebSocket, data: WebSocket.Data) {
+    if (typeof data !== "string") return;
+
+    this.unfulfilledRequests.set(data, { socket, data });
+
     await this.ready();
 
-    if (typeof data !== "string") return;
     const decodedData = base64ToJson(data);
 
-    const responsePayload = await sendAndAwait(this.frontendSocket, decodedData.payload);
+    let responsePayload;
+    try {
+      responsePayload = await sendAndAwait(this.dashboardSocket, decodedData.payload);
+    } catch {
+      return;
+    }
 
     const response = {
       id: decodedData.id,
@@ -65,7 +73,8 @@ export class BrowserProviderServer {
     };
 
     const encodedResponse = jsonToBase64(response);
-
     socket.send(encodedResponse);
+
+    this.unfulfilledRequests.delete(data);
   }
 }
