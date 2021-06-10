@@ -3,6 +3,7 @@ import BN from "bn.js";
 import * as Abi from "@truffle/abi-utils";
 import * as Types from "@truffle/codec/format/types";
 import * as Values from "@truffle/codec/format/values";
+import { Config, DefaultConfig } from "@truffle/codec/format/config";
 import { PaddingMode } from "@truffle/codec/common";
 
 /**
@@ -10,12 +11,14 @@ import { PaddingMode } from "@truffle/codec/common";
  * each of which is documented separately.
  * @Category Output
  */
-export type CalldataDecoding =
-  | FunctionDecoding
-  | ConstructorDecoding
-  | MessageDecoding
-  | UnknownCallDecoding
-  | UnknownCreationDecoding;
+export type CalldataDecoding<
+  C extends Config = DefaultConfig
+> =
+  | FunctionDecoding<C>
+  | ConstructorDecoding<C>
+  | MessageDecoding<C>
+  | UnknownCallDecoding<C>
+  | UnknownCreationDecoding<C>;
 
 /**
  * A type representing a log (event) decoding.  As you can see, these come in two types, each of which
@@ -75,7 +78,9 @@ export interface StateVariable {
  * not a constructor call, not a fallback call.
  * @Category Output
  */
-export interface FunctionDecoding {
+export interface FunctionDecoding<
+  C extends Config = DefaultConfig
+> {
   /**
    * The kind of decoding; indicates that this is a FunctionDecoding.
    */
@@ -83,11 +88,11 @@ export interface FunctionDecoding {
   /**
    * The class of contract that was called, as a Format.Types.ContractType.
    */
-  class: Types.ContractType;
+  class: Types.ContractType<C>;
   /**
    * The list of decoded arguments to the function.
    */
-  arguments: AbiArgument[];
+  arguments: AbiArgument<C>[];
   /**
    * The ABI entry for the function that was called.  You can use this
    * to extract the name, for instance.
@@ -114,7 +119,9 @@ export interface FunctionDecoding {
  *
  * @Category Output
  */
-export interface ConstructorDecoding {
+export interface ConstructorDecoding<
+  C extends Config = DefaultConfig
+> {
   /**
    * The kind of decoding; indicates that this is a ConstructorDecoding.
    */
@@ -122,12 +129,12 @@ export interface ConstructorDecoding {
   /**
    * The class of contract being constructed, as a Format.Types.ContractType.
    */
-  class: Types.ContractType;
+  class: Types.ContractType<C>;
   /**
    * The list of decoded arguments to the constructor.  This will be empty for a
    * default constructor.
    */
-  arguments: AbiArgument[];
+  arguments: AbiArgument<C>[];
   /**
    * The ABI entry for the constructor that was called.  Note that although
    * default constructors don't actually get an ABI entry, we still return an
@@ -152,7 +159,9 @@ export interface ConstructorDecoding {
  *
  * @Category Output
  */
-export interface MessageDecoding {
+export interface MessageDecoding<
+  C extends Config = DefaultConfig
+> {
   /**
    * The kind of decoding; indicates that this is a MessageDecoding.
    */
@@ -160,7 +169,7 @@ export interface MessageDecoding {
   /**
    * The class of contract that was called, as a Format.Types.ContractType.
    */
-  class: Types.ContractType;
+  class: Types.ContractType<C>;
   /**
    * The ABI entry for the contract's fallback or receive function that would
    * handle this message; will be null if there is none.
@@ -183,7 +192,9 @@ export interface MessageDecoding {
  *
  * @Category Output
  */
-export interface UnknownCallDecoding {
+export interface UnknownCallDecoding<
+  _C extends Config = DefaultConfig
+> {
   /**
    * The kind of decoding; indicates that this is an UnknownDecoding.
    */
@@ -205,7 +216,9 @@ export interface UnknownCallDecoding {
  *
  * @Category Output
  */
-export interface UnknownCreationDecoding {
+export interface UnknownCreationDecoding<
+  _C extends Config = DefaultConfig
+> {
   /**
    * The kind of decoding; indicates that this is an UnknownCreationDecoding.
    */
@@ -516,7 +529,9 @@ export interface UnknownBytecodeDecoding {
  *
  * @Category Output
  */
-export interface AbiArgument {
+export interface AbiArgument<
+  C extends Config = DefaultConfig
+> {
   /**
    * The name of the parameter.  Excluded if the parameter is nameless.
    */
@@ -530,7 +545,7 @@ export interface AbiArgument {
    * may contain errors (although event decodings should typically not contain errors;
    * see the [[DecodedLog]] documentation for why).
    */
-  value: Values.Result;
+  value: Values.Result<C>;
 }
 
 /**
