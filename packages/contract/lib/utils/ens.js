@@ -1,48 +1,78 @@
-const ENSJS = require("ethereum-ens");
+const { default: ENSJS, getEnsAddress } = require("@ensdomains/ensjs");
 const { isAddress } = require("web3-utils");
 
 module.exports = {
-  convertENSNames: async function({
-    ensSettings,
+  convertENSNames: async function ({
+    ens,
     inputArgs,
     methodABI,
     inputParams,
-    web3
+    web3,
+    networkId
   }) {
-    const { registryAddress } = ensSettings;
+    const { registryAddress } = ens;
     let args;
     if (inputArgs.length && methodABI) {
-      args = await this.convertENSArgsNames(
+      args = await this.convertENSArgsNames({
         inputArgs,
         methodABI,
         web3,
-        registryAddress
-      );
+        registryAddress,
+        networkId
+      });
     } else {
       args = inputArgs;
     }
-    const params = await this.convertENSParamsNames(
-      inputParams,
-      web3,
-      registryAddress
-    );
+    let params;
+    if (inputParams) {
+      params = await this.convertENSParamsNames({
+        inputParams,
+        web3,
+        registryAddress,
+        networkId
+      });
+    }
     return { args, params };
   },
 
-  getNewENSJS: function({ provider, registryAddress }) {
-    return new ENSJS(provider, registryAddress);
-  },
-
-  resolveNameToAddress: function(name, ensjs) {
-    return ensjs.resolver(name).addr();
-  },
-
-  convertENSArgsNames: function(inputArgs, methodABI, web3, registryAddress) {
-    if (methodABI.inputs.length === 0) return inputArgs;
-    const ensjs = this.getNewENSJS({
-      provider: web3.currentProvider,
-      registryAddress
+  getNewENSJS: function ({ provider, registryAddress, networkId }) {
+    return new ENSJS({
+      provider,
+      ensAddress: registryAddress || getEnsAddress(networkId)
     });
+  },
+
+  resolveNameToAddress: async function ({
+    name,
+    provider,
+    registryAddress,
+    networkId
+  }) {
+    let ensjs;
+    try {
+      ensjs = this.getNewENSJS({
+        provider,
+        registryAddress,
+        networkId
+      });
+    } catch (error) {
+      const message =
+        "There was a problem initializing the ENS library." +
+        "Please ensure you have the address of the registry set correctly." +
+        ` Truffle is currently using ${registryAddress}.`;
+      throw new Error(`${message} - ${error.message}`);
+    }
+    return await ensjs.name(name).getAddress("ETH");
+  },
+
+  convertENSArgsNames: function ({
+    inputArgs,
+    methodABI,
+    web3,
+    registryAddress,
+    networkId
+  }) {
+    if (methodABI.inputs.length === 0) return inputArgs;
 
     const convertedNames = inputArgs.map((argument, index) => {
       if (index + 1 > methodABI.inputs.length) {
@@ -51,7 +81,12 @@ module.exports = {
         // Check all address arguments for ENS names
         const argIsAddress = isAddress(argument);
         if (argIsAddress) return argument;
-        return this.resolveNameToAddress(argument, ensjs);
+        return this.resolveNameToAddress({
+          name: argument,
+          provider: web3.currentProvider,
+          registryAddress,
+          networkId
+        });
       } else {
         return argument;
       }
@@ -59,16 +94,25 @@ module.exports = {
     return Promise.all(convertedNames);
   },
 
-  convertENSParamsNames: async function(params, web3, registryAddress) {
-    if (params.from && !isAddress(params.from)) {
-      const ensjs = this.getNewENSJS({
+  convertENSParamsNames: async function ({
+    inputParams,
+    web3,
+    registryAddress,
+    networkId
+  }) {
+    if (inputParams.from && !isAddress(inputParams.from)) {
+      const newFrom = await this.resolveNameToAddress({
+        name: inputParams.from,
         provider: web3.currentProvider,
+        networkId,
         registryAddress
       });
-      const newFrom = await this.resolveNameToAddress(params.from, ensjs);
-      return Object.assign({}, params, { from: newFrom });
+      return {
+        ...inputParams,
+        from: newFrom
+      };
     } else {
-      return params;
+      return inputParams;
     }
   }
 };
