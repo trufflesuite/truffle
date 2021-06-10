@@ -10,10 +10,13 @@ const LoadingStrategy = require("./LoadingStrategy");
 class VersionRange extends LoadingStrategy {
   compilerFromString(code) {
     const markedListeners = this.markListeners();
-    const soljson = requireFromString(code);
-    const wrapped = solcWrap(soljson);
-    this.removeListener(markedListeners);
-    return wrapped;
+    try {
+      const soljson = requireFromString(code);
+      const wrapped = solcWrap(soljson);
+      return wrapped;
+    } finally {
+      this.removeListener(markedListeners);
+    }
   }
 
   findNewestValidVersion(version, allVersions) {
@@ -34,12 +37,15 @@ class VersionRange extends LoadingStrategy {
 
   getCachedSolcByFileName(fileName) {
     const markedListeners = this.markListeners();
-    const filePath = this.resolveCache(fileName);
-    const soljson = originalRequire(filePath);
-    debug("soljson %o", soljson);
-    const wrapped = solcWrap(soljson);
-    this.removeListener(markedListeners);
-    return wrapped;
+    try {
+      const filePath = this.resolveCache(fileName);
+      const soljson = originalRequire(filePath);
+      debug("soljson %o", soljson);
+      const wrapped = solcWrap(soljson);
+      return wrapped;
+    } finally {
+      this.removeListener(markedListeners);
+    }
   }
 
   // Range can also be a single version specification like "0.5.0"
