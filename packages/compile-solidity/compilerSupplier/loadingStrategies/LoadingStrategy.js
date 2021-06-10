@@ -78,21 +78,26 @@ class LoadingStrategy {
   }
 
   markListeners() {
-    return new Set(process.listeners("uncaughtException"));
+    return {
+      uncaughtException: new Set(process.listeners("uncaughtException")),
+      unhandledRejection: new Set(process.listeners("unhandledRejection")),
+    };
   }
 
   /**
-   * Cleans up error listeners left by older versions of soljson (pre-0.5.1).
+   * Cleans up error listeners left by soljson
    * Use with `markListeners()`
    */
   removeListener(markedListeners) {
-    const listeners = process.listeners("uncaughtException");
-    const newListeners = listeners.filter(
-      listener => !markedListeners.has(listener)
-    );
+    for (const eventName of ["uncaughtException", "unhandledRejection"]) {
+      const listeners = process.listeners(eventName);
+      const newListeners = listeners.filter(
+        (listener) => !markedListeners[eventName].has(listener),
+      );
 
-    for (const listener of newListeners) {
-      process.removeListener("uncaughtException", listener);
+      for (const listener of newListeners) {
+        process.removeListener(eventName, listener);
+      }
     }
   }
 
