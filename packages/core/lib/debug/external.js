@@ -2,10 +2,13 @@ const debugModule = require("debug");
 const debug = debugModule("lib:debug:external");
 
 const Codec = require("@truffle/codec");
-const Fetchers = require("@truffle/source-fetcher").default;
-const {InvalidNetworkError} = require("@truffle/source-fetcher");
+const semver = require("semver");
+const {
+  default: Fetchers,
+  InvalidNetworkError
+} = require("@truffle/source-fetcher");
 
-const {DebugCompiler} = require("./compiler");
+const { DebugCompiler } = require("./compiler");
 
 class DebugExternalHandler {
   constructor(bugger, config) {
@@ -88,7 +91,7 @@ class DebugExternalHandler {
         }
         //if we do have it, extract sources & options
         debug("got sources!");
-        const {sources, options} = result;
+        const { sources, options } = result;
         if (options.language !== "Solidity") {
           //if it's not Solidity, bail out now
           debug("not Solidity, bailing out!");
@@ -96,19 +99,15 @@ class DebugExternalHandler {
           //break out of the fetcher loop, since *no* fetcher will work here
           break;
         }
-        //compile the sources
-        const externalConfig = this.config.with({
+        //set up the config
+        let externalConfig = this.config.with({
           compilers: {
             solc: options
           }
-        }).merge({
-          //turn on docker if the original config has docker
-          compilers: {
-            solc: {
-              docker: ((this.config.compilers || {}).solc || {}).docker
-            }
-          }
         });
+        //if using docker, transform it (this does nothing if not using docker)
+        externalConfig = transformIfUsingDocker(externalConfig, this.config);
+        //compile the sources
         let compilations;
         try {
           compilations = await new DebugCompiler(externalConfig).compile(
@@ -183,6 +182,31 @@ function getAnUnknownAddress(bugger, addressesToSkip) {
   return getUnknownAddresses(bugger).find(
     address => !addressesToSkip.has(address)
   );
+}
+
+function transformIfUsingDocker(externalConfig, projectConfig) {
+  const useDocker = Boolean(((projectConfig.compilers || {}).solc || {}).docker);
+  if (!useDocker) {
+    //if they're not using docker, no need to transform anything :)
+    return externalConfig;
+  }
+  const givenVersion = externalConfig.compilers.solc.version;
+  //if they are, we have to ask: are they using a nightly?
+  if (semver.prerelease(givenVersion)) {
+    //we're not going to attempt to make Docker work with nightlies.
+    //just keep Docker turned off.
+    return externalConfig;
+  }
+  //otherwise, turn on Docker, and reduce the version to its simple form.
+  const simpleVersion = semver.valid(givenVersion);
+  return externalConfig.merge({
+    compilers: {
+      solc: {
+        version: simpleVersion,
+        docker: true
+      }
+    }
+  });
 }
 
 module.exports = {
