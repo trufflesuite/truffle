@@ -1,7 +1,7 @@
 import BN from "bn.js";
 import Big from "big.js";
 import * as Types from "./types";
-import * as Config from "./config";
+import { Config, DefaultConfig } from "./config";
 
 //note that we often want an elementary *value*, and not an error!
 //so let's define those types too
@@ -11,7 +11,7 @@ import * as Config from "./config";
  * @Category General categories
  */
 export type ElementaryValue<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > =
   | UintValue<C>
   | IntValue<C>
@@ -30,7 +30,7 @@ export type ElementaryValue<
  * @Category Elementary types
  */
 export type BytesValue<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > = BytesStaticValue<C> | BytesDynamicValue<C>;
 
 /**
@@ -39,7 +39,7 @@ export type BytesValue<
  * @Category Elementary types
  */
 export interface UintValue<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > {
   type: Types.UintType<C>;
   kind: "value";
@@ -63,7 +63,7 @@ interface IntegerValueInfo {
  * @Category Elementary types
  */
 export interface IntValue<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > {
   type: Types.IntType<C>;
   kind: "value";
@@ -76,7 +76,7 @@ export interface IntValue<
  * @Category Elementary types
  */
 export interface BoolValue<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > {
   type: Types.BoolType<C>;
   kind: "value";
@@ -91,7 +91,7 @@ export interface BoolValue<
  * @Category Elementary types
  */
 export interface BytesStaticValue<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > {
   type: Types.BytesTypeStatic<C>;
   kind: "value";
@@ -110,7 +110,7 @@ export interface BytesStaticValue<
  * @Category Elementary types
  */
 export interface BytesDynamicValue<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > {
   type: Types.BytesTypeDynamic<C>;
   kind: "value";
@@ -128,7 +128,7 @@ export interface BytesDynamicValue<
  * @Category Elementary types
  */
 export interface AddressValue<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > {
   type: Types.AddressType<C>;
   kind: "value";
@@ -150,7 +150,7 @@ export interface AddressValue<
  * @Category Elementary types
  */
 export interface StringValue<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > {
   type: Types.StringType<C>;
   kind: "value";
@@ -193,7 +193,7 @@ export interface StringValueInfoMalformed {
  * @Category Elementary types
  */
 export interface FixedValue<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > {
   type: Types.FixedType<C>;
   kind: "value";
@@ -217,7 +217,7 @@ interface DecimalValueInfo {
  * @Category Elementary types
  */
 export interface UfixedValue<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > {
   type: Types.UfixedType;
   kind: "value";
@@ -230,7 +230,7 @@ export interface UfixedValue<
  * @Category User-defined elementary types
  */
 export interface EnumValue<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > {
   type: Types.EnumType<C>;
   kind: "value";
@@ -262,7 +262,7 @@ interface EnumValueNumericFields {
  * @Category User-defined elementary types
  */
 export interface ContractValue<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > {
   type: Types.ContractType<C>;
   kind: "value";
@@ -276,7 +276,7 @@ export interface ContractValue<
  * @Category User-defined elementary types
  */
 export type ContractValueInfo<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > = ContractValueInfoKnown<C> | ContractValueInfoUnknown;
 
 /**
@@ -285,7 +285,7 @@ export type ContractValueInfo<
  * @Category User-defined elementary types
  */
 export interface ContractValueInfoKnown<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > {
   kind: "known";
   /**

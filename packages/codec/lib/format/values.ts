@@ -28,7 +28,7 @@ import {
   ContractValueInfoKnown,
   ContractValueInfoUnknown
 } from "./elementary";
-import * as Config from "./config";
+import { Config, DefaultConfig } from "./config";
 import * as Common from "@truffle/codec/common";
 import * as Abi from "@truffle/abi-utils";
 
@@ -44,7 +44,7 @@ export * from "./elementary";
  * @Category General categories
  */
 export type Result<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > =
   | ElementaryResult<C>
   | ArrayResult<C>
@@ -60,7 +60,7 @@ export type Result<
  *
  * @Category General categories
  */
-export type Value<C extends Config.FormatConfig = Config.DefaultFormatConfig> =
+export type Value<C extends Config = DefaultConfig> =
   | ElementaryValue<C>
   | ArrayValue<C>
   | MappingValue<C>
@@ -85,7 +85,7 @@ export type Value<C extends Config.FormatConfig = Config.DefaultFormatConfig> =
  * @Category General categories
  */
 export type ElementaryResult<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > =
   | UintResult<C>
   | IntResult<C>
@@ -104,7 +104,7 @@ export type ElementaryResult<
  * @Category Elementary types
  */
 export type BytesResult<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > = BytesStaticResult<C> | BytesDynamicResult<C>;
 
 /**
@@ -113,7 +113,7 @@ export type BytesResult<
  * @Category Elementary types
  */
 export type UintResult<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > = UintValue<C> | Errors.UintErrorResult<C>;
 
 /**
@@ -122,7 +122,7 @@ export type UintResult<
  * @Category Elementary types
  */
 export type IntResult<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > = IntValue<C> | Errors.IntErrorResult<C>;
 
 /**
@@ -131,7 +131,7 @@ export type IntResult<
  * @Category Elementary types
  */
 export type BoolResult<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > = BoolValue<C> | Errors.BoolErrorResult<C>;
 
 /**
@@ -140,7 +140,7 @@ export type BoolResult<
  * @Category Elementary types
  */
 export type BytesStaticResult<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > = BytesStaticValue<C> | Errors.BytesStaticErrorResult<C>;
 
 /**
@@ -149,7 +149,7 @@ export type BytesStaticResult<
  * @Category Elementary types
  */
 export type BytesDynamicResult<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > = BytesDynamicValue<C> | Errors.BytesDynamicErrorResult<C>;
 
 /**
@@ -158,7 +158,7 @@ export type BytesDynamicResult<
  * @Category Elementary types
  */
 export type AddressResult<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > = AddressValue<C> | Errors.AddressErrorResult<C>;
 
 /**
@@ -167,7 +167,7 @@ export type AddressResult<
  * @Category Elementary types
  */
 export type StringResult<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > = StringValue<C> | Errors.StringErrorResult<C>;
 
 /**
@@ -176,7 +176,7 @@ export type StringResult<
  * @Category Elementary types
  */
 export type FixedResult<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > = FixedValue<C> | Errors.FixedErrorResult<C>;
 
 /**
@@ -185,7 +185,7 @@ export type FixedResult<
  * @Category Elementary types
  */
 export type UfixedResult<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > = UfixedValue<C> | Errors.UfixedErrorResult<C>;
 
 /*
@@ -198,7 +198,7 @@ export type UfixedResult<
  * @Category User-defined elementary types
  */
 export type EnumResult<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > = EnumValue<C> | Errors.EnumErrorResult<C>;
 
 /**
@@ -207,7 +207,7 @@ export type EnumResult<
  * @Category User-defined elementary types
  */
 export type ContractResult<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > = ContractValue<C> | Errors.ContractErrorResult<C>;
 
 /*
@@ -220,7 +220,7 @@ export type ContractResult<
  * @Category Container types
  */
 export type ArrayResult<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > = ArrayValue<C> | Errors.ArrayErrorResult<C>;
 
 /**
@@ -229,7 +229,7 @@ export type ArrayResult<
  * @Category Container types
  */
 export interface ArrayValue<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > {
   type: Types.ArrayType<C>;
   kind: "value";
@@ -246,7 +246,7 @@ export interface ArrayValue<
  * @Category Container types
  */
 export type MappingResult<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > = MappingValue<C> | Errors.MappingErrorResult<C>;
 
 /**
@@ -255,7 +255,7 @@ export type MappingResult<
  * @Category Container types
  */
 export interface MappingValue<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > {
   type: Types.MappingType<C>;
   kind: "value";
@@ -268,7 +268,7 @@ export interface MappingValue<
 }
 
 export interface KeyValuePair<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > {
   key: ElementaryValue<C>; //note must be a value, not an error!
   value: Result<C>;
@@ -280,7 +280,7 @@ export interface KeyValuePair<
  * @Category Container types
  */
 export type StructResult<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > = StructValue<C> | Errors.StructErrorResult<C>;
 
 /**
@@ -289,7 +289,7 @@ export type StructResult<
  * @Category Container types
  */
 export interface StructValue<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > {
   type: Types.StructType<C>;
   kind: "value";
@@ -306,7 +306,7 @@ export interface StructValue<
 }
 
 export interface NameValuePair<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > {
   name: string;
   value: Result<C>;
@@ -318,7 +318,7 @@ export interface NameValuePair<
  * @Category Container types
  */
 export type TupleResult<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > = TupleValue<C> | Errors.TupleErrorResult<C>;
 
 /**
@@ -327,7 +327,7 @@ export type TupleResult<
  * @Category Container types
  */
 export interface TupleValue<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > {
   type: Types.TupleType<C>;
   kind: "value";
@@ -335,7 +335,7 @@ export interface TupleValue<
 }
 
 export interface OptionallyNamedValue<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > {
   name?: string;
   value: Result<C>;
@@ -347,7 +347,7 @@ export interface OptionallyNamedValue<
  * @Category Special container types (debugger-only)
  */
 export type MagicResult<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > = MagicValue<C> | Errors.MagicErrorResult<C>;
 
 /**
@@ -356,7 +356,7 @@ export type MagicResult<
  * @Category Special container types (debugger-only)
  */
 export interface MagicValue<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > {
   type: Types.MagicType<C>;
   kind: "value";
@@ -373,7 +373,7 @@ export interface MagicValue<
  * @Category Special container types (debugger-only)
  */
 export type TypeResult<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > = TypeValue<C> | Errors.TypeErrorResult<C>;
 
 /**
@@ -385,7 +385,7 @@ export type TypeResult<
  * @Category Special container types (debugger-only)
  */
 export type TypeValue<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > = TypeValueContract<C> | TypeValueEnum<C>;
 
 /**
@@ -394,7 +394,7 @@ export type TypeValue<
  * @Category Special container types (debugger-only)
  */
 export interface TypeValueContract<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > {
   type: Types.TypeTypeContract;
   kind: "value";
@@ -410,7 +410,7 @@ export interface TypeValueContract<
  * @Category Special container types (debugger-only)
  */
 export interface TypeValueEnum<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > {
   type: Types.TypeTypeEnum;
   kind: "value";
@@ -430,7 +430,7 @@ export interface TypeValueEnum<
  * @Category Function types
  */
 export type FunctionExternalResult<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > = FunctionExternalValue<C> | Errors.FunctionExternalErrorResult<C>;
 
 /**
@@ -439,7 +439,7 @@ export type FunctionExternalResult<
  * @Category Function types
  */
 export interface FunctionExternalValue<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > {
   type: Types.FunctionExternalType<C>;
   kind: "value";
@@ -455,7 +455,7 @@ export interface FunctionExternalValue<
  * @Category Function types
  */
 export type FunctionExternalValueInfo<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > =
   | FunctionExternalValueInfoKnown<C> //known function of known class
   | FunctionExternalValueInfoInvalid<C> //known class, but can't locate function
@@ -467,7 +467,7 @@ export type FunctionExternalValueInfo<
  * @Category Function types
  */
 export interface FunctionExternalValueInfoKnown<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > {
   kind: "known";
   contract: ContractValueInfoKnown<C>;
@@ -485,7 +485,7 @@ export interface FunctionExternalValueInfoKnown<
  * @Category Function types
  */
 export interface FunctionExternalValueInfoInvalid<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > {
   kind: "invalid";
   contract: ContractValueInfoKnown<C>;
@@ -519,7 +519,7 @@ export interface FunctionExternalValueInfoUnknown {
  * @Category Function types
  */
 export type FunctionInternalResult<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > = FunctionInternalValue<C> | Errors.FunctionInternalErrorResult<C>;
 
 /**
@@ -528,7 +528,7 @@ export type FunctionInternalResult<
  * @Category Function types
  */
 export interface FunctionInternalValue<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > {
   type: Types.FunctionInternalType<C>;
   kind: "value";
@@ -544,7 +544,7 @@ export interface FunctionInternalValue<
  * @Category Function types
  */
 export type FunctionInternalValueInfo<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > =
   | FunctionInternalValueInfoKnown<C> //actual function
   | FunctionInternalValueInfoException<C> //default value
@@ -556,7 +556,7 @@ export type FunctionInternalValueInfo<
  * @Category Function types
  */
 export interface FunctionInternalValueInfoKnown<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > {
   kind: "function";
   context: Types.ContractType<C>;
@@ -584,7 +584,7 @@ export interface FunctionInternalValueInfoKnown<
  * @Category Function types
  */
 export interface FunctionInternalValueInfoException<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > {
   kind: "exception";
   context: Types.ContractType<C>;
@@ -607,7 +607,7 @@ export interface FunctionInternalValueInfoException<
  * @Category Function types
  */
 export interface FunctionInternalValueInfoUnknown<
-  C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config = DefaultConfig
 > {
   kind: "unknown";
   context: Types.ContractType<C>;
