@@ -279,7 +279,7 @@ function extractCborInfo(binary: string): CborInfo | null {
 }
 
 function isObjectWithHash(decoded: any): boolean {
-  if (typeof decoded !== "object") {
+  if (typeof decoded !== "object" || decoded === null) {
     return false;
   }
   //cbor sometimes returns maps and sometimes objects,
@@ -297,7 +297,7 @@ function isObjectWithHash(decoded: any): boolean {
 //(if it detects solc but no version, it will not return
 //a partial result, just undefined)
 function detectCompilerInfo(decoded: any): CompilerVersion | undefined {
-  if (typeof decoded !== "object") {
+  if (typeof decoded !== "object" || decoded === null) {
     return undefined;
   }
   //cbor sometimes returns maps and sometimes objects,

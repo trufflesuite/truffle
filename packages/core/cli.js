@@ -3,6 +3,12 @@ require("source-map-support/register");
 
 const semver = require("semver"); // to validate Node version
 
+const crypto = require("crypto");
+global.crypto = crypto;
+// we need to make sure this function exists so ensjs doesn't complain
+// it requires getRandomValues for some functionalities
+global.crypto.getRandomValues = require("get-random-values");
+
 const TruffleError = require("@truffle/error");
 const TaskError = require("./lib/errors/taskerror");
 const analytics = require("./lib/services/analytics");
