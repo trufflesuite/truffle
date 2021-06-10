@@ -12,8 +12,7 @@ class VersionRange extends LoadingStrategy {
     const markedListeners = this.markListeners();
     try {
       const soljson = requireFromString(code);
-      const wrapped = solcWrap(soljson);
-      return wrapped;
+      return solcWrap(soljson);
     } finally {
       this.removeListener(markedListeners);
     }
@@ -41,8 +40,7 @@ class VersionRange extends LoadingStrategy {
       const filePath = this.resolveCache(fileName);
       const soljson = originalRequire(filePath);
       debug("soljson %o", soljson);
-      const wrapped = solcWrap(soljson);
-      return wrapped;
+      return solcWrap(soljson);
     } finally {
       this.removeListener(markedListeners);
     }

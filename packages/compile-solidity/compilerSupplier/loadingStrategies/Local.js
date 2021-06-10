@@ -22,8 +22,7 @@ class Local extends LoadingStrategy {
         throw this.errors("noPath", localPath, error);
       }
       //HACK: if it has a compile function, assume it's already wrapped
-      wrapped = soljson.compile ? soljson : solcWrap(soljson);
-      return wrapped;
+      return soljson.compile ? soljson : solcWrap(soljson);
     } finally {
       this.removeListener(markedListeners);
     }
