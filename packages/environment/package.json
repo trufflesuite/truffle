@@ -13,17 +13,17 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.2.57-cheerios.0",
+  "version": "0.2.57-cheerios.1",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0"
   },
   "dependencies": {
-    "@truffle/artifactor": "^4.0.108-cheerios.0",
+    "@truffle/artifactor": "^4.0.108-cheerios.1",
     "@truffle/error": "^0.0.14",
     "@truffle/expect": "^0.0.17",
     "@truffle/interface-adapter": "^0.5.0",
-    "@truffle/resolver": "^7.0.14-cheerios.0",
+    "@truffle/resolver": "^7.0.14-cheerios.1",
     "ganache-core": "2.13.0",
     "node-ipc": "^9.1.1",
     "source-map-support": "^0.5.19",
