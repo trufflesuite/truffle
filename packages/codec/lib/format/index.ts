@@ -170,11 +170,31 @@
  * @packageDocumentation
  */
 import { Types, Values, Errors } from "./common";
+import {
+  Config,
+  DefaultConfig,
+  SerialConfig
+} from "./config";
 import * as Utils from "./utils";
 
 export {
   Types,
   Values,
   Errors,
+  /**
+   * Base type for a Format configuration
+   * @category Config
+   */
+  Config,
+  /**
+   * Format configuration suitable for serialization purposes
+   * @category Config
+   */
+  SerialConfig,
+  /**
+   * Normal Format configuration
+   * @category Config
+   */
+  DefaultConfig,
   Utils
 };

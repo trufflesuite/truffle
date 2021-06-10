@@ -1,14 +1,14 @@
-export interface FormatConfig {
+export interface Config {
   integerType: "BN" | "string";
   decimalType: "Big" | "string";
 }
 
-export interface DefaultFormatConfig extends FormatConfig {
+export interface DefaultConfig extends Config {
   integerType: "BN";
   decimalType: "Big";
 }
 
-export interface SerialFormatConfig extends FormatConfig {
+export interface SerialConfig extends Config {
   integerType: "string";
   decimalType: "string";
 }

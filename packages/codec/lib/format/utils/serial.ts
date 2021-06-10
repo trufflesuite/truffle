@@ -6,20 +6,20 @@ import Big from "big.js";
 
 import * as Format from "@truffle/codec/format/common";
 import * as Storage from "@truffle/codec/format/storage";
-import { SerialFormatConfig } from "@truffle/codec/format/config";
+import { SerialConfig } from "@truffle/codec/format/config";
 import { tie, sever } from "./circularity";
 
 //SERIALIZATION
 
 export function serializeResult(
   value: Format.Values.Result
-): Format.Values.Result<SerialFormatConfig> {
+): Format.Values.Result<SerialConfig> {
   return serializeUntiedResult(sever(value));
 }
 
 export function serializeType(
   dataType: Format.Types.Type
-): Format.Types.Type<SerialFormatConfig> {
+): Format.Types.Type<SerialConfig> {
   switch (dataType.typeClass) {
     case "array":
       switch (dataType.kind) {
@@ -51,7 +51,7 @@ export function serializeType(
           )
         };
       } else {
-        return <Format.Types.StructType<SerialFormatConfig>>(<unknown>dataType); //ugh Typescript
+        return <Format.Types.StructType<SerialConfig>>(<unknown>dataType); //ugh Typescript
       }
     case "tuple":
       return {
@@ -65,7 +65,7 @@ export function serializeType(
       return {
         ...dataType,
         valueType: serializeType(dataType.valueType),
-        keyType: <Format.Types.ElementaryType<SerialFormatConfig>>(
+        keyType: <Format.Types.ElementaryType<SerialConfig>>(
           serializeType(dataType.keyType)
         )
       };
@@ -113,7 +113,7 @@ export function serializeType(
           )
         };
       } else {
-        return <Format.Types.MagicType<SerialFormatConfig>>(<unknown>dataType); //ugh
+        return <Format.Types.MagicType<SerialConfig>>(<unknown>dataType); //ugh
       }
     case "type":
       switch (dataType.type.typeClass) {
@@ -130,12 +130,12 @@ export function serializeType(
               )
             };
           } else {
-            return <Format.Types.TypeTypeContract<SerialFormatConfig>>(
+            return <Format.Types.TypeTypeContract<SerialConfig>>(
               (<unknown>coercedType)
             ); //fricking TypeScript
           }
         case "enum":
-          return <Format.Types.TypeTypeEnum<SerialFormatConfig>>dataType;
+          return <Format.Types.TypeTypeEnum<SerialConfig>>dataType;
       }
     default:
       return dataType;
@@ -144,7 +144,7 @@ export function serializeType(
 
 function serializeUntiedResult(
   value: Format.Values.Result
-): Format.Values.Result<SerialFormatConfig> {
+): Format.Values.Result<SerialConfig> {
   let serializedType = serializeType(value.type);
   switch (value.kind) {
     case "value":
@@ -156,8 +156,8 @@ function serializeUntiedResult(
           );
           if (coercedValue.value.rawAsBN) {
             return <
-              | Format.Values.UintValue<SerialFormatConfig>
-              | Format.Values.IntValue<SerialFormatConfig>
+              | Format.Values.UintValue<SerialConfig>
+              | Format.Values.IntValue<SerialConfig>
             >{
               ...coercedValue,
               type: serializedType,
@@ -168,8 +168,8 @@ function serializeUntiedResult(
             };
           } else {
             return <
-              | Format.Values.UintValue<SerialFormatConfig>
-              | Format.Values.IntValue<SerialFormatConfig>
+              | Format.Values.UintValue<SerialConfig>
+              | Format.Values.IntValue<SerialConfig>
             >{
               ...coercedValue,
               type: serializedType,
@@ -186,8 +186,8 @@ function serializeUntiedResult(
           >value;
           if (coercedValue.value.rawAsBig) {
             return <
-              | Format.Values.FixedValue<SerialFormatConfig>
-              | Format.Values.UfixedValue<SerialFormatConfig>
+              | Format.Values.FixedValue<SerialConfig>
+              | Format.Values.UfixedValue<SerialConfig>
             >{
               ...coercedValue,
               type: serializedType,
@@ -198,8 +198,8 @@ function serializeUntiedResult(
             };
           } else {
             return <
-              | Format.Values.FixedValue<SerialFormatConfig>
-              | Format.Values.UfixedValue<SerialFormatConfig>
+              | Format.Values.FixedValue<SerialConfig>
+              | Format.Values.UfixedValue<SerialConfig>
             >{
               ...coercedValue,
               type: serializedType,
@@ -213,7 +213,7 @@ function serializeUntiedResult(
           let coercedValue = <Format.Values.EnumValue>value;
           return {
             ...coercedValue,
-            type: <Format.Types.EnumType<SerialFormatConfig>>serializedType,
+            type: <Format.Types.EnumType<SerialConfig>>serializedType,
             value: {
               name: coercedValue.value.name,
               numericAsString: coercedValue.value.numericAsBN.toString()
@@ -224,7 +224,7 @@ function serializeUntiedResult(
           let coercedValue = <Format.Values.ArrayValue>value;
           return {
             ...coercedValue,
-            type: <Format.Types.ArrayType<SerialFormatConfig>>serializedType,
+            type: <Format.Types.ArrayType<SerialConfig>>serializedType,
             value: coercedValue.value.map(serializeUntiedResult)
           };
         }
@@ -232,9 +232,9 @@ function serializeUntiedResult(
           let coercedValue = <Format.Values.MappingValue>value;
           return {
             ...coercedValue,
-            type: <Format.Types.MappingType<SerialFormatConfig>>serializedType,
+            type: <Format.Types.MappingType<SerialConfig>>serializedType,
             value: coercedValue.value.map(({ key, value }) => ({
-              key: <Format.Values.ElementaryValue<SerialFormatConfig>>(
+              key: <Format.Values.ElementaryValue<SerialConfig>>(
                 serializeUntiedResult(key)
               ),
               value: serializeUntiedResult(value)
@@ -245,7 +245,7 @@ function serializeUntiedResult(
           let coercedValue = <Format.Values.StructValue>value;
           return {
             ...coercedValue,
-            type: <Format.Types.StructType<SerialFormatConfig>>serializedType,
+            type: <Format.Types.StructType<SerialConfig>>serializedType,
             value: coercedValue.value.map(({ name, value: element }) => ({
               name,
               value: serializeUntiedResult(element)
@@ -257,7 +257,7 @@ function serializeUntiedResult(
           let coercedValue = <Format.Values.TupleValue>value;
           return {
             ...coercedValue,
-            type: <Format.Types.TupleType<SerialFormatConfig>>serializedType,
+            type: <Format.Types.TupleType<SerialConfig>>serializedType,
             value: coercedValue.value.map(({ name, value: element }) => ({
               name,
               value: serializeUntiedResult(element)
@@ -268,7 +268,7 @@ function serializeUntiedResult(
           let coercedValue = <Format.Values.MagicValue>value;
           return {
             ...coercedValue,
-            type: <Format.Types.MagicType<SerialFormatConfig>>serializedType,
+            type: <Format.Types.MagicType<SerialConfig>>serializedType,
             value: Object.assign(
               {},
               ...Object.entries(coercedValue.value).map(([name, element]) => ({
@@ -283,7 +283,7 @@ function serializeUntiedResult(
               let coercedValue = <Format.Values.TypeValueContract>value;
               return {
                 ...coercedValue,
-                type: <Format.Types.TypeTypeContract<SerialFormatConfig>>(
+                type: <Format.Types.TypeTypeContract<SerialConfig>>(
                   serializedType
                 ),
                 value: coercedValue.value.map(({ name, value: element }) => ({
@@ -296,10 +296,10 @@ function serializeUntiedResult(
               let coercedValue = <Format.Values.TypeValueEnum>value;
               return {
                 ...coercedValue,
-                type: <Format.Types.TypeTypeEnum<SerialFormatConfig>>(
+                type: <Format.Types.TypeTypeEnum<SerialConfig>>(
                   serializedType
                 ),
-                value: <Format.Values.EnumValue<SerialFormatConfig>[]>(
+                value: <Format.Values.EnumValue<SerialConfig>[]>(
                   coercedValue.value.map(serializeUntiedResult)
                 )
               };
@@ -310,7 +310,7 @@ function serializeUntiedResult(
           let coercedValue = <Format.Values.ContractValue>value;
           return {
             ...coercedValue,
-            type: <Format.Types.ContractType<SerialFormatConfig>>serializedType,
+            type: <Format.Types.ContractType<SerialConfig>>serializedType,
             value: serializeContractValueInfo(coercedValue.value)
           };
         }
@@ -318,7 +318,7 @@ function serializeUntiedResult(
           switch (value.type.visibility) {
             case "external": {
               let coercedValue = <Format.Values.FunctionExternalValue>value;
-              return <Format.Values.FunctionExternalValue<SerialFormatConfig>>{
+              return <Format.Values.FunctionExternalValue<SerialConfig>>{
                 ...coercedValue,
                 type: serializedType,
                 value: {
@@ -334,15 +334,15 @@ function serializeUntiedResult(
               if (coercedValue.value.kind === "function") {
                 return {
                   ...coercedValue,
-                  type: <Format.Types.FunctionInternalType<SerialFormatConfig>>(
+                  type: <Format.Types.FunctionInternalType<SerialConfig>>(
                     serializedType
                   ),
                   value: {
                     ...coercedValue.value,
-                    context: <Format.Types.ContractType<SerialFormatConfig>>(
+                    context: <Format.Types.ContractType<SerialConfig>>(
                       serializeType(coercedValue.value.context)
                     ),
-                    definedIn: <Format.Types.ContractType<SerialFormatConfig>>(
+                    definedIn: <Format.Types.ContractType<SerialConfig>>(
                       serializeType(coercedValue.value.definedIn)
                     )
                   }
@@ -350,12 +350,12 @@ function serializeUntiedResult(
               } else {
                 return {
                   ...coercedValue,
-                  type: <Format.Types.FunctionInternalType<SerialFormatConfig>>(
+                  type: <Format.Types.FunctionInternalType<SerialConfig>>(
                     serializedType
                   ),
                   value: {
                     ...coercedValue.value,
-                    context: <Format.Types.ContractType<SerialFormatConfig>>(
+                    context: <Format.Types.ContractType<SerialConfig>>(
                       serializeType(coercedValue.value.context)
                     )
                   }
@@ -364,7 +364,7 @@ function serializeUntiedResult(
             }
           }
         default:
-          return <Format.Values.Value<SerialFormatConfig>>{
+          return <Format.Values.Value<SerialConfig>>{
             ...value,
             type: serializedType
           };
@@ -373,7 +373,7 @@ function serializeUntiedResult(
       switch (value.error.kind) {
         case "BoolOutOfRangeError":
           return {
-            type: <Format.Types.BoolType<SerialFormatConfig>>serializedType,
+            type: <Format.Types.BoolType<SerialConfig>>serializedType,
             kind: "error",
             error: {
               kind: "BoolOutOfRangeError" as const,
@@ -382,7 +382,7 @@ function serializeUntiedResult(
           };
         case "EnumOutOfRangeError":
         case "EnumNotFoundDecodingError":
-          return <Format.Errors.EnumErrorResult<SerialFormatConfig>>{
+          return <Format.Errors.EnumErrorResult<SerialConfig>>{
             type: serializedType,
             kind: "error",
             error: {
@@ -395,19 +395,19 @@ function serializeUntiedResult(
         case "DeployedFunctionInConstructorError":
         case "MalformedInternalFunctionError":
           return {
-            type: <Format.Types.FunctionInternalType<SerialFormatConfig>>(
+            type: <Format.Types.FunctionInternalType<SerialConfig>>(
               serializedType
             ),
             kind: "error",
             error: {
               ...value.error,
-              context: <Format.Types.ContractType<SerialFormatConfig>>(
+              context: <Format.Types.ContractType<SerialConfig>>(
                 serializeType(value.error.context)
               )
             }
           };
         case "UserDefinedTypeNotFoundError":
-          return <Format.Errors.ErrorResult<SerialFormatConfig>>{
+          return <Format.Errors.ErrorResult<SerialConfig>>{
             type: serializedType,
             kind: "error",
             error: {
@@ -416,7 +416,7 @@ function serializeUntiedResult(
             }
           };
         case "ReadErrorStorage":
-          return <Format.Errors.ErrorResult<SerialFormatConfig>>{
+          return <Format.Errors.ErrorResult<SerialConfig>>{
             type: serializedType,
             kind: "error",
             error: {
@@ -425,7 +425,7 @@ function serializeUntiedResult(
             }
           };
         case "OverlongArraysAndStringsNotImplementedError":
-          return <Format.Errors.ErrorResult<SerialFormatConfig>>{
+          return <Format.Errors.ErrorResult<SerialConfig>>{
             type: serializedType,
             kind: "error",
             error:
@@ -441,7 +441,7 @@ function serializeUntiedResult(
                   }
           };
         case "OverlargePointersNotImplementedError":
-          return <Format.Errors.ErrorResult<SerialFormatConfig>>{
+          return <Format.Errors.ErrorResult<SerialConfig>>{
             type: serializedType,
             kind: "error",
             error: {
@@ -450,7 +450,7 @@ function serializeUntiedResult(
             }
           };
         default:
-          return <Format.Errors.ErrorResult<SerialFormatConfig>>(
+          return <Format.Errors.ErrorResult<SerialConfig>>(
             (<unknown>value)
           ); //blech
       }
@@ -459,14 +459,14 @@ function serializeUntiedResult(
 
 function serializeContractValueInfo(
   info: Format.Values.ContractValueInfo
-): Format.Values.ContractValueInfo<SerialFormatConfig> {
+): Format.Values.ContractValueInfo<SerialConfig> {
   switch (info.kind) {
     case "unknown":
       return info;
     case "known":
       return {
         ...info,
-        class: <Format.Types.ContractType<SerialFormatConfig>>(
+        class: <Format.Types.ContractType<SerialConfig>>(
           serializeType(info.class)
         )
       };
@@ -475,7 +475,7 @@ function serializeContractValueInfo(
 
 function serializeRange(
   range: Storage.Range
-): Storage.Range<SerialFormatConfig> {
+): Storage.Range<SerialConfig> {
   return {
     ...range,
     from: {
@@ -491,12 +491,12 @@ function serializeRange(
   };
 }
 
-function serializeSlot(slot: Storage.Slot): Storage.Slot<SerialFormatConfig> {
+function serializeSlot(slot: Storage.Slot): Storage.Slot<SerialConfig> {
   return {
     ...slot,
     path: slot.path ? serializeSlot(slot.path) : undefined,
     key: slot.key
-      ? <Format.Values.ElementaryValue<SerialFormatConfig>>(
+      ? <Format.Values.ElementaryValue<SerialConfig>>(
           serializeUntiedResult(slot.key)
         )
       : undefined,
@@ -507,13 +507,13 @@ function serializeSlot(slot: Storage.Slot): Storage.Slot<SerialFormatConfig> {
 //DESERIALIZATION (apologies for copypaste)
 
 export function deserializeResult(
-  value: Format.Values.Result<SerialFormatConfig>
+  value: Format.Values.Result<SerialConfig>
 ): Format.Values.Result {
   return tie(deserializeToUntiedResult(value));
 }
 
 export function deserializeType(
-  dataType: Format.Types.Type<SerialFormatConfig>
+  dataType: Format.Types.Type<SerialConfig>
 ): Format.Types.Type {
   switch (dataType.typeClass) {
     case "array":
@@ -611,7 +611,7 @@ export function deserializeType(
     case "type":
       switch (dataType.type.typeClass) {
         case "contract":
-          let coercedType = <Format.Types.TypeTypeContract<SerialFormatConfig>>(
+          let coercedType = <Format.Types.TypeTypeContract<SerialConfig>>(
             dataType
           );
           if (coercedType.stateVariableTypes !== undefined) {
@@ -636,7 +636,7 @@ export function deserializeType(
 }
 
 function deserializeToUntiedResult(
-  value: Format.Values.Result<SerialFormatConfig>
+  value: Format.Values.Result<SerialConfig>
 ): Format.Values.Result {
   let deserializedType = deserializeType(value.type);
   switch (value.kind) {
@@ -645,8 +645,8 @@ function deserializeToUntiedResult(
         case "uint":
         case "int": {
           let coercedValue = <
-            | Format.Values.UintValue<SerialFormatConfig>
-            | Format.Values.IntValue<SerialFormatConfig>
+            | Format.Values.UintValue<SerialConfig>
+            | Format.Values.IntValue<SerialConfig>
           >value;
           if (coercedValue.value.rawAsString !== undefined) {
             return <Format.Values.UintValue | Format.Values.IntValue>{
@@ -670,8 +670,8 @@ function deserializeToUntiedResult(
         case "fixed":
         case "ufixed": {
           let coercedValue = <
-            | Format.Values.FixedValue<SerialFormatConfig>
-            | Format.Values.UfixedValue<SerialFormatConfig>
+            | Format.Values.FixedValue<SerialConfig>
+            | Format.Values.UfixedValue<SerialConfig>
           >value;
           if (coercedValue.value.rawAsString !== undefined) {
             return <Format.Values.FixedValue | Format.Values.UfixedValue>{
@@ -693,7 +693,7 @@ function deserializeToUntiedResult(
           }
         }
         case "enum": {
-          let coercedValue = <Format.Values.EnumValue<SerialFormatConfig>>value;
+          let coercedValue = <Format.Values.EnumValue<SerialConfig>>value;
           return {
             ...coercedValue,
             type: <Format.Types.EnumType>deserializedType,
@@ -704,7 +704,7 @@ function deserializeToUntiedResult(
           };
         }
         case "array": {
-          let coercedValue = <Format.Values.ArrayValue<SerialFormatConfig>>(
+          let coercedValue = <Format.Values.ArrayValue<SerialConfig>>(
             value
           );
           return {
@@ -714,7 +714,7 @@ function deserializeToUntiedResult(
           };
         }
         case "mapping": {
-          let coercedValue = <Format.Values.MappingValue<SerialFormatConfig>>(
+          let coercedValue = <Format.Values.MappingValue<SerialConfig>>(
             value
           );
           return {
@@ -729,7 +729,7 @@ function deserializeToUntiedResult(
           };
         }
         case "struct": {
-          let coercedValue = <Format.Values.StructValue<SerialFormatConfig>>(
+          let coercedValue = <Format.Values.StructValue<SerialConfig>>(
             value
           );
           return {
@@ -743,7 +743,7 @@ function deserializeToUntiedResult(
         }
         case "tuple": {
           //had to split this from struct due to TS :-/
-          let coercedValue = <Format.Values.TupleValue<SerialFormatConfig>>(
+          let coercedValue = <Format.Values.TupleValue<SerialConfig>>(
             value
           );
           return {
@@ -756,7 +756,7 @@ function deserializeToUntiedResult(
           };
         }
         case "magic": {
-          let coercedValue = <Format.Values.MagicValue<SerialFormatConfig>>(
+          let coercedValue = <Format.Values.MagicValue<SerialConfig>>(
             value
           );
           return {
@@ -774,7 +774,7 @@ function deserializeToUntiedResult(
           switch (value.type.type.typeClass) {
             case "contract": {
               let coercedValue = <
-                Format.Values.TypeValueContract<SerialFormatConfig>
+                Format.Values.TypeValueContract<SerialConfig>
               >value;
               return {
                 ...coercedValue,
@@ -787,7 +787,7 @@ function deserializeToUntiedResult(
             }
             case "enum": {
               let coercedValue = <
-                Format.Values.TypeValueEnum<SerialFormatConfig>
+                Format.Values.TypeValueEnum<SerialConfig>
               >value;
               return {
                 ...coercedValue,
@@ -800,7 +800,7 @@ function deserializeToUntiedResult(
           }
         }
         case "contract": {
-          let coercedValue = <Format.Values.ContractValue<SerialFormatConfig>>(
+          let coercedValue = <Format.Values.ContractValue<SerialConfig>>(
             value
           );
           return {
@@ -813,7 +813,7 @@ function deserializeToUntiedResult(
           switch (value.type.visibility) {
             case "external": {
               let coercedValue = <
-                Format.Values.FunctionExternalValue<SerialFormatConfig>
+                Format.Values.FunctionExternalValue<SerialConfig>
               >value;
               return <Format.Values.FunctionExternalValue>{
                 ...coercedValue,
@@ -828,7 +828,7 @@ function deserializeToUntiedResult(
             }
             case "internal": {
               let coercedValue = <
-                Format.Values.FunctionInternalValue<SerialFormatConfig>
+                Format.Values.FunctionInternalValue<SerialConfig>
               >value;
               if (coercedValue.value.kind === "function") {
                 return {
@@ -949,7 +949,7 @@ function deserializeToUntiedResult(
 }
 
 function deserializeContractValueInfo(
-  info: Format.Values.ContractValueInfo<SerialFormatConfig>
+  info: Format.Values.ContractValueInfo<SerialConfig>
 ): Format.Values.ContractValueInfo {
   switch (info.kind) {
     case "unknown":
@@ -963,7 +963,7 @@ function deserializeContractValueInfo(
 }
 
 function deserializeRange(
-  range: Storage.Range<SerialFormatConfig>
+  range: Storage.Range<SerialConfig>
 ): Storage.Range {
   return {
     ...range,
@@ -980,7 +980,7 @@ function deserializeRange(
   };
 }
 
-function deserializeSlot(slot: Storage.Slot<SerialFormatConfig>): Storage.Slot {
+function deserializeSlot(slot: Storage.Slot<SerialConfig>): Storage.Slot {
   return {
     ...slot,
     path: slot.path ? deserializeSlot(slot.path) : undefined,
