@@ -9,10 +9,13 @@ const LoadingStrategy = require("./LoadingStrategy");
 
 class VersionRange extends LoadingStrategy {
   compilerFromString(code) {
-    const soljson = requireFromString(code);
-    const wrapped = solcWrap(soljson);
-    this.removeListener();
-    return wrapped;
+    const markedListeners = this.markListeners();
+    try {
+      const soljson = requireFromString(code);
+      return solcWrap(soljson);
+    } finally {
+      this.removeListener(markedListeners);
+    }
   }
 
   findNewestValidVersion(version, allVersions) {
@@ -32,12 +35,15 @@ class VersionRange extends LoadingStrategy {
   }
 
   getCachedSolcByFileName(fileName) {
-    const filePath = this.resolveCache(fileName);
-    const soljson = originalRequire(filePath);
-    debug("soljson %o", soljson);
-    const wrapped = solcWrap(soljson);
-    this.removeListener();
-    return wrapped;
+    const markedListeners = this.markListeners();
+    try {
+      const filePath = this.resolveCache(fileName);
+      const soljson = originalRequire(filePath);
+      debug("soljson %o", soljson);
+      return solcWrap(soljson);
+    } finally {
+      this.removeListener(markedListeners);
+    }
   }
 
   // Range can also be a single version specification like "0.5.0"
@@ -102,10 +108,7 @@ class VersionRange extends LoadingStrategy {
       attemptNumber: index + 1
     });
     try {
-      const response = await axios.get(
-        url,
-        { maxRedirects: 50 }
-      );
+      const response = await axios.get(url, { maxRedirects: 50 });
       events.emit("downloadCompiler:succeed");
       this.addFileToCache(response.data, fileName);
       return this.compilerFromString(response.data);
@@ -150,7 +153,8 @@ class VersionRange extends LoadingStrategy {
 
     // trim trailing slashes from compilerRoot
     const url = `${compilerRoots[index].replace(/\/+$/, "")}/list.json`;
-    return axios.get(url, { maxRedirects: 50 })
+    return axios
+      .get(url, { maxRedirects: 50 })
       .then(response => {
         events.emit("fetchSolcList:succeed");
         return response.data;
