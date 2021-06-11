@@ -74,7 +74,7 @@ export const normalizeSourcePath = (url = defaultPath) => {
     const match = url.match(protocolRex);
     if (match) {
       const { groups: G } = match;
-      const branch = G["branch"] ? `${G["branch"]}` : "";
+      const branch = G["branch"] || "";
 
       if (invalidBranch.test(branch)) {
         debug({
