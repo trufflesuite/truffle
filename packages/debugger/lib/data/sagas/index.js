@@ -60,6 +60,10 @@ export function* defineType(node, sourceId) {
   yield put(actions.defineType(node, sourceId));
 }
 
+export function* defineTaggedOutput(node, sourceId) {
+  yield put(actions.defineTaggedOutput(node, sourceId));
+}
+
 function* tickSaga() {
   yield* variablesAndMappingsSaga();
   yield* trace.signalTickSagaCompletion();
@@ -129,8 +133,10 @@ export function* decodeReturnValue() {
   const state = yield select(data.next.state); //next state has the return data
   const allocations = yield select(data.info.allocations);
   const contexts = yield select(data.views.contexts);
+  const currentContext = yield select(data.current.context);
   const status = yield select(data.current.returnStatus); //may be undefined
   const returnAllocation = yield select(data.current.returnAllocation); //may be null
+  const errorId = yield select(data.current.errorId);
   debug("returnAllocation: %O", returnAllocation);
 
   const decoder = Codec.decodeReturndata(
@@ -138,10 +144,12 @@ export function* decodeReturnValue() {
       userDefinedTypes,
       state,
       allocations,
-      contexts
+      contexts,
+      currentContext
     },
     returnAllocation,
-    status
+    status,
+    errorId
   );
 
   debug("beginning decoding");
@@ -363,6 +371,15 @@ function* variablesAndMappingsSaga() {
       //the rest hopefully will be caught by the modifier preamble
       //(in fact they won't all be, but...)
 
+      //HACK: prevent parameter allocation while popping
+      //sometimes Solidity's sourcemapping will jump back to the function
+      //definition after a bare block while it pops the stack a bit.
+      //we don't want to allocate then, so we'll break out if the current
+      //instruction is a POP.
+      if (yield select(data.current.isPop)) {
+        break;
+      }
+
       //HACK: filter out some garbage
       //this filters out the case where we're really in an invocation of a
       //modifier or base constructor, but have temporarily hit the definition
@@ -397,12 +414,22 @@ function* variablesAndMappingsSaga() {
 
     case "YulFunctionDefinition": {
       const nextPointer = yield select(data.next.pointer);
-      if (nextPointer === null || !nextPointer.startsWith(`${pointer}/body/`)) {
+      if (
+        nextPointer === null ||
+        !(
+          nextPointer.startsWith(`${pointer}/body/`) ||
+          nextPointer.startsWith(`${pointer}/returnVariables`)
+        )
+      ) {
         //in this case, we're seeing the function
         //as it's being defined, rather than as it's
         //being called
         //notice the final slash; when you enter a function, you go *strictly inside*
         //its body (if you hit the body node itself you are seeing the definition)
+        //(as of Solidity 0.8.4, you may also go to the return parameters; rather
+        //than switch on the version, and use a different mechanism for that,
+        //we'll use the same mechanism but alter the condition above to account
+        //for that)
         break;
       }
       //yul parameters are a bit weird.
@@ -410,10 +437,15 @@ function* variablesAndMappingsSaga() {
       //first inputs then outputs (and we skip handling the outputs),
       //yul parameters have the inputs go top to bottom,
       //and the outputs go bottom to top (again with the outputs on top)
-      //note we need to handle both inputs and outputs here
-      const returnSuffixes = (node.returnVariables || []).map(
-        (_, index, vars) => `/returnVariables/${vars.length - 1 - index}`
-      );
+      //For Solidity <0.8.4, we need to handle both inputs and outputs
+      //here; for Solidity >=0.8.4, we handle only inputs here and handle
+      //outputs separately
+      let returnSuffixes = [];
+      if (nextPointer.startsWith(`${pointer}/body/`)) {
+        returnSuffixes = (node.returnVariables || []).map(
+          (_, index, vars) => `/returnVariables/${vars.length - 1 - index}`
+        );
+      }
       const parameterSuffixes = (node.parameters || []).map(
         (_, index) => `/parameters/${index}`
       );
@@ -478,6 +510,7 @@ function* variablesAndMappingsSaga() {
       yield put(actions.assign(assignments));
       break;
     }
+
     case "ContractDefinition": {
       const allocations = yield select(data.current.allocations.state);
       const allocation = allocations[node.id];
@@ -532,6 +565,7 @@ function* variablesAndMappingsSaga() {
       yield put(actions.assign(assignments));
       break;
     }
+
     case "FunctionTypeName": {
       //HACK
       //for some reasons, for declarations of local variables of function type,
@@ -583,6 +617,7 @@ function* variablesAndMappingsSaga() {
       yield put(actions.assign(assignments));
       break;
     }
+
     case "YulFunctionCall": {
       const nextPointer = yield select(data.next.pointer);
       if (nextPointer !== null && nextPointer.startsWith(pointer)) {
@@ -638,6 +673,30 @@ function* variablesAndMappingsSaga() {
       yield put(actions.assign(assignments));
       break;
     }
+
+    case "YulTypedName": {
+      //this case is used to handle output parameters in Yul in
+      //Solidity >=0.8.4
+      const sourceIndex = yield select(data.current.sourceIndex);
+      const sourceAndPointer = makePath(sourceIndex, pointer);
+      const assignment = makeAssignment(
+        {
+          compilationId,
+          internalFor,
+          astRef: sourceAndPointer,
+          stackframe: currentDepth,
+          modifierDepth: inModifier ? modifierDepth : null
+        },
+        {
+          location: "stack",
+          from: top, //all Yul variables are size 1
+          to: top
+        }
+      );
+      yield put(actions.assign({ [assignment.id]: assignment }));
+      break;
+    }
+
     case "IndexAccess": {
       // to track `mapping` types known indices
       // (and also *some* known indices for arrays)
@@ -780,6 +839,7 @@ function* variablesAndMappingsSaga() {
 
       break;
     }
+
     case "MemberAccess": {
       //we're going to start by doing the same thing as in the default case
       //(see below) -- getting things ready for an assignment.  Then we're
@@ -868,6 +928,7 @@ function* variablesAndMappingsSaga() {
       );
       break;
     }
+
     default:
       if (node.id === undefined || node.typeDescriptions == undefined) {
         break;
@@ -1054,6 +1115,12 @@ export function* recordAllocations() {
     userDefinedTypes,
     abiAllocations
   );
+  const returndataAllocations = Codec.AbiData.Allocate.getReturndataAllocations(
+    contracts,
+    referenceDeclarations,
+    userDefinedTypes,
+    abiAllocations
+  );
   const stateAllocations = Codec.Storage.Allocate.getStateAllocations(
     contracts,
     referenceDeclarations,
@@ -1066,6 +1133,7 @@ export function* recordAllocations() {
       memoryAllocations,
       abiAllocations,
       calldataAllocations,
+      returndataAllocations,
       stateAllocations
     )
   );

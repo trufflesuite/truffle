@@ -57,6 +57,11 @@ export interface SolcSettings {
   metadata?: MetadataSettings;
   viaIR?: boolean;
   libraries?: LibrarySettings; //note: we don't actually want to return this!
+  compilationTarget?: { //not actually a valid compiler setting, but rather where the
+    //contract name is stored! (as the lone value, the lone key being the source
+    //where it's defined)
+    [sourcePath: string]: string;
+  };
 }
 
 export interface VyperSettings {

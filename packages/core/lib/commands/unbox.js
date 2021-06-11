@@ -43,6 +43,9 @@ const command = {
     const fse = require("fs-extra");
 
     const config = Config.default().with({logger: console});
+    // we merge in the options so that options passed on the command line
+    // (for example --quiet) make it to the EventManager
+    config.merge(options);
 
     let [url, destination] = options._;
 

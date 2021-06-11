@@ -1,3 +1,4 @@
+import type BN from "bn.js";
 import {
   Block as EvmBlock,
   BlockType as EvmBlockType,
@@ -18,6 +19,17 @@ export type BlockType = EvmBlockType | any;
 export type Transaction = EvmTransaction | any;
 export type TransactionReceipt = EvmTransactionReceipt | any;
 export type TxHash = string;
+export type TransactionCostReport = {
+  timestamp: number;
+  from: string;
+  balance: string;
+  gasUnit: string;
+  gasPrice: string;
+  gas: BN;
+  valueUnit: string;
+  value: string;
+  cost: BN;
+};
 
 export interface InterfaceAdapter {
   getNetworkId(): Promise<NetworkId>;
@@ -29,4 +41,6 @@ export interface InterfaceAdapter {
   getCode(address: string): Promise<string>;
   getAccounts(): Promise<string[]>;
   estimateGas(transactionConfig: Transaction): Promise<number>;
+  getTransactionCostReport(receipt: TransactionReceipt): Promise<TransactionCostReport>;
+  displayCost(value: BN): string;
 }

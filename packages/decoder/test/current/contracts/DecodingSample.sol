@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.7.0;
+pragma solidity ^0.8.0;
 
 contract DecodingSample {
   enum E {
@@ -44,7 +44,7 @@ contract DecodingSample {
   bool[2]    fixedArrayBool;
   address[2] fixedArrayAddress;
   bytes7[2]  fixedArrayBytes7;
-  byte[2]    fixedArrayByte;
+  bytes1[2]    fixedArrayByte;
   E[2]       fixedArrayEnum;
 
   uint[]    dynamicArrayUint;
@@ -52,7 +52,7 @@ contract DecodingSample {
   bool[]    dynamicArrayBool;
   address[] dynamicArrayAddress;
   bytes7[]  dynamicArrayBytes7;
-  byte[]    dynamicArrayByte;
+  bytes1[]    dynamicArrayByte;
   E[]       dynamicArrayEnum;
 
   function() external functionExternal = this.example;
@@ -117,7 +117,7 @@ contract DecodingSample {
     dynamicArrayBytes7 = new bytes7[](2);
     dynamicArrayBytes7[0] = hex"75754477331122";
     dynamicArrayBytes7[1] = hex"e7d14477331122";
-    dynamicArrayByte = new byte[](2);
+    dynamicArrayByte = new bytes1[](2);
     dynamicArrayByte[0] = 0x37;
     dynamicArrayByte[1] = 0xbe;
     dynamicArrayEnum = new E[](2);

@@ -3,6 +3,7 @@ const debug = debugModule("debugger:stacktrace:selectors");
 
 import { createSelectorTree, createLeaf } from "reselect-tree";
 
+import trace from "lib/trace/selectors";
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
 
@@ -43,6 +44,8 @@ function generateReport(callstack, location, status, message) {
       report[0].message = message.Error;
     } else if (message.Panic !== undefined) {
       report[0].panic = message.Panic;
+    } else if (message.custom !== undefined) {
+      report[0].custom = message.custom;
     }
   }
   return report;
@@ -76,10 +79,11 @@ function createMultistepSelectors(stepSelector) {
      * .strippedLocation
      */
     strippedLocation: createLeaf(
-      ["./location/source", "./location/sourceRange"],
-      ({ id, sourcePath, internal }, sourceRange) => ({
+      ["./location/source", "./location/sourceRange", "./location/node"],
+      ({ id, sourcePath, internal }, sourceRange, node) => ({
         source: { id, sourcePath, internal },
-        sourceRange
+        sourceRange,
+        node: node ? { id: node.id } : null
       })
     ),
 
@@ -144,7 +148,37 @@ let stacktrace = createSelectorTree({
       state => state.proc.innerReturnStatus
     ),
 
+    /**
+     * stacktrace.current.innerErrorIndex
+     * Index of the most recent error (but not this)
+     */
+    innerErrorIndex: createLeaf(
+      ["/state"],
+      state => state.proc.innerErrorIndex
+    ),
+
     ...createMultistepSelectors(solidity.current),
+
+    /**
+     * stacktrace.current.index
+     */
+    index: createLeaf([trace.index], identity),
+
+    /**
+     * stacktrace.current.updateIndex
+     * We only want to update the index if:
+     * 1. the return counter is 0 (we're not in the middle of an
+     * error already being thrown -- we want to keep it at the
+     * initial index for that error)
+     * 2. we're not on the last step (we don't want to accidentally
+     * save the final step as the last error, it would be confusing)
+     * 3. the return status is actually false
+     */
+    updateIndex: createLeaf(
+      ["./returnCounter", trace.stepsRemaining, "./returnStatus"],
+      (returnCounter, stepsRemaining, returnStatus) =>
+        returnCounter === 0 && stepsRemaining > 1 && !returnStatus
+    ),
 
     /**
      * stacktrace.current.willJumpIn
@@ -228,8 +262,11 @@ let stacktrace = createSelectorTree({
 
     /**
      * stacktrace.current.revertString
-     * Crudely decodes the current revert string, OR the current panic.
-     * Returns { Error: <string> } or { Panic: <BN> }
+     * Crudely decodes the current revert string, OR the current panic,
+     * *or* an indication of a custom error (but not what, we can't do
+     * that here)
+     * Returns { Error: <string> } or { Panic: <BN> } or { custom: true }
+     * (or undefined)
      * Not meant to account for crazy things, just there to produce
      * a simple string or number.
      * NOTE: if panic code is overlarge, we'll use -1 instead to indicate
@@ -268,6 +305,8 @@ let stacktrace = createSelectorTree({
             default:
               return undefined;
           }
+        } else if (revertDecodings.length === 0) {
+          return { custom: true };
         } else {
           return undefined;
         }

@@ -126,7 +126,7 @@ export class WireDecoder {
     ({
       definitions: this.referenceDeclarations,
       types: this.userDefinedTypes
-    } = this.collectUserDefinedTypes());
+    } = this.collectUserDefinedTypesAndTaggedOutputs());
 
     const allocationInfo: AbiData.Allocate.ContractAllocationInfo[] = this.contractsAndContexts.map(
       ({
@@ -159,6 +159,12 @@ export class WireDecoder {
       this.userDefinedTypes,
       this.allocations.abi
     );
+    this.allocations.returndata = AbiData.Allocate.getReturndataAllocations(
+      allocationInfo,
+      this.referenceDeclarations,
+      this.userDefinedTypes,
+      this.allocations.abi
+    );
     this.allocations.event = AbiData.Allocate.getEventAllocations(
       allocationInfo,
       this.referenceDeclarations,
@@ -174,7 +180,18 @@ export class WireDecoder {
     debug("done with allocation");
   }
 
-  private collectUserDefinedTypes(): {
+  /*
+   * (comment copypasted from the debugger)
+   * "Tagged outputs" means user-defined things that are output by a contract
+   * (not input to a contract), and which are distinguished by (potentially
+   * ambiguous) selectors.  So, events and custom errors are tagged outputs.  
+   * Function arguments are not tagged outputs (they're not outputs).
+   * Return values are not tagged outputs (they don't have a selector).
+   * Built-in errors (Error(string) and Panic(uint))... OK I guess those could
+   * be considered tagged outputs, but we're only looking at user-defined ones
+   * here.
+   */
+  private collectUserDefinedTypesAndTaggedOutputs(): {
     definitions: { [compilationId: string]: Ast.AstNodes };
     types: Format.Types.TypesById;
   } {
@@ -204,6 +221,11 @@ export class WireDecoder {
                 references[compilation.id]
               );
               types[dataType.id] = dataType;
+            } else if (
+              node.nodeType === "EventDefinition" ||
+              node.nodeType === "ErrorDefinition"
+            ) {
+              references[compilation.id][node.id] = node;
             }
             if (node.nodeType === "ContractDefinition") {
               for (const subNode of node.nodes) {
@@ -221,6 +243,11 @@ export class WireDecoder {
                     references[compilation.id]
                   );
                   types[dataType.id] = dataType;
+                } else if (
+                  subNode.nodeType === "EventDefinition" ||
+                  subNode.nodeType === "ErrorDefinition"
+                ) {
+                  references[compilation.id][subNode.id] = subNode;
                 }
               }
             }
@@ -709,12 +736,7 @@ export class WireDecoder {
    * @protected
    */
   public getAllocations(): Evm.AllocationInfo {
-    return {
-      abi: this.allocations.abi,
-      storage: this.allocations.storage,
-      state: this.allocations.state,
-      calldata: this.allocations.calldata
-    };
+    return this.allocations;
   }
 
   /**
@@ -928,6 +950,7 @@ export class ContractDecoder {
       allocation = this.noBytecodeAllocations[selector].output;
     }
 
+    debug("this.allocations: %O", this.allocations);
     const bytes = Conversion.toBytes(data);
     const info: Evm.EvmInfo = {
       state: {
@@ -936,7 +959,8 @@ export class ContractDecoder {
       },
       userDefinedTypes: this.userDefinedTypes,
       allocations: this.allocations,
-      contexts: { ...this.contexts, ...additionalContexts }
+      contexts: { ...this.contexts, ...additionalContexts },
+      currentContext: this.context
     };
 
     const decoder = decodeReturndata(info, allocation, status);

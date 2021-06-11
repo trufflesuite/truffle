@@ -21,7 +21,7 @@ describe("ABIEncoderV2", function () {
     before(async function () {
       this.timeout(10000);
 
-      UserDirectory = await util.createABIV2UserDirectory();
+      const UserDirectory = await util.createABIV2UserDirectory();
 
       await util.setUpProvider(UserDirectory, {});
 

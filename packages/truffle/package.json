@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.3.4",
+  "version": "5.3.9",
   "main": "./build/library.bundled.js",
   "bin": {
     "truffle": "./build/cli.bundled.js"
@@ -32,17 +32,17 @@
     "test:raw": "NO_BUILD=true mocha"
   },
   "dependencies": {
-    "@truffle/debugger": "^8.0.23",
+    "@truffle/debugger": "^9.0.1",
     "app-module-path": "^2.2.0",
     "mocha": "8.1.2",
     "original-require": "^1.0.1"
   },
   "devDependencies": {
-    "@truffle/box": "^2.1.10",
-    "@truffle/config": "^1.2.38",
-    "@truffle/contract": "^4.3.15",
-    "@truffle/core": "^5.3.4",
-    "@truffle/interface-adapter": "^0.4.22",
+    "@truffle/box": "^2.1.15",
+    "@truffle/config": "^1.2.42",
+    "@truffle/contract": "^4.3.19",
+    "@truffle/core": "^5.3.9",
+    "@truffle/interface-adapter": "^0.5.0",
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^7.0.0",
     "eslint": "^5.7.0",
@@ -58,18 +58,18 @@
     "shebang-loader": "0.0.1",
     "stream-buffers": "^3.0.1",
     "tmp": "^0.2.1",
-    "web3": "1.3.5",
+    "web3": "1.3.6",
     "webpack": "^5.21.2",
     "webpack-bundle-analyzer": "^3.0.3",
     "webpack-cli": "^4.5.0",
     "yargs": "^8.0.2"
   },
   "optionalDependencies": {
-    "@truffle/db": "^0.5.9",
-    "@truffle/preserve-fs": "^0.2.1",
-    "@truffle/preserve-to-buckets": "^0.2.1",
-    "@truffle/preserve-to-filecoin": "^0.2.1",
-    "@truffle/preserve-to-ipfs": "^0.2.1"
+    "@truffle/db": "^0.5.14",
+    "@truffle/preserve-fs": "^0.2.2",
+    "@truffle/preserve-to-buckets": "^0.2.2",
+    "@truffle/preserve-to-filecoin": "^0.2.2",
+    "@truffle/preserve-to-ipfs": "^0.2.2"
   },
   "publishConfig": {
     "access": "public"

@@ -7,7 +7,7 @@ const ora = require("ora");
 
 const DebugUtils = require("@truffle/debug-utils");
 const selectors = require("@truffle/debugger").selectors;
-const { session, solidity, trace, evm, controller } = selectors;
+const { session, solidity, stacktrace, trace, evm, controller } = selectors;
 
 const analytics = require("../services/analytics");
 const repl = require("repl");
@@ -45,11 +45,37 @@ class DebugInterpreter {
   }
 
   async setOrClearBreakpoint(args, setOrClear) {
+    const breakpoints = this.determineBreakpoints(args, setOrClear); //note: not pure, can print
+    if (breakpoints !== null) {
+      for (const breakpoint of breakpoints) {
+        await this.setOrClearBreakpointObject(breakpoint, setOrClear);
+      }
+    } else {
+      //null is a special value representing all, we'll handle it separately
+      if (setOrClear) {
+        // only "B all" is legal, not "b all"
+        this.printer.print("Cannot add breakpoint everywhere.");
+      } else {
+        await this.session.removeAllBreakpoints();
+        this.printer.print("Removed all breakpoints.");
+      }
+    }
+  }
+
+  //NOTE: not pure, also prints!
+  //returns an array of the breakpoints, unless it's remove all breakpoints,
+  //in which case it returns null
+  //(if something goes wrong it will return [] to indicate do nothing)
+  determineBreakpoints(args, setOrClear) {
     //setOrClear: true for set, false for clear
     const currentLocation = this.session.view(controller.current.location);
-    const breakpoints = this.session.view(controller.breakpoints);
 
-    const currentNode = currentLocation.astRef;
+    const currentStart = currentLocation.sourceRange
+      ? currentLocation.sourceRange.start
+      : null;
+    const currentLength = currentLocation.sourceRange
+      ? currentLocation.sourceRange.length
+      : null;
     const currentSourceId = currentLocation.source
       ? currentLocation.source.id
       : null;
@@ -59,30 +85,25 @@ class DebugInterpreter {
           currentLocation.sourceRange.lines.start.line
         : null;
 
-    let breakpoint = {};
-
     if (args.length === 0) {
       //no arguments, want currrent node
       debug("node case");
-      if (currentNode === null) {
+      if (currentSourceId === null) {
         this.printer.print("Cannot determine current location.");
-        return;
+        return [];
       }
-      breakpoint.node = currentNode;
-      breakpoint.line = currentLine;
-      breakpoint.sourceId = currentSourceId;
+      return [{
+        start: currentStart,
+        line: currentLine, //this isn't necessary for the
+        //breakpoint to work, but we use it for printing messages
+        length: currentLength,
+        sourceId: currentSourceId
+      }];
     }
 
     //the special case of "B all"
     else if (args[0] === "all") {
-      if (setOrClear) {
-        // only "B all" is legal, not "b all"
-        this.printer.print("Cannot add breakpoint everywhere.");
-        return;
-      }
-      await this.session.removeAllBreakpoints();
-      this.printer.print("Removed all breakpoints.");
-      return;
+      return null;
     }
 
     //if the argument starts with a "+" or "-", we have a relative
@@ -91,18 +112,20 @@ class DebugInterpreter {
       debug("relative case");
       if (currentLine === null) {
         this.printer.print("Cannot determine current location.");
-        return;
+        return [];
       }
       let delta = parseInt(args[0], 10); //want an integer
       debug("delta %d", delta);
 
       if (isNaN(delta)) {
         this.printer.print("Offset must be an integer.");
-        return;
+        return [];
       }
 
-      breakpoint.sourceId = currentSourceId;
-      breakpoint.line = currentLine + delta;
+      return [{
+        sourceId: currentSourceId,
+        line: currentLine + delta
+      }];
     }
 
     //if it contains a colon, it's in the form source:line
@@ -117,7 +140,7 @@ class DebugInterpreter {
       let line = parseInt(lineArg, 10); //want an integer
       if (isNaN(line)) {
         this.printer.print("Line number must be an integer.");
-        return;
+        return [];
       }
 
       //search sources for given string
@@ -129,21 +152,49 @@ class DebugInterpreter {
 
       if (matchingSources.length === 0) {
         this.printer.print(`No source file found matching ${sourceArg}.`);
-        return;
+        return [];
       } else if (matchingSources.length > 1) {
-        this.printer.print(
-          `Multiple source files found matching ${sourceArg}.  Which did you mean?`
-        );
-        matchingSources.forEach(source =>
-          this.printer.print(source.sourcePath)
-        );
-        this.printer.print("");
-        return;
+        //normally if there's multiple matching sources, we want to return no
+        //breakpoint and print a disambiguation prompt.
+        //however, if one of them has a source path that is a substring of all
+        //the others...
+        if (
+          matchingSources.some(
+            shortSource => matchingSources.every(
+              source =>
+                typeof source.sourcePath !== "string" //just ignore these I guess?
+                || source.sourcePath.includes(shortSource.sourcePath)
+            )
+          )
+        ) {
+          //exceptional case
+          this.printer.print(
+            `WARNING: Acting on all matching sources because disambiguation between them is not possible.`
+          );
+          return matchingSources.map(
+            source => ({
+              sourceId: source.id,
+              line: line - 1 //adjust for breakpoint!
+            })
+          );
+        } else {
+          //normal case
+          this.printer.print(
+            `Multiple source files found matching ${sourceArg}.  Which did you mean?`
+          );
+          matchingSources.forEach(source =>
+            this.printer.print(source.sourcePath)
+          );
+          this.printer.print("");
+          return [];
+        }
       }
 
       //otherwise, we found it!
-      breakpoint.sourceId = matchingSources[0].id;
-      breakpoint.line = line - 1; //adjust for zero-indexing!
+      return [{
+        sourceId: matchingSources[0].id,
+        line: line - 1 //adjust for zero-indexing!
+      }];
     }
 
     //otherwise, it's a simple line number
@@ -151,20 +202,26 @@ class DebugInterpreter {
       debug("absolute case");
       if (currentSourceId === null || currentSourceId === undefined) {
         this.printer.print("Cannot determine current file.");
-        return;
+        return [];
       }
       let line = parseInt(args[0], 10); //want an integer
       debug("line %d", line);
 
       if (isNaN(line)) {
         this.printer.print("Line number must be an integer.");
-        return;
+        return [];
       }
 
-      breakpoint.sourceId = currentSourceId;
-      breakpoint.line = line - 1; //adjust for zero-indexing!
+      return [{
+        sourceId: currentSourceId,
+        line: line - 1 //adjust for zero-indexing!
+      }];
     }
+  }
 
+  //note: also prints!
+  async setOrClearBreakpointObject(breakpoint, setOrClear) {
+    const existingBreakpoints = this.session.view(controller.breakpoints);
     //OK, we've constructed the breakpoint!  But if we're adding, we'll
     //want to adjust to make sure we don't set it on an empty line or
     //anything like that
@@ -180,6 +237,9 @@ class DebugInterpreter {
         return;
       }
     }
+
+    const currentSource = this.session.view(controller.current.location.source);
+    const currentSourceId = currentSource ? currentSource.id : null;
 
     //having constructed and adjusted breakpoint, here's now a
     //user-readable message describing its location
@@ -200,7 +260,7 @@ class DebugInterpreter {
 
     //one last check -- does this breakpoint already exist?
     let alreadyExists =
-      breakpoints.filter(
+      existingBreakpoints.filter(
         existingBreakpoint =>
           existingBreakpoint.sourceId === breakpoint.sourceId &&
           existingBreakpoint.line === breakpoint.line &&
@@ -234,8 +294,8 @@ class DebugInterpreter {
       await this.session.removeBreakpoint(breakpoint);
       this.printer.print(`Breakpoint removed at ${locationMessage}.`);
     }
-    return;
   }
+
 
   start(terminate) {
     // if terminate is not passed, return a Promise instead
@@ -360,6 +420,48 @@ class DebugInterpreter {
       //(but not if nothing is loaded)
       if (this.session.view(session.status.loaded)) {
         await this.session.reset();
+      } else {
+        this.printer.print("No transaction loaded.");
+        this.printer.print("");
+      }
+    }
+    if (cmd === "y") {
+      if (this.session.view(session.status.loaded)) {
+        if (this.session.view(trace.finished)) {
+          if (!this.session.view(evm.current.step.isExceptionalHalting)) {
+            const errorIndex = this.session.view(stacktrace.current.innerErrorIndex);
+            if (errorIndex !== null) {
+              const stepSpinner = ora("Stepping...").start();
+              await this.session.reset();
+              await this.session.advance(errorIndex);
+              stepSpinner.stop();
+            } else {
+              this.printer.print("No error to return to.");
+            }
+          } else {
+            this.printer.print("You are already at the final error.");
+            this.printer.print("Use the `Y` command to return to the previous error.");
+            this.printer.print("");
+          }
+        } else {
+          this.printer.print("This command is only usable at end of transaction; did you mean `Y`?");
+        }
+      } else {
+        this.printer.print("No transaction loaded.");
+        this.printer.print("");
+      }
+    }
+    if (cmd === "Y") {
+      if (this.session.view(session.status.loaded)) {
+        const errorIndex = this.session.view(stacktrace.current.innerErrorIndex);
+        if (errorIndex !== null) {
+          const stepSpinner = ora("Stepping...").start();
+          await this.session.reset();
+          await this.session.advance(errorIndex);
+          stepSpinner.stop();
+        } else {
+          this.printer.print("No previous error to return to.");
+        }
       } else {
         this.printer.print("No transaction loaded.");
         this.printer.print("");
@@ -571,6 +673,8 @@ class DebugInterpreter {
       case "u":
       case "n":
       case "c":
+      case "y":
+      case "Y":
         if (!this.session.view(trace.finishedOrUnloaded)) {
           if (!this.session.view(solidity.current.source).source) {
             this.printer.printInstruction();
@@ -627,7 +731,8 @@ class DebugInterpreter {
       cmd !== "T" &&
       cmd !== "g" &&
       cmd !== "G" &&
-      cmd !== "s"
+      cmd !== "s" &&
+      cmd !== "y"
     ) {
       this.lastCommand = cmd;
     }

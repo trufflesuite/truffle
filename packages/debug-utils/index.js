@@ -56,7 +56,9 @@ const commandReference = {
   "T": "unload transaction",
   "s": "print stacktrace",
   "g": "turn on generated sources",
-  "G": "turn off generated sources except via `;`"
+  "G": "turn off generated sources except via `;`",
+  "y": "(if at end) reset & continue to final error",
+  "Y": "reset & continue to previous error"
 };
 
 const shortCommandReference = {
@@ -82,7 +84,9 @@ const shortCommandReference = {
   "T": "unload",
   "s": "stacktrace",
   "g": "turn on generated sources",
-  "G": "turn off generated sources"
+  "G": "turn off generated sources",
+  "y": "reset & go to final error",
+  "Y": "reset & go to previous error"
 };
 
 const truffleColors = {
@@ -336,7 +340,8 @@ var DebugUtils = {
 
     var commandSections = [
       ["o", "i", "u", "n"],
-      ["c"],
+      ["c", "Y"],
+      ["y"],
       [";"],
       ["g", "G"],
       ["p"],
@@ -505,7 +510,7 @@ var DebugUtils = {
     sourceNames
   ) {
     let baseMessage;
-    if (breakpoint.node !== undefined) {
+    if (breakpoint.start !== undefined && breakpoint.length !== undefined) {
       baseMessage = here
         ? `this point in line ${breakpoint.line + 1}`
         : `a point in line ${breakpoint.line + 1}`;
@@ -695,9 +700,35 @@ var DebugUtils = {
       .join(OS.EOL);
   },
 
+  //note: only intended to be used for *custom* errors :)
+  formatCustomError: function (decoding, indent = 0) {
+    const name = decoding.definedIn
+      ? `${decoding.definedIn.typeName}.${decoding.abi.name}`
+      : decoding.abi.name;
+    if (decoding.arguments.length === 0) {
+      return `${name}()`;
+    }
+    const prefix = `${name}(`;
+    const formattedValues = decoding.arguments.map(
+      ({ name, value }) => {
+        const argumentPrefix = name
+          ? `${name}: `
+          : "";
+        const typeString = ` (type: ${Codec.Format.Types.typeStringWithoutLocation(
+          value.type
+        )})`;
+        return (DebugUtils.formatValue(value, argumentPrefix.length) + typeString + ",")
+          .split(/\r?\n/g)
+          .map(line => " ".repeat(indent) + line)
+          .join(OS.EOL);
+      }
+    );
+    return [prefix, ...formattedValues, ')'].join(OS.EOL);
+  },
+
   formatStacktrace: function (stacktrace, indent = 2) {
     //get message or panic code from stacktrace
-    const { message, panic } = stacktrace[0];
+    const { message, panic, custom } = stacktrace[0];
     //we want to print inner to outer, so first, let's
     //reverse
     stacktrace = stacktrace.slice().reverse(); //reverse is in-place so clone first
@@ -753,6 +784,10 @@ var DebugUtils = {
           : `Panic: ${DebugUtils.panicString(panic)} (code 0x${panic.toString(
               16
             )})`;
+      } else if (custom !== undefined) {
+        statusLine = status
+          ? `Error: Improper return (caused custom error)`
+          : `Error: Revert (custom error)`;
       } else {
         statusLine = status
           ? "Error: Improper return (may be an unexpected self-destruct)"
@@ -785,14 +820,8 @@ var DebugUtils = {
       case "Solidity":
         return chromafi(code, options);
       case "Yul":
-        //HACK: stick the code in an assembly block since we don't
-        //have a separate Yul language for HLJS at the moment,
-        //colorize it there, then extract it after colorization
-        const wrappedCode = "assembly {\n" + code + "\n}";
-        const colorizedWrapped = chromafi(wrappedCode, options);
-        const firstNewLine = colorizedWrapped.indexOf("\n");
-        const lastNewLine = colorizedWrapped.lastIndexOf("\n");
-        return colorizedWrapped.slice(firstNewLine + 1, lastNewLine);
+        options.lang = "yul"; //registered along with Solidity :)
+        return chromafi(code, options);
       case "Vyper":
         options.lang = "python"; //HACK -- close enough for now!
         return chromafi(code, options);

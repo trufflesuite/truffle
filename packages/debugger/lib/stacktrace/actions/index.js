@@ -27,12 +27,13 @@ export function externalCall(location, context, address) {
 }
 
 export const EXTERNAL_RETURN = "STACKTRACE_EXTERNAL_RETURN";
-export function externalReturn(from, status, location) {
+export function externalReturn(from, status, location, index) {
   return {
     type: EXTERNAL_RETURN,
     from,
     status,
     location,
+    index
   };
 }
 

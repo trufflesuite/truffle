@@ -83,10 +83,22 @@ function userDefinedTypes(state = [], action) {
   }
 }
 
+//just going to treat this like userDefinedTypes
+function taggedOutputs(state = [], action) {
+  switch (action.type) {
+    case actions.DEFINE_TAGGED_OUTPUT:
+      return [...state, { id: action.node.id, sourceId: action.sourceId }];
+    default:
+      return state;
+  }
+}
+
 const DEFAULT_ALLOCATIONS = {
   storage: {},
   memory: {},
   abi: {},
+  calldata: {},
+  returndata: {},
   state: {}
 };
 
@@ -98,6 +110,7 @@ function allocations(state = DEFAULT_ALLOCATIONS, action) {
       memory: action.memory,
       abi: action.abi,
       calldata: action.calldata,
+      returndata: action.returndata,
       state: action.state
     };
   } else {
@@ -108,6 +121,7 @@ function allocations(state = DEFAULT_ALLOCATIONS, action) {
 const info = combineReducers({
   scopes,
   userDefinedTypes,
+  taggedOutputs,
   allocations
 });
 

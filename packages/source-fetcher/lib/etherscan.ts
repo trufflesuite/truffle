@@ -12,7 +12,13 @@ import {
   removeLibraries,
   InvalidNetworkError
 } from "./common";
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
+
+const etherscanCommentHeader = `/**
+ *Submitted for verification at Etherscan.io on 20XX-XX-XX
+*/
+
+`; //note we include that final newline
 
 //this looks awkward but the TS docs actually suggest this :P
 const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
@@ -92,7 +98,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
 
   private async makeRequest(address: string): Promise<EtherscanSuccess> {
     //not putting a try/catch around this; if it throws, we throw
-    const response: AxiosResponse<EtherscanResponse> = await axios.get(
+    const response: EtherscanResponse = (await axios.get(
       `https://api${this.suffix}.etherscan.io/api`,
       {
         params: {
@@ -101,13 +107,14 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
           address,
           apikey: this.apiKey
         },
-        responseType: "json"
+        responseType: "json",
+        maxRedirects: 50
       }
-    );
-    if (response.data.status === "0") {
-      throw new Error(response.data.result);
+    )).data;
+    if (response.status === "0") {
+      throw new Error(response.result);
     }
-    return response.data;
+    return response;
   }
 
   private static processResult(
@@ -167,7 +174,10 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
     return {
       contractName: result.ContractName,
       sources: {
-        [filename]: result.SourceCode
+        //we prepend this header comment so that line numbers in the debugger
+        //will match up with what's displayed on the website; note that other
+        //cases don't display a similar header on the website
+        [filename]: etherscanCommentHeader + result.SourceCode
       },
       options: {
         language: "Solidity",

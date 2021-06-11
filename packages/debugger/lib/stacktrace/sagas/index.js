@@ -29,8 +29,15 @@ function* stacktraceSaga() {
   //first: are we returning?
   if (yield select(stacktrace.current.willReturn)) {
     const status = yield select(stacktrace.current.returnStatus);
+    const index = yield select(stacktrace.current.index);
+    const updateIndex = yield select(stacktrace.current.updateIndex);
     debug("returning!");
-    yield put(actions.externalReturn(lastLocation, status, currentLocation));
+    yield put(actions.externalReturn(
+      lastLocation,
+      status,
+      currentLocation,
+      updateIndex ? index : null //we use null to mean don't update
+    ));
     positionUpdated = true;
   } else if (
     //next: are we *executing* a return?

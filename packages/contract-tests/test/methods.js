@@ -346,7 +346,7 @@ describe("Methods", function () {
       assert.equal(hash, helloHash);
       assert.equal(parseInt(value), 5, "Ending value should be five");
 
-      goodbyeHash = web3.utils.soliditySha3("goodbye");
+      const goodbyeHash = web3.utils.soliditySha3("goodbye");
       await example.methods["overloadedSet(bytes32,uint256,uint256)"](
         goodbyeHash,
         5,

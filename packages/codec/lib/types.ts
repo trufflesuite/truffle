@@ -1,7 +1,9 @@
 import BN from "bn.js";
 
 import * as Abi from "@truffle/abi-utils";
-import * as Format from "@truffle/codec/format";
+import * as Types from "@truffle/codec/format/types";
+import * as Values from "@truffle/codec/format/values";
+import { PaddingMode } from "@truffle/codec/common";
 
 /**
  * A type representing a transaction (calldata) decoding.  As you can see, these come in five types,
@@ -61,11 +63,11 @@ export interface StateVariable {
    * Note that this class may differ from that of the contract being decoded, due
    * to inheritance.
    */
-  class: Format.Types.ContractType;
+  class: Types.ContractType;
   /**
    * The decoded value of the variable.  Note this is a Format.Values.Result, so it may be an error.
    */
-  value: Format.Values.Result;
+  value: Values.Result;
 }
 
 /**
@@ -81,7 +83,7 @@ export interface FunctionDecoding {
   /**
    * The class of contract that was called, as a Format.Types.ContractType.
    */
-  class: Format.Types.ContractType;
+  class: Types.ContractType;
   /**
    * The list of decoded arguments to the function.
    */
@@ -120,7 +122,7 @@ export interface ConstructorDecoding {
   /**
    * The class of contract being constructed, as a Format.Types.ContractType.
    */
-  class: Format.Types.ContractType;
+  class: Types.ContractType;
   /**
    * The list of decoded arguments to the constructor.  This will be empty for a
    * default constructor.
@@ -158,7 +160,7 @@ export interface MessageDecoding {
   /**
    * The class of contract that was called, as a Format.Types.ContractType.
    */
-  class: Format.Types.ContractType;
+  class: Types.ContractType;
   /**
    * The ABI entry for the contract's fallback or receive function that would
    * handle this message; will be null if there is none.
@@ -235,12 +237,12 @@ export interface EventDecoding {
    * having emitted the event, but we decode it as if the library emitted the event, for clarity.
    * (The address of the contract the EVM thinks emitted the event can of course be found in the original log.)
    */
-  class: Format.Types.ContractType;
+  class: Types.ContractType;
   /**
    * The class of the contract that (according to this decoding) defined the event, as a Format.Types.ContractType.
    * May be omitted if we can't determine it, as may occur in ABI mode.
    */
-  definedIn?: Format.Types.ContractType;
+  definedIn?: Types.ContractType;
   /**
    * The list of decoded arguments to the event.
    */
@@ -277,12 +279,12 @@ export interface AnonymousDecoding {
    * having emitted the event, but we decode it as if the library emitted the event, for clarity.
    * (The address of the contract the EVM thinks emitted the event can of course be found in the original log.)
    */
-  class: Format.Types.ContractType;
+  class: Types.ContractType;
   /**
    * The class of the contract that (according to this decoding) defined the event, as a Format.Types.ContractType.
    * May be omitted if we can't determine it, as may occur in ABI mode.
    */
-  definedIn?: Format.Types.ContractType;
+  definedIn?: Types.ContractType;
   /**
    * The list of decoded arguments to the event.
    */
@@ -409,6 +411,14 @@ export interface RevertMessageDecoding {
    */
   abi: Abi.ErrorEntry;
   /**
+   * The class of the contract that (according to this decoding) defined the
+   * error type, as a Format.Types.ContractType.  This will be `null` if the
+   * error was defined outside of the contract or it's one of the builtin
+   * `Error(string)` or `Panic(uint)` types.
+   * May be omitted if we can't determine it, as may occur in ABI mode.
+   */
+  definedIn?: Types.ContractType | null;
+  /**
    * Indicates that this kind of decoding indicates an unsuccessful return.
    */
   status: false;
@@ -451,7 +461,7 @@ export interface BytecodeDecoding {
   /**
    * The class of contract being constructed, as a Format.Types.ContractType.
    */
-  class: Format.Types.ContractType;
+  class: Types.ContractType;
   /**
    * Decodings for any immutable state variables the created contract contains.
    * Omitted in ABI mode.
@@ -520,7 +530,7 @@ export interface AbiArgument {
    * may contain errors (although event decodings should typically not contain errors;
    * see the [[DecodedLog]] documentation for why).
    */
-  value: Format.Values.Result;
+  value: Values.Result;
 }
 
 /**
@@ -547,14 +557,6 @@ export interface CodeRequest {
   type: "code";
   address: string;
 }
-
-export type PaddingMode = "default" | "permissive" | "zero" | "right";
-//default: check padding; the type of padding is determined by the type
-//permissive: like default, but turns off the check on certain types
-//zero: forces zero-padding even on signed types
-//right: forces right-padding on all types
-
-export type PaddingType = "left" | "right" | "signed";
 
 export interface DecoderOptions {
   paddingMode?: PaddingMode;
@@ -597,4 +599,10 @@ export interface LogOptions {
    * the event -- should be returned.  Defaults to `"off"`.
    */
   extras?: ExtrasAllowed;
+  /**
+   * If passed, restricts to events with the given ID.  This is meant for
+   * internal use by Truffle Debugger; you probably don't want to bother
+   * with this option.
+   */
+  id?: string;
 }

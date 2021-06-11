@@ -26,9 +26,12 @@ async function verifyVCSURL(url: string) {
       .replace(/#.*/, "")}/master/truffle-box.json`
   );
   try {
-    await axios.head(`https://${configURL.host}${configURL.path}`);
+    await axios.head(
+      `https://${configURL.host}${configURL.path}`,
+      { maxRedirects: 50 }
+    );
   } catch (error) {
-    if (error.response.status === 404) {
+    if (error.response && error.response.status === 404) {
       throw new Error(
         `Truffle Box at URL ${url} doesn't exist. If you believe this is an error, please contact Truffle support.`
       );
