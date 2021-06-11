@@ -89,14 +89,12 @@ class LoadingStrategy {
    * Use with `markListeners()`
    */
   removeListener(markedListeners) {
-    for (const eventName of ["uncaughtException", "unhandledRejection"]) {
-      const listeners = process.listeners(eventName);
-      const newListeners = listeners.filter(
-        (listener) => !markedListeners[eventName].has(listener),
-      );
-
-      for (const listener of newListeners) {
-        process.removeListener(eventName, listener);
+    for (const eventName in markedListeners) {
+      const marked = markedListeners[eventName];
+      for (const listener of process.listeners(eventName)) {
+        if (!marked.has(listener)) {
+          process.removeListener(eventName, listener);
+        }
       }
     }
   }
