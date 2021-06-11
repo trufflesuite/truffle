@@ -169,7 +169,7 @@ class DebugInterpreter {
         ) {
           //exceptional case
           this.printer.print(
-            `WARNING: Multiple source files matched, but one is a proper substring of all others, so disambiguation is not possible.  Acting on all of them.`
+            `WARNING: Acting on all matching sources because disambiguation between them is not possible.`
           );
           return matchingSources.map(
             source => ({
