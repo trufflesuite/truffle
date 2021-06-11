@@ -73,8 +73,8 @@ export const normalizeSourcePath = (url = defaultPath) => {
 
     const match = url.match(protocolRex);
     if (match) {
-      const { groups: G } = match;
-      const branch = G["branch"] || "";
+      const { groups } = match;
+      const branch = groups["branch"] || "";
 
       if (invalidBranch.test(branch)) {
         debug({
@@ -85,8 +85,8 @@ export const normalizeSourcePath = (url = defaultPath) => {
         throw new Error("Box specified with invalid format (git/https)");
       }
 
-      const repo = G["repo"].replace(/\.git$/i, "");
-      const result = `https://${G["service"]}:${G["org"]}/${repo}${branch}`;
+      const repo = groups["repo"].replace(/\.git$/i, "");
+      const result = `https://${groups["service"]}:${groups["org"]}/${repo}${branch}`;
       debug({ in: url, out: result });
       return result;
     }
@@ -120,11 +120,11 @@ export const normalizeSourcePath = (url = defaultPath) => {
 
   const match = url.match(orgRepoBranchRex);
   if (match) {
-    const { groups: G } = match;
+    const { groups } = match;
 
     // `truffle-box` is the default org
-    const org = G["org"] || "truffle-box/";
-    const branch = G["branch"] || "";
+    const org = groups["org"] || "truffle-box/";
+    const branch = groups["branch"] || "";
 
     if (invalidBranch.test(branch)) {
       debug({
@@ -136,7 +136,7 @@ export const normalizeSourcePath = (url = defaultPath) => {
     }
 
     // repo should have`-box` suffix
-    let repo = G["repo"];
+    let repo = groups["repo"];
     repo = repo.endsWith("-box") ? repo : `${repo}-box`;
 
     const result = `https://github.com:${org}${repo}${branch}`;
