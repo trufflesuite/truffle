@@ -51,7 +51,9 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       "ropsten",
       "kovan",
       "rinkeby",
-      "goerli"
+      "goerli",
+      "optimistic",
+      "kovan-optimistic"
     ];
     if (networkName === undefined || !supportedNetworks.includes(networkName)) {
       throw new InvalidNetworkError(networkId, "etherscan");
