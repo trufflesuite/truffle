@@ -144,6 +144,26 @@ class Command {
       version: bundled || "(unbundled) " + core
     });
 
+    const unhandledRejections = new Map();
+
+    process.on('unhandledRejection', (reason, promise) => {
+      unhandledRejections.set(promise, reason);
+    });
+
+    process.on('rejectionHandled', (promise) => {
+      unhandledRejections.delete(promise);
+    });
+
+    process.on('exit', (_) => {
+      const log = options.logger ? (options.logger.log || options.logger.debug): console.log;
+      if (unhandledRejections.size) {
+        log('UnhandledRejections detected');
+        unhandledRejections.forEach((reason, promise) => {
+          log(promise, reason);
+        });
+      }
+    });
+
     return await result.command.run(newOptions);
   }
 

@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.3.9",
+  "version": "5.3.10",
   "main": "./build/library.bundled.js",
   "bin": {
     "truffle": "./build/cli.bundled.js"
@@ -32,7 +32,7 @@
     "test:raw": "NO_BUILD=true mocha"
   },
   "dependencies": {
-    "@truffle/debugger": "^9.0.1",
+    "@truffle/debugger": "^9.1.0",
     "app-module-path": "^2.2.0",
     "mocha": "8.1.2",
     "original-require": "^1.0.1"
@@ -40,8 +40,8 @@
   "devDependencies": {
     "@truffle/box": "^2.1.15",
     "@truffle/config": "^1.2.42",
-    "@truffle/contract": "^4.3.19",
-    "@truffle/core": "^5.3.9",
+    "@truffle/contract": "^4.3.20",
+    "@truffle/core": "^5.3.10",
     "@truffle/interface-adapter": "^0.5.0",
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^7.0.0",
@@ -65,7 +65,7 @@
     "yargs": "^8.0.2"
   },
   "optionalDependencies": {
-    "@truffle/db": "^0.5.14",
+    "@truffle/db": "^0.5.15",
     "@truffle/preserve-fs": "^0.2.2",
     "@truffle/preserve-to-buckets": "^0.2.2",
     "@truffle/preserve-to-filecoin": "^0.2.2",

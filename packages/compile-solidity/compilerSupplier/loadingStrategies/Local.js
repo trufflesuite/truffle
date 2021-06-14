@@ -9,20 +9,23 @@ class Local extends LoadingStrategy {
   }
 
   getLocalCompiler(localPath) {
-    let soljson, compilerPath, wrapped;
-    compilerPath = path.isAbsolute(localPath)
-      ? localPath
-      : path.resolve(process.cwd(), localPath);
-
+    const markedListeners = this.markListeners();
     try {
-      soljson = originalRequire(compilerPath);
-    } catch (error) {
-      throw this.errors("noPath", localPath, error);
+      let soljson, compilerPath, wrapped;
+      compilerPath = path.isAbsolute(localPath)
+        ? localPath
+        : path.resolve(process.cwd(), localPath);
+
+      try {
+        soljson = originalRequire(compilerPath);
+      } catch (error) {
+        throw this.errors("noPath", localPath, error);
+      }
+      //HACK: if it has a compile function, assume it's already wrapped
+      return soljson.compile ? soljson : solcWrap(soljson);
+    } finally {
+      this.removeListener(markedListeners);
     }
-    //HACK: if it has a compile function, assume it's already wrapped
-    wrapped = soljson.compile ? soljson : solcWrap(soljson);
-    this.removeListener();
-    return wrapped;
   }
 }
 

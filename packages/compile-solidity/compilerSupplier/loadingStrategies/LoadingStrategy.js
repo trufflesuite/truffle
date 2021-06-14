@@ -77,16 +77,25 @@ class LoadingStrategy {
     );
   }
 
-  /**
-   * Cleans up error listeners set (by solc?) when requiring it. (This code inherited from
-   * previous implementation, note to self - ask Tim about this)
-   */
-  removeListener() {
-    const listeners = process.listeners("uncaughtException");
-    const execeptionHandler = listeners[listeners.length - 1];
+  markListeners() {
+    return {
+      uncaughtException: new Set(process.listeners("uncaughtException")),
+      unhandledRejection: new Set(process.listeners("unhandledRejection")),
+    };
+  }
 
-    if (execeptionHandler) {
-      process.removeListener("uncaughtException", execeptionHandler);
+  /**
+   * Cleans up error listeners left by soljson
+   * Use with `markListeners()`
+   */
+  removeListener(markedListeners) {
+    for (const eventName in markedListeners) {
+      const marked = markedListeners[eventName];
+      for (const listener of process.listeners(eventName)) {
+        if (!marked.has(listener)) {
+          process.removeListener(eventName, listener);
+        }
+      }
     }
   }
 
