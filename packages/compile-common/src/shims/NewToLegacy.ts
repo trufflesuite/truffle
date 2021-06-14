@@ -1,4 +1,4 @@
-import { LinkReference, CompiledContract } from "../types";
+import type { LinkReference, CompiledContract } from "../types";
 
 export function forContract(contract: CompiledContract): any {
   const {

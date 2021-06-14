@@ -1,4 +1,4 @@
-import { Abi, ImmutableReferences } from "@truffle/contract-schema/spec";
+import type { Abi, ImmutableReferences } from "@truffle/contract-schema/spec";
 
 export type Compilation = {
   sourceIndexes: string[]; //note: does not include internal sources
