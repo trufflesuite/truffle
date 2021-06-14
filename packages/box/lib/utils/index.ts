@@ -5,7 +5,7 @@ import tmp from "tmp";
 import process from "process";
 const cwd = require("process").cwd();
 import path from "path";
-import { boxConfig, unboxOptions } from "typings";
+import type { boxConfig, unboxOptions } from "typings";
 
 export = {
   downloadBox: async (source: string, destination: string, events: any) => {
