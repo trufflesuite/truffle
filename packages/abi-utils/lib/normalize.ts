@@ -1,5 +1,5 @@
-import { Abi as SchemaAbi } from "@truffle/contract-schema/spec";
-import { Abi, Entry, StateMutability } from "./types";
+import type { Abi as SchemaAbi } from "@truffle/contract-schema/spec";
+import type { Abi, Entry, StateMutability } from "./types";
 
 export const normalize = (looseAbi: SchemaAbi | Abi): Abi =>
   (looseAbi as SchemaAbi).map(normalizeEntry);
