@@ -18,13 +18,13 @@ import RpcProvider from "@trufflesuite/web3-provider-engine/subproviders/rpc";
 import WebsocketProvider from "@trufflesuite/web3-provider-engine/subproviders/websocket";
 
 import Url from "url";
-import { JSONRPCRequestPayload, JSONRPCErrorCallback, JSONRPCResponsePayload } from "ethereum-protocol";
-import { Callback, JsonRPCResponse } from "web3/providers";
-import { ConstructorArguments } from "./constructor/ConstructorArguments";
+import type { JSONRPCRequestPayload, JSONRPCErrorCallback, JSONRPCResponsePayload } from "ethereum-protocol";
+import type { Callback, JsonRPCResponse } from "web3/providers";
+import type { ConstructorArguments } from "./constructor/ConstructorArguments";
 import { getOptions } from "./constructor/getOptions";
 import { getPrivateKeys } from "./constructor/getPrivateKeys";
 import { getMnemonic } from "./constructor/getMnemonic";
-import { ChainId, ChainSettings, Hardfork } from "./constructor/types";
+import type { ChainId, ChainSettings, Hardfork } from "./constructor/types";
 
 // Important: do not use debug module. Reason: https://github.com/trufflesuite/truffle/issues/2374#issuecomment-536109086
 
