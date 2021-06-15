@@ -1,9 +1,9 @@
 import CID from "cids";
 
-import * as Preserve from "@truffle/preserve";
+import type * as Preserve from "@truffle/preserve";
 import { search } from "./search";
 import { asyncToArray } from "iter-tools";
-import { Buckets, Root } from "@textile/hub";
+import type { Buckets, Root } from "@textile/hub";
 
 export interface UploadOptions {
   controls: Preserve.Controls;

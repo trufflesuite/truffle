@@ -1,4 +1,4 @@
-import * as Preserve from "@truffle/preserve";
+import type * as Preserve from "@truffle/preserve";
 import { Buckets } from "@textile/hub";
 
 export interface ConnectOptions {
