@@ -2,7 +2,7 @@
  * @module @truffle/preserve-to-filecoin
  */ /** */
 
-import CID from "cids";
+import type CID from "cids";
 import * as Preserve from "@truffle/preserve";
 
 import { connect } from "./connect";
