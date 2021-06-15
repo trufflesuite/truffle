@@ -1,7 +1,7 @@
 //these imports aren't actually necessary, but why not :)
 import util from "util";
 import { setTimeout } from "timers";
-import * as Types from "./types";
+import type * as Types from "./types";
 
 export const networksById: { [id: number]: string } = {
   1: "mainnet",

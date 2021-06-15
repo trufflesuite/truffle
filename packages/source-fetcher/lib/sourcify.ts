@@ -1,8 +1,8 @@
 import debugModule from "debug";
 const debug = debugModule("source-fetcher:sourcify");
 
-import { Fetcher, FetcherConstructor } from "./types";
-import * as Types from "./types";
+import type { Fetcher, FetcherConstructor } from "./types";
+import type * as Types from "./types";
 import { networksById, removeLibraries, InvalidNetworkError } from "./common";
 import axios from "axios";
 
