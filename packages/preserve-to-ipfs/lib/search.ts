@@ -1,5 +1,5 @@
 import * as Preserve from "@truffle/preserve";
-import { FileObject } from "./ipfs-adapter";
+import type { FileObject } from "./ipfs-adapter";
 
 export type SearchOptions = {
   source: Preserve.Targets.Normalized.Source;
