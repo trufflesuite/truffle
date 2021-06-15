@@ -1,4 +1,4 @@
-import { ContractObject } from "@truffle/contract-schema/spec";
+import type { ContractObject } from "@truffle/contract-schema/spec";
 
 export interface ResolverSource {
   require(importPath: string, searchPath?: string): ContractObject | null;

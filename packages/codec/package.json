@@ -41,7 +41,6 @@
     "web3-utils": "1.3.6"
   },
   "devDependencies": {
-    "@gnd/typedoc": "0.15.0-0",
     "@truffle/abi-utils": "^0.2.1",
     "@truffle/compile-common": "^0.7.7",
     "@truffle/contract-schema": "^3.4.1",
@@ -61,8 +60,8 @@
     "@types/utf8": "^2.1.6",
     "@zerollup/ts-transform-paths": "^1.7.3",
     "ttypescript": "^1.5.7",
-    "typedoc": "0.15.0",
-    "typedoc-plugin-external-module-name": "^2.1.0",
+    "typedoc": "^0.20.36",
+    "typedoc-plugin-remove-references": "^0.0.5",
     "typescript": "^4.1.4"
   },
   "keywords": [

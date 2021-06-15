@@ -1,4 +1,4 @@
-import { Process, Controls } from "./control";
+import type { Process, Controls } from "./control";
 
 export interface ConstructorOptions {}
 

@@ -1,4 +1,4 @@
-import { Sources, CollectedSources } from "./types";
+import type { Sources, CollectedSources } from "./types";
 import * as path from "path";
 
 /**

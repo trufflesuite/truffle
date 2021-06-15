@@ -1,8 +1,8 @@
 import fs from "fs";
 import { join as joinPath } from "path";
 
-import * as Preserve from "@truffle/preserve";
-import { TargetPathOptions, PathEntryOptions } from "./types";
+import type * as Preserve from "@truffle/preserve";
+import type { TargetPathOptions, PathEntryOptions } from "./types";
 
 export async function* targetPath(
   options: TargetPathOptions

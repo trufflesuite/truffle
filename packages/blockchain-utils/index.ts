@@ -1,5 +1,5 @@
-import { Provider, Callback, JsonRPCResponse } from "web3/providers";
-import { parsedUriObject } from "typings";
+import type { Provider, Callback, JsonRPCResponse } from "web3/providers";
+import type { parsedUriObject } from "typings";
 
 const Blockchain = {
   getBlockByNumber(

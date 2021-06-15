@@ -1,3 +1,9 @@
+/**
+ * @protected
+ *
+ * @packageDocumentation
+ */
+
 import debugModule from "debug";
 const debug = debugModule("codec:ast:read");
 

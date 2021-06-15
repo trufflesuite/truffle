@@ -1,7 +1,7 @@
 const TruffleError = require("@truffle/error");
 const originalRequire = require("original-require");
 import path from "path";
-import { PluginConstructorOptions, PluginDefinition } from "./types";
+import type { PluginConstructorOptions, PluginDefinition } from "./types";
 
 export class Plugin {
   constructor({ module, definition }: PluginConstructorOptions) {

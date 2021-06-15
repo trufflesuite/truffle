@@ -1,5 +1,5 @@
-import { StepsController } from "./controllers";
-import { Event } from "./events";
+import type { StepsController } from "./controllers";
+import type { Event } from "./events";
 
 export enum State {
   Pending = "pending",

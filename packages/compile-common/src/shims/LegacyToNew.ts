@@ -1,4 +1,4 @@
-import { Bytecode, CompiledContract, LinkReference } from "../types";
+import type { Bytecode, CompiledContract, LinkReference } from "../types";
 
 export function forContracts(contracts: any[]): CompiledContract[] {
   // convert to list

@@ -1,4 +1,4 @@
-import { OpcodeTable } from "./types";
+import type { OpcodeTable } from "./types";
 
 const codes: OpcodeTable = {
   0x00: "STOP",

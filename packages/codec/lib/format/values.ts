@@ -1,3 +1,10 @@
+/**
+ * Contains the types for value and result objects.
+ * @category Main Format
+ *
+ * @packageDocumentation
+ */
+
 import debugModule from "debug";
 const debug = debugModule("codec:format:values");
 

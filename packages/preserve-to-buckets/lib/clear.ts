@@ -1,5 +1,5 @@
-import * as Preserve from "@truffle/preserve";
-import { Buckets } from "@textile/hub";
+import type * as Preserve from "@truffle/preserve";
+import type { Buckets } from "@textile/hub";
 
 export interface ClearOptions {
   controls: Preserve.Controls;

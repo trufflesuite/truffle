@@ -134,7 +134,8 @@ One can find more advanced decoding examples with
 documentation for these individual functions.
  *
  * @module @truffle/decoder
- */ /** */
+ * @packageDocumentation
+ */
 
 import {
   ContractDecoder,

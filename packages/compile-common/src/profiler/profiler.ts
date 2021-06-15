@@ -5,7 +5,7 @@ const expect = require("@truffle/expect");
 
 import type TruffleConfig from "@truffle/config";
 import { updated } from "./updated";
-import { UnresolvedSource } from "./resolveAllSources";
+import type { UnresolvedSource } from "./resolveAllSources";
 import { requiredSources, RequiredSourcesOptions } from "./requiredSources";
 import { convertToAbsolutePaths } from "./convertToAbsolutePaths";
 

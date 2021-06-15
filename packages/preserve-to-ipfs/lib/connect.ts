@@ -1,6 +1,6 @@
 import createIpfsClient from "ipfs-http-client";
-import * as Preserve from "@truffle/preserve";
-import { IpfsClient } from "./ipfs-adapter";
+import type * as Preserve from "@truffle/preserve";
+import type { IpfsClient } from "./ipfs-adapter";
 
 export interface ConnectOptions {
   controls: Preserve.Controls;

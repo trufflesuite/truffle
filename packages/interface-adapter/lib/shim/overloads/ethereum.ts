@@ -1,6 +1,6 @@
 import BN from "bn.js";
-import { Web3Shim } from "..";
-import {
+import type { Web3Shim } from "..";
+import type {
   BlockType,
   EvmTransaction,
   EvmTransactionReceipt

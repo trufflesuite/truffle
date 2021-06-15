@@ -1,5 +1,5 @@
-import { PrivateKey } from "./types";
-import { SigningAuthority } from "./Constructor";
+import type { PrivateKey } from "./types";
+import type { SigningAuthority } from "./Constructor";
 
 // extract the private keys if that's the style used, or return undefined
 export const getPrivateKeys = (

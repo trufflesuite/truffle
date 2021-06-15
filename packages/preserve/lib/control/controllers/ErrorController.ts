@@ -1,4 +1,4 @@
-import { Events } from "../events";
+import type { Events } from "../events";
 import { Process, State } from "../types";
 import {
   BaseController,

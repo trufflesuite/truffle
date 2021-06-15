@@ -2,7 +2,7 @@ import * as fc from "fast-check";
 import faker from "faker";
 import { camelCase, pascalCase } from "change-case";
 
-import * as Types from "./types";
+import type * as Types from "./types";
 
 export const Parameter = () =>
   fc

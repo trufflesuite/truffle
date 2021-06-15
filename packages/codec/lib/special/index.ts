@@ -1,3 +1,12 @@
+/**
+ * For decoding of special/magic variables
+ *
+ * @protected
+ * @category Solidity data location
+ *
+ * @packageDocumentation
+ */
+
 import * as Decode from "./decode";
 export {
   /**

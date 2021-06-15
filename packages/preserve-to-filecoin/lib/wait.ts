@@ -1,9 +1,9 @@
-import CID from "cids";
-import * as Preserve from "@truffle/preserve";
+import type CID from "cids";
+import type * as Preserve from "@truffle/preserve";
 import { terminalStates, DealState } from "./dealstates";
-import { LotusClient } from "filecoin.js";
+import type { LotusClient } from "filecoin.js";
 import delay from "delay";
-import { DealInfo } from "filecoin.js/builds/dist/providers/Types";
+import type { DealInfo } from "filecoin.js/builds/dist/providers/Types";
 
 export interface WaitOptions {
   client: LotusClient;

@@ -1,4 +1,4 @@
-import TruffleConfig from "@truffle/config";
+import type TruffleConfig from "@truffle/config";
 
 const provision = (contractAbstraction: any, truffleConfig: TruffleConfig) => {
   if (truffleConfig.provider) {

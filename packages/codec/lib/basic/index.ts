@@ -1,3 +1,14 @@
+/**
+ * For decoding of primitives and constants
+ *
+ * @protected
+ *
+ * @packageDocumentation
+ */
+//Category: Common data location
+//[NOT making this an actual category for now
+//since there's nothing public in it]
+
 import * as Decode from "./decode";
 export {
   /**
