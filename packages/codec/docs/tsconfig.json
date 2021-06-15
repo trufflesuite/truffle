@@ -32,7 +32,8 @@
 
   },
   "include": [
-    "./lib/**/*.ts",
-    "./typings/**/*.d.ts"
+    "../../decoder/lib/**/*.ts",
+    "../lib/**/*.ts",
+    "../typings/**/*.d.ts"
   ]
 }

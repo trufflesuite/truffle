@@ -1,10 +1,5 @@
 import * as Exception from "./exception";
-export {
-  /**
-   * @protected
-   */
-  Exception
-};
+export { Exception };
 
 import * as Inspect from "./inspect";
 export { Inspect };

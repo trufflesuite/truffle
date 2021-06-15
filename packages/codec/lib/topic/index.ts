@@ -1,3 +1,11 @@
+/**
+ * For decoding of event topics
+ *
+ * @protected
+ * @category ABI data location
+ *
+ * @packageDocumentation
+ */
 import * as Decode from "./decode";
 export {
   /**
