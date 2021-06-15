@@ -54,7 +54,7 @@ const command = {
           "Save the raw compiler results into <output-file>, overwriting any existing content."
       },
     ],
-    allowedGlobalOptions: ["network", "config"]
+    allowedGlobalOptions: ["config"]
   },
   run: async function (options) {
     const TruffleError = require("@truffle/error");
