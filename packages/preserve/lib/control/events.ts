@@ -1,4 +1,4 @@
-import { Scope } from "./scopes";
+import type { Scope } from "./scopes";
 
 export type EventName =
   | "fail"

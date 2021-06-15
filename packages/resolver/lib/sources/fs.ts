@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs";
 
-import { ResolverSource } from "../source";
+import type { ResolverSource } from "../source";
 
 export class FS implements ResolverSource {
   workingDirectory: string;

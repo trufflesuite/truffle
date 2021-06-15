@@ -3,8 +3,8 @@ const debug = debugModule("source-fetcher:etherscan");
 // untyped import since no @types/web3-utils exists
 const Web3Utils = require("web3-utils");
 
-import { Fetcher, FetcherConstructor } from "./types";
-import * as Types from "./types";
+import type { Fetcher, FetcherConstructor } from "./types";
+import type * as Types from "./types";
 import {
   networksById,
   makeFilename,

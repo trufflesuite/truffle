@@ -1,8 +1,8 @@
 import chalk from "chalk";
-import CID from "cids";
+import type CID from "cids";
 
 import * as Preserve from "@truffle/preserve";
-import { IpfsClient } from "./ipfs-adapter";
+import type { IpfsClient } from "./ipfs-adapter";
 import { search } from "./search";
 import { asyncToArray } from "iter-tools";
 

@@ -3,7 +3,7 @@ import {
   WsJsonRpcConnector,
   HttpJsonRpcConnector
 } from "filecoin.js";
-import * as Preserve from "@truffle/preserve";
+import type * as Preserve from "@truffle/preserve";
 
 export interface ConnectOptions {
   url: string;

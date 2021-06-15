@@ -1,4 +1,4 @@
-import * as Preserve from "@truffle/preserve";
+import type * as Preserve from "@truffle/preserve";
 
 export interface TargetPathOptions {
   controls: Preserve.Controls | Preserve.Control.StepsController;

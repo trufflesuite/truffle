@@ -1,4 +1,4 @@
-import * as Preserve from "@truffle/preserve";
+import type * as Preserve from "@truffle/preserve";
 import createIpfsHttpClient from "ipfs-http-client";
 
 // extract the typing for an IIPFS client from the default export of "ipfs-http-client"

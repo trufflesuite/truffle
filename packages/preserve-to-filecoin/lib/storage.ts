@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import CID from "cids";
-import * as Preserve from "@truffle/preserve";
-import { LotusClient } from "filecoin.js";
+import type * as Preserve from "@truffle/preserve";
+import type { LotusClient } from "filecoin.js";
 
 export interface StorageDealOptions {
   walletAddress?: string;

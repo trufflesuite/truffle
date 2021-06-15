@@ -3,7 +3,7 @@
  */ /** */
 
 import * as Preserve from "@truffle/preserve";
-import CID from "cids";
+import type CID from "cids";
 import { clear } from "./clear";
 import { connect } from "./connect";
 import { upload } from "./upload";

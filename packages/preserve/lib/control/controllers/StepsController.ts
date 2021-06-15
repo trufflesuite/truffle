@@ -3,7 +3,7 @@ import {
   ConstructorOptions as ErrorControllerConstructorOptions,
   IErrorController
 } from "./ErrorController";
-import { Events } from "../events";
+import type { Events } from "../events";
 import {
   IValueResolutionController,
   ValueResolutionController

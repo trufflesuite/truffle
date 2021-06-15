@@ -2,7 +2,7 @@
  * @module @truffle/preserve-fs
  */ /** */
 
-import * as Preserve from "@truffle/preserve";
+import type * as Preserve from "@truffle/preserve";
 
 import { targetPath } from "./fs";
 

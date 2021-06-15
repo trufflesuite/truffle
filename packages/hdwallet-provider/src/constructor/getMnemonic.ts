@@ -1,5 +1,5 @@
-import { SigningAuthority } from "./Constructor";
-import { Mnemonic } from "./types";
+import type { SigningAuthority } from "./Constructor";
+import type { Mnemonic } from "./types";
 
 // extract the mnemonic if that's the style used, or return undefined
 export const getMnemonic = (

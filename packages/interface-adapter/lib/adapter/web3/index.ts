@@ -1,6 +1,6 @@
 import BN from "bn.js";
 import { Web3Shim } from "../../shim";
-import {
+import type {
   InterfaceAdapter,
   EvmBlockType,
   Provider,

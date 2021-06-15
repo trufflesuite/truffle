@@ -1,8 +1,8 @@
 import debugModule from "debug";
 const debug = debugModule("resolver:sources:vyper");
 import path from "path";
-import { ContractObject } from "@truffle/contract-schema/spec";
-import { ResolverSource, SourceResolution } from "../source";
+import type { ContractObject } from "@truffle/contract-schema/spec";
+import type { ResolverSource, SourceResolution } from "../source";
 
 export class Vyper implements ResolverSource {
   contractsDirectory: string;

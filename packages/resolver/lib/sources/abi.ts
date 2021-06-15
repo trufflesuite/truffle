@@ -1,7 +1,7 @@
 import path from "path";
-import { ContractObject } from "@truffle/contract-schema/spec";
+import type { ContractObject } from "@truffle/contract-schema/spec";
 import { generateSolidity } from "abi-to-sol";
-import { ResolverSource } from "../source";
+import type { ResolverSource } from "../source";
 
 export class ABI {
 

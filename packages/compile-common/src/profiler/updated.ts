@@ -1,7 +1,7 @@
 import * as path from "path";
 import * as fse from "fs-extra";
 
-import { ContractObject } from "@truffle/contract-schema/spec";
+import type { ContractObject } from "@truffle/contract-schema/spec";
 
 export interface UpdatedOptions {
   paths: string[];

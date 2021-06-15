@@ -1,7 +1,7 @@
 const TruffleError = require("@truffle/error");
 const originalRequire = require("original-require");
 import path from "path";
-import { PluginConfig, PluginDefinitions, TruffleConfig } from "./types";
+import type { PluginConfig, PluginDefinitions, TruffleConfig } from "./types";
 import { Plugin } from "./Plugin";
 import { normalizeConfigPlugins } from "./utils";
 
