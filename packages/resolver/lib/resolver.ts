@@ -5,7 +5,7 @@ const contract = require("@truffle/contract");
 const expect = require("@truffle/expect");
 const provision = require("@truffle/provisioner");
 
-import { ResolverSource, ResolvedSource } from "./source";
+import type { ResolverSource, ResolvedSource } from "./source";
 import { EthPMv1, NPM, GlobalNPM, FS, Truffle, ABI, Vyper } from "./sources";
 
 export interface ResolverOptions {

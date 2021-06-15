@@ -2,7 +2,7 @@ import path from "path";
 import fse from "fs-extra";
 import { Deployed } from "./Deployed";
 import findContracts from "@truffle/contract-sources";
-import { ResolverSource } from "../../source";
+import type { ResolverSource } from "../../source";
 const contract = require("@truffle/contract");
 
 export class Truffle implements ResolverSource {

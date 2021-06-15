@@ -3,7 +3,7 @@ import fs from "fs";
 const detectInstalled: any = require("detect-installed");
 const getInstalledPath: any = require("get-installed-path");
 
-import { ResolverSource } from "../source";
+import type { ResolverSource } from "../source";
 
 export class GlobalNPM implements ResolverSource {
   require(importPath: string) {

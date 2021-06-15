@@ -1,8 +1,8 @@
 import path from "path";
 import fs from "fs";
 
-import { ContractObject } from "@truffle/contract-schema/spec";
-import { ResolverSource } from "../source";
+import type { ContractObject } from "@truffle/contract-schema/spec";
+import type { ResolverSource } from "../source";
 
 export class EthPMv1 implements ResolverSource {
   workingDirectory: string;

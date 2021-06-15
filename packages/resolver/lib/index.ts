@@ -1,5 +1,5 @@
 import { Resolver } from "./resolver";
-import { ResolverSource, ResolvedSource } from "./source";
+import type { ResolverSource, ResolvedSource } from "./source";
 
 export { Resolver, ResolverSource, ResolvedSource };
 
