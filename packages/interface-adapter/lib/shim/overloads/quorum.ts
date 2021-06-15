@@ -1,6 +1,6 @@
 import BN from "bn.js";
-import { Web3Shim } from "..";
-import { EvmTransaction } from "../../adapter/types";
+import type { Web3Shim } from "..";
+import type { EvmTransaction } from "../../adapter/types";
 import { AbiCoder as EthersAbi } from "ethers/utils/abi-coder";
 
 export const QuorumDefinition = {

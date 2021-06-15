@@ -1,10 +1,10 @@
 import type BN from "bn.js";
-import {
+import type {
   Block as EvmBlock,
   BlockType as EvmBlockType,
   Tx as EvmTransaction
 } from "web3/eth/types";
-import { TransactionReceipt as EvmTransactionReceipt } from "web3-eth/types";
+import type { TransactionReceipt as EvmTransactionReceipt } from "web3-eth/types";
 
 export {
   Block as EvmBlock,

@@ -1,6 +1,6 @@
 import { Web3InterfaceAdapter, Web3InterfaceAdapterOptions } from "./web3";
 
-import { InterfaceAdapter } from "./types";
+import type { InterfaceAdapter } from "./types";
 
 export type InterfaceAdapterOptions = Web3InterfaceAdapterOptions;
 
