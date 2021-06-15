@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # bin
-typedoc=../../node_modules/@gnd/typedoc/bin/typedoc
+typedoc=../../node_modules/typedoc/bin/typedoc
 
 DIST_HTML=./dist/docs
 DIST_JSON=./dist/api.json
@@ -22,4 +22,4 @@ $typedoc \
     --out $DIST_HTML \
     --json $DIST_JSON \
     --media $MEDIA \
-  $CODEC $DECODER # entrypoints to display
+  $CODEC $DECODER $@ # entrypoints to display

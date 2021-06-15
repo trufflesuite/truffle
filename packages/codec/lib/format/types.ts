@@ -1,3 +1,12 @@
+/**
+ * Contains the types for type objects, and some
+ * functions for working with them.
+ *
+ * @category Main Format
+ *
+ * @packageDocumentation
+ */
+
 import debugModule from "debug";
 const debug = debugModule("codec:format:types");
 

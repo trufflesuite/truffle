@@ -1,3 +1,11 @@
+/**
+ * For allocation and decoding of storage variables
+ *
+ * @category Solidity data location
+ *
+ * @packageDocumentation
+ */
+
 export * from "./types";
 
 import * as Utils from "./utils";
@@ -7,17 +15,7 @@ import * as Allocate from "./allocate";
 export { Allocate };
 
 import * as Decode from "./decode";
-export {
-  /**
-   * @protected
-   */
-  Decode
-};
+export { Decode };
 
 import * as Read from "./read";
-export {
-  /**
-   * @protected
-   */
-  Read
-};
+export { Read };
