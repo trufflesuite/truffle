@@ -1,4 +1,4 @@
-import { State } from "../types";
+import type { State } from "../types";
 
 export const validStates = (states: State[]) => (
   target: Object,

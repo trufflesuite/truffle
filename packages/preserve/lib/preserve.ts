@@ -1,4 +1,4 @@
-import { Recipe } from "./recipes";
+import type { Recipe } from "./recipes";
 import { control, Event } from "./control";
 const TruffleError = require("@truffle/error");
 

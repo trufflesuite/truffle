@@ -1,5 +1,5 @@
-import { Event } from "../events";
-import { Scope } from "../scopes";
+import type { Event } from "../events";
+import type { Scope } from "../scopes";
 import { State } from "../types";
 
 export interface ConstructorOptions {

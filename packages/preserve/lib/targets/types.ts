@@ -1,4 +1,4 @@
-import { Source } from "./sources";
+import type { Source } from "./sources";
 
 export interface Target {
   source: Source;

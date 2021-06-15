@@ -1,4 +1,4 @@
-import { Content } from "./contents";
+import type { Content } from "./contents";
 
 export interface Entry {
   path: string;
