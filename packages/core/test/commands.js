@@ -49,25 +49,29 @@ describe("Commander", function () {
       warning = msg;
     };
 
-    commander.run(
-      [
-        "migrate",
-        "--network",
-        "localhost",
-        "--unsupportedflag",
-        "invalidoption",
-        "--unsupportedflag2",
-        "invalidflag2"
-      ],
-      { noAliases: true, logger: console },
-      function() {
-        //ignore. not part of test
-      }
-    );
-
-    assert.equal(
-      warning,
-      "> Warning: possible unsupported (undocumented in help) command line option: --unsupportedflag,--unsupportedflag2"
-    );
+    try {
+      await commander.run(
+        [
+          "migrate",
+          "--network",
+          "localhost",
+          "--unsupportedflag",
+          "invalidoption",
+          "--unsupportedflag2",
+          "invalidflag2",
+        ],
+        { noAliases: true, logger: console },
+        function () {
+          //ignore. not part of test
+        },
+      );
+    } catch (error) {
+      console.log("error", error);
+    } finally {
+      assert.equal(
+        warning,
+        "> Warning: possible unsupported (undocumented in help) command line option: --unsupportedflag,--unsupportedflag2",
+      );
+    }
   });
 });
