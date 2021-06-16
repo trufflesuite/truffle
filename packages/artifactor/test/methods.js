@@ -47,12 +47,19 @@ describe("Artifactor.saveAll", () => {
         },
       ])
       .then(() => {
-        assert.isTrue(consoleWarnSpy.called, "No warning emitted");
-        assert.isTrue(
+        assert.fail("This should have failed because of bad path");
+      })
+      .catch((err) => {
+        assert(consoleWarnSpy.called, "No warning emitted");
+        assert(
           consoleWarnSpy.calledWithMatch(/Duplicate contract names/),
           "Wrong warning message"
         );
-      });
+
+        // Note, we expect saveAll to fail after checking for warnings above
+        // because `Destination "/some/path" doesn't exist!`);
+        assert(/".some.path" doesn't exist!/i.test(err.message));
+      })
   });
 
   it("throws if this.destination doesn't exist", () => {
