@@ -136,7 +136,8 @@ const { tx, abi } = await encoder.encodeTransaction(
 ```
  *
  * @module @truffle/encoder
- */ /** */
+ * @packageDocumentation
+ */
 
 import {
   ProjectEncoder,

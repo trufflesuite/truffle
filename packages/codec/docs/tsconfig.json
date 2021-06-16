@@ -33,6 +33,7 @@
   },
   "include": [
     "../../decoder/lib/**/*.ts",
+    "../../encoder/lib/**/*.ts",
     "../lib/**/*.ts",
     "../typings/**/*.d.ts"
   ]
