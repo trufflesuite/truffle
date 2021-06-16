@@ -1,5 +1,5 @@
 var assert = require("chai").assert;
-var Box = require("@truffle/box");
+var { default: Box } = require("@truffle/box");
 var glob = require("glob");
 var path = require("path");
 var fse = require("fs-extra");

@@ -1,7 +1,7 @@
 var assert = require("chai").assert;
 var fs = require("fs-extra");
 var glob = require("glob");
-var Box = require("@truffle/box");
+var { default: Box } = require("@truffle/box");
 var Profiler = require("../../profiler");
 var Resolver = require("@truffle/resolver");
 var Artifactor = require("@truffle/artifactor");
