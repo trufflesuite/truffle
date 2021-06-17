@@ -120,14 +120,10 @@ describe("@truffle/box Box", () => {
       beforeEach(() => {
         cleanupCallback = sinon.spy();
         sinon.stub(utils, "downloadBox").throws();
-        sinon.stub(utils, "setUpTempDirectory").returns(
-          new Promise((resolve) => {
-            resolve({
-              path: destination,
-              cleanupCallback,
-            });
-          }),
-        );
+        sinon.stub(utils, "setUpTempDirectory").returns({
+          path: destination,
+          cleanupCallback,
+        });
       });
 
       afterEach(() => {
@@ -138,6 +134,7 @@ describe("@truffle/box Box", () => {
       it("calls the cleanup function if it is available", async () => {
         try {
           await Box.unbox(TRUFFLE_BOX_DEFAULT, destination, {}, config);
+          assert.fail("Box.unbox(...) should have thrown");
         } catch (_) {
           assert(cleanupCallback.called);
         }
