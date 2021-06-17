@@ -65,18 +65,7 @@ class Console extends EventEmitter {
         eval: this.interpret.bind(this)
       });
 
-      let accounts;
-      try {
-        accounts = await this.interfaceAdapter.getAccounts();
-      } catch {
-        // don't prevent Truffle from working if user doesn't provide some way
-        // to sign transactions (e.g. no reason to disallow debugging)
-        accounts = [];
-      }
-
-      this.repl.context.web3 = this.web3;
-      this.repl.context.interfaceAdapter = this.interfaceAdapter;
-      this.repl.context.accounts = accounts;
+      this.setUpEnvironment();
       this.provision();
 
       //want repl to exit when it receives an exit command
@@ -93,6 +82,21 @@ class Console extends EventEmitter {
       );
       this.options.logger.log(error.stack || error.message || error);
     }
+  }
+
+  setUpEnvironment() {
+    let accounts;
+    try {
+      accounts = await this.interfaceAdapter.getAccounts();
+    } catch {
+      // don't prevent Truffle from working if user doesn't provide some way
+      // to sign transactions (e.g. no reason to disallow debugging)
+      accounts = [];
+    }
+
+    this.repl.context.web3 = this.web3;
+    this.repl.context.interfaceAdapter = this.interfaceAdapter;
+    this.repl.context.accounts = accounts;
   }
 
   provision() {
