@@ -65,7 +65,7 @@ class Console extends EventEmitter {
         eval: this.interpret.bind(this)
       });
 
-      this.setUpEnvironment();
+      await this.setUpEnvironment();
       this.provision();
 
       //want repl to exit when it receives an exit command
@@ -78,13 +78,14 @@ class Console extends EventEmitter {
       return new Promise(() => {});
     } catch (error) {
       this.options.logger.log(
-        "Unexpected error: Cannot provision contracts while instantiating the console."
+        "Unexpected error setting up the environment or provisioning " +
+        "contracts while instantiating the console."
       );
       this.options.logger.log(error.stack || error.message || error);
     }
   }
 
-  setUpEnvironment() {
+  async setUpEnvironment() {
     let accounts;
     try {
       accounts = await this.interfaceAdapter.getAccounts();
@@ -101,7 +102,9 @@ class Console extends EventEmitter {
     if (this.options.console && this.options.console.require) {
       switch (typeof this.options.console.require) {
         case "string":
-          const userDefined = require(this.options.console.require);
+          const userDefined = path.isAbsolute(this.options.console.require) ?
+            require(this.options.console.require) :
+            require(path.join(this.options.working_directory, this.options.console.require));
           for (const key in userDefined) {
             this.repl.context[key] = userDefined[key];
           }
