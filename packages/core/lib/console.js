@@ -97,6 +97,23 @@ class Console extends EventEmitter {
     this.repl.context.web3 = this.web3;
     this.repl.context.interfaceAdapter = this.interfaceAdapter;
     this.repl.context.accounts = accounts;
+
+    if (this.options.console && this.options.console.require) {
+      switch (typeof this.options.console.require) {
+        case "string":
+          const userDefined = require(this.options.console.require);
+          for (const key in userDefined) {
+            this.repl.context[key] = userDefined[key];
+          }
+          break;
+        case "object":
+        default:
+          const message = "You must specify the console.require property as " +
+            "either a string or an object. If you specify an object, it must " +
+            "contain at least a `path` property."
+          throw new Error
+      }
+    }
   }
 
   provision() {
