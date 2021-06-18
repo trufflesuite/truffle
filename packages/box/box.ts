@@ -74,7 +74,7 @@ export const normalizeSourcePath = (url = defaultPath) => {
     const match = url.match(protocolRex);
     if (match) {
       const { groups } = match;
-      const branch = groups["branch"] || "";
+      const branch = groups["branch"] || "#master";
 
       if (invalidBranch.test(branch)) {
         debug({
@@ -124,7 +124,7 @@ export const normalizeSourcePath = (url = defaultPath) => {
 
     // `truffle-box` is the default org
     const org = groups["org"] || "truffle-box/";
-    const branch = groups["branch"] || "";
+    const branch = groups["branch"] || "#master";
 
     if (invalidBranch.test(branch)) {
       debug({
