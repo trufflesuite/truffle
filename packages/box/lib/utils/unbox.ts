@@ -103,6 +103,7 @@ async function fetchRepository(sourcePath: string, dir: string) {
         sourcePath === file || !filter.ignores(path.relative(sourcePath, file))
     });
   }
+  debug.extend("fetchRepository")({ sourcePath, dir });
   return promisify(download)(sourcePath, dir);
 }
 
