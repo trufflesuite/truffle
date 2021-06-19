@@ -62,7 +62,8 @@ async function verifyVCSURL(url: string) {
 
 async function verifySourcePath(sourcePath: string) {
   if (sourcePath.startsWith("/")) {
-    return verifyLocalPath(sourcePath);
+    verifyLocalPath(sourcePath);
+    return sourcePath;
   }
   return verifyVCSURL(sourcePath);
 }
