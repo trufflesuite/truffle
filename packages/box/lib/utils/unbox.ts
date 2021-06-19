@@ -27,13 +27,19 @@ async function getDefaultGithubBranch(url: string): Promise<string> {
 }
 
 async function verifyVCSURL(url: string) {
+  let defaultBranch = await getDefaultGithubBranch(url);
+
   // Next let's see if the expected repository exists. If it doesn't, ghdownload
   // will fail spectacularly in a way we can't catch, so we have to do it ourselves.
+  debug("verifyVCSURL", url);
   const configURL = parseURL(
-    `${vcsurl(url)
-      .replace("github.com", "raw.githubusercontent.com")
-      .replace(/#.*/, "")}/master/truffle-box.json`
+    `${
+      vcsurl(url)
+        .replace("github.com", "raw.githubusercontent.com")
+        .replace(/#.*/, "")
+    }/${defaultBranch}/truffle-box.json`,
   );
+
   try {
     await axios.head(
       `https://${configURL.host}${configURL.path}`,
