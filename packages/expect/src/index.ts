@@ -1,13 +1,23 @@
 /**
+ * Asserts at runtime that `options` is an object
+ */
+export function object<O extends {}>(
+  options: unknown | O
+): asserts options is O {
+  if (typeof options !== "object") {
+    throw new Error(`Expected object`);
+  }
+}
+/**
  * Object type O that includes non-nullable keys K
  */
-export type Has<O extends {}, K extends string> = O &
-  Required<NonNullable<Pick<O, K & keyof O>>>;
+export type Has<O extends unknown, K extends string> = O &
+  Required<NonNullable<Pick<O & { [N in K]: unknown }, K | keyof O>>>;
 
 /**
  * Object type O that includes exactly one non-nullable value among keys K
  */
-export type HasOne<O extends {}, K extends string> = O &
+export type HasOne<O extends unknown, K extends string> = O &
   {
     [N in K]: Has<O, N>;
   }[K];
@@ -15,7 +25,7 @@ export type HasOne<O extends {}, K extends string> = O &
 /**
  * Asserts at runtime that `options` contains `key`
  */
-export function has<O extends {}, K extends string>(
+export function has<O extends unknown, K extends string>(
   options: O,
   key: K
 ): asserts options is Has<O, K> {
@@ -28,7 +38,7 @@ export function has<O extends {}, K extends string>(
 /**
  * Asserts at runtime that `options` contains all `expectedKeys`
  */
-export function options<O extends {}, K extends string>(
+export function options<O extends unknown, K extends string>(
   options: O,
   expectedKeys: K[]
 ): asserts options is Has<O, K> {
@@ -43,7 +53,7 @@ export function options<O extends {}, K extends string>(
  * Post-condition: this narrows type of `options` to include _exactly one_ of
  * `expectedKeys`, even though at runtime this accepts more than one key.
  */
-export function one<O extends {}, K extends string>(
+export function one<O extends unknown, K extends string>(
   options: O,
   expectedKeys: K[]
 ): asserts options is HasOne<O, K> {
