@@ -10,6 +10,9 @@ import type { boxConfig, unboxOptions } from "typings";
 import { promisify } from "util";
 import ignore from "ignore";
 
+import debugModule from "debug";
+const debug = debugModule("unbox:util");
+
 function verifyLocalPath(localPath: string) {
   const configPath = path.join(localPath, "truffle-box.json");
   fse.access(configPath).catch(_e => {
