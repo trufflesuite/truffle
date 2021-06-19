@@ -28,25 +28,39 @@ async function getDefaultGithubBranch(
   return (await axios.get(reposApi)).data.default_branch;
 }
 
-async function verifyVCSURL(url: string) {
-  let defaultBranch = await getDefaultGithubBranch(url);
-
-  // Next let's see if the expected repository exists. If it doesn't, ghdownload
-  // will fail spectacularly in a way we can't catch, so we have to do it ourselves.
-  debug("verifyVCSURL", url);
-  const configURL = parseURL(
-    `${
-      vcsurl(url)
-        .replace("github.com", "raw.githubusercontent.com")
-        .replace(/#.*/, "")
-    }/${defaultBranch}/truffle-box.json`,
-  );
-
+async function verifyVCSURL(url: string): Promise<string> | never {
   try {
+    // let's see if the expected repository exists If it doesn't exist,
+    // ghdownload will fail spectacularly in a way we can't catch, so we have
+    // to do it ourselves.
+    let defaultBranch = await getDefaultGithubBranch(url);
+
+    debug("verifyVCSURL", url);
+    let urlWithCorrectBranch = url;
+
+    // Is it a truffle box?
+    let branch = url.replace(/^.+#/, "");
+    if (branch === "master")  {
+      branch = defaultBranch;
+      urlWithCorrectBranch = url.replace(/#.+$/, `#${branch}`);
+    }
+    debug("Specified Branch", branch);
+    const configURL = parseURL(
+      `${
+        vcsurl(url)
+          .replace("github.com", "raw.githubusercontent.com")
+          .replace(/#.*/, "")
+      }/${branch}/truffle-box.json`,
+    );
+
+    debug(configURL);
+
     await axios.head(
       `https://${configURL.host}${configURL.path}`,
-      { maxRedirects: 50 }
+      { maxRedirects: 50 },
     );
+
+    return urlWithCorrectBranch;
   } catch (error) {
     if (error.response && error.response.status === 404) {
       throw new Error(
