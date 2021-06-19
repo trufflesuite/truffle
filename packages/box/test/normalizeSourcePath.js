@@ -6,7 +6,7 @@ describe("@truffle/box.normalizeSourcePath unit tests", () => {
     [
       {
         input: "git@github.com:truffle-box/a-box",
-        expected: "https://github.com:truffle-box/a-box",
+        expected: "https://github.com:truffle-box/a-box#master",
       },
       {
         input: "git@github.com:truffle-box/a-box#simple-branch",
@@ -71,7 +71,7 @@ describe("@truffle/box.normalizeSourcePath unit tests", () => {
     [
       {
         input: "https://github.com/truffle-box/bare-box",
-        expected: "https://github.com:truffle-box/bare-box",
+        expected: "https://github.com:truffle-box/bare-box#master",
       },
       {
         input: "https://github.com/truffle-box/bare-box#branch",
@@ -137,7 +137,7 @@ describe("@truffle/box.normalizeSourcePath unit tests", () => {
     [
       {
         input: "truffle-box/bare-box",
-        expected: "https://github.com:truffle-box/bare-box",
+        expected: "https://github.com:truffle-box/bare-box#master",
       },
       {
         input: "truffle-box/bare-box#master",
@@ -145,7 +145,7 @@ describe("@truffle/box.normalizeSourcePath unit tests", () => {
       },
       {
         input: "bare-box",
-        expected: "https://github.com:truffle-box/bare-box",
+        expected: "https://github.com:truffle-box/bare-box#master",
       },
       {
         input: "bare-box#master",
