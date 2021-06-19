@@ -29,14 +29,13 @@ async function getDefaultGithubBranch(
 }
 
 async function verifyVCSURL(url: string): Promise<string> | never {
+  const localDebug = debug.extend("verifyVCSURL");
   try {
-    // let's see if the expected repository exists If it doesn't exist,
-    // ghdownload will fail spectacularly in a way we can't catch, so we have
-    // to do it ourselves.
-    let defaultBranch = await getDefaultGithubBranch(url);
-
-    debug("verifyVCSURL", url);
     let urlWithCorrectBranch = url;
+    localDebug( `url = ${url}` );
+    let defaultBranch = await getDefaultGithubBranch(url);
+    localDebug( `retrived defaultBranch = ${defaultBranch}` );
+
 
     // Is it a truffle box?
     let branch = url.replace(/^.+#/, "");
@@ -44,7 +43,8 @@ async function verifyVCSURL(url: string): Promise<string> | never {
       branch = defaultBranch;
       urlWithCorrectBranch = url.replace(/#.+$/, `#${branch}`);
     }
-    debug("Specified Branch", branch);
+
+    localDebug(`corrected URL: ${urlWithCorrectBranch}`);
     const configURL = parseURL(
       `${
         vcsurl(url)
@@ -53,15 +53,19 @@ async function verifyVCSURL(url: string): Promise<string> | never {
       }/${branch}/truffle-box.json`,
     );
 
-    debug(configURL);
 
+    // let's see if the expected repository exists If it doesn't exist,
+    // ghdownload will fail spectacularly in a way we can't catch, so we have
+    // to do it ourselves.
+    localDebug(`box url: ${configURL.host}${configURL.path}`);
     await axios.head(
       `https://${configURL.host}${configURL.path}`,
       { maxRedirects: 50 },
     );
-
+    localDebug("box exists");
     return urlWithCorrectBranch;
   } catch (error) {
+    localDebug(error);
     if (error.response && error.response.status === 404) {
       throw new Error(
         `Truffle Box at URL ${url} doesn't exist. If you believe this is an error, please contact Truffle support.`
