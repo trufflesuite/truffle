@@ -23,8 +23,20 @@ function verifyLocalPath(localPath: string) {
 async function getDefaultGithubBranch(
   url: string,
 ): Promise<string> | never {
+
+  // TODO: api.github.com ratelimits calls. 
+  //  - a user may exceed their limit. 
+  //    - we could allow user to set a github token 
+  //      - yuck.
+  //      - ties user to github
+  //    - is it possible to git clone from ipfs?
+  //  -  this will impact CI
+  //    - need to enter GH token to avoid.
+  //    - should mock tests that hit GH as much as possible
+  //
   const reposApi = url.replace(/^.+:/, "https://api.github.com/repos/")
     .replace(/#.*$/, "");
+  debug(reposApi);
   return (await axios.get(reposApi)).data.default_branch;
 }
 
