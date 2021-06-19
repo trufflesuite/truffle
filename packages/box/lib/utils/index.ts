@@ -12,8 +12,8 @@ export = {
     events.emit("unbox:downloadingBox:start");
 
     try {
-      await unbox.verifySourcePath(source);
-      await unbox.fetchRepository(source, destination);
+      const verifiedSource = await unbox.verifySourcePath(source);
+      await unbox.fetchRepository(verifiedSource, destination);
       events.emit("unbox:downloadingBox:succeed");
     } catch (error) {
       events.emit("unbox:fail");
