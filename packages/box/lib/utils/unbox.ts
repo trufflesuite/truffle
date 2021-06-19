@@ -20,6 +20,12 @@ function verifyLocalPath(localPath: string) {
   });
 }
 
+async function getDefaultGithubBranch(url: string): Promise<string> {
+  const queryApi = url.replace(/^.+:/, "https://api.github.com/repos/")
+    .replace(/#.*$/, "");
+  return (await axios.get(reposApi)).data.default_branch;
+}
+
 async function verifyVCSURL(url: string) {
   // Next let's see if the expected repository exists. If it doesn't, ghdownload
   // will fail spectacularly in a way we can't catch, so we have to do it ourselves.
@@ -157,6 +163,7 @@ function installBoxDependencies({ hooks }: boxConfig, destination: string) {
 export = {
   copyTempIntoDestination,
   fetchRepository,
+  getDefaultGithubBranch,
   installBoxDependencies,
   prepareToCopyFiles,
   verifySourcePath
