@@ -1,0 +1,52 @@
+{
+  "name": "@truffle/config-new",
+  "description": "Simple module for ensuring specific options are passed to a function",
+  "license": "MIT",
+  "author": "g. nicholas d'andrea <gnidan@consensys.net>",
+  "homepage": "https://github.com/trufflesuite/truffle/blob/master/packages/config-new#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/config-new"
+  },
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "version": "0.0.17",
+  "main": "dist/src/index.js",
+  "scripts": {
+    "build": "yarn build:dist",
+    "clean": "rm -rf ./dist",
+    "prepare": "yarn build",
+    "build:dist": "ttsc",
+    "test:code": "jest --verbose --detectOpenHandles --forceExit",
+    "test:types": "tsd",
+    "test": "yarn test:types && yarn test:code"
+  },
+  "types": "dist/src/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "@types/jest": "^26.0.20",
+    "@types/node": "12.12.21",
+    "eslint-plugin-jest": "^24.3.6",
+    "jest": "^26.5.2",
+    "ts-jest": "^26.4.1",
+    "tsd": "^0.17.0",
+    "ttypescript": "^1.5.7",
+    "typescript": "^4.4.0-dev.20210617",
+    "typescript-transform-paths": "^2.1.0"
+  },
+  "keywords": [
+    "ethereum",
+    "expect",
+    "truffle"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "tsd": {
+    "directory": "."
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "compilerOptions": {
+    "sourceMap": true,
+    "declaration": true,
+    "esModuleInterop": true,
+    "lib": ["esnext"],
+    "skipLibCheck": true,
+    "target": "es6",
+    "moduleResolution": "node",
+    "downlevelIteration": true,
+    "allowSyntheticDefaultImports": true,
+    "module": "commonjs",
+    "outDir": "./dist",
+    "strictBindCallApply": true,
+    "strictNullChecks": true,
+    "noUncheckedIndexedAccess": true,
+    "strictOptionalProperties": true,
+    "paths": {
+      "@truffle/config-new": ["./src"],
+      "@truffle/config-new/*": ["./src/*"],
+      "test/*": ["./test/*"]
+    },
+    "rootDir": ".",
+    "baseUrl": ".",
+    "types": [
+      "jest",
+      "node"
+    ],
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ]
+  },
+  "include": [
+    "src/**/*",
+    "bin/**/*",
+    "test/**/*",
+    "test-d/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
