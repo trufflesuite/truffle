@@ -20,8 +20,10 @@ function verifyLocalPath(localPath: string) {
   });
 }
 
-async function getDefaultGithubBranch(url: string): Promise<string> {
-  const queryApi = url.replace(/^.+:/, "https://api.github.com/repos/")
+async function getDefaultGithubBranch(
+  url: string,
+): Promise<string> | never {
+  const reposApi = url.replace(/^.+:/, "https://api.github.com/repos/")
     .replace(/#.*$/, "");
   return (await axios.get(reposApi)).data.default_branch;
 }
