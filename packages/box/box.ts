@@ -190,7 +190,7 @@ const Box = {
       const normalizedSourcePath = normalizeSourcePath(url);
 
       await Box.checkDir(options, destination);
-      const tempDir = await utils.setUpTempDirectory(events);
+      const tempDir = utils.setUpTempDirectory(events);
       const tempDirPath = tempDir.path;
       tempDirCleanup = tempDir.cleanupCallback;
 
@@ -209,7 +209,7 @@ const Box = {
       tempDirCleanup();
       events.emit("unbox:cleaningTempFiles:succeed");
 
-      await utils.setUpBox(boxConfig, destination, events);
+      utils.setUpBox(boxConfig, destination, events);
 
       return boxConfig;
     } catch (error) {
