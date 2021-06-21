@@ -85,6 +85,47 @@ class Console extends EventEmitter {
     }
   }
 
+  hydrateUserDefinedVariables() {
+    if (!this.options.console || !this.options.console.require) return;
+
+    const requireFromPath = target => {
+      return path.isAbsolute(target) ?
+        require(target) :
+        require(path.join(this.options.working_directory, target));
+    };
+    const addToContext = (userData, namespace) => {
+      for (const key in userData) {
+        if (namespace) {
+          if (typeof this.repl.context[namespace] === "undefined") {
+            this.repl.context[namespace] = {};
+          }
+          this.repl.context[namespace][key] = userData[key];
+        } else {
+          this.repl.context[key] = userData[key];
+        }
+      }
+    };
+    const errorMessage = "You must specify the console.require property as " +
+      "either a string or an array. If you specify an array, its members " +
+      "must be paths or objects containing at least a `path` property.";
+
+    if (typeof this.options.console.require === "string") {
+      addToContext(requireFromPath(this.options.console.require));
+    } else if (Array.isArray(this.options.console.require)) {
+      this.options.console.require.forEach(item => {
+        if (typeof item === "string") {
+          addToContext(requireFromPath(item));
+        } else if (typeof item === "object" && item.path) {
+          addToContext(requireFromPath(item.path), item.as);
+        } else {
+          throw new Error(errorMessage);
+        }
+      });
+    } else {
+      throw new Error(errorMessage);
+    }
+  }
+
   async setUpEnvironment() {
     let accounts;
     try {
@@ -99,24 +140,7 @@ class Console extends EventEmitter {
     this.repl.context.interfaceAdapter = this.interfaceAdapter;
     this.repl.context.accounts = accounts;
 
-    if (this.options.console && this.options.console.require) {
-      switch (typeof this.options.console.require) {
-        case "string":
-          const userDefined = path.isAbsolute(this.options.console.require) ?
-            require(this.options.console.require) :
-            require(path.join(this.options.working_directory, this.options.console.require));
-          for (const key in userDefined) {
-            this.repl.context[key] = userDefined[key];
-          }
-          break;
-        case "object":
-        default:
-          const message = "You must specify the console.require property as " +
-            "either a string or an object. If you specify an object, it must " +
-            "contain at least a `path` property."
-          throw new Error
-      }
-    }
+    this.hydrateUserDefinedVariables();
   }
 
   provision() {
