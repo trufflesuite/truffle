@@ -23,7 +23,7 @@ export async function getImports({
   shouldIncludePath,
   parseImports
 }: GetImportsOptions): Promise<string[]> {
-  if (!shouldIncludePath(filePath)) return [];
+  if (!shouldIncludePath(filePath) || !parseImports) return [];
 
   debug("filePath: %s", filePath);
 
