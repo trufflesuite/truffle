@@ -1,5 +1,5 @@
 const assert = require("chai").assert;
-const Box = require("@truffle/box");
+const { default: Box } = require("@truffle/box");
 const fs = require("fs-extra");
 const glob = require("glob");
 const path = require("path");

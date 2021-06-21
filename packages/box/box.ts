@@ -5,8 +5,10 @@ import Config from "@truffle/config";
 import fse from "fs-extra";
 import inquirer from "inquirer";
 import { sandboxOptions, unboxOptions } from "typings";
+import debugModule from "debug";
 
-const defaultPath = "https://github.com:trufflesuite/truffle-init-default";
+const debug = debugModule("unbox");
+const defaultPath = "git@github.com:trufflesuite/truffle-init-default";
 
 /*
  * accepts a number of different url and org/repo formats and returns the
@@ -19,50 +21,132 @@ const defaultPath = "https://github.com:trufflesuite/truffle-init-default";
  *   - git@github.com:<org>/<repo>[#branch]
  *   - path to local folder (absolute, relative or ~/home)
  */
-const normalizeSourcePath = (url = defaultPath) => {
+export const normalizeSourcePath = (url = defaultPath) => {
+  // Process filepath resolution
+  //
   if (url.startsWith(".") || url.startsWith("/") || url.startsWith("~")) {
+    debug({ in: url, out: path.normalize(url) });
     return path.resolve(path.normalize(url));
   }
-  // remove the .git from the repo specifier
-  if (url.includes(".git")) {
-    url = url.replace(/.git$/, "");
-    url = url.replace(/.git#/, "#");
-    url = url.replace(/.git:/, ":");
-  }
 
-  // rewrite https://github.com/truffle-box/metacoin format in
-  //         https://github.com:truffle-box/metacoin format
-  if (url.match(/.com\//)) {
-    url = url.replace(/.com\//, ".com:");
-  }
+  // preprocess to reduce regex complexity
+  // `https` is not case sensitiv, unlike `git`
+  url = url.replace(/^https/i, "https");
 
-  // full URL already
-  if (url.includes("://")) {
-    return url;
-  }
+  // branch should not end with slash
+  const invalidBranch = /\/$/;
 
-  if (url.includes("git@")) {
-    return url.replace("git@", "https://");
-  }
+  // process https? or git prefixed input
+  //
+  if (/^(https?|git)/i.test(url)) {
+    // This regular expression uses named capture groups to parse input. The
+    // format is (?<the-name>the-regex)
+    //
+    // \w, the word meta character is a member of [A-Za-z0-9_]. all letters,
+    // digits and the underscore. Note \w has to be \\w to escape the backslash
+    // in a string literal.
+    //
+    const protocolRex = new RegExp([
+      // match either `htps://` or `git@`
+      "(?<protocol>(https://|git@))",
 
-  if (url.split("/").length === 2) {
-    // `org/repo`
-    return `https://github.com:${url}`;
-  }
+      // service is 1 or many (word, dot or dash)
+      "(?<service>[\\w.-]+)",
 
-  if (!url.includes("/")) {
-    // repo name only
-    if (!url.includes("-box")) {
-      // check for branch
-      if (!url.includes("#")) {
-        url = `${url}-box`;
-      } else {
-        const index = url.indexOf("#");
-        url = `${url.substr(0, index)}-box${url.substr(index)}`;
+      // match either `/` or `:`
+      "(/|:)",
+
+      // org is 1 or many (word, dot or dash)
+      "(?<org>[\\w.-]+)",
+
+      "/",
+
+      // repo is 1 or many (word, dot or dash)
+      "(?<repo>[\\w.-]+)",
+
+      // branch is 1 or many (word, dot or dash) and can be optional
+      "(?<branch>#[\\w./-]+)?",
+
+      // the input string must be consumed fully at this point to match
+      "$",
+    ].join(""));
+
+    const match = url.match(protocolRex);
+    if (match) {
+      const { groups } = match;
+      const branch = groups["branch"] || "";
+
+      if (invalidBranch.test(branch)) {
+        debug({
+          in: url,
+          error: "InvalidFormat (protocol)",
+          hint: "branch is malformed",
+        });
+        throw new Error("Box specified with invalid format (git/https)");
       }
+
+      const repo = groups["repo"].replace(/\.git$/i, "");
+      const result = `https://${groups["service"]}:${groups["org"]}/${repo}${branch}`;
+      debug({ in: url, out: result });
+      return result;
     }
-    return `https://github.com:truffle-box/${url}`;
+
+    debug({
+      in: url,
+      error: "InvalidFormat (protocol)",
+      hint: "did not match protocol",
+    });
+    throw new Error("Box specified with invalid format (git/https)");
   }
+
+  // default case: process [org/] + repo + [ #branch/name/with/slashes ]
+  //
+  const orgRepoBranchRex = new RegExp([
+    // start match at beginning
+    "^",
+
+    // org is 1 or many (word, dot or dash) followed by a slash. org can be
+    // optional
+    "(?<org>[\\w.-]+/)?",
+
+    // repo is 1 or many (word, dot or dash)
+    "(?<repo>[\\w.-]+)",
+
+    // optional branch (undefined if unmatched)
+    "(?<branch>#[\\w./-]+)?",
+
+    "$",
+  ].join(""));
+
+  const match = url.match(orgRepoBranchRex);
+  if (match) {
+    const { groups } = match;
+
+    // `truffle-box` is the default org
+    const org = groups["org"] || "truffle-box/";
+    const branch = groups["branch"] || "";
+
+    if (invalidBranch.test(branch)) {
+      debug({
+        in: url,
+        error: "InvalidFormat (orgRepoBranch)",
+        hint: "branch is malformed",
+      });
+      throw new Error("Box specified with invalid format");
+    }
+
+    // repo should have`-box` suffix
+    let repo = groups["repo"];
+    repo = repo.endsWith("-box") ? repo : `${repo}-box`;
+
+    const result = `https://github.com:${org}${repo}${branch}`;
+
+    debug({ in: url, out: result });
+    return result;
+  }
+
+  // No match, it's an error!
+  debug({ in: url, error: "InvalidFormat", hint: "matched nothing" });
   throw new Error("Box specified in invalid format");
 };
 
@@ -74,7 +158,7 @@ const parseSandboxOptions = (options: sandboxOptions) => {
       unsafeCleanup: false,
       setGracefulCleanup: false,
       logger: console,
-      force: false
+      force: false,
     };
   } else if (typeof options === "object") {
     return {
@@ -82,7 +166,7 @@ const parseSandboxOptions = (options: sandboxOptions) => {
       unsafeCleanup: options.unsafeCleanup || false,
       setGracefulCleanup: options.setGracefulCleanup || false,
       logger: options.logger || console,
-      force: options.force || false
+      force: options.force || false,
     };
   }
 };
@@ -92,21 +176,21 @@ const Box = {
     url: string,
     destination: string,
     options: unboxOptions = {},
-    config: any
+    config: any,
   ) => {
     const { events } = config;
     let tempDirCleanup;
     const logger = options.logger || { log: () => {} };
     const unpackBoxOptions = {
       logger: options.logger,
-      force: options.force
+      force: options.force,
     };
 
     try {
       const normalizedSourcePath = normalizeSourcePath(url);
 
       await Box.checkDir(options, destination);
-      const tempDir = await utils.setUpTempDirectory(events);
+      const tempDir = utils.setUpTempDirectory(events);
       const tempDirPath = tempDir.path;
       tempDirCleanup = tempDir.cleanupCallback;
 
@@ -118,14 +202,14 @@ const Box = {
         tempDirPath,
         destination,
         boxConfig,
-        unpackBoxOptions
+        unpackBoxOptions,
       );
 
       events.emit("unbox:cleaningTempFiles:start");
       tempDirCleanup();
       events.emit("unbox:cleaningTempFiles:succeed");
 
-      await utils.setUpBox(boxConfig, destination, events);
+      utils.setUpBox(boxConfig, destination, events);
 
       return boxConfig;
     } catch (error) {
@@ -146,8 +230,8 @@ const Box = {
             type: "confirm",
             name: "proceed",
             message: `Proceed anyway?`,
-            default: true
-          }
+            default: true,
+          },
         ];
         const answer = await inquirer.prompt(prompt);
         if (!answer.proceed) {
@@ -168,7 +252,7 @@ const Box = {
       unsafeCleanup,
       setGracefulCleanup,
       logger,
-      force
+      force,
     } = parseSandboxOptions(options);
 
     const boxPath = name.replace(/^default(?=#|$)/, defaultPath);
@@ -184,7 +268,7 @@ const Box = {
     const unboxOptions = { logger, force };
     await Box.unbox(boxPath, tmpDir.name, unboxOptions, config);
     return Config.load(path.join(tmpDir.name, "truffle-config.js"), {});
-  }
+  },
 };
 
-export = Box;
+export default Box;
