@@ -11,7 +11,7 @@ import type TruffleConfig from "@truffle/config";
 import type { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import type * as Common from "@truffle/compile-common";
 //sorry, some untyped imports here :-/
-const Box = require("@truffle/box"); //Box is TS, but TS has problems with sandbox??
+const Box = require("@truffle/box").default; //Box is TS, but TS has problems with sandbox??
 const WorkflowCompile = require("@truffle/workflow-compile");
 const Deployer = require("@truffle/deployer");
 const Resolver = require("@truffle/resolver"); //resolver is TS too but I can't make it typecheck :-/
