@@ -4,7 +4,7 @@ import { Db, Ens } from "test/schemas";
 
 describe("makeValidate", () => {
   describe("for a single schema", () => {
-    const validate: Validator<Db.Schema> = makeValidate([Db.validate]);
+    const validate = makeValidate(Db.validate);
 
     it("throws for invalid config", () => {
       const config = {};
@@ -30,10 +30,11 @@ describe("makeValidate", () => {
   });
 
   describe("for multiple schemas", () => {
-    const validate: Validator<Db.Schema & Ens.Schema> = makeValidate([
+    // @ts-ignore FOR NOW
+    const validate: Validator<Db.Schema & Ens.Schema> = makeValidate(
       Db.validate,
       Ens.validate
-    ]);
+    );
 
     it("throws for a config that validates none", () => {
       const config = {

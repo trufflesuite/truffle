@@ -1,6 +1,6 @@
 import * as expect from "@truffle/expect";
 
-import { Validator } from "@truffle/config-new";
+import { ProjectConfig, Validator } from "@truffle/config-new";
 
 export namespace Db {
   export type Schema = {
@@ -11,16 +11,23 @@ export namespace Db {
     };
   };
 
-  export const validate: Validator<Schema> = options => {
-    expect.options(options, ["environments"]);
+  export const validate: Validator<Schema> = (
+    options
+  ): options is ProjectConfig<Schema> => {
+    try {
+      expect.options(options, ["environments"]);
 
-    const { environments } = options;
-    expect.object(environments);
+      const { environments } = options;
+      expect.object(environments);
 
-    for (const environment of Object.values(environments)) {
-      expect.options(environment, ["db"]);
-      const { db } = environment;
-      expect.options(db, ["enabled"]);
+      for (const environment of Object.values(environments)) {
+        expect.options(environment, ["db"]);
+        const { db } = environment;
+        expect.options(db, ["enabled"]);
+      }
+      return true;
+    } catch {
+      return false;
     }
   };
 }
@@ -35,16 +42,24 @@ export namespace Ens {
     };
   };
 
-  export const validate: Validator<Schema> = options => {
-    expect.options(options, ["environments"]);
+  export const validate: Validator<Schema> = (
+    options
+  ): options is ProjectConfig<Schema> => {
+    try {
+      expect.options(options, ["environments"]);
 
-    const { environments } = options;
-    expect.object(environments);
+      const { environments } = options;
+      expect.object(environments);
 
-    for (const environment of Object.values(environments)) {
-      expect.options(environment, ["ens"]);
-      const { ens } = environment;
-      expect.options(ens, ["networkName", "registryAddress"]);
+      for (const environment of Object.values(environments)) {
+        expect.options(environment, ["ens"]);
+        const { ens } = environment;
+        expect.options(ens, ["networkName", "registryAddress"]);
+      }
+
+      return true;
+    } catch {
+      return false;
     }
   };
 }
@@ -59,10 +74,18 @@ export namespace Directories {
     };
   };
 
-  export const validate: Validator<Schema> = options => {
-    expect.options(options, ["directories"]);
-    const { directories } = options;
+  export const validate: Validator<Schema> = (
+    options
+  ): options is ProjectConfig<Schema> => {
+    try {
+      expect.options(options, ["directories"]);
+      const { directories } = options;
 
-    expect.options(directories, ["contracts", "tests"]);
+      expect.options(directories, ["contracts", "tests"]);
+
+      return true;
+    } catch {
+      return false;
+    }
   };
 }
