@@ -14,11 +14,18 @@ async function run(rawSources, options, language = "Solidity") {
 
   // Ensure sources have operating system independent paths
   // i.e., convert backslashes to forward slashes; things like C: are left intact.
+  // we also strip the project root (to avoid it appearing in metadata)
+  // and replace it with "project://"
   const {
     sources,
     targets,
     originalSourcePaths
-  } = Common.Sources.collectSources(rawSources, options.compilationTargets);
+  } = Common.Sources.collectSources(
+    rawSources,
+    options.compilationTargets,
+    options.working_directory,
+    "project:/" //only one slash, other will already be present
+  );
 
   // construct solc compiler input
   const compilerInput = prepareCompilerInput({

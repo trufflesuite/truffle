@@ -12,6 +12,10 @@ const partition = require("lodash.partition");
 function compileJson({ sources: rawSources, options, version, command }) {
   const compiler = { name: "vyper", version };
 
+  //in order to better support absolute Vyper imports, we pretend that
+  //the contracts directory is the root directory.  note this means that
+  //if an imported source from somewhere other than FS uses an absolute
+  //import to refer to its own project root, it won't work.  But, oh well.
   const {
     sources,
     targets,
@@ -32,11 +36,6 @@ function compileJson({ sources: rawSources, options, version, command }) {
         targets.includes(sourcePath)
       : sourcePath => !sourcePath.endsWith(".json")
   );
-
-  //in order to better support absolute Vyper imports, we pretend that
-  //the contracts directory is the root directory.  note this means that
-  //if an imported source from somewhere other than FS uses an absolute
-  //import to refer to its own project root, it won't work.  But, oh well.
 
   const properSources = Object.assign(
     {},
