@@ -86,7 +86,7 @@ class Console extends EventEmitter {
   }
 
   hydrateUserDefinedVariables() {
-    if (!this.options.console || !this.options.console.require) return;
+    if ((!this.options.console || !this.options.console.require) && !this.options.require) return;
 
     const requireFromPath = target => {
       return path.isAbsolute(target) ?
@@ -109,9 +109,11 @@ class Console extends EventEmitter {
       "either a string or an array. If you specify an array, its members " +
       "must be paths or objects containing at least a `path` property.";
 
-    if (typeof this.options.console.require === "string") {
-      addToContext(requireFromPath(this.options.console.require));
-    } else if (Array.isArray(this.options.console.require)) {
+    const requireValue = this.options.require || this.options.console.require;
+
+    if (typeof requireValue === "string") {
+      addToContext(requireFromPath(requireValue));
+    } else if (Array.isArray(requireValue)) {
       this.options.console.require.forEach(item => {
         if (typeof item === "string") {
           addToContext(requireFromPath(item));
