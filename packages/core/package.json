@@ -87,7 +87,8 @@
   "devDependencies": {
     "@truffle/blockchain-utils": "^0.0.30",
     "chai-as-promised": "^7.1.1",
-    "memorystream": "^0.3.1"
+    "memorystream": "^0.3.1",
+    "sinon": "^9.0.2"
   },
   "publishConfig": {
     "access": "public"
