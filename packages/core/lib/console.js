@@ -86,7 +86,12 @@ class Console extends EventEmitter {
   }
 
   hydrateUserDefinedVariables() {
-    if ((!this.options.console || !this.options.console.require) && !this.options.require) return;
+    if (
+      (!this.options.console || !this.options.console.require) &&
+      !this.options.require &&
+      !this.options.r ||
+      this.options["require-none"]
+    ) return;
 
     const requireFromPath = target => {
       return path.isAbsolute(target) ?
