@@ -7,6 +7,8 @@
     "build"
   ],
   "dependencies": {
+    "@truffle/browser-provider-server": "^0.1.0",
+    "axios": "^0.21.1",
     "express": "^4.17.1"
   },
   "scripts": {
@@ -39,8 +41,8 @@
     "@types/react-dom": "^17.0.0",
     "@types/web3": "^1.0.20",
     "delay": "^5.0.0",
-    "ethers": "^5.1.4",
     "ethereum-protocol": "^1.0.1",
+    "ethers": "^5.1.4",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-scripts": "4.0.3",
