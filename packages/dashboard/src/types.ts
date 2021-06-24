@@ -7,3 +7,9 @@ export interface Request {
     id: number;
   };
 };
+
+export interface PortsConfig {
+  dashboardPort: number;
+  dashboardToBrowserProviderPort: number;
+  browserProviderToServerPort: number;
+}

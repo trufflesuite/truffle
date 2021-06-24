@@ -1,4 +1,4 @@
-import { base64ToJson, connectToServerWithRetries, jsonToBase64 } from "./utils";
+import { base64ToJson, connectToServerWithRetries, getPorts, jsonToBase64 } from "./utils";
 import { useEffect, useState } from 'react';
 import Web3Modal from "web3modal";
 import './App.css';
@@ -10,13 +10,14 @@ function App() {
   const [socket, setSocket] = useState<WebSocket>();
   const [provider, setProvider] = useState<any>();
   const [requests, setRequests] = useState<Request[]>([]);
-  const port = 8081;
   const web3modal = new Web3Modal();
 
   useEffect(() => {
     const initialiseSocket = async () => {
       if (socket && socket.readyState === WebSocket.OPEN) return;
-      const connectedSocket = await connectToServerWithRetries(port);
+
+      const { dashboardToBrowserProviderPort } = await getPorts();
+      const connectedSocket = await connectToServerWithRetries(dashboardToBrowserProviderPort);
 
       connectedSocket.addEventListener("message", async (event: MessageEvent) => {
         if (typeof event.data !== "string") return;
@@ -34,7 +35,7 @@ function App() {
   const removeFromRequests = (id: number) => {
     const newRequests = requests.filter(request => request.id !== id);
     setRequests(() => newRequests);
-  }
+  };
 
   const connectWeb3 = async () => {
     const provider = await web3modal.connect();
@@ -57,7 +58,7 @@ function App() {
     socket.send(encodedResponse);
 
     removeFromRequests(request.id);
-  }
+  };
 
   const forwardRpcCallToWeb3 = async (payload: JSONRPCRequestPayload) => {
     const sendAsync = promisify(provider.sendAsync.bind(provider));
@@ -91,7 +92,7 @@ function App() {
             </div>
             <button onClick={() => handleRequest(request)}>process</button>
           </div>
-        )
+        );
       })}
     </div>
   );

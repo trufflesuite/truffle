@@ -1,18 +1,16 @@
 import type { JSONRPCRequestPayload, JSONRPCErrorCallback, JSONRPCResponsePayload } from "ethereum-protocol";
 import { callbackify } from "util";
 import WebSocket from "ws";
-import { connectToServerWithRetries } from "./utils";
-import { startServer, sendAndAwait } from "@truffle/browser-provider-server";
+import { connectToServerWithRetries, getServerPort } from "./utils";
+import { sendAndAwait } from "@truffle/browser-provider-server";
+import { startDashboardInBackground } from "@truffle/dashboard";
 
 export class BrowserProvider {
   private socket: WebSocket;
 
-  // TODO: fix the constructor args (probably an object with a bunch of options)
-  constructor(private port = 8080, private dashboardWsPort = 8081) {
-    // Start a new server if not running (will silently fail if address is already in use)
-    // TODO: Figure out what to do when address is already in use by different app
-    // TODO: Figure out what to do when the dashboard ports are already in use
-    startServer(this.port, this.dashboardWsPort);
+  constructor(private dashboardPort = 5000) {
+    // Start a dashboard at the provided port (will silently fail if address is already in use)
+    startDashboardInBackground(dashboardPort);
   }
 
   public send(payload: JSONRPCRequestPayload, callback: JSONRPCErrorCallback) {
@@ -41,6 +39,9 @@ export class BrowserProvider {
 
   private async ready() {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) return;
-    this.socket = await connectToServerWithRetries(this.port);
+
+    const port = await getServerPort(this.dashboardPort);
+
+    this.socket = await connectToServerWithRetries(port);
   }
 }
