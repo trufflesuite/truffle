@@ -1,9 +1,6 @@
 import WebSocket from "ws";
 import { base64ToJson, jsonToBase64, sendAndAwait } from "./utils";
 import delay from "delay";
-import { startDashboard } from "@truffle/dashboard";
-import open from "open";
-import type { Express } from "express";
 import { Request } from "./types";
 
 export class BrowserProviderServer {
@@ -12,7 +9,6 @@ export class BrowserProviderServer {
 
   dashboardServer: WebSocket.Server;
   dashboardSocket: WebSocket;
-  dashboardExpress: Express;
 
   unfulfilledRequests: Map<string, Request> = new Map([]);
 
@@ -39,9 +35,6 @@ export class BrowserProviderServer {
         }
       });
     });
-
-    this.dashboardExpress = startDashboard(5000);
-    open("http://localhost:5000");
   }
 
   // Wait until the dashboard process is started and the websocket connection is established

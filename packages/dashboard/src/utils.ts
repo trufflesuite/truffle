@@ -1,4 +1,6 @@
+import axios from "axios";
 import delay from "delay";
+import { PortsConfig } from "./types";
 
 export const jsonToBase64 = (json: any) => {
   const stringifiedJson = JSON.stringify(json);
@@ -32,4 +34,11 @@ export const connectToServer = (port: number) => {
     socket.addEventListener("open", () => resolve(socket));
     socket.addEventListener("error", reject);
   });
+};
+
+export const getPorts = async (): Promise<PortsConfig> => {
+  const dashboardPort = window.location.port;
+  const { data } = await axios.get(`http://localhost:${dashboardPort}/ports`);
+
+  return data;
 };
