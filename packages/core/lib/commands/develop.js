@@ -11,7 +11,7 @@ const command = {
     }
   },
   help: {
-    usage: "truffle develop [--log]",
+    usage: "truffle develop [--log] [--require|-r <file>]",
     options: [
       {
         option: `--log`,
@@ -19,6 +19,12 @@ const command = {
           `Start/Connect to a Truffle develop session and log all ` +
           `rpc activity. You will\n                    need to open a ` +
           `different Truffle develop or console session to interact via the repl.`
+      },
+      {
+        option: "--require|-r <file>",
+        description: "Preload console environment from required JavaScript " +
+          "file. The default export must be an object with named keys that " +
+          "will be used\n                    to populate the console environment."
       }
     ],
     allowedGlobalOptions: ["config"]
