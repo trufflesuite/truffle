@@ -24,7 +24,7 @@ async function run(rawSources, options, language = "Solidity") {
     rawSources,
     options.compilationTargets,
     options.working_directory,
-    "project:/" //only one slash, other will already be present
+    "project://"
   );
 
   // construct solc compiler input

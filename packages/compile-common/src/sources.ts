@@ -15,7 +15,7 @@ export function collectSources(
   originalSources: Sources,
   originalTargets: string[] = [],
   baseDirectory: string = "",
-  replacement: string = ""
+  replacement: string = "/"
 ): CollectedSources {
   const mappedResults = Object.entries(originalSources)
     .map(([originalSourcePath, contents]) => ({
@@ -81,9 +81,9 @@ function replaceRootDirectory(
   rootDirectory: string,
   replacement: string
 ): string {
-  //make sure root directory doesn't end in a separator
-  if (rootDirectory.endsWith(path.sep)) {
-    rootDirectory = rootDirectory.slice(0, -1); //remove last character
+  //make sure root directory ends in a separator
+  if (!rootDirectory.endsWith(path.sep)) {
+    rootDirectory = rootDirectory + path.sep;
   }
   return sourcePath.startsWith(rootDirectory)
     ? replacement + sourcePath.slice(rootDirectory.length) //remove prefix
