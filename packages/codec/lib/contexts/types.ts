@@ -2,6 +2,8 @@ import type * as Abi from "@truffle/abi-utils";
 import type * as AbiData from "@truffle/codec/abi-data/types";
 import type * as Common from "@truffle/codec/common";
 import type * as Compiler from "@truffle/codec/compiler";
+import type * as Compilations from "@truffle/codec/compilations/types";
+import type { AstNode } from "@truffle/codec/ast/types";
 import type { ImmutableReferences } from "@truffle/contract-schema/spec";
 
 export interface Contexts {
@@ -28,6 +30,14 @@ export interface Context {
   };
   compiler?: Compiler.CompilerVersion;
   compilationId?: string;
+}
+
+export interface ContractAndContexts {
+  compilationId: string;
+  contract: Compilations.Contract;
+  node: AstNode;
+  deployedContext?: Context;
+  constructorContext?: Context;
 }
 
 //NOTE: this is being kept for reference (the debugger is JS and can't import

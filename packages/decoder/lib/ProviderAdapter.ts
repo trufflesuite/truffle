@@ -185,7 +185,7 @@ export class ProviderAdapter {
 
   public async getCode(
     address: string,
-    block: RegularizedBlockSpecifier
+    block: BlockSpecifier //making this one not regularized to support encoder
   ): Promise<string> {
     const blockToFetch = formatBlockSpecifier(block);
     return await this.sendRequest({
