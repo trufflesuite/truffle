@@ -6,21 +6,16 @@ import { DualConfig, IpfsNetwork, EthereumNetwork } from "test/networks";
 
 declare const example: DualConfig;
 
-const {
-  networks: { ipfs, ethereum },
-  environments
-} = example;
+const { networks: { ipfs, ethereum } = {}, environments = {} } = example;
 
-expectAssignable<IpfsNetwork[]>(Object.values(ipfs));
-expectAssignable<EthereumNetwork[]>(Object.values(ethereum));
+expectAssignable<IpfsNetwork[]>(Object.values(ipfs || {}));
+expectAssignable<EthereumNetwork[]>(Object.values(ethereum || {}));
 
-type Environment = DualConfig["environments"][string];
+type Environment = Exclude<DualConfig["environments"], undefined>[string];
 
-for (const environment of Object.values(environments) as Environment[]) {
-  {
-    const {
-      ipfs: { network }
-    } = environment;
+for (const { ipfs, ethereum } of Object.values(environments) as Environment[]) {
+  if (ipfs) {
+    const { network } = ipfs;
 
     const reference = t.type({
       name: t.string
@@ -28,6 +23,18 @@ for (const environment of Object.values(environments) as Environment[]) {
 
     if (!reference.is(network)) {
       expectAssignable<IpfsNetwork>(network);
+    }
+  }
+
+  if (ethereum) {
+    const { network } = ethereum;
+
+    const reference = t.type({
+      name: t.string
+    });
+
+    if (!reference.is(network)) {
+      expectAssignable<EthereumNetwork>(network);
     }
   }
 }

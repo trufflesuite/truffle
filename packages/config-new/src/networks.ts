@@ -1,28 +1,50 @@
 import * as t from "io-ts";
 import * as x from "io-ts-extra";
 
+export type ConfigNetworksType<
+  NetworkKind extends string,
+  Network extends unknown
+> = t.Type<{
+  networks?: {
+    [K in NetworkKind]?: {
+      [networkName: string]: Network;
+    };
+  };
+}>;
+
 export const networksConfig = <
   NetworkKind extends string,
   Network extends unknown
 >(options: {
   networkKind: NetworkKind;
   network: t.Type<Network>;
-}) => {
+}): ConfigNetworksType<NetworkKind, Network> => {
   const { networkKind, network } = options;
 
   const networkName = t.string;
 
-  type NetworkKindNetworks = t.RecordC<t.StringC, t.Type<Network>>;
-  type Networks = {
-    [K in NetworkKind]: NetworkKindNetworks;
-  };
-
-  return t.type({
-    networks: t.type({
+  return t.partial({
+    networks: t.partial({
       [networkKind]: t.record(networkName, network)
-    } as Networks)
+    })
   });
 };
+
+export type ConfigEnvironmentsType<
+  NetworkKind extends string,
+  Network extends unknown,
+  Environment extends unknown,
+  NetworkName extends string
+> = t.Type<{
+  environments?: {
+    [environmentName: string]: Environment &
+      {
+        [K in NetworkKind]?: {
+          network: { name: NetworkName } | Network;
+        };
+      };
+  };
+}>;
 
 export const environmentsConfig = <
   NetworkKind extends string,
@@ -34,11 +56,11 @@ export const environmentsConfig = <
   network: t.Type<Network>;
   environment?: t.Type<Environment>;
   networkName?: t.Type<NetworkName>;
-}) => {
+}): ConfigEnvironmentsType<NetworkKind, Network, Environment, NetworkName> => {
   const {
     networkKind,
     network,
-    environment = t.unknown,
+    environment = t.unknown as t.Type<Environment>,
     networkName
   } = options;
 
@@ -55,14 +77,14 @@ export const environmentsConfig = <
       : network
   });
 
-  return t.type({
+  return t.partial({
     environments: t.record(
       environmentName,
       t.intersection([
         environment,
-        t.type({
+        t.partial({
           [networkKind]: environmentNetworkKind
-        } as { [K in NetworkKind]: typeof environmentNetworkKind })
+        })
       ])
     )
   });
@@ -81,7 +103,7 @@ export const config = <
 }) => {
   const { networkKind } = options;
 
-  const config = t.intersection([
+  const configType = t.intersection([
     networksConfig(options),
 
     // first allow any network name
@@ -91,7 +113,8 @@ export const config = <
     })
   ]);
 
-  return x.narrow(config, ({ networks: { [networkKind]: networks } }) => {
+  return x.narrow(configType, config => {
+    const { networks: { [networkKind]: networks = {} as any } = {} } = config;
     const networkNames = Object.keys(networks);
     const networkName =
       networkNames.length === 0
