@@ -31,6 +31,8 @@
     "@types/jest": "^26.0.20",
     "@types/node": "12.12.21",
     "eslint-plugin-jest": "^24.3.6",
+    "expect-type": "^0.11.0",
+    "io-ts-types": "^0.5.16",
     "jest": "^26.5.2",
     "ts-jest": "^26.4.1",
     "tsd": "^0.17.0",
@@ -53,6 +55,7 @@
     "fp-ts": "^2.10.5",
     "io-ts": "^2.2.16",
     "io-ts-extra": "^0.11.4",
+    "io-ts-reporters": "^1.2.2",
     "io-ts-types": "^0.5.16"
   }
 }

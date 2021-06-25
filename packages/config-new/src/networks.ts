@@ -1,4 +1,5 @@
 import * as t from "io-ts";
+import { withMessage } from "io-ts-types/lib/withMessage";
 import * as x from "io-ts-extra";
 
 export type ConfigNetworksType<
@@ -119,13 +120,16 @@ export const config = <
         : // @ts-ignore to ignore io-ts's confusion here
           t.union(networkNames.map(t.literal) as t.LiteralC<string>[]);
 
-    return t.partial({
-      environments: networkName
-        ? environmentsConfig({
-            ...options,
-            networkName
-          })
-        : environmentsConfig(options)
-    });
+    return withMessage(
+      t.partial({
+        environments: networkName
+          ? environmentsConfig({
+              ...options,
+              networkName
+            })
+          : environmentsConfig(options)
+      }),
+      () => "Invalid network reference"
+    );
   });
 };

@@ -2,6 +2,16 @@
   "plugins": [
     "eslint-plugin-jest"
   ],
+  "rules": {
+    "jest/expect-expect": [
+      "warn",
+      {
+        "assertFunctionNames": [
+          "expect", "expectTypeOf"
+        ]
+      }
+    ]
+  },
   "env": {
     "jest/globals": true
   }
