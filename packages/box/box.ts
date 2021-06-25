@@ -135,9 +135,12 @@ export const normalizeSourcePath = (url = defaultPath) => {
       throw new Error("Box specified with invalid format");
     }
 
-    // repo should have`-box` suffix
     let repo = groups["repo"];
-    repo = repo.endsWith("-box") ? repo : `${repo}-box`;
+
+    // Official Truffle boxes should have a `-box` suffix
+    if (org.toLowerCase().startsWith("truffle-box")) {
+        repo = repo.endsWith("-box") ? repo : `${repo}-box`;
+    }
 
     const result = `https://github.com:${org}${repo}${branch}`;
 
