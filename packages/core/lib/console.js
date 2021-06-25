@@ -142,12 +142,12 @@ class Console extends EventEmitter {
       // to sign transactions (e.g. no reason to disallow debugging)
       accounts = [];
     }
+    // we load user variables first so as to not clobber ours
+    this.hydrateUserDefinedVariables();
 
     this.repl.context.web3 = this.web3;
     this.repl.context.interfaceAdapter = this.interfaceAdapter;
     this.repl.context.accounts = accounts;
-
-    this.hydrateUserDefinedVariables();
   }
 
   provision() {
