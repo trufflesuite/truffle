@@ -7,9 +7,11 @@ import type {
   Compilations,
   LogDecoding,
   StateVariable,
-  ExtrasAllowed
+  ExtrasAllowed,
+  BlockSpecifier,
+  RegularizedBlockSpecifier
 } from "@truffle/codec";
-import type { Provider } from "web3/providers";
+import type { Provider } from "@truffle/encoder";
 
 //StateVariable used to be defined here, so let's continue
 //to export it
@@ -41,30 +43,28 @@ export interface DecoderSettings {
    */
   provider?: Provider;
   /**
-   * In the future, it will be possible to include this field to enable or
-   * disable ENS resolution.  Currently, it does nothing.
+   * This field can be included to enable or disable ENS resolution (and, in
+   * the future, reverse resolution) and specify how it should be performed.
+   * If absent, ENS resolution will be performed using the decoder's usual
+   * provider.
    */
   ens?: EnsSettings;
 }
 
 //WARNING: copypasted from @truffle/encoder!
 /**
- * In the future, this type will indicates settings to be used for ENS resolution
- * and reverse resolution.  Currently it does nothing.
+ * This type indicates settings to be used for ENS resolution (and, in the
+ * future, reverse resolution).
  * @Category Inputs
  */
 export interface EnsSettings {
   /**
-   * (This does nothing at present; this description is intended for the future.)
-   *
    * The provider to use for ENS resolution; set this to `null` to disable
    * ENS resolution.  If absent, will default to the decoder's provider,
    * and ENS resolution will be enabled.
    */
   provider?: Provider | null;
   /**
-   * (This does nothing at present; this description is intended for the future.)
-   *
    * The ENS registry address to use; if absent, will use the default one
    * for the current network.  If there is no default registry for the
    * current network, ENS resolution will be disabled.
@@ -129,17 +129,12 @@ export interface CodeCache {
   };
 }
 
-export interface CompilationAndContract {
-  compilation: Compilations.Compilation;
-  contract: Compilations.Contract;
-}
-
 export interface ContractInfo {
   compilation: Compilations.Compilation;
   contract: Compilations.Contract;
   artifact: Artifact;
   contractNode: Ast.AstNode;
-  contractNetwork: string;
+  contractNetwork: number;
   contextHash: string;
 }
 
@@ -319,24 +314,6 @@ export interface Log {
    */
   blockNumber: number | null;
 }
-
-/**
- * Specifies a block.  Can be given by number, or can be given via the
- * special strings "genesis", "latest", or "pending".
- *
- * Intended to work like Web3's
- * [BlockType](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#id14).
- *
- * *Warning*: Using "pending", while allowed, is not advised, as it may lead
- * to internally inconsistent results.  Use of "latest" is safe and will not
- * lead to inconsistent results from a single decoder call due to the decoder's
- * caching system, but pending blocks cannot be cached under this system, which
- * may cause inconsistencies.
- * @category Inputs
- */
-export type BlockSpecifier = number | "genesis" | "latest" | "pending";
-
-export type RegularizedBlockSpecifier = number | "pending";
 
 //HACK
 export interface ContractConstructorObject extends Artifact {
