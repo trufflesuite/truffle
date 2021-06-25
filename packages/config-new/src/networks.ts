@@ -4,13 +4,13 @@ import * as x from "io-ts-extra";
 export type ConfigNetworksType<
   NetworkKind extends string,
   Network extends unknown
-> = t.Type<{
-  networks?: {
+> = t.Type<
+  {
     [K in NetworkKind]?: {
       [networkName: string]: Network;
     };
-  };
-}>;
+  }
+>;
 
 export const networksConfig = <
   NetworkKind extends string,
@@ -24,9 +24,7 @@ export const networksConfig = <
   const networkName = t.string;
 
   return t.partial({
-    networks: t.partial({
-      [networkKind]: t.record(networkName, network)
-    })
+    [networkKind]: t.record(networkName, network)
   });
 };
 
@@ -36,14 +34,12 @@ export type ConfigEnvironmentsType<
   Environment extends unknown,
   NetworkName extends string
 > = t.Type<{
-  environments?: {
-    [environmentName: string]: Environment &
-      {
-        [K in NetworkKind]?: {
-          network: { name: NetworkName } | Network;
-        };
+  [environmentName: string]: Environment &
+    {
+      [K in NetworkKind]?: {
+        network: { name: NetworkName } | Network;
       };
-  };
+    };
 }>;
 
 export const environmentsConfig = <
@@ -77,17 +73,15 @@ export const environmentsConfig = <
       : network
   });
 
-  return t.partial({
-    environments: t.record(
-      environmentName,
-      t.intersection([
-        environment,
-        t.partial({
-          [networkKind]: environmentNetworkKind
-        })
-      ])
-    )
-  });
+  return t.record(
+    environmentName,
+    t.intersection([
+      environment,
+      t.partial({
+        [networkKind]: environmentNetworkKind
+      })
+    ])
+  );
 };
 
 export const config = <
@@ -103,15 +97,15 @@ export const config = <
 }) => {
   const { networkKind } = options;
 
-  const configType = t.intersection([
-    networksConfig(options),
+  const configType = t.partial({
+    networks: networksConfig(options),
 
     // first allow any network name
-    environmentsConfig({
+    environments: environmentsConfig({
       ...options,
       networkName: t.string
     })
-  ]);
+  });
 
   return x.narrow(configType, config => {
     const { networks: { [networkKind]: networks = {} as any } = {} } = config;
@@ -125,45 +119,13 @@ export const config = <
         : // @ts-ignore to ignore io-ts's confusion here
           t.union(networkNames.map(t.literal) as t.LiteralC<string>[]);
 
-    return networkName
-      ? environmentsConfig({
-          ...options,
-          networkName
-        })
-      : environmentsConfig(options);
+    return t.partial({
+      environments: networkName
+        ? environmentsConfig({
+            ...options,
+            networkName
+          })
+        : environmentsConfig(options)
+    });
   });
-
-  // return t.brand(
-  //   config,
-  //   (config: Config): config is t.Branded<Config,ConsistentlyReferencedBrand<NetworkKind>>  => {
-  //     const {
-  //       networks: {
-  //         [networkKind]: networks = {}
-  //       },
-  //       environments
-  //     } = config;
-
-  //     const definedNetworkNames = new Set(Object.keys(networks));
-
-  //     return Object.values(environments)
-  //       .filter(
-  //         (environment): environment is {
-  //           [K in NetworkKind]: {
-  //             network: { name: string }
-  //           }
-  //         } => (
-  //           networkKind in environment &&
-  //           "network" in (environment[networkKind] || {})
-  //         )
-  //       )
-  //       .every(
-  //         ({
-  //           [networkKind]: {
-  //             network: { name }
-  //           }
-  //         }) => definedNetworkNames.has(name)
-  //       );
-  //   },
-  //   `ConsistentlyReferenced<${networkKind}>` as const
-  // );
 };
