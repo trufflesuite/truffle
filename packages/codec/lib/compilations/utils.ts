@@ -11,7 +11,7 @@ import * as Common from "@truffle/compile-common";
 import { Compilation, Contract, Source, VyperSourceMap } from "./types";
 
 export function shimCompilations(
-  inputCompilations: Common.Compilation[],
+  inputCompilations: (Common.Compilation & { contracts: Common.EvmCompiledContract[] })[],
   shimmedCompilationIdPrefix = "shimmedcompilation"
 ): Compilation[] {
   return inputCompilations.map((compilation, compilationIndex) =>
@@ -22,8 +22,8 @@ export function shimCompilations(
   );
 }
 
-export function shimCompilation(
-  inputCompilation: Common.Compilation,
+function shimCompilation(
+  inputCompilation: Common.Compilation & { contracts: Common.EvmCompiledContract[] },
   shimmedCompilationId = "shimmedcompilation"
 ): Compilation {
   return {
@@ -43,7 +43,7 @@ export function shimCompilation(
  * shimArtifacts for compatibility)
  */
 export function shimArtifacts(
-  artifacts: (Artifact | Common.CompiledContract)[],
+  artifacts: (Artifact | Common.EvmCompiledContract)[],
   files?: string[],
   shimmedCompilationId = "shimmedcompilation"
 ): Compilation[] {
@@ -65,8 +65,8 @@ interface CompilationOptions {
  * compiler set unless you also pass in options.compiler; in this case
  * you should set that up separately, as in shimCompilation().
  */
-export function shimContracts(
-  artifacts: (Artifact | Common.CompiledContract)[],
+function shimContracts(
+  artifacts: (Artifact | Common.EvmCompiledContract)[],
   options: CompilationOptions = {}
 ): Compilation {
   const { files, sources: inputSources } = options;

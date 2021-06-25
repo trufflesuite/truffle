@@ -58,10 +58,22 @@ export interface GeneratedSource {
   ast: any;
 }
 
-export type CompiledContract = {
+export type CompiledContract = EvmCompiledContract | TezosCompiledContract;
+
+type CompiledContractBase = {
+  architecture: string;
   contractName: string;
   sourcePath: string;
   source: string;
+  compiler: {
+    name: string;
+    version: string;
+  };
+  db?: {};
+};
+
+export type EvmCompiledContract = CompiledContractBase & {
+  architecture: "evm";
   sourceMap: string;
   deployedSourceMap: string;
   legacyAST: object;
@@ -70,16 +82,16 @@ export type CompiledContract = {
   metadata: string;
   bytecode: Bytecode;
   deployedBytecode: Bytecode;
-  compiler: {
-    name: string;
-    version: string;
-  };
   devdoc: object;
   userdoc: object;
   immutableReferences: ImmutableReferences;
   generatedSources?: GeneratedSource[];
   deployedGeneratedSources?: GeneratedSource[];
-  db?: {};
+};
+
+export type TezosCompiledContract = CompiledContractBase & {
+  architecture: "tezos";
+  michelson: string;
 };
 
 export interface WorkflowCompileResult {
@@ -107,4 +119,10 @@ export interface Compiler {
     paths: string[];
     options: object;
   }) => Promise<CompilerResult>;
+}
+
+export interface ICompileStrategy {
+  compiler: string,
+  fileExtensions: string[],
+  compile: (paths: string[], options: any) => Promise<CompilerResult>
 }

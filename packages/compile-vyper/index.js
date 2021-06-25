@@ -180,6 +180,7 @@ async function compileNoJson({ paths: sources, options, version }) {
           };
 
           const compilation = {
+            architecture: "evm",
             sources: [
               {
                 sourcePath,

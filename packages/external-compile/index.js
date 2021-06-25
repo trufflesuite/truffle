@@ -153,7 +153,7 @@ async function processTargets(targets, cwd, logger) {
   for (let target of targets) {
     let targetContracts = await processTarget(target, cwd, logger);
     for (let contract of Object.values(targetContracts)) {
-      contracts.push(Schema.validate(contract));
+      contracts.push(Schema.validate({ architecture: "evm", ...contract }));
     }
   }
 

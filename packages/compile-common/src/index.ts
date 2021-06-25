@@ -1,3 +1,4 @@
+export { TezosCompiler } from "./compilers/tezosCompiler";
 export { Profiler } from "./profiler";
 export * as Shims from "./shims";
 export * as Sources from "./sources";
