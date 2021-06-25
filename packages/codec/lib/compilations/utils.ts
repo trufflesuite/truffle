@@ -9,6 +9,7 @@ import type {
   GeneratedSources
 } from "@truffle/contract-schema/spec";
 import type * as Common from "@truffle/compile-common";
+import { Shims } from "@truffle/compile-common";
 import * as Format from "@truffle/codec/format";
 import type {
   Compilation,
@@ -67,6 +68,11 @@ interface CompilationOptions {
   sources?: Common.Source[];
   shimmedCompilationId?: string;
   compiler?: Compiler.CompilerVersion;
+}
+
+interface CompilationAndContract {
+  compilation: Compilation;
+  contract: Contract;
 }
 
 /**
@@ -546,6 +552,70 @@ export function collectUserDefinedTypesAndTaggedOutputs(
     typesByCompilation: types,
     types: Format.Types.forgetCompilations(types)
   };
+}
+
+/**
+ * Given a list of compilations, and an artifact appearing in one
+ * of those compilations, finds the compilation and the corresponding
+ * contract object
+ * (these may be undefined if they can't be found)
+ */
+export function findCompilationAndContract(
+  compilations: Compilation[],
+  artifact: Artifact
+): CompilationAndContract {
+  const deployedBytecode = Shims.NewToLegacy.forBytecode(
+    artifact.deployedBytecode
+  );
+  const bytecode = Shims.NewToLegacy.forBytecode(artifact.bytecode);
+
+  let firstNameMatch: CompilationAndContract;
+  let multipleNameMatches: boolean = false;
+  for (const compilation of compilations) {
+    for (const contract of compilation.contracts) {
+      const nameMatches =
+        contract.contractName === (artifact.contractName || <string>artifact.contract_name);
+      if (nameMatches) {
+        if (bytecode) {
+          if (Shims.NewToLegacy.forBytecode(contract.bytecode) === bytecode) {
+            return { compilation, contract };
+          }
+        } else if (deployedBytecode) {
+          if (Shims.NewToLegacy.forBytecode(contract.deployedBytecode) === deployedBytecode) {
+            return { compilation, contract };
+          }
+        } else if (!firstNameMatch) {
+          //if we have a name match, but no bytecode to go by, record this one.
+          //if it turns out to be the only one, we'll return it later.
+          firstNameMatch = { compilation, contract };
+        } else if (!multipleNameMatches) {
+          //on the other hand, if there *is* an existing name match already,
+          //record that we've got multiple.
+          multipleNameMatches = true;
+        }
+      }
+    }
+  }
+  //once the loop is done, if we haven't returned a bytecode match,
+  //check if we've got a unique name match, and return it if so
+  if (firstNameMatch && !multipleNameMatches) {
+    return firstNameMatch;
+  }
+  //otherwise, if there's no bytecode match, and either no name match
+  //or multiple name matches, just return a default fallback
+  const defaultContract = {
+    contractName: artifact.contractName || <string>artifact.contract_name,
+    abi: artifact.abi
+  };
+  const defaultCompilation = {
+    id: "defaultCompilation",
+    sources: [] as Source[],
+    contracts: [defaultContract]
+  };
+  return {
+    compilation: defaultCompilation,
+    contract: defaultContract
+  }
 }
 
 function projectInfoIsCodecStyle(

@@ -7,10 +7,11 @@
  * but some of its types are also output by @truffle/decoder, which provides
  * a higher-level interface to much of this module's functionality.
  *
- * ## If you're here from Truffle Decoder
+ * ## If you're here from Truffle Decoder or Truffle Encoder
  *
- * If you're coming here from [[@truffle/decoder]], you probably just want to
- * know about the parts that are relevant to you.  These are:
+ * If you're coming here from [[@truffle/decoder]] or [[@truffle/encoder]],
+ * you probably just want to know about the parts that are relevant to you.
+ * These are:
  *
  * * The "data" category (specifically [[Format]])
  * * The "output" and "enumerations" categories ([[CalldataDecoding]], [[LogDecoding]], et al., see below)
@@ -19,25 +20,25 @@
  * Note that the data category is largely scarce in
  * documentation, although that's because it's largely self-explanatory.
  *
- * If you're not just here from Truffle Decoder, but are actually
+ * If you're not just here from Truffle Decoder or Encoder, but are actually
  * interested in the lower-level workings, read on.
  *
- * ## How this module differs from Truffle Decoder
+ * ## How this module differs from Truffle Decoder and Encoder
  *
- * Unlike Truffle Decoder, this library makes no network connections
+ * Unlike Truffle Decoder and Encoder, this library makes no network connections
  * and avoids dependencies that do.  Instead, its decoding functionality
  * is generator-based; calling one of the decoding functions returns a
  * generator.  This generator's `next()` function may return a finished
  * result, or it may return a request for more information.  It is up to
  * the caller to fulfill these requests -- say, by making a network
- * connection of its own.  This is how @truffle/decoder works; @truffle/codec
- * makes requests, and @truffle/decoder fulfills them by
+ * connection of its own.  This is how @truffle/decoder and @truffle/encoder
+ * work; @truffle/codec makes requests, while Decoder and Encoder fulfill them by
  * looking up the necessary information on the blockchain.
  *
  * This library also provides additional functionality beyond what's used by
- * Truffle Decoder.  In particular, this library also exists to support Truffle
- * Debugger, and so it provides encoding functionality not just for
- * transactions, logs, and state variables, but also for Solidity variables
+ * Truffle Decoder and Encoder.  In particular, this library also exists to
+ * support Truffle Debugger, and so it provides decoding functionality not just
+ * for transactions, logs, and state variables, but also for Solidity variables
  * during transaction execution, including circularity detection for memroy
  * structures.  It includes functionality for decoding Solidity's internal
  * function pointers, which the debugger uses, but which Truffle Decoder
@@ -49,13 +50,13 @@
  *
  * ## How to use
  *
- * You should probably use [[@truffle/decoder]] instead, if your use case doesn't
- * preclude it.  This module has little documentation, where it has any at all,
- * and it's likely that parts of its interface may change (particularly
- * regarding allocation).  That said, if you truly need the functionality here,
- * Truffle Decoder can perhaps serve as something of a reference implementation
- * (and perhaps Truffle Debugger as well, though that code is much harder to
- * read or copy).
+ * You should probably use [[@truffle/decoder]] or [[@truffle/encoder]]
+ * instead, if your use case doesn't preclude it.  This module has little
+ * documentation, where it has any at all, and it's likely that parts of its
+ * interface may change (particularly regarding allocation).  That said, if you
+ * truly need the functionality here, Truffle Decoder and Truffle Encoder can
+ * perhaps serve as something of a reference implementation (and perhaps
+ * Truffle Debugger as well, though that code is much harder to read or copy).
  *
  * @module @truffle/codec
  * @packageDocumentation
@@ -76,7 +77,11 @@ export {
   decodeReturndata,
   decodeRevert
 } from "./core";
-export { DecodingError, StopDecodingError } from "./errors";
+export {
+  DecodingError,
+  StopDecodingError,
+  NoProjectInfoError
+} from "./errors";
 
 //now: what types should we export? (other than the ones from ./format)
 //public-facing types for the interface
@@ -93,6 +98,7 @@ export type {
   EventDecoding,
   AnonymousDecoding,
   ReturnDecoding,
+  RawReturnDecoding,
   BytecodeDecoding,
   UnknownBytecodeDecoding,
   SelfDestructDecoding,
@@ -104,7 +110,15 @@ export type {
   StorageRequest,
   CodeRequest,
   LogOptions,
-  ExtrasAllowed
+  ExtrasAllowed,
+  WrapRequest,
+  IntegerWrapRequest,
+  DecimalWrapRequest,
+  AddressWrapRequest,
+  WrapResponse,
+  IntegerWrapResponse,
+  DecimalWrapResponse,
+  AddressWrapResponse
 } from "./types";
 export * from "./common";
 
@@ -164,3 +178,6 @@ export { Evm };
 
 import * as Export from "./export";
 export { Export };
+
+import * as Wrap from "./wrap";
+export { Wrap };
