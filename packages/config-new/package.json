@@ -19,9 +19,7 @@
     "clean": "rm -rf ./dist",
     "prepare": "yarn build",
     "build:dist": "ttsc",
-    "test:code": "jest --verbose --detectOpenHandles --forceExit",
-    "test:types": "tsd",
-    "test": "yarn test:types && yarn test:code"
+    "test": "jest --verbose --detectOpenHandles --forceExit"
   },
   "types": "dist/src/index.d.ts",
   "files": [
@@ -35,7 +33,6 @@
     "io-ts-types": "^0.5.16",
     "jest": "^26.5.2",
     "ts-jest": "^26.4.1",
-    "tsd": "^0.17.0",
     "ttypescript": "^1.5.7",
     "typescript": "^4.4.0-dev.20210617",
     "typescript-transform-paths": "^2.1.0"
@@ -47,9 +44,6 @@
   ],
   "publishConfig": {
     "access": "public"
-  },
-  "tsd": {
-    "directory": "."
   },
   "dependencies": {
     "fp-ts": "^2.10.5",

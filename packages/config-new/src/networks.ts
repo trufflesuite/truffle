@@ -1,135 +1,193 @@
 import * as t from "io-ts";
-import { withMessage } from "io-ts-types/lib/withMessage";
-import * as x from "io-ts-extra";
 
-export type ConfigNetworksType<
+export type Networks<
   NetworkKind extends string,
   Network extends unknown
-> = t.Type<
-  {
-    [K in NetworkKind]?: {
-      [networkName: string]: Network;
-    };
+> = {
+  [K in NetworkKind]?: {
+    [networkName: string]: Network
   }
->;
+};
 
-export const networksConfig = <
+export const networks = <
   NetworkKind extends string,
   Network extends unknown
 >(options: {
   networkKind: NetworkKind;
   network: t.Type<Network>;
-}): ConfigNetworksType<NetworkKind, Network> => {
+}): t.Type<Networks<NetworkKind, Network>> => {
   const { networkKind, network } = options;
 
   const networkName = t.string;
 
-  return t.partial({
-    [networkKind]: t.record(networkName, network)
+  const codec = t.partial({
+    [networkKind]: t.record(
+      networkName,
+      new t.Type(
+        `Network<${networkKind}>`,
+        network.is,
+        network.validate,
+        network.encode
+      )
+    )
   });
+
+  return new t.Type(
+    `Networks<${networkKind}>`,
+    codec.is,
+    codec.validate,
+    codec.encode
+  );
 };
 
-export type ConfigEnvironmentsType<
+export type Config<
   NetworkKind extends string,
-  Network extends unknown,
-  Environment extends unknown,
-  NetworkName extends string
-> = t.Type<{
-  [environmentName: string]: Environment &
-    {
-      [K in NetworkKind]?: {
-        network: { name: NetworkName } | Network;
-      };
-    };
-}>;
-
-export const environmentsConfig = <
-  NetworkKind extends string,
-  Network extends unknown,
-  Environment extends unknown,
-  NetworkName extends string
->(options: {
-  networkKind: NetworkKind;
-  network: t.Type<Network>;
-  environment?: t.Type<Environment>;
-  networkName?: t.Type<NetworkName>;
-}): ConfigEnvironmentsType<NetworkKind, Network, Environment, NetworkName> => {
-  const {
-    networkKind,
-    network,
-    environment = t.unknown as t.Type<Environment>,
-    networkName
-  } = options;
-
-  const environmentName = t.string;
-
-  const environmentNetworkKind = t.type({
-    network: networkName
-      ? t.union([
-          t.type({
-            name: networkName
-          }),
-          network
-        ])
-      : network
-  });
-
-  return t.record(
-    environmentName,
-    t.intersection([
-      environment,
-      t.partial({
-        [networkKind]: environmentNetworkKind
-      })
-    ])
-  );
+  Network extends unknown
+> = {
+  networks?: Networks<NetworkKind, Network>
 };
 
 export const config = <
   NetworkKind extends string,
-  Network extends unknown,
-  Environment extends unknown,
-  NetworkName extends string
+  Network extends unknown
 >(options: {
   networkKind: NetworkKind;
   network: t.Type<Network>;
-  environment?: t.Type<Environment>;
-  networkName?: t.Type<NetworkName>;
-}) => {
-  const { networkKind } = options;
+}): t.Type<Config<NetworkKind, Network>> => {
+  const networksCodec = networks(options);
 
-  const configType = t.partial({
-    networks: networksConfig(options),
+  const codec = t.partial({ networks: networksCodec });
 
-    // first allow any network name
-    environments: environmentsConfig({
-      ...options,
-      networkName: t.string
-    })
-  });
-
-  return x.narrow(configType, config => {
-    const { networks: { [networkKind]: networks = {} as any } = {} } = config;
-    const networkNames = Object.keys(networks);
-    const networkName =
-      networkNames.length === 0
-        ? undefined
-        : networkNames.length === 1
-        ? // @ts-ignore since this will always exist
-          (t.literal(networkNames[0]) as t.LiteralC<string>)
-        : // @ts-ignore to ignore io-ts's confusion here
-          t.union(networkNames.map(t.literal) as t.LiteralC<string>[]);
-
-    return withMessage(
-      t.partial({
-        environments: networkName
-          ? environmentsConfig({
-              ...options,
-              networkName
-            })
-          : environmentsConfig(options)
-      }),
-      () => "Invalid network reference"
-    );
-  });
+  return new t.Type(
+    `Config<${networksCodec.name}>`,
+    codec.is,
+    codec.validate,
+    codec.encode
+  );
 };
+
+// export type NetworkEnvironment<
+//   NetworkKind extends string,
+//   Network extends unknown,
+//   NetworkName extends string | undefined
+// > = {
+//   [K in NetworkKind]?: {
+//     network: NetworkName extends string
+//       ? Network | { name: NetworkName }
+//       : Network
+//   }
+// };
+
+// export const networkEnvironment = <
+//   NetworkKind extends string,
+//   Network extends unknown,
+//   NetworkName extends string | undefined
+// >(options: {
+//   networkKind: NetworkKind;
+//   network: t.Type<Network>;
+//   networkName?: t.Type<Exclude<NetworkName, undefined>>
+// }): t.Type<NetworkEnvironment<NetworkKind, Network, NetworkName>> => {
+//   const {
+//     networkKind,
+//     network,
+//     networkName
+//   } = options;
+
+//   return t.partial({
+//     [networkKind]: t.type({
+//       network: networkName
+//         ? t.union([network, t.type({ name: networkName })])
+//         : network
+//     })
+//   }) as t.Type<NetworkEnvironment<NetworkKind, Network, NetworkName>>;
+// };
+
+// export type ConfigType<
+//   NetworkKind extends string,
+//   Network extends unknown,
+//   NetworkName extends string | undefined
+// > = t.Type<
+//   {
+//     networks?: {
+//       [K in NetworkKind]?: {
+//         [networkName: string]: Network;
+//       };
+//     };
+
+//     environments?: {
+//       [environmentName: string]: {
+//         [K in NetworkKind]?: {
+//           network:
+//             | Network
+//             | (NetworkName extends string ? { name: NetworkName } : never)
+//         }
+//       }
+//     }
+//   }
+// >;
+
+// export const config = <
+//   NetworkKind extends string,
+//   Network extends unknown,
+//   Environment extends unknown,
+//   NetworkName extends string | undefined
+// >(options: {
+//   networkKind: NetworkKind;
+//   network: t.Type<Network>;
+//   environment?: t.Type<Environment>;
+//   networkName?: t.Type<NetworkName>;
+// }): ConfigType<NetworkKind, Network, NetworkName> => {
+//   const { network, networkKind } = options;
+
+//   const configType: ConfigType<NetworkKind, Network, string> = t.partial({
+//     networks: t.partial({
+//       [networkKind]: networks(options),
+//     }),
+
+//     environments: t.record(
+//       t.string,
+//       networkEnvironment({
+//         networkKind,
+//         network,
+//         networkName: t.string
+//       })
+//     )
+//   });
+
+//   const consistentConfig: ConfigType<NetworkKind, Network, string> = x.narrow(
+//     configType,
+//     config => {
+//       const { networks: { [networkKind]: networks = {} as any } = {} } = config;
+//       const networkNames = Object.keys(networks);
+//       const networkName =
+//         networkNames.length === 0
+//           ? undefined
+//           : networkNames.length === 1
+//           ? // @ts-ignore since this will always exist
+//             (t.literal(networkNames[0]) as t.LiteralC<string>)
+//           : // @ts-ignore to ignore io-ts's confusion here
+//             t.union(networkNames.map(t.literal) as t.LiteralC<string>[]);
+
+//       return withMessage(
+//         t.partial({
+//           environments: t.record(
+//             t.string,
+//             networkEnvironment({
+//               networkKind,
+//               network,
+//               ...(networkName ? { networkName } : {})
+//             })
+//           )
+//         }),
+//         () => "Invalid network reference"
+//       );
+//     }
+//   );
+
+//   return new t.Type(
+//     `Config<${networkKind}>`,
+//     consistentConfig.is,
+//     consistentConfig.validate,
+//     consistentConfig.encode
+//   ) as ConfigType<NetworkKind, Network, NetworkName>;
+// };

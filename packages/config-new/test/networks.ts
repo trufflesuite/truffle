@@ -1,6 +1,6 @@
 import * as t from "io-ts";
 
-import * as Network from "@truffle/config-new/networks";
+import * as EnvironmentNetworks from "@truffle/config-new/environmentNetworks";
 
 type Type<T> = T extends t.Type<infer U> ? U : never;
 
@@ -11,9 +11,10 @@ export const ethereumNetwork = t.type({
 
 export type EthereumNetwork = Type<typeof ethereumNetwork>;
 
-export const ethereumConfig = Network.config({
+export const ethereumConfig = EnvironmentNetworks.config({
   networkKind: "ethereum" as const,
-  network: ethereumNetwork
+  network: ethereumNetwork,
+  fieldName: "contracts" as const
 });
 
 export type EthereumConfig = Type<typeof ethereumConfig>;
@@ -24,7 +25,7 @@ export const ipfsNetwork = t.type({
 
 export type IpfsNetwork = Type<typeof ipfsNetwork>;
 
-export const ipfsConfig = Network.config({
+export const ipfsConfig = EnvironmentNetworks.config({
   networkKind: "ipfs" as const,
   network: ipfsNetwork
 });

@@ -3804,11 +3804,6 @@
     xhr "^2.2.0"
     xtend "^4.0.1"
 
-"@tsd/typescript@~4.3.2":
-  version "4.3.4"
-  resolved "https://registry.yarnpkg.com/@tsd/typescript/-/typescript-4.3.4.tgz#3ca75b0fad11180c17a7a6949bda0b0f4a90682f"
-  integrity sha512-o5nx5an9JK+SUN/UiMmVwG3Eg+SsGrtdMtrw82bpZetMO2PkXBERgsf5KxsuPw3qm576z1R/SEUQRb1KaKGlOQ==
-
 "@types/accepts@*", "@types/accepts@^1.3.5":
   version "1.3.5"
   resolved "https://registry.yarnpkg.com/@types/accepts/-/accepts-1.3.5.tgz#c34bec115cfc746e04fe5a059df4ce7e7b391575"
@@ -27508,18 +27503,6 @@ tsd@^0.15.1:
     path-exists "^4.0.0"
     read-pkg-up "^7.0.0"
     update-notifier "^4.1.0"
-
-tsd@^0.17.0:
-  version "0.17.0"
-  resolved "https://registry.yarnpkg.com/tsd/-/tsd-0.17.0.tgz#e5aa66d6598d0b66628784ecb4c0c27795b47317"
-  integrity sha512-+HUwya2NgoP/g9t2gRCC3I8VtGu65NgG9Lv75vNzMaxjMFo+0VXF9c4sj3remSzJYeBHLNKzWMbFOinPqrL20Q==
-  dependencies:
-    "@tsd/typescript" "~4.3.2"
-    eslint-formatter-pretty "^4.0.0"
-    globby "^11.0.1"
-    meow "^9.0.0"
-    path-exists "^4.0.0"
-    read-pkg-up "^7.0.0"
 
 tslib@^1.10.0, tslib@^1.9.0, tslib@^1.9.3:
   version "1.10.0"
