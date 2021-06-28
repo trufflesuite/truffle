@@ -35,7 +35,7 @@
     "src/**/*",
     "bin/**/*",
     "test/**/*",
-    "test-d/**/*"
+    "types/**/*"
   ],
   "exclude": [
     "node_modules"

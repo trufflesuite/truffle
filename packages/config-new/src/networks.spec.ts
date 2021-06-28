@@ -1,52 +1,53 @@
 import * as t from "io-ts";
-import { isRight } from "fp-ts/lib/Either";
-import reporter from "io-ts-reporters";
-import { expectTypeOf } from "expect-type";
 
+import * as EnvironmentNetworks from "@truffle/config-new/environmentNetworks";
 
-// import { DualConfig, IpfsNetwork, EthereumNetwork } from "test/networks";
-import { EthereumConfig, dualConfig, ethereumConfig, ipfsConfig } from "test/networks";
+/*
+ * Define Ethereum-aware configuration
+ */
+namespace Ethereum {
+  export const network = t.type({
+    jsonrpcUrl: t.string,
+    networkId: t.number
+  });
 
-declare global {
-  namespace jest {
-    interface Matchers<R> { // eslint-disable-line @typescript-eslint/no-unused-vars
-      toBeValid<T>(codec: t.Type<T>);
-    }
-  }
+  export const config = EnvironmentNetworks.config({
+    networkKind: "ethereum",
+    network,
+    fieldName: "contracts"
+  });
 }
-expect.extend({
-  toBeValid<T>(item: unknown, codec: t.Type<T>) {
-    const result = codec.decode(item);
-    const pass = isRight(result);
 
-    return {
-      pass,
-      message: pass
-        ? () => [
-            this.utils.matcherHint("toBeValid", undefined, undefined, this),
-            "",
-            `Expected ${
-              this.utils.printExpected(codec)
-            } not to successfully decode ${
-              this.utils.printReceived(item)
-            }`
-          ].join("\n")
-        : () => [
-            this.utils.matcherHint("toBeValid"),
-            "",
-            "Errors:",
-            ...reporter.report(result).map(error => ` - ${error}`),
-            ""
-          ].join("\n")
-    };
-  }
-});
+/*
+ * Define IPFS-aware configuration
+ */
+namespace Ipfs {
+  export const network = t.type({
+    url: t.string,
+  });
+
+  export const config = EnvironmentNetworks.config({
+    networkKind: "ipfs",
+    network,
+    fieldName: "storage"
+  });
+}
+
+/*
+ * Define dual-schema config
+ */
+namespace EthereumAndIpfs {
+  export const config = t.intersection([
+    Ethereum.config,
+    Ipfs.config
+  ]);
+}
 
 describe("Network configuration", () => {
   it("decodes blank config", () => {
     const config = {};
 
-    expect(config).toBeValid(ethereumConfig);
+    expect(config).toBeValid(Ethereum.config);
   });
 
   it("fails to decode config with invalid network", () => {
@@ -58,7 +59,7 @@ describe("Network configuration", () => {
       }
     };
 
-    expect(config).not.toBeValid(ethereumConfig);
+    expect(config).not.toBeValid(Ethereum.config);
   });
 
   it("decodes valid input for a single codec", () => {
@@ -80,7 +81,7 @@ describe("Network configuration", () => {
       }
     };
 
-    expect(config).toBeValid(ethereumConfig);
+    expect(config).toBeValid(Ethereum.config);
   });
 
   it("decodes valid input for multiple codecs", () => {
@@ -101,7 +102,7 @@ describe("Network configuration", () => {
       },
       environments: {
         production: {
-          ipfs: {
+          storage: {
             network: { name: "primary" }
           },
 
@@ -112,7 +113,7 @@ describe("Network configuration", () => {
       }
     };
 
-    expect(config).toBeValid(dualConfig);
+    expect(config).toBeValid(EthereumAndIpfs.config);
   });
 
   it("fails to decode config with network mismatch", () => {
@@ -134,7 +135,7 @@ describe("Network configuration", () => {
       }
     };
 
-    expect(config).not.toBeValid(ethereumConfig);
+    expect(config).not.toBeValid(Ethereum.config);
   });
 
   it("fails to decode input when network references wrong network kind", () => {
@@ -165,7 +166,7 @@ describe("Network configuration", () => {
       },
       environments: {
         production: {
-          ipfs: {
+          storage: {
             network: { name: "mainnet" }
           },
 
@@ -176,8 +177,8 @@ describe("Network configuration", () => {
       }
     };
 
-    expect(config).toBeValid(ethereumConfig);
-    expect(config).not.toBeValid(ipfsConfig);
-    expect(config).not.toBeValid(dualConfig);
+    expect(config).toBeValid(Ethereum.config);
+    expect(config).not.toBeValid(Ipfs.config);
+    expect(config).not.toBeValid(EthereumAndIpfs.config);
   });
 });
