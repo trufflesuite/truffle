@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.11.1",
+  "version": "0.11.2",
   "main": "dist/lib/index.js",
   "files": [
     "dist"
@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "@truffle/abi-utils": "^0.2.2",
-    "@truffle/compile-common": "^0.7.8",
+    "@truffle/compile-common": "^0.7.9",
     "@truffle/contract-schema": "^3.4.1",
     "@trufflesuite/typedoc-default-themes": "^0.6.1",
     "@types/big.js": "^4.0.5",
