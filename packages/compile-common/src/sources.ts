@@ -7,19 +7,22 @@ import * as path from "path";
  *
  * @param originalSources - { [originalSourcePath]: contents }
  * @param originalTargets - originalSourcePath[]
+ * @param baseDirectory - a directory to remove as a prefix
+ * @param replacement - what to replace it with
  * @return { sources, targets, originalSourcePaths }
  */
 export function collectSources(
   originalSources: Sources,
   originalTargets: string[] = [],
-  contractsDirectory: string = "" //only used by Vyper atm
+  baseDirectory: string = "",
+  replacement: string = "/"
 ): CollectedSources {
   const mappedResults = Object.entries(originalSources)
     .map(([originalSourcePath, contents]) => ({
       originalSourcePath,
       contents,
       sourcePath: getPortableSourcePath(
-        removeRootDirectory(originalSourcePath, contractsDirectory)
+        replaceRootDirectory(originalSourcePath, baseDirectory, replacement)
       )
     }))
     .map(({ originalSourcePath, sourcePath, contents }) => ({
@@ -73,12 +76,16 @@ function getPortableSourcePath(sourcePath: string): string {
   return replacement;
 }
 
-function removeRootDirectory(sourcePath: string, rootDirectory: string): string {
-  //make sure root directory doesn't end in a separator
-  if (rootDirectory.endsWith(path.sep)) {
-    rootDirectory = rootDirectory.slice(0, -1); //remove last character
+function replaceRootDirectory(
+  sourcePath: string,
+  rootDirectory: string,
+  replacement: string
+): string {
+  //make sure root directory ends in a separator
+  if (!rootDirectory.endsWith(path.sep)) {
+    rootDirectory = rootDirectory + path.sep;
   }
   return sourcePath.startsWith(rootDirectory)
-    ? sourcePath.slice(rootDirectory.length) //remove prefix
+    ? replacement + sourcePath.slice(rootDirectory.length) //remove prefix
     : sourcePath;
 }
