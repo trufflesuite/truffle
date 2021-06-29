@@ -1,3 +1,6 @@
+const debugModule = require("debug");
+const debug = debugModule("lib:debug:mocha");
+
 const colors = require("colors");
 const util = require("util");
 
@@ -18,12 +21,14 @@ class CLIDebugHook {
     this.disableTimeout();
 
     const { txHash, result, method } = await this.invoke(operation);
+    debug("txHash: %o", txHash);
 
     this.printStartTestHook(method);
 
     const interpreter = await new CLIDebugger(this.config, {
-      compilations: this.compilations
-    }).run(txHash);
+      compilations: this.compilations,
+      txHash
+    }).run();
     await interpreter.start();
 
     this.printStopTestHook();
