@@ -33,8 +33,8 @@ async function compile(config) {
 
       const compileMethod =
         config.all === true || config.compileAll === true
-          ? Compile.all
-          : Compile.necessary;
+          ? Compile.all.bind(Compile)
+          : Compile.necessary.bind(Compile);
 
       return await compileMethod(config);
     })
