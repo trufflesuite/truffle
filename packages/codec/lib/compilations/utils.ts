@@ -22,7 +22,7 @@ export function shimCompilations(
   );
 }
 
-function shimCompilation(
+export function shimCompilation(
   inputCompilation: Common.Compilation & { contracts: Common.EvmCompiledContract[] },
   shimmedCompilationId = "shimmedcompilation"
 ): Compilation {
@@ -65,7 +65,7 @@ interface CompilationOptions {
  * compiler set unless you also pass in options.compiler; in this case
  * you should set that up separately, as in shimCompilation().
  */
-function shimContracts(
+export function shimContracts(
   artifacts: (Artifact | Common.EvmCompiledContract)[],
   options: CompilationOptions = {}
 ): Compilation {
