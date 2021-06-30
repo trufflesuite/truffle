@@ -8821,7 +8821,7 @@ colorette@^1.2.1:
   resolved "https://registry.yarnpkg.com/colorette/-/colorette-1.2.1.tgz#4d0b921325c14faf92633086a536db6e89564b1b"
   integrity sha512-puCDz0CzydiSYOrnXpz/PKd69zRrribezjtE9yd4zvytoRc8+RY/KJPvtPFKZS3E3wP6neGyMe0vOTlHO5L3Pw==
 
-colors@^1.1.2, colors@^1.4.0:
+colors@^1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/colors/-/colors-1.4.0.tgz#c50491479d4c1bdaed2c9ced32cf7c7dc2360f78"
   integrity sha512-a+UqTh4kgZg/SlGvfbzDHpgRu7AAQOmmqRHJnxhRZICKFUT91brVhNNt58CMWU9PsBbv3PDCZUHbVxuDiH2mtA==
@@ -24154,13 +24154,6 @@ redent@^3.0.0:
   dependencies:
     indent-string "^4.0.0"
     strip-indent "^3.0.0"
-
-redux-cli-logger@^2.0.1:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/redux-cli-logger/-/redux-cli-logger-2.1.0.tgz#7e546502a4b08c7fac4fe2faee2326a6326cb4a1"
-  integrity sha512-75mVsggAJRSykWy2qxdGI7osocDWvc3RCMeN93hlvS/FxgdRww12NaXslez+W6gBOrSJKO7W16V0IzuISSfCxg==
-  dependencies:
-    colors "^1.1.2"
 
 redux-devtools-core@^0.2.1:
   version "0.2.1"
