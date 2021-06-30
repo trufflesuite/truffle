@@ -536,6 +536,11 @@ export class ProjectEncoder {
     while (!next.done) {
       const request = next.value;
       debug("request: %O", request);
+      // @ts-ignore: HACK HACK to make typedoc work
+      // (the TS is fine with strict null checks on,
+      // but typedoc has it turned off, so... :-/ )
+      // please remove this ts-ignore once you turn on
+      // strict null checks in typedoc
       response = await this.respond(request);
       debug("response: %O", response);
       next = generator.next(response);
