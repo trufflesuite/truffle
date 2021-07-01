@@ -41,8 +41,8 @@
     "remote-redux-devtools": "^0.5.12",
     "reselect-tree": "^1.3.4",
     "semver": "^7.3.4",
-    "web3": "1.3.6",
-    "web3-eth-abi": "1.3.6"
+    "web3": "1.4.0",
+    "web3-eth-abi": "1.4.0"
   },
   "devDependencies": {
     "@truffle/artifactor": "^4.0.110",
