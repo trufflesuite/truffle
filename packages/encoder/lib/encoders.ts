@@ -163,7 +163,7 @@ export class ProjectEncoder {
    *
    * This method recognizes user input for a given data type and attempts
    * to interpret it as a value of that type.  It will throw a
-   * [[Codec.Wrap.TypeMismatchError|TypeMismatchError]] if it cannot do this.
+   * [[TypeMismatchError]] if it cannot do this.
    *
    * The `input` argument may come in a number of forms, depending on the
    * target data type.  A list of the specific inputs accepted for each type is
@@ -183,14 +183,14 @@ export class ProjectEncoder {
    * Solidity types, it should be the name of the type; note that `"uint"`,
    * `"int"`, `"fixed"`, `"ufixed"`, and `"byte"` are accepted.
    *
-   * Note that input in the form of a [[Codec.Format.Values.Value|Value]] is
+   * Note that input in the form of a [[Format.Values.Value|Value]] is
    * accepted, so long as the type is appropriate, but error results are
    * typically not accepted (exceptions are discussed below).
    *
    * Now then, the list of accepted inputs by type, excluding the above:
    *
    * **Strings**: The input may be a string (or `String`), or it may be a
-   * [[Codec.Format.Values.StringValue|StringValue]].  (The latter is the only
+   * [[Format.Values.StringValue|StringValue]].  (The latter is the only
    * way to input invalid UTF-8.)  Strings with invalid UTF-16 will not be
    * accepted.
    *
@@ -198,14 +198,14 @@ export class ProjectEncoder {
    * all forms of input, if the specified type is `bytesN`, it is OK if the
    * length of the input is shorter than N bytes; it will automatically be
    * right-padded with zero bytes in this case.  (The exception is if the input
-   * is a [[Codec.Format.Values.BytesValue|BytesValue]] and strict checking is
-   * on; see [[wrapAndResolve]].)  Bytestrings may be given as `"0x"`-prefixed
+   * is a [[Format.Values.BytesValue|BytesValue]] and strict checking is
+   * on; see [[resolveAndWrap]].)  Bytestrings may be given as `"0x"`-prefixed
    * even-length hex strings (a `String` may be used in place of a string).
    * They may also be given as a `Uint8Array`, or anything resembling a
    * `Uint8Array` -- any object with a `length` field which is a `number`, and
    * which has fields from `0` to `length-1` all `number`s from 0 to 255, will
    * be accepted.  Input may also be given as a
-   * [[Codec.Format.Values.BytesValue|BytesValue]]; the specific type does not
+   * [[Format.Values.BytesValue|BytesValue]]; the specific type does not
    * have to match unless strict checking is on.  Finally, a bytestring may be
    * given as an object with just the fields `text` and `encoding`; in this
    * case, `text` should be a string (it must not have invalid UTF-16) and
@@ -244,16 +244,16 @@ export class ProjectEncoder {
    * integer (or in other words, it will be interpreted as base 256).
    * Negative numbers cannot be represented in this way.
    * Finally, the input may be given as a
-   * [[Codec.Format.Values.UintValue|UintValue]],
-   * [[Codec.Format.Values.IntValue|IntValue]],
-   * [[Codec.Format.Values.UfixedValue|UfixedValue]],
-   * [[Codec.Format.Values.FixedValue|FixedValue]], or
-   * [[Codec.Format.Values.EnumValue|EnumValue]]; the type is not required to
+   * [[Format.Values.UintValue|UintValue]],
+   * [[Format.Values.IntValue|IntValue]],
+   * [[Format.Values.UfixedValue|UfixedValue]],
+   * [[Format.Values.FixedValue|FixedValue]], or
+   * [[Format.Values.EnumValue|EnumValue]]; the type is not required to
    * match unless strict checking is on (see [[resolveAndWrap]]), in which case
    * the type must match exactly.  In addition, the input may also be a
-   * [[Codec.Format.Values.EnumErrorResult|EnumErrorResult]] so long as
+   * [[Format.Errors.EnumErrorResult|EnumErrorResult]] so long as
    * the error is a
-   * [[Codec.Format.Values.EnumOutOfRangeError|EnumOutOfRangeError]];
+   * [[Format.Errors.EnumOutOfRangeError|EnumOutOfRangeError]];
    * other types of error results are not accepted.
    *
    * **Enums**: Enums accept all the same forms of input as integer types.
@@ -289,8 +289,8 @@ export class ProjectEncoder {
    * Input may also be given as an object with an `address` field, although the
    * contents of that address field must be a `"0x"`-prefixed hex string (not
    * `String`), and not any other address format.  Input may also be given
-   * as a [[Codec.Format.Values.AddressValue|AddressValue]] or
-   * [[Codec.Format.Values.ContractValue|ContractValue]]; the specific type
+   * as a [[Format.Values.AddressValue|AddressValue]] or
+   * [[Format.Values.ContractValue|ContractValue]]; the specific type
    * does not matter.
    *
    * **Booleans**: Almost any input is accepted (as long as it's not type/value
@@ -301,15 +301,15 @@ export class ProjectEncoder {
    * considered true if and only if the underlying string is.  A number will be
    * considered true so long as it is truthy, and a `Number` will be considered
    * true if and only if the underlying number is.  A
-   * [[Codec.Format.Values.BoolValue|BoolValue]] will be considered true so
+   * [[Format.Values.BoolValue|BoolValue]] will be considered true so
    * long as it represents a true value.  Moreover, two types of
-   * [[Codec.Format.Values.BoolErrorResult|BoolErrorResult]] also count as
+   * [[Format.Errors.BoolErrorResult|BoolErrorResult]] also count as
    * true: Those where the error is a
-   * [[Codec.Format.Values.BoolOutOfRangeError|BoolOutOfRangeError]] and
+   * [[Format.Errors.BoolOutOfRangeError|BoolOutOfRangeError]] and
    * those where the error is a
-   * [[Codec.Format.Values.BoolPaddingError|BoolPaddingError]].  All other
-   * error results, and all [[Codec.Format.Values.Value|Values]] that are not
-   * [[Codec.Format.Values.BoolValue|BoolValues]], will be rejected.  All other
+   * [[Format.Errors.BoolPaddingError|BoolPaddingError]].  All other
+   * error results, and all [[Format.Values.Value|Values]] that are not
+   * [[Format.Values.BoolValue|BoolValues]], will be rejected.  All other
    * inputs will be considered true so long as they are truthy.
    *
    * **Decimal fixed-point types**: Input for fixed-point decimal types is
@@ -331,7 +331,7 @@ export class ProjectEncoder {
    * encouraged.
    *
    * **Arrays**: The input may be an array, or it may be a
-   * [[Codec.Format.Values.ArrayValue|ArrayValue]].  In the latter case,
+   * [[Format.Values.ArrayValue|ArrayValue]].  In the latter case,
    * whether it is static-length or dynamic-length does not need to match
    * (unless strict checking is on, see [[resolveAndWrap]]).
    *
@@ -344,8 +344,8 @@ export class ProjectEncoder {
    * sure you do not give `type` as a native string (a `String` instead will work),
    * or else that you give your input in some other form, such as an array...)
    * Additional keys are also allowed unless strict checking is on.
-   * Input may also be given as a [[Codec.Format.Values.StructValue|StructValue]]
-   * or [[Codec.Format.Values.TupleValue|TupleValue]]; the specific type
+   * Input may also be given as a [[Format.Values.StructValue|StructValue]]
+   * or [[Format.Values.TupleValue|TupleValue]]; the specific type
    * does not matter.
    *
    * **External function pointers**: These may be given as an object with fields
@@ -357,7 +357,7 @@ export class ProjectEncoder {
    * specifying the address followed by the selector; in this case, the address
    * does not need to be checksummed.  Finally, input may of course also be
    * given as a
-   * [[Codec.Format.Values.FunctionExternalValue|FunctionExternalValue]];
+   * [[Format.Values.FunctionExternalValue|FunctionExternalValue]];
    * its more specific type does not matter.
    *
    * * Transaction options: These are given as an object with fields for the
@@ -379,13 +379,13 @@ export class ProjectEncoder {
    *     bytestrings (as strings or `String`s), each with a decoded length of
    *     32 bytes.
    * In addition, input may also be given as a
-   * [[Codec.Format.Values.OptionsValue|OptionsValue]].
+   * [[Format.Values.OptionsValue|OptionsValue]].
    *
    * @param dataType The data type that the given value is to be interpreted
    *   as.
    * @param input The value to be interpreted.  This can take a number of
    *   forms depending on the data type, as documented above.
-   * @return The interpreted value wrapped as a [[Codec.Format.Values.Value|Value]]
+   * @return The interpreted value wrapped as a [[Format.Values.Value|Value]]
    *   object.
    */
   public async wrap(
@@ -404,7 +404,7 @@ export class ProjectEncoder {
    * **This method is asynchronous.**
    *
    * This method recognizes user input for a transaction.  It will throw
-   * a [[Codec.Wrap.TypeMismatchError|TypeMismatchError]] if it cannot do this.
+   * a [[TypeMismatchError]] if it cannot do this.
    *
    * If the `allowOptions` flag is set in the `options` argument, the input may
    * contain an additional transaction options argument after the other
@@ -417,7 +417,7 @@ export class ProjectEncoder {
    *   set.
    * @param options Contains options to control the operation of this method.
    * @return The interpretation of the input, as a
-   *   [[Codec.Wrap.Resolution|Resolution]] object.
+   *   [[Resolution]] object.
    */
   public async wrapForTransaction(
     method: Codec.Wrap.Method,
@@ -441,11 +441,11 @@ export class ProjectEncoder {
    * one of these methods, it will attempt to select the best match.
    *
    * If it is not possible for the given input to match any of the given methods,
-   * either a [[Codec.Wrap.TypeMismatchError|TypeMismatchError]] or a
-   * [[Codec.Wrap.NoOverloadsMatchedError|NoOverloadsMatchedError]] will be
+   * either a [[TypeMismatchError]] or a
+   * [[NoOverloadsMatchedError]] will be
    * thrown.  If more than one overload matches but none can be considered the
    * unique best, you will get a
-   * [[Codec.Wrap.NoUniqueBestOverloadError|NoUniqueBestOverloadError]].
+   * [[NoUniqueBestOverloadError]].
    *
    * If the `allowOptions` flag is set in the `options` argument, the input may
    * contain an additional transaction options argument after the other
@@ -461,7 +461,7 @@ export class ProjectEncoder {
    *
    * Note that when doing this the match checker will be somewhat stricter than
    * usual; inputs for structs/tuples will not be allowed to contain extra
-   * keys, and if a value is given as a [[Codec.Format.Values.Value|Value]], it
+   * keys, and if a value is given as a [[Format.Values.Value|Value]], it
    * will only match its specific type, rather than being allowed to match
    * other types as usual (unless it is itself wrapped in a type/value pair).
    *
@@ -506,14 +506,14 @@ export class ProjectEncoder {
    * means.  For enums you may also specify the enum type as documented in
    * [[wrap]].
    *
-   * @param methods An array of [[Codec.Wrap.Method|Method]] objects we are
+   * @param methods An array of [[Method]] objects we are
    *   attempting to decide between.
    * @param inputs An array of the inputs to the transaction.  May include a
    *   transaction options argument on the end if the `allowOptions` flag is
    *   set.
    * @param options Contains options to control the operation of this method.
    * @return The interpretation of the input and the resolved method, as a
-   *   [[Codec.Wrap.Resolution|Resolution]] object.
+   *   [[Resolution]] object.
    */
   public async resolveAndWrap(
     methods: Codec.Wrap.Method[],
@@ -566,7 +566,7 @@ export class ProjectEncoder {
    * **This method is asynchronous.**
    *
    * This method is similar to [[wrapForTransaction]], except instead of
-   * returning a [[Codec.Wrap.Resolution|Resolution]] object, it returns
+   * returning a [[Resolution]] object, it returns
    * the resulting transaction options, including the encoded `data`.
    * Note any options not specified in a transaction options parameter
    * will be simply omitted; it is up to the caller to set these as
@@ -607,7 +607,7 @@ export class ProjectEncoder {
    * **This method is asynchronous.**
    *
    * This method is similar to [[resolveAndWrap]], except instead of
-   * returning a [[Codec.Wrap.Resolution|Resolution]] object, it returns
+   * returning a [[Resolution]] object, it returns
    * a pair containing the ABI for the resolved method together with
    * the resulting transaction options, including the encoded `data`.
    * Note any options not specified in a transaction options parameter
