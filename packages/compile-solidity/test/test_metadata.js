@@ -64,7 +64,7 @@ describe("Compile - solidity ^0.4.0", function () {
       const metadataPaths = metadataSources.concat(metadataTargets);
       debug("metadataPaths: %O", metadataPaths);
       assert(metadataPaths.every(
-        sourcePath => sourcePath.startsWith("project://") &&
+        sourcePath => sourcePath.startsWith("project:/") &&
           !sourcePath.includes(workingDirectory)
       ));
     });
