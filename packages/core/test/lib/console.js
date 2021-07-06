@@ -15,7 +15,7 @@ const consoleCommands = Object.keys(commands).reduce((acc, name) => {
     ? Object.assign(acc, {[name]: commands[name]})
     : acc;
 }, {});
-let truffleConsole, otherTruffleConsole, consoleOptions, otherConsoleOptions;
+let truffleConsole, consoleOptions;
 
 describe("Console", function () {
   describe("Console.setUpEnvironment", function () {
@@ -61,7 +61,37 @@ describe("Console", function () {
       assert.equal(truffleConsole.repl.context.namespace.bingBam, "boom");
     });
 
+    describe("when options['require-none'] is set to true", async function () {
+      let otherConsoleOptions, otherTruffleConsole;
+      beforeEach(function () {
+        otherConsoleOptions = new Config().with({
+          network: "funTimeNetwork",
+          networks: {
+            funTimeNetwork: {
+              type: "ethereum"
+            }
+          },
+          network_id: 666,
+          provider: new Web3.providers.HttpProvider("http://localhost:666"),
+          resolver: new Resolver(config)
+        });
+        otherConsoleOptions.require = path.join(config.working_directory, "test/sources/userVariables.js");
+        otherConsoleOptions.r = path.join(config.working_directory, "test/sources/moreUserVariables.js");
+        otherConsoleOptions["require-none"] = true;
+        otherTruffleConsole = new Console(consoleCommands, otherConsoleOptions);
+        // this is just a stub for the repl.context to check for variables added
+        otherTruffleConsole.repl = { context: {} };
+      });
+
+      it("won't load any user-defined JS", async function () {
+        await otherTruffleConsole.setUpEnvironment();
+        assert.equal(typeof otherTruffleConsole.repl.context.bingBam, "undefined");
+        assert.equal(typeof otherTruffleConsole.repl.context.abraham, "undefined");
+      });
+    });
+
     describe("when there are name conflicts with user-supplied variables", function () {
+      let otherConsoleOptions, otherTruffleConsole;
       beforeEach(function () {
         otherConsoleOptions = new Config().with({
           network: "funTimeNetwork",
@@ -86,6 +116,46 @@ describe("Console", function () {
         assert.notEqual(otherTruffleConsole.repl.context.web3, "fakeWeb3");
         assert.notEqual(otherTruffleConsole.repl.context.interfaceAdapter, "fakeInterfaceAdapter");
       });
-    })
+    });
+
+    describe("other ways of accessing options.console.require", function () {
+      let otherConsoleOptions, otherTruffleConsole;
+      beforeEach(function () {
+        otherConsoleOptions = new Config().with({
+          network: "funTimeNetwork",
+          networks: {
+            funTimeNetwork: {
+              type: "ethereum"
+            }
+          },
+          network_id: 666,
+          provider: new Web3.providers.HttpProvider("http://localhost:666"),
+          resolver: new Resolver(config)
+        });
+        otherTruffleConsole = new Console(consoleCommands, otherConsoleOptions);
+        // this is just a stub for the repl.context to check for variables added
+        otherTruffleConsole.repl = { context: {} };
+      });
+
+      it("accepts options.r", async function () {
+        otherConsoleOptions.require = path.join(config.working_directory, "test/sources/userVariables.js");
+        await otherTruffleConsole.setUpEnvironment();
+        assert.equal(otherTruffleConsole.repl.context.bingBam, "boom");
+      });
+
+      it("accepts options.require", async function () {
+        otherConsoleOptions.r = path.join(config.working_directory, "test/sources/userVariables.js");
+        await otherTruffleConsole.setUpEnvironment();
+        assert.equal(otherTruffleConsole.repl.context.bingBam, "boom");
+      });
+
+      it("accepts options.r over options.require", async function () {
+        otherConsoleOptions.r = path.join(config.working_directory, "test/sources/moreUserVariables.js");
+        otherConsoleOptions.require = path.join(config.working_directory, "test/sources/userVariables.js");
+        await otherTruffleConsole.setUpEnvironment();
+        assert.equal(otherTruffleConsole.repl.context.abraham, "lincoln");
+        assert.notEqual(otherTruffleConsole.repl.context.bingBam, "boom");
+      });
+    });
   });
 });
