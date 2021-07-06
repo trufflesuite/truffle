@@ -11,7 +11,7 @@ const command = {
     }
   },
   help: {
-    usage: "truffle develop [--log] [--require|-r <file>]",
+    usage: "truffle develop [--log] [(--require|-r) <file>]",
     options: [
       {
         option: `--log`,
@@ -21,7 +21,7 @@ const command = {
           `different Truffle develop or console session to interact via the repl.`
       },
       {
-        option: "--require|-r <file>",
+        option: "(--require|-r) <file>",
         description: "Preload console environment from required JavaScript " +
           "file. The default export must be an object with named keys that " +
           "will be used\n                    to populate the console environment."

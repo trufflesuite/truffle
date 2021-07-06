@@ -114,7 +114,7 @@ class Console extends EventEmitter {
       "either a string or an array. If you specify an array, its members " +
       "must be paths or objects containing at least a `path` property.";
 
-    const requireValue = this.options.require || this.options.console.require;
+    const requireValue = this.options.r || this.options.require || this.options.console.require;
 
     if (typeof requireValue === "string") {
       addToContext(requireFromPath(requireValue));
