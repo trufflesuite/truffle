@@ -90,10 +90,10 @@ class Console extends EventEmitter {
   if (this.options["require-none"]) return;
 
   // exit if no hydrate options are set
-  if (!this.options.console || !this.options.console.require) &&
+  if ((!this.options.console || !this.options.console.require) &&
     !this.options.require &&
-    !this.options.r 
-  ) return;
+    !this.options.r
+    ) return;
 
     const requireFromPath = target => {
       return path.isAbsolute(target) ?
