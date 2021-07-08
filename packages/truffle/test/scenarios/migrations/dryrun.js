@@ -7,7 +7,7 @@ const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const Web3 = require("web3");
 
-describe.skip("migrate (dry-run)", function () {
+describe("migrate (dry-run)", function () {
   let config;
   let web3;
   const project = path.join(__dirname, "../../sources/migrations/success");

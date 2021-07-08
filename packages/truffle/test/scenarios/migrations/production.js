@@ -33,7 +33,7 @@ describe("production", function () {
       networkId = await web3.eth.net.getId();
     });
 
-    it.skip("auto dry-runs and honors confirmations option", async function () {
+    it("auto dry-runs and honors confirmations option", async function () {
       this.timeout(70000);
 
       await CommandRunner.run("migrate --network ropsten", config);

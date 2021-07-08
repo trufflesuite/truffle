@@ -3,7 +3,11 @@ var util = require("./util");
 
 describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
   var Example;
-  var providerOptions = { legacyInstamine: true, vmErrorsOnRPCResponse: true }; // <--- TRUE
+  var providerOptions = {
+    legacyInstamine: true,
+    hardfork: "istanbul",
+    vmErrorsOnRPCResponse: true // <--- TRUE
+  };
 
   before(async function () {
     this.timeout(10000);
@@ -142,7 +146,10 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
         await example.setValue(10, { gas: 10 });
         assert.fail();
       } catch (e) {
-        assert(e.message.includes("intrinsic gas too low"), "Error should be OOG");
+        assert(
+          e.message.includes("intrinsic gas too low"),
+          "Error should be OOG"
+        );
       }
     });
 
@@ -297,7 +304,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
           "Should preserve hijacked error message"
         );
         assert(
-          e.hijackedStack.includes("/things/transaction.js:"),
+          e.hijackedStack.includes("/src/runtime-transaction.js:"),
           "Should preserve hijacked stack details"
         );
       }

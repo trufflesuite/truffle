@@ -9,7 +9,7 @@ const Provider = require("@truffle/provider");
 
 const Environment = {
   // It's important config is a Config object and not a vanilla object
-  detect: async function(config) {
+  detect: async function (config) {
     expect.options(config, ["networks"]);
 
     helpers.setUpConfig(config);
@@ -26,7 +26,7 @@ const Environment = {
   },
 
   // Ensure you call Environment.detect() first.
-  fork: async function(config) {
+  fork: async function (config) {
     expect.options(config, ["from", "provider", "networks", "network"]);
 
     const interfaceAdapter = createInterfaceAdapter({
@@ -42,7 +42,9 @@ const Environment = {
     const forkedNetwork = config.network + "-fork";
     const ganacheOptions = {
       fork: config.provider,
-      gasLimit: block.gasLimit
+      gasLimit: block.gasLimit,
+      legacyInstamine: true,
+      vmErrorsOnRPCResponse: true
     };
     if (accounts.length > 0) ganacheOptions.unlocked_accounts = accounts;
 
@@ -64,7 +66,7 @@ const Environment = {
 
     config.networks[network] = {
       network_id: ganacheOptions.network_id,
-      provider: function() {
+      provider: function () {
         return new Web3.providers.HttpProvider(url, { keepAlive: false });
       }
     };

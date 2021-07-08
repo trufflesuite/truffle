@@ -4,7 +4,11 @@ var util = require("./util");
 describe("Deployments", function () {
   var Example;
   var web3;
-  var providerOptions = { vmErrorsOnRPCResponse: false, gasLimit: 0x6691b7};
+  var providerOptions = {
+    vmErrorsOnRPCResponse: false,
+    gasLimit: 0x6691b7,
+    hardfork: "istanbul"
+  };
 
   before(async function () {
     this.timeout(20000);
@@ -84,8 +88,7 @@ describe("Deployments", function () {
         await Example.new(1, { gas: 10 });
         assert.fail();
       } catch (error) {
-        const errorCorrect =
-          error.message.includes("intrinsic gas too low");
+        const errorCorrect = error.message.includes("intrinsic gas too low");
 
         assert(errorCorrect, "Should OOG");
       }
@@ -94,8 +97,7 @@ describe("Deployments", function () {
     it("should emit OOG errors", function (done) {
       Example.new(1, { gas: 10 })
         .on("error", error => {
-          const errorCorrect =
-            error.message.includes("intrinsic gas too low");
+          const errorCorrect = error.message.includes("intrinsic gas too low");
 
           assert(errorCorrect, "Should OOG");
           done();
@@ -225,8 +227,8 @@ describe("Deployments", function () {
     });
   });
 
-  describe("web3 timeout overrides", function() {
-    it("should override 50 blocks err / return a usable instance", async function() {
+  describe("web3 timeout overrides", function () {
+    it("should override 50 blocks err / return a usable instance", async function () {
       this.timeout(50000);
 
       // Mock web3 non-response, fire error @ block 50, resolve receipt @ block 52.

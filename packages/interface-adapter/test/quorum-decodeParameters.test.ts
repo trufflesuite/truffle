@@ -1,10 +1,8 @@
 import { describe, it } from "mocha";
 import assert from "assert";
 
-import { Server } from "http";
-
 import Web3 from "web3";
-import Ganache from "ganache";
+import Ganache, { Server } from "ganache";
 
 import { Web3Shim } from "../lib";
 
@@ -31,8 +29,8 @@ async function prepareGanache(
 const expectedOutput = [{ name: "retVal", type: "uint256" }];
 const emptyByte = "";
 
-describe("Quorum decodeParameters Overload", function() {
-  it("decodes an empty byte to a '0' string value w/ quorum=true", async function() {
+describe("Quorum decodeParameters Overload", function () {
+  it("decodes an empty byte to a '0' string value w/ quorum=true", async function () {
     const preparedGanache = await prepareGanache(true);
     try {
       const result = preparedGanache.web3Shim.eth.abi.decodeParameters(
@@ -47,7 +45,7 @@ describe("Quorum decodeParameters Overload", function() {
   });
 
   // ganache-core uses web3@1.0.0-beta.35 which doesn't include the 'Out of Gas?' decoder guard!
-  it.skip("throws an 'Out of Gas?' error when decoding an empty byte w/ quorum=false", async function() {
+  it.skip("throws an 'Out of Gas?' error when decoding an empty byte w/ quorum=false", async function () {
     return new Promise(async (resolve, reject) => {
       let preparedGanache: any;
       try {
