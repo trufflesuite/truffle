@@ -25,9 +25,11 @@ async function verifyVCSURL(url: string) {
       .replace("github.com", "raw.githubusercontent.com")
       .replace(/#.*/, "")}/master/truffle-box.json`
   );
+
+  const testUrl = `https://${configURL.host}${configURL.path}`;
   try {
     await axios.head(
-      `https://${configURL.host}${configURL.path}`,
+      testUrl,
       { maxRedirects: 50 }
     );
   } catch (error) {
@@ -36,9 +38,9 @@ async function verifyVCSURL(url: string) {
         `Truffle Box at URL ${url} doesn't exist. If you believe this is an error, please contact Truffle support.`
       );
     } else {
-      throw new Error(
-        "Error connecting to github.com. Please check your internet connection and try again."
-      );
+      const prefix = `Error connecting to ${testUrl}. Please check your internet connection and try again.`;
+      error.message = `${prefix}\n\n${error.message || ''}`;
+      throw error;
     }
   }
 }
@@ -156,5 +158,6 @@ export = {
   fetchRepository,
   installBoxDependencies,
   prepareToCopyFiles,
-  verifySourcePath
+  verifySourcePath,
+  verifyVCSURL
 };
