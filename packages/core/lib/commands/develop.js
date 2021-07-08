@@ -30,8 +30,8 @@ const command = {
         option: "--require-none",
         description: "Do not load any user-defined JavaScript into the " +
           "console environment. This option takes precedence over --require, " +
-          "-r, and\n                    values provided in console.require in" +
-          " your project's truffle-config.js."
+          "-r, and\n                    values provided for console.require " +
+          "in your project's truffle-config.js."
       }
     ],
     allowedGlobalOptions: ["config"]
