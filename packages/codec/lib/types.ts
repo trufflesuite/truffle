@@ -630,7 +630,7 @@ export interface IntegerWrapRequest {
   /**
    * The input whose numeric value needs to be extracted.
    */
-  input: any;
+  input: unknown;
 }
 
 /**
@@ -646,7 +646,7 @@ export interface DecimalWrapRequest {
   /**
    * The input whose numeric value needs to be extracted.
    */
-  input: any;
+  input: unknown;
 }
 
 /**
