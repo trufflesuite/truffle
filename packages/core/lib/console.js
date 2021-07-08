@@ -86,12 +86,14 @@ class Console extends EventEmitter {
   }
 
   hydrateUserDefinedVariables() {
-    if (
-      (!this.options.console || !this.options.console.require) &&
-      !this.options.require &&
-      !this.options.r ||
-      this.options["require-none"]
-    ) return;
+  // exit if feature should be disabled
+  if (this.options["require-none"]) return;
+
+  // exit if no hydrate options are set
+  if (!this.options.console || !this.options.console.require) &&
+    !this.options.require &&
+    !this.options.r 
+  ) return;
 
     const requireFromPath = target => {
       return path.isAbsolute(target) ?
