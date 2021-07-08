@@ -151,7 +151,7 @@ export class ProjectEncoder {
    */
   public async wrapElementaryValue(
     dataType: Codec.Format.Types.ElementaryType,
-    input: any
+    input: unknown
   ): Promise<Codec.Format.Values.ElementaryValue> {
     return <Codec.Format.Values.ElementaryValue>(
       await this.wrap(dataType, input)
@@ -390,7 +390,7 @@ export class ProjectEncoder {
    */
   public async wrap(
     dataType: Codec.Format.Types.Type,
-    input: any
+    input: unknown
   ): Promise<Codec.Format.Values.Value> {
     return await this.driveGenerator(
       Codec.Wrap.wrap(dataType, input, {
@@ -421,7 +421,7 @@ export class ProjectEncoder {
    */
   public async wrapForTransaction(
     method: Codec.Wrap.Method,
-    inputs: any[],
+    inputs: unknown[],
     options: Types.ResolveOptions = {}
   ): Promise<Codec.Wrap.Resolution> {
     debug("wrapForTransaction");
@@ -517,7 +517,7 @@ export class ProjectEncoder {
    */
   public async resolveAndWrap(
     methods: Codec.Wrap.Method[],
-    inputs: any[],
+    inputs: unknown[],
     options: Types.ResolveOptions = {}
   ): Promise<Codec.Wrap.Resolution> {
     return await this.driveGenerator(
@@ -580,7 +580,7 @@ export class ProjectEncoder {
    */
   public async encodeTransaction(
     method: Codec.Wrap.Method,
-    inputs: any[],
+    inputs: unknown[],
     options: Types.ResolveOptions = {}
   ): Promise<Codec.Options> {
     debug("encoding transaction");
@@ -621,7 +621,7 @@ export class ProjectEncoder {
    */
   public async resolveAndEncode(
     methods: Codec.Wrap.Method[],
-    inputs: any[],
+    inputs: unknown[],
     options: Types.ResolveOptions = {}
   ): Promise<Types.TxAndAbi> {
     debug("resolve & encode");
@@ -643,7 +643,7 @@ export class ProjectEncoder {
     };
   }
 
-  private recognizeInteger(input: any): Codec.IntegerWrapResponse {
+  private recognizeInteger(input: unknown): Codec.IntegerWrapResponse {
     if (Utils.isBigNumber(input)) {
       if (input.isInteger()) {
         return {
@@ -693,7 +693,7 @@ export class ProjectEncoder {
     }
   }
 
-  private recognizeDecimal(input: any): Codec.DecimalWrapResponse {
+  private recognizeDecimal(input: unknown): Codec.DecimalWrapResponse {
     if (Utils.isBigNumber(input)) {
       if (input.isFinite()) {
         return {
@@ -934,7 +934,7 @@ export class ContractEncoder {
    */
   public async wrapElementaryValue(
     dataType: Codec.Format.Types.ElementaryType,
-    input: any
+    input: unknown
   ): Promise<Codec.Format.Values.ElementaryValue> {
     return await this.projectEncoder.wrapElementaryValue(dataType, input);
   }
@@ -944,7 +944,7 @@ export class ContractEncoder {
    */
   public async wrap(
     dataType: Codec.Format.Types.Type,
-    input: any
+    input: unknown
   ): Promise<Codec.Format.Values.Value> {
     return await this.projectEncoder.wrap(dataType, input);
   }
@@ -967,7 +967,7 @@ export class ContractEncoder {
    */
   public async wrapForTransaction(
     abi: Abi.FunctionEntry | Abi.ConstructorEntry,
-    inputs: any[],
+    inputs: unknown[],
     options: Types.ResolveOptions = {}
   ): Promise<Codec.Wrap.Resolution> {
     const method = this.getMethod(abi);
@@ -998,7 +998,7 @@ export class ContractEncoder {
    */
   public async resolveAndWrap(
     abis: Abi.FunctionEntry[],
-    inputs: any[],
+    inputs: unknown[],
     options: Types.ResolveOptions = {}
   ): Promise<Codec.Wrap.Resolution> {
     const methods = abis.map(abi => this.getMethod(abi));
@@ -1027,7 +1027,7 @@ export class ContractEncoder {
    */
   public async encodeTransaction(
     abi: Abi.FunctionEntry | Abi.ConstructorEntry,
-    inputs: any[],
+    inputs: unknown[],
     options: Types.ResolveOptions = {}
   ): Promise<Codec.Options> {
     const method = this.getMethod(abi);
@@ -1054,7 +1054,7 @@ export class ContractEncoder {
    */
   public async resolveAndEncode(
     abis: Abi.FunctionEntry[],
-    inputs: any[],
+    inputs: unknown[],
     options: Types.ResolveOptions = {}
   ): Promise<Types.TxAndAbi> {
     const methods = abis.map(abi => this.getMethod(abi));
@@ -1174,7 +1174,7 @@ export class ContractInstanceEncoder {
    */
   public async wrapElementaryValue(
     dataType: Codec.Format.Types.ElementaryType,
-    input: any
+    input: unknown
   ): Promise<Codec.Format.Values.ElementaryValue> {
     return await this.contractEncoder.wrapElementaryValue(dataType, input);
   }
@@ -1184,7 +1184,7 @@ export class ContractInstanceEncoder {
    */
   public async wrap(
     dataType: Codec.Format.Types.Type,
-    input: any
+    input: unknown
   ): Promise<Codec.Format.Values.Value> {
     return await this.contractEncoder.wrap(dataType, input);
   }
@@ -1200,7 +1200,7 @@ export class ContractInstanceEncoder {
    */
   public async wrapForTransaction(
     abi: Abi.FunctionEntry | Abi.ConstructorEntry,
-    inputs: any[],
+    inputs: unknown[],
     options: Types.ResolveOptions = {}
   ): Promise<Codec.Wrap.Resolution> {
     const resolution = await this.contractEncoder.wrapForTransaction(
@@ -1224,7 +1224,7 @@ export class ContractInstanceEncoder {
    */
   public async resolveAndWrap(
     abis: Abi.FunctionEntry[],
-    inputs: any[],
+    inputs: unknown[],
     options: Types.ResolveOptions = {}
   ): Promise<Codec.Wrap.Resolution> {
     const resolution = await this.contractEncoder.resolveAndWrap(
@@ -1247,7 +1247,7 @@ export class ContractInstanceEncoder {
    */
   public async encodeTransaction(
     abi: Abi.FunctionEntry | Abi.ConstructorEntry,
-    inputs: any[],
+    inputs: unknown[],
     options: Types.ResolveOptions = {}
   ): Promise<Codec.Options> {
     const encoded = await this.contractEncoder.encodeTransaction(
@@ -1276,7 +1276,7 @@ export class ContractInstanceEncoder {
    */
   public async resolveAndEncode(
     abis: Abi.FunctionEntry[],
-    inputs: any[],
+    inputs: unknown[],
     options: Types.ResolveOptions = {}
   ): Promise<Types.TxAndAbi> {
     const encoded = await this.contractEncoder.resolveAndEncode(

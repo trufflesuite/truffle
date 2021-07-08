@@ -75,7 +75,7 @@ export const byteStringPattern = /^0[xX]([0-9a-fA-F]{2})*$/;
 
 export function wrapBool(
   dataType: Format.Types.BoolType,
-  input: any,
+  input: unknown,
   wrapOptions: WrapOptions
 ): Format.Values.BoolValue {
   let asBoolean: boolean;
@@ -156,7 +156,7 @@ export function wrapBool(
 
 export function wrapString(
   dataType: Format.Types.StringType,
-  input: any,
+  input: unknown,
   wrapOptions: WrapOptions
 ): Format.Values.StringValue {
   let asString: string;
@@ -239,7 +239,7 @@ export function wrapString(
 
 export function wrapBytes(
   dataType: Format.Types.BytesType,
-  input: any,
+  input: unknown,
   wrapOptions: WrapOptions
 ): Format.Values.BytesValue {
   let asHex: string;
@@ -406,7 +406,7 @@ export function wrapBytes(
 
 export function* wrapIntegerOrEnum(
   dataType: IntegerOrEnumType,
-  input: any,
+  input: unknown,
   wrapOptions: WrapOptions
 ): Generator<IntegerWrapRequest, IntegerOrEnumValue, WrapResponse> {
   let asBN: BN;
@@ -881,7 +881,7 @@ function checkUint8ArrayLike(
 
 export function* wrapDecimal(
   dataType: DecimalType,
-  input: any,
+  input: unknown,
   wrapOptions: WrapOptions
 ): Generator<DecimalWrapRequest, DecimalValue, WrapResponse> {
   let asBig: Big;
@@ -1115,7 +1115,7 @@ export function* wrapDecimal(
 //NOTE: even with loose turned off, we'll consider these interchangeable
 export function* wrapAddress(
   dataType: AddressLikeType,
-  input: any,
+  input: unknown,
   wrapOptions: WrapOptions
 ): Generator<AddressWrapRequest, AddressLikeValue, WrapResponse> {
   let asAddress: string;

@@ -27,7 +27,7 @@ export * from "./types";
 
 export function* wrapMultiple(
   types: Format.Types.OptionallyNamedType[],
-  inputs: any[],
+  inputs: unknown[],
   wrapOptions: WrapOptions
 ): Generator<WrapRequest, Format.Values.Value[], WrapResponse> {
   //just wrap the types in a tuple and defer to wrap()
@@ -44,7 +44,7 @@ export function* wrapMultiple(
 
 export function* wrapForMethod(
   method: Method,
-  inputs: any[],
+  inputs: unknown[],
   resolveOptions: ResolveOptions
 ): Generator<WrapRequest, Resolution, WrapResponse> {
   const wrapped = yield* wrapForMethodRaw(method, inputs, resolveOptions);
@@ -81,7 +81,7 @@ function wrappingToResolution(
 //doesn't separate out options from arguments
 function* wrapForMethodRaw(
   method: Method,
-  inputs: any[],
+  inputs: unknown[],
   { userDefinedTypes, allowOptions }: ResolveOptions
 ): Generator<WrapRequest, Format.Values.Value[], WrapResponse> {
   debug("wrapping for method");
@@ -123,7 +123,7 @@ function* wrapForMethodRaw(
 
 export function* resolveAndWrap(
   methods: Method[],
-  inputs: any[],
+  inputs: unknown[],
   { userDefinedTypes, allowOptions }: ResolveOptions
 ): Generator<WrapRequest, Resolution, WrapResponse> {
   //despite us having a good system for overload resolution, we want to

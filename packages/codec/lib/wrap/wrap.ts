@@ -47,7 +47,7 @@ function base64Length(base64: string): number {
 
 export function* wrap(
   dataType: Format.Types.Type,
-  input: any,
+  input: unknown,
   wrapOptions: WrapOptions
 ): Generator<WrapRequest, Format.Values.Value, WrapResponse> {
   if (!wrapOptions.name) {
@@ -94,7 +94,7 @@ export function* wrap(
 
 function* wrapArray(
   dataType: Format.Types.ArrayType,
-  input: any,
+  input: unknown,
   wrapOptions: WrapOptions
 ): Generator<WrapRequest, Format.Values.ArrayValue, WrapResponse> {
   let value: Format.Values.Value[] = [];
@@ -185,7 +185,7 @@ function* wrapArray(
 //between tuples and structs
 function* wrapTuple(
   dataType: TupleLikeType,
-  input: any,
+  input: unknown,
   wrapOptions: WrapOptions
 ): Generator<WrapRequest, TupleLikeValue, WrapResponse> {
   let memberTypes: Format.Types.OptionallyNamedType[];
@@ -276,7 +276,7 @@ function* wrapTuple(
         specifiedTypeMessage(input.type)
       );
     }
-  } else if (typeof input === "object" && input !== null) {
+  } else if (Utils.isPlainObject(input)) { //just checks that it's an object & not null
     if (memberTypes.some(({ name }) => !name)) {
       throw new TypeMismatchError(
         dataType,
@@ -338,7 +338,7 @@ function* wrapTuple(
 
 function* wrapFunctionExternal(
   dataType: Format.Types.FunctionExternalType,
-  input: any,
+  input: unknown,
   wrapOptions: WrapOptions
 ): Generator<
   AddressWrapRequest,
@@ -519,7 +519,7 @@ function* wrapFunctionExternal(
 //not called wrapOptions to avoid name collision there!
 function* wrapTxOptions(
   dataType: Format.Types.OptionsType,
-  input: any,
+  input: unknown,
   wrapOptions: WrapOptions
 ): Generator<WrapRequest, Format.Values.OptionsValue, WrapResponse> {
   let value: Common.Options = {};
@@ -562,7 +562,7 @@ function* wrapTxOptions(
         specifiedTypeMessage(input.type)
       );
     }
-  } else if (typeof input === "object" && input !== null) {
+  } else if (Utils.isPlainObject(input)) { //just checks if it's an object & not null
     const uintKeys = ["gas", "gasPrice", "value", "nonce"] as const;
     const addressKeys = ["from", "to"] as const;
     const bytesKeys = ["data"] as const;
@@ -661,7 +661,7 @@ function* wrapTxOptions(
         );
       }
       value.privateFor = input.privateFor.map(
-        (publicKey: any, index: number) => {
+        (publicKey: unknown, index: number) => {
           if (typeof publicKey !== "string" && isString(publicKey)) {
             publicKey = publicKey.valueOf();
           }

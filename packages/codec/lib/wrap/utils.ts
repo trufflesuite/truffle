@@ -108,3 +108,10 @@ export function isUint8ArrayLikeInput(
     typeof input.length === "number"
   );
 }
+
+//hack?
+export function isPlainObject(
+  input: any
+): input is { [key: string]: unknown } {
+  return typeof input === "object" && input !== null;
+}
