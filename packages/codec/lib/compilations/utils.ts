@@ -355,7 +355,7 @@ function inferLanguage(
     if (compiler.name === "vyper") {
       return "Vyper";
     } else if (compiler.name === "solc") {
-      if (sourcePath.endsWith(".yul")) {
+      if (sourcePath && sourcePath.endsWith(".yul")) {
         return "Yul";
       } else {
         return "Solidity";
