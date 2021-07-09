@@ -26,10 +26,10 @@ async function verifyVCSURL(url: string) {
       .replace(/#.*/, "")}/master/truffle-box.json`
   );
 
-  const testUrl = `https://${configURL.host}${configURL.path}`;
+  const repoUrl = `https://${configURL.host}${configURL.path}`;
   try {
     await axios.head(
-      testUrl,
+      repoUrl,
       { maxRedirects: 50 }
     );
   } catch (error) {
@@ -38,7 +38,7 @@ async function verifyVCSURL(url: string) {
         `Truffle Box at URL ${url} doesn't exist. If you believe this is an error, please contact Truffle support.`
       );
     } else {
-      const prefix = `Error connecting to ${testUrl}. Please check your internet connection and try again.`;
+      const prefix = `Error connecting to ${repoUrl}. Please check your internet connection and try again.`;
       error.message = `${prefix}\n\n${error.message || ''}`;
       throw error;
     }
