@@ -355,6 +355,7 @@ function inferLanguage(
     if (compiler.name === "vyper") {
       return "Vyper";
     } else if (compiler.name === "solc") {
+      //assuming sources compiled with solc without sourcePath are Solidity
       if (sourcePath && sourcePath.endsWith(".yul")) {
         return "Yul";
       } else {
