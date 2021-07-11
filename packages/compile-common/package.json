@@ -1,6 +1,6 @@
 {
   "name": "@truffle/compile-common",
-  "version": "0.7.8",
+  "version": "0.7.11",
   "description": "Common compiler integration support infrastructure for Truffle",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -17,7 +17,7 @@
     "watch": "tsc -w"
   },
   "devDependencies": {
-    "@truffle/config": "^1.2.43",
+    "@truffle/config": "^1.3.0",
     "@truffle/contract-schema": "^3.4.1",
     "@types/fs-extra": "^8.1.0",
     "@types/mocha": "^5.2.7",

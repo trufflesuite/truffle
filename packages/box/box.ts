@@ -135,9 +135,12 @@ export const normalizeSourcePath = (url = defaultPath) => {
       throw new Error("Box specified with invalid format");
     }
 
-    // repo should have`-box` suffix
     let repo = groups["repo"];
-    repo = repo.endsWith("-box") ? repo : `${repo}-box`;
+
+    // Official Truffle boxes should have a `-box` suffix
+    if (org.toLowerCase().startsWith("truffle-box")) {
+        repo = repo.endsWith("-box") ? repo : `${repo}-box`;
+    }
 
     const result = `https://github.com:${org}${repo}${branch}`;
 
@@ -190,7 +193,7 @@ const Box = {
       const normalizedSourcePath = normalizeSourcePath(url);
 
       await Box.checkDir(options, destination);
-      const tempDir = await utils.setUpTempDirectory(events);
+      const tempDir = utils.setUpTempDirectory(events);
       const tempDirPath = tempDir.path;
       tempDirCleanup = tempDir.cleanupCallback;
 
@@ -209,7 +212,7 @@ const Box = {
       tempDirCleanup();
       events.emit("unbox:cleaningTempFiles:succeed");
 
-      await utils.setUpBox(boxConfig, destination, events);
+      utils.setUpBox(boxConfig, destination, events);
 
       return boxConfig;
     } catch (error) {

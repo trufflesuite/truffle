@@ -1026,13 +1026,13 @@ const data = createSelectorTree({
     ),
 
     /**
-     * data.current.errorNodeId
+     * data.current.errorLocation
      * note: we can't get the actual node from stacktrace,
-     * it only stores the ID
+     * it doesn't store that
      */
-    errorNodeId: createLeaf(
+    errorLocation: createLeaf(
       [stacktrace.current.innerReturnPosition, stacktrace.current.lastPosition],
-      (innerLocation, lastLocation) => ((innerLocation || lastLocation || {}).node || {}).id
+      (innerLocation, lastLocation) => innerLocation || lastLocation || {}
     ),
 
     /**
@@ -1041,8 +1041,16 @@ const data = createSelectorTree({
      * it only stores the ID
      */
     errorNode: createLeaf(
-      ["./errorNodeId", "/current/scopes/inlined"],
-      (id, scopes) => id !== undefined ? scopes[id].definition : null
+      ["./errorLocation", "/views/scopes/inlined"],
+      (errorLocation, scopes) => {
+        const sourceId = (errorLocation.source || {}).id;
+        const astId = (errorLocation.node || {}).id;
+        if (sourceId !== undefined && astId !== undefined) {
+          return scopes[sourceId][astId].definition;
+        } else {
+          return null;
+        }
+      }
     ),
 
     /**

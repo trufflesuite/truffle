@@ -57,7 +57,7 @@ describe("AST", function () {
   });
 
   before("Prepare contracts and artifacts", async function () {
-    this.timeout(30000);
+    this.timeout(50000);
 
     let prepared = await prepareContracts(provider, sources);
     abstractions = prepared.abstractions;

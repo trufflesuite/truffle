@@ -10,8 +10,8 @@ import { requiredSources, RequiredSourcesOptions } from "./requiredSources";
 import { convertToAbsolutePaths } from "./convertToAbsolutePaths";
 
 export interface ProfilerConfig {
-  parseImports: RequiredSourcesOptions["parseImports"];
-  shouldIncludePath: RequiredSourcesOptions["shouldIncludePath"];
+  parseImports?: RequiredSourcesOptions["parseImports"];
+  shouldIncludePath?: RequiredSourcesOptions["shouldIncludePath"];
 }
 
 export class Profiler {
@@ -73,7 +73,7 @@ export class Profiler {
           throw error;
         }
       }
-    }
+    };
 
     const updatedPaths = convertToAbsolutePaths(paths, basePath);
     const allPaths = convertToAbsolutePaths(

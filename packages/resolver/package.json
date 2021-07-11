@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "7.0.15",
+  "version": "7.0.18",
   "main": "dist/lib/index.js",
   "files": [
     "dist",
@@ -25,10 +25,10 @@
   },
   "types": "dist/lib/index.d.ts",
   "dependencies": {
-    "@truffle/contract": "^4.3.21",
+    "@truffle/contract": "^4.3.24",
     "@truffle/contract-sources": "^0.1.12",
     "@truffle/expect": "^0.0.17",
-    "@truffle/provisioner": "^0.2.21",
+    "@truffle/provisioner": "^0.2.23",
     "abi-to-sol": "^0.2.0",
     "debug": "^4.3.1",
     "detect-installed": "^2.0.4",

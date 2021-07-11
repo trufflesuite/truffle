@@ -185,4 +185,55 @@ describe("@truffle/box.normalizeSourcePath unit tests", () => {
       });
     });
   });
+
+  describe("handles -box suffix", () => {
+    [
+      {
+        input: "bare-box",
+        expected: "https://github.com:truffle-box/bare-box",
+        description: "No org with box suffix"
+
+      },
+      {
+        input: "bare",
+        expected: "https://github.com:truffle-box/bare-box",
+        description: "No org without box suffix"
+
+      },
+      {
+        input: "truffle-box/bare-box",
+        expected: "https://github.com:truffle-box/bare-box",
+        description: "truffle-box with box suffix"
+
+      },
+      {
+        input: "truffle-box/bare",
+        expected: "https://github.com:truffle-box/bare-box",
+        description: "truffle-box without box suffix"
+
+      },
+      {
+        input: "acme/bare-box",
+        expected: "https://github.com:acme/bare-box",
+        description: "not truffle-box with box suffix"
+
+      },
+      {
+        input: "acme/bare",
+        expected: "https://github.com:acme/bare",
+        description: "not truffle-box without box suffix"
+
+      },
+      ,
+    ].forEach(({ input, description, expected }) => {
+        it(`handles: \`${description}\``, () => {
+          assert.strictEqual(
+            normalize(input),
+            expected,
+            `should process: [${input}]`,
+          );
+        });
+    });
+  });
+
 });
