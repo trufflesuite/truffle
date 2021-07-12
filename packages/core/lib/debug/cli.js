@@ -152,7 +152,7 @@ class CLIDebugger {
         {
           provider: this.config.provider,
           compilations,
-          lightMode: this.config.fetchExternal
+          lightMode: true
         }
       ); //note: may throw!
       await this.fetchExternalSources(bugger); //note: mutates bugger!
