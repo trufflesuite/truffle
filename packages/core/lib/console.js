@@ -65,18 +65,7 @@ class Console extends EventEmitter {
         eval: this.interpret.bind(this)
       });
 
-      let accounts;
-      try {
-        accounts = await this.interfaceAdapter.getAccounts();
-      } catch {
-        // don't prevent Truffle from working if user doesn't provide some way
-        // to sign transactions (e.g. no reason to disallow debugging)
-        accounts = [];
-      }
-
-      this.repl.context.web3 = this.web3;
-      this.repl.context.interfaceAdapter = this.interfaceAdapter;
-      this.repl.context.accounts = accounts;
+      await this.setUpEnvironment();
       this.provision();
 
       //want repl to exit when it receives an exit command
@@ -89,10 +78,79 @@ class Console extends EventEmitter {
       return new Promise(() => {});
     } catch (error) {
       this.options.logger.log(
-        "Unexpected error: Cannot provision contracts while instantiating the console."
+        "Unexpected error setting up the environment or provisioning " +
+        "contracts while instantiating the console."
       );
       this.options.logger.log(error.stack || error.message || error);
     }
+  }
+
+  hydrateUserDefinedVariables() {
+    // exit if feature should be disabled
+    if (this.options["require-none"]) return;
+
+    // exit if no hydrate options are set
+    if (
+      (!this.options.console || !this.options.console.require) &&
+      !this.options.require &&
+      !this.options.r
+    ) return;
+
+    const requireFromPath = target => {
+      return path.isAbsolute(target) ?
+        require(target) :
+        require(path.join(this.options.working_directory, target));
+    };
+    const addToContext = (userData, namespace) => {
+      for (const key in userData) {
+        if (namespace) {
+          if (typeof this.repl.context[namespace] === "undefined") {
+            this.repl.context[namespace] = {};
+          }
+          this.repl.context[namespace][key] = userData[key];
+        } else {
+          this.repl.context[key] = userData[key];
+        }
+      }
+    };
+    const errorMessage = "You must specify the console.require property as " +
+      "either a string or an array. If you specify an array, its members " +
+      "must be paths or objects containing at least a `path` property.";
+
+    const requireValue = this.options.r || this.options.require || this.options.console.require;
+
+    if (typeof requireValue === "string") {
+      addToContext(requireFromPath(requireValue));
+    } else if (Array.isArray(requireValue)) {
+      this.options.console.require.forEach(item => {
+        if (typeof item === "string") {
+          addToContext(requireFromPath(item));
+        } else if (typeof item === "object" && item.path) {
+          addToContext(requireFromPath(item.path), item.as);
+        } else {
+          throw new Error(errorMessage);
+        }
+      });
+    } else {
+      throw new Error(errorMessage);
+    }
+  }
+
+  async setUpEnvironment() {
+    let accounts;
+    try {
+      accounts = await this.interfaceAdapter.getAccounts();
+    } catch {
+      // don't prevent Truffle from working if user doesn't provide some way
+      // to sign transactions (e.g. no reason to disallow debugging)
+      accounts = [];
+    }
+    // we load user variables first so as to not clobber ours
+    this.hydrateUserDefinedVariables();
+
+    this.repl.context.web3 = this.web3;
+    this.repl.context.interfaceAdapter = this.interfaceAdapter;
+    this.repl.context.accounts = accounts;
   }
 
   provision() {

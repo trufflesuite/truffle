@@ -59,6 +59,9 @@ export const getInitialConfig = ({
         settings: {}
       }
     },
+    console: {
+      require: null
+    },
     logger: console
   };
 };
@@ -90,6 +93,7 @@ export const configProps = ({
     logger() {},
     compilers() {},
     ens() {},
+    console() {},
 
     build_directory: {
       default: () => path.join(configObject.working_directory, "build"),
