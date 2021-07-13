@@ -117,7 +117,7 @@ const command = {
       {
         option: "--grep|-g",
         description: "Use mocha's \"grep\" option while running tests. This " +
-          "option only runs tests whose descriptions match the supplied regex."
+          "option only runs tests that match the supplied regex/string."
       }
     ],
     allowedGlobalOptions: ["network", "config"]
