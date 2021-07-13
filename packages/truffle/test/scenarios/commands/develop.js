@@ -2,7 +2,6 @@ const MemoryLogger = require("../memorylogger");
 const CommandRunner = require("../commandrunner");
 const path = require("path");
 const assert = require("assert");
-const Server = require("../server");
 const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 
@@ -13,9 +12,6 @@ describe("develop", function () {
     "../../sources/develop",
   );
   const logger = new MemoryLogger();
-
-  // before(done => Server.start(done));
-  // after(done => Server.stop(done));
 
   before(async function () {
     this.timeout(10000);
