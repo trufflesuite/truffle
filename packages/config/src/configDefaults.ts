@@ -43,7 +43,10 @@ export const getInitialConfig = ({
       enabled: false,
       registryAddress: null
     },
-    mocha: {},
+    mocha: {
+      bail: false,
+      grep: null
+    },
     compilers: {
       solc: {
         settings: {

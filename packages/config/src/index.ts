@@ -23,7 +23,7 @@ class TruffleConfig {
     workingDirectory?: string,
     network?: any
   ) {
-    this._deepCopy = ["compilers"];
+    this._deepCopy = ["compilers", "mocha"];
     this._values = getInitialConfig({
       truffleDirectory,
       workingDirectory,
@@ -121,6 +121,7 @@ class TruffleConfig {
     propertyNames.forEach(key => {
       try {
         if (typeof clone[key] === "object" && this._deepCopy.includes(key)) {
+
           this[key] = merge(this[key], clone[key]);
         } else {
           this[key] = clone[key];
