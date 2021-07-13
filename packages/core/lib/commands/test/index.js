@@ -100,8 +100,8 @@ const command = {
         description: "Suppress all output except for test runner output."
       },
       {
-        option: "--bail",
-        description: "Bail after first test failure.  Alias: -b"
+        option: "--bail|-b",
+        description: "Bail after first test failure."
       },
       {
         option: "--stacktrace",
@@ -124,12 +124,21 @@ const command = {
   },
   run: async function (options) {
     const Config = require("@truffle/config");
-    const {Environment, Develop} = require("@truffle/environment");
-    const {copyArtifactsToTempDir} = require("./copyArtifactsToTempDir");
-    const {determineTestFilesToRun} = require("./determineTestFilesToRun");
-    const {prepareConfigAndRunTests} = require("./prepareConfigAndRunTests");
+    const { Environment, Develop } = require("@truffle/environment");
+    const { copyArtifactsToTempDir } = require("./copyArtifactsToTempDir");
+    const { determineTestFilesToRun } = require("./determineTestFilesToRun");
+    const { prepareConfigAndRunTests } = require("./prepareConfigAndRunTests");
 
-    const config = Config.detect(options);
+    // parse out command line flags to merge in to the config
+    const grep = options.grep || options.g;
+    const bail = options.bail || options.b;
+
+    const config = Config.detect(options).merge({
+      mocha: {
+        grep,
+        bail
+      }
+    });
 
     // if "development" exists, default to using that for testing
     if (!config.network && config.networks.development) {
