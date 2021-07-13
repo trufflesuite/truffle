@@ -43,6 +43,7 @@ export const getInitialConfig = ({
       enabled: false,
       registryAddress: null
     },
+    mocha: {},
     compilers: {
       solc: {
         settings: {
@@ -94,6 +95,7 @@ export const configProps = ({
     compilers() {},
     ens() {},
     console() {},
+    mocha() {},
 
     build_directory: {
       default: () => path.join(configObject.working_directory, "build"),
