@@ -6,7 +6,7 @@ const Server = require("../server");
 const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 
-describe.only("unhandledRejection detection", function () {
+describe("unhandledRejection detection", function () {
   let config;
   const project = path.join(
     __dirname,
