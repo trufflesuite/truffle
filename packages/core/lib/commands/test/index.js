@@ -51,7 +51,7 @@ const command = {
       `[--network <name>]${OS.EOL}                             ` +
       `[--verbose-rpc] [--show-events] [--debug] ` +
       `[--debug-global <identifier>] [--bail]${OS.EOL}                      ` +
-      `       [--stacktrace[-extra]]`,
+      `       [--stacktrace[-extra]] [--grep|-g <regex>]`,
     options: [
       {
         option: "<test_file>",
@@ -113,6 +113,11 @@ const command = {
       {
         option: "--stacktrace-extra",
         description: "Shortcut for --stacktrace --compile-all-debug."
+      },
+      {
+        option: "--grep|-g",
+        description: "Use mocha's \"grep\" option while running tests. This " +
+          "option only runs tests whose descriptions match the supplied regex."
       }
     ],
     allowedGlobalOptions: ["network", "config"]
