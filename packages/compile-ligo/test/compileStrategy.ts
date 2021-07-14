@@ -3,11 +3,15 @@ import Config from "@truffle/config";
 const Resolver = require("@truffle/resolver");
 import assert from "assert";
 import path from "path";
+import sinon from "sinon";
 
 import { Compile } from "../src/index";
+import * as CompileLigo from "../src/compile";
 
 describe("ligo compiler", function () {
   this.timeout(20000);
+
+  const sandbox = sinon.createSandbox();
 
   const defaultSettings = {
     contracts_directory: path.join(__dirname, "./sources/"),
@@ -16,6 +20,14 @@ describe("ligo compiler", function () {
   };
   const config = new Config().merge(defaultSettings);
   config.resolver = new Resolver(config);
+
+  beforeEach(function () {
+    sandbox.stub(CompileLigo, "compile").resolves(compilerResult);
+  });
+
+  afterEach(function () {
+    sandbox.restore();
+  });
 
   it("compiles ligo contract", async function () {
     const { compilations } = await Compile.all(config);
@@ -34,3 +46,93 @@ describe("ligo compiler", function () {
     assert.strictEqual(contracts.length, 3, "Correct number of contracts compiled. Skips other extensions.");
   });
 });
+
+const compilerResult = {
+  results: [
+    {
+      sourcePath: '/home/bernardo/repos/truffle-refactor-compiler/packages/compile-ligo/test/sources/IncrementCamel.mligo',
+      michelson: '[ { "prim": "parameter",\n' +
+        '    "args":\n' +
+        '      [ { "prim": "or",\n' +
+        '          "args":\n' +
+        '            [ { "prim": "or",\n' +
+        '                "args":\n' +
+        '                  [ { "prim": "int", "annots": [ "%decrement" ] },\n' +
+        '                    { "prim": "int", "annots": [ "%increment" ] } ] },\n' +
+        '              { "prim": "unit", "annots": [ "%reset" ] } ] } ] },\n' +
+        '  { "prim": "storage", "args": [ { "prim": "int" } ] },\n' +
+        '  { "prim": "code",\n' +
+        '    "args":\n' +
+        '      [ [ { "prim": "DUP" }, { "prim": "CDR" }, { "prim": "SWAP" },\n' +
+        '          { "prim": "CAR" },\n' +
+        '          { "prim": "IF_LEFT",\n' +
+        '            "args":\n' +
+        '              [ [ { "prim": "IF_LEFT",\n' +
+        '                    "args":\n' +
+        '                      [ [ { "prim": "SWAP" }, { "prim": "SUB" } ],\n' +
+        '                        [ { "prim": "ADD" } ] ] } ],\n' +
+        '                [ { "prim": "DROP", "args": [ { "int": "2" } ] },\n' +
+        '                  { "prim": "PUSH",\n' +
+        '                    "args": [ { "prim": "int" }, { "int": "0" } ] } ] ] },\n' +
+        '          { "prim": "NIL", "args": [ { "prim": "operation" } ] },\n' +
+        '          { "prim": "PAIR" } ] ] } ]'
+    },
+    {
+      sourcePath: '/home/bernardo/repos/truffle-refactor-compiler/packages/compile-ligo/test/sources/IncrementPascal.ligo',
+      michelson: '[ { "prim": "parameter",\n' +
+        '    "args":\n' +
+        '      [ { "prim": "or",\n' +
+        '          "args":\n' +
+        '            [ { "prim": "or",\n' +
+        '                "args":\n' +
+        '                  [ { "prim": "int", "annots": [ "%decrement" ] },\n' +
+        '                    { "prim": "int", "annots": [ "%increment" ] } ] },\n' +
+        '              { "prim": "unit", "annots": [ "%reset" ] } ] } ] },\n' +
+        '  { "prim": "storage", "args": [ { "prim": "int" } ] },\n' +
+        '  { "prim": "code",\n' +
+        '    "args":\n' +
+        '      [ [ { "prim": "DUP" }, { "prim": "CDR" }, { "prim": "SWAP" },\n' +
+        '          { "prim": "CAR" },\n' +
+        '          { "prim": "IF_LEFT",\n' +
+        '            "args":\n' +
+        '              [ [ { "prim": "IF_LEFT",\n' +
+        '                    "args":\n' +
+        '                      [ [ { "prim": "SWAP" }, { "prim": "SUB" } ],\n' +
+        '                        [ { "prim": "ADD" } ] ] } ],\n' +
+        '                [ { "prim": "DROP", "args": [ { "int": "2" } ] },\n' +
+        '                  { "prim": "PUSH",\n' +
+        '                    "args": [ { "prim": "int" }, { "int": "0" } ] } ] ] },\n' +
+        '          { "prim": "NIL", "args": [ { "prim": "operation" } ] },\n' +
+        '          { "prim": "PAIR" } ] ] } ]'
+    },
+    {
+      sourcePath: '/home/bernardo/repos/truffle-refactor-compiler/packages/compile-ligo/test/sources/IncrementReason.religo',
+      michelson: '[ { "prim": "parameter",\n' +
+        '    "args":\n' +
+        '      [ { "prim": "or",\n' +
+        '          "args":\n' +
+        '            [ { "prim": "or",\n' +
+        '                "args":\n' +
+        '                  [ { "prim": "int", "annots": [ "%decrement" ] },\n' +
+        '                    { "prim": "int", "annots": [ "%increment" ] } ] },\n' +
+        '              { "prim": "unit", "annots": [ "%reset" ] } ] } ] },\n' +
+        '  { "prim": "storage", "args": [ { "prim": "int" } ] },\n' +
+        '  { "prim": "code",\n' +
+        '    "args":\n' +
+        '      [ [ { "prim": "DUP" }, { "prim": "CDR" }, { "prim": "SWAP" },\n' +
+        '          { "prim": "CAR" },\n' +
+        '          { "prim": "IF_LEFT",\n' +
+        '            "args":\n' +
+        '              [ [ { "prim": "IF_LEFT",\n' +
+        '                    "args":\n' +
+        '                      [ [ { "prim": "SWAP" }, { "prim": "SUB" } ],\n' +
+        '                        [ { "prim": "ADD" } ] ] } ],\n' +
+        '                [ { "prim": "DROP", "args": [ { "int": "2" } ] },\n' +
+        '                  { "prim": "PUSH",\n' +
+        '                    "args": [ { "prim": "int" }, { "int": "0" } ] } ] ] },\n' +
+        '          { "prim": "NIL", "args": [ { "prim": "operation" } ] },\n' +
+        '          { "prim": "PAIR" } ] ] } ]'
+    }
+  ],
+  compilerDetails: { name: 'ligo', version: 'next' }
+};
