@@ -32,7 +32,7 @@ describe("truffle build [ @standalone ]", () => {
       await CommandRunner.run("build", config);
       const output = logger.contents();
       assert(output.includes("No build configuration found."));
-    });
+    }).timeout(30000);
   });
 
   describe("when there is a proper build config", () => {
@@ -50,7 +50,7 @@ describe("truffle build [ @standalone ]", () => {
       await CommandRunner.run("build", config);
       const output = logger.contents();
       assert(output.includes("'this is the build script'"));
-    });
+    }).timeout(30000);
   });
 
   describe("when there is an object in the build config", () => {
