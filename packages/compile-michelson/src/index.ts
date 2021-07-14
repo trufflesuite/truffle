@@ -1,4 +1,10 @@
-import { TezosCompiler } from "@truffle/compile-common";
+import { TezosCompiler, profilerBuilder } from "@truffle/compile-common";
 import { MichelsonCompileStrategy } from "./compileStrategy";
+const findContracts = require("@truffle/contract-sources");
 
-export const Compile = new TezosCompiler(new MichelsonCompileStrategy());
+const fileExtensions = ["tz"];
+
+export const Compile = new TezosCompiler(
+  new MichelsonCompileStrategy(),
+  profilerBuilder(fileExtensions),
+  findContracts);

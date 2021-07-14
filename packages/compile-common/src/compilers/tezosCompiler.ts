@@ -1,25 +1,28 @@
 import * as path from "path";
 import Config from "@truffle/config";
-const findContracts = require("@truffle/contract-sources");
 
 import { Profiler } from "../profiler";
 import { Compiler, CompilerResult, ICompileStrategy } from "../types";
 
+export const profilerBuilder = (fileExtensions: string[]): Profiler => {
+  const shouldIncludePath = (filePath: string) => {
+    return fileExtensions.map(fileExtension => `.${fileExtension}`).includes(path.extname(filePath));
+  };
+
+  return new Profiler({ shouldIncludePath });
+};
+
 export class TezosCompiler implements Compiler {
-  private readonly profiler: Profiler;
-
-  constructor(private readonly compileStrategy: ICompileStrategy) {
-    const shouldIncludePath = (filePath: string) => {
-      return this.compileStrategy.fileExtensions.map(fileExtension => `.${fileExtension}`).includes(path.extname(filePath));
-    };
-
-    this.profiler = new Profiler({ shouldIncludePath });
-  }
+  constructor(
+    private readonly compileStrategy: ICompileStrategy,
+    private readonly profiler: Profiler,
+    private readonly findContracts: (pattern: string) => Promise<string[]>
+    ) {}
 
   async all(options: Config): Promise<CompilerResult> {
     const paths = [
       ...new Set([
-        ...(await findContracts(options.contracts_directory)),
+        ...(await this.findContracts(options.contracts_directory)),
         ...(options.files || [])
       ])
     ];

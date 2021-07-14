@@ -12,7 +12,6 @@ const compiler = {
 
 export class MichelsonCompileStrategy implements ICompileStrategy {
   public compiler = "michelson";
-  public fileExtensions = ["tz"];
 
   public async compile(paths: string[]): Promise<CompilerResult> {
     const parser = new Parser();
