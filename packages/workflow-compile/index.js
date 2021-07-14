@@ -7,7 +7,8 @@ const SUPPORTED_COMPILERS = {
   solc: require("@truffle/compile-solidity").Compile,
   vyper: require("@truffle/compile-vyper").Compile,
   external: require("@truffle/external-compile").Compile,
-  michelson: require("@truffle/compile-michelson").Compile
+  michelson: require("@truffle/compile-michelson").Compile,
+  ligo: require("@truffle/compile-ligo").Compile
 };
 
 let Db;

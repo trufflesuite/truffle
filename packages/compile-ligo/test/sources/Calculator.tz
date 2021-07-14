@@ -1,0 +1,212 @@
+parameter (or (or (pair %add (nat %x) (nat %y)) (or (nat %factorial) (nat %log2))) (or (pair %multiply (nat %x) (nat %y)) (or (nat %square) (nat %squareRoot))));
+storage   nat;
+code
+  {
+    CAR;        # @parameter
+    IF_LEFT
+      {
+        IF_LEFT
+          {
+            # == add ==
+            # self.data.value = params.x + params.y # @parameter%add
+            UNPAIR;     # nat : nat
+            ADD;        # nat
+          }
+          {
+            IF_LEFT
+              {
+                # == factorial ==
+                # self.data.value = 1 # @parameter%factorial
+                PUSH nat 1; # nat : @parameter%factorial
+                SWAP;       # @parameter%factorial : nat
+                # for y in sp.range(1, params + 1): ... (sp.TNat) # @parameter%factorial : nat
+                DUP;        # @parameter%factorial : @parameter%factorial : nat
+                PUSH nat 1; # nat : @parameter%factorial : @parameter%factorial : nat
+                ADD;        # nat : @parameter%factorial : nat
+                PUSH nat 1; # nat : nat : @parameter%factorial : nat
+                DUP;        # nat : nat : nat : @parameter%factorial : nat
+                DUP 3;      # nat : nat : nat : nat : @parameter%factorial : nat
+                COMPARE;    # int : nat : nat : @parameter%factorial : nat
+                GT;         # bool : nat : nat : @parameter%factorial : nat
+                LOOP
+                  {
+                    # self.data.value *= y # nat : nat : @parameter%factorial : nat
+                    DIG 3;      # nat : nat : nat : @parameter%factorial
+                    SWAP;       # nat : nat : nat : @parameter%factorial
+                    DUP;        # nat : nat : nat : nat : @parameter%factorial
+                    DUG 2;      # nat : nat : nat : nat : @parameter%factorial
+                    MUL;        # nat : nat : nat : @parameter%factorial
+                    DUG 3;      # nat : nat : @parameter%factorial : nat
+                    # loop step # nat : nat : @parameter%factorial : nat
+                    PUSH nat 1; # nat : nat : nat : @parameter%factorial : nat
+                    ADD;        # nat : nat : @parameter%factorial : nat
+                    DUP;        # nat : nat : nat : @parameter%factorial : nat
+                    DUP 3;      # nat : nat : nat : nat : @parameter%factorial : nat
+                    COMPARE;    # int : nat : nat : @parameter%factorial : nat
+                    GT;         # bool : nat : nat : @parameter%factorial : nat
+                  }; # nat : nat : @parameter%factorial : nat
+                DROP 3;     # nat
+              }
+              {
+                # == log2 ==
+                # self.data.value = 0 # @parameter%log2
+                PUSH nat 0; # nat : @parameter%log2
+                SWAP;       # @parameter%log2 : nat
+                # y = sp.local("y", params) # @parameter%log2 : nat
+                DUP;        # @parameter%log2 : @parameter%log2 : nat
+                # while y.value > 1 : ... # @parameter%log2 : @parameter%log2 : nat
+                DUP;        # @parameter%log2 : @parameter%log2 : @parameter%log2 : nat
+                PUSH nat 1; # nat : @parameter%log2 : @parameter%log2 : @parameter%log2 : nat
+                COMPARE;    # int : @parameter%log2 : @parameter%log2 : nat
+                LT;         # bool : @parameter%log2 : @parameter%log2 : nat
+                LOOP
+                  {
+                    # self.data.value += 1 # @parameter%log2 : @parameter%log2 : nat
+                    DIG 2;      # nat : @parameter%log2 : @parameter%log2
+                    PUSH nat 1; # nat : nat : @parameter%log2 : @parameter%log2
+                    ADD;        # nat : @parameter%log2 : @parameter%log2
+                    DUG 2;      # @parameter%log2 : @parameter%log2 : nat
+                    # y.value //= 2 # @parameter%log2 : @parameter%log2 : nat
+                    PUSH nat 2; # nat : @parameter%log2 : @parameter%log2 : nat
+                    SWAP;       # @parameter%log2 : nat : @parameter%log2 : nat
+                    EDIV;       # option (pair nat nat) : @parameter%log2 : nat
+                    IF_SOME
+                      {
+                        CAR;        # nat : @parameter%log2 : nat
+                      }
+                      {
+                        PUSH int 42; # int : @parameter%log2 : nat
+                        FAILWITH;   # FAILED
+                      }; # nat : @parameter%log2 : nat
+                    # check for next loop: y.value > 1 # nat : @parameter%log2 : nat
+                    DUP;        # nat : nat : @parameter%log2 : nat
+                    PUSH nat 1; # nat : nat : nat : @parameter%log2 : nat
+                    COMPARE;    # int : nat : @parameter%log2 : nat
+                    LT;         # bool : nat : @parameter%log2 : nat
+                  }; # @parameter%log2 : @parameter%log2 : nat
+                DROP 2;     # nat
+              }; # nat
+          }; # nat
+      }
+      {
+        IF_LEFT
+          {
+            # == multiply ==
+            # self.data.value = params.x * params.y # @parameter%multiply
+            UNPAIR;     # nat : nat
+            MUL;        # nat
+          }
+          {
+            IF_LEFT
+              {
+                # == square ==
+                # self.data.value = params * params # @parameter%square
+                DUP;        # @parameter%square : @parameter%square
+                MUL;        # nat
+              }
+              {
+                # == squareRoot ==
+                # sp.verify(params >= 0) # @parameter%squareRoot
+                DUP;        # @parameter%squareRoot : @parameter%squareRoot
+                PUSH nat 0; # nat : @parameter%squareRoot : @parameter%squareRoot
+                SWAP;       # @parameter%squareRoot : nat : @parameter%squareRoot
+                COMPARE;    # int : @parameter%squareRoot
+                GE;         # bool : @parameter%squareRoot
+                IF
+                  {}
+                  {
+                    PUSH string "WrongCondition: params >= 0"; # string : @parameter%squareRoot
+                    FAILWITH;   # FAILED
+                  }; # @parameter%squareRoot
+                # y = sp.local("y", params) # @parameter%squareRoot
+                DUP;        # @parameter%squareRoot : @parameter%squareRoot
+                # while (y.value * y.value) > params : ... # @parameter%squareRoot : @parameter%squareRoot
+                DUP;        # @parameter%squareRoot : @parameter%squareRoot : @parameter%squareRoot
+                DUG 2;      # @parameter%squareRoot : @parameter%squareRoot : @parameter%squareRoot
+                SWAP;       # @parameter%squareRoot : @parameter%squareRoot : @parameter%squareRoot
+                DUP;        # @parameter%squareRoot : @parameter%squareRoot : @parameter%squareRoot : @parameter%squareRoot
+                DUP;        # @parameter%squareRoot : @parameter%squareRoot : @parameter%squareRoot : @parameter%squareRoot : @parameter%squareRoot
+                DUG 3;      # @parameter%squareRoot : @parameter%squareRoot : @parameter%squareRoot : @parameter%squareRoot : @parameter%squareRoot
+                MUL;        # nat : @parameter%squareRoot : @parameter%squareRoot : @parameter%squareRoot
+                COMPARE;    # int : @parameter%squareRoot : @parameter%squareRoot
+                GT;         # bool : @parameter%squareRoot : @parameter%squareRoot
+                LOOP
+                  {
+                    # y.value = ((params // y.value) + y.value) // 2 # @parameter%squareRoot : @parameter%squareRoot
+                    PUSH nat 2; # nat : @parameter%squareRoot : @parameter%squareRoot
+                    SWAP;       # @parameter%squareRoot : nat : @parameter%squareRoot
+                    DUP;        # @parameter%squareRoot : @parameter%squareRoot : nat : @parameter%squareRoot
+                    DUP 4;      # @parameter%squareRoot : @parameter%squareRoot : @parameter%squareRoot : nat : @parameter%squareRoot
+                    EDIV;       # option (pair nat nat) : @parameter%squareRoot : nat : @parameter%squareRoot
+                    IF_SOME
+                      {
+                        CAR;        # nat : @parameter%squareRoot : nat : @parameter%squareRoot
+                      }
+                      {
+                        PUSH int 26; # int : @parameter%squareRoot : nat : @parameter%squareRoot
+                        FAILWITH;   # FAILED
+                      }; # nat : @parameter%squareRoot : nat : @parameter%squareRoot
+                    ADD;        # nat : nat : @parameter%squareRoot
+                    EDIV;       # option (pair nat nat) : @parameter%squareRoot
+                    IF_SOME
+                      {
+                        CAR;        # nat : @parameter%squareRoot
+                      }
+                      {
+                        PUSH int 26; # int : @parameter%squareRoot
+                        FAILWITH;   # FAILED
+                      }; # nat : @parameter%squareRoot
+                    SWAP;       # @parameter%squareRoot : nat
+                    # check for next loop: (y.value * y.value) > params # @parameter%squareRoot : nat
+                    DUP;        # @parameter%squareRoot : @parameter%squareRoot : nat
+                    DUG 2;      # @parameter%squareRoot : nat : @parameter%squareRoot
+                    SWAP;       # nat : @parameter%squareRoot : @parameter%squareRoot
+                    DUP;        # nat : nat : @parameter%squareRoot : @parameter%squareRoot
+                    DUP;        # nat : nat : nat : @parameter%squareRoot : @parameter%squareRoot
+                    DUG 3;      # nat : nat : @parameter%squareRoot : nat : @parameter%squareRoot
+                    MUL;        # nat : @parameter%squareRoot : nat : @parameter%squareRoot
+                    COMPARE;    # int : nat : @parameter%squareRoot
+                    GT;         # bool : nat : @parameter%squareRoot
+                  }; # @parameter%squareRoot : @parameter%squareRoot
+                SWAP;       # @parameter%squareRoot : @parameter%squareRoot
+                # sp.verify(((y.value * y.value) <= params) & (params < ((y.value + 1) * (y.value + 1)))) # @parameter%squareRoot : @parameter%squareRoot
+                DUP;        # @parameter%squareRoot : @parameter%squareRoot : @parameter%squareRoot
+                DUG 2;      # @parameter%squareRoot : @parameter%squareRoot : @parameter%squareRoot
+                SWAP;       # @parameter%squareRoot : @parameter%squareRoot : @parameter%squareRoot
+                DUP;        # @parameter%squareRoot : @parameter%squareRoot : @parameter%squareRoot : @parameter%squareRoot
+                DUP;        # @parameter%squareRoot : @parameter%squareRoot : @parameter%squareRoot : @parameter%squareRoot : @parameter%squareRoot
+                DUG 3;      # @parameter%squareRoot : @parameter%squareRoot : @parameter%squareRoot : @parameter%squareRoot : @parameter%squareRoot
+                MUL;        # nat : @parameter%squareRoot : @parameter%squareRoot : @parameter%squareRoot
+                COMPARE;    # int : @parameter%squareRoot : @parameter%squareRoot
+                LE;         # bool : @parameter%squareRoot : @parameter%squareRoot
+                IF
+                  {
+                    DUP;        # @parameter%squareRoot : @parameter%squareRoot : @parameter%squareRoot
+                    PUSH nat 1; # nat : @parameter%squareRoot : @parameter%squareRoot : @parameter%squareRoot
+                    ADD;        # nat : @parameter%squareRoot : @parameter%squareRoot
+                    PUSH nat 1; # nat : nat : @parameter%squareRoot : @parameter%squareRoot
+                    DUP 3;      # @parameter%squareRoot : nat : nat : @parameter%squareRoot : @parameter%squareRoot
+                    ADD;        # nat : nat : @parameter%squareRoot : @parameter%squareRoot
+                    MUL;        # nat : @parameter%squareRoot : @parameter%squareRoot
+                    DIG 2;      # @parameter%squareRoot : nat : @parameter%squareRoot
+                    COMPARE;    # int : @parameter%squareRoot
+                    LT;         # bool : @parameter%squareRoot
+                  }
+                  {
+                    SWAP;       # @parameter%squareRoot : @parameter%squareRoot
+                    DROP;       # @parameter%squareRoot
+                    PUSH bool False; # bool : @parameter%squareRoot
+                  }; # bool : @parameter%squareRoot
+                IF
+                  {}
+                  {
+                    PUSH string "WrongCondition: ((y.value * y.value) <= params) & (params < ((y.value + 1) * (y.value + 1)))"; # string : @parameter%squareRoot
+                    FAILWITH;   # FAILED
+                  }; # @parameter%squareRoot
+                # self.data.value = y.value # @parameter%squareRoot
+              }; # nat
+          }; # nat
+      }; # nat
+    NIL operation; # list operation : nat
+    PAIR;       # pair (list operation) nat
+  };
