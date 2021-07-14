@@ -121,7 +121,6 @@ class TruffleConfig {
     propertyNames.forEach(key => {
       try {
         if (typeof clone[key] === "object" && this._deepCopy.includes(key)) {
-
           this[key] = merge(this[key], clone[key]);
         } else {
           this[key] = clone[key];
