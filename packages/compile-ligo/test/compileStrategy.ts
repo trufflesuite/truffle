@@ -31,6 +31,6 @@ describe("ligo compiler", function () {
       assert.doesNotThrow(() => JSON.parse((contract as TezosCompiledContract).michelson), "Generates valid Michelson");
     });
 
-    assert.strictEqual(contracts.length, 1, "Correct number of contracts compiled. Skips other extensions.");
+    assert.strictEqual(contracts.length, 3, "Correct number of contracts compiled. Skips other extensions.");
   });
 });

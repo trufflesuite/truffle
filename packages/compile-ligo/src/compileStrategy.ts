@@ -6,7 +6,6 @@ import { compile } from "./compile";
 
 export class LigoCompileStrategy implements ICompileStrategy {
   public compiler = "ligo";
-  public fileExtensions = ["ligo", "mligo", "religo"];
 
   public async compile(paths: string[]): Promise<CompilerResult> {
     const ligoCompilerResult = await compile(paths);

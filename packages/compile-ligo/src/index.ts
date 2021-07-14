@@ -1,4 +1,10 @@
-import { TezosCompiler } from "@truffle/compile-common";
+import { TezosCompiler, profilerBuilder } from "@truffle/compile-common";
 import { LigoCompileStrategy } from "./compileStrategy";
+const findContracts = require("@truffle/contract-sources");
 
-export const Compile = new TezosCompiler(new LigoCompileStrategy());
+const fileExtensions = ["ligo", "mligo", "religo"];
+
+export const Compile = new TezosCompiler(
+  new LigoCompileStrategy(),
+  profilerBuilder(fileExtensions),
+  findContracts);
