@@ -60,6 +60,7 @@ const codes: OpcodeTable = {
   0x45: "GASLIMIT",
   0x46: "CHAINID",
   0x47: "SELFBALANCE",
+  0x48: "BASEFEE",
 
   // 0x50 range - 'storage' and execution
   0x50: "POP",
