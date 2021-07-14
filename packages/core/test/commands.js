@@ -70,7 +70,7 @@ describe("Commander", function () {
     } finally {
       assert.equal(
         warning,
-        "> Warning: possible unsupported (undocumented in help) command line option: --unsupportedflag,--unsupportedflag2",
+        "> Warning: possible unsupported (undocumented in help) command line option(s): --unsupportedflag,--unsupportedflag2",
       );
     }
   });
