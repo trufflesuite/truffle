@@ -8,13 +8,15 @@ import sinon from "sinon";
 import { Compile } from "../src/index";
 import * as CompileLigo from "../src/compile";
 
+const sourcesDirectory = path.join(__dirname, "./sources/");
+
 describe("ligo compiler", function () {
   this.timeout(20000);
 
   const sandbox = sinon.createSandbox();
 
   const defaultSettings = {
-    contracts_directory: path.join(__dirname, "./sources/"),
+    contracts_directory: sourcesDirectory,
     quiet: true,
     all: true,
   };
@@ -50,7 +52,7 @@ describe("ligo compiler", function () {
 const compilerResult = {
   results: [
     {
-      sourcePath: '/home/bernardo/repos/truffle-refactor-compiler/packages/compile-ligo/test/sources/IncrementCamel.mligo',
+      sourcePath: `${sourcesDirectory}/IncrementCamel.mligo`,
       michelson: '[ { "prim": "parameter",\n' +
         '    "args":\n' +
         '      [ { "prim": "or",\n' +
@@ -78,7 +80,7 @@ const compilerResult = {
         '          { "prim": "PAIR" } ] ] } ]'
     },
     {
-      sourcePath: '/home/bernardo/repos/truffle-refactor-compiler/packages/compile-ligo/test/sources/IncrementPascal.ligo',
+      sourcePath: `${sourcesDirectory}/IncrementPascal.ligo`,
       michelson: '[ { "prim": "parameter",\n' +
         '    "args":\n' +
         '      [ { "prim": "or",\n' +
@@ -106,7 +108,7 @@ const compilerResult = {
         '          { "prim": "PAIR" } ] ] } ]'
     },
     {
-      sourcePath: '/home/bernardo/repos/truffle-refactor-compiler/packages/compile-ligo/test/sources/IncrementReason.religo',
+      sourcePath: `${sourcesDirectory}/IncrementReason.religo`,
       michelson: '[ { "prim": "parameter",\n' +
         '    "args":\n' +
         '      [ { "prim": "or",\n' +
