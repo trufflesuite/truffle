@@ -37,7 +37,7 @@ export const connectToServer = (port: number) => {
 };
 
 export const getPorts = async (): Promise<PortsConfig> => {
-  const dashboardPort = window.location.port;
+  const dashboardPort = process.env.NODE_ENV === 'development' ? 5000 : window.location.port;
   const { data } = await axios.get(`http://localhost:${dashboardPort}/ports`);
 
   return data;

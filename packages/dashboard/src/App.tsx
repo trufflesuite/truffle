@@ -16,8 +16,8 @@ function App() {
     const initialiseSocket = async () => {
       if (socket && socket.readyState === WebSocket.OPEN) return;
 
-      const { dashboardToBrowserProviderPort } = await getPorts();
-      const connectedSocket = await connectToServerWithRetries(dashboardToBrowserProviderPort);
+      const { dashboardToMessageBusPort } = await getPorts();
+      const connectedSocket = await connectToServerWithRetries(dashboardToMessageBusPort);
 
       connectedSocket.addEventListener("message", async (event: MessageEvent) => {
         if (typeof event.data !== "string") return;

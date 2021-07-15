@@ -24,7 +24,7 @@ export const connectToServer = (port: number) => {
 export const getServerPort = async (dashboardPort: number, retries = 5, tryCount = 1) => {
   try {
     const { data } = await axios.get(`http://localhost:${dashboardPort}/ports`);
-    return data.browserProviderToServerPort;
+    return data.clientsToMessageBusPort;
   } catch {
     if (tryCount === retries) {
       throw new Error(`Could not start or connect to dashboard at ${dashboardPort}`);
