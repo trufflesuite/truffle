@@ -258,7 +258,12 @@ function detectErrors({
     );
 
   // extract messages
-  let errors = rawErrors.map(({ formattedMessage }) => formattedMessage).join();
+  let errors = rawErrors.map(
+    ({ formattedMessage }) => formattedMessage.replace(
+      /: File import callback not supported/g, //remove this confusing message suffix
+      ""
+    )
+  ).join();
   const warnings = rawWarnings.map(({ formattedMessage }) => formattedMessage);
 
   if (errors.includes("requires different compiler version")) {
