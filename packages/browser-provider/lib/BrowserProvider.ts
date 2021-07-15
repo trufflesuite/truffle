@@ -2,7 +2,7 @@ import type { JSONRPCRequestPayload, JSONRPCErrorCallback, JSONRPCResponsePayloa
 import { callbackify } from "util";
 import WebSocket from "ws";
 import { connectToServerWithRetries, getServerPort } from "./utils";
-import { sendAndAwait } from "@truffle/browser-provider-server";
+import { sendAndAwait } from "@truffle/dashboard-message-bus";
 import { startDashboardInBackground } from "@truffle/dashboard";
 
 export class BrowserProvider {

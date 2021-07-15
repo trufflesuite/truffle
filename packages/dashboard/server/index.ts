@@ -1,25 +1,27 @@
 import express from "express";
 import path from "path";
 import getPort from "get-port";
-import { BrowserProviderServer } from "@truffle/browser-provider-server";
+import { DashboardMessageBus } from "@truffle/dashboard-message-bus";
 import { spawn } from "child_process";
+import cors from 'cors';
 
 // TODO: Lifecycle management for dashboard
 export const startDashboard = async (dashboardPort: number) => {
   const app = express();
 
+  app.use(cors());
   app.use(express.static(path.join(__dirname, '..')));
 
-  const dashboardToBrowserProviderPort = await getPort();
-  const browserProviderToServerPort = await getPort();
+  const dashboardToMessageBusPort = await getPort();
+  const clientsToMessageBusPort = await getPort();
 
-  new BrowserProviderServer().start(browserProviderToServerPort, dashboardToBrowserProviderPort);
+  new DashboardMessageBus().start(clientsToMessageBusPort, dashboardToMessageBusPort);
 
   app.get('/ports', (req, res) => {
     res.json({
       dashboardPort,
-      dashboardToBrowserProviderPort,
-      browserProviderToServerPort,
+      dashboardToMessageBusPort,
+      clientsToMessageBusPort,
     });
   });
 
