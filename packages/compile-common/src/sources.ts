@@ -65,7 +65,11 @@ export function collectSources(
  */
 function getPortableSourcePath(sourcePath: string): string {
   // Turn all backslashes into forward slashes
-  var replacement = sourcePath.replace(/\\/g, "/");
+  let replacement = sourcePath;
+  if (path.sep === '\\') {
+    //don't replace backslashes on Linux!
+    replacement = sourcePath.replace(/\\/g, "/");
+  }
 
   // Turn G:/.../ into /G/.../ for Windows
   if (replacement.length >= 2 && replacement[1] === ":") {
