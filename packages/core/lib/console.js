@@ -13,6 +13,7 @@ const fse = require("fs-extra");
 const path = require("path");
 const EventEmitter = require("events");
 const spawnSync = require("child_process").spawnSync;
+const originalRequire = require("original-require");
 
 const processInput = input => {
   const inputComponents = input.trim().split(" ");
@@ -98,8 +99,8 @@ class Console extends EventEmitter {
 
     const requireFromPath = target => {
       return path.isAbsolute(target) ?
-        require(target) :
-        require(path.join(this.options.working_directory, target));
+        originalRequire(target) :
+        originalRequire(path.join(this.options.working_directory, target));
     };
     const addToContext = (userData, namespace) => {
       for (const key in userData) {
