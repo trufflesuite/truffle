@@ -47,10 +47,10 @@ export const sendAndAwait = (socket: WebSocket, payload: JSONRPCRequestPayload) 
   });
 };
 
-export const startServer = (providerPort: number, frontendPort: number) => {
-  const webServerPath = `${__dirname}/start-server`;
+export const startServer = (clientPort: number, dashboardPort: number) => {
+  const serverPath = `${__dirname}/start-server`;
 
-  return spawn("node", [webServerPath, String(providerPort), String(frontendPort)], {
+  return spawn("node", [serverPath, String(clientPort), String(dashboardPort)], {
     detached: true,
     stdio: "ignore"
   });

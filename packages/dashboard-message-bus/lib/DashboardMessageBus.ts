@@ -3,9 +3,9 @@ import { base64ToJson, jsonToBase64, sendAndAwait } from "./utils";
 import delay from "delay";
 import { Request } from "./types";
 
-export class BrowserProviderServer {
-  providerServer: WebSocket.Server;
-  connectedProviderCount = 0;
+export class DashboardMessageBus {
+  clientServer: WebSocket.Server;
+  connectedClientCount = 0;
 
   dashboardServer: WebSocket.Server;
   dashboardSocket: WebSocket;
@@ -21,16 +21,16 @@ export class BrowserProviderServer {
       this.unfulfilledRequests.forEach(({ socket, data }) => this.processRequest(socket, data));
     });
 
-    this.providerServer = new WebSocket.Server({ host: '0.0.0.0', port: providerPort });
-    this.providerServer.on("connection", (socket: WebSocket) => {
-      this.connectedProviderCount++;
+    this.clientServer = new WebSocket.Server({ host: '0.0.0.0', port: providerPort });
+    this.clientServer.on("connection", (socket: WebSocket) => {
+      this.connectedClientCount++;
 
       socket.on("message", (data: WebSocket.Data) => {
         this.processRequest(socket, data);
       });
 
       socket.on("close", () => {
-        if (--this.connectedProviderCount <= 0) {
+        if (--this.connectedClientCount <= 0) {
           process.exit(0);
         }
       });

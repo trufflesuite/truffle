@@ -10,6 +10,6 @@ export interface Request {
 
 export interface PortsConfig {
   dashboardPort: number;
-  dashboardToBrowserProviderPort: number;
-  browserProviderToServerPort: number;
+  dashboardToMessageBusPort: number;
+  clientsToMessageBusPort: number;
 }

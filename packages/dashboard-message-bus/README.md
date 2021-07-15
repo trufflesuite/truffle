@@ -1,0 +1,1 @@
+# @truffle/dashboard-message-bus

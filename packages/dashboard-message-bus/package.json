@@ -1,7 +1,7 @@
 {
-  "name": "@truffle/browser-provider-server",
+  "name": "@truffle/dashboard-message-bus",
   "version": "0.1.0",
-  "description": "Server that powers the BrowserProvider",
+  "description": "Message bus that handles communication between the Dashboard and its components",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
   "files": [
@@ -15,9 +15,9 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/trufflesuite/truffle.git",
-    "directory": "packages/browser-provider-server"
+    "directory": "packages/dashboard-mesasge-bus"
   },
-  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/browser-provider-server#readme",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/dashboard-message-bus#readme",
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
