@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    "sourceMap": true,
+    "declaration": true,
+    "esModuleInterop": true,
+    "lib": ["esnext"],
+    "skipLibCheck": true,
+    "target": "es6",
+    "moduleResolution": "node",
+    "downlevelIteration": true,
+    "allowSyntheticDefaultImports": true,
+    "module": "commonjs",
+    "outDir": "./dist",
+    "strictBindCallApply": true,
+    "strictNullChecks": true,
+    "paths": {
+      "@truffle/parse-mapping-lookup": ["./src"],
+      "@truffle/parse-mapping-lookup/*": ["./src/*"],
+      "test/*": ["./test/*"]
+    },
+    "rootDir": ".",
+    "baseUrl": ".",
+    "types": [
+      "jest",
+      "node"
+    ],
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ]
+  },
+  "include": [
+    "src/**/*",
+    "test/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

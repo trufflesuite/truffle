@@ -1,0 +1,84 @@
+{
+  "name": "@truffle/parse-mapping-lookup",
+  "version": "0.1.0",
+  "description": "Parse pointers to mapping/struct innards (e.g. m[0])",
+  "keywords": [
+    "smart-contract",
+    "truffle"
+  ],
+  "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
+  "homepage": "https://github.com/trufflesuite/truffle#readme",
+  "license": "MIT",
+  "main": "dist/src/index.js",
+  "directories": {
+    "dist": "dist"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/parse-mapping-lookup"
+  },
+  "scripts": {
+    "build": "yarn build:dist && yarn build:docs",
+    "clean": "rm -rf ./dist",
+    "prepare": "yarn build",
+    "build:dist": "ttsc",
+    "build:docs": "typedoc",
+    "madge": "madge ./src/index.ts",
+    "test": "jest --verbose --detectOpenHandles --forceExit --passWithNoTests"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.20",
+    "@types/node": "12.12.21",
+    "jest": "^26.5.2",
+    "madge": "^3.11.0",
+    "ts-jest": "^26.4.1",
+    "ts-node": "^9.1.1",
+    "tsconfig-paths": "^3.9.0",
+    "ttypescript": "^1.5.7",
+    "typedoc": "^0.20.19",
+    "typescript": "^4.1.4",
+    "typescript-transform-paths": "^2.1.0"
+  },
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "dependencies": {
+    "parjs": "^0.12.7"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "ts",
+      "js",
+      "json",
+      "node"
+    ],
+    "testEnvironment": "node",
+    "transform": {
+      "^.+\\.ts$": "ts-jest"
+    },
+    "globals": {
+      "ts-jest": {
+        "tsConfig": "<rootDir>/tsconfig.json",
+        "diagnostics": true
+      }
+    },
+    "moduleNameMapper": {
+      "^@truffle/parse-mapping-lookup/(.*)": "<rootDir>/src/$1",
+      "^@truffle/parse-mapping-lookup$": "<rootDir>/src",
+      "^test/(.*)": "<rootDir>/test/$1"
+    },
+    "testMatch": [
+      "<rootDir>/src/**/test/*\\.(ts|js)",
+      "<rootDir>/test/**/test/*\\.(ts|js)",
+      "<rootDir>/src/**/*\\.(spec|test)\\.(ts|js)",
+      "<rootDir>/test/**/*\\.(spec|test)\\.(ts|js)"
+    ]
+  }
+}
