@@ -122,6 +122,17 @@ const command = {
     ],
     allowedGlobalOptions: ["network", "config"]
   },
+  parseCommandLineFlags: options => {
+    // parse out command line flags to merge in to the config
+    const grep = options.grep || options.g;
+    const bail = options.bail || options.b;
+    return {
+      mocha: {
+        grep,
+        bail
+      }
+    };
+  },
   run: async function (options) {
     const Config = require("@truffle/config");
     const { Environment, Develop } = require("@truffle/environment");
@@ -129,16 +140,8 @@ const command = {
     const { determineTestFilesToRun } = require("./determineTestFilesToRun");
     const { prepareConfigAndRunTests } = require("./prepareConfigAndRunTests");
 
-    // parse out command line flags to merge in to the config
-    const grep = options.grep || options.g;
-    const bail = options.bail || options.b;
-
-    const config = Config.detect(options).merge({
-      mocha: {
-        grep,
-        bail
-      }
-    });
+    const optionsToMerge = this.parseCommandLineFlags(options);
+    const config = Config.detect(options).merge(optionsToMerge);
 
     // if "development" exists, default to using that for testing
     if (!config.network && config.networks.development) {
