@@ -1,4 +1,5 @@
 import debugModule from "debug";
+import path from "path";
 const debug = debugModule("compile-common:profiler:getImports");
 
 //HACK: do *not* import ResolvedSource from @truffle/resolver because
@@ -36,5 +37,7 @@ export async function getImports({
   // here, that's now the responsibility of the individual resolverSource to check
   return (await Promise.all(imports.map(
     dependencyPath => source.resolveDependencyPath(filePath, dependencyPath)
-  ))).filter(path => path); //filter out Vyper failures
+  ))).filter(sourcePath => sourcePath) //filter out Vyper failures
+  .map(sourcePath => sourcePath.replace(/\//g, path.sep)); //make sure to use
+  //backslash on Windows (for same reason as in requiredSources.ts)
 }
