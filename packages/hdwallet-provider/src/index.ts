@@ -18,13 +18,18 @@ import RpcProvider from "@trufflesuite/web3-provider-engine/subproviders/rpc";
 import WebsocketProvider from "@trufflesuite/web3-provider-engine/subproviders/websocket";
 
 import Url from "url";
-import type { JSONRPCRequestPayload, JSONRPCErrorCallback, JSONRPCResponsePayload } from "ethereum-protocol";
+import type {
+  JSONRPCRequestPayload,
+  JSONRPCErrorCallback,
+  JSONRPCResponsePayload
+} from "ethereum-protocol";
 import type { Callback, JsonRPCResponse } from "web3/providers";
 import type { ConstructorArguments } from "./constructor/ConstructorArguments";
 import { getOptions } from "./constructor/getOptions";
 import { getPrivateKeys } from "./constructor/getPrivateKeys";
 import { getMnemonic } from "./constructor/getMnemonic";
 import type { ChainId, ChainSettings, Hardfork } from "./constructor/types";
+import { signTypedData } from "eth-sig-util";
 
 // Important: do not use debug module. Reason: https://github.com/trufflesuite/truffle/issues/2374#issuecomment-536109086
 
@@ -90,7 +95,7 @@ class HDWalletProvider {
         numberOfAddresses
       });
     } else if (privateKeys) {
-      const options = Object.assign({}, { privateKeys }, { addressIndex })
+      const options = Object.assign({}, { privateKeys }, { addressIndex });
       this.ethUtilValidation(options);
     } // no need to handle else case here, since matchesNewOptions() covers it
 
@@ -105,7 +110,10 @@ class HDWalletProvider {
     const tmpWallets = this.wallets;
 
     // if user supplied the chain id, use that - otherwise fetch it
-    if (typeof chainId !== "undefined" || (chainSettings && typeof chainSettings.chainId !== "undefined")) {
+    if (
+      typeof chainId !== "undefined" ||
+      (chainSettings && typeof chainSettings.chainId !== "undefined")
+    ) {
       this.chainId = chainId || chainSettings.chainId;
       this.initialized = Promise.resolve();
     } else {
@@ -114,9 +122,10 @@ class HDWalletProvider {
 
     // EIP155 compliant transactions are enabled for hardforks later
     // than or equal to "spurious dragon"
-    this.hardfork = (chainSettings && chainSettings.hardfork) ?
-      chainSettings.hardfork :
-      "istanbul";
+    this.hardfork =
+      chainSettings && chainSettings.hardfork
+        ? chainSettings.hardfork
+        : "istanbul";
 
     const self = this;
     this.engine.addProvider(
@@ -182,6 +191,18 @@ class HDWalletProvider {
         },
         signPersonalMessage(...args: any[]) {
           this.signMessage(...args);
+        },
+        signTypedMessage({ data, from }: any, cb: any) {
+          const dataIfExists = data;
+          if (!dataIfExists) {
+            cb("No data to sign");
+          }
+          if (!tmpWallets[from]) {
+            cb("Account not found");
+          }
+          const pkey = tmpWallets[from].getPrivateKey();
+          const sig = signTypedData(pkey, { data });
+          cb(null, sig);
         }
       })
     );
@@ -219,32 +240,36 @@ class HDWalletProvider {
 
   private initialize(): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.engine.sendAsync({
-        jsonrpc: '2.0',
-        id: Date.now(),
-        method: 'eth_chainId',
-        params: []
-    }, (error: any, response: JSONRPCResponsePayload & { error?: any }) => {
-        if (error) {
-          reject(error);
-          return;
-        } else if (response.error) {
-          reject(response.error);
-          return;
+      this.engine.sendAsync(
+        {
+          jsonrpc: "2.0",
+          id: Date.now(),
+          method: "eth_chainId",
+          params: []
+        },
+        (error: any, response: JSONRPCResponsePayload & { error?: any }) => {
+          if (error) {
+            reject(error);
+            return;
+          } else if (response.error) {
+            reject(response.error);
+            return;
+          }
+          if (isNaN(parseInt(response.result, 16))) {
+            const message =
+              "When requesting the chain id from the node, it" +
+              `returned the malformed result ${response.result}.`;
+            throw new Error(message);
+          }
+          this.chainId = parseInt(response.result, 16);
+          resolve();
         }
-        if (isNaN(parseInt(response.result, 16))) {
-          const message = "When requesting the chain id from the node, it" +
-            `returned the malformed result ${response.result}.`;
-          throw new Error(message);
-        }
-        this.chainId = parseInt(response.result, 16);
-        resolve();
-      });
+      );
     });
   }
 
   // private helper to check if given mnemonic uses BIP39 passphrase protection
-  private checkBIP39Mnemonic ({
+  private checkBIP39Mnemonic({
     addressIndex,
     numberOfAddresses,
     phrase,
@@ -275,7 +300,7 @@ class HDWalletProvider {
   }
 
   // private helper leveraging ethUtils to populate wallets/addresses
-  private ethUtilValidation ({
+  private ethUtilValidation({
     addressIndex,
     privateKeys
   }: {
@@ -292,8 +317,7 @@ class HDWalletProvider {
         this.wallets[address] = wallet;
       }
     }
-  };
-
+  }
 
   public send(
     payload: JSONRPCRequestPayload,
