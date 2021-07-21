@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "bootstrap": "npx lerna bootstrap",
+    "bootstrap": "npx lerna bootstrap && husky install",
     "prepare": "lerna run prepare --stream --concurrency=1",
     "publish-release": "./scripts/publish-release.sh",
     "publish-dist-tag": "./scripts/publish-dist-tag.sh",
@@ -10,7 +10,8 @@
     "ci": "./scripts/ci.sh",
     "geth": "./scripts/geth.sh",
     "solc-bump": "node ./scripts/solc-bump.js",
-    "update": "lernaupdate"
+    "update": "lernaupdate",
+    "precommit": "lint-staged"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.2.0",
@@ -18,7 +19,7 @@
     "coveralls": "^3.0.2",
     "eslint": "^7.9.0",
     "eslint-plugin-react-hooks": "^4.2.0",
-    "husky": "^4.3.0",
+    "husky": "^6.0.0",
     "lerna": "^3.16.4",
     "lerna-update-wizard": "^0.16.0",
     "lint-staged": "^10.4.2",
@@ -32,11 +33,6 @@
     ]
   },
   "dependencies": {},
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
   "lint-staged": {
     "*.js": [
       "prettier --write",

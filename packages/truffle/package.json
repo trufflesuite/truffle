@@ -49,7 +49,6 @@
     "fs-extra": "^9.1.0",
     "ganache-core": "2.13.0",
     "glob": "^7.1.6",
-    "husky": "^1.1.2",
     "js-scrypt": "^0.2.0",
     "meta-npm": "^0.0.22",
     "meta-pkgs": "^0.2.0",
