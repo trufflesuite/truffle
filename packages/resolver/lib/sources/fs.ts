@@ -57,7 +57,7 @@ export class FS implements ResolverSource {
     return path.basename(sourcePath, ".sol");
   }
 
-  async resolve(importPath: string, importedFrom?: string) {
+  async resolve(importPath: string, _importedFrom?: string) {
 
     if (!path.isAbsolute(importPath)) {
       //the FS resolver should only resolve absolute paths.
