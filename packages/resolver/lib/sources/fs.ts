@@ -57,29 +57,31 @@ export class FS implements ResolverSource {
     return path.basename(sourcePath, ".sol");
   }
 
-  async resolve(importPath: string, importedFrom: string) {
-    importedFrom = importedFrom || "";
-    const possiblePaths = [
-      importPath,
-      path.join(path.dirname(importedFrom), importPath)
-    ];
+  async resolve(importPath: string, importedFrom?: string) {
 
-    let body, filePath;
-    for (const possiblePath of possiblePaths) {
-      try {
-        const resolvedSource = fs.readFileSync(possiblePath, {
-          encoding: "utf8"
-        });
-        body = resolvedSource;
-        filePath = possiblePath;
-
-        return { body, filePath };
-      } catch (error) {
-        // do nothing
-      }
+    if (!path.isAbsolute(importPath)) {
+      //the FS resolver should only resolve absolute paths.
+      //If things are being done properly, then either:
+      //1. this is a top-level path so of course it's absolute; or,
+      //2. the import was an explicitly relative path... which has been
+      //converted to absolute by the time it's passed here.
+      //The bad cases we want to disallow are:
+      //3. this is an absolute path in an import (allowed here but disallowed
+      //elsewhere)
+      //4. this is an implicitly relative path in an import (we have to disallow
+      //these, sorry, they cause problems with Solidity's import resolution)
+      return { body: undefined, filePath: undefined };
     }
 
-    return { body, filePath };
+    try {
+      const resolvedSource = fs.readFileSync(importPath, {
+        encoding: "utf8"
+      });
+      return { body: resolvedSource, filePath: importPath };
+    } catch (error) {
+      return { body: undefined, filePath: undefined };
+    }
+
   }
 
   // Here we're resolving from local files to local files, all absolute.
