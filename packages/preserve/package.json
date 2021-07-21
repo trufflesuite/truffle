@@ -11,7 +11,7 @@
     "build": "tsc",
     "prepare": "yarn build && yarn docs",
     "test": "jest --verbose --detectOpenHandles",
-    "docs": "../../node_modules/typedoc/bin/typedoc --options ./docs/typedoc.json"
+    "docs": "typedoc --options ./docs/typedoc.json"
   },
   "repository": {
     "type": "git",
