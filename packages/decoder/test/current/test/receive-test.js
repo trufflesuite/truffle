@@ -8,45 +8,47 @@ const Decoder = require("../../..");
 
 const { prepareContracts } = require("../../helpers");
 
-describe("Non-function transactions", function() {
-
+describe("Non-function transactions", function () {
   let provider;
   let abstractions;
-  let compilations;
   let web3;
 
   let Contracts;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({seed: "decoder", gasLimit: 7000000});
+    provider = Ganache.provider({ seed: "decoder", gasLimit: 7000000 });
     web3 = new Web3(provider);
   });
 
   before("Prepare contracts and artifacts", async function () {
     this.timeout(30000);
 
-    const prepared = await prepareContracts(provider, path.resolve(__dirname, ".."));
+    const prepared = await prepareContracts(
+      provider,
+      path.resolve(__dirname, "..")
+    );
     abstractions = prepared.abstractions;
-    compilations = prepared.compilations;
 
-    Contracts = [
-      abstractions.ReceiveTest,
-      abstractions.FallbackTest,
-    ];
+    Contracts = [abstractions.ReceiveTest, abstractions.FallbackTest];
   });
 
-  it("should decode transactions that invoke fallback or receive", async function() {
+  it("should decode transactions that invoke fallback or receive", async function () {
     let receiveTest = await abstractions.ReceiveTest.deployed();
     let fallbackTest = await abstractions.FallbackTest.deployed();
 
-    const decoder = await Decoder.forProject(web3.currentProvider, Contracts);
+    const decoder = await Decoder.forProject({
+      provider: web3.currentProvider,
+      projectInfo: { artifacts: Contracts }
+    });
 
     let receiveHash = (await receiveTest.send(1)).tx;
     let fallbackNoDataHash = (await fallbackTest.send(1)).tx;
-    let fallbackDataHash = (await receiveTest.sendTransaction({
-      to: receiveTest.address,
-      data: "0xdeadbeef"
-    })).tx;
+    let fallbackDataHash = (
+      await receiveTest.sendTransaction({
+        to: receiveTest.address,
+        data: "0xdeadbeef"
+      })
+    ).tx;
 
     let receiveTx = await web3.eth.getTransaction(receiveHash);
     let fallbackNoDataTx = await web3.eth.getTransaction(fallbackNoDataHash);

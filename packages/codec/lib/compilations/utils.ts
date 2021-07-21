@@ -1,6 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:compilations:utils");
 
+import { AstNode, AstNodes } from "@truffle/codec/ast/types";
 import * as Ast from "@truffle/codec/ast";
 import * as Compiler from "@truffle/codec/compiler";
 import {
@@ -8,7 +9,15 @@ import {
   GeneratedSources
 } from "@truffle/contract-schema/spec";
 import * as Common from "@truffle/compile-common";
-import { Compilation, Contract, Source, VyperSourceMap } from "./types";
+import * as Format from "@truffle/codec/format";
+import {
+  Compilation,
+  Contract,
+  Source,
+  VyperSourceMap,
+  ProjectInfo
+} from "./types";
+import { NoProjectInfoError } from "../errors";
 
 export function shimCompilations(
   inputCompilations: Common.Compilation[],
@@ -120,9 +129,9 @@ export function shimContracts(
     let sourceObject: Source = {
       sourcePath,
       source,
-      ast: <Ast.AstNode>ast,
+      ast: <AstNode>ast,
       compiler,
-      language: inferLanguage(<Ast.AstNode>ast, compiler, sourcePath)
+      language: inferLanguage(<AstNode>ast, compiler, sourcePath)
     };
     //ast needs to be coerced because schema doesn't quite match our types here...
 
@@ -151,7 +160,9 @@ export function shimContracts(
       }
       //if that didn't work, try the source map
       if (index === undefined && (sourceMap || deployedSourceMap)) {
-        const sourceMapString = simpleShimSourceMap(deployedSourceMap || sourceMap);
+        const sourceMapString = simpleShimSourceMap(
+          deployedSourceMap || sourceMap
+        );
         index = extractPrimarySource(sourceMapString);
       }
       //else leave undefined for now
@@ -205,7 +216,7 @@ export function shimContracts(
       ({ sourcePath, contents: source, ast, language }, index) => ({
         sourcePath,
         source,
-        ast: <Ast.AstNode>ast,
+        ast: <AstNode>ast,
         language,
         id: index.toString(), //HACK
         compiler //redundant but let's include it
@@ -223,7 +234,7 @@ export function shimContracts(
 }
 
 //note: this works for Vyper too!
-function sourceIndexForAst(ast: Ast.AstNode): number | undefined {
+function sourceIndexForAst(ast: AstNode): number | undefined {
   if (Array.isArray(ast)) {
     //special handling for old Vyper versions
     ast = ast[0];
@@ -239,7 +250,7 @@ function sourceIndexForAst(ast: Ast.AstNode): number | undefined {
 export function getContractNode(
   contract: Contract,
   compilation: Compilation
-): Ast.AstNode {
+): AstNode {
   const {
     contractName,
     sourceMap,
@@ -267,7 +278,7 @@ export function getContractNode(
     sourcesToCheck = sources;
   }
 
-  return sourcesToCheck.reduce((foundNode: Ast.AstNode, source: Source) => {
+  return sourcesToCheck.reduce((foundNode: AstNode, source: Source) => {
     if (foundNode || !source) {
       return foundNode;
     }
@@ -313,7 +324,7 @@ function normalizeGeneratedSources(
       sourcePath: source.name,
       source: source.contents,
       //ast needs to be coerced because schema doesn't quite match our types here...
-      ast: <Ast.AstNode>source.ast,
+      ast: <AstNode>source.ast,
       compiler: compiler,
       language: source.language
     };
@@ -337,7 +348,7 @@ function isGeneratedSources(
 
 //HACK, maybe?
 function inferLanguage(
-  ast: Ast.AstNode | undefined,
+  ast: AstNode | undefined,
   compiler: Compiler.CompilerVersion,
   sourcePath: string
 ): string | undefined {
@@ -438,5 +449,104 @@ export function simpleShimSourceMap(
     } catch (_) {
       return sourceMap; //Solidity case
     }
+  }
+}
+
+/**
+ * collects user defined types & tagged outputs for a given set of compilations,
+ * returning both the definition nodes and (for the types) the type objects
+ *
+ * "Tagged outputs" means user-defined things that are output by a contract
+ * (not input to a contract), and which are distinguished by (potentially
+ * ambiguous) selectors.  So, events and custom errors are tagged outputs.
+ * Function arguments are not tagged outputs (they're not outputs).
+ * Return values are not tagged outputs (they don't have a selector).
+ * Built-in errors (Error(string) and Panic(uint))... OK I guess those could
+ * be considered tagged outputs, but we're only looking at user-defined ones
+ * here.
+ */
+export function collectUserDefinedTypesAndTaggedOutputs(
+  compilations: Compilation[]
+): {
+  definitions: { [compilationId: string]: AstNodes };
+  types: Format.Types.TypesById;
+} {
+  let references: { [compilationId: string]: AstNodes } = {};
+  let types: Format.Types.TypesById = {};
+  for (const compilation of compilations) {
+    references[compilation.id] = {};
+    for (const source of compilation.sources) {
+      if (!source) {
+        continue; //remember, sources could be empty if shimmed!
+      }
+      const { ast, compiler, language } = source;
+      if (language === "Solidity" && ast) {
+        //don't check Yul or Vyper sources!
+        for (const node of ast.nodes) {
+          if (
+            node.nodeType === "StructDefinition" ||
+            node.nodeType === "EnumDefinition" ||
+            node.nodeType === "ContractDefinition"
+          ) {
+            references[compilation.id][node.id] = node;
+            //we don't have all the references yet, but we actually don't need them :)
+            const dataType = Ast.Import.definitionToStoredType(
+              node,
+              compilation.id,
+              compiler,
+              references[compilation.id]
+            );
+            types[dataType.id] = dataType;
+          } else if (
+            node.nodeType === "EventDefinition" ||
+            node.nodeType === "ErrorDefinition"
+          ) {
+            references[compilation.id][node.id] = node;
+          }
+          if (node.nodeType === "ContractDefinition") {
+            for (const subNode of node.nodes) {
+              if (
+                subNode.nodeType === "StructDefinition" ||
+                subNode.nodeType === "EnumDefinition"
+              ) {
+                references[compilation.id][subNode.id] = subNode;
+                //we don't have all the references yet, but we only need the
+                //reference to the defining contract, which we just added above!
+                const dataType = Ast.Import.definitionToStoredType(
+                  subNode,
+                  compilation.id,
+                  compiler,
+                  references[compilation.id]
+                );
+                types[dataType.id] = dataType;
+              } else if (
+                subNode.nodeType === "EventDefinition" ||
+                subNode.nodeType === "ErrorDefinition"
+              ) {
+                  references[compilation.id][subNode.id] = subNode;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return { definitions: references, types };
+}
+
+export function infoToCompilations(
+  projectInfo: ProjectInfo | undefined
+): Compilation[] {
+  if (!projectInfo) {
+    throw new NoProjectInfoError();
+  }
+  if (projectInfo.compilations) {
+    return projectInfo.compilations;
+  } else if (projectInfo.commonCompilations) {
+    return shimCompilations(projectInfo.commonCompilations);
+  } else if (projectInfo.artifacts) {
+    return shimArtifacts(projectInfo.artifacts);
+  } else {
+    throw new NoProjectInfoError();
   }
 }

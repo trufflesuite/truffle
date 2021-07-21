@@ -1,52 +1,73 @@
-import BN from "bn.js";
-import { ContractObject as Artifact } from "@truffle/contract-schema/spec";
-import TruffleConfig from "@truffle/config";
-import {
+import type BN from "bn.js";
+import type { ContractObject as Artifact } from "@truffle/contract-schema/spec";
+import type {
   Format,
   Ast,
   Compilations,
-  Contexts,
   LogDecoding,
   StateVariable,
   ExtrasAllowed
 } from "@truffle/codec";
-import Web3 from "web3";
+import type { Provider } from "web3/providers";
+import type Web3 from "web3";
 
 //StateVariable used to be defined here, so let's continue
 //to export it
 export { StateVariable, ExtrasAllowed };
 
 /**
- * This type represents information about a Truffle project that can be used to
- * construct and initialize a decoder for that project.  This information may
- * be passed in various ways; this type is given here as an interface rahter
- * than a union, but note that really you only need to include one of these
- * fields.  (The `compilations` field will be used if present, then `artifacts`
- * if not, etc.)  Further options for how to specify project information are
- * intended to be added in the future.
- * @category Inputs
+ * This type contains information needed to initialize the decoder.
+ * @Category Inputs
  */
-export interface ProjectInfo {
+export interface DecoderSettings {
   /**
-   * An list of compilations, as specified in codec; this method of specifying
-   * a project is mostly intended for internal Truffle use for now, but you can
-   * see the documentation of the Compilations type if you want to use it.
+   * Information about the project or contracts being decoded.
+   * This may come in several forms; see the type documentation for
+   * more information.  The simplest way to use this to set it to
+   * `{ artifacts: <array of artifacts in project> }`.
+   *
+   * This may be left out if an artifact or contract has been passed
+   * in by some other means, in which case the decoder will be made
+   * based purely on that single contract, but it's recommended to pass in
+   * project info for all your contracts to get the decoder's full power.
    */
-  compilations?: Compilations.Compilation[];
+  projectInfo?: Compilations.ProjectInfo;
   /**
-   * A list of contract artifacts for contracts in the project.
-   * Contract constructor objects may be substituted for artifacts, so if
-   * you're not sure which you're dealing with, it's OK.
+   * The provider for the decoder to use.  This is required when using a
+   * provider-based constructor; otherwise an exception will be thrown.
+   * If the decoder is initialized with a Truffle Contract-based constructor,
+   * this is not expected to be passed.  If it is passed, it will override
+   * the use of the given contract's provider.
    */
-  artifacts?: Artifact[];
+  provider?: Provider;
   /**
-   * The project's config object.  If present, and it has the
-   * `contracts_build_directory` property, the decoder will automatically read
-   * all the artifacts from there and use those as the project information.
-   * Further, smarter use of the config object are intended to be added in
-   * the future.
+   * This field can be included to enable or disable ENS resolution (and, in
+   * the future, reverse resolution) and specify how it should be performed.
+   * If absent, ENS resolution will be performed using the decoder's usual
+   * provider.
    */
-  config?: TruffleConfig;
+  ens?: EnsSettings;
+}
+
+//WARNING: copypasted from @truffle/encoder!
+/**
+ * This type indicates settings to be used for ENS resolution (and, in the
+ * future, reverse resolution).
+ * @Category Inputs
+ */
+export interface EnsSettings {
+  /**
+   * The provider to use for ENS resolution; set this to `null` to disable
+   * ENS resolution.  If absent, will default to the decoder's provider,
+   * and ENS resolution will be enabled.
+   */
+  provider?: Provider | null;
+  /**
+   * The ENS registry address to use; if absent, will use the default one
+   * for the current network.  If there is no default registry for the
+   * current network, ENS resolution will be disabled.
+   */
+  registryAddress?: string;
 }
 
 /**
@@ -109,14 +130,6 @@ export interface CodeCache {
 export interface CompilationAndContract {
   compilation: Compilations.Compilation;
   contract: Compilations.Contract;
-}
-
-export interface ContractAndContexts {
-  compilationId: string;
-  contract: Compilations.Contract;
-  node: Ast.AstNode;
-  deployedContext?: Contexts.Context;
-  constructorContext?: Contexts.Context;
 }
 
 export interface ContractInfo {

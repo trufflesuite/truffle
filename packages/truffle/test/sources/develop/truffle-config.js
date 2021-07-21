@@ -9,8 +9,6 @@ module.exports = {
     }
   },
   console: {
-    require: [
-      { path: "./snippets/helper.js" }
-    ]
+    require: [{ path: "./snippets/helper.js" }]
   }
 };

@@ -64,3 +64,15 @@ export function handleDecodingError(
     throw error;
   }
 }
+
+/**
+ * This error indicates that the user attempted to instantiate a decoder
+ * with no project information (by explicitly overriding the default).
+ * @category Exception
+ */
+export class NoProjectInfoError extends Error {
+  constructor() {
+    super("No project information specified.");
+    this.name = "NoProjectInfoError";
+  }
+}

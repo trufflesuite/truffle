@@ -8,16 +8,16 @@ const assert = require("assert");
 const Server = require("../server");
 const Reporter = require("../reporter");
 
-describe("Happy path (truffle unbox)", function() {
+describe("Happy path (truffle unbox)", function () {
   let config;
   let options;
   const logger = new MemoryLogger();
 
-  before("set up the server", function(done) {
+  before("set up the server", function (done) {
     Server.start(done);
   });
 
-  after("stop server", function(done) {
+  after("stop server", function (done) {
     Server.stop(done);
   });
 
@@ -31,7 +31,7 @@ describe("Happy path (truffle unbox)", function() {
     };
   });
 
-  it("will compile", async function() {
+  it("will compile", async function () {
     this.timeout(20000);
 
     await CommandRunner.run("compile", config);
@@ -53,7 +53,7 @@ describe("Happy path (truffle unbox)", function() {
     );
   });
 
-  it("will migrate", async function() {
+  it("will migrate", async function () {
     this.timeout(50000);
 
     await CommandRunner.run("migrate", config);
@@ -70,11 +70,11 @@ describe("Happy path (truffle unbox)", function() {
 
     var promises = [];
 
-    [MetaCoin, ConvertLib, Migrations].forEach(function(abstraction) {
+    [MetaCoin, ConvertLib, Migrations].forEach(function (abstraction) {
       abstraction.setProvider(config.provider);
 
       promises.push(
-        abstraction.deployed().then(function(instance) {
+        abstraction.deployed().then(function (instance) {
           assert.notEqual(
             instance.address,
             null,
@@ -86,7 +86,7 @@ describe("Happy path (truffle unbox)", function() {
     await Promise.all(promises);
   });
 
-  it("will run tests", async function() {
+  it("will run tests", async function () {
     this.timeout(70000);
     await CommandRunner.run("test", config);
     var output = logger.contents();

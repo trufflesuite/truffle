@@ -7,10 +7,7 @@ const sandbox = require("../sandbox");
 
 describe("develop", function () {
   let config;
-  const project = path.join(
-    __dirname,
-    "../../sources/develop",
-  );
+  const project = path.join(__dirname, "../../sources/develop");
   const logger = new MemoryLogger();
 
   before(async function () {
@@ -19,7 +16,7 @@ describe("develop", function () {
     config.network = "development";
     config.logger = logger;
     config.mocha = {
-      reporter: new Reporter(logger),
+      reporter: new Reporter(logger)
     };
   });
 
@@ -30,13 +27,15 @@ describe("develop", function () {
     const output = logger.contents();
 
     //prepare a helpful message to standout in CI log noise
-    const formatLines = (lines) =>
-      lines.split("\n").map((line) => `\t---truffle develop log---\t${line}`)
+    const formatLines = lines =>
+      lines
+        .split("\n")
+        .map(line => `\t---truffle develop log---\t${line}`)
         .join("\n");
     const successMessage = "Snippet Loaded";
     assert(
       output.includes(successMessage),
-      `Expected "${successMessage}" in output:\n${formatLines(output)}`,
+      `Expected "${successMessage}" in output:\n${formatLines(output)}`
     );
   });
 });

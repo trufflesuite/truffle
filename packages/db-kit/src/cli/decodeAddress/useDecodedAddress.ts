@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import type * as Decoder from "@truffle/decoder";
 
 export interface UseDecodedAddressOptions {
-  decoder: Decoder.WireDecoder;
+  decoder: Decoder.ProjectDecoder;
   address: string;
 }
 

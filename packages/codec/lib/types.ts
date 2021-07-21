@@ -1,4 +1,5 @@
 import BN from "bn.js";
+import Big from "big.js";
 
 import * as Abi from "@truffle/abi-utils";
 import * as Types from "@truffle/codec/format/types";
@@ -605,4 +606,132 @@ export interface LogOptions {
    * with this option.
    */
   id?: string;
+}
+
+/**
+ * An encoder request; can come in one of three types.  It can be either a
+ * request to understand a numeric input (integer or decimal), or a request to
+ * resolve a contract name.  The "kind" field distinguishes.
+ *
+ * @Category Requests
+ */
+export type WrapRequest = IntegerWrapRequest | DecimalWrapRequest | AddressWrapRequest;
+
+/**
+ * A request to understand an integer value.
+ *
+ * @Category Requests
+ */
+export interface IntegerWrapRequest {
+  /**
+   * Indicates that this is a IntegerWrapRequest.
+   */
+  kind: "integer";
+  /**
+   * The input whose numeric value needs to be extracted.
+   */
+  input: unknown;
+}
+
+/**
+ * A request to understand an decimal value.
+ *
+ * @Category Requests
+ */
+export interface DecimalWrapRequest {
+  /**
+   * Indicates that this is a DecimalWrapRequest.
+   */
+  kind: "decimal";
+  /**
+   * The input whose numeric value needs to be extracted.
+   */
+  input: unknown;
+}
+
+/**
+ * A request to resolve a contract name to an address.
+ *
+ * @Category Requests
+ */
+export interface AddressWrapRequest {
+  /**
+   * Indicates that this is an AddressWrapRequest.
+   */
+  kind: "address";
+  /**
+   * The name that needs to be resolved to an address.
+   */
+  name: string;
+}
+
+/**
+ * An encoder response; contains either a numeric value (as a BigInt or Big)
+ * or an address.
+ *
+ * @Category Requests
+ */
+export type WrapResponse = IntegerWrapResponse | DecimalWrapResponse | AddressWrapResponse;
+
+/**
+ * A response with an integral numeric value, as BigInt.
+ *
+ * @Category Requests
+ */
+export interface IntegerWrapResponse {
+  /**
+   * Indicates that this is a IntegerWrapResponse.
+   */
+  kind: "integer";
+  /**
+   * The numeric value that was extracted, as a BigInt, or null, to indicate
+   * that either the number format wasn't recognized or wasn't an integer.
+   */
+  value: bigint | null;
+  /**
+   * If present, the reason the number wasn't recognized as an integer.
+   */
+  reason?: string;
+}
+
+/**
+ * A response with an decimal numeric value, as Big.
+ *
+ * @Category Requests
+ */
+export interface DecimalWrapResponse {
+  /**
+   * Indicates that this is a DecimalWrapResponse.
+   */
+  kind: "decimal";
+  /**
+   * The numeric value that was extracted, as a Big, or null, to indicate
+   * that the number format wasn't recognized.
+   */
+  value: Big | null;
+  /**
+   * If present, the reason the number wasn't recognized as a decimal.
+   */
+  reason?: string;
+}
+
+/**
+ * A response with an address for a contract name.
+ *
+ * @Category Requests
+ */
+export interface AddressWrapResponse {
+  /**
+   * Indicates that this is an AddressWrapResponse.
+   */
+  kind: "address";
+  /**
+   * The address for the contract name, or null, to indicate that no such
+   * contract was found.
+   */
+  address: string | null;
+  /**
+   * If present, the reason the address wasn't found.
+   */
+  reason?: string;
 }

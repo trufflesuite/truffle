@@ -14,10 +14,8 @@ const { prepareContracts } = require("../../helpers");
 let web3; //sorry!
 let abstractions; //sorry!
 
-describe("Graceful degradation when information is missing", function() {
-
+describe("Graceful degradation when information is missing", function () {
   let provider;
-  let rawCompilations;
   let accounts;
 
   let Contracts;
@@ -36,9 +34,11 @@ describe("Graceful degradation when information is missing", function() {
   before("Prepare contracts and artifacts", async function () {
     this.timeout(30000);
 
-    const prepared = await prepareContracts(provider, path.resolve(__dirname, ".."));
+    const prepared = await prepareContracts(
+      provider,
+      path.resolve(__dirname, "..")
+    );
     abstractions = prepared.abstractions;
-    rawCompilations = prepared.compilations;
 
     Contracts = [
       abstractions.DowngradeTest,
@@ -48,7 +48,7 @@ describe("Graceful degradation when information is missing", function() {
     compilations = Codec.Compilations.Utils.shimArtifacts(Contracts);
   });
 
-  it("Correctly degrades on allocation when no node", async function() {
+  it("Correctly degrades on allocation when no node", async function () {
     let mangledCompilations = clonedeep(compilations);
     let source = mangledCompilations[0].sources.find(x => x); //find defined source
     source.ast = undefined;
@@ -56,7 +56,7 @@ describe("Graceful degradation when information is missing", function() {
     await runTestBody(mangledCompilations);
   });
 
-  it("Correctly degrades on allocation when error", async function() {
+  it("Correctly degrades on allocation when error", async function () {
     let mangledCompilations = clonedeep(compilations);
     let source = mangledCompilations[0].sources.find(x => x); //find defined source
 
@@ -75,7 +75,7 @@ describe("Graceful degradation when information is missing", function() {
     await runTestBody(mangledCompilations, true);
   });
 
-  it("Correctly degrades on decoding when error", async function() {
+  it("Correctly degrades on decoding when error", async function () {
     let mangledCompilations = clonedeep(compilations);
     let source = mangledCompilations[0].sources.find(x => x); //find defined source
 
@@ -94,11 +94,11 @@ describe("Graceful degradation when information is missing", function() {
     await runTestBody(mangledCompilations, true);
   });
 
-  it("Correctly abifies after finishing", async function() {
+  it("Correctly abifies after finishing", async function () {
     await runTestBody(compilations, false, true); //for once, we're not modifying it!
   });
 
-  it("Correctly decodes decimals", async function() {
+  it("Correctly decodes decimals", async function () {
     let mangledCompilations = clonedeep(compilations);
     let downgradeTest = mangledCompilations[0].contracts.find(
       contract => contract.contractName === "DowngradeTest"
@@ -111,8 +111,9 @@ describe("Graceful degradation when information is missing", function() {
     ).inputs[0].type = "fixed168x10";
 
     //...and now let's set up a decoder for our hacked-up contract artifact.
-    let decoder = await Decoder.forProject(web3.currentProvider, {
-      compilations: mangledCompilations
+    let decoder = await Decoder.forProject({
+      provider: web3.currentProvider,
+      projectInfo: { compilations: mangledCompilations }
     });
 
     //the ethers encoder can't yet handle fixed-point
@@ -168,14 +169,15 @@ describe("Graceful degradation when information is missing", function() {
     assert(txDecoding.arguments[0].value.value.asBig.eq(tau));
   });
 
-  it("Correctly decodes inherited events when no node", async function() {
+  it("Correctly decodes inherited events when no node", async function () {
     let mangledCompilations = clonedeep(compilations);
     let source = mangledCompilations[0].sources.find(x => x); //find defined source
     source.ast = undefined;
 
     //...and now let's set up a decoder for our hacked-up contract artifact.
-    let decoder = await Decoder.forProject(web3.currentProvider, {
-      compilations: mangledCompilations
+    let decoder = await Decoder.forProject({
+      provider: web3.currentProvider,
+      projectInfo: { compilations: mangledCompilations }
     });
 
     let deployedContract = await abstractions.DowngradeTest.new();
@@ -195,12 +197,12 @@ describe("Graceful degradation when information is missing", function() {
     assert.isEmpty(logDecodings[0].arguments);
   });
 
-  describe("Out-of-range enums", function() {
-    it("Doesn't include out-of-range enums in full mode", async function() {
-      let decoder = await Decoder.forProject(
-        web3.currentProvider,
-        { compilations } //not modifying for once!
-      );
+  describe("Out-of-range enums", function () {
+    it("Doesn't include out-of-range enums in full mode", async function () {
+      let decoder = await Decoder.forProject({
+        provider: web3.currentProvider,
+        projectInfo: { compilations } //not modifying for once!
+      });
       let deployedContract = await abstractions.DowngradeTest.new();
 
       let txArguments = [9, 9, 1, 1]; //note: 1 is in range; 9 is not
@@ -219,7 +221,7 @@ describe("Graceful degradation when information is missing", function() {
       assert.strictEqual(indexedLogDecodings[0].decodingMode, "full");
     });
 
-    it("Abifies correctly when failure occurs in first enum", async function() {
+    it("Abifies correctly when failure occurs in first enum", async function () {
       let mangledCompilations = clonedeep(compilations);
       let source = mangledCompilations[0].sources.find(x => x); //find defined source
 
@@ -237,7 +239,7 @@ describe("Graceful degradation when information is missing", function() {
       await runEnumTestBody(mangledCompilations);
     });
 
-    it("Abifies correctly when failure occurs in second enum", async function() {
+    it("Abifies correctly when failure occurs in second enum", async function () {
       let mangledCompilations = clonedeep(compilations);
       let source = mangledCompilations[0].sources.find(x => x); //find defined source
 
@@ -256,7 +258,7 @@ describe("Graceful degradation when information is missing", function() {
     });
   });
 
-  it("Decodes external functions via additionalContexts", async function() {
+  it("Decodes external functions via additionalContexts", async function () {
     let mangledCompilations = clonedeep(compilations);
     let downgradeTest = mangledCompilations[0].contracts.find(
       contract => contract.contractName === "DowngradeTest"
@@ -266,7 +268,7 @@ describe("Graceful degradation when information is missing", function() {
     let deployedContract = await abstractions.DowngradeTest.new();
     let address = deployedContract.address;
     let decoder = await Decoder.forContractInstance(deployedContract, {
-      compilations: mangledCompilations
+      projectInfo: { compilations: mangledCompilations }
     });
 
     let decodedFunction = await decoder.variable("doYouSeeMe");
@@ -288,13 +290,13 @@ describe("Graceful degradation when information is missing", function() {
     assert.strictEqual(decodedFunction.value.selector, selector);
   });
 
-  it("Partially decodes internal functions when unreliable order", async function() {
+  it("Partially decodes internal functions when unreliable order", async function () {
     let mangledCompilations = clonedeep(compilations);
     mangledCompilations[0].unreliableSourceOrder = true;
 
     let deployedContract = await abstractions.DowngradeTest.new();
     let decoder = await Decoder.forContractInstance(deployedContract, {
-      compilations: mangledCompilations
+      projectInfo: { compilations: mangledCompilations }
     });
 
     let decodedFunction = await decoder.variable("canYouReadMe");
@@ -309,7 +311,7 @@ describe("Graceful degradation when information is missing", function() {
     //we won't bother testing the PC values
   });
 
-  it("Decodes return values even with no deployedBytecode", async function() {
+  it("Decodes return values even with no deployedBytecode", async function () {
     let mangledCompilations = clonedeep(compilations);
     const { DowngradeTest } = abstractions;
     let downgradeTest = mangledCompilations[0].contracts.find(
@@ -319,7 +321,7 @@ describe("Graceful degradation when information is missing", function() {
 
     let deployedContract = await DowngradeTest.new();
     let decoder = await Decoder.forContract(DowngradeTest, {
-      compilations: mangledCompilations
+      projectInfo: { compilations: mangledCompilations }
     });
 
     let abiEntry = DowngradeTest.abi.find(
@@ -469,8 +471,9 @@ async function runTestBody(
   skipFunctionTests = false,
   fullMode = false
 ) {
-  let decoder = await Decoder.forProject(web3.currentProvider, {
-    compilations: mangledCompilations
+  let decoder = await Decoder.forProject({
+    provider: web3.currentProvider,
+    projectInfo: { compilations: mangledCompilations }
   });
   let deployedContract = await abstractions.DowngradeTest.new();
   let address = deployedContract.address;
@@ -519,10 +522,10 @@ async function runTestBody(
   }
 }
 
-
 async function runEnumTestBody(mangledCompilations) {
-  let decoder = await Decoder.forProject(web3.currentProvider, {
-    compilations: mangledCompilations
+  let decoder = await Decoder.forProject({
+    provider: web3.currentProvider,
+    projectInfo: { compilations: mangledCompilations }
   });
   let deployedContract = await abstractions.DowngradeTest.new();
 
@@ -567,7 +570,7 @@ async function runEnumTestBody(mangledCompilations) {
 async function runErrorTestBody(mangledCompilations) {
   const deployedContract = await abstractions.DowngradeTest.new();
   const decoder = await Decoder.forContract(abstractions.DowngradeTest, {
-    compilations: mangledCompilations
+    projectInfo: { compilations: mangledCompilations }
   });
   let abiEntry = abstractions.DowngradeTest.abi.find(
     ({ type, name }) => type === "function" && name === "throwCustom"

@@ -1,6 +1,8 @@
 import debugModule from "debug";
 const debug = debugModule("codec:abi-data:allocate");
 
+export * as Utils from "./utils";
+
 import * as Abi from "@truffle/abi-utils";
 
 import * as Import from "@truffle/codec/abi-data/import";

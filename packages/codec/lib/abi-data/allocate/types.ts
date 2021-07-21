@@ -19,6 +19,15 @@ export interface ContractAllocationInfo {
   compilationId?: string; //needed for all
 }
 
+//this basically just exists to be the return type
+//of collectAllocationInfo, i.e., to support the decoder
+export interface ContextAndAllocationInfo {
+  contexts: Contexts.Contexts;
+  deployedContexts: Contexts.Contexts;
+  contractsAndContexts: Contexts.ContractAndContexts[];
+  allocationInfo: ContractAllocationInfo[];
+}
+
 export interface AbiSizeInfo {
   size: number;
   dynamic: boolean;
