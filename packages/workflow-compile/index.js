@@ -33,6 +33,12 @@ async function compile(config) {
       const compileMethod =
         config.all === true || config.compileAll === true
           ? Compile.all
+          : config.paths
+          ? options =>
+              Compile.sourcesWithDependencies({
+                paths: config.paths,
+                options
+              })
           : Compile.necessary;
 
       return await compileMethod(config);

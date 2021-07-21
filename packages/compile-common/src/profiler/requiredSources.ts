@@ -2,6 +2,7 @@ import debugModule from "debug";
 import path from "path";
 const debug = debugModule("compile-common:profiler:requiredSources");
 
+import { UnresolvedPathsError } from "../errors";
 import {
   resolveAllSources,
   ResolveAllSourcesOptions
@@ -67,6 +68,13 @@ export async function requiredSources({
     paths: allPaths
   });
 
+  const missing = updatedPaths.filter(
+    updatedPath => !(updatedPath in resolved)
+  );
+  if (missing.length > 0) {
+    throw new UnresolvedPathsError(missing);
+  }
+
   //exit out semi-quickly if we've been asked to compile everything
   if (listsEqual(updatedPaths, allPaths)) {
     for (const file of Object.keys(resolved)) {
@@ -79,7 +87,6 @@ export async function requiredSources({
       compilationTargets: Object.keys(allSources)
     };
   }
-
 
   // Seed compilationTargets with known updates
   for (const update of updatedPaths) {
@@ -109,7 +116,7 @@ export async function requiredSources({
 
       debug("currentFile: %s", currentFile);
 
-      const imports = resolved[currentFile].imports;
+      const imports = (resolved[currentFile] || {}).imports || [];
 
       debug("imports.length: %d", imports.length);
 
@@ -136,7 +143,8 @@ export async function requiredSources({
       required.push(file);
       for (const importPath of resolved[file].imports) {
         debug("importPath: %s", importPath);
-        if (!required.includes(importPath)) { //don't go into a loop!
+        if (!required.includes(importPath)) {
+          //don't go into a loop!
           filesToProcess.push(importPath);
         }
       }

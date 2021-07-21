@@ -93,6 +93,12 @@ const WorkflowCompile = {
         const compileFunc =
           config.all === true || config.compileAll === true
             ? Compile.all
+            : config.specificFiles
+            ? config =>
+                Compile.sourcesWithDependencies({
+                  paths: config.specificFiles,
+                  options: config
+                })
             : Compile.necessary;
 
         const { compilations } = await compileFunc(config);

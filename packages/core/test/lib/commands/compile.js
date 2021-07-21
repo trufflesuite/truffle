@@ -8,11 +8,47 @@ const command = require("../../../lib/commands/compile");
 const path = require("path");
 const fs = require("fs-extra");
 const glob = require("glob");
-let config;
-let output = "";
-let memStream;
+
+const makeResolveSource = config => async contractSourcePath => {
+  const { filePath } = await config.resolver.resolve(
+    contractSourcePath,
+
+    // to pretend we're inside the contracts directory
+    path.join(config.contracts_directory, "_")
+  );
+
+  return filePath;
+};
+
+const makeUpdateSources = config => {
+  const resolveSource = makeResolveSource(config);
+
+  return async contractSourcePaths => {
+    // convert (e.g.) "ConvertLib.sol" to "/path/to/contracts/ConvertLib.sol"
+    const filePaths = await Promise.all(contractSourcePaths.map(resolveSource));
+
+    const stats = {};
+    for (const filePath of filePaths) {
+      stats[filePath] = fs.statSync(filePath);
+
+      var newTime = new Date().getTime();
+      fs.utimesSync(filePath, newTime, newTime);
+    }
+
+    return () => {
+      for (const [filePath, stat] of Object.entries(stats)) {
+        fs.utimesSync(filePath, stat.atime, stat.mtime);
+      }
+    };
+  };
+};
 
 describe("compile", function () {
+  let config;
+  let output = "";
+  let memStream;
+  let updateSources;
+
   before("Create a sandbox", async () => {
     config = await Box.sandbox("default");
     config.resolver = new Resolver(config);
@@ -27,6 +63,8 @@ describe("compile", function () {
     };
     config.network = "default";
     config.logger = {log: val => val && memStream.write(val)};
+
+    updateSources = makeUpdateSources(config);
   });
 
   after("Cleanup tmp files", async function () {
@@ -64,30 +102,57 @@ describe("compile", function () {
     );
   });
 
+  it("compiles one specified contract after three are updated", async function () {
+    this.timeout(10000);
+
+    const reset = await updateSources([
+      "ConvertLib.sol",
+      "MetaCoin.sol",
+      "Migrations.sol"
+    ]);
+
+    try {
+      const { contracts } = await WorkflowCompile.compileAndSave(
+        config.with({
+          all: false,
+          quiet: true,
+          specificFiles: [
+            path.resolve(config.contracts_directory, "ConvertLib.sol")
+          ]
+        })
+      );
+
+      assert.equal(
+        Object.keys(contracts).length,
+        2, //ConvertLib.sol is imported by MetaCoin.sol so there should be two files.
+        "Didn't compile specified contracts."
+      );
+    } finally {
+      reset();
+    }
+  });
+
   it("compiles updated contract and its ancestors", async function () {
-    const fileToUpdate = path.resolve(
-      path.join(config.contracts_directory, "ConvertLib.sol")
-    );
-    const stat = fs.statSync(fileToUpdate);
+    this.timeout(10000);
 
-    // Update the modification time to simulate an edit.
-    const newTime = new Date().getTime();
-    fs.utimesSync(fileToUpdate, newTime, newTime);
+    const reset = await updateSources(["ConvertLib.sol"]);
+    try {
+      const { contracts } = await WorkflowCompile.compileAndSave(
+        config.with({
+          all: false,
+          quiet: true
+        })
+      );
 
-    const {contracts} = await WorkflowCompile.compileAndSave(
-      config.with({
-        all: false,
-        quiet: true
-      })
-    );
-    assert.equal(
-      Object.keys(contracts).length,
-      2,
-      "Expected MetaCoin and ConvertLib to be compiled"
-    );
-
-    // reset time
-    fs.utimesSync(fileToUpdate, stat.atime, stat.mtime);
+      assert.equal(
+        Object.keys(contracts).length,
+        2,
+        "Expected MetaCoin and ConvertLib to be compiled"
+      );
+    } finally {
+      // reset time
+      reset();
+    }
   });
 
   it("compiling shouldn't create any network artifacts", function () {
