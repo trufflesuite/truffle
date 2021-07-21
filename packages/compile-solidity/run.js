@@ -74,6 +74,7 @@ async function run(rawSources, options, language = "Solidity") {
     ? outputSources.map(source => source.sourcePath)
     : undefined; //leave undefined if sources undefined
   return {
+    architecture: "evm",
     sourceIndexes,
     contracts: processContracts({
       sources,

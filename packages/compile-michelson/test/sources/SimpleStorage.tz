@@ -1,0 +1,50 @@
+parameter (or (nat %divide) (or (unit %double) (nat %replace)));
+storage   nat;
+code
+  {
+    UNPAIR;     # @parameter : @storage
+    IF_LEFT
+      {
+        # == divide ==
+        # sp.verify(params.divisor > 5) # @parameter%divide : @storage
+        DUP;        # @parameter%divide : @parameter%divide : @storage
+        PUSH nat 5; # nat : @parameter%divide : @parameter%divide : @storage
+        COMPARE;    # int : @parameter%divide : @storage
+        LT;         # bool : @parameter%divide : @storage
+        IF
+          {}
+          {
+            PUSH string "WrongCondition: params.divisor > 5"; # string : @parameter%divide : @storage
+            FAILWITH;   # FAILED
+          }; # @parameter%divide : @storage
+        SWAP;       # @storage : @parameter%divide
+        # self.data.storedValue //= params.divisor # @storage : @parameter%divide
+        EDIV;       # option (pair nat nat)
+        IF_SOME
+          {
+            CAR;        # nat
+          }
+          {
+            PUSH int 20; # int
+            FAILWITH;   # FAILED
+          }; # nat
+      }
+      {
+        IF_LEFT
+          {
+            DROP;       # @storage
+            # == double ==
+            # self.data.storedValue *= 2 # @storage
+            PUSH nat 2; # nat : @storage
+            MUL;        # nat
+          }
+          {
+            SWAP;       # @storage : @parameter%replace
+            DROP;       # @parameter%replace
+            # == replace ==
+            # self.data.storedValue = params.value # @parameter%replace
+          }; # nat
+      }; # nat
+    NIL operation; # list operation : nat
+    PAIR;       # pair (list operation) nat
+  };
