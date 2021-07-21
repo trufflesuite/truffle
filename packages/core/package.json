@@ -71,6 +71,7 @@
     "mocha": "8.1.2",
     "node-emoji": "^1.8.1",
     "node-ipc": "^9.1.1",
+    "omelette": "^0.4.15",
     "ora": "^3.4.0",
     "original-require": "^1.0.1",
     "sane": "^4.0.2",

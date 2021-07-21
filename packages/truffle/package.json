@@ -22,7 +22,7 @@
     "build": "yarn build:patch && yarn build:cli",
     "build:patch": "node ./scripts/patchHighlightJsSolidity.js",
     "build:cli": "node --max-old-space-size=8192 ./node_modules/webpack/bin/webpack --config ./webpack.config.js",
-    "postinstall": "node ./scripts/postinstall.js",
+    "postinstall": "node ./scripts/postinstall.js && truffle --setup",
     "prepare": "yarn build",
     "publish:byoc": "node ./scripts/prereleaseVersion.js byoc-safe byoc",
     "publish:external-compiler": "node ./scripts/prereleaseVersion.js external-compiler external-compiler",

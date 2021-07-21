@@ -21792,6 +21792,11 @@ octokit-pagination-methods@^1.1.0:
   resolved "https://registry.yarnpkg.com/octokit-pagination-methods/-/octokit-pagination-methods-1.1.0.tgz#cf472edc9d551055f9ef73f6e42b4dbb4c80bea4"
   integrity sha512-fZ4qZdQ2nxJvtcasX7Ghl+WlWS/d9IgnBIwFZXVNNZUmzpno91SX5bc5vuxiuKoCtK78XxGGNuSCrDC7xYB3OQ==
 
+omelette@^0.4.15:
+  version "0.4.15"
+  resolved "https://registry.yarnpkg.com/omelette/-/omelette-0.4.15.tgz#dcf5a6dee3e70affb330faece3e022ba0e9b4463"
+  integrity sha512-BnfOVsiIKxmy7uy7f96r9lJKvnsKsHqn9ZLqWFjFawO3mFQJlrXoXdPR8iSDW+aVDOQIh3pL4zYkKhAhzbh/9Q==
+
 on-finished@~2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/on-finished/-/on-finished-2.3.0.tgz#20f1336481b083cd75337992a16971aa2d906947"
