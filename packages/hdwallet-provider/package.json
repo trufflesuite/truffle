@@ -17,11 +17,18 @@
   "scripts": {
     "build": "tsc",
     "prepare": "yarn build",
-    "test": "yarn build && mocha --exit -r ts-node/register test/**/*.test.ts"
+    "test": "yarn build && mocha --exit -r ts-node/register test/**/*.test.ts",
+    "test:types": "tsd"
+  },
+  "tsd": {
+    "directory": "test"
   },
   "types": "dist/index.d.ts",
   "dependencies": {
     "@trufflesuite/web3-provider-engine": "15.0.13-1",
+    "@types/ethereumjs-util": "^5.2.0",
+    "@types/ethereum-protocol": "^1.0.0",
+    "@types/web3-provider-engine": "^14.0.0",
     "any-promise": "^1.3.0",
     "bindings": "^1.5.0",
     "ethereum-cryptography": "^0.1.3",
@@ -33,14 +40,11 @@
   },
   "devDependencies": {
     "@types/bip39": "^2.4.2",
-    "@types/ethereum-protocol": "^1.0.0",
-    "@types/ethereumjs-util": "^5.2.0",
     "@types/mocha": "^5.2.7",
-    "@types/web3": "^1.0.20",
-    "@types/web3-provider-engine": "^14.0.0",
     "ganache-core": "2.13.0",
     "mocha": "8.1.2",
     "ts-node": "^9.0.0",
+    "tsd": "^0.17.0",
     "typescript": "^4.1.4"
   },
   "keywords": [
