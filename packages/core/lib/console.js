@@ -338,20 +338,34 @@ class Console extends EventEmitter {
       return callback(error);
     }
 
-    // Ensure our script returns a promise whether we're using an
-    // async function or not. If our script is an async function,
-    // this will ensure the console waits until that await is finished.
-    Promise.resolve(runScript(script))
-      .then(value => {
-        // If there's an assignment to run, run that.
-        if (assignment) return runScript(vm.createScript(assignment));
-        return value;
-      })
-      .then(value => {
-        // All good? Return the value (e.g., eval'd script or assignment)
-        callback(null, value);
-      })
-      .catch(callback);
+    let runScriptResult = runScript(script);
+
+    if (runScriptResult instanceof Promise || assignment) {
+      // Ensure our script returns a promise whether we're using an
+      // async function or not. If our script is an async function,
+      // this will ensure the console waits until that await is finished.
+      Promise.resolve(runScriptResult)
+        .then(value => {
+          // If there's an assignment to run, run that.
+          if (assignment) {
+            return runScript(vm.createScript(assignment));
+          } else {
+            runScript(
+              vm.createScript(
+                'console.log("The expression evaluates to a Promise; auto-resolving:")'
+              )
+            );
+          }
+          return value;
+        })
+        .then(value => {
+          // All good? Return the value (e.g., eval'd script or assignment)
+          callback(null, value);
+        })
+        .catch(callback);
+    } else {
+      callback(null, runScriptResult);
+    }
   }
 }
 
