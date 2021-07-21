@@ -5,6 +5,7 @@ import type {
   Tx as EvmTransaction
 } from "web3/eth/types";
 import type { TransactionReceipt as EvmTransactionReceipt } from "web3-eth/types";
+import { Provider } from "web3/providers";
 
 export {
   Block as EvmBlock,
@@ -30,6 +31,12 @@ export type TransactionCostReport = {
   value: string;
   cost: BN;
 };
+export type InterfaceAdapterOptions = {
+  provider?: Provider;
+  networkType?: string;
+  network_config?: any;
+};
+
 
 export interface InterfaceAdapter {
   getNetworkId(): Promise<NetworkId>;

@@ -24,6 +24,9 @@
   },
   "types": "dist/index.d.ts",
   "dependencies": {
+    "@taquito/rpc": "^9.2.0",
+    "@taquito/signer": "^9.2.0",
+    "@taquito/taquito": "^9.2.0",
     "bn.js": "^5.1.3",
     "ethers": "^4.0.32",
     "web3": "1.3.6"

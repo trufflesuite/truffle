@@ -234,7 +234,8 @@ const Networks = {
 
     const interfaceAdapter = createInterfaceAdapter({
       provider,
-      networkType: network_options.type
+      networkType: network_options.type,
+      network: network_options
     });
 
     const currentNetworkID = await interfaceAdapter.getNetworkId();

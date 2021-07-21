@@ -5,7 +5,7 @@ const {
   Web3Shim,
   createInterfaceAdapter
 } = require("@truffle/interface-adapter");
-const contract = require("@truffle/contract");
+const { contract } = require("@truffle/contract-constructor");
 const vm = require("vm");
 const expect = require("@truffle/expect");
 const TruffleError = require("@truffle/error");
@@ -50,8 +50,10 @@ class Console extends EventEmitter {
 
     this.interfaceAdapter = createInterfaceAdapter({
       provider: options.provider,
-      networkType: options.networks[options.network].type
+      networkType: options.networks[options.network].type,
+      network_config: options.network_config
     });
+    // TODO BGC Not needed with tezos, perhaps set up with method from interfaceAdapter
     this.web3 = new Web3Shim({
       provider: options.provider,
       networkType: options.networks[options.network].type
@@ -125,8 +127,11 @@ class Console extends EventEmitter {
     });
 
     const abstractions = jsonBlobs.map(json => {
-      const abstraction = contract(json);
-      provision(abstraction, this.options);
+      const abstraction = contract(json, this.options);
+      // TODO BGC Implement provision for tezos so that this is no longer needed
+      if (json.architecture != "tezos") {
+        provision(abstraction, this.options);
+      }
       return abstraction;
     });
 

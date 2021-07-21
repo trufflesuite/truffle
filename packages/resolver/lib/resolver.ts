@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("resolver");
 
-const contract = require("@truffle/contract");
+const { contract } = require("@truffle/contract-constructor");
 const expect = require("@truffle/expect");
 const provision = require("@truffle/provisioner");
 
@@ -69,8 +69,11 @@ export class Resolver {
     this.sources.forEach((source: ResolverSource) => {
       const result = source.require(import_path, search_path);
       if (result) {
-        abstraction = contract(result);
-        provision(abstraction, this.options);
+        abstraction = contract(result, this.options);
+        // TODO BGC Implement provision for tezos
+        if (result.architecture != "tezos") {
+          provision(abstraction, this.options);
+        }
       }
     });
     if (abstraction) return abstraction;

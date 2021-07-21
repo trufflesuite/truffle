@@ -22,6 +22,7 @@
   "dependencies": {
     "@truffle/error": "^0.0.14",
     "@truffle/interface-adapter": "^0.5.1",
+    "url-parse": "^1.5.1",
     "web3": "1.3.6"
   },
   "devDependencies": {

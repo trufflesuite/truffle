@@ -1,8 +1,7 @@
-import { Web3InterfaceAdapter, Web3InterfaceAdapterOptions } from "./web3";
+import { Web3InterfaceAdapter } from "./web3";
+import { TezosAdapter } from "./tezos";
 
-import type { InterfaceAdapter } from "./types";
-
-export type InterfaceAdapterOptions = Web3InterfaceAdapterOptions;
+import type { InterfaceAdapter, InterfaceAdapterOptions } from "./types";
 
 const getNetworkTypeClass = (networkType = "ethereum") => {
   const supportedEvmNetworks = ["ethereum", "fabric-evm", "quorum"];
@@ -14,15 +13,18 @@ const getNetworkTypeClass = (networkType = "ethereum") => {
 export const createInterfaceAdapter = (
   options: InterfaceAdapterOptions
 ): InterfaceAdapter => {
-  const { networkType } = options;
+  const { networkType, provider, network_config } = options;
 
-  switch (getNetworkTypeClass(networkType)) {
+  switch (getNetworkTypeClass(networkType || network_config.type)) {
     case "evm-like": {
-      const { provider } = options;
-
       return new Web3InterfaceAdapter({
         networkType: networkType,
         provider: provider
+      });
+    }
+    case "tezos": {
+      return new TezosAdapter({
+        network_config
       });
     }
     default:
