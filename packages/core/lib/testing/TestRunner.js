@@ -5,6 +5,8 @@ const Migrate = require("@truffle/migrate");
 const Resolver = require("@truffle/resolver");
 const expect = require("@truffle/expect");
 const util = require("util");
+const fs = require("fs");
+const path = require("path");
 const debug = require("debug")("lib:testing:testrunner");
 const Decoder = require("@truffle/decoder");
 const Codec = require("@truffle/codec");
@@ -60,8 +62,20 @@ class TestRunner {
       await this.resetState();
     }
 
-    this.decoder = await Decoder.forProject(this.provider, {
-      config: this.config
+    //set up decoder
+    let files = fs
+      .readdirSync(this.config.contracts_build_directory)
+      .filter(file => path.extname(file) === ".json");
+    let data = files.map(file =>
+      fs.readFileSync(
+        path.join(this.config.contracts_build_directory, file),
+        "utf8"
+      )
+    );
+    let artifacts = data.map(text => JSON.parse(text));
+    this.decoder = await Decoder.forProject({
+      provider: this.provider,
+      projectInfo: { artifacts }
     });
   }
 

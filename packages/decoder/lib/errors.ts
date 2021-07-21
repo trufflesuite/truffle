@@ -1,3 +1,6 @@
+import type BN from "bn.js";
+import { Format } from "@truffle/codec";
+
 /**
  * This error indicates that the contract you are attempting to decode does not have AST
  * information associated with it, or that the decoder cannot find it.  This error will
@@ -103,13 +106,71 @@ export class VariableNotFoundError extends Error {
 }
 
 /**
- * This error indicates that the user attempted to instantiate a decoder
- * with no project information (by explicitly overriding the default).
+ * This error indicates that the user requested a struct member that does not
+ * exist.
  * @category Exception
  */
-export class NoProjectInfoError extends Error {
+export class MemberNotFoundError extends Error {
+  public memberName: string;
+  public structType: Format.Types.StructType;
+  public variable: string | number;
+  public indices: any[];
+  constructor(
+    memberName: string,
+    structType: Format.Types.StructType,
+    variable: string | number,
+    indices: any[]
+  ) {
+    const message = `Member ${memberName} does not exist on struct type ${Format.Types.typeStringWithoutLocation(
+      structType
+    )} in attempting to access variable ${variable}$, indexSequence ${indices.join(
+      ", "
+    )}`;
+    super(message);
+    this.memberName = memberName;
+    this.structType = structType;
+    this.variable = variable;
+    this.indices = indices;
+    this.name = "MemberNotFoundError";
+  }
+}
+
+/**
+ * This error indicates that the user requested an array index that is out
+ * of bounds.  Note that currently this error is only thrown when an index
+ * is requested that is outside *static* bounds; dynamic array bounds are
+ * currently not checked.
+ * @category Exception
+ */
+export class ArrayIndexOutOfBoundsError extends Error {
+  public index: BN;
+  public length: BN;
+  public variable: string | number;
+  public indices: any[];
+  constructor(
+    index: BN,
+    length: BN,
+    variable: string | number,
+    indices: any[]
+  ) {
+    const message = `Index ${index} is out of bounds for array of length ${length} in attempting to access variable ${variable}, index sequence ${indices.join(
+      ", "
+    )}`;
+    super(message);
+    this.index = index.clone();
+    this.length = length.clone();
+    this.variable = variable;
+    this.indices = indices;
+    this.name = "ArrayIndexOutOfBoundsError";
+  }
+}
+
+/**
+ * This error indicates that no provider was passed to the decoder.
+ */
+export class NoProviderError extends Error {
   constructor() {
-    super("No project information specified.");
-    this.name = "NoProjectInfoError";
+    super("No provider was given for the decoder to use.");
+    this.name = "NoProviderError";
   }
 }

@@ -1,0 +1,41 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "target": "es2016",
+    "downlevelIteration": true,
+    "strictNullChecks": true,
+    "skipLibCheck": true,
+    "noImplicitAny": true,
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "outDir": "dist",
+    "baseUrl": ".",
+    "lib": ["es2017"],
+    "paths": {
+      "web3": ["../../node_modules/@types/web3/index", "node_modules/web3/index"],
+      "web3/types": ["../../node_modules/@types/web3/types", "node_modules/web3/types"],
+      "web3/eth/types": ["../../node_modules/@types/web3/eth/types", "node_modules/web3/eth/types"]
+    },
+    "rootDir": "lib",
+    "paths": {
+      "web3": [
+        "node_modules/web3/index",
+        "../../node_modules/@types/web3/index"
+      ]
+    },
+    "typeRoots": [
+      "./typings"
+    ],
+    "types": [
+      "jest"
+    ]
+
+  },
+  "include": [
+    "./lib/**/*.ts",
+    "./typings/**/*.d.ts"
+  ]
+
+}

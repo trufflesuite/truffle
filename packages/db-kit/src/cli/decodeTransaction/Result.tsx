@@ -4,7 +4,7 @@ import Spinner from "ink-spinner";
 import Divider from "ink-divider";
 
 import type { Transaction, TransactionReceipt } from "web3-core";
-import type { WireDecoder } from "@truffle/decoder";
+import type { ProjectDecoder } from "@truffle/decoder";
 
 import * as Components from "@truffle/db-kit/cli/components";
 import { DefinitionList } from "@truffle/db-kit/cli/components";
@@ -12,7 +12,7 @@ import { DefinitionList } from "@truffle/db-kit/cli/components";
 import { useDecodedTransaction } from "./useDecodedTransaction";
 
 export interface Props {
-  decoder: WireDecoder;
+  decoder: ProjectDecoder;
   transaction: Transaction;
   receipt: TransactionReceipt;
 }

@@ -8,29 +8,31 @@ const Codec = require("@truffle/codec");
 
 const { prepareContracts } = require("../../helpers");
 
-describe("Shadowed storage variables", function() {
-
+describe("Shadowed storage variables", function () {
   let provider;
   let abstractions;
-  let compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({seed: "decoder", gasLimit: 7000000});
+    provider = Ganache.provider({ seed: "decoder", gasLimit: 7000000 });
   });
 
   before("Prepare contracts and artifacts", async function () {
     this.timeout(30000);
 
-    const prepared = await prepareContracts(provider, path.resolve(__dirname, ".."));
+    const prepared = await prepareContracts(
+      provider,
+      path.resolve(__dirname, "..")
+    );
     abstractions = prepared.abstractions;
-    compilations = prepared.compilations;
   });
 
-  it("Includes shadowed storage variables in variables", async function() {
+  it("Includes shadowed storage variables in variables", async function () {
     let deployedContract = await abstractions.ShadowDerived.deployed();
-    let decoder = await Decoder.forContractInstance(deployedContract, [
-      abstractions.ShadowBase
-    ]);
+    let decoder = await Decoder.forContractInstance(deployedContract, {
+      projectInfo: {
+        artifacts: [abstractions.ShadowBase, abstractions.ShadowDerived]
+      }
+    });
 
     let variables = await decoder.variables();
 
@@ -40,11 +42,13 @@ describe("Shadowed storage variables", function() {
     assert.equal(variables[3].class.typeName, "ShadowDerived");
   });
 
-  it("Fetches variables by name or qualified name", async function() {
+  it("Fetches variables by name or qualified name", async function () {
     let deployedContract = await abstractions.ShadowDerived.deployed();
-    let decoder = await Decoder.forContractInstance(deployedContract, [
-      abstractions.ShadowBase
-    ]);
+    let decoder = await Decoder.forContractInstance(deployedContract, {
+      projectInfo: {
+        artifacts: [abstractions.ShadowBase, abstractions.ShadowDerived]
+      }
+    });
 
     const expectedBaseX = 1;
     const expectedBaseY = 2;

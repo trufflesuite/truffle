@@ -3,7 +3,7 @@ import { Box, Text, measureElement } from "ink";
 import Spinner from "ink-spinner";
 import Divider from "ink-divider";
 
-import type { WireDecoder } from "@truffle/decoder";
+import type { ProjectDecoder } from "@truffle/decoder";
 import Web3 from "web3";
 
 import { useDecodedAddress } from "./useDecodedAddress";
@@ -12,7 +12,7 @@ import * as Components from "@truffle/db-kit/cli/components";
 import { DefinitionList } from "@truffle/db-kit/cli/components";
 
 export interface Props {
-  decoder: WireDecoder;
+  decoder: ProjectDecoder;
   address: string;
 }
 

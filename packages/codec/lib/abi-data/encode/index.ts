@@ -182,3 +182,21 @@ export function encodeTupleAbi(
   }
   return encoded;
 }
+
+/**
+ * @Category Encoding (low-level)
+ */
+export function encodeTupleAbiWithSelector(
+  tuple: Format.Values.Result[],
+  selector: Uint8Array,
+  allocations?: AbiAllocations
+): Uint8Array | undefined {
+  const encodedTuple = encodeTupleAbi(tuple, allocations);
+  if (!encodedTuple) {
+    return undefined;
+  }
+  const encoded = new Uint8Array(selector.length + encodedTuple.length);
+  encoded.set(selector);
+  encoded.set(encodedTuple, selector.length);
+  return encoded;
+}

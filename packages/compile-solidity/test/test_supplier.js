@@ -49,6 +49,7 @@ describe("CompilerSupplier", function () {
         path.join(__dirname, "./sources/v0.6.x/Version6Pragma.sol"),
         "utf-8"
       );
+
       const versionLatestPragma = await fse.readFile(
         path.join(__dirname, "./sources/v0.8.x/Version8Pragma.sol"), //update when necessary
         "utf-8"
