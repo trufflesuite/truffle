@@ -26,8 +26,7 @@
     "@truffle/reporters": "^2.0.1",
     "@truffle/require": "^2.0.68",
     "emittery": "^0.4.1",
-    "glob": "^7.1.6",
-    "web3": "1.4.0"
+    "glob": "^7.1.6"
   },
   "devDependencies": {
     "mocha": "8.1.2",

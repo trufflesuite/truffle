@@ -14,15 +14,10 @@
     "paths": {
     },
     "rootDir": "lib",
-    "typeRoots": [
-      "./typings",
-      "../../**/node_modules/@types/debug"
-    ],
-    "types": ["node"]
+    "types": ["debug", "node"]
   },
   "include": [
-    "./lib/**/*.ts",
-    "./typings/**/*.d.ts"
+    "./lib/**/*.ts"
   ]
 
 }

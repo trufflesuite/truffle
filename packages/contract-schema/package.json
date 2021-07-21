@@ -25,7 +25,6 @@
   "typings": "./typings/index.d.ts",
   "dependencies": {
     "ajv": "^6.10.0",
-    "crypto-js": "^3.1.9-1",
     "debug": "^4.3.1"
   },
   "devDependencies": {
