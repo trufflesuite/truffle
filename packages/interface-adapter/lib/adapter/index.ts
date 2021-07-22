@@ -15,7 +15,7 @@ export const createInterfaceAdapter = (
 ): InterfaceAdapter => {
   const { networkType, provider, network_config } = options;
 
-  switch (getNetworkTypeClass(networkType || network_config.type)) {
+  switch (getNetworkTypeClass(networkType || network_config?.type)) {
     case "evm-like": {
       return new Web3InterfaceAdapter({
         networkType: networkType,
