@@ -8,10 +8,10 @@ const path = require("path");
 const Debugger = require("@truffle/debugger");
 const DebugUtils = require("@truffle/debug-utils");
 const Codec = require("@truffle/codec");
+const { fetchDebug } = require("@truffle/fetch-and-compile");
 
 const { DebugInterpreter } = require("./interpreter");
 const { DebugCompiler } = require("./compiler");
-const { DebugExternalHandler } = require("./external");
 
 class CLIDebugger {
   constructor(config, { compilations, txHash } = {}) {
@@ -47,13 +47,13 @@ class CLIDebugger {
       "Getting and compiling external sources..."
     ).start();
     const {
-      badAddresses,
-      badFetchers,
-      badCompilationAddresses
-    } = await new DebugExternalHandler(
+      fetch: badAddresses,
+      fetchers: badFetchers,
+      compile: badCompilationAddresses
+    } = await fetchDebug(
       bugger,
       this.config
-    ).fetch(); //note: mutates bugger!
+    ); //Note: mutates bugger!!
     if (badAddresses.length === 0 && badFetchers.length === 0) {
       fetchSpinner.succeed();
     } else {
