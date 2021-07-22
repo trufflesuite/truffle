@@ -116,7 +116,7 @@ describe("globalnpm", () => {
       getInstalledPathSyncStub.restore();
     });
 
-    it("returns the contents of solidity file if the import_path exists", async () => {
+    it("returns the contents of solidity file if the import_path exists [win]", async () => {
       syncStub.withArgs("package").returns(true);
       getInstalledPathSyncStub
         .withArgs("package")
