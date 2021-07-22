@@ -54,7 +54,11 @@ class CLIDebugger {
       bugger,
       this.config
     ); //Note: mutates bugger!!
-    if (badAddresses.length === 0 && badFetchers.length === 0) {
+    if (
+      badAddresses.length === 0
+      && badFetchers.length === 0
+      && badCompilationAddresses.length === 0
+    ) {
       fetchSpinner.succeed();
     } else {
       let warningStrings = [];
