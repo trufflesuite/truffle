@@ -13,7 +13,7 @@
     "watch": "tsc -w"
   },
   "dependencies": {
-    "@taquito/michel-codec": "^9.2.0",
+    "@taquito/michel-codec": "^8.1.1",
     "@truffle/compile-common": "^0.7.2"
   },
   "devDependencies": {

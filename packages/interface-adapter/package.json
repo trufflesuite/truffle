@@ -24,15 +24,15 @@
   },
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@taquito/rpc": "^9.2.0",
-    "@taquito/signer": "^9.2.0",
-    "@taquito/taquito": "^9.2.0",
+    "@taquito/rpc": "^8.1.1",
+    "@taquito/signer": "^8.1.1",
+    "@taquito/taquito": "^8.1.1",
     "bn.js": "^5.1.3",
     "ethers": "^4.0.32",
     "web3": "1.3.6"
   },
   "devDependencies": {
-    "@types/bn.js": "^4.11.4",
+    "@types/bn.js": "^5.1.0",
     "@types/mocha": "^5.2.7",
     "@types/web3": "^1.0.20",
     "ganache-core": "2.13.0",

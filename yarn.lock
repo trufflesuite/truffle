@@ -3452,127 +3452,73 @@
   dependencies:
     defer-to-connect "^1.0.1"
 
-"@taquito/http-utils@^7.2.0-beta.2":
-  version "7.2.0-beta.2"
-  resolved "https://registry.yarnpkg.com/@taquito/http-utils/-/http-utils-7.2.0-beta.2.tgz#19ac99df11083383102032e54f38835d1103f80f"
-  integrity sha512-COElCghypZt3QQhcsaMnC6oeTA0tJ5IvBnWT5kxZ6f1d6fWS8NZqcW2PPFbFFEsz1j9UaeAq9SAIvaUjsiTXNg==
+"@taquito/http-utils@^8.1.0":
+  version "8.1.1"
+  resolved "https://registry.yarnpkg.com/@taquito/http-utils/-/http-utils-8.1.1.tgz#62eb983a6e9c1a2f1806327b8c7b6f6dec00024c"
+  integrity sha512-fSoi1hW2rFMeyjTMm3lGaKpWmtlWK+vbXocgPS7aSZGmTon67aE2RRjjc1ZlfBORWxvbLYuttDW5GypLSxkf7w==
   dependencies:
     xhr2-cookies "^1.1.0"
 
-"@taquito/http-utils@^9.2.0":
-  version "9.2.0"
-  resolved "https://registry.yarnpkg.com/@taquito/http-utils/-/http-utils-9.2.0.tgz#bab774bb4d2d65756cd91403c5700abe01d96422"
-  integrity sha512-OvfQIikCopGM1IbH1Heapih9lEf5FaHh+7/zhT7/8J0FIq48eE4Pha91JesMKsMvWImSiQ4Sro7Uz29/6r3u5Q==
+"@taquito/michel-codec@^8.1.1":
+  version "8.1.1"
+  resolved "https://registry.yarnpkg.com/@taquito/michel-codec/-/michel-codec-8.1.1.tgz#23ba8255215db72c60e0f52ff1616cf9830c6aa5"
+  integrity sha512-Clp6LfFVxXuLIUTdMi0XK7lnPBhrj9p8XIismf1Gobg/nxqMCW5idWAprl4f3ickpOzlNLm8UHjCs4aUee1GiQ==
+
+"@taquito/michelson-encoder@^8.1.1":
+  version "8.1.1"
+  resolved "https://registry.yarnpkg.com/@taquito/michelson-encoder/-/michelson-encoder-8.1.1.tgz#153e45cb90028a13aa2f18571185e93047dcb3be"
+  integrity sha512-5axhQr82wkM4J1YHf1nQ8jx7gp45kJFk6D/CcfNeIWHSrGFxQCzHCYkXhYOViCnmhsgJgKrNfqB8UyPeNfFsVg==
   dependencies:
-    xhr2-cookies "^1.1.0"
-
-"@taquito/michel-codec@^7.2.0-beta.2":
-  version "7.2.0-beta.2"
-  resolved "https://registry.yarnpkg.com/@taquito/michel-codec/-/michel-codec-7.2.0-beta.2.tgz#d1031c60d09abceb7acc8a1dfcc60124fdb6714e"
-  integrity sha512-3kENFAAJ97StRWxjiTmCIByJh/+OAwNEso7utoU103J3Qe4ZN3TkmVLqWtMYxNYSuwA4VG+b8fPJx1yL351AEQ==
-
-"@taquito/michel-codec@^9.2.0":
-  version "9.2.0"
-  resolved "https://registry.yarnpkg.com/@taquito/michel-codec/-/michel-codec-9.2.0.tgz#f469b775090094545920c69703e13586c7b2b3b7"
-  integrity sha512-1nnqb2EbsvSzHCtigrKnT0wPXDg/8p/w0dGewRNlE4t001oW/E36YORWtZjhLrFLEHvq+LKFf/xS/OrMhKzoWg==
-
-"@taquito/michelson-encoder@^7.2.0-beta.2":
-  version "7.2.0-beta.2"
-  resolved "https://registry.yarnpkg.com/@taquito/michelson-encoder/-/michelson-encoder-7.2.0-beta.2.tgz#2bb3debaf6b62f51225afbe2123453d5f1d5dc50"
-  integrity sha512-bFd6+vgWtOw/6ctNpq1Bk7Io+RAt6HinTQocEcgkyd+v5UUPu7D1zTbcwwiPf2Z8Z+9oFSLMbqqgVvPCZP/t3g==
-  dependencies:
-    "@taquito/rpc" "^7.2.0-beta.2"
-    "@taquito/utils" "^7.2.0-beta.2"
+    "@taquito/rpc" "^8.1.1"
+    "@taquito/utils" "^8.1.0"
     bignumber.js "^9.0.1"
     fast-json-stable-stringify "^2.1.0"
 
-"@taquito/michelson-encoder@^9.2.0":
-  version "9.2.0"
-  resolved "https://registry.yarnpkg.com/@taquito/michelson-encoder/-/michelson-encoder-9.2.0.tgz#f7cf65218593e55444d101e7770443997c3ce970"
-  integrity sha512-12Fsww2PAZHeG/xexXBeT2Vydk3KDechJrhCoXTeLUnmT55zMMbHmdmShMsywNd3ehqTWUaQLuxgNVPS+LWYxA==
+"@taquito/rpc@^8.1.1":
+  version "8.1.1"
+  resolved "https://registry.yarnpkg.com/@taquito/rpc/-/rpc-8.1.1.tgz#cdbf9d7ba24346034bf0f02ebf634e846801811a"
+  integrity sha512-NS1aoVy+co5xCe41wM67PEMZHt88RtxpsGPvsYs0TO1sJN6JFgwkZYE/ZQULRHPb6JXNxY/KOCVnYahFM+a8pg==
   dependencies:
-    "@taquito/rpc" "^9.2.0"
-    "@taquito/utils" "^9.2.0"
-    bignumber.js "^9.0.1"
-    fast-json-stable-stringify "^2.1.0"
-
-"@taquito/rpc@^7.2.0-beta.2":
-  version "7.2.0-beta.2"
-  resolved "https://registry.yarnpkg.com/@taquito/rpc/-/rpc-7.2.0-beta.2.tgz#637f8ca78335da4cbffce326e68ea234b1398f48"
-  integrity sha512-891LKsy3m+J77T5GpswTl3Nh+XAU7FiQ1Vh1/qXaU08sgBd1Bb/uE6DHXZoTcw4FaR4rTpjCWy96XgqySsPWzQ==
-  dependencies:
-    "@taquito/http-utils" "^7.2.0-beta.2"
+    "@taquito/http-utils" "^8.1.0"
     bignumber.js "^9.0.1"
     lodash "^4.17.20"
 
-"@taquito/rpc@^9.2.0":
-  version "9.2.0"
-  resolved "https://registry.yarnpkg.com/@taquito/rpc/-/rpc-9.2.0.tgz#ba50e0bef86470616abd4d77130daea9018465fa"
-  integrity sha512-Wj4x1URbFM3Two5k3twilAGut0LQXhVOILTOL3f3oFotFzvTgwhtdOXODxzhts4XyZbzv7fLnYVsCqrhsTKo7Q==
+"@taquito/signer@^8.1.1":
+  version "8.1.1"
+  resolved "https://registry.yarnpkg.com/@taquito/signer/-/signer-8.1.1.tgz#6fca53fc479dfcb2c6a199b9ff3b8282990b973a"
+  integrity sha512-3uBfjj/GsptAkE8uKycipIy+Dk9TCsaaxr6LgS2JoNFwJCIbBTYtxbKdFdEwXBa9q4AbysjkuOhsD1QKdnK+7g==
   dependencies:
-    "@taquito/http-utils" "^9.2.0"
+    "@taquito/taquito" "^8.1.1"
+    "@taquito/utils" "^8.1.0"
     bignumber.js "^9.0.1"
-    lodash "^4.17.21"
-
-"@taquito/signer@^9.2.0":
-  version "9.2.0"
-  resolved "https://registry.yarnpkg.com/@taquito/signer/-/signer-9.2.0.tgz#0b5954918cfa10ca034fbb16ee4cfd9fcc26e865"
-  integrity sha512-fUCgqv5yvQJdsQqYLTVQwZSMuZ+wgWSUZXxNT5zS3wRM93NuT0SmTlx39NlABTV28KoDgftNcpbhxHMnaZIP6w==
-  dependencies:
-    "@taquito/taquito" "^9.2.0"
-    "@taquito/utils" "^9.2.0"
-    bignumber.js "^9.0.1"
-    bip39 "^3.0.4"
+    bip39 "^3.0.2"
     elliptic "^6.5.4"
-    libsodium-wrappers "0.7.8"
-    pbkdf2 "^3.1.2"
-    typedarray-to-buffer "^4.0.0"
+    libsodium-wrappers "^0.7.8"
+    pbkdf2 "^3.1.1"
+    typedarray-to-buffer "^3.1.5"
 
-"@taquito/taquito@^7.2.0-beta.2":
-  version "7.2.0-beta.2"
-  resolved "https://registry.yarnpkg.com/@taquito/taquito/-/taquito-7.2.0-beta.2.tgz#de7064194052ac16658f15c7bdf9cf0da3d13398"
-  integrity sha512-vRQJ7HRj2UY0yVzfalJn4/j1Suaf60PM5f6NEvjExOiED7g8X/Cqi8lSkHGgKnzM59M6Jbi30Q9yNmunwQayBg==
+"@taquito/taquito@^8.1.1":
+  version "8.1.1"
+  resolved "https://registry.yarnpkg.com/@taquito/taquito/-/taquito-8.1.1.tgz#284c760414013d9aa12343a4784c3057f62ffa8b"
+  integrity sha512-A8aOYaaAxiwcdGhftdg8lgiX1ZivtrLoqvhWow+JGfvAyAsVabAvckpEgEHgBUvmFClSFVbuM/TOAarnHUfd3A==
   dependencies:
-    "@taquito/http-utils" "^7.2.0-beta.2"
-    "@taquito/michel-codec" "^7.2.0-beta.2"
-    "@taquito/michelson-encoder" "^7.2.0-beta.2"
-    "@taquito/rpc" "^7.2.0-beta.2"
-    "@taquito/utils" "^7.2.0-beta.2"
+    "@taquito/http-utils" "^8.1.0"
+    "@taquito/michel-codec" "^8.1.1"
+    "@taquito/michelson-encoder" "^8.1.1"
+    "@taquito/rpc" "^8.1.1"
+    "@taquito/utils" "^8.1.0"
     bignumber.js "^9.0.1"
     rx-sandbox "^1.0.3"
     rxjs "^6.6.3"
 
-"@taquito/taquito@^9.2.0":
-  version "9.2.0"
-  resolved "https://registry.yarnpkg.com/@taquito/taquito/-/taquito-9.2.0.tgz#3337e0132f6764cccc1c0acf224f7e2b470a9f63"
-  integrity sha512-oCgF2BIXwRu0o64JppHKYpkq7N5EzfZQXvSQm/ecWEP5Kk2Uf7qNza7yid5zESIuIwTPwGJAv4D8kyc3QYi8Jg==
-  dependencies:
-    "@taquito/http-utils" "^9.2.0"
-    "@taquito/michel-codec" "^9.2.0"
-    "@taquito/michelson-encoder" "^9.2.0"
-    "@taquito/rpc" "^9.2.0"
-    "@taquito/utils" "^9.2.0"
-    bignumber.js "^9.0.1"
-    rx-sandbox "^1.0.4"
-    rxjs "^6.6.3"
-
-"@taquito/utils@^7.2.0-beta.2":
-  version "7.2.0-beta.2"
-  resolved "https://registry.yarnpkg.com/@taquito/utils/-/utils-7.2.0-beta.2.tgz#a89b949c700575f00e15ff4091d6cade65901ec1"
-  integrity sha512-/xAznoXXnOX2RcZFvWbBB+f2sYox+t+PKPwKdWZd1w3kzK02Fui1TaRHTn9CNOdb36TyVKCRbUsdYkBMfd9NQg==
+"@taquito/utils@^8.1.0":
+  version "8.1.1"
+  resolved "https://registry.yarnpkg.com/@taquito/utils/-/utils-8.1.1.tgz#b9fbc880308ad814ae15b4f3402fd40c4ecc7c23"
+  integrity sha512-ZsHYxEZ+voTjnFZM/iQXeCDUSa2eH5n9PMSX0DNq85hN6S5Q0ZP/4CGznOf+RJj7p1GF2cbKf9wUJrOMFdN+0g==
   dependencies:
     blakejs "^1.1.0"
     bs58check "^2.1.2"
     buffer "^5.6.0"
-
-"@taquito/utils@^9.2.0":
-  version "9.2.0"
-  resolved "https://registry.yarnpkg.com/@taquito/utils/-/utils-9.2.0.tgz#6c9cde66aea30ffd069a02eacc3a3e946bd3eb27"
-  integrity sha512-pawB2Wqym/evBvSvF4AWeu5b+Zo1NArhqRrdoNOP6iBjhTfb7dcgavjhMFgG7/ATF6C17Mkqtn+Tp2V65i3MPA==
-  dependencies:
-    blakejs "^1.1.0"
-    bs58check "^2.1.2"
-    buffer "^6.0.3"
 
 "@textile/buckets-grpc@2.6.5":
   version "2.6.5"
@@ -4029,6 +3975,13 @@
   version "4.11.6"
   resolved "https://registry.yarnpkg.com/@types/bn.js/-/bn.js-4.11.6.tgz#c306c70d9358aaea33cd4eda092a742b9505967c"
   integrity sha512-pqr857jrp2kPuO9uRjZ3PwnJTjoQy+fcdxvBTvHm6dkmEL9q+hDD/2j/0ELOBPtPnS8LjCX0gI9nbl8lVkadpg==
+  dependencies:
+    "@types/node" "*"
+
+"@types/bn.js@^5.1.0":
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/@types/bn.js/-/bn.js-5.1.0.tgz#32c5d271503a12653c62cf4d2b45e6eab8cebc68"
+  integrity sha512-QSSVYj7pYFN49kW77o2s9xTCwZ8F2xLbjLLSEVh8D2F4JUhZtPAGOFLTD+ffqksBx/u4cE/KImFjyhqCjn/LIA==
   dependencies:
     "@types/node" "*"
 
@@ -7438,16 +7391,6 @@ bip39@^3.0.2:
     pbkdf2 "^3.0.9"
     randombytes "^2.0.1"
 
-bip39@^3.0.4:
-  version "3.0.4"
-  resolved "https://registry.yarnpkg.com/bip39/-/bip39-3.0.4.tgz#5b11fed966840b5e1b8539f0f54ab6392969b2a0"
-  integrity sha512-YZKQlb752TrUWqHWj7XAwCSjYEgGAk+/Aas3V7NyjQeZYsztO8JnQUaCWhcnL4T+jL8nvB8typ2jRPzTlgugNw==
-  dependencies:
-    "@types/node" "11.11.6"
-    create-hash "^1.1.0"
-    pbkdf2 "^3.0.9"
-    randombytes "^2.0.1"
-
 bip66@^1.1.5:
   version "1.1.5"
   resolved "https://registry.yarnpkg.com/bip66/-/bip66-1.1.5.tgz#01fa8748785ca70955d5011217d1b3139969ca22"
@@ -7940,7 +7883,7 @@ buffer-xor@^2.0.1:
   dependencies:
     safe-buffer "^5.1.1"
 
-buffer@6.0.3, buffer@^6.0.1, buffer@^6.0.3:
+buffer@6.0.3, buffer@^6.0.1:
   version "6.0.3"
   resolved "https://registry.yarnpkg.com/buffer/-/buffer-6.0.3.tgz#2ace578459cc8fbe2a70aaa8f52ee63b6a74c6c6"
   integrity sha512-FTiCpNxtwiZZHEZbcbTIcZjERVICn9yq/pDFkTl95/AxzD1naBctN7YO68riM/gLSDY7sdrMby8hofADYuuqOA==
@@ -19296,17 +19239,17 @@ libp2p@^0.30.0:
     varint "^6.0.0"
     xsalsa20 "^1.0.2"
 
-libsodium-wrappers@0.7.8:
-  version "0.7.8"
-  resolved "https://registry.yarnpkg.com/libsodium-wrappers/-/libsodium-wrappers-0.7.8.tgz#d95cdf3e7236c2aef76844bf8e1929ba9eef3e9e"
-  integrity sha512-PDhPWXBqd/SaqAFUBgH2Ux7b3VEEJgyD6BQB+VdNFJb9PbExGr/T/myc/MBoSvl8qLzfm0W0IVByOQS5L1MrCg==
+libsodium-wrappers@^0.7.8:
+  version "0.7.9"
+  resolved "https://registry.yarnpkg.com/libsodium-wrappers/-/libsodium-wrappers-0.7.9.tgz#4ffc2b69b8f7c7c7c5594a93a4803f80f6d0f346"
+  integrity sha512-9HaAeBGk1nKTRFRHkt7nzxqCvnkWTjn1pdjKgcUnZxj0FyOP4CnhgFhMdrFfgNsukijBGyBLpP2m2uKT1vuWhQ==
   dependencies:
-    libsodium "0.7.8"
+    libsodium "^0.7.0"
 
-libsodium@0.7.8:
-  version "0.7.8"
-  resolved "https://registry.yarnpkg.com/libsodium/-/libsodium-0.7.8.tgz#fbd12247b7b1353f88d8de1cbc66bc1a07b2e008"
-  integrity sha512-/Qc+APf0jbeWSaeEruH0L1/tbbT+sbf884ZL0/zV/0JXaDPBzYkKbyb/wmxMHgAHzm3t6gqe7bOOXAVwfqVikQ==
+libsodium@^0.7.0:
+  version "0.7.9"
+  resolved "https://registry.yarnpkg.com/libsodium/-/libsodium-0.7.9.tgz#4bb7bcbf662ddd920d8795c227ae25bbbfa3821b"
+  integrity sha512-gfeADtR4D/CM0oRUviKBViMGXZDgnFdMKMzHsvBdqLBHd9ySi6EtYnmuhHVDDYgYpAO8eU8hEY+F8vIUAPh08A==
 
 liftoff@2.5.0:
   version "2.5.0"
@@ -22870,7 +22813,7 @@ pbkdf2@^3.0.3, pbkdf2@^3.0.9:
     safe-buffer "^5.0.1"
     sha.js "^2.4.8"
 
-pbkdf2@^3.1.2:
+pbkdf2@^3.1.1:
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/pbkdf2/-/pbkdf2-3.1.2.tgz#dd822aa0887580e52f1a039dc3eda108efae3075"
   integrity sha512-iuh7L6jA7JEGu2WxDwtQP1ddOpaJNC4KlDEFfdQajSGgGPNi4OyDc2R7QnbY2bR9QjBVGwgvTdNJZoE7RaxUMA==
@@ -25030,7 +24973,7 @@ rx-lite@*, rx-lite@^4.0.8:
   resolved "https://registry.yarnpkg.com/rx-lite/-/rx-lite-4.0.8.tgz#0b1e11af8bc44836f04a6407e92da42467b79444"
   integrity sha1-Cx4Rr4vESDbwSmQH6S2kJGe3lEQ=
 
-rx-sandbox@^1.0.3, rx-sandbox@^1.0.4:
+rx-sandbox@^1.0.3:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/rx-sandbox/-/rx-sandbox-1.0.4.tgz#821a1d64e5f0d88658da7a5dbbd735b13277648b"
   integrity sha512-+/9MHDYNoF9ca/2RR+L2LloXXeQyIR3k/wjK03IicrxxlbkhmKF4ejPiWeafMWDg7otF+pnX5NE/8v/rX6ICJA==
@@ -27818,11 +27761,6 @@ typedarray-to-buffer@^3.1.5, typedarray-to-buffer@~3.1.5:
   integrity sha512-zdu8XMNEDepKKR+XYOXAVPtWui0ly0NtohUscw+UmaHiAWT8hrV1rr//H6V+0DvJ3OQ19S979M0laLfX8rm82Q==
   dependencies:
     is-typedarray "^1.0.0"
-
-typedarray-to-buffer@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/typedarray-to-buffer/-/typedarray-to-buffer-4.0.0.tgz#cdd2933c61dd3f5f02eda5d012d441f95bfeb50a"
-  integrity sha512-6dOYeZfS3O9RtRD1caom0sMxgK59b27+IwoNy8RDPsmslSGOyU+mpTamlaIW7aNKi90ZQZ9DFaZL3YRoiSCULQ==
 
 typedarray@^0.0.6, typedarray@~0.0.5:
   version "0.0.6"
