@@ -5,6 +5,7 @@ import * as sinon from "sinon";
 import path from "path";
 import fs from "fs";
 import { describe, it } from "mocha";
+import { EOL} from "os";
 
 import { GlobalNPM } from "../lib/sources/globalnpm";
 const globalNpm = new GlobalNPM();
@@ -127,7 +128,7 @@ describe("globalnpm", () => {
         "package/contracts/Test.sol"
       );
 
-      assert.strictEqual(body, "contract Test {}\n");
+      assert.strictEqual(body, `contract Test {}${EOL}`);
       assert.strictEqual(filePath, "package/contracts/Test.sol");
     });
 
