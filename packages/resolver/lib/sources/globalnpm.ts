@@ -14,7 +14,7 @@ export class GlobalNPM implements ResolverSource {
 
     let [packageName] = importPath.split("/", 1);
     if (detectInstalled.sync(packageName)) {
-      const regex = new RegExp(`/${packageName}$`);
+      const regex = new RegExp(`${path.sep}${packageName}$`);
       const globalPackagePath = getInstalledPath
         .getInstalledPathSync(packageName)
         .replace(regex, "");
@@ -44,7 +44,7 @@ export class GlobalNPM implements ResolverSource {
       try {
         const result = fs.readFileSync(possiblePath, "utf8");
         return JSON.parse(result);
-      } catch (e) {
+      } catch (_err) {
         continue;
       }
     }
@@ -55,7 +55,7 @@ export class GlobalNPM implements ResolverSource {
     let [packageName] = importPath.split("/", 1);
     let body;
     if (detectInstalled.sync(packageName)) {
-      const regex = new RegExp(`/${packageName}$`);
+      const regex = new RegExp(`${path.sep}${packageName}$`);
       const globalPackagePath = getInstalledPath
         .getInstalledPathSync(packageName)
         .replace(regex, "");
