@@ -30,8 +30,8 @@ const command = {
   },
   help: {
     usage:
-      "truffle debug [<transaction_hash>] [(--fetch-external|-x)]" + OS.EOL +
-      "                             [(--compile-tests|--compile-all|--compile-none)]",
+      "truffle debug [<transaction_hash>] [--fetch-external|-x]" + OS.EOL +
+      "                             [--compile-tests|--compile-all|--compile-none]",
     options: [
       {
         option: "<transaction_hash>",
@@ -39,7 +39,7 @@ const command = {
           "Transaction ID to use for debugging.  Mandatory if --fetch-external is passed."
       },
       {
-        option: "(--fetch-external|-x)",
+        option: "--fetch-external|-x",
         description:
           "Allows debugging of external contracts with verified sources."
       },
