@@ -8,11 +8,6 @@ const {
   createInterfaceAdapter
 } = require("@truffle/interface-adapter");
 
-let Db;
-try {
-  Db = require("@truffle/db");
-} catch {}
-
 const ResolverIntercept = require("./ResolverIntercept");
 
 class Migration {
@@ -120,35 +115,43 @@ class Migration {
         .contracts()
         .map(abstraction => abstraction._json);
       if (
-        Db &&
         this.config.db &&
         this.config.db.enabled &&
         artifacts.length > 0
       ) {
-        const db = Db.connect(this.config.db);
-        const project = await Db.Project.initialize({
-          db,
-          project: {
-            directory: this.config.working_directory
-          }
-        });
+        // we are requiring Db inside this scope for optimization
+        // currently if Db fails to load, it will do so silently
+        let Db;
+        try {
+          Db = require("@truffle/db");
+        } catch () {};
 
-        const result = await project
-          .connect({ provider: this.config.provider })
-          .loadMigrate({
-            network: {
-              name: this.config.network
-            },
-            artifacts
+        if (Db) {
+          const db = Db.connect(this.config.db);
+          const project = await Db.Project.initialize({
+            db,
+            project: {
+              directory: this.config.working_directory
+            }
           });
 
-        ({ artifacts } = result);
+          const result = await project
+            .connect({ provider: this.config.provider })
+            .loadMigrate({
+              network: {
+                name: this.config.network
+              },
+              artifacts
+            });
 
-        await project.assignNames({
-          assignments: {
-            networks: [result.network]
-          }
-        });
+          ({ artifacts } = result);
+
+          await project.assignNames({
+            assignments: {
+              networks: [result.network]
+            }
+          });
+        }
       }
 
       // Save artifacts to local filesystem
