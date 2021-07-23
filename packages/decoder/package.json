@@ -21,7 +21,7 @@
     "build": "tsc",
     "prepare": "yarn build",
     "start": "tsc --watch",
-    "test": "mocha ./test/current/test/* ./test/legacy/test/*"
+    "test": "mocha --timeout 40000 ./test/current/test/* ./test/legacy/test/*"
   },
   "types": "dist/index.d.ts",
   "dependencies": {
