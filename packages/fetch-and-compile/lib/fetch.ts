@@ -5,6 +5,7 @@ import Fetchers from "@truffle/source-fetcher";
 import {
   InvalidNetworkError,
   FetcherConstructor,
+  Fetcher,
   SourceInfo
 } from "@truffle/source-fetcher";
 import type Config from "@truffle/config";
@@ -35,7 +36,7 @@ export async function fetchWithRecognizer(
   //make fetcher instances. we'll filter out ones that don't support this
   //network (and note ones that yielded errors)
   debug("Fetchers: %o", Fetchers);
-  const fetchers = (
+  const fetchers = <Fetcher[]> ( //sorry for coercion, TS is being stupid
     await Promise.all(
       Fetchers.map(async Fetcher => {
         try {
@@ -55,7 +56,7 @@ export async function fetchWithRecognizer(
     )
   ).filter(fetcher => fetcher !== null);
   //now: the main loop!
-  let address: string;
+  let address: string | undefined;
   while ((address = recognizer.getAnUnrecognizedAddress()) !== undefined) {
     let found: boolean = false;
     let failureReason: FailureType | undefined; //undefined if no failure
@@ -155,7 +156,11 @@ function transformIfUsingDocker(
     return externalConfig;
   }
   //otherwise, turn on Docker, and reduce the version to its simple form.
-  const simpleVersion: string = semver.valid(givenVersion);
+  const simpleVersion: string | null = semver.valid(givenVersion);
+  if (simpleVersion === null) {
+    //this should never happen
+    throw new Error("Fetched source has unparseable compiler version");
+  }
   return externalConfig.merge({
     compilers: {
       solc: {

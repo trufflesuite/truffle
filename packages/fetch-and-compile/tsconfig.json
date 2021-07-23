@@ -6,6 +6,8 @@
     "target": "es2016",
     "downlevelIteration": true,
     "noImplicitAny": true,
+    "strictNullChecks": true,
+    "skipLibCheck": true,
     "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "dist",
