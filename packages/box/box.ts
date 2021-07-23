@@ -24,9 +24,20 @@ const defaultPath = "git@github.com:trufflesuite/truffle-init-default";
 export const normalizeSourcePath = (url = defaultPath) => {
   // Process filepath resolution
   //
-  if (url.startsWith(".") || url.startsWith("/") || url.startsWith("~")) {
-    debug({ in: url, out: path.normalize(url) });
-    return path.resolve(path.normalize(url));
+  const normalizedPath = path.normalize(url);
+  const resolvedPath = path.resolve(normalizedPath);
+  const pathExists = fse.existsSync(resolvedPath);
+
+  debug('---');
+  debug({ 
+    normalizedPath, 
+    resolvedPath,
+    pathExists
+  });
+
+  if(pathExists) {
+    debug({ in: url, out: normalizedPath});
+    return resolvedPath;
   }
 
   // preprocess to reduce regex complexity
