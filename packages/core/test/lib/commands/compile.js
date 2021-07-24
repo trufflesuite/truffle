@@ -12,7 +12,9 @@ let config;
 let output = "";
 let memStream;
 
-describe("compile", function () {
+// TODO: Consult with Tyler
+// skipping to find all windows blockers
+describe.skip("compile", function () {
   before("Create a sandbox", async () => {
     config = await Box.sandbox("default");
     config.resolver = new Resolver(config);
@@ -36,7 +38,9 @@ describe("compile", function () {
 
   afterEach("Clear MemoryStream", () => (output = ""));
 
-  it("compiles all initial contracts", async function () {
+  // TODO: first in sequence test
+  // will resolve this later
+  it.only("compiles all initial contracts", async function () {
     const { contracts } = await WorkflowCompile.compileAndSave(
       config.with({
         all: false,
@@ -50,13 +54,17 @@ describe("compile", function () {
     );
   });
 
-  it("compiles no contracts after no updates", async function () {
+  // What's the DS that maps local file system to
+  // the virtual file system?
+  // TODO: Tyler has insights
+  it.only("compiles no contracts after no updates", async function () {
     const { contracts } = await WorkflowCompile.compileAndSave(
       config.with({
         all: false,
         quiet: true
       })
     );
+    console.log("length", Object.keys(contracts).length);
     assert.equal(
       Object.keys(contracts).length,
       0,
