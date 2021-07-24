@@ -133,11 +133,7 @@ function minimumUpdatedTimePerSource(
     sourceFilesArtifactsUpdatedTimes[sourceFile] = artifacts.reduce(
       (minimum, current) => {
         const updatedAt = new Date(current.updatedAt).getTime();
-
-        if (updatedAt < minimum) {
-          return updatedAt;
-        }
-        return minimum;
+        return updatedAt < minimum ? updatedAt : minimum;
       },
       Number.MAX_SAFE_INTEGER
     );
