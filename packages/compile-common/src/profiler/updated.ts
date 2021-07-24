@@ -45,18 +45,9 @@ function readAndParseArtifactFiles(
     sourceFilesArtifacts[normalizeKey(sourceFile)] = [];
   });
   // Get all the artifact files, and read them, parsing them as JSON
-  let buildFiles: string[];
-  try {
-    buildFiles = fse.readdirSync(contracts_build_directory);
-  } catch (error) {
-    // The build directory may not always exist.
-    if (error.message.includes("ENOENT: no such file or directory")) {
-      // Ignore it.
-      buildFiles = [];
-    } else {
-      throw error;
-    }
-  }
+  let buildFiles: string[] = fse.pathExistsSync(contracts_build_directory)
+    ? fse.readdirSync(contracts_build_directory)
+    : []; 
 
   buildFiles = buildFiles.filter((file) => path.extname(file) === ".json");
   const jsonData = buildFiles.map((file) => {
