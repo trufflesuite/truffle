@@ -12,8 +12,6 @@ let config;
 let output = "";
 let memStream;
 
-// TODO: Consult with Tyler
-// skipping to find all windows blockers
 describe("compile", function () {
   before("Create a sandbox", async () => {
     config = await Box.sandbox("default");
@@ -38,9 +36,7 @@ describe("compile", function () {
 
   afterEach("Clear MemoryStream", () => (output = ""));
 
-  // TODO: first in sequence test
-  // will resolve this later
-  it.only("compiles all initial contracts", async function () {
+  it("compiles all initial contracts", async function () {
     const { contracts } = await WorkflowCompile.compileAndSave(
       config.with({
         all: false,
@@ -54,10 +50,7 @@ describe("compile", function () {
     );
   });
 
-  // What's the DS that maps local file system to
-  // the virtual file system?
-  // TODO: Tyler has insights
-  it.only("compiles no contracts after no updates", async function () {
+  it("compiles no contracts after no updates", async function () {
     const { contracts } = await WorkflowCompile.compileAndSave(
       config.with({
         all: false,
