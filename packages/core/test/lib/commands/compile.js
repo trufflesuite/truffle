@@ -14,7 +14,7 @@ let memStream;
 
 // TODO: Consult with Tyler
 // skipping to find all windows blockers
-describe.skip("compile", function () {
+describe("compile", function () {
   before("Create a sandbox", async () => {
     config = await Box.sandbox("default");
     config.resolver = new Resolver(config);
