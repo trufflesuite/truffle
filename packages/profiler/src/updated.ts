@@ -15,16 +15,16 @@ export async function updated({
   paths,
   contractsBuildDirectory,
 }: UpdatedOptions): Promise<string[]> {
-  const sourceFilesArtifacts = readAndParseArtifactFiles(
+  const artifacts = readAndParseArtifactFiles(
     paths,
     contractsBuildDirectory
   );
-  const sourceFilesArtifactsUpdatedTimes = minimumUpdatedTimePerSource(
-    sourceFilesArtifacts
+  const artifactsUpdatedTime = minimumUpdatedTimePerSource(
+    artifacts
   );
   return findUpdatedFiles(
-    sourceFilesArtifacts,
-    sourceFilesArtifactsUpdatedTimes
+    artifacts,
+    artifactsUpdatedTime
   );
 }
 
