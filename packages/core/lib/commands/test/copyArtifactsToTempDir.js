@@ -1,3 +1,5 @@
+const debug = require("debug")("xyz");
+
 const copyArtifactsToTempDir = async config => {
   const {promisify} = require("util");
   const copy = require("../../copy");
@@ -13,9 +15,15 @@ const copyArtifactsToTempDir = async config => {
     unsafeCleanup: true,
     prefix: "test-"
   }).name;
+
+  debug({
+    temporaryDirectory,
+    contracts_build_directory: config.contracts_build_directory
+  })
   try {
     fs.statSync(config.contracts_build_directory);
   } catch (_error) {
+    debug({msg: "Failed to fs.statSync", build: config.contracts_build_directory});
     return {temporaryDirectory};
   }
 
