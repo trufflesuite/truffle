@@ -18,7 +18,8 @@
   },
   "scripts": {
     "prepare": "exit 0",
-    "test": "mocha ./test/** ./test/**/*"
+    "test": "mocha ./test/** ./test/**/*",
+    "test:debug": "mocha --inspect-brk ./test/** ./test/**/*"
   },
   "dependencies": {
     "@truffle/artifactor": "^4.0.130",
