@@ -79,7 +79,7 @@ describe("compile", function () {
     const stat = fs.statSync(fileToUpdate);
 
     // Update the modification time to simulate an edit.
-    const newTime = new Date().getTime();
+    const newTime = new Date();
     fs.utimesSync(fileToUpdate, newTime, newTime);
 
     const { contracts } = await WorkflowCompile.compileAndSave(
