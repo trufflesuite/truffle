@@ -1,6 +1,6 @@
 {
   "name": "@truffle/preserve-to-ipfs",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Truffle `preserve` command support for IPFS",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
@@ -39,7 +39,7 @@
     "typescript": "^4.1.4"
   },
   "dependencies": {
-    "@truffle/preserve": "^0.2.3",
+    "@truffle/preserve": "^0.2.4",
     "ipfs-http-client": "^48.2.2",
     "iter-tools": "^7.0.2"
   }
