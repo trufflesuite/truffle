@@ -136,7 +136,7 @@ function minimumUpdatedTimePerSource(
       Number.MAX_SAFE_INTEGER
     );
 
-    // Empty array?
+    // Empty artifacts array?
     if (minTime === Number.MAX_SAFE_INTEGER) {
       minTime = 0;
     }
