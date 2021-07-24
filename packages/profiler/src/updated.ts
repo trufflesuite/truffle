@@ -84,12 +84,12 @@ function readAndParseArtifactFiles(
 }
 
 function findUpdatedFiles(
-  sourceFilesArtifacts: SourceFilesArtifacts,
-  sourceFilesArtifactsUpdatedTimes: SourceFilesArtifactsUpdatedTimes
+  sourceArtifacts: SourceFilesArtifacts,
+  sourceArtifactsUpdatedTimes: SourceFilesArtifactsUpdatedTimes
 ): string[] {
   // Stat all the source files, getting there updated times, and comparing them to
   // the artifact updated times.
-  const sourceFiles = Object.keys(sourceFilesArtifacts);
+  const sourceFiles = Object.keys(sourceArtifacts);
 
   let sourceFileStats: (fs.Stats | null)[];
   sourceFileStats = sourceFiles.map((file) => {
@@ -105,15 +105,15 @@ function findUpdatedFiles(
 
   return sourceFiles
     .map((sourceFile, index) => {
-      const sourceFileStat = sourceFileStats[index];
+      const stat = sourceFileStats[index];
 
       // Ignore updating artifacts if source file has been removed.
-      if (sourceFileStat == null) return;
+      if (stat == null) return;
 
       const artifactsUpdatedTime =
-        sourceFilesArtifactsUpdatedTimes[sourceFile] || 0;
+        sourceArtifactsUpdatedTimes[sourceFile] || 0;
       const sourceFileUpdatedTime = (
-        sourceFileStat.mtimeMs || sourceFileStat.ctimeMs
+        stat.mtimeMs || stat.ctimeMs
       );
 
       if (sourceFileUpdatedTime > artifactsUpdatedTime) return sourceFile;
