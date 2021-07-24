@@ -104,7 +104,7 @@ function findUpdatedFiles(
   });
 
   return sourceFiles
-    .map((sourceFile, index) => {
+    .filter((sourceFile, index) => {
       const stat = sourceFileStats[index];
 
       // Ignore updating artifacts if source file has been removed.
@@ -117,8 +117,7 @@ function findUpdatedFiles(
       );
 
       if (sourceFileUpdatedTime > artifactsUpdatedTime) return sourceFile;
-    })
-    .filter((file) => file);
+    });
 }
 
 function minimumUpdatedTimePerSource(
