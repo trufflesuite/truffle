@@ -129,8 +129,7 @@ function minimumUpdatedTimePerSource(
   // (note: one source file might have multiple artifacts).
   for (const sourceFile of Object.keys(sourceFilesArtifacts)) {
     const artifacts = sourceFilesArtifacts[sourceFile];
-
-    updatedTimes[sourceFile] = artifacts.reduce(
+    let minTime = artifacts.reduce(
       (minimum, current) => {
         const updatedAt = new Date(current.updatedAt).getTime();
         return updatedAt < minimum ? updatedAt : minimum;
@@ -139,11 +138,10 @@ function minimumUpdatedTimePerSource(
     );
 
     // Empty array?
-    if (
-      updatedTimes[sourceFile] === Number.MAX_SAFE_INTEGER
-    ) {
-      updatedTimes[sourceFile] = 0;
+    if (minTime === Number.MAX_SAFE_INTEGER) {
+      minTime = 0;
     }
+    updatedTimes[sourceFile] = minTime;
   }
   return updatedTimes;
 }
