@@ -36,7 +36,7 @@ interface SourceFilesArtifactsUpdatedTimes {
   [filePath: string]: number; // ms since epoch
 }
 
-const normalizeKey = (fsPath: string): string => fsPath.replace(/\\/g, "/");
+const normalizeKey = (fsPath: string): string => fsPath.split(path.sep).join("/");
 
 function readAndParseArtifactFiles(
   paths: string[],
