@@ -136,8 +136,7 @@ describe("test command", () => {
     );
   });
 
-  // TODO: skipping to find all windows blockers
-  it.skip("compiles all initial contracts", async () => {
+  it("compiles all initial contracts", async () => {
     const { contracts } = await WorkflowCompile.compile(
       config.with({
         all: false,
@@ -151,8 +150,7 @@ describe("test command", () => {
     );
   });
 
-  // TODO: skipping to find windows blockers
-  it.skip("run test without --compile-none flag after running build", async () => {
+  it("run test without --compile-none flag after running build", async () => {
     const solidityTestFiles = [];
     const { contracts } = await Test.compileContractsWithTestFilesIfNeeded(
       solidityTestFiles,
@@ -171,8 +169,7 @@ describe("test command", () => {
     );
   });
 
-  // TODO: skip to find all windows blockers
-  it.skip("runs test after updating one contract.", async () => {
+  it("runs test after updating one contract.", async () => {
     updateFile("ConvertLib.sol");
 
     const solidityTestFiles = [];
@@ -194,8 +191,7 @@ describe("test command", () => {
     );
   });
 
-  // TODO: skip to find all windows blockers
-  it.skip("Update all contracts and build it.", async () => {
+  it("Update all contracts and build it.", async () => {
     updateFile("ConvertLib.sol");
     updateFile("MetaCoin.sol");
     updateFile("Migrations.sol");
