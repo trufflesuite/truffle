@@ -42,6 +42,7 @@ function readAndParseArtifactFiles(
 ): SourceFilesArtifacts {
   const sourceFilesArtifacts: SourceFilesArtifacts = {};
   // Get all the source files and create an object out of them.
+  // todo: does this need to be initialized? (1)
   paths.forEach((sourceFile) => {
     sourceFilesArtifacts[sourceFile] = [];
   });
@@ -77,6 +78,8 @@ function readAndParseArtifactFiles(
         sourceFilesArtifacts[data.sourcePath] = [];
       }
 
+      //todo: data.sourcePath should be normalized to be operating system neutral
+      // ie, s:\\:/: 
       sourceFilesArtifacts[data.sourcePath].push(data);
     } catch (error) {
       // JSON.parse throws SyntaxError objects
@@ -120,8 +123,8 @@ function findUpdatedFiles(
       const artifactsUpdatedTime =
         sourceFilesArtifactsUpdatedTimes[sourceFile] || 0;
       const sourceFileUpdatedTime = (
-        sourceFileStat.mtime || sourceFileStat.ctime
-      ).getTime();
+        sourceFileStat.mtimeMs || sourceFileStat.ctimeMs
+      ); //.getTime();
 
       if (sourceFileUpdatedTime > artifactsUpdatedTime) return sourceFile;
     })
