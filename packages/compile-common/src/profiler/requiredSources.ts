@@ -1,4 +1,5 @@
 import debugModule from "debug";
+import path from "path";
 const debug = debugModule("compile-common:profiler:requiredSources");
 
 import {
@@ -36,6 +37,13 @@ export async function requiredSources({
 
   debug("allPaths: %O", allPaths);
   debug("updatedPaths: %O", updatedPaths);
+
+  //before anything else: on Windows, make sure all paths are in native form
+  //(with backslashes) rather than slashes.  otherwise, resolution of relative
+  //paths can cause aliasing; you can end up with one source with slashes (as
+  //given) and one with backslashes (due to relative import resolution).
+  allPaths = allPaths.map(sourcePath => sourcePath.replace(/\//g, path.sep));
+  updatedPaths = updatedPaths.map(sourcePath => sourcePath.replace(/\//g, path.sep));
 
   // Solidity test files might have been injected. Include them in the known set.
   updatedPaths.forEach(_path => {

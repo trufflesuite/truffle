@@ -40,7 +40,7 @@ export const process = Batch.configure<{
         "projects",
         id,
         gql`
-        fragment Resolve_${type}_${name} on Project {
+        fragment Resolve_${type}_${name.replace(/[^0-9a-zA-Z_]/, "")} on Project {
           resolve(type: "${type}", name: "${name}") {
             id
             resource {

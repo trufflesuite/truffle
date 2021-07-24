@@ -114,12 +114,17 @@ class Command {
 
     const allValidOptions = [...result.command.help.options, ...allowedGlobalOptions];
 
-    const validOptions = allValidOptions
-      .map(item => {
-        let opt = item.option.split(" ")[0];
-        return opt.startsWith("--") ? opt : null;
-      })
-      .filter(item => item != null);
+    const validOptions = allValidOptions.reduce((a, item) => {
+      // we split the options off from the arguments
+      // and then we split to handle options of the form --<something>|-<s>
+      let options = item.option.split(" ")[0].split("|");
+      return [
+        ...a,
+        ...(options.filter(
+          option => option.startsWith("--") || option.startsWith("-")
+        ))
+      ];
+    }, []);
 
     let invalidOptions = inputOptions.filter(
       opt => !validOptions.includes(opt)
@@ -130,7 +135,7 @@ class Command {
       if (options.logger) {
         const log = options.logger.log || options.logger.debug;
         log(
-          "> Warning: possible unsupported (undocumented in help) command line option: " +
+          "> Warning: possible unsupported (undocumented in help) command line option(s): " +
             invalidOptions
         );
       }

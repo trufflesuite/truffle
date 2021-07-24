@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.5.2",
+  "version": "0.5.3",
   "main": "dist/index.js",
   "files": [
     "dist"
@@ -26,13 +26,13 @@
   },
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@types/node": "^15.0.1",
     "axios": "^0.21.1",
     "debug": "^4.3.1",
     "web3-utils": "1.4.0"
   },
   "devDependencies": {
     "@types/debug": "^4.1.5",
+    "@types/node": "^15.0.1",
     "typescript": "^4.1.4"
   },
   "keywords": [
