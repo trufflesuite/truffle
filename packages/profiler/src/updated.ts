@@ -36,7 +36,7 @@ interface SourceFilesArtifactsUpdatedTimes {
   [filePath: string]: number; // ms since epoch
 }
 
-const normalizeKey = (fsPath: string): string => fsPath.split(path.sep).join("/");
+const getKeyFromPath = (fsPath: string): string => fsPath.split(path.sep).join("/");
 
 function readAndParseArtifactFiles(
   paths: string[],
@@ -45,7 +45,7 @@ function readAndParseArtifactFiles(
   const sourceFilesArtifacts: SourceFilesArtifacts = {};
   // Get all the source files and create an object out of them.
   paths.forEach((sourceFile) => {
-    sourceFilesArtifacts[normalizeKey(sourceFile)] = [];
+    sourceFilesArtifacts[getKeyFromPath(sourceFile)] = [];
   });
   // Get all the artifact files, and read them, parsing them as JSON
   let buildFiles: string[] = fse.pathExistsSync(contracts_build_directory)
@@ -64,7 +64,7 @@ function readAndParseArtifactFiles(
   for (let i = 0; i < jsonData.length; i++) {
     try {
       const data: ContractObject = JSON.parse(jsonData[i].body);
-      const key = normalizeKey(data.sourcePath);
+      const key = getKeyFromPath(data.sourcePath);
       // In case there are artifacts from other source locations.
       if (sourceFilesArtifacts[key] == null) {
         sourceFilesArtifacts[key] = [];
