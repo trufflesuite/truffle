@@ -41,7 +41,6 @@
     "@truffle/preserve": "^0.2.3",
     "cids": "^1.1.5",
     "delay": "^5.0.0",
-    "filecoin.js": "^0.0.5-alpha",
-    "node-fetch": "^2.6.0"
+    "filecoin.js": "^0.0.5-alpha"
   }
 }

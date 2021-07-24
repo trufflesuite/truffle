@@ -18,7 +18,6 @@
     "prepare": "exit 0"
   },
   "dependencies": {
-    "node-emoji": "^1.8.1",
     "ora": "^3.4.0",
     "web3-utils": "1.4.0"
   },
