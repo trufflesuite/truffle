@@ -124,13 +124,13 @@ function findUpdatedFiles(
 function minimumUpdatedTimePerSource(
   sourceFilesArtifacts: SourceFilesArtifacts
 ) {
-  let sourceFilesArtifactsUpdatedTimes: SourceFilesArtifactsUpdatedTimes = {};
+  let updatedTimes: SourceFilesArtifactsUpdatedTimes = {};
   // Get the minimum updated time for all of a source file's artifacts
   // (note: one source file might have multiple artifacts).
   for (const sourceFile of Object.keys(sourceFilesArtifacts)) {
     const artifacts = sourceFilesArtifacts[sourceFile];
 
-    sourceFilesArtifactsUpdatedTimes[sourceFile] = artifacts.reduce(
+    updatedTimes[sourceFile] = artifacts.reduce(
       (minimum, current) => {
         const updatedAt = new Date(current.updatedAt).getTime();
         return updatedAt < minimum ? updatedAt : minimum;
@@ -140,10 +140,10 @@ function minimumUpdatedTimePerSource(
 
     // Empty array?
     if (
-      sourceFilesArtifactsUpdatedTimes[sourceFile] === Number.MAX_SAFE_INTEGER
+      updatedTimes[sourceFile] === Number.MAX_SAFE_INTEGER
     ) {
-      sourceFilesArtifactsUpdatedTimes[sourceFile] = 0;
+      updatedTimes[sourceFile] = 0;
     }
   }
-  return sourceFilesArtifactsUpdatedTimes;
+  return updatedTimes;
 }
