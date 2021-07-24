@@ -36,15 +36,16 @@ interface SourceFilesArtifactsUpdatedTimes {
   [filePath: string]: number; // ms since epoch
 }
 
+const normalizeKey = (fsPath: string): string => fsPath.replace(/\\/g, "/");
+
 function readAndParseArtifactFiles(
   paths: string[],
   contracts_build_directory: string
 ): SourceFilesArtifacts {
   const sourceFilesArtifacts: SourceFilesArtifacts = {};
   // Get all the source files and create an object out of them.
-  // todo: does this need to be initialized? (1)
   paths.forEach((sourceFile) => {
-    sourceFilesArtifacts[sourceFile] = [];
+    sourceFilesArtifacts[normalizeKey(sourceFile)] = [];
   });
   // Get all the artifact files, and read them, parsing them as JSON
   let buildFiles: string[];
@@ -72,15 +73,13 @@ function readAndParseArtifactFiles(
   for (let i = 0; i < jsonData.length; i++) {
     try {
       const data: ContractObject = JSON.parse(jsonData[i].body);
-
+      const key = normalizeKey(data.sourcePath);
       // In case there are artifacts from other source locations.
-      if (sourceFilesArtifacts[data.sourcePath] == null) {
-        sourceFilesArtifacts[data.sourcePath] = [];
+      if (sourceFilesArtifacts[key] == null) {
+        sourceFilesArtifacts[key] = [];
       }
 
-      //todo: data.sourcePath should be normalized to be operating system neutral
-      // ie, s:\\:/: 
-      sourceFilesArtifacts[data.sourcePath].push(data);
+      sourceFilesArtifacts[key].push(data);
     } catch (error) {
       // JSON.parse throws SyntaxError objects
       if (error instanceof SyntaxError) {
@@ -124,7 +123,7 @@ function findUpdatedFiles(
         sourceFilesArtifactsUpdatedTimes[sourceFile] || 0;
       const sourceFileUpdatedTime = (
         sourceFileStat.mtimeMs || sourceFileStat.ctimeMs
-      ); //.getTime();
+      ); 
 
       if (sourceFileUpdatedTime > artifactsUpdatedTime) return sourceFile;
     })
