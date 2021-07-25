@@ -13,7 +13,7 @@ export class Truffle implements ResolverSource {
   }
 
   async resolve(importPath: string) {
-    if (importPath === "truffle/DeployedAddresses.sol") {
+    if (importPath === `truffle${path.sep}DeployedAddresses.sol`) {
       const sourceFiles = await findContracts(this.options.contracts_directory);
 
       const buildDirFiles: string[] =
@@ -88,7 +88,7 @@ export class Truffle implements ResolverSource {
     ];
 
     for (const lib of truffleLibraries) {
-      if (importPath === `truffle/${lib}.sol`) {
+      if (importPath === `truffle${path.sep}${lib}.sol`) {
         const actualImportPath =
           // @ts-ignore
           typeof BUNDLE_VERSION !== "undefined"
