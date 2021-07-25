@@ -21,7 +21,9 @@
   "scripts": {
     "build": "tsc",
     "prepare": "yarn build",
-    "test": "mocha -r ts-node/register test/*.ts"
+    "test:ts": "mocha -r ts-node/register test/*.ts",
+    "test:js": "mocha test/*.js",
+    "test": "yarn test:ts && yarn test:js"
   },
   "types": "dist/lib/index.d.ts",
   "dependencies": {
