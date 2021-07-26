@@ -1,0 +1,37 @@
+name: Node CI
+
+on:
+  push:
+    # until it gets merged into develop
+    branches:
+    - windows/runner
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        platform: [windows-latest]
+        # keep things minimal for now
+        node-version: [14.x] 
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm install -g yarn
+    - run: yarn bootstrap
+      # keep it simple for now
+    - run: ${{ matrix.env }} yarn test:win
+      env:
+        CI: true
+    - uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
