@@ -36,7 +36,7 @@ export async function fetchAndCompileForRecognizer(
   //make fetcher instances. we'll filter out ones that don't support this
   //network (and note ones that yielded errors)
   debug("Fetchers: %o", Fetchers);
-  const fetchers = <Fetcher[]> ( //sorry for coercion, TS is being stupid
+  const fetchers = (
     await Promise.all(
       Fetchers.map(async Fetcher => {
         try {
@@ -54,7 +54,7 @@ export async function fetchAndCompileForRecognizer(
         }
       })
     )
-  ).filter(fetcher => fetcher !== null);
+  ).filter((fetcher): fetcher is Fetcher => fetcher !== null);
   //now: the main loop!
   let address: string | undefined;
   while ((address = recognizer.getAnUnrecognizedAddress()) !== undefined) {
