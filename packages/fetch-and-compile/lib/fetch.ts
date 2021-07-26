@@ -13,7 +13,7 @@ const { Compile } = require("@truffle/compile-solidity"); //sorry for untyped im
 import type { Recognizer, FailureType } from "./types";
 import type { WorkflowCompileResult } from "@truffle/compile-common";
 
-export async function fetchWithRecognizer(
+export async function fetchAndCompileForRecognizer(
   recognizer: Recognizer,
   config: Config
 ): Promise<void> {

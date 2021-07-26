@@ -8,7 +8,7 @@ const path = require("path");
 const Debugger = require("@truffle/debugger");
 const DebugUtils = require("@truffle/debug-utils");
 const Codec = require("@truffle/codec");
-const { fetchDebug } = require("@truffle/fetch-and-compile");
+const { fetchAndCompileForDebugger } = require("@truffle/fetch-and-compile");
 
 const { DebugInterpreter } = require("./interpreter");
 const { DebugCompiler } = require("./compiler");
@@ -50,7 +50,7 @@ class CLIDebugger {
       fetch: badAddresses,
       fetchers: badFetchers,
       compile: badCompilationAddresses
-    } = await fetchDebug(
+    } = await fetchAndCompileForDebugger(
       bugger,
       this.config
     ); //Note: mutates bugger!!

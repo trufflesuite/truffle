@@ -3,7 +3,7 @@ import type TruffleConfig from "@truffle/config";
 import type { WorkflowCompileResult } from "@truffle/compile-common";
 import * as Common from "@truffle/compile-common";
 import type { Project } from "@truffle/db";
-import { fetchSingle } from "@truffle/fetch-and-compile";
+import * as FetchExternal from "@truffle/fetch-and-compile";
 
 export interface FetchExternalOptions {
   config: TruffleConfig;
@@ -61,7 +61,7 @@ async function fetchAndCompile(options: {
 }> {
 
   const { address, config } = options;
-  const { sourceInfo, compileResult } = await fetchSingle(address, config);
+  const { sourceInfo, compileResult } = await FetchExternal.fetchAndCompile(address, config);
 
   if (sourceInfo.contractName === undefined) {
     throw new Error(`Contract found at ${address} had no name`);
