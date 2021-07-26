@@ -17,44 +17,9 @@ export async function fetchAndCompileForRecognizer(
   recognizer: Recognizer,
   config: Config
 ): Promise<void> {
-  const userFetcherNames: string[] | undefined = config.sourceFetchers;
-  //sort/filter fetchers by user's order, if given; otherwise use default order
-  let sortedFetchers: FetcherConstructor[] = [];
-  if (userFetcherNames) {
-    for (let name of userFetcherNames) {
-      let Fetcher = Fetchers.find(Fetcher => Fetcher.fetcherName === name);
-      if (Fetcher) {
-        sortedFetchers.push(Fetcher);
-      } else {
-        throw new Error(`Unknown external source service ${name}.`);
-      }
-    }
-  } else {
-    sortedFetchers = Fetchers;
-  }
-  const networkId: number = config.network_id;
-  //make fetcher instances. we'll filter out ones that don't support this
-  //network (and note ones that yielded errors)
-  debug("Fetchers: %o", Fetchers);
-  const fetchers = (
-    await Promise.all(
-      Fetchers.map(async Fetcher => {
-        try {
-          return await Fetcher.forNetworkId(
-            networkId,
-            config[Fetcher.fetcherName]
-          );
-        } catch (error) {
-          if (!(error instanceof InvalidNetworkError)) {
-            //if it's *not* just an invalid network, log the error.
-            recognizer.markBadFetcher(Fetcher.fetcherName);
-          }
-          //either way, filter this fetcher out
-          return null;
-        }
-      })
-    )
-  ).filter((fetcher): fetcher is Fetcher => fetcher !== null);
+  const fetcherConstructors: FetcherConstructor[] =
+    getSortedFetcherConstructors(config);
+  const fetchers = await getFetchers(fetcherConstructors, config, recognizer);
   //now: the main loop!
   let address: string | undefined;
   while ((address = recognizer.getAnUnrecognizedAddress()) !== undefined) {
@@ -135,6 +100,54 @@ export async function fetchAndCompileForRecognizer(
       recognizer.markUnrecognizable(address, failureReason);
     }
   }
+}
+
+//sort/filter fetchers by user's order, if given; otherwise use default order
+function getSortedFetcherConstructors(config: Config): FetcherConstructor[] {
+  const userFetcherNames: string[] | undefined = config.sourceFetchers;
+  let sortedFetchers: FetcherConstructor[] = [];
+  if (userFetcherNames) {
+    for (let name of userFetcherNames) {
+      let Fetcher = Fetchers.find(Fetcher => Fetcher.fetcherName === name);
+      if (Fetcher) {
+        sortedFetchers.push(Fetcher);
+      } else {
+        throw new Error(`Unknown external source service ${name}.`);
+      }
+    }
+  } else {
+    sortedFetchers = Fetchers;
+  }
+  return sortedFetchers;
+}
+
+async function getFetchers(
+  fetcherConstructors: FetcherConstructor[],
+  config: Config,
+  recognizer: Recognizer
+): Promise<Fetcher[]> {
+  const networkId: number = config.network_id;
+  //make fetcher instances. we'll filter out ones that don't support this
+  //network (and note ones that yielded errors)
+  return (
+    await Promise.all(
+      fetcherConstructors.map(async Fetcher => {
+        try {
+          return await Fetcher.forNetworkId(
+            networkId,
+            config[Fetcher.fetcherName]
+          );
+        } catch (error) {
+          if (!(error instanceof InvalidNetworkError)) {
+            //if it's *not* just an invalid network, log the error.
+            recognizer.markBadFetcher(Fetcher.fetcherName);
+          }
+          //either way, filter this fetcher out
+          return null;
+        }
+      })
+    )
+  ).filter((fetcher): fetcher is Fetcher => fetcher !== null);
 }
 
 function transformIfUsingDocker(
