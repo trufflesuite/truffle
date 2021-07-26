@@ -1,4 +1,7 @@
 
+## TODO
+  - [ ] mocha timeouts are annoying! Seems to be related to downloading solc.
+        Maybe there's a way to cache this for CI
 
 
 ## Tests marked skipped
