@@ -124,7 +124,7 @@ class Migration {
         let Db;
         try {
           Db = require("@truffle/db");
-        } catch () {};
+        } catch {};
 
         if (Db) {
           const db = Db.connect(this.config.db);
