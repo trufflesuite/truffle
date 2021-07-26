@@ -54,7 +54,7 @@ describe("Contracts.compile", () => {
             `${process.cwd()}/${config.contracts_directory}/${contractName}.sol`
           )
       );
-    }).timeout(4000);
+    }).timeout(60000);
 
     it("provides an array of sources in compilation result", async () => {
       config.all = true;
