@@ -118,7 +118,7 @@ export async function fetchWithRecognizer(
       failureReason = undefined; //mark as *not* failed in case a previous fetcher failed
       //check: did this actually help?
       debug("checking result");
-      if (!recognizer.getUnrecognizedAddresses().includes(address)) {
+      if (!recognizer.isAddressUnrecognized(address)) {
         debug(
           "address %s successfully recognized via %s",
           address,

@@ -15,7 +15,7 @@ export interface FetchExternalErrors {
 }
 
 export interface Recognizer {
-  getUnrecognizedAddresses(): string[];
+  isAddressUnrecognized(address: string): boolean;
   getAnUnrecognizedAddress(): string | undefined;
   addCompiledInfo(
     compileResult: WorkflowCompileResult,

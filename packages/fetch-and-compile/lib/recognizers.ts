@@ -21,8 +21,8 @@ export class SingleRecognizer implements Recognizer {
     this.address = address;
   }
 
-  getUnrecognizedAddresses(): string[] {
-    return this.recognized ? [] : [this.address];
+  isAddressUnrecognized(address: string): boolean {
+    return !this.recognized || address !== this.address; //I guess?
   }
 
   getAnUnrecognizedAddress(): string | undefined {
@@ -77,7 +77,7 @@ export class DebugRecognizer implements Recognizer {
     this.bugger = bugger; //no clone, note!
   }
 
-  getUnrecognizedAddresses(): string[] {
+  private getUnrecognizedAddresses(): string[] { //helper function
     debug("getting unknown addresses");
     const instances: Instances = this.bugger.view(
       this.bugger.selectors.session.info.affectedInstances
@@ -86,6 +86,10 @@ export class DebugRecognizer implements Recognizer {
     return Object.entries(instances)
       .filter(([_, { contractName }]) => contractName === undefined)
       .map(([address, _]) => address);
+  }
+
+  isAddressUnrecognized(address: string): boolean {
+    return this.getUnrecognizedAddresses().includes(address);
   }
 
   getAnUnrecognizedAddress(): string | undefined {
