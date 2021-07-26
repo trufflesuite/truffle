@@ -9,10 +9,6 @@ const SUPPORTED_COMPILERS = {
   external: require("@truffle/external-compile").Compile
 };
 
-let Db;
-try {
-  Db = require("@truffle/db");
-} catch {}
 
 async function compile(config) {
   // determine compiler(s) to use
@@ -106,22 +102,28 @@ const WorkflowCompile = {
     await fse.ensureDir(config.contracts_build_directory);
 
     if (
-      Db &&
       options.db &&
       options.db.enabled === true &&
       contracts.length > 0
     ) {
-      debug("saving to @truffle/db");
-      const db = Db.connect(config.db);
-      const project = await Db.Project.initialize({
-        db,
-        project: {
-          directory: config.working_directory
-        }
-      });
-      ({ contracts, compilations } = await project.loadCompile({
-        result: { contracts, sources, compilations }
-      }));
+      let Db;
+      try {
+        Db = require("@truffle/db");
+      } catch {}
+
+      if (Db) {
+        debug("saving to @truffle/db");
+        const db = Db.connect(config.db);
+        const project = await Db.Project.initialize({
+          db,
+          project: {
+            directory: config.working_directory
+          }
+        });
+        ({ contracts, compilations } = await project.loadCompile({
+          result: { contracts, sources, compilations }
+        }));
+      }
     }
 
     const artifacts = contracts.map(Shims.NewToLegacy.forContract);
@@ -131,6 +133,11 @@ const WorkflowCompile = {
   },
 
   async assignNames(options, { contracts }) {
+    let Db;
+    try {
+      Db = require("@truffle/db");
+    } catch {}
+
     const config = prepareConfig(options);
 
     if (!Db || !config.db || !config.db.enabled || contracts.length === 0) {
