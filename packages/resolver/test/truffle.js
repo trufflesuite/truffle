@@ -6,7 +6,7 @@ const path = require("path");
 const { Truffle } = require("../dist/lib/sources/truffle");
 const resolver = new Truffle({});
 
-describe("truffle resolve [ @win ]", function () {
+describe("truffle resolve", function () {
 
   describe("assertion contracts", () => {
     [
@@ -35,9 +35,4 @@ describe("truffle resolve [ @win ]", function () {
       })
     })
   });
-
-  describe.skip("DeployedAddresses Contracts", () => {
-    // "DeployedAddresses"
-    // TODO: Not sure how to set this up
-  })
 });
