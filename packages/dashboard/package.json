@@ -13,11 +13,11 @@
     "express": "^4.17.1"
   },
   "scripts": {
-    "start:react": "DISABLE_ESLINT_PLUGIN=true SKIP_PREFLIGHT_CHECK=true react-scripts start",
+    "start:react": "DISABLE_ESLINT_PLUGIN=true SKIP_PREFLIGHT_CHECK=true craco start",
     "start:prebuilt": "node build/server/start-dashboard.js 5000",
     "start:dev-backend": "ts-node --project tsconfig.server.json server/start-dashboard.ts 5000",
     "start": "concurrently --kill-others \"yarn start:dev-backend\" \"NODE_ENV=\"development\" yarn start:react\"",
-    "build:react": "DISABLE_ESLINT_PLUGIN=true SKIP_PREFLIGHT_CHECK=true react-scripts build",
+    "build:react": "DISABLE_ESLINT_PLUGIN=true SKIP_PREFLIGHT_CHECK=true craco build",
     "build:server": "tsc -p tsconfig.server.json",
     "build": "yarn build:react && yarn build:server",
     "prepare": "yarn build"
@@ -35,6 +35,7 @@
     ]
   },
   "devDependencies": {
+    "@craco/craco": "^6.2.0",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
@@ -45,13 +46,16 @@
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
     "@types/web3": "^1.0.20",
+    "autoprefixer": "^9",
     "concurrently": "^6.2.0",
     "delay": "^5.0.0",
     "ethereum-protocol": "^1.0.1",
     "ethers": "^5.1.4",
+    "postcss": "^7",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-scripts": "4.0.3",
+    "tailwindcss": "npm:@tailwindcss/postcss7-compat",
     "ts-node": "^10.1.0",
     "typescript": "^4.1.2",
     "web-vitals": "^1.0.1",
