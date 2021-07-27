@@ -4,7 +4,7 @@ const { execSync } = require("child_process");
 const ora = require("ora");
 const semver = require("semver");
 const LoadingStrategy = require("./LoadingStrategy");
-const VersionRange = require("./VersionRange");
+const { normalizeSolcVersion } = require("../normalizeSolcVersion");
 
 class Docker extends LoadingStrategy {
   async load() {
@@ -95,7 +95,7 @@ class Docker extends LoadingStrategy {
     const version = execSync(
       "docker run ethereum/solc:" + image + " --version"
     );
-    const normalized = new VersionRange(this.config).normalizeSolcVersion(
+    const normalized = normalizeSolcVersion(
       version
     );
     this.addFileToCache(normalized, fileName);
