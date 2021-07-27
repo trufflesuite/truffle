@@ -2,6 +2,7 @@ const debug = require("debug")("workflow-compile");
 const fse = require("fs-extra");
 const { prepareConfig } = require("./utils");
 const { Shims } = require("@truffle/compile-common");
+const { getDb } = require("@truffle/db-utils");
 
 const SUPPORTED_COMPILERS = {
   solc: require("@truffle/compile-solidity").Compile,
@@ -106,10 +107,8 @@ const WorkflowCompile = {
       options.db.enabled === true &&
       contracts.length > 0
     ) {
-      let Db;
-      try {
-        Db = require("@truffle/db");
-      } catch {}
+      // currently if Db fails to load, getDb returns `null`
+      const Db = getDb();
 
       if (Db) {
         debug("saving to @truffle/db");
@@ -133,10 +132,8 @@ const WorkflowCompile = {
   },
 
   async assignNames(options, { contracts }) {
-    let Db;
-    try {
-      Db = require("@truffle/db");
-    } catch {}
+    // currently if Db fails to load, getDb returns `null`
+    const Db = getDb();
 
     const config = prepareConfig(options);
 

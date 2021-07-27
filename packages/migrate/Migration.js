@@ -7,8 +7,8 @@ const {
   Web3Shim,
   createInterfaceAdapter
 } = require("@truffle/interface-adapter");
-
 const ResolverIntercept = require("./ResolverIntercept");
+const { getDb } = require("@truffle/db-utils");
 
 class Migration {
   constructor(file, reporter, config) {
@@ -119,12 +119,8 @@ class Migration {
         this.config.db.enabled &&
         artifacts.length > 0
       ) {
-        // we are requiring Db inside this scope for optimization
-        // currently if Db fails to load, it will do so silently
-        let Db;
-        try {
-          Db = require("@truffle/db");
-        } catch {};
+        // currently if Db fails to load, getDb returns `null`
+        const Db = getDb();
 
         if (Db) {
           const db = Db.connect(this.config.db);

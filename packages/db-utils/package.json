@@ -1,33 +1,33 @@
 {
   "name": "@truffle/db-utils",
-  "version": "0.0.1",
   "description": "Utilities for working with @truffle/db",
+  "license": "MIT",
+  "author": "tyler feickert <tyler.feickert@consensys.net>",
+  "homepage": "https://github.com/trufflesuite/truffle#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/db-utils"
+  },
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "version": "0.0.1",
+  "main": "dist/index.js",
   "keywords": [
     "ethereum",
     "Truffle",
     "Truffle Db"
   ],
-  "author": "tyler feickert <tyler.feickert@consensys.net>",
-  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/db-utils#readme",
-  "license": "MIT",
-  "main": "dist/src/index.js",
-  "types": "dist/src/index.d.ts",
+  "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
   "publishConfig": {
     "access": "public"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/trufflesuite/truffle.git",
-    "directory": "packages/db-utils"
-  },
   "scripts": {
     "prepare": "tsc"
-  },
-  "bugs": {
-    "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "dependencies": {
     "@truffle/db": "^0.5.22"
