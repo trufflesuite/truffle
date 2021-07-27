@@ -208,11 +208,6 @@ class VersionRange extends LoadingStrategy {
     }
   }
 
-  normalizeSolcVersion(input) {
-    const version = String(input);
-    return version.split(":")[1].trim();
-  }
-
   versionIsCached(version) {
     const cachedCompilerFileNames = fs.readdirSync(this.compilerCachePath);
     const cachedVersions = cachedCompilerFileNames.map(fileName => {

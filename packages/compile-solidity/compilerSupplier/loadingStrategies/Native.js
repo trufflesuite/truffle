@@ -1,6 +1,6 @@
 const { execSync } = require("child_process");
+const { normalizeSolcVersion } = require("../normalizeSolcVersion");
 const LoadingStrategy = require("./LoadingStrategy");
-const VersionRange = require("./VersionRange");
 
 class Native extends LoadingStrategy {
   load() {
@@ -29,7 +29,7 @@ class Native extends LoadingStrategy {
     } catch (error) {
       throw this.errors("noNative", null, error);
     }
-    return new VersionRange(this.config).normalizeSolcVersion(version);
+    return normalizeSolcVersion(version);
   }
 }
 
