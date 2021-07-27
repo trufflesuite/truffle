@@ -22,6 +22,7 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
+    - uses: c-hive/gha-yarn-cache@v2
     - run: npm install -g yarn
     - run: yarn bootstrap
       # keep it simple for now
