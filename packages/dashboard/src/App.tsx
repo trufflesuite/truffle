@@ -1,13 +1,14 @@
-import { base64ToJson, connectToServerWithRetries, getPorts, jsonToBase64 } from "./utils";
+import { base64ToJson, connectToServerWithRetries, getPorts, jsonToBase64 } from "./utils/utils";
 import { useEffect, useState } from 'react';
 import Web3Modal from "web3modal";
-import './App.css';
 import { JSONRPCRequestPayload } from "ethereum-protocol";
 import { promisify } from "util";
-import { Request } from "./types";
+import { Request } from "./utils/types";
+import Header from "./components/Header";
+import BrowserProvider from "./components/BrowserProvider";
 
 function App() {
-  const [socket, setSocket] = useState<WebSocket>();
+  const [socket, setSocket] = useState<WebSocket | undefined>();
   const [provider, setProvider] = useState<any>();
   const [requests, setRequests] = useState<Request[]>([]);
   const web3modal = new Web3Modal();
@@ -77,23 +78,9 @@ function App() {
   };
 
   return (
-    <div className="App">
-      {!provider && <button onClick={() => connectWeb3()}>Connect Web3</button>}
-      {requests.map((request, i) => {
-        return (
-          <div key={i}>
-            <div>
-              <div>
-                Method: {request.payload.method}
-              </div>
-              <div>
-                Parameters: {JSON.stringify(request.payload.params)}
-              </div>
-            </div>
-            <button onClick={() => handleRequest(request)}>process</button>
-          </div>
-        );
-      })}
+    <div>
+      <Header provider={provider} connectWeb3={connectWeb3} />
+      <BrowserProvider provider={provider} socket={socket} requests={requests} setRequests={setRequests} />
     </div>
   );
 }
