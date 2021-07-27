@@ -17,7 +17,7 @@
       }
     },
     {
-      "files": ["./migration/**/*.js"],
+      "files": ["./migrations/**/*.js"],
       "globals": {
         "artifacts": "readonly",
         "config": "readonly"
@@ -25,4 +25,3 @@
     }
   ]
 }
-
