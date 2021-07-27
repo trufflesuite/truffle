@@ -3,7 +3,7 @@ import type TruffleConfig from "@truffle/config";
 import type { WorkflowCompileResult } from "@truffle/compile-common";
 import * as Common from "@truffle/compile-common";
 import type { Project } from "@truffle/db";
-import * as FetchExternal from "@truffle/fetch-and-compile";
+import { fetchAndCompile } from "@truffle/fetch-and-compile";
 
 export interface FetchExternalOptions {
   config: TruffleConfig;
@@ -16,7 +16,14 @@ export async function fetchExternal({
   project,
   address
 }: FetchExternalOptions): Promise<void> {
-  const { contractName, result } = await fetchAndCompile({ config, address });
+  const {
+    sourceInfo: { contractName },
+    compileResult: result
+  } = await fetchAndCompile(address, config);
+
+  if (contractName === undefined) {
+    throw new Error(`Contract found at ${address} had no name`);
+  }
 
   const { contracts } = await project.loadCompile({ result });
 
@@ -50,27 +57,6 @@ export async function fetchExternal({
       networks: [network]
     }
   });
-}
-
-async function fetchAndCompile(options: {
-  config: TruffleConfig;
-  address: string;
-}): Promise<{
-  contractName: string;
-  result: WorkflowCompileResult;
-}> {
-
-  const { address, config } = options;
-  const { sourceInfo, compileResult } = await FetchExternal.fetchAndCompile(address, config);
-
-  if (sourceInfo.contractName === undefined) {
-    throw new Error(`Contract found at ${address} had no name`);
-  }
-
-  return {
-    contractName: sourceInfo.contractName,
-    result: compileResult
-  };
 }
 
 async function findContract<Contract extends Common.CompiledContract>(options: {
