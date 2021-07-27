@@ -5,6 +5,7 @@ on:
     # until it gets merged into develop
     branches:
     - windows/runner
+    - win/**
 
 jobs:
   build:
