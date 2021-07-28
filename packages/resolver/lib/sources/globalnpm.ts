@@ -44,7 +44,7 @@ export class GlobalNPM implements ResolverSource {
       try {
         const result = fs.readFileSync(possiblePath, "utf8");
         return JSON.parse(result);
-      } catch (_err) {
+      } catch {
         continue;
       }
     }

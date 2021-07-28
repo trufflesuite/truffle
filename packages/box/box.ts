@@ -36,7 +36,7 @@ export const normalizeSourcePath = (url = defaultPath) => {
   });
 
   if(pathExists) {
-    debug({ in: url, out: normalizedPath});
+    debug({ in: url, out: normalizedPath });
     return resolvedPath;
   }
 
