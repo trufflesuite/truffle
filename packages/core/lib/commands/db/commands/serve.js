@@ -22,7 +22,7 @@ const command = {
     if (Db === null) {
       throw new Error(
         "There was a problem importing Truffle Db. Ensure that you have " +
-          "@truffle/db installed."
+        "@truffle/db installed."
       );
     }
     const { serve } = Db;
