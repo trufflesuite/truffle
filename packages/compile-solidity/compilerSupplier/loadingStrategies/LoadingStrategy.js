@@ -53,28 +53,6 @@ class LoadingStrategy {
       "Abstract method LoadingStrategy.load is not implemented for this strategy."
     );
   }
-
-  markListeners() {
-    return {
-      uncaughtException: new Set(process.listeners("uncaughtException")),
-      unhandledRejection: new Set(process.listeners("unhandledRejection")),
-    };
-  }
-
-  /**
-   * Cleans up error listeners left by soljson
-   * Use with `markListeners()`
-   */
-  removeListener(markedListeners) {
-    for (const eventName in markedListeners) {
-      const marked = markedListeners[eventName];
-      for (const listener of process.listeners(eventName)) {
-        if (!marked.has(listener)) {
-          process.removeListener(eventName, listener);
-        }
-      }
-    }
-  }
 };
 
 module.exports = LoadingStrategy;
