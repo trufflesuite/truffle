@@ -13,6 +13,6 @@ export interface BrowserProviderRequest {
 
 export interface PortsConfig {
   dashboardPort: number;
-  dashboardToMessageBusPort: number;
-  clientsToMessageBusPort: number;
+  messageBusListenPort: number;
+  messageBusRequestsPort: number;
 }

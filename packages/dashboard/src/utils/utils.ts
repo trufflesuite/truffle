@@ -17,17 +17,17 @@ export const base64ToJson = (base64: string) => {
 
   return json;
 };
-export const connectToServerWithRetries = async (port: number, retries = 50, tryCount = 1): Promise<WebSocket> => {
+export const connectToMessageBusWithRetries = async (port: number, retries = 1, tryCount = 1): Promise<WebSocket> => {
   try {
-    return await connectToServer(port);
+    return await connectToMessageBus(port);
   } catch (e) {
     if (tryCount === retries) throw e;
     await delay(1000);
-    return await connectToServerWithRetries(port, retries, tryCount + 1);
+    return await connectToMessageBusWithRetries(port, retries, tryCount + 1);
   }
 };
 
-export const connectToServer = (port: number) => {
+export const connectToMessageBus = (port: number) => {
   const socket = new WebSocket(`ws://localhost:${port}`);
 
   return new Promise<WebSocket>((resolve, reject) => {
