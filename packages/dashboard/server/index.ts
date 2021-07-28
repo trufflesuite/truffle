@@ -12,16 +12,16 @@ export const startDashboard = async (dashboardPort: number) => {
   app.use(cors());
   app.use(express.static(path.join(__dirname, '..')));
 
-  const dashboardToMessageBusPort = await getPort();
-  const clientsToMessageBusPort = await getPort();
+  const messageBusListenPort = await getPort();
+  const messageBusRequestsPort = await getPort();
 
-  new DashboardMessageBus().start(clientsToMessageBusPort, dashboardToMessageBusPort);
+  new DashboardMessageBus().start(messageBusRequestsPort, messageBusListenPort);
 
   app.get('/ports', (req, res) => {
     res.json({
       dashboardPort,
-      dashboardToMessageBusPort,
-      clientsToMessageBusPort,
+      messageBusListenPort,
+      messageBusRequestsPort,
     });
   });
 

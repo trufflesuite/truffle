@@ -1,6 +1,6 @@
 import {
   base64ToJson,
-  connectToServerWithRetries,
+  connectToMessageBusWithRetries,
   getPorts
 } from "./utils/utils";
 import { useEffect, useState } from "react";
@@ -19,17 +19,28 @@ function App() {
     const initialiseSocket = async () => {
       if (socket && socket.readyState === WebSocket.OPEN) return;
 
-      const { dashboardToMessageBusPort } = await getPorts();
-      const connectedSocket = await connectToServerWithRetries(
-        dashboardToMessageBusPort
+      const { messageBusListenPort } = await getPorts();
+      const connectedSocket = await connectToMessageBusWithRetries(
+        messageBusListenPort
       );
 
       connectedSocket.addEventListener(
         "message",
         async (event: MessageEvent) => {
           if (typeof event.data !== "string") return;
-          const request = base64ToJson(event.data);
-          setRequests(requests => [...requests, request]);
+          const incomingRequest = base64ToJson(event.data);
+
+          // Make sure that there's no duplicates
+          const newRequests = [...requests, incomingRequest];
+          const filteredRequests = newRequests
+            .filter((request, i) => {
+              const otherIndex = newRequests.findIndex(other => (
+                JSON.stringify(request) === JSON.stringify(other)
+              ));
+
+              return i === otherIndex;
+            });
+          setRequests(filteredRequests);
         }
       );
 
