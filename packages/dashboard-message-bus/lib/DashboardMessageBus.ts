@@ -1,8 +1,11 @@
 import WebSocket from "ws";
 import { base64ToJson, jsonToBase64, sendAndAwait } from "./utils";
 import delay from "delay";
-import { Request } from "./types";
+import { UnfulfilledRequest } from "./types";
 
+// TODO: Any number of senders sending to all connected listeners
+// TODO: First to respond should consume the message
+// TODO: socket.io for message bus
 export class DashboardMessageBus {
   clientServer: WebSocket.Server;
   connectedClientCount = 0;
@@ -10,18 +13,26 @@ export class DashboardMessageBus {
   dashboardServer: WebSocket.Server;
   dashboardSocket: WebSocket;
 
-  unfulfilledRequests: Map<string, Request> = new Map([]);
+  unfulfilledRequests: Map<string, UnfulfilledRequest> = new Map([]);
 
   start(providerPort: number, dashboardPort: number) {
-    this.dashboardServer = new WebSocket.Server({ host: '0.0.0.0', port: dashboardPort });
+    this.dashboardServer = new WebSocket.Server({
+      host: "0.0.0.0",
+      port: dashboardPort
+    });
     this.dashboardServer.on("connection", (socket: WebSocket) => {
       this.dashboardSocket = socket;
 
       // Process all backlogged (unfulfilled) requests on new dashboard connection.
-      this.unfulfilledRequests.forEach(({ socket, data }) => this.processRequest(socket, data));
+      this.unfulfilledRequests.forEach(({ socket, data }) =>
+        this.processRequest(socket, data)
+      );
     });
 
-    this.clientServer = new WebSocket.Server({ host: '0.0.0.0', port: providerPort });
+    this.clientServer = new WebSocket.Server({
+      host: "0.0.0.0",
+      port: providerPort
+    });
     this.clientServer.on("connection", (socket: WebSocket) => {
       this.connectedClientCount++;
 
@@ -51,23 +62,17 @@ export class DashboardMessageBus {
 
     await this.ready();
 
-    const decodedData = base64ToJson(data);
+    const message = base64ToJson(data);
 
-    let responsePayload;
     try {
-      responsePayload = await sendAndAwait(this.dashboardSocket, decodedData.payload);
+      const response = await sendAndAwait(this.dashboardSocket, message);
+
+      const encodedResponse = jsonToBase64(response);
+      socket.send(encodedResponse);
+
+      this.unfulfilledRequests.delete(data);
     } catch {
       return;
     }
-
-    const response = {
-      id: decodedData.id,
-      payload: responsePayload
-    };
-
-    const encodedResponse = jsonToBase64(response);
-    socket.send(encodedResponse);
-
-    this.unfulfilledRequests.delete(data);
   }
 }

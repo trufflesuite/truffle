@@ -1,6 +1,5 @@
-import { base64ToJson, connectToServerWithRetries, getPorts, jsonToBase64 } from "../utils/utils";
-import { useEffect, useState } from 'react';
-import Web3Modal from "web3modal";
+import { jsonToBase64 } from "../utils/utils";
+import { useEffect, useState } from "react";
 import { JSONRPCRequestPayload } from "ethereum-protocol";
 import { promisify } from "util";
 import { Request } from "../utils/types";
@@ -17,12 +16,16 @@ function BrowserProvider({ provider, socket, requests, setRequests }: Props) {
   const [interactiveRequests, setInteractiveRequests] = useState<Request[]>([]);
 
   useEffect(() => {
-    const interactive = requests.filter((request) => !NON_INTERACTIVE_REQUESTS.includes(request.payload.method));
-    const nonInteractive = requests.filter((request) => NON_INTERACTIVE_REQUESTS.includes(request.payload.method));
+    const interactive = requests.filter(
+      request => !NON_INTERACTIVE_REQUESTS.includes(request.payload.method)
+    );
+    const nonInteractive = requests.filter(request =>
+      NON_INTERACTIVE_REQUESTS.includes(request.payload.method)
+    );
 
     nonInteractive.forEach(handleRequest);
     setInteractiveRequests(interactive);
-  }, [requests])
+  }, [requests]);
 
   const removeFromRequests = (id: number) => {
     const newRequests = requests.filter(request => request.id !== id);
@@ -73,9 +76,7 @@ function BrowserProvider({ provider, socket, requests, setRequests }: Props) {
             return (
               <div key={i}>
                 <div>
-                  <div>
-                    Method: {request.payload.method}
-                  </div>
+                  <div>Method: {request.payload.method}</div>
                   <div>
                     Parameters: {JSON.stringify(request.payload.params)}
                   </div>

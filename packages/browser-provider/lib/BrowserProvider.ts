@@ -1,8 +1,12 @@
-import type { JSONRPCRequestPayload, JSONRPCErrorCallback, JSONRPCResponsePayload } from "ethereum-protocol";
+import type {
+  JSONRPCRequestPayload,
+  JSONRPCErrorCallback,
+  JSONRPCResponsePayload
+} from "ethereum-protocol";
 import { callbackify } from "util";
 import WebSocket from "ws";
 import { connectToServerWithRetries, getServerPort } from "./utils";
-import { sendAndAwait } from "@truffle/dashboard-message-bus";
+import { sendAndAwait, createMessage } from "@truffle/dashboard-message-bus";
 import { startDashboardInBackground } from "@truffle/dashboard";
 
 export class BrowserProvider {
@@ -14,11 +18,15 @@ export class BrowserProvider {
   }
 
   public send(payload: JSONRPCRequestPayload, callback: JSONRPCErrorCallback) {
-    const sendInternal = (payload: JSONRPCRequestPayload) => this.sendInternal(payload);
+    const sendInternal = (payload: JSONRPCRequestPayload) =>
+      this.sendInternal(payload);
     callbackify(sendInternal)(payload, callback);
   }
 
-  public sendAsync(payload: JSONRPCRequestPayload, callback: JSONRPCErrorCallback) {
+  public sendAsync(
+    payload: JSONRPCRequestPayload,
+    callback: JSONRPCErrorCallback
+  ) {
     this.send(payload, callback);
   }
 
@@ -26,10 +34,13 @@ export class BrowserProvider {
     this.socket.close();
   }
 
-  private async sendInternal(payload: JSONRPCRequestPayload): Promise<JSONRPCResponsePayload> {
+  private async sendInternal(
+    payload: JSONRPCRequestPayload
+  ): Promise<JSONRPCResponsePayload> {
     await this.ready();
-    const response = await sendAndAwait(this.socket, payload);
 
+    const message = createMessage("browser-provider", payload);
+    const { payload: response } = await sendAndAwait(this.socket, message);
     if (response.error) {
       throw response.error;
     }
