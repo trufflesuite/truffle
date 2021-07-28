@@ -1,7 +1,3 @@
-const Config = require("@truffle/config");
-const path = require("path");
-const fs = require("fs");
-
 class LoadingStrategy {
   constructor(options) {
     const defaultConfig = {
@@ -14,20 +10,6 @@ class LoadingStrategy {
         "https://registry.hub.docker.com/v2/repositories/ethereum/solc/tags/"
     };
     this.config = Object.assign({}, defaultConfig, options);
-    const compilersDir = path.resolve(
-      Config.getTruffleDataDirectory(),
-      "compilers"
-    );
-    const compilerCachePath = path.resolve(compilersDir, "node_modules"); // because babel binds to require & does weird things
-    if (!fs.existsSync(compilersDir)) fs.mkdirSync(compilersDir);
-    if (!fs.existsSync(compilerCachePath)) fs.mkdirSync(compilerCachePath); // for 5.0.8 users
-
-    this.compilerCachePath = compilerCachePath;
-  }
-
-  addFileToCache(code, fileName) {
-    const filePath = this.resolveCache(fileName);
-    fs.writeFileSync(filePath, code);
   }
 
   errors(kind, input, error) {
@@ -66,11 +48,6 @@ class LoadingStrategy {
     return new Error(kinds[kind]);
   }
 
-  fileIsCached(fileName) {
-    const file = this.resolveCache(fileName);
-    return fs.existsSync(file);
-  }
-
   load(_userSpecification) {
     throw new Error(
       "Abstract method LoadingStrategy.load is not implemented for this strategy."
@@ -98,10 +75,6 @@ class LoadingStrategy {
       }
     }
   }
-
-  resolveCache(fileName) {
-    return path.resolve(this.compilerCachePath, fileName);
-  }
-}
+};
 
 module.exports = LoadingStrategy;

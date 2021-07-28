@@ -1,13 +1,19 @@
 const debug = require("debug")("compile:compilerSupplier");
 const requireFromString = require("require-from-string");
-const fs = require("fs");
 const originalRequire = require("original-require");
 const axios = require("axios").default;
 const semver = require("semver");
 const solcWrap = require("solc/wrapper");
 const LoadingStrategy = require("./LoadingStrategy");
+const Cache = require("../Cache");
 
 class VersionRange extends LoadingStrategy {
+  constructor(...args) {
+    super(...args);
+
+    this.cache = new Cache();
+  }
+
   compilerFromString(code) {
     const markedListeners = this.markListeners();
     try {
@@ -37,7 +43,7 @@ class VersionRange extends LoadingStrategy {
   getCachedSolcByFileName(fileName) {
     const markedListeners = this.markListeners();
     try {
-      const filePath = this.resolveCache(fileName);
+      const filePath = this.cache.resolveCache(fileName);
       const soljson = originalRequire(filePath);
       debug("soljson %o", soljson);
       return solcWrap(soljson);
@@ -48,7 +54,7 @@ class VersionRange extends LoadingStrategy {
 
   // Range can also be a single version specification like "0.5.0"
   getCachedSolcByVersionRange(version) {
-    const cachedCompilerFileNames = fs.readdirSync(this.compilerCachePath);
+    const cachedCompilerFileNames = this.cache.getCachedFileNames();
     const validVersions = cachedCompilerFileNames.filter(fileName => {
       const match = fileName.match(/v\d+\.\d+\.\d+.*/);
       if (match) return semver.satisfies(match[0], version);
@@ -62,7 +68,7 @@ class VersionRange extends LoadingStrategy {
   }
 
   getCachedSolcFileName(commit) {
-    const cachedCompilerFileNames = fs.readdirSync(this.compilerCachePath);
+    const cachedCompilerFileNames = this.cache.getCachedFileNames();
     return cachedCompilerFileNames.find(fileName => {
       return fileName.includes(commit);
     });
@@ -110,7 +116,7 @@ class VersionRange extends LoadingStrategy {
     try {
       const response = await axios.get(url, { maxRedirects: 50 });
       events.emit("downloadCompiler:succeed");
-      this.addFileToCache(response.data, fileName);
+      this.cache.addFileToCache(response.data, fileName);
       return this.compilerFromString(response.data);
     } catch (error) {
       events.emit("downloadCompiler:fail");
@@ -137,7 +143,7 @@ class VersionRange extends LoadingStrategy {
 
     if (!fileName) throw this.errors("noVersion", versionToUse);
 
-    if (this.fileIsCached(fileName))
+    if (this.cache.fileIsCached(fileName))
       return this.getCachedSolcByFileName(fileName);
     return this.getSolcByUrlAndCache(fileName);
   }
@@ -209,7 +215,7 @@ class VersionRange extends LoadingStrategy {
   }
 
   versionIsCached(version) {
-    const cachedCompilerFileNames = fs.readdirSync(this.compilerCachePath);
+    const cachedCompilerFileNames = this.cache.getCachedFileNames();
     const cachedVersions = cachedCompilerFileNames.map(fileName => {
       const match = fileName.match(/v\d+\.\d+\.\d+.*/);
       if (match) return match[0];
