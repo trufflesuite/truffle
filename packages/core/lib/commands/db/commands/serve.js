@@ -17,7 +17,15 @@ const command = {
    */
   run: async function (argv) {
     const Config = require("@truffle/config");
-    const { serve } = require("@truffle/db");
+    const { getTruffleDb } = require("@truffle/db-loader");
+    const Db = getTruffleDb();
+    if (Db === null) {
+      throw new Error(
+        "There was a problem importing Truffle Db. Ensure that you have " +
+          "@truffle/db installed."
+      );
+    }
+    const { serve } = Db;
 
     const config = Config.detect(argv);
     const port = (config.db && config.db.port) || 4444;
