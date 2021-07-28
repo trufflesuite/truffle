@@ -57,7 +57,6 @@ describe("compile", function () {
         quiet: true
       })
     );
-    console.log("length", Object.keys(contracts).length);
     assert.equal(
       Object.keys(contracts).length,
       0,

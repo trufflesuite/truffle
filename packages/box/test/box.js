@@ -5,7 +5,6 @@ const inquirer = require("inquirer");
 const sinon = require("sinon");
 const Config = require("@truffle/config");
 
-// TODO: Add tests for x-platform normalizing paths 
 const { default: Box, normalizeSourcePath } = require("../");
 const TRUFFLE_BOX_DEFAULT =
   "https://github.com:trufflesuite/truffle-init-default";
@@ -69,7 +68,7 @@ describe("@truffle/box Box", () => {
       });
     });
 
-    it("unboxes truffle box from local folder [win]", async () => {
+    it("unboxes truffle box from local folder", async () => {
       const truffleConfig = await Box.unbox(
         LOCAL_TRUFFLE_BOX,
         destination,
