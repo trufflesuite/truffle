@@ -11,7 +11,7 @@ destructure it from the package.
 const { getTruffleDb } = require("@truffle/db-loader");
 ```
 
-To use it you can just call the method. It will return an instance of Truffle Db
+When you call the method, it will return an instance of Truffle Db
 or `null` if the import fails.
 
 ```javascript
