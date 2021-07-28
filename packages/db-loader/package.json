@@ -1,13 +1,13 @@
 {
-  "name": "@truffle/db-utils",
-  "description": "Utilities for working with @truffle/db",
+  "name": "@truffle/db-loader",
+  "description": "Utility for loading @truffle/db",
   "license": "MIT",
   "author": "tyler feickert <tyler.feickert@consensys.net>",
   "homepage": "https://github.com/trufflesuite/truffle#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/trufflesuite/truffle.git",
-    "directory": "packages/db-utils"
+    "directory": "packages/db-loader"
   },
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
@@ -29,8 +29,8 @@
   "scripts": {
     "prepare": "tsc"
   },
-  "dependencies": {
-    "@truffle/db": "^0.5.22"
+  "optionalDependencies": {
+    "@truffle/db": "^0.5.22",
   },
   "devDependencies": {
     "typescript": "^4.1.4"

@@ -8,7 +8,7 @@ const {
   createInterfaceAdapter
 } = require("@truffle/interface-adapter");
 const ResolverIntercept = require("./ResolverIntercept");
-const { getDb } = require("@truffle/db-utils");
+const { getTruffleDb } = require("@truffle/db-loader");
 
 class Migration {
   constructor(file, reporter, config) {
@@ -119,8 +119,8 @@ class Migration {
         this.config.db.enabled &&
         artifacts.length > 0
       ) {
-        // currently if Db fails to load, getDb returns `null`
-        const Db = getDb();
+        // currently if Truffle Db fails to load, getTruffleDb returns `null`
+        const Db = getTruffleDb();
 
         if (Db) {
           const db = Db.connect(this.config.db);
