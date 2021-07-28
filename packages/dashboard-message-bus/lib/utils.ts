@@ -1,6 +1,6 @@
 import { spawn } from "child_process";
-import { JSONRPCRequestPayload } from "ethereum-protocol";
 import WebSocket from "ws";
+import { Message } from "./types";
 
 export const jsonToBase64 = (json: any) => {
   const stringifiedJson = JSON.stringify(json);
@@ -18,19 +18,18 @@ export const base64ToJson = (base64: string) => {
   return json;
 };
 
-export const sendAndAwait = (socket: WebSocket, payload: JSONRPCRequestPayload) => {
-  const message = {
-    id: Date.now(),
-    payload
-  };
+export const createMessage = (type: string, payload: any): Message => {
+  const id = Date.now();
+  return { id, type, payload };
+};
 
+export const sendAndAwait = (socket: WebSocket, message: Message) => {
   return new Promise<any>((resolve, reject) => {
     socket.on("message", (data: WebSocket.Data) => {
       if (typeof data !== "string") return;
       const response = base64ToJson(data);
-
       if (response.id !== message.id) return;
-      resolve(response.payload);
+      resolve(response);
     });
 
     // TODO: Need to check that the error corresponds to the sent message?
@@ -50,8 +49,12 @@ export const sendAndAwait = (socket: WebSocket, payload: JSONRPCRequestPayload) 
 export const startServer = (clientPort: number, dashboardPort: number) => {
   const serverPath = `${__dirname}/start-server`;
 
-  return spawn("node", [serverPath, String(clientPort), String(dashboardPort)], {
-    detached: true,
-    stdio: "ignore"
-  });
+  return spawn(
+    "node",
+    [serverPath, String(clientPort), String(dashboardPort)],
+    {
+      detached: true,
+      stdio: "ignore"
+    }
+  );
 };
