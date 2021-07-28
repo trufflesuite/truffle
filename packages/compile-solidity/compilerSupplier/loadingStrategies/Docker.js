@@ -4,9 +4,16 @@ const { execSync } = require("child_process");
 const ora = require("ora");
 const semver = require("semver");
 const LoadingStrategy = require("./LoadingStrategy");
+const Cache = require("../Cache");
 const { normalizeSolcVersion } = require("../normalizeSolcVersion");
 
 class Docker extends LoadingStrategy {
+  constructor(...args) {
+    super(...args);
+
+    this.cache = new Cache();
+  }
+
   async load() {
     // Set a sensible limit for maxBuffer
     // See https://github.com/nodejs/node/pull/23027
@@ -68,8 +75,8 @@ class Docker extends LoadingStrategy {
     const fileName = image + ".version";
 
     // Skip validation if they've validated for this image before.
-    if (this.fileIsCached(fileName)) {
-      const cachePath = this.resolveCache(fileName);
+    if (this.cache.fileIsCached(fileName)) {
+      const cachePath = this.cache.resolveCache(fileName);
       return fs.readFileSync(cachePath, "utf-8");
     }
     // Image specified
@@ -98,7 +105,7 @@ class Docker extends LoadingStrategy {
     const normalized = normalizeSolcVersion(
       version
     );
-    this.addFileToCache(normalized, fileName);
+    this.cache.addFileToCache(normalized, fileName);
     return normalized;
   }
 }
