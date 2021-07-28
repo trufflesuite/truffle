@@ -30,7 +30,7 @@
     "prepare": "tsc"
   },
   "optionalDependencies": {
-    "@truffle/db": "^0.5.22",
+    "@truffle/db": "^0.5.22"
   },
   "devDependencies": {
     "typescript": "^4.1.4"
