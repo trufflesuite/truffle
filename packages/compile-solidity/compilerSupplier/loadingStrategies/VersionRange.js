@@ -6,6 +6,7 @@ const semver = require("semver");
 const solcWrap = require("solc/wrapper");
 const LoadingStrategy = require("./LoadingStrategy");
 const Cache = require("../Cache");
+const observeListeners = require("../observeListeners");
 
 class VersionRange extends LoadingStrategy {
   constructor(...args) {
@@ -15,12 +16,12 @@ class VersionRange extends LoadingStrategy {
   }
 
   compilerFromString(code) {
-    const markedListeners = this.markListeners();
+    const listeners = observeListeners();
     try {
       const soljson = requireFromString(code);
       return solcWrap(soljson);
     } finally {
-      this.removeListener(markedListeners);
+      listeners.cleanup();
     }
   }
 
@@ -41,14 +42,14 @@ class VersionRange extends LoadingStrategy {
   }
 
   getCachedSolcByFileName(fileName) {
-    const markedListeners = this.markListeners();
+    const listeners = observeListeners();
     try {
       const filePath = this.cache.resolveCache(fileName);
       const soljson = originalRequire(filePath);
       debug("soljson %o", soljson);
       return solcWrap(soljson);
     } finally {
-      this.removeListener(markedListeners);
+      listeners.cleanup();
     }
   }
 
