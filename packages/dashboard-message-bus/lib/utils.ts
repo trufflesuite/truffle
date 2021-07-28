@@ -1,6 +1,9 @@
 import { spawn } from "child_process";
 import WebSocket from "ws";
 import { Message } from "./types";
+import any from 'promise.any';
+
+any.shim();
 
 export const jsonToBase64 = (json: any) => {
   const stringifiedJson = JSON.stringify(json);
@@ -21,6 +24,12 @@ export const base64ToJson = (base64: string) => {
 export const createMessage = (type: string, payload: any): Message => {
   const id = Date.now();
   return { id, type, payload };
+};
+
+export const broadcastAndAwaitFirst = async (sockets: WebSocket[], message: Message) => {
+  const promises = sockets.map(socket => sendAndAwait(socket, message));
+  const result = await Promise.any(promises);
+  return result;
 };
 
 export const sendAndAwait = (socket: WebSocket, message: Message) => {
@@ -46,8 +55,8 @@ export const sendAndAwait = (socket: WebSocket, message: Message) => {
   });
 };
 
-export const startServer = (clientPort: number, dashboardPort: number) => {
-  const serverPath = `${__dirname}/start-server`;
+export const startMessageBus = (clientPort: number, dashboardPort: number) => {
+  const serverPath = `${__dirname}/start-message-bus`;
 
   return spawn(
     "node",

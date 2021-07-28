@@ -1,5 +1,5 @@
 import WebSocket from "ws";
-import { base64ToJson, jsonToBase64, sendAndAwait } from "./utils";
+import { base64ToJson, broadcastAndAwaitFirst, jsonToBase64 } from "./utils";
 import delay from "delay";
 import { UnfulfilledRequest } from "./types";
 
@@ -7,21 +7,28 @@ import { UnfulfilledRequest } from "./types";
 // TODO: First to respond should consume the message
 // TODO: socket.io for message bus
 export class DashboardMessageBus {
-  clientServer: WebSocket.Server;
-  connectedClientCount = 0;
+  requestsServer: WebSocket.Server;
+  clients: WebSocket[] = [];
 
-  dashboardServer: WebSocket.Server;
-  dashboardSocket: WebSocket;
+  listenServer: WebSocket.Server;
+  listeners: WebSocket[] = [];
 
   unfulfilledRequests: Map<string, UnfulfilledRequest> = new Map([]);
 
-  start(providerPort: number, dashboardPort: number) {
-    this.dashboardServer = new WebSocket.Server({
+  start(requestsPort: number, listenPort: number) {
+    this.listenServer = new WebSocket.Server({
       host: "0.0.0.0",
-      port: dashboardPort
+      port: listenPort
     });
-    this.dashboardServer.on("connection", (socket: WebSocket) => {
-      this.dashboardSocket = socket;
+
+    this.listenServer.on("connection", (socket: WebSocket) => {
+      this.listeners.push(socket);
+      console.log(this.listeners.length);
+
+      socket.on("close", () => {
+        this.listeners = this.listeners.filter((listener) => listener !== socket);
+        console.log(this.listeners.length);
+      });
 
       // Process all backlogged (unfulfilled) requests on new dashboard connection.
       this.unfulfilledRequests.forEach(({ socket, data }) =>
@@ -29,19 +36,21 @@ export class DashboardMessageBus {
       );
     });
 
-    this.clientServer = new WebSocket.Server({
+    this.requestsServer = new WebSocket.Server({
       host: "0.0.0.0",
-      port: providerPort
+      port: requestsPort
     });
-    this.clientServer.on("connection", (socket: WebSocket) => {
-      this.connectedClientCount++;
+
+    this.requestsServer.on("connection", (socket: WebSocket) => {
+      this.clients.push(socket);
 
       socket.on("message", (data: WebSocket.Data) => {
         this.processRequest(socket, data);
       });
 
       socket.on("close", () => {
-        if (--this.connectedClientCount <= 0) {
+        this.clients = this.clients.filter((client) => client !== socket);
+        if (this.clients.length === 0) {
           process.exit(0);
         }
       });
@@ -50,7 +59,7 @@ export class DashboardMessageBus {
 
   // Wait until the dashboard process is started and the websocket connection is established
   async ready() {
-    if (this.dashboardSocket) return;
+    if (this.listeners.length > 0) return;
     await delay(1000);
     await this.ready();
   }
@@ -65,11 +74,9 @@ export class DashboardMessageBus {
     const message = base64ToJson(data);
 
     try {
-      const response = await sendAndAwait(this.dashboardSocket, message);
-
+      const response = await broadcastAndAwaitFirst(this.listeners, message);
       const encodedResponse = jsonToBase64(response);
       socket.send(encodedResponse);
-
       this.unfulfilledRequests.delete(data);
     } catch {
       return;
