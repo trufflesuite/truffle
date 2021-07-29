@@ -9,23 +9,12 @@ import inquirer from "inquirer";
 import type { boxConfig, unboxOptions } from "typings";
 import { promisify } from "util";
 import ignore from "ignore";
-import debugModule from "debug";
 
-const debug = debugModule("unbox");
-
-async function verifyLocalPath(localPath: string) {
+function verifyLocalPath(localPath: string) {
   const configPath = path.join(localPath, "truffle-box.json");
-  let exists = false;
-  try {
-    exists = await fse.pathExists(configPath);
-  } catch (_err) {
-    debug("Error verifying configPath", configPath);
-    console.log(_err);
-  } finally {
-    if (!exists) {
-      throw new Error(`Truffle Box at path ${localPath} doesn't exist.`);
-    }
-  }
+  fse.access(configPath).catch(_e => {
+    throw new Error(`Truffle Box at path ${localPath} doesn't exist.`);
+  });
 }
 
 async function verifyVCSURL(url: string) {
@@ -57,7 +46,7 @@ async function verifyVCSURL(url: string) {
 }
 
 async function verifySourcePath(sourcePath: string) {
-  if (path.isAbsolute(sourcePath)) {
+  if (sourcePath.startsWith("/")) {
     return verifyLocalPath(sourcePath);
   }
   return verifyVCSURL(sourcePath);
@@ -77,7 +66,7 @@ async function gitIgnoreFilter(sourcePath: string) {
 }
 
 async function fetchRepository(sourcePath: string, dir: string) {
-  if (path.isAbsolute(sourcePath)) {
+  if (sourcePath.startsWith("/")) {
     const filter = await gitIgnoreFilter(sourcePath);
     return fse.copy(sourcePath, dir, {
       filter: file =>
