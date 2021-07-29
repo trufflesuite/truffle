@@ -11,6 +11,7 @@ import { promisify } from "util";
 import ignore from "ignore";
 
 function verifyLocalPath(localPath: string) {
+  debugger
   const configPath = path.join(localPath, "truffle-box.json");
   fse.access(configPath).catch(_e => {
     throw new Error(`Truffle Box at path ${localPath} doesn't exist.`);
@@ -46,7 +47,9 @@ async function verifyVCSURL(url: string) {
 }
 
 async function verifySourcePath(sourcePath: string) {
-  if (sourcePath.startsWith("/")) {
+  debugger;
+  if (sourcePath.startsWith("/") || fse.pathExistsSync(sourcePath) ) {
+    debugger;
     return verifyLocalPath(sourcePath);
   }
   return verifyVCSURL(sourcePath);
@@ -66,7 +69,7 @@ async function gitIgnoreFilter(sourcePath: string) {
 }
 
 async function fetchRepository(sourcePath: string, dir: string) {
-  if (sourcePath.startsWith("/")) {
+  if (sourcePath.startsWith("/") || fse.pathExistsSync(sourcePath) ) {
     const filter = await gitIgnoreFilter(sourcePath);
     return fse.copy(sourcePath, dir, {
       filter: file =>
@@ -142,7 +145,10 @@ async function copyTempIntoDestination(
   }
 
   for (const file of shouldCopy) {
-    fse.copySync(`${tmpDir}/${file}`, `${destination}/${file}`);
+    fse.copySync(
+      path.join(tmpDir, file), 
+      path.join(destination, file)
+    )
   }
 }
 

@@ -67,7 +67,7 @@ describe("@truffle/box Box", () => {
       });
     });
 
-    it("unboxes truffle box from local folder", async () => {
+    it.only("unboxes truffle box from local folder", async () => {
       const truffleConfig = await Box.unbox(
         LOCAL_TRUFFLE_BOX,
         destination,

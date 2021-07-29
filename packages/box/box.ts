@@ -2,13 +2,26 @@ import utils from "./lib/utils";
 import tmp from "tmp";
 import path from "path";
 import Config from "@truffle/config";
-import fse from "fs-extra";
+import fse, { openSync } from "fs-extra";
 import inquirer from "inquirer";
 import { sandboxOptions, unboxOptions } from "typings";
 import debugModule from "debug";
+import os from "os";
 
 const debug = debugModule("unbox");
 const defaultPath = "git@github.com:trufflesuite/truffle-init-default";
+
+const getWin32Path = (url: string): string | null => {
+  let result: string = null;
+  if (os.platform() === "win32") {
+    if (url.startsWith(".")) {
+       let candidate = path.join(process.cwd(), url)
+       result = fse.pathExistsSync(candidate) ? candidate : null;
+    }
+    return result;
+  }
+  return fse.pathExistsSync(url) ? url : null;
+}
 
 /*
  * accepts a number of different url and org/repo formats and returns the
@@ -22,11 +35,15 @@ const defaultPath = "git@github.com:trufflesuite/truffle-init-default";
  *   - path to local folder (absolute, relative or ~/home)
  */
 export const normalizeSourcePath = (url = defaultPath) => {
+  
   // Process filepath resolution
   //
-  if (url.startsWith(".") || url.startsWith("/") || url.startsWith("~")) {
-    debug({ in: url, out: path.normalize(url) });
-    return path.resolve(path.normalize(url));
+  const isUnixPathLike = url.startsWith(".") || url.startsWith("/") || url.startsWith("~");
+  const winPath = getWin32Path(url);
+  if (isUnixPathLike || winPath) {
+    debugger;
+    debug({ in: url, out: path.normalize(winPath || url) });
+    return path.resolve(path.normalize(winPath || url));
   }
 
   // preprocess to reduce regex complexity
