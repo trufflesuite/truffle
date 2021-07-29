@@ -2,10 +2,17 @@ import debugModule from "debug";
 const debug = debugModule("codec:contexts:utils");
 
 import * as Evm from "@truffle/codec/evm";
+import * as Compilations from "@truffle/codec/compilations";
+import * as Ast from "@truffle/codec/ast";
+import * as Conversion from "@truffle/codec/conversion";
 import { CompilerVersion } from "@truffle/codec/compiler";
 import { Context, Contexts } from "./types";
 import escapeRegExp from "lodash.escaperegexp";
 import * as cbor from "cbor";
+import { Shims } from "@truffle/compile-common";
+import * as Abi from "@truffle/abi-utils";
+import * as Common from "@truffle/codec/common";
+import * as AbiDataUtils from "@truffle/codec/abi-data/utils";
 
 export function findContext(
   contexts: Contexts,
@@ -324,4 +331,77 @@ function detectCompilerInfo(decoded: any): CompilerVersion | undefined {
     //return undefined on anything else
     return undefined;
   }
+}
+
+export function makeContext(
+  contract: Compilations.Contract,
+  node: Ast.AstNode | undefined,
+  compilation: Compilations.Compilation,
+  isConstructor = false
+): Context {
+  const abi = Abi.normalize(contract.abi);
+  const bytecode = isConstructor
+    ? contract.bytecode
+    : contract.deployedBytecode;
+  const binary: string = Shims.NewToLegacy.forBytecode(bytecode);
+  const hash = Conversion.toHexString(
+    Evm.Utils.keccak256({
+      type: "string",
+      value: binary
+    })
+  );
+  debug("hash: %s", hash);
+  const fallback =
+    <Abi.FallbackEntry>abi.find(abiEntry => abiEntry.type === "fallback") ||
+    null; //TS is failing at inference here
+  const receive =
+    <Abi.ReceiveEntry>abi.find(abiEntry => abiEntry.type === "receive") || null; //and here
+  return {
+    context: hash,
+    contractName: contract.contractName,
+    binary,
+    contractId: node ? node.id : undefined,
+    linearizedBaseContracts: node ? node.linearizedBaseContracts : undefined,
+    contractKind: contractKind(contract, node),
+    immutableReferences: isConstructor
+      ? undefined
+      : contract.immutableReferences,
+    isConstructor,
+    abi: AbiDataUtils.computeSelectors(abi),
+    payable: AbiDataUtils.abiHasPayableFallback(abi),
+    fallbackAbi: { fallback, receive },
+    compiler: compilation.compiler || contract.compiler,
+    compilationId: compilation.id
+  };
+}
+
+//attempts to determine if the given contract is a library or not
+function contractKind(
+  contract: Compilations.Contract,
+  node?: Ast.AstNode
+): Common.ContractKind {
+  //first: if we have a node, use its listed contract kind
+  if (node) {
+    return node.contractKind;
+  }
+  //next: check the contract kind field on the contract object itself, if it exists.
+  //however this isn't implemented yet so we'll skip it.
+  //next: if we have no direct info on the contract kind, but we do
+  //have the deployed bytecode, we'll use a HACK:
+  //we'll assume it's an ordinary contract, UNLESS its deployed bytecode begins with
+  //PUSH20 followed by 20 0s, in which case we'll assume it's a library
+  //(note: this will fail to detect libraries from before Solidity 0.4.20)
+  if (contract.deployedBytecode) {
+    const deployedBytecode = Shims.NewToLegacy.forBytecode(
+      contract.deployedBytecode
+    );
+    const pushAddressInstruction = (0x60 + Evm.Utils.ADDRESS_SIZE - 1).toString(
+      16
+    ); //"73"
+    const libraryString =
+      "0x" + pushAddressInstruction + "00".repeat(Evm.Utils.ADDRESS_SIZE);
+    return deployedBytecode.startsWith(libraryString) ? "library" : "contract";
+  }
+  //finally, in the absence of anything to go on, we'll assume it's an ordinary contract
+  return "contract";
 }

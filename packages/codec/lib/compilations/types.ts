@@ -1,8 +1,9 @@
 import * as Compiler from "@truffle/codec/compiler";
-import * as Ast from "@truffle/codec/ast";
+import { AstNode } from "@truffle/codec/ast/types";
 import {
   Abi as SchemaAbi,
-  ImmutableReferences
+  ImmutableReferences,
+  ContractObject as Artifact
 } from "@truffle/contract-schema/spec";
 import * as Common from "@truffle/compile-common";
 
@@ -70,7 +71,7 @@ export interface Source {
   /**
    * The source's abstract syntax tree.
    */
-  ast?: Ast.AstNode;
+  ast?: AstNode;
   /**
    * This field is a compatibility hack only inteded for internal use.
    * (It allows the compiler to be set on a source if none is set on the
@@ -148,4 +149,36 @@ export interface VyperSourceMap {
     [pc: number]: [number, number, number, number];
   };
   pc_pos_map_compressed?: string;
+}
+
+/**
+ * This type represents information about a Truffle project that can be used to
+ * construct and initialize a encoder or decoder for that project.  This
+ * information may be passed in various ways; this type is given here as an
+ * interface rather than a union, but note that you only need to include one of
+ * these fields.  (The `compilations` field will be used if present, then
+ * `commonCompilations` if not, then finally `artifacts`.)
+ *
+ * The old option to use `config` is no longer supported.
+ */
+export interface ProjectInfo {
+  /**
+   * An list of codec-style compilations; this method of specifying a project
+   * is mostly intended for internal Truffle use for now, but you can see the
+   * documentation of the Compilation type if you want to use it.
+   */
+  compilations?: Compilation[];
+  /**
+   * An list of @truffle/compile-common style compilations; this method of
+   * specifying a project is mostly intended for internal Truffle use for now,
+   * but you can see the documentation of the that type if you want to
+   * use it.
+   */
+  commonCompilations?: Common.Compilation[];
+  /**
+   * A list of contract artifacts for contracts in the project.
+   * Contract constructor objects may be substituted for artifacts, so if
+   * you're not sure which you're dealing with, it's OK.
+   */
+  artifacts?: Artifact[];
 }
