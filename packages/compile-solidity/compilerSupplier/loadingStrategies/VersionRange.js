@@ -4,14 +4,20 @@ const originalRequire = require("original-require");
 const axios = require("axios").default;
 const semver = require("semver");
 const solcWrap = require("solc/wrapper");
-const LoadingStrategy = require("./LoadingStrategy");
 const Cache = require("../Cache");
 const observeListeners = require("../observeListeners");
 const { NoVersionError, NoRequestError } = require("../errors");
 
-class VersionRange extends LoadingStrategy {
-  constructor(...args) {
-    super(...args);
+class VersionRange {
+  constructor(options) {
+    const defaultConfig = {
+      compilerRoots: [
+        "https://relay.trufflesuite.com/solc/bin/",
+        "https://solc-bin.ethereum.org/bin/",
+        "https://ethereum.github.io/solc-bin/bin/"
+      ]
+    };
+    this.config = Object.assign({}, defaultConfig, options);
 
     this.cache = new Cache();
   }
