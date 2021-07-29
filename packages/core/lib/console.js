@@ -13,7 +13,7 @@ const fse = require("fs-extra");
 const path = require("path");
 const EventEmitter = require("events");
 const spawnSync = require("child_process").spawnSync;
-const originalRequire = require("original-require");
+const Require = require("@truffle/require");
 
 const processInput = input => {
   const inputComponents = input.trim().split(" ");
@@ -86,7 +86,11 @@ class Console extends EventEmitter {
     }
   }
 
-  hydrateUserDefinedVariables() {
+  hydrateUserDefinedVariables({
+    accounts,
+    interfaceAdapter,
+    web3,
+  }) {
     // exit if feature should be disabled
     if (this.options["require-none"]) return;
 
@@ -97,11 +101,6 @@ class Console extends EventEmitter {
       !this.options.r
     ) return;
 
-    const requireFromPath = target => {
-      return path.isAbsolute(target) ?
-        originalRequire(target) :
-        originalRequire(path.join(this.options.working_directory, target));
-    };
     const addToContext = (userData, namespace) => {
       for (const key in userData) {
         if (namespace) {
@@ -120,14 +119,25 @@ class Console extends EventEmitter {
 
     const requireValue = this.options.r || this.options.require || this.options.console.require;
 
+    // Require allows us to inject Truffle variables into the script's scope
+    const requireOptions = {
+      context: {
+        accounts,
+        interfaceAdapter,
+        web3,
+      }
+    };
     if (typeof requireValue === "string") {
-      addToContext(requireFromPath(requireValue));
+      requireOptions.file = requireValue;
+      addToContext(Require.file(requireOptions));
     } else if (Array.isArray(requireValue)) {
       this.options.console.require.forEach(item => {
         if (typeof item === "string") {
-          addToContext(requireFromPath(item));
+          requireOptions.file = item;
+          addToContext(Require.file(requireOptions));
         } else if (typeof item === "object" && item.path) {
-          addToContext(requireFromPath(item.path), item.as);
+          requireOptions.file = item.path;
+          addToContext(Require.file(requireOptions), item.as);
         } else {
           throw new Error(errorMessage);
         }
@@ -147,7 +157,11 @@ class Console extends EventEmitter {
       accounts = [];
     }
     // we load user variables first so as to not clobber ours
-    this.hydrateUserDefinedVariables();
+    this.hydrateUserDefinedVariables({
+      web3: this.web3,
+      interfaceAdapter: this.interfaceAdapter,
+      accounts
+    });
 
     this.repl.context.web3 = this.web3;
     this.repl.context.interfaceAdapter = this.interfaceAdapter;
