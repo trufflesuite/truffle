@@ -111,7 +111,7 @@ function findUpdatedFiles(
       const stat = sourceFileStats[index];
 
       // Ignore updating artifacts if source file has been removed.
-      if (stat == null) return;
+      if (stat == null) return false;
 
       const artifactsUpdatedTime =
         sourceArtifactsUpdatedTimes[sourceFile] || 0;
@@ -119,7 +119,7 @@ function findUpdatedFiles(
         stat.mtimeMs || stat.ctimeMs
       ); 
 
-      if (sourceFileUpdatedTime > artifactsUpdatedTime) return sourceFile;
+      return sourceFileUpdatedTime > artifactsUpdatedTime;
     });
 }
 
