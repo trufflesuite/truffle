@@ -20,13 +20,20 @@ class Local extends LoadingStrategy {
       try {
         soljson = originalRequire(compilerPath);
       } catch (error) {
-        throw this.errors("noPath", localPath, error);
+        throw new NoPathError(localPath, error);
       }
       //HACK: if it has a compile function, assume it's already wrapped
       return soljson.compile ? soljson : solcWrap(soljson);
     } finally {
       listeners.cleanup();
     }
+  }
+}
+
+class NoPathError extends Error {
+  constructor(input, error) {
+    const message = `Could not find compiler at: ${input}\n\n` + error;
+    super(message);
   }
 }
 

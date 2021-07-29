@@ -1,6 +1,7 @@
 const { execSync } = require("child_process");
 const { normalizeSolcVersion } = require("../normalizeSolcVersion");
 const LoadingStrategy = require("./LoadingStrategy");
+const { NoVersionError } = require("../errors");
 
 class Native extends LoadingStrategy {
   load() {
@@ -16,7 +17,7 @@ class Native extends LoadingStrategy {
       };
     } catch (error) {
       if (error.message === "No matching version found") {
-        throw this.errors("noVersion", versionString);
+        throw new NoVersionError(versionString);
       }
       throw new Error(error);
     }
@@ -27,9 +28,15 @@ class Native extends LoadingStrategy {
     try {
       version = execSync("solc --version");
     } catch (error) {
-      throw this.errors("noNative", null, error);
+      throw new NoNativeError(error);
     }
     return normalizeSolcVersion(version);
+  }
+}
+
+class NoNativeError extends Error {
+  constructor(error) {
+    super("Could not execute local solc binary: " + error);
   }
 }
 

@@ -7,6 +7,7 @@ const solcWrap = require("solc/wrapper");
 const LoadingStrategy = require("./LoadingStrategy");
 const Cache = require("../Cache");
 const observeListeners = require("../observeListeners");
+const { NoVersionError, NoRequestError } = require("../errors");
 
 class VersionRange extends LoadingStrategy {
   constructor(...args) {
@@ -91,7 +92,7 @@ class VersionRange extends LoadingStrategy {
     if (this.versionIsCached(versionRange)) {
       return this.getCachedSolcByVersionRange(versionRange);
     }
-    throw this.errors("noVersion", versionRange);
+    throw new NoVersionError(versionRange);
   }
 
   async getSolcByCommit(commit) {
@@ -122,7 +123,7 @@ class VersionRange extends LoadingStrategy {
     } catch (error) {
       events.emit("downloadCompiler:fail");
       if (index >= this.config.compilerRoots.length - 1) {
-        throw this.errors("noRequest", "compiler URLs", error);
+        throw new NoRequestError("compiler URLs", error);
       }
       return this.getSolcByUrlAndCache(fileName, index + 1);
     }
@@ -133,7 +134,7 @@ class VersionRange extends LoadingStrategy {
     try {
       allVersions = await this.getSolcVersions();
     } catch (error) {
-      throw this.errors("noRequest", versionConstraint, error);
+      throw new NoRequestError(versionConstraint, error);
     }
     const isVersionRange = !semver.valid(versionConstraint);
 
@@ -142,7 +143,7 @@ class VersionRange extends LoadingStrategy {
       : versionConstraint;
     const fileName = this.getSolcVersionFileName(versionToUse, allVersions);
 
-    if (!fileName) throw this.errors("noVersion", versionToUse);
+    if (!fileName) throw new NoVersionError(versionToUse);
 
     if (this.cache.fileIsCached(fileName))
       return this.getCachedSolcByFileName(fileName);
@@ -154,7 +155,7 @@ class VersionRange extends LoadingStrategy {
     events.emit("fetchSolcList:start", { attemptNumber: index + 1 });
     if (!this.config.compilerRoots || this.config.compilerRoots.length < 1) {
       events.emit("fetchSolcList:fail");
-      throw this.errors("noUrl");
+      throw new NoUrlError();
     }
     const { compilerRoots } = this.config;
 
@@ -169,7 +170,7 @@ class VersionRange extends LoadingStrategy {
       .catch(error => {
         events.emit("fetchSolcList:fail");
         if (index >= this.config.compilerRoots.length - 1) {
-          throw this.errors("noRequest", "version URLs", error);
+          throw new NoRequestError("version URLs", error);
         }
         return this.getSolcVersions(index + 1);
       });
@@ -226,5 +227,12 @@ class VersionRange extends LoadingStrategy {
     );
   }
 }
+
+class NoUrlError extends Error {
+  constructor() {
+    super("compiler root URL missing");
+  }
+}
+
 
 module.exports = VersionRange;
