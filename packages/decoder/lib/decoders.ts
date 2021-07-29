@@ -21,35 +21,36 @@ import {
   decodeReturndata
 } from "@truffle/codec";
 import * as Utils from "./utils";
-import * as DecoderTypes from "./types";
+import type * as DecoderTypes from "./types";
 import Web3 from "web3";
-import { ContractObject as Artifact } from "@truffle/contract-schema/spec";
+import type { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import BN from "bn.js";
-import { Provider } from "web3/providers";
+import type { Provider } from "web3/providers";
 import {
   ContractBeingDecodedHasNoNodeError,
   ContractAllocationFailedError,
   ContractNotFoundError,
   InvalidAddressError,
-  VariableNotFoundError
+  VariableNotFoundError,
+  MemberNotFoundError,
+  ArrayIndexOutOfBoundsError,
+  NoProviderError
 } from "./errors";
-//sorry for the untyped imports, but...
-const { Shims } = require("@truffle/compile-common");
+import { Shims } from "@truffle/compile-common";
+//sorry for the untyped import, but...
 const SourceMapUtils = require("@truffle/source-map-utils");
 
 /**
- * The WireDecoder class.  Decodes transactions and logs.  See below for a method listing.
+ * The ProjectDecoder class.  Decodes transactions and logs.  See below for a method listing.
  * @category Decoder
  */
-export class WireDecoder {
+export class ProjectDecoder {
   private web3: Web3;
-
-  private network: string;
 
   private compilations: Compilations.Compilation[];
   private contexts: Contexts.Contexts = {}; //all contexts
   private deployedContexts: Contexts.Contexts = {};
-  private contractsAndContexts: DecoderTypes.ContractAndContexts[] = [];
+  private contractsAndContexts: Contexts.ContractAndContexts[] = [];
 
   private referenceDeclarations: { [compilationId: string]: Ast.AstNodes };
   private userDefinedTypes: Format.Types.TypesById;
@@ -57,94 +58,35 @@ export class WireDecoder {
 
   private codeCache: DecoderTypes.CodeCache = {};
 
+  private ensSettings: DecoderTypes.EnsSettings;
+
   /**
    * @protected
    */
-  constructor(compilations: Compilations.Compilation[], provider: Provider) {
+  constructor(
+    compilations: Compilations.Compilation[],
+    provider: Provider,
+    ensSettings?: DecoderTypes.EnsSettings
+  ) {
+    if (!provider) {
+      throw new NoProviderError();
+    }
     this.web3 = new Web3(provider);
     this.compilations = compilations;
-
-    for (const compilation of this.compilations) {
-      for (const contract of compilation.contracts) {
-        const node: Ast.AstNode = Compilations.Utils.getContractNode(
-          contract,
-          compilation
-        );
-        let deployedContext: Contexts.Context | undefined = undefined;
-        let constructorContext: Contexts.Context | undefined = undefined;
-        const deployedBytecode = Shims.NewToLegacy.forBytecode(
-          contract.deployedBytecode
-        );
-        const bytecode = Shims.NewToLegacy.forBytecode(contract.bytecode);
-        if (deployedBytecode && deployedBytecode !== "0x") {
-          deployedContext = Utils.makeContext(contract, node, compilation);
-          this.contexts[deployedContext.context] = deployedContext;
-          //note that we don't set up deployedContexts until after normalization!
-        }
-        if (bytecode && bytecode !== "0x") {
-          constructorContext = Utils.makeContext(
-            contract,
-            node,
-            compilation,
-            true
-          );
-          this.contexts[constructorContext.context] = constructorContext;
-        }
-        this.contractsAndContexts.push({
-          contract,
-          node,
-          deployedContext,
-          constructorContext,
-          compilationId: compilation.id
-        });
-      }
-    }
-    debug("known contexts: %o", Object.keys(this.contexts));
-
-    this.contexts = Contexts.Utils.normalizeContexts(this.contexts);
-    this.deployedContexts = Object.assign(
-      {},
-      ...Object.values(this.contexts).map(context =>
-        !context.isConstructor ? { [context.context]: context } : {}
-      )
-    );
-
-    for (const contractAndContexts of this.contractsAndContexts) {
-      //change everything to normalized version
-      if (contractAndContexts.deployedContext) {
-        contractAndContexts.deployedContext = this.contexts[
-          contractAndContexts.deployedContext.context
-        ]; //get normalized version
-      }
-      if (contractAndContexts.constructorContext) {
-        contractAndContexts.constructorContext = this.contexts[
-          contractAndContexts.constructorContext.context
-        ]; //get normalized version
-      }
-    }
+    this.ensSettings = ensSettings || {};
+    let allocationInfo: AbiData.Allocate.ContractAllocationInfo[];
 
     ({
       definitions: this.referenceDeclarations,
       types: this.userDefinedTypes
-    } = this.collectUserDefinedTypesAndTaggedOutputs());
+    } = Compilations.Utils.collectUserDefinedTypesAndTaggedOutputs(this.compilations));
 
-    const allocationInfo: AbiData.Allocate.ContractAllocationInfo[] = this.contractsAndContexts.map(
-      ({
-        contract: { abi, compiler, immutableReferences },
-        compilationId,
-        node,
-        deployedContext,
-        constructorContext
-      }) => ({
-        abi: Abi.normalize(abi),
-        compilationId,
-        compiler,
-        contractNode: node,
-        deployedContext,
-        constructorContext,
-        immutableReferences
-      })
-    );
+    ({
+      contexts: this.contexts,
+      deployedContexts: this.deployedContexts,
+      contractsAndContexts: this.contractsAndContexts,
+      allocationInfo
+    } = AbiData.Allocate.Utils.collectAllocationInfo(this.compilations));
 
     this.allocations = {};
     this.allocations.abi = AbiData.Allocate.getAbiAllocations(
@@ -152,7 +94,7 @@ export class WireDecoder {
     );
     this.allocations.storage = Storage.Allocate.getStorageAllocations(
       this.userDefinedTypes
-    ); //not used by wire decoder itself, but used by contract decoder
+    ); //not used by project decoder itself, but used by contract decoder
     this.allocations.calldata = AbiData.Allocate.getCalldataAllocations(
       allocationInfo,
       this.referenceDeclarations,
@@ -178,84 +120,6 @@ export class WireDecoder {
       this.allocations.storage
     );
     debug("done with allocation");
-  }
-
-  /*
-   * (comment copypasted from the debugger)
-   * "Tagged outputs" means user-defined things that are output by a contract
-   * (not input to a contract), and which are distinguished by (potentially
-   * ambiguous) selectors.  So, events and custom errors are tagged outputs.  
-   * Function arguments are not tagged outputs (they're not outputs).
-   * Return values are not tagged outputs (they don't have a selector).
-   * Built-in errors (Error(string) and Panic(uint))... OK I guess those could
-   * be considered tagged outputs, but we're only looking at user-defined ones
-   * here.
-   */
-  private collectUserDefinedTypesAndTaggedOutputs(): {
-    definitions: { [compilationId: string]: Ast.AstNodes };
-    types: Format.Types.TypesById;
-  } {
-    let references: { [compilationId: string]: Ast.AstNodes } = {};
-    let types: Format.Types.TypesById = {};
-    for (const compilation of this.compilations) {
-      references[compilation.id] = {};
-      for (const source of compilation.sources) {
-        if (!source) {
-          continue; //remember, sources could be empty if shimmed!
-        }
-        const { ast, compiler, language } = source;
-        if (language === "Solidity" && ast) {
-          //don't check Yul or Vyper sources!
-          for (const node of ast.nodes) {
-            if (
-              node.nodeType === "StructDefinition" ||
-              node.nodeType === "EnumDefinition" ||
-              node.nodeType === "ContractDefinition"
-            ) {
-              references[compilation.id][node.id] = node;
-              //we don't have all the references yet, but we actually don't need them :)
-              const dataType = Ast.Import.definitionToStoredType(
-                node,
-                compilation.id,
-                compiler,
-                references[compilation.id]
-              );
-              types[dataType.id] = dataType;
-            } else if (
-              node.nodeType === "EventDefinition" ||
-              node.nodeType === "ErrorDefinition"
-            ) {
-              references[compilation.id][node.id] = node;
-            }
-            if (node.nodeType === "ContractDefinition") {
-              for (const subNode of node.nodes) {
-                if (
-                  subNode.nodeType === "StructDefinition" ||
-                  subNode.nodeType === "EnumDefinition"
-                ) {
-                  references[compilation.id][subNode.id] = subNode;
-                  //we don't have all the references yet, but we only need the
-                  //reference to the defining contract, which we just added above!
-                  const dataType = Ast.Import.definitionToStoredType(
-                    subNode,
-                    compilation.id,
-                    compiler,
-                    references[compilation.id]
-                  );
-                  types[dataType.id] = dataType;
-                } else if (
-                  subNode.nodeType === "EventDefinition" ||
-                  subNode.nodeType === "ErrorDefinition"
-                ) {
-                  references[compilation.id][subNode.id] = subNode;
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-    return { definitions: references, types };
   }
 
   /**
@@ -541,7 +405,9 @@ export class WireDecoder {
    * on decodings produced by other instances may not work consistently.
    * @param decoding The decoding to abify
    */
-  public abifyReturndataDecoding(decoding: ReturndataDecoding): ReturndataDecoding {
+  public abifyReturndataDecoding(
+    decoding: ReturndataDecoding
+  ): ReturndataDecoding {
     return Codec.abifyReturndataDecoding(decoding, this.userDefinedTypes);
   }
 
@@ -749,14 +615,22 @@ export class WireDecoder {
   /**
    * @protected
    */
+  public getEnsSettings(): DecoderTypes.EnsSettings {
+    return this.ensSettings;
+  }
+
+  /**
+   * @protected
+   */
   public getDeployedContexts(): Contexts.Contexts {
     return this.deployedContexts;
   }
 }
 
 /**
- * The ContractDecoder class.  Spawns the [[ContractInstanceDecoder]] class.
- * Also, decodes transactions and logs.  See below for a method listing.
+ * The ContractDecoder class.  Decodes return values, and spawns the
+ * [[ContractInstanceDecoder]] class.  Also, decodes transactions logs.  See
+ * below for a method listing.
  * @category Decoder
  */
 export class ContractDecoder {
@@ -778,7 +652,7 @@ export class ContractDecoder {
   private userDefinedTypes: Format.Types.TypesById;
   private stateVariableReferences: Storage.Allocate.StateVariableAllocation[];
 
-  private wireDecoder: WireDecoder;
+  private projectDecoder: ProjectDecoder;
 
   /**
    * @protected
@@ -786,22 +660,22 @@ export class ContractDecoder {
   constructor(
     contract: Compilations.Contract,
     compilation: Compilations.Compilation,
-    wireDecoder: WireDecoder,
+    projectDecoder: ProjectDecoder,
     artifact?: Artifact
   ) {
     this.artifact = artifact; //may be undefined; only used for address autodetection in instance decoder
     this.contract = contract;
     this.compilation = compilation;
-    this.wireDecoder = wireDecoder;
-    this.web3 = wireDecoder.getWeb3();
-    this.contexts = wireDecoder.getDeployedContexts();
-    this.userDefinedTypes = this.wireDecoder.getUserDefinedTypes();
+    this.projectDecoder = projectDecoder;
+    this.web3 = projectDecoder.getWeb3();
+    this.contexts = projectDecoder.getDeployedContexts();
+    this.userDefinedTypes = this.projectDecoder.getUserDefinedTypes();
 
     this.contractNode = Compilations.Utils.getContractNode(
       this.contract,
       this.compilation
     );
-    this.allocations = this.wireDecoder.getAllocations();
+    this.allocations = this.projectDecoder.getAllocations();
 
     //note: ordinarily this.contract.deployedBytecode should equal artifact.deployedBytecode
     //at this point, so it may seem strange that I'm using this longer version (but not
@@ -812,7 +686,7 @@ export class ContractDecoder {
       this.contract.deployedBytecode &&
       this.contract.deployedBytecode !== "0x"
     ) {
-      const unnormalizedContext = Utils.makeContext(
+      const unnormalizedContext = Contexts.Utils.makeContext(
         this.contract,
         this.contractNode,
         this.compilation
@@ -822,7 +696,7 @@ export class ContractDecoder {
       //this.contexts (which is normalized) via the context getter below
     } else {
       //if there's no bytecode, allocate output data in ABI mode anyway
-      const referenceDeclarations = this.wireDecoder.getReferenceDeclarations();
+      const referenceDeclarations = this.projectDecoder.getReferenceDeclarations();
       const compiler = this.compilation.compiler || this.contract.compiler;
       this.noBytecodeAllocations = Object.values(
         AbiData.Allocate.getCalldataAllocations(
@@ -832,7 +706,7 @@ export class ContractDecoder {
               compilationId: this.compilation.id,
               compiler,
               contractNode: this.contractNode,
-              deployedContext: Utils.makeContext(
+              deployedContext: Contexts.Utils.makeContext(
                 {
                   ...this.contract,
                   deployedBytecode: "0x" //only time this should ever appear in a context!
@@ -852,7 +726,7 @@ export class ContractDecoder {
 
     if (this.contractNode) {
       //note: there used to be code here to do state allocations for the contract,
-      //but now the wire decoder does this all up-front
+      //but now the project decoder does this all up-front
       //(I could change this back if for some reason performance is an issue,
       //but this way is simpler TBH)
       //NOTE: does this change make this intermediate class essentially pointless?
@@ -998,72 +872,74 @@ export class ContractDecoder {
     address: string,
     block: DecoderTypes.RegularizedBlockSpecifier
   ): Promise<Uint8Array> {
-    return await this.wireDecoder.getCode(address, block);
+    return await this.projectDecoder.getCode(address, block);
   }
 
   private async regularizeBlock(
     block: DecoderTypes.BlockSpecifier
   ): Promise<DecoderTypes.RegularizedBlockSpecifier> {
-    return await this.wireDecoder.regularizeBlock(block);
+    return await this.projectDecoder.regularizeBlock(block);
   }
 
   /**
    * **This method is asynchronous.**
    *
-   * See [[WireDecoder.decodeTransaction]].
+   * See [[ProjectDecoder.decodeTransaction]].
    * @param transaction The transaction to be decoded.
    */
   public async decodeTransaction(
     transaction: DecoderTypes.Transaction
   ): Promise<CalldataDecoding> {
-    return await this.wireDecoder.decodeTransaction(transaction);
+    return await this.projectDecoder.decodeTransaction(transaction);
   }
 
   /**
    * **This method is asynchronous.**
    *
-   * See [[WireDecoder.decodeLog]].
+   * See [[ProjectDecoder.decodeLog]].
    * @param log The log to be decoded.
    */
   public async decodeLog(
     log: DecoderTypes.Log,
     options: DecoderTypes.DecodeLogOptions = {}
   ): Promise<LogDecoding[]> {
-    return await this.wireDecoder.decodeLog(log, options);
+    return await this.projectDecoder.decodeLog(log, options);
   }
 
   /**
    * **This method is asynchronous.**
    *
-   * See [[WireDecoder.events]].
+   * See [[ProjectDecoder.events]].
    * @param options Used to determine what events to fetch and how to decode them;
    *   see the documentation on the EventOptions type for more.
    */
   public async events(
     options: DecoderTypes.EventOptions = {}
   ): Promise<DecoderTypes.DecodedLog[]> {
-    return await this.wireDecoder.events(options);
+    return await this.projectDecoder.events(options);
   }
 
   /**
-   * See [[WireDecoder.abifyCalldataDecoding]].
+   * See [[ProjectDecoder.abifyCalldataDecoding]].
    */
   public abifyCalldataDecoding(decoding: CalldataDecoding): CalldataDecoding {
-    return this.wireDecoder.abifyCalldataDecoding(decoding);
+    return this.projectDecoder.abifyCalldataDecoding(decoding);
   }
 
   /**
-   * See [[WireDecoder.abifyLogDecoding]].
+   * See [[ProjectDecoder.abifyLogDecoding]].
    */
   public abifyLogDecoding(decoding: LogDecoding): LogDecoding {
-    return this.wireDecoder.abifyLogDecoding(decoding);
+    return this.projectDecoder.abifyLogDecoding(decoding);
   }
 
   /**
-   * See [[WireDecoder.abifyReturndataDecoding]].
+   * See [[ProjectDecoder.abifyReturndataDecoding]].
    */
-  public abifyReturndataDecoding(decoding: ReturndataDecoding): ReturndataDecoding {
-    return this.wireDecoder.abifyReturndataDecoding(decoding);
+  public abifyReturndataDecoding(
+    decoding: ReturndataDecoding
+  ): ReturndataDecoding {
+    return this.projectDecoder.abifyReturndataDecoding(decoding);
   }
 
   //the following functions are for internal use
@@ -1085,8 +961,8 @@ export class ContractDecoder {
   /**
    * @protected
    */
-  public getWireDecoder() {
-    return this.wireDecoder;
+  public getProjectDecoder() {
+    return this.projectDecoder;
   }
 
   /**
@@ -1106,13 +982,13 @@ export class ContractDecoder {
 
 /**
  * The ContractInstanceDecoder class.  Decodes storage for a specified
- * instance.  Also, decodes transactions and logs.  See below for a method
- * listing.
+ * instance.  Also, decodes transactions, logs, and return values.  See below
+ * for a method listing.
  *
  * Note that when using this class to decode transactions, logs, and return
- * values, it does have one advantage over using the WireDecoder or
+ * values, it does have one advantage over using the ProjectDecoder or
  * ContractDecoder.  If the artifact for the class does not have a
- * deployedBytecode field, the WireDecoder (and therefore also the
+ * deployedBytecode field, the ProjectDecoder (and therefore also the
  * ContractDecoder) will not be able to tell that this instance is of that
  * class, and so will fail to decode transactions sent to it or logs
  * originating from it, and will fall back to ABI mode when decoding return
@@ -1136,7 +1012,7 @@ export class ContractInstanceDecoder {
   private compiler: Compiler.CompilerVersion;
 
   private contexts: Contexts.Contexts = {}; //deployed contexts only
-  private additionalContexts: Contexts.Contexts = {}; //for passing to wire decoder when contract has no deployedBytecode
+  private additionalContexts: Contexts.Contexts = {}; //for passing to project decoder when contract has no deployedBytecode
 
   private referenceDeclarations: { [compilationId: string]: Ast.AstNodes };
   private userDefinedTypes: Format.Types.TypesById;
@@ -1150,15 +1026,15 @@ export class ContractInstanceDecoder {
   private storageCache: DecoderTypes.StorageCache = {};
 
   private contractDecoder: ContractDecoder;
-  private wireDecoder: WireDecoder;
+  private projectDecoder: ProjectDecoder;
 
   /**
    * @protected
    */
   constructor(contractDecoder: ContractDecoder, address?: string) {
     this.contractDecoder = contractDecoder;
-    this.wireDecoder = this.contractDecoder.getWireDecoder();
-    this.web3 = this.wireDecoder.getWeb3();
+    this.projectDecoder = this.contractDecoder.getProjectDecoder();
+    this.web3 = this.projectDecoder.getWeb3();
     if (address !== undefined) {
       if (!Web3.utils.isAddress(address)) {
         throw new InvalidAddressError(address);
@@ -1166,9 +1042,9 @@ export class ContractInstanceDecoder {
       this.contractAddress = Web3.utils.toChecksumAddress(address);
     }
 
-    this.referenceDeclarations = this.wireDecoder.getReferenceDeclarations();
-    this.userDefinedTypes = this.wireDecoder.getUserDefinedTypes();
-    this.contexts = this.wireDecoder.getDeployedContexts();
+    this.referenceDeclarations = this.projectDecoder.getReferenceDeclarations();
+    this.userDefinedTypes = this.projectDecoder.getUserDefinedTypes();
+    this.contexts = this.projectDecoder.getDeployedContexts();
     let artifact: Artifact;
     ({
       compilation: this.compilation,
@@ -1220,7 +1096,7 @@ export class ContractInstanceDecoder {
         ...this.contract,
         deployedBytecode: this.contractCode
       };
-      const extraContext = Utils.makeContext(
+      const extraContext = Contexts.Utils.makeContext(
         contractWithCode,
         this.contractNode,
         this.compilation
@@ -1534,13 +1410,13 @@ export class ContractInstanceDecoder {
     address: string,
     block: DecoderTypes.RegularizedBlockSpecifier
   ): Promise<Uint8Array> {
-    return await this.wireDecoder.getCode(address, block);
+    return await this.projectDecoder.getCode(address, block);
   }
 
   private async regularizeBlock(
     block: DecoderTypes.BlockSpecifier
   ): Promise<DecoderTypes.RegularizedBlockSpecifier> {
-    return await this.wireDecoder.regularizeBlock(block);
+    return await this.projectDecoder.regularizeBlock(block);
   }
 
   /**
@@ -1607,10 +1483,7 @@ export class ContractInstanceDecoder {
     ...indices: any[]
   ): Promise<void> {
     this.checkAllocationSuccess();
-    let slot: Storage.Slot | undefined = this.constructSlot(
-      variable,
-      ...indices
-    )[0];
+    let { slot } = await this.constructSlot(variable, ...indices);
     //add mapping key and all ancestors
     debug("slot: %O", slot);
     while (
@@ -1640,7 +1513,7 @@ export class ContractInstanceDecoder {
    * Note that unwatching a mapping key will also unwatch all its descendants.
    * E.g., if `m` is of type `mapping(uint => mapping(uint => uint))`, then
    * unwatching `m[0]` will also unwatch `m[0][0]`, `m[0][1]`, etc, if these
-   * are currently watched.
+   * are currently watched
    *
    * This function has the same caveats as watchMappingKey.
    */
@@ -1649,10 +1522,7 @@ export class ContractInstanceDecoder {
     ...indices: any[]
   ): Promise<void> {
     this.checkAllocationSuccess();
-    let slot: Storage.Slot | undefined = this.constructSlot(
-      variable,
-      ...indices
-    )[0];
+    let { slot } = await this.constructSlot(variable, ...indices);
     if (slot === undefined) {
       return; //not strictly necessary, but may as well
     }
@@ -1674,12 +1544,12 @@ export class ContractInstanceDecoder {
   /**
    * **This method is asynchronous.**
    *
-   * See [[WireDecoder.decodeTransaction]].
+   * See [[ProjectDecoder.decodeTransaction]].
    */
   public async decodeTransaction(
     transaction: DecoderTypes.Transaction
   ): Promise<CalldataDecoding> {
-    return await this.wireDecoder.decodeTransactionWithAdditionalContexts(
+    return await this.projectDecoder.decodeTransactionWithAdditionalContexts(
       transaction,
       this.additionalContexts
     );
@@ -1688,13 +1558,13 @@ export class ContractInstanceDecoder {
   /**
    * **This method is asynchronous.**
    *
-   * See [[WireDecoder.decodeLog]].
+   * See [[ProjectDecoder.decodeLog]].
    */
   public async decodeLog(
     log: DecoderTypes.Log,
     options: DecoderTypes.DecodeLogOptions = {}
   ): Promise<LogDecoding[]> {
-    return await this.wireDecoder.decodeLogWithAdditionalOptions(
+    return await this.projectDecoder.decodeLogWithAdditionalOptions(
       log,
       options,
       this.additionalContexts
@@ -1724,30 +1594,32 @@ export class ContractInstanceDecoder {
   }
 
   /**
-   * See [[WireDecoder.abifyCalldataDecoding]].
+   * See [[ProjectDecoder.abifyCalldataDecoding]].
    */
   public abifyCalldataDecoding(decoding: CalldataDecoding): CalldataDecoding {
-    return this.wireDecoder.abifyCalldataDecoding(decoding);
+    return this.projectDecoder.abifyCalldataDecoding(decoding);
   }
 
   /**
-   * See [[WireDecoder.abifyLogDecoding]].
+   * See [[ProjectDecoder.abifyLogDecoding]].
    */
   public abifyLogDecoding(decoding: LogDecoding): LogDecoding {
-    return this.wireDecoder.abifyLogDecoding(decoding);
+    return this.projectDecoder.abifyLogDecoding(decoding);
   }
 
   /**
-   * See [[WireDecoder.abifyReturndataDecoding]].
+   * See [[ProjectDecoder.abifyReturndataDecoding]].
    */
-  public abifyReturndataDecoding(decoding: ReturndataDecoding): ReturndataDecoding {
-    return this.wireDecoder.abifyReturndataDecoding(decoding);
+  public abifyReturndataDecoding(
+    decoding: ReturndataDecoding
+  ): ReturndataDecoding {
+    return this.projectDecoder.abifyReturndataDecoding(decoding);
   }
 
   /**
    * **This method is asynchronous.**
    *
-   * This mostly behaves as [[WireDecoder.events]].
+   * This mostly behaves as [[ProjectDecoder.events]].
    * However, unlike other variants of this function, this one, by default, restricts to events originating from this instance's address.
    * If you don't want to restrict like that, you can explicitly use `address: undefined` in the options to disable this.
    * (You can also of course set a different address to restrict to that.)
@@ -1756,7 +1628,7 @@ export class ContractInstanceDecoder {
   public async events(
     options: DecoderTypes.EventOptions = {}
   ): Promise<DecoderTypes.DecodedLog[]> {
-    return await this.wireDecoder.eventsWithAdditionalContexts(
+    return await this.projectDecoder.eventsWithAdditionalContexts(
       { address: this.contractAddress, ...options },
       this.additionalContexts
     );
@@ -1772,10 +1644,10 @@ export class ContractInstanceDecoder {
   //bytes mapping keys should be given as hex strings beginning with "0x"
   //address mapping keys are like bytes; checksum case is not required
   //boolean mapping keys may be given either as booleans, or as string "true" or "false"
-  private constructSlot(
+  private async constructSlot(
     variable: number | string,
     ...indices: any[]
-  ): [Storage.Slot | undefined, Format.Types.Type | undefined] {
+  ): Promise<{ slot?: Storage.Slot; type?: Format.Types.Type }> {
     //base case: we need to locate the variable and its definition
     if (indices.length === 0) {
       let allocation = this.findVariableByNameOrId(variable);
@@ -1792,19 +1664,19 @@ export class ContractInstanceDecoder {
       let pointer = allocation.pointer;
       if (pointer.location !== "storage") {
         //i.e., if it's a constant
-        return [undefined, undefined];
+        return { slot: undefined, type: undefined };
       }
-      return [pointer.range.from.slot, dataType];
+      return { slot: pointer.range.from.slot, type: dataType };
     }
 
     //main case
     let parentIndices = indices.slice(0, -1); //remove last index
-    let [parentSlot, parentType] = this.constructSlot(
+    let { slot: parentSlot, type: parentType } = await this.constructSlot(
       variable,
       ...parentIndices
     );
     if (parentSlot === undefined) {
-      return [undefined, undefined];
+      return { slot: undefined, type: undefined };
     }
     let rawIndex = indices[indices.length - 1];
     let index: any;
@@ -1825,7 +1697,7 @@ export class ContractInstanceDecoder {
           this.allocations.storage
         );
         if (!Storage.Utils.isWordsLength(size)) {
-          return [undefined, undefined];
+          return { slot: undefined, type: undefined };
         }
         slot = {
           path: parentSlot,
@@ -1854,6 +1726,14 @@ export class ContractInstanceDecoder {
         let allocation: Storage.Allocate.StorageMemberAllocation = this.allocations.storage[
           parentType.id
         ].members.find(({ name }) => name === rawIndex); //there should be exactly one
+        if (!allocation) {
+          throw new MemberNotFoundError(
+            rawIndex,
+            parentType,
+            variable,
+            indices
+          );
+        }
         slot = {
           path: parentSlot,
           //need type coercion here -- we know structs don't contain constants but the compiler doesn't
@@ -1862,8 +1742,8 @@ export class ContractInstanceDecoder {
         dataType = allocation.type;
         break;
       default:
-        return [undefined, undefined];
+        return { slot: undefined, type: undefined };
     }
-    return [slot, dataType];
+    return { slot, type: dataType };
   }
 }
