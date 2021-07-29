@@ -4,11 +4,10 @@ const assert = require("assert");
 const inquirer = require("inquirer");
 const sinon = require("sinon");
 const Config = require("@truffle/config");
-
 const { default: Box, normalizeSourcePath } = require("../");
 const TRUFFLE_BOX_DEFAULT =
   "https://github.com:trufflesuite/truffle-init-default";
-const LOCAL_TRUFFLE_BOX = path.join(__dirname, '..', "test", "sources", "mock-local-box");
+const LOCAL_TRUFFLE_BOX = "./test/sources/mock-local-box";
 const utils = require("../dist/lib/utils");
 let options, cleanupCallback, config;
 
