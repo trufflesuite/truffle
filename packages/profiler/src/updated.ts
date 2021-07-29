@@ -116,8 +116,8 @@ function findUpdatedFiles(
       const artifactsUpdatedTime =
         sourceArtifactsUpdatedTimes[sourceFile] || 0;
       const sourceFileUpdatedTime = (
-        stat.mtimeMs || stat.ctimeMs
-      ); 
+        stat.mtime || stat.ctime
+      ).getTime();
 
       return sourceFileUpdatedTime > artifactsUpdatedTime;
     });
