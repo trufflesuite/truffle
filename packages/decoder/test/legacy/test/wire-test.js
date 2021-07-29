@@ -10,25 +10,25 @@ const Codec = require("@truffle/codec");
 const { prepareContracts } = require("../../helpers");
 
 describe("Over-the-wire decoding (legacy features)", function () {
-
   let provider;
   let abstractions;
-  let compilations;
   let web3;
 
   let Contracts;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({seed: "decoder", gasLimit: 7000000});
+    provider = Ganache.provider({ seed: "decoder", gasLimit: 7000000 });
     web3 = new Web3(provider);
   });
 
   before("Prepare contracts and artifacts", async function () {
     this.timeout(30000);
 
-    const prepared = await prepareContracts(provider, path.resolve(__dirname, ".."));
+    const prepared = await prepareContracts(
+      provider,
+      path.resolve(__dirname, "..")
+    );
     abstractions = prepared.abstractions;
-    compilations = prepared.compilations;
 
     Contracts = [
       abstractions.LegacyWireTest,
@@ -40,7 +40,10 @@ describe("Over-the-wire decoding (legacy features)", function () {
   it("should decode overridden events & events inherited from abstract contracts", async function () {
     const deployedContract = await abstractions.LegacyWireTest.new();
 
-    const decoder = await Decoder.forProject(web3.currentProvider, Contracts);
+    const decoder = await Decoder.forProject({
+      provider: web3.currentProvider,
+      projectInfo: { artifacts: Contracts }
+    });
 
     const overrideTest = await deployedContract.interfaceAndOverrideTest();
 
