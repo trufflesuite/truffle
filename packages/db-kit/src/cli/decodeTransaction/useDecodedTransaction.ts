@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import type { Transaction, TransactionReceipt } from "web3-core";
-import type { WireDecoder, Log } from "@truffle/decoder";
+import type { ProjectDecoder, Log } from "@truffle/decoder";
 import type { LogDecoding, CalldataDecoding } from "@truffle/codec";
 
 export interface UseDecodedTransactionOptions {
-  decoder: WireDecoder;
+  decoder: ProjectDecoder;
   transaction: Transaction;
   receipt: TransactionReceipt;
 }
