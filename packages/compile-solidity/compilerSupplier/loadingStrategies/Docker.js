@@ -3,14 +3,17 @@ const fs = require("fs");
 const { execSync } = require("child_process");
 const ora = require("ora");
 const semver = require("semver");
-const LoadingStrategy = require("./LoadingStrategy");
 const Cache = require("../Cache");
 const { normalizeSolcVersion } = require("../normalizeSolcVersion");
 const { NoVersionError, NoRequestError } = require("../errors");
 
-class Docker extends LoadingStrategy {
-  constructor(...args) {
-    super(...args);
+class Docker {
+  constructor(options) {
+    const defaultConfig = {
+      dockerTagsUrl:
+        "https://registry.hub.docker.com/v2/repositories/ethereum/solc/tags/"
+    };
+    this.config = Object.assign({}, defaultConfig, options);
 
     this.cache = new Cache();
   }

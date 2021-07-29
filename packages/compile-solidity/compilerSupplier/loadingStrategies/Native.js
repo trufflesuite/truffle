@@ -1,9 +1,8 @@
 const { execSync } = require("child_process");
 const { normalizeSolcVersion } = require("../normalizeSolcVersion");
-const LoadingStrategy = require("./LoadingStrategy");
 const { NoVersionError } = require("../errors");
 
-class Native extends LoadingStrategy {
+class Native {
   load() {
     const versionString = this.validateAndGetSolcVersion();
     const command = "solc --standard-json";
