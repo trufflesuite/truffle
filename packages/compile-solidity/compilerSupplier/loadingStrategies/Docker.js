@@ -6,6 +6,7 @@ const semver = require("semver");
 const LoadingStrategy = require("./LoadingStrategy");
 const Cache = require("../Cache");
 const { normalizeSolcVersion } = require("../normalizeSolcVersion");
+const { NoVersionError, NoRequestError } = require("../errors");
 
 class Docker extends LoadingStrategy {
   constructor(...args) {
@@ -36,7 +37,7 @@ class Docker extends LoadingStrategy {
       };
     } catch (error) {
       if (error.message === "No matching version found") {
-        throw this.errors("noVersion", versionString);
+        throw new NoVersionError(versionString);
       }
       throw new Error(error);
     }
@@ -46,7 +47,7 @@ class Docker extends LoadingStrategy {
     return axios.get(this.config.dockerTagsUrl, { maxRedirects: 50 })
       .then(response => response.data.results.map(item => item.name))
       .catch(error => {
-        throw this.errors("noRequest", this.config.dockerTagsUrl, error);
+        throw new NoRequestError(this.config.dockerTagsUrl, error);
       });
   }
 
@@ -80,13 +81,13 @@ class Docker extends LoadingStrategy {
       return fs.readFileSync(cachePath, "utf-8");
     }
     // Image specified
-    if (!image) throw this.errors("noString", image);
+    if (!image) throw new NoStringError(image);
 
     // Docker exists locally
     try {
       execSync("docker -v");
     } catch (error) {
-      throw this.errors("noDocker");
+      throw new NoDockerError();
     }
 
     // Image exists locally
@@ -107,6 +108,29 @@ class Docker extends LoadingStrategy {
     );
     this.cache.addFileToCache(normalized, fileName);
     return normalized;
+  }
+}
+
+class NoDockerError extends Error {
+  constructor() {
+    super(
+      "You are trying to run dockerized solc, but docker is not installed."
+    );
+  }
+}
+
+class NoStringError extends Error {
+  constructor(input) {
+    const message =
+      "`compilers.solc.version` option must be a string specifying:\n" +
+      "   - a path to a locally installed solcjs\n" +
+      "   - a solc version or range (ex: '0.4.22' or '^0.5.0')\n" +
+      "   - a docker image name (ex: 'stable')\n" +
+      "   - 'native' to use natively installed solc\n" +
+      "Received: " +
+      input +
+      " instead.";
+    super(message);
   }
 }
 
