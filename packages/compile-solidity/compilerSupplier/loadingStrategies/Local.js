@@ -1,10 +1,9 @@
 const path = require("path");
 const originalRequire = require("original-require");
-const LoadingStrategy = require("./LoadingStrategy");
 const solcWrap = require("solc/wrapper");
 const observeListeners = require("../observeListeners");
 
-class Local extends LoadingStrategy {
+class Local {
   load(localPath) {
     return this.getLocalCompiler(localPath);
   }
