@@ -5,19 +5,29 @@ import type {
 } from "ethereum-protocol";
 import { callbackify } from "util";
 import WebSocket from "ws";
-import { connectToMessageBusWithRetries, getMessageBusPort } from "./utils";
-import { sendAndAwait, createMessage } from "@truffle/dashboard-message-bus";
+import { getMessageBusPort } from "./utils";
+import { sendAndAwait, createMessage, connectToMessageBusWithRetries } from "@truffle/dashboard-message-bus";
 import { startDashboardInBackground } from "@truffle/dashboard";
+import { timeout } from "promise-timeout";
+import { BrowserProviderOptions } from "./types";
 
 export class BrowserProvider {
   private socket: WebSocket;
+  private dashboardPort: number;
+  private timeoutSeconds: number;
 
-  constructor(private dashboardPort = 5000) {
-    // Start a dashboard at the provided port (will silently fail if address is already in use)
-    startDashboardInBackground(dashboardPort);
+  constructor(options: BrowserProviderOptions = {}) {
+    this.dashboardPort = options.dashboardPort ?? 5000;
+    this.timeoutSeconds = options.timeoutSeconds ?? 120;
+
+    // Start a dashboard at the provided port (will silently fail if the dashboard address is already in use)
+    startDashboardInBackground(this.dashboardPort);
   }
 
-  public send(payload: JSONRPCRequestPayload, callback: JSONRPCErrorCallback) {
+  public send(
+    payload: JSONRPCRequestPayload,
+    callback: JSONRPCErrorCallback
+  ) {
     const sendInternal = (payload: JSONRPCRequestPayload) =>
       this.sendInternal(payload);
     callbackify(sendInternal)(payload, callback);
@@ -30,8 +40,8 @@ export class BrowserProvider {
     this.send(payload, callback);
   }
 
-  public terminate() {
-    this.socket.close();
+  private terminate() {
+    this.socket.terminate();
   }
 
   private async sendInternal(
@@ -40,7 +50,12 @@ export class BrowserProvider {
     await this.ready();
 
     const message = createMessage("browser-provider", payload);
-    const { payload: response } = await sendAndAwait(this.socket, message);
+
+    const { payload: response } = await timeout(
+      sendAndAwait(this.socket, message),
+      this.timeoutSeconds * 1000,
+    ).finally(() => this.terminate());
+
     if (response.error) {
       throw response.error;
     }

@@ -26,21 +26,14 @@ function App() {
 
       connectedSocket.addEventListener(
         "message",
-        async (event: MessageEvent) => {
+        (event: MessageEvent) => {
           if (typeof event.data !== "string") return;
           const incomingRequest = base64ToJson(event.data);
 
-          // Make sure that there's no duplicates
-          const newRequests = [...requests, incomingRequest];
-          const filteredRequests = newRequests
-            .filter((request, i) => {
-              const otherIndex = newRequests.findIndex(other => (
-                JSON.stringify(request) === JSON.stringify(other)
-              ));
+          // We're only set up currently to handle browser-provider requests
+          if (incomingRequest.type !== "browser-provider") return;
 
-              return i === otherIndex;
-            });
-          setRequests(filteredRequests);
+          setRequests((previousRequests) => [...previousRequests, incomingRequest]);
         }
       );
 

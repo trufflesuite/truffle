@@ -3,16 +3,12 @@ import { base64ToJson, broadcastAndAwaitFirst, jsonToBase64 } from "./utils";
 import delay from "delay";
 import { UnfulfilledRequest } from "./types";
 
-// TODO: Any number of senders sending to all connected listeners
-// TODO: First to respond should consume the message
-// TODO: socket.io for message bus
+// TODO: Do we want to use socket.io for the message bus?
 export class DashboardMessageBus {
   requestsServer: WebSocket.Server;
-  clients: WebSocket[] = [];
-
   listenServer: WebSocket.Server;
+  clients: WebSocket[] = [];
   listeners: WebSocket[] = [];
-
   unfulfilledRequests: Map<string, UnfulfilledRequest> = new Map([]);
 
   start(requestsPort: number, listenPort: number) {
@@ -21,19 +17,18 @@ export class DashboardMessageBus {
       port: listenPort
     });
 
-    this.listenServer.on("connection", (socket: WebSocket) => {
-      this.listeners.push(socket);
-      console.log(this.listeners.length);
-
-      socket.on("close", () => {
-        this.listeners = this.listeners.filter((listener) => listener !== socket);
-        console.log(this.listeners.length);
+    this.listenServer.on("connection", (newListener: WebSocket) => {
+      newListener.on("close", () => {
+        this.listeners = this.listeners.filter((listener) => listener !== newListener);
+        this.terminateIfNoConnections();
       });
 
-      // Process all backlogged (unfulfilled) requests on new dashboard connection.
+      // Process all backlogged (unfulfilled) requests on new listener connection.
       this.unfulfilledRequests.forEach(({ socket, data }) =>
-        this.processRequest(socket, data)
+        this.processRequest(socket, data, [newListener])
       );
+
+      this.listeners.push(newListener);
     });
 
     this.requestsServer = new WebSocket.Server({
@@ -41,45 +36,55 @@ export class DashboardMessageBus {
       port: requestsPort
     });
 
-    this.requestsServer.on("connection", (socket: WebSocket) => {
-      this.clients.push(socket);
-
-      socket.on("message", (data: WebSocket.Data) => {
-        this.processRequest(socket, data);
+    this.requestsServer.on("connection", (newClient: WebSocket) => {
+      newClient.on("message", (data: WebSocket.Data) => {
+        this.processRequest(newClient, data, this.listeners);
       });
 
-      socket.on("close", () => {
-        this.clients = this.clients.filter((client) => client !== socket);
-        if (this.clients.length === 0) {
-          process.exit(0);
-        }
+      newClient.on("close", () => {
+        this.clients = this.clients.filter((client) => client !== newClient);
+        this.clearClientRequests(newClient);
+        this.terminateIfNoConnections();
       });
+
+      this.clients.push(newClient);
     });
   }
 
-  // Wait until the dashboard process is started and the websocket connection is established
   async ready() {
     if (this.listeners.length > 0) return;
     await delay(1000);
     await this.ready();
   }
 
-  async processRequest(socket: WebSocket, data: WebSocket.Data) {
+  private async processRequest(socket: WebSocket, data: WebSocket.Data, listeners: WebSocket[]) {
     if (typeof data !== "string") return;
-
-    this.unfulfilledRequests.set(data, { socket, data });
-
     await this.ready();
-
+    this.unfulfilledRequests.set(data, { socket, data });
     const message = base64ToJson(data);
 
     try {
-      const response = await broadcastAndAwaitFirst(this.listeners, message);
+      const response = await broadcastAndAwaitFirst(listeners, message);
       const encodedResponse = jsonToBase64(response);
       socket.send(encodedResponse);
       this.unfulfilledRequests.delete(data);
     } catch {
       return;
     }
+  }
+
+  // TODO: Do we want to provide a few seconds "grace period" to reconnect?
+  private terminateIfNoConnections() {
+    if (this.clients.length === 0 && this.listeners.length === 0) {
+      process.exit(0);
+    }
+  }
+
+  private clearClientRequests(client: WebSocket) {
+    this.unfulfilledRequests.forEach(({ socket }, key) => {
+      if (socket === client) {
+        this.unfulfilledRequests.delete(key);
+      }
+    });
   }
 }

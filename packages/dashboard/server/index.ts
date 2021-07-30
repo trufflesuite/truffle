@@ -5,7 +5,6 @@ import { DashboardMessageBus } from "@truffle/dashboard-message-bus";
 import { spawn } from "child_process";
 import cors from 'cors';
 
-// TODO: Lifecycle management for dashboard
 export const startDashboard = async (dashboardPort: number) => {
   const app = express();
 
@@ -35,8 +34,10 @@ export const startDashboard = async (dashboardPort: number) => {
 export const startDashboardInBackground = (port: number) => {
   const dashboardPath = `${__dirname}/start-dashboard`;
 
-  return spawn("node", [dashboardPath, String(port)], {
+  const child = spawn("node", [dashboardPath, String(port)], {
     detached: true,
     stdio: "ignore"
   });
+
+  return child;
 };
