@@ -6,7 +6,7 @@ jest.setTimeout(200000);
 // TODO: Create a mock dashboard that replies to requests with mock data
 // so that we can properly test this, and then properly test this
 // TODO: Perhaps also add some tests where we're using this provider inside Ethers.js / web3.js
-describe.skip("BrowserProvider", () => {
+describe("BrowserProvider", () => {
   let provider: BrowserProvider;
 
   beforeAll(() => {
