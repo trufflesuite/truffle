@@ -22,17 +22,6 @@ class CompilerSupplier {
     if (spawn) this.strategyOptions.spawn = spawn;
   }
 
-  badInputError(userSpecification) {
-    const message =
-      `Could not find a compiler version matching ${userSpecification}. ` +
-      `compilers.solc.version option must be a string specifying:\n` +
-      `   - a path to a locally installed solcjs\n` +
-      `   - a solc version or range (ex: '0.4.22' or '^0.5.0')\n` +
-      `   - a docker image name (ex: 'stable')\n` +
-      `   - 'native' to use natively installed solc\n`;
-    return new Error(message);
-  }
-
   async load() {
     const userSpecification = this.version;
 
@@ -62,30 +51,6 @@ class CompilerSupplier {
     }
   }
 
-  async loadParserSolc(parser, solc) {
-    if (parser) {
-      this.checkParser(parser);
-      const solcVersion = solc.version();
-      const normalizedSolcVersion = semver.coerce(solcVersion).version;
-      const options = Object.assign({}, this.strategyOptions, {
-        version: normalizedSolcVersion
-      });
-      return await new VersionRange(options).load(normalizedSolcVersion);
-    }
-    return false;
-  }
-
-  checkParser(parser) {
-    if (parser !== "solcjs")
-      throw new Error(
-        `Unsupported parser "${parser}" found in truffle-config.js`
-      );
-  }
-
-  fileExists(localPath) {
-    return fs.existsSync(localPath) || path.isAbsolute(localPath);
-  }
-
   getDockerTags() {
     return new Docker(this.strategyOptions).getDockerTags();
   }
@@ -112,6 +77,41 @@ class CompilerSupplier {
 
   static getDefaultVersion() {
     return defaultSolcVersion;
+  }
+
+  badInputError(userSpecification) {
+    const message =
+      `Could not find a compiler version matching ${userSpecification}. ` +
+      `compilers.solc.version option must be a string specifying:\n` +
+      `   - a path to a locally installed solcjs\n` +
+      `   - a solc version or range (ex: '0.4.22' or '^0.5.0')\n` +
+      `   - a docker image name (ex: 'stable')\n` +
+      `   - 'native' to use natively installed solc\n`;
+    return new Error(message);
+  }
+
+  async loadParserSolc(parser, solc) {
+    if (parser) {
+      this.checkParser(parser);
+      const solcVersion = solc.version();
+      const normalizedSolcVersion = semver.coerce(solcVersion).version;
+      const options = Object.assign({}, this.strategyOptions, {
+        version: normalizedSolcVersion
+      });
+      return await new VersionRange(options).load(normalizedSolcVersion);
+    }
+    return false;
+  }
+
+  checkParser(parser) {
+    if (parser !== "solcjs")
+      throw new Error(
+        `Unsupported parser "${parser}" found in truffle-config.js`
+      );
+  }
+
+  fileExists(localPath) {
+    return fs.existsSync(localPath) || path.isAbsolute(localPath);
   }
 }
 

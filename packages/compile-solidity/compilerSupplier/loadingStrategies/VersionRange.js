@@ -22,6 +22,22 @@ class VersionRange {
     this.cache = new Cache();
   }
 
+  async load(versionRange) {
+    const rangeIsSingleVersion = semver.valid(versionRange);
+    if (rangeIsSingleVersion && this.versionIsCached(versionRange)) {
+      return this.getCachedSolcByVersionRange(versionRange);
+    }
+
+    try {
+      return await this.getSolcFromCacheOrUrl(versionRange);
+    } catch (error) {
+      if (error.message.includes("Failed to complete request")) {
+        return this.getSatisfyingVersionFromCache(versionRange);
+      }
+      throw new Error(error);
+    }
+  }
+
   compilerFromString(code) {
     const listeners = observeListeners();
     try {
@@ -204,22 +220,6 @@ class VersionRange {
     if (versionToUse) return allVersions.releases[versionToUse];
 
     return null;
-  }
-
-  async load(versionRange) {
-    const rangeIsSingleVersion = semver.valid(versionRange);
-    if (rangeIsSingleVersion && this.versionIsCached(versionRange)) {
-      return this.getCachedSolcByVersionRange(versionRange);
-    }
-
-    try {
-      return await this.getSolcFromCacheOrUrl(versionRange);
-    } catch (error) {
-      if (error.message.includes("Failed to complete request")) {
-        return this.getSatisfyingVersionFromCache(versionRange);
-      }
-      throw new Error(error);
-    }
   }
 
   versionIsCached(version) {
