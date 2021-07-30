@@ -2,6 +2,7 @@ const debug = require("debug")("workflow-compile");
 const fse = require("fs-extra");
 const { prepareConfig } = require("./utils");
 const { Shims } = require("@truffle/compile-common");
+const { getTruffleDb } = require("@truffle/db-loader");
 
 const SUPPORTED_COMPILERS = {
   solc: require("@truffle/compile-solidity").Compile,
@@ -9,10 +10,6 @@ const SUPPORTED_COMPILERS = {
   external: require("@truffle/external-compile").Compile
 };
 
-let Db;
-try {
-  Db = require("@truffle/db");
-} catch {}
 
 async function compile(config) {
   // determine compiler(s) to use
@@ -106,22 +103,26 @@ const WorkflowCompile = {
     await fse.ensureDir(config.contracts_build_directory);
 
     if (
-      Db &&
       options.db &&
       options.db.enabled === true &&
       contracts.length > 0
     ) {
-      debug("saving to @truffle/db");
-      const db = Db.connect(config.db);
-      const project = await Db.Project.initialize({
-        db,
-        project: {
-          directory: config.working_directory
-        }
-      });
-      ({ contracts, compilations } = await project.loadCompile({
-        result: { contracts, sources, compilations }
-      }));
+      // currently if Truffle Db fails to load, getTruffleDb returns `null`
+      const Db = getTruffleDb();
+
+      if (Db) {
+        debug("saving to @truffle/db");
+        const db = Db.connect(config.db);
+        const project = await Db.Project.initialize({
+          db,
+          project: {
+            directory: config.working_directory
+          }
+        });
+        ({ contracts, compilations } = await project.loadCompile({
+          result: { contracts, sources, compilations }
+        }));
+      }
     }
 
     const artifacts = contracts.map(Shims.NewToLegacy.forContract);
@@ -131,6 +132,9 @@ const WorkflowCompile = {
   },
 
   async assignNames(options, { contracts }) {
+    // currently if Truffle Db fails to load, getTruffleDb returns `null`
+    const Db = getTruffleDb();
+
     const config = prepareConfig(options);
 
     if (!Db || !config.db || !config.db.enabled || contracts.length === 0) {
