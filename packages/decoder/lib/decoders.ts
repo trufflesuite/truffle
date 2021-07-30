@@ -50,7 +50,7 @@ export class ProjectDecoder {
   private compilations: Compilations.Compilation[];
   private contexts: Contexts.Contexts = {}; //all contexts
   private deployedContexts: Contexts.Contexts = {};
-  private contractsAndContexts: Contexts.ContractAndContexts[] = [];
+  private contractsAndContexts: AbiData.Allocate.ContractAndContexts[] = [];
 
   private referenceDeclarations: { [compilationId: string]: Ast.AstNodes };
   private userDefinedTypes: Format.Types.TypesById;

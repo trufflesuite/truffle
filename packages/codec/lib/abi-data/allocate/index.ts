@@ -36,6 +36,7 @@ import {
   CalldataAllocationTemporary,
   CalldataArgumentAllocation,
   ContractAllocationInfo,
+  ContractAndContexts,
   EventAllocation,
   EventAllocations,
   EventAllocationTemporary,
@@ -58,6 +59,7 @@ export {
   BlankReturndataAllocation,
   CalldataAndReturndataAllocation,
   ContractAllocationInfo,
+  ContractAndContexts,
   EventAllocation,
   ReturndataAllocations
 };

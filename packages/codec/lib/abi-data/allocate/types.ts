@@ -1,6 +1,7 @@
 import * as Abi from "@truffle/abi-utils";
 
 import * as Compiler from "@truffle/codec/compiler";
+import * as Compilations from "@truffle/codec/compilations";
 import * as Ast from "@truffle/codec/ast";
 import * as Contexts from "@truffle/codec/contexts/types";
 import * as Pointer from "@truffle/codec/pointer";
@@ -19,13 +20,12 @@ export interface ContractAllocationInfo {
   compilationId?: string; //needed for all
 }
 
-//this basically just exists to be the return type
-//of collectAllocationInfo, i.e., to support the decoder
-export interface ContextAndAllocationInfo {
-  contexts: Contexts.Contexts;
-  deployedContexts: Contexts.Contexts;
-  contractsAndContexts: Contexts.ContractAndContexts[];
-  allocationInfo: ContractAllocationInfo[];
+export interface ContractAndContexts {
+  compilationId: string;
+  contract: Compilations.Contract;
+  node: Ast.AstNode;
+  deployedContext?: Contexts.Context;
+  constructorContext?: Contexts.Context;
 }
 
 export interface AbiSizeInfo {

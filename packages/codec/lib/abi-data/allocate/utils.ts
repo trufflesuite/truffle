@@ -1,19 +1,29 @@
 import debugModule from "debug";
 const debug = debugModule("codec:abi-data:allocate:utils");
 
-import { ContractAllocationInfo, ContextAndAllocationInfo } from "./types";
+import {
+  ContractAllocationInfo,
+  ContractAndContexts
+} from "./types";
 import * as Compilations from "@truffle/codec/compilations";
 import { Shims } from "@truffle/compile-common";
 import * as Ast from "@truffle/codec/ast";
 import * as Contexts from "@truffle/codec/contexts";
 import * as Abi from "@truffle/abi-utils";
 
+export interface ContextAndAllocationInfo {
+  contexts: Contexts.Contexts;
+  deployedContexts: Contexts.Contexts;
+  contractsAndContexts: ContractAndContexts[];
+  allocationInfo: ContractAllocationInfo[];
+}
+
 export function collectAllocationInfo(
   compilations: Compilations.Compilation[]
 ): ContextAndAllocationInfo {
   let contexts: Contexts.Contexts = {};
   let deployedContexts: Contexts.Contexts = {};
-  let contractsAndContexts: Contexts.ContractAndContexts[] = [];
+  let contractsAndContexts: ContractAndContexts[] = [];
   for (const compilation of compilations) {
     for (const contract of compilation.contracts) {
       const node: Ast.AstNode = Compilations.Utils.getContractNode(
