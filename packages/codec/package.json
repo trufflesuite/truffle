@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.11.6",
+  "version": "0.11.7",
   "main": "dist/lib/index.js",
   "files": [
     "dist"
@@ -35,11 +35,11 @@
     "lodash.sum": "^4.0.2",
     "semver": "^7.3.4",
     "utf8": "^3.0.0",
-    "web3-utils": "1.4.0"
+    "web3-utils": "1.5.0"
   },
   "devDependencies": {
     "@truffle/abi-utils": "^0.2.3",
-    "@truffle/compile-common": "^0.7.13",
+    "@truffle/compile-common": "^0.7.14",
     "@truffle/contract-schema": "^3.4.2",
     "@trufflesuite/typedoc-default-themes": "^0.6.1",
     "@types/big.js": "^4.0.5",

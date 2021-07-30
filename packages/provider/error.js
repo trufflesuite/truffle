@@ -29,7 +29,7 @@ const buildMessage = options => {
   message +=
     "Please check that your Ethereum client:\n" +
     "    - is running\n" +
-    '    - is accepting RPC connections (i.e., "--rpc" option is used in geth)\n' +
+    '    - is accepting RPC connections (i.e., "--rpc" or "--http" option is used in geth)\n' +
     "    - is accessible over the network\n" +
     "    - is properly configured in your Truffle configuration file (truffle-config.js)\n";
   return message;

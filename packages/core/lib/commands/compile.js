@@ -91,7 +91,9 @@ const command = {
     }
 
     const result = await WorkflowCompile.save(config, compilationOutput);
-    await WorkflowCompile.assignNames(config, result);
+    if (config.db && config.db.enabled) {
+      await WorkflowCompile.assignNames(config, result);
+    }
     return result;
   },
 

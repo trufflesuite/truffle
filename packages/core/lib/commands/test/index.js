@@ -50,8 +50,8 @@ const command = {
       `truffle test [<test_file>] [--compile-all[-debug]] [--compile-none] ` +
       `[--network <name>]${OS.EOL}                             ` +
       `[--verbose-rpc] [--show-events] [--debug] ` +
-      `[--debug-global <identifier>] [(--bail)]${OS.EOL}                      ` +
-      `       [--stacktrace[-extra]] [(--grep|-g) <regex>]`,
+      `[--debug-global <identifier>] [--bail|-b]${OS.EOL}                      ` +
+      `       [--stacktrace[-extra]] [--grep|-g <regex>]`,
     options: [
       {
         option: "<test_file>",
@@ -100,7 +100,7 @@ const command = {
         description: "Suppress all output except for test runner output."
       },
       {
-        option: "(--bail|-b)",
+        option: "--bail|-b",
         description: "Bail after first test failure."
       },
       {
@@ -115,7 +115,7 @@ const command = {
         description: "Shortcut for --stacktrace --compile-all-debug."
       },
       {
-        option: "(--grep|-g)",
+        option: "--grep|-g",
         description: "Use mocha's \"grep\" option while running tests. This " +
           "option only runs tests that match the supplied regex/string."
       }
