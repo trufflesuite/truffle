@@ -1,4 +1,4 @@
-export const getDb = () => {
+export const getTruffleDb = () => {
   try {
     return require("@truffle/db");
   } catch {
