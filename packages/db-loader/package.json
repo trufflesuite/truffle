@@ -1,0 +1,38 @@
+{
+  "name": "@truffle/db-loader",
+  "description": "Utility for loading @truffle/db",
+  "license": "MIT",
+  "author": "tyler feickert <tyler.feickert@consensys.net>",
+  "homepage": "https://github.com/trufflesuite/truffle/blob/develop/packages/db-loader/README.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/db-loader"
+  },
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "version": "0.0.1",
+  "main": "dist/index.js",
+  "keywords": [
+    "ethereum",
+    "Truffle",
+    "Truffle Db"
+  ],
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "prepare": "tsc"
+  },
+  "optionalDependencies": {
+    "@truffle/db": "^0.5.22"
+  },
+  "devDependencies": {
+    "typescript": "^4.1.4"
+  }
+}

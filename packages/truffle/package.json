@@ -32,6 +32,7 @@
     "test:raw": "NO_BUILD=true mocha"
   },
   "dependencies": {
+    "@truffle/db-loader": "^0.0.1",
     "@truffle/debugger": "^9.1.7",
     "app-module-path": "^2.2.0",
     "mocha": "8.1.2",
