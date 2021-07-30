@@ -15,7 +15,10 @@ import {
   Contract,
   Source,
   VyperSourceMap,
-  ProjectInfo
+  ProjectInfo,
+  ProjectInfoCompilations,
+  ProjectInfoCommon,
+  ProjectInfoArtifacts
 } from "./types";
 import { NoProjectInfoError } from "../errors";
 
@@ -534,19 +537,35 @@ export function collectUserDefinedTypesAndTaggedOutputs(
   return { definitions: references, types };
 }
 
+function projectInfoIsCodecStyle(
+  info: ProjectInfo
+): info is ProjectInfoCompilations {
+  return Boolean((<ProjectInfoCompilations>info).compilations);
+}
+
+function projectInfoIsCommonStyle(
+  info: ProjectInfo
+): info is ProjectInfoCommon {
+  return Boolean((<ProjectInfoCommon>info).commonCompilations);
+}
+
+function projectInfoIsArtifacts(
+  info: ProjectInfo
+): info is ProjectInfoArtifacts {
+  return Boolean((<ProjectInfoArtifacts>info).artifacts);
+}
+
 export function infoToCompilations(
   projectInfo: ProjectInfo | undefined
 ): Compilation[] {
   if (!projectInfo) {
     throw new NoProjectInfoError();
   }
-  if (projectInfo.compilations) {
+  if (projectInfoIsCodecStyle(projectInfo)) {
     return projectInfo.compilations;
-  } else if (projectInfo.commonCompilations) {
+  } else if (projectInfoIsCommonStyle(projectInfo)) {
     return shimCompilations(projectInfo.commonCompilations);
-  } else if (projectInfo.artifacts) {
+  } else if (projectInfoIsArtifacts(projectInfo)) {
     return shimArtifacts(projectInfo.artifacts);
-  } else {
-    throw new NoProjectInfoError();
   }
 }

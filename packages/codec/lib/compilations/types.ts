@@ -154,20 +154,33 @@ export interface VyperSourceMap {
 /**
  * This type represents information about a Truffle project that can be used to
  * construct and initialize a encoder or decoder for that project.  This
- * information may be passed in various ways; this type is given here as an
- * interface rather than a union, but note that you only need to include one of
- * these fields.  (The `compilations` field will be used if present, then
- * `commonCompilations` if not, then finally `artifacts`.)
+ * information may be passed in various ways; this is done Javascript style,
+ * where you pass an object and the field you use indicates which way you're
+ * using.
  *
  * The old option to use `config` is no longer supported.
  */
-export interface ProjectInfo {
+export type ProjectInfo =
+  | ProjectInfoCompilations
+  | ProjectInfoCommon
+  | ProjectInfoArtifacts;
+
+/**
+ * Project info given as codec-style compilations.
+ */
+export interface ProjectInfoCompilations {
   /**
    * An list of codec-style compilations; this method of specifying a project
    * is mostly intended for internal Truffle use for now, but you can see the
    * documentation of the Compilation type if you want to use it.
    */
   compilations?: Compilation[];
+}
+
+/**
+ * Project info given as compile-common-style compilations.
+ */
+export interface ProjectInfoCommon {
   /**
    * An list of @truffle/compile-common style compilations; this method of
    * specifying a project is mostly intended for internal Truffle use for now,
@@ -175,6 +188,12 @@ export interface ProjectInfo {
    * use it.
    */
   commonCompilations?: Common.Compilation[];
+}
+
+/**
+ * Project info given as artifacts.
+ */
+export interface ProjectInfoArtifacts {
   /**
    * A list of contract artifacts for contracts in the project.
    * Contract constructor objects may be substituted for artifacts, so if
