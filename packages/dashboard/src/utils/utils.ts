@@ -1,6 +1,7 @@
 import axios from "axios";
 import delay from "delay";
-import { PortsConfig } from "./types";
+import { INTERACTIVE_REQUESTS } from "./constants";
+import { BrowserProviderRequest, PortsConfig } from "./types";
 
 export const jsonToBase64 = (json: any) => {
   const stringifiedJson = JSON.stringify(json);
@@ -17,6 +18,9 @@ export const base64ToJson = (base64: string) => {
 
   return json;
 };
+
+// TODO: Replace these functions with those in the Dashboard Message Bus package
+// Only difference rn is that this uses browser WebSocket, while the other uses Node.js WebSocket
 export const connectToMessageBusWithRetries = async (port: number, retries = 1, tryCount = 1): Promise<WebSocket> => {
   try {
     return await connectToMessageBus(port);
@@ -42,3 +46,6 @@ export const getPorts = async (): Promise<PortsConfig> => {
 
   return data;
 };
+
+export const isInteractiveRequest = (request: BrowserProviderRequest) =>
+  INTERACTIVE_REQUESTS.includes(request.payload.method);

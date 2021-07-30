@@ -1,3 +1,12 @@
-export const NON_INTERACTIVE_REQUESTS = [
-  "eth_accounts"
+export const INTERACTIVE_REQUESTS = [
+  "eth_sign",
+  "eth_signTransaction",
+  "eth_sendTransaction",
+  "eth_sendRawTransaction",
+  "eth_decrypt",
+  "eth_getEncryptionPublicKey",
+  "eth_signTypedData",
+  "eth_signTypedData_v1",
+  "eth_signTypedData_v3",
+  "eth_signTypedData_v4"
 ];
