@@ -1,1 +1,2 @@
-export { BrowserProvider } from "./BrowserProvider";
+export * from "./BrowserProvider";
+export * from "./types";
