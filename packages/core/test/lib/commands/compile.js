@@ -26,7 +26,7 @@ describe("compile", function () {
       }
     };
     config.network = "default";
-    config.logger = {log: val => val && memStream.write(val)};
+    config.logger = { log: val => val && memStream.write(val) };
   });
 
   after("Cleanup tmp files", async function () {
@@ -37,7 +37,7 @@ describe("compile", function () {
   afterEach("Clear MemoryStream", () => (output = ""));
 
   it("compiles all initial contracts", async function () {
-    const {contracts} = await WorkflowCompile.compileAndSave(
+    const { contracts } = await WorkflowCompile.compileAndSave(
       config.with({
         all: false,
         quiet: true
@@ -51,7 +51,7 @@ describe("compile", function () {
   });
 
   it("compiles no contracts after no updates", async function () {
-    const {contracts} = await WorkflowCompile.compileAndSave(
+    const { contracts } = await WorkflowCompile.compileAndSave(
       config.with({
         all: false,
         quiet: true
@@ -74,7 +74,7 @@ describe("compile", function () {
     const newTime = new Date().getTime();
     fs.utimesSync(fileToUpdate, newTime, newTime);
 
-    const {contracts} = await WorkflowCompile.compileAndSave(
+    const { contracts } = await WorkflowCompile.compileAndSave(
       config.with({
         all: false,
         quiet: true
@@ -115,7 +115,7 @@ describe("compile", function () {
       await command.run(config.with(options));
       memStream.on("end", () => {
         const arr = JSON.parse(output);
-        assert(arr.length === 11);
+        assert(arr.length === 10);
       });
       memStream.end("");
     });

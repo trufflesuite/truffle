@@ -74,10 +74,10 @@ config.resolver = new Resolver(config);
 
 describe("compileWithPragmaAnalysis", function () {
   before(function () {
-    sinon.stub(CompilerSupplier.prototype, "getReleases").returns(releases);
+    sinon.stub(CompilerSupplier.prototype, "list").returns(releases);
   });
   after(function () {
-    CompilerSupplier.prototype.getReleases.restore();
+    CompilerSupplier.prototype.list.restore();
   });
 
   describe("solidity files with no imports", function () {

@@ -23,8 +23,7 @@ const command = {
     }
   },
   help: {
-    usage:
-      "truffle compile [--list <filter>] [--all] [--quiet]",
+    usage: "truffle compile [--list <filter>] [--all] [--quiet]",
     options: [
       {
         option: "--all",
@@ -52,7 +51,7 @@ const command = {
         internal: true,
         description:
           "Save the raw compiler results into <output-file>, overwriting any existing content."
-      },
+      }
     ],
     allowedGlobalOptions: ["config"]
   },
@@ -86,7 +85,7 @@ const command = {
       await fse.writeFile(
         compilationOutputFile,
         JSON.stringify(compilationOutput),
-        {encoding: "utf8"}
+        { encoding: "utf8" }
       );
     }
 
@@ -98,28 +97,55 @@ const command = {
   },
 
   listVersions: async function (options) {
-    const {CompilerSupplier} = require("@truffle/compile-solidity");
+    const { CompilerSupplier } = require("@truffle/compile-solidity");
+    const { asyncTake } = require("iter-tools");
+
     const supplier = new CompilerSupplier({
-      solcConfig: options.compilers.solc,
+      solcConfig: {
+        ...options.compilers.solc,
+        docker: options.list === "docker"
+      },
       events: options.events
     });
 
     const log = options.logger.log;
     options.list = options.list.length ? options.list : "releases";
 
-    // Docker tags
-    if (options.list === "docker") {
-      const tags = await supplier.getDockerTags();
-      tags.push("See more at: hub.docker.com/r/ethereum/solc/tags/");
-      log(format(tags, null, " "));
+    const {
+      latestRelease,
+      releases,
+      prereleases
+    } = await supplier.list();
+    if (options.list === "latestRelease") {
+      log(format(latestRelease, null, " "));
       return;
     }
 
-    // Solcjs releases
-    const releases = await supplier.getReleases();
-    const shortener = options.all ? null : command.shortener;
-    const list = format(releases[options.list], shortener, " ");
-    log(list);
+    const allVersions = options.list === "prereleases" ? prereleases : releases;
+    const versions = options.all ? allVersions : asyncTake(10, allVersions);
+
+    if (options.all && options.list === "docker") {
+      log(
+        "Warning: using `--all` with `--list=docker` is very slow and makes " +
+          "many HTTP requests."
+      );
+      log(
+        "You may instead want to browse tags on the web here: " +
+          "https://hub.docker.com/r/ethereum/solc/tags/"
+      );
+    }
+
+    const tags = [];
+    for await (const version of versions) {
+      tags.push(version);
+    }
+
+    // Docker tags
+    if (options.list === "docker" && !options.all) {
+      tags.push("See more at: hub.docker.com/r/ethereum/solc/tags/");
+    }
+
+    log(format(tags, null, " "));
     return;
   },
 

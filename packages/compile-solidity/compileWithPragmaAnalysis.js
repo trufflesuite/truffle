@@ -67,10 +67,13 @@ const compileWithPragmaAnalysis = async ({ paths, options }) => {
   }
   const supplierOptions = {
     events: options.events,
-    solcConfig: options.compilers.solc
+    solcConfig: {
+      ...options.compilers.solc,
+      docker: false
+    }
   };
   const compilerSupplier = new CompilerSupplier(supplierOptions);
-  const { releases } = await compilerSupplier.getReleases();
+  const { releases } = await compilerSupplier.list();
 
   // collect sources by the version of the Solidity compiler that they require
   const versionsAndSources = {};
