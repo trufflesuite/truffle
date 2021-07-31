@@ -2,20 +2,48 @@ const CompilerSupplier = require("../compilerSupplier");
 const Parser = require("../parser");
 const semver = require("semver");
 
-async function loadParser(options) {
-  // Load compiler
-  const supplierOptions = {
-    parser: options.parser,
-    events: options.events,
-    solcConfig: options.compilers.solc
-  };
+/**
+ * Loads solc and wrap it to parse imports rather than performing a full
+ * compilation. Returns the wrapped form.
+ *
+ * This function optionally accepts an `parser` param, whose only possible
+ * value is `"solcjs"`. Passing this option indicates that the imports-parser
+ * should use a wrapped soljson module instead of whatever normal compiler
+ * the user would use. NOTE that as a result, this function may download solc
+ * up to twice: first time as usual, to get the specific version, then a second
+ * time to get the solcjs of that version.
+ */
+async function loadParser({ events, compilers: { solc: solcConfig } }) {
+  const { parser } = solcConfig;
 
-  const supplier = new CompilerSupplier(supplierOptions);
+  const supplier = new CompilerSupplier({ events, solcConfig });
+  const { solc } = await supplier.load();
 
-  const { solc, parserSolc } = await supplier.load();
+  // if no parser is specified, just use the normal solc
+  if (!parser) {
+    return makeParseImports(solc);
+  }
 
-  // use explicit parser solc if defined, otherwise just default compiler solc
-  return makeParseImports(parserSolc || solc);
+  // otherwise, there's only one choice...
+  if (parser !== "solcjs") {
+    throw new Error(
+      `Unsupported parser "${parser}" found in truffle-config.js`
+    );
+  }
+
+  // determine normal solc version and then load that version as solcjs
+  const { version } = semver.coerce(solc.version());
+  const parserSupplier = new CompilerSupplier({
+    events,
+    solcConfig: {
+      ...solcConfig,
+      version,
+      docker: false
+    }
+  });
+  const { solc: parserSolc } = await parserSupplier.load();
+
+  return makeParseImports(parserSolc);
 }
 
 function makeParseImports(parser) {

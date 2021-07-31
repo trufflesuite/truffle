@@ -8,9 +8,8 @@ const defaultSolcVersion = "0.5.16";
 
 class CompilerSupplier {
   constructor({ events, solcConfig }) {
-    const { version, docker, compilerRoots, parser, spawn } = solcConfig;
+    const { version, docker, compilerRoots, spawn } = solcConfig;
     this.events = events;
-    this.parser = parser;
     this.version = version ? version : defaultSolcVersion;
     this.docker = docker;
     this.compilerRoots = compilerRoots;
@@ -44,8 +43,7 @@ class CompilerSupplier {
 
     if (strategy) {
       const solc = await strategy.load(userSpecification);
-      const parserSolc = await this.loadParserSolc(this.parser, solc);
-      return { solc, parserSolc };
+      return { solc };
     } else {
       throw this.badInputError(userSpecification);
     }
@@ -88,26 +86,6 @@ class CompilerSupplier {
       `   - a docker image name (ex: 'stable')\n` +
       `   - 'native' to use natively installed solc\n`;
     return new Error(message);
-  }
-
-  async loadParserSolc(parser, solc) {
-    if (parser) {
-      this.checkParser(parser);
-      const solcVersion = solc.version();
-      const normalizedSolcVersion = semver.coerce(solcVersion).version;
-      const options = Object.assign({}, this.strategyOptions, {
-        version: normalizedSolcVersion
-      });
-      return await new VersionRange(options).load(normalizedSolcVersion);
-    }
-    return false;
-  }
-
-  checkParser(parser) {
-    if (parser !== "solcjs")
-      throw new Error(
-        `Unsupported parser "${parser}" found in truffle-config.js`
-      );
   }
 
   fileExists(localPath) {
