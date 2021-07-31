@@ -1,5 +1,5 @@
 import * as path from "path";
-import * as fse from "fs-extra";
+import * as fs from "fs";
 
 import type { ContractObject } from "@truffle/contract-schema/spec";
 
@@ -45,7 +45,7 @@ function readAndParseArtifactFiles(
   // Get all the artifact files, and read them, parsing them as JSON
   let buildFiles: string[];
   try {
-    buildFiles = fse.readdirSync(contracts_build_directory);
+    buildFiles = fs.readdirSync(contracts_build_directory);
   } catch (error) {
     // The build directory may not always exist.
     if (error.message.includes("ENOENT: no such file or directory")) {
@@ -58,7 +58,7 @@ function readAndParseArtifactFiles(
 
   buildFiles = buildFiles.filter((file) => path.extname(file) === ".json");
   const jsonData = buildFiles.map((file) => {
-    const body = fse.readFileSync(
+    const body = fs.readFileSync(
       path.join(contracts_build_directory, file),
       "utf8"
     );
@@ -95,10 +95,10 @@ function findUpdatedFiles(
   // the artifact updated times.
   const sourceFiles = Object.keys(sourceFilesArtifacts);
 
-  let sourceFileStats: (fse.Stats | null)[];
+  let sourceFileStats: (fs.Stats | null)[];
   sourceFileStats = sourceFiles.map((file) => {
     try {
-      return fse.statSync(file);
+      return fs.statSync(file);
     } catch (error) {
       // Ignore it. This means the source file was removed
       // but the artifact file possibly exists. Return null
