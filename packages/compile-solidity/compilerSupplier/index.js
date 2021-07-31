@@ -49,28 +49,37 @@ class CompilerSupplier {
     }
   }
 
-  getDockerTags() {
-    return new Docker(this.strategyOptions).getDockerTags();
-  }
+  async list() {
+    const userSpecification = this.version;
 
-  getReleases() {
-    return new VersionRange(this.strategyOptions)
-      .getSolcVersions()
-      .then(list => {
-        const prereleases = list.builds
-          .filter(build => build["prerelease"])
-          .map(build => build["longVersion"]);
+    let strategy;
+    const useDocker = this.docker;
+    const useNative = userSpecification === "native";
+    const useSpecifiedLocal =
+      userSpecification && this.fileExists(userSpecification);
+    const isValidVersionRange = semver.validRange(userSpecification);
 
-        const { rsort } = semver;
-        // ensure releases are listed in descending order
-        const releases = rsort(Object.keys(list.releases));
+    if (useDocker) {
+      strategy = new Docker(this.strategyOptions);
+    } else if (useNative) {
+      strategy = new Native(this.strategyOptions);
+    } else if (useSpecifiedLocal) {
+      strategy = new Local(this.strategyOptions);
+    } else if (isValidVersionRange) {
+      strategy = new VersionRange(this.strategyOptions);
+    }
 
-        return {
-          prereleases: prereleases,
-          releases: releases,
-          latestRelease: list.latestRelease
-        };
-      });
+    if (!strategy) {
+      throw this.badInputError(userSpecification);
+    }
+
+    if (!strategy.list) {
+      throw new Error(
+        `Cannot list versions for strategy ${strategy.constructor.name}`
+      );
+    }
+
+    return await strategy.list();
   }
 
   static getDefaultVersion() {

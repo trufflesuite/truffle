@@ -1,4 +1,5 @@
 const axios = require("axios");
+const axiosRetry = require("axios-retry");
 const fs = require("fs");
 const { execSync } = require("child_process");
 const ora = require("ora");
@@ -6,6 +7,7 @@ const semver = require("semver");
 const Cache = require("../Cache");
 const { normalizeSolcVersion } = require("../normalizeSolcVersion");
 const { NoVersionError, NoRequestError } = require("../errors");
+const { asyncFirst, asyncFilter, asyncFork } = require("iter-tools");
 
 class Docker {
   constructor(options) {
@@ -46,13 +48,38 @@ class Docker {
     }
   }
 
-  getDockerTags() {
-    return axios.get(this.config.dockerTagsUrl, { maxRedirects: 50 })
-      .then(response => response.data.results.map(item => item.name))
-      .catch(error => {
-        throw new NoRequestError(this.config.dockerTagsUrl, error);
-      });
+  async list() {
+    const allTags = this.streamAllDockerTags();
+
+    // split stream of all tags into separate releases and prereleases streams
+    const isRelease = name => !!semver.valid(name);
+    const isPrerelease = name => name.match(/nightly/);
+    const [allTagsA, allTagsB] = asyncFork(allTags);
+
+    // construct prereleases stream
+    const prereleases = asyncFilter(isPrerelease, allTagsB);
+
+    // construct releases stream and immediately fork so as to allow consuming
+    // the first value in the stream safely
+    const [releases, forkedReleases] = asyncFork(
+      asyncFilter(isRelease, allTagsA)
+    );
+
+    // grab the latest release from the forked releases stream;
+    // coerce semver to remove possible `-alpine` suffix used by this repo
+    const latestRelease = semver.coerce(await asyncFirst(forkedReleases))
+      .version;
+
+    return {
+      prereleases,
+      releases,
+      latestRelease
+    };
   }
+
+  /*
+   * Private methods
+   */
 
   downloadDockerImage(image) {
     if (!semver.valid(image)) {
@@ -106,11 +133,55 @@ class Docker {
     const version = execSync(
       "docker run ethereum/solc:" + image + " --version"
     );
-    const normalized = normalizeSolcVersion(
-      version
-    );
+    const normalized = normalizeSolcVersion(version);
     this.cache.addFileToCache(normalized, fileName);
     return normalized;
+  }
+
+  streamAllDockerTags() {
+    // build http client to account for rate limit problems
+    // use axiosRetry to instate exponential backoff when requests come back
+    // with expected 429
+    const client = axios.create();
+    axiosRetry(client, {
+      retries: 5,
+      retryDelay: axiosRetry.exponentialDelay,
+      shouldResetTimeout: true,
+      retryCondition: error => {
+        const tooManyRequests =
+          error && error.response && error.response.status === 429;
+
+        return (
+          axiosRetry.isNetworkOrIdempotentRequestError(error) || tooManyRequests
+        );
+      }
+    });
+
+    const { dockerTagsUrl } = this.config;
+    let nextUrl = dockerTagsUrl;
+
+    return (async function* () {
+      do {
+        try {
+          const {
+            data: {
+              // page of results
+              results,
+              // next page url
+              next
+            }
+          } = await client.get(nextUrl, { maxRedirects: 50 });
+
+          for (const { name } of results) {
+            yield name;
+          }
+
+          nextUrl = next;
+        } catch (error) {
+          throw new NoRequestError(dockerTagsUrl, error);
+        }
+      } while (nextUrl);
+    })();
   }
 }
 

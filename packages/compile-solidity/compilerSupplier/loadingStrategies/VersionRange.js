@@ -38,6 +38,24 @@ class VersionRange {
     }
   }
 
+  async list() {
+    const data = await this.getSolcVersions();
+    const { latestRelease } = data;
+
+    const prereleases = data.builds
+      .filter(build => build["prerelease"])
+      .map(build => build["longVersion"]);
+
+    // ensure releases are listed in descending order
+    const releases = semver.rsort(Object.keys(data.releases));
+
+    return {
+      prereleases,
+      releases,
+      latestRelease
+    };
+  }
+
   compilerFromString(code) {
     const listeners = observeListeners();
     try {
