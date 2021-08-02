@@ -18,6 +18,10 @@ export function collectSources(
   replacement: string = "/"
 ): CollectedSources {
   const mappedResults = Object.entries(originalSources)
+    .filter(([originalSourcePath, _]) =>
+      !path.isAbsolute(originalSourcePath) ||
+      originalSourcePath.startsWith(baseDirectory)
+    )
     .map(([originalSourcePath, contents]) => ({
       originalSourcePath,
       contents,
