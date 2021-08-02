@@ -1,5 +1,5 @@
 const assert = require("assert");
-const CommandRunner = require("../commandrunner");
+const CommandRunner = require("../commandRunner");
 const path = require("path");
 const tmp = require("tmp");
 const fse = require("fs-extra");

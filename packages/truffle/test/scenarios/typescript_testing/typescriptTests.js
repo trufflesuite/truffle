@@ -1,6 +1,6 @@
 const { default: Box } = require("@truffle/box");
-const MemoryLogger = require("../memorylogger");
-const CommandRunner = require("../commandrunner");
+const MemoryLogger = require("../MemoryLogger");
+const CommandRunner = require("../commandRunner");
 const assert = require("assert");
 const Reporter = require("../reporter");
 const Server = require("../server");

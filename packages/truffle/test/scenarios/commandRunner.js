@@ -1,4 +1,5 @@
-const exec = require("child_process").exec;
+const { exec } = require("child_process");
+const { EOL } = require ("os");
 const path = require("path");
 
 module.exports = {
@@ -42,5 +43,36 @@ module.exports = {
         reject(child.error);
       }
     });
-  }
+  },
+  runInDevelopEnvironment: (commands = [], config) => {
+    let child;
+    // open `truffle develop`
+    const cmdLine = "node " +
+      path.join(__dirname, "../../../", "core", "cli.js") +
+      " develop";
+
+    return new Promise((resolve, reject) => {
+      child = exec(cmdLine, { cwd: config.working_directory });
+
+      if (child.error) return reject(child.error);
+
+      child.stderr.on("data", (data) => {
+        config.logger.log("ERR: ", data);
+      });
+
+      child.stdout.on("data", (data) => {
+        config.logger.log("OUT: ", data);
+      });
+
+      child.on("close", (code) => {
+        config.logger.log("EXIT: ", code);
+        resolve();
+      });
+
+      commands.forEach(command => {
+        child.stdin.write(command + EOL);
+      });
+      child.stdin.end();
+    });
+  },
 };
