@@ -3,7 +3,7 @@ const debug = debugModule("fetch-and-compile:recognizer");
 import type {
   Recognizer,
   FailureType,
-  SingleResult
+  FetchAndCompileResult
 } from "./types";
 import type { WorkflowCompileResult } from "@truffle/compile-common";
 import type { SourceInfo } from "@truffle/source-fetcher";
@@ -18,7 +18,7 @@ export class SingleRecognizer implements Recognizer {
     this.address = address;
   }
 
-  getResult(): SingleResult {
+  getResult(): FetchAndCompileResult {
     return {
       compileResult: this.compileResult,
       sourceInfo: this.sourceInfo
@@ -56,12 +56,11 @@ export class SingleRecognizer implements Recognizer {
   }
 
   addCompiledInfo(
-    compileResult: WorkflowCompileResult,
-    sourceInfo: SourceInfo,
+    info: FetchAndCompileResult,
     _address: string,
     _fetcherName: string
   ): void {
-    this.compileResult = compileResult;
-    this.sourceInfo = sourceInfo;
+    this.compileResult = info.compileResult;
+    this.sourceInfo = info.sourceInfo;
   }
 }

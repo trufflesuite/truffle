@@ -3,7 +3,7 @@ import type { SourceInfo } from "@truffle/source-fetcher";
 
 export type FailureType = "fetch" | "compile";
 
-export interface SingleResult {
+export interface FetchAndCompileResult {
   compileResult: WorkflowCompileResult;
   sourceInfo: SourceInfo;
 }
@@ -18,8 +18,7 @@ export interface Recognizer {
   isAddressUnrecognized(address: string): boolean;
   getAnUnrecognizedAddress(): string | undefined;
   addCompiledInfo(
-    compileResult: WorkflowCompileResult,
-    sourceInfo: SourceInfo,
+    info: FetchAndCompileResult,
     address: string,
     fetcherName: string
   ): void | Promise<void>;

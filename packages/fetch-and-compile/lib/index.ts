@@ -11,7 +11,7 @@ export { fetchAndCompileForRecognizer };
 export async function fetchAndCompile(
   address: string,
   config: Config
-): Promise<Types.SingleResult> {
+): Promise<Types.FetchAndCompileResult> {
   const recognizer = new SingleRecognizer(address);
   await fetchAndCompileForRecognizer(recognizer, config);
   return recognizer.getResult();

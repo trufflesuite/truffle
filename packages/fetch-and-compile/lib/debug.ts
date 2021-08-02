@@ -5,6 +5,7 @@ import type {
   Recognizer,
   FailureType,
   FetchExternalErrors,
+  FetchAndCompileResult,
   Instances
 } from "./types";
 import type { WorkflowCompileResult } from "@truffle/compile-common";
@@ -74,13 +75,12 @@ export class DebugRecognizer implements Recognizer {
   }
 
   async addCompiledInfo(
-    compileResult: WorkflowCompileResult,
-    _sourceInfo: SourceInfo,
+    info: FetchAndCompileResult,
     address: string,
     fetcherName: string
   ): Promise<void> {
-    debug("compileResult: %O", compileResult);
-    const compilations = compileResult.compilations;
+    debug("compileResult: %O", info.compileResult);
+    const compilations = info.compileResult.compilations;
     const shimmedCompilations = Codec.Compilations.Utils.shimCompilations(
       compilations,
       `externalFor(${address})Via(${fetcherName})`

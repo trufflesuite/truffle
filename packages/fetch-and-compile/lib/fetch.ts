@@ -75,8 +75,10 @@ export async function fetchAndCompileForRecognizer(
       }
       //add it!
       await recognizer.addCompiledInfo(
-        compileResult,
-        result,
+        {
+          compileResult,
+          sourceInfo: result,
+        },
         address,
         fetcher.fetcherName
       );
