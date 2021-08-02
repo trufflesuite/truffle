@@ -1,6 +1,6 @@
 const assert = require("assert");
 const CommandRunner = require("../commandRunner");
-const MemoryLogger = require("../memoryLogger");
+const MemoryLogger = require("../MemoryLogger");
 const fse = require("fs-extra");
 const tmp = require("tmp");
 const path = require("path");
