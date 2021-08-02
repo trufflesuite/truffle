@@ -45,6 +45,8 @@ export class SingleRecognizer implements Recognizer {
           throw new Error(`Error in fetching sources for ${address}`);
         case "compile":
           throw new Error(`Error in compiling sources for ${address}`);
+        case "language":
+          throw new Error(`Sources for ${address} were not in a supported language`);
       }
     } else {
       throw new Error(`No verified sources found for ${address}`);

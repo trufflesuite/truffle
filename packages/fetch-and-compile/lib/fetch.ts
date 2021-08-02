@@ -107,7 +107,7 @@ async function tryFetchAndCompileAddress(
     if (options.language === "Vyper") {
       //if it's not Solidity, bail out now
       debug("found Vyper, bailing out!");
-      recognizer.markUnrecognizable(address);
+      recognizer.markUnrecognizable(address, "language");
       //break out of the fetcher loop, since *no* fetcher will work here
       break;
     }

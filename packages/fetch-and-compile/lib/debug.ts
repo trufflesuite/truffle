@@ -65,6 +65,9 @@ export class DebugRecognizer implements Recognizer {
         case "compile":
           this.badCompileAddresses.push(address);
           break;
+        default:
+          //just ignore ones with unsupported language
+          break;
       }
     }
     this.addressesToSkip.add(address);
