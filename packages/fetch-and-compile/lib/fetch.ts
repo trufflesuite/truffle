@@ -23,84 +23,7 @@ export async function fetchAndCompileForRecognizer(
   //now: the main loop!
   let address: string | undefined;
   while ((address = recognizer.getAnUnrecognizedAddress()) !== undefined) {
-    let found: boolean = false;
-    let failureReason: FailureType | undefined; //undefined if no failure
-    //(not set if there is no source)
-    for (const fetcher of fetchers) {
-      //now comes all the hard parts!
-      //get our sources
-      let result: SourceInfo | null;
-      try {
-        debug("getting sources for %s via %s", address, fetcher.fetcherName);
-        result = await fetcher.fetchSourcesForAddress(address);
-      } catch (error) {
-        debug("error in getting sources! %o", error);
-        failureReason = "fetch";
-        continue;
-      }
-      if (result === null) {
-        debug("no sources found");
-        //null means they don't have that address
-        continue;
-      }
-      //if we do have it, extract sources & options
-      debug("got sources!");
-      const { sources, options } = result;
-      if (options.language === "Vyper") {
-        //if it's not Solidity, bail out now
-        debug("found Vyper, bailing out!");
-        recognizer.markUnrecognizable(address);
-        //break out of the fetcher loop, since *no* fetcher will work here
-        break;
-      }
-      //set up the config
-      let externalConfig: Config = config.with({
-        compilers: {
-          solc: options
-        }
-      });
-      //if using docker, transform it (this does nothing if not using docker)
-      externalConfig = transformIfUsingDocker(externalConfig, config);
-      //compile the sources
-      let compileResult: WorkflowCompileResult;
-      try {
-        compileResult = await Compile.sources({
-          options: externalConfig,
-          sources
-        });
-      } catch (error) {
-        debug("compile error: %O", error);
-        failureReason = "compile";
-        continue; //try again with a different fetcher, I guess?
-      }
-      //add it!
-      await recognizer.addCompiledInfo(
-        {
-          compileResult,
-          sourceInfo: result,
-        },
-        address,
-        fetcher.fetcherName
-      );
-      failureReason = undefined; //mark as *not* failed in case a previous fetcher failed
-      //check: did this actually help?
-      debug("checking result");
-      if (!recognizer.isAddressUnrecognized(address)) {
-        debug(
-          "address %s successfully recognized via %s",
-          address,
-          fetcher.fetcherName
-        );
-        found = true;
-        //break out of the fetcher loop -- we got what we want
-        break;
-      }
-      debug("address %s still unrecognized", address);
-    }
-    if (found === false) {
-      //if we couldn't find it, add it to the list of addresses to skip
-      recognizer.markUnrecognizable(address, failureReason);
-    }
+    await tryFetchAndCompileAddress(address, fetchers, recognizer, config);
   }
 }
 
@@ -150,6 +73,92 @@ async function getFetchers(
       })
     )
   ).filter((fetcher): fetcher is Fetcher => fetcher !== null);
+}
+
+async function tryFetchAndCompileAddress(
+  address: string,
+  fetchers: Fetcher[],
+  recognizer: Recognizer,
+  config: Config
+): Promise<void> {
+  let found: boolean = false;
+  let failureReason: FailureType | undefined; //undefined if no failure
+  //(this includes if no source is found)
+  for (const fetcher of fetchers) {
+    //now comes all the hard parts!
+    //get our sources
+    let result: SourceInfo | null;
+    try {
+      debug("getting sources for %s via %s", address, fetcher.fetcherName);
+      result = await fetcher.fetchSourcesForAddress(address);
+    } catch (error) {
+      debug("error in getting sources! %o", error);
+      failureReason = "fetch";
+      continue;
+    }
+    if (result === null) {
+      debug("no sources found");
+      //null means they don't have that address
+      continue;
+    }
+    //if we do have it, extract sources & options
+    debug("got sources!");
+    const { sources, options } = result;
+    if (options.language === "Vyper") {
+      //if it's not Solidity, bail out now
+      debug("found Vyper, bailing out!");
+      recognizer.markUnrecognizable(address);
+      //break out of the fetcher loop, since *no* fetcher will work here
+      break;
+    }
+    //set up the config
+    let externalConfig: Config = config.with({
+      compilers: {
+        solc: options
+      }
+    });
+    //if using docker, transform it (this does nothing if not using docker)
+    externalConfig = transformIfUsingDocker(externalConfig, config);
+    //compile the sources
+    let compileResult: WorkflowCompileResult;
+    try {
+      compileResult = await Compile.sources({
+        options: externalConfig,
+        sources
+      });
+    } catch (error) {
+      debug("compile error: %O", error);
+      failureReason = "compile";
+      continue; //try again with a different fetcher, I guess?
+    }
+    //add it!
+    await recognizer.addCompiledInfo(
+      {
+        compileResult,
+        sourceInfo: result,
+      },
+      address,
+      fetcher.fetcherName
+    );
+    failureReason = undefined; //mark as *not* failed in case a previous fetcher failed
+    //check: did this actually help?
+    debug("checking result");
+    if (!recognizer.isAddressUnrecognized(address)) {
+      debug(
+        "address %s successfully recognized via %s",
+        address,
+        fetcher.fetcherName
+      );
+      found = true;
+      //break out of the fetcher loop -- we got what we want
+      break;
+    }
+    debug("address %s still unrecognized", address);
+  }
+  if (found === false) {
+    //if we couldn't find it, add it to the list of addresses to skip
+    recognizer.markUnrecognizable(address, failureReason);
+  }
 }
 
 function transformIfUsingDocker(
