@@ -26,7 +26,7 @@
     "@truffle/expect": "^0.0.17",
     "emittery": "^0.4.1",
     "eth-ens-namehash": "^2.0.8",
-    "web3-utils": "1.5.0"
+    "web3-utils": "1.5.1-rc.0"
   },
   "devDependencies": {
     "@truffle/reporters": "^2.0.3",
@@ -34,7 +34,7 @@
     "ganache-core": "2.13.0",
     "mocha": "8.1.2",
     "sinon": "^9.0.2",
-    "web3": "1.5.0"
+    "web3": "1.5.1-rc.0"
   },
   "keywords": [
     "contracts",
