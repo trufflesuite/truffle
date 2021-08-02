@@ -61,13 +61,16 @@ class Console extends EventEmitter {
 
   async start() {
     try {
+      const context = {};
+      this.repl = { context };
+      await this.setUpEnvironment();
+      this.provision();
+
       this.repl = repl.start({
         prompt: "truffle(" + this.options.network + ")> ",
         eval: this.interpret.bind(this)
       });
-
-      await this.setUpEnvironment();
-      this.provision();
+      this.repl.context = context;
 
       //want repl to exit when it receives an exit command
       this.repl.on("exit", () => {
