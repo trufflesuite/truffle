@@ -1,4 +1,3 @@
-const { Compile } = require("@truffle/compile-solidity");
 const WorkflowCompile = require("@truffle/workflow-compile");
 const Resolver = require("@truffle/resolver");
 const glob = require("glob");
@@ -9,7 +8,7 @@ class DebugCompiler {
     this.config = config;
   }
 
-  async compile({ sources, withTests }) {
+  async compile({ withTests }) {
     let compileConfig = this.config.with({ quiet: true });
 
     if (withTests) {
@@ -26,12 +25,7 @@ class DebugCompiler {
       });
     }
 
-    const { compilations } = sources
-      ? await Compile.sources({ sources, options: compileConfig }) //used by external.js
-      : await WorkflowCompile.compile(compileConfig.with({ all: true }));
-    //note: we don't allow for the possibility here of compiling with specified sources
-    //that are *not* solidity.  only external.js specifies sources, and making that work
-    //with Vyper is a hard problem atm (how do we get the right version??)
+    const { compilations } = await WorkflowCompile.compile(compileConfig.with({ all: true }));
 
     return compilations;
   }

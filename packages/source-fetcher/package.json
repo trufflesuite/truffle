@@ -40,7 +40,9 @@
     "etherscan",
     "ipfs",
     "solidity",
-    "verify-source"
+    "verify-source",
+    "sourcify",
+    "vyper"
   ],
   "publishConfig": {
     "access": "public"

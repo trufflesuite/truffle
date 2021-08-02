@@ -62,7 +62,7 @@
     "@truffle/db": "^0.5.23",
     "@truffle/decoder": "^4.6.8",
     "@truffle/environment": "^0.2.64",
-    "@truffle/source-fetcher": "^0.5.4",
+    "@truffle/fetch-and-compile": "^0.1.0-0",
     "ink": "^3.0.8",
     "ink-big-text": "^1.2.0",
     "ink-divider": "^3.0.0",

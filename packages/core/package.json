@@ -34,6 +34,7 @@
     "@truffle/environment": "^0.2.64",
     "@truffle/error": "^0.0.14",
     "@truffle/expect": "^0.0.17",
+    "@truffle/fetch-and-compile": "^0.1.0-0",
     "@truffle/interface-adapter": "^0.5.3",
     "@truffle/migrate": "^3.2.36",
     "@truffle/plugins": "^0.2.3",
