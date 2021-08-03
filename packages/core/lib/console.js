@@ -61,6 +61,8 @@ class Console extends EventEmitter {
 
   async start() {
     try {
+      // it is important to calculate the context first so that the context
+      // variables are available as early as possible after the repl starts
       const context = {};
       this.repl = { context };
       await this.setUpEnvironment();
