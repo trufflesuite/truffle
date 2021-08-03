@@ -1,14 +1,23 @@
-const debug = require("debug")("compile:compilerSupplier");
-const requireFromString = require("require-from-string");
-const originalRequire = require("original-require");
-const axios = require("axios").default;
-const semver = require("semver");
-const solcWrap = require("solc/wrapper");
-const Cache = require("../Cache");
-const observeListeners = require("../observeListeners");
-const { NoVersionError, NoRequestError } = require("../errors");
+import debugModule from "debug";
+const debug = debugModule("compile:compilerSupplier");
 
-class VersionRange {
+import requireFromString from "require-from-string";
+import originalRequire from "original-require";
+import axios from "axios";
+import semver from "semver";
+import solcWrap from "solc/wrapper";
+import { Cache } from "../Cache";
+import { observeListeners } from "../observeListeners";
+import { NoVersionError, NoRequestError } from "../errors";
+
+export class VersionRange {
+  private config: {
+    events: any;
+    compilerRoots: string[];
+  };
+
+  private cache: Cache;
+
   constructor(options) {
     const defaultConfig = {
       compilerRoots: [
@@ -27,7 +36,7 @@ class VersionRange {
     this.cache = new Cache();
   }
 
-  async load(versionRange) {
+  async load(versionRange: string) {
     const rangeIsSingleVersion = semver.valid(versionRange);
     if (rangeIsSingleVersion && this.versionIsCached(versionRange)) {
       return this.getCachedSolcByVersionRange(versionRange);
@@ -77,7 +86,7 @@ class VersionRange {
       .map(solcVersion => {
         if (semver.satisfies(solcVersion, version)) return solcVersion;
       })
-      .filter(solcVersion => solcVersion);
+      .filter((solcVersion): solcVersion is string => !!solcVersion);
     if (satisfyingVersions.length > 0) {
       return satisfyingVersions.reduce((newestVersion, version) => {
         return semver.gtr(version, newestVersion) ? version : newestVersion;
@@ -239,18 +248,15 @@ class VersionRange {
     const cachedVersions = cachedCompilerFileNames.map(fileName => {
       const match = fileName.match(/v\d+\.\d+\.\d+.*/);
       if (match) return match[0];
-    });
+    }).filter((version): version is string => !!version);
     return cachedVersions.find(cachedVersion =>
       semver.satisfies(cachedVersion, version)
     );
   }
 }
 
-class NoUrlError extends Error {
+export class NoUrlError extends Error {
   constructor() {
     super("compiler root URL missing");
   }
 }
-
-
-module.exports = VersionRange;

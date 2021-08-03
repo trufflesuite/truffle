@@ -2,7 +2,7 @@ const { execSync } = require("child_process");
 const { normalizeSolcVersion } = require("../normalizeSolcVersion");
 const { NoVersionError } = require("../errors");
 
-class Native {
+export class Native {
   load() {
     const versionString = this.validateAndGetSolcVersion();
     const command = "solc --standard-json";
@@ -33,10 +33,8 @@ class Native {
   }
 }
 
-class NoNativeError extends Error {
+export class NoNativeError extends Error {
   constructor(error) {
     super("Could not execute local solc binary: " + error);
   }
 }
-
-module.exports = Native;

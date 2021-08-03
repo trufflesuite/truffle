@@ -1,12 +1,24 @@
-const path = require("path");
-const fs = require("fs");
-const semver = require("semver");
+import path from "path";
+import fs from "fs";
+import semver from "semver";
 
-const { Docker, Local, Native, VersionRange } = require("./loadingStrategies");
+import { Docker, Local, Native, VersionRange } from "./loadingStrategies";
 
 const defaultSolcVersion = "0.5.16";
 
-class CompilerSupplier {
+export class CompilerSupplier {
+  private events: unknown;
+  private version: string;
+  private docker: unknown;
+  private compilerRoots: unknown;
+  private strategyOptions: Partial<{
+    version: string;
+    docker: unknown;
+    compilerRoots: unknown;
+    events: unknown;
+    spawn: unknown;
+  }>;
+
   constructor({ events, solcConfig }) {
     const { version, docker, compilerRoots, spawn } = solcConfig;
     this.events = events;
@@ -34,9 +46,9 @@ class CompilerSupplier {
     if (useDocker) {
       strategy = new Docker(this.strategyOptions);
     } else if (useNative) {
-      strategy = new Native(this.strategyOptions);
+      strategy = new Native();
     } else if (useSpecifiedLocal) {
-      strategy = new Local(this.strategyOptions);
+      strategy = new Local();
     } else if (isValidVersionRange) {
       strategy = new VersionRange(this.strategyOptions);
     }
@@ -62,9 +74,9 @@ class CompilerSupplier {
     if (useDocker) {
       strategy = new Docker(this.strategyOptions);
     } else if (useNative) {
-      strategy = new Native(this.strategyOptions);
+      strategy = new Native();
     } else if (useSpecifiedLocal) {
-      strategy = new Local(this.strategyOptions);
+      strategy = new Local();
     } else if (isValidVersionRange) {
       strategy = new VersionRange(this.strategyOptions);
     }
@@ -101,5 +113,3 @@ class CompilerSupplier {
     return fs.existsSync(localPath) || path.isAbsolute(localPath);
   }
 }
-
-module.exports = CompilerSupplier;

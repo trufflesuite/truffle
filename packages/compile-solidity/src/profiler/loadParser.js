@@ -1,4 +1,4 @@
-const CompilerSupplier = require("../compilerSupplier");
+const { CompilerSupplier } = require("../compilerSupplier");
 const Parser = require("../parser");
 const semver = require("semver");
 
