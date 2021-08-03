@@ -1,8 +1,10 @@
-const Config = require("@truffle/config");
-const path = require("path");
-const fs = require("fs");
+import Config from "@truffle/config";
+import path from "path";
+import fs from "fs";
 
-class Cache {
+export class Cache {
+  private compilerCachePath: string;
+
   constructor() {
     const compilersDir = path.resolve(
       Config.getTruffleDataDirectory(),
@@ -33,5 +35,3 @@ class Cache {
     return path.resolve(this.compilerCachePath, fileName);
   }
 };
-
-module.exports = Cache;
