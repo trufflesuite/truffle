@@ -1,23 +1,15 @@
 const { exec } = require("child_process");
-const { EOL } = require ("os");
+const { EOL } = require("os");
 const path = require("path");
 
 module.exports = {
   getExecString: function () {
     return process.env.NO_BUILD
-      ? (execString =
-        "node " +
-        path.join(__dirname, "../", "../", "../", "core", "cli.js") +
-        " " +
-        command)
-      : (execString =
-        "node " +
-        path.join(__dirname, "../", "../", "build", "cli.bundled.js") +
-        " " +
-        command);
+      ? `node ${path.join(__dirname, "../", "../", "../", "core", "cli.js")}`
+      : `node ${path.join(__dirname, "../", "../", "build", "cli.bundled.js")}`;
   },
-  run: function(command, config) {
-    const execString = this.getExecString();
+  run: function (command, config) {
+    const execString = `${this.getExecString()} ${command}`;
 
     return new Promise((resolve, reject) => {
       let child = exec(execString, {
@@ -45,7 +37,7 @@ module.exports = {
       }
     });
   },
-  runInDevelopEnvironment: (commands = [], config) => {
+  runInDevelopEnvironment: function (commands = [], config) {
     // get command for opening `truffle develop`
     const cmdLine = `${this.getExecString()} develop`;
 
@@ -54,15 +46,15 @@ module.exports = {
 
       if (child.error) return reject(child.error);
 
-      child.stderr.on("data", (data) => {
+      child.stderr.on("data", data => {
         config.logger.log("ERR: ", data);
       });
 
-      child.stdout.on("data", (data) => {
+      child.stdout.on("data", data => {
         config.logger.log("OUT: ", data);
       });
 
-      child.on("close", (code) => {
+      child.on("close", code => {
         config.logger.log("EXIT: ", code);
         resolve();
       });
@@ -72,5 +64,5 @@ module.exports = {
       });
       child.stdin.end();
     });
-  },
+  }
 };
