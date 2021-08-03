@@ -1,14 +1,14 @@
 const assert = require("assert");
 const sinon = require("sinon");
 const axios = require("axios");
-const CompilerSupplier = require("../../compilerSupplier");
-const Cache = require("../../compilerSupplier/Cache");
+const CompilerSupplier = require("../../dist/compilerSupplier");
+const Cache = require("../../dist/compilerSupplier/Cache");
 const {
   Docker,
   Native,
   Local,
   VersionRange
-} = require("../../compilerSupplier/loadingStrategies");
+} = require("../../dist/compilerSupplier/loadingStrategies");
 const Config = require("@truffle/config");
 const config = new Config();
 let supplier;
