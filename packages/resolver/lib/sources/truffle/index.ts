@@ -63,7 +63,7 @@ export class Truffle implements ResolverSource {
         mapping[name] = address;
       });
 
-      const addressSource = Deployed.makeSolidityDeployedAddressesLibrary(
+      const addressSource = await Deployed.makeSolidityDeployedAddressesLibrary(
         mapping,
         this.options.compilers
       );

@@ -10,7 +10,7 @@ const WorkflowCompile = require("@truffle/workflow-compile");
 const Resolver = require("@truffle/resolver");
 const TestRunner = require("./TestRunner");
 const SolidityTest = require("./SolidityTest");
-const RangeUtils = require("@truffle/compile-solidity/dist/compilerSupplier/rangeUtils");
+const { RangeUtils } = require("@truffle/compile-solidity/dist/compilerSupplier/rangeUtils");
 const expect = require("@truffle/expect");
 const Migrate = require("@truffle/migrate");
 const Profiler = require("@truffle/compile-solidity/dist/profiler");
@@ -207,8 +207,8 @@ const Test = {
     });
     if (config.compileAllDebug) {
       let versionString = ((compileConfig.compilers || {}).solc || {}).version;
-      versionString = RangeUtils.resolveToRange(versionString);
-      if (RangeUtils.rangeContainsAtLeast(versionString, "0.6.3")) {
+      versionString = await RangeUtils.resolveToRange(versionString);
+      if (await RangeUtils.rangeContainsAtLeast(versionString, "0.6.3")) {
         compileConfig = compileConfig.merge({
           compilers: {
             solc: {

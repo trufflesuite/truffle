@@ -2,7 +2,7 @@ const debug = require("debug")("compile:test:test_metadata");
 const fs = require("fs");
 const path = require("path");
 const { Compile } = require("@truffle/compile-solidity");
-const { CompilerSupplier } = require("../dist/compilerSupplier");
+const { createCompilerSupplier } = require("../dist/compilerSupplier");
 const assert = require("assert");
 const { findOne } = require("./helpers");
 const workingDirectory = "/home/fakename/truffleproject";
@@ -36,7 +36,7 @@ describe("Compile - solidity ^0.4.0", function () {
   before("get solc", async function () {
     this.timeout(40000);
 
-    const supplier = new CompilerSupplier(supplierOptions);
+    const supplier = createCompilerSupplier(supplierOptions);
     ({ solc } = await supplier.load());
   });
 

@@ -8,8 +8,33 @@ import { Cache } from "../Cache";
 import { normalizeSolcVersion } from "../normalizeSolcVersion";
 import { NoVersionError } from "../errors";
 import { asyncFirst, asyncFilter, asyncFork } from "iter-tools";
+import { CompilerSupplier } from "@truffle/compile-common";
+import type { Results } from "@truffle/compile-solidity/compilerSupplier/types";
+import * as defaults from "@truffle/compile-solidity/compilerSupplier/defaults";
 
-export class Docker {
+export namespace Docker {
+  export type Specification = {
+    constructor: {
+      options: {
+        spawn?: {
+          maxBuffer: number;
+        };
+        dockerTagsUrl?: string;
+        solcConfig: {
+          version?: string;
+        };
+      };
+    };
+    allowsLoadingSpecificVersion: true;
+    allowsListingVersions: true;
+  };
+}
+
+export class Docker
+  implements
+    CompilerSupplier.Strategy<
+      Docker.Specification & { results: Results.Specification }
+    > {
   private config: {
     spawn: {
       maxBuffer: number;
@@ -19,17 +44,29 @@ export class Docker {
   };
   private cache: Cache;
 
-  constructor(options) {
-    const defaultConfig = {
-      dockerTagsUrl:
-        "https://registry.hub.docker.com/v2/repositories/ethereum/solc/tags/"
+  constructor({
+    spawn,
+    dockerTagsUrl = "https://registry.hub.docker.com/v2/repositories/ethereum/solc/tags/",
+    solcConfig: { version = defaults.solcVersion }
+  }) {
+    this.config = {
+      spawn,
+      dockerTagsUrl,
+      version
     };
-    this.config = Object.assign({}, defaultConfig, options);
 
     this.cache = new Cache();
   }
 
-  async load() {
+  allowsLoadingSpecificVersion() {
+    return true;
+  }
+
+  allowsListingVersions() {
+    return true;
+  }
+
+  async load(version: string = this.config.version) {
     // Set a sensible limit for maxBuffer
     // See https://github.com/nodejs/node/pull/23027
     let maxBuffer = 1024 * 1024 * 100;
@@ -37,17 +74,17 @@ export class Docker {
       maxBuffer = this.config.spawn.maxBuffer;
     }
 
-    const versionString = await this.validateAndGetSolcVersion();
+    const versionString = await this.validateAndGetSolcVersion(version);
     const command =
-      "docker run --rm -i ethereum/solc:" +
-      this.config.version +
-      " --standard-json";
+      "docker run --rm -i ethereum/solc:" + version + " --standard-json";
 
     try {
       return {
-        compile: options =>
-          String(execSync(command, { input: options, maxBuffer })),
-        version: () => versionString
+        solc: {
+          compile: options =>
+            String(execSync(command, { input: options, maxBuffer })),
+          version: () => versionString
+        }
       };
     } catch (error) {
       if (error.message === "No matching version found") {
@@ -57,7 +94,7 @@ export class Docker {
     }
   }
 
-  async listVersions() {
+  async list() {
     const allTags = this.streamAllDockerTags();
 
     // split stream of all tags into separate releases and prereleases streams
@@ -76,9 +113,8 @@ export class Docker {
 
     // grab the latest release from the forked releases stream;
     // coerce semver to remove possible `-alpine` suffix used by this repo
-    const latestRelease = semver.coerce(
-      await asyncFirst(forkedReleases)
-    )?.version;
+    const latestRelease = semver.coerce(await asyncFirst(forkedReleases))
+      ?.version;
 
     return {
       prereleases,
@@ -111,8 +147,8 @@ export class Docker {
     }
   }
 
-  async validateAndGetSolcVersion() {
-    const image = this.config.version;
+  async validateAndGetSolcVersion(version: string) {
+    const image = version;
     const fileName = image + ".version";
 
     // Skip validation if they've validated for this image before.
@@ -140,10 +176,10 @@ export class Docker {
     }
 
     // Get version & cache.
-    const version = execSync(
+    const reportedVersion = execSync(
       "docker run ethereum/solc:" + image + " --version"
     );
-    const normalized = normalizeSolcVersion(version);
+    const normalized = normalizeSolcVersion(reportedVersion);
     this.cache.addFileToCache(normalized, fileName);
     return normalized;
   }

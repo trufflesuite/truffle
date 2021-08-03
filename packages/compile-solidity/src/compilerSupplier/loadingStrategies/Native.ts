@@ -1,18 +1,44 @@
-const { execSync } = require("child_process");
-const { normalizeSolcVersion } = require("../normalizeSolcVersion");
-const { NoVersionError } = require("../errors");
+import { execSync } from "child_process";
+import { normalizeSolcVersion } from "../normalizeSolcVersion";
+import { NoVersionError } from "../errors";
 
-export class Native {
-  load() {
+import { CompilerSupplier } from "@truffle/compile-common";
+
+import type { Results } from "@truffle/compile-solidity/compilerSupplier/types";
+
+export namespace Native {
+  export type Specification = {
+    constructor: {
+      options: void
+    };
+    allowsLoadingSpecificVersion: false;
+    allowsListingVersions: false;
+  };
+}
+
+export class Native implements CompilerSupplier.Strategy<
+  Native.Specification & { results: Results.Specification }
+> {
+  allowsLoadingSpecificVersion() {
+    return false;
+  }
+
+  allowsListingVersions() {
+    return false;
+  }
+
+  async load() {
     const versionString = this.validateAndGetSolcVersion();
     const command = "solc --standard-json";
     const maxBuffer = 1024 * 1024 * 10;
 
     try {
       return {
-        compile: options =>
-          String(execSync(command, { input: options, maxBuffer })),
-        version: () => versionString
+        solc: {
+          compile: options =>
+            String(execSync(command, { input: options, maxBuffer })),
+          version: () => versionString
+        }
       };
     } catch (error) {
       if (error.message === "No matching version found") {

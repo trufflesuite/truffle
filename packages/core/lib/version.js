@@ -1,5 +1,5 @@
 const pkg = require("../package.json");
-const { CompilerSupplier } = require("@truffle/compile-solidity");
+const { createCompilerSupplier } = require("@truffle/compile-solidity");
 const Config = require("@truffle/config");
 
 const info = config => {
@@ -18,7 +18,7 @@ const info = config => {
     const solcConfig = compilers.solc;
     supplierOptions = { events, solcConfig };
   }
-  const supplier = new CompilerSupplier(supplierOptions);
+  const supplier = createCompilerSupplier(supplierOptions);
 
   return {
     core: pkg.version,

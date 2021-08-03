@@ -1,8 +1,8 @@
 const assert = require("assert");
 const Config = require("@truffle/config");
-const {CompilerSupplier} = require("../dist/index");
 const Resolver = require("@truffle/resolver");
 const sinon = require("sinon");
+const { VersionRange } = require("../dist/compilerSupplier/loadingStrategies");
 const {compileWithPragmaAnalysis} = require("../dist/compileWithPragmaAnalysis");
 const path = require("path");
 let paths = [];
@@ -74,10 +74,10 @@ config.resolver = new Resolver(config);
 
 describe("compileWithPragmaAnalysis", function () {
   before(function () {
-    sinon.stub(CompilerSupplier.prototype, "listVersions").returns(releases);
+    sinon.stub(VersionRange.prototype, "list").returns(Promise.resolve(releases));
   });
   after(function () {
-    CompilerSupplier.prototype.listVersions.restore();
+    VersionRange.prototype.list.restore();
   });
 
   describe("solidity files with no imports", function () {

@@ -2,7 +2,7 @@ const debug = require("debug")("compile:run");
 const OS = require("os");
 const semver = require("semver");
 const Common = require("@truffle/compile-common");
-const { CompilerSupplier } = require("./compilerSupplier");
+const { createCompilerSupplier } = require("./compilerSupplier");
 
 // this function returns a Compilation - legacy/index.js and ./index.js
 // both check to make sure rawSources exist before calling this method
@@ -221,7 +221,7 @@ async function invokeCompiler({ compilerInput, options }) {
     events: options.events,
     solcConfig: options.compilers.solc
   };
-  const supplier = new CompilerSupplier(supplierOptions);
+  const supplier = createCompilerSupplier(supplierOptions);
   const { solc } = await supplier.load();
   const solcVersion = solc.version();
 

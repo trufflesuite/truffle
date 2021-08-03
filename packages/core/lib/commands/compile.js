@@ -97,10 +97,10 @@ const command = {
   },
 
   listVersions: async function (options) {
-    const { CompilerSupplier } = require("@truffle/compile-solidity");
+    const { createCompilerSupplier } = require("@truffle/compile-solidity");
     const { asyncTake } = require("iter-tools");
 
-    const supplier = new CompilerSupplier({
+    const supplier = createCompilerSupplier({
       solcConfig: {
         ...options.compilers.solc,
         docker: options.list === "docker"
@@ -115,7 +115,7 @@ const command = {
       latestRelease,
       releases,
       prereleases
-    } = await supplier.listVersions();
+    } = await supplier.list();
     if (options.list === "latestRelease") {
       log(format(latestRelease, null, " "));
       return;

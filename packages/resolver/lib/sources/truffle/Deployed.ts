@@ -1,16 +1,16 @@
 const web3Utils = require("web3-utils");
 import semver from "semver";
-import RangeUtils from "@truffle/compile-solidity/dist/compilerSupplier/rangeUtils";
+import { RangeUtils } from "@truffle/compile-solidity/dist/compilerSupplier/rangeUtils";
 
 type solcOptionsArg = {
   solc: { version: string };
 };
 
 export class Deployed {
-  static makeSolidityDeployedAddressesLibrary(
+  static async makeSolidityDeployedAddressesLibrary(
     mapping: { [key: string]: string | false },
     { solc: { version } }: solcOptionsArg
-  ): string {
+  ): Promise<string> {
     let source = "";
     source +=
       "//SPDX-License-Identifier: MIT\n" +
@@ -37,12 +37,12 @@ export class Deployed {
 
     source += "}";
 
-    version = RangeUtils.resolveToRange(version);
-    if (!RangeUtils.rangeContainsAtLeast(version, "0.5.0")) {
+    version = await RangeUtils.resolveToRange(version);
+    if (!(await RangeUtils.rangeContainsAtLeast(version, "0.5.0"))) {
       //remove "payable"s in types if we're before 0.5.0
       source = source.replace(/address payable/g, "address");
     }
-    if (!RangeUtils.rangeContainsAtLeast(version, "0.6.0")) {
+    if (!(await RangeUtils.rangeContainsAtLeast(version, "0.6.0"))) {
       //remove "payable"s in conversions if we're before 0.6.0
       source = source.replace(/payable\((.*)\)/g, "$1");
     }

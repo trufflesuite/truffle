@@ -9,45 +9,82 @@ import solcWrap from "solc/wrapper";
 import { Cache } from "../Cache";
 import { observeListeners } from "../observeListeners";
 import { NoVersionError, NoRequestError } from "../errors";
+import { CompilerSupplier } from "@truffle/compile-common";
+import type { Results } from "@truffle/compile-solidity/compilerSupplier/types";
+import * as defaults from "@truffle/compile-solidity/compilerSupplier/defaults";
 
-export class VersionRange {
+export namespace VersionRange {
+  export type Specification = {
+    constructor: {
+      options: {
+        events: any;
+        compilerRoots?: string[];
+        solcConfig: {
+          version?: string;
+        }
+      }
+    };
+    allowsLoadingSpecificVersion: true;
+    allowsListingVersions: true;
+  };
+}
+
+export class VersionRange implements CompilerSupplier.Strategy<
+  VersionRange.Specification & { results: Results.Specification }
+> {
   private config: {
     events: any;
     compilerRoots: string[];
+    version: string;
   };
 
   private cache: Cache;
 
-  constructor(options) {
-    const defaultConfig = {
-      compilerRoots: [
-        "https://relay.trufflesuite.com/solc/bin/",
-        "https://solc-bin.ethereum.org/bin/",
-        "https://ethereum.github.io/solc-bin/bin/"
-      ]
+  constructor({
+    events,
+    compilerRoots = [
+      "https://relay.trufflesuite.com/solc/bin/",
+      "https://solc-bin.ethereum.org/bin/",
+      "https://ethereum.github.io/solc-bin/bin/"
+    ],
+    solcConfig: {
+      version = defaults.solcVersion
+    }
+  }) {
+    this.config = {
+      events,
+      compilerRoots,
+      version
     };
-    this.config = Object.assign({}, defaultConfig, options);
 
     this.cache = new Cache();
   }
 
-  async load(versionRange: string) {
+  allowsLoadingSpecificVersion() {
+    return true;
+  }
+
+  allowsListingVersions() {
+    return true;
+  }
+
+  async load(versionRange: string = this.config.version) {
     const rangeIsSingleVersion = semver.valid(versionRange);
     if (rangeIsSingleVersion && this.versionIsCached(versionRange)) {
-      return this.getCachedSolcByVersionRange(versionRange);
+      return { solc: this.getCachedSolcByVersionRange(versionRange) };
     }
 
     try {
-      return await this.getSolcFromCacheOrUrl(versionRange);
+      return { solc: await this.getSolcFromCacheOrUrl(versionRange) };
     } catch (error) {
       if (error.message.includes("Failed to complete request")) {
-        return this.getSatisfyingVersionFromCache(versionRange);
+        return { solc: this.getSatisfyingVersionFromCache(versionRange) };
       }
       throw new Error(error);
     }
   }
 
-  async listVersions() {
+  async list() {
     const data = await this.getSolcVersions();
     const { latestRelease } = data;
 

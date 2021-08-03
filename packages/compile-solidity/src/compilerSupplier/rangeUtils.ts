@@ -1,23 +1,23 @@
-const semver = require("semver");
-const CompilerSupplier = require(".");
-const Native = require("./loadingStrategies/Native");
-const Local = require("./loadingStrategies/Local");
-const path = require("path");
-const fs = require("fs-extra");
+import path from "path";
+import fs from "fs-extra";
+import semver from "semver";
+import { Native } from "./loadingStrategies/Native";
+import { Local } from "./loadingStrategies/Local";
+import * as defaults from "./defaults";
 
-const RangeUtils = {
+export const RangeUtils = {
   //takes a version string which may be native or local, and resolves
   //it to one which is (presumably) either a version or a version range
-  resolveToRange: function (version) {
+  resolveToRange: async function (version) {
     if (!version) {
-      return CompilerSupplier.getDefaultVersion();
+      return defaults.solcVersion;
     }
     //if version was native or local, must determine what version that
     //actually corresponds to
     if (version === "native") {
-      return new Native().load().version();
+      return (await new Native().load()).solc.version();
     } else if (fs.existsSync(version) && path.isAbsolute(version)) {
-      return new Local({ version }).load().version();
+      return (await new Local().load(version)).solc.version();
     }
     return version;
   },
@@ -46,9 +46,7 @@ const RangeUtils = {
   coerce: function (version) {
     return (
       semver.validRange(version, { loose: true }) ||
-      semver.coerce(version, { loose: true }).toString()
+      semver.coerce(version, { loose: true })?.toString()
     );
   }
 };
-
-module.exports = RangeUtils;
