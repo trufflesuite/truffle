@@ -49,15 +49,24 @@ class Docker {
   }
 
   async listVersions() {
+    const allTags = this.streamAllDockerTags();
+
+    // split stream of all tags into separate releases and prereleases streams
     const isRelease = name => !!semver.valid(name);
     const isPrerelease = name => name.match(/nightly/);
+    const [allTagsA, allTagsB] = asyncFork(allTags);
 
-    const [resultsA, resultsB] = asyncFork(this.streamAllDockerTags());
+    // construct prereleases stream
+    const prereleases = asyncFilter(isPrerelease, allTagsB);
 
+    // construct releases stream and immediately fork so as to allow consuming
+    // the first value in the stream safely
     const [releases, forkedReleases] = asyncFork(
-      asyncFilter(isRelease, resultsA)
+      asyncFilter(isRelease, allTagsA)
     );
-    const prereleases = asyncFilter(isPrerelease, resultsB);
+
+    // grab the latest release from the forked releases stream;
+    // coerce semver to remove possible `-alpine` suffix used by this repo
     const latestRelease = semver.coerce(await asyncFirst(forkedReleases))
       .version;
 
