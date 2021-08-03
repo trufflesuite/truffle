@@ -288,30 +288,6 @@ describe("CompilerSupplier", function () {
         );
       });
 
-      it("errors if running dockerized solc without specifying an image", async function () {
-        options.compilers = {
-          solc: {
-            version: undefined,
-            docker: true,
-            settings: {}
-          }
-        };
-        compileConfig = Config.default().merge(options);
-
-        let error;
-        try {
-          await Compile.sources({
-            sources: version4PragmaSource,
-            options: compileConfig
-          });
-        } catch (err) {
-          error = err;
-        }
-
-        assert(error);
-        assert(error.message.includes("option must be"));
-      });
-
       it("errors if running dockerized solc when image does not exist locally", async function () {
         const imageName = "fantasySolc.7777555";
 

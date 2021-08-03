@@ -207,7 +207,7 @@ const Test = {
     });
     if (config.compileAllDebug) {
       let versionString = ((compileConfig.compilers || {}).solc || {}).version;
-      versionString = RangeUtils.resolveToRange(versionString);
+      versionString = await RangeUtils.resolveToRange(versionString);
       if (RangeUtils.rangeContainsAtLeast(versionString, "0.6.3")) {
         compileConfig = compileConfig.merge({
           compilers: {

@@ -108,7 +108,7 @@ const SolidityTest = {
     debug("compiling");
     const config = runner.config;
     let solcVersion = config.compilers.solc.version;
-    solcVersion = RangeUtils.resolveToRange(solcVersion);
+    solcVersion = await RangeUtils.resolveToRange(solcVersion);
 
     const truffleLibraries = [
       "truffle/Assert.sol",

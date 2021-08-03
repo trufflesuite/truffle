@@ -96,10 +96,10 @@ const command = {
   },
 
   listVersions: async function (options) {
-    const { CompilerSupplier } = require("@truffle/compile-solidity");
+    const { createCompilerSupplier } = require("@truffle/compile-solidity");
     const { asyncTake } = require("iter-tools");
 
-    const supplier = new CompilerSupplier({
+    const supplier = createCompilerSupplier({
       solcConfig: {
         ...options.compilers.solc,
         // HACK to force use of the VersionRange or Docker strategy
