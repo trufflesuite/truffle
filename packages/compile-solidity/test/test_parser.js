@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
-const Parser = require("../parser");
-const CompilerSupplier = require("../compilerSupplier");
+const Parser = require("../dist/parser");
+const CompilerSupplier = require("../dist/compilerSupplier");
 const assert = require("assert");
 
 describe("Parser", () => {
