@@ -32,7 +32,7 @@ module.exports = {
   },
 
   downloadAndCacheSolc: async ({config, options}) => {
-    const { CompilerSupplier } = require("@truffle/compile-solidity");
+    const { createCompilerSupplier } = require("@truffle/compile-solidity");
     const semver = require("semver");
     const { events } = config;
 
@@ -45,7 +45,7 @@ module.exports = {
     }
 
     try {
-      const supplier = new CompilerSupplier({
+      const supplier = createCompilerSupplier({
         events,
         solcConfig: {
           ...config.compilers.solc,

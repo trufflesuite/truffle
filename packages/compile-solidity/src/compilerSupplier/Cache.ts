@@ -34,4 +34,12 @@ export class Cache {
   resolve(fileName) {
     return path.resolve(this.compilerCachePath, fileName);
   }
-};
+}
+
+export class HasCache {
+  protected cache: Cache;
+
+  constructor() {
+    this.cache = new Cache();
+  }
+}

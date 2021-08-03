@@ -2,7 +2,7 @@ const debug = require("debug")("compile");
 const findContracts = require("@truffle/contract-sources");
 const Config = require("@truffle/config");
 const Profiler = require("./profiler");
-const { CompilerSupplier } = require("./compilerSupplier");
+const { createCompilerSupplier } = require("./compilerSupplier");
 const { run } = require("./run");
 const { normalizeOptions } = require("./normalizeOptions");
 const { compileWithPragmaAnalysis } = require("./compileWithPragmaAnalysis");
@@ -170,5 +170,5 @@ const Compile = {
 
 module.exports = {
   Compile,
-  CompilerSupplier
+  createCompilerSupplier
 };

@@ -1,4 +1,4 @@
-const { CompilerSupplier } = require("../compilerSupplier");
+const { createCompilerSupplier } = require("../compilerSupplier");
 const Parser = require("../parser");
 const semver = require("semver");
 
@@ -16,7 +16,7 @@ const semver = require("semver");
 async function loadParser({ events, compilers: { solc: solcConfig } }) {
   const { parser } = solcConfig;
 
-  const supplier = new CompilerSupplier({ events, solcConfig });
+  const supplier = createCompilerSupplier({ events, solcConfig });
   const { solc } = await supplier.load();
 
   // if no parser is specified, just use the normal solc
@@ -33,7 +33,7 @@ async function loadParser({ events, compilers: { solc: solcConfig } }) {
 
   // determine normal solc version and then load that version as solcjs
   const { version } = semver.coerce(solc.version());
-  const parserSupplier = new CompilerSupplier({
+  const parserSupplier = createCompilerSupplier({
     events,
     solcConfig: {
       ...solcConfig,

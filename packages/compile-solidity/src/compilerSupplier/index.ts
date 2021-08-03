@@ -2,116 +2,70 @@ import path from "path";
 import fs from "fs";
 import semver from "semver";
 
+import type { Results } from "./types";
+import { forDefinition } from "@truffle/supplier";
 import { Docker, Local, Native, VersionRange } from "./loadingStrategies";
 
-const defaultSolcVersion = "0.5.16";
-
-export class CompilerSupplier {
-  private events: any;
-  private version: string;
-  private docker: boolean;
-  private compilerRoots: string[];
-  private strategyOptions: Partial<{
-    version: string;
-    docker: boolean;
-    compilerRoots: string[];
-    events: any; // represents a @truffle/events instance, which lacks types
-    spawn: {
-      maxBuffer: number;
+export namespace CompilerSupplier {
+  export type Specification = {
+    options: {
+      solcConfig: {
+        docker?: boolean;
+        version?: "native" | string;
+      };
     };
-  }>;
+    results: Results.Specification;
+    strategies: {
+      docker: Docker.Specification;
+      local: Local.Specification;
+      native: Native.Specification;
+      "version-range": VersionRange.Specification;
+    };
+  };
+}
 
-  constructor({ events, solcConfig }) {
-    const { version, docker, compilerRoots, spawn } = solcConfig;
-    this.events = events;
-    this.version = version ? version : defaultSolcVersion;
-    this.docker = docker;
-    this.compilerRoots = compilerRoots;
-    this.strategyOptions = {};
-    if (version) this.strategyOptions.version = this.version;
-    if (docker) this.strategyOptions.docker = compilerRoots;
-    if (compilerRoots) this.strategyOptions.compilerRoots = compilerRoots;
-    if (events) this.strategyOptions.events = events;
-    if (spawn) this.strategyOptions.spawn = spawn;
-  }
+export const createCompilerSupplier = forDefinition<
+  CompilerSupplier.Specification
+>({
+  determineStrategy(options) {
+    const {
+      solcConfig: { docker = false, version }
+    } = options;
 
-  async load() {
-    const userSpecification = this.version;
-
-    let strategy;
-    const useDocker = this.docker;
-    const useNative = userSpecification === "native";
-    const useSpecifiedLocal =
-      userSpecification && this.fileExists(userSpecification);
-    const isValidVersionRange = semver.validRange(userSpecification);
-
-    if (useDocker) {
-      strategy = new Docker(this.strategyOptions);
-    } else if (useNative) {
-      strategy = new Native();
-    } else if (useSpecifiedLocal) {
-      strategy = new Local();
-    } else if (isValidVersionRange) {
-      strategy = new VersionRange(this.strategyOptions);
+    if (docker) {
+      return "docker";
     }
 
-    if (strategy) {
-      const solc = await strategy.load(userSpecification);
-      return { solc };
-    } else {
-      throw this.badInputError(userSpecification);
-    }
-  }
-
-  async list() {
-    const userSpecification = this.version;
-
-    let strategy;
-    const useDocker = this.docker;
-    const useNative = userSpecification === "native";
-    const useSpecifiedLocal =
-      userSpecification && this.fileExists(userSpecification);
-    const isValidVersionRange = semver.validRange(userSpecification);
-
-    if (useDocker) {
-      strategy = new Docker(this.strategyOptions);
-    } else if (useNative) {
-      strategy = new Native();
-    } else if (useSpecifiedLocal) {
-      strategy = new Local();
-    } else if (isValidVersionRange) {
-      strategy = new VersionRange(this.strategyOptions);
+    if (version === "native") {
+      return "native";
     }
 
-    if (!strategy) {
-      throw this.badInputError(userSpecification);
+    if (version && fileExists(version)) {
+      return "local";
     }
 
-    if (!strategy.list) {
-      throw new Error(
-        `Cannot list versions for strategy ${strategy.constructor.name}`
-      );
+    if (!version || semver.validRange(version)) {
+      return "version-range";
     }
 
-    return await strategy.list();
-  }
-
-  static getDefaultVersion() {
-    return defaultSolcVersion;
-  }
-
-  badInputError(userSpecification) {
     const message =
-      `Could not find a compiler version matching ${userSpecification}. ` +
+      `Could not find a compiler version matching ${version}. ` +
       `compilers.solc.version option must be a string specifying:\n` +
       `   - a path to a locally installed solcjs\n` +
       `   - a solc version or range (ex: '0.4.22' or '^0.5.0')\n` +
       `   - a docker image name (ex: 'stable')\n` +
       `   - 'native' to use natively installed solc\n`;
-    return new Error(message);
-  }
+    throw new Error(message);
+  },
 
-  fileExists(localPath) {
-    return fs.existsSync(localPath) || path.isAbsolute(localPath);
+  strategyConstructors: {
+    "docker": Docker,
+    "local": Local,
+    "native": Native,
+    "version-range": VersionRange
   }
+});
+
+function fileExists(localPath) {
+  return fs.existsSync(localPath) || path.isAbsolute(localPath);
 }

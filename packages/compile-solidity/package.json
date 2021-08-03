@@ -23,6 +23,7 @@
     "@truffle/config": "^1.3.4",
     "@truffle/contract-sources": "^0.1.12",
     "@truffle/expect": "^0.0.18",
+    "@truffle/supplier": "^0.1.0-0",
     "axios": "^0.21.1",
     "axios-retry": "^3.1.9",
     "debug": "^4.3.1",
@@ -34,7 +35,8 @@
     "original-require": "^1.0.1",
     "require-from-string": "^2.0.2",
     "semver": "^7.3.4",
-    "solc": "0.6.9"
+    "solc": "0.6.9",
+    "ts-mixer": "^6.0.0"
   },
   "devDependencies": {
     "@truffle/artifactor": "^4.0.118",

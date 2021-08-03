@@ -7,10 +7,10 @@ type solcOptionsArg = {
 };
 
 export class Deployed {
-  static makeSolidityDeployedAddressesLibrary(
+  static async makeSolidityDeployedAddressesLibrary(
     mapping: { [key: string]: string | false },
     { solc: { version } }: solcOptionsArg
-  ): string {
+  ): Promise<string> {
     let source = "";
     source +=
       "//SPDX-License-Identifier: MIT\n" +
@@ -37,7 +37,7 @@ export class Deployed {
 
     source += "}";
 
-    version = RangeUtils.resolveToRange(version);
+    version = await RangeUtils.resolveToRange(version);
     if (!RangeUtils.rangeContainsAtLeast(version, "0.5.0")) {
       //remove "payable"s in types if we're before 0.5.0
       source = source.replace(/address payable/g, "address");

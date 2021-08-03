@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const Parser = require("../dist/parser");
-const { CompilerSupplier } = require("../dist/compilerSupplier");
+const { createCompilerSupplier } = require("../dist/compilerSupplier");
 const assert = require("assert");
 
 describe("Parser", () => {
@@ -26,10 +26,10 @@ describe("Parser", () => {
     );
 
     supplierOptions = {
-      solcConfig: { version: null },
+      solcConfig: { },
       events: { emit: () => {} }
     };
-    const supplier = new CompilerSupplier(supplierOptions);
+    const supplier = createCompilerSupplier(supplierOptions);
     ({ solc } = await supplier.load());
   });
 
@@ -48,7 +48,7 @@ describe("Parser", () => {
       events: { emit: () => {} },
       solcConfig: { version: "native" }
     };
-    const nativeSupplier = new CompilerSupplier(options);
+    const nativeSupplier = createCompilerSupplier(options);
 
     nativeSupplier.load().then(({ solc }) => {
       const imports = Parser.parseImports(source, solc);
@@ -68,7 +68,7 @@ describe("Parser", () => {
         version: "0.4.25"
       }
     };
-    const dockerSupplier = new CompilerSupplier(options);
+    const dockerSupplier = createCompilerSupplier(options);
 
     dockerSupplier.load().then(({ solc }) => {
       const imports = Parser.parseImports(source, solc);

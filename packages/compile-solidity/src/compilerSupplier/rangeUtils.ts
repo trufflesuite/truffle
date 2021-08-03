@@ -2,23 +2,23 @@ import path from "path";
 import fs from "fs-extra";
 import semver from "semver";
 import { Native, Local } from "./loadingStrategies";
-import { CompilerSupplier } from "./index";
+import * as defaults from "./defaults";
 
 /**
  * takes a version string which may be native or local, and resolves
  * it to one which is (presumably) either a version or a version range
  */
-export function resolveToRange(version?: string): string {
+export async function resolveToRange(version?: string): Promise<string> {
   if (!version) {
-    return CompilerSupplier.getDefaultVersion();
+    return defaults.solcVersion;
   }
 
   //if version was native or local, must determine what version that
   //actually corresponds to
   if (version === "native") {
-    return new Native().load().version();
+    return (await new Native().load()).solc.version();
   } else if (fs.existsSync(version) && path.isAbsolute(version)) {
-    return new Local().load(version).version();
+    return (await new Local().load(version)).solc.version();
   }
   return version;
 }

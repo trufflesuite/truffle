@@ -1,27 +1,25 @@
 const assert = require("chai").assert;
 const command = require("../../../lib/commands/obtain");
 const sinon = require("sinon");
-const CompilerSupplier = require("@truffle/compile-solidity").CompilerSupplier;
+const {
+  VersionRange
+} = require("@truffle/compile-solidity/dist/compilerSupplier/loadingStrategies");
 let options, solc;
 
 describe("obtain", () => {
   describe(".run(options)", function () {
     beforeEach(() => {
-      options = {solc: "0.5.3"};
-      solc = {version: () => "0.5.3"};
-      sinon
-        .stub(CompilerSupplier.prototype, "load")
-        .returns({ solc });
+      options = { solc: "0.5.3" };
+      solc = { version: () => "0.5.3" };
+      sinon.stub(VersionRange.prototype, "load").returns({ solc });
     });
     afterEach(() => {
-      CompilerSupplier.prototype.load.restore();
+      VersionRange.prototype.load.restore();
     });
 
     it("calls supplier.load()", async function () {
       await command.run(options);
-      assert(
-        CompilerSupplier.prototype.load.calledWith()
-      );
+      assert(VersionRange.prototype.load.calledWith());
     });
 
     describe("when options.solc is not present", async function () {
@@ -29,7 +27,7 @@ describe("obtain", () => {
         options.solc = undefined;
       });
 
-      it("throws an error", async function() {
+      it("throws an error", async function () {
         try {
           await command.run(options);
           assert.fail("The run command should have failed");
