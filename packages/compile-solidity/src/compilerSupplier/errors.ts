@@ -1,4 +1,4 @@
-class NoVersionError extends Error {
+export class NoVersionError extends Error {
   constructor(input) {
     const message = `Could not find a compiler version matching ${input}. ` +
       `Please ensure you are specifying a valid version, constraint or ` +
@@ -8,7 +8,7 @@ class NoVersionError extends Error {
   }
 }
 
-class NoRequestError extends Error {
+export class NoRequestError extends Error {
   constructor(input, error) {
     const message =
       `Failed to complete request to: ${input}. Are you connected to ` +
@@ -17,8 +17,3 @@ class NoRequestError extends Error {
     super(message);
   }
 }
-
-module.exports = {
-  NoVersionError,
-  NoRequestError
-};

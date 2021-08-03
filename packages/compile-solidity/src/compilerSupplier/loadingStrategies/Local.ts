@@ -1,9 +1,9 @@
-const path = require("path");
-const originalRequire = require("original-require");
-const solcWrap = require("solc/wrapper");
-const observeListeners = require("../observeListeners");
+import path from "path";
+import originalRequire from "original-require";
+import solcWrap from "solc/wrapper";
+import observeListeners from "../observeListeners";
 
-class Local {
+export class Local {
   load(localPath) {
     return this.getLocalCompiler(localPath);
   }
@@ -29,11 +29,9 @@ class Local {
   }
 }
 
-class NoPathError extends Error {
+export class NoPathError extends Error {
   constructor(input, error) {
     const message = `Could not find compiler at: ${input}\n\n` + error;
     super(message);
   }
 }
-
-module.exports = Local;

@@ -1,8 +1,8 @@
 const assert = require("assert");
 const sinon = require("sinon");
 const axios = require("axios");
-const CompilerSupplier = require("../../dist/compilerSupplier");
-const Cache = require("../../dist/compilerSupplier/Cache");
+const { CompilerSupplier } = require("../../dist/compilerSupplier");
+const { Cache } = require("../../dist/compilerSupplier/Cache");
 const {
   Docker,
   Native,

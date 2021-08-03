@@ -1,15 +1,24 @@
-const axios = require("axios");
-const axiosRetry = require("axios-retry");
-const fs = require("fs");
-const { execSync } = require("child_process");
-const ora = require("ora");
-const semver = require("semver");
-const Cache = require("../Cache");
-const { normalizeSolcVersion } = require("../normalizeSolcVersion");
-const { NoVersionError } = require("../errors");
-const { asyncFirst, asyncFilter, asyncFork } = require("iter-tools");
+import axios from "axios";
+import axiosRetry from "axios-retry";
+import fs from "fs";
+import { execSync } from "child_process";
+import ora from "ora";
+import semver from "semver";
+import { Cache } from "../Cache";
+import { normalizeSolcVersion } from "../normalizeSolcVersion";
+import { NoVersionError } from "../errors";
+import { asyncFirst, asyncFilter, asyncFork } from "iter-tools";
 
-class Docker {
+export class Docker {
+  private config: {
+    spawn: {
+      maxBuffer: number;
+    };
+    dockerTagsUrl: string;
+    version: string;
+  };
+  private cache: Cache;
+
   constructor(options) {
     const defaultConfig = {
       dockerTagsUrl:
@@ -67,8 +76,9 @@ class Docker {
 
     // grab the latest release from the forked releases stream;
     // coerce semver to remove possible `-alpine` suffix used by this repo
-    const latestRelease = semver.coerce(await asyncFirst(forkedReleases))
-      .version;
+    const latestRelease = semver.coerce(
+      await asyncFirst(forkedReleases)
+    )?.version;
 
     return {
       prereleases,
@@ -151,7 +161,7 @@ class Docker {
         const tooManyRequests =
           error && error.response && error.response.status === 429;
 
-        return (
+        return !!(
           axiosRetry.isNetworkOrIdempotentRequestError(error) || tooManyRequests
         );
       }
@@ -180,7 +190,7 @@ class Docker {
   }
 }
 
-class NoDockerError extends Error {
+export class NoDockerError extends Error {
   constructor() {
     super(
       "You are trying to run dockerized solc, but docker is not installed."
@@ -188,7 +198,7 @@ class NoDockerError extends Error {
   }
 }
 
-class NoStringError extends Error {
+export class NoStringError extends Error {
   constructor(input) {
     const message =
       "`compilers.solc.version` option must be a string specifying:\n" +
@@ -202,5 +212,3 @@ class NoStringError extends Error {
     super(message);
   }
 }
-
-module.exports = Docker;
