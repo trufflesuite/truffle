@@ -3,20 +3,21 @@ const { EOL } = require ("os");
 const path = require("path");
 
 module.exports = {
-  run: function(command, config) {
-    let execString;
-
-    process.env.NO_BUILD
+  getExecString: function () {
+    return process.env.NO_BUILD
       ? (execString =
-          "node " +
-          path.join(__dirname, "../", "../", "../", "core", "cli.js") +
-          " " +
-          command)
+        "node " +
+        path.join(__dirname, "../", "../", "../", "core", "cli.js") +
+        " " +
+        command)
       : (execString =
-          "node " +
-          path.join(__dirname, "../", "../", "build", "cli.bundled.js") +
-          " " +
-          command);
+        "node " +
+        path.join(__dirname, "../", "../", "build", "cli.bundled.js") +
+        " " +
+        command);
+  },
+  run: function(command, config) {
+    const execString = this.getExecString();
 
     return new Promise((resolve, reject) => {
       let child = exec(execString, {
@@ -45,14 +46,11 @@ module.exports = {
     });
   },
   runInDevelopEnvironment: (commands = [], config) => {
-    let child;
-    // open `truffle develop`
-    const cmdLine = "node " +
-      path.join(__dirname, "../../../", "core", "cli.js") +
-      " develop";
+    // get command for opening `truffle develop`
+    const cmdLine = `${this.getExecString()} develop`;
 
     return new Promise((resolve, reject) => {
-      child = exec(cmdLine, { cwd: config.working_directory });
+      const child = exec(cmdLine, { cwd: config.working_directory });
 
       if (child.error) return reject(child.error);
 
