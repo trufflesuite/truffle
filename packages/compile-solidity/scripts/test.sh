@@ -2,6 +2,8 @@
 
 set -o errexit
 
+yarn prepare
+
 if [ "$CI" = true ]; then
   mocha ./test/** ./test/**/* --timeout 70000 $@
 else

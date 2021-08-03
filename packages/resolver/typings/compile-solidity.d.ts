@@ -1,1 +1,1 @@
-declare module "@truffle/compile-solidity/compilerSupplier/rangeUtils";
+declare module "@truffle/compile-solidity/dist/compilerSupplier/rangeUtils";

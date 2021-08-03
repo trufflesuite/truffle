@@ -1,5 +1,5 @@
 const assert = require("assert");
-const { rangeContainsAtLeast } = require("../../compilerSupplier/rangeUtils");
+const { rangeContainsAtLeast } = require("../../dist/compilerSupplier/rangeUtils");
 
 describe("rangeUtils", () => {
   describe(".rangeContainsAtLeast(range, comparisonVersion)", () => {

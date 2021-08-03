@@ -24624,6 +24624,14 @@ resolve-url@^0.2.1:
   resolved "https://registry.yarnpkg.com/resolve-url/-/resolve-url-0.2.1.tgz#2c637fe77c893afd2a663fe21aa9080068e2052a"
   integrity sha1-LGN/53yJOv0qZj/iGqkIAGjiBSo=
 
+resolve@>=1.9.0, resolve@^1.17.0, resolve@^1.4.0:
+  version "1.20.0"
+  resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.20.0.tgz#629a013fb3f70755d6f0b7935cc1c2c5378b1975"
+  integrity sha512-wENBPt4ySzg4ybFQW2TT1zMQucPK95HSh/nq2CFTZVOGut2+pQvSsgtda4d26YrYcr067wjbmzOG8byDPBX63A==
+  dependencies:
+    is-core-module "^2.2.0"
+    path-parse "^1.0.6"
+
 resolve@^1.0.0:
   version "1.9.0"
   resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.9.0.tgz#a14c6fdfa8f92a7df1d996cb7105fa744658ea06"
@@ -24644,14 +24652,6 @@ resolve@^1.11.1:
   integrity sha512-lDfCPaMKfOJXjy0dPayzPdF1phampNWr3qFCjAu+rw/qbQmr5jWH5xN2hwh9QKfw9E5v4hwV7A+jrCmL8yjjqA==
   dependencies:
     is-core-module "^2.0.0"
-    path-parse "^1.0.6"
-
-resolve@^1.17.0, resolve@^1.4.0:
-  version "1.20.0"
-  resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.20.0.tgz#629a013fb3f70755d6f0b7935cc1c2c5378b1975"
-  integrity sha512-wENBPt4ySzg4ybFQW2TT1zMQucPK95HSh/nq2CFTZVOGut2+pQvSsgtda4d26YrYcr067wjbmzOG8byDPBX63A==
-  dependencies:
-    is-core-module "^2.2.0"
     path-parse "^1.0.6"
 
 resolve@^1.18.1:
@@ -27491,6 +27491,13 @@ tty-browserify@0.0.1:
   resolved "https://registry.yarnpkg.com/tty-browserify/-/tty-browserify-0.0.1.tgz#3f05251ee17904dfd0677546670db9651682b811"
   integrity sha512-C3TaO7K81YvjCgQH9Q1S3R3P3BtN3RIM8n+OvX4il1K1zgE8ZhI0op7kClgkxtutIE8hQrcrHBXvIheqKUUCxw==
 
+ttypescript@^1.5.12:
+  version "1.5.12"
+  resolved "https://registry.yarnpkg.com/ttypescript/-/ttypescript-1.5.12.tgz#27a8356d7d4e719d0075a8feb4df14b52384f044"
+  integrity sha512-1ojRyJvpnmgN9kIHmUnQPlEV1gq+VVsxVYjk/NfvMlHSmYxjK5hEvOOU2MQASrbekTUiUM7pR/nXeCc8bzvMOQ==
+  dependencies:
+    resolve ">=1.9.0"
+
 ttypescript@^1.5.7:
   version "1.5.8"
   resolved "https://registry.yarnpkg.com/ttypescript/-/ttypescript-1.5.8.tgz#82fc316a47be3136e993abf0dbd2768cc68d1db3"
@@ -27725,6 +27732,13 @@ typescript-transform-paths@^2.1.0:
   resolved "https://registry.yarnpkg.com/typescript-transform-paths/-/typescript-transform-paths-2.1.0.tgz#3d5c492910c59ce1a7bb762d3078185cbd11940d"
   integrity sha512-xBzFzS5LTfTjyuT4fuqIk3MLDWsrJTNFs3y17CwVR54G6G/KtTZcVc9UjChgDTuoBffd+Q3oD99UtyDXRpuy/g==
 
+typescript-transform-paths@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/typescript-transform-paths/-/typescript-transform-paths-3.1.0.tgz#48f3e50b6b1fb8275cb5657f0651346467da32f4"
+  integrity sha512-JEdKeRgsTlfuzQABkLLyqMvNsHsbXkTgeOwuVTCVG7RYxpVs6wZSsnf9z39l09LBljOiXXpEv3AL2eQnKlJupA==
+  dependencies:
+    minimatch "^3.0.4"
+
 typescript-tuple@^2.2.1:
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/typescript-tuple/-/typescript-tuple-2.2.1.tgz#7d9813fb4b355f69ac55032e0363e8bb0f04dad2"
@@ -27741,6 +27755,11 @@ typescript@^4.1.4:
   version "4.1.4"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.1.4.tgz#f058636e2f4f83f94ddaae07b20fd5e14598432f"
   integrity sha512-+Uru0t8qIRgjuCpiSPpfGuhHecMllk5Zsazj5LZvVsEStEjmIRRBZe+jHjGQvsgS7M1wONy2PQXd67EMyV6acg==
+
+typescript@^4.3.5:
+  version "4.3.5"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.3.5.tgz#4d1c37cc16e893973c45a06886b7113234f119f4"
+  integrity sha512-DqQgihaQ9cUrskJo9kIyW/+g0Vxsk8cDtZ52a3NGh0YNTfpUSArXSohyUGnvbPazEPLu398C0UxmKSOrPumUzA==
 
 typewise-core@^1.2, typewise-core@^1.2.0:
   version "1.2.0"

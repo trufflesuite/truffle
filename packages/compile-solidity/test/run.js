@@ -1,6 +1,6 @@
 const Config = require("@truffle/config");
 const { assert } = require("chai");
-const { run } = require("../run");
+const { run } = require("../dist/run");
 let rawSources, options;
 
 describe("async run(rawSources, options)", () => {
