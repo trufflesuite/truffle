@@ -46,27 +46,25 @@ export namespace Strategy {
 export type Strategy<S extends Strategy.Specification> = UnknownStrategy<S> &
   (true extends Strategy.AllowsLoadingSpecificVersion<S>
     ? {
-        load(version?: string): Results.Load<S["results"]>;
+        load(version?: string): Strategy.Results.Load<S>;
       }
     : {
-        load(): Results.Load<S["results"]>;
+        load(): Strategy.Results.Load<S>;
       }) &
   (true extends Strategy.AllowsListingVersions<S>
     ? {
-        list(): Results.List<S["results"]>;
+        list(): Strategy.Results.List<S>;
       }
     : {});
 
-export interface UnknownStrategy<
-  S extends Pick<Strategy.Specification, "results">
-> {
-  load(): Results.Load<S["results"]>;
+export interface UnknownStrategy<S extends Strategy.Specification> {
+  load(): Strategy.Results.Load<S>;
 
   allowsLoadingSpecificVersion(): this is this & {
-    load(version?: string): Results.Load<S["results"]>;
+    load(version?: string): Strategy.Results.Load<S>;
   };
 
   allowsListingVersions(): this is {
-    list(): Results.List<S["results"]>;
+    list(): Strategy.Results.List<S>;
   };
 }
