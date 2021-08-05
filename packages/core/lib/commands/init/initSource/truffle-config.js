@@ -102,14 +102,15 @@ module.exports = {
   //
   // After you backed up your artifacts you can utilize db by running migrate as follows: 
   // $ truffle migrate --reset --compile-all
-
-  db: {
-    enabled: false,
+  //
+  // db: {
+    // enabled: false,
+    // host: "127.0.0.1",
     // adapter: {
     //   name: "sqlite",
     //   settings: {
     //     directory: ".truffle-db"
     //   }
     // }
-  }
+  // }
 };
