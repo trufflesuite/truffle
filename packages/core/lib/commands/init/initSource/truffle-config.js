@@ -99,7 +99,7 @@ module.exports = {
   //
   // Note: your previously migrated contracts will not be available in
   // truffle-db. We recommnd you backup your artifacts before utilizing Truffle
-  // DB the first time with:
+  // DB for the first time with:
   // $ truffle migrate --reset --compile-all
 
   db: {
