@@ -109,7 +109,7 @@ module.exports = {
     // adapter: {
     //   name: "sqlite",
     //   settings: {
-    //     directory: ".truffle-db"
+    //     directory: ".db"
     //   }
     // }
   // }
