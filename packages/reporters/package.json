@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "ora": "^3.4.0",
-    "web3-utils": "1.5.1-rc.0"
+    "web3-utils": "1.5.1-rc.1"
   },
   "publishConfig": {
     "access": "public"
