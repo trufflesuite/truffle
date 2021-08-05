@@ -104,7 +104,7 @@ module.exports = {
 
   db: {
     enabled: false
-    //, adapter: {
+    // adapter: {
     //   name: "sqlite",
     //   settings: {
     //     directory: ".truffle-db"
