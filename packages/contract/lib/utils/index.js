@@ -11,6 +11,8 @@ const allowedTxParams = new Set([
   "to",
   "gas",
   "gasPrice",
+  "maxFeePerGas",
+  "maxPriorityFeePerGas",
   "value",
   "data",
   "nonce",
