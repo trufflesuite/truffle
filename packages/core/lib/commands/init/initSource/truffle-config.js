@@ -97,8 +97,9 @@ module.exports = {
   // false to enabled: true, the default storage location can also be
   // overridden by specifying the adapter settings.
   //
-  // Note: if you migrated your contracts prior to enabling this field in your Truffle project and want
-  // those previously migrated contracts available in the .db directory, you will need to run the following:
+  // Note: your previously migrated contracts will not be available in
+  // truffle-db. We recommnd you backup your artifacts before utilizing Truffle
+  // DB the first time with:
   // $ truffle migrate --reset --compile-all
 
   db: {
