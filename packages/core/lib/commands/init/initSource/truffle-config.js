@@ -95,7 +95,7 @@ module.exports = {
 
   // Truffle DB is currently disabled by default; to enable it, change enabled:
   // false to enabled: true. The default storage location can also be
-  // overridden by specifying the adapter settings.
+  // overridden by specifying the adapter settings, as shown in the commented code below.
   //
   // Note: your previously migrated contracts will not be available in
   // truffle-db. We recommnd you backup your artifacts before utilizing Truffle
