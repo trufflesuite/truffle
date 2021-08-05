@@ -35,7 +35,7 @@
     "lodash.sum": "^4.0.2",
     "semver": "^7.3.4",
     "utf8": "^3.0.0",
-    "web3-utils": "1.5.0"
+    "web3-utils": "1.5.1"
   },
   "devDependencies": {
     "@truffle/abi-utils": "^0.2.3",

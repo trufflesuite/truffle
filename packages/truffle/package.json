@@ -1,7 +1,7 @@
 {
   "name": "truffle",
-  "license": "MIT",
   "description": "Truffle - Simple development framework for Ethereum",
+  "license": "MIT",
   "author": "consensys.net",
   "homepage": "https://github.com/trufflesuite/truffle/",
   "repository": {
@@ -20,8 +20,8 @@
   "scripts": {
     "analyze": "./scripts/analyze.sh",
     "build": "yarn build:patch && yarn build:cli",
-    "build:patch": "node ./scripts/patchHighlightJsSolidity.js",
     "build:cli": "node --max-old-space-size=8192 ./node_modules/webpack/bin/webpack --config ./webpack.config.js",
+    "build:patch": "node ./scripts/patchHighlightJsSolidity.js",
     "postinstall": "node ./scripts/postinstall.js",
     "prepare": "yarn build",
     "publish:byoc": "node ./scripts/prereleaseVersion.js byoc-safe byoc",
@@ -30,6 +30,13 @@
     "publish:user-level-mnemonic": "node ./scripts/prereleaseVersion.js user-level-mnemonic user-level-mnemonic",
     "test": "./scripts/test.sh",
     "test:raw": "NO_BUILD=true mocha"
+  },
+  "optionalDependencies": {
+    "@truffle/db": "^0.5.23",
+    "@truffle/preserve-fs": "^0.2.4",
+    "@truffle/preserve-to-buckets": "^0.2.4",
+    "@truffle/preserve-to-filecoin": "^0.2.4",
+    "@truffle/preserve-to-ipfs": "^0.2.4"
   },
   "dependencies": {
     "@truffle/db-loader": "^0.0.2",
@@ -59,18 +66,11 @@
     "shebang-loader": "0.0.1",
     "stream-buffers": "^3.0.1",
     "tmp": "^0.2.1",
-    "web3": "1.5.0",
+    "web3": "1.5.1",
     "webpack": "^5.21.2",
     "webpack-bundle-analyzer": "^3.0.3",
     "webpack-cli": "^4.5.0",
     "yargs": "^8.0.2"
-  },
-  "optionalDependencies": {
-    "@truffle/db": "^0.5.23",
-    "@truffle/preserve-fs": "^0.2.4",
-    "@truffle/preserve-to-buckets": "^0.2.4",
-    "@truffle/preserve-to-filecoin": "^0.2.4",
-    "@truffle/preserve-to-ipfs": "^0.2.4"
   },
   "publishConfig": {
     "access": "public"
