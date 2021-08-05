@@ -30,7 +30,7 @@
     "bignumber.js": "^7.2.1",
     "ethers": "^4.0.32",
     "web3": "1.5.1",
-    "web3-core-helpers": "1.5.0",
+    "web3-core-helpers": "1.5.1",
     "web3-core-promievent": "1.5.0",
     "web3-eth-abi": "1.5.0",
     "web3-utils": "1.5.0"
