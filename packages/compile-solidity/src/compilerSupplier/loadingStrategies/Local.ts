@@ -15,14 +15,13 @@ export namespace Local {
         }
       }
     };
+    results: Results.Specification;
     allowsLoadingSpecificVersion: true;
     allowsListingVersions: false;
   };
 }
 
-export class Local implements CompilerSupplier.Strategy<
-  Local.Specification & { results: Results.Specification }
-> {
+export class Local implements CompilerSupplier.Strategy<Local.Specification> {
   private localPath: string | undefined;
 
   constructor({

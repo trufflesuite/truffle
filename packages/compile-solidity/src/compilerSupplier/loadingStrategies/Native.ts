@@ -11,14 +11,13 @@ export namespace Native {
     constructor: {
       options: void
     };
+    results: Results.Specification;
     allowsLoadingSpecificVersion: false;
     allowsListingVersions: false;
   };
 }
 
-export class Native implements CompilerSupplier.Strategy<
-  Native.Specification & { results: Results.Specification }
-> {
+export class Native implements CompilerSupplier.Strategy<Native.Specification> {
   allowsLoadingSpecificVersion() {
     return false;
   }

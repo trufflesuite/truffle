@@ -25,16 +25,13 @@ export namespace Docker {
         };
       };
     };
+    results: Results.Specification;
     allowsLoadingSpecificVersion: true;
     allowsListingVersions: true;
   };
 }
 
-export class Docker
-  implements
-    CompilerSupplier.Strategy<
-      Docker.Specification & { results: Results.Specification }
-    > {
+export class Docker implements CompilerSupplier.Strategy<Docker.Specification> {
   private config: {
     spawn: {
       maxBuffer: number;

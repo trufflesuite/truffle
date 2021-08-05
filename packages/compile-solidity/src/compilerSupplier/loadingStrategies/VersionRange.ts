@@ -24,13 +24,14 @@ export namespace VersionRange {
         }
       }
     };
+    results: Results.Specification;
     allowsLoadingSpecificVersion: true;
     allowsListingVersions: true;
   };
 }
 
 export class VersionRange implements CompilerSupplier.Strategy<
-  VersionRange.Specification & { results: Results.Specification }
+  VersionRange.Specification
 > {
   private config: {
     events: any;
