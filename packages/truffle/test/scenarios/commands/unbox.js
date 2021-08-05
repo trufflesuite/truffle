@@ -1,13 +1,13 @@
 const assert = require("assert");
-const CommandRunner = require("../commandrunner");
-const MemoryLogger = require("../memorylogger");
+const CommandRunner = require("../commandRunner");
+const MemoryLogger = require("../MemoryLogger");
 const fse = require("fs-extra");
 const tmp = require("tmp");
 const path = require("path");
 const Config = require("@truffle/config");
 
 describe("truffle unbox [ @standalone ]", () => {
-  let config;
+  let config, tempDir;
   const logger = new MemoryLogger();
 
   beforeEach("set up config for logger", () => {

@@ -1,6 +1,6 @@
 const assert = require("assert");
-const CommandRunner = require("../commandrunner");
-const MemoryLogger = require("../memorylogger");
+const CommandRunner = require("../commandRunner");
+const MemoryLogger = require("../MemoryLogger");
 const sandbox = require("../sandbox");
 const path = require("path");
 

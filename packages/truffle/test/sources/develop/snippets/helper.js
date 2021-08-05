@@ -1,10 +1,5 @@
-const main = () => {
-  console.log("Snippet Loaded");
-
-  // todo: might need to allow some time for io flush
-  setTimeout(() => process.exit(0), 0);
+module.exports = {
+  breakfast: "eggs and sausage, and a side of toast",
+  // the following tests that Truffle injected vars are available here
+  twoAccounts: accounts[0] + accounts[1]
 }
-
-// N.B. this is not how this feature is intended to be used. This module is
-// constructed to verify that truffle develop requires a specified module.
-main();

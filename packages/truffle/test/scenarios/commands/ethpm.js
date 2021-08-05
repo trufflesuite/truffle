@@ -1,5 +1,5 @@
-var MemoryLogger = require("../memorylogger");
-var CommandRunner = require("../commandrunner");
+var MemoryLogger = require("../MemoryLogger");
+var CommandRunner = require("../commandRunner");
 var fs = require("fs");
 var path = require("path");
 var assert = require("assert");
