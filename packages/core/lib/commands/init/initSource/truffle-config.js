@@ -93,7 +93,9 @@ module.exports = {
     }
   },
 
-  // Truffle DB is currently disabled by default; to enable it, change enabled: false to enabled: true
+  // Truffle DB is currently disabled by default; to enable it, change enabled:
+  // false to enabled: true, the default storage location can also be
+  // overridden by specifying the adapter settings.
   //
   // Note: if you migrated your contracts prior to enabling this field in your Truffle project and want
   // those previously migrated contracts available in the .db directory, you will need to run the following:
@@ -101,5 +103,11 @@ module.exports = {
 
   db: {
     enabled: false
+    //, adapter: {
+    //   name: "sqlite",
+    //   settings: {
+    //     directory: ".truffle-db"
+    //   }
+    // }
   }
 };
