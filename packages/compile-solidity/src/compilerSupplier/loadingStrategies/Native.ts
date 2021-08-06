@@ -1,15 +1,20 @@
 import { execSync } from "child_process";
+import { Mixin } from "ts-mixer";
 import { normalizeSolcVersion } from "../normalizeSolcVersion";
 import { NoVersionError } from "../errors";
 
 import { CompilerSupplier } from "@truffle/compile-common";
 
 import type { Results } from "@truffle/compile-solidity/compilerSupplier/types";
+import {
+  ForbidsLoadingSpecificVersion,
+  ForbidsListingVersions
+} from "./mixins";
 
 export namespace Native {
   export type Specification = {
     constructor: {
-      options: void
+      options: void;
     };
     results: Results.Specification;
     allowsLoadingSpecificVersion: false;
@@ -17,15 +22,9 @@ export namespace Native {
   };
 }
 
-export class Native implements CompilerSupplier.Strategy<Native.Specification> {
-  allowsLoadingSpecificVersion() {
-    return false;
-  }
-
-  allowsListingVersions() {
-    return false;
-  }
-
+export class Native
+  extends Mixin(ForbidsLoadingSpecificVersion, ForbidsListingVersions)
+  implements CompilerSupplier.Strategy<Native.Specification> {
   async load() {
     const versionString = this.validateAndGetSolcVersion();
     const command = "solc --standard-json";

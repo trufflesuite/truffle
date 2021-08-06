@@ -1,10 +1,12 @@
 import path from "path";
 import originalRequire from "original-require";
 import solcWrap from "solc/wrapper";
+import { Mixin } from "ts-mixer";
 import { observeListeners } from "../observeListeners";
 import { CompilerSupplier } from "@truffle/compile-common";
 
 import type { Results } from "@truffle/compile-solidity/compilerSupplier/types";
+import { AllowsLoadingSpecificVersion, ForbidsListingVersions } from "./mixins";
 
 export namespace Local {
   export type Specification = {
@@ -12,8 +14,8 @@ export namespace Local {
       options: {
         solcConfig: {
           version?: string;
-        }
-      }
+        };
+      };
     };
     results: Results.Specification;
     allowsLoadingSpecificVersion: true;
@@ -21,21 +23,15 @@ export namespace Local {
   };
 }
 
-export class Local implements CompilerSupplier.Strategy<Local.Specification> {
+export class Local
+  extends Mixin(AllowsLoadingSpecificVersion, ForbidsListingVersions)
+  implements CompilerSupplier.Strategy<Local.Specification> {
   private localPath: string | undefined;
 
-  constructor({
-    solcConfig = {}
-  } = {}) {
+  constructor({ solcConfig = {} } = {}) {
+    super();
+
     this.localPath = (solcConfig as any).version;
-  }
-
-  allowsLoadingSpecificVersion() {
-    return true;
-  }
-
-  allowsListingVersions() {
-    return false;
   }
 
   async load(localPath: string | undefined = this.localPath) {

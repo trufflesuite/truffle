@@ -6,11 +6,17 @@ import originalRequire from "original-require";
 import axios from "axios";
 import semver from "semver";
 import solcWrap from "solc/wrapper";
-import { Cache } from "../Cache";
+import { Mixin } from "ts-mixer";
+
 import { observeListeners } from "../observeListeners";
 import { NoVersionError, NoRequestError } from "../errors";
 import { CompilerSupplier } from "@truffle/compile-common";
 import type { Results } from "@truffle/compile-solidity/compilerSupplier/types";
+import {
+  HasCache,
+  AllowsLoadingSpecificVersion,
+  AllowsListingVersions
+} from "./mixins";
 import * as defaults from "@truffle/compile-solidity/compilerSupplier/defaults";
 
 export namespace VersionRange {
@@ -21,8 +27,8 @@ export namespace VersionRange {
         compilerRoots?: string[];
         solcConfig: {
           version?: string;
-        }
-      }
+        };
+      };
     };
     results: Results.Specification;
     allowsLoadingSpecificVersion: true;
@@ -30,16 +36,14 @@ export namespace VersionRange {
   };
 }
 
-export class VersionRange implements CompilerSupplier.Strategy<
-  VersionRange.Specification
-> {
+export class VersionRange
+  extends Mixin(AllowsLoadingSpecificVersion, AllowsListingVersions, HasCache)
+  implements CompilerSupplier.Strategy<VersionRange.Specification> {
   private config: {
     events: any; // represents a @truffle/events instance, which lacks types
     compilerRoots: string[];
     version: string;
   };
-
-  private cache: Cache;
 
   constructor({
     events,
@@ -53,25 +57,15 @@ export class VersionRange implements CompilerSupplier.Strategy<
       "https://solc-bin.ethereum.org/bin/",
       "https://ethereum.github.io/solc-bin/bin/"
     ],
-    solcConfig: {
-      version = defaults.solcVersion
-    }
+    solcConfig: { version = defaults.solcVersion }
   }) {
+    super();
+
     this.config = {
       events,
       compilerRoots,
       version
     };
-
-    this.cache = new Cache();
-  }
-
-  allowsLoadingSpecificVersion() {
-    return true;
-  }
-
-  allowsListingVersions() {
-    return true;
   }
 
   async load(versionRange: string = this.config.version) {
@@ -283,10 +277,12 @@ export class VersionRange implements CompilerSupplier.Strategy<
 
   versionIsCached(version) {
     const cachedCompilerFileNames = this.cache.list();
-    const cachedVersions = cachedCompilerFileNames.map(fileName => {
-      const match = fileName.match(/v\d+\.\d+\.\d+.*/);
-      if (match) return match[0];
-    }).filter((version): version is string => !!version);
+    const cachedVersions = cachedCompilerFileNames
+      .map(fileName => {
+        const match = fileName.match(/v\d+\.\d+\.\d+.*/);
+        if (match) return match[0];
+      })
+      .filter((version): version is string => !!version);
     return cachedVersions.find(cachedVersion =>
       semver.satisfies(cachedVersion, version)
     );

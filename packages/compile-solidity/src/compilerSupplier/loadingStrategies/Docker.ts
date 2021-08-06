@@ -4,11 +4,16 @@ import fs from "fs";
 import { execSync } from "child_process";
 import ora from "ora";
 import semver from "semver";
-import { Cache } from "../Cache";
 import { normalizeSolcVersion } from "../normalizeSolcVersion";
 import { NoVersionError, NoRequestError } from "../errors";
 import { asyncFirst, asyncFilter, asyncFork } from "iter-tools";
 import { CompilerSupplier } from "@truffle/compile-common";
+import { Mixin } from "ts-mixer";
+import {
+  HasCache,
+  AllowsLoadingSpecificVersion,
+  AllowsListingVersions
+} from "./mixins";
 import type { Results } from "@truffle/compile-solidity/compilerSupplier/types";
 import * as defaults from "@truffle/compile-solidity/compilerSupplier/defaults";
 
@@ -31,7 +36,9 @@ export namespace Docker {
   };
 }
 
-export class Docker implements CompilerSupplier.Strategy<Docker.Specification> {
+export class Docker
+  extends Mixin(AllowsLoadingSpecificVersion, AllowsListingVersions, HasCache)
+  implements CompilerSupplier.Strategy<Docker.Specification> {
   private config: {
     spawn: {
       maxBuffer: number;
@@ -39,28 +46,19 @@ export class Docker implements CompilerSupplier.Strategy<Docker.Specification> {
     dockerTagsUrl: string;
     version: string;
   };
-  private cache: Cache;
 
   constructor({
     spawn,
     dockerTagsUrl = "https://registry.hub.docker.com/v2/repositories/ethereum/solc/tags/",
     solcConfig: { version = defaults.solcVersion }
   }) {
+    super();
+
     this.config = {
       spawn,
       dockerTagsUrl,
       version
     };
-
-    this.cache = new Cache();
-  }
-
-  allowsLoadingSpecificVersion() {
-    return true;
-  }
-
-  allowsListingVersions() {
-    return true;
   }
 
   async load(version: string = this.config.version) {
