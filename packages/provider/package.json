@@ -21,7 +21,7 @@
     "web3": "1.2.9"
   },
   "devDependencies": {
-    "ganache": "7.0.0-canary.2",
+    "ganache": "7.0.0-canary.1318",
     "mocha": "8.1.2"
   },
   "keywords": [

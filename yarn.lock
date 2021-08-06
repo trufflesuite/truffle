@@ -10383,10 +10383,10 @@ ganache-cli@^6.1.0:
     source-map-support "0.5.12"
     yargs "13.2.4"
 
-ganache@7.0.0-internal.33:
-  version "7.0.0-internal.33"
-  resolved "https://registry.yarnpkg.com/ganache/-/ganache-7.0.0-internal.33.tgz#8fa1bc234036680c5bda9b8041a44adb05446292"
-  integrity sha512-Uk2z6+LsmsJOldDI0mTDR2y/DIxdpWHriXZiQdm2JY2QTed4KNbUbL8nQhAhejs2RePfKarhlFN7NHLlK8LuDA==
+ganache@7.0.0-canary.1313:
+  version "7.0.0-canary.1313"
+  resolved "https://registry.yarnpkg.com/ganache/-/ganache-7.0.0-canary.1313.tgz#82ca3e7a75c8d9649a717faa80046139afd2921b"
+  integrity sha512-xd5924Qh0Dq7D/cbQcXh+hg/IGOaf95xgnFsCdl8HywvLnP7qQZBUqOddGUQZF+a/svH+hTDvNKqIGMZCsoQmg==
   dependencies:
     bigint-buffer "1.1.5"
     keccak "3.0.1"
