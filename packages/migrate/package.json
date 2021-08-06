@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "3.2.37",
+  "version": "3.2.38",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0",
@@ -20,8 +20,8 @@
   },
   "dependencies": {
     "@truffle/config": "^1.3.3",
-    "@truffle/db-loader": "^0.0.3",
-    "@truffle/deployer": "^3.2.37",
+    "@truffle/db-loader": "^0.0.4",
+    "@truffle/deployer": "^3.2.38",
     "@truffle/expect": "^0.0.17",
     "@truffle/interface-adapter": "^0.5.4",
     "@truffle/reporters": "^2.0.4",
