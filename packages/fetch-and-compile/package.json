@@ -45,6 +45,7 @@
   },
   "devDependencies": {
     "@truffle/compile-common": "^0.7.14",
-    "@truffle/config": "^1.3.2"
+    "@truffle/config": "^1.3.2",
+    "typescript": "^4.1.4"
   }
 }
