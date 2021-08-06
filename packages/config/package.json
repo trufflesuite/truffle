@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "1.3.2",
+  "version": "1.3.3",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -23,7 +23,7 @@
   "dependencies": {
     "@truffle/error": "^0.0.14",
     "@truffle/events": "^0.0.13",
-    "@truffle/provider": "^0.2.35",
+    "@truffle/provider": "^0.2.36",
     "configstore": "^4.0.0",
     "find-up": "^2.1.0",
     "lodash.assignin": "^4.2.0",
