@@ -28,6 +28,42 @@ describe("truffle develop", function () {
     };
   });
 
+  describe("Globals", () => {
+    let output;
+    before(async() => {
+      const input = "Object.keys(global)";
+      await CommandRunner.runInDevelopEnvironment([input], config);
+      output = logger.contents();
+    });
+
+    [
+      'clearInterval',      'clearTimeout',       
+      'setInterval',
+      'setTimeout',         'queueMicrotask',
+      'clearImmediate',     'setImmediate',
+      '__core-js_shared__', 'regeneratorRuntime',
+    ].forEach(property => {
+      it(`has ${property}`, function () {
+        assert(
+          output.includes(property),
+          `${property} is missing from globals.\n${formatLines(output)}`
+        );
+      });
+    });
+  })
+
+  it("handles awaits", async function () {
+    this.timeout(70000);
+    const input = "await Promise.resolve(`${6*7} is probably not a prime`)";
+    await CommandRunner.runInDevelopEnvironment([input], config);
+    const output = logger.contents();
+    const expectedValue = "42 is probably not a prime";
+    assert(
+      output.includes(expectedValue),
+      `Expected "${expectedValue}" in output:\n${formatLines(output)}`
+    );
+  });
+
   it("loads snippets", async function () {
     this.timeout(70000);
     await CommandRunner.runInDevelopEnvironment(["breakfast"], config);
