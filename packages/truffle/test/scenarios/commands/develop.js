@@ -43,6 +43,7 @@ describe("truffle develop", function () {
       '__core-js_shared__', 'regeneratorRuntime',
     ].forEach(property => {
       it(`has ${property}`, function () {
+        this.timeout(70000);
         assert(
           output.includes(property),
           `${property} is missing from globals.\n${formatLines(output)}`
