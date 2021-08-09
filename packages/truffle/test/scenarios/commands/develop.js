@@ -38,8 +38,7 @@ describe("truffle develop", function () {
 
     [
       'clearInterval',      'clearTimeout',       
-      'setInterval',
-      'setTimeout',         'queueMicrotask',
+      'setInterval',        'setTimeout',
       'clearImmediate',     'setImmediate',
       '__core-js_shared__', 'regeneratorRuntime',
     ].forEach(property => {
