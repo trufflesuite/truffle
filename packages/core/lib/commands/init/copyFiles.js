@@ -19,7 +19,7 @@ const copyFiles = async (destination, options) => {
 
   let shouldCopy;
   if (force) {
-    shouldCopy = boxContents;
+    shouldCopy = projectFiles;
   } else {
     const overwriteContents = await promptOverwrites(contentCollisions, logger);
     shouldCopy = [...newContents, ...overwriteContents];
