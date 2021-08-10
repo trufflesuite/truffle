@@ -10,7 +10,8 @@ const copyFiles = async (destination, options) => {
   const destinationContents = fse.readdirSync(destination);
 
   const newContents = projectFiles.filter(
-    filename => !destinationContents.includes(filename)
+    filename => !filename.endsWith(".eslintrc.json") //exclude eslintrc.json
+    && !destinationContents.includes(filename)
   );
 
   const contentCollisions = projectFiles.filter(filename =>
