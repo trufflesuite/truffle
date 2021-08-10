@@ -6,12 +6,13 @@ const copyFiles = async (destination, options) => {
   fse.ensureDirSync(destination);
   const { force, logger, events } = options;
   const sourcePath = path.join(__dirname, "initSource");
-  const projectFiles = fse.readdirSync(sourcePath);
+  const projectFiles = fse.readdirSync(sourcePath).filter(
+    filename => !filename.endsWith(".eslintrc.json") //exclude .eslintrc.json
+  );
   const destinationContents = fse.readdirSync(destination);
 
   const newContents = projectFiles.filter(
-    filename => !filename.endsWith(".eslintrc.json") //exclude eslintrc.json
-    && !destinationContents.includes(filename)
+    filename => !destinationContents.includes(filename)
   );
 
   const contentCollisions = projectFiles.filter(filename =>
