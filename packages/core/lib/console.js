@@ -71,11 +71,7 @@ class Console extends EventEmitter {
       // Get and set Truffle and User Globals
       const truffleAndUserGlobals = await this.calculateTruffleAndUserGlobals() ;
       Object.entries(truffleAndUserGlobals).forEach(([key, value]) => {
-        Object.defineProperty(this.repl.context, key, {
-          configurable: false,
-          enumerable: true,
-          value,
-        });
+        this.repl.context[key] = value;
       });
 
       // repl is ready - set and display prompt
