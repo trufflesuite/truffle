@@ -13,6 +13,7 @@ import {
   InvalidNetworkError
 } from "./common";
 import axios from "axios";
+import retry from "async-retry";
 
 const etherscanCommentHeader = `/**
  *Submitted for verification at Etherscan.io on 20XX-XX-XX
@@ -79,27 +80,17 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
   private async getSuccessfulResponse(
     address: string
   ): Promise<EtherscanSuccess> {
-    const allowedAttempts = 2; //for now, we'll just retry once if it fails
-    let lastError;
-    for (let attempt = 0; attempt < allowedAttempts; attempt++) {
-      await this.ready;
-      const responsePromise = this.makeRequest(address);
-      this.ready = makeTimer(this.delay);
-      try {
-        return await responsePromise;
-      } catch (error) {
-        lastError = error;
-        //just go back to the top of the loop to retry
-      }
-    }
-    //if we've made it this far with no successful response, just
-    //throw the last error
-    throw lastError;
+    const initialTimeoutFactor = 1.5; //I guess?
+    return await retry(
+      async () => await this.makeRequest(address),
+      { retries: 3, minTimeout: this.delay * initialTimeoutFactor }
+    );
   }
 
   private async makeRequest(address: string): Promise<EtherscanSuccess> {
     //not putting a try/catch around this; if it throws, we throw
-    const response: EtherscanResponse = (await axios.get(
+    await this.ready;
+    const responsePromise = axios.get(
       `https://api${this.suffix}.etherscan.io/api`,
       {
         params: {
@@ -111,7 +102,9 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
         responseType: "json",
         maxRedirects: 50
       }
-    )).data;
+    );
+    this.ready = makeTimer(this.delay);
+    const response: EtherscanResponse = (await responsePromise).data;
     if (response.status === "0") {
       throw new Error(response.result);
     }
