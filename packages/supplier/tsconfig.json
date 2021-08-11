@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "declaration": true,
+    "target": "es2016",
+    "noImplicitAny": true,
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "skipLibCheck": true,
+    "strictBindCallApply": true,
+    "strictNullChecks": true,
+    "downlevelIteration": true,
+    "allowSyntheticDefaultImports": true,
+    "outDir": "dist",
+    "baseUrl": ".",
+    "lib": ["es2017"],
+    "paths": {
+      "@truffle/supplier": ["./src"],
+      "@truffle/supplier/*": ["./src/*"],
+      "test/*": ["./test/*"]
+    },
+    "rootDir": ".",
+    "types": ["node", "mocha"],
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ]
+  },
+  "include": [
+    "./src/**/*.ts",
+    "./test/**/*.ts"
+  ]
+}

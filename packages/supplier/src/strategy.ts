@@ -3,7 +3,7 @@ import type { Results as FreeResults } from "./results";
 
 export namespace Strategy {
   /**
-   * Type-level description of a compiler supplier strategy
+   * Type-level description of a supplier strategy
    */
   export type Specification = {
     constructor: Omit<FreeConstructor.Specification, "result">;
