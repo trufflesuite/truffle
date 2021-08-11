@@ -1,0 +1,28 @@
+{
+  "overrides": [
+    {
+      "files": ["./test/**/*.js"],
+      "env": {
+        "mocha": true
+      },
+      "globals": {
+        "interfaceAdapter": "readonly",
+        "web3": "readonly",
+        "assert": "readonly",
+        "expect": "readonly",
+        "artifacts": "readonly",
+        "config": "readonly",
+        "debug": "readonly",
+        "contract": "readonly"
+      }
+    },
+    {
+      "files": ["./migrations/**/*.js"],
+      "globals": {
+        "artifacts": "readonly",
+        "config": "readonly"
+      }
+    }
+  ]
+}
+
