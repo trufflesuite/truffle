@@ -65,7 +65,6 @@ class Console extends EventEmitter {
       // the repl has set up its context and is ready to accept input
       this.repl = repl.start({
         prompt: "",
-        ignoreUndefined: true,
         eval: this.interpret.bind(this)
       });
 
