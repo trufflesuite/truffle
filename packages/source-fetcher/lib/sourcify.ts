@@ -5,6 +5,7 @@ import type { Fetcher, FetcherConstructor } from "./types";
 import type * as Types from "./types";
 import { networksById, removeLibraries, InvalidNetworkError } from "./common";
 import axios from "axios";
+import retry from "async-retry";
 
 //this looks awkward but the TS docs actually suggest this :P
 const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
@@ -162,23 +163,21 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
   private async requestWithRetries<T>(
     requestObject: any //sorry, trying to import the type properly ran into problems
   ): Promise<T> {
-    const allowedAttempts = 2; //for now, we'll just retry once if it fails
-    let lastError;
-    for (let attempt = 0; attempt < allowedAttempts; attempt++) {
-      try {
-        return (await axios(requestObject)).data;
-      } catch (error) {
-        //check: is this a 404 error? if so give up
-        if (error.response && error.response.status === 404) {
-          throw error;
+    return await retry(
+      async (bail) => {
+        try {
+          return (await axios(requestObject)).data;
+        } catch (error) {
+          //check: is this a 404 error? if so give up
+          if (error.response && error.response.status === 404) {
+            bail(error); //don't retry
+          } else {
+            throw error; //retry
+          }
         }
-        //otherwise, just go back to the top of the loop to retry
-        lastError = error;
-      }
-    }
-    //if we've made it this far with no successful response, just
-    //throw the last error
-    throw lastError;
+      },
+      { retries: 3 } //leaving minTimeout as default 1000
+    );
   }
 };
 
