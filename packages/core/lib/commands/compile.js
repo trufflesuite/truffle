@@ -1,4 +1,3 @@
-const format = JSON.stringify;
 const path = require("path");
 const fse = require("fs-extra");
 
@@ -113,7 +112,7 @@ const command = {
       prereleases
     } = await supplier.list();
     if (options.list === "latestRelease") {
-      log(format(latestRelease, null, " "));
+      log(JSON.stringify(latestRelease, null, " "));
       return;
     }
 
@@ -142,7 +141,7 @@ const command = {
       tags.push("See more at: hub.docker.com/r/ethereum/solc/tags/");
     }
 
-    log(format(tags, null, " "));
+    log(JSON.stringify(tags, null, " "));
     return;
   },
 
