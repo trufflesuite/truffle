@@ -1,7 +1,9 @@
 import axios from "axios";
 import delay from "delay";
+import { JSONRPCRequestPayload } from "ethereum-protocol";
+import { promisify } from "util";
 import { INTERACTIVE_REQUESTS } from "./constants";
-import { BrowserProviderRequest, PortsConfig } from "./types";
+import { BrowserProviderRequest, PortsConfig, Request } from "./types";
 
 export const jsonToBase64 = (json: any) => {
   const stringifiedJson = JSON.stringify(json);
@@ -49,3 +51,30 @@ export const getPorts = async (): Promise<PortsConfig> => {
 
 export const isInteractiveRequest = (request: BrowserProviderRequest) =>
   INTERACTIVE_REQUESTS.includes(request.payload.method);
+
+export const forwardWeb3Request = async (
+  provider: any,
+  payload: JSONRPCRequestPayload
+) => {
+  const sendAsync = promisify(provider.sendAsync.bind(provider));
+  try {
+    const response = await sendAsync(payload);
+    return response;
+  } catch (error) {
+    return {
+      jsonrpc: payload.jsonrpc,
+      id: payload.id,
+      error
+    };
+  }
+};
+
+export const handleRequest = async (request: Request, provider: any, responseSocket: WebSocket) => {
+  const responsePayload = await forwardWeb3Request(provider, request.payload);
+  const response = {
+    id: request.id,
+    payload: responsePayload
+  };
+  const encodedResponse = jsonToBase64(response);
+  responseSocket.send(encodedResponse);
+};
