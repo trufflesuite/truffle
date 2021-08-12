@@ -8,27 +8,25 @@ interface Props {
 
 function Card({ header, body, footer }: Props) {
   const headerOrNull = header && (
-    <div className="">
-      <h2 className="text-center mb-1">{header}</h2>
-      <hr />
+    <div className="border-b border-grey py-3 mx-3">
+      <h2 className="text-center">{header}</h2>
     </div>
   );
 
   const bodyOrNull = body && (
-    <div className="m-2">
+    <div className="p-3">
       {body}
     </div>
   );
 
   const footerOrNull = footer && (
-    <div className="">
-      <hr className="mb-1" />
+    <div className="border-t border-grey py-3 mx-3">
       {footer}
     </div>
   );
 
   return (
-    <div className="border-grey border rounded p-2 w-3/4 max-w-4xl h-2/3 bg-white">
+    <div className="border-grey border rounded bg-white">
       {headerOrNull}
       {bodyOrNull}
       {footerOrNull}
