@@ -52,7 +52,7 @@ export const getPorts = async (): Promise<PortsConfig> => {
 export const isInteractiveRequest = (request: BrowserProviderRequest) =>
   INTERACTIVE_REQUESTS.includes(request.payload.method);
 
-export const forwardWeb3Request = async (
+export const forwardBrowserProviderRequest = async (
   provider: any,
   payload: JSONRPCRequestPayload
 ) => {
@@ -69,8 +69,8 @@ export const forwardWeb3Request = async (
   }
 };
 
-export const handleRequest = async (request: Request, provider: any, responseSocket: WebSocket) => {
-  const responsePayload = await forwardWeb3Request(provider, request.payload);
+export const handleBrowserProviderRequest = async (request: Request, provider: any, responseSocket: WebSocket) => {
+  const responsePayload = await forwardBrowserProviderRequest(provider, request.payload);
   const response = {
     id: request.id,
     payload: responsePayload
