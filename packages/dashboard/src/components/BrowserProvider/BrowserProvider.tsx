@@ -1,4 +1,4 @@
-import { handleRequest, isInteractiveRequest } from "../../utils/utils";
+import { handleBrowserProviderRequest, isInteractiveRequest } from "../../utils/utils";
 import { useEffect } from 'react';
 import { Request } from "../../utils/types";
 import Card from "../common/Card";
@@ -23,7 +23,7 @@ function BrowserProvider({ provider, socket, requests, setRequests }: Props) {
     requests
       .filter((request) => !isInteractiveRequest(request))
       .forEach(async (request) => {
-        handleRequest(request, provider, socket);
+        handleBrowserProviderRequest(request, provider, socket);
         removeFromRequests(request.id);
       });
   }, [requests, setRequests, provider, socket]);
@@ -41,7 +41,7 @@ function BrowserProvider({ provider, socket, requests, setRequests }: Props) {
 
   return (
     <div className="flex justify-center items-center mt-20">
-      <div className="mx-3">
+      <div className="mx-3 w-3/4 max-w-4xl h-2/3">
         <Card header="INCOMING REQUESTS" body={incomingRequests}/>
       </div>
     </div>
