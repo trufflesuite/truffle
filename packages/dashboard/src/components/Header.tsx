@@ -1,3 +1,5 @@
+import Button from "./Button";
+
 interface Props {
   provider: any;
   connectWeb3: () => void;
@@ -5,11 +7,16 @@ interface Props {
 
 function Header({ provider, connectWeb3 }: Props) {
   return (
-    <header className="flex justify-start p-2 gap-2">
-      <div>
-        Truffle Dashboard
+    <header className="grid grid-cols-5 py-2 px-4 border-b-2 border-truffle-light">
+      <div className="col-span-4 flex justify-start items-center">
+        <span className="inline-flex items-center gap-3 text-md">
+          <img src={"/truffle-logomark.svg"} width="32px" />
+          TRUFFLE DASHBOARD
+        </span>
       </div>
-      {!provider && <button onClick={connectWeb3}>Connect Web3</button>}
+      <div className="flex justify-end items-center">
+        <Button onClick={connectWeb3} text={provider ? 'WALLET CONNECTED' : 'CONNECT WALLET'} />
+      </div>
     </header>
   );
 }
