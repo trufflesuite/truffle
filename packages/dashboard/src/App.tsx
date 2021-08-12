@@ -6,8 +6,8 @@ import {
 import { useEffect, useState } from "react";
 import Web3Modal from "web3modal";
 import { Request } from "./utils/types";
-import Header from "./components/Header";
-import BrowserProvider from "./components/BrowserProvider";
+import Header from "./components/Header/Header";
+import BrowserProvider from "./components/BrowserProvider/BrowserProvider";
 
 function App() {
   const [socket, setSocket] = useState<WebSocket | undefined>();
