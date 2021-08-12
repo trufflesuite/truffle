@@ -1,6 +1,6 @@
-import type { Fetcher, FetcherConstructor } from "./types";
+import type { Fetcher, FetcherConstructor, SourceInfo } from "./types";
 import { InvalidNetworkError } from "./common";
-export { Fetcher, FetcherConstructor, InvalidNetworkError };
+export { Fetcher, FetcherConstructor, InvalidNetworkError, SourceInfo };
 
 import EtherscanFetcher from "./etherscan";
 import SourcifyFetcher from "./sourcify";

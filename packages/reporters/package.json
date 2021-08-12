@@ -3,6 +3,7 @@
   "description": "Reporters for Truffle modules",
   "license": "MIT",
   "author": "",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/provisioner#reporters",
   "repository": {
     "type": "git",
     "url": "https://github.com/trufflesuite/truffle.git",
@@ -11,16 +12,14 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/provisioner#reporters",
-  "version": "2.0.1",
+  "version": "2.0.4",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0"
   },
   "dependencies": {
-    "node-emoji": "^1.8.1",
     "ora": "^3.4.0",
-    "web3-utils": "1.4.0"
+    "web3-utils": "1.5.1"
   },
   "publishConfig": {
     "access": "public"

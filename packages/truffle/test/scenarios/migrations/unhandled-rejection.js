@@ -1,12 +1,12 @@
-const MemoryLogger = require("../memorylogger");
-const CommandRunner = require("../commandrunner");
+const MemoryLogger = require("../MemoryLogger");
+const CommandRunner = require("../commandRunner");
 const path = require("path");
 const assert = require("assert");
 const Server = require("../server");
 const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 
-describe.only("unhandledRejection detection", function () {
+describe("unhandledRejection detection", function () {
   let config;
   const project = path.join(
     __dirname,

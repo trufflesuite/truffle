@@ -50,8 +50,8 @@ const command = {
       `truffle test [<test_file>] [--compile-all[-debug]] [--compile-none] ` +
       `[--network <name>]${OS.EOL}                             ` +
       `[--verbose-rpc] [--show-events] [--debug] ` +
-      `[--debug-global <identifier>] [--bail]${OS.EOL}                      ` +
-      `       [--stacktrace[-extra]]`,
+      `[--debug-global <identifier>] [--bail|-b]${OS.EOL}                      ` +
+      `       [--stacktrace[-extra]] [--grep|-g <regex>]`,
     options: [
       {
         option: "<test_file>",
@@ -100,8 +100,8 @@ const command = {
         description: "Suppress all output except for test runner output."
       },
       {
-        option: "--bail",
-        description: "Bail after first test failure.  Alias: -b"
+        option: "--bail|-b",
+        description: "Bail after first test failure."
       },
       {
         option: "--stacktrace",
@@ -113,18 +113,35 @@ const command = {
       {
         option: "--stacktrace-extra",
         description: "Shortcut for --stacktrace --compile-all-debug."
+      },
+      {
+        option: "--grep|-g",
+        description: "Use mocha's \"grep\" option while running tests. This " +
+          "option only runs tests that match the supplied regex/string."
       }
     ],
     allowedGlobalOptions: ["network", "config"]
   },
+  parseCommandLineFlags: options => {
+    // parse out command line flags to merge in to the config
+    const grep = options.grep || options.g;
+    const bail = options.bail || options.b;
+    return {
+      mocha: {
+        grep,
+        bail
+      }
+    };
+  },
   run: async function (options) {
     const Config = require("@truffle/config");
-    const {Environment, Develop} = require("@truffle/environment");
-    const {copyArtifactsToTempDir} = require("./copyArtifactsToTempDir");
-    const {determineTestFilesToRun} = require("./determineTestFilesToRun");
-    const {prepareConfigAndRunTests} = require("./prepareConfigAndRunTests");
+    const { Environment, Develop } = require("@truffle/environment");
+    const { copyArtifactsToTempDir } = require("./copyArtifactsToTempDir");
+    const { determineTestFilesToRun } = require("./determineTestFilesToRun");
+    const { prepareConfigAndRunTests } = require("./prepareConfigAndRunTests");
 
-    const config = Config.detect(options);
+    const optionsToMerge = this.parseCommandLineFlags(options);
+    const config = Config.detect(options).merge(optionsToMerge);
 
     // if "development" exists, default to using that for testing
     if (!config.network && config.networks.development) {

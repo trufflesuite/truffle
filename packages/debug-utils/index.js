@@ -123,6 +123,8 @@ const trufflePalette = {
   "class": truffleColors.orange,
   "comment": truffleColors.comment,
   "doctag": truffleColors.comment,
+  "operator": truffleColors.blue,
+  "punctuation": truffleColors.purple,
   /* classes it might soon use! */
   "meta": truffleColors.pink,
   "metaString": truffleColors.green,
@@ -132,6 +134,7 @@ const trufflePalette = {
   "symbol": truffleColors.orange,
   "metaKeyword": truffleColors.mint,
   "meta-keyword": truffleColors.mint, //again, to be sure
+  "property": chalk, //not putting any highlighting here for now
   /* classes that don't make sense for Solidity */
   "regexp": chalk, //solidity does not have regexps
   "subst": chalk, //or string interpolation

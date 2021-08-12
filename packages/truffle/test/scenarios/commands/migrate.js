@@ -1,4 +1,4 @@
-const CommandRunner = require("../commandrunner");
+const CommandRunner = require("../commandRunner");
 const Server = require("../server");
 const sandbox = require("../sandbox");
 const path = require("path");

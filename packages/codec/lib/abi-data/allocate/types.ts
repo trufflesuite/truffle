@@ -1,6 +1,7 @@
 import * as Abi from "@truffle/abi-utils";
 
 import * as Compiler from "@truffle/codec/compiler";
+import * as Compilations from "@truffle/codec/compilations";
 import * as Ast from "@truffle/codec/ast";
 import * as Contexts from "@truffle/codec/contexts/types";
 import * as Pointer from "@truffle/codec/pointer";
@@ -17,6 +18,14 @@ export interface ContractAllocationInfo {
   immutableReferences?: ImmutableReferences; //needed for state
   compiler: Compiler.CompilerVersion; //needed for all
   compilationId?: string; //needed for all
+}
+
+export interface ContractAndContexts {
+  compilationId: string;
+  contract: Compilations.Contract;
+  node: Ast.AstNode;
+  deployedContext?: Contexts.Context;
+  constructorContext?: Contexts.Context;
 }
 
 export interface AbiSizeInfo {

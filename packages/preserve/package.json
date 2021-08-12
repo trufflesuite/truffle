@@ -1,6 +1,6 @@
 {
   "name": "@truffle/preserve",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Library for functionality for `truffle preserve` command",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
@@ -11,7 +11,7 @@
     "build": "tsc",
     "prepare": "yarn build && yarn docs",
     "test": "jest --verbose --detectOpenHandles",
-    "docs": "../../node_modules/typedoc/bin/typedoc --options ./docs/typedoc.json"
+    "docs": "typedoc --options ./docs/typedoc.json"
   },
   "repository": {
     "type": "git",

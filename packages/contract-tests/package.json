@@ -13,7 +13,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.1.43",
+  "version": "0.1.48",
   "scripts": {
     "prepare": "exit 0",
     "test": "./scripts/test.sh",
@@ -22,15 +22,15 @@
   },
   "devDependencies": {
     "@truffle/blockchain-utils": "^0.0.31",
-    "@truffle/compile-solidity": "^5.3.11",
-    "@truffle/contract": "^4.3.24",
+    "@truffle/compile-solidity": "^5.3.16",
+    "@truffle/contract": "^4.3.29",
     "bignumber.js": "^7.2.1",
     "chai": "^4.2.0",
     "debug": "^4.3.1",
     "ganache-core": "2.13.0",
     "mocha": "8.0.1",
     "sinon": "^9.0.2",
-    "web3": "1.4.0",
-    "web3-core-promievent": "1.4.0"
+    "web3": "1.5.1",
+    "web3-core-promievent": "1.5.1"
   }
 }

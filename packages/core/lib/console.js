@@ -13,6 +13,7 @@ const fse = require("fs-extra");
 const path = require("path");
 const EventEmitter = require("events");
 const spawnSync = require("child_process").spawnSync;
+const Require = require("@truffle/require");
 
 const processInput = input => {
   const inputComponents = input.trim().split(" ");
@@ -60,15 +61,26 @@ class Console extends EventEmitter {
 
   async start() {
     try {
+      // start the repl with an empty prompt and show a proper one when
+      // the repl has set up its context and is ready to accept input
       this.repl = repl.start({
-        prompt: "truffle(" + this.options.network + ")> ",
+        prompt: "",
         eval: this.interpret.bind(this)
       });
 
-      await this.setUpEnvironment();
+      // Get and set Truffle and User Globals
+      const truffleAndUserGlobals = await this.calculateTruffleAndUserGlobals() ;
+      Object.entries(truffleAndUserGlobals).forEach(([key, value]) => {
+        this.repl.context[key] = value;
+      });
+
+      // repl is ready - set and display prompt
+      this.repl.setPrompt("truffle(" + this.options.network + ")> ");
+      this.repl.displayPrompt();
+
+      // hydrate the environment with the user's contracts
       this.provision();
 
-      //want repl to exit when it receives an exit command
       this.repl.on("exit", () => {
         process.exit();
       });
@@ -79,13 +91,13 @@ class Console extends EventEmitter {
     } catch (error) {
       this.options.logger.log(
         "Unexpected error setting up the environment or provisioning " +
-        "contracts while instantiating the console."
+          "contracts while instantiating the console."
       );
       this.options.logger.log(error.stack || error.message || error);
     }
   }
 
-  hydrateUserDefinedVariables() {
+  getUserDefinedGlobals({ accounts, interfaceAdapter, web3 }) {
     // exit if feature should be disabled
     if (this.options["require-none"]) return;
 
@@ -94,39 +106,49 @@ class Console extends EventEmitter {
       (!this.options.console || !this.options.console.require) &&
       !this.options.require &&
       !this.options.r
-    ) return;
+    )
+      return;
 
-    const requireFromPath = target => {
-      return path.isAbsolute(target) ?
-        require(target) :
-        require(path.join(this.options.working_directory, target));
-    };
-    const addToContext = (userData, namespace) => {
+    const addToContext = (context, userData, namespace) => {
       for (const key in userData) {
         if (namespace) {
-          if (typeof this.repl.context[namespace] === "undefined") {
-            this.repl.context[namespace] = {};
+          if (typeof context[namespace] === "undefined") {
+            context[namespace] = {};
           }
-          this.repl.context[namespace][key] = userData[key];
+          context[namespace][key] = userData[key];
         } else {
-          this.repl.context[key] = userData[key];
+          context[key] = userData[key];
         }
       }
     };
-    const errorMessage = "You must specify the console.require property as " +
+    const errorMessage =
+      "You must specify the console.require property as " +
       "either a string or an array. If you specify an array, its members " +
       "must be paths or objects containing at least a `path` property.";
 
-    const requireValue = this.options.r || this.options.require || this.options.console.require;
+    const requireValue =
+      this.options.r || this.options.require || this.options.console.require;
 
+    // Require allows us to inject Truffle variables into the script's scope
+    const requireOptions = {
+      context: {
+        accounts,
+        interfaceAdapter,
+        web3
+      }
+    };
+    const userGlobals = {};
     if (typeof requireValue === "string") {
-      addToContext(requireFromPath(requireValue));
+      requireOptions.file = requireValue;
+      addToContext(userGlobals, Require.file(requireOptions));
     } else if (Array.isArray(requireValue)) {
       this.options.console.require.forEach(item => {
         if (typeof item === "string") {
-          addToContext(requireFromPath(item));
+          requireOptions.file = item;
+          addToContext(userGlobals, Require.file(requireOptions));
         } else if (typeof item === "object" && item.path) {
-          addToContext(requireFromPath(item.path), item.as);
+          requireOptions.file = item.path;
+          addToContext(userGlobals, Require.file(requireOptions), item.as);
         } else {
           throw new Error(errorMessage);
         }
@@ -134,9 +156,10 @@ class Console extends EventEmitter {
     } else {
       throw new Error(errorMessage);
     }
+    return userGlobals;
   }
 
-  async setUpEnvironment() {
+  async calculateTruffleAndUserGlobals() {
     let accounts;
     try {
       accounts = await this.interfaceAdapter.getAccounts();
@@ -145,12 +168,24 @@ class Console extends EventEmitter {
       // to sign transactions (e.g. no reason to disallow debugging)
       accounts = [];
     }
-    // we load user variables first so as to not clobber ours
-    this.hydrateUserDefinedVariables();
 
-    this.repl.context.web3 = this.web3;
-    this.repl.context.interfaceAdapter = this.interfaceAdapter;
-    this.repl.context.accounts = accounts;
+    const userGlobals = this.getUserDefinedGlobals({
+      web3: this.web3,
+      interfaceAdapter: this.interfaceAdapter,
+      accounts
+    });
+
+    const truffleGlobals = {
+      web3: this.web3,
+      interfaceAdapter: this.interfaceAdapter,
+      accounts
+    };
+
+    // we insert user variables first so as to not clobber Truffle's
+    return {
+      ...userGlobals,
+      ...truffleGlobals
+    };
   }
 
   provision() {
@@ -209,6 +244,7 @@ class Console extends EventEmitter {
 
   runSpawn(inputStrings, options) {
     let childPath;
+    /* eslint-disable no-undef */
     if (typeof BUNDLE_CONSOLE_CHILD_FILENAME !== "undefined") {
       childPath = path.join(__dirname, BUNDLE_CONSOLE_CHILD_FILENAME);
     } else {

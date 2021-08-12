@@ -1,0 +1,51 @@
+{
+  "name": "@truffle/fetch-and-compile",
+  "version": "0.1.1",
+  "description": "Used to obtain external verified sources and compile them",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "prepare": "yarn build"
+  },
+  "author": "Harry Altman <harry@trufflesuite.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/trufflesuite/truffle#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/fetch-and-compile"
+  },
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "files": [
+    "dist"
+  ],
+  "directories": {
+    "lib": "lib"
+  },
+  "types": "dist/index.d.ts",
+  "keywords": [
+    "ethereum",
+    "etherscan",
+    "ipfs",
+    "solidity",
+    "verify-source",
+    "sourcify",
+    "compile"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@truffle/codec": "^0.11.9",
+    "@truffle/compile-solidity": "^5.3.16",
+    "@truffle/source-fetcher": "^0.5.5",
+    "semver": "^7.3.4"
+  },
+  "devDependencies": {
+    "@truffle/compile-common": "^0.7.15",
+    "@truffle/config": "^1.3.3",
+    "typescript": "^4.1.4"
+  }
+}
