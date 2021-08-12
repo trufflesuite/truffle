@@ -9,7 +9,7 @@
     "url": "https://github.com/trufflesuite/truffle.git",
     "directory": "packages/artifactor"
   },
-  "version": "4.0.117",
+  "version": "4.0.118",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -18,13 +18,13 @@
   },
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@truffle/contract-schema": "^3.4.2",
+    "@truffle/contract-schema": "^3.4.3",
     "fs-extra": "^9.1.0",
     "lodash.assign": "^4.2.0",
     "lodash.merge": "^4.6.2"
   },
   "devDependencies": {
-    "@truffle/contract": "^4.3.29",
+    "@truffle/contract": "^4.3.30",
     "@types/fs-extra": "^8.1.0",
     "@types/lodash.assign": "^4.2.6",
     "@types/lodash.merge": "^4.6.6",
