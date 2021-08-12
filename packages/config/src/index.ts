@@ -40,9 +40,8 @@ class TruffleConfig {
     );
   }
 
-  public eventManagerOptions(config: TruffleConfig): any {
-    let muteLogging;
-    const { quiet, logger, subscribers } = config;
+  public eventManagerOptions(options: any): any {
+    const { quiet, logger, subscribers } = options;
     return { logger, quiet, subscribers };
   }
 
@@ -102,8 +101,12 @@ class TruffleConfig {
     const current = this.normalize(this);
     const normalized = this.normalize(obj);
 
-    let eventsOptions = this.eventManagerOptions(this);
-    this.events.updateSubscriberOptions(eventsOptions);
+    const currentEventsOptions = this.eventManagerOptions(this);
+    const optionsToMerge = this.eventManagerOptions(obj);
+    this.events.updateSubscriberOptions({
+      ...currentEventsOptions,
+      ...optionsToMerge
+    });
 
     return assignIn(
       Object.create(TruffleConfig.prototype),
