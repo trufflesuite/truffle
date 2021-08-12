@@ -11,13 +11,13 @@ interface Props {
 }
 
 function IncomingRequest({ provider, socket, request, setRequests }: Props) {
-  const removeFromRequests = (id: number) => {
-    setRequests((previousRequests) => previousRequests.filter(request => request.id !== id));
+  const removeFromRequests = () => {
+    setRequests((previousRequests) => previousRequests.filter(other => other.id !== request.id));
   };
 
   const process = async () => {
     await handleRequest(request, provider, socket);
-    removeFromRequests(request.id);
+    removeFromRequests();
   };
 
   return (
@@ -30,8 +30,9 @@ function IncomingRequest({ provider, socket, request, setRequests }: Props) {
           </div>
         }
         footer={
-          <div className="flex justify-center items-center">
+          <div className="flex justify-start items-center gap-2">
             <Button onClick={process} text="PROCESS" />
+            <Button onClick={removeFromRequests} text="CANCEL" />
           </div>
         }
       />

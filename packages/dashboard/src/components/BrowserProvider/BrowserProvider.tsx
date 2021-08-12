@@ -41,7 +41,9 @@ function BrowserProvider({ provider, socket, requests, setRequests }: Props) {
 
   return (
     <div className="flex justify-center items-center mt-20">
-      <Card header="INCOMING REQUESTS" body={incomingRequests}/>
+      <div className="mx-3">
+        <Card header="INCOMING REQUESTS" body={incomingRequests}/>
+      </div>
     </div>
   );
 }
