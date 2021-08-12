@@ -5,10 +5,6 @@ const observeListeners = require("../observeListeners");
 
 class Local {
   load(localPath) {
-    return this.getLocalCompiler(localPath);
-  }
-
-  getLocalCompiler(localPath) {
     const listeners = observeListeners();
     try {
       let soljson, compilerPath;
