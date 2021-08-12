@@ -137,8 +137,8 @@ describe("CompilerSupplier", () => {
 
     describe("when a user specifies the compiler url root", () => {
       beforeEach(() => {
-        sinon.stub(Cache.prototype, "addFileToCache");
-        sinon.stub(Cache.prototype, "fileIsCached").returns(false);
+        sinon.stub(Cache.prototype, "add");
+        sinon.stub(Cache.prototype, "has").returns(false);
         sinon.stub(VersionRange.prototype, "getSolcVersions")
           .returns(allVersions);
         sinon.stub(VersionRange.prototype, "versionIsCached").returns(false);
@@ -150,8 +150,8 @@ describe("CompilerSupplier", () => {
           .returns({ data: "response" });
       });
       afterEach(() => {
-        Cache.prototype.addFileToCache.restore();
-        Cache.prototype.fileIsCached.restore();
+        Cache.prototype.add.restore();
+        Cache.prototype.has.restore();
         VersionRange.prototype.getSolcVersions.restore();
         VersionRange.prototype.versionIsCached.restore();
         VersionRange.prototype.compilerFromString.restore();

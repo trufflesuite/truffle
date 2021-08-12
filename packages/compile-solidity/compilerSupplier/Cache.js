@@ -15,21 +15,21 @@ class Cache {
     this.compilerCachePath = compilerCachePath;
   }
 
-  getCachedFileNames() {
+  list() {
     return fs.readdirSync(this.compilerCachePath);
   }
 
-  addFileToCache(code, fileName) {
-    const filePath = this.resolveCache(fileName);
+  add(code, fileName) {
+    const filePath = this.resolve(fileName);
     fs.writeFileSync(filePath, code);
   }
 
-  fileIsCached(fileName) {
-    const file = this.resolveCache(fileName);
+  has(fileName) {
+    const file = this.resolve(fileName);
     return fs.existsSync(file);
   }
 
-  resolveCache(fileName) {
+  resolve(fileName) {
     return path.resolve(this.compilerCachePath, fileName);
   }
 };
