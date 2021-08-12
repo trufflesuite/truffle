@@ -38,8 +38,11 @@ module.exports = {
     });
   },
   runInDevelopEnvironment: function (commands = [], config) {
-    // get command for opening `truffle develop`
     const cmdLine = `${this.getExecString()} develop`;
+    const readyPrompt = "truffle(develop)>";
+
+    let seenChildPrompt = false;
+    let outputBuffer = "";
 
     return new Promise((resolve, reject) => {
       const child = exec(cmdLine, { cwd: config.working_directory });
@@ -51,6 +54,20 @@ module.exports = {
       });
 
       child.stdout.on("data", data => {
+        // accumulate buffer from chunks
+        if (!seenChildPrompt) {
+          outputBuffer += data;
+        }
+
+        // child process is ready for input when it displays the readyPrompt 
+        if (!seenChildPrompt && outputBuffer.includes(readyPrompt)) {
+          seenChildPrompt = true;
+          commands.forEach(command => {
+            child.stdin.write(command + EOL);
+          });
+          child.stdin.end();
+        }
+
         config.logger.log("OUT: ", data);
       });
 
@@ -59,10 +76,6 @@ module.exports = {
         resolve();
       });
 
-      commands.forEach(command => {
-        child.stdin.write(command + EOL);
-      });
-      child.stdin.end();
     });
   }
 };

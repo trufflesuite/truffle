@@ -61,22 +61,26 @@ class Console extends EventEmitter {
 
   async start() {
     try {
-      // we calculate the context before calling `start`  so that the context
-      // variables are available as early as possible after the repl starts
-      const context = { ...(await this.calculateTruffleAndUserGlobals()) };
-      // we set up this.repl here because `this.provision` sets values on
-      // this.repl.context - this will finish setting up the environment
-      this.repl = { context };
-      // this hydrates the environment with the user's contracts
-      this.provision();
-
+      // start the repl with an empty prompt and show a proper one when
+      // the repl has set up its context and is ready to accept input
       this.repl = repl.start({
-        prompt: "truffle(" + this.options.network + ")> ",
+        prompt: "",
         eval: this.interpret.bind(this)
       });
-      this.repl.context = context;
 
-      //want repl to exit when it receives an exit command
+      // Get and set Truffle and User Globals
+      const truffleAndUserGlobals = await this.calculateTruffleAndUserGlobals() ;
+      Object.entries(truffleAndUserGlobals).forEach(([key, value]) => {
+        this.repl.context[key] = value;
+      });
+
+      // repl is ready - set and display prompt
+      this.repl.setPrompt("truffle(" + this.options.network + ")> ");
+      this.repl.displayPrompt();
+
+      // hydrate the environment with the user's contracts
+      this.provision();
+
       this.repl.on("exit", () => {
         process.exit();
       });

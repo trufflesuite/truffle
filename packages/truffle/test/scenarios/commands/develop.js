@@ -8,6 +8,13 @@ const sandbox = require("../sandbox");
 const logger = new MemoryLogger();
 let config, project;
 
+//prepare a helpful message to standout in CI log noise
+const formatLines = lines =>
+  lines
+    .split("\n")
+    .map(line => `\t---truffle develop log---\t${line}`)
+    .join("\n");
+
 describe("truffle develop", function () {
   project = path.join(__dirname, "../../sources/develop");
 
@@ -21,18 +28,46 @@ describe("truffle develop", function () {
     };
   });
 
+  describe("Globals", () => {
+    let output;
+    before(async() => {
+      const input = "Object.keys(global)";
+      await CommandRunner.runInDevelopEnvironment([input], config);
+      output = logger.contents();
+    });
+
+    [
+      'clearInterval',      'clearTimeout',       
+      'setInterval',        'setTimeout',
+      'clearImmediate',     'setImmediate',
+      '__core-js_shared__', 'regeneratorRuntime',
+    ].forEach(property => {
+      it(`has ${property}`, function () {
+        this.timeout(70000);
+        assert(
+          output.includes(property),
+          `${property} is missing from globals.\n${formatLines(output)}`
+        );
+      });
+    });
+  })
+
+  it("handles awaits", async function () {
+    this.timeout(70000);
+    const input = "await Promise.resolve(`${6*7} is probably not a prime`)";
+    await CommandRunner.runInDevelopEnvironment([input], config);
+    const output = logger.contents();
+    const expectedValue = "42 is probably not a prime";
+    assert(
+      output.includes(expectedValue),
+      `Expected "${expectedValue}" in output:\n${formatLines(output)}`
+    );
+  });
+
   it("loads snippets", async function () {
     this.timeout(70000);
-
     await CommandRunner.runInDevelopEnvironment(["breakfast"], config);
     const output = logger.contents();
-
-    //prepare a helpful message to standout in CI log noise
-    const formatLines = lines =>
-      lines
-        .split("\n")
-        .map(line => `\t---truffle develop log---\t${line}`)
-        .join("\n");
     const expectedValue = "eggs and sausage, and a side of toast";
     assert(
       output.includes(expectedValue),
@@ -46,12 +81,6 @@ describe("truffle develop", function () {
     await CommandRunner.runInDevelopEnvironment(["twoAccounts"], config);
     const output = logger.contents();
 
-    //prepare a helpful message to standout in CI log noise
-    const formatLines = lines =>
-      lines
-        .split("\n")
-        .map(line => `\t---truffle develop log---\t${line}`)
-        .join("\n");
     // `twoAccounts` is the concatenation of the first 2 accounts in `accounts`
     // this matches two concatenated accounts
     const addressesRegex = new RegExp(/(0x[0-9a-f]{40}){2}/, "gi");
