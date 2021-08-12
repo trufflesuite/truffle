@@ -30,7 +30,6 @@ $ npm install -g truffle
 
 *Note: To avoid any strange permissions errors, we recommend using [nvm](https://github.com/nvm-sh/nvm).*
 
-
 ### Quick Usage
 
 For a default set of contracts and tests, run the following within an empty project directory:
