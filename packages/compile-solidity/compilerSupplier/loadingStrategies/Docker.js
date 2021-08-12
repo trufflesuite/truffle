@@ -106,8 +106,8 @@ class Docker {
     const fileName = image + ".version";
 
     // Skip validation if they've validated for this image before.
-    if (this.cache.fileIsCached(fileName)) {
-      const cachePath = this.cache.resolveCache(fileName);
+    if (this.cache.has(fileName)) {
+      const cachePath = this.cache.resolve(fileName);
       return fs.readFileSync(cachePath, "utf-8");
     }
     // Image specified
@@ -134,7 +134,7 @@ class Docker {
       "docker run ethereum/solc:" + image + " --version"
     );
     const normalized = normalizeSolcVersion(version);
-    this.cache.addFileToCache(normalized, fileName);
+    this.cache.add(normalized, fileName);
     return normalized;
   }
 

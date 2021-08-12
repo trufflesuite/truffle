@@ -97,11 +97,11 @@ describe("VersionRange loading strategy", () => {
     describe("when a version constraint is specified", () => {
       beforeEach(() => {
         sinon.stub(instance, "getSolcByUrlAndCache");
-        sinon.stub(instance.cache, "fileIsCached").returns(false);
+        sinon.stub(instance.cache, "has").returns(false);
       });
       afterEach(() => {
         instance.getSolcByUrlAndCache.restore();
-        instance.cache.fileIsCached.restore();
+        instance.cache.has.restore();
       });
 
       it("calls findNewstValidVersion to determine which version to fetch", async () => {
@@ -117,10 +117,10 @@ describe("VersionRange loading strategy", () => {
 
     describe("when the version is cached", () => {
       beforeEach(() => {
-        sinon.stub(instance.cache, "fileIsCached").returns(true);
+        sinon.stub(instance.cache, "has").returns(true);
       });
       afterEach(() => {
-        instance.cache.fileIsCached.restore();
+        instance.cache.has.restore();
       });
 
       it("calls getCachedSolcByFileName", async () => {
@@ -135,19 +135,19 @@ describe("VersionRange loading strategy", () => {
 
     describe("when the version is not cached", () => {
       beforeEach(() => {
-        sinon.stub(instance.cache, "fileIsCached").returns(false);
-        sinon.stub(instance.cache, "addFileToCache");
+        sinon.stub(instance.cache, "has").returns(false);
+        sinon.stub(instance.cache, "add");
         sinon.stub(instance, "compilerFromString").returns("compiler");
       });
       afterEach(() => {
-        instance.cache.fileIsCached.restore();
-        instance.cache.addFileToCache.restore();
+        instance.cache.has.restore();
+        instance.cache.add.restore();
         instance.compilerFromString.restore();
       });
 
-      it("eventually calls addFileToCache and compilerFromString", async () => {
+      it("eventually calls add and compilerFromString", async () => {
         await instance.getSolcFromCacheOrUrl("0.5.1");
-        assert(instance.cache.addFileToCache.called);
+        assert(instance.cache.add.called);
         assert(instance.compilerFromString.called);
       }).timeout(60000);
     });
@@ -184,13 +184,13 @@ describe("VersionRange loading strategy", () => {
           .returns(undefined);
         sinon.stub(axios, "get")
           .returns(Promise.resolve({ data: "the stuff" }));
-        sinon.stub(instance.cache, "addFileToCache");
+        sinon.stub(instance.cache, "add");
         sinon.stub(instance, "compilerFromString");
       });
       afterEach(() => {
         instance.getCachedSolcFileName.restore();
         axios.get.restore();
-        instance.cache.addFileToCache.restore();
+        instance.cache.add.restore();
         instance.compilerFromString.restore();
       });
 
@@ -216,7 +216,7 @@ describe("VersionRange loading strategy", () => {
         .stub(axios, "get")
         .withArgs(`${instance.config.compilerRoots[0]}${fileName}`)
         .returns({ data: "requestReturn" });
-      sinon.stub(instance.cache, "addFileToCache").withArgs("requestReturn");
+      sinon.stub(instance.cache, "add").withArgs("requestReturn");
       sinon
         .stub(instance, "compilerFromString")
         .withArgs("requestReturn")
@@ -224,14 +224,14 @@ describe("VersionRange loading strategy", () => {
     });
     afterEach(() => {
       axios.get.restore();
-      instance.cache.addFileToCache.restore();
+      instance.cache.add.restore();
       instance.compilerFromString.restore();
     });
 
-    it("calls addFileToCache with the response and the file name", async () => {
+    it("calls add with the response and the file name", async () => {
       const result = await instance.getSolcByUrlAndCache(fileName, 0);
       assert(
-        instance.cache.addFileToCache.calledWith("requestReturn", "someSolcFile")
+        instance.cache.add.calledWith("requestReturn", "someSolcFile")
       );
       assert(result === "success");
     });

@@ -85,7 +85,7 @@ class VersionRange {
   getCachedSolcByFileName(fileName) {
     const listeners = observeListeners();
     try {
-      const filePath = this.cache.resolveCache(fileName);
+      const filePath = this.cache.resolve(fileName);
       const soljson = originalRequire(filePath);
       debug("soljson %o", soljson);
       return solcWrap(soljson);
@@ -96,7 +96,7 @@ class VersionRange {
 
   // Range can also be a single version specification like "0.5.0"
   getCachedSolcByVersionRange(version) {
-    const cachedCompilerFileNames = this.cache.getCachedFileNames();
+    const cachedCompilerFileNames = this.cache.list();
     const validVersions = cachedCompilerFileNames.filter(fileName => {
       const match = fileName.match(/v\d+\.\d+\.\d+.*/);
       if (match) return semver.satisfies(match[0], version);
@@ -110,7 +110,7 @@ class VersionRange {
   }
 
   getCachedSolcFileName(commit) {
-    const cachedCompilerFileNames = this.cache.getCachedFileNames();
+    const cachedCompilerFileNames = this.cache.list();
     return cachedCompilerFileNames.find(fileName => {
       return fileName.includes(commit);
     });
@@ -158,7 +158,7 @@ class VersionRange {
     try {
       const response = await axios.get(url, { maxRedirects: 50 });
       events.emit("downloadCompiler:succeed");
-      this.cache.addFileToCache(response.data, fileName);
+      this.cache.add(response.data, fileName);
       return this.compilerFromString(response.data);
     } catch (error) {
       events.emit("downloadCompiler:fail");
@@ -185,7 +185,7 @@ class VersionRange {
 
     if (!fileName) throw new NoVersionError(versionToUse);
 
-    if (this.cache.fileIsCached(fileName))
+    if (this.cache.has(fileName))
       return this.getCachedSolcByFileName(fileName);
     return this.getSolcByUrlAndCache(fileName);
   }
@@ -241,7 +241,7 @@ class VersionRange {
   }
 
   versionIsCached(version) {
-    const cachedCompilerFileNames = this.cache.getCachedFileNames();
+    const cachedCompilerFileNames = this.cache.list();
     const cachedVersions = cachedCompilerFileNames.map(fileName => {
       const match = fileName.match(/v\d+\.\d+\.\d+.*/);
       if (match) return match[0];
