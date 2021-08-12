@@ -50,7 +50,7 @@ function App() {
   };
 
   return (
-    <div>
+    <div className="h-screen bg-gradient-to-b from-truffle-lighter to-truffle-light">
       <Header provider={provider} connectWeb3={connectWeb3} />
       <BrowserProvider
         provider={provider}

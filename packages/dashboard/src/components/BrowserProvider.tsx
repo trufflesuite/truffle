@@ -3,6 +3,8 @@ import { useEffect } from 'react';
 import { JSONRPCRequestPayload } from "ethereum-protocol";
 import { promisify } from "util";
 import { Request } from "../utils/types";
+import Button from "./Button";
+import Card from "./Card";
 
 interface Props {
   requests: Request[];
@@ -49,28 +51,29 @@ function BrowserProvider({ provider, socket, requests, setRequests }: Props) {
     }
   };
 
-  return (
-    <div className="flex justify-center items-center">
-      <div className="border-black border-2 p-2 mt-20">
-        <h2 className="text-center">Incoming Requests</h2>
-        <div className="mt-2">
-          {requests.filter(isInteractiveRequest).map((request, i) => {
-            return (
-              <div key={i}>
-                <div>
-                  <div>
-                    Method: {request.payload.method}
-                  </div>
-                  <div>
-                    Parameters: {JSON.stringify(request.payload.params)}
-                  </div>
-                </div>
-                <button onClick={() => handleRequest(request)}>process</button>
+  const cardContent = requests.filter(isInteractiveRequest).map((request, i) => {
+      return (
+        <div key={i} className="flex justify-center items-center">
+          <Card
+            header={request.payload.method}
+            body={
+              <div>
+                {JSON.stringify(request.payload.params)}
               </div>
-            );
-          })}
+            }
+            footer={
+              <div className="flex justify-center items-center">
+                <Button onClick={() => handleRequest(request)} text="PROCESS" />
+              </div>
+            }
+          />
         </div>
-      </div>
+      );
+    });
+
+  return (
+    <div className="flex justify-center items-center mt-20">
+      <Card header="INCOMING REQUESTS" body={cardContent}/>
     </div>
   );
 }
