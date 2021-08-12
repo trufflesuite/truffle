@@ -26,7 +26,7 @@ function Card({ header, body, footer }: Props) {
   );
 
   return (
-    <div className="border-grey border rounded bg-white">
+    <div className="border-grey border rounded bg-white w-full">
       {headerOrNull}
       {bodyOrNull}
       {footerOrNull}
