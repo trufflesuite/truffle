@@ -18,7 +18,7 @@ class Native {
       if (error.message === "No matching version found") {
         throw new NoVersionError(versionString);
       }
-      throw new Error(error);
+      throw error;
     }
   }
 
