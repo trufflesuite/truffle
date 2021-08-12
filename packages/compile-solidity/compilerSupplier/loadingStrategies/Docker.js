@@ -44,7 +44,7 @@ class Docker {
       if (error.message === "No matching version found") {
         throw new NoVersionError(versionString);
       }
-      throw new Error(error);
+      throw error;
     }
   }
 
@@ -102,10 +102,8 @@ class Docker {
     }).start();
     try {
       execSync(`docker pull ethereum/solc:${image}`);
+    } finally {
       spinner.stop();
-    } catch (error) {
-      spinner.stop();
-      throw new Error(error);
     }
   }
 

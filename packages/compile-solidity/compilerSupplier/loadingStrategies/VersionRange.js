@@ -39,7 +39,7 @@ class VersionRange {
       if (error.message.includes("Failed to complete request")) {
         return this.getSatisfyingVersionFromCache(versionRange);
       }
-      throw new Error(error);
+      throw error;
     }
   }
 
