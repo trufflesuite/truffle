@@ -12,6 +12,11 @@ class VersionRange {
   constructor(options) {
     const defaultConfig = {
       compilerRoots: [
+        // NOTE this relay address exists so that we have a backup option in
+        // case more official distribution mechanisms fail.
+        //
+        // currently this URL just redirects (302 Found); we may alter this to
+        // host for real in the future.
         "https://relay.trufflesuite.com/solc/bin/",
         "https://solc-bin.ethereum.org/bin/",
         "https://ethereum.github.io/solc-bin/bin/"

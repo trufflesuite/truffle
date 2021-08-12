@@ -132,11 +132,12 @@ const command = {
     }
 
     const tags = [];
+    // use `for await` because Docker strategy returns AsyncIterableIterators
     for await (const version of versions) {
       tags.push(version);
     }
 
-    // Docker tags
+    // Docker tags are best browsed via their own web UI
     if (options.list === "docker" && !options.all) {
       tags.push("See more at: hub.docker.com/r/ethereum/solc/tags/");
     }

@@ -48,6 +48,14 @@ class Docker {
     }
   }
 
+  /**
+   * Fetch list of solc versions available as Docker images.
+   *
+   * This returns a promise for an object with three fields:
+   *   { latestRelease, releases, prereleases }
+   * NOTE that `releases` and `prereleases` in this object are both
+   * AsyncIterableIterators (thus, use only `for await (const ...)` to consume)
+   */
   async list() {
     const allTags = this.streamAllDockerTags();
 

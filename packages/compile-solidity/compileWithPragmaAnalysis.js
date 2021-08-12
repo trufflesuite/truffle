@@ -65,6 +65,9 @@ const compileWithPragmaAnalysis = async ({ paths, options }) => {
   if (filteredPaths.length === 0) {
     return { compilations: [] };
   }
+  // construct supplier options for fetching list of solc versions;
+  // enforce no Docker because listing Docker versions is slow (Docker Hub API
+  // paginates responses, with >500 pages at time of writing)
   const supplierOptions = {
     events: options.events,
     solcConfig: {
