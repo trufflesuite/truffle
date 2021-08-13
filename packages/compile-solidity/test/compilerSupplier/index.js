@@ -2,6 +2,7 @@ const assert = require("assert");
 const sinon = require("sinon");
 const axios = require("axios");
 const CompilerSupplier = require("../../compilerSupplier");
+const Cache = require("../../compilerSupplier/Cache");
 const {
   Docker,
   Native,
@@ -136,11 +137,11 @@ describe("CompilerSupplier", () => {
 
     describe("when a user specifies the compiler url root", () => {
       beforeEach(() => {
+        sinon.stub(Cache.prototype, "add");
+        sinon.stub(Cache.prototype, "has").returns(false);
         sinon.stub(VersionRange.prototype, "getSolcVersions")
           .returns(allVersions);
-        sinon.stub(VersionRange.prototype, "addFileToCache");
         sinon.stub(VersionRange.prototype, "versionIsCached").returns(false);
-        sinon.stub(VersionRange.prototype, "fileIsCached").returns(false);
         sinon.stub(VersionRange.prototype, "compilerFromString");
         sinon.stub(axios, "get")
           .withArgs(
@@ -149,10 +150,10 @@ describe("CompilerSupplier", () => {
           .returns({ data: "response" });
       });
       afterEach(() => {
+        Cache.prototype.add.restore();
+        Cache.prototype.has.restore();
         VersionRange.prototype.getSolcVersions.restore();
-        VersionRange.prototype.addFileToCache.restore();
         VersionRange.prototype.versionIsCached.restore();
-        VersionRange.prototype.fileIsCached.restore();
         VersionRange.prototype.compilerFromString.restore();
         axios.get.restore();
       });

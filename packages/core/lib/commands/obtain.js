@@ -15,18 +15,11 @@ module.exports = {
     const SUPPORTED_COMPILERS = ["--solc"];
     const Config = require("@truffle/config");
     const config = Config.default().with(options);
-    const CompilerSupplier = require("@truffle/compile-solidity")
-      .CompilerSupplier;
-    const supplierOptions = {
-      events: config.events,
-      solcConfig: config.compilers.solc
-    };
-    const supplier = new CompilerSupplier(supplierOptions);
 
     config.events.emit("obtain:start");
 
     if (options.solc) {
-      return await this.downloadAndCacheSolc({config, options, supplier});
+      return await this.downloadAndCacheSolc({config, options});
     }
 
     const message =
@@ -38,11 +31,28 @@ module.exports = {
     throw new Error(message);
   },
 
-  downloadAndCacheSolc: async ({config, options, supplier}) => {
-    const {events} = config;
+  downloadAndCacheSolc: async ({config, options}) => {
+    const { CompilerSupplier } = require("@truffle/compile-solidity");
+    const semver = require("semver");
+    const { events } = config;
+
     const version = options.solc;
+    if (!version || !semver.validRange(version)) {
+      const message =
+        `You must specify a valid solc version to download` +
+        `You specified: "${version}".`;
+      throw new Error(message);
+    }
+
     try {
-      const solc = await supplier.downloadAndCacheSolc(version);
+      const supplier = new CompilerSupplier({
+        events,
+        solcConfig: {
+          ...config.compilers.solc,
+          version
+        }
+      });
+      const { solc } = await supplier.load();
       events.emit("obtain:succeed", {
         compiler: {
           version: solc.version(),

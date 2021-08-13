@@ -1,12 +1,25 @@
 const axios = require("axios");
+const axiosRetry = require("axios-retry");
 const fs = require("fs");
 const { execSync } = require("child_process");
 const ora = require("ora");
 const semver = require("semver");
-const LoadingStrategy = require("./LoadingStrategy");
-const VersionRange = require("./VersionRange");
+const Cache = require("../Cache");
+const { normalizeSolcVersion } = require("../normalizeSolcVersion");
+const { NoVersionError, NoRequestError } = require("../errors");
+const { asyncFirst, asyncFilter, asyncFork } = require("iter-tools");
 
-class Docker extends LoadingStrategy {
+class Docker {
+  constructor(options) {
+    const defaultConfig = {
+      dockerTagsUrl:
+        "https://registry.hub.docker.com/v2/repositories/ethereum/solc/tags/"
+    };
+    this.config = Object.assign({}, defaultConfig, options);
+
+    this.cache = new Cache();
+  }
+
   async load() {
     // Set a sensible limit for maxBuffer
     // See https://github.com/nodejs/node/pull/23027
@@ -29,19 +42,52 @@ class Docker extends LoadingStrategy {
       };
     } catch (error) {
       if (error.message === "No matching version found") {
-        throw this.errors("noVersion", versionString);
+        throw new NoVersionError(versionString);
       }
-      throw new Error(error);
+      throw error;
     }
   }
 
-  getDockerTags() {
-    return axios.get(this.config.dockerTagsUrl, { maxRedirects: 50 })
-      .then(response => response.data.results.map(item => item.name))
-      .catch(error => {
-        throw this.errors("noRequest", this.config.dockerTagsUrl, error);
-      });
+  /**
+   * Fetch list of solc versions available as Docker images.
+   *
+   * This returns a promise for an object with three fields:
+   *   { latestRelease, releases, prereleases }
+   * NOTE that `releases` and `prereleases` in this object are both
+   * AsyncIterableIterators (thus, use only `for await (const ...)` to consume)
+   */
+  async list() {
+    const allTags = this.streamAllDockerTags();
+
+    // split stream of all tags into separate releases and prereleases streams
+    const isRelease = name => !!semver.valid(name);
+    const isPrerelease = name => name.match(/nightly/);
+    const [allTagsA, allTagsB] = asyncFork(allTags);
+
+    // construct prereleases stream
+    const prereleases = asyncFilter(isPrerelease, allTagsB);
+
+    // construct releases stream and immediately fork so as to allow consuming
+    // the first value in the stream safely
+    const [releases, forkedReleases] = asyncFork(
+      asyncFilter(isRelease, allTagsA)
+    );
+
+    // grab the latest release from the forked releases stream;
+    // coerce semver to remove possible `-alpine` suffix used by this repo
+    const latestRelease = semver.coerce(await asyncFirst(forkedReleases))
+      .version;
+
+    return {
+      prereleases,
+      releases,
+      latestRelease
+    };
   }
+
+  /*
+   * Private methods
+   */
 
   downloadDockerImage(image) {
     if (!semver.valid(image)) {
@@ -56,10 +102,8 @@ class Docker extends LoadingStrategy {
     }).start();
     try {
       execSync(`docker pull ethereum/solc:${image}`);
+    } finally {
       spinner.stop();
-    } catch (error) {
-      spinner.stop();
-      throw new Error(error);
     }
   }
 
@@ -68,18 +112,18 @@ class Docker extends LoadingStrategy {
     const fileName = image + ".version";
 
     // Skip validation if they've validated for this image before.
-    if (this.fileIsCached(fileName)) {
-      const cachePath = this.resolveCache(fileName);
+    if (this.cache.has(fileName)) {
+      const cachePath = this.cache.resolve(fileName);
       return fs.readFileSync(cachePath, "utf-8");
     }
     // Image specified
-    if (!image) throw this.errors("noString", image);
+    if (!image) throw new NoStringError(image);
 
     // Docker exists locally
     try {
       execSync("docker -v");
     } catch (error) {
-      throw this.errors("noDocker");
+      throw new NoDockerError();
     }
 
     // Image exists locally
@@ -95,11 +139,78 @@ class Docker extends LoadingStrategy {
     const version = execSync(
       "docker run ethereum/solc:" + image + " --version"
     );
-    const normalized = new VersionRange(this.config).normalizeSolcVersion(
-      version
-    );
-    this.addFileToCache(normalized, fileName);
+    const normalized = normalizeSolcVersion(version);
+    this.cache.add(normalized, fileName);
     return normalized;
+  }
+
+  streamAllDockerTags() {
+    // build http client to account for rate limit problems
+    // use axiosRetry to instate exponential backoff when requests come back
+    // with expected 429
+    const client = axios.create();
+    axiosRetry(client, {
+      retries: 5,
+      retryDelay: axiosRetry.exponentialDelay,
+      shouldResetTimeout: true,
+      retryCondition: error => {
+        const tooManyRequests =
+          error && error.response && error.response.status === 429;
+
+        return (
+          axiosRetry.isNetworkOrIdempotentRequestError(error) || tooManyRequests
+        );
+      }
+    });
+
+    const { dockerTagsUrl } = this.config;
+    let nextUrl = dockerTagsUrl;
+
+    return (async function* () {
+      do {
+        try {
+          const {
+            data: {
+              // page of results
+              results,
+              // next page url
+              next
+            }
+          } = await client.get(nextUrl, { maxRedirects: 50 });
+
+          for (const { name } of results) {
+            yield name;
+          }
+
+          nextUrl = next;
+        } catch (error) {
+          throw new NoRequestError(dockerTagsUrl, error);
+        }
+      } while (nextUrl);
+    })();
+  }
+}
+
+class NoDockerError extends Error {
+  constructor() {
+    super(
+      "You are trying to run dockerized solc, but docker is not installed."
+    );
+  }
+}
+
+class NoStringError extends Error {
+  constructor(input) {
+    const message =
+      "`compilers.solc.version` option must be a string specifying:\n" +
+      "   - a path to a locally installed solcjs\n" +
+      "   - a solc version or range (ex: '0.4.22' or '^0.5.0')\n" +
+      "   - a docker image name (ex: 'stable')\n" +
+      "   - 'native' to use natively installed solc\n" +
+      "Received: " +
+      input +
+      " instead.";
+    super(message);
   }
 }
 
