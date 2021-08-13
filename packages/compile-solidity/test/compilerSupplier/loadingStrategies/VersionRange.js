@@ -153,62 +153,6 @@ describe("VersionRange loading strategy", () => {
     });
   });
 
-  describe("async getSolcByCommit(commit)", () => {
-    describe("when the file is cached", () => {
-      beforeEach(() => {
-        sinon
-          .stub(instance, "getCachedSolcFileName")
-          .withArgs("commit.porkBelly")
-          .returns("someFile.js");
-        sinon.stub(instance, "getCachedSolcByFileName");
-      });
-      afterEach(() => {
-        instance.getCachedSolcFileName.restore();
-        instance.getCachedSolcByFileName.restore();
-      });
-
-      it("calls getCachedSolcByFileName with the file name", async () => {
-        await instance.getSolcByCommit("commit.porkBelly");
-        assert(instance.getCachedSolcByFileName.calledWith("someFile.js"));
-      });
-    });
-
-    describe("when the file is not cached", () => {
-      let commitString;
-      beforeEach(() => {
-        // commit string for v 0.5.1
-        commitString = "commit.c8a2cb62";
-        sinon
-          .stub(instance, "getCachedSolcFileName")
-          .withArgs(commitString)
-          .returns(undefined);
-        sinon.stub(axios, "get")
-          .returns(Promise.resolve({ data: "the stuff" }));
-        sinon.stub(instance.cache, "add");
-        sinon.stub(instance, "compilerFromString");
-      });
-      afterEach(() => {
-        instance.getCachedSolcFileName.restore();
-        axios.get.restore();
-        instance.cache.add.restore();
-        instance.compilerFromString.restore();
-      });
-
-      it("eventually calls compilerFromString with request reponse", async () => {
-        await instance.getSolcByCommit(commitString);
-        assert(instance.compilerFromString.calledWith("the stuff"));
-      }).timeout(20000);
-      it("throws an error when it can't find a match", async () => {
-        try {
-          await instance.getSolcByCommit("some garbage that will not match");
-          assert(false);
-        } catch (error) {
-          assert(error.message === "No matching version found");
-        }
-      }).timeout(20000);
-    });
-  });
-
   describe(".getAndCacheSolcByUrl(fileName)", () => {
     beforeEach(() => {
       fileName = "someSolcFile";
