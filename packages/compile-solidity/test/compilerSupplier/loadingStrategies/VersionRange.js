@@ -96,21 +96,21 @@ describe("VersionRange loading strategy", () => {
 
     describe("when a version constraint is specified", () => {
       beforeEach(() => {
-        sinon.stub(instance, "getSolcByUrlAndCache");
+        sinon.stub(instance, "getAndCacheSolcByUrl");
         sinon.stub(instance.cache, "has").returns(false);
       });
       afterEach(() => {
-        instance.getSolcByUrlAndCache.restore();
+        instance.getAndCacheSolcByUrl.restore();
         instance.cache.has.restore();
       });
 
       it("calls findNewstValidVersion to determine which version to fetch", async () => {
         await instance.getSolcFromCacheOrUrl("^0.5.0");
         assert(
-          instance.getSolcByUrlAndCache.calledWith(
+          instance.getAndCacheSolcByUrl.calledWith(
             "soljson-v0.5.4+commit.9549d8ff.js"
           ),
-          "getSolcByUrlAndCache not called with the compiler file name"
+          "getAndCacheSolcByUrl not called with the compiler file name"
         );
       });
     });
@@ -209,7 +209,7 @@ describe("VersionRange loading strategy", () => {
     });
   });
 
-  describe(".getSolcByUrlAndCache(fileName)", () => {
+  describe(".getAndCacheSolcByUrl(fileName)", () => {
     beforeEach(() => {
       fileName = "someSolcFile";
       sinon
@@ -229,7 +229,7 @@ describe("VersionRange loading strategy", () => {
     });
 
     it("calls add with the response and the file name", async () => {
-      const result = await instance.getSolcByUrlAndCache(fileName, 0);
+      const result = await instance.getAndCacheSolcByUrl(fileName, 0);
       assert(
         instance.cache.add.calledWith("requestReturn", "someSolcFile")
       );
