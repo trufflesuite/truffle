@@ -9,15 +9,15 @@ const defaultSolcVersion = "0.5.16";
 export class CompilerSupplier {
   private events: any;
   private version: string;
-  private docker: unknown;
-  private compilerRoots: unknown;
+  private docker: boolean;
+  private compilerRoots: string[];
   private strategyOptions: Partial<{
     version: string;
     docker: boolean;
     compilerRoots: string[];
     events: any; // represents a @truffle/events instance, which lacks types
     spawn: {
-      maxBuffer: number
+      maxBuffer: number;
     };
   }>;
 
