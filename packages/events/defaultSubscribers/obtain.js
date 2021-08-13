@@ -58,11 +58,13 @@ module.exports = {
     ],
     "fetchSolcList:succeed": [
       function() {
+        if (this.quiet) return;
         if (this.spinner.isSpinning) this.spinner.succeed();
       }
     ],
     "fetchSolcList:fail": [
       function() {
+        if (this.quiet) return;
         if (this.spinner.isSpinning) this.spinner.fail();
       }
     ]
