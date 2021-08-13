@@ -9,12 +9,14 @@ module.exports = {
   handlers: {
     "obtain:start": [
       function() {
+        if (this.quiet) return;
         this.logger.log(`${OS.EOL}Starting obtain...`);
         this.logger.log(`==================${OS.EOL}`);
       }
     ],
     "obtain:succeed": [
       function({ compiler }) {
+        if (this.quiet) return;
         const { name, version } = compiler;
         this.logger.log(
           `    > successfully downloaded and cached version ${version} ` +
@@ -24,6 +26,7 @@ module.exports = {
     ],
     "obtain:fail": [
       function() {
+        if (this.quiet) return;
         if (this.spinner.isSpinning) this.spinner.fail();
         this.logger.log("Unbox failed!");
       }
@@ -31,6 +34,7 @@ module.exports = {
 
     "downloadCompiler:start": [
       function({ attemptNumber }) {
+        if (this.quiet) return;
         this.spinner = this.ora({
           text: `Downloading compiler. Attempt #${attemptNumber}.`,
           color: "red"
@@ -39,12 +43,13 @@ module.exports = {
     ],
     "downloadCompiler:succeed": [
       function() {
+        if (this.quiet) return;
         this.spinner.succeed();
       }
     ],
-
     "fetchSolcList:start": [
       function({ attemptNumber }) {
+        if (this.quiet) return;
         this.spinner = this.ora({
           text: `Fetching solc version list from solc-bin. Attempt #${attemptNumber}`,
           color: "yellow"

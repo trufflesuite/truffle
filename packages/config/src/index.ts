@@ -42,7 +42,15 @@ class TruffleConfig {
 
   public eventManagerOptions(options: any): any {
     const { quiet, logger, subscribers } = options;
-    return { logger, quiet, subscribers };
+    const eventManagerOptions: any = { quiet, logger, subscribers };
+    // filter undefined values
+    return Object.keys(eventManagerOptions)
+      .reduce((a: any, key: string) => {
+        if (typeof eventManagerOptions[key] !== "undefined") {
+          a[key] = eventManagerOptions[key];
+        }
+        return a;
+      }, {});
   }
 
   public addProp(propertyName: string, descriptor: any): void {
