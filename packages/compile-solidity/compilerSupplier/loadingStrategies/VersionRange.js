@@ -148,10 +148,10 @@ class VersionRange {
     const fileName = this.getSolcVersionFileName(commit, allVersions);
 
     if (!fileName) throw new Error("No matching version found");
-    return this.getSolcByUrlAndCache(fileName);
+    return this.getAndCacheSolcByUrl(fileName);
   }
 
-  async getSolcByUrlAndCache(fileName, index = 0) {
+  async getAndCacheSolcByUrl(fileName, index = 0) {
     const url = `${this.config.compilerRoots[index].replace(
       /\/+$/,
       ""
@@ -170,7 +170,7 @@ class VersionRange {
       if (index >= this.config.compilerRoots.length - 1) {
         throw new NoRequestError("compiler URLs", error);
       }
-      return this.getSolcByUrlAndCache(fileName, index + 1);
+      return this.getAndCacheSolcByUrl(fileName, index + 1);
     }
   }
 
@@ -192,7 +192,7 @@ class VersionRange {
 
     if (this.cache.has(fileName))
       return this.getCachedSolcByFileName(fileName);
-    return this.getSolcByUrlAndCache(fileName);
+    return this.getAndCacheSolcByUrl(fileName);
   }
 
   getSolcVersions(index = 0) {
