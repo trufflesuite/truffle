@@ -3,8 +3,8 @@ import { wordlist } from "ethereum-cryptography/bip39/wordlists/english";
 import * as EthUtil from "ethereumjs-util";
 import ethJSWallet from "ethereumjs-wallet";
 import { hdkey as EthereumHDKey } from "ethereumjs-wallet";
-import { Transaction } from "ethereumjs-tx";
-import Common from "ethereumjs-common";
+import { Transaction } from "@ethereumjs/tx";
+import Common from "@ethereumjs/common";
 
 // @ts-ignore
 import ProviderEngine from "@trufflesuite/web3-provider-engine";
@@ -157,21 +157,22 @@ class HDWalletProvider {
           const KNOWN_CHAIN_IDS = new Set([1, 3, 4, 5, 42]);
           let txOptions;
           if (typeof chain !== "undefined" && KNOWN_CHAIN_IDS.has(chain)) {
-            txOptions = { chain };
+            txOptions = { common: new Common({ chain }) };
           } else if (typeof chain !== "undefined") {
-            const common = Common.forCustomChain(
-              1,
-              {
-                name: "custom chain",
-                chainId: chain
-              },
-              self.hardfork
-            );
-            txOptions = { common };
+            txOptions = {
+              common: Common.forCustomChain(
+                1,
+                {
+                  name: "custom chain",
+                  chainId: chain
+                },
+                self.hardfork
+              )
+            };
           }
-          const tx = new Transaction(txParams, txOptions);
-          tx.sign(pkey as Buffer);
-          const rawTx = `0x${tx.serialize().toString("hex")}`;
+          const tx = Transaction.fromTxData(txParams, txOptions);
+          const signedTx = tx.sign(pkey as Buffer);
+          const rawTx = `0x${signedTx.serialize().toString("hex")}`;
           cb(null, rawTx);
         },
         signMessage({ data, from }: any, cb: any) {
