@@ -32,18 +32,28 @@ export const createCompilerSupplier = forDefinition<
       solcConfig: { docker = false, version }
     } = options;
 
+    // docker case: simple flag
     if (docker) {
       return "docker";
     }
 
+    // native case: version passed as string literal `"native"`
     if (version === "native") {
       return "native";
     }
 
-    if (version && fileExists(version)) {
+    // local soljson case: version is arguably a path
+    if (version && (
+      // an absolute path is definitely a path
+      path.isAbsolute(version) ||
+      // interpret version string as path if its point to real file on disk
+      fs.existsSync(version)
+    )) {
       return "local";
     }
 
+    // remote soljson case: version is unspecified or conforms to semver
+    // (default case)
     if (!version || semver.validRange(version)) {
       return "version-range";
     }
@@ -65,7 +75,3 @@ export const createCompilerSupplier = forDefinition<
     "version-range": VersionRange
   }
 });
-
-function fileExists(localPath) {
-  return fs.existsSync(localPath) || path.isAbsolute(localPath);
-}
