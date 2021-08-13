@@ -24,8 +24,7 @@ class ObservedListeners {
   cleanup() {
     for (const eventName in this.listeners) {
       const marked = this.listeners[eventName];
-      // @ts-expect-error since eventName: string
-      for (const listener of process.listeners(eventName)) {
+      for (const listener of process.listeners(eventName as NodeJS.Signals)) {
         if (!marked.has(listener)) {
           process.removeListener(eventName, listener);
         }
