@@ -1,20 +1,73 @@
 const debug = require("debug")("compile:compilerSupplier");
 const requireFromString = require("require-from-string");
-const fs = require("fs");
 const originalRequire = require("original-require");
 const axios = require("axios").default;
 const semver = require("semver");
 const solcWrap = require("solc/wrapper");
-const LoadingStrategy = require("./LoadingStrategy");
+const Cache = require("../Cache");
+const observeListeners = require("../observeListeners");
+const { NoVersionError, NoRequestError } = require("../errors");
 
-class VersionRange extends LoadingStrategy {
+class VersionRange {
+  constructor(options) {
+    const defaultConfig = {
+      compilerRoots: [
+        // NOTE this relay address exists so that we have a backup option in
+        // case more official distribution mechanisms fail.
+        //
+        // currently this URL just redirects (302 Found); we may alter this to
+        // host for real in the future.
+        "https://relay.trufflesuite.com/solc/bin/",
+        "https://solc-bin.ethereum.org/bin/",
+        "https://ethereum.github.io/solc-bin/bin/"
+      ]
+    };
+    this.config = Object.assign({}, defaultConfig, options);
+
+    this.cache = new Cache();
+  }
+
+  async load(versionRange) {
+    const rangeIsSingleVersion = semver.valid(versionRange);
+    if (rangeIsSingleVersion && this.versionIsCached(versionRange)) {
+      return this.getCachedSolcByVersionRange(versionRange);
+    }
+
+    try {
+      return await this.getSolcFromCacheOrUrl(versionRange);
+    } catch (error) {
+      if (error.message.includes("Failed to complete request")) {
+        return this.getSatisfyingVersionFromCache(versionRange);
+      }
+      throw error;
+    }
+  }
+
+  async list() {
+    const data = await this.getSolcVersions();
+    const { latestRelease } = data;
+
+    const prereleases = data.builds
+      .filter(build => build["prerelease"])
+      .map(build => build["longVersion"]);
+
+    // ensure releases are listed in descending order
+    const releases = semver.rsort(Object.keys(data.releases));
+
+    return {
+      prereleases,
+      releases,
+      latestRelease
+    };
+  }
+
   compilerFromString(code) {
-    const markedListeners = this.markListeners();
+    const listeners = observeListeners();
     try {
       const soljson = requireFromString(code);
       return solcWrap(soljson);
     } finally {
-      this.removeListener(markedListeners);
+      listeners.cleanup();
     }
   }
 
@@ -35,20 +88,20 @@ class VersionRange extends LoadingStrategy {
   }
 
   getCachedSolcByFileName(fileName) {
-    const markedListeners = this.markListeners();
+    const listeners = observeListeners();
     try {
-      const filePath = this.resolveCache(fileName);
+      const filePath = this.cache.resolve(fileName);
       const soljson = originalRequire(filePath);
       debug("soljson %o", soljson);
       return solcWrap(soljson);
     } finally {
-      this.removeListener(markedListeners);
+      listeners.cleanup();
     }
   }
 
   // Range can also be a single version specification like "0.5.0"
   getCachedSolcByVersionRange(version) {
-    const cachedCompilerFileNames = fs.readdirSync(this.compilerCachePath);
+    const cachedCompilerFileNames = this.cache.list();
     const validVersions = cachedCompilerFileNames.filter(fileName => {
       const match = fileName.match(/v\d+\.\d+\.\d+.*/);
       if (match) return semver.satisfies(match[0], version);
@@ -62,7 +115,7 @@ class VersionRange extends LoadingStrategy {
   }
 
   getCachedSolcFileName(commit) {
-    const cachedCompilerFileNames = fs.readdirSync(this.compilerCachePath);
+    const cachedCompilerFileNames = this.cache.list();
     return cachedCompilerFileNames.find(fileName => {
       return fileName.includes(commit);
     });
@@ -84,21 +137,10 @@ class VersionRange extends LoadingStrategy {
     if (this.versionIsCached(versionRange)) {
       return this.getCachedSolcByVersionRange(versionRange);
     }
-    throw this.errors("noVersion", versionRange);
+    throw new NoVersionError(versionRange);
   }
 
-  async getSolcByCommit(commit) {
-    const solcFileName = this.getCachedSolcFileName(commit);
-    if (solcFileName) return this.getCachedSolcByFileName(solcFileName);
-
-    const allVersions = await this.getSolcVersions();
-    const fileName = this.getSolcVersionFileName(commit, allVersions);
-
-    if (!fileName) throw new Error("No matching version found");
-    return this.getSolcByUrlAndCache(fileName);
-  }
-
-  async getSolcByUrlAndCache(fileName, index = 0) {
+  async getAndCacheSolcByUrl(fileName, index = 0) {
     const url = `${this.config.compilerRoots[index].replace(
       /\/+$/,
       ""
@@ -110,14 +152,14 @@ class VersionRange extends LoadingStrategy {
     try {
       const response = await axios.get(url, { maxRedirects: 50 });
       events.emit("downloadCompiler:succeed");
-      this.addFileToCache(response.data, fileName);
+      this.cache.add(response.data, fileName);
       return this.compilerFromString(response.data);
     } catch (error) {
       events.emit("downloadCompiler:fail");
       if (index >= this.config.compilerRoots.length - 1) {
-        throw this.errors("noRequest", "compiler URLs", error);
+        throw new NoRequestError("compiler URLs", error);
       }
-      return this.getSolcByUrlAndCache(fileName, index + 1);
+      return this.getAndCacheSolcByUrl(fileName, index + 1);
     }
   }
 
@@ -126,7 +168,7 @@ class VersionRange extends LoadingStrategy {
     try {
       allVersions = await this.getSolcVersions();
     } catch (error) {
-      throw this.errors("noRequest", versionConstraint, error);
+      throw new NoRequestError(versionConstraint, error);
     }
     const isVersionRange = !semver.valid(versionConstraint);
 
@@ -135,11 +177,11 @@ class VersionRange extends LoadingStrategy {
       : versionConstraint;
     const fileName = this.getSolcVersionFileName(versionToUse, allVersions);
 
-    if (!fileName) throw this.errors("noVersion", versionToUse);
+    if (!fileName) throw new NoVersionError(versionToUse);
 
-    if (this.fileIsCached(fileName))
+    if (this.cache.has(fileName))
       return this.getCachedSolcByFileName(fileName);
-    return this.getSolcByUrlAndCache(fileName);
+    return this.getAndCacheSolcByUrl(fileName);
   }
 
   getSolcVersions(index = 0) {
@@ -147,7 +189,7 @@ class VersionRange extends LoadingStrategy {
     events.emit("fetchSolcList:start", { attemptNumber: index + 1 });
     if (!this.config.compilerRoots || this.config.compilerRoots.length < 1) {
       events.emit("fetchSolcList:fail");
-      throw this.errors("noUrl");
+      throw new NoUrlError();
     }
     const { compilerRoots } = this.config;
 
@@ -162,7 +204,7 @@ class VersionRange extends LoadingStrategy {
       .catch(error => {
         events.emit("fetchSolcList:fail");
         if (index >= this.config.compilerRoots.length - 1) {
-          throw this.errors("noRequest", "version URLs", error);
+          throw new NoRequestError("version URLs", error);
         }
         return this.getSolcVersions(index + 1);
       });
@@ -192,29 +234,8 @@ class VersionRange extends LoadingStrategy {
     return null;
   }
 
-  async load(versionRange) {
-    const rangeIsSingleVersion = semver.valid(versionRange);
-    if (rangeIsSingleVersion && this.versionIsCached(versionRange)) {
-      return this.getCachedSolcByVersionRange(versionRange);
-    }
-
-    try {
-      return await this.getSolcFromCacheOrUrl(versionRange);
-    } catch (error) {
-      if (error.message.includes("Failed to complete request")) {
-        return this.getSatisfyingVersionFromCache(versionRange);
-      }
-      throw new Error(error);
-    }
-  }
-
-  normalizeSolcVersion(input) {
-    const version = String(input);
-    return version.split(":")[1].trim();
-  }
-
   versionIsCached(version) {
-    const cachedCompilerFileNames = fs.readdirSync(this.compilerCachePath);
+    const cachedCompilerFileNames = this.cache.list();
     const cachedVersions = cachedCompilerFileNames.map(fileName => {
       const match = fileName.match(/v\d+\.\d+\.\d+.*/);
       if (match) return match[0];
@@ -224,5 +245,12 @@ class VersionRange extends LoadingStrategy {
     );
   }
 }
+
+class NoUrlError extends Error {
+  constructor() {
+    super("compiler root URL missing");
+  }
+}
+
 
 module.exports = VersionRange;
