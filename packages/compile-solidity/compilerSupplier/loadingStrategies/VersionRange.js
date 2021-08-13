@@ -140,17 +140,6 @@ class VersionRange {
     throw new NoVersionError(versionRange);
   }
 
-  async getSolcByCommit(commit) {
-    const solcFileName = this.getCachedSolcFileName(commit);
-    if (solcFileName) return this.getCachedSolcByFileName(solcFileName);
-
-    const allVersions = await this.getSolcVersions();
-    const fileName = this.getSolcVersionFileName(commit, allVersions);
-
-    if (!fileName) throw new Error("No matching version found");
-    return this.getAndCacheSolcByUrl(fileName);
-  }
-
   async getAndCacheSolcByUrl(fileName, index = 0) {
     const url = `${this.config.compilerRoots[index].replace(
       /\/+$/,
