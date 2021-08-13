@@ -12,7 +12,7 @@ import { NoVersionError, NoRequestError } from "../errors";
 
 export class VersionRange {
   private config: {
-    events: any;
+    events: any; // represents a @truffle/events instance, which lacks types
     compilerRoots: string[];
   };
 
