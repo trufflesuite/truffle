@@ -164,11 +164,13 @@ export class Docker {
       retryDelay: axiosRetry.exponentialDelay,
       shouldResetTimeout: true,
       retryCondition: error => {
-        const tooManyRequests =
-          error && error.response && error.response.status === 429;
+        const tooManyRequests = !!(
+          error && error.response && error.response.status === 429
+        );
 
-        return !!(
-          axiosRetry.isNetworkOrIdempotentRequestError(error) || tooManyRequests
+        return (
+          axiosRetry.isNetworkOrIdempotentRequestError(error) ||
+          tooManyRequests
         );
       }
     });
