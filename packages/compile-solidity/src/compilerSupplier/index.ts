@@ -3,7 +3,7 @@ import fs from "fs";
 import semver from "semver";
 
 import type { Results } from "./types";
-import { forDefinition } from "@truffle/supplier";
+import { Supplier, forDefinition } from "@truffle/supplier";
 import { Docker, Local, Native, VersionRange } from "./loadingStrategies";
 
 export namespace CompilerSupplier {
@@ -23,6 +23,12 @@ export namespace CompilerSupplier {
     };
   };
 }
+
+export type CreateCompilerSupplierOptions =
+  Supplier.Options<
+    CompilerSupplier.Specification,
+    Supplier.StrategyName<CompilerSupplier.Specification>
+  >;
 
 export const createCompilerSupplier = forDefinition<
   CompilerSupplier.Specification
@@ -58,14 +64,7 @@ export const createCompilerSupplier = forDefinition<
       return "version-range";
     }
 
-    const message =
-      `Could not find a compiler version matching ${version}. ` +
-      `compilers.solc.version option must be a string specifying:\n` +
-      `   - a path to a locally installed solcjs\n` +
-      `   - a solc version or range (ex: '0.4.22' or '^0.5.0')\n` +
-      `   - a docker image name (ex: 'stable')\n` +
-      `   - 'native' to use natively installed solc\n`;
-    throw new Error(message);
+    throw new UnknownStrategyError(options);
   },
 
   strategyConstructors: {
@@ -75,3 +74,22 @@ export const createCompilerSupplier = forDefinition<
     "version-range": VersionRange
   }
 });
+
+export class UnknownStrategyError extends Error {
+  constructor(options: CreateCompilerSupplierOptions) {
+    const {
+      solcConfig: {
+        version
+      }
+    } = options;
+
+    super(
+      `Could not find a compiler version matching ${version}. ` +
+      `compilers.solc.version option must be a string specifying:\n` +
+      `   - a path to a locally installed solcjs\n` +
+      `   - a solc version or range (ex: '0.4.22' or '^0.5.0')\n` +
+      `   - a docker image name (ex: 'stable')\n` +
+      `   - 'native' to use natively installed solc\n`
+    );
+  }
+}
