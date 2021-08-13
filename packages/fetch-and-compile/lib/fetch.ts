@@ -123,7 +123,7 @@ async function tryFetchAndCompileAddress(
     let compileResult: WorkflowCompileResult;
     try {
       compileResult = await Compile.sources({
-        options: externalConfig,
+        options: externalConfig.with({ quiet: true }),
         sources
       });
     } catch (error) {
