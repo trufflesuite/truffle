@@ -7,16 +7,18 @@ import { Docker, Local, Native, VersionRange } from "./loadingStrategies";
 const defaultSolcVersion = "0.5.16";
 
 export class CompilerSupplier {
-  private events: unknown;
+  private events: any;
   private version: string;
   private docker: unknown;
   private compilerRoots: unknown;
   private strategyOptions: Partial<{
     version: string;
-    docker: unknown;
-    compilerRoots: unknown;
-    events: unknown;
-    spawn: unknown;
+    docker: boolean;
+    compilerRoots: string[];
+    events: any; // represents a @truffle/events instance, which lacks types
+    spawn: {
+      maxBuffer: number
+    };
   }>;
 
   constructor({ events, solcConfig }) {
