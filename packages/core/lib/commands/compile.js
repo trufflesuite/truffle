@@ -102,6 +102,10 @@ const command = {
     const supplier = new CompilerSupplier({
       solcConfig: {
         ...options.compilers.solc,
+        // HACK to force use of the VersionRange or Docker strategy
+        // as implemented, Docker requires a version to be specified, and so
+        // we can't simply remove this field entirely.
+        version: "0.5.16",
         docker: options.list === "docker"
       },
       events: options.events
