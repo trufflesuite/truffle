@@ -1,6 +1,7 @@
 import path from "path";
 import assignIn from "lodash.assignin";
 import merge from "lodash.merge";
+import pick from "lodash.pick";
 import Module from "module";
 import findUp from "find-up";
 import Configstore from "configstore";
@@ -40,17 +41,11 @@ class TruffleConfig {
     );
   }
 
-  public eventManagerOptions(options: any): any {
-    const { quiet, logger, subscribers } = options;
-    const eventManagerOptions: any = { quiet, logger, subscribers };
-    // filter undefined values
-    return Object.keys(eventManagerOptions)
-      .reduce((a: any, key: string) => {
-        if (typeof eventManagerOptions[key] !== "undefined") {
-          a[key] = eventManagerOptions[key];
-        }
-        return a;
-      }, {});
+  private eventManagerOptions(
+    options: TruffleConfig | { quiet?: boolean, logger?: any, subscribers?: any[] }
+  ): any {
+    const optionsWhitelist = ["quiet", "logger", "subscribers"] as const;
+    return pick(options, optionsWhitelist);
   }
 
   public addProp(propertyName: string, descriptor: any): void {
