@@ -44,7 +44,7 @@ class TruffleConfig {
   private eventManagerOptions(
     options: TruffleConfig | { quiet?: boolean, logger?: any, subscribers?: any[] }
   ): any {
-    const optionsWhitelist = ["quiet", "logger", "subscribers"] as const;
+    const optionsWhitelist = ["quiet", "logger", "subscribers"];
     return pick(options, optionsWhitelist);
   }
 
