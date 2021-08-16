@@ -104,7 +104,7 @@ export namespace Supplier {
 
 /**
  * An object of type Supplier<S, N> provides an interface for loading and
- * possibly listing versions of the compiler
+ * possibly listing versions of the supplied component
  *
  * @dev for known strategy names, this computes the method signature of
  *      `load()` according to the corresponding strategy specification;
