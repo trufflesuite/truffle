@@ -1,9 +1,9 @@
-import BN from "bn.js";
+import type BN from "bn.js";
 
-import * as Abi from "@truffle/abi-utils";
-import * as Types from "@truffle/codec/format/types";
-import * as Values from "@truffle/codec/format/values";
-import { PaddingMode } from "@truffle/codec/common";
+import type * as Abi from "@truffle/abi-utils";
+import type * as Types from "@truffle/codec/format/types";
+import type * as Values from "@truffle/codec/format/values";
+import type { PaddingMode } from "@truffle/codec/common";
 
 /**
  * A type representing a transaction (calldata) decoding.  As you can see, these come in five types,

@@ -1,6 +1,6 @@
-import BN from "bn.js";
-import Big from "big.js";
-import * as Types from "./types";
+import type BN from "bn.js";
+import type Big from "big.js";
+import type * as Types from "./types";
 
 //note that we often want an elementary *value*, and not an error!
 //so let's define those types too

@@ -8,8 +8,8 @@ import debugModule from "debug";
 const debug = debugModule("codec:abi-data:import");
 
 import BN from "bn.js";
-import * as Format from "@truffle/codec/format/common";
-import { Parameter } from "@truffle/abi-utils";
+import type * as Format from "@truffle/codec/format/common";
+import type { Parameter } from "@truffle/abi-utils";
 
 export function abiParameterToType(abi: Parameter): Format.Types.Type {
   let typeName = abi.type;

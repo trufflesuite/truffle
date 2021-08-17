@@ -1,7 +1,7 @@
 import * as Evm from "@truffle/codec/evm";
-import * as Pointer from "@truffle/codec/pointer";
+import type * as Pointer from "@truffle/codec/pointer";
 import { DecodingError } from "@truffle/codec/errors";
-import { DecoderRequest } from "@truffle/codec/types";
+import type { DecoderRequest } from "@truffle/codec/types";
 
 export function* readCode(
   pointer: Pointer.CodePointer,

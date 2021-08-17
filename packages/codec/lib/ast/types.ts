@@ -1,4 +1,4 @@
-import * as Common from "@truffle/codec/common";
+import type * as Common from "@truffle/codec/common";
 
 export interface TypeDescriptions {
   typeIdentifier: string;

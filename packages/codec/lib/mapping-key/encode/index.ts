@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:mapping-key:encode");
 
-import * as Format from "@truffle/codec/format";
+import type * as Format from "@truffle/codec/format";
 import * as Conversion from "@truffle/codec/conversion";
 import * as BasicEncode from "@truffle/codec/basic/encode";
 import * as BytesEncode from "@truffle/codec/bytes/encode";

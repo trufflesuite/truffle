@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:topic:encode");
 
-import * as Format from "@truffle/codec/format";
+import type * as Format from "@truffle/codec/format";
 import * as Conversion from "@truffle/codec/conversion";
 import * as Evm from "@truffle/codec/evm";
 import * as BasicEncode from "@truffle/codec/basic/encode";

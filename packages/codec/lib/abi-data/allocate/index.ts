@@ -3,20 +3,20 @@ const debug = debugModule("codec:abi-data:allocate");
 
 export * as Utils from "./utils";
 
-import * as Abi from "@truffle/abi-utils";
+import type * as Abi from "@truffle/abi-utils";
 
 import * as Import from "@truffle/codec/abi-data/import";
 import * as AbiDataUtils from "@truffle/codec/abi-data/utils";
 const Web3Utils = require("web3-utils"); //sorry for untyped import
 import * as Evm from "@truffle/codec/evm";
 import * as Common from "@truffle/codec/common";
-import * as Compiler from "@truffle/codec/compiler";
+import type * as Compiler from "@truffle/codec/compiler";
 import * as Conversion from "@truffle/codec/conversion";
 import * as Ast from "@truffle/codec/ast";
-import * as Contexts from "@truffle/codec/contexts";
+import type * as Contexts from "@truffle/codec/contexts";
 import { makeTypeId } from "@truffle/codec/contexts/import";
-import * as Pointer from "@truffle/codec/pointer";
-import {
+import type * as Pointer from "@truffle/codec/pointer";
+import type {
   AbiAllocation,
   AbiAllocations,
   AbiMemberAllocation,
@@ -43,7 +43,7 @@ import {
   EventArgumentAllocation,
   ReturndataAllocations
 } from "./types";
-import { DecodingMode } from "@truffle/codec/types";
+import type { DecodingMode } from "@truffle/codec/types";
 import * as Format from "@truffle/codec/format";
 import partition from "lodash.partition";
 

@@ -1,11 +1,11 @@
-import * as Compiler from "@truffle/codec/compiler";
-import { AstNode } from "@truffle/codec/ast/types";
-import {
+import type * as Compiler from "@truffle/codec/compiler";
+import type { AstNode } from "@truffle/codec/ast/types";
+import type {
   Abi as SchemaAbi,
   ImmutableReferences,
   ContractObject as Artifact
 } from "@truffle/contract-schema/spec";
-import * as Common from "@truffle/compile-common";
+import type * as Common from "@truffle/compile-common";
 
 //Note to other people passing in compilations:
 //Please include all fields you can that aren't

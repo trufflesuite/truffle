@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:format:utils:circularity");
 
-import * as Format from "@truffle/codec/format/common";
+import type * as Format from "@truffle/codec/format/common";
 
 export function tie(untied: Format.Values.Result): Format.Values.Result {
   return tieWithTable(untied, []);

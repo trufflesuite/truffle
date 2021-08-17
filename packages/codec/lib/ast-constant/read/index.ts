@@ -10,7 +10,7 @@ const debug = debugModule("codec:ast:read");
 import * as Conversion from "@truffle/codec/conversion";
 import * as Evm from "@truffle/codec/evm";
 import * as Ast from "@truffle/codec/ast";
-import * as Pointer from "@truffle/codec/pointer";
+import type * as Pointer from "@truffle/codec/pointer";
 import BN from "bn.js";
 import { DecodingError } from "@truffle/codec/errors";
 

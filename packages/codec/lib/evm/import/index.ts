@@ -1,6 +1,6 @@
-import * as Format from "@truffle/codec/format";
+import type * as Format from "@truffle/codec/format";
 import { makeTypeId } from "@truffle/codec/contexts/import";
-import { InternalFunction } from "@truffle/codec/evm/types";
+import type { InternalFunction } from "@truffle/codec/evm/types";
 
 //creates a type object for the contract the function was defined in
 export function functionTableEntryToType(

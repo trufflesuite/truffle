@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:format:utils:inspect");
 
 import util from "util";
-import * as Format from "@truffle/codec/format/common";
+import type * as Format from "@truffle/codec/format/common";
 import * as Exception from "./exception";
 
 //we'll need to write a typing for the options type ourself, it seems; just

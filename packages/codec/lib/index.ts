@@ -80,7 +80,7 @@ export { DecodingError, StopDecodingError } from "./errors";
 
 //now: what types should we export? (other than the ones from ./format)
 //public-facing types for the interface
-export {
+export type {
   DecodingMode,
   CalldataDecoding,
   LogDecoding,
@@ -156,8 +156,8 @@ export { Contexts };
 import * as Conversion from "./conversion";
 export { Conversion };
 
-import * as Pointer from "./pointer";
-export { Pointer };
+import type * as Pointer from "./pointer";
+export type { Pointer };
 
 import * as Evm from "./evm";
 export { Evm };

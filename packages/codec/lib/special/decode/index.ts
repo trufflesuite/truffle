@@ -1,12 +1,12 @@
 import debugModule from "debug";
 const debug = debugModule("codec:special:decode");
 
-import * as Format from "@truffle/codec/format";
+import type * as Format from "@truffle/codec/format";
 import * as Basic from "@truffle/codec/basic";
 import * as Bytes from "@truffle/codec/bytes";
 import * as Compiler from "@truffle/codec/compiler";
-import * as Pointer from "@truffle/codec/pointer";
-import { DecoderRequest } from "@truffle/codec/types";
+import type * as Pointer from "@truffle/codec/pointer";
+import type { DecoderRequest } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
 
 export function* decodeSpecial(

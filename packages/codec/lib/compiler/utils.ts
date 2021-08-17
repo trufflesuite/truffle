@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:compiler:utils");
 
 import semver from "semver";
-import { CompilerVersion, SolidityFamily } from "./types";
+import type { CompilerVersion, SolidityFamily } from "./types";
 
 export function solidityFamily(compiler: CompilerVersion): SolidityFamily {
   if (!compiler || compiler.name !== "solc") {

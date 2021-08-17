@@ -1,5 +1,5 @@
-import BN from "bn.js";
-import * as Elementary from "@truffle/codec/format/elementary";
+import type BN from "bn.js";
+import type * as Elementary from "@truffle/codec/format/elementary";
 //import directly from Elementary to avoid circularity!
 
 export type StorageLength = { bytes: number } | { words: number };

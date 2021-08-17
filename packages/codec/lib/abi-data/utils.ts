@@ -5,8 +5,8 @@ const debug = debugModule("codec:abi-data:utils");
 const Web3Utils = require("web3-utils");
 import * as Evm from "@truffle/codec/evm";
 import * as Ast from "@truffle/codec/ast";
-import * as Abi from "@truffle/abi-utils";
-import { FunctionAbiBySelectors } from "./types";
+import type * as Abi from "@truffle/abi-utils";
+import type { FunctionAbiBySelectors } from "./types";
 
 export const DEFAULT_CONSTRUCTOR_ABI: Abi.ConstructorEntry = {
   type: "constructor",

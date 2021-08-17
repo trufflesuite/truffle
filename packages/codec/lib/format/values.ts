@@ -17,9 +17,9 @@ const debug = debugModule("codec:format:values");
 //just intended for the future.  More optional fields may be added in the
 //future.
 
-import * as Types from "./types";
-import * as Errors from "./errors";
-import {
+import type * as Types from "./types";
+import type * as Errors from "./errors";
+import type {
   ElementaryValue,
   UintValue,
   IntValue,
@@ -35,10 +35,10 @@ import {
   ContractValueInfoKnown,
   ContractValueInfoUnknown
 } from "./elementary";
-import * as Common from "@truffle/codec/common";
-import * as Abi from "@truffle/abi-utils";
+import type * as Common from "@truffle/codec/common";
+import type * as Abi from "@truffle/abi-utils";
 
-export * from "./elementary";
+export * from "./elementary"; //can't do 'export type *'
 
 /*
  * SECTION 1: Generic types for values in neneral (including errors).

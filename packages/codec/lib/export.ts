@@ -1,8 +1,8 @@
 import debugModule from "debug";
 const debug = debugModule("codec:export");
 
-import * as Format from "@truffle/codec/format";
-import {
+import type * as Format from "@truffle/codec/format";
+import type {
   LogDecoding,
   ReturndataDecoding
 } from "@truffle/codec/types";

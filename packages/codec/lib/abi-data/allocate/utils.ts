@@ -1,13 +1,13 @@
 import debugModule from "debug";
 const debug = debugModule("codec:abi-data:allocate:utils");
 
-import {
+import type {
   ContractAllocationInfo,
   ContractAndContexts
 } from "./types";
 import * as Compilations from "@truffle/codec/compilations";
 import { Shims } from "@truffle/compile-common";
-import * as Ast from "@truffle/codec/ast";
+import type * as Ast from "@truffle/codec/ast";
 import * as Contexts from "@truffle/codec/contexts";
 import * as Abi from "@truffle/abi-utils";
 

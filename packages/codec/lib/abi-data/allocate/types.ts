@@ -1,13 +1,13 @@
-import * as Abi from "@truffle/abi-utils";
+import type * as Abi from "@truffle/abi-utils";
 
-import * as Compiler from "@truffle/codec/compiler";
-import * as Compilations from "@truffle/codec/compilations";
-import * as Ast from "@truffle/codec/ast";
-import * as Contexts from "@truffle/codec/contexts/types";
-import * as Pointer from "@truffle/codec/pointer";
-import { DecodingMode } from "@truffle/codec/types";
-import { ImmutableReferences } from "@truffle/contract-schema/spec";
-import * as Format from "@truffle/codec/format";
+import type * as Compiler from "@truffle/codec/compiler";
+import type * as Compilations from "@truffle/codec/compilations";
+import type * as Ast from "@truffle/codec/ast";
+import type * as Contexts from "@truffle/codec/contexts/types";
+import type * as Pointer from "@truffle/codec/pointer";
+import type { DecodingMode } from "@truffle/codec/types";
+import type { ImmutableReferences } from "@truffle/contract-schema/spec";
+import type * as Format from "@truffle/codec/format";
 
 //for passing to calldata/returndata/event/state allocation functions
 export interface ContractAllocationInfo {

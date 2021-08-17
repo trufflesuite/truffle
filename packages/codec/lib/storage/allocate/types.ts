@@ -1,7 +1,7 @@
-import * as Storage from "@truffle/codec/storage/types";
-import * as Ast from "@truffle/codec/ast/types";
-import * as Pointer from "@truffle/codec/pointer";
-import * as Format from "@truffle/codec/format";
+import type * as Storage from "@truffle/codec/storage/types";
+import type * as Ast from "@truffle/codec/ast/types";
+import type * as Pointer from "@truffle/codec/pointer";
+import type * as Format from "@truffle/codec/format";
 
 //holds a collection of storage allocations for structs
 export interface StorageAllocations {
