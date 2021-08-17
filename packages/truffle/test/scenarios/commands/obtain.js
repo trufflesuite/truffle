@@ -52,9 +52,10 @@ describe("truffle obtain", function () {
       }
     }
     await CommandRunner.run("obtain --solc=0.7.2 --quiet", config);
-    const output = logger.contents();
+    // logger.contents() returns false as long as nothing is written to the
+    // stream that is used for logging in MemoryLogger
     assert(
-      !output.includes("successfully downloaded and cached"),
+      !logger.contents(),
       "The command logged to the console when it shouldn't have."
     );
     fse.unlinkSync(expectedPath);
