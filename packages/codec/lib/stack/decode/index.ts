@@ -14,8 +14,8 @@ import read from "@truffle/codec/read";
 import * as Basic from "@truffle/codec/basic";
 import * as Memory from "@truffle/codec/memory";
 import * as Storage from "@truffle/codec/storage";
-import * as Pointer from "@truffle/codec/pointer";
-import { DecoderRequest } from "@truffle/codec/types";
+import type * as Pointer from "@truffle/codec/pointer";
+import type { DecoderRequest } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
 import { handleDecodingError } from "@truffle/codec/errors";
 

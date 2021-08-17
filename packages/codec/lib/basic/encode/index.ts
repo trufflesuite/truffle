@@ -1,4 +1,4 @@
-import * as Format from "@truffle/codec/format";
+import type * as Format from "@truffle/codec/format";
 import * as Conversion from "@truffle/codec/conversion";
 import * as Evm from "@truffle/codec/evm";
 

@@ -5,7 +5,7 @@ import * as AstConstantRead from "@truffle/codec/ast-constant/read";
 import * as TopicRead from "@truffle/codec/topic/read";
 import * as SpecialRead from "@truffle/codec/special/read";
 import * as Pointer from "@truffle/codec/pointer";
-import { DecoderRequest } from "@truffle/codec/types";
+import type { DecoderRequest } from "@truffle/codec/types";
 import { DecodingError } from "@truffle/codec/errors";
 import * as Evm from "@truffle/codec/evm";
 

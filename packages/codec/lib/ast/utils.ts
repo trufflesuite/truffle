@@ -1,10 +1,10 @@
 import debugModule from "debug";
 const debug = debugModule("codec:ast:utils");
 
-import * as Abi from "@truffle/abi-utils";
+import type * as Abi from "@truffle/abi-utils";
 import * as Common from "@truffle/codec/common";
 
-import { AstNode, AstNodes, Scopes } from "./types";
+import type { AstNode, AstNodes, Scopes } from "./types";
 import BN from "bn.js";
 import cloneDeep from "lodash.clonedeep";
 

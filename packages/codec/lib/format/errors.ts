@@ -13,11 +13,11 @@ const debug = debugModule("codec:format:errors");
 //This is because they're not for throwing.  If you want to throw one,
 //wrap it in a DecodingError.
 
-import BN from "bn.js";
-import * as Types from "./types";
-import * as Ast from "@truffle/codec/ast/types";
-import * as Storage from "@truffle/codec/storage/types";
-import { PaddingType } from "@truffle/codec/common";
+import type BN from "bn.js";
+import type * as Types from "./types";
+import type * as Ast from "@truffle/codec/ast/types";
+import type * as Storage from "@truffle/codec/storage/types";
+import type { PaddingType } from "@truffle/codec/common";
 
 /*
  * SECTION 1: Generic types for values in general (including errors).

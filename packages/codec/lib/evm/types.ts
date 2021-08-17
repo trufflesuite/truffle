@@ -1,19 +1,19 @@
-import * as Common from "@truffle/codec/common";
-import * as Storage from "@truffle/codec/storage/types";
-import * as Ast from "@truffle/codec/ast";
-import {
+import type * as Common from "@truffle/codec/common";
+import type * as Storage from "@truffle/codec/storage/types";
+import type * as Ast from "@truffle/codec/ast";
+import type {
   StorageAllocations,
   StateAllocations
 } from "@truffle/codec/storage/allocate/types";
-import { MemoryAllocations } from "@truffle/codec/memory/allocate/types";
-import {
+import type { MemoryAllocations } from "@truffle/codec/memory/allocate/types";
+import type {
   AbiAllocations,
   CalldataAllocations,
   ReturndataAllocations,
   EventAllocations
 } from "@truffle/codec/abi-data/allocate/types";
-import * as Contexts from "@truffle/codec/contexts/types";
-import * as Format from "@truffle/codec/format";
+import type * as Contexts from "@truffle/codec/contexts/types";
+import type * as Format from "@truffle/codec/format";
 
 export interface EvmState {
   storage: WordMapping;

@@ -1,14 +1,14 @@
 import debugModule from "debug";
 const debug = debugModule("codec:storage:allocate");
 
-import * as Compiler from "@truffle/codec/compiler";
+import type * as Compiler from "@truffle/codec/compiler";
 import * as Common from "@truffle/codec/common";
 import * as Basic from "@truffle/codec/basic";
-import * as Storage from "@truffle/codec/storage/types";
+import type * as Storage from "@truffle/codec/storage/types";
 import * as Utils from "@truffle/codec/storage/utils";
 import * as Ast from "@truffle/codec/ast";
-import * as Pointer from "@truffle/codec/pointer";
-import {
+import type * as Pointer from "@truffle/codec/pointer";
+import type {
   StorageAllocation,
   StorageAllocations,
   StorageMemberAllocation,
@@ -16,8 +16,8 @@ import {
   StateAllocations,
   StateVariableAllocation
 } from "./types";
-import { ContractAllocationInfo } from "@truffle/codec/abi-data/allocate";
-import { ImmutableReferences } from "@truffle/contract-schema/spec";
+import type { ContractAllocationInfo } from "@truffle/codec/abi-data/allocate";
+import type { ImmutableReferences } from "@truffle/contract-schema/spec";
 import * as Evm from "@truffle/codec/evm";
 import * as Format from "@truffle/codec/format";
 import BN from "bn.js";

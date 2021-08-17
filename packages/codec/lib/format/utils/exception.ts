@@ -8,7 +8,7 @@ const debug = debugModule("codec:format:utils:exception");
 
 import * as Format from "@truffle/codec/format/common";
 import * as AstUtils from "@truffle/codec/ast/utils";
-import * as Storage from "@truffle/codec/storage/types";
+import type * as Storage from "@truffle/codec/storage/types";
 
 //this function gives an error message
 //for those errors that are meant to possibly

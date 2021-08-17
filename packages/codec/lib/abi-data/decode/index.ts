@@ -7,14 +7,14 @@
 import debugModule from "debug";
 const debug = debugModule("codec:abi-data:decode");
 
-import BN from "bn.js";
+import type BN from "bn.js";
 import read from "@truffle/codec/read";
 import * as Conversion from "@truffle/codec/conversion";
 import * as Basic from "@truffle/codec/basic";
 import * as Bytes from "@truffle/codec/bytes";
 import * as Format from "@truffle/codec/format";
-import * as Pointer from "@truffle/codec/pointer";
-import { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
+import type * as Pointer from "@truffle/codec/pointer";
+import type { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
 import { abiSizeInfo } from "@truffle/codec/abi-data/allocate";
 import { handleDecodingError, StopDecodingError } from "@truffle/codec/errors";

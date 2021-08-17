@@ -3,10 +3,10 @@ const debug = debugModule("codec:bytes:decode");
 
 import read from "@truffle/codec/read";
 import * as Conversion from "@truffle/codec/conversion";
-import * as Format from "@truffle/codec/format";
-import * as Pointer from "@truffle/codec/pointer";
-import { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
-import * as Evm from "@truffle/codec/evm";
+import type * as Format from "@truffle/codec/format";
+import type * as Pointer from "@truffle/codec/pointer";
+import type { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
+import type * as Evm from "@truffle/codec/evm";
 import { handleDecodingError } from "@truffle/codec/errors";
 import utf8 from "utf8";
 

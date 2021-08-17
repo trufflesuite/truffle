@@ -6,7 +6,7 @@
  * @packageDocumentation
  */
 
-export * from "./types";
+export * from "./types"; //can't do 'export type *'
 
 import * as Utils from "./utils";
 export { Utils };

@@ -5,9 +5,9 @@ import read from "@truffle/codec/read";
 import * as Basic from "@truffle/codec/basic";
 import * as Format from "@truffle/codec/format";
 import * as Conversion from "@truffle/codec/conversion";
-import * as Pointer from "@truffle/codec/pointer";
-import { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
-import * as Evm from "@truffle/codec/evm";
+import type * as Pointer from "@truffle/codec/pointer";
+import type { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
+import type * as Evm from "@truffle/codec/evm";
 
 export function* decodeTopic(
   dataType: Format.Types.Type,

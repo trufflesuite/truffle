@@ -1,13 +1,13 @@
 import debugModule from "debug";
 const debug = debugModule("codec:memory:allocate");
 
-import {
+import type {
   MemoryAllocations,
   MemoryAllocation,
   MemoryMemberAllocation
 } from "./types";
 import * as Evm from "@truffle/codec/evm";
-import * as Format from "@truffle/codec/format";
+import type * as Format from "@truffle/codec/format";
 
 export { MemoryAllocations, MemoryAllocation, MemoryMemberAllocation };
 

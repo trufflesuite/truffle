@@ -3,7 +3,7 @@ const debug = debugModule("codec:conversion");
 
 import BN from "bn.js";
 import Big from "big.js";
-import * as Format from "@truffle/codec/format";
+import type * as Format from "@truffle/codec/format";
 
 /**
  * @param bytes - undefined | string | number | BN | Uint8Array | Big

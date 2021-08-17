@@ -2,16 +2,16 @@ import debugModule from "debug";
 const debug = debugModule("codec:contexts:utils");
 
 import * as Evm from "@truffle/codec/evm";
-import * as Compilations from "@truffle/codec/compilations";
-import * as Ast from "@truffle/codec/ast";
+import type * as Compilations from "@truffle/codec/compilations";
+import type * as Ast from "@truffle/codec/ast";
 import * as Conversion from "@truffle/codec/conversion";
-import { CompilerVersion } from "@truffle/codec/compiler";
-import { Context, Contexts } from "./types";
+import type { CompilerVersion } from "@truffle/codec/compiler";
+import type { Context, Contexts } from "./types";
 import escapeRegExp from "lodash.escaperegexp";
 import * as cbor from "cbor";
 import { Shims } from "@truffle/compile-common";
 import * as Abi from "@truffle/abi-utils";
-import * as Common from "@truffle/codec/common";
+import type * as Common from "@truffle/codec/common";
 import * as AbiDataUtils from "@truffle/codec/abi-data/utils";
 
 export function findContext(

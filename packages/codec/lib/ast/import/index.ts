@@ -8,11 +8,11 @@ import debugModule from "debug";
 const debug = debugModule("codec:ast:import");
 
 import BN from "bn.js";
-import * as Format from "@truffle/codec/format/common";
-import * as Common from "@truffle/codec/common";
+import type * as Format from "@truffle/codec/format/common";
+import type * as Common from "@truffle/codec/common";
 import * as Compiler from "@truffle/codec/compiler";
 import * as Utils from "@truffle/codec/ast/utils";
-import { AstNode, AstNodes } from "@truffle/codec/ast/types";
+import type { AstNode, AstNodes } from "@truffle/codec/ast/types";
 import { makeTypeId } from "@truffle/codec/contexts/import";
 
 //NOTE: the following function will *not* work for arbitrary nodes! It will,

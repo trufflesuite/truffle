@@ -1,16 +1,16 @@
 import debugModule from "debug";
 const debug = debugModule("codec:compilations:utils");
 
-import { AstNode, AstNodes } from "@truffle/codec/ast/types";
+import type { AstNode, AstNodes } from "@truffle/codec/ast/types";
 import * as Ast from "@truffle/codec/ast";
-import * as Compiler from "@truffle/codec/compiler";
-import {
+import type * as Compiler from "@truffle/codec/compiler";
+import type {
   ContractObject as Artifact,
   GeneratedSources
 } from "@truffle/contract-schema/spec";
-import * as Common from "@truffle/compile-common";
-import * as Format from "@truffle/codec/format";
-import {
+import type * as Common from "@truffle/compile-common";
+import type * as Format from "@truffle/codec/format";
+import type {
   Compilation,
   Contract,
   Source,

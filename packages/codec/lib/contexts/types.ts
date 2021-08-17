@@ -1,8 +1,8 @@
-import * as Abi from "@truffle/abi-utils";
-import * as AbiData from "@truffle/codec/abi-data/types";
-import * as Common from "@truffle/codec/common";
-import * as Compiler from "@truffle/codec/compiler";
-import { ImmutableReferences } from "@truffle/contract-schema/spec";
+import type * as Abi from "@truffle/abi-utils";
+import type * as AbiData from "@truffle/codec/abi-data/types";
+import type * as Common from "@truffle/codec/common";
+import type * as Compiler from "@truffle/codec/compiler";
+import type { ImmutableReferences } from "@truffle/contract-schema/spec";
 
 export interface Contexts {
   [context: string]: Context;

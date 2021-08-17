@@ -23,8 +23,8 @@ const debug = debugModule("codec:format:types");
 //ALSO NOTE: IDs are strings even though they're currently numeric because
 //that might change in the future.
 
-import BN from "bn.js";
-import { ContractKind, Location, Mutability } from "@truffle/codec/common";
+import type BN from "bn.js";
+import type { ContractKind, Location, Mutability } from "@truffle/codec/common";
 
 /**
  * Object representing a type
