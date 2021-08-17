@@ -9,7 +9,7 @@ const sandbox = require("../sandbox");
 let logger, config, project, expectedPath;
 
 describe("truffle obtain", function () {
-  project = path.join(__dirname, "../../sources/develop");
+  project = path.join(__dirname, "../../sources/obtain");
 
   beforeEach(async function () {
     expectedPath = path.join(
