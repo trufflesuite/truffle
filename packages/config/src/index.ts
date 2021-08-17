@@ -43,7 +43,7 @@ class TruffleConfig {
 
   private eventManagerOptions(
     options: TruffleConfig | Partial<Pick<TruffleConfig, "quiet" | "logger" | "subscribers">>
-  ): any {
+  ): Partial<TruffleConfig> {
     const optionsWhitelist = ["quiet", "logger", "subscribers"];
     return pick(options, optionsWhitelist);
   }
