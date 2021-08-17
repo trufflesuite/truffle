@@ -8,6 +8,10 @@ const options = {
     option: "--config <file>",
     description:
       "Specify configuration file to be used. The default is truffle-config.js"
+  },
+  quiet: {
+    option: "--quiet",
+    description: "Suppress excess logging output."
   }
 };
  module.exports = options;

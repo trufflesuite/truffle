@@ -39,10 +39,6 @@ const command = {
           "prereleases,\n                    releases, latestRelease or docker."
       },
       {
-        option: "--quiet",
-        description: "Suppress all compilation output."
-      },
-      {
         option: "--compiler <compiler-name>",
         description:
           "Specify a single compiler to use (e.g. `--compiler=solc`). Specify `none` to skip compilation."
@@ -54,7 +50,7 @@ const command = {
           "Save the raw compiler results into <output-file>, overwriting any existing content."
       },
     ],
-    allowedGlobalOptions: ["config"]
+    allowedGlobalOptions: ["config", "quiet"]
   },
   run: async function (options) {
     const TruffleError = require("@truffle/error");
