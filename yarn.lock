@@ -1027,14 +1027,6 @@
     "@ethereumjs/common" "^2.3.1"
     ethereumjs-util "^7.0.10"
 
-"@ethereumjs/tx@^3.3.0":
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/@ethereumjs/tx/-/tx-3.3.0.tgz#14ed1b7fa0f28e1cd61e3ecbdab824205f6a4378"
-  integrity sha512-yTwEj2lVzSMgE6Hjw9Oa1DZks/nKTWM8Wn4ykDNapBPua2f4nXO3qKnni86O6lgDj5fVNRqbDsD0yy7/XNGDEA==
-  dependencies:
-    "@ethereumjs/common" "^2.4.0"
-    ethereumjs-util "^7.1.0"
-
 "@ethersproject/abi@5.0.0-beta.153":
   version "5.0.0-beta.153"
   resolved "https://registry.yarnpkg.com/@ethersproject/abi/-/abi-5.0.0-beta.153.tgz#43a37172b33794e4562999f6e2d555b7599a8eee"
