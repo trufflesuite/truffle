@@ -9,7 +9,7 @@ module.exports = {
         description: `Download and cache a version of the solc compiler. (required)`
       }
     ],
-    allowedGlobalOptions: []
+    allowedGlobalOptions: ["quiet"]
   },
   run: async function (options) {
     const SUPPORTED_COMPILERS = ["--solc"];

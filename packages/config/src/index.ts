@@ -1,6 +1,7 @@
 import path from "path";
 import assignIn from "lodash.assignin";
 import merge from "lodash.merge";
+import pick from "lodash.pick";
 import Module from "module";
 import findUp from "find-up";
 import Configstore from "configstore";
@@ -40,10 +41,11 @@ class TruffleConfig {
     );
   }
 
-  public eventManagerOptions(config: TruffleConfig): any {
-    let muteLogging;
-    const { quiet, logger, subscribers } = config;
-    return { logger, quiet, subscribers };
+  private eventManagerOptions(
+    options: Partial<TruffleConfig>
+  ): Partial<Pick<TruffleConfig, "quiet" | "logger" | "subscribers">> {
+    const optionsWhitelist = ["quiet", "logger", "subscribers"];
+    return pick(options, optionsWhitelist);
   }
 
   public addProp(propertyName: string, descriptor: any): void {
@@ -102,8 +104,12 @@ class TruffleConfig {
     const current = this.normalize(this);
     const normalized = this.normalize(obj);
 
-    let eventsOptions = this.eventManagerOptions(this);
-    this.events.updateSubscriberOptions(eventsOptions);
+    const currentEventsOptions = this.eventManagerOptions(this);
+    const optionsToMerge = this.eventManagerOptions(obj);
+    this.events.updateSubscriberOptions({
+      ...currentEventsOptions,
+      ...optionsToMerge
+    });
 
     return assignIn(
       Object.create(TruffleConfig.prototype),
