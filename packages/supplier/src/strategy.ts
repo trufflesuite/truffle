@@ -12,32 +12,19 @@ import type { Results as FreeResults } from "./results";
  */
 export type Strategy<S extends Strategy.Specification> = BaseStrategy<S> &
   (true extends Strategy.AllowsLoadingSpecificVersion<S>
-    ? {
-        load(version?: string): Strategy.Results.Load<S>;
-      }
-    : {
-        load(): Strategy.Results.Load<S>;
-      }) &
-  (true extends Strategy.AllowsListingVersions<S>
-    ? {
-        list(): Strategy.Results.List<S>;
-      }
-    : {});
+    ? Strategy.SpecificVersionLoader<S>
+    : Strategy.BaseLoader<S>) &
+  (true extends Strategy.AllowsListingVersions<S> ? Strategy.Lister<S> : {});
 
 /**
  * An object of BaseStrategy<S> allows loading an unspecified version, plus
  * type guards to determine additional functionality
  */
-export interface BaseStrategy<S extends Strategy.Specification> {
-  load(): Strategy.Results.Load<S>;
-
-  allowsLoadingSpecificVersion(): this is this & {
-    load(version?: string): Strategy.Results.Load<S>;
-  };
-
-  allowsListingVersions(): this is {
-    list(): Strategy.Results.List<S>;
-  };
+export interface BaseStrategy<S extends Strategy.Specification>
+  extends Strategy.BaseLoader<S> {
+  allowsLoadingSpecificVersion(): this is this &
+    Strategy.SpecificVersionLoader<S>;
+  allowsListingVersions(): this is this & Strategy.Lister<S>;
 }
 
 export namespace Strategy {
@@ -160,4 +147,33 @@ export namespace Strategy {
   export type AllowsListingVersions<
     S extends Strategy.Specification
   > = S["allowsListingVersions"];
+
+  /**
+   * An object adhering to the BaseLoader interface provides the `load()`
+   * method.
+   *
+   * This type is used in the construction of the root Strategy type.
+   */
+  export interface BaseLoader<S extends Strategy.Specification> {
+    load(): Strategy.Results.Load<S>;
+  }
+
+  /**
+   * An object adhering to the SpecificVersionLoader interface provides the
+   * `load(version?: string)` method
+   *
+   * This type is used in the construction of the root Strategy type.
+   */
+  export interface SpecificVersionLoader<S extends Strategy.Specification> {
+    load(version?: string): Strategy.Results.Load<S>;
+  }
+
+  /**
+   * An object adhering to the Lister interface provides the `list()` method
+   *
+   * This type is used in the construction of the root Strategy type.
+   */
+  export interface Lister<S extends Strategy.Specification> {
+    list(): Strategy.Results.List<S>;
+  }
 }
