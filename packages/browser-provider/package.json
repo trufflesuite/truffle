@@ -33,6 +33,7 @@
     "@types/web3": "^1.0.20",
     "@types/ws": "^7.4.4",
     "ethereum-protocol": "^1.0.1",
+    "ganache-core": "^2.13.2",
     "jest": "^26.0.1",
     "ts-jest": "^26.1.0",
     "typescript": "^4.1.4"
