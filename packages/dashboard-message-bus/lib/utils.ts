@@ -48,7 +48,7 @@ export const sendAndAwait = (socket: WebSocket, message: Message) => {
     });
 
     socket.on("close", (code: number, reason: string) => {
-      reject(new Error(reason));
+      reject(new Error(`Socket connection closed with code '${code}' and reason '${reason}'`));
     });
 
     const encodedMessage = jsonToBase64(message);
