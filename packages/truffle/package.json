@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "app-module-path": "^2.2.0",
-    "ganache": "7.0.0-canary.1318",
+    "ganache": "7.0.0-canary.1340",
     "mocha": "8.1.2",
     "original-require": "1.0.1"
   },
