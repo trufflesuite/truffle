@@ -5,7 +5,7 @@ import type {
 } from "ethereum-protocol";
 import { callbackify } from "util";
 import WebSocket from "ws";
-import { getMessageBusPort } from "./utils";
+import { getMessageBusPorts } from "./utils";
 import { sendAndAwait, createMessage, connectToMessageBusWithRetries } from "@truffle/dashboard-message-bus";
 import { startDashboardInBackground } from "@truffle/dashboard";
 import { timeout } from "promise-timeout";
@@ -65,7 +65,7 @@ export class BrowserProvider {
 
   private async ready() {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) return;
-    const port = await getMessageBusPort(this.dashboardPort);
-    this.socket = await connectToMessageBusWithRetries(port);
+    const { messageBusRequestsPort } = await getMessageBusPorts(this.dashboardPort);
+    this.socket = await connectToMessageBusWithRetries(messageBusRequestsPort);
   }
 }
