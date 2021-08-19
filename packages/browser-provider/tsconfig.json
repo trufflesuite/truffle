@@ -24,7 +24,8 @@
   },
   "include": [
     "lib/**/*",
-    "test/**/*"
+    "test/**/*",
+    "manual-test/**/*",
   ],
   "exclude": [
     "node_modules"
