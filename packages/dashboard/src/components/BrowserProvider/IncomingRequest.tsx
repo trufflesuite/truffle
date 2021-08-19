@@ -1,3 +1,4 @@
+import ReactJson from 'react-json-view';
 import { handleBrowserProviderRequest, jsonToBase64 } from "../../utils/utils";
 import { BrowserProviderRequest, Request } from "../../utils/types";
 import Button from "../common/Button";
@@ -45,16 +46,7 @@ function IncomingRequest({ provider, socket, request, setRequests }: Props) {
       case "eth_sendTransaction":
       case "eth_signTransaction": {
         const [transaction] = request.payload.params;
-        const formattedTransaction = Object.entries(transaction).map(([key, value]) => {
-          return <div><b>{key}</b>: {JSON.stringify(value, null, 2)}</div>;
-        });
-
-        return (
-          <div className="flex gap-2">
-            <div>TRANSACTION:</div>
-            <div>{formattedTransaction}</div>
-          </div>
-        );
+        return (<ReactJson name="transaction" src={transaction as any} />);
       }
       case "eth_sign": {
         const [from, message] = request.payload.params;
@@ -72,7 +64,10 @@ function IncomingRequest({ provider, socket, request, setRequests }: Props) {
       case "eth_signTypedData": {
         const [messageParams, from] = request.payload.params;
         const formattedMessage = messageParams.map((param: any) => {
-          return <div><b>{param.name}</b>: {param.value}</div>;
+          if (typeof param.value === "object") {
+            return <ReactJson name={param.name} src={param.value} />;
+          }
+          return (<div><b>{param.name}</b>: {param.value}</div>);
         });
 
         return (
@@ -90,7 +85,10 @@ function IncomingRequest({ provider, socket, request, setRequests }: Props) {
         const [from, messageParams] = request.payload.params;
         const { message } = JSON.parse(messageParams);
         const formattedMessage = Object.entries(message).map(([key, value]) => {
-          return <div><b>{key}</b>: {JSON.stringify(value, null, 2)}</div>;
+          if (typeof value === "object") {
+            return <ReactJson name={key} src={value as any} />;
+          }
+          return (<div><b>{key}</b>: {value}</div>);
         });
 
         return (
