@@ -15,6 +15,7 @@ export class BrowserProvider {
   private socket: WebSocket;
   private dashboardPort: number;
   private timeoutSeconds: number;
+  private concurrentRequests: number = 0;
 
   constructor(options: BrowserProviderOptions = {}) {
     this.dashboardPort = options.dashboardPort ?? 5000;
@@ -51,10 +52,16 @@ export class BrowserProvider {
 
     const message = createMessage("browser-provider", payload);
 
+    this.concurrentRequests++;
+
     const { payload: response } = await timeout(
       sendAndAwait(this.socket, message),
       this.timeoutSeconds * 1000,
-    ).finally(() => this.terminate());
+    );
+
+    if (--this.concurrentRequests === 0) {
+      this.terminate();
+    }
 
     if (response.error) {
       throw response.error;
