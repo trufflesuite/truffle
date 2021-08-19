@@ -29,7 +29,7 @@ function IncomingRequest({ provider, socket, request, setRequests }: Props) {
         id: request.payload.id,
         error: {
           code: 4001,
-          message: "User denied @truffle/browser-provider request"
+          message: "User rejected @truffle/browser-provider request"
         }
       }
     };
@@ -63,19 +63,12 @@ function IncomingRequest({ provider, socket, request, setRequests }: Props) {
       case "eth_signTypedData_v1":
       case "eth_signTypedData": {
         const [messageParams, from] = request.payload.params;
-        const formattedMessage = messageParams.map((param: any) => {
-          if (typeof param.value === "object") {
-            return <ReactJson name={param.name} src={param.value} />;
-          }
-          return (<div><b>{param.name}</b>: {param.value}</div>);
-        });
-
         return (
           <div>
             <div>ACCOUNT: {from}</div>
             <div className="flex gap-2">
               <div>MESSAGE:</div>
-              <div>{formattedMessage}</div>
+              <ReactJson name="message params" src={messageParams} />
             </div>
           </div>
         );
@@ -84,19 +77,12 @@ function IncomingRequest({ provider, socket, request, setRequests }: Props) {
       case "eth_signTypedData_v4": {
         const [from, messageParams] = request.payload.params;
         const { message } = JSON.parse(messageParams);
-        const formattedMessage = Object.entries(message).map(([key, value]) => {
-          if (typeof value === "object") {
-            return <ReactJson name={key} src={value as any} />;
-          }
-          return (<div><b>{key}</b>: {value}</div>);
-        });
-
         return (
           <div>
             <div>ACCOUNT: {from}</div>
             <div className="flex gap-2">
               <div>MESSAGE:</div>
-              <div>{formattedMessage}</div>
+              <ReactJson name="message" src={message} />
             </div>
           </div>
         );

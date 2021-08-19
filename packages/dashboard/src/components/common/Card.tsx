@@ -14,7 +14,7 @@ function Card({ header, body, footer }: Props) {
   );
 
   const bodyOrNull = body && (
-    <div className="p-3">
+    <div className="p-3 overflow-auto">
       {body}
     </div>
   );
