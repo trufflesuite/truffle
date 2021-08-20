@@ -49,9 +49,7 @@ export type CreateSupplier<S extends Supplier.Specification> = <
 export type Supplier<
   S extends Supplier.Specification,
   N extends Supplier.StrategyName<S> = Supplier.StrategyName<S>
-> = Supplier.StrategyName<S> extends N
-  ? BaseStrategy<Supplier.Strategy.Specification<S, N>>
-  : FreeStrategy<Supplier.Strategy.Specification<S, N>>;
+> = Supplier.Strategy<S, N>;
 
 export namespace Supplier {
   /**
@@ -92,7 +90,7 @@ export namespace Supplier {
    * strategy to use for a given set of input options
    */
   export type Definition<S extends Supplier.Specification> = {
-    determineStrategy(options: Options<S>): Supplier.StrategyName<S>;
+    determineStrategy(options: Supplier.Options<S>): Supplier.StrategyName<S>;
 
     strategyConstructors: {
       [N in Supplier.StrategyName<S>]: Supplier.Strategy.Constructor<S, N>;
@@ -135,14 +133,40 @@ export namespace Supplier {
   export type StrategyName<S extends Supplier.Specification> = string &
     keyof Supplier.Strategies.Specification<S>;
 
+  /**
+   * An object of type Supplier.Strategy<S> adheres to the common BaseStrategy
+   * interface for any one of the strategies specified in the
+   * Supplier.Specification S.
+   *
+   * An object of type Supplier.Strategy<S, N> (for a given string literal
+   * Supplier.StrategyName<S> type N) adheres to the interface provided by
+   * that particular strategy.
+   *
+   * This type determines which of BaseStrategy and FreeStrategy to re-export,
+   * based on whether or not N is specified as the default "any strategy name"
+   * or specified as a particular strategy name.
+   */
+  export type Strategy<
+    S extends Supplier.Specification,
+    N extends Supplier.StrategyName<S> = Supplier.StrategyName<S>
+  > =
+    // check for default case where N is equal to Supplier.StrategyName
+    // [logic: if (A extends B) and (B extends A), then (A equals B)]
+    Supplier.StrategyName<S> extends N
+      ? BaseStrategy<Supplier.Strategy.Specification<S>>
+      : FreeStrategy<Supplier.Strategy.Specification<S, N>>;
+
   export namespace Strategy {
     /**
      * Type-level specification of one of the named strategies for specified
      * supplier; joins specified supplier results type
+     *
+     * In cases where N is omitted, this represents the type union of each
+     * Strategy.Specification for all strategies of the specified supplier.
      */
     export type Specification<
       S extends Supplier.Specification,
-      N extends Supplier.StrategyName<S>
+      N extends Supplier.StrategyName<S> = Supplier.StrategyName<S>
     > = Supplier.Strategies.Specification<S>[N] & {
       results: Supplier.Results.Specification<S>;
     };
