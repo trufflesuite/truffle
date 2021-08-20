@@ -11,7 +11,9 @@ specific solc versions from the web / via docker / et al.)
 1. Define a common "results" specification: what does `supplier.load()` and
    `supplier.list()` return?
 
-   e.g.:
+   <p>
+   <details>
+   <summary>See example results specification</summary>
 
    ```typescript
    export type Compiler = { compile(): any };
@@ -24,9 +26,18 @@ specific solc versions from the web / via docker / et al.)
    }
    ```
 
+   </details>
+   </p>
+
 2. Define one or more strategies.
 
-   e.g.:
+   <p>
+   <details>
+   <summary>
+   See example strategy specification (using provided mixin classes with
+   <a href="https://www.npmjs.com/package/ts-mixer"><strong>ts-mixer</strong></a>
+   package).
+   </summary>
 
    ```typescript
    import { Mixin } from "ts-mixer";
@@ -63,9 +74,58 @@ specific solc versions from the web / via docker / et al.)
    }
    ```
 
+   </details>
+   </p>
+
+   <p>
+   <details>
+   <summary>
+   See example strategy specification (without using mixins)
+   </summary>
+
+   ```typescript
+   import { Strategy } from "@truffle/supplier";
+
+   import { Results } from "./types";
+
+   export namespace RemoteSoljson {
+     export type Specification = {
+       constructor: {
+         options: { strategy: "remote-soljson" };
+       };
+       results: Results.Specification;
+       allowsLoadingSpecificVersion: true;
+       allowsListingVersions: true;
+     };
+   }
+
+   export class RemoteSoljson implements Strategy<RemoteSoljson.Specification> {
+     allowsLoadingSpecificVersion() {
+       return true;
+     }
+
+     allowsListingVersions() {
+       return true;
+     }
+
+     async load(_version?: string) {
+       return { compile: (): any => null };
+     }
+
+     async list(): Promise<string[]> {
+       return [];
+     }
+   }
+   ```
+
+   </details>
+   </p>
+
 3. Connect everything:
 
-   e.g.:
+   <p>
+   <details>
+   <summary>See example supplier</summary>
 
    ```typescript
    import { Supplier, forDefinition } from "@truffle/supplier";
@@ -93,3 +153,6 @@ specific solc versions from the web / via docker / et al.)
 
    export const createCompilerSupplier = forDefinition(definition);
    ```
+
+   </details>
+   </p>
