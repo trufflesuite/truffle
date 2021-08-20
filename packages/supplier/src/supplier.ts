@@ -22,17 +22,22 @@ export const forDefinition = <S extends Supplier.Specification>({
 };
 
 /**
- * A function that constructs a Supplier
+ * A function of type CreateSupplier<S> (for a given Supplier.Specification S)
+ * accepts options for a particular strategy and constructs an instance of
+ * the specified Supplier.
  */
 export type CreateSupplier<S extends Supplier.Specification> = <
   N extends Supplier.StrategyName<S>
 >(
-  options: Supplier.Strategy.Constructor.Options<S, N>
+  options: Supplier.Options<S, N>
 ) => Supplier<S, N>;
 
 /**
  * An object of type Supplier<S, N> provides an interface for loading and
- * possibly listing versions of the supplied component
+ * possibly listing versions of the supplied component, where S is a particular
+ * Supplier.Specification type and where N is [optionally] a particular
+ * Supplier.StrategyName<S>. When N is omitted, Supplier<S> represents a
+ * supplier that uses any specified strategy.
  *
  * @dev for known strategy names, this computes the method signature of
  *      `load()` according to the corresponding strategy specification;
