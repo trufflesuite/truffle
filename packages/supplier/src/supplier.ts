@@ -87,9 +87,7 @@ export namespace Supplier {
    * strategy to use for a given set of input options
    */
   export type Definition<S extends Supplier.Specification> = {
-    determineStrategy(
-      options: Options<S, Supplier.StrategyName<S>>
-    ): Supplier.StrategyName<S>;
+    determineStrategy(options: Options<S>): Supplier.StrategyName<S>;
 
     strategyConstructors: {
       [N in Supplier.StrategyName<S>]: Supplier.Strategy.Constructor<S, N>;
@@ -106,7 +104,7 @@ export namespace Supplier {
    */
   export type Options<
     S extends Supplier.Specification,
-    N extends Supplier.StrategyName<S>
+    N extends Supplier.StrategyName<S> = Supplier.StrategyName<S>
   > = S["options"] & Supplier.Strategy.Constructor.Options<S, N>;
 
   export namespace Results {
