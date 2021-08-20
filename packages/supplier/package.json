@@ -32,6 +32,7 @@
     "@types/mocha": "^5.2.7",
     "@types/node": "12.12.21",
     "mocha": "8.0.1",
+    "ts-mixer": "^6.0.0",
     "ts-node": "^9.0.0",
     "tsd": "^0.17.0",
     "ttypescript": "^1.5.12",
@@ -39,8 +40,6 @@
     "typescript-transform-paths": "^3.2.1"
   },
   "dependencies": {
-    "colors": "^1.4.0",
-    "debug": "^4.3.1",
-    "ts-mixer": "^6.0.0"
+    "debug": "^4.3.1"
   }
 }
