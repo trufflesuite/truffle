@@ -10,7 +10,10 @@
   "scripts": {
     "build": "tsc",
     "prepare": "yarn build",
-    "test": "jest --verbose"
+    "test": "jest --verbose",
+    "test:manual:basic": "ts-node ./manual-test/manual-test.ts",
+    "test:manual:metacoin-truffle": "pushd ./manual-test/metacoin-truffle && yarn && truffle migrate --network browser --reset; popd",
+    "test:manual:metacoin-hardhat": "pushd ./manual-test/metacoin-hardhat && yarn && yarn deploy; popd"
   },
   "repository": {
     "type": "git",
