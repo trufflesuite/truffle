@@ -1,0 +1,21 @@
+{
+  "name": "metacoin-hardhat",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {},
+  "dependencies": {
+    "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "@tenderly/hardhat-tenderly": "^1.0.0",
+    "chalk": "^4.1.0",
+    "ethers": "^5.0.17",
+    "hardhat": "^2.0.11",
+    "hardhat-deploy": "^0.8.11"
+  },
+  "scripts": {
+    "compile": "hardhat compile",
+    "deploy": "hardhat run scripts/deploy.js",
+    "deploy-with-hardhat-deploy": "hardhat deploy"
+  }
+}
