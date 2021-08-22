@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.2.37",
+  "version": "0.2.38",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0",
@@ -21,7 +21,7 @@
   "types": "./typings/index.d.ts",
   "dependencies": {
     "@truffle/error": "^0.0.14",
-    "@truffle/interface-adapter": "^0.5.4",
+    "@truffle/interface-adapter": "^0.5.5",
     "web3": "1.5.2"
   },
   "devDependencies": {
