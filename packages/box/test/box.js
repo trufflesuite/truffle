@@ -1,5 +1,4 @@
 const path = require("path");
-const { cwd } =require("process");
 const fse = require("fs-extra");
 const assert = require("assert");
 const inquirer = require("inquirer");
@@ -101,7 +100,7 @@ describe("@truffle/box Box", () => {
 
     it("unboxes truffle box from fullpath", async () => {
       //Start with c:\\ for windows or / otherwise
-      const FULL_PATH = path.join(cwd(), LOCAL_TRUFFLE_BOX);
+      const FULL_PATH = path.join(process.cwd(), LOCAL_TRUFFLE_BOX);
       const truffleConfig = await Box.unbox(
         FULL_PATH,
         destination,
