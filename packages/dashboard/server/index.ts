@@ -14,7 +14,9 @@ export const startDashboard = async (dashboardPort: number) => {
   const messageBusListenPort = await getPort();
   const messageBusRequestsPort = await getPort();
 
-  new DashboardMessageBus().start(messageBusRequestsPort, messageBusListenPort);
+  const messageBus = new DashboardMessageBus();
+  messageBus.start(messageBusRequestsPort, messageBusListenPort);
+  messageBus.on("terminate", () => process.exit(0));
 
   app.get('/ports', (req, res) => {
     res.json({
