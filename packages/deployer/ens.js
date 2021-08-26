@@ -27,7 +27,7 @@ class ENS {
   }
 
   async deployNewDevENSRegistry(from) {
-    const ENSRegistryArtifact = require("@ensdomains/ens").ENSRegistry;
+    const ENSRegistryArtifact = require("@ensdomains/ens-contracts").ENSRegistry;
     const ENSRegistry = contract(ENSRegistryArtifact);
     ENSRegistry.setProvider(this.provider);
     const ensRegistry = await ENSRegistry.new({ from });

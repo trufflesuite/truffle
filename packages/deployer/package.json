@@ -19,7 +19,7 @@
     "test": "mocha --no-warnings --timeout 10000 --exit"
   },
   "dependencies": {
-    "@ensdomains/ens": "^0.4.0",
+    "@ensdomains/ens-contracts": "^0.0.7",
     "@ensdomains/ensjs": "^2.0.1",
     "@ensdomains/resolver": "^0.2.0",
     "@truffle/contract": "^4.3.31",
