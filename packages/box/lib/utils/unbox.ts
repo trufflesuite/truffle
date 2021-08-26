@@ -10,7 +10,10 @@ import type { boxConfig, unboxOptions } from "typings";
 import { promisify } from "util";
 import ignore from "ignore";
 
-function verifyLocalPath(localPath: string) {
+const startsWithDrive = (fn: string): Boolean => 
+  /^[a-z]:/i.test(fn);
+
+function verifyBoxExistsAtPath(localPath: string) {
   const configPath = path.join(localPath, "truffle-box.json");
   fse.access(configPath).catch(_e => {
     throw new Error(`Truffle Box at path ${localPath} doesn't exist.`);
@@ -45,11 +48,11 @@ async function verifyVCSURL(url: string) {
   }
 }
 
-async function verifySourcePath(sourcePath: string) {
-  if (sourcePath.startsWith("/")) {
-    return verifyLocalPath(sourcePath);
+async function verifySourcePath(normalizedSourcePath: string) {
+  if (startsWithDrive(normalizedSourcePath) || normalizedSourcePath.startsWith("/")) {
+    return verifyBoxExistsAtPath(normalizedSourcePath);
   }
-  return verifyVCSURL(sourcePath);
+  return verifyVCSURL(normalizedSourcePath);
 }
 
 async function gitIgnoreFilter(sourcePath: string) {
@@ -65,15 +68,15 @@ async function gitIgnoreFilter(sourcePath: string) {
   return ignoreFilter;
 }
 
-async function fetchRepository(sourcePath: string, dir: string) {
-  if (sourcePath.startsWith("/")) {
-    const filter = await gitIgnoreFilter(sourcePath);
-    return fse.copy(sourcePath, dir, {
+async function fetchRepository(normalizedSourcePath: string, dir: string) {
+  if (startsWithDrive(normalizedSourcePath) || normalizedSourcePath.startsWith("/")) {
+    const filter = await gitIgnoreFilter(normalizedSourcePath);
+    return fse.copy(normalizedSourcePath, dir, {
       filter: file =>
-        sourcePath === file || !filter.ignores(path.relative(sourcePath, file))
+        normalizedSourcePath === file || !filter.ignores(path.relative(normalizedSourcePath, file))
     });
   }
-  return promisify(download)(sourcePath, dir);
+  return promisify(download)(normalizedSourcePath, dir);
 }
 
 function prepareToCopyFiles(tempDir: string, { ignore }: boxConfig) {
@@ -158,6 +161,7 @@ export = {
   fetchRepository,
   installBoxDependencies,
   prepareToCopyFiles,
+  startsWithDrive,
   verifySourcePath,
   verifyVCSURL
 };
