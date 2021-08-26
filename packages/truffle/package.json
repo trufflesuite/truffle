@@ -42,7 +42,7 @@
     "@truffle/db-loader": "^0.0.6",
     "@truffle/debugger": "^9.1.12",
     "app-module-path": "^2.2.0",
-    "mocha": "8.1.2",
+    "mocha": "9.1.0",
     "original-require": "^1.0.1"
   },
   "devDependencies": {

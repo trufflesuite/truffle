@@ -21,9 +21,9 @@
   "scripts": {
     "build": "tsc",
     "prepare": "yarn build",
-    "test:ts": "mocha -r ts-node/register test/*.ts",
+    "test": "yarn test:ts && yarn test:js",
     "test:js": "mocha test/*.js",
-    "test": "yarn test:ts && yarn test:js"
+    "test:ts": "mocha -r ts-node/register test/*.ts"
   },
   "types": "dist/lib/index.d.ts",
   "dependencies": {
@@ -40,7 +40,7 @@
   "devDependencies": {
     "@types/node": "12.12.21",
     "@types/sinon": "^9.0.10",
-    "mocha": "8.1.2",
+    "mocha": "9.1.0",
     "sinon": "^9.0.2",
     "ts-node": "^9.0.0",
     "typescript": "^4.1.4"

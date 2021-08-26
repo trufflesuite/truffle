@@ -14,22 +14,22 @@
   },
   "version": "0.0.18",
   "main": "dist/src/index.js",
-  "scripts": {
-    "build": "yarn build:dist",
-    "clean": "rm -rf ./dist",
-    "prepare": "yarn build",
-    "build:dist": "ttsc",
-    "test:code": "mocha",
-    "test:types": "tsd",
-    "test": "yarn test:types && yarn test:code"
-  },
-  "types": "dist/src/index.d.ts",
   "files": [
     "dist"
   ],
+  "scripts": {
+    "build": "yarn build:dist",
+    "build:dist": "ttsc",
+    "clean": "rm -rf ./dist",
+    "prepare": "yarn build",
+    "test": "yarn test:types && yarn test:code",
+    "test:code": "mocha",
+    "test:types": "tsd"
+  },
+  "types": "dist/src/index.d.ts",
   "devDependencies": {
     "@types/node": "12.12.21",
-    "mocha": "8.1.2",
+    "mocha": "9.1.0",
     "tsd": "^0.15.1",
     "ttypescript": "^1.5.7",
     "typescript": "^4.1.4",

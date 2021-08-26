@@ -30,7 +30,7 @@
     "glob": "^7.1.6"
   },
   "devDependencies": {
-    "mocha": "8.1.2",
+    "mocha": "9.1.0",
     "sinon": "^9.0.2"
   },
   "keywords": [
