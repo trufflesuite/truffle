@@ -36,10 +36,12 @@
     "@types/web3": "^1.0.20",
     "@types/ws": "^7.4.4",
     "ethereum-protocol": "^1.0.1",
+    "ethers": "^5.4.5",
     "ganache-core": "^2.13.2",
     "jest": "^26.0.1",
     "ts-jest": "^26.1.0",
-    "typescript": "^4.1.4"
+    "typescript": "^4.1.4",
+    "web3": "^1.5.2"
   },
   "dependencies": {
     "@truffle/dashboard": "^0.1.0",

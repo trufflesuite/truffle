@@ -5,6 +5,7 @@ import type {
 } from "ethereum-protocol";
 import { callbackify } from "util";
 import WebSocket from "ws";
+import delay from "delay";
 import { getMessageBusPorts } from "./utils";
 import { sendAndAwait, createMessage, connectToMessageBusWithRetries } from "@truffle/dashboard-message-bus";
 import { startDashboardInBackground } from "@truffle/dashboard";
@@ -16,6 +17,7 @@ export class BrowserProvider {
   private dashboardPort: number;
   private timeoutSeconds: number;
   private concurrentRequests: number = 0;
+  private connecting: boolean = false;
 
   constructor(options: BrowserProviderOptions = {}) {
     this.dashboardPort = options.dashboardPort ?? 5000;
@@ -71,8 +73,23 @@ export class BrowserProvider {
   }
 
   private async ready() {
-    if (this.socket && this.socket.readyState === WebSocket.OPEN) return;
-    const { messageBusRequestsPort } = await getMessageBusPorts(this.dashboardPort);
-    this.socket = await connectToMessageBusWithRetries(messageBusRequestsPort);
+    // Don't create a new connection to the  messageBus while we're already connecting
+    if (this.connecting) {
+      await delay(1000);
+      return this.ready();
+    }
+
+    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+      this.connecting = false;
+      return;
+    }
+
+    this.connecting = true;
+    try {
+      const { messageBusRequestsPort } = await getMessageBusPorts(this.dashboardPort);
+      this.socket = await connectToMessageBusWithRetries(messageBusRequestsPort);
+    } finally {
+      this.connecting = false;
+    }
   }
 }
