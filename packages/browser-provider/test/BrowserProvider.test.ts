@@ -1,7 +1,7 @@
 import { promisify } from "util";
 import delay from "delay";
 import Ganache from "ganache-core";
-import { providers } from "ethers";
+import { providers, utils } from "ethers";
 import Web3 from "web3";
 import { BrowserProvider } from "../lib";
 import MockDashboard from "./MockDashboard";
@@ -108,7 +108,6 @@ describe("BrowserProvider", () => {
       // First send the request
       const request = ethersProvider.listAccounts();
 
-      // Wait for a second
       await delay(1000);
 
       // Then connect the dashboard
@@ -118,6 +117,45 @@ describe("BrowserProvider", () => {
       const accounts = await request;
 
       expect(accounts[0]).toBeDefined();
+    });
+
+    it("should send ETH", async () => {
+      await mockDashboard.connect(messageBusPorts.messageBusListenPort);
+
+      const accounts = await ethersProvider.listAccounts();
+      const signer = ethersProvider.getSigner();
+      const response = await signer.sendTransaction({
+        from: accounts[0],
+        to: accounts[1],
+        value: utils.parseEther("0.1"),
+      });
+
+      expect(response).toHaveProperty("hash");
+      expect(response.hash).toBeDefined();
+    });
+
+    // TODO: This is failing because there is a window where disconnecting the
+    // dashboard closes the entire message bus if that happens to be at a point
+    // where there are no active browser provider requests
+    it.skip("should send ETH when dashboard disconnects and reconnects", async () => {
+      await mockDashboard.connect(messageBusPorts.messageBusListenPort);
+
+      const accounts = await ethersProvider.listAccounts();
+      const signer = ethersProvider.getSigner();
+
+      const request = signer.sendTransaction({
+        from: accounts[0],
+        to: accounts[1],
+        value: utils.parseEther("0.1"),
+      });
+
+      mockDashboard.disconnect();
+      await mockDashboard.connect(messageBusPorts.messageBusListenPort);
+
+      const response = await request;
+
+      expect(response).toHaveProperty("hash");
+      expect(response.hash).toBeDefined();
     });
   });
 
@@ -152,6 +190,20 @@ describe("BrowserProvider", () => {
       const accounts = await request;
 
       expect(accounts[0]).toBeDefined();
+    });
+
+    it("should send ETH", async () => {
+      await mockDashboard.connect(messageBusPorts.messageBusListenPort);
+
+      const accounts = await web3.eth.getAccounts();
+      const response = await web3.eth.sendTransaction({
+        from: accounts[0],
+        to: accounts[1],
+        value: web3.utils.toWei('0.1'),
+      });
+
+      expect(response).toHaveProperty("transactionHash");
+      expect(response.transactionHash).toBeDefined();
     });
   });
 });
