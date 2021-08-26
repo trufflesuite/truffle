@@ -73,7 +73,7 @@ export class BrowserProvider {
   }
 
   private async ready() {
-    // Don't create a new connection to the  messageBus while we're already connecting
+    // Don't create a new connection to the message bus while we're already connecting
     if (this.connecting) {
       await delay(1000);
       return this.ready();

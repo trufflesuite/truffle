@@ -1,14 +1,16 @@
 import WebSocket from "ws";
-import { base64ToJson, broadcastAndAwaitFirst, jsonToBase64 } from "./utils";
 import delay from "delay";
+import { EventEmitter } from "events";
+import { base64ToJson, broadcastAndAwaitFirst, jsonToBase64 } from "./utils";
 import { UnfulfilledRequest } from "./types";
 
 // TODO: Do we want to use socket.io for the message bus?
-export class DashboardMessageBus {
+export class DashboardMessageBus extends EventEmitter {
   requestsServer: WebSocket.Server;
   listenServer: WebSocket.Server;
-  clients: WebSocket[] = [];
-  listeners: WebSocket[] = [];
+  clientSockets: WebSocket[] = [];
+  listeningSockets: WebSocket[] = [];
+
   unfulfilledRequests: Map<string, UnfulfilledRequest> = new Map([]);
 
   start(requestsPort: number, listenPort: number) {
@@ -19,7 +21,7 @@ export class DashboardMessageBus {
 
     this.listenServer.on("connection", (newListener: WebSocket) => {
       newListener.on("close", () => {
-        this.listeners = this.listeners.filter((listener) => listener !== newListener);
+        this.listeningSockets = this.listeningSockets.filter((listener) => listener !== newListener);
         this.terminateIfNoConnections();
       });
 
@@ -28,7 +30,7 @@ export class DashboardMessageBus {
         this.processRequest(socket, data, [newListener])
       );
 
-      this.listeners.push(newListener);
+      this.listeningSockets.push(newListener);
     });
 
     this.requestsServer = new WebSocket.Server({
@@ -38,21 +40,21 @@ export class DashboardMessageBus {
 
     this.requestsServer.on("connection", (newClient: WebSocket) => {
       newClient.on("message", (data: WebSocket.Data) => {
-        this.processRequest(newClient, data, this.listeners);
+        this.processRequest(newClient, data, this.listeningSockets);
       });
 
       newClient.on("close", () => {
-        this.clients = this.clients.filter((client) => client !== newClient);
+        this.clientSockets = this.clientSockets.filter((client) => client !== newClient);
         this.clearClientRequests(newClient);
         this.terminateIfNoConnections();
       });
 
-      this.clients.push(newClient);
+      this.clientSockets.push(newClient);
     });
   }
 
   async ready() {
-    if (this.listeners.length > 0) return;
+    if (this.listeningSockets.length > 0) return;
     await delay(1000);
     await this.ready();
   }
@@ -73,11 +75,16 @@ export class DashboardMessageBus {
     }
   }
 
-  // TODO: Do we want to provide a few seconds "grace period" to reconnect?
   private terminateIfNoConnections() {
-    if (this.clients.length === 0 && this.listeners.length === 0) {
-      process.exit(0);
+    if (this.clientSockets.length === 0 && this.listeningSockets.length === 0) {
+      this.terminate();
     }
+  }
+
+  private terminate() {
+    this.requestsServer.close();
+    this.listenServer.close();
+    this.emit("terminate");
   }
 
   private clearClientRequests(client: WebSocket) {
