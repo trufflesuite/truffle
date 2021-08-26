@@ -1,4 +1,5 @@
 const path = require("path");
+const { cwd } =require("process");
 const fse = require("fs-extra");
 const assert = require("assert");
 const inquirer = require("inquirer");
@@ -70,6 +71,39 @@ describe("@truffle/box Box", () => {
     it("unboxes truffle box from local folder", async () => {
       const truffleConfig = await Box.unbox(
         LOCAL_TRUFFLE_BOX,
+        destination,
+        {},
+        config,
+      );
+      assert.ok(truffleConfig);
+
+      assert(
+        fse.existsSync(path.join(destination, "truffle-config.js")),
+        "Unboxed project should have truffle config.",
+      );
+
+      // Assert the file is not there first.
+      assert(
+        fse.existsSync(path.join(destination, "truffle-init.json")) === false,
+        "truffle-init.json shouldn't be available to the user!",
+      );
+
+      assert(
+        fse.existsSync(path.join(destination, "build")) === false,
+        "shouldn't not copy files mentioned in .gitignore",
+      );
+
+      assert(
+        fse.existsSync(path.join(destination, ".env")) === false,
+        "shouldn't not copy files mentioned in .gitignore",
+      );
+    });
+
+    it("unboxes truffle box from fullpath", async () => {
+      //Start with c:\\ for windows or / otherwise
+      const FULL_PATH = path.join(cwd(), LOCAL_TRUFFLE_BOX);
+      const truffleConfig = await Box.unbox(
+        FULL_PATH,
         destination,
         {},
         config,
