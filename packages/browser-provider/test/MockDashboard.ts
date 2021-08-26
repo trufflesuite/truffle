@@ -43,7 +43,7 @@ export const forwardBrowserProviderRequest = async (
   provider: Ganache.Provider,
   payload: JSONRPCRequestPayload
 ) => {
-  const send = promisify(provider.send.bind(provider)) as any;
+  const send = promisify(provider.send.bind(provider));
   try {
     const response = await send(payload);
     return response;
