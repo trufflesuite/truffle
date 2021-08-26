@@ -1,5 +1,6 @@
-const path = require("path");
 const fse = require("fs-extra");
+const os = require("os");
+const path = require("path");
 const assert = require("assert");
 const inquirer = require("inquirer");
 const sinon = require("sinon");
@@ -103,6 +104,49 @@ describe("@truffle/box Box", () => {
       const FULL_PATH = path.join(process.cwd(), LOCAL_TRUFFLE_BOX);
       const truffleConfig = await Box.unbox(
         FULL_PATH,
+        destination,
+        {},
+        config,
+      );
+      assert.ok(truffleConfig);
+
+      assert(
+        fse.existsSync(path.join(destination, "truffle-config.js")),
+        "Unboxed project should have truffle config.",
+      );
+
+      // Assert the file is not there first.
+      assert(
+        fse.existsSync(path.join(destination, "truffle-init.json")) === false,
+        "truffle-init.json shouldn't be available to the user!",
+      );
+
+      assert(
+        fse.existsSync(path.join(destination, "build")) === false,
+        "shouldn't not copy files mentioned in .gitignore",
+      );
+
+      assert(
+        fse.existsSync(path.join(destination, ".env")) === false,
+        "shouldn't not copy files mentioned in .gitignore",
+      );
+    });
+
+    it("unboxes truffle box [win]", async () => {
+      //Start with c:\\ for windows or / otherwise
+      const ROOT = "\\truffle-box-test";
+
+      if (os.platform() !== "win32") {
+        return assert(true);
+      }
+
+      fse.rmdirSync(ROOT, { recursive: true, force: true });
+
+      fse.mkdirSync(ROOT);
+      fse.copySync(LOCAL_TRUFFLE_BOX, ROOT);
+
+      const truffleConfig = await Box.unbox(
+        ROOT,
         destination,
         {},
         config,

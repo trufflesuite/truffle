@@ -3,11 +3,12 @@ import fs from "fs";
 import config from "../config";
 import tmp from "tmp";
 import process from "process";
-const cwd = require("process").cwd();
 import path from "path";
 import type { boxConfig, unboxOptions } from "typings";
 
 export = {
+  startsWithDrive: unbox.startsWithDrive,
+
   downloadBox: async (source: string, destination: string, events: any) => {
     events.emit("unbox:downloadingBox:start");
 
