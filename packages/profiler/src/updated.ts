@@ -48,9 +48,10 @@ function readAndParseArtifactFiles(
     sourceFilesArtifacts[getKeyFromPath(sourceFile)] = [];
   });
   // Get all the artifact files, and read them, parsing them as JSON
-  let buildFiles: string[] = fse.pathExistsSync(contracts_build_directory)
+  let buildFiles: string[] = fse.existsSync(contracts_build_directory)
     ? fse.readdirSync(contracts_build_directory)
     : [];
+
 
   buildFiles = buildFiles.filter((file) => path.extname(file) === ".json");
   const jsonData = buildFiles.map((file) => {
