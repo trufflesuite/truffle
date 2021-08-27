@@ -8,12 +8,22 @@ const Resolver = require("@truffle/resolver");
 const { CompilerSupplier } = require("../dist/compilerSupplier");
 const assert = require("assert");
 const { findOne } = require("./helpers");
-const solcConfig = {
-  version: "0.4.25",
-  settings: {
-    optimizer: {
-      enabled: false,
-      runs: 200
+const workingDirectory = path.join(
+  process.cwd(),
+  "truffleproject"
+);
+
+const compileOptions = {
+  working_directory: workingDirectory,
+  compilers: {
+    solc: {
+      version: "0.4.25",
+      settings: {
+        optimizer: {
+          enabled: false,
+          runs: 200
+        }
+      }
     }
   }
 };
@@ -63,9 +73,16 @@ describe("Compile - solidity ^0.4.0", function () {
     });
 
     it("does not include absolute paths in metadata", async function () {
-      const { compilations } = await Compile.sourcesWithDependencies({
-        paths: [sourcePath],
-        options
+      const sourcePath = path.join(
+        workingDirectory,
+        "contracts",
+        "SimpleOrdered.sol"
+      )
+      const sources = { [sourcePath]: source };
+
+      const { compilations } = await Compile.sources({
+        sources,
+        options: compileOptions
       });
 
       const SimpleOrdered = findOne("SimpleOrdered", compilations[0].contracts);
