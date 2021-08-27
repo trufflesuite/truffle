@@ -131,6 +131,45 @@ describe("@truffle/box Box", () => {
       );
     });
 
+    it.only("unboxes truffle box [win]", async () => {
+      //Start with c:\\ for windows or / otherwise
+      const ROOT = "\\truffle-box-test";
+
+      fse.rmdirSync(ROOT, { recursive: true, force: true });
+
+      fse.mkdirSync(ROOT);
+      fse.copySync(LOCAL_TRUFFLE_BOX, ROOT);
+
+      const truffleConfig = await Box.unbox(
+        ROOT,
+        destination,
+        {},
+        config,
+      );
+      assert.ok(truffleConfig);
+
+      assert(
+        fse.existsSync(path.join(destination, "truffle-config.js")),
+        "Unboxed project should have truffle config.",
+      );
+
+      // Assert the file is not there first.
+      assert(
+        fse.existsSync(path.join(destination, "truffle-init.json")) === false,
+        "truffle-init.json shouldn't be available to the user!",
+      );
+
+      assert(
+        fse.existsSync(path.join(destination, "build")) === false,
+        "shouldn't not copy files mentioned in .gitignore",
+      );
+
+      assert(
+        fse.existsSync(path.join(destination, ".env")) === false,
+        "shouldn't not copy files mentioned in .gitignore",
+      );
+    });
+
     it("does not copy the config files or ignored files in the config", () => {
       // Assert the file is not there first.
       assert(

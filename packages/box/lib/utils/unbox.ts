@@ -10,8 +10,15 @@ import type { boxConfig, unboxOptions } from "typings";
 import { promisify } from "util";
 import ignore from "ignore";
 
-const startsWithDrive = (fn: string): Boolean => 
-  /^[a-z]:/i.test(fn);
+function startsWithDrive(fn: string): Boolean {
+  return /^[a-z]:/i.test(fn);
+} 
+
+function isLikelyFullFilePath(sourcePath: string): Boolean {
+  // "\\" and /[a-z]:/i are valid root component for Windows paths
+  // https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file#fully-qualified-vs-relative-paths
+  return startsWithDrive(sourcePath) || "/\\".includes(sourcePath[0]); 
+}
 
 function verifyBoxExistsAtPath(localPath: string) {
   const configPath = path.join(localPath, "truffle-box.json");
@@ -49,7 +56,7 @@ async function verifyVCSURL(url: string) {
 }
 
 async function verifySourcePath(normalizedSourcePath: string) {
-  if (startsWithDrive(normalizedSourcePath) || normalizedSourcePath.startsWith("/")) {
+  if (isLikelyFullFilePath(normalizedSourcePath)) {
     return verifyBoxExistsAtPath(normalizedSourcePath);
   }
   return verifyVCSURL(normalizedSourcePath);
@@ -69,7 +76,7 @@ async function gitIgnoreFilter(sourcePath: string) {
 }
 
 async function fetchRepository(normalizedSourcePath: string, dir: string) {
-  if (startsWithDrive(normalizedSourcePath) || normalizedSourcePath.startsWith("/")) {
+  if (isLikelyFullFilePath(normalizedSourcePath)) {
     const filter = await gitIgnoreFilter(normalizedSourcePath);
     return fse.copy(normalizedSourcePath, dir, {
       filter: file =>

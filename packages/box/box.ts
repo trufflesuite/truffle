@@ -23,7 +23,8 @@ const defaultPath = "git@github.com:trufflesuite/truffle-init-default";
  */
 export const normalizeSourcePath = (url = defaultPath) => {
   // Process filepath resolution
-  if (utils.startsWithDrive(url) || url.startsWith(".") || url.startsWith("/") || url.startsWith("~")) {
+  if (utils.startsWithDrive(url) || url.startsWith(".") || url.startsWith("/") || url.startsWith("~") || url.startsWith("\\")) {
+    console.log("NORMALIZED:", path.normalize(url));
     debug({ in: url, out: path.normalize(url) });
     return path.resolve(path.normalize(url));
   }
@@ -190,7 +191,6 @@ const Box = {
 
     try {
       const normalizedSourcePath = normalizeSourcePath(url);
-
       await Box.checkDir(options, destination);
       const tempDir = utils.setUpTempDirectory(events);
       const tempDirPath = tempDir.path;
