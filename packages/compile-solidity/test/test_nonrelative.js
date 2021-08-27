@@ -104,6 +104,10 @@ describe("Non-canonical absolute file paths", function () {
 
   it("Refuses to compile non-canonical absolute paths", async function () {
     this.timeout(150000);
+    if (process.platform === "win32") {
+      //Note: /d:\Users\... is not a valid Windows path
+      return assert(true); 
+    }
 
     try {
       await Compile.all(options);
