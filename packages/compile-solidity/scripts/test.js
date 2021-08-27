@@ -9,7 +9,7 @@ const execOpt = { stdio: "inherit" }
 //arg0 is node, arg1 is __filename
 const argv = process.argv.slice(2);
 
-let mocha = ["mocha", "./test/**", "./test/**/*", "--timeout", "70000" ];
+let mocha = ["mocha", "'./test/**/*.js'", "--timeout", "70000" ];
 const grepOpts = ["--invert --grep native"];
 
 const makeCommand = (cmd, opts=[]) => [...cmd, ...opts, ...argv].join(' ');
