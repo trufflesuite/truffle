@@ -5,7 +5,11 @@ const { Compile } = require("@truffle/compile-solidity");
 const CompilerSupplier = require("../compilerSupplier");
 const assert = require("assert");
 const { findOne } = require("./helpers");
-const workingDirectory = "/home/fakename/truffleproject";
+const workingDirectory = path.join(
+  process.cwd(),
+  "truffleproject"
+);
+
 const compileOptions = {
   working_directory: workingDirectory,
   compilers: {
@@ -49,7 +53,11 @@ describe("Compile - solidity ^0.4.0", function () {
     });
 
     it("does not include absolute paths in metadata", async function () {
-      const sourcePath = `${workingDirectory}/contracts/SimpleOrdered.sol`;
+      const sourcePath = path.join(
+        workingDirectory,
+        "contracts",
+        "SimpleOrdered.sol"
+      )
       const sources = { [sourcePath]: source };
 
       const { compilations } = await Compile.sources({
