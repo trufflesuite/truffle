@@ -1,5 +1,6 @@
-const path = require("path");
 const fse = require("fs-extra");
+const os = require("os");
+const path = require("path");
 const assert = require("assert");
 const inquirer = require("inquirer");
 const sinon = require("sinon");
@@ -131,9 +132,13 @@ describe("@truffle/box Box", () => {
       );
     });
 
-    it.only("unboxes truffle box [win]", async () => {
+    it("unboxes truffle box [win]", async () => {
       //Start with c:\\ for windows or / otherwise
       const ROOT = "\\truffle-box-test";
+
+      if (os.platform() !== "win32") {
+        return assert(true);
+      }
 
       fse.rmdirSync(ROOT, { recursive: true, force: true });
 
