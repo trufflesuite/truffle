@@ -3,7 +3,23 @@
 const { execSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
-const execOpt = { stdio: "inherit" }
+const { env } = require("process");
+// const DEBUG = [
+//   "*",
+//   "-compile:compilerSupplier",
+//   "-mocha:cli:cli",
+//   "-mocha:cli:run",
+//   "-mocha:cli:options",
+//   "-mocha:cli:mocha",
+//   "-mocha:mocha",
+//   "-mocha:runner",
+//   "-mocha:runnable",
+//   "-mocha:suite",
+//   "-compile:parser",
+//   "-compile:run",
+//   "compile-common:sources"
+// ].join(",") ;
+const execOpt = { stdio: "inherit", /* env:{...env, DEBUG} */ }
 
 //Simulate "$@" 
 //arg0 is node, arg1 is __filename
