@@ -11,7 +11,7 @@
   "scripts": {
     "build": "tsc",
     "prepare": "yarn build",
-    "test": "./scripts/test.sh"
+    "test": "node ./scripts/test.js"
   },
   "repository": {
     "type": "git",
