@@ -1,19 +1,33 @@
 
 ## TODO
+  - [ ] Investigate caching CI options. Would be nice to cache node_modules.
   - [ ] Eventually will have to mirror productions's CI matrix
     - [ ] Docker strategy
     - [ ] GETH strategy [Instructions for Windows install](https://geth.ethereum.org/docs/install-and-build/installing-geth#install-on-windows)
   - [ ] Mocha timeouts are annoying! Seems to be related to downloading solc.
   - [ ] Mocha seems to have different globbing behavior on Windows and non
         windows that effects how tests and helpers are identified. We should be
-        more explicit.
-  - [ ] Investigate caching CI options. Would be nice to cache node_modules.
-  - [ ] Convert shell scripts to nodejs. 
-
+        more explicit. This will impact the conversions below.
+    - [ ] Convert shell scripts to nodejs. use: `r!fd scripts`
+      -[▲] packages/codec/scripts
+      -[✓] packages/compile-solidity/scripts
+      -[ ] packages/contract-schema/scripts
+      -[✓] packages/contract-tests/scripts
+      -[ ] packages/preserve-to-buckets/scripts
+      -[ ] packages/preserve-to-filecoin/scripts
+      -[ ] packages/preserve-to-ipfs/scripts
+      -[ ] packages/truffle/scripts
+      -[ ] scripts
+      -[ ] package.json  use : `r!rg --vimgrep -t json "[ba]?sh "`
+        -[ ] packages/contract/package.json:18:17:    "compile": "sh -c \"mkdir
+             -p ./dist\" && browserify --debug ./index.js | exorcist
+             ./dist/truffle-contract.js.map > ./dist/truffle-contract.js && uglifyjs
+             ./dist/truffle-contract.js -o ./dist/truffle-contract.min.js",
+        -[ ] packages/contract-schema/package.json:21:15:    "build": "sh ./scripts/generate-declarations",
 
 ## Tests marked skipped
 
-Use command: `rg --vimgrep "\.skip\w*?\("`
+Use : `r!rg --vimgrep "\.skip\w*?\("`
 
 packages/compile-solidity/test/test_JSparser.js:26:5:  it.skip("resolves imports when using solcjs parser instead of docker [ @native ]", async () => {
 packages/compile-solidity/test/test_parser.js:64:5:  it.skip("should return correct imports with docker solc [ @native ]", () => {
