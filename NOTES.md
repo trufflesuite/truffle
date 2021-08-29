@@ -8,10 +8,18 @@
   - [ ] Mocha seems to have different globbing behavior on Windows and non
         windows that effects how tests and helpers are identified. We should be
         more explicit. This will impact the conversions below.
+
     - [ ] Convert shell scripts to nodejs. use: `r!fd scripts`
       -[▲] packages/codec/scripts
       -[✓] packages/compile-solidity/scripts
-      -[ ] packages/contract-schema/scripts
+      -[✓] packages/contract-schema/scripts
+        - [ ] TODO: json-schems-to-typescript is very behind (^5.5.0) 
+	      while npmjs indicates v10 . Also, this projects repo
+	      https://github.com/bcherny/json-schema-to-typescript/releases
+	      is out of sync with npmjs
+	      https://www.npmjs.com/package/json-schema-to-typescript
+	      The gh repo doesn't have releases associated with NPM!!!
+	      - ask team.
       -[✓] packages/contract-tests/scripts
       -[ ] packages/preserve-to-buckets/scripts
       -[ ] packages/preserve-to-filecoin/scripts
@@ -23,6 +31,7 @@
              -p ./dist\" && browserify --debug ./index.js | exorcist
              ./dist/truffle-contract.js.map > ./dist/truffle-contract.js && uglifyjs
              ./dist/truffle-contract.js -o ./dist/truffle-contract.min.js",
+
         -[ ] packages/contract-schema/package.json:21:15:    "build": "sh ./scripts/generate-declarations",
 
 ## Tests marked skipped
