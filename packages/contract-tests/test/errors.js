@@ -1,5 +1,6 @@
 var assert = require("chai").assert;
 var util = require("./util");
+const path = require("path");
 
 describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
   var Example;
@@ -93,7 +94,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
           "Should keep hijacked error description"
         );
         assert(
-          e.stack.includes("/test/errors.js:"),
+          e.stack.includes(path.join("test", "errors.js:")),
           "Should include original stack details"
         );
         assert(
@@ -101,7 +102,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
           "Should preserve hijacked error message"
         );
         assert(
-          e.hijackedStack.includes("dist/runTx.js:"),
+          e.hijackedStack.includes(path.join("dist", "runTx.js:")),
           "Should preserve hijacked stack details"
         );
       }
@@ -254,7 +255,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
           "Should keep hijacked error description"
         );
         assert(
-          e.stack.includes("/test/errors.js:"),
+          e.stack.includes(path.join("test", "errors.js:")),
           "Should include original stack details"
         );
         assert(
@@ -262,7 +263,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
           "Should preserve hijacked error message"
         );
         assert(
-          e.hijackedStack.includes("/lib/execute.js:"),
+          e.hijackedStack.includes(path.join("lib", "execute.js:")),
           "Should preserve hijacked stack details"
         );
       }
@@ -287,7 +288,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
           "Should keep hijacked error description"
         );
         assert(
-          e.stack.includes("/test/errors.js:"),
+          e.stack.includes(path.join("test", "errors.js:")),
           "Should include original stack details"
         );
         assert(
@@ -295,7 +296,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
           "Should preserve hijacked error message"
         );
         assert(
-          e.hijackedStack.includes("/utils/runtimeerror.js:"),
+          e.hijackedStack.includes(path.join("utils", "runtimeerror.js:")),
           "Should preserve hijacked stack details"
         );
       }
@@ -312,7 +313,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
           "Should keep hijacked error description"
         );
         assert(
-          e.stack.includes("/test/errors.js:"),
+          e.stack.includes(path.join("test", "errors.js:")),
           "Should include original stack details"
         );
         assert(
@@ -320,7 +321,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
           "Should preserve hijacked error message"
         );
         assert(
-          e.hijackedStack.includes("/src.ts/abi-coder.ts:"),
+          e.hijackedStack.includes(path.join("src.ts", "abi-coder.ts:")),
           "Should preserve hijacked stack details"
         );
       }
@@ -332,12 +333,13 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
         await example.setValue(10, { gas: 10 });
         assert.fail();
       } catch (e) {
+        console.log("ERROR stack:", e.stack);
         assert(
           e.stack.includes("Error: base fee exceeds gas limit"),
           "Should keep hijacked error description"
         );
         assert(
-          e.stack.includes("/test/errors.js:"),
+          e.stack.includes(path.join("test", "errors.js:")),
           "Should include original stack details"
         );
         assert(
@@ -345,7 +347,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
           "Should preserve hijacked error message"
         );
         assert(
-          e.hijackedStack.includes("dist/runTx.js:"),
+          e.hijackedStack.includes(path.join("dist", "runTx.js:")),
           "Should preserve hijacked stack details"
         );
       }
