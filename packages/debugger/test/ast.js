@@ -66,7 +66,7 @@ describe("AST", function () {
 
   describe("Node pointer", function () {
     it("traverses", async function () {
-      this.timeout(6000);
+      this.timeout(26000);
       let instance = await abstractions.Variables.deployed();
       let receipt = await instance.stack(4);
       let txHash = receipt.tx;
