@@ -13,7 +13,7 @@ describe("`truffle compile` as external", function () {
   // You can run them locally with `CI=true npm test`
   if (!process.env.CI) return;
 
-  //TODO: skip test on windows
+  //TODO: .only(skip test on windows)
   if (process.platform === "win32") return;
 
   var config;
