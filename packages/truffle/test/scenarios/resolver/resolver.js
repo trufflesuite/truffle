@@ -60,11 +60,11 @@ describe("Solidity Imports [ @standalone ]", function () {
       await CommandRunner.run("compile", config);
       const output = logger.contents();
 
-      assert(output.includes("./contracts/Importer.sol"));
-      assert(output.includes("ethpmpkg/EthPMImport.sol"));
-      assert(output.includes("nodepkg/ImportOfImport.sol"));
-      assert(output.includes("nodepkg/LocalNodeImport.sol"));
-      assert(output.includes("nodepkg/NodeImport.sol"));
+      assert(output.includes(path.join("contracts", "Importer.sol")));
+      assert(output.includes(path.join("ethpmpkg", "EthPMImport.sol")));
+      assert(output.includes(path.join("nodepkg", "ImportOfImport.sol")));
+      assert(output.includes(path.join("nodepkg", "LocalNodeImport.sol")));
+      assert(output.includes(path.join("nodepkg", "NodeImport.sol")));
     });
   });
 
