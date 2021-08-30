@@ -13,7 +13,7 @@
       -[▲] packages/codec/scripts
       -[✓] packages/compile-solidity/scripts
       -[✓] packages/contract-schema/scripts
-        - [ ] TODO: json-schems-to-typescript is very behind (^5.5.0) 
+        - [?] TODO: json-schems-to-typescript is very behind (^5.5.0) 
 	      while npmjs indicates v10 . Also, this projects repo
 	      https://github.com/bcherny/json-schema-to-typescript/releases
 	      is out of sync with npmjs
@@ -21,9 +21,9 @@
 	      The gh repo doesn't have releases associated with NPM!!!
 	      - ask team.
       -[✓] packages/contract-tests/scripts
-      -[ ] packages/preserve-to-buckets/scripts
-      -[ ] packages/preserve-to-filecoin/scripts
-      -[ ] packages/preserve-to-ipfs/scripts
+      -[✓] packages/preserve-to-buckets/scripts
+      -[✓] packages/preserve-to-filecoin/scripts
+      -[✓] packages/preserve-to-ipfs/scripts
       -[ ] packages/truffle/scripts
       -[ ] scripts
       -[ ] package.json  use : `r!rg --vimgrep -t json "[ba]?sh "`
