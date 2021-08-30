@@ -41,6 +41,5 @@ if (isEnv("GETH")) {
   cmd =
     `mocha --no-warnings --timeout 20000 --grep "${inverse_grep}" --invert --colors` +
     args;
-  console.log("cmd", cmd);
   execSync(cmd, execOption);
 }
