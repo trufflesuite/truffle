@@ -27,7 +27,8 @@
     "publish:external-compiler": "node ./scripts/prereleaseVersion.js external-compiler external-compiler",
     "publish:next": "node ./scripts/prereleaseVersion.js next next",
     "publish:user-level-mnemonic": "node ./scripts/prereleaseVersion.js user-level-mnemonic user-level-mnemonic",
-    "test": "./scripts/test.sh",
+    "test": "node ./scripts/test.js",
+    "test:sh": "./scripts/test.sh",
     "test:raw": "NO_BUILD=true mocha"
   },
   "optionalDependencies": {
