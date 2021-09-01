@@ -141,7 +141,7 @@ describe("migration errors", function () {
     } catch (_error) {
       const output = logger.contents();
       console.log(output);
-      assert(output.includes("6_migrations_funds.js"));
+      assert(output.includes("10_migrations_funds_geth.js"));
       assert(output.includes("Deploying 'Example'"));
       assert(output.includes("insufficient funds"));
     }
