@@ -14,7 +14,7 @@ describe.only("`truffle compile` as external", function () {
   if (!process.env.CI) return;
 
   //TODO: .only(skip test on windows)
-  if (process.platform === "win32") return;
+  // if (process.platform === "win32") return;
 
   var config;
   var project = path.join(__dirname, "../../sources/external_compile");
