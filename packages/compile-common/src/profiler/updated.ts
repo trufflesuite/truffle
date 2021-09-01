@@ -1,6 +1,9 @@
 import * as path from "path";
 import * as fse from "fs-extra";
 
+import debugModule from "debug";
+const debug = debugModule("profiler:updated");
+
 import type { ContractObject } from "@truffle/contract-schema/spec";
 
 export interface UpdatedOptions {
@@ -33,7 +36,14 @@ interface SourceFilesArtifactsUpdatedTimes {
   [filePath: string]: number; // ms since epoch
 }
 
-const getKeyFromPath = (fsPath: string): string => fsPath.split(path.sep).join("/");
+const getKeyFromPath = (fsPath: string): string => {
+  debug("getKeyFromPath", fsPath);
+  debug(new Error().stack);
+  //HACK: Not sure why there would be no source paths. We should enforce that
+  //sources have paths. Tests could introduces sources with out paths, and
+  //maybe  the compile external workflow? 
+  return fsPath ? fsPath.split(path.sep).join("/") : fsPath;
+}
 
 function readAndParseArtifactFiles(
   paths: string[],
