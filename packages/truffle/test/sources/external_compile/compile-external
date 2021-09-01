@@ -1,6 +1,18 @@
-#!/usr/bin/env bash
+#!/usr/bin/env node
 
-truffle compile --compiler=solc --contracts_build_directory=external
+const { execSync } =  require("child_process");
+const fs = require("fs");
+const path = require("path");
 
-cat ./external/MetaCoin.json | jq '.abi' > ./external/MetaCoin.abi
-cat ./external/MetaCoin.json | jq '.bytecode' > ./external/MetaCoin.bytecode
+execSync("truffle compile --compiler=solc --contracts_build_directory=external");
+
+const fs_metacoin = path.join("external", "MetaCoin.json");
+const fs_abi = path.join("external", "MetaCoin.abi");
+const fs_bytecode = path.join("external", "MetaCoin.bytecode");
+
+const mc = JSON.parse(fs.readFileSync(fs_metacoin).toString());
+
+const writePartial = (fn, data) => fs.writeFileSync(fn, JSON.stringify(data));
+writePartial(fs_abi, mc.abi);
+writePartial(fs_bytecode, mc.bytecode);
+
