@@ -1,16 +1,16 @@
 module.exports = {
   compilers: {
     external: {
-      command: "./compile-external",
+      command: "node ./compile-external",
       targets: [
         {
           path: "external/M*.json", // MetaCoin and Migrations
-          command: "cat -"
+          // command: "cat -"
         },
         {
           path: "external/ConvertLib.json",
-          command: "cat",
-          stdin: false
+          // command: "cat",
+          // stdin: false
         },
         {
           properties: {
