@@ -17,6 +17,9 @@ module.exports = {
           " " +
           command);
 
+    console.log(process.cwd());
+    console.log("CHILD", execString);
+
     return new Promise((resolve, reject) => {
       let child = exec(execString, {
         cwd: config.working_directory
@@ -24,6 +27,7 @@ module.exports = {
 
       child.stdout.on("data", data => {
         data = data.toString().replace(/\n$/, "");
+        console.log(data);
         config.logger.log(data);
       });
       child.stderr.on("data", data => {

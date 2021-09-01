@@ -8,7 +8,7 @@ var sandbox = require("../sandbox");
 var Server = require("../server");
 var Reporter = require("../reporter");
 
-describe("`truffle compile` as external", function () {
+describe.only("`truffle compile` as external", function () {
   // These tests rely on a solc jq dependency installed with apt-get
   // You can run them locally with `CI=true npm test`
   if (!process.env.CI) return;
