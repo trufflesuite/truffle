@@ -136,7 +136,7 @@ describe("migration errors", function () {
 
     try {
       console.log("about to run a migration");
-      await CommandRunner.run("migrate -f 6", config);
+      await CommandRunner.run("migrate -f 10", config);
       assert(false, "This should have thrown.");
     } catch (_error) {
       const output = logger.contents();
