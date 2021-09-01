@@ -157,7 +157,7 @@ class HDWalletProvider {
           const KNOWN_CHAIN_IDS = new Set([1, 3, 4, 5, 42]);
           let txOptions;
           if (typeof chain !== "undefined" && KNOWN_CHAIN_IDS.has(chain)) {
-            txOptions = { common: new Common({ chain }) };
+            txOptions = { common: new Common({ chain, hardfork: self.hardfork }) };
           } else if (typeof chain !== "undefined") {
             txOptions = {
               common: Common.forCustomChain(
