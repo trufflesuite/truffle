@@ -16,12 +16,14 @@ export class BrowserProvider {
   private socket: WebSocket;
   private dashboardPort: number;
   private timeoutSeconds: number;
+  public keepAlive: boolean;
   private concurrentRequests: number = 0;
   private connecting: boolean = false;
 
   constructor(options: BrowserProviderOptions = {}) {
     this.dashboardPort = options.dashboardPort ?? 5000;
     this.timeoutSeconds = options.timeoutSeconds ?? 120;
+    this.keepAlive = options.keepAlive ?? false;
 
     // Start a dashboard at the provided port (will silently fail if the dashboard address is already in use)
     startDashboardInBackground(this.dashboardPort);
@@ -43,8 +45,8 @@ export class BrowserProvider {
     this.send(payload, callback);
   }
 
-  private terminate() {
-    this.socket.terminate();
+  public terminate() {
+    this.socket?.terminate();
   }
 
   private async sendInternal(
@@ -54,14 +56,16 @@ export class BrowserProvider {
 
     const message = createMessage("browser-provider", payload);
 
-    this.concurrentRequests++;
+    this.concurrentRequests += 1;
 
     const { payload: response } = await timeout(
       sendAndAwait(this.socket, message),
       this.timeoutSeconds * 1000,
     );
 
-    if (--this.concurrentRequests === 0) {
+    this.concurrentRequests -= 1;
+
+    if (this.shouldTerminate()) {
       this.terminate();
     }
 
@@ -70,6 +74,12 @@ export class BrowserProvider {
     }
 
     return response;
+  }
+
+  private shouldTerminate(): boolean {
+    if (this.keepAlive) return false;
+    if (this.concurrentRequests !== 0) return false;
+    return true;
   }
 
   private async ready() {

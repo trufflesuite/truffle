@@ -1,5 +1,4 @@
 import { promisify } from "util";
-import delay from "delay";
 import Ganache from "ganache-core";
 import { providers, utils } from "ethers";
 import Web3 from "web3";
@@ -11,7 +10,7 @@ jest.setTimeout(200000);
 
 describe("BrowserProvider", () => {
   const ganachePort = 8545;
-  const dashboardPort = 5000;
+  const dashboardPort = 8546;
 
   let browserProvider: BrowserProvider;
   let mockDashboard: MockDashboard;
@@ -67,9 +66,6 @@ describe("BrowserProvider", () => {
         id: 1
       });
 
-      // Wait for a second
-      await delay(1000);
-
       // Then connect the dashboard
       await mockDashboard.connect(messageBusPorts.messageBusListenPort);
 
@@ -78,6 +74,34 @@ describe("BrowserProvider", () => {
 
       expect(response).toHaveProperty('result');
       expect(response?.result[0]).toBeDefined();
+    });
+
+    it("should send ETH", async () => {
+      const send = promisify(browserProvider.send.bind(browserProvider));
+
+      await mockDashboard.connect(messageBusPorts.messageBusListenPort);
+
+      const { result: accounts } = await send({
+        jsonrpc: "2.0",
+        method: "eth_accounts",
+        params: [],
+        id: 1
+      }) ?? {};
+
+      const transaction = {
+        from: accounts[0],
+        to: accounts[1],
+        value: '16345785D8A0000', // 0.1 ETH
+      };
+
+      const { result: hash } = await send({
+        jsonrpc: "2.0",
+        method: "eth_sendTransaction",
+        params: [transaction],
+        id: 1
+      }) ?? {};
+
+      expect(hash).toBeDefined();
     });
   });
 
@@ -108,8 +132,6 @@ describe("BrowserProvider", () => {
       // First send the request
       const request = ethersProvider.listAccounts();
 
-      await delay(1000);
-
       // Then connect the dashboard
       await mockDashboard.connect(messageBusPorts.messageBusListenPort);
 
@@ -134,25 +156,26 @@ describe("BrowserProvider", () => {
       expect(response.hash).toBeDefined();
     });
 
-    // TODO: This is failing because there is a window where disconnecting the
-    // dashboard closes the entire message bus if that happens to be at a point
-    // where there are no active browser provider requests
-    it.skip("should send ETH when dashboard disconnects and reconnects", async () => {
+
+    it("should send ETH even when dashboard loses connection as long as keepAlive is true", async () => {
+      browserProvider.keepAlive = true;
+
+      await mockDashboard.connect(messageBusPorts.messageBusListenPort);
+      const accounts = await ethersProvider.listAccounts();
+
+      // Disconnect + reconnect the dashboard between BrowserProvider requests
+      mockDashboard.disconnect();
       await mockDashboard.connect(messageBusPorts.messageBusListenPort);
 
-      const accounts = await ethersProvider.listAccounts();
       const signer = ethersProvider.getSigner();
-
-      const request = signer.sendTransaction({
+      const response = await signer.sendTransaction({
         from: accounts[0],
         to: accounts[1],
         value: utils.parseEther("0.1"),
       });
 
-      mockDashboard.disconnect();
-      await mockDashboard.connect(messageBusPorts.messageBusListenPort);
-
-      const response = await request;
+      // Manually terminate the provider
+      browserProvider.terminate();
 
       expect(response).toHaveProperty("hash");
       expect(response.hash).toBeDefined();
@@ -162,7 +185,7 @@ describe("BrowserProvider", () => {
   describe("Usage with Web3.js", () => {
     let web3: Web3;
 
-    beforeAll(() => {
+    beforeEach(() => {
       web3 = new Web3(browserProvider);
     });
 
@@ -179,9 +202,6 @@ describe("BrowserProvider", () => {
     it("should retrieve unlocked accounts if request gets sent before dashboard connects", async () => {
       // First send the request
       const request = web3.eth.getAccounts();
-
-      // Wait for a second
-      await delay(1000);
 
       // Then connect the dashboard
       await mockDashboard.connect(messageBusPorts.messageBusListenPort);
@@ -201,6 +221,29 @@ describe("BrowserProvider", () => {
         to: accounts[1],
         value: web3.utils.toWei('0.1'),
       });
+
+      expect(response).toHaveProperty("transactionHash");
+      expect(response.transactionHash).toBeDefined();
+    });
+
+    it("should send ETH even when dashboard loses connection as long as keepAlive is true", async () => {
+      browserProvider.keepAlive = true;
+
+      await mockDashboard.connect(messageBusPorts.messageBusListenPort);
+      const accounts = await web3.eth.getAccounts();
+
+      // Disconnect + reconnect the dashboard between BrowserProvider requests
+      mockDashboard.disconnect();
+      await mockDashboard.connect(messageBusPorts.messageBusListenPort);
+
+      const response = await web3.eth.sendTransaction({
+        from: accounts[0],
+        to: accounts[1],
+        value: web3.utils.toWei('0.1'),
+      });
+
+      // Manually terminate the provider
+      browserProvider.terminate();
 
       expect(response).toHaveProperty("transactionHash");
       expect(response.transactionHash).toBeDefined();
