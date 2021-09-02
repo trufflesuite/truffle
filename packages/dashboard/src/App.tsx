@@ -15,6 +15,14 @@ function App() {
   const [requests, setRequests] = useState<Request[]>([]);
   const web3modal = new Web3Modal();
 
+  // Add warning when trying to close the dashboard
+  useEffect(() => {
+    window.onbeforeunload = function(e: any) {
+      e.returnValue = "";
+      return "";
+    };
+  }, []);
+
   useEffect(() => {
     const initialiseSocket = async () => {
       if (socket && socket.readyState === WebSocket.OPEN) return;
