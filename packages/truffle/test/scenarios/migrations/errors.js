@@ -7,17 +7,17 @@ const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const Web3 = require("web3");
 
-describe("migration errors", function() {
+describe("migration errors", function () {
   let config;
   let web3;
   let networkId;
   const project = path.join(__dirname, "../../sources/migrations/error");
-  const logger = new MemoryLogger();
+  const logger = new MemoryLogger(true);
 
   before(done => Server.start(done));
   after(done => Server.stop(done));
 
-  before(async function() {
+  before(async function () {
     this.timeout(10000);
     config = await sandbox.create(project);
     config.network = "development";
@@ -33,7 +33,7 @@ describe("migration errors", function() {
     networkId = await web3.eth.net.getId();
   });
 
-  it("should error and stop", async function() {
+  it("should error and stop", async function () {
     this.timeout(70000);
 
     try {
@@ -64,7 +64,7 @@ describe("migration errors", function() {
     }
   });
 
-  it("should run from the last successfully completely migration", async function() {
+  it("should run from the last successfully completely migration", async function () {
     this.timeout(70000);
 
     try {
@@ -79,7 +79,7 @@ describe("migration errors", function() {
     }
   });
 
-  it("should run out of gas correctly", async function() {
+  it("should run out of gas correctly", async function () {
     this.timeout(70000);
 
     try {
@@ -99,7 +99,7 @@ describe("migration errors", function() {
     }
   });
 
-  it("should expose the reason string if available [ @ganache ]", async function() {
+  it("should expose the reason string if available [ @ganache ]", async function () {
     this.timeout(70000);
 
     try {
@@ -114,7 +114,7 @@ describe("migration errors", function() {
     }
   });
 
-  it("should error on insufficient funds correctly [ @ganache ]", async function() {
+  it("should error on insufficient funds correctly [ @ganache ]", async function () {
     this.timeout(70000);
 
     try {
@@ -131,22 +131,22 @@ describe("migration errors", function() {
     }
   });
 
-  it("should error on insufficient funds correctly [ @geth ]", async function() {
+  it("should error on insufficient funds correctly [ @geth ]", async function () {
     this.timeout(70000);
 
     try {
-      await CommandRunner.run("migrate -f 6", config);
+      await CommandRunner.run("migrate -f 10", config);
       assert(false, "This should have thrown.");
     } catch (_error) {
       const output = logger.contents();
       console.log(output);
-      assert(output.includes("6_migrations_funds.js"));
+      assert(output.includes("10_migrations_funds_geth.js"));
       assert(output.includes("Deploying 'Example'"));
       assert(output.includes("insufficient funds"));
     }
   });
 
-  it("should error if user tries to use batch syntax", async function() {
+  it("should error if user tries to use batch syntax", async function () {
     this.timeout(70000);
 
     try {
@@ -161,7 +161,7 @@ describe("migration errors", function() {
     }
   });
 
-  it("should error if there are js errors in the migrations script (sync)", async function() {
+  it("should error if there are js errors in the migrations script (sync)", async function () {
     this.timeout(70000);
 
     try {
@@ -175,7 +175,7 @@ describe("migration errors", function() {
     }
   });
 
-  it("should error if there are js errors in the migrations script (async)", async function() {
+  it("should error if there are js errors in the migrations script (async)", async function () {
     this.timeout(70000);
 
     try {
