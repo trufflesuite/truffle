@@ -135,7 +135,6 @@ describe("migration errors", function () {
     this.timeout(70000);
 
     try {
-      console.log("about to run a migration");
       await CommandRunner.run("migrate -f 10", config);
       assert(false, "This should have thrown.");
     } catch (_error) {
