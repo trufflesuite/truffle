@@ -5,7 +5,7 @@ import { DashboardMessageBus } from "@truffle/dashboard-message-bus";
 import { spawn } from "child_process";
 import cors from 'cors';
 
-export const startDashboard = async (dashboardPort: number) => {
+export const startDashboard = async (dashboardPort: number, dashboardHost: string) => {
   const app = express();
 
   app.use(cors());
@@ -26,17 +26,17 @@ export const startDashboard = async (dashboardPort: number) => {
     });
   });
 
-  app.listen(dashboardPort, () => {
+  app.listen(dashboardPort, dashboardHost, () => {
     console.log(`@truffle/dashboard started on port ${dashboardPort}`);
   });
 
   return app;
 };
 
-export const startDashboardInBackground = (port: number) => {
+export const startDashboardInBackground = (port: number, host: string) => {
   const dashboardPath = `${__dirname}/start-dashboard`;
 
-  const child = spawn("node", [dashboardPath, String(port)], {
+  const child = spawn("node", [dashboardPath, String(port), host], {
     detached: true,
     stdio: "ignore"
   });

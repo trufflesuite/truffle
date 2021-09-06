@@ -6,27 +6,28 @@ import type {
 import { callbackify } from "util";
 import WebSocket from "ws";
 import delay from "delay";
-import { getMessageBusPorts } from "./utils";
-import { sendAndAwait, createMessage, connectToMessageBusWithRetries } from "@truffle/dashboard-message-bus";
+import { sendAndAwait, createMessage, connectToMessageBusWithRetries, getMessageBusPorts } from "@truffle/dashboard-message-bus";
 import { startDashboardInBackground } from "@truffle/dashboard";
 import { timeout } from "promise-timeout";
 import { BrowserProviderOptions } from "./types";
 
 export class BrowserProvider {
   private socket: WebSocket;
-  private dashboardPort: number;
+  public dashboardHost: string;
+  public dashboardPort: number;
   private timeoutSeconds: number;
   public keepAlive: boolean;
   private concurrentRequests: number = 0;
   private connecting: boolean = false;
 
   constructor(options: BrowserProviderOptions = {}) {
+    this.dashboardHost = options.dashboardHost ?? "localhost";
     this.dashboardPort = options.dashboardPort ?? 5000;
     this.timeoutSeconds = options.timeoutSeconds ?? 120;
     this.keepAlive = options.keepAlive ?? false;
 
     // Start a dashboard at the provided port (will silently fail if the dashboard address is already in use)
-    startDashboardInBackground(this.dashboardPort);
+    startDashboardInBackground(this.dashboardPort, this.dashboardHost);
   }
 
   public send(
@@ -96,7 +97,7 @@ export class BrowserProvider {
 
     this.connecting = true;
     try {
-      const { messageBusRequestsPort } = await getMessageBusPorts(this.dashboardPort);
+      const { messageBusRequestsPort } = await getMessageBusPorts(this.dashboardPort, this.dashboardHost);
       this.socket = await connectToMessageBusWithRetries(messageBusRequestsPort);
     } finally {
       this.connecting = false;

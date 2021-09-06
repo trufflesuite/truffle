@@ -13,9 +13,9 @@ export class DashboardMessageBus extends EventEmitter {
 
   unfulfilledRequests: Map<string, UnfulfilledRequest> = new Map([]);
 
-  start(requestsPort: number, listenPort: number) {
+  start(requestsPort: number, listenPort: number, host: string = "0.0.0.0") {
     this.listenServer = new WebSocket.Server({
-      host: "0.0.0.0",
+      host,
       port: listenPort
     });
 
@@ -34,7 +34,7 @@ export class DashboardMessageBus extends EventEmitter {
     });
 
     this.requestsServer = new WebSocket.Server({
-      host: "0.0.0.0",
+      host,
       port: requestsPort
     });
 

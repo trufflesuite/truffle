@@ -40,7 +40,6 @@ function IncomingRequest({ provider, socket, request, setRequests }: Props) {
     removeFromRequests();
   };
 
-  // TODO: Clean this up
   const formatBrowserProviderRequestParameters = (request: BrowserProviderRequest) => {
     switch (request.payload.method) {
       case "eth_sendTransaction":
@@ -89,7 +88,7 @@ function IncomingRequest({ provider, socket, request, setRequests }: Props) {
       }
       case "eth_decrypt":
       default: {
-        return JSON.stringify(request.payload.params);
+        return <ReactJson src={request.payload.params} />;
       }
     }
   };
