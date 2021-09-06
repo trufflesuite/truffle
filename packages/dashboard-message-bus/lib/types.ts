@@ -10,3 +10,9 @@ export interface Message {
   type: string;
   payload: any;
 }
+
+export interface PortsConfig {
+  dashboardPort: number;
+  messageBusListenPort: number;
+  messageBusRequestsPort: number;
+}
