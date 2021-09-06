@@ -1,4 +1,4 @@
 import { startDashboard } from ".";
 
-const [dashboardPort] = process.argv.slice(2);
-startDashboard(Number(dashboardPort));
+const [dashboardPort, dashboardHost] = process.argv.slice(2);
+startDashboard(Number(dashboardPort), dashboardHost);

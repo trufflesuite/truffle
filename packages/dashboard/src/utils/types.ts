@@ -10,9 +10,3 @@ export interface BrowserProviderRequest {
     id: number;
   };
 }
-
-export interface PortsConfig {
-  dashboardPort: number;
-  messageBusListenPort: number;
-  messageBusRequestsPort: number;
-}

@@ -1,8 +1,8 @@
-import { spawn } from "child_process";
 import WebSocket from "ws";
-import { Message } from "./types";
+import { Message, PortsConfig } from "./types";
 import any from 'promise.any';
 import delay from "delay";
+import axios from "axios";
 
 any.shim();
 
@@ -56,34 +56,44 @@ export const sendAndAwait = (socket: WebSocket, message: Message) => {
   });
 };
 
-export const startMessageBus = (clientPort: number, dashboardPort: number) => {
-  const serverPath = `${__dirname}/start-message-bus`;
-
-  return spawn(
-    "node",
-    [serverPath, String(clientPort), String(dashboardPort)],
-    {
-      detached: true,
-      stdio: "ignore"
-    }
-  );
-};
-
-export const connectToMessageBusWithRetries = async (port: number, retries = 50, tryCount = 1): Promise<WebSocket> => {
+export const connectToMessageBusWithRetries = async (
+  port: number,
+  host: string = "localhost",
+  retries: number = 50,
+  tryCount: number = 1,
+): Promise<WebSocket> => {
   try {
-    return await connectToMessageBus(port);
+    return await connectToMessageBus(port, host);
   } catch (e) {
     if (tryCount === retries) throw e;
     await delay(1000);
-    return await connectToMessageBusWithRetries(port, retries, tryCount + 1);
+    return await connectToMessageBusWithRetries(port, host, retries, tryCount + 1);
   }
 };
 
-export const connectToMessageBus = (port: number) => {
-  const socket = new WebSocket(`ws://localhost:${port}`);
+export const connectToMessageBus = (port: number, host: string = "localhost") => {
+  const socket = new WebSocket(`ws://${host}:${port}`);
 
   return new Promise<WebSocket>((resolve, reject) => {
     socket.on("open", () => resolve(socket));
     socket.on("error", reject);
   });
+};
+
+export const getMessageBusPorts = async (
+  dashboardPort: number,
+  dashboardHost: string = "localhost",
+  retries: number = 5,
+  tryCount: number = 1
+): Promise<PortsConfig> => {
+  try {
+    const { data } = await axios.get(`http://${dashboardHost}:${dashboardPort}/ports`);
+    return data;
+  } catch {
+    if (tryCount === retries) {
+      throw new Error(`Could not connect to dashboard at http://${dashboardHost}:${dashboardPort}/ports`);
+    }
+    await delay(1000);
+    return await getMessageBusPorts(dashboardPort, dashboardHost, retries, tryCount + 1);
+  }
 };

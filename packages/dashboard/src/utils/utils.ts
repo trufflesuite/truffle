@@ -1,9 +1,9 @@
-import axios from "axios";
+import { getMessageBusPorts, PortsConfig } from "@truffle/dashboard-message-bus";
 import delay from "delay";
 import { JSONRPCRequestPayload } from "ethereum-protocol";
 import { promisify } from "util";
 import { INTERACTIVE_REQUESTS } from "./constants";
-import { BrowserProviderRequest, PortsConfig, Request } from "./types";
+import { BrowserProviderRequest, Request } from "./types";
 
 export const jsonToBase64 = (json: any) => {
   const stringifiedJson = JSON.stringify(json);
@@ -33,8 +33,8 @@ export const connectToMessageBusWithRetries = async (port: number, retries = 1, 
   }
 };
 
-export const connectToMessageBus = (port: number) => {
-  const socket = new WebSocket(`ws://localhost:${port}`);
+export const connectToMessageBus = (port: number, host: string = "localhost") => {
+  const socket = new WebSocket(`ws://${host}:${port}`);
 
   return new Promise<WebSocket>((resolve, reject) => {
     socket.addEventListener("open", () => resolve(socket));
@@ -43,10 +43,9 @@ export const connectToMessageBus = (port: number) => {
 };
 
 export const getPorts = async (): Promise<PortsConfig> => {
-  const dashboardPort = process.env.NODE_ENV === 'development' ? 5000 : window.location.port;
-  const { data } = await axios.get(`http://localhost:${dashboardPort}/ports`);
-
-  return data;
+  const dashboardHost = window.location.hostname;
+  const dashboardPort = process.env.NODE_ENV === 'development' ? 5000 : Number(window.location.port);
+  return getMessageBusPorts(dashboardPort, dashboardHost);
 };
 
 export const isInteractiveRequest = (request: BrowserProviderRequest) =>

@@ -2,9 +2,9 @@ import { promisify } from "util";
 import Ganache from "ganache-core";
 import { providers, utils } from "ethers";
 import Web3 from "web3";
+import { getMessageBusPorts } from "@truffle/dashboard-message-bus";
 import { BrowserProvider } from "../lib";
 import MockDashboard from "./MockDashboard";
-import { getMessageBusPorts } from "../lib/utils";
 
 jest.setTimeout(200000);
 
