@@ -76,6 +76,12 @@ class Command {
   async run(inputStrings, options) {
     const result = this.getCommand(inputStrings, options.noAliases);
 
+    try {
+      // migrate Truffle data to the new location if necessary
+      const { migrateTruffleDataIfNecessary } = require("./config-migration");
+      await migrateTruffleDataIfNecessary();
+    } catch {};
+
     if (result == null) {
       throw new TaskError(
         "Cannot find command based on input: " + JSON.stringify(inputStrings)
