@@ -1,4 +1,4 @@
-const migrationUtils = require("../../lib/config-migrations");
+const migrationUtils = require("../../lib/config-migration");
 const {
   migrateTruffleDataIfNecessary,
   needsMigrated,
