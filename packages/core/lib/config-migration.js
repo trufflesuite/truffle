@@ -16,7 +16,7 @@ module.exports = {
   },
 
   migrateTruffleDataIfNecessary: async function () {
-    if (!this.needsMigrated) return;
+    if (!this.needsMigrated()) return;
     this.migrateGlobalConfig();
     const folders = ["compilers", ".db"];
     for (const folder of folders) {
