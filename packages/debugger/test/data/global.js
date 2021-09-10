@@ -189,7 +189,7 @@ describe("Globally-available variables", function () {
     assert.equal(variables.this, variables._this);
     assert.deepEqual(variables.msg, variables._msg);
     assert.deepEqual(variables.tx, variables._tx);
-    assert.deepEqual(variables.block, variables._block);
+    assert.deepEqual(variables.block, withBaseFeeZero(variables._block));
   });
 
   it("Gets globals correctly in nested call", async function () {
@@ -215,7 +215,7 @@ describe("Globally-available variables", function () {
     assert.equal(variables.this, variables._this);
     assert.deepEqual(variables.msg, variables._msg);
     assert.deepEqual(variables.tx, variables._tx);
-    assert.deepEqual(variables.block, variables._block);
+    assert.deepEqual(variables.block, withBaseFeeZero(variables._block));
   });
 
   it("Gets globals correctly in static call", async function () {
@@ -241,7 +241,7 @@ describe("Globally-available variables", function () {
     assert.equal(variables.this, variables.__this);
     assert.deepEqual(variables.msg, variables.__msg);
     assert.deepEqual(variables.tx, variables.__tx);
-    assert.deepEqual(variables.block, variables.__block);
+    assert.deepEqual(variables.block, withBaseFeeZero(variables.__block));
   });
 
   it("Gets globals correctly in library call", async function () {
@@ -260,13 +260,15 @@ describe("Globally-available variables", function () {
     });
     await bugger.continueUntilBreakpoint();
 
+    debug("variables: %O", await bugger.variables());
+
     const variables = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
       await bugger.variables()
     );
 
     assert.deepEqual(variables.msg, variables.__msg);
     assert.deepEqual(variables.tx, variables.__tx);
-    assert.deepEqual(variables.block, variables.__block);
+    assert.deepEqual(variables.block, withBaseFeeZero(variables.__block));
   });
 
   it("Gets globals correctly in simple creation", async function () {
@@ -285,7 +287,7 @@ describe("Globally-available variables", function () {
     assert.equal(variables.this, variables._this);
     assert.deepEqual(variables.msg, variables._msg);
     assert.deepEqual(variables.tx, variables._tx);
-    assert.deepEqual(variables.block, variables._block);
+    assert.deepEqual(variables.block, withBaseFeeZero(variables._block));
   });
 
   it("Gets globals correctly in nested creation", async function () {
@@ -311,7 +313,7 @@ describe("Globally-available variables", function () {
     assert.equal(variables.this, variables._this);
     assert.deepEqual(variables.msg, variables._msg);
     assert.deepEqual(variables.tx, variables._tx);
-    assert.deepEqual(variables.block, variables._block);
+    assert.deepEqual(variables.block, withBaseFeeZero(variables._block));
   });
 
   it("Gets globals correctly in failed CREATE2", async function () {
@@ -337,6 +339,14 @@ describe("Globally-available variables", function () {
     assert.equal(variables.this, variables._this);
     assert.deepEqual(variables.msg, variables._msg);
     assert.deepEqual(variables.tx, variables._tx);
-    assert.deepEqual(variables.block, variables._block);
+    assert.deepEqual(variables.block, withBaseFeeZero(variables._block));
   });
 });
+
+//HACK for testing until Ganache supports london
+function withBaseFeeZero(block) {
+  return {
+    ...block,
+    basefee: 0
+  };
+}
