@@ -12,6 +12,8 @@ module.exports = {
   needsMigrated: function () {
     const oldConfig = path.join(this.oldTruffleDataDirectory, "config.json");
     const conf = new Conf({ projectName: "truffle" });
+    const alreadyMigrated = conf.get("migrated");
+    if (alreadyMigrated) return false;
     return fse.existsSync(oldConfig) && oldConfig !== conf.path;
   },
 
@@ -26,6 +28,8 @@ module.exports = {
 
   migrateGlobalConfig: function () {
     const conf = new Conf({ projectName: "truffle" });
+    // set this to true so we know not to migrate next time
+    conf.set("migrated", true);
     const oldSettings = require(path.join(
       this.oldTruffleDataDirectory,
       "config.json"
