@@ -74,7 +74,10 @@ function* fetchTransactionInfo(adapter, { txHash }) {
     gaslimit: new BN(block.gasLimit),
     number: new BN(block.number),
     timestamp: new BN(block.timestamp),
-    chainid: new BN(chainId) //key is lowercase because that's what Solidity does
+    chainid: new BN(chainId), //key is lowercase because that's what Solidity does
+    basefee: new BN(parseInt(block.baseFeePerGas)) //will be 0 if pre-London [new BN(NaN) yields 0]
+    //note we need parseInt on basefee because some web3 versions return it as a hex string,
+    //and BN doesn't allow for hex strings as input
   };
 
   if (tx.to != null) {

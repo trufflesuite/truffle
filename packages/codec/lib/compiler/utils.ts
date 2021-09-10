@@ -9,11 +9,17 @@ export function solidityFamily(compiler: CompilerVersion): SolidityFamily {
     return "unknown";
   }
   if (
+    semver.satisfies(compiler.version, ">=0.8.7", {
+      includePrerelease: true
+    })
+  ) {
+    return "0.8.7+";
+  } else if (
+    //see comment below about the weird-looking condition
     semver.satisfies(compiler.version, "~0.8 || >=0.8.0", {
       includePrerelease: true
     })
   ) {
-    //see comment below about the weird-looking condition
     return "0.8.x";
   } else if (
     semver.satisfies(compiler.version, "~0.5 || >=0.5.0", {

@@ -109,6 +109,9 @@ export function* decodeMagic(
       if (solidityVersionHasChainId(info.currentContext.compiler)) {
         variables.push("chainid");
       }
+      if (solidityVersionHasBaseFee(info.currentContext.compiler)) {
+        variables.push("basefee");
+      }
       for (let variable of variables) {
         block[variable] = yield* Basic.Decode.decodeBasic(
           {
@@ -143,7 +146,7 @@ function senderType(
         kind: "specific",
         payable: true
       };
-    case "0.8.x":
+    default:
       return {
         typeClass: "address",
         kind: "specific",
@@ -164,6 +167,7 @@ function coinbaseType(
       };
     case "0.5.x":
     case "0.8.x":
+    case "0.8.7+":
       return {
         typeClass: "address",
         kind: "specific",
@@ -180,7 +184,21 @@ function solidityVersionHasChainId(
     case "pre-0.5.0":
     case "0.5.x":
       return false;
+    default:
+      return true;
+  }
+}
+
+function solidityVersionHasBaseFee(
+  compiler: Compiler.CompilerVersion
+): boolean {
+  switch (Compiler.Utils.solidityFamily(compiler)) {
+    case "unknown":
+    case "pre-0.5.0":
+    case "0.5.x":
     case "0.8.x":
+      return false;
+    default:
       return true;
   }
 }
