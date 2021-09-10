@@ -13,6 +13,7 @@ const execute = {
   // -----------------------------------  Helpers --------------------------------------------------
   /**
    * Retrieves gas estimate multiplied by the set gas multiplier for a `sendTransaction` call.
+   * Lacking an estimate, sets gas to have of latest blockLimit
    * @param  {Object} params     `sendTransaction` parameters
    * @param  {Number} blockLimit  most recent network block.blockLimit
    * @return {Number}             gas estimate
@@ -22,20 +23,34 @@ const execute = {
     const interfaceAdapter = this.interfaceAdapter;
 
     return new Promise(function (accept) {
-      // Always prefer specified gas - this includes gas set by class_defaults
+      // Always prefer gas specified by user (if a user sets gas to 0, that is treated
+      // as undefined here and we do proceed to do gas estimation)
       if (params.gas) return accept(params.gas);
       if (!constructor.autoGas) return accept();
 
       interfaceAdapter
         .estimateGas(params)
         .then(gas => {
-          const bestEstimate = utils.multiplyBigNumberByDecimal(
-            utils.bigNumberify(gas),
-            constructor.gasMultiplier
-          );
-
-          // Don't go over blockLimit
+          // there are situations where the web3 gas estimation function in interfaceAdapter
+          // fails, specifically when a transaction will revert; we still want to continue
+          // the user flow for debugging purposes; so we provide a default gas for
+          // that situation, equal to half of the blockLimit for the latest block
           const limit = utils.bigNumberify(blockLimit);
+          let bestEstimate;
+          if(gas === null) {
+            const defaultGas = utils.bigNumberify(Math.floor(blockLimit/2));
+            bestEstimate = defaultGas;
+          } else {
+            // if we did get a numerical gas estimate from interfaceAdapter, we
+            // multiply that estimate by the gasMultiplier to help ensure we
+            // have enough gas for the transaction
+            bestEstimate = utils.multiplyBigNumberByDecimal(
+              utils.bigNumberify(gas),
+              constructor.gasMultiplier
+            );
+          }
+
+          // Check that we don't go over blockLimit
           bestEstimate.gte(limit)
             ? accept(limit.sub(1).toHexString())
             : accept(bestEstimate.toHexString());
