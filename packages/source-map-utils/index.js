@@ -208,9 +208,7 @@ var SourceMapUtils = {
           //(designated invalid gets file -1 in some Solidity versions)
           if (sourceIndex === -1) {
             if (
-              SourceMapUtils.isDesignatedInvalid(
-                instructions.slice(instruction.index)
-              )
+              SourceMapUtils.isDesignatedInvalid(instructions, instruction.index)
             ) {
               //designated invalid, include it
               return {
@@ -243,9 +241,7 @@ var SourceMapUtils = {
             //filter out JUMPDESTs that aren't function definitions...
             //except for the designated invalid function
             if (
-              SourceMapUtils.isDesignatedInvalid(
-                instructions.slice(instruction.index)
-              )
+              SourceMapUtils.isDesignatedInvalid(instructions, instruction.index)
             ) {
               //designated invalid, include it
               return {
@@ -380,11 +376,11 @@ var SourceMapUtils = {
     return [start, start + length];
   },
 
-  //takes an array of instructions (as returned by parseCode)
-  //and asks: is the start of this instruction array the
+  //takes an array of instructions & an index into it
+  //and asks: is this index the start of this instruction array the
   //start of a Solidity designated invalid function?
   //i.e. what an uninitialized internal function pointer jumps to?
-  isDesignatedInvalid: function (instructions) {
+  isDesignatedInvalid: function (instructions, index) {
     const oldSequence = [{ name: "JUMPDEST" }, { name: "INVALID" }];
     const panicSelector = Web3Utils.soliditySha3({
       type: "string",
@@ -408,11 +404,13 @@ var SourceMapUtils = {
       { name: "REVERT" }
     ];
 
-    const checkAgainstTemplate = (instructions, template) => {
-      for (let index = 0; index < template.length; index++) {
-        const instruction = instructions[index];
-        const comparison = template[index];
-        if (!instruction || instruction.name !== comparison.name) {
+    const checkAgainstTemplate = (instructions, index, template) => {
+      for (let offset = 0; offset < template.length; offset++) {
+        const instruction = instructions[index + offset];
+        const comparison = template[offset];
+        if (
+          !instruction || instruction.name !== comparison.name
+        ) {
           return false;
         }
         if (
@@ -425,10 +423,48 @@ var SourceMapUtils = {
       return true;
     };
 
-    return (
-      checkAgainstTemplate(instructions, oldSequence) ||
-      checkAgainstTemplate(instructions, newSequence)
-    );
+    //gets the final pushdata in a JUMPDEST, PUSH, [PUSH,] JUMP sequence;
+    //returns null if the code is not of that form
+    const getIndirectAddress = (instructions, startingIndex) => {
+      let index = startingIndex;
+      if (instructions[index].name !== "JUMPDEST") {
+        return null;
+      }
+      index++;
+      while (instructions[index].name.match(/^PUSH\d*/)) {
+        index++;
+        if (index > startingIndex + 3) {
+          //check: are there more than 2 PUSHes?
+          return false;
+        }
+      }
+      if (instructions[index].name === "JUMP") {
+        index--;
+        return parseInt(instructions[index].pushData);
+      } else {
+        return null;
+      }
+    };
+
+    //if it matches either direct template, return true
+    if (
+      checkAgainstTemplate(instructions, index, oldSequence) ||
+      checkAgainstTemplate(instructions, index, newSequence)
+    ) {
+      return true;
+    }
+
+    //otherwise, check if it's indirect for the new template
+    const jumpAddress = getIndirectAddress(instructions, index);
+    if (jumpAddress !== null) {
+      const jumpIndex = instructions.findIndex(
+        instruction => instruction.pc === jumpAddress
+      );
+      return checkAgainstTemplate(instructions, jumpIndex, newSequence);
+    }
+
+    //otherwise, return false
+    return false;
   }
 };
 
