@@ -25,7 +25,7 @@ describe("nativize (ethers format)", function () {
   });
 
   before("Prepare contracts and artifacts", async function () {
-    this.timeout(30000);
+    this.timeout(45000);
 
     const prepared = await prepareContracts(provider, path.resolve(__dirname, ".."));
     abstractions = prepared.abstractions;
