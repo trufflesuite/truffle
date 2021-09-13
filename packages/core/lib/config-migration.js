@@ -5,6 +5,8 @@ const Conf = require("conf");
 const { promisify } = require("util");
 const copy = require("./copy");
 const TruffleConfig = require("@truffle/config");
+const debugModule = require("debug");
+const debug = debugModule("core:config-migration");
 
 module.exports = {
   oldTruffleDataDirectory: path.join(OS.homedir(), ".config", "truffle"),
@@ -26,6 +28,7 @@ module.exports = {
 
   migrateTruffleDataIfNecessary: async function () {
     if (!this.needsMigrated()) return;
+    debug("Truffle files need to be migrated");
     const conf = this.migrateGlobalConfig();
     const folders = ["compilers", ".db"];
     for (const folder of folders) {
