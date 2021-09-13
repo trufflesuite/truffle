@@ -13,15 +13,15 @@ module.exports = {
 
   needsMigrated: function () {
     const conf = new Conf({ projectName: "truffle" });
-    if (conf.get("migrated") === true)) return false;
+    if (conf.get("version") === 1)) return false;
     const oldConfig = path.join(this.oldTruffleDataDirectory, "config.json");
     if (fse.existsSync(oldConfig) && oldConfig !== conf.path) {
       // we are on Windows or a Mac
       return true;
     } else {
-      // we are on Linux or previous config doesn't exist
-      // we don't need to perform a migration
-      conf.set("migrated", true);
+      // we are on Linux or previous config doesn't exist and we don't need to
+      // perform a migration - version set to 1 designates success
+      conf.set("version", 1);
       return false;
     }
   },
@@ -34,8 +34,8 @@ module.exports = {
     for (const folder of folders) {
       await this.migrateFolder(folder);
     }
-    // set migrated to true only after migration is complete
-    conf.set("migrated", true);
+    // set version to 1 only after migration is complete to designate success
+    conf.set("version", 1);
   },
 
   migrateGlobalConfig: function () {
