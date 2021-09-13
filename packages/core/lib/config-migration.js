@@ -32,9 +32,11 @@ module.exports = {
     if (!this.needsMigrated()) return;
     debug("Truffle files need to be migrated");
     const conf = this.migrateGlobalConfig();
+    debug("successfully migrated global config");
     const folders = ["compilers", ".db"];
     for (const folder of folders) {
       await this.migrateFolder(folder);
+      debug("successfully migrated folder: %o", folder);
     }
     // set version to current only after migration is complete to designate success
     conf.set("version", CURRENT_CONFIG_VERSION);

@@ -81,8 +81,8 @@ class Command {
 
     try {
       // migrate Truffle data to the new location if necessary
-      const { migrateTruffleDataIfNecessary } = require("./config-migration");
-      await migrateTruffleDataIfNecessary();
+      const configMigration = require("./config-migration");
+      await configMigration.migrateTruffleDataIfNecessary();
     } catch (error) {
       debug("Truffle data migration failed: %o", error);
     };
