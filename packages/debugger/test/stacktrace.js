@@ -328,18 +328,19 @@ describe("Stack tracing", function () {
       undefined,
       "run1",
       "runInternal",
-      undefined
+      undefined,
+      "panic_error_0x51"
     ]);
     let contractNames = report.map(({ contractName }) => contractName);
     assert.isUndefined(contractNames[contractNames.length - 1]);
-    contractNames.pop();
-    assert(contractNames.every(name => name === "StacktraceTest"));
+    assert.isUndefined(contractNames[contractNames.length - 2]);
+    assert(contractNames.slice(0,-2).every(name => name === "StacktraceTest"));
     let addresses = report.map(({ address }) => address);
     assert(addresses.every(address => address === instance.address));
     let status = report[report.length - 1].status;
     assert.isFalse(status);
-    let location = report[report.length - 2].location; //note, -2 because of undefined on top
-    let prevLocation = report[report.length - 3].location; //similar
+    let location = report[report.length - 3].location; //note, -2 because of panic & undefined on top
+    let prevLocation = report[report.length - 4].location; //similar
     assert.strictEqual(location.sourceRange.lines.start.line, failLine);
     assert.strictEqual(prevLocation.sourceRange.lines.start.line, callLine);
   });

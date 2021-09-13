@@ -47,8 +47,7 @@ export function definitionToType(
             kind: "general",
             typeHint
           };
-        case "0.5.x":
-        case "0.8.x":
+        default:
           return {
             typeClass,
             kind: "specific",
