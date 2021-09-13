@@ -13,7 +13,7 @@ module.exports = {
 
   needsMigrated: function () {
     const conf = new Conf({ projectName: "truffle" });
-    if (conf.get("version") === 1)) return false;
+    if (conf.get("version") === 1) return false;
     const oldConfig = path.join(this.oldTruffleDataDirectory, "config.json");
     if (fse.existsSync(oldConfig) && oldConfig !== conf.path) {
       // we are on Windows or a Mac
