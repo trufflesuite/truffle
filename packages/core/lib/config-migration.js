@@ -10,26 +10,33 @@ module.exports = {
   oldTruffleDataDirectory: path.join(OS.homedir(), ".config", "truffle"),
 
   needsMigrated: function () {
-    const oldConfig = path.join(this.oldTruffleDataDirectory, "config.json");
     const conf = new Conf({ projectName: "truffle" });
-    const alreadyMigrated = conf.get("migrated");
-    if (alreadyMigrated) return false;
-    return fse.existsSync(oldConfig) && oldConfig !== conf.path;
+    if (conf.get("migrated") === true)) return false;
+    const oldConfig = path.join(this.oldTruffleDataDirectory, "config.json");
+    if (fse.existsSync(oldConfig) && oldConfig !== conf.path) {
+      // we are on Windows or a Mac
+      return true;
+    } else {
+      // we are on Linux or previous config doesn't exist
+      // we don't need to perform a migration
+      conf.set("migrated", true);
+      return false;
+    }
   },
 
   migrateTruffleDataIfNecessary: async function () {
     if (!this.needsMigrated()) return;
-    this.migrateGlobalConfig();
+    const conf = this.migrateGlobalConfig();
     const folders = ["compilers", ".db"];
     for (const folder of folders) {
       await this.migrateFolder(folder);
     }
+    // set migrated to true only after migration is complete
+    conf.set("migrated", true);
   },
 
   migrateGlobalConfig: function () {
     const conf = new Conf({ projectName: "truffle" });
-    // set this to true so we know not to migrate next time
-    conf.set("migrated", true);
     const oldSettings = require(path.join(
       this.oldTruffleDataDirectory,
       "config.json"
@@ -37,6 +44,7 @@ module.exports = {
     for (const key in oldSettings) {
       conf.set(key, oldSettings[key]);
     }
+    return conf;
   },
 
   migrateFolder: async function (folderName) {
