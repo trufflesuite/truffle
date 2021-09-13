@@ -8,20 +8,22 @@ const TruffleConfig = require("@truffle/config");
 const debugModule = require("debug");
 const debug = debugModule("core:config-migration");
 
+const CURRENT_CONFIG_VERSION = 1;
+
 module.exports = {
   oldTruffleDataDirectory: path.join(OS.homedir(), ".config", "truffle"),
 
   needsMigrated: function () {
     const conf = new Conf({ projectName: "truffle" });
-    if (conf.get("version") === 1) return false;
+    if (conf.get("version") === CURRENT_CONFIG_VERSION) return false;
     const oldConfig = path.join(this.oldTruffleDataDirectory, "config.json");
     if (fse.existsSync(oldConfig) && oldConfig !== conf.path) {
       // we are on Windows or a Mac
       return true;
     } else {
       // we are on Linux or previous config doesn't exist and we don't need to
-      // perform a migration - version set to 1 designates success
-      conf.set("version", 1);
+      // perform a migration - current version set to designates success
+      conf.set("version", CURRENT_CONFIG_VERSION);
       return false;
     }
   },
@@ -34,8 +36,8 @@ module.exports = {
     for (const folder of folders) {
       await this.migrateFolder(folder);
     }
-    // set version to 1 only after migration is complete to designate success
-    conf.set("version", 1);
+    // set version to current only after migration is complete to designate success
+    conf.set("version", CURRENT_CONFIG_VERSION);
   },
 
   migrateGlobalConfig: function () {
