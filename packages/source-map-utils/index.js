@@ -202,13 +202,17 @@ var SourceMapUtils = {
         .filter(instruction => instruction.name === "JUMPDEST")
         .map(instruction => {
           debug("instruction %O", instruction);
-          let sourceIndex = instruction.file;
+          const sourceIndex = instruction.file;
           //first off, a special case: if the file is -1, check for designated
           //invalid and if it's not that give up
           //(designated invalid gets file -1 in some Solidity versions)
           if (sourceIndex === -1) {
             if (
-              SourceMapUtils.isDesignatedInvalid(instructions, instruction.index)
+              SourceMapUtils.isDesignatedInvalid(
+                instructions,
+                instruction.index,
+                overlapFunctions
+              )
             ) {
               //designated invalid, include it
               return {
@@ -222,13 +226,13 @@ var SourceMapUtils = {
             }
           }
           //now we proceed with the normal case
-          let findOverlappingRange = overlapFunctions[sourceIndex];
-          let ast = asts[sourceIndex];
+          const findOverlappingRange = overlapFunctions[sourceIndex];
+          const ast = asts[sourceIndex];
           if (!ast) {
             //if we can't get the ast... filter it out I guess
             return {};
           }
-          let range = SourceMapUtils.getSourceRange(instruction);
+          const range = SourceMapUtils.getSourceRange(instruction);
           let { node, pointer } = SourceMapUtils.findRange(
             findOverlappingRange,
             range.start,
@@ -241,7 +245,12 @@ var SourceMapUtils = {
             //filter out JUMPDESTs that aren't function definitions...
             //except for the designated invalid function
             if (
-              SourceMapUtils.isDesignatedInvalid(instructions, instruction.index)
+              SourceMapUtils.isDesignatedInvalid(
+                instructions,
+                instruction.index,
+                overlapFunctions,
+                node
+              )
             ) {
               //designated invalid, include it
               return {
@@ -380,7 +389,12 @@ var SourceMapUtils = {
   //and asks: is this index the start of this instruction array the
   //start of a Solidity designated invalid function?
   //i.e. what an uninitialized internal function pointer jumps to?
-  isDesignatedInvalid: function (instructions, index) {
+  isDesignatedInvalid: function (
+    instructions,
+    index,
+    overlapFunctions,
+    node = undefined
+  ) {
     const oldSequence = [{ name: "JUMPDEST" }, { name: "INVALID" }];
     const panicSelector = Web3Utils.soliditySha3({
       type: "string",
@@ -435,10 +449,14 @@ var SourceMapUtils = {
         index++;
         if (index > startingIndex + 3) {
           //check: are there more than 2 PUSHes?
-          return false;
+          return null;
         }
       }
       if (instructions[index].name === "JUMP") {
+        if (index === startingIndex + 1) {
+          //check: was there at least one push?
+          return null;
+        }
         index--;
         return parseInt(instructions[index].pushData);
       } else {
@@ -454,13 +472,47 @@ var SourceMapUtils = {
       return true;
     }
 
+    //if it's panic_error_0x51, return true
+    if (
+      node &&
+      node.nodeType === "YulFunctionDefinition" &&
+      node.name === "panic_error_0x51"
+    ) {
+      return true;
+    }
+
     //otherwise, check if it's indirect for the new template
+    //(or for panic_error_0x51)
     const jumpAddress = getIndirectAddress(instructions, index);
     if (jumpAddress !== null) {
       const jumpIndex = instructions.findIndex(
         instruction => instruction.pc === jumpAddress
       );
-      return checkAgainstTemplate(instructions, jumpIndex, newSequence);
+      if (checkAgainstTemplate(instructions, jumpIndex, newSequence)) {
+        return true;
+      }
+      debug("indirect: %O", instructions.slice(index, index + 4));
+      debug("jumpAddress: %d", jumpAddress);
+      debug("jumpIndex: %d", jumpIndex);
+      debug("instr count: %d", instructions.length);
+      const jumpInstruction = instructions[jumpIndex];
+      const jumpFile = jumpInstruction.file;
+      if (jumpFile !== -1) {
+        const findOverlappingRange = overlapFunctions[jumpFile];
+        const range = SourceMapUtils.getSourceRange(jumpInstruction);
+        const { node: jumpNode } = SourceMapUtils.findRange(
+          findOverlappingRange,
+          range.start,
+          range.length
+        );
+        if (
+          jumpNode &&
+          jumpNode.nodeType === "YulFunctionDefinition" &&
+          jumpNode.name === "panic_error_0x51"
+        ) {
+          return true;
+        }
+      }
     }
 
     //otherwise, return false
