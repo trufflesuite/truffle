@@ -50,12 +50,9 @@ export class Web3InterfaceAdapter implements InterfaceAdapter {
   }
 
   public async estimateGas(transactionConfig: Transaction) {
-    try {
-      const gasEstimate = await this.web3.eth.estimateGas(transactionConfig);
-      return gasEstimate;
-    } catch {
-      return null;
-    }
+    const gasEstimate = await this.web3.eth.estimateGas(transactionConfig);
+
+    return gasEstimate;
   }
 
   public getBlockNumber() {
