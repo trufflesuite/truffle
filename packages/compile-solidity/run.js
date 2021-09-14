@@ -45,11 +45,14 @@ async function run(rawSources, options, language = "Solidity") {
 
   // handle warnings as errors if options.strict
   // log if not options.quiet
-  const { warnings, errors } = detectErrors({
+  const { infos, warnings, errors } = detectErrors({
     compilerOutput,
     options,
     solcVersion
   });
+  if (infos.length > 0) {
+    options.events.emit("compile:infos", { infos });
+  }
   if (warnings.length > 0) {
     options.events.emit("compile:warnings", { warnings });
   }
@@ -238,7 +241,7 @@ async function invokeCompiler({ compilerInput, options }) {
 
 /**
  * Extract errors/warnings from compiler output based on strict mode setting
- * @return { errors: string, warnings: string }
+ * @return { errors: string, warnings: string, infos: string }
  */
 function detectErrors({
   compilerOutput: { errors: outputErrors },
@@ -246,16 +249,20 @@ function detectErrors({
   solcVersion
 }) {
   outputErrors = outputErrors || [];
-  const rawErrors = options.strict
-    ? outputErrors
-    : outputErrors.filter(({ severity }) => severity !== "warning");
+  const rawErrors = outputErrors.filter(
+    ({ severity }) => options.strict
+      ? severity !== "info" //strict mode: warnings are errors too
+      : severity === "error" //nonstrict mode: only errors are errors
+  );
 
   const rawWarnings = options.strict
-    ? [] // none of those in strict mode
+    ? [] // in strict mode these get classified as errors, not warnings
     : outputErrors.filter(({ severity, message }) =>
       severity === "warning" &&
       message !== "Yul is still experimental. Please use the output with care." //filter out Yul warning
     );
+
+  const rawInfos = outputErrors.filter(({ severity }) => severity === "info");
 
   // extract messages
   let errors = rawErrors.map(
@@ -265,6 +272,7 @@ function detectErrors({
     )
   ).join();
   const warnings = rawWarnings.map(({ formattedMessage }) => formattedMessage);
+  const infos = rawInfos.map(({ formattedMessage }) => formattedMessage);
 
   if (errors.includes("requires different compiler version")) {
     const contractSolcVer = errors.match(/pragma solidity[^;]*/gm)[0];
@@ -287,7 +295,7 @@ function detectErrors({
     );
   }
 
-  return { warnings, errors };
+  return { warnings, errors, infos };
 }
 
 /**

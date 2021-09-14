@@ -55,6 +55,13 @@ module.exports = {
         this.logger.log(`${OS.EOL}    ${warnings.join()}`);
       }
     ],
+    "compile:infos": [
+      function ({ infos }) {
+        if (this.quiet) return;
+        this.logger.log("> Compilation notices encountered:");
+        this.logger.log(`${OS.EOL}    ${infos.join()}`);
+      }
+    ],
     "compile:nothingToCompile": [
       function () {
         if (this.quiet) return;
