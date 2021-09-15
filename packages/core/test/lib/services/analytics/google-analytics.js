@@ -5,22 +5,22 @@ const sinon = require("sinon");
 const analytics = require("../../../../lib/services/analytics/google");
 const inquirer = require("inquirer");
 const configCommand = require("../../../../lib/commands/config");
-const Configstore = require("configstore");
+const Conf = require("conf");
 
 describe("analytics", function() {
   beforeEach(() => {
     sinon.stub(inquirer, "prompt").returns({ then: () => 1 });
     sinon.stub(Config, "getUserConfig").returns(true);
-    sinon.stub(Configstore.prototype, "get").returns(false);
-    sinon.stub(Configstore.prototype, "set");
+    sinon.stub(Conf.prototype, "get").returns(false);
+    sinon.stub(Conf.prototype, "set");
     sinon.stub(analytics, "setUserConfigViaPrompt").resolves();
     sinon.stub(ua.Visitor.prototype, "_enqueue");
   });
   afterEach(() => {
     inquirer.prompt.restore();
     Config.getUserConfig.restore();
-    Configstore.prototype.get.restore();
-    Configstore.prototype.set.restore();
+    Conf.prototype.get.restore();
+    Conf.prototype.set.restore();
     analytics.setUserConfigViaPrompt.restore();
     ua.Visitor.prototype._enqueue.restore();
     sinon.restore();
@@ -28,8 +28,8 @@ describe("analytics", function() {
   describe("#setUserId", function() {
     it("sets a userId if one does not exist", function() {
       analytics.setUserId();
-      sinon.assert.calledOnce(Configstore.prototype.get);
-      sinon.assert.calledOnce(Configstore.prototype.set);
+      sinon.assert.calledOnce(Conf.prototype.get);
+      sinon.assert.calledOnce(Conf.prototype.set);
     });
   });
   describe("#setAnalytics", function() {
@@ -49,15 +49,15 @@ describe("analytics", function() {
     });
     it("sets user-level configuration of enableAnalytics to true if passed true", function() {
       analytics.setAnalytics(true);
-      sinon.assert.calledTwice(Configstore.prototype.set);
-      let stubArg = Configstore.prototype.set.getCall(1).args[0]
+      sinon.assert.calledTwice(Conf.prototype.set);
+      let stubArg = Conf.prototype.set.getCall(1).args[0]
         .enableAnalytics;
       assert.equal(stubArg, true);
     });
     it("sets user-level configuration of enableAnalytics to false if passed false", function() {
       analytics.setAnalytics(false);
-      sinon.assert.calledOnce(Configstore.prototype.set);
-      let stubArg = Configstore.prototype.set.getCall(0).args[0]
+      sinon.assert.calledOnce(Conf.prototype.set);
+      let stubArg = Conf.prototype.set.getCall(0).args[0]
         .enableAnalytics;
       assert.equal(stubArg, false);
     });
@@ -71,7 +71,7 @@ describe("analytics", function() {
   describe("#checkIfAnalyticsEnabled", function() {
     it("checks the user-level config to see if analytics are enabled", function() {
       analytics.checkIfAnalyticsEnabled();
-      sinon.assert.calledOnce(Configstore.prototype.get);
+      sinon.assert.calledOnce(Conf.prototype.get);
     });
   });
   describe("#setPersistentAnalyticsData", function() {

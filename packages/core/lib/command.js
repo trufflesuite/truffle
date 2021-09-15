@@ -5,6 +5,9 @@ const OS = require("os");
 const analytics = require("../lib/services/analytics");
 const { extractFlags } = require("./utils/utils"); // Contains utility methods
 const commandOptions = require("./command-options");
+const debugModule = require("debug");
+const debug = debugModule("core:command:run");
+
 
 class Command {
   constructor(commands) {
@@ -75,6 +78,14 @@ class Command {
 
   async run(inputStrings, options) {
     const result = this.getCommand(inputStrings, options.noAliases);
+
+    try {
+      // migrate Truffle data to the new location if necessary
+      const configMigration = require("./config-migration");
+      await configMigration.migrateTruffleDataIfNecessary();
+    } catch (error) {
+      debug("Truffle data migration failed: %o", error);
+    };
 
     if (result == null) {
       throw new TaskError(

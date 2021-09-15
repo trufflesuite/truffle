@@ -4,7 +4,7 @@ import merge from "lodash.merge";
 import pick from "lodash.pick";
 import Module from "module";
 import findUp from "find-up";
-import Configstore from "configstore";
+import Conf from "conf";
 import TruffleError from "@truffle/error";
 import originalRequire from "original-require";
 import { getInitialConfig, configProps } from "./configDefaults";
@@ -218,14 +218,13 @@ class TruffleConfig {
     return config;
   }
 
-  public static getUserConfig(): Configstore {
-    return new Configstore("truffle", {}, { globalConfigPath: true });
+  public static getUserConfig(): Conf {
+    return new Conf({ projectName: "truffle" });
   }
 
   public static getTruffleDataDirectory(): string {
-    const configStore = TruffleConfig.getUserConfig();
-
-    return path.dirname(configStore.path);
+    const conf = TruffleConfig.getUserConfig();
+    return path.dirname(conf.path);
   }
 }
 
