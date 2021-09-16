@@ -26,7 +26,6 @@
   },
   "dependencies": {
     "@truffle/error": "^0.0.14",
-    "@truffle/expect": "^0.0.18",
     "colors": "^1.4.0",
     "debug": "^4.3.1"
   },
