@@ -49,10 +49,20 @@ export class Web3InterfaceAdapter implements InterfaceAdapter {
     return this.web3.eth.getAccounts();
   }
 
-  public async estimateGas(transactionConfig: Transaction) {
-    const gasEstimate = await this.web3.eth.estimateGas(transactionConfig);
-
-    return gasEstimate;
+  public async estimateGas(transactionConfig: Transaction, stacktrace = false) {
+    // web3 does not error gracefully when gas estimation fails due to a revert,
+    // so in cases where we want to get past this (debugging/stacktracing), we must
+    // catch the error and return null instead
+    if(stacktrace === true) {
+      try {
+        const gasEstimate = await this.web3.eth.estimateGas(transactionConfig);
+        return gasEstimate;
+      } catch {
+        return null;
+      }
+    } else {
+      return this.web3.eth.estimateGas(transactionConfig);
+    }
   }
 
   public getBlockNumber() {

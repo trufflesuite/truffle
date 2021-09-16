@@ -18,7 +18,7 @@ const execute = {
    * @param  {Number} blockLimit  most recent network block.blockLimit
    * @return {Number}             gas estimate
    */
-  getGasEstimate: function (params, blockLimit) {
+  getGasEstimate: function (params, blockLimit, stacktrace = false) {
     const constructor = this;
     const interfaceAdapter = this.interfaceAdapter;
 
@@ -29,34 +29,32 @@ const execute = {
       if (!constructor.autoGas) return accept();
 
       interfaceAdapter
-        .estimateGas(params)
+        .estimateGas(params, stacktrace)
         .then(gas => {
           // there are situations where the web3 gas estimation function in interfaceAdapter
           // fails, specifically when a transaction will revert; we still want to continue
-          // the user flow for debugging purposes; so we provide a default gas for
-          // that situation, equal to half of the blockLimit for the latest block
-          const limit = utils.bigNumberify(blockLimit);
-          let bestEstimate;
+          // the user flow for debugging purposes if the user has enabled stacktraces; so we provide a
+          // default gas for that situation, equal to half of the blockLimit for the latest block
+          //
+          // note: this means if a transaction will revert but the user does not have stacktracing enabled,
+          // they will get an error from the gas estimation and be unable to proceed; we may need to revisit this
           if(gas === null) {
             const defaultGas = utils.bigNumberify(Math.floor(blockLimit/2));
-            bestEstimate = defaultGas;
+            accept(defaultGas.toHexString());
           } else {
+            const limit = utils.bigNumberify(blockLimit);
             // if we did get a numerical gas estimate from interfaceAdapter, we
             // multiply that estimate by the gasMultiplier to help ensure we
             // have enough gas for the transaction
-            bestEstimate = utils.multiplyBigNumberByDecimal(
+            const bestEstimate = utils.multiplyBigNumberByDecimal(
               utils.bigNumberify(gas),
               constructor.gasMultiplier
             );
+            // Check that we don't go over blockLimit
+            bestEstimate.gte(limit)
+              ? accept(limit.sub(1).toHexString())
+              : accept(bestEstimate.toHexString());
           }
-
-          // Check that we don't go over blockLimit
-          bestEstimate.gte(limit)
-            ? accept(limit.sub(1).toHexString())
-            : accept(bestEstimate.toHexString());
-
-          // We need to let txs that revert through.
-          // Often that's exactly what you are testing.
         })
         .catch(() => accept());
     });
@@ -204,11 +202,13 @@ const execute = {
             contract: constructor
           });
 
+          const stacktrace = promiEvent.debug ? promiEvent.debug : false;
           try {
             params.gas = await execute.getGasEstimate.call(
               constructor,
               params,
-              network.blockLimit
+              network.blockLimit,
+              stacktrace
             );
           } catch (error) {
             promiEvent.reject(error);
@@ -267,11 +267,13 @@ const execute = {
 
           const contract = new web3.eth.Contract(constructor.abi);
           params.data = contract.deploy(options).encodeABI();
+          const stacktrace = promiEvent.debug ? promiEvent.debug : false;
 
           params.gas = await execute.getGasEstimate.call(
             constructor,
             params,
-            blockLimit
+            blockLimit,
+            stacktrace
           );
 
           context.params = params;
