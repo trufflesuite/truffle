@@ -17,7 +17,6 @@
     "watch": "tsc -w"
   },
   "devDependencies": {
-    "@truffle/config": "^1.3.8",
     "@truffle/contract-schema": "^3.4.3",
     "@types/mocha": "^5.2.7",
     "@types/node": "12.12.21",
