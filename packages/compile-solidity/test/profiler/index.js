@@ -1,10 +1,10 @@
-var assert = require("chai").assert;
-var fs = require("fs-extra");
-var glob = require("glob");
-var { default: Box } = require("@truffle/box");
-var Profiler = require("../../profiler");
-var Resolver = require("@truffle/resolver");
-var Artifactor = require("@truffle/artifactor");
+const assert = require("chai").assert;
+const fs = require("fs-extra");
+const glob = require("glob");
+const { default: Box } = require("@truffle/box");
+const { Profiler } = require("../../profiler");
+const Resolver = require("@truffle/resolver");
+const Artifactor = require("@truffle/artifactor");
 
 describe("profiler", function () {
   var config;
