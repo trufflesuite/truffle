@@ -26,7 +26,6 @@
     "typescript": "^4.1.4"
   },
   "dependencies": {
-    "@truffle/contract-sources": "^0.1.12",
     "@truffle/error": "^0.0.14",
     "@truffle/expect": "^0.0.18",
     "colors": "^1.4.0",
