@@ -38,7 +38,7 @@ const execute = {
           //
           // note: this means if a transaction will revert but the user does not have stacktracing enabled,
           // they will get an error from the gas estimation and be unable to proceed; we may need to revisit this
-          if(gas === null) {
+          if (gas === null) {
             const defaultGas = utils.bigNumberify(Math.floor(blockLimit/2));
             accept(defaultGas.toHexString());
           } else {
