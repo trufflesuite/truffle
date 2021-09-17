@@ -75,7 +75,8 @@ describe("nativize (ethers format)", function () {
         z: keyedArray,
         __length__: 1
       },
-      returnFunction: instance.address.toLowerCase() + emitStringSelector
+      returnFunction: instance.address.toLowerCase() + emitStringSelector,
+      returnBytes: null
     };
     expected.returnStringPair.w = "hello";
     expected.returnStringPair.z = "goodbye";
