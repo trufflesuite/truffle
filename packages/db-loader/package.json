@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.0.9",
+  "version": "0.0.10",
   "main": "dist/index.js",
   "keywords": [
     "ethereum",
@@ -30,7 +30,7 @@
     "prepare": "tsc"
   },
   "optionalDependencies": {
-    "@truffle/db": "^0.5.30"
+    "@truffle/db": "^0.5.31"
   },
   "devDependencies": {
     "typescript": "^4.1.4"
