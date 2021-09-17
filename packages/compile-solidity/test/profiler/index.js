@@ -2,7 +2,7 @@ const assert = require("chai").assert;
 const fs = require("fs-extra");
 const glob = require("glob");
 const { default: Box } = require("@truffle/box");
-const { Profiler } = require("../../profiler");
+const Profiler = require("../../profiler");
 const Resolver = require("@truffle/resolver");
 const Artifactor = require("@truffle/artifactor");
 
