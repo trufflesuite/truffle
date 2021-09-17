@@ -40,7 +40,7 @@ export interface InterfaceAdapter {
   getBalance(address: string): Promise<string>;
   getCode(address: string): Promise<string>;
   getAccounts(): Promise<string[]>;
-  estimateGas(transactionConfig: Transaction): Promise<number>;
+  estimateGas(transactionConfig: Transaction, stacktrace: boolean): Promise<number> | null;
   getTransactionCostReport(receipt: TransactionReceipt): Promise<TransactionCostReport>;
   displayCost(value: BN): string;
 }

@@ -1,4 +1,3 @@
-import assignIn from "lodash.assignin";
 import * as path from "path";
 import Provider from "@truffle/provider";
 import TruffleConfig from "./";
@@ -78,11 +77,6 @@ export const configProps = ({
   const resolveDirectory = (value: string): string =>
     path.resolve(configObject.working_directory, value);
 
-  const defaultTXValues = {
-    gas: 6721975,
-    from: null
-  };
-
   return {
     // These are already set.
     truffle_directory() {},
@@ -158,8 +152,6 @@ export const configProps = ({
           config = {};
         }
 
-        config = assignIn({}, defaultTXValues, config);
-
         return config;
       },
       set() {
@@ -173,7 +165,7 @@ export const configProps = ({
         try {
           return configObject.network_config.from;
         } catch (e) {
-          return defaultTXValues.from;
+          return null;
         }
       },
       set() {
@@ -187,7 +179,7 @@ export const configProps = ({
         try {
           return configObject.network_config.gas;
         } catch (e) {
-          return defaultTXValues.gas;
+          return null;
         }
       },
       set() {
