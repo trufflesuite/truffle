@@ -7,8 +7,8 @@ const minimatch = require("minimatch");
 const semver = require("semver");
 
 const findContracts = require("@truffle/contract-sources");
-const { Profiler } = require("@truffle/profiler");
 const Config = require("@truffle/config");
+const { Profiler } = require("@truffle/profiler");
 const { requiredSources } = require("./profiler");
 
 const { compileJson } = require("./vyper-json");

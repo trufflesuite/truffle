@@ -1,7 +1,7 @@
 const CompilerSupplier = require("./compilerSupplier");
 const Config = require("@truffle/config");
 const semver = require("semver");
-const { Profiler } = require("@truffle/profiler");
+const Profiler = require("./profiler");
 const { run } = require("./run");
 const { reportSources } = require("./reportSources");
 const OS = require("os");

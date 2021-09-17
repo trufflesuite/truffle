@@ -1,7 +1,7 @@
 const debug = require("debug")("compile");
 const findContracts = require("@truffle/contract-sources");
 const Config = require("@truffle/config");
-const { Profiler } = require("@truffle/profiler");
+const Profiler = require("./profiler");
 const CompilerSupplier = require("./compilerSupplier");
 const { run } = require("./run");
 const { normalizeOptions } = require("./normalizeOptions");
