@@ -53,7 +53,7 @@ export class Web3InterfaceAdapter implements InterfaceAdapter {
     // web3 does not error gracefully when gas estimation fails due to a revert,
     // so in cases where we want to get past this (debugging/stacktracing), we must
     // catch the error and return null instead
-    if(stacktrace === true) {
+    if (stacktrace === true) {
       try {
         const gasEstimate = await this.web3.eth.estimateGas(transactionConfig);
         return gasEstimate;
