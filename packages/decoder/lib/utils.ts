@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("decoder:utils");
 
-import Web3 from "web3";
+import Web3Utils from "web3-utils";
 import BN from "bn.js";
 
 import type * as Codec from "@truffle/codec";
@@ -45,7 +45,7 @@ export function wrapElementaryValue(
         }
       } as Codec.Format.Values.BytesValue;
     case "address":
-      value = Web3.utils.toChecksumAddress(value);
+      value = Web3Utils.toChecksumAddress(value);
       return {
         type: dataType,
         kind: "value",
@@ -54,7 +54,7 @@ export function wrapElementaryValue(
         }
       };
     case "contract":
-      value = Web3.utils.toChecksumAddress(value);
+      value = Web3Utils.toChecksumAddress(value);
       return {
         type: dataType,
         kind: "value",

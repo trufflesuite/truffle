@@ -9,7 +9,10 @@ import type {
   ExtrasAllowed
 } from "@truffle/codec";
 import type { Provider } from "web3/providers";
-import type Web3 from "web3";
+export type Web3Adapter = {
+  getCode: () => Promise<string>;
+  getBlockNumber: () => Promise<number>;
+}
 
 //StateVariable used to be defined here, so let's continue
 //to export it

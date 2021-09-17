@@ -22,7 +22,7 @@ import {
 } from "@truffle/codec";
 import * as Utils from "./utils";
 import type * as DecoderTypes from "./types";
-import Web3 from "web3";
+import Web3Utils from "web3-utils";
 import type { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import BN from "bn.js";
 import type { Provider } from "web3/providers";
@@ -37,6 +37,7 @@ import {
   NoProviderError
 } from "./errors";
 import { Shims } from "@truffle/compile-common";
+import { Web3Adapter } from "./Web3Adapter";
 //sorry for the untyped import, but...
 const SourceMapUtils = require("@truffle/source-map-utils");
 
@@ -45,7 +46,7 @@ const SourceMapUtils = require("@truffle/source-map-utils");
  * @category Decoder
  */
 export class ProjectDecoder {
-  private web3: Web3;
+  private web3Adapter: Web3Adapter;
 
   private compilations: Compilations.Compilation[];
   private contexts: Contexts.Contexts = {}; //all contexts
@@ -71,7 +72,7 @@ export class ProjectDecoder {
     if (!provider) {
       throw new NoProviderError();
     }
-    this.web3 = new Web3(provider);
+    this.web3Adapter = new Web3Adapter(provider);
     this.compilations = compilations;
     this.ensSettings = ensSettings || {};
     let allocationInfo: AbiData.Allocate.ContractAllocationInfo[];
@@ -131,7 +132,7 @@ export class ProjectDecoder {
   ): Promise<Uint8Array> {
     //if pending, ignore the cache
     if (block === "pending") {
-      return Conversion.toBytes(await this.web3.eth.getCode(address, block));
+      return Conversion.toBytes(await this.web3Adapter.getCode(address, block));
     }
 
     //otherwise, start by setting up any preliminary layers as needed
@@ -143,7 +144,7 @@ export class ProjectDecoder {
       return this.codeCache[block][address];
     }
     //otherwise, get it, cache it, and return it
-    let code = Conversion.toBytes(await this.web3.eth.getCode(address, block));
+    let code = Conversion.toBytes(await this.web3Adapter.getCode(address, block));
     this.codeCache[block][address] = code;
     return code;
   }
@@ -161,7 +162,7 @@ export class ProjectDecoder {
       return "pending";
     }
 
-    return (await this.web3.eth.getBlock(block)).number;
+    return (await this.web3Adapter.getBlock(block)).number;
   }
 
   /**
@@ -550,10 +551,10 @@ export class ProjectDecoder {
     address: string,
     block: DecoderTypes.BlockSpecifier = "latest"
   ): Promise<ContractInstanceDecoder> {
-    if (!Web3.utils.isAddress(address)) {
+    if (!Web3Utils.isAddress(address)) {
       throw new InvalidAddressError(address);
     }
-    address = Web3.utils.toChecksumAddress(address);
+    address = Web3Utils.toChecksumAddress(address);
     const blockNumber = await this.regularizeBlock(block);
     const deployedBytecode = Conversion.toHexString(
       await this.getCode(address, blockNumber)
@@ -1036,10 +1037,10 @@ export class ContractInstanceDecoder {
     this.projectDecoder = this.contractDecoder.getProjectDecoder();
     this.web3 = this.projectDecoder.getWeb3();
     if (address !== undefined) {
-      if (!Web3.utils.isAddress(address)) {
+      if (!Web3Utils.isAddress(address)) {
         throw new InvalidAddressError(address);
       }
-      this.contractAddress = Web3.utils.toChecksumAddress(address);
+      this.contractAddress = Web3Utils.toChecksumAddress(address);
     }
 
     this.referenceDeclarations = this.projectDecoder.getReferenceDeclarations();
