@@ -119,7 +119,8 @@ function ethersCompatibleNativize(
         case "bool":
           return (<Format.Values.BoolValue>result).value.asBoolean;
         case "bytes":
-          return (<Format.Values.BytesValue>result).value.asHex;
+          const asHex = (<Format.Values.BytesValue>result).value.asHex;
+          return asHex !== "0x" ? asHex : null;
         case "address":
           return (<Format.Values.AddressValue>result).value.asAddress;
         case "contract":
