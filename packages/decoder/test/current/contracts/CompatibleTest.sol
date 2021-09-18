@@ -40,4 +40,8 @@ contract CompatibleNativizeTest {
   function returnFunction() public view returns (function() external) {
     return this.emitString;
   }
+
+  function returnBytes() public pure returns (bytes memory) {
+    return hex"";
+  }
 }
