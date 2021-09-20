@@ -3,6 +3,7 @@ import { handleBrowserProviderRequest, jsonToBase64 } from "../../utils/utils";
 import { BrowserProviderRequest, Request } from "../../utils/types";
 import Button from "../common/Button";
 import Card from "../common/Card";
+import { useWeb3React } from '@web3-react/core';
 
 interface Props {
   request: Request;
@@ -12,11 +13,14 @@ interface Props {
 }
 
 function IncomingRequest({ provider, socket, request, setRequests }: Props) {
+  const { chainId } = useWeb3React();
+
   const removeFromRequests = () => {
     setRequests((previousRequests) => previousRequests.filter(other => other.id !== request.id));
   };
 
   const process = async () => {
+    if (chainId === 1 && !confirm('You are connected to Ethereum Mainnet, are you sure you wish to continue?')) return;
     await handleBrowserProviderRequest(request, provider, socket);
     removeFromRequests();
   };
