@@ -1,4 +1,4 @@
-import WebSocket from "ws";
+import WebSocket from "isomorphic-ws";
 import { Message, PortsConfig } from "./types";
 import any from 'promise.any';
 import delay from "delay";
@@ -35,20 +35,20 @@ export const broadcastAndAwaitFirst = async (sockets: WebSocket[], message: Mess
 
 export const sendAndAwait = (socket: WebSocket, message: Message) => {
   return new Promise<any>((resolve, reject) => {
-    socket.on("message", (data: WebSocket.Data) => {
-      if (typeof data !== "string") return;
-      const response = base64ToJson(data);
+    socket.addEventListener("message", (event: WebSocket.MessageEvent) => {
+      if (typeof event.data !== "string") return;
+      const response = base64ToJson(event.data);
       if (response.id !== message.id) return;
       resolve(response);
     });
 
     // TODO: Need to check that the error corresponds to the sent message?
-    socket.on("error", (error: Error) => {
-      reject(error);
+    socket.addEventListener("error", (event: WebSocket.ErrorEvent) => {
+      reject(event.error);
     });
 
-    socket.on("close", (code: number, reason: string) => {
-      reject(new Error(`Socket connection closed with code '${code}' and reason '${reason}'`));
+    socket.addEventListener("close", (event: WebSocket.CloseEvent) => {
+      reject(new Error(`Socket connection closed with code '${event.code}' and reason '${event.reason}'`));
     });
 
     const encodedMessage = jsonToBase64(message);
@@ -75,8 +75,8 @@ export const connectToMessageBus = (port: number, host: string = "localhost") =>
   const socket = new WebSocket(`ws://${host}:${port}`);
 
   return new Promise<WebSocket>((resolve, reject) => {
-    socket.on("open", () => resolve(socket));
-    socket.on("error", reject);
+    socket.addEventListener("open", () => resolve(socket));
+    socket.addEventListener("error", (event: WebSocket.ErrorEvent) => reject(event.error));
   });
 };
 

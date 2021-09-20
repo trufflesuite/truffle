@@ -1,4 +1,4 @@
-import WebSocket from "ws";
+import WebSocket from "isomorphic-ws";
 
 export interface UnfulfilledRequest {
   socket: WebSocket;

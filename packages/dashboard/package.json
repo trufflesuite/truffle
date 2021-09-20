@@ -18,8 +18,8 @@
   },
   "scripts": {
     "start:react": "DISABLE_ESLINT_PLUGIN=true SKIP_PREFLIGHT_CHECK=true craco start",
-    "start:prebuilt": "node build/server/start-dashboard.js 5000",
-    "start:dev-backend": "ts-node --project tsconfig.server.json server/start-dashboard.ts 5000",
+    "start:prebuilt": "node build/server/start-dashboard.js 5000 localhost",
+    "start:dev-backend": "ts-node --project tsconfig.server.json server/start-dashboard.ts 5000 localhost",
     "start": "concurrently --kill-others \"yarn start:dev-backend\" \"NODE_ENV=\"development\" yarn start:react\"",
     "build:react": "DISABLE_ESLINT_PLUGIN=true SKIP_PREFLIGHT_CHECK=true craco build",
     "build:server": "tsc -p tsconfig.server.json",

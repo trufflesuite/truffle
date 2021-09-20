@@ -1,6 +1,6 @@
+import WebSocket from "isomorphic-ws";
 import { getMessageBusPorts, PortsConfig } from "@truffle/dashboard-message-bus";
 import axios from "axios";
-import delay from "delay";
 import { providers } from 'ethers';
 import { JSONRPCRequestPayload } from "ethereum-protocol";
 import { promisify } from "util";
@@ -21,27 +21,6 @@ export const base64ToJson = (base64: string) => {
   const json = JSON.parse(stringifiedJson);
 
   return json;
-};
-
-// TODO: Replace these functions with those in the Dashboard Message Bus package
-// Only difference rn is that this uses browser WebSocket, while the other uses Node.js WebSocket
-export const connectToMessageBusWithRetries = async (port: number, retries = 1, tryCount = 1): Promise<WebSocket> => {
-  try {
-    return await connectToMessageBus(port);
-  } catch (e) {
-    if (tryCount === retries) throw e;
-    await delay(1000);
-    return await connectToMessageBusWithRetries(port, retries, tryCount + 1);
-  }
-};
-
-export const connectToMessageBus = (port: number, host: string = "localhost") => {
-  const socket = new WebSocket(`ws://${host}:${port}`);
-
-  return new Promise<WebSocket>((resolve, reject) => {
-    socket.addEventListener("open", () => resolve(socket));
-    socket.addEventListener("error", reject);
-  });
 };
 
 export const getPorts = async (): Promise<PortsConfig> => {
