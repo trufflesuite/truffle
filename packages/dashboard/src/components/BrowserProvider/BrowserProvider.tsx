@@ -1,5 +1,7 @@
-import { handleBrowserProviderRequest, isInteractiveRequest } from "../../utils/utils";
 import { useEffect } from 'react';
+import { useWeb3React } from "@web3-react/core";
+import { providers } from "ethers";
+import { handleBrowserProviderRequest, isInteractiveRequest } from "../../utils/utils";
 import { Request } from "../../utils/types";
 import Card from "../common/Card";
 import IncomingRequest from "./IncomingRequest";
@@ -7,33 +9,34 @@ import IncomingRequest from "./IncomingRequest";
 interface Props {
   requests: Request[];
   setRequests: (requests: Request[] | ((requests: Request[]) => Request[])) => void;
-  provider?: any;
   socket?: WebSocket;
 }
 
-function BrowserProvider({ provider, socket, requests, setRequests }: Props) {
+function BrowserProvider({ socket, requests, setRequests }: Props) {
+  const { account, library } = useWeb3React<providers.Web3Provider>();
+
   useEffect(() => {
     const removeFromRequests = (id: number) => {
       setRequests((previousRequests) => previousRequests.filter(request => request.id !== id));
     };
 
-    if (!provider || !socket) return;
+    if (!account || !library || !socket) return;
 
     // Automatically handle all non-interactive requests
     requests
       .filter((request) => !isInteractiveRequest(request))
       .forEach(async (request) => {
-        handleBrowserProviderRequest(request, provider, socket);
+        handleBrowserProviderRequest(request, library.provider, socket);
         removeFromRequests(request.id);
       });
-  }, [requests, setRequests, provider, socket]);
+  }, [requests, setRequests, socket, account, library]);
 
-  const incomingRequests = provider && socket
+  const incomingRequests = account && library && socket
     ? requests.filter(isInteractiveRequest).map((request) => (
         <IncomingRequest
           request={request}
           setRequests={setRequests}
-          provider={provider}
+          provider={library.provider}
           socket={socket}
         />
       ))

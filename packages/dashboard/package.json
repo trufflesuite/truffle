@@ -8,8 +8,11 @@
   ],
   "dependencies": {
     "@truffle/dashboard-message-bus": "^0.1.0",
+    "@web3-react/core": "^6.1.9",
+    "@web3-react/injected-connector": "^6.0.7",
     "axios": "^0.21.1",
     "cors": "^2.8.5",
+    "ethers": "^5.4.7",
     "express": "^4.17.1",
     "react-json-view": "^1.21.3"
   },
@@ -59,7 +62,6 @@
     "tailwindcss": "npm:@tailwindcss/postcss7-compat",
     "ts-node": "^10.1.0",
     "typescript": "^4.1.2",
-    "web-vitals": "^1.0.1",
-    "web3modal": "^1.9.3"
+    "web-vitals": "^1.0.1"
   }
 }
