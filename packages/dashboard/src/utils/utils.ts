@@ -81,3 +81,29 @@ export const handleBrowserProviderRequest = async (request: Request, provider: a
 };
 
 export const getLibrary = (provider: any) => new providers.Web3Provider(provider);
+
+export const getNetworkName = async (chainId: number) => {
+  const { data: chainList } = await axios.get('https://chainid.network/chains.json');
+  const [chain] = chainList.filter((chain: any) => chain.chainId === chainId);
+  if (!chain) return `CHAIN ID ${chainId}`;
+  return chain.name.toUpperCase();
+};
+
+export const getDisplayName = async (library: providers.Web3Provider, address: string) => {
+  const ensName = await reverseLookup(library, address);
+  const shortenedAccount = shortenAddress(address);
+  const displayName = (ensName ?? shortenedAccount).toUpperCase();
+  return displayName;
+};
+
+export const reverseLookup = async (library: providers.Web3Provider, address: string) => {
+  try {
+    return await library.lookupAddress(address);
+  } catch {
+    return undefined;
+  }
+};
+
+export const shortenAddress = (address: string) => {
+  return `${address.substr(0, 6)}...${address.substr(address.length - 4, 4)}`;
+};
