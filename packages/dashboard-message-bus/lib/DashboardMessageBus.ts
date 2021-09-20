@@ -1,4 +1,4 @@
-import WebSocket from "ws";
+import WebSocket from "isomorphic-ws";
 import delay from "delay";
 import { EventEmitter } from "events";
 import { base64ToJson, broadcastAndAwaitFirst, jsonToBase64 } from "./utils";

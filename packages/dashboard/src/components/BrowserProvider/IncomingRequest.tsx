@@ -1,9 +1,10 @@
+import WebSocket from "isomorphic-ws";
 import ReactJson from 'react-json-view';
 import { handleBrowserProviderRequest, jsonToBase64 } from "../../utils/utils";
 import { BrowserProviderRequest, Request } from "../../utils/types";
 import Button from "../common/Button";
 import Card from "../common/Card";
-import { useWeb3React } from '@web3-react/core';
+import { useWeb3React } from "@web3-react/core";
 
 interface Props {
   request: Request;
@@ -20,7 +21,7 @@ function IncomingRequest({ provider, socket, request, setRequests }: Props) {
   };
 
   const process = async () => {
-    if (chainId === 1 && !confirm('You are connected to Ethereum Mainnet, are you sure you wish to continue?')) return;
+    if (chainId === 1 && !confirm("You are connected to Ethereum Mainnet, are you sure you wish to continue?")) return;
     await handleBrowserProviderRequest(request, provider, socket);
     removeFromRequests();
   };
