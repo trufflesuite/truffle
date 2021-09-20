@@ -8,6 +8,7 @@ module.exports = {
       },
       colors: {
         'truffle-blue': '#3fe0c5',
+        'truffle-red': '#F2545B',
         'truffle-brown': '#5e464d',
         'truffle-light': '#efe5dc',
         'truffle-lighter': '#f8f5f0',
