@@ -1,8 +1,6 @@
-import {
-  base64ToJson,
-  connectToMessageBusWithRetries,
-  getPorts
-} from "./utils/utils";
+import WebSocket from "isomorphic-ws";
+import { connectToMessageBusWithRetries } from "@truffle/dashboard-message-bus";
+import { base64ToJson, getPorts } from "./utils/utils";
 import { useEffect, useState } from "react";
 import { useWeb3React } from '@web3-react/core';
 import { Request } from "./utils/types";
@@ -34,7 +32,7 @@ function Dashboard() {
 
       connectedSocket.addEventListener(
         "message",
-        (event: MessageEvent) => {
+        (event: WebSocket.MessageEvent) => {
           if (typeof event.data !== "string") return;
           const incomingRequest = base64ToJson(event.data);
 
@@ -54,7 +52,7 @@ function Dashboard() {
 
 
   return (
-    <div className="h-screen bg-gradient-to-b from-truffle-lighter to-truffle-light">
+    <div className="h-full min-h-screen bg-gradient-to-b from-truffle-lighter to-truffle-light">
       <Header />
       <BrowserProvider
         socket={socket}

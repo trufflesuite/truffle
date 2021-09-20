@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import WebSocket from "isomorphic-ws";
+import { useEffect } from "react";
 import { useWeb3React } from "@web3-react/core";
 import { providers } from "ethers";
 import { handleBrowserProviderRequest, isInteractiveRequest } from "../../utils/utils";
@@ -43,7 +44,7 @@ function BrowserProvider({ socket, requests, setRequests }: Props) {
     : [];
 
   return (
-    <div className="flex justify-center items-center mt-20">
+    <div className="flex justify-center items-center py-20">
       <div className="mx-3 w-3/4 max-w-4xl h-2/3">
         <Card header="INCOMING REQUESTS" body={incomingRequests}/>
       </div>
