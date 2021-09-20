@@ -13,21 +13,15 @@ function Dashboard() {
   const [requests, setRequests] = useState<Request[]>([]);
   const { account } = useWeb3React<providers.Web3Provider>();
 
-  // Add warning when trying to close the dashboard
-  useEffect(() => {
-    window.onbeforeunload = function(e: any) {
-      e.returnValue = "";
-      return "";
-    };
-  }, []);
-
   useEffect(() => {
     const initialiseSocket = async () => {
       if (socket && socket.readyState === WebSocket.OPEN) return;
 
+      const messageBusHost = window.location.hostname;
       const { messageBusListenPort } = await getPorts();
       const connectedSocket = await connectToMessageBusWithRetries(
-        messageBusListenPort
+        messageBusListenPort,
+        messageBusHost
       );
 
       connectedSocket.addEventListener(
