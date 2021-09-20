@@ -11,11 +11,11 @@ export const startDashboard = async (dashboardPort: number, dashboardHost: strin
   app.use(cors());
   app.use(express.static(path.join(__dirname, '..')));
 
-  const messageBusListenPort = await getPort();
-  const messageBusRequestsPort = await getPort();
+  const messageBusListenPort = await getPort({ host: dashboardHost });
+  const messageBusRequestsPort = await getPort({ host: dashboardHost });
 
   const messageBus = new DashboardMessageBus();
-  messageBus.start(messageBusRequestsPort, messageBusListenPort);
+  messageBus.start(messageBusRequestsPort, messageBusListenPort, dashboardHost);
   messageBus.on("terminate", () => process.exit(0));
 
   app.get('/ports', (req, res) => {
@@ -27,7 +27,7 @@ export const startDashboard = async (dashboardPort: number, dashboardHost: strin
   });
 
   app.listen(dashboardPort, dashboardHost, () => {
-    console.log(`@truffle/dashboard started on port ${dashboardPort}`);
+    console.log(`@truffle/dashboard started at ${dashboardHost}:${dashboardPort}`);
   });
 
   return app;

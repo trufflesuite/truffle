@@ -98,7 +98,7 @@ export class BrowserProvider {
     this.connecting = true;
     try {
       const { messageBusRequestsPort } = await getMessageBusPorts(this.dashboardPort, this.dashboardHost);
-      this.socket = await connectToMessageBusWithRetries(messageBusRequestsPort);
+      this.socket = await connectToMessageBusWithRetries(messageBusRequestsPort, this.dashboardHost);
     } finally {
       this.connecting = false;
     }
