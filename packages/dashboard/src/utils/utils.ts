@@ -1,5 +1,7 @@
 import { getMessageBusPorts, PortsConfig } from "@truffle/dashboard-message-bus";
+import axios from "axios";
 import delay from "delay";
+import { providers } from 'ethers';
 import { JSONRPCRequestPayload } from "ethereum-protocol";
 import { promisify } from "util";
 import { INTERACTIVE_REQUESTS } from "./constants";
@@ -77,3 +79,5 @@ export const handleBrowserProviderRequest = async (request: Request, provider: a
   const encodedResponse = jsonToBase64(response);
   responseSocket.send(encodedResponse);
 };
+
+export const getLibrary = (provider: any) => new providers.Web3Provider(provider);
