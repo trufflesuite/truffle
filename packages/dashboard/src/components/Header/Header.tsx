@@ -1,11 +1,14 @@
+import { useWeb3React } from "@web3-react/core";
+import { InjectedConnector } from "@web3-react/injected-connector";
+import { providers } from "ethers";
 import Button from "../common/Button";
 
-interface Props {
-  provider: any;
-  connectWeb3: () => void;
-}
+interface Props {}
 
-function Header({ provider, connectWeb3 }: Props) {
+function Header({}: Props) {
+  const { account, activate } = useWeb3React<providers.Web3Provider>();
+  const injectedConnector = new InjectedConnector({});
+
   return (
     <header className="grid grid-cols-2 py-2 px-4 border-b-2 border-truffle-light">
       <div className="flex justify-start items-center">
@@ -15,7 +18,7 @@ function Header({ provider, connectWeb3 }: Props) {
         </span>
       </div>
       <div className="flex justify-end items-center">
-        <Button onClick={connectWeb3} text={provider ? 'WALLET CONNECTED' : 'CONNECT WALLET'} />
+        <Button onClick={() => activate(injectedConnector)} text={account ? 'WALLET CONNECTED' : 'CONNECT WALLET'} />
       </div>
     </header>
   );
