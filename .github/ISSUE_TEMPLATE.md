@@ -1,4 +1,4 @@
-- [ ] I've asked for help in the [Truffle Gitter](http://gitter.im/Consensys/truffle) before filing this issue.
+- [ ] I've [opened a support ticket](https://trufflesuite.zendesk.com/hc/en-us/requests/new) before filing this issue.
 
 ---------------------------
 
