@@ -45,7 +45,7 @@
     "fs-extra": "^9.1.0",
     "graphql": "^15.3.0",
     "graphql-tag": "^2.11.0",
-    "graphql-tools": "^6.2.4",
+    "graphql-tools": "^8.2.0",
     "json-stable-stringify": "^1.0.1",
     "jsondown": "^1.0.0",
     "pascal-case": "^2.0.1",
