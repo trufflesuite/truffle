@@ -1,5 +1,5 @@
 import WebSocket from "isomorphic-ws";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useWeb3React } from "@web3-react/core";
 import { providers } from "ethers";
 import { handleBrowserProviderRequest, isInteractiveRequest } from "../../utils/utils";
@@ -14,6 +14,7 @@ interface Props {
 }
 
 function BrowserProvider({ socket, requests, setRequests }: Props) {
+  const [hasConfirmedMainnet, setHasConfirmedMainnet] = useState<boolean>(false);
   const { account, library } = useWeb3React<providers.Web3Provider>();
 
   useEffect(() => {
@@ -39,6 +40,8 @@ function BrowserProvider({ socket, requests, setRequests }: Props) {
           setRequests={setRequests}
           provider={library.provider}
           socket={socket}
+          hasConfirmedMainnet={hasConfirmedMainnet}
+          setHasConfirmedMainnet={setHasConfirmedMainnet}
         />
       ))
     : [];
