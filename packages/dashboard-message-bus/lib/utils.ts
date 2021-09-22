@@ -27,6 +27,13 @@ export const createMessage = (type: string, payload: any): Message => {
   return { id, type, payload };
 };
 
+export const broadcastAndDisregard = (sockets: WebSocket[], message: Message) => {
+  const encodedMessage = jsonToBase64(message);
+  sockets.forEach((socket) => {
+    socket.send(encodedMessage);
+  });
+};
+
 export const broadcastAndAwaitFirst = async (sockets: WebSocket[], message: Message) => {
   const promises = sockets.map(socket => sendAndAwait(socket, message));
   const result = await Promise.any(promises);
