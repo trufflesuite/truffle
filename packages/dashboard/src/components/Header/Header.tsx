@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { useState } from "react";
 import { getDisplayName } from "../../utils/utils";
 import Button from "../common/Button";
-import NetworkIndicator from "../common/NetworkIndicator";
+import NetworkIndicator from "./NetworkIndicator";
 
 interface Props {}
 

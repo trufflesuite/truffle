@@ -11,9 +11,11 @@ interface Props {
   setRequests: (requests: Request[] | ((requests: Request[]) => Request[])) => void;
   provider: any;
   socket: WebSocket;
+  hasConfirmedMainnet: boolean;
+  setHasConfirmedMainnet: (hasConfirmedMainnet: boolean) => void;
 }
 
-function IncomingRequest({ provider, socket, request, setRequests }: Props) {
+function IncomingRequest({ provider, socket, request, setRequests, hasConfirmedMainnet, setHasConfirmedMainnet }: Props) {
   const { chainId } = useWeb3React();
 
   const removeFromRequests = () => {
@@ -21,7 +23,10 @@ function IncomingRequest({ provider, socket, request, setRequests }: Props) {
   };
 
   const process = async () => {
-    if (chainId === 1 && !confirm("You are connected to Ethereum Mainnet, are you sure you wish to continue?")) return;
+    if (chainId === 1 && !hasConfirmedMainnet) {
+      if (!confirm("You are connected to Ethereum Mainnet, are you sure you wish to continue?\n\nThis confirmation will only be displayed once per session.")) return;
+      setHasConfirmedMainnet(true);
+    }
     await handleBrowserProviderRequest(request, provider, socket);
     removeFromRequests();
   };
