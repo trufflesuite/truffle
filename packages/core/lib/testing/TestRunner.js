@@ -126,6 +126,7 @@ class TestRunner {
     }
 
     function printEvent(decoding, indentation = 0, initialPrefix = "") {
+      debug("raw event: %O", decoding);
       const anonymousPrefix =
         decoding.kind === "anonymous" ? "<anonymous> " : "";
       const className = decoding.definedIn
@@ -150,7 +151,7 @@ class TestRunner {
         )})`;
         return namePrefix + indexedPrefix + displayValue + typeString + ",";
       });
-      {
+      if (eventArgs.length > 0) {
         const len = eventArgs.length - 1;
         eventArgs[len] = eventArgs[len].slice(0, -1); // remove the final comma
       }
