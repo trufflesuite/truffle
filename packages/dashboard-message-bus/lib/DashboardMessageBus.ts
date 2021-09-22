@@ -1,7 +1,7 @@
 import WebSocket from "isomorphic-ws";
 import delay from "delay";
 import { EventEmitter } from "events";
-import { base64ToJson, broadcastAndAwaitFirst, jsonToBase64 } from "./utils";
+import { base64ToJson, broadcastAndAwaitFirst, broadcastAndDisregard, createMessage, jsonToBase64 } from "./utils";
 import { UnfulfilledRequest } from "./types";
 
 // TODO: Do we want to use socket.io for the message bus?
@@ -29,6 +29,8 @@ export class DashboardMessageBus extends EventEmitter {
       this.unfulfilledRequests.forEach(({ socket, data }) =>
         this.processRequest(socket, data, [newListener])
       );
+
+      this.logToClients("New listener connected");
 
       this.listeningSockets.push(newListener);
     });
@@ -73,6 +75,16 @@ export class DashboardMessageBus extends EventEmitter {
     } catch {
       return;
     }
+  }
+
+  private logToClients(logMessage: string) {
+    const message = createMessage('log', logMessage);
+    broadcastAndDisregard(this.clientSockets, message);
+  }
+
+  private logToListeners(logMessage: string) {
+    const message = createMessage('log', logMessage);
+    broadcastAndDisregard(this.listeningSockets, message);
   }
 
   private terminateIfNoConnections() {
