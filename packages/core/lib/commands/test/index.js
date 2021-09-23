@@ -190,7 +190,6 @@ const command = {
         network_id: 4447,
         mnemonic:
           "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
-        gasLimit: config.gas,
         time: config.genesis_time,
         _chainId: 1337 //temporary until Ganache v3!
       };
