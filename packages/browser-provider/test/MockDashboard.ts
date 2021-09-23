@@ -38,7 +38,6 @@ export default class MockDashboard {
   }
 }
 
-// TODO: This was copy-pasted from Dashboard, have to make this DRYer
 export const forwardBrowserProviderRequest = async (
   provider: Ganache.Provider,
   payload: JSONRPCRequestPayload
