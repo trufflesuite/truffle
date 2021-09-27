@@ -1,4 +1,5 @@
 import type BN from "bn.js";
+import type Web3 from "web3";
 import type { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import type {
   Format,
@@ -9,10 +10,6 @@ import type {
   ExtrasAllowed
 } from "@truffle/codec";
 import type { Provider } from "web3/providers";
-export type Web3Adapter = {
-  getCode: () => Promise<string>;
-  getBlockNumber: () => Promise<number>;
-}
 
 //StateVariable used to be defined here, so let's continue
 //to export it
