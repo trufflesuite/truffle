@@ -50,7 +50,7 @@ export function abifyType(
       const fullType = <Format.Types.StructType>(
         Format.Types.fullType(dataType, userDefinedTypes)
       );
-      if (!fullType) {
+      if (!fullType.memberTypes) {
         let typeToDisplay = Format.Types.typeString(dataType);
         throw new Common.UnknownUserDefinedTypeError(
           dataType.id,
@@ -73,7 +73,7 @@ export function abifyType(
       const fullType = <Format.Types.EnumType>(
         Format.Types.fullType(dataType, userDefinedTypes)
       );
-      if (!fullType) {
+      if (!fullType.options) {
         let typeToDisplay = Format.Types.typeString(dataType);
         throw new Common.UnknownUserDefinedTypeError(
           dataType.id,
@@ -87,6 +87,19 @@ export function abifyType(
         bits,
         typeHint: Format.Types.typeString(fullType)
       };
+    }
+    case "userDefinedValueType": {
+      const fullType = <Format.Types.UDVTType>(
+        Format.Types.fullType(dataType, userDefinedTypes)
+      );
+      if (!fullType.underlyingType) {
+        let typeToDisplay = Format.Types.typeString(dataType);
+        throw new Common.UnknownUserDefinedTypeError(
+          dataType.id,
+          typeToDisplay
+        );
+      }
+      return abifyType(fullType.underlyingType, userDefinedTypes);
     }
     //finally: arrays
     case "array":
@@ -200,6 +213,19 @@ export function abifyResult(
             ) //note: may throw exception
           };
       }
+    }
+    case "userDefinedValueType": {
+      const coercedResult = <Format.Values.UDVTResult>result;
+      switch (coercedResult.kind) {
+        case "value":
+          return abifyResult(coercedResult.value, userDefinedTypes);
+        case "error":
+          return <Format.Errors.BuiltInValueTypeErrorResult>{ //I have no idea what TS is thinking here
+            ...coercedResult,
+            type: abifyType(result.type, userDefinedTypes)
+          };
+      }
+      break; //to satisfy TS :P
     }
     case "enum": {
       //NOTE: this is the one case where errors are converted to non-error values!!

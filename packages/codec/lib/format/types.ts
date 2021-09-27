@@ -45,6 +45,7 @@ export type Type =
   | FunctionType
   | StructType
   | EnumType
+  | UDVTType
   | ContractType
   | MagicType
   | TypeType
@@ -226,7 +227,22 @@ export type ElementaryType =
   | AddressType
   | StringType
   | EnumType
+  | UDVTType
   | ContractType;
+
+/**
+ * Types that can underlie a user-defined value type
+ *
+ * @Category General categories
+ */
+export type BuiltInValueType =
+  | UintType
+  | IntType
+  | BoolType
+  | BytesTypeStatic
+  | FixedType
+  | UfixedType
+  | AddressTypeSpecific; //UDVTs only exist on 0.8.8 and later
 
 /**
  * Type of a mapping
@@ -303,7 +319,11 @@ export interface FunctionExternalTypeGeneral {
  *
  * @Category General categories
  */
-export type ContractDefinedType = StructTypeLocal | EnumTypeLocal;
+export type ContractDefinedType =
+  | StructTypeLocal
+  | EnumTypeLocal
+  | UDVTTypeLocal;
+
 /**
  * User-defined types
  *
@@ -313,7 +333,8 @@ export type UserDefinedType =
   | ContractDefinedType
   | ContractTypeNative
   | StructTypeGlobal
-  | EnumTypeGlobal;
+  | EnumTypeGlobal
+  | UDVTTypeGlobal;
 
 /**
  * Type of a struct
@@ -486,6 +507,49 @@ export interface ContractTypeForeign {
   //now
 }
 
+/**
+ * Type of a user-defined value type
+ *
+ * These may be local (defined in a contract) or global (defined outside of any contract)
+ *
+ * @Category User-defined elementary types
+ */
+export type UDVTType = UDVTTypeLocal | UDVTTypeGlobal;
+
+/**
+ * Local UDVT (defined in a contract)
+ *
+ * @Category User-defined elementary types
+ */
+export interface UDVTTypeLocal {
+  typeClass: "userDefinedValueType";
+  kind: "local";
+  /**
+   * Internal ID.  Format may change in future.
+   */
+  id: string;
+  typeName: string;
+  definingContractName: string;
+  definingContract?: ContractTypeNative;
+  underlyingType?: BuiltInValueType;
+}
+
+/**
+ * Global UDVT (defined outside a contract)
+ *
+ * @Category User-defined elementary types
+ */
+export interface UDVTTypeGlobal {
+  typeClass: "userDefinedValueType";
+  kind: "global";
+  /**
+   * Internal ID.  Format may change in future.
+   */
+  id: string;
+  typeName: string;
+  underlyingType?: BuiltInValueType;
+}
+
 export type MagicVariableName = "message" | "block" | "transaction";
 
 /**
@@ -552,7 +616,7 @@ export interface TypesById {
 }
 
 function isUserDefinedType(anyType: Type): anyType is UserDefinedType {
-  const userDefinedTypes = ["contract", "enum", "struct"];
+  const userDefinedTypes = ["contract", "enum", "struct", "userDefinedValueType"];
   return userDefinedTypes.includes(anyType.typeClass);
 }
 
@@ -698,6 +762,16 @@ export function typeStringWithoutLocation(dataType: Type): string {
         case "global":
           return `${dataType.typeClass} ${dataType.typeName}`;
       }
+      break; //to satisfy TS :P
+    case "userDefinedValueType":
+      //differs from struct & enum in that typeClass is omitted
+      switch (dataType.kind) {
+        case "local":
+          return `${dataType.definingContractName}.${dataType.typeName}`;
+        case "global":
+          return `${dataType.typeName}`;
+      }
+      break; //to satisfy TS :P
     case "tuple":
       return (
         dataType.typeHint ||
@@ -749,6 +823,7 @@ export function typeStringWithoutLocation(dataType: Type): string {
 export function isContractDefinedType(
   anyType: Type
 ): anyType is ContractDefinedType {
-  const contractDefinedTypes = ["enum", "struct"];
-  return contractDefinedTypes.includes(anyType.typeClass);
+  const contractDefinedTypes = ["enum", "struct", "userDefinedValueType"];
+  return contractDefinedTypes.includes(anyType.typeClass)
+    && (<EnumType|StructType|UDVTType>anyType).kind === "local";
 }

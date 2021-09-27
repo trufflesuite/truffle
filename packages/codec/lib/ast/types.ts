@@ -13,6 +13,7 @@ export interface AstNode {
   canonicalName?: string;
   linearizedBaseContracts?: number[];
   members?: AstNode[];
+  underlyingType?: AstNode;
   nodes?: AstNode[];
   nodeType: string;
   ast_type?: string; //HACK: Vyper equivalent of nodeType

@@ -19,7 +19,17 @@ export type ElementaryValue =
   | FixedValue
   | UfixedValue
   | EnumValue
+  | UDVTValue
   | ContractValue;
+
+export type BuiltInValueTypeValue =
+  | UintValue
+  | IntValue
+  | BoolValue
+  | BytesStaticValue
+  | AddressValue
+  | FixedValue
+  | UfixedValue;
 
 /**
  * A bytestring value (static or dynamic)
@@ -206,6 +216,17 @@ export interface EnumValue {
      */
     numericAsBN: BN;
   };
+}
+
+/**
+ * A UDVT value
+ *
+ * @Category User-defined elementary types
+ */
+export interface UDVTValue {
+  type: Types.UDVTType;
+  kind: "value";
+  value: BuiltInValueTypeValue;
 }
 
 /**

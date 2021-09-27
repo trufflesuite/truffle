@@ -216,6 +216,8 @@ export function contractKind(definition: AstNode): Common.ContractKind {
 
 /**
  * stack size, in words, of a given type
+ * note: this function assumes that UDVTs only ever take up
+ * a single word, which is currently true
  * @category Definition Reading
  */
 export function stackSize(definition: AstNode): number {

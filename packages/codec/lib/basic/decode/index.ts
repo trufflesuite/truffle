@@ -36,6 +36,57 @@ export function* decodeBasic(
   debug("pointer %o", pointer);
 
   switch (dataType.typeClass) {
+    case "userDefinedValueType": {
+      const fullType = <Format.Types.UDVTType>(
+        Format.Types.fullType(dataType, info.userDefinedTypes)
+      );
+      if (!fullType.underlyingType) {
+        const error = {
+          kind: "UserDefinedTypeNotFoundError" as const,
+          type: fullType,
+        };
+        if (strict || options.allowRetry) {
+          throw new StopDecodingError(error, true);
+          //note that we allow a retry if we couldn't locate the underlying type!
+        }
+        return {
+          type: fullType,
+          kind: "error" as const,
+          error
+        };
+      }
+      const underlyingResult = yield* decodeBasic(
+        fullType.underlyingType,
+        pointer,
+        info,
+        options
+      );
+      switch (underlyingResult.kind) { //yes this switch is a little unnecessary :P
+        case "value":
+          //wrap the value and return
+          return <Format.Values.UDVTValue>{ //no idea why need coercion here
+            type: fullType,
+            kind: "value" as const,
+            value: underlyingResult
+          };
+        case "error":
+          //wrap the error and return an error result!
+          //this is inconsistent with how we handle other container types
+          //(structs, arrays, mappings), where having an error in one element
+          //does not cause an error in the whole thing, but to do that here
+          //would cause problems for the type system :-/
+          //so we'll just be inconsistent
+          return <Format.Errors.UDVTErrorResult>{ //TS is being bad again :-/
+            type: fullType,
+            kind: "error" as const,
+            error: {
+              kind: "WrappedError",
+              error: underlyingResult
+            }
+          };
+      }
+      break; //to satisfy TS :P
+    }
     case "bool": {
       if (!checkPadding(bytes, dataType, paddingMode)) {
         let error = {

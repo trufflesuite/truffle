@@ -62,6 +62,7 @@ export type DecoderError =
   | TypeErrorUnion
   | TupleError
   | EnumError
+  | UDVTError
   | ContractError
   | FunctionExternalError
   | FunctionInternalError
@@ -86,7 +87,22 @@ export type ElementaryErrorResult =
   | FixedErrorResult
   | UfixedErrorResult
   | EnumErrorResult
+  | UDVTErrorResult
   | ContractErrorResult;
+
+/**
+ * An error result for a built-in value type
+ *
+ * @Category Elementary types
+ */
+export type BuiltInValueTypeErrorResult =
+  | UintErrorResult
+  | IntErrorResult
+  | BoolErrorResult
+  | BytesStaticErrorResult
+  | AddressErrorResult
+  | FixedErrorResult
+  | UfixedErrorResult;
 
 /**
  * An error result for a bytestring
@@ -427,6 +443,35 @@ export interface EnumNotFoundDecodingError {
 }
 
 /**
+ * An error result for a user-defined value type
+ *
+ * @Category User-defined elementary types
+ */
+export interface UDVTErrorResult {
+  type: Types.UDVTType;
+  kind: "error";
+  error: GenericError | UDVTError;
+}
+
+/**
+ * A UDVT-specific error
+ *
+ * @Category User-defined elementary types
+ */
+export type UDVTError = WrappedError;
+
+/**
+ * An error result representing something going wrong decoding
+ * the underlying type when decoding a UDVT
+ *
+ * @Category User-defined elementary types
+ */
+export interface WrappedError {
+  kind: "WrappedError";
+  error: BuiltInValueTypeErrorResult;
+}
+
+/**
  * An error result for a contract
  *
  * @Category User-defined elementary types
@@ -719,6 +764,7 @@ export type GenericError =
   | UserDefinedTypeNotFoundError
   | IndexedReferenceTypeError
   | ReadError;
+
 /**
  * A read error
  *
@@ -730,6 +776,7 @@ export type ReadError =
   | ReadErrorBytes
   | ReadErrorStorage
   | UnusedImmutableError;
+
 /**
  * An error resulting from overlarge length or pointer values
  *

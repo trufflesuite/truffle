@@ -50,6 +50,7 @@ function* handleEnter(sourceId, sourceIndex, node, pointer, parentId) {
     case "ContractDefinition":
     case "StructDefinition":
     case "EnumDefinition":
+    case "UserDefinedValueTypeDefinition":
       debug("%s recording type %o", pointer, node);
       yield* data.defineType(node, sourceId);
       break;

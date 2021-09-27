@@ -489,6 +489,7 @@ export function collectUserDefinedTypesAndTaggedOutputs(
           if (
             node.nodeType === "StructDefinition" ||
             node.nodeType === "EnumDefinition" ||
+            node.nodeType === "UserDefinedValueTypeDefinition" ||
             node.nodeType === "ContractDefinition"
           ) {
             references[compilation.id][node.id] = node;
@@ -510,7 +511,8 @@ export function collectUserDefinedTypesAndTaggedOutputs(
             for (const subNode of node.nodes) {
               if (
                 subNode.nodeType === "StructDefinition" ||
-                subNode.nodeType === "EnumDefinition"
+                subNode.nodeType === "EnumDefinition" ||
+                subNode.nodeType === "UserDefinedValueTypeDefinition"
               ) {
                 references[compilation.id][subNode.id] = subNode;
                 //we don't have all the references yet, but we only need the
