@@ -609,8 +609,8 @@ export class ProjectDecoder {
   /**
    * @protected
    */
-  public getWeb3(): Web3 {
-    return this.web3;
+  public getWeb3Adapter(): Web3Adapter {
+    return this.web3Adapter;
   }
 
   /**
@@ -635,7 +635,7 @@ export class ProjectDecoder {
  * @category Decoder
  */
 export class ContractDecoder {
-  private web3: Web3;
+  private web3Adapter: Web3Adapter;
 
   private contexts: Contexts.Contexts; //note: this is deployed contexts only!
 
@@ -668,7 +668,7 @@ export class ContractDecoder {
     this.contract = contract;
     this.compilation = compilation;
     this.projectDecoder = projectDecoder;
-    this.web3 = projectDecoder.getWeb3();
+    this.web3Adapter = projectDecoder.getWeb3Adapter();
     this.contexts = projectDecoder.getDeployedContexts();
     this.userDefinedTypes = this.projectDecoder.getUserDefinedTypes();
 
@@ -750,7 +750,7 @@ export class ContractDecoder {
    * @protected
    */
   public async init(): Promise<void> {
-    this.contractNetwork = (await this.web3.eth.net.getId()).toString();
+    this.contractNetwork = await this.web3Adapter.getNetworkId();
   }
 
   private get context(): Contexts.Context {
@@ -1001,7 +1001,7 @@ export class ContractDecoder {
  * @category Decoder
  */
 export class ContractInstanceDecoder {
-  private web3: Web3;
+  private web3Adapter: Web3Adapter;
 
   private compilation: Compilations.Compilation;
   private contract: Compilations.Contract;
@@ -1035,7 +1035,7 @@ export class ContractInstanceDecoder {
   constructor(contractDecoder: ContractDecoder, address?: string) {
     this.contractDecoder = contractDecoder;
     this.projectDecoder = this.contractDecoder.getProjectDecoder();
-    this.web3 = this.projectDecoder.getWeb3();
+    this.web3Adapter = this.projectDecoder.getWeb3Adapter();
     if (address !== undefined) {
       if (!Web3Utils.isAddress(address)) {
         throw new InvalidAddressError(address);
@@ -1075,7 +1075,7 @@ export class ContractInstanceDecoder {
     this.contractCode = Conversion.toHexString(
       await this.getCode(
         this.contractAddress,
-        await this.web3.eth.getBlockNumber() //not "latest" because regularized
+        await this.web3Adapter.getBlockNumber() //not "latest" because regularized
       )
     );
 
@@ -1252,10 +1252,10 @@ export class ContractInstanceDecoder {
       address: this.contractAddress,
       code: this.contractCode,
       balanceAsBN: new BN(
-        await this.web3.eth.getBalance(this.contractAddress, blockNumber)
+        await this.web3Adapter.getBalance(this.contractAddress, blockNumber)
       ),
       nonceAsBN: new BN(
-        await this.web3.eth.getTransactionCount(
+        await this.web3Adapter.getTransactionCount(
           this.contractAddress,
           blockNumber
         )
