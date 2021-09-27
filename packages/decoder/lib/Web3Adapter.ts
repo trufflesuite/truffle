@@ -25,4 +25,16 @@ export class Web3Adapter {
   public async getPastLogs ({ address, fromBlock, toBlock }: PastLogsOptions): Promise<any> {
     return await this.Eth.getPastLogs({ address, fromBlock, toBlock });
   }
+
+  public async getNetworkId (): Promise<string> {
+    return (await this.Eth.net.getId()).toString();
+  }
+
+  public async getBlockNumber (): Promise<number> {
+    return await this.Eth.getBlockNumber();
+  }
+
+  public async getBalance (address: string, blockNumber: number) {
+    return await this.Eth.getBalance(address, blockNumber);
+  }
 }
