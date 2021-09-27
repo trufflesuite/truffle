@@ -4,6 +4,7 @@ type PastLogsOptions = {
   fromBlock?: string | number;
   address?: string | string[];
 }
+import type BN from "bn.js";
 
 export class Web3Adapter {
   public provider: any;
@@ -40,5 +41,9 @@ export class Web3Adapter {
 
   public async getTransactionCount (contractAddress: string, blockNumber: any) {
     return this.Eth.getTransactionCount(contractAddress, blockNumber);
+  }
+
+  public async getStorageAt (address: string, position: BN, block: string | number) {
+    return this.Eth.getStorageAt(address, position, block);
   }
 }
