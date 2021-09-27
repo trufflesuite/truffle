@@ -1,21 +1,28 @@
-import eth from "web3-eth";
+import { Eth } from "web3-eth";
+type PastLogsOptions = {
+  toBlock?: string | number;
+  fromBlock?: string | number;
+  address?: string | string[];
+}
 
 export class Web3Adapter {
   public provider: any;
+  public Eth: Eth;
 
   constructor (provider: any) {
     this.provider = provider;
+    this.Eth = new Eth(provider);
   }
 
-  async getCode (address: string, block: string) {
-    return await eth.getCode(address, block);
+  public async getCode (address: string, block: string | number) {
+    return await this.Eth.getCode(address, block);
   }
 
-  async getBlock (block: string) {
-    return await eth.getBlock(block);
+  public async getBlock (block: string | number) {
+    return await this.Eth.getBlock(block);
   }
 
-  async getPastLogs (address: string, from: string, to: string) {
-    return await eth.getPastLogs(address, from, to);
+  public async getPastLogs ({ address, fromBlock, toBlock }: PastLogsOptions): Promise<any> {
+    return await this.Eth.getPastLogs({ address, fromBlock, toBlock });
   }
 }
