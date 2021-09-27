@@ -34,7 +34,11 @@ export class Web3Adapter {
     return await this.Eth.getBlockNumber();
   }
 
-  public async getBalance (address: string, blockNumber: number) {
+  public async getBalance (address: string, blockNumber: any) {
     return await this.Eth.getBalance(address, blockNumber);
+  }
+
+  public async getTransactionCount (contractAddress: string, blockNumber: any) {
+    return this.Eth.getTransactionCount(contractAddress, blockNumber);
   }
 }
