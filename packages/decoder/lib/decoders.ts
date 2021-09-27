@@ -345,7 +345,7 @@ export class ProjectDecoder {
     const fromBlockNumber = await this.regularizeBlock(fromBlock);
     const toBlockNumber = await this.regularizeBlock(toBlock);
 
-    const logs = await this.web3.eth.getPastLogs({
+    const logs = await this.web3Adapter.getPastLogs({
       address,
       fromBlock: fromBlockNumber,
       toBlock: toBlockNumber
