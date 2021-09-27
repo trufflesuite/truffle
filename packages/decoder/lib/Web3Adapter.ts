@@ -23,7 +23,7 @@ export class Web3Adapter {
     return await this.Eth.getBlock(block);
   }
 
-  public async getPastLogs ({ address, fromBlock, toBlock }: PastLogsOptions): Promise<any> {
+  public async getPastLogs ({ address, fromBlock, toBlock }: PastLogsOptions): Promise<any[]> {
     return await this.Eth.getPastLogs({ address, fromBlock, toBlock });
   }
 
