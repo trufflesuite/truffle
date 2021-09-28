@@ -541,6 +541,16 @@ function storageSizeAndAllocate(
       };
     }
 
+    case "userDefinedValueType": {
+      //surprisingly, these always take up a full word in storage,
+      //regardless of their underlying type!  So I'm handling
+      //them here rather than in byteLength
+      return {
+        size: { words: 1 },
+        allocations: existingAllocations
+      };
+    }
+
     default:
       //otherwise, it's a direct type
       return {
