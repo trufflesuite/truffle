@@ -392,37 +392,24 @@ export function definitionToStoredType(
 ): Format.Types.UserDefinedType {
   switch (definition.nodeType) {
     case "StructDefinition": {
-      let id = makeTypeId(definition.id, compilationId);
-      let definingContractName: string;
-      let typeName: string;
-      if (definition.canonicalName.includes(".")) {
-        [definingContractName, typeName] = definition.canonicalName.split(".");
-      } else {
-        typeName = definition.canonicalName;
-        //leave definingContractName undefined
-      }
-      let memberTypes: {
+      const {
+        id,
+        typeName,
+        definingContractName,
+        definingContract
+      } = getDefiningInfo(
+        definition,
+        compilationId,
+        compiler,
+        referenceDeclarations
+      );
+      const memberTypes: {
         name: string;
         type: Format.Types.Type;
       }[] = definition.members.map(member => ({
         name: member.name,
         type: definitionToType(member, compilationId, compiler, null)
       }));
-      let definingContract;
-      if (referenceDeclarations) {
-        let contractDefinition = Object.values(referenceDeclarations).find(
-          node =>
-            node.nodeType === "ContractDefinition" &&
-            node.nodes.some(
-              (subNode: AstNode) => makeTypeId(subNode.id, compilationId) === id
-            )
-        );
-        if (contractDefinition) {
-          definingContract = <Format.Types.ContractTypeNative>(
-            definitionToStoredType(contractDefinition, compilationId, compiler)
-          ); //can skip reference declarations
-        }
-      }
       if (definingContract) {
         return {
           typeClass: "struct",
@@ -444,34 +431,18 @@ export function definitionToStoredType(
       }
     }
     case "EnumDefinition": {
-      let id = makeTypeId(definition.id, compilationId);
-      let definingContractName: string;
-      let typeName: string;
-      debug("typeName: %s", typeName);
-      if (definition.canonicalName.includes(".")) {
-        [definingContractName, typeName] = definition.canonicalName.split(".");
-      } else {
-        typeName = definition.canonicalName;
-        //leave definingContractName undefined
-      }
-      let options = definition.members.map(member => member.name);
-      let definingContract;
-      if (referenceDeclarations) {
-        let contractDefinition = Object.values(referenceDeclarations).find(
-          node =>
-            node.nodeType === "ContractDefinition" &&
-            node.nodes.some(
-              (subNode: AstNode) => makeTypeId(subNode.id, compilationId) === id
-            )
-        );
-        if (contractDefinition) {
-          definingContract = <Format.Types.ContractTypeNative>(
-            definitionToStoredType(contractDefinition, compilationId, compiler)
-          ); //can skip reference declarations
-          debug("contractDefinition: %o", contractDefinition);
-          debug("definingContract: %o", definingContract);
-        }
-      }
+      const {
+        id,
+        typeName,
+        definingContractName,
+        definingContract
+      } = getDefiningInfo(
+        definition,
+        compilationId,
+        compiler,
+        referenceDeclarations
+      );
+      const options = definition.members.map(member => member.name);
       if (definingContract) {
         return {
           typeClass: "enum",
@@ -493,32 +464,19 @@ export function definitionToStoredType(
       }
     }
     case "UserDefinedValueTypeDefinition": {
-      let id = makeTypeId(definition.id, compilationId);
-      let definingContractName: string;
-      let typeName: string;
-      if (definition.canonicalName.includes(".")) {
-        [definingContractName, typeName] = definition.canonicalName.split(".");
-      } else {
-        typeName = definition.canonicalName;
-        //leave definingContractName undefined
-      }
+      const {
+        id,
+        typeName,
+        definingContractName,
+        definingContract
+      } = getDefiningInfo(
+        definition,
+        compilationId,
+        compiler,
+        referenceDeclarations
+      );
       let underlyingType = <Format.Types.BuiltInValueType> //we know it's that, TS doesn't
         definitionToType(definition.underlyingType, compilationId, compiler, null); //final null doesn't matter here
-      let definingContract;
-      if (referenceDeclarations) {
-        let contractDefinition = Object.values(referenceDeclarations).find(
-          node =>
-            node.nodeType === "ContractDefinition" &&
-            node.nodes.some(
-              (subNode: AstNode) => makeTypeId(subNode.id, compilationId) === id
-            )
-        );
-        if (contractDefinition) {
-          definingContract = <Format.Types.ContractTypeNative>(
-            definitionToStoredType(contractDefinition, compilationId, compiler)
-          ); //can skip reference declarations
-        }
-      }
       if (definingContract) {
         return {
           typeClass: "userDefinedValueType",
@@ -554,4 +512,61 @@ export function definitionToStoredType(
       };
     }
   }
+}
+
+interface DefiningInfo {
+  definingContract?: Format.Types.ContractTypeNative;
+  definingContractName?: string;
+  typeName: string;
+  id: string;
+}
+
+function getDefiningInfo(
+  definition: AstNode,
+  compilationId: string,
+  compiler: Compiler.CompilerVersion,
+  referenceDeclarations?: AstNodes
+): DefiningInfo {
+  const id = makeTypeId(definition.id, compilationId);
+  let definingContractName: string | undefined;
+  let typeName: string;
+  if (definition.canonicalName) {
+    if (definition.canonicalName.includes(".")) {
+      [definingContractName, typeName] = definition.canonicalName.split(".");
+    } else {
+      typeName = definition.canonicalName;
+    }
+  } else {
+    //due to a bug, in 0.8.8 UDVTs lack a canonicalName.
+    //so we'll set typeName based on name instead of canonicalName,
+    //and set definingContractName below based on definingContract.
+    //(this does mean that we'll mess up a bit if referenceDeclarations
+    //is not passed... but realistically that shouldn't come up?  really the
+    //same kind of hapepns for every type)
+    typeName = definition.name;
+  }
+  let definingContract: Format.Types.ContractTypeNative | undefined = undefined;;
+  if (referenceDeclarations) {
+    let contractDefinition = Object.values(referenceDeclarations).find(
+      node =>
+        node.nodeType === "ContractDefinition" &&
+        node.nodes.some(
+          (subNode: AstNode) => makeTypeId(subNode.id, compilationId) === id
+        )
+    );
+    if (contractDefinition) {
+      definingContract = <Format.Types.ContractTypeNative>(
+        definitionToStoredType(contractDefinition, compilationId, compiler)
+      ); //can skip reference declarations
+      if (!definingContractName) {
+        definingContractName = contractDefinition.name;
+      }
+    }
+  }
+  return {
+    definingContract,
+    definingContractName,
+    typeName,
+    id
+  };
 }
