@@ -40,6 +40,24 @@ export type ErrorResult =
   | FunctionInternalErrorResult;
 
 /**
+ * An error result for an ABI type
+ *
+ * @Category General categories
+ */
+export type AbiErrorResult =
+  | UintErrorResult
+  | IntErrorResult
+  | BoolErrorResult
+  | BytesErrorResult
+  | AddressErrorResult
+  | FixedErrorResult
+  | UfixedErrorResult
+  | StringErrorResult
+  | ArrayErrorResult
+  | FunctionExternalErrorResult
+  | TupleErrorResult;
+
+/**
  * One of the underlying errors contained in an [[ErrorResult]]
  *
  * @Category General categories

@@ -26,6 +26,7 @@ import type {
   BoolValue,
   BytesStaticValue,
   BytesDynamicValue,
+  BytesValue,
   AddressValue,
   StringValue,
   FixedValue,
@@ -75,6 +76,42 @@ export type Value =
   | TypeValue
   | FunctionExternalValue
   | FunctionInternalValue;
+
+/**
+ * A value that can go in the ABI
+ *
+ * @Category General categories
+ */
+export type AbiValue =
+  | UintValue
+  | IntValue
+  | BoolValue
+  | BytesValue
+  | AddressValue
+  | FixedValue
+  | UfixedValue
+  | StringValue
+  | ArrayValue
+  | FunctionExternalValue
+  | TupleValue;
+
+/**
+ * A result for an ABI type
+ *
+ * @Category General categories
+ */
+export type AbiResult =
+  | UintResult
+  | IntResult
+  | BoolResult
+  | BytesResult
+  | AddressResult
+  | FixedResult
+  | UfixedResult
+  | StringResult
+  | ArrayResult
+  | FunctionExternalResult
+  | TupleResult;
 
 /*
  * SECTION 2: Built-in elementary types

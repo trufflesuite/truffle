@@ -14,7 +14,7 @@ import * as Conversion from "@truffle/codec/conversion";
 export function abifyType(
   dataType: Format.Types.Type,
   userDefinedTypes?: Format.Types.TypesById
-): Format.Types.Type | undefined {
+): Format.Types.AbiType | undefined {
   switch (dataType.typeClass) {
     //we only need to specially handle types that don't go in
     //the ABI, or that have some information loss when going
@@ -23,6 +23,7 @@ export function abifyType(
     //First: types that do not go in the ABI
     case "mapping":
     case "magic":
+    case "type":
       return undefined;
     //Next: address & contract, these can get handled together
     case "address":
@@ -99,7 +100,14 @@ export function abifyType(
           typeToDisplay
         );
       }
-      return abifyType(fullType.underlyingType, userDefinedTypes);
+      const abifiedUnderlying = abifyType(
+        fullType.underlyingType,
+        userDefinedTypes
+      );
+      return {
+        ...abifiedUnderlying,
+        typeHint: Format.Types.typeStringWithoutLocation(dataType)
+      };
     }
     //finally: arrays
     case "array":
@@ -118,10 +126,11 @@ export function abifyType(
 export function abifyResult(
   result: Format.Values.Result,
   userDefinedTypes?: Format.Types.TypesById
-): Format.Values.Result | undefined {
+): Format.Values.AbiResult | undefined {
   switch (result.type.typeClass) {
     case "mapping": //doesn't go in ABI
     case "magic": //doesn't go in ABI
+    case "type": //doesn't go in ABI
       return undefined;
     case "address":
       //abify the type but leave the value alone
@@ -200,7 +209,7 @@ export function abifyResult(
           );
           return {
             kind: "value",
-            type: <Format.Types.StructType>(
+            type: <Format.Types.TupleType>(
               abifyType(result.type, userDefinedTypes)
             ), //note: may throw exception
             value: abifiedMembers
@@ -208,7 +217,7 @@ export function abifyResult(
         case "error":
           return {
             ...coercedResult,
-            type: <Format.Types.StructType>(
+            type: <Format.Types.TupleType>(
               abifyType(result.type, userDefinedTypes)
             ) //note: may throw exception
           };
@@ -321,7 +330,7 @@ export function abifyResult(
       }
     }
     default:
-      return result;
+      return <Format.Values.AbiResult>result; //just coerce :-/
   }
 }
 

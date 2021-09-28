@@ -245,6 +245,24 @@ export type BuiltInValueType =
   | AddressTypeSpecific; //UDVTs only exist on 0.8.8 and later
 
 /**
+ * Types that can go in the ABI
+ *
+ * @Category General categories
+ */
+export type AbiType =
+  | UintType
+  | IntType
+  | BoolType
+  | BytesType
+  | AddressTypeGeneral
+  | FixedType
+  | UfixedType
+  | StringType
+  | ArrayType
+  | FunctionExternalTypeGeneral
+  | TupleType;
+
+/**
  * Type of a mapping
  *
  * @Category Container types

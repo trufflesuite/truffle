@@ -746,19 +746,33 @@ function toAbiType(node: AstNode, referenceDeclarations: AstNodes): string {
       return "address";
     case "struct":
       return "tuple"; //the more detailed checking will be handled elsewhere
-    case "enum":
-      let referenceId = typeId(node);
-      let referenceDeclaration = referenceDeclarations[referenceId];
+    case "enum": {
+      const referenceId = typeId(node);
+      const referenceDeclaration = referenceDeclarations[referenceId];
       if (referenceDeclaration === undefined) {
-        let typeToDisplay = typeString(node);
+        const typeToDisplay = typeString(node);
         throw new Common.UnknownUserDefinedTypeError(
           referenceId.toString(),
           typeToDisplay
         );
       }
-      let numOptions = referenceDeclaration.members.length;
-      let bits = 8 * Math.ceil(Math.log2(numOptions) / 8);
+      const numOptions = referenceDeclaration.members.length;
+      const bits = 8 * Math.ceil(Math.log2(numOptions) / 8);
       return `uint${bits}`;
+    }
+    case "userDefinedValueType": {
+      const referenceId = typeId(node);
+      const referenceDeclaration = referenceDeclarations[referenceId];
+      if (referenceDeclaration === undefined) {
+        const typeToDisplay = typeString(node);
+        throw new Common.UnknownUserDefinedTypeError(
+          referenceId.toString(),
+          typeToDisplay
+        );
+      }
+      const underlyingType = referenceDeclaration.underlyingType;
+      return toAbiType(underlyingType, referenceDeclarations);
+    }
     default:
       return basicType;
     //note that: int/uint/fixed/ufixed/bytes will have their size and such left on;
