@@ -2,13 +2,13 @@
 // determines which .sol files have been updated.
 
 const debug = require("debug")("compile:profiler");
-const Common = require("@truffle/compile-common");
+const { Profiler } = require("@truffle/profiler");
 const { loadParser } = require("./loadParser");
 const { shouldIncludePath } = require("./shouldIncludePath");
 
 module.exports = {
   updated: async options => {
-    const profiler = await new Common.Profiler({});
+    const profiler = await new Profiler({});
     return await profiler.updated(options);
   },
 
@@ -19,7 +19,7 @@ module.exports = {
     const parseImports = await loadParser(options);
 
     // generate profiler
-    const profiler = new Common.Profiler({
+    const profiler = new Profiler({
       parseImports,
       shouldIncludePath
     });
@@ -31,7 +31,7 @@ module.exports = {
   requiredSourcesForSingleFile: async options => {
     const parseImports = await loadParser(options);
 
-    const profiler = new Common.Profiler({
+    const profiler = new Profiler({
       parseImports,
       shouldIncludePath
     });

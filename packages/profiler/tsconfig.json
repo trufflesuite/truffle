@@ -13,7 +13,7 @@
     "paths": {
     },
     "rootDir": ".",
-    "types": ["node", "mocha"]
+    "types": ["node"],
   },
   "include": [
     "./src/**/*.ts"

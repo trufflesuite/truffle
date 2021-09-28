@@ -1,5 +1,5 @@
 const debug = require("debug")("compile-vyper:profiler");
-const Common = require("@truffle/compile-common");
+const { Profiler } = require("@truffle/profiler");
 const Resolver = require("@truffle/resolver");
 const { parseImports } = require("./parser");
 
@@ -14,7 +14,7 @@ async function requiredSources(options) {
   debug("resolver.sources.length: %d", resolver.sources.length);
 
   // generate profiler
-  const profiler = new Common.Profiler({
+  const profiler = new Profiler({
     parseImports,
     shouldIncludePath
   });

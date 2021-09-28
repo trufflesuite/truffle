@@ -7,8 +7,8 @@ const minimatch = require("minimatch");
 const semver = require("semver");
 
 const findContracts = require("@truffle/contract-sources");
-const Common = require("@truffle/compile-common");
 const Config = require("@truffle/config");
+const { Profiler } = require("@truffle/profiler");
 const { requiredSources } = require("./profiler");
 
 const { compileJson } = require("./vyper-json");
@@ -316,7 +316,7 @@ const Compile = {
   async necessary(options) {
     options = Config.default().merge(options);
 
-    const profiler = await new Common.Profiler({});
+    const profiler = await new Profiler({});
     const updated = await profiler.updated(options);
     if (updated.length === 0) {
       return { compilations: [] };
