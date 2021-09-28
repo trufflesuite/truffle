@@ -482,6 +482,18 @@ export function functionKind(node: AstNode): string | undefined {
   return node.name === "" ? "fallback" : "function";
 }
 
+//this is kind of a weird one, it exposes some Solidity internals.
+//for internal functions it'll return "internal".
+//for external functions it'll return "external".
+//for library functions it'll return "delegatecall".
+//and for builtin functions, it'll return an internal name for
+//that particular builtin function.
+//(there are more possibilities but I'm not going to list them all here)
+export function functionClass(node: AstNode): string | undefined {
+  const match = typeIdentifier(node).match(/^t_function_([^_]+)_/);
+  return match ? match[1] : undefined;
+}
+
 /**
  * similar compatibility function for mutability for pre-0.4.16 versions
  * returns undefined if you don't give it a FunctionDefinition or
