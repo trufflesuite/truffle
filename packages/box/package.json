@@ -3,10 +3,14 @@
   "description": "Truffle project boilerplate utility",
   "license": "MIT",
   "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/box#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/trufflesuite/truffle.git",
     "directory": "packages/box"
+  },
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "version": "2.1.28",
   "main": "dist/box.js",
