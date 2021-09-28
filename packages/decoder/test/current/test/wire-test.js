@@ -71,7 +71,8 @@ describe("Over-the-wire decoding", function () {
         "0x0000000000000000000000000000000000000001",
         "0x0000000000000000000000000000000000000002"
       ],
-      ["hello", "hi", "hooblypoob"]
+      ["hello", "hi", "hooblypoob"],
+      -1
     ];
     let emitStuff = await deployedContract.emitStuff(...emitStuffArgs);
     let emitStuffHash = emitStuff.tx;
@@ -131,6 +132,7 @@ describe("Over-the-wire decoding", function () {
     );
 
     assert.strictEqual(constructorDecoding.kind, "constructor");
+    assert.strictEqual(constructorDecoding.decodingMode, "full");
     assert.strictEqual(constructorDecoding.class.typeName, "WireTest");
     assert.lengthOf(constructorDecoding.arguments, 3);
     assert.strictEqual(constructorDecoding.arguments[0].name, "status");
@@ -156,9 +158,10 @@ describe("Over-the-wire decoding", function () {
     );
 
     assert.strictEqual(emitStuffDecoding.kind, "function");
+    assert.strictEqual(emitStuffDecoding.decodingMode, "full");
     assert.strictEqual(emitStuffDecoding.abi.name, "emitStuff");
     assert.strictEqual(emitStuffDecoding.class.typeName, "WireTest");
-    assert.lengthOf(emitStuffDecoding.arguments, 3);
+    assert.lengthOf(emitStuffDecoding.arguments, 4);
     assert.strictEqual(emitStuffDecoding.arguments[0].name, "p");
     assert.deepEqual(
       Codec.Format.Utils.Inspect.unsafeNativize(
@@ -180,8 +183,16 @@ describe("Over-the-wire decoding", function () {
       ),
       emitStuffArgs[2]
     );
+    assert.strictEqual(emitStuffDecoding.arguments[3].name, "x");
+    assert.strictEqual(
+      Codec.Format.Utils.Inspect.unsafeNativize(
+        emitStuffDecoding.arguments[3].value
+      ),
+      emitStuffArgs[3]
+    );
 
     assert.strictEqual(moreStuffDecoding.kind, "function");
+    assert.strictEqual(moreStuffDecoding.decodingMode, "full");
     assert.strictEqual(moreStuffDecoding.abi.name, "moreStuff");
     assert.strictEqual(moreStuffDecoding.class.typeName, "WireTest");
     assert.lengthOf(moreStuffDecoding.arguments, 2);
@@ -201,6 +212,7 @@ describe("Over-the-wire decoding", function () {
     );
 
     assert.strictEqual(globalTestDecoding.kind, "function");
+    assert.strictEqual(globalTestDecoding.decodingMode, "full");
     assert.strictEqual(globalTestDecoding.abi.name, "globalTest");
     assert.strictEqual(globalTestDecoding.class.typeName, "WireTest");
     assert.lengthOf(globalTestDecoding.arguments, 2);
@@ -220,6 +232,7 @@ describe("Over-the-wire decoding", function () {
     );
 
     assert.strictEqual(inheritedDecoding.kind, "function");
+    assert.strictEqual(inheritedDecoding.decodingMode, "full");
     assert.strictEqual(inheritedDecoding.abi.name, "inherited");
     assert.strictEqual(inheritedDecoding.class.typeName, "WireTest"); //NOT WireTestParent
     assert.lengthOf(inheritedDecoding.arguments, 1);
@@ -232,6 +245,7 @@ describe("Over-the-wire decoding", function () {
     );
 
     assert.strictEqual(defaultConstructorDecoding.kind, "constructor");
+    assert.strictEqual(defaultConstructorDecoding.decodingMode, "full");
     assert.strictEqual(
       defaultConstructorDecoding.class.typeName,
       "WireTestParent"
@@ -239,6 +253,7 @@ describe("Over-the-wire decoding", function () {
     assert.isEmpty(defaultConstructorDecoding.arguments);
 
     assert.strictEqual(getterDecoding1.kind, "function");
+    assert.strictEqual(getterDecoding1.decodingMode, "full");
     assert.strictEqual(getterDecoding1.abi.name, "deepStruct");
     assert.strictEqual(getterDecoding1.class.typeName, "WireTest");
     assert.lengthOf(getterDecoding1.arguments, 2);
@@ -258,6 +273,7 @@ describe("Over-the-wire decoding", function () {
     );
 
     assert.strictEqual(getterDecoding2.kind, "function");
+    assert.strictEqual(getterDecoding2.decodingMode, "full");
     assert.strictEqual(getterDecoding2.abi.name, "deepString");
     assert.strictEqual(getterDecoding2.class.typeName, "WireTest");
     assert.lengthOf(getterDecoding2.arguments, 2);
@@ -366,6 +382,7 @@ describe("Over-the-wire decoding", function () {
     let dangerEventDecoding = dangerEventDecodings[0];
 
     assert.strictEqual(constructorEventDecoding.kind, "event");
+    assert.strictEqual(constructorEventDecoding.decodingMode, "full");
     assert.strictEqual(constructorEventDecoding.class.typeName, "WireTest");
     assert.strictEqual(constructorEventDecoding.definedIn.typeName, "WireTest");
     assert.strictEqual(constructorEventDecoding.abi.name, "ConstructorEvent");
@@ -393,10 +410,11 @@ describe("Over-the-wire decoding", function () {
     );
 
     assert.strictEqual(emitStuffEventDecoding.kind, "event");
+    assert.strictEqual(emitStuffEventDecoding.decodingMode, "full");
     assert.strictEqual(emitStuffEventDecoding.abi.name, "EmitStuff");
     assert.strictEqual(emitStuffEventDecoding.class.typeName, "WireTest");
     assert.strictEqual(emitStuffEventDecoding.definedIn.typeName, "WireTest");
-    assert.lengthOf(emitStuffEventDecoding.arguments, 3);
+    assert.lengthOf(emitStuffEventDecoding.arguments, 4);
     assert.isUndefined(emitStuffEventDecoding.arguments[0].name);
     assert.deepEqual(
       Codec.Format.Utils.Inspect.unsafeNativize(
@@ -418,8 +436,16 @@ describe("Over-the-wire decoding", function () {
       ),
       emitStuffArgs[2]
     );
+    assert.isUndefined(emitStuffEventDecoding.arguments[3].name);
+    assert.strictEqual(
+      Codec.Format.Utils.Inspect.unsafeNativize(
+        emitStuffEventDecoding.arguments[3].value
+      ),
+      emitStuffArgs[3]
+    );
 
     assert.strictEqual(moreStuffEventDecoding.kind, "event");
+    assert.strictEqual(moreStuffEventDecoding.decodingMode, "full");
     assert.strictEqual(moreStuffEventDecoding.abi.name, "MoreStuff");
     assert.strictEqual(moreStuffEventDecoding.class.typeName, "WireTest");
     assert.strictEqual(moreStuffEventDecoding.definedIn.typeName, "WireTest");
@@ -440,6 +466,7 @@ describe("Over-the-wire decoding", function () {
     );
 
     assert.strictEqual(globalTestEventDecoding.kind, "event");
+    assert.strictEqual(globalTestEventDecoding.decodingMode, "full");
     assert.strictEqual(globalTestEventDecoding.abi.name, "Globals");
     assert.strictEqual(globalTestEventDecoding.class.typeName, "WireTest");
     assert.strictEqual(globalTestEventDecoding.definedIn.typeName, "WireTest");
@@ -460,6 +487,7 @@ describe("Over-the-wire decoding", function () {
     );
 
     assert.strictEqual(inheritedEventDecoding.kind, "event");
+    assert.strictEqual(inheritedEventDecoding.decodingMode, "full");
     assert.strictEqual(inheritedEventDecoding.abi.name, "Done");
     assert.strictEqual(inheritedEventDecoding.class.typeName, "WireTest");
     assert.strictEqual(
@@ -469,6 +497,7 @@ describe("Over-the-wire decoding", function () {
     assert.isEmpty(inheritedEventDecoding.arguments);
 
     assert.strictEqual(indexTestEventDecoding.kind, "event");
+    assert.strictEqual(indexTestEventDecoding.decodingMode, "full");
     assert.strictEqual(indexTestEventDecoding.abi.name, "HasIndices");
     assert.strictEqual(indexTestEventDecoding.class.typeName, "WireTest");
     assert.strictEqual(indexTestEventDecoding.definedIn.typeName, "WireTest");
@@ -509,6 +538,7 @@ describe("Over-the-wire decoding", function () {
     );
 
     assert.strictEqual(libraryTestEventDecoding.kind, "event");
+    assert.strictEqual(libraryTestEventDecoding.decodingMode, "full");
     assert.strictEqual(libraryTestEventDecoding.abi.name, "LibraryEvent");
     assert.strictEqual(
       libraryTestEventDecoding.class.typeName,
@@ -528,6 +558,7 @@ describe("Over-the-wire decoding", function () {
     );
 
     assert.strictEqual(dangerEventDecoding.kind, "event");
+    assert.strictEqual(dangerEventDecoding.decodingMode, "full");
     assert.strictEqual(dangerEventDecoding.abi.name, "Danger");
     assert.lengthOf(dangerEventDecoding.arguments, 1);
     assert.isUndefined(dangerEventDecoding.arguments[0].name);
@@ -930,7 +961,7 @@ describe("Over-the-wire decoding", function () {
     let decoding = decodings[0];
     assert.strictEqual(decoding.kind, "return");
     assert.strictEqual(decoding.decodingMode, "full");
-    assert.lengthOf(decoding.arguments, 2);
+    assert.lengthOf(decoding.arguments, 3);
     assert.deepEqual(
       Codec.Format.Utils.Inspect.unsafeNativize(decoding.arguments[0].value),
       {
@@ -942,6 +973,10 @@ describe("Over-the-wire decoding", function () {
     assert.strictEqual(
       Codec.Format.Utils.Inspect.unsafeNativize(decoding.arguments[1].value),
       "WireTest.Ternary.No"
+    );
+    assert.strictEqual(
+      Codec.Format.Utils.Inspect.unsafeNativize(decoding.arguments[2].value),
+      -1
     );
 
     //now: let's try decoding a self-destruct :D

@@ -43,6 +43,7 @@ describe("State variable decoding", function () {
     await decoder.watchMappingKey("varEnumMapping", "EnumValTwo");
     await decoder.watchMappingKey("varEnumMapping", "3");
     await decoder.watchMappingKey("varEnumMapping", 4);
+    await decoder.watchMappingKey("varWrapMapping", -3);
 
     const initialState = await decoder.state();
     const initialVariables = await decoder.variables();
@@ -66,6 +67,8 @@ describe("State variable decoding", function () {
     assert.equal(variables.varBytes, "0x01030307");
     assert.equal(typeof variables.varEnum, "string");
     assert.equal(variables.varEnum, "DecodingSample.E.EnumValTwo");
+    assert.equal(variables.varCustom1, -1);
+    assert.equal(variables.varCustom2, -2);
 
     const struct = variables.varStructS;
     validateStructS(struct, [
@@ -134,6 +137,7 @@ describe("State variable decoding", function () {
     assert.equal(variables.varEnumMapping["DecodingSample.E.EnumValTwo"], 2);
     assert.equal(variables.varEnumMapping["DecodingSample.E.EnumValThree"], 3);
     assert.equal(variables.varEnumMapping["DecodingSample.E.EnumValFour"], 4);
+    assert.equal(variables.varWrapMapping[-3], -3);
 
     assert.equal(
       variables.functionExternal,
