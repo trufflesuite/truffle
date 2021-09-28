@@ -1707,7 +1707,10 @@ export class ContractInstanceDecoder {
         break;
       case "mapping":
         let keyType = parentType.keyType;
-        if (keyType.typeClass === "enum") {
+        if (
+          keyType.typeClass === "enum" ||
+          keyType.typeClass === "userDefinedValueType"
+        ) {
           keyType = <Format.Types.EnumType>(
             Format.Types.fullType(keyType, this.userDefinedTypes)
           );

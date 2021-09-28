@@ -7,7 +7,7 @@ import BN from "bn.js";
 import type * as Codec from "@truffle/codec";
 
 //Function for wrapping a value as an ElementaryValue
-//(note: assumes any enum types are the full type)
+//(note: assumes any enum types & UDVTs are the full type)
 //WARNING: this function does not check its inputs! Please check before using!
 //How to use:
 //numbers may be BN, number, or numeric string
@@ -116,6 +116,8 @@ export function wrapElementaryValue(
           numericAsBN: numeric
         }
       };
+    case "userDefinedValueType":
+      return wrapElementaryValue(value, dataType.underlyingType);
     //fixed and ufixed are not handled for now!
   }
 }
