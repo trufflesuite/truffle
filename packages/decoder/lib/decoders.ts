@@ -53,6 +53,7 @@ export class ProjectDecoder {
   private contractsAndContexts: AbiData.Allocate.ContractAndContexts[] = [];
 
   private referenceDeclarations: { [compilationId: string]: Ast.AstNodes };
+  private userDefinedTypesByCompilation: Format.Types.TypesByCompilationAndId;
   private userDefinedTypes: Format.Types.TypesById;
   private allocations: Evm.AllocationInfo;
 
@@ -78,6 +79,7 @@ export class ProjectDecoder {
 
     ({
       definitions: this.referenceDeclarations,
+      typesByCompilation: this.userDefinedTypesByCompilation,
       types: this.userDefinedTypes
     } = Compilations.Utils.collectUserDefinedTypesAndTaggedOutputs(this.compilations));
 
@@ -93,7 +95,7 @@ export class ProjectDecoder {
       this.userDefinedTypes
     );
     this.allocations.storage = Storage.Allocate.getStorageAllocations(
-      this.userDefinedTypes
+      this.userDefinedTypesByCompilation
     ); //not used by project decoder itself, but used by contract decoder
     this.allocations.calldata = AbiData.Allocate.getCalldataAllocations(
       allocationInfo,

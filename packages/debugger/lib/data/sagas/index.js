@@ -1120,9 +1120,11 @@ export function* reset() {
 export function* recordAllocations() {
   const contracts = yield select(data.views.contractAllocationInfo);
   const referenceDeclarations = yield select(data.views.referenceDeclarations);
+  const userDefinedTypesByCompilation =
+    yield select(data.views.userDefinedTypesByCompilation);
   const userDefinedTypes = yield select(data.views.userDefinedTypes);
   const storageAllocations = Codec.Storage.Allocate.getStorageAllocations(
-    userDefinedTypes
+    userDefinedTypesByCompilation
   );
   const memoryAllocations = Codec.Memory.Allocate.getMemoryAllocations(
     userDefinedTypes

@@ -61,19 +61,27 @@ interface StorageAllocationInfo {
 //contracts contains only the contracts to be allocated; any base classes not
 //being allocated should just be in referenceDeclarations
 export function getStorageAllocations(
-  userDefinedTypes: Format.Types.TypesById
+  userDefinedTypesByCompilation: Format.Types.TypesByCompilationAndId
 ): StorageAllocations {
   let allocations: StorageAllocations = {};
-  for (const dataType of Object.values(userDefinedTypes)) {
-    if (dataType.typeClass === "struct") {
-      try {
-        allocations = allocateStruct(dataType, userDefinedTypes, allocations);
-      } catch (_) {
-        //if allocation fails... oh well, allocation fails, we do nothing and just move on :P
-        //note: a better way of handling this would probably be to *mark* it
-        //as failed rather than throwing an exception as that would lead to less
-        //recomputation, but this is simpler and I don't think the recomputation
-        //should really be a problem
+  for (const compilation of Object.values(userDefinedTypesByCompilation)) {
+    const { compiler, types: userDefinedTypes } = compilation;
+    for (const dataType of Object.values(compilation.types)) {
+      if (dataType.typeClass === "struct") {
+        try {
+          allocations = allocateStruct(
+            dataType,
+            userDefinedTypes,
+            allocations,
+            compiler
+          );
+        } catch {
+          //if allocation fails... oh well, allocation fails, we do nothing and just move on :P
+          //note: a better way of handling this would probably be to *mark* it
+          //as failed rather than throwing an exception as that would lead to less
+          //recomputation, but this is simpler and I don't think the recomputation
+          //should really be a problem
+        }
       }
     }
   }
@@ -115,7 +123,7 @@ export function getStateAllocations(
         storageAllocations,
         allocations
       );
-    } catch (_) {
+    } catch {
       //we're just going to allow failure here and catch the problem elsewhere
     }
   }
@@ -125,7 +133,8 @@ export function getStateAllocations(
 function allocateStruct(
   dataType: Format.Types.StructType,
   userDefinedTypes: Format.Types.TypesById,
-  existingAllocations: StorageAllocations
+  existingAllocations: StorageAllocations,
+  compiler?: Compiler.CompilerVersion
 ): StorageAllocations {
   //NOTE: dataType here should be a *stored* type!
   //it is up to the caller to take care of this
@@ -133,7 +142,8 @@ function allocateStruct(
     dataType.id,
     dataType.memberTypes,
     userDefinedTypes,
-    existingAllocations
+    existingAllocations,
+    compiler
   );
 }
 
@@ -141,7 +151,8 @@ function allocateMembers(
   parentId: string,
   members: Format.Types.NameTypePair[],
   userDefinedTypes: Format.Types.TypesById,
-  existingAllocations: StorageAllocations
+  existingAllocations: StorageAllocations,
+  compiler?: Compiler.CompilerVersion
 ): StorageAllocations {
   let offset: number = 0; //will convert to BN when placing in slot
   let index: number = Evm.Utils.WORD_SIZE - 1;
@@ -161,7 +172,8 @@ function allocateMembers(
     ({ size, allocations } = storageSizeAndAllocate(
       member.type,
       userDefinedTypes,
-      allocations
+      allocations,
+      compiler
     ));
 
     //if it's sized in words (and we're not at the start of slot) we need to start on a new slot
@@ -339,7 +351,7 @@ function allocateContractState(
   );
 
   //transform storage variables into data types
-  let storageVariableTypes = storageVariables.map(variable => ({
+  const storageVariableTypes = storageVariables.map(variable => ({
     name: variable.definition.name,
     type: Ast.Import.definitionToType(
       variable.definition,
@@ -350,15 +362,16 @@ function allocateContractState(
 
   //let's allocate the storage variables using a fictitious ID
   const id = "-1";
-  let storageVariableStorageAllocations = allocateMembers(
+  const storageVariableStorageAllocations = allocateMembers(
     id,
     storageVariableTypes,
     userDefinedTypes,
-    storageAllocations
+    storageAllocations,
+    compiler
   )[id];
 
   //transform to new format
-  let storageVariableAllocations = storageVariables.map(
+  const storageVariableAllocations = storageVariables.map(
     ({ definition, definedIn }, index) => ({
       definition,
       definedIn,
@@ -433,15 +446,22 @@ function allocateContractState(
 export function storageSize(
   dataType: Format.Types.Type,
   userDefinedTypes?: Format.Types.TypesById,
-  allocations?: StorageAllocations
+  allocations?: StorageAllocations,
+  compiler?: Compiler.CompilerVersion
 ): Storage.StorageLength {
-  return storageSizeAndAllocate(dataType, userDefinedTypes, allocations).size;
+  return storageSizeAndAllocate(
+    dataType,
+    userDefinedTypes,
+    allocations,
+    compiler
+  ).size;
 }
 
 function storageSizeAndAllocate(
   dataType: Format.Types.Type,
   userDefinedTypes?: Format.Types.TypesById,
-  existingAllocations?: StorageAllocations
+  existingAllocations?: StorageAllocations,
+  compiler?: Compiler.CompilerVersion
 ): StorageAllocationInfo {
   //we'll only directly handle reference types here;
   //direct types will be handled by dispatching to Basic.Allocate.byteLength
@@ -541,20 +561,12 @@ function storageSizeAndAllocate(
       };
     }
 
-    case "userDefinedValueType": {
-      //surprisingly, these always take up a full word in storage,
-      //regardless of their underlying type!  So I'm handling
-      //them here rather than in byteLength
-      return {
-        size: { words: 1 },
-        allocations: existingAllocations
-      };
-    }
-
     default:
       //otherwise, it's a direct type
       return {
-        size: { bytes: Basic.Allocate.byteLength(dataType, userDefinedTypes) },
+        size: {
+          bytes: Basic.Allocate.byteLength(dataType, userDefinedTypes, compiler)
+        },
         allocations: existingAllocations
       };
   }

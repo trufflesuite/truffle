@@ -1,6 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:basic:allocate");
 
+import * as Compiler from "@truffle/codec/compiler";
 import * as Common from "@truffle/codec/common";
 import * as Evm from "@truffle/codec/evm";
 import * as Format from "@truffle/codec/format";
@@ -8,7 +9,8 @@ import * as Format from "@truffle/codec/format";
 //only for direct types!
 export function byteLength(
   dataType: Format.Types.Type,
-  userDefinedTypes?: Format.Types.TypesById
+  userDefinedTypes?: Format.Types.TypesById,
+  compiler?: Compiler.CompilerVersion
 ): number {
   switch (dataType.typeClass) {
     case "bool":
@@ -30,9 +32,9 @@ export function byteLength(
       }
     case "bytes": //we assume we're in the static case
       return (<Format.Types.BytesTypeStatic>dataType).length;
-    case "enum": { //the only complex case!
+    case "enum": {
       const storedType = <Format.Types.EnumType>userDefinedTypes[dataType.id];
-      if (!storedType.options) {
+      if (!storedType || !storedType.options) {
         throw new Common.UnknownUserDefinedTypeError(
           dataType.id,
           Format.Types.typeString(dataType)
@@ -40,6 +42,25 @@ export function byteLength(
       }
       const numValues = storedType.options.length;
       return Math.ceil(Math.log2(numValues) / 8);
+    }
+    case "userDefinedValueType": {
+      const storedType = <Format.Types.UDVTType>userDefinedTypes[dataType.id];
+      if (!storedType || !storedType.underlyingType) {
+        throw new Common.UnknownUserDefinedTypeError(
+          dataType.id,
+          Format.Types.typeString(dataType)
+        );
+      }
+      switch (Compiler.Utils.solidityFamily(compiler)) {
+        case "0.8.7+":
+          //UDVTs were introduced in Solidity 0.8.8.  However, in that version,
+          //and that version only, they have a bug where they always take up a
+          //full word in storage regardless of the size of the underlying type.
+          return Evm.Utils.ADDRESS_SIZE;;
+        default:
+          const { underlyingType } = storedType;
+          return byteLength(underlyingType, userDefinedTypes, compiler);
+      }
     }
   }
 }

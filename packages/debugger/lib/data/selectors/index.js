@@ -246,41 +246,49 @@ const data = createSelectorTree({
     },
 
     /**
-     * data.views.userDefinedTypes
-     * user-defined types for passing to the decoder
-     * NOTE: *not* grouped by compilation or anything, this is flat
+     * data.views.userDefinedTypesByCompilation
      */
-    userDefinedTypes: createLeaf(
+    userDefinedTypesByCompilation: createLeaf(
       [
         "/info/userDefinedTypes",
         "./referenceDeclarations",
         "./scopes/inlined",
         solidity.views.sources
       ],
-      (userDefinedTypes, referenceDeclarations, scopes, sources) =>
-        Object.assign(
-          {},
-          ...userDefinedTypes.map(({ sourceId, id }) => {
-            debug("id: %d", id);
-            debug("sourceId: %s", sourceId);
-            debug("scope: %o", scopes[sourceId][id]);
-            const node = scopes[sourceId][id].definition;
-            debug("node: %o", node);
-            const { compilationId, compiler, internal } = sources[sourceId];
-            debug("compilationId: %s", compilationId);
-            if (internal) {
-              return {}; //just to be sure, we assume generated sources don't define types
-            }
-            const type = Codec.Ast.Import.definitionToStoredType(
-              node,
-              compilationId,
+      (userDefinedTypes, referenceDeclarations, scopes, sources) => {
+        let typesByCompilation = {};
+        for (const { sourceId, id } of userDefinedTypes) {
+          const node = scopes[sourceId][id].definition;
+          const { compilationId, compiler, internal } = sources[sourceId];
+          if (internal) {
+            continue; //just to be sure, we assume generated sources don't define types
+          }
+          const type = Codec.Ast.Import.definitionToStoredType(
+            node,
+            compilationId,
+            compiler,
+            referenceDeclarations[compilationId]
+          );
+          if (!typesByCompilation[compilationId]) {
+            typesByCompilation[compilationId] = {
               compiler,
-              referenceDeclarations[compilationId]
-            );
-            debug("type: %o", type);
-            return { [type.id]: type };
-          })
-        )
+              types: {}
+            };
+          }
+          typesByCompilation[compilationId].types[type.id] = type;
+        }
+        return typesByCompilation;
+      }
+    ),
+
+    /**
+     * data.views.userDefinedTypes
+     * user-defined types for passing to the decoder
+     * NOTE: *not* grouped by compilation or anything, this is flat
+     */
+    userDefinedTypes: createLeaf(
+      ["./userDefinedTypesByCompilation"],
+      Codec.Format.Types.forgetCompilations
     ),
 
     /**

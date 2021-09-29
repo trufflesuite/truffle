@@ -25,6 +25,7 @@ const debug = debugModule("codec:format:types");
 
 import type BN from "bn.js";
 import type { ContractKind, Location, Mutability } from "@truffle/codec/common";
+import type { CompilerVersion } from "@truffle/codec/compiler";
 
 /**
  * Object representing a type
@@ -631,6 +632,22 @@ export type ReferenceType =
 
 export interface TypesById {
   [id: string]: UserDefinedType;
+}
+
+export interface TypesByCompilationAndId {
+  [compilationId: string]: {
+    compiler: CompilerVersion;
+    types: TypesById;
+  };
+}
+
+export function forgetCompilations(
+  typesByCompilation: TypesByCompilationAndId
+): TypesById {
+  return Object.assign(
+    {},
+    ...Object.values(typesByCompilation).map(({ types }) => types)
+  );
 }
 
 function isUserDefinedType(anyType: Type): anyType is UserDefinedType {
