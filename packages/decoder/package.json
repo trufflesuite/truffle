@@ -3,7 +3,7 @@
   "description": "A decoder and encoder for Solidity variables of all sorts",
   "license": "MIT",
   "author": "Mike Seese and Harry Altman",
-  "homepage": "https://github.com/trufflesuite/truffle#readme",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/decoder#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/trufflesuite/truffle.git",

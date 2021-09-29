@@ -3,7 +3,7 @@
   "description": "Utility for loading @truffle/db",
   "license": "MIT",
   "author": "tyler feickert <tyler.feickert@consensys.net>",
-  "homepage": "https://github.com/trufflesuite/truffle/blob/develop/packages/db-loader/README.md",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/db-loader#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/trufflesuite/truffle.git",

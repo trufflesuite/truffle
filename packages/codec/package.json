@@ -3,7 +3,7 @@
   "description": "Library for encoding and decoding smart contract data",
   "license": "MIT",
   "author": "",
-  "homepage": "https://github.com/trufflesuite/truffle#readme",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/codec#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/trufflesuite/truffle.git",

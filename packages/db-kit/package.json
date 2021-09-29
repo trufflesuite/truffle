@@ -7,7 +7,7 @@
     "truffle"
   ],
   "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
-  "homepage": "https://github.com/trufflesuite/truffle#readme",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/db-kit#readme",
   "license": "MIT",
   "main": "dist/src/index.js",
   "directories": {

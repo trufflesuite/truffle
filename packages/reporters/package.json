@@ -3,7 +3,7 @@
   "description": "Reporters for Truffle modules",
   "license": "MIT",
   "author": "",
-  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/provisioner#reporters",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/reporters#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/trufflesuite/truffle.git",
