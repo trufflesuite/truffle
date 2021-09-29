@@ -9,6 +9,10 @@
     "url": "https://github.com/trufflesuite/truffle.git",
     "directory": "packages/profiler"
   },
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/profiler#readme",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
   "license": "MIT",
   "scripts": {
     "build": "tsc",

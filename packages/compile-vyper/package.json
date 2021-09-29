@@ -3,6 +3,10 @@
   "description": "Vyper compiler support",
   "license": "MIT",
   "author": "Evgeniy Filatov <evgeniyfilatov@gmail.com>",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/compile-vyper#readme",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/trufflesuite/truffle.git",

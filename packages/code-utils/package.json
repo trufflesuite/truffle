@@ -3,10 +3,14 @@
   "description": "Utilities for parsing and managing EVM-compatible bytecode",
   "license": "MIT",
   "author": "",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/code-utils#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/trufflesuite/truffle.git",
     "directory": "packages/code-utils"
+  },
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "version": "1.2.29",
   "main": "dist/src/index.js",

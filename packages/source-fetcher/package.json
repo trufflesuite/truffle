@@ -3,7 +3,7 @@
   "description": "Fetches verified source code from services such as Etherscan",
   "license": "MIT",
   "author": "Harry Altman <harry@trufflesuite.com>",
-  "homepage": "https://github.com/trufflesuite/truffle#readme",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/source-fetcher#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/trufflesuite/truffle.git",
