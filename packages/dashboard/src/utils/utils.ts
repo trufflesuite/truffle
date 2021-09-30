@@ -1,11 +1,10 @@
 import WebSocket from "isomorphic-ws";
-import { getMessageBusPorts, PortsConfig } from "@truffle/dashboard-message-bus";
+import { BrowserProviderMessage, getMessageBusPorts, PortsConfig } from "@truffle/dashboard-message-bus";
 import axios from "axios";
 import { providers } from 'ethers';
 import { JSONRPCRequestPayload } from "ethereum-protocol";
 import { promisify } from "util";
 import { INTERACTIVE_REQUESTS } from "./constants";
-import { BrowserProviderRequest, Request } from "./types";
 
 export const jsonToBase64 = (json: any) => {
   const stringifiedJson = JSON.stringify(json);
@@ -29,7 +28,7 @@ export const getPorts = async (): Promise<PortsConfig> => {
   return getMessageBusPorts(dashboardPort, dashboardHost);
 };
 
-export const isInteractiveRequest = (request: BrowserProviderRequest) =>
+export const isInteractiveRequest = (request: BrowserProviderMessage) =>
   INTERACTIVE_REQUESTS.includes(request.payload.method);
 
 export const forwardBrowserProviderRequest = async (
@@ -49,7 +48,7 @@ export const forwardBrowserProviderRequest = async (
   }
 };
 
-export const handleBrowserProviderRequest = async (request: Request, provider: any, responseSocket: WebSocket) => {
+export const handleBrowserProviderRequest = async (request: BrowserProviderMessage, provider: any, responseSocket: WebSocket) => {
   const responsePayload = await forwardBrowserProviderRequest(provider, request.payload);
   const response = {
     id: request.id,

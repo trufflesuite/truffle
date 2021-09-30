@@ -1,14 +1,14 @@
 import WebSocket from "isomorphic-ws";
-import ReactJson from 'react-json-view';
+import ReactJson from "react-json-view";
 import { handleBrowserProviderRequest, jsonToBase64 } from "../../utils/utils";
-import { BrowserProviderRequest, Request } from "../../utils/types";
 import Button from "../common/Button";
 import Card from "../common/Card";
 import { useWeb3React } from "@web3-react/core";
+import { BrowserProviderMessage } from "@truffle/dashboard-message-bus";
 
 interface Props {
-  request: Request;
-  setRequests: (requests: Request[] | ((requests: Request[]) => Request[])) => void;
+  request: BrowserProviderMessage;
+  setRequests: (requests: BrowserProviderMessage[] | ((requests: BrowserProviderMessage[]) => BrowserProviderMessage[])) => void;
   provider: any;
   socket: WebSocket;
   hasConfirmedMainnet: boolean;
@@ -50,7 +50,7 @@ function IncomingRequest({ provider, socket, request, setRequests, hasConfirmedM
     removeFromRequests();
   };
 
-  const formatBrowserProviderRequestParameters = (request: BrowserProviderRequest) => {
+  const formatBrowserProviderRequestParameters = (request: BrowserProviderMessage) => {
     switch (request.payload.method) {
       case "eth_sendTransaction":
       case "eth_signTransaction": {

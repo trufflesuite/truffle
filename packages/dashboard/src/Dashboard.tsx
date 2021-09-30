@@ -1,16 +1,15 @@
 import WebSocket from "isomorphic-ws";
-import { connectToMessageBusWithRetries } from "@truffle/dashboard-message-bus";
+import { BrowserProviderMessage, connectToMessageBusWithRetries } from "@truffle/dashboard-message-bus";
 import { base64ToJson, getPorts } from "./utils/utils";
 import { useEffect, useState } from "react";
 import { useWeb3React } from '@web3-react/core';
-import { Request } from "./utils/types";
 import Header from "./components/Header/Header";
 import BrowserProvider from "./components/BrowserProvider/BrowserProvider";
 import { providers } from "ethers";
 
 function Dashboard() {
   const [socket, setSocket] = useState<WebSocket | undefined>();
-  const [requests, setRequests] = useState<Request[]>([]);
+  const [browserProviderRequests, setBrowserProviderRequests] = useState<BrowserProviderMessage[]>([]);
   const { account } = useWeb3React<providers.Web3Provider>();
 
   useEffect(() => {
@@ -33,7 +32,7 @@ function Dashboard() {
           // We're only set up currently to handle browser-provider requests
           if (incomingRequest.type !== "browser-provider") return;
 
-          setRequests((previousRequests) => [...previousRequests, incomingRequest]);
+          setBrowserProviderRequests((previousRequests) => [...previousRequests, incomingRequest]);
         }
       );
 
@@ -50,8 +49,8 @@ function Dashboard() {
       <Header />
       <BrowserProvider
         socket={socket}
-        requests={requests}
-        setRequests={setRequests}
+        requests={browserProviderRequests}
+        setRequests={setBrowserProviderRequests}
       />
     </div>
   );

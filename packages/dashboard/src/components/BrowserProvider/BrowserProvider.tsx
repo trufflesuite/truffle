@@ -3,13 +3,13 @@ import { useEffect, useState } from "react";
 import { useWeb3React } from "@web3-react/core";
 import { providers } from "ethers";
 import { handleBrowserProviderRequest, isInteractiveRequest } from "../../utils/utils";
-import { Request } from "../../utils/types";
 import Card from "../common/Card";
 import IncomingRequest from "./IncomingRequest";
+import { BrowserProviderMessage } from "@truffle/dashboard-message-bus";
 
 interface Props {
-  requests: Request[];
-  setRequests: (requests: Request[] | ((requests: Request[]) => Request[])) => void;
+  requests: BrowserProviderMessage[];
+  setRequests: (requests: BrowserProviderMessage[] | ((requests: BrowserProviderMessage[]) => BrowserProviderMessage[])) => void;
   socket?: WebSocket;
 }
 
