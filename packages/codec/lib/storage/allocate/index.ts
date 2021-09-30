@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:storage:allocate");
 
-import type * as Compiler from "@truffle/codec/compiler";
+import * as Compiler from "@truffle/codec/compiler";
 import * as Common from "@truffle/codec/common";
 import * as Basic from "@truffle/codec/basic";
 import type * as Storage from "@truffle/codec/storage/types";
@@ -561,11 +561,23 @@ function storageSizeAndAllocate(
       };
     }
 
+    case "userDefinedValueType":
+      if (Compiler.Utils.solidityFamily(compiler) === "0.8.7+") {
+        //UDVTs were introduced in Solidity 0.8.8.  However, in that version,
+        //and that version only, they have a bug where they always take up a
+        //full word in storage regardless of the size of the underlying type.
+        return {
+          size: { words: 1 },
+          allocations: existingAllocations
+        };
+      }
+      //otherwise, treat them normally
+      //DELIBERATE FALL-TRHOUGH
     default:
       //otherwise, it's a direct type
       return {
         size: {
-          bytes: Basic.Allocate.byteLength(dataType, userDefinedTypes, compiler)
+          bytes: Basic.Allocate.byteLength(dataType, userDefinedTypes)
         },
         allocations: existingAllocations
       };

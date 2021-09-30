@@ -1,7 +1,6 @@
 import debugModule from "debug";
 const debug = debugModule("codec:basic:allocate");
 
-import * as Compiler from "@truffle/codec/compiler";
 import * as Common from "@truffle/codec/common";
 import * as Evm from "@truffle/codec/evm";
 import * as Format from "@truffle/codec/format";
@@ -9,8 +8,7 @@ import * as Format from "@truffle/codec/format";
 //only for direct types!
 export function byteLength(
   dataType: Format.Types.Type,
-  userDefinedTypes?: Format.Types.TypesById,
-  compiler?: Compiler.CompilerVersion
+  userDefinedTypes?: Format.Types.TypesById
 ): number {
   switch (dataType.typeClass) {
     case "bool":
@@ -51,16 +49,8 @@ export function byteLength(
           Format.Types.typeString(dataType)
         );
       }
-      switch (Compiler.Utils.solidityFamily(compiler)) {
-        case "0.8.7+":
-          //UDVTs were introduced in Solidity 0.8.8.  However, in that version,
-          //and that version only, they have a bug where they always take up a
-          //full word in storage regardless of the size of the underlying type.
-          return Evm.Utils.ADDRESS_SIZE;;
-        default:
-          const { underlyingType } = storedType;
-          return byteLength(underlyingType, userDefinedTypes, compiler);
-      }
+      const { underlyingType } = storedType;
+      return byteLength(underlyingType, userDefinedTypes);
     }
   }
 }
