@@ -26,3 +26,15 @@ export interface InvalidateMessage extends Message {
   type: "invalidate";
   payload: number;
 }
+
+export const isBrowserProviderMessage = (message: Message): message is BrowserProviderMessage => {
+  return message.type === "browser-provider";
+};
+
+export const isLogMessage = (message: Message): message is LogMessage => {
+  return message.type === "log";
+};
+
+export const isInvalidateMessage = (message: Message): message is InvalidateMessage => {
+  return message.type === "invalidate";
+};

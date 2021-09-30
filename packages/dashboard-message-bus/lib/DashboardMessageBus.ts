@@ -86,10 +86,17 @@ export class DashboardMessageBus extends EventEmitter {
       const encodedResponse = jsonToBase64(response);
       socket.send(encodedResponse);
       this.unfulfilledRequests.delete(data);
+
+      this.invalidateMessage(message.id);
     } catch (error) {
       this.logToClients(`An error occurred while processing message ${message.id}`, "errors");
       this.logToClients(error, "errors");
     }
+  }
+
+  invalidateMessage(id: number) {
+    const invalidationMessage = createMessage("invalidate", id);
+    broadcastAndDisregard(this.listeningSockets, invalidationMessage);
   }
 
   private logToClients(logMessage: any, namespace?: string) {
