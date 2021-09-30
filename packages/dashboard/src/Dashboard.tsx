@@ -1,5 +1,5 @@
 import WebSocket from "isomorphic-ws";
-import { BrowserProviderMessage, connectToMessageBusWithRetries } from "@truffle/dashboard-message-bus";
+import { BrowserProviderMessage, connectToMessageBusWithRetries, isBrowserProviderMessage, isInvalidateMessage, Message } from "@truffle/dashboard-message-bus";
 import { base64ToJson, getPorts } from "./utils/utils";
 import { useEffect, useState } from "react";
 import { useWeb3React } from '@web3-react/core';
@@ -27,12 +27,13 @@ function Dashboard() {
         "message",
         (event: WebSocket.MessageEvent) => {
           if (typeof event.data !== "string") return;
-          const incomingRequest = base64ToJson(event.data);
+          const message = base64ToJson(event.data) as Message;
 
-          // We're only set up currently to handle browser-provider requests
-          if (incomingRequest.type !== "browser-provider") return;
-
-          setBrowserProviderRequests((previousRequests) => [...previousRequests, incomingRequest]);
+          if (isBrowserProviderMessage(message)) {
+            setBrowserProviderRequests((previousRequests) => [...previousRequests, message]);
+          } else if (isInvalidateMessage(message)) {
+            setBrowserProviderRequests((previousRequests) => previousRequests.filter((request) => request.id !== message.payload));
+          }
         }
       );
 
