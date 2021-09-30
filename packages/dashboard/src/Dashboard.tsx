@@ -29,6 +29,8 @@ function Dashboard() {
           if (typeof event.data !== "string") return;
           const message = base64ToJson(event.data) as Message;
 
+          console.debug('Received message', message);
+
           if (isBrowserProviderMessage(message)) {
             setBrowserProviderRequests((previousRequests) => [...previousRequests, message]);
           } else if (isInvalidateMessage(message)) {
