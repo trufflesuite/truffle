@@ -4,6 +4,8 @@ const debug = debugModule("codec:core");
 import type * as Abi from "@truffle/abi-utils";
 import * as Ast from "@truffle/codec/ast";
 import * as AbiData from "@truffle/codec/abi-data";
+import * as Compiler from "@truffle/codec/compiler";
+import type { PaddingMode } from "@truffle/codec/common";
 import * as Topic from "@truffle/codec/topic";
 import type * as Pointer from "@truffle/codec/pointer";
 import type {
@@ -846,11 +848,25 @@ function* decodeBytecode(
     for (const variable of allocation.immutables) {
       const dataType = variable.type; //we don't conditioning on decodingMode here because we know it
       let value: Format.Values.Result;
+      let paddingMode: PaddingMode; //how immutables are padded depends on the Solidity version :-/
+      switch (Compiler.Utils.solidityFamily(context.compiler)) {
+        case "0.5.x":
+        case "0.8.x":
+        case "0.8.7+":
+          //from their introduction until 0.8.8, they were always zero-padded,
+          //regardless of sign
+          paddingMode = "zero";
+          break;
+        default:
+          //now they're padded normally
+          paddingMode = "default";
+          break;
+      }
       try {
         value = yield* decode(dataType, variable.pointer, info, {
           allowRetry: true, //we know we're in full mode
           strictAbiMode: true,
-          paddingMode: "zero" //force zero-padding!
+          paddingMode
         });
       } catch (error) {
         if (error instanceof StopDecodingError && error.allowRetry) {
