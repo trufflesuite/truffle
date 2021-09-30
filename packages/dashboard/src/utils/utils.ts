@@ -4,7 +4,7 @@ import axios from "axios";
 import { providers } from 'ethers';
 import { JSONRPCRequestPayload } from "ethereum-protocol";
 import { promisify } from "util";
-import { INTERACTIVE_REQUESTS } from "./constants";
+import { INTERACTIVE_REQUESTS, UNSUPPORTED_REQUESTS } from "./constants";
 
 export const jsonToBase64 = (json: any) => {
   const stringifiedJson = JSON.stringify(json);
@@ -31,6 +31,9 @@ export const getPorts = async (): Promise<PortsConfig> => {
 export const isInteractiveRequest = (request: BrowserProviderMessage) =>
   INTERACTIVE_REQUESTS.includes(request.payload.method);
 
+export const isUnsupportedRequest = (request: BrowserProviderMessage) =>
+  UNSUPPORTED_REQUESTS.includes(request.payload.method);
+
 export const forwardBrowserProviderRequest = async (
   provider: any,
   payload: JSONRPCRequestPayload
@@ -54,8 +57,30 @@ export const handleBrowserProviderRequest = async (request: BrowserProviderMessa
     id: request.id,
     payload: responsePayload
   };
+
+  respond(response, responseSocket);
+};
+
+export const respondToUnsupportedRequest = (request: BrowserProviderMessage, responseSocket: WebSocket) => {
+  const errorResponse = {
+    id: request.id,
+    payload: {
+      jsonrpc: request.payload.jsonrpc,
+      id: request.payload.id,
+      error: {
+        code: 4001,
+        message: `Method "${request.payload.method}" is unsupported by @truffle/browser-provider`
+      }
+    }
+  };
+
+  respond(errorResponse, responseSocket);
+};
+
+export const respond = (response: any, socket: WebSocket) => {
+  console.debug('Sending response', response);
   const encodedResponse = jsonToBase64(response);
-  responseSocket.send(encodedResponse);
+  socket.send(encodedResponse);
 };
 
 export const getLibrary = (provider: any) => new providers.Web3Provider(provider);

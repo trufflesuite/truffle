@@ -1,6 +1,6 @@
 import WebSocket from "isomorphic-ws";
 import ReactJson from "react-json-view";
-import { handleBrowserProviderRequest, jsonToBase64 } from "../../utils/utils";
+import { handleBrowserProviderRequest, respond } from "../../utils/utils";
 import Button from "../common/Button";
 import Card from "../common/Card";
 import { useWeb3React } from "@web3-react/core";
@@ -44,9 +44,7 @@ function IncomingRequest({ provider, socket, request, setRequests, hasConfirmedM
       }
     };
 
-    const encodedResponse = jsonToBase64(errorResponse);
-
-    socket.send(encodedResponse);
+    respond(errorResponse, socket);
     removeFromRequests();
   };
 
@@ -56,18 +54,6 @@ function IncomingRequest({ provider, socket, request, setRequests, hasConfirmedM
       case "eth_signTransaction": {
         const [transaction] = request.payload.params;
         return (<ReactJson name="transaction" src={transaction as any} />);
-      }
-      case "eth_sign": {
-        const [from, message] = request.payload.params;
-        return (
-          <div>
-            <div>ACCOUNT: {from}</div>
-            <div className="flex gap-2">
-              <div>MESSAGE:</div>
-              <div>{message}</div>
-            </div>
-          </div>
-        );
       }
       case "eth_signTypedData_v1":
       case "eth_signTypedData": {
@@ -92,6 +78,18 @@ function IncomingRequest({ provider, socket, request, setRequests, hasConfirmedM
             <div className="flex gap-2">
               <div>MESSAGE:</div>
               <ReactJson name="message" src={message} />
+            </div>
+          </div>
+        );
+      }
+      case "personal_sign": {
+        const [message, from] = request.payload.params;
+        return (
+          <div>
+            <div>ACCOUNT: {from}</div>
+            <div className="flex gap-2">
+              <div>MESSAGE:</div>
+              <div>{message}</div>
             </div>
           </div>
         );
