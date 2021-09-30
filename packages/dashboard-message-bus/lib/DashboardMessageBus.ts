@@ -21,6 +21,8 @@ export class DashboardMessageBus extends EventEmitter {
 
     this.listenServer.on("connection", (newListener: WebSocket) => {
       newListener.on("close", () => {
+        this.logToClients("Listener disconnected", "connections");
+
         this.listeningSockets = this.listeningSockets.filter((listener) => listener !== newListener);
         this.terminateIfNoConnections();
       });
@@ -30,7 +32,7 @@ export class DashboardMessageBus extends EventEmitter {
         this.processRequest(socket, data, [newListener])
       );
 
-      this.logToClients("New listener connected");
+      this.logToClients("Listener connected", "connections");
 
       this.listeningSockets.push(newListener);
     });
@@ -46,10 +48,14 @@ export class DashboardMessageBus extends EventEmitter {
       });
 
       newClient.on("close", () => {
+        this.logToClients("Client disconnected", "connections");
+
         this.clientSockets = this.clientSockets.filter((client) => client !== newClient);
         this.clearClientRequests(newClient);
         this.terminateIfNoConnections();
       });
+
+      this.logToClients("Client connected", "connections");
 
       this.clientSockets.push(newClient);
     });
@@ -64,27 +70,48 @@ export class DashboardMessageBus extends EventEmitter {
   private async processRequest(socket: WebSocket, data: WebSocket.Data, listeners: WebSocket[]) {
     if (typeof data !== "string") return;
     await this.ready();
+
     this.unfulfilledRequests.set(data, { socket, data });
     const message = base64ToJson(data);
 
     try {
+      this.logToClients(`Sending message to ${listeners.length} listeners`, "requests");
+      this.logToClients(message, "requests");
+
       const response = await broadcastAndAwaitFirst(listeners, message);
+
+      this.logToClients(`Sending response for message ${message.id}`, "responses");
+      this.logToClients(response, "responses");
+
       const encodedResponse = jsonToBase64(response);
       socket.send(encodedResponse);
       this.unfulfilledRequests.delete(data);
-    } catch {
-      return;
+    } catch (error) {
+      this.logToClients(`An error occurred while processing message ${message.id}`, "errors");
+      this.logToClients(error, "errors");
     }
   }
 
-  private logToClients(logMessage: string) {
-    const message = createMessage('log', logMessage);
-    broadcastAndDisregard(this.clientSockets, message);
+  private logToClients(logMessage: any, namespace?: string) {
+    this.logTo(logMessage, this.clientSockets, namespace);
   }
 
-  private logToListeners(logMessage: string) {
-    const message = createMessage('log', logMessage);
-    broadcastAndDisregard(this.listeningSockets, message);
+  private logToListeners(logMessage: any, namespace?: string) {
+    this.logTo(logMessage, this.listeningSockets, namespace);
+  }
+
+  private logTo(logMessage: any, receivers: WebSocket[], namespace?: string) {
+    const payload = {
+      namespace: "truffle:dashboard:messagebus",
+      message: logMessage
+    };
+
+    if (namespace) {
+      payload.namespace += `:${namespace}`;
+    }
+
+    const message = createMessage("log", payload);
+    broadcastAndDisregard(receivers, message);
   }
 
   private terminateIfNoConnections() {

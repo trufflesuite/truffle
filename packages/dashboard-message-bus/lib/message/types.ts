@@ -16,7 +16,10 @@ export interface BrowserProviderMessage extends Message {
 
 export interface LogMessage extends Message {
   type: "log";
-  payload: string;
+  payload: {
+    namespace: string;
+    message: any;
+  };
 }
 
 export interface InvalidateMessage extends Message {
