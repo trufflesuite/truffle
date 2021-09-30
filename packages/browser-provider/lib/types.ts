@@ -10,4 +10,7 @@ export interface BrowserProviderOptions {
 
   /** Boolean indicating whether the connection to the dashboard is kept alive between requests (default: false) */
   keepAlive?: boolean;
+
+  /** Boolean indicating whether debug output should be logged (default: false) */
+  verbose?: boolean;
 }
