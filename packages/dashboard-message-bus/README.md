@@ -31,3 +31,9 @@ The `@truffle/dashboard-message-bus` does contain a bunch of exported utilities 
 This package is meant to be used with the `@truffle/dashboard` package. So manual testing is most likely done through the dashboard package.
 
 Some automated tests are defined in the `test/` folder, but these still need to be expanded. The message bus functionality is also tested indirectly by the automated tests in the `@truffle/browser-provider` package.
+
+### Adding new message types
+
+Right now there are very few message types. The most important one is `"browser-provider"`, which sends RPC requests for the browser provider. Other message types are `"invalidate"`, which can be sent to invalidate earlier messages, and `"log"`, which is sent by the message bus to send log messages over the wire. The interfaces of these messages are defined inside the `@truffle/dashboard-message-bus` package, from where they can be imported by consumers.
+
+To add additional message types, the interface for the new message type should be defined in this package under `lib/message/types.ts`. To use these new messge formats, support needs to be added to any consuming packages such as `@truffle/dashboard` as well.
