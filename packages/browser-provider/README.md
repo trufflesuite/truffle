@@ -57,16 +57,19 @@ export interface BrowserProviderOptions {
 
   /** Boolean indicating whether the connection to the dashboard is kept alive between requests (default: false) */
   keepAlive?: boolean;
+
+  /** Boolean indicating whether debug output should be logged (default: false) */
+  verbose?: boolean;
 }
 ```
 
 ## Logging
-For additional logging output from the browser provider and message bus we use the "debug" package with the following namespaces:
+When setting the browser provider's `verbose` option to `true`, debug output is logged in the following "debug" namespaces
 
-- `truffle:dashboard:messagebus:connections` - logs connections and disconnections of message bus clients and listeners
-- `truffle:dashboard:messagebus:requests` - logs requests that get sent from clients to listeners
-- `truffle:dashboard:messagebus:responses` - logs responses sent back from listeners to clients
-- `truffle:dashboard:messagebus:errors` - logs errors that occur in the message bus
+- `dashboard-message-bus:connections` - logs connections and disconnections of message bus clients and listeners
+- `dashboard-message-bus:requests` - logs requests that get sent from clients to listeners
+- `dashboard-message-bus:responses` - logs responses sent back from listeners to clients
+- `dashboard-message-bus:errors` - logs errors that occur in the message bus
 
 ## Development
 

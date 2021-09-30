@@ -109,7 +109,7 @@ export class DashboardMessageBus extends EventEmitter {
 
   private logTo(logMessage: any, receivers: WebSocket[], namespace?: string) {
     const payload = {
-      namespace: "truffle:dashboard:messagebus",
+      namespace: "dashboard-message-bus",
       message: logMessage
     };
 

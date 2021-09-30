@@ -10,7 +10,7 @@ import { sendAndAwait, createMessage, connectToMessageBusWithRetries, getMessage
 import { startDashboardInBackground } from "@truffle/dashboard";
 import { timeout } from "promise-timeout";
 import { BrowserProviderOptions } from "./types";
-import { debug } from "debug";
+import debugModule from "debug";
 
 export class BrowserProvider {
   public dashboardHost: string;
@@ -21,12 +21,14 @@ export class BrowserProvider {
   private timeoutSeconds: number;
   private concurrentRequests: number = 0;
   private connecting: boolean = false;
+  private verbose: boolean;
 
   constructor(options: BrowserProviderOptions = {}) {
     this.dashboardHost = options.dashboardHost ?? "localhost";
     this.dashboardPort = options.dashboardPort ?? 5000;
     this.timeoutSeconds = options.timeoutSeconds ?? 120;
     this.keepAlive = options.keepAlive ?? false;
+    this.verbose = options.verbose ?? false;
 
     // Start a dashboard at the provided port (will silently fail if the dashboard address is already in use)
     startDashboardInBackground(this.dashboardPort, this.dashboardHost);
@@ -101,7 +103,7 @@ export class BrowserProvider {
     try {
       const { messageBusRequestsPort } = await getMessageBusPorts(this.dashboardPort, this.dashboardHost);
       this.socket = await connectToMessageBusWithRetries(messageBusRequestsPort, this.dashboardHost);
-      this.setupLogging();
+      if (this.verbose) this.setupLogging();
     } finally {
       this.connecting = false;
     }
@@ -113,7 +115,9 @@ export class BrowserProvider {
       const message = base64ToJson(event.data);
       if (message.type === "log") {
         const logMessage = message as LogMessage;
-        debug(logMessage.payload.namespace)(logMessage.payload.message);
+        const debug = debugModule(logMessage.payload.namespace);
+        debug.enabled = true;
+        debug(logMessage.payload.message);
       }
     });
   }
