@@ -69,7 +69,7 @@ The entire browser-provider stack consists of three separate packages within the
 
 Refer to the READMEs of the other packages for more information on those components.
 
-## Automated testing
+### Automated testing
 
 `test/` contains a few very simple tests that test basic functioning of the BrowserProvider + Message Bus + Dashboard infrastructure. It uses a mocked "dashboard" that rather than opening a browser window just forwards all requests to Ganache.
 
