@@ -5,7 +5,7 @@ import path from "path";
 import fs from "fs-extra";
 import WorkflowCompile from "@truffle/workflow-compile";
 import Artifactor from "@truffle/artifactor";
-import Web3 from "web3";
+import Web3Eth from "web3-eth";
 import Migrate from "@truffle/migrate";
 import Box from "@truffle/box";
 import Resolver from "@truffle/resolver";
@@ -15,7 +15,7 @@ import flatten from "lodash.flatten";
 export async function prepareContracts(provider, sources = {}, migrations) {
   let config = await createSandbox();
 
-  const accounts = await new Web3(provider).eth.getAccounts();
+  const accounts = await new Web3Eth(provider).getAccounts();
 
   config.networks["debugger"] = {
     provider: provider,

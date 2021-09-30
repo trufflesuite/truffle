@@ -1,16 +1,16 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:web3:adapter");
 
-import Web3 from "web3";
+import Web3Eth from "web3-eth";
 import { promisify } from "util";
 
 export default class Web3Adapter {
   constructor(provider) {
-    this.web3 = new Web3(provider);
+    this.web3Eth = new Web3Eth(provider);
   }
 
   async getTrace(txHash) {
-    let result = await promisify(this.web3.currentProvider.send)(
+    let result = await promisify(this.web3Eth.currentProvider.send)(
       //send *only* uses callbacks, so we use promsifiy to make things more
       //readable
       {
@@ -33,19 +33,19 @@ export default class Web3Adapter {
   }
 
   async getTransaction(txHash) {
-    return await this.web3.eth.getTransaction(txHash);
+    return await this.web3Eth.getTransaction(txHash);
   }
 
   async getReceipt(txHash) {
-    return await this.web3.eth.getTransactionReceipt(txHash);
+    return await this.web3Eth.getTransactionReceipt(txHash);
   }
 
   async getBlock(blockNumberOrHash) {
-    return await this.web3.eth.getBlock(blockNumberOrHash);
+    return await this.web3Eth.getBlock(blockNumberOrHash);
   }
 
   async getChainId() {
-    return await this.web3.eth.getChainId();
+    return await this.web3Eth.getChainId();
   }
 
   /**
@@ -56,7 +56,7 @@ export default class Web3Adapter {
    */
   async getDeployedCode(address, block) {
     debug("getting deployed code for %s", address);
-    let code = await this.web3.eth.getCode(address, block);
+    let code = await this.web3Eth.getCode(address, block);
     return code === "0x0" ? "0x" : code;
   }
 }

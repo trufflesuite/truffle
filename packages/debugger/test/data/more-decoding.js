@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("debugger:test:data:more-decoding");
 
 import { assert } from "chai";
-import Web3 from "web3"; //just using for utils
+import Web3Utils from "web3-utils";
 
 import Ganache from "ganache-core";
 
@@ -493,7 +493,7 @@ describe("Further Decoding", function () {
     let instance = await abstractions.BadBoolTest.deployed();
     let signature = "run(bool)";
     //manually set up the selector; 10 is for initial 0x + 8 more hex digits
-    let selector = Web3.utils
+    let selector = Web3Utils
       .soliditySha3({ type: "string", value: signature })
       .slice(0, 10);
     let argument =
