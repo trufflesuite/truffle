@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "3.2.45",
+  "version": "3.2.46",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0",
@@ -22,15 +22,15 @@
     "@ensdomains/ens": "^0.4.0",
     "@ensdomains/ensjs": "^2.0.1",
     "@ensdomains/resolver": "^0.2.0",
-    "@truffle/contract": "^4.3.36",
+    "@truffle/contract": "^4.3.37",
     "@truffle/expect": "^0.0.18",
     "emittery": "^0.4.1",
     "eth-ens-namehash": "^2.0.8",
     "web3-utils": "1.5.3"
   },
   "devDependencies": {
-    "@truffle/reporters": "^2.0.6",
-    "@truffle/workflow-compile": "^3.2.31",
+    "@truffle/reporters": "^2.0.7",
+    "@truffle/workflow-compile": "^3.2.32",
     "ganache-core": "2.13.0",
     "mocha": "8.1.2",
     "sinon": "^9.0.2",
