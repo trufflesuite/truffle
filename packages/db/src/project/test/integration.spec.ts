@@ -10,7 +10,7 @@ import Migrate from "@truffle/migrate";
 import { Environment } from "@truffle/environment";
 import Config from "@truffle/config";
 import Ganache from "ganache-core";
-import Web3 from "web3";
+import Web3Eth from "web3-eth";
 import * as fse from "fs-extra";
 import * as tmp from "tmp";
 import { Shims } from "@truffle/compile-common";
@@ -455,8 +455,8 @@ describe("Compilation", () => {
 
   beforeAll(async () => {
     await Environment.detect(migrationConfig);
-    const web3 = new Web3(migrationConfig.provider);
-    const networkId = await web3.eth.net.getId();
+    const web3Eth = new Web3Eth(migrationConfig.provider);
+    const networkId = await web3Eth.net.getId();
     migrationConfig.reset = true;
     await Migrate.run(migrationConfig);
 
@@ -542,7 +542,7 @@ describe("Compilation", () => {
 
         if (networksArray.length > 0) {
           const links = networksArray[networksArray.length - 1][1]["links"];
-          const transaction = await web3.eth.getTransaction(
+          const transaction = await web3Eth.getTransaction(
             networksArray[networksArray.length - 1][1]["transactionHash"]
           );
           const historicBlock: DataModel.Block = {
