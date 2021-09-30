@@ -48,6 +48,7 @@ const command = {
   help: {
     usage:
       `truffle test [<test_file>] [--compile-all[-debug]] [--compile-none] ` +
+      `[--migrate-none] ` +
       `[--network <name>]${OS.EOL}                             ` +
       `[--verbose-rpc] [--show-events] [--debug] ` +
       `[--debug-global <identifier>] [--bail|-b]${OS.EOL}                      ` +
@@ -74,6 +75,10 @@ const command = {
         description:
           "Compile all contracts and do so in debug mode for extra revert info.  May " +
           "cause errors on large\n                    contracts."
+      },
+      {
+        option: "--migrate-none",
+        description: "Do not migrate any contracts before running the tests."
       },
       {
         option: "--verbose-rpc",
