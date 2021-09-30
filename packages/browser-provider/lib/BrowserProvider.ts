@@ -6,10 +6,11 @@ import type {
 import { callbackify } from "util";
 import WebSocket from "isomorphic-ws";
 import delay from "delay";
-import { sendAndAwait, createMessage, connectToMessageBusWithRetries, getMessageBusPorts, base64ToJson } from "@truffle/dashboard-message-bus";
+import { sendAndAwait, createMessage, connectToMessageBusWithRetries, getMessageBusPorts, base64ToJson, LogMessage } from "@truffle/dashboard-message-bus";
 import { startDashboardInBackground } from "@truffle/dashboard";
 import { timeout } from "promise-timeout";
 import { BrowserProviderOptions } from "./types";
+import { debug } from "debug";
 
 export class BrowserProvider {
   public dashboardHost: string;
@@ -18,7 +19,6 @@ export class BrowserProvider {
 
   private socket: WebSocket;
   private timeoutSeconds: number;
-  private verbose: boolean;
   private concurrentRequests: number = 0;
   private connecting: boolean = false;
 
@@ -27,7 +27,6 @@ export class BrowserProvider {
     this.dashboardPort = options.dashboardPort ?? 5000;
     this.timeoutSeconds = options.timeoutSeconds ?? 120;
     this.keepAlive = options.keepAlive ?? false;
-    this.verbose = options.verbose ?? false;
 
     // Start a dashboard at the provided port (will silently fail if the dashboard address is already in use)
     startDashboardInBackground(this.dashboardPort, this.dashboardHost);
@@ -102,7 +101,7 @@ export class BrowserProvider {
     try {
       const { messageBusRequestsPort } = await getMessageBusPorts(this.dashboardPort, this.dashboardHost);
       this.socket = await connectToMessageBusWithRetries(messageBusRequestsPort, this.dashboardHost);
-      if (this.verbose) this.setupLogging();
+      this.setupLogging();
     } finally {
       this.connecting = false;
     }
@@ -113,7 +112,8 @@ export class BrowserProvider {
       if (typeof event.data !== "string") return;
       const message = base64ToJson(event.data);
       if (message.type === "log") {
-        console.log("DASHBOARD MESSAGE BUS:", message.payload);
+        const logMessage = message as LogMessage;
+        debug(logMessage.payload.namespace)(logMessage.payload.message);
       }
     });
   }
