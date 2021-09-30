@@ -1,7 +1,7 @@
 const assert = require("assert");
 const Ganache = require("ganache-core");
 const Provider = require("../index");
-const Web3 = require("web3");
+const Web3HttpProvider = require("web3-providers-http");
 
 describe("Provider", function() {
   let server;
@@ -101,7 +101,7 @@ describe("Provider", function() {
 
   it("fails when given a bogus provider url", async () => {
     const provider = Provider.create({
-      provider: new Web3.providers.HttpProvider("http://127.0.0.1:9999")
+      provider: new Web3HttpProvider("http://127.0.0.1:9999")
     });
 
     try {

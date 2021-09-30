@@ -1,5 +1,6 @@
 const debug = require("debug")("provider");
-const Web3 = require("web3");
+const Web3HttpProvider = require("web3-providers-http");
+const Web3WsProvider = require("web3-providers-ws");
 const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const wrapper = require("./wrapper");
 const DEFAULT_NETWORK_CHECK_TIMEOUT = 5000;
@@ -21,11 +22,11 @@ module.exports = {
     } else if (options.provider) {
       provider = options.provider;
     } else if (options.websockets || /^wss?:\/\//.test(options.url)) {
-      provider = new Web3.providers.WebsocketProvider(
+      provider = new Web3WsProvider(
         options.url || "ws://" + options.host + ":" + options.port
       );
     } else {
-      provider = new Web3.providers.HttpProvider(
+      provider = new Web3HttpProvider(
         options.url || `http://${options.host}:${options.port}`,
         { keepAlive: false }
       );
@@ -49,7 +50,7 @@ module.exports = {
     return new Promise((resolve, reject) => {
       const noResponseFromNetworkCall = setTimeout(() => {
         const errorMessage =
-          "There was a timeout while attempting to connect to the network at " + host + 
+          "There was a timeout while attempting to connect to the network at " + host +
           ".\n       Check to see that your provider is valid." +
           "\n       If you have a slow internet connection, try configuring a longer " +
           "timeout in your Truffle config. Use the " +
@@ -65,7 +66,7 @@ module.exports = {
             clearTimeout(noResponseFromNetworkCall);
             clearTimeout(networkCheck);
             return resolve(true);
-          } catch (error) {            
+          } catch (error) {
             console.log(
               "> Something went wrong while attempting to connect to the " +
                 "network at " + host + ". Check your network configuration."
