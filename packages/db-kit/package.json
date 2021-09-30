@@ -72,6 +72,8 @@
     "ink-text-input": "^4.0.1",
     "meow": "^9.0.0",
     "react": "^17.0.1",
-    "source-map-support": "^0.5.19"
+    "source-map-support": "^0.5.19",
+    "web3-utils": "1.5.3",
+    "web3-eth": "1.5.3"
   }
 }

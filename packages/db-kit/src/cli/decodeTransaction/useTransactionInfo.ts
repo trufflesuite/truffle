@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import type { Transaction, TransactionReceipt } from "web3-core";
-import Web3 from "web3";
+import Web3Eth from "web3-eth";
 
 import type TruffleConfig from "@truffle/config";
 
@@ -56,10 +56,11 @@ function fetchTransactionInfo({
   receipt: Promise<TransactionReceipt>;
   addresses: Promise<string[]>;
 } {
-  const web3 = new Web3(config.provider);
+  // @ts-ignore the types are out of sync with the implementation
+  const web3Eth = new Web3Eth(config.provider);
 
-  const transaction = web3.eth.getTransaction(transactionHash);
-  const receipt = web3.eth.getTransactionReceipt(transactionHash);
+  const transaction = web3Eth.getTransaction(transactionHash);
+  const receipt = web3Eth.getTransactionReceipt(transactionHash);
 
   const addresses = Promise.all([transaction, receipt]).then(
     ([transaction, receipt]) => {

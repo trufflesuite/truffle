@@ -4,7 +4,7 @@ import Spinner from "ink-spinner";
 import Divider from "ink-divider";
 
 import type { ProjectDecoder } from "@truffle/decoder";
-import Web3 from "web3";
+import Web3Utils from "web3-utils";
 
 import { useDecodedAddress } from "./useDecodedAddress";
 
@@ -63,7 +63,7 @@ export const DecodeAddressResult = ({ decoder, address }: Props) => {
               name: "Balance",
               node: (
                 <Text bold color="cyan">
-                  {Web3.utils.fromWei(contract.balanceAsBN.toString(), "ether")}{" "}
+                  {Web3Utils.fromWei(contract.balanceAsBN.toString(), "ether")}{" "}
                   ETH
                 </Text>
               )
