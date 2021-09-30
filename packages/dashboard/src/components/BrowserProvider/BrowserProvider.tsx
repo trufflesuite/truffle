@@ -2,7 +2,7 @@ import WebSocket from "isomorphic-ws";
 import { useEffect, useState } from "react";
 import { useWeb3React } from "@web3-react/core";
 import { providers } from "ethers";
-import { handleBrowserProviderRequest, isInteractiveRequest } from "../../utils/utils";
+import { handleBrowserProviderRequest, isInteractiveRequest, isUnsupportedRequest, respondToUnsupportedRequest } from "../../utils/utils";
 import Card from "../common/Card";
 import IncomingRequest from "./IncomingRequest";
 import { BrowserProviderMessage } from "@truffle/dashboard-message-bus";
@@ -24,10 +24,18 @@ function BrowserProvider({ socket, requests, setRequests }: Props) {
 
     if (!account || !library || !socket) return;
 
+    // Automatically respond with an error for unsupported requests
+    requests
+      .filter(isUnsupportedRequest)
+      .forEach((request) => {
+        respondToUnsupportedRequest(request, socket);
+        removeFromRequests(request.id);
+      });
+
     // Automatically handle all non-interactive requests
     requests
-      .filter((request) => !isInteractiveRequest(request))
-      .forEach(async (request) => {
+      .filter((request) => !isInteractiveRequest(request) && !isUnsupportedRequest(request))
+      .forEach((request) => {
         handleBrowserProviderRequest(request, library.provider, socket);
         removeFromRequests(request.id);
       });
