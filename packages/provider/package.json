@@ -22,7 +22,7 @@
   "dependencies": {
     "@truffle/error": "^0.0.14",
     "@truffle/interface-adapter": "^0.5.8",
-    "web3": "1.5.3"
+    "web3": "1.6.0"
   },
   "devDependencies": {
     "ganache-core": "2.13.0",
