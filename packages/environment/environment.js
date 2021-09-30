@@ -1,4 +1,4 @@
-const Web3 = require("web3");
+const Web3HttpProvider = require("web3-providers-http");
 const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const expect = require("@truffle/expect");
 const TruffleError = require("@truffle/error");
@@ -73,7 +73,7 @@ const Environment = {
     config.networks[network] = {
       network_id: ganacheOptions.network_id,
       provider: function () {
-        return new Web3.providers.HttpProvider(url, { keepAlive: false });
+        return new Web3HttpProvider(url, { keepAlive: false });
       }
     };
 
