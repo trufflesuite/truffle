@@ -8,7 +8,8 @@ const Config = require("@truffle/config");
 const requireNoCache = require("require-nocache")(module);
 const { Compile } = require("@truffle/compile-solidity");
 const Ganache = require("ganache-core");
-const Web3 = require("web3");
+const Web3Eth = require("web3-eth");
+const Web3Utils = require("web3-utils");
 const { Shims } = require("@truffle/compile-common");
 const tmp = require("tmp");
 tmp.setGracefulCleanup();
@@ -16,10 +17,9 @@ tmp.setGracefulCleanup();
 describe("artifactor + require", () => {
   let Example, accounts, abi, bytecode, networkID, artifactor, config;
   const provider = Ganache.provider();
-  const web3 = new Web3();
-  web3.setProvider(provider);
+  const web3Eth = new Web3Eth(provider);
 
-  before(() => web3.eth.net.getId().then(id => (networkID = id)));
+  before(() => web3Eth.net.getId().then(id => (networkID = id)));
 
   before(async function () {
     this.timeout(20000);
@@ -103,7 +103,7 @@ describe("artifactor + require", () => {
   });
 
   before(() =>
-    web3.eth.getAccounts().then(_accounts => {
+    web3Eth.getAccounts().then(_accounts => {
       accounts = _accounts;
 
       Example.defaults({
@@ -232,20 +232,20 @@ describe("artifactor + require", () => {
           "Fallback should not have been triggered yet"
         );
         return example.sendTransaction({
-          value: web3.utils.toWei("1", "ether")
+          value: Web3Utils.toWei("1", "ether")
         });
       })
       .then(
         () =>
           new Promise((accept, reject) =>
-            web3.eth.getBalance(example.address, (err, balance) => {
+            web3Eth.getBalance(example.address, (err, balance) => {
               if (err) return reject(err);
               accept(balance);
             })
           )
       )
       .then(balance => {
-        assert(balance === web3.utils.toWei("1", "ether"));
+        assert(balance === Web3Utils.toWei("1", "ether"));
       });
   });
 
@@ -261,19 +261,19 @@ describe("artifactor + require", () => {
           triggered === false,
           "Fallback should not have been triggered yet"
         );
-        return example.send(web3.utils.toWei("1", "ether"));
+        return example.send(Web3Utils.toWei("1", "ether"));
       })
       .then(
         () =>
           new Promise((accept, reject) =>
-            web3.eth.getBalance(example.address, (err, balance) => {
+            web3Eth.getBalance(example.address, (err, balance) => {
               if (err) return reject(err);
               accept(balance);
             })
           )
       )
       .then(balance => {
-        assert(balance === web3.utils.toWei("1", "ether"));
+        assert(balance === Web3Utils.toWei("1", "ether"));
       });
   });
 
@@ -343,7 +343,7 @@ describe("artifactor + require", () => {
 
     MyContract.setNetwork(5);
 
-    const expectedEventTopic = web3.utils.sha3(
+    const expectedEventTopic = Web3Utils.sha3(
       "PackageRelease(bytes32,bytes32)"
     );
 
