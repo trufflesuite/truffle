@@ -63,20 +63,12 @@ function* decodeDispatch(
     case "nowhere":
       //currently only basic types can go in code, so we'll dispatch directly to decodeBasic
       //(if it's a nowhere pointer, this will return an error result, of course)
-      //also: on types with immutables but before 0.8.9, we force zero-padding!
-      debug("compiler: %o", info.currentContext.compiler);
-      debug("options: %o", options);
-      switch (Compiler.Utils.solidityFamily(info.currentContext.compiler)) {
-        case "0.5.x":
-        case "0.8.x":
-        case "0.8.7+":
-          return yield* Basic.Decode.decodeBasic(dataType, pointer, info, {
-            ...options,
-            paddingMode: "zero"
-          });
-        default:
-          return yield* Basic.Decode.decodeBasic(dataType, pointer, info, options);
-      }
+      //(also, Solidity <0.8.9 would always zero-pad immutables regardless of type,
+      //so we have to set the padding mode appropriately to allow for this)
+      return yield* Basic.Decode.decodeBasic(dataType, pointer, info, {
+        ...options,
+        paddingMode: "defaultOrZero"
+      });
 
     case "memory":
       //this case -- decoding something that resides *directly* in memory,

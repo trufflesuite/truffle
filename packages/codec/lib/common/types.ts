@@ -18,16 +18,17 @@ export type ContractKind = "contract" | "library" | "interface";
 /**
  * @Category Enumerations
  */
-export type PaddingMode = "default" | "permissive" | "zero" | "right";
+export type PaddingMode = "default" | "permissive" | "zero" | "right" | "defaultOrZero";
 //default: check padding; the type of padding is determined by the type
 //permissive: like default, but turns off the check on certain types
 //zero: forces zero-padding even on signed types
 //right: forces right-padding on all types
+//defaultOrZero: allows either default or zero
 
 /**
  * @Category Enumerations
  */
-export type PaddingType = "left" | "right" | "signed";
+export type PaddingType = "left" | "right" | "signed" | "signedOrLeft";
 
 
 /**

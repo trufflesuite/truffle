@@ -704,7 +704,7 @@ function checkPadding(
   userDefinedTypes?: Format.Types.TypesById
 ): boolean {
   const length = byteLength(dataType, userDefinedTypes);
-  let paddingType = getPaddingType(dataType, paddingMode);
+  const paddingType = getPaddingType(dataType, paddingMode);
   if (paddingMode === "permissive") {
     switch (dataType.typeClass) {
       case "bool":
@@ -737,11 +737,10 @@ function removePaddingDirect(
   paddingType: PaddingType
 ) {
   switch (paddingType) {
-    case "left":
-    case "signed":
-      return bytes.slice(-length);
     case "right":
       return bytes.slice(0, length);
+    default:
+      return bytes.slice(-length);
   }
 }
 
@@ -757,6 +756,8 @@ function checkPaddingDirect(
       return checkPaddingRight(bytes, length);
     case "signed":
       return checkPaddingSigned(bytes, length);
+    case "signedOrLeft":
+      return checkPaddingSigned(bytes, length) || checkPaddingLeft(bytes, length);
   }
 }
 
@@ -770,9 +771,14 @@ function getPaddingType(
     case "default":
     case "permissive":
       return defaultPaddingType(dataType);
-    case "zero":
-      let defaultType = defaultPaddingType(dataType);
+    case "zero": {
+      const defaultType = defaultPaddingType(dataType);
       return defaultType === "signed" ? "left" : defaultType;
+    }
+    case "defaultOrZero": {
+      const defaultType = defaultPaddingType(dataType);
+      return defaultType === "signed" ? "signedOrLeft" : defaultType;
+    }
   }
 }
 
