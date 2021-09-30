@@ -1,7 +1,7 @@
 const Command = require("../lib/command");
 const TruffleError = require("@truffle/error");
 const Config = require("@truffle/config");
-const Web3 = require("web3");
+const Web3HttpProvider = require("web3-providers-http");
 const yargs = require("yargs");
 
 const crypto = require("crypto");
@@ -32,7 +32,7 @@ detectedConfig.networks.develop = {
   port: customConfig.port || 9545,
   network_id: customConfig.network_id || 5777,
   provider: function () {
-    return new Web3.providers.HttpProvider(url, { keepAlive: false });
+    return new Web3HttpProvider(url, { keepAlive: false });
   }
 };
 

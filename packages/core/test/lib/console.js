@@ -4,7 +4,7 @@ const Console = require("../../lib/console");
 const commands = require("../../lib/commands");
 const sinon = require("sinon");
 const Config = require("@truffle/config");
-const Web3 = require("web3");
+const Web3HttpProvider = require("web3-providers-http");
 const Resolver = require("@truffle/resolver");
 const config = new Config();
 
@@ -28,7 +28,7 @@ describe("Console", function () {
           }
         },
         network_id: 666,
-        provider: new Web3.providers.HttpProvider("http://localhost:666"),
+        provider: new Web3HttpProvider("http://localhost:666"),
         resolver: new Resolver(config)
       });
       const pathToUserJs = path.join(
@@ -78,7 +78,7 @@ describe("Console", function () {
             }
           },
           network_id: 666,
-          provider: new Web3.providers.HttpProvider("http://localhost:666"),
+          provider: new Web3HttpProvider("http://localhost:666"),
           resolver: new Resolver(config)
         });
         otherConsoleOptions.require = path.join(
@@ -111,7 +111,7 @@ describe("Console", function () {
             }
           },
           network_id: 666,
-          provider: new Web3.providers.HttpProvider("http://localhost:666"),
+          provider: new Web3HttpProvider("http://localhost:666"),
           resolver: new Resolver(config)
         });
         otherConsoleOptions.console.require = path.join(
@@ -140,7 +140,7 @@ describe("Console", function () {
             }
           },
           network_id: 666,
-          provider: new Web3.providers.HttpProvider("http://localhost:666"),
+          provider: new Web3HttpProvider("http://localhost:666"),
           resolver: new Resolver(config)
         });
         otherTruffleConsole = new Console(consoleCommands, otherConsoleOptions);
