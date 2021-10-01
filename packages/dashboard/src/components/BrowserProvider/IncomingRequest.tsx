@@ -3,7 +3,6 @@ import ReactJson from "react-json-view";
 import { handleBrowserProviderRequest, respond } from "../../utils/utils";
 import Button from "../common/Button";
 import Card from "../common/Card";
-import { useWeb3React } from "@web3-react/core";
 import { BrowserProviderMessage } from "@truffle/dashboard-message-bus";
 
 interface Props {
@@ -11,22 +10,14 @@ interface Props {
   setRequests: (requests: BrowserProviderMessage[] | ((requests: BrowserProviderMessage[]) => BrowserProviderMessage[])) => void;
   provider: any;
   socket: WebSocket;
-  hasConfirmedMainnet: boolean;
-  setHasConfirmedMainnet: (hasConfirmedMainnet: boolean) => void;
 }
 
-function IncomingRequest({ provider, socket, request, setRequests, hasConfirmedMainnet, setHasConfirmedMainnet }: Props) {
-  const { chainId } = useWeb3React();
-
+function IncomingRequest({ provider, socket, request, setRequests }: Props) {
   const removeFromRequests = () => {
     setRequests((previousRequests) => previousRequests.filter(other => other.id !== request.id));
   };
 
   const process = async () => {
-    if (chainId === 1 && !hasConfirmedMainnet) {
-      if (!confirm("You are connected to Ethereum Mainnet, are you sure you wish to continue?\n\nThis confirmation will only be displayed once per session.")) return;
-      setHasConfirmedMainnet(true);
-    }
     await handleBrowserProviderRequest(request, provider, socket);
     removeFromRequests();
   };

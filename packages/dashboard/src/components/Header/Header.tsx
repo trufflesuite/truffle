@@ -1,19 +1,15 @@
 import { useWeb3React } from "@web3-react/core";
-import { InjectedConnector } from "@web3-react/injected-connector";
 import { providers } from "ethers";
 import { useEffect } from "react";
 import { useState } from "react";
 import { getDisplayName } from "../../utils/utils";
-import Button from "../common/Button";
 import NetworkIndicator from "./NetworkIndicator";
 
 interface Props {}
 
 function Header({}: Props) {
   const [displayName, setDisplayName] = useState<string>();
-
-  const { account, activate, library, chainId } = useWeb3React<providers.Web3Provider>();
-  const injectedConnector = new InjectedConnector({});
+  const { account, library, chainId } = useWeb3React<providers.Web3Provider>();
 
   useEffect(() => {
     const updateAccountDisplay = async (library: providers.Web3Provider, account: string) => {
@@ -25,16 +21,16 @@ function Header({}: Props) {
   }, [library, account]);
 
   return (
-    <header className="grid grid-cols-2 py-2 px-4 border-b-2 border-truffle-light">
+    <header className="grid grid-cols-2 py-2 px-4 border-b-2 border-truffle-light text-md">
       <div className="flex justify-start items-center">
-        <span className="inline-flex items-center gap-3 text-md">
+        <span className="inline-flex items-center gap-3">
           <img src="/truffle-logomark.svg" width="32px" />
           TRUFFLE DASHBOARD
         </span>
       </div>
-      <div className="flex justify-end items-center gap-2">
+      <div className="flex justify-end items-center gap-4 text-md">
         {chainId && <NetworkIndicator chainId={chainId} />}
-        <Button onClick={() => activate(injectedConnector)} text={displayName ?? 'CONNECT WALLET'} />
+        <div>{displayName}</div>
       </div>
     </header>
   );
