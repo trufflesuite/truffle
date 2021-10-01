@@ -3,7 +3,7 @@ import { providers } from "ethers";
 import Card from "./common/Card";
 import Button from "./common/Button";
 import { InjectedConnector } from "@web3-react/injected-connector";
-import NetworkIndicator from "./Header/NetworkIndicator";
+import NetworkIndicator from "./common/NetworkIndicator";
 
 interface Props {
   confirm: () => void;
