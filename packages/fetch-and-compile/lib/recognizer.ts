@@ -59,10 +59,13 @@ export class SingleRecognizer implements Recognizer {
 
   addCompiledInfo(
     info: FetchAndCompileResult,
-    _address: string,
+    address: string,
     _fetcherName: string
   ): void {
     this.compileResult = info.compileResult;
     this.sourceInfo = info.sourceInfo;
+    if (address === this.address) { //I guess? this should never be false
+      this.recognized = true;
+    }
   }
 }
