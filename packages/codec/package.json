@@ -37,7 +37,7 @@
     "lodash.sum": "^4.0.2",
     "semver": "^7.3.4",
     "utf8": "^3.0.0",
-    "web3-utils": "1.5.3"
+    "web3-utils": "1.6.0"
   },
   "devDependencies": {
     "@truffle/contract-schema": "^3.4.3",
