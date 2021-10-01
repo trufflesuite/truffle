@@ -7,10 +7,10 @@ const getPkgPermissions = userOrOrg => {
 };
 
 const getMonorepoPackages = () => {
-  // get list of monorepo packages and remove lerna branding from output
-  const pkgs = execSync('$(yarn bin)/lerna ls | grep -v "^lerna"')
+  const pkgs = execSync('lerna ls')
     .toString()
-    .split("\n");
+    .split("\n")
+    .filter(ln => !/^lerna/.test(ln));
   return new Set(pkgs);
 }
 
