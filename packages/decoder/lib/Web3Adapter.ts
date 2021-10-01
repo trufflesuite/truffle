@@ -4,6 +4,7 @@ type PastLogsOptions = {
   fromBlock?: string | number;
   address?: string | string[];
 }
+import type { BlockSpecifier } from "./types";
 import type BN from "bn.js";
 
 export class Web3Adapter {
@@ -16,8 +17,29 @@ export class Web3Adapter {
     this.eth = new Web3Eth(provider);
   }
 
-  public async getCode (address: string, block: string | number) {
-    return await this.eth.getCode(address, block);
+  public async getCode (address: string, block: BlockSpecifier) {
+    let blockToFetch: string;
+    if (typeof block === "string" && !isNaN(parseInt(block))) {
+      // block is one of 'latest', 'pending', or 'genesis'
+      blockToFetch = block;
+    } else if (typeof block === "number") {
+      blockToFetch = `0x${block.toString(16)}`;
+    } else {
+      throw new Error(
+        "The block specified must be a number or one of the strings 'latest'," +
+        "'pending', or 'genesis'."
+      );
+    }
+
+    return await this.provider.send({
+      jsonrpc: "2.0",
+      method: "eth_getCode",
+      id: new Date().getTime(),
+      params: [
+        address,
+        blockToFetch
+      ]
+    });
   }
 
   public async getBlock (block: string | number) {
