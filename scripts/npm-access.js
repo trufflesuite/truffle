@@ -14,7 +14,7 @@ const getMonorepoPackages = () => {
   return new Set(pkgs);
 }
 
-const orgs = ["trufflesuite", "truffle"];
+const orgs = ["truffle"];
 
 for (let org of orgs) {
   const permissions = getPkgPermissions(org);
