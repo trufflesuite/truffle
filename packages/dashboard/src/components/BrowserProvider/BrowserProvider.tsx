@@ -1,5 +1,5 @@
 import WebSocket from "isomorphic-ws";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useWeb3React } from "@web3-react/core";
 import { providers } from "ethers";
 import { handleBrowserProviderRequest, isInteractiveRequest, isUnsupportedRequest, respondToUnsupportedRequest } from "../../utils/utils";
@@ -10,11 +10,10 @@ import { BrowserProviderMessage } from "@truffle/dashboard-message-bus";
 interface Props {
   requests: BrowserProviderMessage[];
   setRequests: (requests: BrowserProviderMessage[] | ((requests: BrowserProviderMessage[]) => BrowserProviderMessage[])) => void;
-  socket?: WebSocket;
+  socket: WebSocket;
 }
 
 function BrowserProvider({ socket, requests, setRequests }: Props) {
-  const [hasConfirmedMainnet, setHasConfirmedMainnet] = useState<boolean>(false);
   const { account, library } = useWeb3React<providers.Web3Provider>();
 
   useEffect(() => {
@@ -22,7 +21,7 @@ function BrowserProvider({ socket, requests, setRequests }: Props) {
       setRequests((previousRequests) => previousRequests.filter(request => request.id !== id));
     };
 
-    if (!account || !library || !socket) return;
+    if (!account || !library) return;
 
     // Automatically respond with an error for unsupported requests
     requests
@@ -48,8 +47,6 @@ function BrowserProvider({ socket, requests, setRequests }: Props) {
           setRequests={setRequests}
           provider={library.provider}
           socket={socket}
-          hasConfirmedMainnet={hasConfirmedMainnet}
-          setHasConfirmedMainnet={setHasConfirmedMainnet}
         />
       ))
     : [];
