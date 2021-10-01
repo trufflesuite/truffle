@@ -3,7 +3,7 @@ import { providers } from "ethers";
 import { useEffect } from "react";
 import { useState } from "react";
 import { getDisplayName } from "../../utils/utils";
-import NetworkIndicator from "./NetworkIndicator";
+import NetworkIndicator from "../common/NetworkIndicator";
 
 interface Props {}
 
