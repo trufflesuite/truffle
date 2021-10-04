@@ -14,7 +14,7 @@ on:
 
 jobs:
   yarncheck:
-    runs-on: ubuntu-20.04 #please unpin once possible
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-node@v1
@@ -25,7 +25,7 @@ jobs:
   build:
     strategy:
       matrix:
-        platform: [ubuntu-20.04] #please unpin once possible
+        platform: [ubuntu-latest]
         node-version: [10.x, 12.x, 14.x]
         env: [GETH=true, PACKAGES=true, INTEGRATION=true]
     runs-on: ${{ matrix.platform }}
@@ -52,7 +52,7 @@ jobs:
 
   slack_notification:
     needs: [yarncheck, build]
-    runs-on: ubuntu-20.04 #please unpin once possible
+    runs-on: ubuntu-latest
     continue-on-error: true
     steps:
       - uses: 8398a7/action-slack@v1.1.1
