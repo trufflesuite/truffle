@@ -1,6 +1,6 @@
 {
   "name": "@truffle/fetch-and-compile",
-  "version": "0.1.9",
+  "version": "0.1.10-fc.0",
   "description": "Used to obtain external verified sources and compile them",
   "main": "dist/index.js",
   "scripts": {
