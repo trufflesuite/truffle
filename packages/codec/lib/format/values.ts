@@ -32,7 +32,7 @@ import type {
   FixedValue,
   UfixedValue,
   EnumValue,
-  UDVTValue,
+  UdvtValue,
   ContractValue,
   ContractValueInfoKnown,
   ContractValueInfoUnknown
@@ -136,7 +136,7 @@ export type ElementaryResult =
   | FixedResult
   | UfixedResult
   | EnumResult
-  | UDVTResult
+  | UdvtResult
   | ContractResult;
 
 /**
@@ -229,7 +229,7 @@ export type EnumResult = EnumValue | Errors.EnumErrorResult;
  *
  * @Category User-defined elementary types
  */
-export type UDVTResult = UDVTValue | Errors.UDVTErrorResult;
+export type UdvtResult = UdvtValue | Errors.UdvtErrorResult;
 
 /**
  * A contract value or error

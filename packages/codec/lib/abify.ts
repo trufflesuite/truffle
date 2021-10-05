@@ -90,7 +90,7 @@ export function abifyType(
       };
     }
     case "userDefinedValueType": {
-      const fullType = <Format.Types.UDVTType>(
+      const fullType = <Format.Types.UdvtType>(
         Format.Types.fullType(dataType, userDefinedTypes)
       );
       if (!fullType.underlyingType) {
@@ -224,7 +224,7 @@ export function abifyResult(
       }
     }
     case "userDefinedValueType": {
-      const coercedResult = <Format.Values.UDVTResult>result;
+      const coercedResult = <Format.Values.UdvtResult>result;
       switch (coercedResult.kind) {
         case "value":
           return abifyResult(coercedResult.value, userDefinedTypes);

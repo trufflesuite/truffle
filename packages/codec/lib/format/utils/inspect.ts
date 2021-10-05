@@ -152,7 +152,7 @@ export class ResultInspector {
           }
           case "userDefinedValueType": {
             const typeName = Format.Types.typeStringWithoutLocation(this.result.type);
-            const coercedResult = <Format.Values.UDVTValue>this.result;
+            const coercedResult = <Format.Values.UdvtValue>this.result;
             const inspectOfUnderlying = util.inspect(
               new ResultInspector(coercedResult.value),
               options
@@ -544,7 +544,7 @@ function unsafeNativizeWithTable(
       }
     }
     case "userDefinedValueType": {
-      return unsafeNativize((<Format.Values.UDVTValue>result).value);
+      return unsafeNativize((<Format.Values.UdvtValue>result).value);
     }
     case "mapping":
       return Object.assign(
