@@ -62,7 +62,7 @@ describe("commands/unbox.js", () => {
           );
         });
         return await Promise.all(promises);
-      }).timeout(10000);
+      }).timeout(20000);
     });
   });
 });
