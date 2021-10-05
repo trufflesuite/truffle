@@ -37,7 +37,7 @@ import {
   NoProviderError
 } from "./errors";
 import { Shims } from "@truffle/compile-common";
-import { Web3Adapter } from "./Web3Adapter";
+import { ProviderAdapter } from "./ProviderAdapter";
 //sorry for the untyped import, but...
 const SourceMapUtils = require("@truffle/source-map-utils");
 
@@ -46,7 +46,7 @@ const SourceMapUtils = require("@truffle/source-map-utils");
  * @category Decoder
  */
 export class ProjectDecoder {
-  private web3Adapter: Web3Adapter;
+  private providerAdapter: ProviderAdapter;
 
   private compilations: Compilations.Compilation[];
   private contexts: Contexts.Contexts = {}; //all contexts
@@ -73,7 +73,7 @@ export class ProjectDecoder {
     if (!provider) {
       throw new NoProviderError();
     }
-    this.web3Adapter = new Web3Adapter(provider);
+    this.providerAdapter = new ProviderAdapter(provider);
     this.compilations = compilations;
     this.ensSettings = ensSettings || {};
     let allocationInfo: AbiData.Allocate.ContractAllocationInfo[];
@@ -134,7 +134,7 @@ export class ProjectDecoder {
   ): Promise<Uint8Array> {
     //if pending, ignore the cache
     if (block === "pending") {
-      return Conversion.toBytes(await this.web3Adapter.getCode(address, block));
+      return Conversion.toBytes(await this.providerAdapter.getCode(address, block));
     }
 
     //otherwise, start by setting up any preliminary layers as needed
@@ -146,7 +146,7 @@ export class ProjectDecoder {
       return this.codeCache[block][address];
     }
     //otherwise, get it, cache it, and return it
-    let code = Conversion.toBytes(await this.web3Adapter.getCode(address, block));
+    let code = Conversion.toBytes(await this.providerAdapter.getCode(address, block));
     this.codeCache[block][address] = code;
     return code;
   }
@@ -164,7 +164,7 @@ export class ProjectDecoder {
       return "pending";
     }
 
-    return (await this.web3Adapter.getBlock(block)).number;
+    return (await this.providerAdapter.getBlock(block)).number;
   }
 
   /**
@@ -347,7 +347,7 @@ export class ProjectDecoder {
     const fromBlockNumber = await this.regularizeBlock(fromBlock);
     const toBlockNumber = await this.regularizeBlock(toBlock);
 
-    const logs = await this.web3Adapter.getPastLogs({
+    const logs = await this.providerAdapter.getPastLogs({
       address,
       fromBlock: fromBlockNumber,
       toBlock: toBlockNumber
@@ -611,8 +611,8 @@ export class ProjectDecoder {
   /**
    * @protected
    */
-  public getWeb3Adapter(): Web3Adapter {
-    return this.web3Adapter;
+  public getProviderAdapter(): ProviderAdapter {
+    return this.providerAdapter;
   }
 
   /**
@@ -637,7 +637,7 @@ export class ProjectDecoder {
  * @category Decoder
  */
 export class ContractDecoder {
-  private web3Adapter: Web3Adapter;
+  private providerAdapter: ProviderAdapter;
 
   private contexts: Contexts.Contexts; //note: this is deployed contexts only!
 
@@ -670,7 +670,7 @@ export class ContractDecoder {
     this.contract = contract;
     this.compilation = compilation;
     this.projectDecoder = projectDecoder;
-    this.web3Adapter = projectDecoder.getWeb3Adapter();
+    this.providerAdapter = projectDecoder.getProviderAdapter();
     this.contexts = projectDecoder.getDeployedContexts();
     this.userDefinedTypes = this.projectDecoder.getUserDefinedTypes();
 
@@ -752,7 +752,7 @@ export class ContractDecoder {
    * @protected
    */
   public async init(): Promise<void> {
-    this.contractNetwork = await this.web3Adapter.getNetworkId();
+    this.contractNetwork = await this.providerAdapter.getNetworkId();
   }
 
   private get context(): Contexts.Context {
@@ -1003,7 +1003,7 @@ export class ContractDecoder {
  * @category Decoder
  */
 export class ContractInstanceDecoder {
-  private web3Adapter: Web3Adapter;
+  private providerAdapter: ProviderAdapter;
 
   private compilation: Compilations.Compilation;
   private contract: Compilations.Contract;
@@ -1037,7 +1037,7 @@ export class ContractInstanceDecoder {
   constructor(contractDecoder: ContractDecoder, address?: string) {
     this.contractDecoder = contractDecoder;
     this.projectDecoder = this.contractDecoder.getProjectDecoder();
-    this.web3Adapter = this.projectDecoder.getWeb3Adapter();
+    this.providerAdapter = this.projectDecoder.getProviderAdapter();
     if (address !== undefined) {
       if (!Web3Utils.isAddress(address)) {
         throw new InvalidAddressError(address);
@@ -1077,7 +1077,7 @@ export class ContractInstanceDecoder {
     this.contractCode = Conversion.toHexString(
       await this.getCode(
         this.contractAddress,
-        await this.web3Adapter.getBlockNumber() //not "latest" because regularized
+        await this.providerAdapter.getBlockNumber() //not "latest" because regularized
       )
     );
 
@@ -1254,10 +1254,10 @@ export class ContractInstanceDecoder {
       address: this.contractAddress,
       code: this.contractCode,
       balanceAsBN: new BN(
-        await this.web3Adapter.getBalance(this.contractAddress, blockNumber)
+        await this.providerAdapter.getBalance(this.contractAddress, blockNumber)
       ),
       nonceAsBN: new BN(
-        await this.web3Adapter.getTransactionCount(
+        await this.providerAdapter.getTransactionCount(
           this.contractAddress,
           blockNumber
         )
@@ -1384,7 +1384,7 @@ export class ContractInstanceDecoder {
     //if pending, bypass the cache
     if (block === "pending") {
       return Conversion.toBytes(
-        await this.web3Adapter.getStorageAt(address, slot, block),
+        await this.providerAdapter.getStorageAt(address, slot, block),
         Codec.Evm.Utils.WORD_SIZE
       );
     }
@@ -1402,7 +1402,7 @@ export class ContractInstanceDecoder {
     }
     //otherwise, get it, cache it, and return it
     let word = Conversion.toBytes(
-      await this.web3Adapter.getStorageAt(address, slot, block),
+      await this.providerAdapter.getStorageAt(address, slot, block),
       Codec.Evm.Utils.WORD_SIZE
     );
     this.storageCache[block][address][slot.toString()] = word;

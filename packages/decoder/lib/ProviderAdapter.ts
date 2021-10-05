@@ -42,7 +42,7 @@ const formatBlockSpecifier = (block: BlockSpecifier): string => {
 }
 
 
-export class Web3Adapter {
+export class ProviderAdapter {
   public provider: Provider | any; // TODO: find a better type for 1193 stuff
 
   constructor (provider: any) {
