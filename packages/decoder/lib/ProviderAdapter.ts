@@ -2,6 +2,18 @@ import type { BlockSpecifier, RegularizedBlockSpecifier } from "./types";
 import type BN from "bn.js";
 import type { Provider } from "web3/providers";
 import { promisify } from "util";
+
+// lifted from @types/web3
+type Log = {
+    address: string;
+    data: string;
+    topics: string[];
+    logIndex: number;
+    transactionHash: string;
+    transactionIndex: number;
+    blockHash: string;
+    blockNumber: number;
+}
 type PastLogsOptions = {
   toBlock?: string | number;
   fromBlock?: string | number;
@@ -20,15 +32,14 @@ const stringWhitelist = [
 
 const formatBlockSpecifier = (block: BlockSpecifier): string => {
   if (typeof block === "string" && stringWhitelist.includes(block)) {
-    // block is one of 'latest', 'pending', or 'genesis'
+    // block is one of 'latest', 'pending', 'earliest', or 'genesis'
     return block === "genesis" ?
       // convert old web3 input format which uses 'genesis'
       "earliest" :
       block;
   } else if (typeof block === "string" && !isNaN(parseInt(block))) {
-    if (block.startsWith("0x")) {
-      return block;
-    }
+    // block is a string representation of a number
+    if (block.startsWith("0x")) return block;
     // convert to hex and add '0x' prefix in case block is decimal
     return `0x${parseInt(block).toString(16)}`;
   } else if (typeof block === "number") {
@@ -45,7 +56,7 @@ const formatBlockSpecifier = (block: BlockSpecifier): string => {
 export class ProviderAdapter {
   public provider: Provider | any; // TODO: find a better type for 1193 stuff
 
-  constructor (provider: any) {
+  constructor (provider: Provider | any) {
     this.provider = provider;
   }
 
@@ -89,7 +100,7 @@ export class ProviderAdapter {
     });
   }
 
-  public async getPastLogs ({ address, fromBlock, toBlock }: PastLogsOptions): Promise<any[]> {
+  public async getPastLogs ({ address, fromBlock, toBlock }: PastLogsOptions): Promise<Log[]> {
     return await this.sendRequest({
       method: "eth_getLogs",
       params: [{ fromBlock, toBlock, address }]
@@ -136,7 +147,7 @@ export class ProviderAdapter {
     return parseInt(result).toString();
   }
 
-  public async getStorageAt (address: string, position: BN, block: BlockSpecifier) {
+  public async getStorageAt (address: string, position: BN, block: BlockSpecifier): Promise<string> {
     return await this.sendRequest({
       method: "eth_getStorageAt",
       params: [
@@ -144,6 +155,6 @@ export class ProviderAdapter {
         position,
         formatBlockSpecifier(block)
       ]
-    })
+    });
   }
 }
