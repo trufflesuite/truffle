@@ -23,6 +23,9 @@ type SendRequestArgs = {
   method: string;
   params: unknown[];
 };
+type EipElevenNinetyThreeProvider = {
+  request: (options: { method: string; params: unknown[]; }) => Promise<any>;
+}
 const stringWhitelist = [
   "latest",
   "pending",
@@ -50,13 +53,16 @@ const formatBlockSpecifier = (block: BlockSpecifier): string => {
       "'pending', or 'earliest'."
     );
   }
-}
+};
 
+const isElevenNinetyThreeProvider = (provider: Provider | EipElevenNinetyThreeProvider): provider is EipElevenNinetyThreeProvider => {
+  return typeof (provider as EipElevenNinetyThreeProvider).request === "function";
+};
 
 export class ProviderAdapter {
-  public provider: Provider | any; // TODO: find a better type for 1193 stuff
+  public provider: Provider | EipElevenNinetyThreeProvider;
 
-  constructor (provider: Provider | any) {
+  constructor (provider: Provider | EipElevenNinetyThreeProvider) {
     this.provider = provider;
   }
 
@@ -69,16 +75,17 @@ export class ProviderAdapter {
     }
     // check to see if the provider is compliant with eip1193
     // https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1193.md
-    if (this.provider.request) {
+    if (isElevenNinetyThreeProvider(this.provider)) {
       return (await this.provider.request({ method, params })).result;
+    } else {
+      const sendMethod = promisify(this.provider.send).bind(this.provider);
+      return (await sendMethod({
+        jsonrpc: "2.0",
+        id: new Date().getTime(),
+        method,
+        params
+      })).result;
     }
-    const sendMethod = promisify(this.provider.send).bind(this.provider);
-    return (await sendMethod({
-      jsonrpc: "2.0",
-      id: new Date().getTime(),
-      method,
-      params
-    })).result;
   }
 
   public async getCode (address: string, block: RegularizedBlockSpecifier) {
