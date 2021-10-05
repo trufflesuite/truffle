@@ -135,11 +135,11 @@ export class ProviderAdapter {
     return parseInt(result).toString();
   }
 
-  public async getTransactionCount (contractAddress: string, block: BlockSpecifier): Promise<string> {
+  public async getTransactionCount (address: string, block: BlockSpecifier): Promise<string> {
     const result = await this.sendRequest({
       method: "eth_getTransactionCount",
       params: [
-        contractAddress,
+        address,
         formatBlockSpecifier(block)
       ]
     });
