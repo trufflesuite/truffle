@@ -6,7 +6,15 @@ const getPkgPermissions = userOrOrg => {
   return JSON.parse(stringResponse);
 };
 
-const orgs = ["trufflesuite", "truffle"];
+const getMonorepoPackages = () => {
+  const pkgs = execSync('lerna ls')
+    .toString()
+    .split("\n")
+    .filter(ln => !/^lerna/.test(ln));
+  return new Set(pkgs);
+}
+
+const orgs = ["truffle"];
 
 for (let org of orgs) {
   const permissions = getPkgPermissions(org);
@@ -19,8 +27,14 @@ for (let org of orgs) {
   const username = getNpmUsername();
 
   const userPermissionsObject = getPkgPermissions(username);
+  const monoPkgs = getMonorepoPackages();
 
   for (const pkg in permissions) {
+    // skip perm checks if package not in monorepo
+    if (!monoPkgs.has(pkg)) {
+      continue
+    }
+
     if (!userPermissionsObject[pkg])
       throw new Error(`You don't have permissions to publish ${pkg}`);
     if (permissions[pkg] !== userPermissionsObject[pkg])
