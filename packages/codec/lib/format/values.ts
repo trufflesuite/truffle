@@ -26,11 +26,13 @@ import type {
   BoolValue,
   BytesStaticValue,
   BytesDynamicValue,
+  BytesValue,
   AddressValue,
   StringValue,
   FixedValue,
   UfixedValue,
   EnumValue,
+  UserDefinedValueTypeValue,
   ContractValue,
   ContractValueInfoKnown,
   ContractValueInfoUnknown
@@ -75,6 +77,42 @@ export type Value =
   | FunctionExternalValue
   | FunctionInternalValue;
 
+/**
+ * A value that can go in the ABI
+ *
+ * @Category General categories
+ */
+export type AbiValue =
+  | UintValue
+  | IntValue
+  | BoolValue
+  | BytesValue
+  | AddressValue
+  | FixedValue
+  | UfixedValue
+  | StringValue
+  | ArrayValue
+  | FunctionExternalValue
+  | TupleValue;
+
+/**
+ * A result for an ABI type
+ *
+ * @Category General categories
+ */
+export type AbiResult =
+  | UintResult
+  | IntResult
+  | BoolResult
+  | BytesResult
+  | AddressResult
+  | FixedResult
+  | UfixedResult
+  | StringResult
+  | ArrayResult
+  | FunctionExternalResult
+  | TupleResult;
+
 /*
  * SECTION 2: Built-in elementary types
  */
@@ -98,6 +136,7 @@ export type ElementaryResult =
   | FixedResult
   | UfixedResult
   | EnumResult
+  | UserDefinedValueTypeResult
   | ContractResult;
 
 /**
@@ -184,6 +223,13 @@ export type UfixedResult = UfixedValue | Errors.UfixedErrorResult;
  * @Category User-defined elementary types
  */
 export type EnumResult = EnumValue | Errors.EnumErrorResult;
+
+/**
+ * A UDVT value or error
+ *
+ * @Category User-defined elementary types
+ */
+export type UserDefinedValueTypeResult = UserDefinedValueTypeValue | Errors.UserDefinedValueTypeErrorResult;
 
 /**
  * A contract value or error

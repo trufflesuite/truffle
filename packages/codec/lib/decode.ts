@@ -3,6 +3,7 @@ const debug = debugModule("codec:decode");
 
 import * as AstConstant from "@truffle/codec/ast-constant";
 import * as AbiData from "@truffle/codec/abi-data";
+import * as Compiler from "@truffle/codec/compiler";
 import * as Format from "@truffle/codec/format";
 import type * as Pointer from "@truffle/codec/pointer";
 import * as Basic from "@truffle/codec/basic";
@@ -62,19 +63,29 @@ function* decodeDispatch(
     case "nowhere":
       //currently only basic types can go in code, so we'll dispatch directly to decodeBasic
       //(if it's a nowhere pointer, this will return an error result, of course)
-      //also: we force zero-padding!
+      //(also, Solidity <0.8.9 would always zero-pad immutables regardless of type,
+      //so we have to set the padding mode appropriately to allow for this)
       return yield* Basic.Decode.decodeBasic(dataType, pointer, info, {
         ...options,
-        paddingMode: "zero"
+        paddingMode: "defaultOrZero"
       });
 
     case "memory":
       //this case -- decoding something that resides *directly* in memory,
       //rather than located via a pointer -- only comes up when decoding immutables
-      //in a constructor.  thus, we turn on the forceRightPadding option.
-      return yield* Memory.Decode.decodeMemory(dataType, pointer, info, {
-        ...options,
-        paddingMode: "right"
-      });
+      //in a constructor.  thus, we turn on the forceRightPadding option on Solidity
+      //versions prior to 0.8.9, because before then all immutables would be right-padded
+      //while in memory
+      switch (Compiler.Utils.solidityFamily(info.currentContext.compiler)) {
+        case "0.5.x":
+        case "0.8.x":
+        case "0.8.7+":
+          return yield* Memory.Decode.decodeMemory(dataType, pointer, info, {
+            ...options,
+            paddingMode: "right"
+          });
+        default:
+          return yield* Memory.Decode.decodeMemory(dataType, pointer, info, options);
+      }
   }
 }

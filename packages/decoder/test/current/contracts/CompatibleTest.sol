@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.8;
 pragma experimental ABIEncoderV2;
 
 contract CompatibleNativizeTest {
@@ -8,6 +8,8 @@ contract CompatibleNativizeTest {
     string x;
     string y;
   }
+
+  type MyBool is bool;
 
   event String(string z);
   event TwoStrings(string w, string z);
@@ -43,5 +45,9 @@ contract CompatibleNativizeTest {
 
   function returnBytes() public pure returns (bytes memory) {
     return hex"";
+  }
+
+  function returnCustom() public pure returns (MyBool) {
+    return MyBool.wrap(true);
   }
 }

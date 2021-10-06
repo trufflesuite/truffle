@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:format:utils:inspect");
 
 import util from "util";
-import type * as Format from "@truffle/codec/format/common";
+import * as Format from "@truffle/codec/format/common";
 import * as Exception from "./exception";
 
 //we'll need to write a typing for the options type ourself, it seems; just
@@ -150,6 +150,15 @@ export class ResultInspector {
               options
             );
           }
+          case "userDefinedValueType": {
+            const typeName = Format.Types.typeStringWithoutLocation(this.result.type);
+            const coercedResult = <Format.Values.UserDefinedValueTypeValue>this.result;
+            const inspectOfUnderlying = util.inspect(
+              new ResultInspector(coercedResult.value),
+              options
+            );
+            return `${typeName}.wrap(${inspectOfUnderlying})`; //note only the underlying part is stylized
+          }
           case "tuple": {
             let coercedResult = <Format.Values.TupleValue>this.result;
             //if everything is named, do same as with struct.
@@ -291,6 +300,11 @@ export class ResultInspector {
         debug("this.result: %O", this.result);
         let errorResult = <Format.Errors.ErrorResult>this.result; //the hell?? why couldn't it make this inference??
         switch (errorResult.error.kind) {
+          case "WrappedError":
+            return util.inspect(
+              new ResultInspector(errorResult.error.error),
+              options
+            );
           case "UintPaddingError":
             return `Uint has incorrect padding (expected padding: ${errorResult.error.paddingType}) (raw value ${errorResult.error.raw})`;
           case "IntPaddingError":
@@ -383,7 +397,7 @@ class ContractInfoInspector {
   }
 }
 
-function enumTypeName(enumType: Format.Types.EnumType) {
+function enumTypeName(enumType: Format.Types.EnumType): string {
   return (
     (enumType.kind === "local" ? enumType.definingContractName + "." : "") +
     enumType.typeName
@@ -528,6 +542,9 @@ function unsafeNativizeWithTable(
       } else {
         return seenSoFar[coercedResult.reference - 1];
       }
+    }
+    case "userDefinedValueType": {
+      return unsafeNativize((<Format.Values.UserDefinedValueTypeValue>result).value);
     }
     case "mapping":
       return Object.assign(

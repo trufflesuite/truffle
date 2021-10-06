@@ -9,7 +9,7 @@ import type {
   GeneratedSources
 } from "@truffle/contract-schema/spec";
 import type * as Common from "@truffle/compile-common";
-import type * as Format from "@truffle/codec/format";
+import * as Format from "@truffle/codec/format";
 import type {
   Compilation,
   Contract,
@@ -472,12 +472,17 @@ export function collectUserDefinedTypesAndTaggedOutputs(
   compilations: Compilation[]
 ): {
   definitions: { [compilationId: string]: AstNodes };
+  typesByCompilation: Format.Types.TypesByCompilationAndId;
   types: Format.Types.TypesById;
 } {
   let references: { [compilationId: string]: AstNodes } = {};
-  let types: Format.Types.TypesById = {};
+  let types: Format.Types.TypesByCompilationAndId = {};
   for (const compilation of compilations) {
     references[compilation.id] = {};
+    types[compilation.id] = {
+      compiler: compilation.compiler,
+      types: {}
+    };
     for (const source of compilation.sources) {
       if (!source) {
         continue; //remember, sources could be empty if shimmed!
@@ -489,6 +494,7 @@ export function collectUserDefinedTypesAndTaggedOutputs(
           if (
             node.nodeType === "StructDefinition" ||
             node.nodeType === "EnumDefinition" ||
+            node.nodeType === "UserDefinedValueTypeDefinition" ||
             node.nodeType === "ContractDefinition"
           ) {
             references[compilation.id][node.id] = node;
@@ -499,7 +505,7 @@ export function collectUserDefinedTypesAndTaggedOutputs(
               compiler,
               references[compilation.id]
             );
-            types[dataType.id] = dataType;
+            types[compilation.id].types[dataType.id] = dataType;
           } else if (
             node.nodeType === "EventDefinition" ||
             node.nodeType === "ErrorDefinition"
@@ -510,7 +516,8 @@ export function collectUserDefinedTypesAndTaggedOutputs(
             for (const subNode of node.nodes) {
               if (
                 subNode.nodeType === "StructDefinition" ||
-                subNode.nodeType === "EnumDefinition"
+                subNode.nodeType === "EnumDefinition" ||
+                subNode.nodeType === "UserDefinedValueTypeDefinition"
               ) {
                 references[compilation.id][subNode.id] = subNode;
                 //we don't have all the references yet, but we only need the
@@ -521,7 +528,7 @@ export function collectUserDefinedTypesAndTaggedOutputs(
                   compiler,
                   references[compilation.id]
                 );
-                types[dataType.id] = dataType;
+                types[compilation.id].types[dataType.id] = dataType;
               } else if (
                 subNode.nodeType === "EventDefinition" ||
                 subNode.nodeType === "ErrorDefinition"
@@ -534,7 +541,11 @@ export function collectUserDefinedTypesAndTaggedOutputs(
       }
     }
   }
-  return { definitions: references, types };
+  return {
+    definitions: references,
+    typesByCompilation: types,
+    types: Format.Types.forgetCompilations(types)
+  };
 }
 
 function projectInfoIsCodecStyle(

@@ -139,6 +139,11 @@ function ethersCompatibleNativize(
               ).toString();
           }
         }
+        case "userDefinedValueType":
+          return ethersCompatibleNativize(
+            (<Format.Values.UserDefinedValueTypeValue>result).value,
+            numberFormatter
+          );
         case "array":
           return (<Format.Values.ArrayValue>result).value.map(value =>
             ethersCompatibleNativize(value, numberFormatter)

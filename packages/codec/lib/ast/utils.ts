@@ -216,6 +216,8 @@ export function contractKind(definition: AstNode): Common.ContractKind {
 
 /**
  * stack size, in words, of a given type
+ * note: this function assumes that UDVTs only ever take up
+ * a single word, which is currently true
  * @category Definition Reading
  */
 export function stackSize(definition: AstNode): number {
@@ -478,6 +480,18 @@ export function functionKind(node: AstNode): string | undefined {
     return "constructor";
   }
   return node.name === "" ? "fallback" : "function";
+}
+
+//this is kind of a weird one, it exposes some Solidity internals.
+//for internal functions it'll return "internal".
+//for external functions it'll return "external".
+//for library functions it'll return "delegatecall".
+//and for builtin functions, it'll return an internal name for
+//that particular builtin function.
+//(there are more possibilities but I'm not going to list them all here)
+export function functionClass(node: AstNode): string | undefined {
+  const match = typeIdentifier(node).match(/^t_function_([^_]+)_/);
+  return match ? match[1] : undefined;
 }
 
 /**
@@ -744,19 +758,33 @@ function toAbiType(node: AstNode, referenceDeclarations: AstNodes): string {
       return "address";
     case "struct":
       return "tuple"; //the more detailed checking will be handled elsewhere
-    case "enum":
-      let referenceId = typeId(node);
-      let referenceDeclaration = referenceDeclarations[referenceId];
+    case "enum": {
+      const referenceId = typeId(node);
+      const referenceDeclaration = referenceDeclarations[referenceId];
       if (referenceDeclaration === undefined) {
-        let typeToDisplay = typeString(node);
+        const typeToDisplay = typeString(node);
         throw new Common.UnknownUserDefinedTypeError(
           referenceId.toString(),
           typeToDisplay
         );
       }
-      let numOptions = referenceDeclaration.members.length;
-      let bits = 8 * Math.ceil(Math.log2(numOptions) / 8);
+      const numOptions = referenceDeclaration.members.length;
+      const bits = 8 * Math.ceil(Math.log2(numOptions) / 8);
       return `uint${bits}`;
+    }
+    case "userDefinedValueType": {
+      const referenceId = typeId(node);
+      const referenceDeclaration = referenceDeclarations[referenceId];
+      if (referenceDeclaration === undefined) {
+        const typeToDisplay = typeString(node);
+        throw new Common.UnknownUserDefinedTypeError(
+          referenceId.toString(),
+          typeToDisplay
+        );
+      }
+      const underlyingType = referenceDeclaration.underlyingType;
+      return toAbiType(underlyingType, referenceDeclarations);
+    }
     default:
       return basicType;
     //note that: int/uint/fixed/ufixed/bytes will have their size and such left on;

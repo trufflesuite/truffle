@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.8;
 pragma experimental ABIEncoderV2;
 
 contract WireTestParent {
@@ -36,6 +36,8 @@ enum GlobalEnum {
 
 contract WireTest is WireTestParent, WireTestAbstract {
 
+  type MyInt is int8;
+
   function notImplemented() public {
     emit Done();
   } //just a dummy function, not 
@@ -70,10 +72,10 @@ contract WireTest is WireTestParent, WireTestAbstract {
     Yes, No, MaybeSo
   }
 
-  event EmitStuff(Triple, address[2], string[]);
+  event EmitStuff(Triple, address[2], string[], MyInt);
 
-  function emitStuff(Triple memory p, address[2] memory precompiles, string[] memory strings) public {
-    emit EmitStuff(p, precompiles, strings);
+  function emitStuff(Triple memory p, address[2] memory precompiles, string[] memory strings, MyInt x) public {
+    emit EmitStuff(p, precompiles, strings, x);
   }
 
   event MoreStuff(WireTest, uint[] data);
@@ -167,8 +169,16 @@ contract WireTest is WireTestParent, WireTestAbstract {
   mapping(string => Triple[]) public deepStruct;
   mapping(string => string)[] public deepString;
 
-  function returnsStuff() public pure returns (Triple memory, Ternary) {
-    return (Triple(-1, 0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef, hex"deadbeef"), Ternary.No);
+  function returnsStuff() public pure returns (Triple memory, Ternary, MyInt) {
+    return (
+      Triple(
+        -1,
+        0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef,
+        hex"deadbeef"
+      ),
+      Ternary.No,
+      MyInt.wrap(-1)
+    );
   }
 
   function overriddenReturn() public pure override returns (uint) {

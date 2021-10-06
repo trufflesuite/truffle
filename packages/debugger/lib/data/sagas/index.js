@@ -990,6 +990,8 @@ function* decodeMappingKeyCore(indexDefinition, keyDefinition) {
 
     const indexReference = (currentAssignments[fullIndexId] || {}).ref;
 
+    debug("indexDefinition.nodeType: %o", indexDefinition.nodeType);
+    debug("indexDefinition.kind: %o", indexDefinition.kind);
     if (Codec.Ast.Utils.isSimpleConstant(indexDefinition)) {
       //while the main case is the next one, where we look for a prior
       //assignment, we need this case (and need it first) for two reasons:
@@ -1068,7 +1070,11 @@ function* decodeMappingKeyCore(indexDefinition, keyDefinition) {
     //(note that this case is last for a reason; if this were earlier, it
     //would catch *non*-silent type conversions, which we want to just read
     //off the stack)
-    else if (indexDefinition.kind === "typeConversion") {
+    else if (
+      indexDefinition.nodeType === "FunctionCall" &&
+      indexDefinition.kind === "typeConversion"
+    ) {
+      debug("type conversion case");
       indexDefinition = indexDefinition.arguments[0];
     }
     //...also prior to 0.5.0, unary + was legal, which needs to be accounted
@@ -1077,7 +1083,20 @@ function* decodeMappingKeyCore(indexDefinition, keyDefinition) {
       indexDefinition.nodeType === "UnaryOperation" &&
       indexDefinition.operator === "+"
     ) {
+      debug("unary + case");
       indexDefinition = indexDefinition.subExpression;
+    }
+    //...and starting in 0.8.8, we'd better handle wrap and unwrap as well for
+    //the same reason!
+    else if (
+      indexDefinition.nodeType === "FunctionCall" &&
+      indexDefinition.kind === "functionCall" &&
+      ["wrap", "unwrap"].includes(
+        Codec.Ast.Utils.functionClass(indexDefinition.expression)
+      )
+    ) {
+      debug("wrap/unwrap case");
+      indexDefinition = indexDefinition.arguments[0];
     }
     //otherwise, we've just totally failed to decode it, so we mark
     //indexValue as null (as distinct from undefined) to indicate this.  In
@@ -1085,10 +1104,12 @@ function* decodeMappingKeyCore(indexDefinition, keyDefinition) {
     //not quite there yet, sorry (because we can't yet handle all constant
     //state variables)
     else {
+      debug("we failed");
       return null;
     }
+    debug("retrying");
     //now, as mentioned, retry in the typeConversion case
-    //(or unary + case)
+    //(or unary + case, or wrap/unwrap case)
   }
 }
 
@@ -1099,9 +1120,11 @@ export function* reset() {
 export function* recordAllocations() {
   const contracts = yield select(data.views.contractAllocationInfo);
   const referenceDeclarations = yield select(data.views.referenceDeclarations);
+  const userDefinedTypesByCompilation =
+    yield select(data.views.userDefinedTypesByCompilation);
   const userDefinedTypes = yield select(data.views.userDefinedTypes);
   const storageAllocations = Codec.Storage.Allocate.getStorageAllocations(
-    userDefinedTypes
+    userDefinedTypesByCompilation
   );
   const memoryAllocations = Codec.Memory.Allocate.getMemoryAllocations(
     userDefinedTypes

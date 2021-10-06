@@ -13,7 +13,7 @@ import * as Codec from "@truffle/codec";
 import solidity from "lib/solidity/selectors";
 
 const __IMMUTABLE = `
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.8;
 
 contract Base {
   int8 immutable base = -37;
@@ -24,11 +24,14 @@ contract ImmutableTest is Base {
     Red, Green, Blue
   }
 
+  type MyInt is int8;
+
   Color immutable background;
   bool immutable truth;
   address immutable self;
   bytes1 immutable secret;
   uint8 immutable trulySecret;
+  MyInt immutable obscured;
 
   event Done();
 
@@ -38,6 +41,7 @@ contract ImmutableTest is Base {
     self = address(this);
     secret = 0x88;
     trulySecret = 23;
+    obscured = MyInt.wrap(-1);
     emit Done(); //BREAK CONSTRUCTOR
   }
 
@@ -53,6 +57,7 @@ contract ImmutableTest is Base {
     emit Bool(truth);
     emit Address(self);
     emit Byte(secret);
+    emit Number(MyInt.unwrap(obscured));
     emit Done(); //BREAK DEPLOYED
   }
 }
@@ -107,7 +112,8 @@ describe("Immutable state variables", function () {
       background: "ImmutableTest.Color.Blue",
       truth: true,
       self: address,
-      secret: "0x88"
+      secret: "0x88",
+      obscured: -1
     };
 
     assert.deepInclude(variables, expectedResult);
@@ -144,7 +150,8 @@ describe("Immutable state variables", function () {
       truth: true,
       self: address,
       secret: "0x88",
-      trulySecret: 23
+      trulySecret: 23,
+      obscured: -1
     };
 
     assert.deepInclude(variables, expectedResult);

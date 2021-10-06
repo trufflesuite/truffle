@@ -1,7 +1,10 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.8;
 
 contract DecodingSample {
+
+  type MyInt is int8;
+
   enum E {
     EnumValZero,
     EnumValOne,
@@ -31,11 +34,14 @@ contract DecodingSample {
   bytes   varBytes;
   E       varEnum;
   S       varStructS;
+  MyInt   varCustom1;
+  MyInt   varCustom2;
 
   mapping(uint => uint) varMapping;
   mapping(address => uint) varAddressMapping;
   mapping(DecodingSample => uint) varContractMapping;
   mapping(E => uint) varEnumMapping;
+  mapping(MyInt => MyInt) varWrapMapping;
 
   uint immutable immutableUint;
 
@@ -84,6 +90,8 @@ contract DecodingSample {
     varStructS.structS2.structTwoDynamicArrayUint[0] = 4;
     varStructS.structS2.structTwoDynamicArrayUint[1] = 8;
     varStructS.structS2.structTwoDynamicArrayUint[2] = 12;
+    varCustom1 = MyInt.wrap(-1);
+    varCustom2 = MyInt.wrap(-2);
 
     immutableUint = 16;
 
@@ -132,6 +140,7 @@ contract DecodingSample {
     varEnumMapping[E.EnumValTwo] = 2;
     varEnumMapping[E.EnumValThree] = 3;
     varEnumMapping[E.EnumValFour] = 4;
+    varWrapMapping[MyInt.wrap(-3)] = MyInt.wrap(-3);
 
     functionInternal = example;
   }

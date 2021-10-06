@@ -196,6 +196,7 @@ function abiSizeAndAllocate(
     case "fixed":
     case "ufixed":
     case "enum":
+    case "userDefinedValueType":
       return {
         size: Evm.Utils.WORD_SIZE,
         dynamic: false,
@@ -367,6 +368,7 @@ function allocateCalldataAndReturndata(
   let inputParametersAbi: Abi.Parameter[];
   let outputParametersAbi: Abi.Parameter[];
   let offset: number; //refers to INPUT offset; output offset is always 0
+  debug("allocating calldata and returndata");
   switch (abiEntry.type) {
     case "constructor":
       if (!constructorContext) {
@@ -405,6 +407,7 @@ function allocateCalldataAndReturndata(
             ),
           contractNode
         ).node; //may be undefined!  that's OK!
+        debug("found node: %o", Boolean(node));
       }
       break;
   }
@@ -463,6 +466,7 @@ function allocateCalldataAndReturndata(
     compiler
     //note no offset
   );
+  debug("modes: %s in, %s out", inputMode, outputMode);
   //finally: transform the allocation appropriately
   let inputArgumentsAllocation = abiAllocationInput.members.map(member => ({
     ...member,
@@ -546,6 +550,7 @@ function allocateDataArguments(
       )[id];
     } catch {
       //if something goes wrong, switch to ABI mdoe
+      debug("falling back to ABI due to exception!");
       allocationMode = "abi";
     }
   }

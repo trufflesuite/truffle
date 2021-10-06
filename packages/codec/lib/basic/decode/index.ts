@@ -36,6 +36,57 @@ export function* decodeBasic(
   debug("pointer %o", pointer);
 
   switch (dataType.typeClass) {
+    case "userDefinedValueType": {
+      const fullType = <Format.Types.UserDefinedValueTypeType>(
+        Format.Types.fullType(dataType, info.userDefinedTypes)
+      );
+      if (!fullType.underlyingType) {
+        const error = {
+          kind: "UserDefinedTypeNotFoundError" as const,
+          type: fullType,
+        };
+        if (strict || options.allowRetry) {
+          throw new StopDecodingError(error, true);
+          //note that we allow a retry if we couldn't locate the underlying type!
+        }
+        return {
+          type: fullType,
+          kind: "error" as const,
+          error
+        };
+      }
+      const underlyingResult = yield* decodeBasic(
+        fullType.underlyingType,
+        pointer,
+        info,
+        options
+      );
+      switch (underlyingResult.kind) { //yes this switch is a little unnecessary :P
+        case "value":
+          //wrap the value and return
+          return <Format.Values.UserDefinedValueTypeValue>{ //no idea why need coercion here
+            type: fullType,
+            kind: "value" as const,
+            value: underlyingResult
+          };
+        case "error":
+          //wrap the error and return an error result!
+          //this is inconsistent with how we handle other container types
+          //(structs, arrays, mappings), where having an error in one element
+          //does not cause an error in the whole thing, but to do that here
+          //would cause problems for the type system :-/
+          //so we'll just be inconsistent
+          return <Format.Errors.UserDefinedValueTypeErrorResult>{ //TS is being bad again :-/
+            type: fullType,
+            kind: "error" as const,
+            error: {
+              kind: "WrappedError",
+              error: underlyingResult
+            }
+          };
+      }
+      break; //to satisfy TS :P
+    }
     case "bool": {
       if (!checkPadding(bytes, dataType, paddingMode)) {
         let error = {
@@ -653,7 +704,7 @@ function checkPadding(
   userDefinedTypes?: Format.Types.TypesById
 ): boolean {
   const length = byteLength(dataType, userDefinedTypes);
-  let paddingType = getPaddingType(dataType, paddingMode);
+  const paddingType = getPaddingType(dataType, paddingMode);
   if (paddingMode === "permissive") {
     switch (dataType.typeClass) {
       case "bool":
@@ -686,11 +737,10 @@ function removePaddingDirect(
   paddingType: PaddingType
 ) {
   switch (paddingType) {
-    case "left":
-    case "signed":
-      return bytes.slice(-length);
     case "right":
       return bytes.slice(0, length);
+    default:
+      return bytes.slice(-length);
   }
 }
 
@@ -706,6 +756,8 @@ function checkPaddingDirect(
       return checkPaddingRight(bytes, length);
     case "signed":
       return checkPaddingSigned(bytes, length);
+    case "signedOrLeft":
+      return checkPaddingSigned(bytes, length) || checkPaddingLeft(bytes, length);
   }
 }
 
@@ -719,9 +771,14 @@ function getPaddingType(
     case "default":
     case "permissive":
       return defaultPaddingType(dataType);
-    case "zero":
-      let defaultType = defaultPaddingType(dataType);
+    case "zero": {
+      const defaultType = defaultPaddingType(dataType);
       return defaultType === "signed" ? "left" : defaultType;
+    }
+    case "defaultOrZero": {
+      const defaultType = defaultPaddingType(dataType);
+      return defaultType === "signed" ? "signedOrLeft" : defaultType;
+    }
   }
 }
 

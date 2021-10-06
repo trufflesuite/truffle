@@ -30,9 +30,9 @@ export function byteLength(
       }
     case "bytes": //we assume we're in the static case
       return (<Format.Types.BytesTypeStatic>dataType).length;
-    case "enum": //the only complex case!
+    case "enum": {
       const storedType = <Format.Types.EnumType>userDefinedTypes[dataType.id];
-      if (!storedType.options) {
+      if (!storedType || !storedType.options) {
         throw new Common.UnknownUserDefinedTypeError(
           dataType.id,
           Format.Types.typeString(dataType)
@@ -40,5 +40,17 @@ export function byteLength(
       }
       const numValues = storedType.options.length;
       return Math.ceil(Math.log2(numValues) / 8);
+    }
+    case "userDefinedValueType": {
+      const storedType = <Format.Types.UserDefinedValueTypeType>userDefinedTypes[dataType.id];
+      if (!storedType || !storedType.underlyingType) {
+        throw new Common.UnknownUserDefinedTypeError(
+          dataType.id,
+          Format.Types.typeString(dataType)
+        );
+      }
+      const { underlyingType } = storedType;
+      return byteLength(underlyingType, userDefinedTypes);
+    }
   }
 }

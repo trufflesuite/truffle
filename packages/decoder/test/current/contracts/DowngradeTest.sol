@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.8;
 pragma experimental ABIEncoderV2;
 
 contract DowngradeTestParent {
@@ -10,9 +10,11 @@ contract DowngradeTest is DowngradeTestParent {
 
   //structs; enums; contracts; address payable; functions
 
+  type MyInt is int16;
+
   struct Pair {
     uint x;
-    uint y;
+    MyInt y;
   }
 
   struct AsymmetricTriple {
@@ -72,13 +74,13 @@ contract DowngradeTest is DowngradeTestParent {
   }
 
   function returnsStuff() public pure returns (Pair memory, Ternary) {
-    return (Pair(107, 683), Ternary.No);
+    return (Pair(107, MyInt.wrap(683)), Ternary.No);
   }
 
   error CustomError(Pair pair);
 
   function throwCustom() public pure {
-    revert CustomError(Pair(1, 2));
+    revert CustomError(Pair(1, MyInt.wrap(2)));
   }
 }
 

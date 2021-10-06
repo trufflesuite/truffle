@@ -168,6 +168,7 @@ function coinbaseType(
     case "0.5.x":
     case "0.8.x":
     case "0.8.7+":
+    case "0.8.9+":
       return {
         typeClass: "address",
         kind: "specific",

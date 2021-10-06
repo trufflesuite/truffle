@@ -4,6 +4,7 @@ const debug = debugModule("codec:core");
 import type * as Abi from "@truffle/abi-utils";
 import * as Ast from "@truffle/codec/ast";
 import * as AbiData from "@truffle/codec/abi-data";
+import * as Compiler from "@truffle/codec/compiler";
 import * as Topic from "@truffle/codec/topic";
 import type * as Pointer from "@truffle/codec/pointer";
 import type {
@@ -850,7 +851,7 @@ function* decodeBytecode(
         value = yield* decode(dataType, variable.pointer, info, {
           allowRetry: true, //we know we're in full mode
           strictAbiMode: true,
-          paddingMode: "zero" //force zero-padding!
+          paddingMode: "defaultOrZero"
         });
       } catch (error) {
         if (error instanceof StopDecodingError && error.allowRetry) {
