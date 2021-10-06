@@ -229,7 +229,7 @@ export function abifyResult(
         case "value":
           return abifyResult(coercedResult.value, userDefinedTypes);
         case "error":
-          return <Format.Errors.BuiltInValueTypeErrorResult>{ //I have no idea what TS is thinking here
+          return <Format.Errors.BuiltInValueErrorResult>{ //I have no idea what TS is thinking here
             ...coercedResult,
             type: abifyType(result.type, userDefinedTypes)
           };

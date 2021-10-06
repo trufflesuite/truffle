@@ -22,7 +22,7 @@ export type ElementaryValue =
   | UserDefinedValueTypeValue
   | ContractValue;
 
-export type BuiltInValueTypeValue =
+export type BuiltInValueValue =
   | UintValue
   | IntValue
   | BoolValue
@@ -226,7 +226,7 @@ export interface EnumValue {
 export interface UserDefinedValueTypeValue {
   type: Types.UserDefinedValueTypeType;
   kind: "value";
-  value: BuiltInValueTypeValue;
+  value: BuiltInValueValue;
 }
 
 /**

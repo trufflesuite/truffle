@@ -113,7 +113,7 @@ export type ElementaryErrorResult =
  *
  * @Category Elementary types
  */
-export type BuiltInValueTypeErrorResult =
+export type BuiltInValueErrorResult =
   | UintErrorResult
   | IntErrorResult
   | BoolErrorResult
@@ -486,7 +486,7 @@ export type UserDefinedValueTypeError = WrappedError;
  */
 export interface WrappedError {
   kind: "WrappedError";
-  error: BuiltInValueTypeErrorResult;
+  error: BuiltInValueErrorResult;
 }
 
 /**
