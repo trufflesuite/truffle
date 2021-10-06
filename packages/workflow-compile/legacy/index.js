@@ -57,7 +57,11 @@ const WorkflowCompile = {
       );
 
       if (numberOfCompiledContracts === 0 && config.events) {
-        config.events.emit("compile:nothingToCompile");
+        if (config.compileNone || config["compile-none"]) {
+          config.events.emit("compile:skipped");
+        } else {
+          config.events.emit("compile:nothingToCompile");
+        }
       }
 
       if (config.events) {

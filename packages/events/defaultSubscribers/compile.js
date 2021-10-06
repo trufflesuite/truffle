@@ -69,6 +69,14 @@ module.exports = {
           `> Everything is up to date, there is nothing to compile.`
         );
       }
+    ],
+    "compile:skipped": [
+      function () {
+        if (this.quiet) return;
+        this.logger.log(
+          `> Compilation skipped because --compile-none option was passed.`
+        );
+      }
     ]
   }
 };
