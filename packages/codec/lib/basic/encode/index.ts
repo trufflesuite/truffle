@@ -16,7 +16,7 @@ export function encodeBasic(input: Format.Values.Value): Uint8Array {
   let bytes: Uint8Array;
   switch (input.type.typeClass) {
     case "userDefinedValueType":
-      return encodeBasic((<Format.Values.UdvtValue>input).value);
+      return encodeBasic((<Format.Values.UserDefinedValueTypeValue>input).value);
     case "uint":
     case "int":
       return Conversion.toBytes(

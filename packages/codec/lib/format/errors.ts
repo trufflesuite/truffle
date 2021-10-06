@@ -80,7 +80,7 @@ export type DecoderError =
   | TypeErrorUnion
   | TupleError
   | EnumError
-  | UdvtError
+  | UserDefinedValueTypeError
   | ContractError
   | FunctionExternalError
   | FunctionInternalError
@@ -105,7 +105,7 @@ export type ElementaryErrorResult =
   | FixedErrorResult
   | UfixedErrorResult
   | EnumErrorResult
-  | UdvtErrorResult
+  | UserDefinedValueTypeErrorResult
   | ContractErrorResult;
 
 /**
@@ -465,10 +465,10 @@ export interface EnumNotFoundDecodingError {
  *
  * @Category User-defined elementary types
  */
-export interface UdvtErrorResult {
-  type: Types.UdvtType;
+export interface UserDefinedValueTypeErrorResult {
+  type: Types.UserDefinedValueTypeType;
   kind: "error";
-  error: GenericError | UdvtError;
+  error: GenericError | UserDefinedValueTypeError;
 }
 
 /**
@@ -476,7 +476,7 @@ export interface UdvtErrorResult {
  *
  * @Category User-defined elementary types
  */
-export type UdvtError = WrappedError;
+export type UserDefinedValueTypeError = WrappedError;
 
 /**
  * An error result representing something going wrong decoding

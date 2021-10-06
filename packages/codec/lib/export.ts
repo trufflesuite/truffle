@@ -141,7 +141,7 @@ function ethersCompatibleNativize(
         }
         case "userDefinedValueType":
           return ethersCompatibleNativize(
-            (<Format.Values.UdvtValue>result).value,
+            (<Format.Values.UserDefinedValueTypeValue>result).value,
             numberFormatter
           );
         case "array":

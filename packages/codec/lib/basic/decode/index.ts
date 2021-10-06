@@ -37,7 +37,7 @@ export function* decodeBasic(
 
   switch (dataType.typeClass) {
     case "userDefinedValueType": {
-      const fullType = <Format.Types.UdvtType>(
+      const fullType = <Format.Types.UserDefinedValueTypeType>(
         Format.Types.fullType(dataType, info.userDefinedTypes)
       );
       if (!fullType.underlyingType) {
@@ -64,7 +64,7 @@ export function* decodeBasic(
       switch (underlyingResult.kind) { //yes this switch is a little unnecessary :P
         case "value":
           //wrap the value and return
-          return <Format.Values.UdvtValue>{ //no idea why need coercion here
+          return <Format.Values.UserDefinedValueTypeValue>{ //no idea why need coercion here
             type: fullType,
             kind: "value" as const,
             value: underlyingResult
@@ -76,7 +76,7 @@ export function* decodeBasic(
           //does not cause an error in the whole thing, but to do that here
           //would cause problems for the type system :-/
           //so we'll just be inconsistent
-          return <Format.Errors.UdvtErrorResult>{ //TS is being bad again :-/
+          return <Format.Errors.UserDefinedValueTypeErrorResult>{ //TS is being bad again :-/
             type: fullType,
             kind: "error" as const,
             error: {

@@ -46,7 +46,7 @@ export type Type =
   | FunctionType
   | StructType
   | EnumType
-  | UdvtType
+  | UserDefinedValueTypeType
   | ContractType
   | MagicType
   | TypeType
@@ -228,7 +228,7 @@ export type ElementaryType =
   | AddressType
   | StringType
   | EnumType
-  | UdvtType
+  | UserDefinedValueTypeType
   | ContractType;
 
 /**
@@ -341,7 +341,7 @@ export interface FunctionExternalTypeGeneral {
 export type ContractDefinedType =
   | StructTypeLocal
   | EnumTypeLocal
-  | UdvtTypeLocal;
+  | UserDefinedValueTypeTypeLocal;
 
 /**
  * User-defined types
@@ -353,7 +353,7 @@ export type UserDefinedType =
   | ContractTypeNative
   | StructTypeGlobal
   | EnumTypeGlobal
-  | UdvtTypeGlobal;
+  | UserDefinedValueTypeTypeGlobal;
 
 /**
  * Type of a struct
@@ -533,14 +533,14 @@ export interface ContractTypeForeign {
  *
  * @Category User-defined elementary types
  */
-export type UdvtType = UdvtTypeLocal | UdvtTypeGlobal;
+export type UserDefinedValueTypeType = UserDefinedValueTypeTypeLocal | UserDefinedValueTypeTypeGlobal;
 
 /**
  * Local UDVT (defined in a contract)
  *
  * @Category User-defined elementary types
  */
-export interface UdvtTypeLocal {
+export interface UserDefinedValueTypeTypeLocal {
   typeClass: "userDefinedValueType";
   kind: "local";
   /**
@@ -558,7 +558,7 @@ export interface UdvtTypeLocal {
  *
  * @Category User-defined elementary types
  */
-export interface UdvtTypeGlobal {
+export interface UserDefinedValueTypeTypeGlobal {
   typeClass: "userDefinedValueType";
   kind: "global";
   /**
@@ -860,5 +860,5 @@ export function isContractDefinedType(
 ): anyType is ContractDefinedType {
   const contractDefinedTypes = ["enum", "struct", "userDefinedValueType"];
   return contractDefinedTypes.includes(anyType.typeClass)
-    && (<EnumType|StructType|UdvtType>anyType).kind === "local";
+    && (<EnumType|StructType|UserDefinedValueTypeType>anyType).kind === "local";
 }

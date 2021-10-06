@@ -19,7 +19,7 @@ export type ElementaryValue =
   | FixedValue
   | UfixedValue
   | EnumValue
-  | UdvtValue
+  | UserDefinedValueTypeValue
   | ContractValue;
 
 export type BuiltInValueTypeValue =
@@ -223,8 +223,8 @@ export interface EnumValue {
  *
  * @Category User-defined elementary types
  */
-export interface UdvtValue {
-  type: Types.UdvtType;
+export interface UserDefinedValueTypeValue {
+  type: Types.UserDefinedValueTypeType;
   kind: "value";
   value: BuiltInValueTypeValue;
 }

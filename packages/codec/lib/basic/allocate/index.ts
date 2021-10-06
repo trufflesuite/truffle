@@ -42,7 +42,7 @@ export function byteLength(
       return Math.ceil(Math.log2(numValues) / 8);
     }
     case "userDefinedValueType": {
-      const storedType = <Format.Types.UdvtType>userDefinedTypes[dataType.id];
+      const storedType = <Format.Types.UserDefinedValueTypeType>userDefinedTypes[dataType.id];
       if (!storedType || !storedType.underlyingType) {
         throw new Common.UnknownUserDefinedTypeError(
           dataType.id,
