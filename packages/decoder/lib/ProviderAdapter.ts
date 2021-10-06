@@ -55,10 +55,6 @@ const formatBlockSpecifier = (block: BlockSpecifier): string => {
   }
 };
 
-const isElevenNinetyThreeProvider = (provider: Provider | EipElevenNinetyThreeProvider): provider is EipElevenNinetyThreeProvider => {
-  return typeof (provider as EipElevenNinetyThreeProvider).request === "function";
-};
-
 export class ProviderAdapter {
   public provider: Provider | EipElevenNinetyThreeProvider;
 
@@ -75,7 +71,7 @@ export class ProviderAdapter {
     }
     // check to see if the provider is compliant with eip1193
     // https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1193.md
-    if (isElevenNinetyThreeProvider(this.provider)) {
+    if ("request" in this.provider) {
       return (await this.provider.request({ method, params })).result;
     } else {
       const sendMethod = promisify(this.provider.send).bind(this.provider);
