@@ -26,6 +26,28 @@ type SendRequestArgs = {
 type EipElevenNinetyThreeProvider = {
   request: (options: { method: string; params: unknown[]; }) => Promise<any>;
 }
+type Block = {
+  number: string;
+  hash: string;
+  parentHash: string;
+  mixHash: string;
+  nonce: string;
+  sha3Uncles: string;
+  logsBloom: string;
+  transactionsRoot: string;
+  stateRoot: string;
+  receiptsRoot: string;
+  miner: string;
+  difficulty: string;
+  totalDifficulty: string;
+  extraData: string;
+  size: string;
+  gasLimit: string;
+  gasUsed: string;
+  timestamp: string;
+  transactions: string[];
+  uncles: string[];
+}
 const stringWhitelist = [
   "latest",
   "pending",
@@ -84,7 +106,7 @@ export class ProviderAdapter {
     }
   }
 
-  public async getCode (address: string, block: RegularizedBlockSpecifier) {
+  public async getCode (address: string, block: RegularizedBlockSpecifier): Promise<string> {
     const blockToFetch = formatBlockSpecifier(block);
     return await this.sendRequest({
       method: "eth_getCode",
@@ -95,7 +117,7 @@ export class ProviderAdapter {
     });
   }
 
-  public async getBlock (block: BlockSpecifier) {
+  public async getBlockByNumber (block: BlockSpecifier): Promise<Block> {
     const blockToFetch = formatBlockSpecifier(block);
     return await this.sendRequest({
       method: "eth_getBlockByNumber",
