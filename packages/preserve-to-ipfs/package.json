@@ -28,11 +28,11 @@
     "access": "public"
   },
   "devDependencies": {
-    "@ganache/filecoin": "^0.1.2",
+    "@ganache/filecoin": "^0.1.5",
     "@types/jest": "^26.0.20",
     "@types/node": "^14.14.22",
     "cids": "^1.1.5",
-    "ganache": "^3.0.0-filecoin.3",
+    "ganache": "^7.0.0-alpha.1",
     "jest": "^26.6.3",
     "semver": "^7.3.4",
     "ts-jest": "^26.5.0",
