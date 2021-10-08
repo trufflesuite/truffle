@@ -13,4 +13,8 @@
       3e7304db4 compile-common: use fs alternative
       df877347a compile-common: Add guard on getKeyFromPath
 
+TODO:
 
+- remove NOTES.md
+- [x] box.ts use `isLikelyFilePath` for line 26
+- [x] box.ts use remove console.log 
