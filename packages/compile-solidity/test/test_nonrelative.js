@@ -13,8 +13,8 @@ describe("Non-relative non-absolute file paths", function () {
 
   const options = {
     working_directory: __dirname,
-    contracts_directory: path.join(__dirname, "./sources/badSources"),
-    contracts_build_directory: path.join(__dirname, "./does/not/matter"), //nothing is actually written, but resolver demands it
+    contracts_directory: path.join(__dirname, "sources", "badSources"),
+    contracts_build_directory: path.join(__dirname, "does", "not", "matter"), //nothing is actually written, but resolver demands it
     compilers: {
       solc: {
         version: "0.8.6",
@@ -70,12 +70,12 @@ describe("Non-canonical absolute file paths", function () {
 
   before("Set up temporary directory and project", async function () {
     tmpdir = tmp.dirSync({ unsafeCleanup: true }).name; //tmp uses callbacks, not promises, so using sync
-    await fs.promises.mkdir(path.join(tmpdir, "./contracts"));
-    const contracts_directory = path.join(tmpdir, "./contracts");
+    await fs.promises.mkdir(path.join(tmpdir, "contracts"));
+    const contracts_directory = path.join(tmpdir, "contracts");
     options = {
       working_directory: tmpdir,
       contracts_directory,
-      contracts_build_directory: path.join(tmpdir, "./build/contracts"), //nothing is actually written, but resolver demands it
+      contracts_build_directory: path.join(tmpdir, "build", "contracts"), //nothing is actually written, but resolver demands it
       compilers: {
         solc: {
           version: "0.8.6",
@@ -93,7 +93,7 @@ describe("Non-canonical absolute file paths", function () {
     const importedPath = path.join(options.contracts_directory, "Imported.sol");
     const importerPath = path.join(options.contracts_directory, "DoubleSlash.sol");
     await fs.promises.copyFile(
-      path.join(__dirname, "./sources/badSources/Imported.sol"),
+      path.join(__dirname, "sources", "badSources", "Imported.sol"),
       importedPath
     );
     await fs.promises.writeFile(
