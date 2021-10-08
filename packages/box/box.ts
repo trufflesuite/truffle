@@ -10,6 +10,9 @@ import debugModule from "debug";
 const debug = debugModule("unbox");
 const defaultPath = "git@github.com:trufflesuite/truffle-init-default";
 
+const isLikelyFilePath = (url: string) : Boolean =>   
+  utils.startsWithDrive(url) || "./~\\".includes(url[0]);
+
 /*
  * accepts a number of different url and org/repo formats and returns the
  * format required by https://www.npmjs.com/package/download-git-repo for remote URLs
@@ -23,8 +26,7 @@ const defaultPath = "git@github.com:trufflesuite/truffle-init-default";
  */
 export const normalizeSourcePath = (url = defaultPath) => {
   // Process filepath resolution
-  if (utils.startsWithDrive(url) || url.startsWith(".") || url.startsWith("/") || url.startsWith("~") || url.startsWith("\\")) {
-    console.log("NORMALIZED:", path.normalize(url));
+  if (isLikelyFilePath(url)) {
     debug({ in: url, out: path.normalize(url) });
     return path.resolve(path.normalize(url));
   }
