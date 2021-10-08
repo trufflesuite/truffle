@@ -103,6 +103,12 @@ describe("Non-canonical absolute file paths", function () {
   });
 
   it("Refuses to compile non-canonical absolute paths", async function () {
+
+    //Skip on win32
+    if (process.platform === "win32") {
+      return;
+    }
+
     this.timeout(150000);
 
     try {
