@@ -100,7 +100,8 @@ describe("@truffle/box Box", () => {
     });
 
     it("unboxes truffle box from fullpath", async () => {
-      //Start with c:\\ for windows or / otherwise
+      //This will create a path that begins with drive:\ for windows 
+      //or / otherwise
       const FULL_PATH = path.join(process.cwd(), LOCAL_TRUFFLE_BOX);
       const truffleConfig = await Box.unbox(
         FULL_PATH,
@@ -132,16 +133,14 @@ describe("@truffle/box Box", () => {
       );
     });
 
-    it("unboxes truffle box [win]", async () => {
-      //Start with c:\\ for windows or / otherwise
-      const ROOT = "\\truffle-box-test";
+    it.only("unboxes truffle box on non win32 host", async () => {
 
       if (os.platform() !== "win32") {
-        return assert(true);
+        return;
       }
 
+      const ROOT = "\\truffle-box-test";
       fse.rmdirSync(ROOT, { recursive: true, force: true });
-
       fse.mkdirSync(ROOT);
       fse.copySync(LOCAL_TRUFFLE_BOX, ROOT);
 
