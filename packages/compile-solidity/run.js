@@ -152,14 +152,7 @@ function prepareCompilerInput({
     language,
     sources: prepareSources({ sources }),
     settings: {
-      evmVersion: settings.evmVersion,
-      optimizer: settings.optimizer,
-      remappings: settings.remappings,
-      debug: settings.debug,
-      metadata: settings.metadata,
-      libraries: settings.libraries,
-      viaIR: settings.viaIR,
-      modelChecker: settings.modelChecker,
+      ...settings,
       // Specify compilation targets. Each target uses defaultSelectors,
       // defaulting to single target `*` if targets are unspecified
       outputSelection: prepareOutputSelection({ targets })
