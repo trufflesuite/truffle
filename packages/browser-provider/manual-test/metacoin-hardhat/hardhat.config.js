@@ -9,6 +9,9 @@ module.exports = {
     localhost: {
       url: "http://localhost:8545",
     },
+    browser: {
+      url: "http://localhost:5000/rpc",
+    }
   },
   namedAccounts: {
     deployer: {
