@@ -11,9 +11,11 @@
     "build": "tsc",
     "prepare": "yarn build",
     "test": "jest --verbose",
-    "test:manual:basic": "ts-node ./manual-test/manual-test.ts",
+    "test:manual:basic-provider": "ts-node ./manual-test/manual-test.ts",
+    "test:manual:basic-rpc": "ts-node ./manual-test/manual-test-rpc.ts",
     "test:manual:metacoin-truffle": "pushd ./manual-test/metacoin-truffle && yarn && truffle migrate --network browser --reset; popd",
-    "test:manual:metacoin-hardhat": "pushd ./manual-test/metacoin-hardhat && yarn && yarn deploy; popd"
+    "test:manual:metacoin-hardhat": "pushd ./manual-test/metacoin-hardhat && yarn && yarn deploy --network browser; popd",
+    "test:manual:metacoin-hardhat-2": "pushd ./manual-test/metacoin-hardhat && yarn && yarn deploy-with-hardhat-deploy --network browser; popd"
   },
   "repository": {
     "type": "git",

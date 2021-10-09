@@ -1,8 +1,7 @@
 const fs = require("fs");
 const chalk = require("chalk");
 const { ethers, tenderly } = require("hardhat");
-const { utils, providers } = require("ethers");
-const { BrowserProvider } = require("../../../dist/lib");
+const { utils } = require("ethers");
 
 const deploy = async (contractName, _args = [], overrides = {}, libraries = {}) => {
   console.log(` 🛰  Deploying: ${contractName}`);
@@ -39,8 +38,6 @@ const deploy = async (contractName, _args = [], overrides = {}, libraries = {}) 
 
 const main = async () => {
   console.log("\n\n 📡 Deploying...\n");
-
-  ethers.provider = new providers.Web3Provider(new BrowserProvider());
 
   const ConvertLib = await deploy("ConvertLib");
   const MetaCoin = await deploy("MetaCoin", [], {}, { ConvertLib: ConvertLib.address });

@@ -1,9 +1,7 @@
-const { BrowserProvider } = require('../../dist/lib');
-
 module.exports = {
   networks: {
     browser: {
-      provider: () => new BrowserProvider({ dashboardPort: 5000 }),
+      url: 'http://localhost:5000/rpc',
       network_id: '*',
       skipDryRun: true,
       networkCheckTimeout: 120000,
