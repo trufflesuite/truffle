@@ -132,7 +132,7 @@ function prepareCompilerInput({
     sources: prepareSources({ sources }),
     interfaces: prepareInterfaces({ interfaces }),
     settings: {
-      evmVersion: settings.evmVersion,
+      ...settings,
       outputSelection
     },
     //older versions of vyper require outputSelection *outside* of settings.
