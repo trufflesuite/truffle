@@ -335,9 +335,15 @@ function processContracts({
   originalSourcePaths,
   solcVersion
 }) {
-  if (!compilerOutput.contracts) return [];
+  let { contracts } = compilerOutput;
+  if (!contracts) return [];
+  //HACK: versions of Solidity prior to 0.4.20 are confused by our "project:/"
+  //prefix (or, more generally, by paths containing colons)
+  //and put contracts in a weird form as a result.  we detect
+  //this case and repair it.
+  contracts = repairOldContracts(contracts);
   return (
-    Object.entries(compilerOutput.contracts)
+    Object.entries(contracts)
       // map to [[{ source, contractName, contract }]]
       .map(([sourcePath, sourceContracts]) =>
         Object.entries(sourceContracts).map(([contractName, contract]) => ({
@@ -416,6 +422,40 @@ function processContracts({
         })
       )
   );
+}
+
+function repairOldContracts(contracts) {
+  const contractNames = [].concat(
+    ...Object.values(contracts).map(source => Object.keys(source))
+  );
+  if (contractNames.some(name => name.includes(":"))) {
+    //if any of the "contract names" contains a colon... hack invoked!
+    //(notionally we could always apply this hack but let's skip it most of the
+    //time please :P )
+    let repairedContracts = {};
+    for (const [sourcePrefix, sourceContracts] of Object.entries(contracts)) {
+      for (const [mixedPath, contract] of Object.entries(sourceContracts)) {
+        let sourcePath, contractName;
+        const lastColonIndex = mixedPath.lastIndexOf(":");
+        if (lastColonIndex === -1) { //if there is none
+          sourcePath = sourcePrefix;
+          contractName = mixedPath;
+        } else {
+          contractName = mixedPath.slice(lastColonIndex + 1); //take the part after the final colon
+          sourcePath = sourcePrefix + ":" + mixedPath.slice(0, lastColonIndex); //the part before the final colon
+        }
+        if (!repairedContracts[sourcePath]) {
+          repairedContracts[sourcePath] = {};
+        }
+        repairedContracts[sourcePath][contractName] = contract;
+      }
+    }
+    debug("repaired contracts: %O", repairedContracts);
+    return repairedContracts;
+  } else {
+    //otherwise just return contracts as-is rather than processing
+    return contracts;
+  }
 }
 
 function formatLinkReferences(linkReferences) {
