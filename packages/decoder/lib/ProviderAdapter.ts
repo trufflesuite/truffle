@@ -24,7 +24,7 @@ type SendRequestArgs = {
   params: unknown[];
 };
 type Eip1193Provider = {
-  request: (options: { method: string; params: unknown[]; }) => Promise<any>;
+  request: (options: { method: string; params?: unknown[] | object; }) => Promise<any>;
 }
 type Block = {
   number: string;
