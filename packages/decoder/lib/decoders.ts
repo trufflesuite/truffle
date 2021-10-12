@@ -33,7 +33,6 @@ import {
   InvalidAddressError,
   VariableNotFoundError,
   MemberNotFoundError,
-  ArrayIndexOutOfBoundsError,
   NoProviderError
 } from "./errors";
 import { Shims } from "@truffle/compile-common";
