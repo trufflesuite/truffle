@@ -23,7 +23,7 @@ type SendRequestArgs = {
   method: string;
   params: unknown[];
 };
-type EipElevenNinetyThreeProvider = {
+type Eip1193Provider = {
   request: (options: { method: string; params: unknown[]; }) => Promise<any>;
 }
 type Block = {
@@ -78,9 +78,9 @@ const formatBlockSpecifier = (block: BlockSpecifier): string => {
 };
 
 export class ProviderAdapter {
-  public provider: Provider | EipElevenNinetyThreeProvider;
+  public provider: Provider | Eip1193Provider;
 
-  constructor (provider: Provider | EipElevenNinetyThreeProvider) {
+  constructor (provider: Provider | Eip1193Provider) {
     this.provider = provider;
   }
 
