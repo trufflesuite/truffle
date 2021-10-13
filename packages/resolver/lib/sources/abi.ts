@@ -3,7 +3,7 @@ import type { ContractObject } from "@truffle/contract-schema/spec";
 import { generateSolidity } from "abi-to-sol";
 import type { ResolverSource } from "../source";
 
-export class ABI {
+export class ABI implements ResolverSource {
 
   wrappedSource: ResolverSource;
 
@@ -17,7 +17,11 @@ export class ABI {
     return null;
   }
 
-  async resolve(importPath: string, importedFrom: string = "") {
+  async resolve(
+    importPath: string,
+    importedFrom: string = "",
+    options: { compiler?: { name: string; version: string } } = {}
+  ) {
     let filePath: string | undefined;
     let body: string | undefined;
 
@@ -25,10 +29,17 @@ export class ABI {
       return { filePath, body };
     }
 
-    const resolution = await this.wrappedSource.resolve(importPath, importedFrom);
+    const resolution = await this.wrappedSource.resolve(
+      importPath,
+      importedFrom,
+      options
+    );
     if (resolution.body === undefined) {
       return { filePath, body };
     }
+
+    const { compiler } = options;
+    const solidityVersion = determineSolidityVersion(compiler);
 
     ({ filePath, body } = resolution);
 
@@ -41,7 +52,8 @@ export class ABI {
       const soliditySource = generateSolidity({
         name,
         abi,
-        license: "MIT" // as per the rest of Truffle
+        license: "MIT", // as per the rest of Truffle
+        solidityVersion
       });
 
       return {
@@ -67,4 +79,15 @@ export class ABI {
     //just defer to wrapped source
     return await this.wrappedSource.resolveDependencyPath(importPath, dependencyPath);
   }
+}
+
+function determineSolidityVersion(
+  compiler?: { name: string; version: string }
+): string | undefined {
+  if (!compiler) {
+    return;
+  }
+
+  const { version } = compiler;
+  return version.split("+")[0];
 }
