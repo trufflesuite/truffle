@@ -12,7 +12,7 @@
     "debug": "^4.3.2",
     "express": "^4.17.1",
     "isomorphic-ws": "^4.0.1",
-    "ws": "^8.2.3"
+    "ws": "^7.2.0"
   },
   "scripts": {
     "start:react": "DISABLE_ESLINT_PLUGIN=true SKIP_PREFLIGHT_CHECK=true craco start",
@@ -51,7 +51,7 @@
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
     "@types/web3": "^1.0.20",
-    "@types/ws": "^8.2.0",
+    "@types/ws": "^7.2.0",
     "@web3-react/core": "^6.1.9",
     "@web3-react/injected-connector": "^6.0.7",
     "autoprefixer": "^9",

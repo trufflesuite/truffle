@@ -1,13 +1,6 @@
 // deploy/00_deploy_your_contract.js
 
-const { ethers } = require("hardhat");
-const { BrowserProvider } = require("../../../dist/lib");
-
-// TODO: This doesn't work yet because Hardhat doesn't allow custom providers in the
-// network config and the "hack" I used where I set ethers.provider manually doesn't
-// work with hardhat-deploy
 module.exports = async ({ getNamedAccounts, deployments }) => {
-  ethers.provider = new ethers.providers.Web3Provider(new BrowserProvider());
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
 

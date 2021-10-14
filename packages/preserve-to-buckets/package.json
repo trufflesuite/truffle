@@ -43,6 +43,6 @@
     "ipfs-http-client": "^48.2.2",
     "isomorphic-ws": "^4.0.1",
     "iter-tools": "^7.0.2",
-    "ws": "^7.4.3"
+    "ws": "^7.2.0"
   }
 }
