@@ -13,19 +13,19 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
 
   const ConvertLib = await deploy("ConvertLib", {
     from: deployer,
-    log: true,
+    log: true
   });
 
   const MetaCoin = await deploy("MetaCoin", {
     from: deployer,
     libraries: { ConvertLib: ConvertLib.address },
-    log: true,
+    log: true
   });
 
   const _WrappedMetaCoin = await deploy("WrappedMetaCoin", {
     from: deployer,
     args: [MetaCoin.address],
-    log: true,
+    log: true
   });
 };
 

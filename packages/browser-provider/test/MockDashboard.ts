@@ -1,4 +1,9 @@
-import { base64ToJson, connectToMessageBusWithRetries, jsonToBase64, Message } from "@truffle/dashboard-message-bus";
+import {
+  base64ToJson,
+  connectToMessageBusWithRetries,
+  jsonToBase64,
+  Message
+} from "@truffle/dashboard-message-bus";
 import { JSONRPCRequestPayload } from "ethereum-protocol";
 import { promisify } from "util";
 import WebSocket from "ws";
@@ -12,7 +17,7 @@ export default class MockDashboard {
   async connect(messageBusListenPort: number) {
     if (this.socket) return;
     this.socket = await connectToMessageBusWithRetries(messageBusListenPort);
-    this.socket.on('message', this.handleIncomingMessage.bind(this));
+    this.socket.on("message", this.handleIncomingMessage.bind(this));
   }
 
   disconnect() {
@@ -21,13 +26,16 @@ export default class MockDashboard {
   }
 
   private async handleIncomingMessage(data: WebSocket.Data) {
-    if (typeof data !== 'string') return;
+    if (typeof data !== "string") return;
     if (!this.socket) return;
 
     const message = base64ToJson(data) as Message;
-    if (message.type !== 'browser-provider') return;
+    if (message.type !== "browser-provider") return;
 
-    const responsePayload = await forwardBrowserProviderRequest(this.forwardProvider, message.payload);
+    const responsePayload = await forwardBrowserProviderRequest(
+      this.forwardProvider,
+      message.payload
+    );
     const response = {
       id: message.id,
       payload: responsePayload

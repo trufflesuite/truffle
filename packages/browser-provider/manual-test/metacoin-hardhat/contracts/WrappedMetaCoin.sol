@@ -10,15 +10,18 @@ contract WrappedMetaCoin {
         underlying = _underlying;
     }
 
-    function sendCoin(address receiver, uint amount) public returns(bool sufficient) {
+    function sendCoin(address receiver, uint256 amount)
+        public
+        returns (bool sufficient)
+    {
         return underlying.sendCoin(receiver, amount);
     }
 
-    function getBalanceInEth(address addr) public view returns(uint){
+    function getBalanceInEth(address addr) public view returns (uint256) {
         return underlying.getBalanceInEth(addr);
     }
 
-    function getBalance(address addr) public view returns(uint) {
+    function getBalance(address addr) public view returns (uint256) {
         return underlying.getBalance(addr);
     }
 }

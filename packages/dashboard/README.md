@@ -17,10 +17,13 @@ yarn add @truffle/dashboard
 The `@truffle/dashboard` package can then be used to start a new dashboard process either in the foreground or background.
 
 ```js
-const { startDashboard, startDashboardInBackground } = require('@truffle/dashboard');
+const {
+  startDashboard,
+  startDashboardInBackground
+} = require("@truffle/dashboard");
 
 const port = 5000;
-const host = 'localhost';
+const host = "localhost";
 const dashboardExpressApp = await startDashboard(port, host);
 const backgroundProcess = startDashboardInBackground(port, host);
 ```
