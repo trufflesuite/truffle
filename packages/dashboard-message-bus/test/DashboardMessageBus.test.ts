@@ -12,8 +12,8 @@ describe('DashboardMessageBus', () => {
   let listener: WebSocket;
 
   beforeEach(async () => {
-    messageBus = new DashboardMessageBus();
-    messageBus.start(requestsPort, listenPort);
+    messageBus = new DashboardMessageBus(requestsPort, listenPort);
+    messageBus.start();
     client = await connectToMessageBusWithRetries(requestsPort);
     listener = await connectToMessageBusWithRetries(listenPort);
   });

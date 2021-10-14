@@ -8,7 +8,7 @@ import MockDashboard from "./MockDashboard";
 
 jest.setTimeout(200000);
 
-describe.skip("BrowserProvider", () => {
+describe("BrowserProvider", () => {
   const ganachePort = 8545;
   const dashboardPort = 8546;
 

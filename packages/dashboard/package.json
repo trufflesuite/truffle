@@ -12,15 +12,18 @@
     "@web3-react/injected-connector": "^6.0.7",
     "axios": "^0.21.1",
     "cors": "^2.8.5",
+    "debug": "^4.3.2",
     "ethers": "^5.4.7",
     "express": "^4.17.1",
-    "react-json-view": "^1.21.3"
+    "isomorphic-ws": "^4.0.1",
+    "react-json-view": "^1.21.3",
+    "ws": "^8.2.3"
   },
   "scripts": {
     "start:react": "DISABLE_ESLINT_PLUGIN=true SKIP_PREFLIGHT_CHECK=true craco start",
     "start:prebuilt": "node build/server/start-dashboard.js 5000 localhost",
-    "start:dev-backend": "ts-node --project tsconfig.server.json server/start-dashboard.ts 5000 localhost",
-    "start": "concurrently --kill-others \"yarn start:dev-backend\" \"NODE_ENV=\"development\" yarn start:react\"",
+    "start:dev-server": "ts-node --project tsconfig.server.json server/start-dev-server.ts",
+    "start": "concurrently --kill-others \"yarn start:dev-server\" \"NODE_ENV=\"development\" yarn start:react\"",
     "build:react": "DISABLE_ESLINT_PLUGIN=true SKIP_PREFLIGHT_CHECK=true craco build",
     "build:server": "tsc -p tsconfig.server.json",
     "build": "yarn build:react && yarn build:server",
