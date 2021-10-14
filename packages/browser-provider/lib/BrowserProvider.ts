@@ -31,7 +31,13 @@ export class BrowserProvider {
     this.verbose = options.verbose ?? false;
 
     // Start a dashboard at the provided port (will silently fail if the dashboard address is already in use)
-    startDashboardInBackground(this.dashboardPort, this.dashboardHost);
+    const dashboardOptions = {
+      port: this.dashboardPort,
+      host: this.dashboardHost,
+      rpc: false,
+      verbose: this.verbose,
+    };
+    startDashboardInBackground(dashboardOptions);
   }
 
   public send(
