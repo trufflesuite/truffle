@@ -1,20 +1,33 @@
 import WebSocket from "isomorphic-ws";
 import delay from "delay";
 import { EventEmitter } from "events";
-import { base64ToJson, broadcastAndAwaitFirst, broadcastAndDisregard, createMessage, jsonToBase64 } from "./utils";
-import { UnfulfilledRequest } from "./types";
+import {
+  base64ToJson,
+  broadcastAndAwaitFirst,
+  broadcastAndDisregard,
+  createMessage,
+  jsonToBase64
+} from "./utils";
 import { promisify } from "util";
 
-// TODO: Do we want to use socket.io for the message bus?
+interface UnfulfilledRequest {
+  socket: WebSocket;
+  data: WebSocket.Data;
+}
+
 export class DashboardMessageBus extends EventEmitter {
-  requestsServer: WebSocket.Server;
-  listenServer: WebSocket.Server;
-  clientSockets: WebSocket[] = [];
-  listeningSockets: WebSocket[] = [];
+  private requestsServer: WebSocket.Server;
+  private listenServer: WebSocket.Server;
+  private clientSockets: WebSocket[] = [];
+  private listeningSockets: WebSocket[] = [];
 
-  unfulfilledRequests: Map<string, UnfulfilledRequest> = new Map([]);
+  private unfulfilledRequests: Map<string, UnfulfilledRequest> = new Map([]);
 
-  constructor(public requestsPort: number, public listenPort: number, public host: string = "0.0.0.0") {
+  constructor(
+    public requestsPort: number,
+    public listenPort: number,
+    public host: string = "0.0.0.0"
+  ) {
     super();
   }
 
@@ -28,7 +41,9 @@ export class DashboardMessageBus extends EventEmitter {
       newListener.on("close", () => {
         this.logToClients("Listener disconnected", "connections");
 
-        this.listeningSockets = this.listeningSockets.filter((listener) => listener !== newListener);
+        this.listeningSockets = this.listeningSockets.filter(
+          listener => listener !== newListener
+        );
         this.terminateIfNoConnections();
       });
 
@@ -55,7 +70,9 @@ export class DashboardMessageBus extends EventEmitter {
       newClient.on("close", () => {
         this.logToClients("Client disconnected", "connections");
 
-        this.clientSockets = this.clientSockets.filter((client) => client !== newClient);
+        this.clientSockets = this.clientSockets.filter(
+          client => client !== newClient
+        );
         this.clearClientRequests(newClient);
         this.terminateIfNoConnections();
       });
@@ -78,7 +95,11 @@ export class DashboardMessageBus extends EventEmitter {
     this.emit("terminate");
   }
 
-  private async processRequest(socket: WebSocket, data: WebSocket.Data, listeners: WebSocket[]) {
+  private async processRequest(
+    socket: WebSocket,
+    data: WebSocket.Data,
+    listeners: WebSocket[]
+  ) {
     if (typeof data !== "string") return;
     await this.ready();
 
@@ -86,12 +107,18 @@ export class DashboardMessageBus extends EventEmitter {
     const message = base64ToJson(data);
 
     try {
-      this.logToClients(`Sending message to ${listeners.length} listeners`, "requests");
+      this.logToClients(
+        `Sending message to ${listeners.length} listeners`,
+        "requests"
+      );
       this.logToClients(message, "requests");
 
       const response = await broadcastAndAwaitFirst(listeners, message);
 
-      this.logToClients(`Sending response for message ${message.id}`, "responses");
+      this.logToClients(
+        `Sending response for message ${message.id}`,
+        "responses"
+      );
       this.logToClients(response, "responses");
 
       const encodedResponse = jsonToBase64(response);
@@ -100,12 +127,15 @@ export class DashboardMessageBus extends EventEmitter {
 
       this.invalidateMessage(message.id);
     } catch (error) {
-      this.logToClients(`An error occurred while processing message ${message.id}`, "errors");
+      this.logToClients(
+        `An error occurred while processing message ${message.id}`,
+        "errors"
+      );
       this.logToClients(error, "errors");
     }
   }
 
-  invalidateMessage(id: number) {
+  private invalidateMessage(id: number) {
     const invalidationMessage = createMessage("invalidate", id);
     broadcastAndDisregard(this.listeningSockets, invalidationMessage);
   }
