@@ -2,7 +2,14 @@ import express, { Application, NextFunction, Request, Response } from "express";
 import WebSocket from "isomorphic-ws";
 import path from "path";
 import getPort from "get-port";
-import { base64ToJson, connectToMessageBusWithRetries, createMessage, DashboardMessageBus, LogMessage, sendAndAwait } from "@truffle/dashboard-message-bus";
+import {
+  base64ToJson,
+  connectToMessageBusWithRetries,
+  createMessage,
+  DashboardMessageBus,
+  LogMessage,
+  sendAndAwait
+} from "@truffle/dashboard-message-bus";
 import cors from "cors";
 import { Server } from "http";
 import debugModule from "debug";
@@ -13,6 +20,7 @@ export default class DashboardServer {
   host: string;
   rpc: boolean;
   verbose: boolean;
+  frontendPath: string;
 
   private expressApp?: Application;
   private httpServer?: Server;
@@ -26,6 +34,12 @@ export default class DashboardServer {
     this.host = options.host ?? "localhost";
     this.rpc = options.rpc ?? true;
     this.verbose = options.verbose ?? false;
+    this.frontendPath = path.join(
+      __dirname,
+      ".",
+      "dashboard-frontend",
+      "build"
+    );
 
     this.boundTerminateListener = () => this.stop();
   }
@@ -39,20 +53,19 @@ export default class DashboardServer {
 
     this.expressApp.use(cors());
     this.expressApp.use(express.json());
-    this.expressApp.use(express.static(path.join(__dirname, '..')));
+    this.expressApp.use(express.static(this.frontendPath));
 
-    this.expressApp.get('/ports', this.getPorts.bind(this));
+    this.expressApp.get("/ports", this.getPorts.bind(this));
 
     if (this.rpc) {
       this.socket = await this.connectToMessageBus();
-      this.expressApp.post('/rpc', this.postRpc.bind(this));
+      this.expressApp.post("/rpc", this.postRpc.bind(this));
     }
 
-    await new Promise<void>((resolve) => {
-      this.httpServer = this.expressApp!.listen(this.port, this.host, () => {
-        console.log(`@truffle/dashboard started at ${this.host}:${this.port}`);
-        resolve();
-      });
+    await new Promise<void>(resolve => {
+      this.httpServer = this.expressApp!.listen(this.port, this.host, () =>
+        resolve()
+      );
     });
   }
 
@@ -60,7 +73,7 @@ export default class DashboardServer {
     this.messageBus?.off("terminate", this.boundTerminateListener);
     await this.messageBus?.terminate();
     this.socket?.terminate();
-    await new Promise<void>((resolve) => {
+    return new Promise<void>(resolve => {
       this.httpServer?.close(() => resolve());
     });
   }
@@ -73,7 +86,7 @@ export default class DashboardServer {
     res.json({
       dashboardPort: this.port,
       messageBusListenPort: this.messageBus.listenPort,
-      messageBusRequestsPort: this.messageBus.requestsPort,
+      messageBusRequestsPort: this.messageBus.requestsPort
     });
   }
 
@@ -84,14 +97,18 @@ export default class DashboardServer {
 
     const message = createMessage("browser-provider", req.body);
     sendAndAwait(this.socket, message)
-      .then((response) => res.json(response.payload))
+      .then(response => res.json(response.payload))
       .catch(next);
   }
 
   private async startMessageBus() {
     const messageBusListenPort = await getPort({ host: this.host });
     const messageBusRequestsPort = await getPort({ host: this.host });
-    const messageBus = new DashboardMessageBus(messageBusRequestsPort, messageBusListenPort, this.host);
+    const messageBus = new DashboardMessageBus(
+      messageBusRequestsPort,
+      messageBusListenPort,
+      this.host
+    );
 
     messageBus.start();
     messageBus.on("terminate", this.boundTerminateListener);
@@ -104,7 +121,10 @@ export default class DashboardServer {
       throw new Error("Message bus has not been started yet");
     }
 
-    const socket = await connectToMessageBusWithRetries(this.messageBus.requestsPort, this.host);
+    const socket = await connectToMessageBusWithRetries(
+      this.messageBus.requestsPort,
+      this.host
+    );
 
     if (this.verbose) {
       socket.addEventListener("message", (event: WebSocket.MessageEvent) => {

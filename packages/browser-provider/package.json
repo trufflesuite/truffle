@@ -15,7 +15,7 @@
     "test:manual:basic-rpc": "ts-node ./manual-test/manual-test-rpc.ts",
     "test:manual:metacoin-truffle": "pushd ./manual-test/metacoin-truffle && yarn && truffle migrate --network browser --reset; popd",
     "test:manual:metacoin-hardhat": "pushd ./manual-test/metacoin-hardhat && yarn && yarn deploy --network browser; popd",
-    "test:manual:metacoin-hardhat-2": "pushd ./manual-test/metacoin-hardhat && yarn && yarn deploy-with-hardhat-deploy --network browser; popd"
+    "test:manual:metacoin-hardhat-2": "pushd ./manual-test/metacoin-hardhat && yarn && yarn deploy-with-hardhat-deploy --reset --network browser; popd"
   },
   "repository": {
     "type": "git",
@@ -36,7 +36,7 @@
     "@types/node": "^14.0.13",
     "@types/promise-timeout": "^1.3.0",
     "@types/web3": "^1.0.20",
-    "@types/ws": "^7.4.4",
+    "@types/ws": "^8.2.0",
     "ethereum-protocol": "^1.0.1",
     "ethers": "^5.4.5",
     "ganache-core": "^2.13.2",
@@ -53,6 +53,9 @@
     "delay": "^5.0.0",
     "isomorphic-ws": "^4.0.1",
     "promise-timeout": "^1.3.0",
-    "ws": "^7.4.5"
+    "ws": "^8.2.0"
+  },
+  "browser": {
+    "ws": false
   }
 }
