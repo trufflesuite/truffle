@@ -12,7 +12,10 @@ function Header({}: Props) {
   const { account, library, chainId } = useWeb3React<providers.Web3Provider>();
 
   useEffect(() => {
-    const updateAccountDisplay = async (library: providers.Web3Provider, account: string) => {
+    const updateAccountDisplay = async (
+      library: providers.Web3Provider,
+      account: string
+    ) => {
       setDisplayName(await getDisplayName(library, account));
     };
 

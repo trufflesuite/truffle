@@ -1,5 +1,11 @@
 import WebSocket from "isomorphic-ws";
-import { BrowserProviderMessage, connectToMessageBusWithRetries, isBrowserProviderMessage, isInvalidateMessage, Message } from "@truffle/dashboard-message-bus";
+import {
+  BrowserProviderMessage,
+  connectToMessageBusWithRetries,
+  isBrowserProviderMessage,
+  isInvalidateMessage,
+  Message
+} from "@truffle/dashboard-message-bus";
 import { base64ToJson, getPorts } from "./utils/utils";
 import { useState } from "react";
 import Header from "./components/Header/Header";
@@ -8,7 +14,9 @@ import ConnectNetwork from "./components/ConnectNetwork";
 
 function Dashboard() {
   const [socket, setSocket] = useState<WebSocket | undefined>();
-  const [browserProviderRequests, setBrowserProviderRequests] = useState<BrowserProviderMessage[]>([]);
+  const [browserProviderRequests, setBrowserProviderRequests] = useState<
+    BrowserProviderMessage[]
+  >([]);
 
   const initializeSocket = async () => {
     if (socket && socket.readyState === WebSocket.OPEN) return;
@@ -26,12 +34,17 @@ function Dashboard() {
         if (typeof event.data !== "string") return;
         const message = base64ToJson(event.data) as Message;
 
-        console.debug('Received message', message);
+        console.debug("Received message", message);
 
         if (isBrowserProviderMessage(message)) {
-          setBrowserProviderRequests((previousRequests) => [...previousRequests, message]);
+          setBrowserProviderRequests(previousRequests => [
+            ...previousRequests,
+            message
+          ]);
         } else if (isInvalidateMessage(message)) {
-          setBrowserProviderRequests((previousRequests) => previousRequests.filter((request) => request.id !== message.payload));
+          setBrowserProviderRequests(previousRequests =>
+            previousRequests.filter(request => request.id !== message.payload)
+          );
         }
       }
     );
@@ -39,18 +52,17 @@ function Dashboard() {
     setSocket(connectedSocket);
   };
 
-
   return (
     <div className="h-full min-h-screen bg-gradient-to-b from-truffle-lighter to-truffle-light">
       <Header />
       {!socket && <ConnectNetwork confirm={initializeSocket} />}
-      {socket &&
+      {socket && (
         <BrowserProvider
           socket={socket}
           requests={browserProviderRequests}
           setRequests={setBrowserProviderRequests}
         />
-      }
+      )}
     </div>
   );
 }

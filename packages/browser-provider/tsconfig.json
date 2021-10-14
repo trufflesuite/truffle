@@ -16,18 +16,8 @@
     "strictNullChecks": true,
     "rootDir": ".",
     "baseUrl": ".",
-    "types": [
-      "jest",
-      "react",
-      "node"
-    ]
+    "types": ["jest", "react", "node"]
   },
-  "include": [
-    "lib/**/*",
-    "test/**/*",
-    "manual-test/**/*",
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["lib/**/*", "test/**/*", "manual-test/**/*"],
+  "exclude": ["node_modules"]
 }

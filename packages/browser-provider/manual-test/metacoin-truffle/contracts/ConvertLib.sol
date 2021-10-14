@@ -6,7 +6,10 @@ library ConvertLib {
         uint256 name;
     }
 
-    function convert(uint amount,uint conversionRate) public pure returns (uint convertedAmount)
+    function convert(uint256 amount, uint256 conversionRate)
+        public
+        pure
+        returns (uint256 convertedAmount)
     {
         return amount * conversionRate;
     }

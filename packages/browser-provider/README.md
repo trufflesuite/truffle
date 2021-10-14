@@ -19,8 +19,8 @@ The browser provider can be used in place where you'd use any other web3 provide
 ### Ethers.js
 
 ```js
-const { BrowserProvider } = require('@truffle/browser-provider');
-const { providers } = require('ethers');
+const { BrowserProvider } = require("@truffle/browser-provider");
+const { providers } = require("ethers");
 
 const browserProvider = new BrowserProvider();
 const ethersProvider = new providers.Web3Provider(browserProvider);
@@ -31,8 +31,8 @@ const [account] = await ethersProvider.listAccounts();
 ### Web3.js
 
 ```js
-const { BrowserProvider } = require('@truffle/browser-provider');
-const Web3 = require('web3');
+const { BrowserProvider } = require("@truffle/browser-provider");
+const Web3 = require("web3");
 
 const browserProvider = new BrowserProvider();
 const web3 = new Web3(browserProvider);
@@ -64,6 +64,7 @@ export interface BrowserProviderOptions {
 ```
 
 ## Logging
+
 When setting the browser provider's `verbose` option to `true`, debug output is logged in the following "debug" namespaces
 
 - `dashboard-message-bus:connections` - logs connections and disconnections of message bus clients and listeners

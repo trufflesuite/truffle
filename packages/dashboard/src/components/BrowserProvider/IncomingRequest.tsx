@@ -7,14 +7,20 @@ import { BrowserProviderMessage } from "@truffle/dashboard-message-bus";
 
 interface Props {
   request: BrowserProviderMessage;
-  setRequests: (requests: BrowserProviderMessage[] | ((requests: BrowserProviderMessage[]) => BrowserProviderMessage[])) => void;
+  setRequests: (
+    requests:
+      | BrowserProviderMessage[]
+      | ((requests: BrowserProviderMessage[]) => BrowserProviderMessage[])
+  ) => void;
   provider: any;
   socket: WebSocket;
 }
 
 function IncomingRequest({ provider, socket, request, setRequests }: Props) {
   const removeFromRequests = () => {
-    setRequests((previousRequests) => previousRequests.filter(other => other.id !== request.id));
+    setRequests(previousRequests =>
+      previousRequests.filter(other => other.id !== request.id)
+    );
   };
 
   const process = async () => {
@@ -39,12 +45,14 @@ function IncomingRequest({ provider, socket, request, setRequests }: Props) {
     removeFromRequests();
   };
 
-  const formatBrowserProviderRequestParameters = (request: BrowserProviderMessage) => {
+  const formatBrowserProviderRequestParameters = (
+    request: BrowserProviderMessage
+  ) => {
     switch (request.payload.method) {
       case "eth_sendTransaction":
       case "eth_signTransaction": {
         const [transaction] = request.payload.params;
-        return (<ReactJson name="transaction" src={transaction as any} />);
+        return <ReactJson name="transaction" src={transaction as any} />;
       }
       case "eth_signTypedData_v1":
       case "eth_signTypedData": {
@@ -94,11 +102,7 @@ function IncomingRequest({ provider, socket, request, setRequests }: Props) {
 
   const header = request.payload.method;
 
-  const body = (
-    <div>
-      {formatBrowserProviderRequestParameters(request)}
-    </div>
-  );
+  const body = <div>{formatBrowserProviderRequestParameters(request)}</div>;
 
   const footer = (
     <div className="flex justify-start items-center gap-2">

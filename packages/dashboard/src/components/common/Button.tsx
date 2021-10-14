@@ -7,7 +7,10 @@ interface Props {
 
 function Button({ onClick, text }: Props) {
   return (
-    <button className="rounded p-2 bg-truffle-blue text-truffle-brown hover:bg-white" onClick={onClick}>
+    <button
+      className="rounded p-2 bg-truffle-blue text-truffle-brown hover:bg-white"
+      onClick={onClick}
+    >
       {text}
     </button>
   );

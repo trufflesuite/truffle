@@ -6,7 +6,7 @@ The `@truffle/dashboard-message-bus` manages the communication between the Truff
 
 Any requests from clients are sent to all listeners, but only the first response will be returned to the client. When new listeners connect, any "unfulfilled requests" will be sent to the newly connected listeners as well.
 
-The message bus stays running as long as there is at least one client *or* listener connected. As soon as the last one disconnects, the message bus shuts down.
+The message bus stays running as long as there is at least one client _or_ listener connected. As soon as the last one disconnects, the message bus shuts down.
 
 ## Installation
 
