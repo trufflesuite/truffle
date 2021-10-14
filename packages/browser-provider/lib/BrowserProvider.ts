@@ -6,7 +6,14 @@ import type {
 import { callbackify } from "util";
 import WebSocket from "isomorphic-ws";
 import delay from "delay";
-import { sendAndAwait, createMessage, connectToMessageBusWithRetries, getMessageBusPorts, base64ToJson, LogMessage } from "@truffle/dashboard-message-bus";
+import {
+  sendAndAwait,
+  createMessage,
+  connectToMessageBusWithRetries,
+  getMessageBusPorts,
+  base64ToJson,
+  LogMessage
+} from "@truffle/dashboard-message-bus";
 import { startDashboardInBackground } from "@truffle/dashboard";
 import { timeout } from "promise-timeout";
 import { BrowserProviderOptions } from "./types";
@@ -35,15 +42,12 @@ export class BrowserProvider {
       port: this.dashboardPort,
       host: this.dashboardHost,
       rpc: false,
-      verbose: this.verbose,
+      verbose: this.verbose
     };
     startDashboardInBackground(dashboardOptions);
   }
 
-  public send(
-    payload: JSONRPCRequestPayload,
-    callback: JSONRPCErrorCallback
-  ) {
+  public send(payload: JSONRPCRequestPayload, callback: JSONRPCErrorCallback) {
     const sendInternal = (payload: JSONRPCRequestPayload) =>
       this.sendInternal(payload);
     callbackify(sendInternal)(payload, callback);
@@ -71,7 +75,7 @@ export class BrowserProvider {
 
     const { payload: response } = await timeout(
       sendAndAwait(this.socket, message),
-      this.timeoutSeconds * 1000,
+      this.timeoutSeconds * 1000
     );
 
     this.concurrentRequests -= 1;
@@ -107,8 +111,14 @@ export class BrowserProvider {
 
     this.connecting = true;
     try {
-      const { messageBusRequestsPort } = await getMessageBusPorts(this.dashboardPort, this.dashboardHost);
-      this.socket = await connectToMessageBusWithRetries(messageBusRequestsPort, this.dashboardHost);
+      const { messageBusRequestsPort } = await getMessageBusPorts(
+        this.dashboardPort,
+        this.dashboardHost
+      );
+      this.socket = await connectToMessageBusWithRetries(
+        messageBusRequestsPort,
+        this.dashboardHost
+      );
       if (this.verbose) this.setupLogging();
     } finally {
       this.connecting = false;
@@ -116,15 +126,18 @@ export class BrowserProvider {
   }
 
   setupLogging() {
-    this.socket?.addEventListener("message", (event: WebSocket.MessageEvent) => {
-      if (typeof event.data !== "string") return;
-      const message = base64ToJson(event.data);
-      if (message.type === "log") {
-        const logMessage = message as LogMessage;
-        const debug = debugModule(logMessage.payload.namespace);
-        debug.enabled = true;
-        debug(logMessage.payload.message);
+    this.socket?.addEventListener(
+      "message",
+      (event: WebSocket.MessageEvent) => {
+        if (typeof event.data !== "string") return;
+        const message = base64ToJson(event.data);
+        if (message.type === "log") {
+          const logMessage = message as LogMessage;
+          const debug = debugModule(logMessage.payload.namespace);
+          debug.enabled = true;
+          debug(logMessage.payload.message);
+        }
       }
-    });
+    );
   }
 }

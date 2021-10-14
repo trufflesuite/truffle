@@ -1,7 +1,11 @@
 import WebSocket from "isomorphic-ws";
-import { BrowserProviderMessage, getMessageBusPorts, PortsConfig } from "@truffle/dashboard-message-bus";
+import {
+  BrowserProviderMessage,
+  getMessageBusPorts,
+  PortsConfig
+} from "@truffle/dashboard-message-bus";
 import axios from "axios";
-import { providers } from 'ethers';
+import { providers } from "ethers";
 import { JSONRPCRequestPayload } from "ethereum-protocol";
 import { promisify } from "util";
 import { INTERACTIVE_REQUESTS, UNSUPPORTED_REQUESTS } from "./constants";
@@ -24,7 +28,10 @@ export const base64ToJson = (base64: string) => {
 
 export const getPorts = async (): Promise<PortsConfig> => {
   const dashboardHost = window.location.hostname;
-  const dashboardPort = process.env.NODE_ENV === 'development' ? 5000 : Number(window.location.port);
+  const dashboardPort =
+    process.env.NODE_ENV === "development"
+      ? 5000
+      : Number(window.location.port);
   return getMessageBusPorts(dashboardPort, dashboardHost);
 };
 
@@ -51,8 +58,15 @@ export const forwardBrowserProviderRequest = async (
   }
 };
 
-export const handleBrowserProviderRequest = async (request: BrowserProviderMessage, provider: any, responseSocket: WebSocket) => {
-  const responsePayload = await forwardBrowserProviderRequest(provider, request.payload);
+export const handleBrowserProviderRequest = async (
+  request: BrowserProviderMessage,
+  provider: any,
+  responseSocket: WebSocket
+) => {
+  const responsePayload = await forwardBrowserProviderRequest(
+    provider,
+    request.payload
+  );
   const response = {
     id: request.id,
     payload: responsePayload
@@ -61,7 +75,10 @@ export const handleBrowserProviderRequest = async (request: BrowserProviderMessa
   respond(response, responseSocket);
 };
 
-export const respondToUnsupportedRequest = (request: BrowserProviderMessage, responseSocket: WebSocket) => {
+export const respondToUnsupportedRequest = (
+  request: BrowserProviderMessage,
+  responseSocket: WebSocket
+) => {
   const errorResponse = {
     id: request.id,
     payload: {
@@ -78,28 +95,37 @@ export const respondToUnsupportedRequest = (request: BrowserProviderMessage, res
 };
 
 export const respond = (response: any, socket: WebSocket) => {
-  console.debug('Sending response', response);
+  console.debug("Sending response", response);
   const encodedResponse = jsonToBase64(response);
   socket.send(encodedResponse);
 };
 
-export const getLibrary = (provider: any) => new providers.Web3Provider(provider);
+export const getLibrary = (provider: any) =>
+  new providers.Web3Provider(provider);
 
 export const getNetworkName = async (chainId: number) => {
-  const { data: chainList } = await axios.get('https://chainid.network/chains.json');
+  const { data: chainList } = await axios.get(
+    "https://chainid.network/chains.json"
+  );
   const [chain] = chainList.filter((chain: any) => chain.chainId === chainId);
   if (!chain) return `CHAIN ID ${chainId}`;
   return chain.name.toUpperCase();
 };
 
-export const getDisplayName = async (library: providers.Web3Provider, address: string) => {
+export const getDisplayName = async (
+  library: providers.Web3Provider,
+  address: string
+) => {
   const ensName = await reverseLookup(library, address);
   const shortenedAccount = shortenAddress(address);
   const displayName = (ensName ?? shortenedAccount).toUpperCase();
   return displayName;
 };
 
-export const reverseLookup = async (library: providers.Web3Provider, address: string) => {
+export const reverseLookup = async (
+  library: providers.Web3Provider,
+  address: string
+) => {
   try {
     return await library.lookupAddress(address);
   } catch {

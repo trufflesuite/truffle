@@ -13,16 +13,10 @@ function Card({ header, body, footer }: Props) {
     </div>
   );
 
-  const bodyOrNull = body && (
-    <div className="p-3 overflow-auto">
-      {body}
-    </div>
-  );
+  const bodyOrNull = body && <div className="p-3 overflow-auto">{body}</div>;
 
   const footerOrNull = footer && (
-    <div className="border-t border-grey py-3 mx-3">
-      {footer}
-    </div>
+    <div className="border-t border-grey py-3 mx-3">{footer}</div>
   );
 
   return (

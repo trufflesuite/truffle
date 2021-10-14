@@ -1,9 +1,15 @@
-import { base64ToJson, connectToMessageBusWithRetries, DashboardMessageBus, jsonToBase64, sendAndAwait } from "../lib";
+import {
+  base64ToJson,
+  connectToMessageBusWithRetries,
+  DashboardMessageBus,
+  jsonToBase64,
+  sendAndAwait
+} from "../lib";
 import WebSocket from "ws";
 
 jest.setTimeout(2000000);
 
-describe('DashboardMessageBus', () => {
+describe("DashboardMessageBus", () => {
   const requestsPort = 12345;
   const listenPort = 23456;
 
@@ -23,7 +29,7 @@ describe('DashboardMessageBus', () => {
     listener.close();
   });
 
-  it('should send a message between a client and listener', async () => {
+  it("should send a message between a client and listener", async () => {
     listener.on("message", (data: string) => {
       const request = base64ToJson(data);
       const response = { ...request, payload: "response" };

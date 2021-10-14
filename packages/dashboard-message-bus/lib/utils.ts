@@ -1,6 +1,6 @@
 import WebSocket from "isomorphic-ws";
 import { Message, PortsConfig } from "./types";
-import any from 'promise.any';
+import any from "promise.any";
 import delay from "delay";
 import axios from "axios";
 
@@ -27,14 +27,20 @@ export const createMessage = (type: string, payload: any): Message => {
   return { id, type, payload };
 };
 
-export const broadcastAndDisregard = (sockets: WebSocket[], message: Message) => {
+export const broadcastAndDisregard = (
+  sockets: WebSocket[],
+  message: Message
+) => {
   const encodedMessage = jsonToBase64(message);
-  sockets.forEach((socket) => {
+  sockets.forEach(socket => {
     socket.send(encodedMessage);
   });
 };
 
-export const broadcastAndAwaitFirst = async (sockets: WebSocket[], message: Message) => {
+export const broadcastAndAwaitFirst = async (
+  sockets: WebSocket[],
+  message: Message
+) => {
   const promises = sockets.map(socket => sendAndAwait(socket, message));
   const result = await Promise.any(promises);
   return result;
@@ -55,7 +61,11 @@ export const sendAndAwait = (socket: WebSocket, message: Message) => {
     });
 
     socket.addEventListener("close", (event: WebSocket.CloseEvent) => {
-      reject(new Error(`Socket connection closed with code '${event.code}' and reason '${event.reason}'`));
+      reject(
+        new Error(
+          `Socket connection closed with code '${event.code}' and reason '${event.reason}'`
+        )
+      );
     });
 
     const encodedMessage = jsonToBase64(message);
@@ -67,23 +77,33 @@ export const connectToMessageBusWithRetries = async (
   port: number,
   host: string = "localhost",
   retries: number = 50,
-  tryCount: number = 1,
+  tryCount: number = 1
 ): Promise<WebSocket> => {
   try {
     return await connectToMessageBus(port, host);
   } catch (e) {
     if (tryCount === retries) throw e;
     await delay(1000);
-    return await connectToMessageBusWithRetries(port, host, retries, tryCount + 1);
+    return await connectToMessageBusWithRetries(
+      port,
+      host,
+      retries,
+      tryCount + 1
+    );
   }
 };
 
-export const connectToMessageBus = (port: number, host: string = "localhost") => {
+export const connectToMessageBus = (
+  port: number,
+  host: string = "localhost"
+) => {
   const socket = new WebSocket(`ws://${host}:${port}`);
 
   return new Promise<WebSocket>((resolve, reject) => {
     socket.addEventListener("open", () => resolve(socket));
-    socket.addEventListener("error", (event: WebSocket.ErrorEvent) => reject(event.error));
+    socket.addEventListener("error", (event: WebSocket.ErrorEvent) =>
+      reject(event.error)
+    );
   });
 };
 
@@ -94,13 +114,22 @@ export const getMessageBusPorts = async (
   tryCount: number = 1
 ): Promise<PortsConfig> => {
   try {
-    const { data } = await axios.get(`http://${dashboardHost}:${dashboardPort}/ports`);
+    const { data } = await axios.get(
+      `http://${dashboardHost}:${dashboardPort}/ports`
+    );
     return data;
   } catch {
     if (tryCount === retries) {
-      throw new Error(`Could not connect to dashboard at http://${dashboardHost}:${dashboardPort}/ports`);
+      throw new Error(
+        `Could not connect to dashboard at http://${dashboardHost}:${dashboardPort}/ports`
+      );
     }
     await delay(1000);
-    return await getMessageBusPorts(dashboardPort, dashboardHost, retries, tryCount + 1);
+    return await getMessageBusPorts(
+      dashboardPort,
+      dashboardHost,
+      retries,
+      tryCount + 1
+    );
   }
 };

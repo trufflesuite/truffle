@@ -51,7 +51,7 @@ describe("BrowserProvider", () => {
         id: 1
       });
 
-      expect(response).toHaveProperty('result');
+      expect(response).toHaveProperty("result");
       expect(response?.result[0]).toBeDefined();
     });
 
@@ -72,7 +72,7 @@ describe("BrowserProvider", () => {
       // Then await the response
       const response = await request;
 
-      expect(response).toHaveProperty('result');
+      expect(response).toHaveProperty("result");
       expect(response?.result[0]).toBeDefined();
     });
 
@@ -81,25 +81,27 @@ describe("BrowserProvider", () => {
 
       await mockDashboard.connect(messageBusPorts.messageBusListenPort);
 
-      const { result: accounts } = await send({
-        jsonrpc: "2.0",
-        method: "eth_accounts",
-        params: [],
-        id: 1
-      }) ?? {};
+      const { result: accounts } =
+        (await send({
+          jsonrpc: "2.0",
+          method: "eth_accounts",
+          params: [],
+          id: 1
+        })) ?? {};
 
       const transaction = {
         from: accounts[0],
         to: accounts[1],
-        value: '16345785D8A0000', // 0.1 ETH
+        value: "16345785D8A0000" // 0.1 ETH
       };
 
-      const { result: hash } = await send({
-        jsonrpc: "2.0",
-        method: "eth_sendTransaction",
-        params: [transaction],
-        id: 1
-      }) ?? {};
+      const { result: hash } =
+        (await send({
+          jsonrpc: "2.0",
+          method: "eth_sendTransaction",
+          params: [transaction],
+          id: 1
+        })) ?? {};
 
       expect(hash).toBeDefined();
     });
@@ -149,13 +151,12 @@ describe("BrowserProvider", () => {
       const response = await signer.sendTransaction({
         from: accounts[0],
         to: accounts[1],
-        value: utils.parseEther("0.1"),
+        value: utils.parseEther("0.1")
       });
 
       expect(response).toHaveProperty("hash");
       expect(response.hash).toBeDefined();
     });
-
 
     it("should send ETH even when dashboard loses connection as long as keepAlive is true", async () => {
       browserProvider.keepAlive = true;
@@ -171,7 +172,7 @@ describe("BrowserProvider", () => {
       const response = await signer.sendTransaction({
         from: accounts[0],
         to: accounts[1],
-        value: utils.parseEther("0.1"),
+        value: utils.parseEther("0.1")
       });
 
       // Manually terminate the provider
@@ -219,7 +220,7 @@ describe("BrowserProvider", () => {
       const response = await web3.eth.sendTransaction({
         from: accounts[0],
         to: accounts[1],
-        value: web3.utils.toWei('0.1'),
+        value: web3.utils.toWei("0.1")
       });
 
       expect(response).toHaveProperty("transactionHash");
@@ -239,7 +240,7 @@ describe("BrowserProvider", () => {
       const response = await web3.eth.sendTransaction({
         from: accounts[0],
         to: accounts[1],
-        value: web3.utils.toWei('0.1'),
+        value: web3.utils.toWei("0.1")
       });
 
       // Manually terminate the provider
