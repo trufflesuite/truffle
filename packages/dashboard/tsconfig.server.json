@@ -11,7 +11,7 @@
     "downlevelIteration": true,
     "allowSyntheticDefaultImports": true,
     "module": "commonjs",
-    "outDir": "./build",
+    "outDir": "./dist",
     "strictBindCallApply": true,
     "strictNullChecks": true,
     "rootDir": ".",
@@ -23,6 +23,6 @@
     ]
   },
   "include": [
-    "server/**/*"
+    "lib/**/*"
   ]
 }

@@ -5,7 +5,7 @@
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
   "files": [
-    "dist"
+    "dist/lib"
   ],
   "scripts": {
     "build": "tsc",
@@ -31,7 +31,6 @@
     "@types/node": "^14.0.13",
     "@types/promise.any": "^2.0.0",
     "@types/web3": "^1.0.20",
-    "@types/ws": "^7.4.4",
     "ethereum-protocol": "^1.0.1",
     "express": "^4.17.1",
     "jest": "^26.0.1",
@@ -40,12 +39,16 @@
   },
   "dependencies": {
     "@truffle/dashboard": "^0.1.0",
+    "@types/ws": "^8.2.0",
     "axios": "^0.21.3",
     "delay": "^5.0.0",
     "isomorphic-ws": "^4.0.1",
     "open": "^8.2.0",
     "promise.any": "^2.0.2",
-    "ws": "^7.4.5",
+    "ws": "^8.2.3",
     "yarn": "^1.22.11"
+  },
+  "browser": {
+    "ws": false
   }
 }

@@ -4,6 +4,7 @@ module.exports = {
   config: require("./config"),
   console: require("./console"),
   create: require("./create"),
+  dashboard: require("./dashboard"),
   db: require("./db"),
   debug: require("./debug"),
   deploy: require("./deploy"),
