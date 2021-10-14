@@ -1,4 +1,7 @@
-import { startDashboard } from ".";
+import { base64ToJson } from "@truffle/dashboard-message-bus";
+import DashboardServer from "./DashboardServer";
 
-const [dashboardPort, dashboardHost] = process.argv.slice(2);
-startDashboard(Number(dashboardPort), dashboardHost);
+const [optionsBase64] = process.argv.slice(2);
+const options = base64ToJson(optionsBase64);
+const dashboardServer = new DashboardServer(options);
+dashboardServer.start();

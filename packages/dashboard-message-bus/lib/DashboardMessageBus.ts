@@ -3,6 +3,7 @@ import delay from "delay";
 import { EventEmitter } from "events";
 import { base64ToJson, broadcastAndAwaitFirst, broadcastAndDisregard, createMessage, jsonToBase64 } from "./utils";
 import { UnfulfilledRequest } from "./types";
+import { promisify } from "util";
 
 // TODO: Do we want to use socket.io for the message bus?
 export class DashboardMessageBus extends EventEmitter {
@@ -13,10 +14,14 @@ export class DashboardMessageBus extends EventEmitter {
 
   unfulfilledRequests: Map<string, UnfulfilledRequest> = new Map([]);
 
-  start(requestsPort: number, listenPort: number, host: string = "0.0.0.0") {
+  constructor(public requestsPort: number, public listenPort: number, public host: string = "0.0.0.0") {
+    super();
+  }
+
+  start() {
     this.listenServer = new WebSocket.Server({
-      host,
-      port: listenPort
+      host: this.host,
+      port: this.listenPort
     });
 
     this.listenServer.on("connection", (newListener: WebSocket) => {
@@ -38,8 +43,8 @@ export class DashboardMessageBus extends EventEmitter {
     });
 
     this.requestsServer = new WebSocket.Server({
-      host,
-      port: requestsPort
+      host: this.host,
+      port: this.requestsPort
     });
 
     this.requestsServer.on("connection", (newClient: WebSocket) => {
@@ -65,6 +70,12 @@ export class DashboardMessageBus extends EventEmitter {
     if (this.listeningSockets.length > 0) return;
     await delay(1000);
     await this.ready();
+  }
+
+  async terminate() {
+    await promisify(this.requestsServer.close.bind(this.requestsServer))();
+    await promisify(this.listenServer.close.bind(this.listenServer))();
+    this.emit("terminate");
   }
 
   private async processRequest(socket: WebSocket, data: WebSocket.Data, listeners: WebSocket[]) {
@@ -125,12 +136,6 @@ export class DashboardMessageBus extends EventEmitter {
     if (this.clientSockets.length === 0 && this.listeningSockets.length === 0) {
       this.terminate();
     }
-  }
-
-  private terminate() {
-    this.requestsServer.close();
-    this.listenServer.close();
-    this.emit("terminate");
   }
 
   private clearClientRequests(client: WebSocket) {
