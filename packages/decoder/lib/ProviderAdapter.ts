@@ -3,6 +3,7 @@ const debug = debugModule("decoder:adapter");
 import type { BlockSpecifier, RegularizedBlockSpecifier } from "./types";
 import type BN from "bn.js";
 import type { Provider as LegacyProvider } from "web3/providers";
+import type { JsonRpcProvider as EthersProvider } from "ethers/providers";
 import { promisify } from "util";
 
 // lifted from @types/web3
@@ -77,7 +78,7 @@ const formatBlockSpecifier = (block: BlockSpecifier): string => {
   }
 };
 
-type Provider = LegacyProvider | Eip1193Provider;
+type Provider = LegacyProvider | Eip1193Provider | EthersProvider;
 
 // EIP-1193 providers use `request()` instead of `send()`
 // NOTE this provider returns `response.result` already unwrapped
@@ -85,6 +86,14 @@ type Provider = LegacyProvider | Eip1193Provider;
 const isEip1193Provider = (
   provider: Provider
 ): provider is Eip1193Provider => "request" in provider;
+
+// ethers' JsonRpcProvider's `send()` method takes separate method/params args
+// HACK detect this by looking for the ethers-specific `listAccounts` method
+// NOTE this provider returns `response.result` already unwrapped
+// https://docs.ethers.io/v5/api/providers/jsonrpc-provider/
+const isEthersProvider = (
+  provider: Provider
+): provider is EthersProvider => "listAccounts" in provider;
 
 export class ProviderAdapter {
   public provider: Provider;
@@ -100,6 +109,8 @@ export class ProviderAdapter {
 
     if (isEip1193Provider(this.provider)) {
       return await this.provider.request({ method, params });
+    } else if (isEthersProvider(this.provider)) {
+      return await this.provider.send(method, params);
     } else {
       const sendMethod = promisify(this.provider.send).bind(this.provider);
       return (
