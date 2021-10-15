@@ -118,7 +118,9 @@ export type {
   WrapResponse,
   IntegerWrapResponse,
   DecimalWrapResponse,
-  AddressWrapResponse
+  AddressWrapResponse,
+  BlockSpecifier,
+  RegularizedBlockSpecifier
 } from "./types";
 export * from "./common";
 

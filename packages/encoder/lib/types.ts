@@ -1,4 +1,4 @@
-import type { Provider } from "web3/providers";
+import type { Provider } from "./adapter";
 import type { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import type { Compilations, Format, Evm } from "@truffle/codec";
 import type * as Codec from "@truffle/codec";

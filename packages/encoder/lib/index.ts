@@ -168,8 +168,11 @@ export {
   ContractNotDeployedError
 } from "./errors";
 
+import { ProviderAdapter } from "./adapter";
+export { ProviderAdapter };
+export { Provider } from "./adapter";
+
 import { Compilations } from "@truffle/codec";
-import Web3 from "web3";
 
 /**
  * @hidden
@@ -400,7 +403,7 @@ async function networkIdForInfo(
   if (settings.networkId !== undefined) {
     return settings.networkId;
   } else if (settings.provider) {
-    return await new Web3(settings.provider).eth.net.getId();
+    return await new ProviderAdapter(settings.provider).getNetworkId();
   } else {
     return null;
   }
