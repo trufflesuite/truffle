@@ -36,14 +36,8 @@ interface SourceFilesArtifactsUpdatedTimes {
   [filePath: string]: number; // ms since epoch
 }
 
-const getKeyFromPath = (fsPath: string): string => {
-  debug("getKeyFromPath", fsPath);
-  debug(new Error().stack);
-  //HACK: Not sure why there would be no source paths. We should enforce that
-  //sources have paths. Tests could introduces sources with out paths, and
-  //maybe  the compile external workflow? 
-  return fsPath ? fsPath.split(path.sep).join("/") : fsPath;
-}
+const getKeyFromPath = (fsPath: string): string => 
+  fsPath.split(path.sep).join("/");
 
 function readAndParseArtifactFiles(
   paths: string[],
