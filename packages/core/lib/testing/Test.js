@@ -106,7 +106,13 @@ const Test = {
 
     const runner = new TestRunner(config);
 
-    await this.performInitialDeploy(config, testResolver);
+    if (config.migrateNone || config['migrate-none']) {
+      if (config.events) {
+        config.events.emit("migrate:skipped");
+      }
+    } else {
+      await this.performInitialDeploy(config, testResolver);
+    }
 
     const sourcePaths = []
       .concat(
