@@ -579,7 +579,15 @@ class DebugInterpreter {
           );
           break;
         }
-        await this.printer.printVariables();
+
+        //first: process which sections we should print out
+        const tempPrintouts = this.updatePrintouts(
+          splitArgs,
+          this.printer.sections,
+          this.printer.sectionPrintouts
+        );
+
+        await this.printer.printVariables(tempPrintouts);
         if (this.session.view(trace.finished)) {
           await this.printer.printReturnValue();
         }
@@ -596,29 +604,12 @@ class DebugInterpreter {
         break;
       case "p":
         //first: process which locations we should print out
-        let temporaryPrintouts = new Set();
-        for (let argument of splitArgs) {
-          let fullLocation;
-          if (argument[0] === "+" || argument[0] === "-") {
-            fullLocation = argument.slice(1);
-          } else {
-            fullLocation = argument;
-          }
-          let location = this.printer.locations.find(possibleLocation =>
-            fullLocation.startsWith(possibleLocation)
-          );
-          if (argument[0] === "+") {
-            this.printer.printouts.add(location);
-          } else if (argument[0] === "-") {
-            this.printer.printouts.delete(location);
-          } else {
-            temporaryPrintouts.add(location);
-          }
-        }
-        for (let location of this.printer.printouts) {
-          debug("location: %s", location);
-          temporaryPrintouts.add(location);
-        }
+        const temporaryPrintouts = this.updatePrintouts(
+          splitArgs,
+          this.printer.locations,
+          this.printer.locationPrintouts
+        );
+
         if (this.session.view(session.status.loaded)) {
           if (this.session.view(trace.steps).length > 0) {
             this.printer.printInstruction(temporaryPrintouts);
@@ -736,6 +727,39 @@ class DebugInterpreter {
     ) {
       this.lastCommand = cmd;
     }
+  }
+
+  // update the printouts according to user inputs
+  // called by case v for section printouts and case p for location printouts
+  //
+  // NOTE: THIS FUNCTION IS NOT PURE.
+  //       The input printOuts is altered according to the values of other inputs: userArgs and selections.
+  //       The function returns an object, tempPrintouts, that contains the selected printouts.
+  updatePrintouts(userArgs, selections, printOuts) {
+    let tempPrintouts = new Set();
+    for (let argument of userArgs) {
+      let fullSelection;
+      if (argument[0] === "+" || argument[0] === "-") {
+        fullSelection = argument.slice(1);
+      } else {
+        fullSelection = argument;
+      }
+      let selection = selections.find(possibleSelection =>
+        fullSelection.startsWith(possibleSelection)
+      );
+      if (argument[0] === "+") {
+        printOuts.add(selection);
+      } else if (argument[0] === "-") {
+        printOuts.delete(selection);
+      } else {
+        tempPrintouts.add(selection);
+      }
+    }
+    for (let selection of printOuts) {
+      debug("selection: %s", selection);
+      tempPrintouts.add(selection);
+    }
+    return tempPrintouts;
   }
 }
 
