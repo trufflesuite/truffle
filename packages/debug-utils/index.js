@@ -42,7 +42,7 @@ const commandReference = {
   "p": "print instruction & state (`p [mem|cal|sto]*`; see docs for more)",
   "l": "print additional source context",
   "h": "print this help",
-  "v": "print variables and values",
+  "v": "print variables and values (`v [bui|glo|con|loc]*`; see docs for more)",
   ":": "evaluate expression - see `v`",
   "+": "add watch expression (`+:<expr>`)",
   "-": "remove watch expression (-:<expr>)",
@@ -354,7 +354,8 @@ var DebugUtils = {
       ["B"],
       ["+", "-"],
       ["?"],
-      ["v", ":"]
+      ["v"],
+      [":"]
     ].map(function (shortcuts) {
       return shortcuts.map(DebugUtils.formatCommandDescription).join(", ");
     });

@@ -57,8 +57,21 @@ class DebugPrinter {
       )
     );
 
-    this.printouts = new Set(["sta"]);
+    // location printouts for command (p): print instruction and state
+    //   sto: Storage
+    //   cal: Calldata
+    //   mem: Memory
+    //   sta: Stack
+    this.locationPrintouts = new Set(["sta"]);
     this.locations = ["sto", "cal", "mem", "sta"]; //should remain constant
+
+    // section printouts for command (v): print variables and values
+    //   bui: Solidity built-ins
+    //   glo: Global constants
+    //   con: Contract variables
+    //   loc: Local variables
+    this.sectionPrintouts = new Set(["bui", "glo", "con", "loc"]);
+    this.sections = ["bui", "glo", "con", "loc"]; //should remain constant
   }
 
   print(...args) {
@@ -169,7 +182,7 @@ class DebugPrinter {
     this.config.logger.log("");
   }
 
-  printInstruction(locations = this.printouts) {
+  printInstruction(locations = this.locationPrintouts) {
     const instruction = this.session.view(solidity.current.instruction);
     const step = this.session.view(trace.step);
     const traceIndex = this.session.view(trace.index);
@@ -580,7 +593,7 @@ class DebugPrinter {
     }
   }
 
-  async printVariables() {
+  async printVariables(sectionOuts = this.sectionPrintouts) {
     const values = await this.session.variables();
     const sections = this.session.view(data.current.identifiers.sections);
 
@@ -593,8 +606,10 @@ class DebugPrinter {
 
     this.config.logger.log();
 
+    // printout the sections that are included in the inputs and have positive contents length
     for (const [section, variables] of Object.entries(sections)) {
-      if (variables.length > 0) {
+      const printThisSection = sectionOuts.has(section.slice(0,3));
+      if ( printThisSection && (variables.length > 0) ) {
         this.config.logger.log(sectionNames[section] + ":");
         // Get the length of the longest name.
         const longestNameLength = variables.reduce((longest, name) => {
