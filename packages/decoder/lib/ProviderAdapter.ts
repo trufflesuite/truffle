@@ -27,6 +27,7 @@ type PastLogsOptions = {
 type SendRequestArgs = {
   method: string;
   params: unknown[];
+  formatOutput?: (arg: any) => any;
 };
 type Eip1193Provider = {
   request: (options: {
@@ -34,6 +35,7 @@ type Eip1193Provider = {
     params?: unknown[] | object;
   }) => Promise<any>;
 };
+
 type Block = {
   number: string;
   hash: string;
@@ -56,7 +58,35 @@ type Block = {
   transactions: string[];
   uncles: string[];
 };
-const stringWhitelist = ["latest", "pending", "genesis", "earliest"];
+
+type FormattedBlock = {
+  number: number;
+  size: number;
+  gasLimit: number;
+  gasUsed: number;
+  timestamp: number;
+  hash: string;
+  parentHash: string;
+  mixHash: string;
+  nonce: string;
+  sha3Uncles: string;
+  logsBloom: string;
+  transactionsRoot: string;
+  stateRoot: string;
+  receiptsRoot: string;
+  miner: string;
+  difficulty: string;
+  totalDifficulty: string;
+  extraData: string;
+  transactions: string[];
+  uncles: string[];
+}
+const stringWhitelist = [
+  "latest",
+  "pending",
+  "genesis",
+  "earliest"
+];
 
 const formatBlockSpecifier = (block: BlockSpecifier): string => {
   if (typeof block === "string" && stringWhitelist.includes(block)) {
@@ -79,6 +109,16 @@ const formatBlockSpecifier = (block: BlockSpecifier): string => {
     );
   }
 };
+const formatBlock = (block: Block): FormattedBlock => {
+  return {
+    ...block,
+    number: parseInt(block.number),
+    size: parseInt(block.size),
+    gasLimit: parseInt(block.gasLimit),
+    gasUsed: parseInt(block.gasUsed),
+    timestamp: parseInt(block.timestamp)
+  };
+};
 
 type Provider = LegacyProvider | Eip1193Provider;
 
@@ -96,13 +136,18 @@ export class ProviderAdapter {
     this.provider = provider;
   }
 
-  private async sendRequest({ method, params }: SendRequestArgs): Promise<any> {
+  private async sendRequest ({
+    method,
+    params,
+    formatOutput
+  }: SendRequestArgs): Promise<any> {
     if (!this.provider) {
       throw new Error("There is not a valid provider present.");
     }
-
+<<<<<<< HEAD
+    let result;
     if (isEip1193Provider(this.provider)) {
-      return await this.provider.request({ method, params });
+      result = await this.provider.request({ method, params });
     } else {
       // HACK MetaMask's injected provider doesn't allow `.send()` with
       // a callback, so prefer `.sendAsync()` if it's defined
@@ -115,7 +160,7 @@ export class ProviderAdapter {
 
       // HACK this uses a manual `new Promise` instead of promisify because
       // users reported difficulty running this package in a browser extension
-      return await new Promise(
+      result = await new Promise(
         (accept, reject) =>
           send(
             {
@@ -129,12 +174,14 @@ export class ProviderAdapter {
                 return reject(error);
               }
 
-              const { result } = response;
-              accept(result);
+              const { result: res } = response;
+              accept(res);
             }) as Callback<JsonRPCResponse>
           )
       );
     }
+    if (formatOutput) return formatOutput(result);
+    return result;
   }
 
   public async getCode(
@@ -148,11 +195,12 @@ export class ProviderAdapter {
     });
   }
 
-  public async getBlockByNumber(block: BlockSpecifier): Promise<Block> {
+  public async getBlockByNumber (block: BlockSpecifier): Promise<FormattedBlock> {
     const blockToFetch = formatBlockSpecifier(block);
     return await this.sendRequest({
       method: "eth_getBlockByNumber",
-      params: [blockToFetch, false]
+      params: [blockToFetch, false],
+      formatOutput: formatBlock
     });
   }
 
@@ -170,41 +218,36 @@ export class ProviderAdapter {
   public async getNetworkId(): Promise<string> {
     return await this.sendRequest({
       method: "net_version",
-      params: []
+      params: [],
+      formatOutput: result => parseInt(result)
     });
   }
 
-  public async getBlockNumber(): Promise<number> {
-    const result = await this.sendRequest({
+  public async getBlockNumber (): Promise<number> {
+    return await this.sendRequest({
       method: "eth_blockNumber",
-      params: []
+      params: [],
+      formatOutput: result => parseInt(result)
     });
-    // return decimal
-    return parseInt(result);
   }
 
-  public async getBalance(
-    address: string,
-    block: BlockSpecifier
-  ): Promise<string> {
-    const result = await this.sendRequest({
+  public async getBalance (address: string, block: BlockSpecifier): Promise<string> {
+    return await this.sendRequest({
       method: "eth_getBalance",
-      params: [address, formatBlockSpecifier(block)]
+      params: [address, formatBlockSpecifier(block)],
+      formatOutput: result => parseInt(result).toString()
     });
-    // return value in decimal format
-    return parseInt(result).toString();
   }
 
   public async getTransactionCount(
     address: string,
     block: BlockSpecifier
   ): Promise<string> {
-    const result = await this.sendRequest({
+    return await this.sendRequest({
       method: "eth_getTransactionCount",
-      params: [address, formatBlockSpecifier(block)]
+      params: [address, formatBlockSpecifier(block)],
+      formatOutput: result => parseInt(result).toString()
     });
-    // return value in decimal format
-    return parseInt(result).toString();
   }
 
   public async getStorageAt(
