@@ -80,6 +80,7 @@ const formatBlockSpecifier = (block: BlockSpecifier): string => {
 type Provider = LegacyProvider | Eip1193Provider;
 
 // EIP-1193 providers use `request()` instead of `send()`
+// NOTE this provider returns `response.result` already unwrapped
 // https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1193.md
 const isEip1193Provider = (
   provider: Provider
@@ -98,7 +99,7 @@ export class ProviderAdapter {
     }
 
     if (isEip1193Provider(this.provider)) {
-      return (await this.provider.request({ method, params })).result;
+      return await this.provider.request({ method, params });
     } else {
       const sendMethod = promisify(this.provider.send).bind(this.provider);
       return (
