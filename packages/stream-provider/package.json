@@ -22,7 +22,9 @@
   },
   "scripts": {
     "build": "tsc",
-    "prepare": "yarn build"
+    "prepare": "yarn build",
+    "test:ts": "mocha -r ts-node/register test/*.ts",
+    "test": "yarn test:ts"
   },
   "types": "dist/index.d.ts",
   "dependencies": {
@@ -30,6 +32,9 @@
     "web3-core-helpers": "1.5.3",
     "JSONStream": "1.3.5",
     "axios": "^0.21.1"
+  },
+  "devDependencies": {
+    "mocha": "8.1.2"
   },
   "keywords": [
     "ethereum",

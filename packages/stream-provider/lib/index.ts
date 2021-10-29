@@ -7,7 +7,7 @@ const JSONStream = require("JSONStream");
 // they export types, but in the wrong place
 const Web3HttpProvider = (_Web3HttpProvider as any) as typeof HttpProvider;
 
-export class StreamingWeb3HttpProvider extends Web3HttpProvider {
+export default class StreamingWeb3HttpProvider extends Web3HttpProvider {
   /**
    * Should be used to make async request
    *
@@ -60,12 +60,23 @@ export class StreamingWeb3HttpProvider extends Web3HttpProvider {
         .then(async response => {
           let error = null;
           let result: any = {};
+          const stream = response.data.pipe(
+            JSONStream.parse([true, { emitKey: true }])
+          );
           try {
-            for await (const { key, value } of response.data.pipe(
-              JSONStream.parse([true, { emitKey: true }])
-            )) {
-              result[key] = value;
-            }
+            result = await new Promise((resolve, reject) => {
+              let result: any = {};
+              stream.on("data", (data: any) => {
+                const { key, value } = data;
+                result[key] = value;
+              });
+              stream.on("error", (error: Error) => {
+                reject(error);
+              });
+              stream.on("end", () => {
+                resolve(result);
+              });
+            });
           } catch (e) {
             error = errors.InvalidResponse(e);
           }
