@@ -86,8 +86,8 @@ describe("End State", function () {
       provider,
       compilations
     });
-
-    await bugger.continueUntilBreakpoint(); //no breakpoints set so advances to end
+    
+    await bugger.runToEnd();
 
     assert.ok(bugger.view(evm.transaction.status));
     const variables = Codec.Format.Utils.Inspect.unsafeNativizeVariables(

@@ -65,7 +65,7 @@ describe("Loading and unloading transactions", function () {
     assert.isFalse(bugger.view(trace.loaded));
     await bugger.load(txHash);
     assert.isTrue(bugger.view(trace.loaded));
-    await bugger.continueUntilBreakpoint(); //continue to end
+    await bugger.runToEnd();
     const variables = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
       await bugger.variables()
     );
@@ -88,7 +88,7 @@ describe("Loading and unloading transactions", function () {
     });
 
     assert.isTrue(bugger.view(trace.loaded));
-    await bugger.continueUntilBreakpoint(); //continue to end
+    await bugger.runToEnd();
     let variables = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
       await bugger.variables()
     );
@@ -98,7 +98,7 @@ describe("Loading and unloading transactions", function () {
     assert.isFalse(bugger.view(trace.loaded));
     await bugger.load(txHash2);
     assert.isTrue(bugger.view(trace.loaded));
-    await bugger.continueUntilBreakpoint(); //continue to end
+    await bugger.runToEnd();
     variables = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
       await bugger.variables()
     );

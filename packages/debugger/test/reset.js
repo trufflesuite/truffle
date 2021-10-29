@@ -79,7 +79,7 @@ describe("Reset Button", function () {
     variables[0].push(
       Codec.Format.Utils.Inspect.unsafeNativizeVariables(await bugger.variables())
     );
-    await bugger.continueUntilBreakpoint(); //advance to the end
+    await bugger.runToEnd();
     variables[0].push(
       Codec.Format.Utils.Inspect.unsafeNativizeVariables(await bugger.variables())
     );
@@ -98,7 +98,7 @@ describe("Reset Button", function () {
     variables[1].push(
       Codec.Format.Utils.Inspect.unsafeNativizeVariables(await bugger.variables())
     );
-    await bugger.continueUntilBreakpoint(); //advance to the end
+    await bugger.runToEnd();
     variables[1].push(
       Codec.Format.Utils.Inspect.unsafeNativizeVariables(await bugger.variables())
     );

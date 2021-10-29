@@ -175,7 +175,7 @@ describe("Return value decoding", function () {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    await bugger.continueUntilBreakpoint(); //run till end
+    await bugger.runToEnd();
 
     const decodings = await bugger.returnValue();
     assert.lengthOf(decodings, 1);
@@ -201,7 +201,7 @@ describe("Return value decoding", function () {
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     debug("about to run!");
-    await bugger.continueUntilBreakpoint(); //run till end
+    await bugger.runToEnd();
     debug("ran!");
 
     const decodings = await bugger.returnValue();
@@ -229,7 +229,7 @@ describe("Return value decoding", function () {
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     debug("about to run!");
-    await bugger.continueUntilBreakpoint(); //run till end
+    await bugger.runToEnd();
     debug("ran!");
 
     const decodings = await bugger.returnValue();
@@ -250,7 +250,7 @@ describe("Return value decoding", function () {
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     debug("about to run!");
-    await bugger.continueUntilBreakpoint(); //run till end
+    await bugger.runToEnd();
     debug("ran!");
 
     const decodings = await bugger.returnValue();
@@ -284,7 +284,7 @@ describe("Return value decoding", function () {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    await bugger.continueUntilBreakpoint(); //run till end
+    await bugger.runToEnd();
 
     const decodings = await bugger.returnValue();
     assert.lengthOf(decodings, 1);
@@ -308,7 +308,7 @@ describe("Return value decoding", function () {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    await bugger.continueUntilBreakpoint(); //run till end
+    await bugger.runToEnd();
 
     const decodings = await bugger.returnValue();
     assert.lengthOf(decodings, 1);
@@ -339,7 +339,7 @@ describe("Return value decoding", function () {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    await bugger.continueUntilBreakpoint(); //run till end
+    await bugger.runToEnd();
 
     const decodings = await bugger.returnValue();
     assert.lengthOf(decodings, 1);
@@ -371,7 +371,7 @@ describe("Return value decoding", function () {
   
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
   
-      await bugger.continueUntilBreakpoint(); //run till end
+      await bugger.runToEnd();
   
       const decodings = await bugger.returnValue();
       assert.lengthOf(decodings, 1);
@@ -410,7 +410,7 @@ describe("Return value decoding", function () {
   
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
   
-      await bugger.continueUntilBreakpoint(); //run till end
+      await bugger.runToEnd();
   
       const decodings = await bugger.returnValue();
       assert.lengthOf(decodings, 1);
@@ -439,7 +439,7 @@ describe("Return value decoding", function () {
   
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
   
-      await bugger.continueUntilBreakpoint(); //run till end
+      await bugger.runToEnd();
   
       const decodings = await bugger.returnValue();
       assert.lengthOf(decodings, 1);
@@ -468,7 +468,7 @@ describe("Return value decoding", function () {
   
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
   
-      await bugger.continueUntilBreakpoint(); //run till end
+      await bugger.runToEnd();
   
       const decodings = await bugger.returnValue();
       assert.lengthOf(decodings, 1);
@@ -497,7 +497,7 @@ describe("Return value decoding", function () {
   
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
   
-      await bugger.continueUntilBreakpoint(); //run till end
+      await bugger.runToEnd();
   
       const decodings = await bugger.returnValue();
       assert.lengthOf(decodings, 1);
@@ -526,7 +526,7 @@ describe("Return value decoding", function () {
   
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
   
-      await bugger.continueUntilBreakpoint(); //run till end
+      await bugger.runToEnd();
   
       const decodings = await bugger.returnValue();
       assert.lengthOf(decodings, 1);
@@ -560,7 +560,7 @@ describe("Return value decoding", function () {
   
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
   
-      await bugger.continueUntilBreakpoint(); //run till end
+      await bugger.runToEnd();
   
       const decodings = await bugger.returnValue();
       assert.lengthOf(decodings, 1);

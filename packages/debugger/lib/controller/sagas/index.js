@@ -22,7 +22,8 @@ const STEP_SAGAS = {
   [actions.STEP_OVER]: stepOver,
   [actions.STEP_INTO]: stepInto,
   [actions.STEP_OUT]: stepOut,
-  [actions.CONTINUE]: continueUntilBreakpoint
+  [actions.CONTINUE]: continueUntilBreakpoint,
+  [actions.RUN_TO_END]: runToEnd
 };
 
 export function* saga() {
@@ -209,6 +210,31 @@ function* stepOver() {
         currentLocation.sourceRange.lines.start.line ===
           startingLocation.sourceRange.lines.start.line))
   );
+}
+
+/**
+ * runToEnd - run the debugger till the end without breakpoints
+ */
+function* runToEnd() {
+  let breakpointHit = false;
+  let currentLocation = yield select(controller.current.location);
+  let currentSourceId = currentLocation.source.id;
+
+  do {
+    yield* advance(); //note: this avoids using stepNext in order to
+    //allow breakpoints in internal sources to work properly
+
+    currentLocation = yield select(controller.current.location);
+    let finished = yield select(controller.current.trace.finished);
+    if (finished) {
+      break; //can break immediately if finished
+    }
+
+    currentSourceId = currentLocation.source.id;
+    if (currentSourceId === undefined) {
+      continue; //never stop on an unmapped instruction
+    }
+  } while (!breakpointHit);
 }
 
 /**
