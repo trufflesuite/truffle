@@ -60,6 +60,5 @@ describe("test", () => {
     result.structLogs.forEach((log: Buffer) => {
       assert.strictEqual(log.length, SIZE);
     });
-    assert(true);
   }) as any).timeout(0);
 });
