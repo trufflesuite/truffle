@@ -90,8 +90,20 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
   private async makeRequest(address: string): Promise<EtherscanSuccess> {
     //not putting a try/catch around this; if it throws, we throw
     await this.ready;
+    let url = '';
+    switch (this.suffix){
+      case "arbitrum" :
+        url = "https://api.arbiscan.io/api";
+        break;
+      case "polygon" :
+        url = "https://api.polygonscan.com/api";
+        break;
+      default:
+        `https://api${this.suffix}.etherscan.io/api`;
+        break;
+    }
     const responsePromise = axios.get(
-      `https://api${this.suffix}.etherscan.io/api`,
+      url,
       {
         params: {
           module: "contract",

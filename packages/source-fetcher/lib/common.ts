@@ -10,7 +10,9 @@ export const networksById: { [id: number]: string } = {
   5: "goerli",
   42: "kovan",
   10: "optimistic",
-  69: "kovan-optimistic"
+  69: "kovan-optimistic",
+  42161: "arbitrum",
+  137: "polygon"
 };
 
 export function makeFilename(name: string, extension: string = ".sol"): string {
