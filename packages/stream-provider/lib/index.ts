@@ -61,7 +61,7 @@ export default class StreamingWeb3HttpProvider extends Web3HttpProvider {
           let error = null;
           let result: any = {};
           const stream = response.data.pipe(
-            JSONStream.parse([true, { emitKey: true }])
+            JSONStream.parse([{ emitKey: true }])
           );
           try {
             result = await new Promise((resolve, reject) => {

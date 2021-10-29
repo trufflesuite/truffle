@@ -42,7 +42,7 @@ describe("test", () => {
   });
   (it("handle giant traces", async () => {
     const provider = new StreamingWeb3HttpProvider(`http://localhost:${PORT}`);
-    const result = await new Promise<any>((resolve, reject) => {
+    const { result } = await new Promise<any>((resolve, reject) => {
       provider.send(
         {
           id: 1,
