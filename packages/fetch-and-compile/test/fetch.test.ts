@@ -6,7 +6,7 @@ import { fetchAndCompile } from "../lib/index";
     const config = Config.default().merge({
         networks: {
           mainnet: {
-            url: 'https://mainnet.infura.io/v3/a6f6223b17034a66a6d9289a6e80d77c',
+            url: '',
             network_id: 1
           }
         },
