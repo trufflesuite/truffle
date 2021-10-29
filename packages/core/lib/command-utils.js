@@ -11,6 +11,7 @@ const {
 } = require("./commands/commands");
 const Web3 = require("web3");
 const TruffleError = require("@truffle/error");
+const StreamingWeb3HttpProvider = require("@truffle/stream-provider");
 
 const defaultHost = "127.0.0.1";
 const managedGanacheDefaultPort = 9545;
@@ -324,9 +325,11 @@ const displayGeneralHelp = options => {
         OS.EOL +
         "Usage: truffle <command> [options]"
     )
-    .epilog("See more at https://trufflesuite.com/docs/" + 
-      OS.EOL +
-      "For Ethereum JSON-RPC documentation see https://ganache.dev")
+    .epilog(
+      "See more at https://trufflesuite.com/docs/" +
+        OS.EOL +
+        "For Ethereum JSON-RPC documentation see https://ganache.dev"
+    )
     // showHelp prints using console.error, this won't log in a
     // child process - "log" forces it to use console.log instead
     .showHelp("log");
@@ -397,7 +400,7 @@ const deriveConfigEnvironment = function (detectedConfig, network, url) {
     configuredNetwork = {
       network_id: customConfig.network_id || defaultNetworkId,
       provider: function () {
-        return new Web3.providers.HttpProvider(configuredNetworkUrl, {
+        return new StreamingWeb3HttpProvider(configuredNetworkUrl, {
           keepAlive: false
         });
       },

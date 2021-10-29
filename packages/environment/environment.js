@@ -1,4 +1,3 @@
-const Web3 = require("web3");
 const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const expect = require("@truffle/expect");
 const TruffleError = require("@truffle/error");
@@ -6,6 +5,7 @@ const { Resolver } = require("@truffle/resolver");
 const Artifactor = require("@truffle/artifactor");
 const Ganache = require("ganache");
 const Provider = require("@truffle/provider");
+const StreamingWeb3HttpProvider = require("@truffle/stream-provider");
 
 const Environment = {
   // It's important config is a Config object and not a vanilla object
@@ -77,7 +77,7 @@ const Environment = {
       ...config.networks[network],
       network_id: ganacheOptions.network_id,
       provider: function () {
-        return new Web3.providers.HttpProvider(url, { keepAlive: false });
+        return new StreamingWeb3HttpProvider(url, { keepAlive: false });
       }
     };
 

@@ -1,0 +1,44 @@
+{
+  "name": "@truffle/stream-provider",
+  "description": "Enables streaming results into memory from debug_traceTransaction",
+  "license": "MIT",
+  "author": "David Murdoch <david@trufflesuite.com>",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/stream-provider#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/stream-provider"
+  },
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "version": "0.0.1",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepare": "yarn build"
+  },
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "web3-providers-http": "^1.6.0",
+    "web3-core-helpers": "1.5.3",
+    "JSONStream": "1.3.5",
+    "axios": "^0.21.1"
+  },
+  "keywords": [
+    "ethereum",
+    "etherscan",
+    "ipfs",
+    "solidity",
+    "web3"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
