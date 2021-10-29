@@ -57,7 +57,7 @@ const command = {
       `[--network <name>]${OS.EOL}                             ` +
       `[--verbose-rpc] [--show-events] [--debug] ` +
       `[--debug-global <identifier>] [--bail|-b]${OS.EOL}                      ` +
-      `       [--stacktrace[-extra]] [--grep|-g <regex>] `  +  
+      `       [--stacktrace[-extra]] [--grep|-g <regex>] `  +
       `[--reporter|-r <name>] `,
     options: [
       {
@@ -137,95 +137,6 @@ const command = {
     ],
     allowedGlobalOptions: ["network", "config"]
   },
-  parseCommandLineFlags: options => {
-    // parse out command line flags to merge in to the config
-    const grep = options.grep || options.g;
-    const bail = options.bail || options.b;
-    const reporter = options.reporter || options.r;
-    return {
-      mocha: {
-        grep,
-        bail,
-        reporter
-      }
-    };
-  },
-  run: async function (options) {
-    const Config = require("@truffle/config");
-    const { Environment, Develop } = require("@truffle/environment");
-    const { copyArtifactsToTempDir } = require("./copyArtifactsToTempDir");
-    const { determineTestFilesToRun } = require("./determineTestFilesToRun");
-    const { prepareConfigAndRunTests } = require("./prepareConfigAndRunTests");
-
-    const optionsToMerge = this.parseCommandLineFlags(options);
-    const config = Config.detect(options).merge(optionsToMerge);
-
-    // if "development" exists, default to using that for testing
-    if (!config.network && config.networks.development) {
-      config.network = "development";
-    }
-
-    if (!config.network) {
-      config.network = "test";
-    } else {
-      await Environment.detect(config);
-    }
-
-    if (config.stacktraceExtra) {
-      config.stacktrace = true;
-      config.compileAllDebug = true;
-    }
-    // enables in-test debug() interrupt, or stacktraces, forcing compileAll
-    if (config.debug || config.stacktrace || config.compileAllDebug) {
-      config.compileAll = true;
-    }
-
-    const {file} = options;
-    const inputArgs = options._;
-    const files = determineTestFilesToRun({
-      config,
-      inputArgs,
-      inputFile: file
-    });
-
-    if (config.networks[config.network]) {
-      await Environment.detect(config);
-      const {temporaryDirectory} = await copyArtifactsToTempDir(config);
-      const numberOfFailures = await prepareConfigAndRunTests({
-        config,
-        files,
-        temporaryDirectory
-      });
-      return numberOfFailures;
-    } else {
-      const ipcOptions = {network: "test"};
-      const port = await require("get-port")();
-
-      const ganacheOptions = {
-        host: "127.0.0.1",
-        port,
-        network_id: 4447,
-        mnemonic:
-          "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
-        time: config.genesis_time,
-        _chainId: 1337 //temporary until Ganache v3!
-      };
-      const { disconnect } = await Develop.connectOrStart(
-        ipcOptions,
-        ganacheOptions
-      );
-      const ipcDisconnect = disconnect;
-      await Environment.develop(config, ganacheOptions);
-      const { temporaryDirectory } = await copyArtifactsToTempDir(config);
-      const numberOfFailures = await prepareConfigAndRunTests({
-        config,
-        files,
-        temporaryDirectory
-      });
-      ipcDisconnect();
-      return numberOfFailures;
-    }
-  }
 };
 
 module.exports = command;

@@ -32,22 +32,6 @@ const command = {
     options: [],
     allowedGlobalOptions: []
   },
-
-  run: async function (args) {
-    const [subCommand] = args._;
-    switch (subCommand) {
-      case "serve":
-        await serveCommand.run(args);
-        break;
-
-      case "query":
-        await queryCommand.run(args);
-        break;
-
-      default:
-        console.log(`Unknown command: ${subCommand}`);
-    }
-  }
 };
 
 module.exports = command;

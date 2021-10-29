@@ -7,7 +7,7 @@ const { extractFlags } = require("./utils/utils"); // Contains utility methods
 const commandOptions = require("./command-options");
 const debugModule = require("debug");
 const debug = debugModule("core:command:run");
-
+const path = require("path");
 
 class Command {
   constructor(commands) {
@@ -68,11 +68,13 @@ class Command {
     }
 
     const command = this.commands[chosenCommand];
+    const run = require(path.join(__dirname, "commands", chosenCommand, "run"));
 
     return {
       name: chosenCommand,
       argv,
-      command
+      command,
+      run
     };
   }
 
@@ -180,7 +182,7 @@ class Command {
       }
     });
 
-    return await result.command.run(newOptions);
+    return await result.run(newOptions);
   }
 
   displayGeneralHelp() {
