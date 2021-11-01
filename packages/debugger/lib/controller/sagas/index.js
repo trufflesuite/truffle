@@ -216,15 +216,11 @@ function* stepOver() {
  * runToEnd - run the debugger till the end
  */
 function* runToEnd() {
-  var finished;
+  let finished;
 
   do {
     yield* advance();
-
     finished = yield select(controller.current.trace.finished);
-    if (finished) {
-      break; //can break immediately if finished
-    }
   } while (!finished);
 }
 
