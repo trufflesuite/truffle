@@ -341,7 +341,7 @@ describe("Calldata Decoding", function () {
 
     assert.deepInclude(variables, expectedResult);
 
-    await bugger.continueUntilBreakpoint(); //continue to end
+    await bugger.runToEnd();
 
     const decodings = await bugger.returnValue();
 

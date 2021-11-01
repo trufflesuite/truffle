@@ -16,7 +16,7 @@ function PromiEvent(justPromise, bugger = undefined, isDeploy = false) {
       getSolidityStackTrace = async () => {
         try {
           await bugger.load(this.txHash);
-          await bugger.continueUntilBreakpoint();
+          await bugger.runToEnd();
           const report = bugger.stacktrace();
           await bugger.unload();
           return DebugUtils.formatStacktrace(report, 4); //indent 4 to match node's stacktraces

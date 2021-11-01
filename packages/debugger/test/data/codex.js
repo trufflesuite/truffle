@@ -116,7 +116,7 @@ describe("Codex", function () {
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     debug("starting stepping");
-    await bugger.continueUntilBreakpoint(); //run till end
+    await bugger.runToEnd();
     debug("made it to end of transaction");
 
     const surface = Codec.Format.Utils.Inspect.unsafeNativize(
@@ -134,7 +134,7 @@ describe("Codex", function () {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    await bugger.continueUntilBreakpoint(); //run till end
+    await bugger.runToEnd();
 
     const x = Codec.Format.Utils.Inspect.unsafeNativize(await bugger.variable("x"));
 
@@ -149,7 +149,7 @@ describe("Codex", function () {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    await bugger.continueUntilBreakpoint(); //run till end
+    await bugger.runToEnd();
 
     const x = Codec.Format.Utils.Inspect.unsafeNativize(await bugger.variable("x"));
 

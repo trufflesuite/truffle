@@ -451,7 +451,7 @@ describe("Further Decoding", function () {
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     //we're only testing storage so run till end
-    await bugger.continueUntilBreakpoint();
+    await bugger.runToEnd();
 
     const variables = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
       await bugger.variables()
@@ -509,7 +509,7 @@ describe("Further Decoding", function () {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    await bugger.continueUntilBreakpoint(); //run till end
+    await bugger.runToEnd();
 
     const variables = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
       await bugger.variables()
@@ -532,7 +532,7 @@ describe("Further Decoding", function () {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    await bugger.continueUntilBreakpoint(); //run till end
+    await bugger.runToEnd();
 
     const variables = Codec.Format.Utils.Inspect.unsafeNativizeVariables(
       await bugger.variables()

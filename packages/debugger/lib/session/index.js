@@ -419,6 +419,11 @@ export default class Session {
     return await this._runSaga(controllerSagas.reset);
   }
 
+  //Run the debugger till the end
+  async runToEnd() {
+    return await this.dispatch(controller.runToEnd());
+  }
+
   //NOTE: breakpoints is an OPTIONAL argument for if you want to supply your
   //own list of breakpoints; leave it out to use the internal one (as
   //controlled by the functions below)

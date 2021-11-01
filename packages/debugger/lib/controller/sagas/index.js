@@ -22,7 +22,8 @@ const STEP_SAGAS = {
   [actions.STEP_OVER]: stepOver,
   [actions.STEP_INTO]: stepInto,
   [actions.STEP_OUT]: stepOut,
-  [actions.CONTINUE]: continueUntilBreakpoint
+  [actions.CONTINUE]: continueUntilBreakpoint,
+  [actions.RUN_TO_END]: runToEnd
 };
 
 export function* saga() {
@@ -209,6 +210,18 @@ function* stepOver() {
         currentLocation.sourceRange.lines.start.line ===
           startingLocation.sourceRange.lines.start.line))
   );
+}
+
+/**
+ * runToEnd - run the debugger till the end
+ */
+function* runToEnd() {
+  let finished;
+
+  do {
+    yield* advance();
+    finished = yield select(controller.current.trace.finished);
+  } while (!finished);
 }
 
 /**

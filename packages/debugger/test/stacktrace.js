@@ -138,8 +138,8 @@ describe("Stack tracing", function () {
     let source = bugger.view(solidity.current.source);
     let failLine = lineOf("REQUIRE", source.source);
     let callLine = lineOf("CALL", source.source);
-
-    await bugger.continueUntilBreakpoint(); //run till end
+    
+    await bugger.runToEnd();
 
     let report = bugger.view(stacktrace.current.finalReport);
     let functionNames = report.map(({ functionName }) => functionName);
@@ -265,7 +265,7 @@ describe("Stack tracing", function () {
     let failLine = lineOf("PAY", source.source);
     let callLine = lineOf("CALL", source.source);
 
-    await bugger.continueUntilBreakpoint(); //run till end
+    await bugger.runToEnd();
 
     let report = bugger.view(stacktrace.current.finalReport);
     let functionNames = report.map(({ functionName }) => functionName);
@@ -315,7 +315,7 @@ describe("Stack tracing", function () {
     let failLine = lineOf("GARBAGE", source.source);
     let callLine = lineOf("CALL", source.source);
 
-    await bugger.continueUntilBreakpoint(); //run till end
+    await bugger.runToEnd();
 
     let report = bugger.view(stacktrace.current.finalReport);
     let functionNames = report.map(({ functionName }) => functionName);
@@ -369,7 +369,7 @@ describe("Stack tracing", function () {
     let callLine = lineOf("UHOH", source.source);
     let prevCallLine = lineOf("CALL", source.source);
 
-    await bugger.continueUntilBreakpoint(); //run till end
+    await bugger.runToEnd();
 
     let report = bugger.view(stacktrace.current.finalReport);
     let functionNames = report.map(({ functionName }) => functionName);

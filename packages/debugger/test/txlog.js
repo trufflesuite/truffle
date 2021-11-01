@@ -141,7 +141,7 @@ describe("Transaction log (visualizer)", function () {
       compilations
     });
 
-    await bugger.continueUntilBreakpoint(); //run till end
+    await bugger.runToEnd();
 
     const root = bugger.view(txlog.views.transactionLog);
     assert.equal(root.type, "transaction");
@@ -197,7 +197,7 @@ describe("Transaction log (visualizer)", function () {
       compilations
     });
 
-    await bugger.continueUntilBreakpoint(); //run till end
+    await bugger.runToEnd();
 
     const root = bugger.view(txlog.views.transactionLog);
     assert.equal(root.type, "transaction");
@@ -250,7 +250,7 @@ describe("Transaction log (visualizer)", function () {
       compilations
     });
 
-    await bugger.continueUntilBreakpoint(); //run till end
+    await bugger.runToEnd();
 
     const root = bugger.view(txlog.views.transactionLog);
     assert.equal(root.type, "transaction");
@@ -298,7 +298,7 @@ describe("Transaction log (visualizer)", function () {
       compilations
     });
 
-    await bugger.continueUntilBreakpoint(); //run till end
+    await bugger.runToEnd();
 
     const root = bugger.view(txlog.views.transactionLog);
     assert.equal(root.type, "transaction");
@@ -333,7 +333,7 @@ describe("Transaction log (visualizer)", function () {
       compilations
     });
 
-    await bugger.continueUntilBreakpoint(); //run till end
+    await bugger.runToEnd();
 
     const root = bugger.view(txlog.views.transactionLog);
     assert.equal(root.type, "transaction");
@@ -384,7 +384,7 @@ describe("Transaction log (visualizer)", function () {
       compilations
     });
 
-    await bugger.continueUntilBreakpoint(); //run till end
+    await bugger.runToEnd();
 
     const root = bugger.view(txlog.views.transactionLog);
     assert.equal(root.type, "transaction");
@@ -423,7 +423,7 @@ describe("Transaction log (visualizer)", function () {
       compilations
     });
 
-    await bugger.continueUntilBreakpoint(); //run till end
+    await bugger.runToEnd();
     await bugger.reset();
 
     const root = bugger.view(txlog.views.transactionLog);
