@@ -213,28 +213,19 @@ function* stepOver() {
 }
 
 /**
- * runToEnd - run the debugger till the end without breakpoints
+ * runToEnd - run the debugger till the end
  */
 function* runToEnd() {
-  let breakpointHit = false;
-  let currentLocation = yield select(controller.current.location);
-  let currentSourceId = currentLocation.source.id;
+  var finished;
 
   do {
-    yield* advance(); //note: this avoids using stepNext in order to
-    //allow breakpoints in internal sources to work properly
+    yield* advance();
 
-    currentLocation = yield select(controller.current.location);
-    let finished = yield select(controller.current.trace.finished);
+    finished = yield select(controller.current.trace.finished);
     if (finished) {
       break; //can break immediately if finished
     }
-
-    currentSourceId = currentLocation.source.id;
-    if (currentSourceId === undefined) {
-      continue; //never stop on an unmapped instruction
-    }
-  } while (!breakpointHit);
+  } while (!finished);
 }
 
 /**
