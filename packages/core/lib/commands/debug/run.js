@@ -6,7 +6,7 @@ module.exports = async function (options) {
   const { Environment } = require("@truffle/environment");
   const Config = require("@truffle/config");
 
-  const { CLIDebugger } = require("../debug");
+  const { CLIDebugger } = require("../../debug");
 
   const config = Config.detect(options);
   await Environment.detect(config);

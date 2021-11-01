@@ -9,7 +9,7 @@ module.exports = async function (options) {
   );
   console.log(deprecationMessage);
   const Config = require("@truffle/config");
-  const Build = require("../build");
+  const Build = require("../../build");
   const config = Config.detect(options);
 
   return await Build.build(config);

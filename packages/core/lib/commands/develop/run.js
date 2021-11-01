@@ -1,5 +1,8 @@
+const emoji = require("node-emoji");
+const mnemonicInfo = require("../../mnemonics/mnemonic");
+
 const runConsole = async (config, ganacheOptions) => {
-  const Console = require("../console");
+  const Console = require("../../console");
   const { Environment } = require("@truffle/environment");
 
   const commands = require("../index");

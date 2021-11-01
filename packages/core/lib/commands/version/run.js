@@ -1,5 +1,5 @@
 module.exports = async function (options) {
-  const version = require("../version");
+  const version = require("../../version");
   const { logger } = options;
   const Config = require("@truffle/config");
 

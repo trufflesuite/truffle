@@ -68,7 +68,8 @@ class Command {
     }
 
     const command = this.commands[chosenCommand];
-    const run = require(path.join(__dirname, "commands", chosenCommand, "run"));
+    // is there a better way to do this?
+    const run = require(`./commands${path.sep}${chosenCommand}${path.sep}run`);
 
     return {
       name: chosenCommand,

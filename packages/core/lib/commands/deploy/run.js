@@ -1,3 +1,3 @@
-const migrate = require("../migrate");
+const runMigrate = require("../migrate/run");
 
-module.exports = migrate.run;
+module.exports = runMigrate;

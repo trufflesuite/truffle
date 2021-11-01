@@ -1,6 +1,3 @@
-const emoji = require("node-emoji");
-const mnemonicInfo = require("../../mnemonics/mnemonic");
-
 const command = {
   command: "develop",
   description: "Open a console with a local development blockchain",
