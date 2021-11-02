@@ -9,7 +9,7 @@ $ npm install @truffle/hdwallet-provider
 
 ## Requirements
 ```
-Node >= 7.6
+Node >= 12 
 Web3 ^1.2.0
 ```
 
