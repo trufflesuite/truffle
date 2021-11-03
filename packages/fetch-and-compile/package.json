@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "prepare": "yarn build",
-    "test": "yarn build && mocha --exit -r ts-node/register test/**/*.test.ts --timeout 10000000"
+    "test": "yarn build && mocha --exit -r ts-node/register test/**/*.test.ts --timeout 100000"
   },
   "author": "Harry Altman <harry@trufflesuite.com>",
   "license": "MIT",

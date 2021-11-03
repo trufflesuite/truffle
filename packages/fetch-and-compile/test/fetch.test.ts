@@ -16,34 +16,34 @@ import { fetchAndCompile } from "../lib/index";
         // }
       });
       it.only('resolves with verified contract', () => {
-        return fetchAndCompile('0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',config).then(result => {
+        return fetchAndCompile('0x6B3595068778DD592e39A122f4f5a5cF09C90fE2',config).then(result => {
           let contractName = result.sourceInfo.contractName
           console.log(result.sourceInfo.contractName)
           assert.notEqual(contractName, undefined)
         })
       })
     });
-    // describe("fetches contract on arbitrum and checks for verification",  () => {
-    //   const config = Config.default().merge({
-    //       networks: {
-    //         mainnet: {
-    //           url: 'https://arbitrum-mainnet.infura.io/v3/9106cb4bf5d54d478e5585a2234e72b3',
-    //           network_id: 42161
-    //         }
-    //       }, ​
-    //       network: "arbitrum",   ​
-    //       // etherscan: {
-    //       //   apiKey: process.env.ETHERSCAN_KEY
-    //       // }
-    //     });
-    //     it('resolves with verified contract', () => {
-    //       return fetchAndCompile('0xBf00759D7E329d7A7fa1D4DCdC914C53d1d2db86',config).then(result => {
-    //         let contractName = result.sourceInfo.contractName
-    //         console.log(result)
-    //         assert.notEqual(contractName, undefined)
-    //       })
-    //     })
-    //   });
+    describe("fetches contract on arbitrum and checks for verification",  () => {
+      const config = Config.default().merge({
+          networks: {
+            arbitrum: {
+              url: 'https://arbitrum-mainnet.infura.io/v3/9106cb4bf5d54d478e5585a2234e72b3',
+              network_id: 42161
+            }
+          }, ​
+          network: "arbitrum",   ​
+          // etherscan: {
+          //   apiKey: process.env.ETHERSCAN_KEY
+          // }
+        });
+        it('resolves with verified contract', () => {
+          return fetchAndCompile('0xBf00759D7E329d7A7fa1D4DCdC914C53d1d2db86',config).then(result => {
+            let contractName = result.sourceInfo.contractName
+            console.log(result)
+            assert.notEqual(contractName, undefined)
+          })
+        })
+      });
       describe("fetches contract on polygon and checks for verification",  () => {
         const config = Config.default().merge({
             networks: {
