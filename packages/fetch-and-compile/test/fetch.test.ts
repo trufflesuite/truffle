@@ -6,7 +6,11 @@ import { fetchAndCompile } from "../lib/index";
     const config = Config.default().merge({
         networks: {
           mainnet: {
+<<<<<<< HEAD
             url: 'https://mainnet.infura.io/v3/8d23e7266ef248038e020ed5034a79c4',
+=======
+            url: 'https://mainnet.infura.io/v3/a6f6223b17034a66a6d9289a6e80d77c',
+>>>>>>> parent of f6bad1ad0 (remove mainnet url from test)
             network_id: 1
           }
         }, ​
