@@ -23,6 +23,8 @@ export const getInitialConfig = ({
     verboseRpc: false,
     gas: null,
     gasPrice: null,
+    maxFeePerGas: null,
+    maxPriorityFeePerGas: null,
     from: null,
     confirmations: 0,
     timeoutBlocks: 0,
@@ -199,6 +201,34 @@ export const configProps = ({
       set() {
         throw new Error(
           "Don't set config.gasPrice directly. Instead, set config.networks and then config.networks[<network name>].gasPrice"
+        );
+      }
+    },
+    maxFeePerGas: {
+      get() {
+        try {
+          return configObject.network_config.maxFeePerGas;
+        } catch (e) {
+          return null;
+        }
+      },
+      set() {
+        throw new Error(
+          "Don't set config.maxFeePerGas directly. Instead, set config.networks and then config.networks[<network name>].maxFeePerGas"
+        );
+      }
+    },
+    maxPriorityFeePerGas: {
+      get() {
+        try {
+          return configObject.network_config.maxPriorityFeePerGas;
+        } catch (e) {
+          return null;
+        }
+      },
+      set() {
+        throw new Error(
+          "Don't set config.maxPriorityFeePerGas directly. Instead, set config.networks and then config.networks[<network name>].maxPriorityFeePerGas"
         );
       }
     },
