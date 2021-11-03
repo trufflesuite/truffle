@@ -6,7 +6,7 @@ import { fetchAndCompile } from "../lib/index";
     const config = Config.default().merge({
         networks: {
           mainnet: {
-            url: 'https://mainnet.infura.io/v3/8d23e7266ef248038e020ed5034a79c4',
+            url: 'https://mainnet.infura.io/v3/',
             network_id: 1
           }
         }, ​
@@ -27,7 +27,7 @@ import { fetchAndCompile } from "../lib/index";
       const config = Config.default().merge({
           networks: {
             arbitrum: {
-              url: 'https://arbitrum-mainnet.infura.io/v3/9106cb4bf5d54d478e5585a2234e72b3',
+              url: 'https://arbitrum-mainnet.infura.io/v3/',
               network_id: 42161
             }
           }, ​
@@ -48,7 +48,7 @@ import { fetchAndCompile } from "../lib/index";
         const config = Config.default().merge({
             networks: {
               polygon: {
-                url: 'https://polygon-mainnet.infura.io/v3/500286b860dc494ab29a48e8314af908',
+                url: 'https://polygon-mainnet.infura.io/v3/',
                 network_id: 137
               }
             }, ​
