@@ -54,12 +54,14 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       "rinkeby",
       "goerli",
       "optimistic",
-      "kovan-optimistic"
+      "kovan-optimistic",
+      "arbitrum",
+      "polygon"
     ];
     if (networkName === undefined || !supportedNetworks.includes(networkName)) {
       throw new InvalidNetworkError(networkId, "etherscan");
     }
-    this.suffix = networkName === "mainnet" ? "" : `-${networkName}`;
+    this.suffix = networkName === "" ? "mainnet" : `${networkName}`;
     debug("apiKey: %s", apiKey);
     this.apiKey = apiKey;
     const baseDelay = this.apiKey ? 200 : 3000; //etherscan permits 5 requests/sec w/a key, 1/3sec w/o
@@ -98,10 +100,13 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       case "polygon" :
         url = "https://api.polygonscan.com/api";
         break;
+      case "mainnet":
+        url = "https://api.etherscan.io/api"
       default:
         `https://api${this.suffix}.etherscan.io/api`;
         break;
     }
+    console.log(url)
     const responsePromise = axios.get(
       url,
       {
