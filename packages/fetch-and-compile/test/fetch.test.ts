@@ -18,7 +18,7 @@ import { fetchAndCompile } from "../lib/index";
       it.only('resolves with verified contract', () => {
         return fetchAndCompile('0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',config).then(result => {
           let contractName = result.sourceInfo.contractName
-          console.log(result.sourceInfo.contractName)
+          console.log(contractName)
           assert.notEqual(contractName, undefined)
         })
       })
@@ -39,7 +39,7 @@ import { fetchAndCompile } from "../lib/index";
         it('resolves with verified contract', () => {
           return fetchAndCompile('0xBf00759D7E329d7A7fa1D4DCdC914C53d1d2db86',config).then(result => {
             let contractName = result.sourceInfo.contractName
-            console.log(result)
+            console.log(contractName)
             assert.notEqual(contractName, undefined)
           })
         })
@@ -60,7 +60,7 @@ import { fetchAndCompile } from "../lib/index";
           it('resolves with verified contract', () => {
             return fetchAndCompile('0xDef1C0ded9bec7F1a1670819833240f027b25EfF',config).then(result => {
               let contractName = result.sourceInfo.contractName
-              console.log(result.sourceInfo.contractName)
+              console.log(contractName)
               assert.notEqual(contractName, undefined)
             })
           })
