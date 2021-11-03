@@ -15,7 +15,7 @@ import { fetchAndCompile } from "../lib/index";
         //   apiKey: process.env.ETHERSCAN_KEY
         // }
       });
-      it.only('resolves with verified contract', () => {
+      it('resolves with verified contract', () => {
         return fetchAndCompile('0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',config).then(result => {
           let contractName = result.sourceInfo.contractName
           console.log(contractName)
@@ -58,7 +58,7 @@ import { fetchAndCompile } from "../lib/index";
             }
           });
           it('resolves with verified contract', () => {
-            return fetchAndCompile('0xDef1C0ded9bec7F1a1670819833240f027b25EfF',config).then(result => {
+            return fetchAndCompile('0xBB6828C8228E5C641Eb6d89Ca22e09E6311CA398',config).then(result => {
               let contractName = result.sourceInfo.contractName
               console.log(contractName)
               assert.notEqual(contractName, undefined)
