@@ -3808,11 +3808,12 @@
     lunr "^2.3.6"
     underscore "^1.9.1"
 
-"@trufflesuite/web3-provider-engine@15.0.13-1":
-  version "15.0.13-1"
-  resolved "https://registry.yarnpkg.com/@trufflesuite/web3-provider-engine/-/web3-provider-engine-15.0.13-1.tgz#f6a7f7131a2fdc4ab53976318ed13ce83e8e4bcb"
-  integrity sha512-6u3x/iIN5fyj8pib5QTUDmIOUiwAGhaqdSTXdqCu6v9zo2BEwdCqgEJd1uXDh3DBmPRDfiZ/ge8oUPy7LerpHg==
+"@trufflesuite/web3-provider-engine@15.0.14":
+  version "15.0.14"
+  resolved "https://registry.yarnpkg.com/@trufflesuite/web3-provider-engine/-/web3-provider-engine-15.0.14.tgz#8f9696f434585cc0ab2e57c312090c1f138bc471"
+  integrity sha512-6/LoWvNMxYf0oaYzJldK2a9AdnkAdIeJhHW4nuUBAeO29eK9xezEaEYQ0ph1QRTaICxGxvn+1Azp4u8bQ8NEZw==
   dependencies:
+    "@ethereumjs/tx" "^3.3.0"
     "@trufflesuite/eth-json-rpc-filters" "^4.1.2-1"
     "@trufflesuite/eth-json-rpc-infura" "^4.0.3-0"
     "@trufflesuite/eth-json-rpc-middleware" "^4.4.2-1"
@@ -3824,7 +3825,6 @@
     eth-block-tracker "^4.4.2"
     eth-json-rpc-errors "^2.0.2"
     ethereumjs-block "^1.2.2"
-    ethereumjs-tx "^1.2.0"
     ethereumjs-util "^5.1.5"
     ethereumjs-vm "^2.3.4"
     json-stable-stringify "^1.0.1"
