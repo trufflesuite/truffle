@@ -6,11 +6,7 @@ import { fetchAndCompile } from "../lib/index";
     const config = Config.default().merge({
         networks: {
           mainnet: {
-<<<<<<< HEAD
             url: 'https://mainnet.infura.io/v3/8d23e7266ef248038e020ed5034a79c4',
-=======
-            url: 'https://mainnet.infura.io/v3/a6f6223b17034a66a6d9289a6e80d77c',
->>>>>>> parent of f6bad1ad0 (remove mainnet url from test)
             network_id: 1
           }
         }, ​
@@ -20,7 +16,7 @@ import { fetchAndCompile } from "../lib/index";
         // }
       });
       it.only('resolves with verified contract', () => {
-        return fetchAndCompile('0x6B3595068778DD592e39A122f4f5a5cF09C90fE2',config).then(result => {
+        return fetchAndCompile('0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',config).then(result => {
           let contractName = result.sourceInfo.contractName
           console.log(result.sourceInfo.contractName)
           assert.notEqual(contractName, undefined)
