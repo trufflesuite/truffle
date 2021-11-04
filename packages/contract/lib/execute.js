@@ -1,3 +1,5 @@
+// noinspection JSUnusedLocalSymbols,JSValidateJSDoc
+
 const debug = require("debug")("contract:execute");
 const PromiEvent = require("./promievent");
 const EventEmitter = require("events");
@@ -39,7 +41,7 @@ const execute = {
           // note: this means if a transaction will revert but the user does not have stacktracing enabled,
           // they will get an error from the gas estimation and be unable to proceed; we may need to revisit this
           if (gas === null) {
-            const defaultGas = utils.bigNumberify(Math.floor(blockLimit/2));
+            const defaultGas = utils.bigNumberify(Math.floor(blockLimit / 2));
             accept(defaultGas.toHexString());
           } else {
             const limit = utils.bigNumberify(blockLimit);
@@ -66,9 +68,15 @@ const execute = {
    * @param  {Object} constructor   TruffleContract constructor
    * @param  {Object} methodABI     Function ABI segment w/ inputs & outputs keys.
    * @param  {Array}  _arguments    Arguments passed to method invocation
+   * @param  {{blockLimit: number, id:number}}  _detectNetworkArguments    Arguments passed to prevent getBlock {gasLimit} network call for read data methods invocation
    * @return {Promise}              Resolves object w/ tx params disambiguated from arguments
    */
-  prepareCall: async function (constructor, methodABI, _arguments) {
+  prepareCall: async function (
+    constructor,
+    methodABI,
+    _arguments,
+    _detectNetworkArguments
+  ) {
     let args = Array.prototype.slice.call(_arguments);
     let params = utils.getTxParams.call(constructor, methodABI, args);
 
@@ -87,7 +95,10 @@ const execute = {
       args = processedValues.args;
       params = processedValues.params;
     }
-
+    const { id } = _detectNetworkArguments;
+    if (id) {
+      return { args, params, _detectNetworkArguments };
+    }
     const network = await constructor.detectNetwork();
     return { args, params, network };
   },
@@ -140,7 +151,10 @@ const execute = {
       }
 
       execute
-        .prepareCall(constructor, methodABI, args)
+        .prepareCall(constructor, methodABI, args, {
+          id: constructor.network_id,
+          blockLimit: 0
+        })
         .then(async ({ args, params }) => {
           let result;
 
@@ -183,7 +197,7 @@ const execute = {
       const promiEvent = new PromiEvent(false, constructor.debugger);
 
       execute
-        .prepareCall(constructor, methodABI, arguments)
+        .prepareCall(constructor, methodABI, arguments, {})
         .then(async ({ args, params, network }) => {
           const context = {
             contract: constructor, // Can't name this field `constructor` or `_constructor`
@@ -247,7 +261,7 @@ const execute = {
       const promiEvent = new PromiEvent(false, constructor.debugger, true);
 
       execute
-        .prepareCall(constructor, constructorABI, arguments)
+        .prepareCall(constructor, constructorABI, arguments, {})
         .then(async ({ args, params, network }) => {
           const { blockLimit } = network;
 
@@ -443,7 +457,7 @@ const execute = {
     const constructor = this;
     return function () {
       return execute
-        .prepareCall(constructor, methodABI, arguments)
+        .prepareCall(constructor, methodABI, arguments, {})
         .then(res => fn(...res.args).estimateGas(res.params));
     };
   },
@@ -458,7 +472,7 @@ const execute = {
     const constructor = this;
     return function () {
       return execute
-        .prepareCall(constructor, methodABI, arguments)
+        .prepareCall(constructor, methodABI, arguments, {})
         .then(res => {
           //clone res.params
           let tx = {};
@@ -484,7 +498,7 @@ const execute = {
     )[0];
 
     return execute
-      .prepareCall(constructor, constructorABI, arguments)
+      .prepareCall(constructor, constructorABI, arguments, {})
       .then(res => {
         const options = {
           data: constructor.binary,
@@ -511,7 +525,7 @@ const execute = {
     )[0];
 
     return execute
-      .prepareCall(constructor, constructorABI, arguments)
+      .prepareCall(constructor, constructorABI, arguments, {})
       .then(res => {
         //clone res.params
         let tx = {};
