@@ -42,8 +42,7 @@ From there, you can run `truffle compile`, `truffle migrate` and `truffle test` 
 
 Truffle comes bundled with a local development blockchain server that launches automatically when you invoke the commands  above. If you'd like to [configure a more advanced development environment](https://trufflesuite.com/docs/advanced/configuration) we recommend you install the blockchain server separately by running `npm install -g ganache-cli` at the command line.
 
-+  [ganache-cli](https://github.com/trufflesuite/ganache-cli): a command-line version of Truffle's blockchain server.
-+  [ganache](https://trufflesuite.com/ganache/): A GUI for the server that displays your transaction history and chain state.
++  [ganache](https://github.com/trufflesuite/ganache-cli): a command-line version of Truffle's blockchain server.
 
 
 ### Documentation
