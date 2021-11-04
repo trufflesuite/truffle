@@ -394,15 +394,11 @@ class MigrationsMessages {
         if (!reporter.migration.dryRun && deployments.length)
           output += `   > Saving artifacts\n`;
 
-        if (data.valueUnit == undefined) {
-          data.valueUnit = "ETH";
-        }
-
         output +=
           self.underline(37) +
           "\n" +
           `   > ${"Total cost:".padEnd(15)} ${data.cost.padStart(15)} ${
-            data.valueUnit
+            data.valueUnit || "ETH"
           }\n`;
 
         if (self.describeJson) {
