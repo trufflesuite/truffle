@@ -7,6 +7,7 @@ module.exports = {
   dashboard: require("./dashboard"),
   db: require("./db"),
   debug: require("./debug"),
+  declare: require("./declare"),
   deploy: require("./deploy"),
   develop: require("./develop"),
   exec: require("./exec"),
