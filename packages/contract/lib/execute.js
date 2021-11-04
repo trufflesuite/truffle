@@ -1,5 +1,3 @@
-// noinspection JSUnusedLocalSymbols,JSValidateJSDoc
-
 const debug = require("debug")("contract:execute");
 const PromiEvent = require("./promievent");
 const EventEmitter = require("events");
