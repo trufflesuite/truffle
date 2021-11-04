@@ -7,15 +7,18 @@ const CompilerSupplier = require("./compilerSupplier");
 // this function returns a Compilation - legacy/index.js and ./index.js
 // both check to make sure rawSources exist before calling this method
 // however, there is a check here that returns null if no sources exist
-async function run(rawSources, options, language = "Solidity") {
+async function run(rawSources, options, internalOptions = {}) {
   if (Object.keys(rawSources).length === 0) {
     return null;
   }
 
+  const language = internalOptions.language || "Solidity"; //could also be "Yul"
+  const noTransform = internalOptions.noTransform; //turns off project root transform
+
   // Ensure sources have operating system independent paths
   // i.e., convert backslashes to forward slashes; things like C: are left intact.
   // we also strip the project root (to avoid it appearing in metadata)
-  // and replace it with "project:/"
+  // and replace it with "project:/" (unless noTransform is set)
   const {
     sources,
     targets,
@@ -23,8 +26,8 @@ async function run(rawSources, options, language = "Solidity") {
   } = Common.Sources.collectSources(
     rawSources,
     options.compilationTargets,
-    options.working_directory,
-    "project:/"
+    noTransform ? "" : options.working_directory,
+    noTransform ? "" : "project:/"
   );
 
   // construct solc compiler input
