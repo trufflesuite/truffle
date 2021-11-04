@@ -39,7 +39,8 @@
     "ganache-core": "2.13.0",
     "mocha": "8.1.2",
     "ts-node": "^9.0.0",
-    "typescript": "^4.1.4"
+    "typescript": "^4.1.4",
+    "web3": "1.5.3"
   },
   "keywords": [
     "etheruem",

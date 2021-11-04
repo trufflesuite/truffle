@@ -54,7 +54,9 @@ class HDWalletProvider {
 
   constructor(...args: ConstructorArguments) {
     const {
-      providerOrUrl, // required
+      provider,
+      url,
+      providerOrUrl,
       addressIndex = 0,
       numberOfAddresses = 10,
       shareNonce = true,
@@ -78,11 +80,21 @@ class HDWalletProvider {
       pollingInterval
     });
 
-    if (!HDWalletProvider.isValidProvider(providerOrUrl)) {
+    let providerToUse;
+    if (HDWalletProvider.isValidProvider(provider)) {
+      providerToUse = provider;
+    } else if (HDWalletProvider.isValidProvider(url)) {
+      providerToUse = url;
+    } else {
+      providerToUse = providerOrUrl;
+    }
+
+    if (!HDWalletProvider.isValidProvider(providerToUse)) {
       throw new Error(
         [
-          `Malformed provider URL: '${providerOrUrl}'`,
-          "Please specify a correct URL, using the http, https, ws, or wss protocol.",
+          `No provider or an invalid provider was specified: '${providerToUse}'`,
+          "Please specify a valid provider or URL, using the http, https, " +
+          "ws, or wss protocol.",
           ""
         ].join("\n")
       );
@@ -219,8 +231,8 @@ class HDWalletProvider {
       : this.engine.addProvider(singletonNonceSubProvider);
 
     this.engine.addProvider(new FiltersSubprovider());
-    if (typeof providerOrUrl === "string") {
-      const url = providerOrUrl;
+    if (typeof providerToUse === "string") {
+      const url = providerToUse;
 
       const providerProtocol = (
         Url.parse(url).protocol || "http:"
@@ -235,8 +247,7 @@ class HDWalletProvider {
           this.engine.addProvider(new RpcProvider({ rpcUrl: url }));
       }
     } else {
-      const provider = providerOrUrl;
-      this.engine.addProvider(new ProviderSubprovider(provider));
+      this.engine.addProvider(new ProviderSubprovider(providerToUse));
     }
 
     // Required by the provider engine.
@@ -356,15 +367,20 @@ class HDWalletProvider {
     return this.addresses;
   }
 
-  public static isValidProvider(provider: string | any): boolean {
-    const validProtocols = ["http:", "https:", "ws:", "wss:"];
-
+  public static isValidProvider(provider: any): boolean {
+    if (!provider) return false;
     if (typeof provider === "string") {
+      const validProtocols = ["http:", "https:", "ws:", "wss:"];
       const url = Url.parse(provider.toLowerCase());
       return !!(validProtocols.includes(url.protocol || "") && url.slashes);
+    } else if ("request" in provider) {
+      // provider is an 1193 provider
+      return true;
+    } else if ("send" in provider) {
+      // provider is a "legacy" provider
+      return true;
     }
-
-    return true;
+    return false;
   }
 }
 
