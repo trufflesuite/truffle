@@ -1,0 +1,55 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "target": "es6",
+    "moduleResolution": "node",
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "lib": [
+      "esnext"
+    ],
+    "declaration": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "strictBindCallApply": true,
+    "strictNullChecks": true,
+    "paths": {
+      "@truffle/solver": [
+        "./src"
+      ],
+      "@truffle/solver/*": [
+        "./src/*"
+      ],
+      "test/*": [
+        "./test/*"
+      ]
+    },
+    "rootDir": ".",
+    "baseUrl": ".",
+    // specify type package names to include
+    // w/o specification in source file
+    "types": [
+      "jest",
+      "node"
+    ],
+    "plugins": [
+      {
+        "transform": "typescript-transform-paths"
+      },
+      {
+        "transform": "typescript-transform-paths",
+        "afterDeclarations": true
+      }
+    ]
+  },
+  "include": [
+    "src/**/*",
+    "bin/**/*",
+    "test/**/*",
+    "*.yaml"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
