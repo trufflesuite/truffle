@@ -50,7 +50,7 @@
  * This module provides utilities for inspecting objects in this format,
  * including the **safe** [[Format.Utils.Inspect.ResultInspector]] wrapper
  * (for [util.inspect](https://nodejs.org/api/util.html#util_util_inspect_object_options)),
- * and the **unsafe** [[Format.Utils.Inspect.nativize]] function. For more
+ * and the **unsafe** [[Format.Utils.Inspect.unsafeNativize]] function. For more
  * information, please see the documentation for those utilities.
  *
  * ### Specification
