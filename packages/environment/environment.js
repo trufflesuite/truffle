@@ -71,6 +71,7 @@ const Environment = {
     const url = `http://${ganacheOptions.host}:${ganacheOptions.port}/`;
 
     config.networks[network] = {
+      ...config.networks[network],
       network_id: ganacheOptions.network_id,
       provider: function () {
         return new Web3.providers.HttpProvider(url, { keepAlive: false });
