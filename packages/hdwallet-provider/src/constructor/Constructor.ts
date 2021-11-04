@@ -2,6 +2,7 @@ import type {
   Mnemonic,
   MnemonicPhrase,
   PrivateKey,
+  Provider,
   ProviderOrUrl,
   AddressIndex,
   NumberOfAddresses,
@@ -38,7 +39,9 @@ export type InputSigningAuthority =
   | PrivateKeysSigningAuthority;
 
 export interface CommonOptions {
-  providerOrUrl: ProviderOrUrl;
+  providerOrUrl?: ProviderOrUrl;
+  provider?: Provider;
+  url?: string;
   addressIndex?: AddressIndex;
   numberOfAddresses?: NumberOfAddresses;
   shareNonce?: ShareNonce;
