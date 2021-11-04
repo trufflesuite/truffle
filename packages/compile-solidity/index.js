@@ -20,7 +20,11 @@ async function compileYulPaths(yulPaths, options) {
     //for simplicity, since there are no imports to worry about)
     const yulSource = fs.readFileSync(path, { encoding: "utf8" });
     debug("Compiling Yul");
-    const compilation = await run({ [path]: yulSource }, yulOptions, "Yul");
+    const compilation = await run(
+      { [path]: yulSource },
+      yulOptions,
+      { language: "Yul" }
+    );
     debug("Yul compiled successfully");
 
     // returns CompilerResult - see @truffle/compile-common
@@ -40,6 +44,8 @@ async function compileYulPaths(yulPaths, options) {
 const Compile = {
   // this takes an object with keys being the name and values being source
   // material as well as an options object
+  // NOTE: this function does *not* transform the source path prefix to
+  // "project:/" before passing to the compiler!
   async sources({ sources, options }) {
     options = Config.default().merge(options);
     options = normalizeOptions(options);
@@ -55,7 +61,11 @@ const Compile = {
     let yulCompilations = [];
     if (solidityNames.length > 0) {
       debug("Compiling Solidity (specified sources)");
-      const compilation = await run(soliditySources, options);
+      const compilation = await run(
+        soliditySources,
+        options,
+        { noTransform: true }
+      );
       debug("Compiled Solidity");
       if (compilation.contracts.length > 0) {
         solidityCompilations = [compilation];
@@ -63,7 +73,11 @@ const Compile = {
     }
     for (const name of yulNames) {
       debug("Compiling Yul (specified sources)");
-      const compilation = await run({ [name]: sources[name] }, options, "Yul");
+      const compilation = await run(
+        { [name]: sources[name] },
+        options,
+        { language: "Yul", noTransform: true },
+      );
       debug("Compiled Yul");
       yulCompilations.push(compilation);
     }
