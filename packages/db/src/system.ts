@@ -17,7 +17,6 @@ import {
  *
  * ```typescript
  * type ConnectOptions = {
- *   workingDirectory: string;
  *   adapter?:
  *     | {
  *         name: "couch";
