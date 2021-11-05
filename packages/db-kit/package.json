@@ -1,6 +1,6 @@
 {
   "name": "@truffle/db-kit",
-  "version": "0.1.38",
+  "version": "0.1.39",
   "description": "Utility belt for Truffle and @truffle/db",
   "keywords": [
     "smart-contract",
@@ -55,14 +55,14 @@
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "dependencies": {
-    "@truffle/codec": "^0.11.17",
+    "@truffle/codec": "^0.11.18",
     "@truffle/compile-common": "^0.7.22",
-    "@truffle/compile-solidity": "^5.3.27",
-    "@truffle/config": "^1.3.11",
-    "@truffle/db": "^0.5.35",
-    "@truffle/decoder": "^5.0.13",
-    "@truffle/environment": "^0.2.76",
-    "@truffle/fetch-and-compile": "^0.1.12",
+    "@truffle/compile-solidity": "^5.3.28",
+    "@truffle/config": "^1.3.12",
+    "@truffle/db": "^0.5.36",
+    "@truffle/decoder": "^5.0.14",
+    "@truffle/environment": "^0.2.77",
+    "@truffle/fetch-and-compile": "^0.1.13",
     "ink": "^3.0.8",
     "ink-big-text": "^1.2.0",
     "ink-divider": "^3.0.0",
