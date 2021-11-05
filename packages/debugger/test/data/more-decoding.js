@@ -88,6 +88,7 @@ contract ElementaryTest {
   mapping(bool => bool) boolMap;
   mapping(bytes1 => bytes1) byteMap;
   mapping(bytes => bytes) bytesMap;
+  mapping(bytes4 => bytes4) selectorMap;
   mapping(uint => uint) uintMap;
   mapping(int => int) intMap;
   mapping(string => string) stringMap;
@@ -97,7 +98,11 @@ contract ElementaryTest {
   mapping(MyInt => MyInt) wrapMap;
 
   //constant state variables to try as mapping keys
+  //(and for testing on their own)
   uint constant two = 2;
+  string constant hello = "hello";
+  bytes4 constant hexConst = 0xdeadbeef;
+  bytes4 constant short = hex"ff";
 
   function run() public {
     //local variables to be tested
@@ -124,12 +129,17 @@ contract ElementaryTest {
 
     stringMap["0xdeadbeef"] = "0xdeadbeef";
     stringMap["12345"] = "12345";
+    stringMap[hello] = hello;
 
     contractMap[this] = this;
 
     enumMap[Ternary.Blue] = Ternary.Blue;
 
     wrapMap[MyInt.wrap(-2)] = MyInt.wrap(-2);
+
+    selectorMap[hexConst] = hexConst;
+    selectorMap[short] = short;
+    selectorMap[hex"f00f"] = hex"f00f";
 
     emit Done(); //break here
   }
@@ -394,13 +404,22 @@ describe("Further Decoding", function () {
       bytesMap: { "0x01": "0x01" },
       uintMap: { 1: 1, 2: 2 },
       intMap: { "-1": -1 },
-      stringMap: { "0xdeadbeef": "0xdeadbeef", "12345": "12345" },
+      stringMap: { "0xdeadbeef": "0xdeadbeef", "12345": "12345", "hello": "hello" },
       addressMap: { [address]: address },
       contractMap: { [address]: address },
       enumMap: { "ElementaryTest.Ternary.Blue": "ElementaryTest.Ternary.Blue" },
       wrapMap: { "-2": -2 },
       oneByte: "0xff",
-      severalBytes: ["0xff"]
+      severalBytes: ["0xff"],
+      two: 2,
+      hexConst: "0xdeadbeef",
+      short: "0xff000000",
+      hello: "hello",
+      selectorMap: {
+        "0xdeadbeef": "0xdeadbeef",
+        "0xff000000": "0xff000000",
+        "0xf00f0000": "0xf00f0000"
+      }
     };
 
     assert.deepInclude(variables, expectedResult);
