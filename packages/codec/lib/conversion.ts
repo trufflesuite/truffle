@@ -67,7 +67,8 @@ export function toBig(value: BN | number): Big {
  */
 export function toHexString(
   bytes: Uint8Array | BN,
-  padLength: number = 0
+  padLength: number = 0,
+  padRight: boolean = false //pad on right instead of length
 ): string {
   if (BN.isBN(bytes)) {
     bytes = toBytes(bytes);
@@ -85,7 +86,13 @@ export function toHexString(
     let prior = bytes;
     bytes = new Uint8Array(padLength);
 
-    bytes.set(prior, padLength - prior.length);
+    if (padRight) {
+      //unusual case: pad on right
+      bytes.set(prior);
+    } else {
+      //usual case
+      bytes.set(prior, padLength - prior.length);
+    }
   }
 
   debug("bytes: %o", bytes);

@@ -28,22 +28,25 @@ export function* decodeConstant(
   //you see, decodeBasic expects to find the bytes at the *beginning*
   //of the word, but readDefinition will put them at the *end* of the
   //word.  So we'll have to adjust things ourselves.
+  //(if the constant is a string constant, it'll be *just* the bytes, so
+  //we have to pad it...)
 
   if (dataType.typeClass === "bytes" && dataType.kind === "static") {
-    let size = dataType.length;
+    const size = dataType.length;
     let word: Uint8Array;
     try {
       word = yield* read(pointer, info.state);
     } catch (error) {
       return handleDecodingError(dataType, error);
     }
+    debug("got word: %O", word);
     //not bothering to check padding; shouldn't be necessary
-    let bytes = word.slice(Evm.Utils.WORD_SIZE - size);
+    const bytes = word.slice(-size); //isolate the bytes we want (works in both cases, even if string literal is short)
     return {
       type: dataType,
       kind: "value" as const,
       value: {
-        asHex: Conversion.toHexString(bytes)
+        asHex: Conversion.toHexString(bytes, size, true) //padding in case of short string literal
       }
     }; //we'll skip including a raw value, as that would be meaningless
   }
