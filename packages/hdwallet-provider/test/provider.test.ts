@@ -208,20 +208,6 @@ describe("HD Wallet Provider", function () {
       assert(number === 0);
     });
 
-    it("throws on invalid mnemonic", () => {
-      try {
-        provider = new HDWalletProvider({
-          mnemonic: {
-            phrase: "I am not a crook"
-          },
-          providerOrUrl: "http://localhost:8545"
-        });
-        assert.fail("Should throw on invalid mnemonic");
-      } catch (e) {
-        assert(e.message.includes("Mnemonic invalid or undefined"));
-      }
-    });
-
     it("provides for a default polling interval", () => {
       const mnemonicPhrase =
         "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
@@ -303,6 +289,51 @@ describe("HD Wallet Provider", function () {
 
       const number = await web3.eth.getBlockNumber();
       assert(number === 0);
+    });
+
+    describe("instantiation errors", () => {
+      it("throws on invalid providers", () => {
+        try {
+          provider = new HDWalletProvider({
+            mnemonic: {
+              phrase: "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"
+            },
+            // @ts-ignore we gotta do the bad thing here to get the test right
+            provider: { junk: "in", an: "object" }
+          });
+          assert.fail("Should throw on invalid provider");
+        } catch (e) {
+          assert(e.message.includes("invalid provider was specified"));
+        }
+      });
+
+      it("throws on invalid urls", () => {
+        try {
+          provider = new HDWalletProvider({
+            mnemonic: {
+              phrase: "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"
+            },
+            url: "justABunchOfJunk"
+          });
+          assert.fail("Should throw on invalid url");
+        } catch (e) {
+          assert(e.message.includes("invalid provider was specified"));
+        }
+      });
+
+      it("throws on invalid mnemonic", () => {
+        try {
+          provider = new HDWalletProvider({
+            mnemonic: {
+              phrase: "I am not a crook"
+            },
+            providerOrUrl: "http://localhost:8545"
+          });
+          assert.fail("Should throw on invalid mnemonic");
+        } catch (e) {
+          assert(e.message.includes("Mnemonic invalid or undefined"));
+        }
+      });
     });
   });
 });
