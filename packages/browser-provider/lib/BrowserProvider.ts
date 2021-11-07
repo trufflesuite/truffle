@@ -6,6 +6,7 @@ import type {
 import { callbackify } from "util";
 import WebSocket from "isomorphic-ws";
 import delay from "delay";
+import open from "open";
 import {
   sendAndAwait,
   createMessage,
@@ -23,6 +24,7 @@ export class BrowserProvider {
   public dashboardHost: string;
   public dashboardPort: number;
   public keepAlive: boolean;
+  public autoOpen: boolean;
 
   private socket: WebSocket;
   private timeoutSeconds: number;
@@ -36,15 +38,19 @@ export class BrowserProvider {
     this.timeoutSeconds = options.timeoutSeconds ?? 120;
     this.keepAlive = options.keepAlive ?? false;
     this.verbose = options.verbose ?? false;
+    this.autoOpen = options.autoOpen ?? true;
 
     // Start a dashboard at the provided port (will silently fail if the dashboard address is already in use)
     const dashboardOptions = {
       port: this.dashboardPort,
       host: this.dashboardHost,
       rpc: false,
-      verbose: this.verbose
+      verbose: this.verbose,
+      autoOpen: false
     };
     startDashboardInBackground(dashboardOptions);
+
+    if (this.autoOpen) open(`http://${this.dashboardHost}:${this.dashboardPort}`);
   }
 
   public send(payload: JSONRPCRequestPayload, callback: JSONRPCErrorCallback) {

@@ -28,7 +28,7 @@ describe("BrowserProvider", () => {
 
   beforeEach(async () => {
     mockDashboard = new MockDashboard(ganacheServer.provider);
-    browserProvider = new BrowserProvider({ dashboardPort });
+    browserProvider = new BrowserProvider({ dashboardPort, autoOpen: false });
     messageBusPorts = await getMessageBusPorts(dashboardPort);
   });
 
