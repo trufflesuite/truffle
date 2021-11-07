@@ -29,7 +29,7 @@ describe("DashboardServer", () => {
   });
 
   beforeEach(async () => {
-    dashboardServer = new DashboardServer({ port: dashboardPort });
+    dashboardServer = new DashboardServer({ port: dashboardPort, autoOpen: false });
     await dashboardServer.start();
 
     mockDashboard = new MockDashboard(ganacheServer.provider);

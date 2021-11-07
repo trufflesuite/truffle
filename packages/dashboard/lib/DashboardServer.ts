@@ -2,6 +2,7 @@ import express, { Application, NextFunction, Request, Response } from "express";
 import WebSocket from "isomorphic-ws";
 import path from "path";
 import getPort from "get-port";
+import open from "open";
 import {
   base64ToJson,
   connectToMessageBusWithRetries,
@@ -20,6 +21,7 @@ export default class DashboardServer {
   host: string;
   rpc: boolean;
   verbose: boolean;
+  autoOpen: boolean;
   frontendPath: string;
 
   private expressApp?: Application;
@@ -34,6 +36,7 @@ export default class DashboardServer {
     this.host = options.host ?? "localhost";
     this.rpc = options.rpc ?? true;
     this.verbose = options.verbose ?? false;
+    this.autoOpen = options.autoOpen ?? true;
     this.frontendPath = path.join(
       __dirname,
       ".",
@@ -63,9 +66,10 @@ export default class DashboardServer {
     }
 
     await new Promise<void>(resolve => {
-      this.httpServer = this.expressApp!.listen(this.port, this.host, () =>
-        resolve()
-      );
+      this.httpServer = this.expressApp!.listen(this.port, this.host, () => {
+        if (this.autoOpen) open(`http://${this.host}:${this.port}`);
+        resolve();
+      });
     });
   }
 
