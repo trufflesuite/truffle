@@ -13,6 +13,7 @@ import IncomingRequest from "./IncomingRequest";
 import { BrowserProviderMessage } from "@truffle/dashboard-message-bus";
 
 interface Props {
+  paused: boolean;
   requests: BrowserProviderMessage[];
   setRequests: (
     requests:
@@ -22,7 +23,7 @@ interface Props {
   socket: WebSocket;
 }
 
-function BrowserProvider({ socket, requests, setRequests }: Props) {
+function BrowserProvider({ paused, socket, requests, setRequests }: Props) {
   const { account, library } = useWeb3React<providers.Web3Provider>();
 
   useEffect(() => {
@@ -33,6 +34,7 @@ function BrowserProvider({ socket, requests, setRequests }: Props) {
     };
 
     if (!account || !library) return;
+    if (paused) return;
 
     // Automatically respond with an error for unsupported requests
     requests.filter(isUnsupportedRequest).forEach(request => {
@@ -50,7 +52,7 @@ function BrowserProvider({ socket, requests, setRequests }: Props) {
         handleBrowserProviderRequest(request, library.provider, socket);
         removeFromRequests(request.id);
       });
-  }, [requests, setRequests, socket, account, library]);
+  }, [paused, requests, setRequests, socket, account, library]);
 
   const incomingRequests =
     account && library && socket
