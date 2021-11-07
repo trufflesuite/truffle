@@ -3,4 +3,5 @@ export interface DashboardServerOptions {
   host?: string;
   rpc?: boolean;
   verbose?: boolean;
+  autoOpen?: boolean;
 }

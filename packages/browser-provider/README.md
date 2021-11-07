@@ -60,6 +60,9 @@ export interface BrowserProviderOptions {
 
   /** Boolean indicating whether debug output should be logged (default: false) */
   verbose?: boolean;
+
+  /** Boolean indicating whether the dashboard should automatically get opened in the default browser (default: true) */
+  autoOpen?: boolean;
 }
 ```
 

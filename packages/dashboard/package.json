@@ -12,6 +12,7 @@
     "debug": "^4.3.2",
     "express": "^4.17.1",
     "isomorphic-ws": "^4.0.1",
+    "open": "^8.4.0",
     "ws": "^7.2.0"
   },
   "scripts": {
