@@ -48,6 +48,12 @@ describe("DashboardServer", () => {
       ethersProvider = new providers.JsonRpcProvider(rpcUrl);
     });
 
+    afterEach(async () => {
+      // Ethers sends a request to get the chainId on connection, so we await it
+      // to make sure that the provider is finished with that request as well
+      await ethersProvider.ready;
+    });
+
     it("should retrieve unlocked accounts", async () => {
       // First connect the dashboard
       await mockDashboard.connect(messageBusPorts.messageBusListenPort);

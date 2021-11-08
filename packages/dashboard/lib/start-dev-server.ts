@@ -2,7 +2,7 @@ import DashboardServer from "./DashboardServer";
 
 const options = {
   port: 5000,
-  host: "localhost",
+  host: "0.0.0.0",
   verbose: true,
   rpc: true,
   autoOpen: false
