@@ -17,10 +17,10 @@ import {
 } from "@truffle/dashboard-message-bus";
 import { startDashboardInBackground } from "@truffle/dashboard";
 import { timeout } from "promise-timeout";
-import { BrowserProviderOptions } from "./types";
+import { DashboardProviderOptions } from "./types";
 import debugModule from "debug";
 
-export class BrowserProvider {
+export class DashboardProvider {
   public dashboardHost: string;
   public dashboardPort: number;
   public keepAlive: boolean;
@@ -32,7 +32,7 @@ export class BrowserProvider {
   private connecting: boolean = false;
   private verbose: boolean;
 
-  constructor(options: BrowserProviderOptions = {}) {
+  constructor(options: DashboardProviderOptions = {}) {
     this.dashboardHost = options.dashboardHost ?? "localhost";
     this.dashboardPort = options.dashboardPort ?? 5000;
     this.timeoutSeconds = options.timeoutSeconds ?? 120;
@@ -75,7 +75,7 @@ export class BrowserProvider {
   ): Promise<JSONRPCResponsePayload> {
     await this.ready();
 
-    const message = createMessage("browser-provider", payload);
+    const message = createMessage("dashboard-provider", payload);
 
     this.concurrentRequests += 1;
 

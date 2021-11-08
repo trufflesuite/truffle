@@ -3,27 +3,27 @@ import { useEffect } from "react";
 import { useWeb3React } from "@web3-react/core";
 import { providers } from "ethers";
 import {
-  handleBrowserProviderRequest,
+  handleDashboardProviderRequest,
   isInteractiveRequest,
   isUnsupportedRequest,
   respondToUnsupportedRequest
 } from "../../utils/utils";
 import Card from "../common/Card";
 import IncomingRequest from "./IncomingRequest";
-import { BrowserProviderMessage } from "@truffle/dashboard-message-bus";
+import { DashboardProviderMessage } from "@truffle/dashboard-message-bus";
 
 interface Props {
   paused: boolean;
-  requests: BrowserProviderMessage[];
+  requests: DashboardProviderMessage[];
   setRequests: (
     requests:
-      | BrowserProviderMessage[]
-      | ((requests: BrowserProviderMessage[]) => BrowserProviderMessage[])
+      | DashboardProviderMessage[]
+      | ((requests: DashboardProviderMessage[]) => DashboardProviderMessage[])
   ) => void;
   socket: WebSocket;
 }
 
-function BrowserProvider({ paused, socket, requests, setRequests }: Props) {
+function DashboardProvider({ paused, socket, requests, setRequests }: Props) {
   const { account, library } = useWeb3React<providers.Web3Provider>();
 
   useEffect(() => {
@@ -49,7 +49,7 @@ function BrowserProvider({ paused, socket, requests, setRequests }: Props) {
           !isInteractiveRequest(request) && !isUnsupportedRequest(request)
       )
       .forEach(request => {
-        handleBrowserProviderRequest(request, library.provider, socket);
+        handleDashboardProviderRequest(request, library.provider, socket);
         removeFromRequests(request.id);
       });
   }, [paused, requests, setRequests, socket, account, library]);
@@ -77,4 +77,4 @@ function BrowserProvider({ paused, socket, requests, setRequests }: Props) {
   );
 }
 
-export default BrowserProvider;
+export default DashboardProvider;

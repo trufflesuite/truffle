@@ -1,6 +1,7 @@
 import {
   base64ToJson,
   connectToMessageBusWithRetries,
+  isDashboardProviderMessage,
   jsonToBase64,
   Message
 } from "@truffle/dashboard-message-bus";
@@ -9,7 +10,7 @@ import { promisify } from "util";
 import WebSocket from "ws";
 import Ganache from "ganache-core";
 
-// TODO: This mock dashboard was copy-pasted from the browser-provider tests
+// TODO: This mock dashboard was copy-pasted from the dashboard-provider tests
 // We should figure out whether we want to make this DRYer
 export default class MockDashboard {
   socket?: WebSocket;
@@ -32,9 +33,9 @@ export default class MockDashboard {
     if (!this.socket) return;
 
     const message = base64ToJson(data) as Message;
-    if (message.type !== "browser-provider") return;
+    if (!isDashboardProviderMessage(message)) return;
 
-    const responsePayload = await forwardBrowserProviderRequest(
+    const responsePayload = await forwardDashboardProviderRequest(
       this.forwardProvider,
       message.payload
     );
@@ -48,7 +49,7 @@ export default class MockDashboard {
   }
 }
 
-export const forwardBrowserProviderRequest = async (
+export const forwardDashboardProviderRequest = async (
   provider: Ganache.Provider,
   payload: JSONRPCRequestPayload
 ) => {

@@ -1,7 +1,7 @@
 {
-  "name": "@truffle/browser-provider",
+  "name": "@truffle/dashboard-provider",
   "version": "0.1.0",
-  "description": "Web3 provider that uses a browser-based web3 wallet for signing",
+  "description": "Web3 provider that uses a browser-based web3 wallet through the Truffle Dasboard",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
   "files": [
@@ -20,9 +20,9 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/trufflesuite/truffle.git",
-    "directory": "packages/browser-provider"
+    "directory": "packages/dashboard-provider"
   },
-  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/browser-provider#readme",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/dashboard-provider#readme",
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },

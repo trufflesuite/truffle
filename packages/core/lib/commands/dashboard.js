@@ -1,7 +1,7 @@
 module.exports = {
   command: "dashboard",
   description:
-    "Start a Truffle Dashboard instance + BrowserProvider RPC endpoint",
+    "Start a Truffle Dashboard instance + DashboardProvider RPC endpoint",
   builder: {
     port: {
       describe: "Specify the port to start the dashboard and RPC endpoint on",
@@ -67,17 +67,17 @@ module.exports = {
       );
 
       console.log(
-        `BrowserProvider RPC endpoint running at http://localhost:${options.port}/rpc`
+        `DashboardProvider RPC endpoint running at http://localhost:${options.port}/rpc`
       );
       lanAddress && console.log(
-        `                                        http://${lanAddress}:${options.port}/rpc`
+        `                                          http://${lanAddress}:${options.port}/rpc`
       );
     } else {
       console.log(
         `Truffle Dashboard running at http://${options.host}:${options.port}`
       );
       console.log(
-        `BrowserProvider RPC endpoint running at http://${options.host}:${options.port}/rpc`
+        `DashboardProvider RPC endpoint running at http://${options.host}:${options.port}/rpc`
       );
     }
 
