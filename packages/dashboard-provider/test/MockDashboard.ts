@@ -1,6 +1,7 @@
 import {
   base64ToJson,
   connectToMessageBusWithRetries,
+  isDashboardProviderMessage,
   jsonToBase64,
   Message
 } from "@truffle/dashboard-message-bus";
@@ -30,9 +31,9 @@ export default class MockDashboard {
     if (!this.socket) return;
 
     const message = base64ToJson(data) as Message;
-    if (message.type !== "browser-provider") return;
+    if (!isDashboardProviderMessage(message)) return;
 
-    const responsePayload = await forwardBrowserProviderRequest(
+    const responsePayload = await forwardDashboardProviderRequest(
       this.forwardProvider,
       message.payload
     );
@@ -46,7 +47,7 @@ export default class MockDashboard {
   }
 }
 
-export const forwardBrowserProviderRequest = async (
+export const forwardDashboardProviderRequest = async (
   provider: Ganache.Provider,
   payload: JSONRPCRequestPayload
 ) => {

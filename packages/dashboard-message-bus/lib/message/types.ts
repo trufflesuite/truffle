@@ -4,8 +4,8 @@ export interface Message {
   payload: any;
 }
 
-export interface BrowserProviderMessage extends Message {
-  type: "browser-provider";
+export interface DashboardProviderMessage extends Message {
+  type: "dashboard-provider";
   payload: {
     jsonrpc: "2.0";
     method: string;
@@ -27,10 +27,10 @@ export interface InvalidateMessage extends Message {
   payload: number;
 }
 
-export const isBrowserProviderMessage = (
+export const isDashboardProviderMessage = (
   message: Message
-): message is BrowserProviderMessage => {
-  return message.type === "browser-provider";
+): message is DashboardProviderMessage => {
+  return message.type === "dashboard-provider";
 };
 
 export const isLogMessage = (message: Message): message is LogMessage => {
