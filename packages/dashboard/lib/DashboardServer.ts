@@ -33,7 +33,7 @@ export default class DashboardServer {
 
   constructor(options: DashboardServerOptions) {
     this.port = options.port;
-    this.host = options.host ?? "localhost";
+    this.host = options.host ?? "0.0.0.0";
     this.rpc = options.rpc ?? true;
     this.verbose = options.verbose ?? false;
     this.autoOpen = options.autoOpen ?? true;
@@ -67,7 +67,10 @@ export default class DashboardServer {
 
     await new Promise<void>(resolve => {
       this.httpServer = this.expressApp!.listen(this.port, this.host, () => {
-        if (this.autoOpen) open(`http://${this.host}:${this.port}`);
+        if (this.autoOpen) {
+          const host = this.host === "0.0.0.0" ? "localhost" : this.host;
+          open(`http://${host}:${this.port}`);
+        }
         resolve();
       });
     });
