@@ -1,6 +1,6 @@
 import WebSocket from "isomorphic-ws";
 import {
-  BrowserProviderMessage,
+  DashboardProviderMessage,
   getMessageBusPorts,
   PortsConfig
 } from "@truffle/dashboard-message-bus";
@@ -35,13 +35,13 @@ export const getPorts = async (): Promise<PortsConfig> => {
   return getMessageBusPorts(dashboardPort, dashboardHost);
 };
 
-export const isInteractiveRequest = (request: BrowserProviderMessage) =>
+export const isInteractiveRequest = (request: DashboardProviderMessage) =>
   INTERACTIVE_REQUESTS.includes(request.payload.method);
 
-export const isUnsupportedRequest = (request: BrowserProviderMessage) =>
+export const isUnsupportedRequest = (request: DashboardProviderMessage) =>
   UNSUPPORTED_REQUESTS.includes(request.payload.method);
 
-export const forwardBrowserProviderRequest = async (
+export const forwardDashboardProviderRequest = async (
   provider: any,
   payload: JSONRPCRequestPayload
 ) => {
@@ -58,12 +58,12 @@ export const forwardBrowserProviderRequest = async (
   }
 };
 
-export const handleBrowserProviderRequest = async (
-  request: BrowserProviderMessage,
+export const handleDashboardProviderRequest = async (
+  request: DashboardProviderMessage,
   provider: any,
   responseSocket: WebSocket
 ) => {
-  const responsePayload = await forwardBrowserProviderRequest(
+  const responsePayload = await forwardDashboardProviderRequest(
     provider,
     request.payload
   );
@@ -76,7 +76,7 @@ export const handleBrowserProviderRequest = async (
 };
 
 export const respondToUnsupportedRequest = (
-  request: BrowserProviderMessage,
+  request: DashboardProviderMessage,
   responseSocket: WebSocket
 ) => {
   const errorResponse = {
@@ -86,7 +86,7 @@ export const respondToUnsupportedRequest = (
       id: request.payload.id,
       error: {
         code: 4001,
-        message: `Method "${request.payload.method}" is unsupported by @truffle/browser-provider`
+        message: `Method "${request.payload.method}" is unsupported by @truffle/dashboard-provider`
       }
     }
   };

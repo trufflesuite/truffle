@@ -1,16 +1,16 @@
 import WebSocket from "isomorphic-ws";
 import ReactJson from "react-json-view";
-import { handleBrowserProviderRequest, respond } from "../../utils/utils";
+import { handleDashboardProviderRequest, respond } from "../../utils/utils";
 import Button from "../common/Button";
 import Card from "../common/Card";
-import { BrowserProviderMessage } from "@truffle/dashboard-message-bus";
+import { DashboardProviderMessage } from "@truffle/dashboard-message-bus";
 
 interface Props {
-  request: BrowserProviderMessage;
+  request: DashboardProviderMessage;
   setRequests: (
     requests:
-      | BrowserProviderMessage[]
-      | ((requests: BrowserProviderMessage[]) => BrowserProviderMessage[])
+      | DashboardProviderMessage[]
+      | ((requests: DashboardProviderMessage[]) => DashboardProviderMessage[])
   ) => void;
   provider: any;
   socket: WebSocket;
@@ -24,7 +24,7 @@ function IncomingRequest({ provider, socket, request, setRequests }: Props) {
   };
 
   const process = async () => {
-    await handleBrowserProviderRequest(request, provider, socket);
+    await handleDashboardProviderRequest(request, provider, socket);
     removeFromRequests();
   };
 
@@ -36,7 +36,7 @@ function IncomingRequest({ provider, socket, request, setRequests }: Props) {
         id: request.payload.id,
         error: {
           code: 4001,
-          message: "User rejected @truffle/browser-provider request"
+          message: "User rejected @truffle/dashboard-provider request"
         }
       }
     };
@@ -45,8 +45,8 @@ function IncomingRequest({ provider, socket, request, setRequests }: Props) {
     removeFromRequests();
   };
 
-  const formatBrowserProviderRequestParameters = (
-    request: BrowserProviderMessage
+  const formatDashboardProviderRequestParameters = (
+    request: DashboardProviderMessage
   ) => {
     switch (request.payload.method) {
       case "eth_sendTransaction":
@@ -102,7 +102,7 @@ function IncomingRequest({ provider, socket, request, setRequests }: Props) {
 
   const header = request.payload.method;
 
-  const body = <div>{formatBrowserProviderRequestParameters(request)}</div>;
+  const body = <div>{formatDashboardProviderRequestParameters(request)}</div>;
 
   const footer = (
     <div className="flex justify-start items-center gap-2">

@@ -1,8 +1,8 @@
 import { promisify } from "util";
-import { BrowserProvider } from "../lib";
+import { DashboardProvider } from "../lib";
 
 const run = async () => {
-  const provider = new BrowserProvider();
+  const provider = new DashboardProvider();
   const send = promisify(provider.send.bind(provider));
 
   console.log("eth_accounts");
