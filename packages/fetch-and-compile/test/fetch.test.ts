@@ -2,6 +2,9 @@ import assert from "assert";
 import { describe, it } from "mocha";
 import Config from "@truffle/config";
 import { fetchAndCompile } from "../lib/index";
+import  axios from "axios";
+import sinon from "sinon";
+const fixture: any = require("./fixture.js");
 
 describe("fetches contract on mainnet and checks for verification", () => {
   const config = Config.default().merge({
@@ -13,6 +16,22 @@ describe("fetches contract on mainnet and checks for verification", () => {
     },
     network: "mainnet",
   });
+  beforeEach(()=>{
+    sinon.stub(axios,'get').withArgs("https://api.etherscan.io/api",{
+      params: {
+        module: "contract",
+        action: "getsourcecode",
+        address:'0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',
+        apikey: ''
+      },
+      responseType: "json",
+      maxRedirects: 50
+    }).returns(Promise.resolve({data:fixture.mainnetData}))
+  })
+  afterEach(()=>{
+    //@ts-ignore
+    axios.get.restore()
+  })
   it('resolves with verified contract', () => {
     return fetchAndCompile('0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D', config).then(result => {
       let contractName = result.sourceInfo.contractName
@@ -23,6 +42,7 @@ describe("fetches contract on mainnet and checks for verification", () => {
     })
   })
 });
+
 describe("fetches contract on arbitrum and checks for verification", () => {
   const config = Config.default().merge({
     networks: {
@@ -33,6 +53,22 @@ describe("fetches contract on arbitrum and checks for verification", () => {
     },
     network: "arbitrum",
   });
+  beforeEach(()=>{
+    sinon.stub(axios,'get').withArgs("https://api.arbiscan.io/api",{
+      params: {
+        module: "contract",
+        action: "getsourcecode",
+        address:'0xBf00759D7E329d7A7fa1D4DCdC914C53d1d2db86',
+        apikey: ''
+      },
+      responseType: "json",
+      maxRedirects: 50
+    }).returns(Promise.resolve({data:fixture.arbitrumData}))
+  })
+  afterEach(()=>{
+    //@ts-ignore
+    axios.get.restore()
+  })
   it('resolves with verified contract', () => {
     return fetchAndCompile('0xBf00759D7E329d7A7fa1D4DCdC914C53d1d2db86', config).then(result => {
       let contractName = result.sourceInfo.contractName
@@ -53,6 +89,22 @@ describe("fetches contract on polygon and checks for verification", () => {
     },
     network: "polygon",
   });
+  beforeEach(()=>{
+    sinon.stub(axios,'get').withArgs("https://api.polygonscan.com/api",{
+      params: {
+        module: "contract",
+        action: "getsourcecode",
+        address:'0xBB6828C8228E5C641Eb6d89Ca22e09E6311CA398',
+        apikey: ''
+      },
+      responseType: "json",
+      maxRedirects: 50
+    }).returns(Promise.resolve({data:fixture.polygonData}))
+  })
+  afterEach(()=>{
+    //@ts-ignore
+    axios.get.restore()
+  })
   it('resolves with verified contract', () => {
     return fetchAndCompile('0xBB6828C8228E5C641Eb6d89Ca22e09E6311CA398', config).then(result => {
       let contractName = result.sourceInfo.contractName
