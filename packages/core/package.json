@@ -50,6 +50,7 @@
     "@truffle/resolver": "^7.0.37",
     "@truffle/source-fetcher": "^0.5.9",
     "@truffle/workflow-compile": "^3.2.39",
+    "address": "^1.1.2",
     "chai": "^4.2.0",
     "colors": "^1.4.0",
     "command-exists": "^1.2.8",

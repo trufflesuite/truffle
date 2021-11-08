@@ -11,7 +11,7 @@ module.exports = {
     host: {
       describe: "Specify the host to start the dashboard and RPC endpoint on",
       type: "string",
-      default: "localhost"
+      default: "0.0.0.0"
     },
     verbose: {
       describe: "Display debug logs for the dashboard server and message bus",
@@ -40,6 +40,7 @@ module.exports = {
   },
   run: async function (options) {
     const { DashboardServer } = require("@truffle/dashboard");
+    const address = require("address");
 
     const dashboardServerOptions = {
       port: options.port,
@@ -51,12 +52,34 @@ module.exports = {
     const dashboardServer = new DashboardServer(dashboardServerOptions);
     await dashboardServer.start();
 
-    console.log(
-      `Truffle Dashboard running at http://${options.host}:${options.port}`
-    );
-    console.log(
-      `BrowserProvider RPC endpoint running at http://${options.host}:${options.port}/rpc`
-    );
+    if (options.host === "0.0.0.0") {
+      // Regex taken from react-scripts to check that the address is a private IP, otherwise we discard it
+      // https://en.wikipedia.org/wiki/Private_network#Private_IPv4_address_spaces
+      let lanAddress = /^10[.]|^172[.](1[6-9]|2[0-9]|3[0-1])[.]|^192[.]168[.]/.test(address.ip())
+        ? address.ip()
+        : undefined;
+
+      console.log(
+        `Truffle Dashboard running at http://localhost:${options.port}`
+      );
+      lanAddress && console.log(
+        `                             http://${lanAddress}:${options.port}`
+      );
+
+      console.log(
+        `BrowserProvider RPC endpoint running at http://localhost:${options.port}/rpc`
+      );
+      lanAddress && console.log(
+        `                                        http://${lanAddress}:${options.port}/rpc`
+      );
+    } else {
+      console.log(
+        `Truffle Dashboard running at http://${options.host}:${options.port}`
+      );
+      console.log(
+        `BrowserProvider RPC endpoint running at http://${options.host}:${options.port}/rpc`
+      );
+    }
 
     // ensure that `await`-ing this method never resolves. (we want to keep
     // the console open until it exits on its own)
