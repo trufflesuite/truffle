@@ -66,7 +66,7 @@ const execute = {
    * @param  {Object} constructor   TruffleContract constructor
    * @param  {Object} methodABI     Function ABI segment w/ inputs & outputs keys.
    * @param  {Array}  _arguments    Arguments passed to method invocation
-   * @param  {{blockLimit: number, id:number}}  _detectNetworkArguments    Arguments passed to prevent getBlock {gasLimit} network call for read data methods invocation
+   * @param  {{id:number}}  _detectNetworkArguments    Arguments passed to prevent getBlock {gasLimit} network call for read data methods invocation
    * @return {Promise}              Resolves object w/ tx params disambiguated from arguments
    */
   prepareCall: async function (
@@ -150,8 +150,7 @@ const execute = {
 
       execute
         .prepareCall(constructor, methodABI, args, {
-          id: constructor.network_id,
-          blockLimit: 0
+          id: constructor.network_id
         })
         .then(async ({ args, params }) => {
           let result;
