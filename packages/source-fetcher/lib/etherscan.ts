@@ -35,7 +35,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
     id: number,
     options?: Types.FetcherOptions
   ): Promise<EtherscanFetcher> {
-    debug("networkID options: %O", options);
+    debug("options: %O", options);
     debug("id:",id)
     return new EtherscanFetcher(id, options ? options.apiKey : "");
   }
