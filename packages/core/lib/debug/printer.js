@@ -184,6 +184,7 @@ class DebugPrinter {
 
   printInstruction(locations = this.locationPrintouts) {
     const instruction = this.session.view(solidity.current.instruction);
+    const instructions = this.session.view(solidity.current.instructions);
     const step = this.session.view(trace.step);
     const traceIndex = this.session.view(trace.index);
     const totalSteps = this.session.view(trace.steps).length;
@@ -209,10 +210,33 @@ class DebugPrinter {
       this.config.logger.log(DebugUtils.formatStack(step.stack));
       this.config.logger.log("");
     }
-    this.config.logger.log(
-      DebugUtils.formatInstruction(traceIndex + 1, totalSteps, instruction)
-    );
-    this.config.logger.log(DebugUtils.formatPC(step.pc));
+
+    // printout instructions
+    const previousInstructions = 3;
+    const upcomingInstructions = 3;
+    const currentIndex = instruction.index;
+    // printout 3 previous instructions
+    if (currentIndex - previousInstructions + 1 > 0) {
+      this.config.logger.log("...");
+    }
+    for (let i = currentIndex - previousInstructions; i < currentIndex; i++) {
+      if (i >= 0) {
+        this.config.logger.log(DebugUtils.formatInstruction(instructions[i]));
+      }
+    }
+
+    // printout current instruction
+    this.config.logger.log(DebugUtils.formatCurrentInstruction(instruction));
+
+    // printout 3 upcoming instructions
+    for (let i = currentIndex + 1; i <= currentIndex + upcomingInstructions; i++) {
+      if (i >= instructions.length) break;
+      this.config.logger.log(DebugUtils.formatInstruction(instructions[i]));
+    }
+    if (currentIndex + upcomingInstructions < instructions.length) {
+      this.config.logger.log("...");
+    }
+
     this.config.logger.log("");
     this.config.logger.log(step.gas + " gas remaining");
   }
