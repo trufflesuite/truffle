@@ -104,7 +104,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       case "mainnet":
         url = "https://api.etherscan.io/api"
       default:
-        `https://api${this.suffix}.etherscan.io/api`;
+        `https://api-${this.suffix}.etherscan.io/api`;
         break;
     }
     const responsePromise = axios.get(
