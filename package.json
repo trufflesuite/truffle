@@ -31,9 +31,7 @@
       "packages/*"
     ]
   },
-  "dependencies": {
-    "typescript": "^4.4.4"
-  },
+  "dependencies": {},
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
