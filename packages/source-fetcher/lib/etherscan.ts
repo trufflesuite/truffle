@@ -107,7 +107,6 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
         `https://api${this.suffix}.etherscan.io/api`;
         break;
     }
-    console.log(url)
     const responsePromise = axios.get(
       url,
       {
