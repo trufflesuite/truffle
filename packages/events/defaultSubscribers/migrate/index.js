@@ -7,8 +7,7 @@ module.exports = {
   },
   handlers: {
     "migrate:start": [
-      function ({ config, Migrate }) {
-        console.log(1)
+      function ({ config }) {
         this.reporter = new Reporter({
           logger: this.logger,
           describeJson: config.describeJson || false,
@@ -16,9 +15,7 @@ module.exports = {
       }
     ],
     "migrate:preAllMigrations": [
-      async function ({ dryRun, migrations, Migrate }) {
-        console.log(2)
-
+      async function ({ dryRun, migrations }) {
         const message = this.reporter.messages.steps("preAllMigrations", {
           migrations,
           dryRun
@@ -27,8 +24,7 @@ module.exports = {
       }
     ],
     "migrate:postAllMigrations": [
-      async function ({ dryRun, error, Migrate }) {
-        console.log(3)
+      async function ({ dryRun, error }) {
         const message = this.reporter.messages.steps("postAllMigrations", {
           dryRun,
           error
@@ -39,7 +35,6 @@ module.exports = {
 
     "migrate:migration:run:start": [
       async function ({ migration, deployer, confirmations }) {
-        console.log(4)
         if (migration) {
           this.reporter.setMigration(migration);
           this.reporter.setDeployer(deployer);
@@ -49,33 +44,28 @@ module.exports = {
       }
     ],
     "migrate:migration:deploy:transaction:start": [
-      async function ({ data, migration }) {
-        console.log(5)
+      async function ({ data }) {
         await this.reporter.startTransaction(data);
       }
     ],
     "migrate:migration:deploy:transaction:succeed": [
-      async function ({ data, migration }) {
-        console.log(6)
+      async function ({ data }) {
         await this.reporter.endTransaction(data);
       }
     ],
     "migrate:migration:deploy:migrate:succeed": [
-      async function ({ eventArgs, migration }) {
-        console.log(7)
+      async function ({ eventArgs }) {
         this.reporter.postMigrate(eventArgs);
       }
     ],
 
     "migrate:migration:deploy:error": [
-      async function ({ migration, payload }) {
-        console.log(9)
+      async function ({ payload }) {
         this.reporter.error(payload);
       }
     ],
     "migrate:migration:run:preMigrations": [
-      async function ({ migration, data }) {
-        console.log(10)
+      async function ({ data }) {
         this.reporter.preMigrate(data);
       }
     ]

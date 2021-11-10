@@ -3,7 +3,6 @@ const path = require("path");
 const glob = require("glob");
 const expect = require("@truffle/expect");
 const Config = require("@truffle/config");
-// const Reporter = require("@truffle/reporters").migrationsV5;
 const Migration = require("./Migration");
 const Emittery = require("emittery");
 
@@ -20,10 +19,7 @@ const Migrate = {
   launchReporter: function (config) {
     config.events.emit("migrate:start", {
       config,
-      Migrate
     });
-    // Migrate.reporter = new Reporter(config.describeJson || false);
-    // this.logger = config.logger;
   },
 
   acceptDryRun: async function () {
@@ -139,20 +135,10 @@ const Migrate = {
 
     if (options.events) {
       options.events.emit("migrate:preAllMigrations", {
-        Migrate,
         migrations,
         dryRun: options.dryRun
       });
     }
-    // if (this.reporter) {
-    //   this.reporter.setMigrator(this);
-    //   this.reporter.listenMigrator();
-    // }
-    //
-    // await this.emitter.emit("preAllMigrations", {
-    //   dryRun: options.dryRun,
-    //   migrations,
-    // });
 
     try {
       global.artifacts = clone.resolver;
@@ -161,26 +147,16 @@ const Migrate = {
         await migration.run(clone);
       }
 
-      // await this.emitter.emit("postAllMigrations", {
-      //   dryRun: options.dryRun,
-      //   error: null,
-      // });
       if (options.events) {
         await options.events.emit("migrate:postAllMigrations", {
-          Migrate,
           dryRun: options.dryRun,
           error: null,
         });
       }
       return;
     } catch (error) {
-      // await this.emitter.emit("postAllMigrations", {
-      //   dryRun: options.dryRun,
-      //   error: error.toString(),
-      // });
       if (options.events) {
         await options.events.emit("migrate:postAllMigrations", {
-          Migrate,
           dryRun: options.dryRun,
           error: error.toString(),
         });
