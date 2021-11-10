@@ -93,7 +93,6 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
   private async makeRequest(address: string): Promise<EtherscanSuccess> {
     //not putting a try/catch around this; if it throws, we throw
     await this.ready;
-    console.log(this.suffix)
     let url = '';
     switch (this.suffix){
       case "arbitrum" :
@@ -112,7 +111,6 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
        url = `https://api-${this.suffix}.etherscan.io/api`;
         break;
     }
-    console.log(url)
     const responsePromise = axios.get(
       url,
       {
