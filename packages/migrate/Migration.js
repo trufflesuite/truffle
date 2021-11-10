@@ -94,7 +94,7 @@ class Migration {
           const data = { message: message };
           // await this.emitter.emit("startTransaction", data);
           await options.events.emit("migrate:migration:deploy:transaction:start", {
-            Migration: this,
+            migration: this,
             data
           });
         }
@@ -106,7 +106,7 @@ class Migration {
           const data = { receipt: receipt, message: message };
           // await this.emitter.emit("endTransaction", data);
           await options.events.emit("migrate:migration:deploy:transaction:succeed", {
-            Migration: this,
+            migration: this,
             data
           });
         }
@@ -119,7 +119,7 @@ class Migration {
 
       // await this.emitter.emit("postMigrate", eventArgs);
       await options.events.emit("migrate:migration:deploy:migrate:succeed", {
-        Migration: this,
+        migration: this,
         eventArgs
       });
 
@@ -171,7 +171,7 @@ class Migration {
       if (this.isLast) {
         if (options.events) {
           await options.events.emit("migrate:migration:lastMigration:succeed", {
-            Migration: this
+            migration: this
           });
         }
         // this.emitter.clearListeners();
@@ -192,7 +192,7 @@ class Migration {
       // await this.emitter.emit("error", payload);
       if (options.events) {
         await options.events.emit("migrate:migration:deploy:error", {
-          Migration: this,
+          migration: this,
           payload
         });
       }
@@ -224,7 +224,7 @@ class Migration {
     // }
     if (options.events) {
       await options.events.emit("migrate:migration:run:start", {
-        Migration: this,
+        migration: this,
         deployer,
         confirmations: options.confirmations || 0
       });
@@ -246,7 +246,7 @@ class Migration {
     // await this.emitter.emit("preMigrate", preMigrationsData);
     if (options.events) {
       await options.events.emit("migrate:migration:run:preMigrations", {
-        Migration: this,
+        migration: this,
         data: preMigrationsData
       });
     }
