@@ -108,7 +108,7 @@ const Test = {
 
     if (config.migrateNone || config['migrate-none']) {
       if (config.events) {
-        config.events.emit("migrate:skipped");
+        config.events.emit("test:migration:skipped");
       }
     } else {
       await this.performInitialDeploy(config, testResolver);

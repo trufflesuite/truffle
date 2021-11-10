@@ -3,7 +3,7 @@ module.exports = {
     this.logger = console;
   },
   handlers: {
-    "migrate:skipped": [
+    "test:migration:skipped": [
       function () {
         if (this.quiet) return;
         this.logger.log(
