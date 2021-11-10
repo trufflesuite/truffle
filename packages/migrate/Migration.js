@@ -92,7 +92,11 @@ class Migration {
 
         if (!this.dryRun) {
           const data = { message: message };
-          await this.emitter.emit("startTransaction", data);
+          // await this.emitter.emit("startTransaction", data);
+          await options.events.emit("migrate:migration:deploy:transaction:start", {
+            Migration: this,
+            data
+          });
         }
 
         const migrations = await Migrations.deployed();
@@ -100,7 +104,11 @@ class Migration {
 
         if (!this.dryRun) {
           const data = { receipt: receipt, message: message };
-          await this.emitter.emit("endTransaction", data);
+          // await this.emitter.emit("endTransaction", data);
+          await options.events.emit("migrate:migration:deploy:transaction:succeed", {
+            Migration: this,
+            data
+          });
         }
       }
 
@@ -109,7 +117,11 @@ class Migration {
         interfaceAdapter: context.interfaceAdapter
       };
 
-      await this.emitter.emit("postMigrate", eventArgs);
+      // await this.emitter.emit("postMigrate", eventArgs);
+      await options.events.emit("migrate:migration:deploy:migrate:succeed", {
+        Migration: this,
+        eventArgs
+      });
 
       let artifacts = resolver
         .contracts()
@@ -157,7 +169,12 @@ class Migration {
 
       // Cleanup
       if (this.isLast) {
-        this.emitter.clearListeners();
+        if (options.events) {
+          await options.events.emit("migrate:migration:lastMigration:succeed", {
+            Migration: this
+          });
+        }
+        // this.emitter.clearListeners();
 
         // Exiting w provider-engine appears to be hopeless. This hack on
         // our fork just swallows errors from eth-block-tracking
@@ -172,7 +189,13 @@ class Migration {
         error: error
       };
 
-      await this.emitter.emit("error", payload);
+      // await this.emitter.emit("error", payload);
+      if (options.events) {
+        await options.events.emit("migrate:migration:deploy:error", {
+          Migration: this,
+          payload
+        });
+      }
       deployer.finish();
       throw error;
     }
@@ -193,11 +216,18 @@ class Migration {
     } = this.prepareForMigrations(options);
 
     // Connect reporter to this migration
-    if (this.reporter) {
-      this.reporter.setMigration(this);
-      this.reporter.setDeployer(deployer);
-      this.reporter.confirmations = options.confirmations || 0;
-      this.reporter.listen();
+    // if (this.reporter) {
+    //   this.reporter.setMigration(this);
+    //   this.reporter.setDeployer(deployer);
+    //   this.reporter.confirmations = options.confirmations || 0;
+    //   this.reporter.listen();
+    // }
+    if (options.events) {
+      await options.events.emit("migrate:migration:run:start", {
+        Migration: this,
+        deployer,
+        confirmations: options.confirmations || 0
+      });
     }
 
     // Get file path and emit pre-migration event
@@ -213,7 +243,13 @@ class Migration {
       blockLimit: block.gasLimit
     };
 
-    await this.emitter.emit("preMigrate", preMigrationsData);
+    // await this.emitter.emit("preMigrate", preMigrationsData);
+    if (options.events) {
+      await options.events.emit("migrate:migration:run:preMigrations", {
+        Migration: this,
+        data: preMigrationsData
+      });
+    }
     await this._load(options, context, deployer, resolver);
   }
 

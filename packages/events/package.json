@@ -23,6 +23,8 @@
   },
   "dependencies": {
     "emittery": "^0.4.1",
-    "ora": "^3.4.0"
+    "ora": "^3.4.0",
+    "readline": "^1.3.0",
+    "web3-utils": "^1.6.0"
   }
 }

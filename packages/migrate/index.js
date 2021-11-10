@@ -3,7 +3,7 @@ const path = require("path");
 const glob = require("glob");
 const expect = require("@truffle/expect");
 const Config = require("@truffle/config");
-const Reporter = require("@truffle/reporters").migrationsV5;
+// const Reporter = require("@truffle/reporters").migrationsV5;
 const Migration = require("./Migration");
 const Emittery = require("emittery");
 
@@ -18,8 +18,12 @@ const Migrate = {
   logger: null,
 
   launchReporter: function (config) {
-    Migrate.reporter = new Reporter(config.describeJson || false);
-    this.logger = config.logger;
+    config.events.emit("migrate:start", {
+      config,
+      Migrate
+    });
+    // Migrate.reporter = new Reporter(config.describeJson || false);
+    // this.logger = config.logger;
   },
 
   acceptDryRun: async function () {
@@ -133,15 +137,22 @@ const Migrate = {
       migrations[total - 1].isLast = true;
     }
 
-    if (this.reporter) {
-      this.reporter.setMigrator(this);
-      this.reporter.listenMigrator();
+    if (options.events) {
+      options.events.emit("preAllMigrations", {
+        Migrate,
+        migrations,
+        options
+      });
     }
-
-    await this.emitter.emit("preAllMigrations", {
-      dryRun: options.dryRun,
-      migrations,
-    });
+    // if (this.reporter) {
+    //   this.reporter.setMigrator(this);
+    //   this.reporter.listenMigrator();
+    // }
+    //
+    // await this.emitter.emit("preAllMigrations", {
+    //   dryRun: options.dryRun,
+    //   migrations,
+    // });
 
     try {
       global.artifacts = clone.resolver;
@@ -149,16 +160,31 @@ const Migrate = {
       for (const migration of migrations) {
         await migration.run(clone);
       }
-      await this.emitter.emit("postAllMigrations", {
-        dryRun: options.dryRun,
-        error: null,
-      });
+
+      // await this.emitter.emit("postAllMigrations", {
+      //   dryRun: options.dryRun,
+      //   error: null,
+      // });
+      if (options.events) {
+        await options.events.emit("postAllMigrations", {
+          Migrate,
+          dryRun: options.dryRun,
+          error: null,
+        });
+      }
       return;
     } catch (error) {
-      await this.emitter.emit("postAllMigrations", {
-        dryRun: options.dryRun,
-        error: error.toString(),
-      });
+      // await this.emitter.emit("postAllMigrations", {
+      //   dryRun: options.dryRun,
+      //   error: error.toString(),
+      // });
+      if (options.events) {
+        await options.events.emit("postAllMigrations", {
+          Migrate,
+          dryRun: options.dryRun,
+          error: error.toString(),
+        });
+      }
       throw error;
     } finally {
       delete global.artifacts;
