@@ -7,15 +7,19 @@ import { Transaction, FeeMarketEIP1559Transaction } from "@ethereumjs/tx";
 import Common from "@ethereumjs/common";
 
 // @ts-ignore
-import ProviderEngine from "@trufflesuite/web3-provider-engine";
-import FiltersSubprovider from "@trufflesuite/web3-provider-engine/subproviders/filters";
-import NonceSubProvider from "@trufflesuite/web3-provider-engine/subproviders/nonce-tracker";
-import HookedSubprovider from "@trufflesuite/web3-provider-engine/subproviders/hooked-wallet";
-import ProviderSubprovider from "@trufflesuite/web3-provider-engine/subproviders/provider";
+import ProviderEngine from "web3-provider-engine";
 // @ts-ignore
-import RpcProvider from "@trufflesuite/web3-provider-engine/subproviders/rpc";
+import FiltersSubprovider from "web3-provider-engine/subproviders/filters";
 // @ts-ignore
-import WebsocketProvider from "@trufflesuite/web3-provider-engine/subproviders/websocket";
+import NonceSubProvider from "web3-provider-engine/subproviders/nonce-tracker";
+// @ts-ignore
+import HookedSubprovider from "web3-provider-engine/subproviders/hooked-wallet";
+// @ts-ignore
+import ProviderSubprovider from "web3-provider-engine/subproviders/provider";
+// @ts-ignore
+import RpcProvider from "web3-provider-engine/subproviders/rpc";
+// @ts-ignore
+import WebsocketProvider from "web3-provider-engine/subproviders/websocket";
 
 import Url from "url";
 import type {
@@ -265,6 +269,8 @@ class HDWalletProvider {
           method: "eth_chainId",
           params: []
         },
+        // @ts-ignore - the type doesn't take into account the possibility
+        // that response.error could be a thing
         (error: any, response: JSONRPCResponsePayload & { error?: any }) => {
           if (error) {
             reject(error);
