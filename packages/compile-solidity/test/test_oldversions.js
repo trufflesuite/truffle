@@ -10,7 +10,7 @@ const compileOptions = {
   working_directory: workingDirectory,
   compilers: {
     solc: {
-      version: "0.4.11",
+      version: "0.4.9",
       settings: {
         optimizer: {
           enabled: false,
@@ -43,7 +43,7 @@ describe("Compile - solidity <0.4.20", function () {
   describe("Output repair", function () {
     before("get code", function () {
       source = fs.readFileSync(
-        path.join(__dirname, "./sources/v0.4.11/FilenameWith:Colon.sol"),
+        path.join(__dirname, "./sources/v0.4.9/FilenameWith:Colon.sol"),
         "utf-8"
       );
     });

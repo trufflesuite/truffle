@@ -19,6 +19,7 @@ describe("CompilerSupplier", function () {
     let version4PragmaSource; // ^0.4.21
     let version5PragmaSource; // ^0.5.0
     let version6PragmaSource; // ^0.6.0
+    let version8PragmaSource; // ^0.8.0
     let versionLatestPragmaSource; // Currently: ^0.8.0
     let compileConfig;
 
@@ -49,16 +50,18 @@ describe("CompilerSupplier", function () {
         path.join(__dirname, "./sources/v0.6.x/Version6Pragma.sol"),
         "utf-8"
       );
-      const versionLatestPragma = await fse.readFile(
-        path.join(__dirname, "./sources/v0.8.x/Version8Pragma.sol"), //update when necessary
+      const version8Pragma = await fse.readFile(
+        path.join(__dirname, "./sources/v0.8.x/Version8Pragma.sol"),
         "utf-8"
       );
+      const versionLatestPragma = version8Pragma; //update when necessary
 
       oldPragmaPinSource = { "OldPragmaPin.sol": oldPragmaPin };
       oldPragmaFloatSource = { "OldPragmaFloat.sol": oldPragmaFloat };
       version4PragmaSource = { "NewPragma.sol": version4Pragma };
       version5PragmaSource = { "Version5Pragma.sol": version5Pragma };
       version6PragmaSource = { "Version6Pragma.sol": version6Pragma };
+      version8PragmaSource = { "Version8Pragma.sol": version8Pragma };
       versionLatestPragmaSource = { "Version8Pragma.sol": versionLatestPragma }; //update when necessary
     });
 
@@ -130,14 +133,14 @@ describe("CompilerSupplier", function () {
       const localPathOptions = Config.default().merge(options);
 
       const { compilations } = await Compile.sources({
-        sources: version6PragmaSource,
+        sources: version8PragmaSource,
         options: localPathOptions
       });
-      const Version6Pragma = findOne(
-        "Version6Pragma",
+      const Version8Pragma = findOne(
+        "Version8Pragma",
         compilations[0].contracts
       );
-      assert(Version6Pragma.contractName === "Version6Pragma");
+      assert(Version8Pragma.contractName === "Version8Pragma");
     });
 
     it("caches releases and uses them if available", async function () {
