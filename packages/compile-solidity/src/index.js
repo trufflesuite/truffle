@@ -146,7 +146,11 @@ const Compile = {
       options.with({
         paths: solidityPaths,
         base_path: options.contracts_directory,
-        resolver: options.resolver
+        resolver: options.resolver,
+        compiler: {
+          name: "solc",
+          version: solc.version()
+        }
       })
     );
     debug("compilationTargets: %O", compilationTargets);
