@@ -12,8 +12,11 @@ async function run(rawSources, options, internalOptions = {}) {
     return null;
   }
 
-  const language = internalOptions.language || "Solidity"; //could also be "Yul"
-  const noTransform = internalOptions.noTransform; //turns off project root transform
+  const {
+    language = "Solidity", // could also be "Yul"
+    noTransform = false, // turns off project root transform
+    solc, // passing this skips compilerSupplier.load()
+  } = internalOptions;
 
   // Ensure sources have operating system independent paths
   // i.e., convert backslashes to forward slashes; things like C: are left intact.
@@ -42,6 +45,7 @@ async function run(rawSources, options, internalOptions = {}) {
   // perform compilation
   const { compilerOutput, solcVersion } = await invokeCompiler({
     compilerInput,
+    solc,
     options
   });
   debug("compilerOutput: %O", compilerOutput);
@@ -214,14 +218,18 @@ function prepareOutputSelection({ targets = [] }) {
 /**
  * Load solc and perform compilation
  */
-async function invokeCompiler({ compilerInput, options }) {
+async function invokeCompiler({ compilerInput, options, solc }) {
   const supplierOptions = {
     parser: options.parser,
     events: options.events,
     solcConfig: options.compilers.solc
   };
-  const supplier = new CompilerSupplier(supplierOptions);
-  const { solc } = await supplier.load();
+
+  if (!solc) {
+    const supplier = new CompilerSupplier(supplierOptions);
+    ({ solc } = await supplier.load());
+  }
+
   const solcVersion = solc.version();
 
   // perform compilation
