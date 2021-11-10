@@ -138,10 +138,10 @@ const Migrate = {
     }
 
     if (options.events) {
-      options.events.emit("preAllMigrations", {
+      options.events.emit("migrate:preAllMigrations", {
         Migrate,
         migrations,
-        options
+        dryRun: options.dryRun
       });
     }
     // if (this.reporter) {
@@ -166,7 +166,7 @@ const Migrate = {
       //   error: null,
       // });
       if (options.events) {
-        await options.events.emit("postAllMigrations", {
+        await options.events.emit("migrate:postAllMigrations", {
           Migrate,
           dryRun: options.dryRun,
           error: null,
@@ -179,7 +179,7 @@ const Migrate = {
       //   error: error.toString(),
       // });
       if (options.events) {
-        await options.events.emit("postAllMigrations", {
+        await options.events.emit("migrate:postAllMigrations", {
           Migrate,
           dryRun: options.dryRun,
           error: error.toString(),
