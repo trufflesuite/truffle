@@ -22,7 +22,7 @@ const MigrationsMessages = require("./messages");
  *  + `this.deployer`
  */
 class Reporter {
-  constructor(describeJson) {
+  constructor({ describeJson, logger }) {
     this.migrator = null;
     this.deployer = null;
     this.migration = null;
@@ -36,6 +36,7 @@ class Reporter {
     this.blockSpinner = null;
     this.currentBlockWait = "";
     this.describeJson = describeJson;
+    this.logger = logger;
 
     this.messages = new MigrationsMessages(this);
   }
@@ -170,7 +171,7 @@ class Reporter {
         }
 
         input.close();
-        self.deployer && self.deployer.logger.log(exitLine);
+        self.deployer && self.logger.log(exitLine);
         resolve(false);
       });
     });
@@ -267,7 +268,7 @@ class Reporter {
    */
   async preAllMigrations(data) {
     const message = this.messages.steps("preAllMigrations", data);
-    this.migrator.logger.log(message);
+    this.logger.log(message);
   }
 
   /**
@@ -276,7 +277,7 @@ class Reporter {
    */
   async postAllMigrations(data) {
     const message = this.messages.steps("postAllMigrations", data);
-    this.migrator.logger.log(message);
+    this.logger.log(message);
   }
 
   // -------------------------  Migration File Handlers --------------------------------------------
@@ -289,7 +290,7 @@ class Reporter {
     let message;
     if (data.isFirst) {
       message = this.messages.steps("firstMigrate", data);
-      this.deployer.logger.log(message);
+      this.logger.log(message);
     }
 
     this.summary.push({
@@ -301,7 +302,7 @@ class Reporter {
     this.currentFileIndex++;
 
     message = this.messages.steps("preMigrate", data);
-    this.deployer.logger.log(message);
+    this.logger.log(message);
   }
 
   /**
@@ -318,7 +319,7 @@ class Reporter {
       valueUnit: this.valueUnit,
     };
     let message = this.messages.steps("postMigrate", messageData);
-    this.deployer.logger.log(message);
+    this.logger.log(message);
 
     if (data.isLast) {
       messageData.totalDeployments = totals.deployments;
@@ -328,7 +329,7 @@ class Reporter {
       this.summary.finalCost = messageData.finalCost;
 
       message = this.messages.steps("lastMigrate", messageData);
-      this.deployer.logger.log(message);
+      this.logger.log(message);
     }
   }
 
@@ -344,7 +345,7 @@ class Reporter {
       ? (message = this.messages.steps("replacing", data))
       : (message = this.messages.steps("deploying", data));
 
-    !this.deployingMany && this.deployer.logger.log(message);
+    !this.deployingMany && this.logger.log(message);
   }
 
   /**
@@ -396,7 +397,7 @@ class Reporter {
       message = this.messages.steps("reusing", data);
     }
 
-    this.deployer.logger.log(message);
+    this.logger.log(message);
   }
 
   /**
@@ -413,7 +414,7 @@ class Reporter {
 
     const message = await this.processDeploymentError(data);
 
-    return data.log ? this.deployer.logger.error(message) : message;
+    return data.log ? this.logger.error(message) : message;
   }
 
   // --------------------------  Transaction Handlers  ------------------------------------------
@@ -425,14 +426,13 @@ class Reporter {
    */
   async startTransaction(data) {
     const message = data.message || "Starting unknown transaction...";
-    this.deployer.logger.log();
+    this.logger.log();
 
     this.blockSpinner = new ora({
       text: message,
       spinner: indentedSpinner,
       color: "red"
     });
-
     this.blockSpinner.start();
   }
 
@@ -443,13 +443,13 @@ class Reporter {
   async endTransaction(data) {
     data.message = data.message || "Ending unknown transaction....";
     const message = this.messages.steps("endTransaction", data);
-    this.deployer.logger.log(message);
+    this.logger.log(message);
   }
 
   // ----------------------------  Library Event Handlers ------------------------------------------
   linking(data) {
     let message = this.messages.steps("linking", data);
-    this.deployer.logger.log(message);
+    this.logger.log(message);
   }
 
   // ----------------------------  PromiEvent Handlers --------------------------------------------
@@ -461,7 +461,7 @@ class Reporter {
   async error(data) {
     const message = this.messages.errors(data.type, data);
 
-    return data.log ? this.deployer.logger.error(message) : message;
+    return data.log ? this.logger.error(message) : message;
   }
 
   /**
@@ -473,7 +473,7 @@ class Reporter {
     if (this.migration.dryRun) return;
 
     let message = this.messages.steps("hash", data);
-    this.deployer.logger.log(message);
+    this.logger.log(message);
 
     this.currentBlockWait = `Blocks: 0`.padEnd(21) + `Seconds: 0`;
 
@@ -492,7 +492,7 @@ class Reporter {
    */
   async confirmation(data) {
     let message = this.messages.steps("confirmation", data);
-    this.deployer.logger.log(message);
+    this.logger.log(message);
   }
 }
 
