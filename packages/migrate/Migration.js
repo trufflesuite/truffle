@@ -2,7 +2,6 @@ const debug = require("debug")("migrate:Migration");
 const path = require("path");
 const Deployer = require("@truffle/deployer");
 const Require = require("@truffle/require");
-const Emittery = require("emittery");
 const {
   Web3Shim,
   createInterfaceAdapter
@@ -15,7 +14,6 @@ class Migration {
     this.file = path.resolve(file);
     this.reporter = reporter;
     this.number = parseInt(path.basename(file));
-    this.emitter = new Emittery();
     this.isFirst = false;
     this.isLast = false;
     this.dryRun = config.dryRun;
@@ -92,7 +90,6 @@ class Migration {
 
         if (!this.dryRun) {
           const data = { message: message };
-          // await this.emitter.emit("startTransaction", data);
           await options.events.emit("migrate:migration:deploy:transaction:start", {
             migration: this,
             data
@@ -104,7 +101,6 @@ class Migration {
 
         if (!this.dryRun) {
           const data = { receipt: receipt, message: message };
-          // await this.emitter.emit("endTransaction", data);
           await options.events.emit("migrate:migration:deploy:transaction:succeed", {
             migration: this,
             data
@@ -117,7 +113,6 @@ class Migration {
         interfaceAdapter: context.interfaceAdapter
       };
 
-      // await this.emitter.emit("postMigrate", eventArgs);
       await options.events.emit("migrate:migration:deploy:migrate:succeed", {
         migration: this,
         eventArgs
@@ -169,13 +164,6 @@ class Migration {
 
       // Cleanup
       if (this.isLast) {
-        if (options.events) {
-          await options.events.emit("migrate:migration:lastMigration:succeed", {
-            migration: this
-          });
-        }
-        // this.emitter.clearListeners();
-
         // Exiting w provider-engine appears to be hopeless. This hack on
         // our fork just swallows errors from eth-block-tracking
         // as we unwind the handlers downstream from here.
@@ -189,7 +177,6 @@ class Migration {
         error: error
       };
 
-      // await this.emitter.emit("error", payload);
       if (options.events) {
         await options.events.emit("migrate:migration:deploy:error", {
           migration: this,
@@ -215,13 +202,6 @@ class Migration {
       deployer
     } = this.prepareForMigrations(options);
 
-    // Connect reporter to this migration
-    // if (this.reporter) {
-    //   this.reporter.setMigration(this);
-    //   this.reporter.setDeployer(deployer);
-    //   this.reporter.confirmations = options.confirmations || 0;
-    //   this.reporter.listen();
-    // }
     if (options.events) {
       await options.events.emit("migrate:migration:run:start", {
         migration: this,
@@ -243,7 +223,6 @@ class Migration {
       blockLimit: block.gasLimit
     };
 
-    // await this.emitter.emit("preMigrate", preMigrationsData);
     if (options.events) {
       await options.events.emit("migrate:migration:run:preMigrations", {
         migration: this,

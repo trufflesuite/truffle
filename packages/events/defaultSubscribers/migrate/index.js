@@ -51,40 +51,32 @@ module.exports = {
     "migrate:migration:deploy:transaction:start": [
       async function ({ data, migration }) {
         console.log(5)
-        // await migration.emitter.emit("startTransaction", data);
         await this.reporter.startTransaction(data);
       }
     ],
     "migrate:migration:deploy:transaction:succeed": [
       async function ({ data, migration }) {
         console.log(6)
-        // await migration.emitter.emit("endTransaction", data);
         await this.reporter.endTransaction(data);
       }
     ],
     "migrate:migration:deploy:migrate:succeed": [
       async function ({ eventArgs, migration }) {
         console.log(7)
-        await migration.emitter.emit("postMigrate", eventArgs);
+        this.reporter.postMigrate(eventArgs);
       }
     ],
 
-    "migrate:migration:lastMigration:succeed": [
-      async function ({ migration }) {
-        console.log(8)
-        await migration.emitter.clearListeners();
-      }
-    ],
     "migrate:migration:deploy:error": [
       async function ({ migration, payload }) {
         console.log(9)
-        await migration.emitter.emit("error", payload);
+        this.reporter.error(payload);
       }
     ],
     "migrate:migration:run:preMigrations": [
       async function ({ migration, data }) {
         console.log(10)
-        await migration.emitter.emit("preMigrate", data);
+        this.reporter.preMigrate(data);
       }
     ]
   }
