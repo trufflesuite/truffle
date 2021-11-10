@@ -62,7 +62,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
     if (networkName === undefined || !supportedNetworks.includes(networkName)) {
       throw new InvalidNetworkError(networkId, "etherscan");
     }
-    this.suffix = networkName === "" ? "mainnet" : `${networkName}`;
+    this.suffix = networkName === "" ? "mainnet": `${networkName}`;
     debug("apiKey: %s", apiKey);
     this.apiKey = apiKey;
     const baseDelay = this.apiKey ? 200 : 3000; //etherscan permits 5 requests/sec w/a key, 1/3sec w/o
@@ -93,6 +93,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
   private async makeRequest(address: string): Promise<EtherscanSuccess> {
     //not putting a try/catch around this; if it throws, we throw
     await this.ready;
+    console.log(this.suffix)
     let url = '';
     switch (this.suffix){
       case "arbitrum" :
@@ -102,11 +103,16 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
         url = "https://api.polygonscan.com/api";
         break;
       case "mainnet":
-        url = "https://api.etherscan.io/api"
+        url = "https://api.etherscan.io/api";
+        break;
+      case "kovan":
+        url = "https://api-kovan.etherscan.io/api";
+        break;
       default:
-        `https://api-${this.suffix}.etherscan.io/api`;
+       url = `https://api-${this.suffix}.etherscan.io/api`;
         break;
     }
+    console.log(url)
     const responsePromise = axios.get(
       url,
       {
