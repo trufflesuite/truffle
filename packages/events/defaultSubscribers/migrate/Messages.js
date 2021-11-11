@@ -1,7 +1,7 @@
 /**
  *  A module that formats output for the Migrations reporter.
  */
-class MigrationsMessages {
+class Messages {
   constructor(reporter) {
     this.reporter = reporter;
     this.describeJson = reporter.describeJson;
@@ -465,4 +465,4 @@ class MigrationsMessages {
   }
 }
 
-module.exports = MigrationsMessages;
+module.exports = Messages;

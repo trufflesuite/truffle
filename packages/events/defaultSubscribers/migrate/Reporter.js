@@ -4,7 +4,7 @@ const readline = require("readline");
 const ora = require("ora");
 
 const indentedSpinner = require("./indentedSpinner");
-const MigrationsMessages = require("./messages");
+const Messages = require("./Messages");
 
 /**
  *  Reporter consumed by a migrations sequence which iteself consumes a series of Migration and
@@ -33,7 +33,7 @@ class Reporter {
     this.dryRun = dryRun;
     this.confirmations = confirmations;
 
-    this.messages = new MigrationsMessages(this);
+    this.messages = new Messages(this);
   }
 
   // ------------------------------------  Utilities -----------------------------------------------
