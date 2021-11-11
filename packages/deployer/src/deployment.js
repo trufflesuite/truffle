@@ -241,27 +241,6 @@ class Deployment {
     });
   }
 
-  /**
-   * Handler for contract's `confirmation` event. Rebroadcasts as a deployer event
-   * and maintains a table of txHashes & their current confirmation number. This
-   * table gets polled if the user needs to wait a few blocks before getting
-   * an instance back.
-   * @private
-   * @param  {Object} parent  Deployment instance. Local `this` belongs to promievent
-   * @param  {Number} num     Confirmation number
-   * @param  {Object} receipt transaction receipt
-   */
-  async _confirmationCb(parent, state, num, receipt) {
-    const eventArgs = {
-      contractName: state.contractName,
-      num: num,
-      receipt: receipt
-    };
-
-    parent.confirmationsMap[receipt.transactionHash] = num;
-    await parent.emitter.emit("confirmation", eventArgs);
-  }
-
   // ------------------------------------ Methods --------------------------------------------------
   /**
    *
