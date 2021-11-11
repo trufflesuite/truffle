@@ -97,7 +97,9 @@ class Deployment {
         secondsWaited: secondsWaited
       };
 
-      await self.emitter.emit("block", eventArgs);
+      if (this.options && this.options.events) {
+        this.options.events.emit("migrate:deployment:block", eventArgs);
+      }
     }, self.pollingInterval);
   }
 
@@ -139,7 +141,9 @@ class Deployment {
             block: currentBlock
           };
 
-          await self.emitter.emit("confirmation", eventArgs);
+          if (this.options && this.options.events) {
+            await this.options.events.emit("migrate:deployment:confirmation", eventArgs);
+          }
         }
 
         if (blocksHeard >= blocksToWait) {

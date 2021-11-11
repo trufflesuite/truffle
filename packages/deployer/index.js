@@ -18,6 +18,7 @@ class Deployer extends Deployment {
     const emitter = new Emittery();
     super(emitter, options);
 
+    this.options = options;
     this.emitter = emitter;
     this.chain = new DeferredChain();
     this.logger = logger || { log: function () {} };

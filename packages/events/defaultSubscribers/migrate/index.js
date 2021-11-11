@@ -68,6 +68,16 @@ module.exports = {
       async function ({ data }) {
         this.reporter.preMigrate(data);
       }
-    ]
+    ],
+    "migrate:deployment:block": [
+      async function ({ data }) {
+        this.reporter.block(data);
+      }
+    ],
+    "migrate:deployment:confirmation": [
+      async function ({ data }) {
+        this.reporter.confirmation(data);
+      }
+    ],
   }
 }
