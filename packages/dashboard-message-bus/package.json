@@ -38,15 +38,13 @@
     "typescript": "^4.1.4"
   },
   "dependencies": {
-    "@truffle/dashboard": "^0.1.0",
     "@types/ws": "^7.2.0",
     "axios": "^0.21.3",
     "delay": "^5.0.0",
     "isomorphic-ws": "^4.0.1",
     "open": "^8.2.0",
     "promise.any": "^2.0.2",
-    "ws": "^7.2.0",
-    "yarn": "^1.22.11"
+    "ws": "^7.2.0"
   },
   "browser": {
     "ws": false
