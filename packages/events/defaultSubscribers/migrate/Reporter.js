@@ -23,7 +23,6 @@ const MigrationsMessages = require("./messages");
  */
 class Reporter {
   constructor({ describeJson, logger, dryRun, confirmations }) {
-    this.migrator = null;
     this.deployer = null;
     this.migration = null;
     this.currentGasTotal = new web3Utils.BN(0);
@@ -46,14 +45,6 @@ class Reporter {
   // ------------------------------------  Utilities -----------------------------------------------
 
   /**
-   * Sets a Migrator instance to be the current master migrator events emitter source
-   * @param {Migration} migrator
-   */
-  setMigrator(migrator) {
-    this.migrator = migrator;
-  }
-
-  /**
    * Sets a Migration instance to be the current migrations events emitter source
    * @param {Migration} migration
    */
@@ -67,23 +58,6 @@ class Reporter {
    */
   setDeployer(deployer) {
     this.deployer = deployer;
-  }
-
-  /**
-   * Registers emitter handlers for the migrator
-   */
-  listenMigrator() {
-    // Migrator
-    if (this.migrator && this.migrator.emitter) {
-      this.migrator.emitter.on(
-        "preAllMigrations",
-        this.preAllMigrations.bind(this)
-      );
-      this.migrator.emitter.on(
-        "postAllMigrations",
-        this.postAllMigrations.bind(this)
-      );
-    }
   }
 
   /**
