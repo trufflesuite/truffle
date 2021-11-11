@@ -9,6 +9,7 @@ module.exports = {
     "migrate:start": [
       function ({ config }) {
         this.reporter = new Reporter({
+          dryRun: config.dryRun,
           logger: this.logger,
           describeJson: config.describeJson || false,
         });
@@ -36,7 +37,6 @@ module.exports = {
     "migrate:migration:run:start": [
       async function ({ migration, deployer, confirmations }) {
         if (migration) {
-          this.reporter.setMigration(migration);
           this.reporter.setDeployer(deployer);
           this.reporter.confirmations = confirmations || 0;
           this.reporter.listen();

@@ -4,7 +4,6 @@ const glob = require("glob");
 const expect = require("@truffle/expect");
 const Config = require("@truffle/config");
 const Migration = require("./Migration");
-const Emittery = require("emittery");
 
 /**
  *  This API is consumed by `@truffle/core` at the `migrate` and `test` commands via
@@ -12,8 +11,6 @@ const Emittery = require("emittery");
  */
 const Migrate = {
   Migration: Migration,
-  reporter: null,
-  emitter: new Emittery(),
   logger: null,
 
   launchReporter: function (config) {
@@ -23,6 +20,7 @@ const Migrate = {
   },
 
   acceptDryRun: async function () {
+    // TODO: extract interactive stuff from reporters
     return Migrate.reporter.acceptDryRun();
   },
 
@@ -48,7 +46,7 @@ const Migrate = {
           path.extname(file).match(config.migrations_file_extension_regexp) !=
           null
       )
-      .map(file => new Migration(file, Migrate.reporter, config));
+      .map(file => new Migration(file, config));
 
     // Make sure to sort the prefixes as numbers and not strings.
     migrations = migrations.sort((a, b) => {

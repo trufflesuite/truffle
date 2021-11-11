@@ -10,9 +10,8 @@ const ResolverIntercept = require("./ResolverIntercept");
 const { getTruffleDb } = require("@truffle/db-loader");
 
 class Migration {
-  constructor(file, reporter, config) {
+  constructor(file, config) {
     this.file = path.resolve(file);
-    this.reporter = reporter;
     this.number = parseInt(path.basename(file));
     this.isFirst = false;
     this.isLast = false;
