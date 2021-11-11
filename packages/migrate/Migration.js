@@ -199,14 +199,6 @@ class Migration {
       deployer
     } = this.prepareForMigrations(options);
 
-    if (options.events) {
-      await options.events.emit("migrate:migration:run:start", {
-        migration: this,
-        deployer,
-        confirmations: options.confirmations || 0
-      });
-    }
-
     // Get file path and emit pre-migration event
     const file = path.relative(options.migrations_directory, this.file);
     const block = await interfaceAdapter.getBlock("latest");
