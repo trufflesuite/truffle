@@ -7,7 +7,11 @@ const create = require("./src/actions/new");
 const ENS = require("./ens");
 
 class Deployer extends Deployment {
-  constructor(options) {
+  constructor({
+    options,
+    logger,
+    basePath
+  }) {
     options = options || {};
     expect.options(options, ["provider", "networks", "network", "network_id"]);
 
@@ -16,12 +20,12 @@ class Deployer extends Deployment {
 
     this.emitter = emitter;
     this.chain = new DeferredChain();
-    this.logger = options.logger || { log: function () {} };
+    this.logger = logger || { log: function () {} };
     this.network = options.network;
     this.networks = options.networks;
     this.network_id = options.network_id;
     this.provider = options.provider;
-    this.basePath = options.basePath || process.cwd();
+    this.basePath = basePath || process.cwd();
     this.known_contracts = {};
     if (options.ens && options.ens.enabled) {
       options.ens.registryAddress = this.networks[this.network].registry

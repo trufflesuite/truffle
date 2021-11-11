@@ -248,15 +248,9 @@ class Migration {
     const context = { web3, interfaceAdapter, config: this.config };
 
     const deployer = new Deployer({
+      options,
       logger,
-      confirmations: options.confirmations,
-      timeoutBlocks: options.timeoutBlocks,
-      networks: options.networks,
-      network: options.network,
-      network_id: options.network_id,
-      provider: options.provider,
-      basePath: path.dirname(this.file),
-      ens: options.ens
+      basePath: path.dirname(this.file)
     });
 
     return { interfaceAdapter, resolver, context, deployer };
