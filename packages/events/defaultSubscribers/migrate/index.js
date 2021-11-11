@@ -12,6 +12,7 @@ module.exports = {
           dryRun: config.dryRun,
           logger: this.logger,
           describeJson: config.describeJson || false,
+          confirmations: config.confirmations || 0
         });
       }
     ],
@@ -34,15 +35,6 @@ module.exports = {
       }
     ],
 
-    "migrate:migration:run:start": [
-      async function ({ migration, deployer, confirmations }) {
-        if (migration) {
-          // this.reporter.setDeployer(deployer);
-          // this.reporter.confirmations = confirmations || 0;
-          // this.reporter.listen();
-        }
-      }
-    ],
     "migrate:migration:deploy:transaction:start": [
       async function ({ data }) {
         await this.reporter.startTransaction(data);
@@ -55,34 +47,34 @@ module.exports = {
     ],
     "migrate:migration:deploy:migrate:succeed": [
       async function ({ eventArgs }) {
-        this.reporter.postMigrate(eventArgs);
+        return await this.reporter.postMigrate(eventArgs);
       }
     ],
 
     "migrate:migration:deploy:error": [
       async function ({ errorData }) {
-        this.reporter.error(errorData);
+        return await this.reporter.error(errorData);
       }
     ],
     "migrate:migration:run:preMigrations": [
       async function ({ data }) {
-        this.reporter.preMigrate(data);
+        return await this.reporter.preMigrate(data);
       }
     ],
 
     "migrate:deployment:block": [
       async function ({ data }) {
-        this.reporter.block(data);
+        return await this.reporter.block(data);
       }
     ],
     "migrate:deployment:confirmation": [
       async function ({ data }) {
-        this.reporter.confirmation(data);
+        return await this.reporter.confirmation(data);
       }
     ],
     "migrate:deployment:txHash": [
       async function ({ data }) {
-        this.reporter.txHash(data);
+        return await this.reporter.txHash(data);
       }
     ],
     "migrate:deployment:postDeploy": [

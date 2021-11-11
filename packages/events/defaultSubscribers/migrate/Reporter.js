@@ -22,7 +22,7 @@ const MigrationsMessages = require("./messages");
  *  + `this.deployer`
  */
 class Reporter {
-  constructor({ describeJson, logger, dryRun }) {
+  constructor({ describeJson, logger, dryRun, confirmations }) {
     this.migrator = null;
     this.deployer = null;
     this.migration = null;
@@ -38,6 +38,7 @@ class Reporter {
     this.describeJson = describeJson;
     this.logger = logger;
     this.dryRun = dryRun;
+    this.confirmations = confirmations;
 
     this.messages = new MigrationsMessages(this);
   }
