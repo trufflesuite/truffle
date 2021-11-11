@@ -24,7 +24,6 @@
     "@ensdomains/resolver": "^0.2.0",
     "@truffle/contract": "^4.4.6",
     "@truffle/expect": "^0.0.19",
-    "emittery": "^0.4.1",
     "eth-ens-namehash": "^2.0.8",
     "web3-utils": "1.5.3"
   },
