@@ -220,9 +220,11 @@ describe("HD Wallet Provider", function () {
       });
       assert.ok(provider.engine,
         "Web3ProviderEngine instantiated");
+      // @ts-ignore - _blockTracker is not officially part of the interface
       assert.ok(provider.engine._blockTracker,
         "PollingBlockTracker instantiated");
       assert.deepEqual(
+        // @ts-ignore
         provider.engine._blockTracker._pollingInterval,
         4000,
         "PollingBlockTracker with expected pollingInterval");
@@ -241,9 +243,11 @@ describe("HD Wallet Provider", function () {
       });
       assert.ok(provider.engine,
         "Web3ProviderEngine instantiated");
+      // @ts-ignore
       assert.ok(provider.engine._blockTracker,
         "PollingBlockTracker instantiated");
       assert.deepEqual(
+        // @ts-ignore
         provider.engine._blockTracker._pollingInterval,
         8000,
         "PollingBlockTracker with expected pollingInterval");
