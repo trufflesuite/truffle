@@ -87,7 +87,7 @@ module.exports = {
     ],
     "migrate:deployment:postDeploy": [
       async function ({ data }) {
-        this.reporter.postDeploy(data);
+        return await this.reporter.postDeploy(data);
       }
     ],
     "migrate:deployment:deployFailed": [
