@@ -16,6 +16,11 @@ module.exports = {
         });
       }
     ],
+    "migrate:dryRun:notAccepted": [
+      async function () {
+        this.logger.log("\n> Exiting without migrating...\n\n");
+      }
+    ],
     "migrate:preAllMigrations": [
       async function ({ dryRun, migrations }) {
         const message = this.reporter.messages.steps("preAllMigrations", {

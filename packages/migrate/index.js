@@ -4,6 +4,7 @@ const glob = require("glob");
 const expect = require("@truffle/expect");
 const Config = require("@truffle/config");
 const Migration = require("./Migration");
+const inquirer = require("inquirer");
 
 /**
  *  This API is consumed by `@truffle/core` at the `migrate` and `test` commands via
@@ -13,15 +14,22 @@ const Migrate = {
   Migration: Migration,
   logger: null,
 
-  launchReporter: function (config) {
-    config.events.emit("migrate:start", {
-      config,
-    });
-  },
+  acceptDryRun: async function (options) {
+    const prompt = [{
+      type: "confirm",
+      name: "proceed",
+      message: `Dry-run successful. Do you want to proceed with real deployment?  >> (y/n): `,
+      default: false,
+    }];
 
-  acceptDryRun: async function () {
-    // TODO: extract interactive stuff from reporters
-    return Migrate.reporter.acceptDryRun();
+    const answer = await inquirer.prompt(prompt);
+    if (answer.proceed) {
+      return true;
+    }
+    if (options.events) {
+      await options.events.emit("migrate:dryRun:notAccepted");
+    }
+    return false;
   },
 
   assemble: function (options) {
