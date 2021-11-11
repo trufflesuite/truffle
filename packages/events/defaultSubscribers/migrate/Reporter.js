@@ -423,7 +423,6 @@ class Reporter {
         data.error.message
       }`;
     }
-    console.log("the mess - %o", message);
     return message;
   }
 
