@@ -258,7 +258,7 @@ class MigrationsMessages {
         if (reporter.blockSpinner) {
           reporter.blockSpinner.stop();
           const stopText = `   > ${reporter.currentBlockWait}`;
-          reporter.deployer.logger.log(stopText);
+          this.reporter.logger.log(stopText);
         }
 
         let output = "";

@@ -1,3 +1,5 @@
+const sanitizeMessage = require("./sanitizeMessage");
+
 module.exports = {
   link: async function(library, destinations, deployer) {
     let eventArgs;
@@ -8,8 +10,14 @@ module.exports = {
         type: "noLibName"
       };
 
-      const message = await deployer.emitter.emit("error", eventArgs);
-      throw new Error(message);
+      // const message = await deployer.emitter.emit("error", eventArgs);
+      let message;
+      if (deployer.options && deployer.options.events) {
+        message = await deployer.options.events.emit("migrate:deployment:error", {
+          data: eventArgs
+        });
+      }
+      throw new Error(sanitizeMessage(message));
     }
 
     // Validate address: don't want to use .address directly because it will throw.
@@ -25,8 +33,13 @@ module.exports = {
         contract: library
       };
 
-      const message = await deployer.emitter.emit("error", eventArgs);
-      throw new Error(message);
+      let message;
+      if (deployer.options && deployer.options.events) {
+        message = await deployer.options.events.emit("migrate:deployment:error", {
+          data: eventArgs
+        });
+      }
+      throw new Error(sanitizeMessage(message));
     }
 
     // Link all destinations
@@ -50,7 +63,11 @@ module.exports = {
         contractAddress: destination.contractAddress
       };
 
-      await deployer.emitter.emit("linking", eventArgs);
+      if (deployer.options && deployer.options.events) {
+        await deployer.options.events.emit("migrate:deployment:linking", {
+          data: eventArgs
+        });
+      }
       destination.link(library);
     }
   }
