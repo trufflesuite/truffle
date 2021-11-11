@@ -4062,6 +4062,14 @@
   resolved "https://registry.yarnpkg.com/@truffle/error/-/error-0.0.8.tgz#dc94ca36393403449d4b7461bf9452c241e53ec1"
   integrity sha512-x55rtRuNfRO1azmZ30iR0pf0OJ6flQqbax1hJz+Avk1K5fdmOv5cr22s9qFnwTWnS6Bw0jvJEoR0ITsM7cPKtQ==
 
+"@truffle/reporters@^2.0.8":
+  version "2.0.8"
+  resolved "https://registry.yarnpkg.com/@truffle/reporters/-/reporters-2.0.8.tgz#20a52a7efe4142231a7435a3938fa06cb86a54d6"
+  integrity sha512-E1zDyrjxEI11IJqRhnCLYzz9R3yOB7HjE3t5/hdtXpYyUXwo8A8C2r298pZKKhLgqZGkJgaGmZZuNK8vXv74qw==
+  dependencies:
+    ora "^3.4.0"
+    web3-utils "1.5.3"
+
 "@trufflesuite/bigint-buffer@1.1.9":
   version "1.1.9"
   resolved "https://registry.yarnpkg.com/@trufflesuite/bigint-buffer/-/bigint-buffer-1.1.9.tgz#e2604d76e1e4747b74376d68f1312f9944d0d75d"
