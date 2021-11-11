@@ -10,7 +10,6 @@ module.exports = {
         type: "noLibName"
       };
 
-      // const message = await deployer.emitter.emit("error", eventArgs);
       let message;
       if (deployer.options && deployer.options.events) {
         message = await deployer.options.events.emit("migrate:deployment:error", {
