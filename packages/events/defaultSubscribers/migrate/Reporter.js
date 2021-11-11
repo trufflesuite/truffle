@@ -1,6 +1,5 @@
 const debug = require("debug")("reporters:migrations:reporter"); // eslint-disable-line no-unused-vars
 const web3Utils = require("web3-utils");
-const readline = require("readline");
 const ora = require("ora");
 
 const indentedSpinner = require("./indentedSpinner");
@@ -56,39 +55,6 @@ class Reporter {
       finalCost: interfaceAdapter.displayCost(this.finalCostTotal),
       deployments: this.deployments.toString()
     };
-  }
-
-  /**
-   * Queries the user for a true/false response and resolves the result.
-   * @param  {String} type identifier the reporter consumes to format query
-   * @return {Promise}
-   */
-  askBoolean(type) {
-    const self = this;
-    const question = this.messages.questions(type);
-    const exitLine = this.messages.exitLines(type);
-
-    // NB: We need direct access to a writeable stream here.
-    // This ignores `quiet` - but we only use that mode for `truffle test`.
-    const input = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout
-    });
-
-    const affirmations = ["y", "yes", "YES", "Yes"];
-
-    return new Promise(resolve => {
-      input.question(question, answer => {
-        if (affirmations.includes(answer.trim())) {
-          input.close();
-          return resolve(true);
-        }
-
-        input.close();
-        self.deployer && self.logger.log(exitLine);
-        resolve(false);
-      });
-    });
   }
 
   /**

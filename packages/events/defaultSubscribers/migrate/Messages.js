@@ -33,27 +33,6 @@ class Messages {
     return `${Number(num).toString(10)} (0x${Number(num).toString(16)})`;
   }
 
-  // ----------------------------------- Interactions ----------------------------------------------
-
-  questions(kind) {
-    const prompt = " >> (y/n): ";
-    const kinds = {
-      acceptDryRun:
-        `Dry-run successful. ` +
-        `Do you want to proceed with real deployment? ${prompt}`
-    };
-
-    return kinds[kind];
-  }
-
-  exitLines(kind) {
-    const kinds = {
-      acceptDryRun: "\nExiting without migrating...\n\n"
-    };
-
-    return kinds[kind];
-  }
-
   // ----------------------------------  Errors ----------------------------------------------------
 
   errors(kind, data) {
