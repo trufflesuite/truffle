@@ -113,7 +113,6 @@ class Migration {
       };
 
       await options.events.emit("migrate:migration:deploy:migrate:succeed", {
-        migration: this,
         eventArgs
       });
 
@@ -171,15 +170,14 @@ class Migration {
         }
       }
     } catch (error) {
-      const payload = {
+      const errorData = {
         type: "migrateErr",
         error: error
       };
 
       if (options.events) {
         await options.events.emit("migrate:migration:deploy:error", {
-          migration: this,
-          payload
+          errorData
         });
       }
       deployer.finish();
@@ -224,7 +222,6 @@ class Migration {
 
     if (options.events) {
       await options.events.emit("migrate:migration:run:preMigrations", {
-        migration: this,
         data: preMigrationsData
       });
     }
