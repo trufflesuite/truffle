@@ -92,9 +92,12 @@ module.exports = {
     ],
     "migrate:deployment:deployFailed": [
       async function ({ data }) {
-        const thing = await this.reporter.deployFailed(data);
-        console.log("the thing - %o", thing);
-        return thing;
+        return await this.reporter.deployFailed(data);
+      }
+    ],
+    "migrate:deployment:error": [
+      async function ({ data }) {
+        return await this.reporter.error(data);
       }
     ]
   }

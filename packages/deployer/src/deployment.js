@@ -170,10 +170,22 @@ class Deployment {
   async _preFlightCheck(contract) {
     // Check that contract is not array
     if (Array.isArray(contract)) {
-      const message = await this.emitter.emit("error", {
+      const data = {
         type: "noBatches",
         contract: null
-      });
+      };
+      let message;
+      if (this.options && this.options.events) {
+        message = await this.options.events.emit("migrate:deployment:error", {
+          data
+        });
+      }
+
+      if (Array.isArray(message)) {
+        // for some reason, message is returned as an array padded with many
+        // empty arrays - should investigate this further later
+        message = message[0];
+      }
 
       throw new Error(message);
     }
