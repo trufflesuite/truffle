@@ -18,6 +18,7 @@ class Deployment {
     this.promiEventEmitters = [];
     this.confirmationsMap = {};
     this.blockPoll;
+    this.options = options;
   }
 
   // ------------------------------------  Utils ---------------------------------------------------
@@ -91,14 +92,16 @@ class Deployment {
       currentBlock = newBlock;
       secondsWaited = Math.floor((new Date().getTime() - startTime) / 1000);
 
-      const eventArgs = {
+      const data = {
         blockNumber: newBlock,
         blocksWaited: blocksWaited,
         secondsWaited: secondsWaited
       };
 
       if (this.options && this.options.events) {
-        this.options.events.emit("migrate:deployment:block", eventArgs);
+        this.options.events.emit("migrate:deployment:block", {
+          data
+        });
       }
     }, self.pollingInterval);
   }
@@ -134,7 +137,7 @@ class Deployment {
           blocksHeard = newBlock - currentBlock + blocksHeard;
           currentBlock = newBlock;
 
-          const eventArgs = {
+          const data = {
             contractName: state.contractName,
             receipt: state.receipt,
             num: blocksHeard,
@@ -142,7 +145,9 @@ class Deployment {
           };
 
           if (this.options && this.options.events) {
-            await this.options.events.emit("migrate:deployment:confirmation", eventArgs);
+            await this.options.events.emit("migrate:deployment:confirmation", {
+              data
+            });
           }
         }
 
@@ -185,22 +190,6 @@ class Deployment {
 
     // Check network
     await contract.detectNetwork();
-  }
-
-  /**
-   * Handler for contract's `transactionHash` event. Rebroadcasts as a deployer event
-   * @private
-   * @param  {Object} parent Deployment instance. Local `this` belongs to promievent
-   * @param  {String} hash   tranactionHash
-   */
-  async _hashCb(parent, state, hash) {
-    const eventArgs = {
-      contractName: state.contractName,
-      transactionHash: hash
-    };
-    state.transactionHash = hash;
-    await parent.emitter.emit("transactionHash", eventArgs);
-    this.removeListener("transactionHash", parent._hashCb);
   }
 
   /**
@@ -343,7 +332,17 @@ class Deployment {
 
         // Subscribe to contract events / rebroadcast them to any reporters
         promiEvent
-          .on("transactionHash", self._hashCb.bind(promiEvent, self, state))
+          .on("transactionHash", async (hash) => {
+            if (self.options && self.options.events) {
+              const data = {
+                contractName: state.contractName,
+                transactionHash: hash
+              };
+              await self.options.events.emit("migrate:deployment:txHash", {
+                data
+              });
+            }
+          })
           .on("receipt", self._receiptCb.bind(promiEvent, self, state));
 
         await self._startBlockPolling(contract.interfaceAdapter);

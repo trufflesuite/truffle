@@ -60,8 +60,8 @@ module.exports = {
     ],
 
     "migrate:migration:deploy:error": [
-      async function ({ payload }) {
-        this.reporter.error(payload);
+      async function ({ errorData }) {
+        this.reporter.error(errorData);
       }
     ],
     "migrate:migration:run:preMigrations": [
@@ -69,6 +69,7 @@ module.exports = {
         this.reporter.preMigrate(data);
       }
     ],
+
     "migrate:deployment:block": [
       async function ({ data }) {
         this.reporter.block(data);
@@ -79,5 +80,10 @@ module.exports = {
         this.reporter.confirmation(data);
       }
     ],
+    "migrate:deployment:txHash": [
+      async function ({ data }) {
+        this.reporter.txHash(data);
+      }
+    ]
   }
 }

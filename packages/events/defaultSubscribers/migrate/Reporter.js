@@ -111,7 +111,7 @@ class Reporter {
       this.deployer.emitter.on("deployFailed", this.deployFailed.bind(this));
       this.deployer.emitter.on("linking", this.linking.bind(this));
       this.deployer.emitter.on("error", this.error.bind(this));
-      this.deployer.emitter.on("transactionHash", this.hash.bind(this));
+      this.deployer.emitter.on("transactionHash", this.txHash.bind(this));
       this.deployer.emitter.on("confirmation", this.confirmation.bind(this));
       this.deployer.emitter.on("block", this.block.bind(this));
       this.deployer.emitter.on(
@@ -470,7 +470,7 @@ class Reporter {
    * a block / time counter.
    * @param  {Object} data
    */
-  async hash(data) {
+  async txHash(data) {
     if (this.dryRun) return;
 
     let message = this.messages.steps("hash", data);
