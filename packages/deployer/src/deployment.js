@@ -192,26 +192,6 @@ class Deployment {
     await contract.detectNetwork();
   }
 
-  /**
-   * Handler for contract's `receipt` event. Rebroadcasts as a deployer event
-   * @private
-   * @param  {Object} parent  Deployment instance. Local `this` belongs to promievent
-   * @param  {Object} state   store for the receipt value
-   * @param  {Object} receipt
-   */
-  async _receiptCb(parent, state, receipt) {
-    const eventArgs = {
-      contractName: state.contractName,
-      receipt: receipt
-    };
-
-    // We want this receipt available for the post-deploy event
-    // so gas reporting is at hand there.
-    state.receipt = receipt;
-    await parent.emitter.emit("receipt", eventArgs);
-    this.removeListener("receipt", parent._receiptCb);
-  }
-
   // ----------------- Confirmations Handling (temporarily disabled) -------------------------------
   /**
    * There are outstanding issues at both geth (with websockets) & web3 (with confirmation handling
@@ -343,7 +323,11 @@ class Deployment {
               });
             }
           })
-          .on("receipt", self._receiptCb.bind(promiEvent, self, state));
+          .on("receipt", receipt => {
+            // We want this receipt available for the post-deploy event
+            // so gas reporting is at hand there.
+            state.receipt = receipt;
+          });
 
         await self._startBlockPolling(contract.interfaceAdapter);
 
