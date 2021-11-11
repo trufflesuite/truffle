@@ -37,9 +37,9 @@ module.exports = {
     "migrate:migration:run:start": [
       async function ({ migration, deployer, confirmations }) {
         if (migration) {
-          this.reporter.setDeployer(deployer);
-          this.reporter.confirmations = confirmations || 0;
-          this.reporter.listen();
+          // this.reporter.setDeployer(deployer);
+          // this.reporter.confirmations = confirmations || 0;
+          // this.reporter.listen();
         }
       }
     ],
@@ -103,6 +103,11 @@ module.exports = {
     "migrate:deployment:preDeploy": [
       async function ({ data }) {
         return await this.reporter.preDeploy(data);
+      }
+    ],
+    "migrate:deployment:linking": [
+      async function ({ data }) {
+        return await this.reporter.linking(data);
       }
     ]
   }
