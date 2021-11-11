@@ -16,14 +16,9 @@ const MigrationsMessages = require("./messages");
  *  suite:: deployer.start to deployer.finish
  *  test file:: migrations file
  *
- *  Each time a new migrations file loads, the reporter needs the following properties
- *  updated to reflect the current emitter source:
- *  + `this.migration`
- *  + `this.deployer`
  */
 class Reporter {
   constructor({ describeJson, logger, dryRun, confirmations }) {
-    this.deployer = null;
     this.migration = null;
     this.currentGasTotal = new web3Utils.BN(0);
     this.currentCostTotal = new web3Utils.BN(0);
@@ -53,14 +48,6 @@ class Reporter {
   }
 
   /**
-   * Sets a Deployer instance as the current deployer events emitter source
-   * @param {Deployer} deployer
-   */
-  setDeployer(deployer) {
-    this.deployer = deployer;
-  }
-
-  /**
    * Registers emitter handlers for a migration/deployment
    */
   listen() {
@@ -77,26 +64,6 @@ class Reporter {
       );
       this.migration.emitter.on("postMigrate", this.postMigrate.bind(this));
       this.migration.emitter.on("error", this.error.bind(this));
-    }
-
-    // Deployment
-    if (this.deployer && this.deployer.emitter) {
-      this.deployer.emitter.on("preDeploy", this.preDeploy.bind(this));
-      this.deployer.emitter.on("postDeploy", this.postDeploy.bind(this));
-      this.deployer.emitter.on("deployFailed", this.deployFailed.bind(this));
-      this.deployer.emitter.on("linking", this.linking.bind(this));
-      this.deployer.emitter.on("error", this.error.bind(this));
-      this.deployer.emitter.on("transactionHash", this.txHash.bind(this));
-      this.deployer.emitter.on("confirmation", this.confirmation.bind(this));
-      this.deployer.emitter.on("block", this.block.bind(this));
-      this.deployer.emitter.on(
-        "startTransaction",
-        this.startTransaction.bind(this)
-      );
-      this.deployer.emitter.on(
-        "endTransaction",
-        this.endTransaction.bind(this)
-      );
     }
   }
 
