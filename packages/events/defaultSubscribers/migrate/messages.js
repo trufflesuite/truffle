@@ -263,7 +263,7 @@ class MigrationsMessages {
 
         let output = "";
 
-        if (!reporter.migration.dryRun)
+        if (!reporter.dryRun)
           output += `   > ${"contract address:".padEnd(20)} ${
             data.receipt.contractAddress
           }\n`;
@@ -322,7 +322,7 @@ class MigrationsMessages {
             data.libraryName
           } `;
 
-        if (!reporter.migration.dryRun)
+        if (!reporter.dryRun)
           output += `(at address: ${data.libraryAddress})`;
 
         return output;
@@ -391,7 +391,7 @@ class MigrationsMessages {
       firstMigrate: () => {
         let output = ``;
 
-        reporter.migration.dryRun
+        reporter.dryRun
           ? (output +=
               self.doubleline(`Migrations dry-run (simulation)`) + "\n")
           : (output += self.doubleline(`Starting migrations...`) + "\n");
@@ -409,7 +409,7 @@ class MigrationsMessages {
         let deployments =
           reporter.summary[reporter.currentFileIndex].deployments;
 
-        if (!reporter.migration.dryRun && deployments.length)
+        if (!reporter.dryRun && deployments.length)
           output += `   > Saving artifacts\n`;
 
         output +=

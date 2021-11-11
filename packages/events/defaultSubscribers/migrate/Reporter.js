@@ -22,7 +22,7 @@ const MigrationsMessages = require("./messages");
  *  + `this.deployer`
  */
 class Reporter {
-  constructor({ describeJson, logger }) {
+  constructor({ describeJson, logger, dryRun }) {
     this.migrator = null;
     this.deployer = null;
     this.migration = null;
@@ -37,6 +37,7 @@ class Reporter {
     this.currentBlockWait = "";
     this.describeJson = describeJson;
     this.logger = logger;
+    this.dryRun = dryRun;
 
     this.messages = new MigrationsMessages(this);
   }
@@ -470,7 +471,7 @@ class Reporter {
    * @param  {Object} data
    */
   async hash(data) {
-    if (this.migration.dryRun) return;
+    if (this.dryRun) return;
 
     let message = this.messages.steps("hash", data);
     this.logger.log(message);
