@@ -99,6 +99,11 @@ module.exports = {
       async function ({ data }) {
         return await this.reporter.error(data);
       }
+    ],
+    "migrate:deployment:preDeploy": [
+      async function ({ data }) {
+        return await this.reporter.preDeploy(data);
+      }
     ]
   }
 }

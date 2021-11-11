@@ -304,7 +304,11 @@ class Deployment {
         }
 
         // Emit `preDeploy` & send transaction
-        await self.emitter.emit("preDeploy", eventArgs);
+        if (self.options && self.options.events) {
+          await self.options.events.emit("migrate:deployment:preDeploy", {
+            data: eventArgs
+          });
+        }
         const promiEvent = contract.new.apply(contract, newArgs);
 
         // Track emitters for cleanup on exit
