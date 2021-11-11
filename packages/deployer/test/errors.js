@@ -1,7 +1,6 @@
 const ganache = require("ganache");
 const Web3 = require("web3");
 const assert = require("assert");
-const Reporter = require("@truffle/reporters").migrationsV5;
 const EventEmitter = require("events");
 
 const Deployer = require("../index");
@@ -87,10 +86,6 @@ describe("Error cases", function () {
       }
     };
     deployer = new Deployer(options);
-    reporter = new Reporter();
-    reporter.setDeployer(deployer);
-    reporter.setMigration(mockMigration);
-    reporter.listen();
   });
 
   afterEach(() => {

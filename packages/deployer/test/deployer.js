@@ -2,7 +2,6 @@ const ganache = require("ganache");
 const Web3 = require("web3");
 const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const assert = require("assert");
-const Reporter = require("@truffle/reporters").migrationsV5;
 const EventEmitter = require("events");
 
 const Deployer = require("../index");
@@ -13,7 +12,6 @@ describe("Deployer (sync)", function() {
   let options;
   let networkId;
   let deployer;
-  let reporter;
   let output = "";
   let Example;
   let UsesExample;
@@ -26,10 +24,6 @@ describe("Deployer (sync)", function() {
     },
     logging: { quiet: true }
   });
-
-  const mockMigration = {
-    emitter: new EventEmitter()
-  };
 
   const web3 = new Web3(provider);
 
@@ -88,10 +82,6 @@ describe("Deployer (sync)", function() {
 
   async function setUpWithConfig(config) {
     deployer = new Deployer(config);
-    reporter = new Reporter();
-    reporter.setDeployer(deployer);
-    reporter.setMigration(mockMigration);
-    reporter.listen();
   }
 
   // in this describe block, `setUpWithConfig` is **not** called in a `beforeEach`
