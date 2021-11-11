@@ -19,7 +19,6 @@ const MigrationsMessages = require("./messages");
  */
 class Reporter {
   constructor({ describeJson, logger, dryRun, confirmations }) {
-    this.migration = null;
     this.currentGasTotal = new web3Utils.BN(0);
     this.currentCostTotal = new web3Utils.BN(0);
     this.finalCostTotal = new web3Utils.BN(0);
@@ -38,34 +37,6 @@ class Reporter {
   }
 
   // ------------------------------------  Utilities -----------------------------------------------
-
-  /**
-   * Sets a Migration instance to be the current migrations events emitter source
-   * @param {Migration} migration
-   */
-  setMigration(migration) {
-    this.migration = migration;
-  }
-
-  /**
-   * Registers emitter handlers for a migration/deployment
-   */
-  listen() {
-    // Migration
-    if (this.migration && this.migration.emitter) {
-      this.migration.emitter.on("preMigrate", this.preMigrate.bind(this));
-      this.migration.emitter.on(
-        "startTransaction",
-        this.startTransaction.bind(this)
-      );
-      this.migration.emitter.on(
-        "endTransaction",
-        this.endTransaction.bind(this)
-      );
-      this.migration.emitter.on("postMigrate", this.postMigrate.bind(this));
-      this.migration.emitter.on("error", this.error.bind(this));
-    }
-  }
 
   /**
    * Retrieves gas usage totals per migrations file / totals since the reporter
