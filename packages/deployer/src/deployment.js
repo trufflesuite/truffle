@@ -159,6 +159,15 @@ class Deployment {
     });
   }
 
+  sanitizeMessage(message) {
+    if (Array.isArray(message)) {
+      // for some reason, message is returned as an array padded with many
+      // empty arrays - should investigate this further later
+      return message[0];
+    }
+    return message;
+  }
+
   /**
    * Sanity checks catch-all:
    * Are we connected?
@@ -181,23 +190,23 @@ class Deployment {
         });
       }
 
-      if (Array.isArray(message)) {
-        // for some reason, message is returned as an array padded with many
-        // empty arrays - should investigate this further later
-        message = message[0];
-      }
-
-      throw new Error(message);
+      throw new Error(this.sanitizeMessage(message));
     }
 
     // Check bytecode
     if (contract.bytecode === "0x") {
-      const message = await this.emitter.emit("error", {
+      const data = {
         type: "noBytecode",
-        contract: contract
-      });
+        contract: null
+      };
+      let message;
+      if (this.options && this.options.events) {
+        message = await this.options.events.emit("migrate:deployment:error", {
+          data
+        });
+      }
 
-      throw new Error(message);
+      throw new Error(this.sanitizeMessage(message));
     }
 
     // Check network
@@ -356,13 +365,8 @@ class Deployment {
               data: eventArgs
             });
           }
-          if (Array.isArray(message)) {
-            // for some reason, message is returned as an array padded with many
-            // empty arrays - should investigate this further later
-            message = message[0];
-          }
           self.close();
-          throw new Error(message);
+          throw new Error(this.sanitizeMessage(message));
         }
 
         // Case: already deployed
