@@ -89,6 +89,13 @@ module.exports = {
       async function ({ data }) {
         this.reporter.postDeploy(data);
       }
+    ],
+    "migrate:deployment:deployFailed": [
+      async function ({ data }) {
+        const thing = await this.reporter.deployFailed(data);
+        console.log("the thing - %o", thing);
+        return thing;
+      }
     ]
   }
 }
