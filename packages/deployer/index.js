@@ -1,5 +1,4 @@
 const expect = require("@truffle/expect");
-const Emittery = require("emittery");
 const DeferredChain = require("./src/deferredchain");
 const Deployment = require("./src/deployment");
 const link = require("./src/actions/link");
@@ -15,11 +14,9 @@ class Deployer extends Deployment {
     options = options || {};
     expect.options(options, ["provider", "networks", "network", "network_id"]);
 
-    const emitter = new Emittery();
-    super(emitter, options);
+    super(options);
 
     this.options = options;
-    this.emitter = emitter;
     this.chain = new DeferredChain();
     this.logger = logger || { log: function () {} };
     this.network = options.network;
@@ -81,7 +78,6 @@ class Deployer extends Deployment {
   }
 
   finish() {
-    this.emitter.clearListeners();
     this.close();
   }
 }
