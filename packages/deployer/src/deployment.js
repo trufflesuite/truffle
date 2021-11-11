@@ -365,7 +365,11 @@ class Deployment {
         receipt: state.receipt
       };
 
-      await self.emitter.emit("postDeploy", eventArgs);
+      if (self.options && self.options.events) {
+        await self.options.events.emit("migrate:deployment:postDeploy", {
+          data: eventArgs
+        });
+      }
 
       // Wait for `n` blocks
       if (self.confirmations !== 0 && shouldDeploy) {

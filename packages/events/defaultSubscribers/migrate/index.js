@@ -84,6 +84,11 @@ module.exports = {
       async function ({ data }) {
         this.reporter.txHash(data);
       }
+    ],
+    "migrate:deployment:postDeploy": [
+      async function ({ data }) {
+        this.reporter.postDeploy(data);
+      }
     ]
   }
 }
