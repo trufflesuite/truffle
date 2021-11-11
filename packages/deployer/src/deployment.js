@@ -6,15 +6,13 @@ const debug = require("debug")("deployer:deployment"); // eslint-disable-line no
 class Deployment {
   /**
    * constructor
-   * @param  {Object} emitter         async `Emittery` emitter
    * @param  {Number} confirmations   confirmations needed to resolve an instance
    */
-  constructor(emitter, options) {
+  constructor(options) {
     const networkConfig = options.networks[options.network] || {};
     this.confirmations = options.confirmations || 0;
     this.timeoutBlocks = options.timeoutBlocks || 0;
     this.pollingInterval = networkConfig.deploymentPollingInterval || 4000;
-    this.emitter = emitter;
     this.promiEventEmitters = [];
     this.confirmationsMap = {};
     this.blockPoll;
@@ -390,7 +388,6 @@ class Deployment {
    * Cleans up promiEvents' emitter listeners
    */
   close() {
-    this.emitter.clearListeners();
     this.promiEventEmitters.forEach(item => {
       item.removeAllListeners();
     });
