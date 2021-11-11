@@ -52,7 +52,12 @@ export function* decodeStorageReferenceByAddress(
   const startOffset = Conversion.toBN(rawValue);
   let rawSize: Storage.StorageLength;
   try {
-    rawSize = storageSize(dataType, info.userDefinedTypes, allocations);
+    rawSize = storageSize(
+      dataType,
+      info.userDefinedTypes,
+      allocations,
+      info.currentContext.compiler
+    );
   } catch (error) {
     return handleDecodingError(dataType, error);
   }
@@ -133,7 +138,8 @@ export function* decodeStorageReference(
         baseSize = storageSize(
           dataType.baseType,
           info.userDefinedTypes,
-          allocations
+          allocations,
+          info.currentContext.compiler
         );
       } catch (error) {
         return handleDecodingError(dataType, error);
@@ -386,7 +392,12 @@ export function* decodeStorageReference(
       const valueType = dataType.valueType;
       let valueSize: Storage.StorageLength;
       try {
-        valueSize = storageSize(valueType, info.userDefinedTypes, allocations);
+        valueSize = storageSize(
+          valueType,
+          info.userDefinedTypes,
+          allocations,
+          info.currentContext.compiler
+        );
       } catch (error) {
         return handleDecodingError(dataType, error);
       }
