@@ -413,9 +413,18 @@ class Reporter {
       this.blockSpinner.stop();
     }
 
-    const message = await this.processDeploymentError(data);
+    let message = await this.processDeploymentError(data);
+    message = data.log ? this.logger.error(message) : message;
 
-    return data.log ? this.logger.error(message) : message;
+    // Reporter might not be enabled (via Migrate.launchReporter) so
+    // message is a (potentially empty) array of results from the emitter
+    if (!message.length) {
+      message = `while migrating ${data.contract.contractName}: ${
+        data.error.message
+      }`;
+    }
+    console.log("the mess - %o", message);
+    return message;
   }
 
   // --------------------------  Transaction Handlers  ------------------------------------------

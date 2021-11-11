@@ -338,16 +338,17 @@ class Deployment {
         } catch (err) {
           self._stopBlockPolling();
           eventArgs.error = err.error || err;
-          let message = await self.emitter.emit("deployFailed", eventArgs);
-
-          // Reporter might not be enabled (via Migrate.launchReporter) so
-          // message is a (potentially empty) array of results from the emitter
-          if (!message.length) {
-            message = `while migrating ${contract.contractName}: ${
-              eventArgs.error.message
-            }`;
+          let message;
+          if (self.options && self.options.events) {
+            message = await self.options.events.emit("migrate:deployment:deployFailed", {
+              data: eventArgs
+            });
           }
-
+          if (Array.isArray(message)) {
+            // for some reason, message is returned as an array padded with many
+            // empty arrays - should investigate this further later
+            message = message[0];
+          }
           self.close();
           throw new Error(message);
         }
