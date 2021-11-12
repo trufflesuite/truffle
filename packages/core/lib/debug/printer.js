@@ -215,7 +215,7 @@ class DebugPrinter {
     this.config.logger.log("");
 
     // printout instructions
-    // add an ellipse if the first instruction of the stack will not be included in the printout
+    // add an ellipse if there exist additional instructions before
     const previousInstructions = 3;
     const upcomingInstructions = 3;
     const currentIndex = instruction.index;
@@ -240,7 +240,7 @@ class DebugPrinter {
       this.config.logger.log(DebugUtils.formatInstruction(instructions[i]));
     }
 
-    // add an ellipse if the last instruction of the stack is not included in the printout
+    // add an ellipse if there exist additional instructions after
     if (currentIndex + upcomingInstructions < instructions.length) {
       this.config.logger.log("...");
     }
