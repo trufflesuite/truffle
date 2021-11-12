@@ -81,19 +81,10 @@ export class VersionRange {
   }
 
   findNewestValidVersion(version, allVersions) {
-    if (!semver.validRange(version)) return null;
-    const satisfyingVersions = Object.keys(allVersions.releases)
-      .map(solcVersion => {
-        if (semver.satisfies(solcVersion, version)) return solcVersion;
-      })
-      .filter((solcVersion): solcVersion is string => !!solcVersion);
-    if (satisfyingVersions.length > 0) {
-      return satisfyingVersions.reduce((newestVersion, version) => {
-        return semver.gtr(version, newestVersion) ? version : newestVersion;
-      }, "0.0.0");
-    } else {
-      return null;
-    }
+    return semver.maxSatisfying(
+      Object.keys(allVersions?.releases || {}),
+      version
+    );
   }
 
   getCachedSolcByFileName(fileName) {
