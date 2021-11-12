@@ -111,9 +111,7 @@ export class CompilerSupplier {
     }
 
     if (!strategy.list) {
-      throw new Error(
-        `Cannot list versions for strategy ${strategy.constructor.name}`
-      );
+      throw new StrategyCannotListVersionsError(strategy.constructor.name);
     }
 
     return await strategy.list();
@@ -134,5 +132,11 @@ export class BadInputError extends Error {
       `   - a docker image name (ex: 'stable')\n` +
       `   - 'native' to use natively installed solc\n`;
     super(message);
+  }
+}
+
+export class StrategyCannotListVersionsError extends Error {
+  constructor (strategyName) {
+    super(`Cannot list versions for strategy ${strategyName}`);
   }
 }
