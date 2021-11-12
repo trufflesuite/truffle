@@ -94,7 +94,10 @@ export class CompilerSupplier {
         fs.existsSync(userSpecification) ||
         path.isAbsolute(userSpecification)
       );
-    const isValidVersionRange = semver.validRange(userSpecification);
+    const isValidVersionRange =
+      semver.validRange(userSpecification) ||
+      userSpecification === "pragma"
+      ;
 
     if (useDocker) {
       strategy = new Docker(this.strategyOptions);
