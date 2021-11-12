@@ -534,7 +534,7 @@ var DebugUtils = {
     const pc = this.formatPC(instruction.pc);
     const formattedInstruction = this.formatInstruction(instruction);
     return (
-      truffleColors.mint("-> " + formattedInstruction + pc )
+      "-> " + truffleColors.mint(formattedInstruction) + pc
     );
   },
 

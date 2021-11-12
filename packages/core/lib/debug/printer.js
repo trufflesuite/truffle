@@ -211,33 +211,42 @@ class DebugPrinter {
       this.config.logger.log("");
     }
 
+    this.config.logger.log("Instructions:");
+    this.config.logger.log("");
+
     // printout instructions
+    // add an ellipse if the first instruction of the stack will not be included in the printout
     const previousInstructions = 3;
     const upcomingInstructions = 3;
     const currentIndex = instruction.index;
-    // printout 3 previous instructions
-    if (currentIndex - previousInstructions + 1 > 0) {
+
+    if (currentIndex - previousInstructions >= 0) {
       this.config.logger.log("...");
     }
-    for (let i = currentIndex - previousInstructions; i < currentIndex; i++) {
-      if (i >= 0) {
-        this.config.logger.log(DebugUtils.formatInstruction(instructions[i]));
-      }
+    // printout 3 previous instructions
+    for (let i = Math.max(currentIndex - previousInstructions, 0);
+      i < currentIndex;
+      i++) {
+      this.config.logger.log(DebugUtils.formatInstruction(instructions[i]));
     }
 
     // printout current instruction
     this.config.logger.log(DebugUtils.formatCurrentInstruction(instruction));
 
     // printout 3 upcoming instructions
-    for (let i = currentIndex + 1; i <= currentIndex + upcomingInstructions; i++) {
-      if (i >= instructions.length) break;
+    for (let i = Math.min(currentIndex + 1, instructions.length);
+      i <= currentIndex + upcomingInstructions;
+      i++) {
       this.config.logger.log(DebugUtils.formatInstruction(instructions[i]));
     }
+
+    // add an ellipse if the last instruction of the stack is not included in the printout
     if (currentIndex + upcomingInstructions < instructions.length) {
       this.config.logger.log("...");
     }
 
     this.config.logger.log("");
+    this.config.logger.log("Step ", + traceIndex + "/" + totalSteps);
     this.config.logger.log(step.gas + " gas remaining");
   }
 
