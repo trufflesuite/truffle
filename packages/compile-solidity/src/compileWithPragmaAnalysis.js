@@ -101,6 +101,10 @@ const compileWithPragmaAnalysis = async ({ paths, options }) => {
         path,
         base_path: options.contracts_directory,
         resolver: options.resolver,
+        compiler: {
+          name: "solc",
+          version: parserVersion
+        },
         compilers: {
           solc: {
             version: parserVersion
