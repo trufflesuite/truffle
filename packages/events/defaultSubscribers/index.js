@@ -1,6 +1,6 @@
 module.exports = {
   compile: require("./compile"),
-  migrate: require("./migrate"),
+  test: require("./test"),
   init: require("./init"),
   obtain: require("./obtain"),
   unbox: require("./unbox"),
