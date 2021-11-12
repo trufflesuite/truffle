@@ -79,13 +79,9 @@ describe("Error cases", function () {
       },
       network: "test",
       network_id: networkId,
-      provider: provider,
-      logger: {
-        log: () => {},
-        error: () => {}
-      }
+      provider
     };
-    deployer = new Deployer(options);
+    deployer = new Deployer({ options });
   });
 
   afterEach(() => {

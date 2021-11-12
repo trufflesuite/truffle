@@ -7,7 +7,42 @@ const EventEmitter = require("events");
 const Deployer = require("../index");
 const utils = require("./helpers/utils");
 
-describe("Deployer (sync)", function() {
+// test helpers
+const getAllEventsByName = (options, eventName) => {
+  return options.events.emittedEvents[eventName];
+};
+
+const preDeployOccurredForNames = (options, contractNames) => {
+  const allPreDeploys = getAllEventsByName(options, "migrate:deployment:preDeploy");
+  return contractNames.reduce((a, name) => {
+    // after finding one that didn't occur, we know the test has failed
+    if (a === false) return a;
+    // search all events to make sure it occurred once for the name
+    return allPreDeploys.some(eventData => {
+      return eventData.data.state.contractName === name;
+    });
+  }, true);
+};
+
+const postDeployOccurredForNames = (options, contractNames) => {
+  const allPostDeploys = getAllEventsByName(options, "migrate:deployment:postDeploy");
+  return contractNames.reduce((a, name) => {
+    if (a === false) return a;
+    return allPostDeploys.some(eventData => {
+      return eventData.data.contract.contractName === name;
+    });
+  }, true);
+};
+
+const linkingOccurredForName = (options, contractName, libraryName) => {
+  const allLinks = getAllEventsByName(options, "migrate:deployment:linking");
+  return allLinks.some(linkEvent => {
+    return linkEvent.data.libraryName === libraryName && linkEvent.data.contractName === contractName;
+  });
+};
+// end test helpers
+
+describe.only("Deployer (sync)", function() {
   let owner;
   let options;
   let networkId;
@@ -69,6 +104,7 @@ describe("Deployer (sync)", function() {
           "migrate:deployment:preDeploy": [],
           "migrate:deployment:txHash": [],
           "migrate:deployment:postDeploy": [],
+          "migrate:deployment:linking": [],
         },
         emit: function(eventName, data) {
           options.events.emittedEvents[eventName].push(data);
@@ -89,7 +125,7 @@ describe("Deployer (sync)", function() {
 
   // in this describe block, `setUpWithConfig` is **not** called in a `beforeEach`
   // as each test is expected to vary the truffle config passed to `Deployer`
-  describe('custom config', () => {
+  describe("custom config", () => {
     it("deployment with default polling interval", async function() {
       const customConfig = {
         ...options,
@@ -125,7 +161,7 @@ describe("Deployer (sync)", function() {
 
   // in this describe block, `setUpWithConfig` **is** called in a `beforeEach`
   // as each test is expected to pass the default truffle config into `Deployer`
-  describe('default config', () => {
+  describe("default config", () => {
     beforeEach(async function beforeEachWithDefaultConfig() {
       // simply pass default options
       await setUpWithConfig(options);
@@ -145,15 +181,9 @@ describe("Deployer (sync)", function() {
       const id = await example.id();
 
       assert(id === "Example");
-      assert(
-        options.events.emittedEvents["migrate:deployment:preDeploy"].data.state.contractName
-        === "Example"
-      );
-      assert(options.events.emittedEvents["migrate:deployment:txHash"]);
-      assert(
-        options.events.emittedEvents["migrate:deployment:postDeploy"].data.contract.contractName
-        === "Example"
-      );
+      assert(preDeployOccurredForNames(options, ["Example"]));
+      assert(postDeployOccurredForNames(options, ["Example"]));
+      assert(getAllEventsByName(options, "migrate:deployment:txHash").length === 1);
     });
 
     it("deploy().then", async function() {
@@ -177,19 +207,9 @@ describe("Deployer (sync)", function() {
       assert(usesExampleId === "UsesExample");
       assert(other === Example.address);
 
-      assert(
-        options.events.emittedEvents["migrate:deployment:preDeploy"].data.state.contractName
-        === "Example"
-      );
-      assert(options.events.emittedEvents["migrate:deployment:txHash"]);
-      assert(
-        options.events.emittedEvents["migrate:deployment:postDeploy"].data.contract.contractName
-        === "Example"
-      );
-      assert(output.includes("Replacing"));
-      assert(output.includes("Deploying"));
-      assert(output.includes("Example"));
-      assert(output.includes("UsesExample"));
+      assert(preDeployOccurredForNames(options, ["Example", "UsesExample"]));
+      assert(postDeployOccurredForNames(options, ["Example", "UsesExample"]));
+      assert(getAllEventsByName(options, "migrate:deployment:txHash").length === 2);
     });
 
     it("deployer.then", async function() {
@@ -214,9 +234,9 @@ describe("Deployer (sync)", function() {
       assert(usesExampleId === "UsesExample");
       assert(other === Example.address);
 
-      assert(output.includes("Replacing"));
-      assert(output.includes("Example"));
-      assert(output.includes("UsesExample"));
+      assert(preDeployOccurredForNames(options, ["Example", "UsesExample"]));
+      assert(postDeployOccurredForNames(options, ["Example", "UsesExample"]));
+      assert(getAllEventsByName(options, "migrate:deployment:txHash").length === 2);
     });
 
     it("deployer.link", async function() {
@@ -243,10 +263,9 @@ describe("Deployer (sync)", function() {
       assert(events[0].args.eventID.toNumber() === 5);
       assert(events[1].args.eventID.toNumber() === 7);
 
-      assert(output.includes("Deploying"));
-      assert(output.includes("Linking"));
-      assert(output.includes("IsLibrary"));
-      assert(output.includes("UsesLibrary"));
+      assert(preDeployOccurredForNames(options, ["IsLibrary", "UsesLibrary"]));
+      assert(postDeployOccurredForNames(options, ["IsLibrary", "UsesLibrary"]));
+      assert(linkingOccurredForName(options, "UsesLibrary", "IsLibrary"));
     });
 
     // There's a chain like this in the @truffle/core solidity-tests
@@ -254,28 +273,21 @@ describe("Deployer (sync)", function() {
       const migrate = function() {
         deployer
           .deploy(Example)
-          .then(function() {
-            return Example.deployed();
-          })
-          .then(function(instance) {
-            return instance.id();
-          })
+          .then(() => Example.deployed())
+          .then(instance => instance.id())
           .then(function() {
             return deployer
               .deploy(UsesExample, utils.zeroAddress)
-              .then(function() {
-                return UsesExample.deployed();
-              })
-              .then(function(usesExample) {
-                return usesExample.id();
-              });
+              .then(() => UsesExample.deployed())
+              .then((usesExample) => usesExample.id());
           });
       };
       migrate();
 
       await deployer.start();
-      assert(output.includes("Example"));
-      assert(output.includes("UsesExample"));
+      assert(preDeployOccurredForNames(options, ["Example", "UsesExample"]));
+      assert(postDeployOccurredForNames(options, ["Example", "UsesExample"]));
+      assert(getAllEventsByName(options, "migrate:deployment:txHash").length === 2);
     });
 
     it("waits for confirmations", async function() {
