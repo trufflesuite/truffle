@@ -1,3 +1,4 @@
+const fs = require("fs");
 const assert = require("assert");
 const sinon = require("sinon");
 const axios = require("axios");
@@ -222,11 +223,11 @@ describe("CompilerSupplier", () => {
       beforeEach(() => {
         supplierOptions.solcConfig = { version: "./some/path" };
         supplier = new CompilerSupplier(supplierOptions);
-        sinon.stub(supplier, "fileExists").returns(true);
+        sinon.stub(fs, "existsSync").returns(true);
         sinon.stub(Local.prototype, "load").returns("called Local");
       });
       afterEach(() => {
-        supplier.fileExists.restore();
+        fs.existsSync.restore();
         Local.prototype.load.restore();
       });
 

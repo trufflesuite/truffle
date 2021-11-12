@@ -49,7 +49,10 @@ export class CompilerSupplier {
     const useDocker = this.docker;
     const useNative = userSpecification === "native";
     const useSpecifiedLocal =
-      userSpecification && this.fileExists(userSpecification);
+      userSpecification && (
+        fs.existsSync(userSpecification) ||
+        path.isAbsolute(userSpecification)
+      );
     const isValidVersionRange = semver.validRange(userSpecification);
 
     if (useDocker) {
@@ -87,7 +90,10 @@ export class CompilerSupplier {
     const useDocker = this.docker;
     const useNative = userSpecification === "native";
     const useSpecifiedLocal =
-      userSpecification && this.fileExists(userSpecification);
+      userSpecification && (
+        fs.existsSync(userSpecification) ||
+        path.isAbsolute(userSpecification)
+      );
     const isValidVersionRange = semver.validRange(userSpecification);
 
     if (useDocker) {
@@ -126,9 +132,5 @@ export class CompilerSupplier {
       `   - a docker image name (ex: 'stable')\n` +
       `   - 'native' to use natively installed solc\n`;
     return new Error(message);
-  }
-
-  fileExists(localPath) {
-    return fs.existsSync(localPath) || path.isAbsolute(localPath);
   }
 }
