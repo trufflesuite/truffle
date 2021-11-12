@@ -66,15 +66,10 @@ const execute = {
    * @param  {Object} constructor   TruffleContract constructor
    * @param  {Object} methodABI     Function ABI segment w/ inputs & outputs keys.
    * @param  {Array}  _arguments    Arguments passed to method invocation
-   * @param  {{id:number}}  _detectNetworkArguments    Arguments passed to prevent getBlock {gasLimit} network call for read data methods invocation
+   * @param  {Boolean}  isCall    Arguments passed to prevent getBlock {gasLimit} network call for read data methods invocation
    * @return {Promise}              Resolves object w/ tx params disambiguated from arguments
    */
-  prepareCall: async function (
-    constructor,
-    methodABI,
-    _arguments,
-    _detectNetworkArguments
-  ) {
+  prepareCall: async function (constructor, methodABI, _arguments, isCall) {
     let args = Array.prototype.slice.call(_arguments);
     let params = utils.getTxParams.call(constructor, methodABI, args);
 
@@ -93,9 +88,9 @@ const execute = {
       args = processedValues.args;
       params = processedValues.params;
     }
-    const { id } = _detectNetworkArguments;
-    if (id) {
-      return { args, params, _detectNetworkArguments };
+    if (isCall && constructor.network_id) {
+      const network = { id: constructor.network_id };
+      return { args, params, network };
     }
     const network = await constructor.detectNetwork();
     return { args, params, network };
@@ -149,9 +144,7 @@ const execute = {
       }
 
       execute
-        .prepareCall(constructor, methodABI, args, {
-          id: constructor.network_id
-        })
+        .prepareCall(constructor, methodABI, args, true)
         .then(async ({ args, params }) => {
           let result;
 
@@ -194,7 +187,7 @@ const execute = {
       const promiEvent = new PromiEvent(false, constructor.debugger);
 
       execute
-        .prepareCall(constructor, methodABI, arguments, {})
+        .prepareCall(constructor, methodABI, arguments, false)
         .then(async ({ args, params, network }) => {
           const context = {
             contract: constructor, // Can't name this field `constructor` or `_constructor`
@@ -258,7 +251,7 @@ const execute = {
       const promiEvent = new PromiEvent(false, constructor.debugger, true);
 
       execute
-        .prepareCall(constructor, constructorABI, arguments, {})
+        .prepareCall(constructor, constructorABI, arguments, false)
         .then(async ({ args, params, network }) => {
           const { blockLimit } = network;
 
@@ -454,7 +447,7 @@ const execute = {
     const constructor = this;
     return function () {
       return execute
-        .prepareCall(constructor, methodABI, arguments, {})
+        .prepareCall(constructor, methodABI, arguments, false)
         .then(res => fn(...res.args).estimateGas(res.params));
     };
   },
@@ -469,7 +462,7 @@ const execute = {
     const constructor = this;
     return function () {
       return execute
-        .prepareCall(constructor, methodABI, arguments, {})
+        .prepareCall(constructor, methodABI, arguments, false)
         .then(res => {
           //clone res.params
           let tx = {};
@@ -495,7 +488,7 @@ const execute = {
     )[0];
 
     return execute
-      .prepareCall(constructor, constructorABI, arguments, {})
+      .prepareCall(constructor, constructorABI, arguments, false)
       .then(res => {
         const options = {
           data: constructor.binary,
@@ -522,7 +515,7 @@ const execute = {
     )[0];
 
     return execute
-      .prepareCall(constructor, constructorABI, arguments, {})
+      .prepareCall(constructor, constructorABI, arguments, false)
       .then(res => {
         //clone res.params
         let tx = {};
