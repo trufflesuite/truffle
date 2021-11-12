@@ -42,7 +42,7 @@ const linkingOccurredForName = (options, contractName, libraryName) => {
 };
 // end test helpers
 
-describe.only("Deployer (sync)", function() {
+describe("Deployer (sync)", function() {
   let owner;
   let options;
   let networkId;
@@ -105,9 +105,16 @@ describe.only("Deployer (sync)", function() {
           "migrate:deployment:txHash": [],
           "migrate:deployment:postDeploy": [],
           "migrate:deployment:linking": [],
+          "migrate:deployment:confirmation": [],
         },
         emit: function(eventName, data) {
-          options.events.emittedEvents[eventName].push(data);
+          if (options.events.emittedEvents[eventName]) {
+            options.events.emittedEvents[eventName].push(data);
+          } else {
+            console.log(
+              `Could not find the event name ${eventName} in 'emittedEvents'.`;
+            );
+          }
         }
       }
     };

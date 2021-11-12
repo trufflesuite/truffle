@@ -131,7 +131,6 @@ class Deployment {
 
       const poll = setInterval(async () => {
         const newBlock = await interfaceAdapter.getBlockNumber();
-
         if (newBlock > currentBlock) {
           blocksHeard = newBlock - currentBlock + blocksHeard;
           currentBlock = newBlock;
@@ -142,7 +141,6 @@ class Deployment {
             num: blocksHeard,
             block: currentBlock
           };
-
           if (this.options && this.options.events) {
             await this.options.events.emit("migrate:deployment:confirmation", {
               data

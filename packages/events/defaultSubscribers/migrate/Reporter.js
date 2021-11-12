@@ -17,7 +17,7 @@ const Messages = require("./Messages");
  *
  */
 class Reporter {
-  constructor({ describeJson, logger, dryRun, confirmations }) {
+  constructor({ describeJson, dryRun, logger }) {
     this.currentGasTotal = new web3Utils.BN(0);
     this.currentCostTotal = new web3Utils.BN(0);
     this.finalCostTotal = new web3Utils.BN(0);
@@ -30,7 +30,6 @@ class Reporter {
     this.describeJson = describeJson;
     this.logger = logger;
     this.dryRun = dryRun;
-    this.confirmations = confirmations;
 
     this.messages = new Messages(this);
   }
