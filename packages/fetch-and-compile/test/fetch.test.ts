@@ -15,6 +15,11 @@ describe("fetches contract on mainnet and checks for verification", () => {
       }
     },
     network: "mainnet",
+    compilers:{
+      solc:{
+        version: "0.6.6"
+      }
+    }
   });
   //stubbing axios.get method
   beforeEach(() => {
@@ -55,6 +60,11 @@ describe("fetches contract on arbitrum and checks for verification", () => {
       }
     },
     network: "arbitrum",
+    compilers:{
+      solc:{
+        version: "0.6.6"
+      }
+    }
   });
   //stubbing axios.get method
   beforeEach(() => {
@@ -93,6 +103,11 @@ describe("fetches contract on polygon and checks for verification", () => {
       }
     },
     network: "polygon",
+    compilers:{
+      solc:{
+        version: "0.6.6"
+      }
+    }
   });
   //stubbing axios.get method
   beforeEach(() => {
