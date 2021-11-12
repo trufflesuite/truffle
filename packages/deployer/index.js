@@ -7,18 +7,15 @@ const ENS = require("./ens");
 
 class Deployer extends Deployment {
   constructor({
-    options,
-    logger,
+    options = {},
     basePath
   }) {
-    options = options || {};
     expect.options(options, ["provider", "networks", "network", "network_id"]);
 
     super(options);
 
     this.options = options;
     this.chain = new DeferredChain();
-    this.logger = logger || { log: function () {} };
     this.network = options.network;
     this.networks = options.networks;
     this.network_id = options.network_id;
@@ -54,7 +51,6 @@ class Deployer extends Deployment {
   deploy() {
     const args = Array.prototype.slice.call(arguments);
     const contract = args.shift();
-
     return this.queueOrExec(this.executeDeployment(contract, args, this));
   }
 
