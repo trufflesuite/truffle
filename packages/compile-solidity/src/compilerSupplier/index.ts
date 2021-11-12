@@ -69,7 +69,7 @@ export class CompilerSupplier {
       const solc = await strategy.load(userSpecification);
       return { solc };
     } else {
-      throw this.badInputError(userSpecification);
+      throw new BadInputError(userSpecification);
     }
   }
 
@@ -107,7 +107,7 @@ export class CompilerSupplier {
     }
 
     if (!strategy) {
-      throw this.badInputError(userSpecification);
+      throw new BadInputError(userSpecification);
     }
 
     if (!strategy.list) {
@@ -122,15 +122,17 @@ export class CompilerSupplier {
   static getDefaultVersion() {
     return defaultSolcVersion;
   }
+}
 
-  badInputError(userSpecification) {
+export class BadInputError extends Error {
+  constructor (input) {
     const message =
-      `Could not find a compiler version matching ${userSpecification}. ` +
+      `Could not find a compiler version matching ${input}. ` +
       `compilers.solc.version option must be a string specifying:\n` +
       `   - a path to a locally installed solcjs\n` +
       `   - a solc version or range (ex: '0.4.22' or '^0.5.0')\n` +
       `   - a docker image name (ex: 'stable')\n` +
       `   - 'native' to use natively installed solc\n`;
-    return new Error(message);
+    super(message);
   }
 }
