@@ -73,14 +73,6 @@ describe("Deployer (sync)", function() {
         emit: function(eventName, data) {
           options.events.emittedEvents[eventName].push(data);
         }
-      },
-      logger: {
-        log: val => {
-          if (val) output += `${val}\n`;
-        },
-        error: val => {
-          if (val) output += `${val}\n`;
-        }
       }
     };
   });
@@ -338,7 +330,6 @@ describe("Deployer (sync)", function() {
       await deployer.start();
       utils.stopAutoMine();
 
-      // We used to test output here but the ora spinner doesn't use the logger
       // Keeping this test just to run the logic, make sure it's not crashing.
     });
   });
