@@ -70,6 +70,16 @@ export class CompilerSupplier {
     }
   }
 
+  /**
+   * This function lists known solc versions, possibly asynchronously to
+   * account for APIs with paginated data (namely, Docker Hub)
+   *
+   * @return Promise<{
+   *           prereleases: AsyncIterable<string>;
+   *           releases: AsyncIterable<string>;
+   *           latestRelease: string;
+   *         }>
+   */
   async list() {
     const userSpecification = this.version;
 
