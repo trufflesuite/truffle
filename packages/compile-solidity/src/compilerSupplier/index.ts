@@ -15,6 +15,7 @@ export class CompilerSupplier {
     version: string;
     docker: boolean;
     compilerRoots: string[];
+    dockerTagsUrl: string;
     events: any; // represents a @truffle/events instance, which lacks types
     spawn: {
       maxBuffer: number;
@@ -22,14 +23,20 @@ export class CompilerSupplier {
   }>;
 
   constructor({ events, solcConfig }) {
-    const { version, docker, compilerRoots, spawn } = solcConfig;
+    const {
+      version,
+      docker,
+      compilerRoots,
+      dockerTagsUrl,
+      spawn,
+    } = solcConfig;
     this.events = events;
     this.version = version ? version : defaultSolcVersion;
     this.docker = docker;
     this.compilerRoots = compilerRoots;
     this.strategyOptions = {};
     if (version) this.strategyOptions.version = this.version;
-    if (docker) this.strategyOptions.docker = compilerRoots;
+    if (dockerTagsUrl) this.strategyOptions.dockerTagsUrl = dockerTagsUrl;
     if (compilerRoots) this.strategyOptions.compilerRoots = compilerRoots;
     if (events) this.strategyOptions.events = events;
     if (spawn) this.strategyOptions.spawn = spawn;
