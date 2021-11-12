@@ -88,9 +88,8 @@ const execute = {
       args = processedValues.args;
       params = processedValues.params;
     }
-    if (isCall && constructor.network_id) {
-      const network = { id: constructor.network_id };
-      return { args, params, network };
+    if (isCall) {
+      return { args, params };
     }
     const network = await constructor.detectNetwork();
     return { args, params, network };
@@ -187,7 +186,7 @@ const execute = {
       const promiEvent = new PromiEvent(false, constructor.debugger);
 
       execute
-        .prepareCall(constructor, methodABI, arguments, false)
+        .prepareCall(constructor, methodABI, arguments)
         .then(async ({ args, params, network }) => {
           const context = {
             contract: constructor, // Can't name this field `constructor` or `_constructor`
@@ -251,7 +250,7 @@ const execute = {
       const promiEvent = new PromiEvent(false, constructor.debugger, true);
 
       execute
-        .prepareCall(constructor, constructorABI, arguments, false)
+        .prepareCall(constructor, constructorABI, arguments)
         .then(async ({ args, params, network }) => {
           const { blockLimit } = network;
 
@@ -447,7 +446,7 @@ const execute = {
     const constructor = this;
     return function () {
       return execute
-        .prepareCall(constructor, methodABI, arguments, false)
+        .prepareCall(constructor, methodABI, arguments)
         .then(res => fn(...res.args).estimateGas(res.params));
     };
   },
@@ -462,7 +461,7 @@ const execute = {
     const constructor = this;
     return function () {
       return execute
-        .prepareCall(constructor, methodABI, arguments, false)
+        .prepareCall(constructor, methodABI, arguments)
         .then(res => {
           //clone res.params
           let tx = {};
@@ -488,7 +487,7 @@ const execute = {
     )[0];
 
     return execute
-      .prepareCall(constructor, constructorABI, arguments, false)
+      .prepareCall(constructor, constructorABI, arguments)
       .then(res => {
         const options = {
           data: constructor.binary,
@@ -515,7 +514,7 @@ const execute = {
     )[0];
 
     return execute
-      .prepareCall(constructor, constructorABI, arguments, false)
+      .prepareCall(constructor, constructorABI, arguments)
       .then(res => {
         //clone res.params
         let tx = {};
