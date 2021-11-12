@@ -95,10 +95,15 @@ export class Profiler {
   async requiredSourcesForSingleFile(options: TruffleConfig) {
     expect.options(options, ["path", "base_path", "resolver"]);
 
-    const { resolver, path, base_path: basePath } = options;
+    const {
+      resolver,
+      path,
+      base_path: basePath,
+      compiler // { name, version }
+    } = options;
 
     const resolve = ({ filePath, importedFrom }: UnresolvedSource) =>
-      resolver.resolve(filePath, importedFrom);
+      resolver.resolve(filePath, importedFrom, { compiler });
 
     const allPaths = convertToAbsolutePaths([path], basePath);
     const updatedPaths = allPaths;
