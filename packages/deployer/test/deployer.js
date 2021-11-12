@@ -7,40 +7,13 @@ const EventEmitter = require("events");
 const Deployer = require("../index");
 const utils = require("./helpers/utils");
 
-// test helpers
-const getAllEventsByName = (options, eventName) => {
-  return options.events.emittedEvents[eventName];
-};
-
-const preDeployOccurredForNames = (options, contractNames) => {
-  const allPreDeploys = getAllEventsByName(options, "migrate:deployment:preDeploy");
-  return contractNames.reduce((a, name) => {
-    // after finding one that didn't occur, we know the test has failed
-    if (a === false) return a;
-    // search all events to make sure it occurred once for the name
-    return allPreDeploys.some(eventData => {
-      return eventData.data.state.contractName === name;
-    });
-  }, true);
-};
-
-const postDeployOccurredForNames = (options, contractNames) => {
-  const allPostDeploys = getAllEventsByName(options, "migrate:deployment:postDeploy");
-  return contractNames.reduce((a, name) => {
-    if (a === false) return a;
-    return allPostDeploys.some(eventData => {
-      return eventData.data.contract.contractName === name;
-    });
-  }, true);
-};
-
-const linkingOccurredForName = (options, contractName, libraryName) => {
-  const allLinks = getAllEventsByName(options, "migrate:deployment:linking");
-  return allLinks.some(linkEvent => {
-    return linkEvent.data.libraryName === libraryName && linkEvent.data.contractName === contractName;
-  });
-};
-// end test helpers
+const {
+  mockEventsSystem,
+  getAllEventsByName,
+  preDeployOccurredForNames,
+  postDeployOccurredForNames,
+  linkingOccurredForName
+} = require("./helpers");
 
 describe("Deployer (sync)", function() {
   let owner;
@@ -81,6 +54,8 @@ describe("Deployer (sync)", function() {
     IsLibrary = utils.getContract("IsLibrary", provider, networkId, owner);
     const Abstract = utils.getContract("Abstract", provider, networkId, owner);
 
+    mockEventsSystem.clearEmittedEvents();
+
     options = {
       contracts: [
         Example,
@@ -98,25 +73,7 @@ describe("Deployer (sync)", function() {
       network: "test",
       network_id: networkId,
       provider: provider,
-      // mock the events system with some added goodies: keep data
-      events: {
-        emittedEvents: {
-          "migrate:deployment:preDeploy": [],
-          "migrate:deployment:txHash": [],
-          "migrate:deployment:postDeploy": [],
-          "migrate:deployment:linking": [],
-          "migrate:deployment:confirmation": [],
-        },
-        emit: function(eventName, data) {
-          if (options.events.emittedEvents[eventName]) {
-            options.events.emittedEvents[eventName].push(data);
-          } else {
-            console.log(
-              `Could not find the event name ${eventName} in 'emittedEvents'.`;
-            );
-          }
-        }
-      }
+      events: mockEventsSystem
     };
   });
 
