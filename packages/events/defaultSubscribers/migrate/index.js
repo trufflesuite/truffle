@@ -2,8 +2,8 @@ const Reporter = require("./Reporter");
 const Messages = require("./Messages");
 
 module.exports = {
-  initialize: () => {
-    this.logger = console;
+  initialization: () => {
+    this.logger = this.logger || console;
   },
   handlers: {
     "migrate:start": [

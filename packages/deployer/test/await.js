@@ -46,7 +46,9 @@ describe("Deployer (async / await)", function () {
     const Example = utils.getContract("Example", provider, networkId, owner);
     options.contracts = [Example];
 
-    deployer = new Deployer(options);
+    deployer = new Deployer({
+      options
+    });
 
     const migrate = async function () {
       await deployer.deploy(Example);
@@ -72,7 +74,7 @@ describe("Deployer (async / await)", function () {
 
     options.contracts = [Example, UsesExample];
 
-    deployer = new Deployer(options);
+    deployer = new Deployer({ options });
     const migrate = async function () {
       await deployer.deploy(Example);
       await deployer.deploy(UsesExample, Example.address);
@@ -106,7 +108,7 @@ describe("Deployer (async / await)", function () {
     );
     options.contracts = [UsesLibrary, IsLibrary];
 
-    deployer = new Deployer(options);
+    deployer = new Deployer({ options });
 
     const migrate = async function () {
       await deployer.deploy(IsLibrary);

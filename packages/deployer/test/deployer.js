@@ -63,6 +63,17 @@ describe("Deployer (sync)", function() {
       network: "test",
       network_id: networkId,
       provider: provider,
+      // mock the events system with some added goodies: keep data
+      events: {
+        emittedEvents: {
+          "migrate:deployment:preDeploy": [],
+          "migrate:deployment:txHash": [],
+          "migrate:deployment:postDeploy": [],
+        },
+        emit: function(eventName, data) {
+          options.events.emittedEvents[eventName].push(data);
+        }
+      },
       logger: {
         log: val => {
           if (val) output += `${val}\n`;
@@ -80,8 +91,8 @@ describe("Deployer (sync)", function() {
     deployer.finish();
   });
 
-  async function setUpWithConfig(config) {
-    deployer = new Deployer(config);
+  async function setUpWithConfig(options) {
+    deployer = new Deployer({ options });
   }
 
   // in this describe block, `setUpWithConfig` is **not** called in a `beforeEach`
@@ -96,7 +107,7 @@ describe("Deployer (sync)", function() {
           }
         }
       };
-      deployer = new Deployer(customConfig);
+      deployer = new Deployer({ options: customConfig });
       assert.strictEqual(
         deployer.pollingInterval,
         4000,
@@ -112,7 +123,7 @@ describe("Deployer (sync)", function() {
           }
         }
       };
-      deployer = new Deployer(customConfig);
+      deployer = new Deployer({ options: customConfig });
       assert.strictEqual(
         deployer.pollingInterval,
         8000,
@@ -129,12 +140,10 @@ describe("Deployer (sync)", function() {
     });
 
     it("deploy()", async function() {
-      const migrate = function() {
+      function migrate() {
         deployer.deploy(Example);
-      };
-
+      }
       migrate();
-
       await deployer.start();
 
       assert(Example.address !== null);
@@ -144,11 +153,15 @@ describe("Deployer (sync)", function() {
       const id = await example.id();
 
       assert(id === "Example");
-      assert(output.includes("Example"));
-      assert(output.includes("Deploying"));
-      assert(output.includes("transaction hash"));
-      assert(output.includes("address"));
-      assert(output.includes("gas used"));
+      assert(
+        options.events.emittedEvents["migrate:deployment:preDeploy"].data.state.contractName
+        === "Example"
+      );
+      assert(options.events.emittedEvents["migrate:deployment:txHash"]);
+      assert(
+        options.events.emittedEvents["migrate:deployment:postDeploy"].data.contract.contractName
+        === "Example"
+      );
     });
 
     it("deploy().then", async function() {
@@ -172,6 +185,15 @@ describe("Deployer (sync)", function() {
       assert(usesExampleId === "UsesExample");
       assert(other === Example.address);
 
+      assert(
+        options.events.emittedEvents["migrate:deployment:preDeploy"].data.state.contractName
+        === "Example"
+      );
+      assert(options.events.emittedEvents["migrate:deployment:txHash"]);
+      assert(
+        options.events.emittedEvents["migrate:deployment:postDeploy"].data.contract.contractName
+        === "Example"
+      );
       assert(output.includes("Replacing"));
       assert(output.includes("Deploying"));
       assert(output.includes("Example"));
