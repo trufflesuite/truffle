@@ -1,4 +1,4 @@
-const CompilerSupplier = require("./compilerSupplier");
+const { CompilerSupplier } = require("./compilerSupplier");
 const Config = require("@truffle/config");
 const semver = require("semver");
 const Profiler = require("./profiler");
@@ -65,12 +65,18 @@ const compileWithPragmaAnalysis = async ({ paths, options }) => {
   if (filteredPaths.length === 0) {
     return { compilations: [] };
   }
+  // construct supplier options for fetching list of solc versions;
+  // enforce no Docker because listing Docker versions is slow (Docker Hub API
+  // paginates responses, with >500 pages at time of writing)
   const supplierOptions = {
     events: options.events,
-    solcConfig: options.compilers.solc
+    solcConfig: {
+      ...options.compilers.solc,
+      docker: false
+    }
   };
   const compilerSupplier = new CompilerSupplier(supplierOptions);
-  const { releases } = await compilerSupplier.getReleases();
+  const { releases } = await compilerSupplier.list();
 
   // collect sources by the version of the Solidity compiler that they require
   const versionsAndSources = {};

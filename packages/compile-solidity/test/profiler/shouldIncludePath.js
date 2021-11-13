@@ -1,5 +1,5 @@
 const assert = require("assert");
-const { shouldIncludePath } = require("../../profiler/shouldIncludePath");
+const { shouldIncludePath } = require("../../dist/profiler/shouldIncludePath");
 
 describe(".shouldIncludePath(filename)", () => {
   it("returns true if the file has a .sol extension", () => {

@@ -2,7 +2,7 @@ const debug = require("debug")("compile:run");
 const OS = require("os");
 const semver = require("semver");
 const Common = require("@truffle/compile-common");
-const CompilerSupplier = require("./compilerSupplier");
+const { CompilerSupplier } = require("./compilerSupplier");
 
 // this function returns a Compilation - legacy/index.js and ./index.js
 // both check to make sure rawSources exist before calling this method

@@ -1,8 +1,8 @@
 const { execSync } = require("child_process");
-const LoadingStrategy = require("./LoadingStrategy");
-const VersionRange = require("./VersionRange");
+const { normalizeSolcVersion } = require("../normalizeSolcVersion");
+const { NoVersionError } = require("../errors");
 
-class Native extends LoadingStrategy {
+export class Native {
   load() {
     const versionString = this.validateAndGetSolcVersion();
     const command = "solc --standard-json";
@@ -16,9 +16,9 @@ class Native extends LoadingStrategy {
       };
     } catch (error) {
       if (error.message === "No matching version found") {
-        throw this.errors("noVersion", versionString);
+        throw new NoVersionError(versionString);
       }
-      throw new Error(error);
+      throw error;
     }
   }
 
@@ -27,10 +27,14 @@ class Native extends LoadingStrategy {
     try {
       version = execSync("solc --version");
     } catch (error) {
-      throw this.errors("noNative", null, error);
+      throw new NoNativeError(error);
     }
-    return new VersionRange(this.config).normalizeSolcVersion(version);
+    return normalizeSolcVersion(version);
   }
 }
 
-module.exports = Native;
+export class NoNativeError extends Error {
+  constructor(error) {
+    super("Could not execute local solc binary: " + error);
+  }
+}

@@ -10,17 +10,17 @@ describe("obtain", () => {
       options = {solc: "0.5.3"};
       solc = {version: () => "0.5.3"};
       sinon
-        .stub(CompilerSupplier.prototype, "downloadAndCacheSolc")
-        .returns(solc);
+        .stub(CompilerSupplier.prototype, "load")
+        .returns({ solc });
     });
     afterEach(() => {
-      CompilerSupplier.prototype.downloadAndCacheSolc.restore();
+      CompilerSupplier.prototype.load.restore();
     });
 
-    it("calls downloadAndCacheSolc on the supplier with the version", async function () {
+    it("calls supplier.load()", async function () {
       await command.run(options);
       assert(
-        CompilerSupplier.prototype.downloadAndCacheSolc.calledWith("0.5.3")
+        CompilerSupplier.prototype.load.calledWith()
       );
     });
 

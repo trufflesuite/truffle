@@ -1,13 +1,15 @@
+const fs = require("fs");
 const assert = require("assert");
 const sinon = require("sinon");
 const axios = require("axios");
-const CompilerSupplier = require("../../compilerSupplier");
+const { CompilerSupplier } = require("../../dist/compilerSupplier");
+const { Cache } = require("../../dist/compilerSupplier/Cache");
 const {
   Docker,
   Native,
   Local,
   VersionRange
-} = require("../../compilerSupplier/loadingStrategies");
+} = require("../../dist/compilerSupplier/loadingStrategies");
 const Config = require("@truffle/config");
 const config = new Config();
 let supplier;
@@ -136,11 +138,11 @@ describe("CompilerSupplier", () => {
 
     describe("when a user specifies the compiler url root", () => {
       beforeEach(() => {
+        sinon.stub(Cache.prototype, "add");
+        sinon.stub(Cache.prototype, "has").returns(false);
         sinon.stub(VersionRange.prototype, "getSolcVersions")
           .returns(allVersions);
-        sinon.stub(VersionRange.prototype, "addFileToCache");
         sinon.stub(VersionRange.prototype, "versionIsCached").returns(false);
-        sinon.stub(VersionRange.prototype, "fileIsCached").returns(false);
         sinon.stub(VersionRange.prototype, "compilerFromString");
         sinon.stub(axios, "get")
           .withArgs(
@@ -149,10 +151,10 @@ describe("CompilerSupplier", () => {
           .returns({ data: "response" });
       });
       afterEach(() => {
+        Cache.prototype.add.restore();
+        Cache.prototype.has.restore();
         VersionRange.prototype.getSolcVersions.restore();
-        VersionRange.prototype.addFileToCache.restore();
         VersionRange.prototype.versionIsCached.restore();
-        VersionRange.prototype.fileIsCached.restore();
         VersionRange.prototype.compilerFromString.restore();
         axios.get.restore();
       });
@@ -221,11 +223,11 @@ describe("CompilerSupplier", () => {
       beforeEach(() => {
         supplierOptions.solcConfig = { version: "./some/path" };
         supplier = new CompilerSupplier(supplierOptions);
-        sinon.stub(supplier, "fileExists").returns(true);
+        sinon.stub(fs, "existsSync").returns(true);
         sinon.stub(Local.prototype, "load").returns("called Local");
       });
       afterEach(() => {
-        supplier.fileExists.restore();
+        fs.existsSync.restore();
         Local.prototype.load.restore();
       });
 

@@ -1,9 +1,9 @@
 const assert = require("assert");
 const Config = require("@truffle/config");
-const {CompilerSupplier} = require("../index");
+const {CompilerSupplier} = require("../dist/index");
 const Resolver = require("@truffle/resolver");
 const sinon = require("sinon");
-const {compileWithPragmaAnalysis} = require("../compileWithPragmaAnalysis");
+const {compileWithPragmaAnalysis} = require("../dist/compileWithPragmaAnalysis");
 const path = require("path");
 let paths = [];
 
@@ -74,10 +74,10 @@ config.resolver = new Resolver(config);
 
 describe("compileWithPragmaAnalysis", function () {
   before(function () {
-    sinon.stub(CompilerSupplier.prototype, "getReleases").returns(releases);
+    sinon.stub(CompilerSupplier.prototype, "list").returns(releases);
   });
   after(function () {
-    CompilerSupplier.prototype.getReleases.restore();
+    CompilerSupplier.prototype.list.restore();
   });
 
   describe("solidity files with no imports", function () {
