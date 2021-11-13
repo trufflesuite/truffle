@@ -93,7 +93,7 @@ const execute = {
       args = processedValues.args;
       params = processedValues.params;
     }
-    //skipNetworkCheck boolean to skip network call for read data (calls type) methods invocation
+    //skipNetworkCheck flag used to skip network call for read data (calls type) methods invocation
     if (skipNetworkCheck) {
       return { args, params };
     }
@@ -147,7 +147,7 @@ const execute = {
       if (execute.hasDefaultBlock(args, lastArg, methodABI.inputs)) {
         defaultBlock = args.pop();
       }
-      //skipNetworkCheck boolean to skip network call for read data (calls type) methods invocation
+      //skipNetworkCheck flag passed to skip network call for read data (calls type) methods invocation
       const skipNetworkCheck = true;
       execute
         .prepareCall(constructor, methodABI, args, skipNetworkCheck)
