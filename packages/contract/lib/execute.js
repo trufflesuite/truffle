@@ -66,10 +66,15 @@ const execute = {
    * @param  {Object} constructor   TruffleContract constructor
    * @param  {Object} methodABI     Function ABI segment w/ inputs & outputs keys.
    * @param  {Array}  _arguments    Arguments passed to method invocation
-   * @param  {Boolean}  isCall    Arguments passed to prevent getBlock {gasLimit} network call for read data methods invocation
+   * @param  {Boolean}  skipNetworkCheck    Arguments passed to skip network call for read data (calls type) methods invocation
    * @return {Promise}              Resolves object w/ tx params disambiguated from arguments
    */
-  prepareCall: async function (constructor, methodABI, _arguments, isCall) {
+  prepareCall: async function (
+    constructor,
+    methodABI,
+    _arguments,
+    skipNetworkCheck
+  ) {
     let args = Array.prototype.slice.call(_arguments);
     let params = utils.getTxParams.call(constructor, methodABI, args);
 
@@ -88,7 +93,8 @@ const execute = {
       args = processedValues.args;
       params = processedValues.params;
     }
-    if (isCall) {
+    //skipNetworkCheck boolean to skip network call for read data (calls type) methods invocation
+    if (skipNetworkCheck) {
       return { args, params };
     }
     const network = await constructor.detectNetwork();
@@ -141,9 +147,10 @@ const execute = {
       if (execute.hasDefaultBlock(args, lastArg, methodABI.inputs)) {
         defaultBlock = args.pop();
       }
-
+      //skipNetworkCheck boolean to skip network call for read data (calls type) methods invocation
+      const skipNetworkCheck = true;
       execute
-        .prepareCall(constructor, methodABI, args, true)
+        .prepareCall(constructor, methodABI, args, skipNetworkCheck)
         .then(async ({ args, params }) => {
           let result;
 
