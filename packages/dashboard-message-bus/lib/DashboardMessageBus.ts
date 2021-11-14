@@ -6,7 +6,8 @@ import {
   broadcastAndAwaitFirst,
   broadcastAndDisregard,
   createMessage,
-  jsonToBase64
+  jsonToBase64,
+  startWebSocketServer
 } from "./utils";
 import { promisify } from "util";
 
@@ -31,8 +32,8 @@ export class DashboardMessageBus extends EventEmitter {
     super();
   }
 
-  start() {
-    this.listenServer = new WebSocket.Server({
+  async start() {
+    this.listenServer = await startWebSocketServer({
       host: this.host,
       port: this.listenPort
     });
@@ -57,7 +58,7 @@ export class DashboardMessageBus extends EventEmitter {
       this.listeningSockets.push(newListener);
     });
 
-    this.requestsServer = new WebSocket.Server({
+    this.requestsServer = await startWebSocketServer({
       host: this.host,
       port: this.requestsPort
     });
