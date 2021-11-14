@@ -19,7 +19,7 @@ describe("DashboardMessageBus", () => {
 
   beforeEach(async () => {
     messageBus = new DashboardMessageBus(requestsPort, listenPort);
-    messageBus.start();
+    await messageBus.start();
     client = await connectToMessageBusWithRetries(requestsPort);
     listener = await connectToMessageBusWithRetries(listenPort);
   });
