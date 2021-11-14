@@ -1,4 +1,4 @@
-import WebSocket from "isomorphic-ws";
+import WebSocket, { ServerOptions } from "isomorphic-ws";
 import { Message, PortsConfig } from "./types";
 import any from "promise.any";
 import delay from "delay";
@@ -20,6 +20,12 @@ export const base64ToJson = (base64: string) => {
   const json = JSON.parse(stringifiedJson);
 
   return json;
+};
+
+export const startWebSocketServer = (options: ServerOptions) => {
+  return new Promise<WebSocket.Server>((resolve) => {
+    const server = new WebSocket.Server(options, () => resolve(server));
+  });
 };
 
 export const createMessage = (type: string, payload: any): Message => {

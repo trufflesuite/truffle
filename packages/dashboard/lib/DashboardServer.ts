@@ -117,7 +117,7 @@ export default class DashboardServer {
       this.host
     );
 
-    messageBus.start();
+    await messageBus.start();
     messageBus.on("terminate", this.boundTerminateListener);
 
     return messageBus;
