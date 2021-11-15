@@ -2,11 +2,10 @@ const ganache = require("ganache");
 const Web3 = require("web3");
 const assert = require("assert");
 const EventEmitter = require("events");
-
 const Deployer = require("../index");
 const utils = require("./helpers/utils");
-
-const { mockEventsSystem } = require("./helpers");
+const Config = require("@truffle/config");
+const { Environment } = require("@truffle/environment");
 
 describe("Error cases", function() {
   let owner;
@@ -61,9 +60,7 @@ describe("Error cases", function() {
     Abstract = utils.getContract("Abstract", provider, networkId, owner);
     Loops = utils.getContract("Loops", provider, networkId, owner);
 
-    mockEventsSystem.clearEmittedEvents();
-
-    options = {
+    options = Config.default().merge({
       contracts: [
         Example,
         ExampleRevert,
@@ -75,13 +72,13 @@ describe("Error cases", function() {
         Loops
       ],
       networks: {
-        test: {}
+        test: {
+          network_id: networkId,
+          provider
+        }
       },
       network: "test",
-      network_id: networkId,
-      provider,
-      events: mockEventsSystem
-    };
+    await Environment.detect(options);
     deployer = new Deployer({ options });
   });
 
@@ -101,10 +98,9 @@ describe("Error cases", function() {
       await deployer.start();
       assert.fail();
     } catch (err) {
-      assert(mockEventsSystem.emittedEvents["migrate:deployment:error"].length === 1);
-      assert(mockEventsSystem.emittedEvents["migrate:deployment:error"][0].data.type === "noLibAddress");
-      assert(mockEventsSystem.emittedEvents["migrate:deployment:error"][0].data.contract.contractName === "IsLibrary");
-    }
+      assert(err.message.includes("Deployment Failed"));
+      assert(err.message.includes("IsLibrary"));
+      assert(err.message.includes("has no address"));    }
   });
 
   it("unlinked library", async function () {
@@ -118,9 +114,9 @@ describe("Error cases", function() {
       await deployer.start();
       assert.fail();
     } catch (err) {
-      assert(mockEventsSystem.emittedEvents["migrate:deployment:deployFailed"].length === 1);
-      assert(mockEventsSystem.emittedEvents["migrate:deployment:deployFailed"][0].data.error.message.includes("unresolved libraries"));
-      assert(mockEventsSystem.emittedEvents["migrate:deployment:deployFailed"][0].data.contract.contractName === "UsesLibrary");
+      assert(err.message.includes("Deployment Failed"));
+      assert(err.message.includes("UsesLibrary"));
+      assert(err.message.includes("unresolved libraries"));
     }
   });
 
@@ -135,9 +131,10 @@ describe("Error cases", function() {
       await deployer.start();
       assert.fail();
     } catch (err) {
-      assert(mockEventsSystem.emittedEvents["migrate:deployment:error"].length === 1);
-      assert(mockEventsSystem.emittedEvents["migrate:deployment:error"][0].data.type.includes("noBytecode"));
-      assert(mockEventsSystem.emittedEvents["migrate:deployment:error"][0].data.contract === null);
+      assert(err.message.includes("Deployment Failed"));
+      assert(err.message.includes("Abstract"));
+      assert(err.message.includes("interface"));
+      assert(err.message.includes("cannot be deployed"));
     }
   });
 
@@ -293,10 +290,7 @@ describe("Error cases", function() {
       await deployer.start();
       assert.fail();
     } catch (err) {
-      assert(err.message.includes("Example"));
       assert(err.message.includes("insufficient funds"));
-      assert(err.message.includes("Account"));
-      assert(err.message.includes("Balance"));
     }
   });
 });

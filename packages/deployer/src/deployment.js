@@ -169,7 +169,7 @@ class Deployment {
     if (Array.isArray(contract)) {
       const data = {
         type: "noBatches",
-        contract: null
+        contract
       };
       let message;
       if (this.options && this.options.events) {
@@ -185,7 +185,7 @@ class Deployment {
     if (contract.bytecode === "0x") {
       const data = {
         type: "noBytecode",
-        contract: null
+        contract
       };
       let message;
       if (this.options && this.options.events) {
@@ -238,7 +238,6 @@ class Deployment {
    */
   executeDeployment(contract, args) {
     const self = this;
-
     return async function() {
       await self._preFlightCheck(contract);
 
