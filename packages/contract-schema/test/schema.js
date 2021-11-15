@@ -22,4 +22,25 @@ describe("Schema", function() {
       assert(abiErrors);
     }
   });
+
+  it("normalizes a correct input", function () {
+    Schema.normalize(MetaCoin);
+  });
+
+  it("throws exception when attempting to normalize an invalid schema", function () {
+    var invalid = {
+      abi: -1
+    };
+
+    try {
+      Schema.normalize(invalid, {
+        validate: true
+      });
+    } catch (err) {
+      var abiErrors = err.errors.filter(function (error) {
+        return error.dataPath === ".abi";
+      });
+      assert(abiErrors);
+    }
+  });
 });
