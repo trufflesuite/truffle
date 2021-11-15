@@ -118,9 +118,9 @@ describe("Error cases", function() {
       await deployer.start();
       assert.fail();
     } catch (err) {
-      assert(err.message.includes("Deployment Failed"));
-      assert(err.message.includes("UsesLibrary"));
-      assert(err.message.includes("unresolved libraries"));
+      assert(mockEventsSystem.emittedEvents["migrate:deployment:deployFailed"].length === 1);
+      assert(mockEventsSystem.emittedEvents["migrate:deployment:deployFailed"][0].data.error.message.includes("unresolved libraries"));
+      assert(mockEventsSystem.emittedEvents["migrate:deployment:deployFailed"][0].data.contract.contractName === "UsesLibrary");
     }
   });
 

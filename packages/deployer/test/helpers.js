@@ -45,6 +45,7 @@ const mockEventsSystem = {
     "migrate:deployment:linking": [],
     "migrate:deployment:confirmation": [],
     "migrate:deployment:error": [],
+    "migrate:deployment:deployFailed": []
   },
   emit: function(eventName, data) {
     if (mockEventsSystem.emittedEvents[eventName]) {
