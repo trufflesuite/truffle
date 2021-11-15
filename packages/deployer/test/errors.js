@@ -135,10 +135,9 @@ describe("Error cases", function() {
       await deployer.start();
       assert.fail();
     } catch (err) {
-      assert(err.message.includes("Deployment Failed"));
-      assert(err.message.includes("Abstract"));
-      assert(err.message.includes("interface"));
-      assert(err.message.includes("cannot be deployed"));
+      assert(mockEventsSystem.emittedEvents["migrate:deployment:error"].length === 1);
+      assert(mockEventsSystem.emittedEvents["migrate:deployment:error"][0].data.type.includes("noBytecode"));
+      assert(mockEventsSystem.emittedEvents["migrate:deployment:error"][0].data.contract === null);
     }
   });
 
