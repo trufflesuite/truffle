@@ -1,7 +1,7 @@
 const sanitizeMessage = require("./sanitizeMessage");
 
 module.exports = {
-  link: async function(library, destinations, deployer) {
+  link: async function (library, destinations, deployer) {
     let eventArgs;
 
     // Validate name
@@ -12,7 +12,10 @@ module.exports = {
 
       let message;
       if (deployer.options && deployer.options.events) {
-        message = await deployer.options.events.emit("migrate:deployment:error", eventArgs);
+        message = await deployer.options.events.emit(
+          "deployment:error",
+          eventArgs
+        );
       }
       throw new Error(sanitizeMessage(message));
     }
@@ -32,7 +35,10 @@ module.exports = {
 
       let message;
       if (deployer.options && deployer.options.events) {
-        message = await deployer.options.events.emit("migrate:deployment:error", eventArgs);
+        message = await deployer.options.events.emit(
+          "deployment:error",
+          eventArgs
+        );
       }
       throw new Error(sanitizeMessage(message));
     }
@@ -59,7 +65,7 @@ module.exports = {
       };
 
       if (deployer.options && deployer.options.events) {
-        await deployer.options.events.emit("migrate:deployment:linking", eventArgs);
+        await deployer.options.events.emit("deployment:linking", eventArgs);
       }
       destination.link(library);
     }

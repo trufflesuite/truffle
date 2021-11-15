@@ -1,5 +1,4 @@
 const Reporter = require("./Reporter");
-const Messages = require("./Messages");
 
 module.exports = {
   initialization: () => {
@@ -67,12 +66,12 @@ module.exports = {
       }
     ],
 
-    "migrate:deployment:block": [
+    "deployment:block": [
       async function (data) {
         return await this.reporter.block(data);
       }
     ],
-    "migrate:deployment:confirmation": [
+    "deployment:confirmation": [
       async function (data) {
         return await this.reporter.confirmation(data);
       }
@@ -82,30 +81,35 @@ module.exports = {
         return await this.reporter.txHash(data);
       }
     ],
-    "migrate:deployment:postDeploy": [
+    "deployment:postDeploy": [
       async function (data) {
         return await this.reporter.postDeploy(data);
       }
     ],
-    "migrate:deployment:deployFailed": [
+    "deployment:deployFailed": [
       async function (data) {
         return await this.reporter.deployFailed(data);
       }
     ],
-    "migrate:deployment:error": [
+    "deployment:error": [
       async function (data) {
         return await this.reporter.error(data);
       }
     ],
-    "migrate:deployment:preDeploy": [
+    "deployment:preDeploy": [
       async function (data) {
         return await this.reporter.preDeploy(data);
       }
     ],
-    "migrate:deployment:linking": [
+    "deployment:linking": [
       async function (data) {
         return await this.reporter.linking(data);
       }
+    ],
+    "deployment:newContract": [
+      function ({ contract }) {
+        this.logger.log("Creating new instance of " + contract.contractName);
+      }
     ]
   }
-}
+};
