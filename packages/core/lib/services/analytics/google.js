@@ -71,12 +71,14 @@ const googleAnalytics = {
   setAnalytics: function(analyticsBool) {
     if (analyticsBool === true) {
       this.setUserId();
+      console.log('Analytics enabled');
       userConfig.set({
         enableAnalytics: true,
         analyticsSet: true,
         analyticsMessageDateTime: Date.now()
       });
     } else if (analyticsBool === false) {
+      console.log('Analytics disabled');
       userConfig.set({
         enableAnalytics: false,
         analyticsSet: true,
