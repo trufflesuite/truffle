@@ -89,10 +89,7 @@ class Migration {
 
         if (!this.dryRun) {
           const data = { message: message };
-          await options.events.emit("migrate:migration:deploy:transaction:start", {
-            migration: this,
-            data
-          });
+          await options.events.emit("migrate:migration:deploy:transaction:start", data);
         }
 
         const migrations = await Migrations.deployed();
@@ -100,10 +97,7 @@ class Migration {
 
         if (!this.dryRun) {
           const data = { receipt: receipt, message: message };
-          await options.events.emit("migrate:migration:deploy:transaction:succeed", {
-            migration: this,
-            data
-          });
+          await options.events.emit("migrate:migration:deploy:transaction:succeed", data);
         }
       }
 
@@ -112,9 +106,7 @@ class Migration {
         interfaceAdapter: context.interfaceAdapter
       };
 
-      await options.events.emit("migrate:migration:deploy:migrate:succeed", {
-        eventArgs
-      });
+      await options.events.emit("migrate:migration:deploy:migrate:succeed", eventArgs);
 
       let artifacts = resolver
         .contracts()
@@ -176,9 +168,7 @@ class Migration {
       };
 
       if (options.events) {
-        await options.events.emit("migrate:migration:deploy:error", {
-          errorData
-        });
+        await options.events.emit("migrate:migration:deploy:error", errorData);
       }
       deployer.finish();
       throw error;
@@ -213,9 +203,7 @@ class Migration {
     };
 
     if (options.events) {
-      await options.events.emit("migrate:migration:run:preMigrations", {
-        data: preMigrationsData
-      });
+      await options.events.emit("migrate:migration:run:preMigrations", preMigrationsData);
     }
     await this._load(options, context, deployer, resolver);
   }

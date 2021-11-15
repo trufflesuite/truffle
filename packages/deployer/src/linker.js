@@ -12,9 +12,7 @@ module.exports = {
 
       let message;
       if (deployer.options && deployer.options.events) {
-        message = await deployer.options.events.emit("migrate:deployment:error", {
-          data: eventArgs
-        });
+        message = await deployer.options.events.emit("migrate:deployment:error", eventArgs);
       }
       throw new Error(sanitizeMessage(message));
     }
@@ -34,9 +32,7 @@ module.exports = {
 
       let message;
       if (deployer.options && deployer.options.events) {
-        message = await deployer.options.events.emit("migrate:deployment:error", {
-          data: eventArgs
-        });
+        message = await deployer.options.events.emit("migrate:deployment:error", eventArgs);
       }
       throw new Error(sanitizeMessage(message));
     }
@@ -63,9 +59,7 @@ module.exports = {
       };
 
       if (deployer.options && deployer.options.events) {
-        await deployer.options.events.emit("migrate:deployment:linking", {
-          data: eventArgs
-        });
+        await deployer.options.events.emit("migrate:deployment:linking", eventArgs);
       }
       destination.link(library);
     }

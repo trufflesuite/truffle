@@ -41,69 +41,69 @@ module.exports = {
     ],
 
     "migrate:migration:deploy:transaction:start": [
-      async function ({ data }) {
+      async function (data) {
         await this.reporter.startTransaction(data);
       }
     ],
     "migrate:migration:deploy:transaction:succeed": [
-      async function ({ data }) {
+      async function (data) {
         await this.reporter.endTransaction(data);
       }
     ],
     "migrate:migration:deploy:migrate:succeed": [
-      async function ({ eventArgs }) {
+      async function (eventArgs) {
         return await this.reporter.postMigrate(eventArgs);
       }
     ],
 
     "migrate:migration:deploy:error": [
-      async function ({ errorData }) {
+      async function (errorData) {
         return await this.reporter.error(errorData);
       }
     ],
     "migrate:migration:run:preMigrations": [
-      async function ({ data }) {
+      async function (data) {
         return await this.reporter.preMigrate(data);
       }
     ],
 
     "migrate:deployment:block": [
-      async function ({ data }) {
+      async function (data) {
         return await this.reporter.block(data);
       }
     ],
     "migrate:deployment:confirmation": [
-      async function ({ data }) {
+      async function (data) {
         return await this.reporter.confirmation(data);
       }
     ],
     "migrate:deployment:txHash": [
-      async function ({ data }) {
+      async function (data) {
         return await this.reporter.txHash(data);
       }
     ],
     "migrate:deployment:postDeploy": [
-      async function ({ data }) {
+      async function (data) {
         return await this.reporter.postDeploy(data);
       }
     ],
     "migrate:deployment:deployFailed": [
-      async function ({ data }) {
+      async function (data) {
         return await this.reporter.deployFailed(data);
       }
     ],
     "migrate:deployment:error": [
-      async function ({ data }) {
+      async function (data) {
         return await this.reporter.error(data);
       }
     ],
     "migrate:deployment:preDeploy": [
-      async function ({ data }) {
+      async function (data) {
         return await this.reporter.preDeploy(data);
       }
     ],
     "migrate:deployment:linking": [
-      async function ({ data }) {
+      async function (data) {
         return await this.reporter.linking(data);
       }
     ]
