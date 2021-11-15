@@ -45,14 +45,16 @@ const mockEventsSystem = {
     "migrate:deployment:linking": [],
     "migrate:deployment:confirmation": [],
     "migrate:deployment:error": [],
-    "migrate:deployment:deployFailed": []
+    "migrate:deployment:deployFailed": [],
+    "migrate:deployment:block": []
   },
   emit: function(eventName, data) {
     if (mockEventsSystem.emittedEvents[eventName]) {
       mockEventsSystem.emittedEvents[eventName].push(data);
+      return `Mock event system emitted ${eventName}`;
     } else {
       console.log(
-        `Could not find the event name ${eventName} in 'emittedEvents'.`
+        `Mock event system message: Could not find the event name ${eventName} in 'emittedEvents'.`
       );
     }
   }
