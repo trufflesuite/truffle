@@ -98,9 +98,7 @@ class Deployment {
       };
 
       if (this.options && this.options.events) {
-        this.options.events.emit("migrate:deployment:block", {
-          data
-        });
+        this.options.events.emit("migrate:deployment:block", data);
       }
     }, self.pollingInterval);
   }
@@ -142,9 +140,7 @@ class Deployment {
             block: currentBlock
           };
           if (this.options && this.options.events) {
-            await this.options.events.emit("migrate:deployment:confirmation", {
-              data
-            });
+            await this.options.events.emit("migrate:deployment:confirmation", data);
           }
         }
 
@@ -173,9 +169,7 @@ class Deployment {
       };
       let message;
       if (this.options && this.options.events) {
-        message = await this.options.events.emit("migrate:deployment:error", {
-          data
-        });
+        message = await this.options.events.emit("migrate:deployment:error", data);
       }
 
       throw new Error(sanitizeMessage(message));
@@ -189,9 +183,7 @@ class Deployment {
       };
       let message;
       if (this.options && this.options.events) {
-        message = await this.options.events.emit("migrate:deployment:error", {
-          data
-        });
+        message = await this.options.events.emit("migrate:deployment:error", data);
       }
 
       throw new Error(sanitizeMessage(message));
@@ -292,9 +284,7 @@ class Deployment {
 
         // Emit `preDeploy` & send transaction
         if (self.options && self.options.events) {
-          await self.options.events.emit("migrate:deployment:preDeploy", {
-            data: eventArgs
-          });
+          await self.options.events.emit("migrate:deployment:preDeploy", eventArgs);
         }
         const promiEvent = contract.new.apply(contract, newArgs);
 
@@ -309,9 +299,7 @@ class Deployment {
                 contractName: state.contractName,
                 transactionHash: hash
               };
-              await self.options.events.emit("migrate:deployment:txHash", {
-                data
-              });
+              await self.options.events.emit("migrate:deployment:txHash", data);
             }
           })
           .on("receipt", receipt => {
@@ -331,9 +319,7 @@ class Deployment {
           eventArgs.error = err.error || err;
           let message;
           if (self.options && self.options.events) {
-            message = await self.options.events.emit("migrate:deployment:deployFailed", {
-              data: eventArgs
-            });
+            message = await self.options.events.emit("migrate:deployment:deployFailed", eventArgs);
           }
           self.close();
           throw new Error(sanitizeMessage(message));
@@ -353,9 +339,7 @@ class Deployment {
       };
 
       if (self.options && self.options.events) {
-        await self.options.events.emit("migrate:deployment:postDeploy", {
-          data: eventArgs
-        });
+        await self.options.events.emit("migrate:deployment:postDeploy", eventArgs);
       }
 
       // Wait for `n` blocks
