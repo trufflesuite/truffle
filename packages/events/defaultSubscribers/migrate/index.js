@@ -39,12 +39,12 @@ module.exports = {
       }
     ],
 
-    "migrate:migration:deploy:transaction:start": [
+    "migrate:migration:deploy:savingMigration:start": [
       async function (data) {
         await this.reporter.startTransaction(data);
       }
     ],
-    "migrate:migration:deploy:transaction:succeed": [
+    "migrate:migration:deploy:savingMigration:succeed": [
       async function (data) {
         await this.reporter.endTransaction(data);
       }

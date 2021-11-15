@@ -89,7 +89,10 @@ class Migration {
 
         if (!this.dryRun) {
           const data = { message: message };
-          await options.events.emit("migrate:migration:deploy:transaction:start", data);
+          await options.events.emit(
+            "migrate:migration:deploy:savingMigration:start",
+            data
+          );
         }
 
         const migrations = await Migrations.deployed();
@@ -97,7 +100,10 @@ class Migration {
 
         if (!this.dryRun) {
           const data = { receipt: receipt, message: message };
-          await options.events.emit("migrate:migration:deploy:transaction:succeed", data);
+          await options.events.emit(
+            "migrate:migration:deploy:savingMigration:succeed",
+            data
+          );
         }
       }
 
@@ -106,16 +112,15 @@ class Migration {
         interfaceAdapter: context.interfaceAdapter
       };
 
-      await options.events.emit("migrate:migration:deploy:migrate:succeed", eventArgs);
+      await options.events.emit(
+        "migrate:migration:deploy:migrate:succeed",
+        eventArgs
+      );
 
       let artifacts = resolver
         .contracts()
         .map(abstraction => abstraction._json);
-      if (
-        this.config.db &&
-        this.config.db.enabled &&
-        artifacts.length > 0
-      ) {
+      if (this.config.db && this.config.db.enabled && artifacts.length > 0) {
         // currently if Truffle Db fails to load, getTruffleDb returns `null`
         const Db = getTruffleDb();
 
@@ -203,7 +208,10 @@ class Migration {
     };
 
     if (options.events) {
-      await options.events.emit("migrate:migration:run:preMigrations", preMigrationsData);
+      await options.events.emit(
+        "migrate:migration:run:preMigrations",
+        preMigrationsData
+      );
     }
     await this._load(options, context, deployer, resolver);
   }
