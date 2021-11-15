@@ -3,31 +3,34 @@ const getAllEventsByName = (options, eventName) => {
 };
 
 const preDeployOccurredForNames = (options, contractNames) => {
-  const allPreDeploys = getAllEventsByName(options, "migrate:deployment:preDeploy");
+  const allPreDeploys = getAllEventsByName(options, "deployment:preDeploy");
   return contractNames.reduce((a, name) => {
     // after finding one that didn't occur, we know the test has failed
     if (a === false) return a;
     // search all events to make sure it occurred once for the name
     return allPreDeploys.some(eventData => {
-      return eventData.data.state.contractName === name;
+      return eventData.state.contractName === name;
     });
   }, true);
 };
 
 const postDeployOccurredForNames = (options, contractNames) => {
-  const allPostDeploys = getAllEventsByName(options, "migrate:deployment:postDeploy");
+  const allPostDeploys = getAllEventsByName(options, "deployment:postDeploy");
   return contractNames.reduce((a, name) => {
     if (a === false) return a;
     return allPostDeploys.some(eventData => {
-      return eventData.data.contract.contractName === name;
+      return eventData.contract.contractName === name;
     });
   }, true);
 };
 
 const linkingOccurredForName = (options, contractName, libraryName) => {
-  const allLinks = getAllEventsByName(options, "migrate:deployment:linking");
+  const allLinks = getAllEventsByName(options, "deployment:linking");
   return allLinks.some(linkEvent => {
-    return linkEvent.data.libraryName === libraryName && linkEvent.data.contractName === contractName;
+    return (
+      linkEvent.libraryName === libraryName &&
+      linkEvent.contractName === contractName
+    );
   });
 };
 
@@ -39,16 +42,16 @@ const mockEventsSystem = {
     }
   },
   emittedEvents: {
-    "migrate:deployment:preDeploy": [],
-    "migrate:deployment:txHash": [],
-    "migrate:deployment:postDeploy": [],
-    "migrate:deployment:linking": [],
-    "migrate:deployment:confirmation": [],
-    "migrate:deployment:error": [],
-    "migrate:deployment:deployFailed": [],
-    "migrate:deployment:block": []
+    "deployment:preDeploy": [],
+    "deployment:txHash": [],
+    "deployment:postDeploy": [],
+    "deployment:linking": [],
+    "deployment:confirmation": [],
+    "deployment:error": [],
+    "deployment:deployFailed": [],
+    "deployment:block": []
   },
-  emit: function(eventName, data) {
+  emit: function (eventName, data) {
     if (mockEventsSystem.emittedEvents[eventName]) {
       mockEventsSystem.emittedEvents[eventName].push(data);
       return `Mock event system emitted ${eventName}`;
@@ -58,7 +61,7 @@ const mockEventsSystem = {
       );
     }
   }
-}
+};
 
 module.exports = {
   mockEventsSystem,

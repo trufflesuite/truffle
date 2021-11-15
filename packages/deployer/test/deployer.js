@@ -2,7 +2,6 @@ const ganache = require("ganache");
 const Web3 = require("web3");
 const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const assert = require("assert");
-const EventEmitter = require("events");
 
 const Deployer = require("../index");
 const utils = require("./helpers/utils");
@@ -13,14 +12,13 @@ const {
   preDeployOccurredForNames,
   postDeployOccurredForNames,
   linkingOccurredForName
-} = require("./helpers");
+} = require("./helpers/eventSystem");
 
-describe("Deployer (sync)", function() {
+describe("Deployer (sync)", function () {
   let owner;
   let options;
   let networkId;
   let deployer;
-  let output = "";
   let Example;
   let UsesExample;
   let IsLibrary;
@@ -35,7 +33,7 @@ describe("Deployer (sync)", function() {
 
   const web3 = new Web3(provider);
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     networkId = await web3.eth.net.getId();
     const accounts = await web3.eth.getAccounts();
 
@@ -78,7 +76,6 @@ describe("Deployer (sync)", function() {
   });
 
   afterEach(() => {
-    output = "";
     utils.cleanUp();
     deployer.finish();
   });
@@ -90,7 +87,7 @@ describe("Deployer (sync)", function() {
   // in this describe block, `setUpWithConfig` is **not** called in a `beforeEach`
   // as each test is expected to vary the truffle config passed to `Deployer`
   describe("custom config", () => {
-    it("deployment with default polling interval", async function() {
+    it("deployment with default polling interval", async function () {
       const customConfig = {
         ...options,
         networks: {
@@ -103,10 +100,11 @@ describe("Deployer (sync)", function() {
       assert.strictEqual(
         deployer.pollingInterval,
         4000,
-        "default value of config.networks.test.deploymentPollingInterval expected");
+        "default value of config.networks.test.deploymentPollingInterval expected"
+      );
     });
 
-    it("deployment configurable with custom polling interval", async function() {
+    it("deployment configurable with custom polling interval", async function () {
       const customConfig = {
         ...options,
         networks: {
@@ -119,7 +117,8 @@ describe("Deployer (sync)", function() {
       assert.strictEqual(
         deployer.pollingInterval,
         8000,
-        "custom value from config.networks.test.deploymentPollingInterval expected");
+        "custom value from config.networks.test.deploymentPollingInterval expected"
+      );
     });
   });
 
@@ -131,7 +130,7 @@ describe("Deployer (sync)", function() {
       await setUpWithConfig(options);
     });
 
-    it("deploy()", async function() {
+    it("deploy()", async function () {
       function migrate() {
         deployer.deploy(Example);
       }
@@ -147,10 +146,10 @@ describe("Deployer (sync)", function() {
       assert(id === "Example");
       assert(preDeployOccurredForNames(options, ["Example"]));
       assert(postDeployOccurredForNames(options, ["Example"]));
-      assert(getAllEventsByName(options, "migrate:deployment:txHash").length === 1);
+      assert(getAllEventsByName(options, "deployment:txHash").length === 1);
     });
 
-    it("deploy().then", async function() {
+    it("deploy().then", async function () {
       function migrate() {
         deployer
           .deploy(Example)
@@ -173,12 +172,12 @@ describe("Deployer (sync)", function() {
 
       assert(preDeployOccurredForNames(options, ["Example", "UsesExample"]));
       assert(postDeployOccurredForNames(options, ["Example", "UsesExample"]));
-      assert(getAllEventsByName(options, "migrate:deployment:txHash").length === 2);
+      assert(getAllEventsByName(options, "deployment:txHash").length === 2);
     });
 
-    it("deployer.then", async function() {
+    it("deployer.then", async function () {
       function migrate() {
-        deployer.then(async function() {
+        deployer.then(async function () {
           const example = await deployer.deploy(Example);
           await deployer.deploy(UsesExample, example.address);
         });
@@ -200,11 +199,11 @@ describe("Deployer (sync)", function() {
 
       assert(preDeployOccurredForNames(options, ["Example", "UsesExample"]));
       assert(postDeployOccurredForNames(options, ["Example", "UsesExample"]));
-      assert(getAllEventsByName(options, "migrate:deployment:txHash").length === 2);
+      assert(getAllEventsByName(options, "deployment:txHash").length === 2);
     });
 
-    it("deployer.link", async function() {
-      const migrate = function() {
+    it("deployer.link", async function () {
+      const migrate = function () {
         deployer.deploy(IsLibrary);
         deployer.link(IsLibrary, UsesLibrary);
         deployer.deploy(UsesLibrary);
@@ -233,17 +232,17 @@ describe("Deployer (sync)", function() {
     });
 
     // There's a chain like this in the @truffle/core solidity-tests
-    it("deployer.deploy().then()", async function() {
-      const migrate = function() {
+    it("deployer.deploy().then()", async function () {
+      const migrate = function () {
         deployer
           .deploy(Example)
           .then(() => Example.deployed())
           .then(instance => instance.id())
-          .then(function() {
+          .then(function () {
             return deployer
               .deploy(UsesExample, utils.zeroAddress)
               .then(() => UsesExample.deployed())
-              .then((usesExample) => usesExample.id());
+              .then(usesExample => usesExample.id());
           });
       };
       migrate();
@@ -251,16 +250,16 @@ describe("Deployer (sync)", function() {
       await deployer.start();
       assert(preDeployOccurredForNames(options, ["Example", "UsesExample"]));
       assert(postDeployOccurredForNames(options, ["Example", "UsesExample"]));
-      assert(getAllEventsByName(options, "migrate:deployment:txHash").length === 2);
+      assert(getAllEventsByName(options, "deployment:txHash").length === 2);
     });
 
-    it("waits for confirmations", async function() {
+    it("waits for confirmations", async function () {
       this.timeout(15000);
       const startBlock = await web3.eth.getBlockNumber();
 
       utils.startAutoMine(web3, 1500);
 
-      const migrate = function() {
+      const migrate = function () {
         deployer.deploy(IsLibrary);
         deployer.deploy(Example);
       };
@@ -287,15 +286,15 @@ describe("Deployer (sync)", function() {
       deployer.confirmationsRequired = 0;
     });
 
-    it("emits block events while waiting for a tx to mine", async function() {
+    it("emits block events while waiting for a tx to mine", async function () {
       this.timeout(15000);
 
       utils.startAutoMine(web3, 4000);
 
       const interfaceAdapter = createInterfaceAdapter({ provider });
 
-      const migrate = function() {
-        deployer.then(async function() {
+      const migrate = function () {
+        deployer.then(async function () {
           await deployer._startBlockPolling(interfaceAdapter);
           await utils.waitMS(9000);
           await deployer._startBlockPolling(interfaceAdapter);
