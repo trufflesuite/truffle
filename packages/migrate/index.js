@@ -14,13 +14,15 @@ const Migrate = {
   Migration: Migration,
   logger: null,
 
-  acceptDryRun: async function (options) {
-    const prompt = [{
-      type: "confirm",
-      name: "proceed",
-      message: `Dry-run successful. Do you want to proceed with real deployment?  >> (y/n): `,
-      default: false,
-    }];
+  promptToAcceptDryRun: async function (options) {
+    const prompt = [
+      {
+        type: "confirm",
+        name: "proceed",
+        message: `Dry-run successful. Do you want to proceed with real deployment?  >> (y/n): `,
+        default: false
+      }
+    ];
 
     const answer = await inquirer.prompt(prompt);
     if (answer.proceed) {
@@ -78,7 +80,7 @@ const Migrate = {
         "network",
         "network_id",
         "logger",
-        "from", // address doing deployment
+        "from" // address doing deployment
       ]);
 
       if (options.reset === true) {
@@ -156,7 +158,7 @@ const Migrate = {
       if (options.events) {
         await options.events.emit("migrate:postAllMigrations", {
           dryRun: options.dryRun,
-          error: null,
+          error: null
         });
       }
       return;
@@ -164,7 +166,7 @@ const Migrate = {
       if (options.events) {
         await options.events.emit("migrate:postAllMigrations", {
           dryRun: options.dryRun,
-          error: error.toString(),
+          error: error.toString()
         });
       }
       throw error;
@@ -181,7 +183,7 @@ const Migrate = {
         abstraction.setProvider(provider);
         return abstraction;
       },
-      resolve: resolver.resolve,
+      resolve: resolver.resolve
     };
   },
 
@@ -242,7 +244,7 @@ const Migrate = {
         })
         .catch(error => reject(error));
     });
-  },
+  }
 };
 
 module.exports = Migrate;

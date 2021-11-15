@@ -133,12 +133,6 @@ class Reporter {
     }
   }
 
-  // ---------------------------- Interaction Handlers ---------------------------------------------
-
-  async acceptDryRun() {
-    return this.askBoolean("acceptDryRun");
-  }
-
   // -------------------------  Migrator File Handlers --------------------------------------------
 
   /**
@@ -195,7 +189,7 @@ class Reporter {
     let messageData = {
       number: this.summary[this.currentFileIndex].number,
       cost: totals.cost,
-      valueUnit: this.valueUnit,
+      valueUnit: this.valueUnit
     };
     let message = this.messages.steps("postMigrate", messageData);
     this.logger.log(message);
@@ -250,7 +244,9 @@ class Reporter {
   async postDeploy(data) {
     let message;
     if (data.deployed) {
-      const txCostReport = await data.contract.interfaceAdapter.getTransactionCostReport(data.receipt);
+      const txCostReport = await data.contract.interfaceAdapter.getTransactionCostReport(
+        data.receipt
+      );
 
       // if it returns null, try again!
       if (!txCostReport) return this.postDeploy(data);
@@ -297,9 +293,7 @@ class Reporter {
     // Reporter might not be enabled (via Migrate.launchReporter) so
     // message is a (potentially empty) array of results from the emitter
     if (!message.length) {
-      message = `while migrating ${data.contract.contractName}: ${
-        data.error.message
-      }`;
+      message = `while migrating ${data.contract.contractName}: ${data.error.message}`;
     }
     return message;
   }
