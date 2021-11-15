@@ -178,7 +178,7 @@ class Deployment {
         });
       }
 
-      throw new Error(this.sanitizeMessage(message));
+      throw new Error(sanitizeMessage(message));
     }
 
     // Check bytecode
@@ -194,7 +194,7 @@ class Deployment {
         });
       }
 
-      throw new Error(this.sanitizeMessage(message));
+      throw new Error(sanitizeMessage(message));
     }
 
     // Check network
@@ -337,7 +337,7 @@ class Deployment {
             });
           }
           self.close();
-          throw new Error(this.sanitizeMessage(message));
+          throw new Error(sanitizeMessage(message));
         }
 
         // Case: already deployed
