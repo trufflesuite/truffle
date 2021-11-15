@@ -127,6 +127,7 @@ async function tryFetchAndCompileAddress(
         sources
       });
     } catch (error) {
+      console.log(error)
       debug("compile error: %O", error);
       failureReason = "compile";
       continue; //try again with a different fetcher, I guess?
