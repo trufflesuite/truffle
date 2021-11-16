@@ -39,7 +39,7 @@ const execute = {
           // note: this means if a transaction will revert but the user does not have stacktracing enabled,
           // they will get an error from the gas estimation and be unable to proceed; we may need to revisit this
           if (gas === null) {
-            const defaultGas = utils.bigNumberify(Math.floor(blockLimit/2));
+            const defaultGas = utils.bigNumberify(Math.floor(blockLimit / 2));
             accept(defaultGas.toHexString());
           } else {
             const limit = utils.bigNumberify(blockLimit);
@@ -66,9 +66,15 @@ const execute = {
    * @param  {Object} constructor   TruffleContract constructor
    * @param  {Object} methodABI     Function ABI segment w/ inputs & outputs keys.
    * @param  {Array}  _arguments    Arguments passed to method invocation
+   * @param  {Boolean}  skipNetworkCheck    Arguments passed to skip network call for read data (calls type) methods invocation
    * @return {Promise}              Resolves object w/ tx params disambiguated from arguments
    */
-  prepareCall: async function (constructor, methodABI, _arguments) {
+  prepareCall: async function (
+    constructor,
+    methodABI,
+    _arguments,
+    skipNetworkCheck
+  ) {
     let args = Array.prototype.slice.call(_arguments);
     let params = utils.getTxParams.call(constructor, methodABI, args);
 
@@ -87,7 +93,10 @@ const execute = {
       args = processedValues.args;
       params = processedValues.params;
     }
-
+    //skipNetworkCheck flag used to skip network call for read data (calls type) methods invocation
+    if (skipNetworkCheck) {
+      return { args, params };
+    }
     const network = await constructor.detectNetwork();
     return { args, params, network };
   },
@@ -138,9 +147,10 @@ const execute = {
       if (execute.hasDefaultBlock(args, lastArg, methodABI.inputs)) {
         defaultBlock = args.pop();
       }
-
+      //skipNetworkCheck flag passed to skip network call for read data (calls type) methods invocation
+      const skipNetworkCheck = true;
       execute
-        .prepareCall(constructor, methodABI, args)
+        .prepareCall(constructor, methodABI, args, skipNetworkCheck)
         .then(async ({ args, params }) => {
           let result;
 
