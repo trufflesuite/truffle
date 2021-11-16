@@ -17,7 +17,7 @@ const Messages = require("./Messages");
  *
  */
 class Reporter {
-  constructor({ describeJson, dryRun, confirmations }) {
+  constructor({ dryRun, confirmations, config }) {
     this.currentGasTotal = new web3Utils.BN(0);
     this.currentCostTotal = new web3Utils.BN(0);
     this.finalCostTotal = new web3Utils.BN(0);
@@ -27,9 +27,9 @@ class Reporter {
     this.currentFileIndex = -1;
     this.blockSpinner = null;
     this.currentBlockWait = "";
-    this.describeJson = describeJson;
     this.dryRun = dryRun;
     this.confirmations = confirmations;
+    this.config = config;
 
     this.messages = new Messages(this);
   }
@@ -178,7 +178,7 @@ class Reporter {
       this.summary.totalDeployments = messageData.totalDeployments;
       this.summary.finalCost = messageData.finalCost;
 
-      message = this.messages.steps("lastMigrate", messageData);
+      message += this.messages.steps("lastMigrate", messageData);
     }
     return message;
   }

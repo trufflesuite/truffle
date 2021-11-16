@@ -5,9 +5,9 @@ module.exports = {
     this.logger = config.logger || console;
     this.config = config;
     this.reporter = new Reporter({
+      config: this.config,
       dryRun: this.config.dryRun,
-      logger: this.config.logger,
-      describeJson: this.config.describeJson || false,
+      logger: this.logger,
       confirmations: this.config.confirmations || 0
     });
   },
@@ -83,7 +83,7 @@ module.exports = {
         this.logger.log(message);
       }
     ],
-    "migrate:deployment:txHash": [
+    "deployment:txHash": [
       async function (data) {
         const message = await this.reporter.txHash(data);
         this.logger.log(message);

@@ -8,30 +8,27 @@ const MemoryLogger = require("../MemoryLogger");
 function verifyMigrationStatuses(statuses, deployingStatusString) {
   let cost = 0;
 
-  it("includes all statuses", done => {
+  it("includes all statuses", function () {
     assert.equal(statuses.length, 7);
-    done();
   });
 
-  it("includes preAllMigrations status", done => {
+  it("includes preAllMigrations status", function () {
     const status = statuses[0];
     assert.equal(status.status, "preAllMigrations");
     assert.equal(status.data.dryRun, false);
     assert.equal(status.data.migrations.length, 1);
-    done();
   });
 
-  it("includes preMigrate status", done => {
+  it("includes preMigrate status", function () {
     const status = statuses[1];
     assert.equal(status.status, "preMigrate");
     assert.equal(status.data.file, "1_initial_migration.js");
     assert.equal(status.data.number, 1);
     assert.equal(status.data.isFirst, true);
     assert.equal(status.data.network, "development");
-    done();
   });
 
-  it(`includes ${deployingStatusString} status`, done => {
+  it(`includes ${deployingStatusString} status`, function () {
     const status = statuses[2];
     assert.equal(status.status, deployingStatusString);
     assert.equal(status.data.contractName, "Migrations");
@@ -41,11 +38,9 @@ function verifyMigrationStatuses(statuses, deployingStatusString) {
       assert.equal(status.data.priorAddress.slice(0, 2), "0x");
       assert.equal(status.data.priorAddress.length, 42);
     }
-
-    done();
   });
 
-  it("includes deployed status", done => {
+  it("includes deployed status", function () {
     const status = statuses[3];
     assert.equal(status.status, "deployed");
     assert.equal(status.data.contract.contractName, "Migrations");
@@ -57,34 +52,30 @@ function verifyMigrationStatuses(statuses, deployingStatusString) {
     assert.equal(status.data.valueUnit, "ETH");
     cost = parseFloat(status.data.cost);
     assert(cost > 0);
-    done();
   });
 
-  it("includes postMigrate status", done => {
+  it("includes postMigrate status", function () {
     const status = statuses[4];
     assert.equal(status.status, "postMigrate");
     assert.equal(status.data.number, 1);
     assert.equal(parseFloat(status.data.cost), cost);
-    done();
   });
 
-  it("includes lastMigrate status", done => {
+  it("includes lastMigrate status", function () {
     const status = statuses[5];
     assert.equal(status.status, "lastMigrate");
     assert.equal(parseFloat(status.data.finalCost), cost);
-    done();
   });
 
-  it("includes postAllMigrations status", done => {
+  it("includes postAllMigrations status", function () {
     const status = statuses[6];
     assert.equal(status.status, "postAllMigrations");
     assert.equal(status.data.dryRun, false);
     assert.equal(status.data.error, null);
-    done();
   });
 }
 
-describe("truffle migrate --describe-json", () => {
+describe.only("truffle migrate --describe-json", () => {
   let config, projectPath;
   let logger = new MemoryLogger();
 
@@ -122,7 +113,6 @@ describe("truffle migrate --describe-json", () => {
 
       it("runs the migration without throwing", async () => {
         await CommandRunner.run("migrate --reset --describe-json", config);
-
         const contents = logger.contents();
         statuses.push(
           ...contents
