@@ -1,3 +1,6 @@
+import debugModule from "debug";
+const debug = debugModule("profiler:updated");
+
 import * as path from "path";
 import * as fs from "fs";
 

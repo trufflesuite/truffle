@@ -1,6 +1,7 @@
 import debugModule from "debug";
-import path from "path";
 const debug = debugModule("profiler:getImports");
+
+import path from "path";
 
 //HACK: do *not* import ResolvedSource from @truffle/resolver because
 //that would create a circular dependency!

@@ -1,5 +1,6 @@
 import debugModule from "debug";
 const debug = debugModule("profiler:resolveAllSources");
+
 import { getImports, ResolvedSource } from "./getImports";
 //note: see getImports.ts for why we don't import from @truffle/resolver
 

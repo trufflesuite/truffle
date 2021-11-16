@@ -1,3 +1,6 @@
+import debugModule from "debug";
+const debug = debugModule("profiler:convertToAbsolutePaths");
+
 import path from "path";
 
 import { isExplicitlyRelative } from "./isExplicitlyRelative";
