@@ -2,16 +2,17 @@ const helpers = require("./helpers");
 const { createLookupTable, sortHandlers, validateOptions } = helpers;
 
 class Subscriber {
-  constructor({ emitter, options, logger, quiet }) {
+  constructor({ emitter, options, config }) {
     validateOptions(options);
     const { initialization, handlers } = options;
 
     this.emitter = emitter;
     // Object for storing unsubscribe methods for non-globbed listeners
     this.unsubscribeListeners = {};
-    this.quiet = quiet;
-    if (logger) this.logger = logger;
-    if (initialization) initialization.bind(this)();
+    this.quiet = config.quiet;
+    this.config = config;
+    if (config.logger) this.logger = config.logger;
+    if (initialization) initialization.bind(this)(config);
 
     const { globbedHandlers, nonGlobbedHandlers } = sortHandlers(handlers);
 
@@ -61,10 +62,10 @@ class Subscriber {
     }
   }
 
-  updateOptions(newOptions) {
-    const { logger, quiet } = newOptions;
-    if (quiet) this.quiet = true;
-    if (logger) this.logger = logger;
+  updateOptions(config) {
+    this.config = config;
+    if (config.quiet) this.quiet = true;
+    if (config.logger) this.logger = config.logger;
   }
 }
 
