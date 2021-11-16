@@ -184,6 +184,7 @@ class DebugPrinter {
 
   printInstruction(locations = this.locationPrintouts) {
     const instruction = this.session.view(solidity.current.instruction);
+    const instructions = this.session.view(solidity.current.instructions);
     const step = this.session.view(trace.step);
     const traceIndex = this.session.view(trace.index);
     const totalSteps = this.session.view(trace.steps).length;
@@ -209,11 +210,47 @@ class DebugPrinter {
       this.config.logger.log(DebugUtils.formatStack(step.stack));
       this.config.logger.log("");
     }
-    this.config.logger.log(
-      DebugUtils.formatInstruction(traceIndex + 1, totalSteps, instruction)
-    );
-    this.config.logger.log(DebugUtils.formatPC(step.pc));
+
+    this.config.logger.log("Instructions:");
+
+    // printout instructions
+    const previousInstructions = 3;
+    const upcomingInstructions = 3;
+    const currentIndex = instruction.index;
+
+    // add an ellipse if there exist additional instructions before
+    if (currentIndex - previousInstructions >= 0) {
+      this.config.logger.log("...");
+    }
+    // printout 3 previous instructions
+    for (let i = Math.max(currentIndex - previousInstructions, 0);
+      i < currentIndex;
+      i++) {
+      this.config.logger.log(DebugUtils.formatInstruction(instructions[i]));
+    }
+
+    // printout current instruction
+    this.config.logger.log(DebugUtils.formatCurrentInstruction(instruction));
+
+    // printout 3 upcoming instructions
+    for (let i = Math.min(currentIndex + 1, instructions.length);
+      i <= currentIndex + upcomingInstructions;
+      i++) {
+      this.config.logger.log(DebugUtils.formatInstruction(instructions[i]));
+    }
+
+    // add an ellipse if there exist additional instructions after
+    if (currentIndex + upcomingInstructions < instructions.length) {
+      this.config.logger.log("...");
+    }
+
     this.config.logger.log("");
+    this.config.logger.log(
+      "Step " +
+      (traceIndex + 1).toString() +
+      "/" +
+      totalSteps.toString()
+    );
     this.config.logger.log(step.gas + " gas remaining");
   }
 
