@@ -1,6 +1,6 @@
 import debugModule from "debug";
 import path from "path";
-const debug = debugModule("compile-common:profiler:requiredSources");
+const debug = debugModule("profiler:requiredSources");
 
 import {
   resolveAllSources,

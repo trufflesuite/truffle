@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("compile-common:profiler");
+const debug = debugModule("profiler");
 const findContracts = require("@truffle/contract-sources");
 const expect = require("@truffle/expect");
 
