@@ -212,14 +212,13 @@ class DebugPrinter {
     }
 
     this.config.logger.log("Instructions:");
-    this.config.logger.log("");
 
     // printout instructions
-    // add an ellipse if there exist additional instructions before
     const previousInstructions = 3;
     const upcomingInstructions = 3;
     const currentIndex = instruction.index;
 
+    // add an ellipse if there exist additional instructions before
     if (currentIndex - previousInstructions >= 0) {
       this.config.logger.log("...");
     }
@@ -246,7 +245,12 @@ class DebugPrinter {
     }
 
     this.config.logger.log("");
-    this.config.logger.log("Step ", + traceIndex + "/" + totalSteps);
+    this.config.logger.log(
+      "Step " +
+      (traceIndex + 1).toString() +
+      "/" +
+      totalSteps.toString()
+    );
     this.config.logger.log(step.gas + " gas remaining");
   }
 
