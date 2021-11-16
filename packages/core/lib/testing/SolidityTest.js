@@ -107,8 +107,6 @@ const SolidityTest = {
   async compileNewAbstractInterface(runner) {
     debug("compiling");
     const config = runner.config;
-    let solcVersion = config.compilers.solc.version;
-    solcVersion = RangeUtils.resolveToRange(solcVersion);
 
     const truffleLibraries = [
       "truffle/Assert.sol",
@@ -152,11 +150,11 @@ const SolidityTest = {
 
   async deployTestDependencies(abstraction, dependencyPaths, runner) {
     debug("deploying %s", abstraction.contract_name);
-    const deployer = new Deployer(
-      runner.config.with({
+    const deployer = new Deployer({
+      options: runner.config.with({
         logger: { log() {} }
       })
-    );
+    });
 
     debug("starting deployer");
     await deployer.start();

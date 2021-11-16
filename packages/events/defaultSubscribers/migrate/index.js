@@ -1,20 +1,17 @@
 const Reporter = require("./Reporter");
 
 module.exports = {
-  initialization: () => {
-    this.logger = this.logger || console;
+  initialization: function (config) {
+    this.logger = config.logger || console;
+    this.config = config;
+    this.reporter = new Reporter({
+      dryRun: this.config.dryRun,
+      logger: this.config.logger,
+      describeJson: this.config.describeJson || false,
+      confirmations: this.config.confirmations || 0
+    });
   },
   handlers: {
-    "migrate:start": [
-      function ({ config }) {
-        this.reporter = new Reporter({
-          dryRun: config.dryRun,
-          logger: this.logger,
-          describeJson: config.describeJson || false,
-          confirmations: config.confirmations || 0
-        });
-      }
-    ],
     "migrate:dryRun:notAccepted": [
       async function () {
         this.logger.log("\n> Exiting without migrating...\n\n");
@@ -41,69 +38,85 @@ module.exports = {
 
     "migrate:migration:deploy:savingMigration:start": [
       async function (data) {
+        this.logger.log();
         await this.reporter.startTransaction(data);
+        const message = await this.reporter.startTransaction(data);
+        this.logger.log(message);
       }
     ],
     "migrate:migration:deploy:savingMigration:succeed": [
       async function (data) {
         await this.reporter.endTransaction(data);
-      }
-    ],
-    "migrate:migration:deploy:migrate:succeed": [
-      async function (eventArgs) {
-        return await this.reporter.postMigrate(eventArgs);
+        const message = await this.reporter.endTransaction(data);
+        this.logger.log(message);
       }
     ],
 
     "migrate:migration:deploy:error": [
       async function (errorData) {
-        return await this.reporter.error(errorData);
+        const message = await this.reporter.error(errorData);
+        this.logger.log(message);
       }
     ],
     "migrate:migration:run:preMigrations": [
       async function (data) {
-        return await this.reporter.preMigrate(data);
+        const message = await this.reporter.preMigrate(data);
+        this.logger.log(message);
+      }
+    ],
+    "migrate:migration:deploy:migrate:succeed": [
+      async function (eventArgs) {
+        const message = await this.reporter.postMigrate(eventArgs);
+        this.logger.log(message);
       }
     ],
 
     "deployment:block": [
       async function (data) {
-        return await this.reporter.block(data);
+        const message = await this.reporter.block(data);
+        this.logger.log(message);
       }
     ],
     "deployment:confirmation": [
       async function (data) {
-        return await this.reporter.confirmation(data);
+        const message = await this.reporter.confirmation(data);
+        this.logger.log(message);
       }
     ],
     "migrate:deployment:txHash": [
       async function (data) {
-        return await this.reporter.txHash(data);
+        const message = await this.reporter.txHash(data);
+        this.logger.log(message);
       }
     ],
     "deployment:postDeploy": [
       async function (data) {
-        return await this.reporter.postDeploy(data);
+        const message = await this.reporter.postDeploy(data);
+        this.logger.log(message);
       }
     ],
     "deployment:deployFailed": [
       async function (data) {
-        return await this.reporter.deployFailed(data);
+        const message = await this.reporter.deployFailed(data);
+        this.logger.log(message);
       }
     ],
     "deployment:error": [
       async function (data) {
-        return await this.reporter.error(data);
+        const message = await this.reporter.error(data);
+        this.logger.error(message);
       }
     ],
     "deployment:preDeploy": [
       async function (data) {
-        return await this.reporter.preDeploy(data);
+        const message = await this.reporter.preDeploy(data);
+        this.logger.log(message);
       }
     ],
     "deployment:linking": [
       async function (data) {
-        return await this.reporter.linking(data);
+        const message = await this.reporter.linking(data);
+        this.logger.log(message);
       }
     ],
     "deployment:newContract": [

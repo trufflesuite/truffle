@@ -234,10 +234,10 @@ class Messages {
       },
 
       deployed: () => {
+        let stopText;
         if (reporter.blockSpinner) {
           reporter.blockSpinner.stop();
-          const stopText = `   > ${reporter.currentBlockWait}`;
-          this.reporter.logger.log(stopText);
+          stopText = `   > ${reporter.currentBlockWait}`;
         }
 
         let output = "";
@@ -283,7 +283,7 @@ class Messages {
           });
         }
 
-        return output;
+        return stopText ? stopText + "\n" + output : output;
       },
 
       // Transactions

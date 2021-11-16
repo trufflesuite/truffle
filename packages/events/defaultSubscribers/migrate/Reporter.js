@@ -17,7 +17,7 @@ const Messages = require("./Messages");
  *
  */
 class Reporter {
-  constructor({ describeJson, dryRun, logger, confirmations }) {
+  constructor({ describeJson, dryRun, confirmations }) {
     this.currentGasTotal = new web3Utils.BN(0);
     this.currentCostTotal = new web3Utils.BN(0);
     this.finalCostTotal = new web3Utils.BN(0);
@@ -28,7 +28,6 @@ class Reporter {
     this.blockSpinner = null;
     this.currentBlockWait = "";
     this.describeJson = describeJson;
-    this.logger = logger;
     this.dryRun = dryRun;
     this.confirmations = confirmations;
 
@@ -134,26 +133,6 @@ class Reporter {
     }
   }
 
-  // -------------------------  Migrator File Handlers --------------------------------------------
-
-  /**
-   * Run when before any migration has started
-   * @param  {Object} data
-   */
-  async preAllMigrations(data) {
-    const message = this.messages.steps("preAllMigrations", data);
-    this.logger.log(message);
-  }
-
-  /**
-   * Run after all migrations have finished
-   * @param  {Object} data
-   */
-  async postAllMigrations(data) {
-    const message = this.messages.steps("postAllMigrations", data);
-    this.logger.log(message);
-  }
-
   // -------------------------  Migration File Handlers --------------------------------------------
 
   /**
@@ -164,7 +143,6 @@ class Reporter {
     let message;
     if (data.isFirst) {
       message = this.messages.steps("firstMigrate", data);
-      this.logger.log(message);
     }
 
     this.summary.push({
@@ -175,8 +153,7 @@ class Reporter {
 
     this.currentFileIndex++;
 
-    message = this.messages.steps("preMigrate", data);
-    this.logger.log(message);
+    return message + "\n" + this.messages.steps("preMigrate", data);
   }
 
   /**
@@ -193,7 +170,6 @@ class Reporter {
       valueUnit: this.valueUnit
     };
     let message = this.messages.steps("postMigrate", messageData);
-    this.logger.log(message);
 
     if (data.isLast) {
       messageData.totalDeployments = totals.deployments;
@@ -203,8 +179,8 @@ class Reporter {
       this.summary.finalCost = messageData.finalCost;
 
       message = this.messages.steps("lastMigrate", messageData);
-      this.logger.log(message);
     }
+    return message;
   }
 
   // ----------------------------  Deployment Handlers --------------------------------------------
@@ -219,7 +195,7 @@ class Reporter {
       ? (message = this.messages.steps("replacing", data))
       : (message = this.messages.steps("deploying", data));
 
-    !this.deployingMany && this.logger.log(message);
+    return message;
   }
 
   /**
@@ -273,7 +249,7 @@ class Reporter {
       message = this.messages.steps("reusing", data);
     }
 
-    this.logger.log(message);
+    return message;
   }
 
   /**
@@ -289,7 +265,6 @@ class Reporter {
     }
 
     let message = await this.processDeploymentError(data);
-    message = data.log ? this.logger.error(message) : message;
 
     // Reporter might not be enabled (via Migrate.launchReporter) so
     // message is a (potentially empty) array of results from the emitter
@@ -308,7 +283,6 @@ class Reporter {
    */
   async startTransaction(data) {
     const message = data.message || "Starting unknown transaction...";
-    this.logger.log();
 
     this.blockSpinner = new ora({
       text: message,
@@ -325,13 +299,12 @@ class Reporter {
   async endTransaction(data) {
     data.message = data.message || "Ending unknown transaction....";
     const message = this.messages.steps("endTransaction", data);
-    this.logger.log(message);
+    return message;
   }
 
   // ----------------------------  Library Event Handlers ------------------------------------------
   linking(data) {
-    let message = this.messages.steps("linking", data);
-    this.logger.log(message);
+    return this.messages.steps("linking", data);
   }
 
   // ----------------------------  PromiEvent Handlers --------------------------------------------
@@ -341,9 +314,7 @@ class Reporter {
    * @param  {Object} data
    */
   async error(data) {
-    const message = this.messages.errors(data.type, data);
-
-    return data.log ? this.logger.error(message) : message;
+    return this.messages.errors(data.type, data);
   }
 
   /**
@@ -355,7 +326,6 @@ class Reporter {
     if (this.dryRun) return;
 
     let message = this.messages.steps("hash", data);
-    this.logger.log(message);
 
     this.currentBlockWait = `Blocks: 0`.padEnd(21) + `Seconds: 0`;
 
@@ -366,6 +336,7 @@ class Reporter {
     });
 
     this.blockSpinner.start();
+    return message;
   }
 
   /**
@@ -373,8 +344,7 @@ class Reporter {
    * @param  {Object} data
    */
   async confirmation(data) {
-    let message = this.messages.steps("confirmation", data);
-    this.logger.log(message);
+    return this.messages.steps("confirmation", data);
   }
 }
 
