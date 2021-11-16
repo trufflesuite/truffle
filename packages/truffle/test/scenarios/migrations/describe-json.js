@@ -75,7 +75,7 @@ function verifyMigrationStatuses(statuses, deployingStatusString) {
   });
 }
 
-describe.only("truffle migrate --describe-json", () => {
+describe("truffle migrate --describe-json", () => {
   let config, projectPath;
   let logger = new MemoryLogger();
 
