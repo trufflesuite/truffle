@@ -28,7 +28,7 @@ describe("fetches contract on mainnet and checks for verification", () => {
       params: {
         module: "contract",
         action: "getsourcecode",
-        address: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',
+        address: '0xDd43936EbB73E60F6fB66f7002438e9c64E524df',
         apikey: ''
       },
       responseType: "json",
@@ -41,7 +41,7 @@ describe("fetches contract on mainnet and checks for verification", () => {
     axios.get.restore()
   })
   it('resolves with verified contract', () => {
-    return fetchAndCompile('0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D', config).then(result => {
+    return fetchAndCompile('0xDd43936EbB73E60F6fB66f7002438e9c64E524df', config).then(result => {
       let contractName = result.sourceInfo.contractName
       //assert contract name is correct 
       assert.equal(contractName, "UniswapV2Router02")
