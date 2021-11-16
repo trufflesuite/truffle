@@ -17,7 +17,7 @@ describe("fetches contract on mainnet and checks for verification", () => {
     network: "mainnet",
     compilers:{
       solc:{
-        version: "0.6.6"
+        version: "v0.8.8+commit.dddeac2f"
       }
     }
   });
