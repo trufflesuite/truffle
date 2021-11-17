@@ -96,12 +96,14 @@ module.exports = {
       async function (data) {
         const message = await this.reporter.deployFailed(data);
         this.logger.log(message);
+        return message;
       }
     ],
     "deployment:error": [
       async function (data) {
         const message = await this.reporter.error(data);
         this.logger.error(message);
+        return message;
       }
     ],
     "deployment:preDeploy": [
