@@ -24,7 +24,6 @@ describe("fetches contract and checks for verification", () => {
     const config = Config.default().merge({
       networks: {
         mainnet: {
-          url: 'https://mainnet.infura.io/v3/',
           network_id: 1
         }
       },
@@ -48,7 +47,6 @@ describe("fetches contract and checks for verification", () => {
     const config = Config.default().merge({
       networks: {
         arbitrum: {
-          url: 'https://arbitrum-mainnet.infura.io/v3/',
           network_id: 42161
         }
       },
@@ -71,7 +69,6 @@ describe("fetches contract and checks for verification", () => {
     const config = Config.default().merge({
       networks: {
         polygon: {
-          url: 'https://polygon-mainnet.infura.io/v3/',
           network_id: 137
         }
       },
