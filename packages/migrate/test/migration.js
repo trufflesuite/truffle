@@ -10,7 +10,7 @@ let options,
   resolver;
 let deployer;
 
-describe("Migration", () => {
+describe("Migration", function () {
   before(() => {
     deployer: "da fake deployer yo";
     resolver: "da fake resolver yo",
@@ -18,62 +18,46 @@ describe("Migration", () => {
         provider: "da fake provider yo",
         artifactor: "da fake artifactor yo",
         resolver,
-        logger: "crushin it wit a loggerzzz",
         networks: {
-          "fake network": {},
+          "fake network": {}
         },
         network: "fake network",
         network_id: "this is also fake",
-        from: "Russia with love",
+        from: "Russia with love"
       }));
     fakeInterfaceAdapter = {
-      getBlock: sinon.stub().returns({ gasLimit: 2000 }),
+      getBlock: sinon.stub().returns({ gasLimit: 2000 })
     };
     context = { interfaceAdapter: fakeInterfaceAdapter };
     prepareForMigrationsReturn = {
       interfaceAdapter: fakeInterfaceAdapter,
       resolver,
       context,
-      deployer,
+      deployer
     };
-    migration = new Migration("fake/file.js", undefined, options);
+    migration = new Migration("fake/file.js", options);
   });
 
-  describe("run(options)", () => {
-    beforeEach(() => {
+  describe("run(options)", function () {
+    beforeEach(function () {
       sinon
         .stub(migration, "prepareForMigrations")
         .returns(prepareForMigrationsReturn);
       sinon.stub(migration, "_load");
     });
-    afterEach(() => {
+    afterEach(function () {
       migration.prepareForMigrations.restore();
       migration._load.restore();
     });
 
-    it("calls interfaceAdapter.getBlock('latest')", done => {
-      migration
-        .run(options)
-        .then(() => {
-          assert(fakeInterfaceAdapter.getBlock.calledWith("latest"));
-          done();
-        })
-        .catch(error => {
-          done(error);
-        });
+    it("calls interfaceAdapter.getBlock('latest')", async function () {
+      await migration.run(options);
+      assert(fakeInterfaceAdapter.getBlock.calledWith("latest"));
     });
-    it("calls _load with the proper arguments", done => {
-      migration
-        .run(options)
-        .then(() => {
-          assert(
-            migration._load.calledWith(options, context, deployer, resolver)
-          );
-          done();
-        })
-        .catch(error => {
-          done(error);
-        });
+
+    it("calls _load with the proper arguments", async function () {
+      await migration.run(options);
+      assert(migration._load.calledWith(options, context, deployer, resolver));
     });
   });
 });
