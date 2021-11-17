@@ -65,7 +65,6 @@ class Migration {
   async _deploy(options, context, deployer, resolver, migrateFn) {
     try {
       await deployer.start();
-
       // Allow migrations method to be async and
       // deploy to use await
       if (migrateFn && migrateFn.then !== undefined) {
@@ -76,7 +75,6 @@ class Migration {
       if (options.save === false) return;
 
       let Migrations;
-
       // Attempt to write migrations record to chain
       try {
         Migrations = resolver.require("Migrations");
@@ -86,7 +84,6 @@ class Migration {
 
       if (Migrations && Migrations.isDeployed()) {
         const message = `Saving migration to chain.`;
-
         if (!this.dryRun) {
           const data = { message: message };
           await options.events.emit(

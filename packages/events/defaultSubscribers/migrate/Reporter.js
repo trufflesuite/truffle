@@ -151,7 +151,13 @@ class Reporter {
 
     this.currentFileIndex++;
 
-    return message + "\n" + this.messages.steps("preMigrate", data);
+    const messagePart2 = this.messages.steps("preMigrate", data);
+    if (message && messagePart2) {
+      return message + "\n" + messagePart2;
+    } else if (message) {
+      return message;
+    }
+    return messagePart2;
   }
 
   /**
@@ -281,7 +287,6 @@ class Reporter {
    */
   async startTransaction(data) {
     const message = data.message || "Starting unknown transaction...";
-
     this.blockSpinner = new ora({
       text: message,
       spinner: indentedSpinner,

@@ -275,7 +275,6 @@ class Messages {
       // Transactions
       endTransaction: () => {
         if (reporter.blockSpinner) reporter.blockSpinner.stop();
-
         return `   > ${data.message}`;
       },
 
@@ -345,7 +344,6 @@ class Messages {
         }
 
         output += self.doubleline(`${data.file}`);
-
         return output;
       },
 
@@ -362,7 +360,6 @@ class Messages {
           `> Network name:    '${data.network}'\n` +
           `> Network id:      ${data.networkId}\n` +
           `> Block gas limit: ${self.decAndHex(data.blockLimit)}\n`;
-
         return output;
       },
 

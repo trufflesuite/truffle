@@ -10,7 +10,6 @@ describe("Migrate", () => {
       provider: "da fake provider yo",
       artifactor: "da fake artifactor yo",
       resolver: "da fake resolver yo",
-      logger: "crushin it wit a loggerzzz",
       network: "fake network",
       network_id: "this is also fake",
       from: "Russia with love"
@@ -30,17 +29,13 @@ describe("Migrate", () => {
         Migrate.runAll.restore();
       });
 
-      it("calls runAll then the callback", done => {
-        Migrate.run(options)
-          .then(() => {
-            assert(Migrate.runAll.calledWith(options));
-            done();
-          })
-          .catch(done);
+      it("calls runAll then the callback", async function () {
+        await Migrate.run(options);
+        assert(Migrate.runAll.calledWith(options));
       });
     });
 
-    describe("when reset is not true", () => {
+    describe("when reset is not true", function () {
       beforeEach(() => {
         options.reset = undefined;
         sinon
@@ -53,18 +48,14 @@ describe("Migrate", () => {
         Migrate.runFrom.restore();
       });
 
-      it("calls runFrom with the proper migration number", done => {
-        Migrate.run(options)
-          .then(() => {
-            assert(Migrate.runFrom.calledWith(667));
-            done();
-          })
-          .catch(done);
+      it("calls runFrom with the proper migration number", async function () {
+        await Migrate.run(options);
+        assert(Migrate.runFrom.calledWith(667));
       });
     });
   });
 
-  describe("runMigrations(migrations, options)", () => {
+  describe("runMigrations(migrations, options)", function () {
     beforeEach(() => {
       sinon.stub(Migrate, "wrapResolver");
       migrations = [
@@ -79,17 +70,14 @@ describe("Migrate", () => {
       Migrate.wrapResolver.restore();
     });
 
-    it("calls wrapResolver with the resolver and the wrapped provider", done => {
-      Migrate.runMigrations(migrations, options)
-        .then(() => {
-          assert(
-            Migrate.wrapResolver.calledWith(options.resolver, options.provider)
-          );
-          done();
-        })
-        .catch(done);
+    it("calls wrapResolver with the resolver and the wrapped provider", async function () {
+      await Migrate.runMigrations(migrations, options);
+      assert(
+        Migrate.wrapResolver.calledWith(options.resolver, options.provider)
+      );
     });
-    describe("when an error occurs in a migration", () => {
+
+    describe("when an error occurs in a migration", function () {
       beforeEach(() => {
         migrations = [
           {
@@ -100,16 +88,13 @@ describe("Migrate", () => {
         ];
       });
 
-      it("returns a resolved Promise after running migrations", done => {
-        Migrate.runMigrations(migrations, options)
-          .then(() => {
-            assert(false, "This code should not run");
-            done();
-          })
-          .catch(error => {
-            assert(error.message === "Somethin bad!");
-            done();
-          });
+      it("returns a resolved Promise after running migrations", async function () {
+        try {
+          await Migrate.runMigrations(migrations, options);
+          assert(false, "This code should not run");
+        } catch (error) {
+          assert(error.message === "Somethin bad!");
+        }
       });
     });
   });
