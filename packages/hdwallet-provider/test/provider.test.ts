@@ -140,7 +140,7 @@ describe("HD Wallet Provider", function () {
         mnemonic: {
           phrase: mnemonicPhrase
         },
-        providerOrUrl: `http://localhost:${port}`
+        url: `http://localhost:${port}`
       });
 
       assert.deepEqual(provider.getAddresses(), truffleDevAccounts);
@@ -168,7 +168,7 @@ describe("HD Wallet Provider", function () {
         "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
       provider = new HDWalletProvider({
         mnemonic: mnemonicPhrase,
-        providerOrUrl: `http://localhost:${port}`
+        url: `http://localhost:${port}`
       });
 
       assert.deepEqual(provider.getAddresses(), truffleDevAccounts);
@@ -198,7 +198,7 @@ describe("HD Wallet Provider", function () {
           phrase: mnemonicPhrase,
           password: "yummy"
         },
-        providerOrUrl: `http://localhost:${port}`
+        url: `http://localhost:${port}`
       });
 
       assert.deepEqual(provider.getAddresses(), accounts);
@@ -215,7 +215,7 @@ describe("HD Wallet Provider", function () {
         mnemonic: {
           phrase: mnemonicPhrase
         },
-        providerOrUrl: `http://localhost:${port}`,
+        url: `http://localhost:${port}`,
         // polling interval is unspecified
       });
       assert.ok(provider.engine,
@@ -235,7 +235,7 @@ describe("HD Wallet Provider", function () {
         mnemonic: {
           phrase: mnemonicPhrase
         },
-        providerOrUrl: `http://localhost:${port}`,
+        url: `http://localhost:${port}`,
         // double the default value, for less chatty JSON-RPC
         pollingInterval: 8000,
       });
@@ -264,7 +264,7 @@ describe("HD Wallet Provider", function () {
 
       provider = new HDWalletProvider({
         privateKeys,
-        providerOrUrl: `http://localhost:${port}`
+        url: `http://localhost:${port}`
       });
       web3.setProvider(provider);
 
@@ -327,7 +327,7 @@ describe("HD Wallet Provider", function () {
             mnemonic: {
               phrase: "I am not a crook"
             },
-            providerOrUrl: "http://localhost:8545"
+            url: "http://localhost:8545"
           });
           assert.fail("Should throw on invalid mnemonic");
         } catch (e) {
