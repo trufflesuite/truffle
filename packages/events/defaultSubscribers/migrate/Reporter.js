@@ -17,7 +17,7 @@ const Messages = require("./Messages");
  *
  */
 class Reporter {
-  constructor({ dryRun, confirmations, config }) {
+  constructor({ subscriber }) {
     this.currentGasTotal = new web3Utils.BN(0);
     this.currentCostTotal = new web3Utils.BN(0);
     this.finalCostTotal = new web3Utils.BN(0);
@@ -27,9 +27,7 @@ class Reporter {
     this.currentFileIndex = -1;
     this.blockSpinner = null;
     this.currentBlockWait = "";
-    this.dryRun = dryRun;
-    this.confirmations = confirmations;
-    this.config = config;
+    this.subscriber = subscriber;
 
     this.messages = new Messages(this);
   }
@@ -323,7 +321,7 @@ class Reporter {
    * @param  {Object} data
    */
   async txHash(data) {
-    if (this.dryRun) return;
+    if (this.subscriber.config.dryRun) return;
 
     let message = this.messages.steps("hash", data);
 
