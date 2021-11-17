@@ -22,6 +22,7 @@ describe("DashboardMessageBus", () => {
     await messageBus.start();
     client = await connectToMessageBusWithRetries(requestsPort);
     listener = await connectToMessageBusWithRetries(listenPort);
+    listener.send("ready");
   });
 
   afterEach(() => {
