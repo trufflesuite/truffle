@@ -10,6 +10,8 @@ import { promisify } from "util";
 import WebSocket from "ws";
 import Ganache from "ganache-core";
 
+// TODO: This mock dashboard was copy-pasted from the dashboard-provider tests
+// We should figure out whether we want to make this DRYer
 export default class MockDashboard {
   socket?: WebSocket;
 
@@ -19,6 +21,7 @@ export default class MockDashboard {
     if (this.socket) return;
     this.socket = await connectToMessageBusWithRetries(messageBusListenPort);
     this.socket.on("message", this.handleIncomingMessage.bind(this));
+    this.socket.send("ready");
   }
 
   disconnect() {

@@ -21,6 +21,7 @@ export default class MockDashboard {
     if (this.socket) return;
     this.socket = await connectToMessageBusWithRetries(messageBusListenPort);
     this.socket.on("message", this.handleIncomingMessage.bind(this));
+    this.socket.send("ready");
   }
 
   disconnect() {
