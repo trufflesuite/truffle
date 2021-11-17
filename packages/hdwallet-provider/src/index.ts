@@ -24,10 +24,8 @@ import WebsocketProvider from "web3-provider-engine/subproviders/websocket";
 import Url from "url";
 import type {
   JSONRPCRequestPayload,
-  JSONRPCErrorCallback,
   JSONRPCResponsePayload
 } from "ethereum-protocol";
-import type { Callback, JsonRPCResponse } from "web3/providers";
 import type { ConstructorArguments } from "./constructor/ConstructorArguments";
 import { getOptions } from "./constructor/getOptions";
 import { getPrivateKeys } from "./constructor/getPrivateKeys";
@@ -173,7 +171,9 @@ class HDWalletProvider {
           const KNOWN_CHAIN_IDS = new Set([1, 3, 4, 5, 42]);
           let txOptions;
           if (typeof chain !== "undefined" && KNOWN_CHAIN_IDS.has(chain)) {
-            txOptions = { common: new Common({ chain, hardfork: self.hardfork }) };
+            txOptions = {
+              common: new Common({ chain, hardfork: self.hardfork })
+            };
           } else if (typeof chain !== "undefined") {
             txOptions = {
               common: Common.forCustomChain(
@@ -188,10 +188,12 @@ class HDWalletProvider {
           }
 
           // Taken from https://github.com/ethers-io/ethers.js/blob/2a7ce0e72a1e0c9469e10392b0329e75e341cf18/packages/abstract-signer/src.ts/index.ts#L215
-          const hasEip1559 = (txParams.maxFeePerGas !== undefined || txParams.maxPriorityFeePerGas !== undefined);
-          const tx = hasEip1559 ?
-            FeeMarketEIP1559Transaction.fromTxData(txParams, txOptions) :
-            Transaction.fromTxData(txParams, txOptions);
+          const hasEip1559 =
+            txParams.maxFeePerGas !== undefined ||
+            txParams.maxPriorityFeePerGas !== undefined;
+          const tx = hasEip1559
+            ? FeeMarketEIP1559Transaction.fromTxData(txParams, txOptions)
+            : Transaction.fromTxData(txParams, txOptions);
 
           const signedTx = tx.sign(pkey as Buffer);
           const rawTx = `0x${signedTx.serialize().toString("hex")}`;
@@ -255,9 +257,7 @@ class HDWalletProvider {
     }
 
     // Required by the provider engine.
-    this.engine.start((err: any) => {
-      if (err) throw err;
-    });
+    this.engine.start();
   }
 
   private initialize(): Promise<void> {
@@ -345,16 +345,17 @@ class HDWalletProvider {
 
   public send(
     payload: JSONRPCRequestPayload,
-    callback: JSONRPCErrorCallback | Callback<JsonRPCResponse>
+    // @ts-ignore we patch this method so it doesn't conform to type
+    callback: (error: null | Error, response: JSONRPCResponsePayload) => void
   ): void {
     this.initialized.then(() => {
-      this.engine.send(payload, callback);
+      this.engine.sendAsync(payload, callback);
     });
   }
 
   public sendAsync(
     payload: JSONRPCRequestPayload,
-    callback: JSONRPCErrorCallback | Callback<JsonRPCResponse>
+    callback: (error: null | Error, response: JSONRPCResponsePayload) => void
   ): void {
     this.initialized.then(() => {
       this.engine.sendAsync(payload, callback);
