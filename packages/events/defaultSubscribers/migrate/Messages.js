@@ -160,7 +160,7 @@ class Messages {
       deploying: () => {
         let output = "";
 
-        if (self.reporter.config.describeJson) {
+        if (reporter.subscriber.config.describeJson) {
           output +=
             self.migrationStatus({
               status: "deploying",
@@ -178,7 +178,7 @@ class Messages {
       replacing: () => {
         let output = "";
 
-        if (self.reporter.config.describeJson) {
+        if (reporter.subscriber.config.describeJson) {
           output +=
             self.migrationStatus({
               status: "replacing",
@@ -197,7 +197,7 @@ class Messages {
       reusing: () => {
         let output = "";
 
-        if (self.reporter.config.describeJson) {
+        if (reporter.subscriber.config.describeJson) {
           output +=
             self.migrationStatus({
               status: "reusing",
@@ -225,7 +225,7 @@ class Messages {
 
         let output = "";
 
-        if (!reporter.dryRun)
+        if (!reporter.subscriber.config.dryRun)
           output += `   > ${"contract address:".padEnd(20)} ${
             data.receipt.contractAddress
           }\n`;
@@ -244,12 +244,12 @@ class Messages {
           `   > ${"value sent:".padEnd(20)} ${data.value} ${data.valueUnit}\n` +
           `   > ${"total cost:".padEnd(20)} ${data.cost} ${data.valueUnit}\n`;
 
-        if (reporter.confirmations !== 0)
+        if (reporter.subscriber.config.confirmations !== 0)
           output += self.underline(
-            `Pausing for ${reporter.confirmations} confirmations...`
+            `Pausing for ${reporter.subscriber.config.confirmations} confirmations...`
           );
 
-        if (this.reporter.config.describeJson) {
+        if (reporter.subscriber.config.describeJson) {
           output += self.migrationStatus({
             status: "deployed",
             data: Object.assign({}, data, {
@@ -282,7 +282,8 @@ class Messages {
           self.underline(`Linking`) +
           `\n   * Contract: ${data.contractName} <--> Library: ${data.libraryName} `;
 
-        if (!reporter.dryRun) output += `(at address: ${data.libraryAddress})`;
+        if (!reporter.subscriber.config.dryRun)
+          output += `(at address: ${data.libraryAddress})`;
 
         return output;
       },
@@ -301,7 +302,7 @@ class Messages {
       preAllMigrations: () => {
         let output = "";
 
-        if (self.reporter.config.describeJson) {
+        if (reporter.subscriber.config.describeJson) {
           const migrations = data.migrations.map(migration =>
             migration.serializeable()
           );
@@ -319,7 +320,7 @@ class Messages {
       postAllMigrations: () => {
         let output = "";
 
-        if (self.reporter.config.describeJson) {
+        if (reporter.subscriber.config.describeJson) {
           output += self.migrationStatus({
             status: "postAllMigrations",
             data
@@ -332,7 +333,7 @@ class Messages {
       // Migrations
       preMigrate: () => {
         let output = "";
-        if (self.reporter.config.describeJson) {
+        if (reporter.subscriber.config.describeJson) {
           output +=
             self.migrationStatus({
               status: "preMigrate",
@@ -349,8 +350,7 @@ class Messages {
 
       firstMigrate: () => {
         let output = ``;
-
-        reporter.dryRun
+        reporter.subscriber.config.dryRun
           ? (output +=
               self.doubleline(`Migrations dry-run (simulation)`) + "\n")
           : (output += self.doubleline(`Starting migrations...`) + "\n");
@@ -366,9 +366,9 @@ class Messages {
       postMigrate: () => {
         let output = "";
         let deployments =
-          reporter.summary[reporter.currentFileIndex].deployments;
+          self.reporter.summary[self.reporter.currentFileIndex].deployments;
 
-        if (!reporter.dryRun && deployments.length)
+        if (!self.reporter.subscriber.config.dryRun && deployments.length)
           output += `   > Saving artifacts\n`;
 
         output +=
@@ -378,7 +378,7 @@ class Messages {
             data.valueUnit
           }\n`;
 
-        if (self.reporter.config.describeJson) {
+        if (self.reporter.subscriber.config.describeJson) {
           output +=
             "\n" +
             self.migrationStatus({
@@ -400,7 +400,7 @@ class Messages {
           `> ${"Total deployments:".padEnd(20)} ${data.totalDeployments}\n` +
           `> ${"Final cost:".padEnd(20)} ${data.finalCost} ${data.valueUnit}\n`;
 
-        if (self.reporter.config.describeJson) {
+        if (self.reporter.subscriber.config.describeJson) {
           output +=
             "\n" +
             self.migrationStatus({

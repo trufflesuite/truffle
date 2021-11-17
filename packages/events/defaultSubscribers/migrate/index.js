@@ -5,10 +5,7 @@ module.exports = {
     this.logger = config.logger || console;
     this.config = config;
     this.reporter = new Reporter({
-      config: this.config,
-      dryRun: this.config.dryRun,
-      logger: this.logger,
-      confirmations: this.config.confirmations || 0
+      subscriber: this
     });
   },
   handlers: {
@@ -38,7 +35,6 @@ module.exports = {
 
     "migrate:migration:deploy:savingMigration:start": [
       async function (data) {
-        this.logger.log();
         await this.reporter.startTransaction(data);
         const message = await this.reporter.startTransaction(data);
         this.logger.log(message);
