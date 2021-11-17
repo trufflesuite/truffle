@@ -37,16 +37,15 @@ describe("fetches contract on mainnet and checks for verification", () => {
     //restoring stub
     axios.get.restore()
   })
-  it('resolves with verified contract', () => {
-    return fetchAndCompile('0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D', config).then(result => {
+  it('resolves with verified contract', async ()  => {
+      const result = await fetchAndCompile('0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D', config)
       let contractName = result.sourceInfo.contractName
       //assert contract name is correct 
       assert.equal(contractName, "UniswapV2Router02")
       //assert contract name is not undefined
       assert.notEqual(contractName, undefined)
     })
-  })
-});
+  });
 
 describe("fetches contract on arbitrum and checks for verification", () => {
   const config = Config.default().merge({
@@ -78,16 +77,15 @@ describe("fetches contract on arbitrum and checks for verification", () => {
     //@ts-ignore
     axios.get.restore()
   })
-  it('resolves with verified contract', () => {
-    return fetchAndCompile('0xBf00759D7E329d7A7fa1D4DCdC914C53d1d2db86', config).then(result => {
+  it('resolves with verified contract', async () => {
+      const result = await fetchAndCompile('0xBf00759D7E329d7A7fa1D4DCdC914C53d1d2db86', config)
       let contractName = result.sourceInfo.contractName
       //assert contract name is correct 
       assert.equal(contractName, "stARBIS")
       //assert contract name is not undefined
       assert.notEqual(contractName, undefined)
     })
-  })
-});
+  });
 describe("fetches contract on polygon and checks for verification", () => {
   const config = Config.default().merge({
     networks: {
@@ -118,13 +116,12 @@ describe("fetches contract on polygon and checks for verification", () => {
     //@ts-ignore
     axios.get.restore()
   })
-  it('resolves with verified contract', () => {
-    return fetchAndCompile('0xBB6828C8228E5C641Eb6d89Ca22e09E6311CA398', config).then(result => {
+  it('resolves with verified contract', async ()  => {
+      const result = await fetchAndCompile('0xBB6828C8228E5C641Eb6d89Ca22e09E6311CA398', config)
       let contractName = result.sourceInfo.contractName
       //assert contract name is correct 
       assert.equal(contractName, "GrowthVault")
       //assert contract name is not undefined
       assert.notEqual(contractName, undefined)
     })
-  })
-});
+  });
