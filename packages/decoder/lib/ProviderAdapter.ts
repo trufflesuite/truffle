@@ -2,8 +2,11 @@ import debugModule from "debug";
 const debug = debugModule("decoder:adapter");
 import type { BlockSpecifier, RegularizedBlockSpecifier } from "./types";
 import type BN from "bn.js";
-import type { Provider as LegacyProvider } from "web3/providers";
-import { promisify } from "util";
+import type {
+  Provider as LegacyProvider,
+  Callback,
+  JsonRPCResponse
+} from "web3/providers";
 
 // lifted from @types/web3
 type Log = {
@@ -101,15 +104,25 @@ export class ProviderAdapter {
     if (isEip1193Provider(this.provider)) {
       return await this.provider.request({ method, params });
     } else {
-      const sendMethod = promisify(this.provider.send).bind(this.provider);
-      return (
-        await sendMethod({
-          jsonrpc: "2.0",
-          id: new Date().getTime(),
-          method,
-          params
-        })
-      ).result;
+      return await new Promise(
+        (accept, reject) =>
+          (this.provider as LegacyProvider).send(
+            {
+              jsonrpc: "2.0",
+              id: new Date().getTime(),
+              method,
+              params
+            },
+            ((error: Error, response: JsonRPCResponse) => {
+              if (error) {
+                return reject(error);
+              }
+
+              const { result } = response;
+              accept(result);
+            }) as Callback<JsonRPCResponse>
+          )
+      );
     }
   }
 
