@@ -104,6 +104,8 @@ export class ProviderAdapter {
     if (isEip1193Provider(this.provider)) {
       return await this.provider.request({ method, params });
     } else {
+      // HACK this uses a manual `new Promise` instead of promisify because
+      // users reported difficulty running this package in a browser extension
       return await new Promise(
         (accept, reject) =>
           (this.provider as LegacyProvider).send(
