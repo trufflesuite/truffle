@@ -244,9 +244,12 @@ class Messages {
           `   > ${"value sent:".padEnd(20)} ${data.value} ${data.valueUnit}\n` +
           `   > ${"total cost:".padEnd(20)} ${data.cost} ${data.valueUnit}\n`;
 
-        if (reporter.subscriber.config.confirmations !== 0)
+        if (
+          reporter.subscriber.config.confirmations !== undefined &&
+          reporter.subscriber.config.confirmations !== 0
+        )
           output += self.underline(
-            `Pausing for ${reporter.subscriber.config.confirmations} confirmations...`
+            `Pausing for ${reporter.subscriber.config.confirmations} confirmations...\n`
           );
 
         if (reporter.subscriber.config.describeJson) {
