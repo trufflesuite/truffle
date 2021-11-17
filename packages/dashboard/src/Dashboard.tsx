@@ -67,6 +67,8 @@ function Dashboard() {
       }
     );
 
+    connectedSocket.send("ready");
+
     setSocket(connectedSocket);
   };
 

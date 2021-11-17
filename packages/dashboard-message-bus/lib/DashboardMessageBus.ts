@@ -48,14 +48,8 @@ export class DashboardMessageBus extends EventEmitter {
         this.terminateIfNoConnections();
       });
 
-      // Process all backlogged (unfulfilled) requests on new listener connection.
-      this.unfulfilledRequests.forEach(({ socket, data }) =>
-        this.processRequest(socket, data, [newListener])
-      );
-
-      this.logToClients("Listener connected", "connections");
-
-      this.listeningSockets.push(newListener);
+      // Require the listener to send a message *first* before being marked as ready
+      newListener.once("message", () => this.addNewListeneningSocket(newListener));
     });
 
     this.requestsServer = await startWebSocketServer({
@@ -176,4 +170,15 @@ export class DashboardMessageBus extends EventEmitter {
       }
     });
   }
+
+  private addNewListeneningSocket(newListener: WebSocket) {
+    // Process all backlogged (unfulfilled) requests on new listener connection.
+    this.unfulfilledRequests.forEach(({ socket, data }) =>
+      this.processRequest(socket, data, [newListener])
+    );
+
+    this.logToClients("Listener connected", "connections");
+
+    this.listeningSockets.push(newListener);
+  };
 }
