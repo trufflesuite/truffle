@@ -35,6 +35,7 @@ module.exports = {
 
     "migrate:migration:deploy:savingMigration:start": [
       async function (data) {
+        this.logger.log();
         await this.reporter.startTransaction(data);
         const message = await this.reporter.startTransaction(data);
         this.logger.log(message);
