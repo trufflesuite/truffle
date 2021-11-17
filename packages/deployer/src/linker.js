@@ -42,7 +42,6 @@ module.exports = {
       }
       throw new Error(sanitizeMessage(message));
     }
-
     // Link all destinations
     if (!Array.isArray(destinations)) {
       destinations = [destinations];
