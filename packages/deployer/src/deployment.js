@@ -282,9 +282,9 @@ class Deployment {
           eventArgs.estimateError = err;
         }
 
-        // Emit `preDeploy` & send transaction
+        // Emit `deployment:start` & send transaction
         if (self.options && self.options.events) {
-          await self.options.events.emit("deployment:preDeploy", eventArgs);
+          await self.options.events.emit("deployment:start", eventArgs);
         }
         const promiEvent = contract.new.apply(contract, newArgs);
 
@@ -320,7 +320,7 @@ class Deployment {
           let message;
           if (self.options && self.options.events) {
             message = await self.options.events.emit(
-              "deployment:deployFailed",
+              "deployment:failed",
               eventArgs
             );
           }
@@ -342,7 +342,7 @@ class Deployment {
       };
 
       if (self.options && self.options.events) {
-        await self.options.events.emit("deployment:postDeploy", eventArgs);
+        await self.options.events.emit("deployment:succeed", eventArgs);
       }
 
       // Wait for `n` blocks

@@ -258,8 +258,7 @@ class Reporter {
 
   /**
    * Runs on deployment error. Forwards err to the error parser/dispatcher after shutting down
-   * any `pending` UI.any `pending` UI. Returns the error message OR logs it out from the reporter
-   * if data.log is true.
+   * any `pending` UI.any `pending` UI.
    * @param  {Object}  data  event args
    * @return {Promise}       resolves string error message
    */
@@ -267,15 +266,7 @@ class Reporter {
     if (this.blockSpinner) {
       this.blockSpinner.stop();
     }
-
-    let message = await this.processDeploymentError(data);
-
-    // Reporter might not be enabled (via Migrate.launchReporter) so
-    // message is a (potentially empty) array of results from the emitter
-    if (!message.length) {
-      message = `while migrating ${data.contract.contractName}: ${data.error.message}`;
-    }
-    return message;
+    return await this.processDeploymentError(data);
   }
 
   // --------------------------  Transaction Handlers  ------------------------------------------
