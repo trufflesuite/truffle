@@ -1,17 +1,4 @@
-const command = {
-  command: "run",
-  description: "Run a third-party command",
-  builder: {},
-  help: {
-    usage: "truffle run [<command>]",
-    options: [
-      {
-        option: "<command>",
-        description: "Name of the third-party command to run."
-      }
-    ],
-    allowedGlobalOptions: []
-  }
+module.exports = {
+  run: require("./run"),
+  meta: require("./meta")
 };
-
-module.exports = command;

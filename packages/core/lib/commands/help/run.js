@@ -1,5 +1,5 @@
 module.exports = async function (options) {
-  const commands = require("./index");
+  const commands = require("../index");
   if (options._.length === 0) {
     await displayCommandHelp("help", options);
     return;
@@ -21,7 +21,11 @@ module.exports = async function (options) {
   }
 };
 
-const displayCommandHelp = async function (selectedCommand, subCommand, options) {
+const displayCommandHelp = async function (
+  selectedCommand,
+  subCommand,
+  options
+) {
   const commands = require("../index");
   const commandOptions = require("../../command-options");
 
@@ -30,18 +34,20 @@ const displayCommandHelp = async function (selectedCommand, subCommand, options)
   const chosenCommand = commands[selectedCommand];
 
   if (subCommand && chosenCommand.subCommands[subCommand]) {
-    commandHelp = chosenCommand.subCommands[subCommand].help;
-    commandDescription = chosenCommand.subCommands[subCommand].description;
+    commandHelp = chosenCommand.subCommands[subCommand].meta.help;
+    commandDescription = chosenCommand.subCommands[subCommand].meta.description;
   } else {
-    commandHelp = chosenCommand.help;
-    commandDescription = chosenCommand.description;
+    commandHelp = chosenCommand.meta.help;
+    commandDescription = chosenCommand.meta.description;
   }
 
   if (typeof commandHelp === "function") {
     commandHelp = await commandHelp(options);
   }
 
-  const allowedGlobalOptions = commandHelp.allowedGlobalOptions.filter(tag=> tag in commandOptions).map(tag => commandOptions[tag]);
+  const allowedGlobalOptions = commandHelp.allowedGlobalOptions
+    .filter(tag => tag in commandOptions)
+    .map(tag => commandOptions[tag]);
   const validOptionsUsage = allowedGlobalOptions
     .map(({ option }) => `[${option}]`)
     .join(" ");

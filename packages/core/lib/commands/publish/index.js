@@ -1,12 +1,4 @@
-const command = {
-  command: "publish",
-  description: "Publish a package to the Ethereum Package Registry",
-  builder: {},
-  help: {
-    usage: "truffle publish",
-    options: [],
-    allowedGlobalOptions: []
-  }
+module.exports = {
+  run: require("./run"),
+  meta: require("./meta")
 };
-
-module.exports = command;

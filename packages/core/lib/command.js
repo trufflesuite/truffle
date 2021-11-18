@@ -7,7 +7,6 @@ const { extractFlags } = require("./utils/utils"); // Contains utility methods
 const commandOptions = require("./command-options");
 const debugModule = require("debug");
 const debug = debugModule("core:command:run");
-const path = require("path");
 
 class Command {
   constructor(commands) {
@@ -15,8 +14,8 @@ class Command {
 
     let args = yargs();
 
-    Object.keys(this.commands).forEach(function (command) {
-      args = args.command(commands[command]);
+    Object.keys(this.commands).forEach(command => {
+      args = args.command(this.commands[command].meta);
     });
 
     this.args = args;
@@ -68,14 +67,11 @@ class Command {
     }
 
     const command = this.commands[chosenCommand];
-    // is there a better way to do this?
-    const run = require(`./commands${path.sep}${chosenCommand}${path.sep}run`);
 
     return {
       name: chosenCommand,
       argv,
-      command,
-      run
+      command
     };
   }
 
@@ -88,7 +84,7 @@ class Command {
       await configMigration.migrateTruffleDataIfNecessary();
     } catch (error) {
       debug("Truffle data migration failed: %o", error);
-    };
+    }
 
     if (result == null) {
       throw new TaskError(
@@ -124,9 +120,14 @@ class Command {
     const inputOptions = extractFlags(inputStrings);
 
     //adding allowed global options as enumerated in each command
-    const allowedGlobalOptions = result.command.help.allowedGlobalOptions.filter(tag=> tag in commandOptions).map(tag => commandOptions[tag]);
+    const allowedGlobalOptions = result.command.meta.help.allowedGlobalOptions
+      .filter(tag => tag in commandOptions)
+      .map(tag => commandOptions[tag]);
 
-    const allValidOptions = [...result.command.help.options, ...allowedGlobalOptions];
+    const allValidOptions = [
+      ...result.command.meta.help.options,
+      ...allowedGlobalOptions
+    ];
 
     const validOptions = allValidOptions.reduce((a, item) => {
       // we split the options off from the arguments
@@ -134,9 +135,9 @@ class Command {
       let options = item.option.split(" ")[0].split("|");
       return [
         ...a,
-        ...(options.filter(
+        ...options.filter(
           option => option.startsWith("--") || option.startsWith("-")
-        ))
+        )
       ];
     }, []);
 
@@ -165,25 +166,27 @@ class Command {
 
     const unhandledRejections = new Map();
 
-    process.on('unhandledRejection', (reason, promise) => {
+    process.on("unhandledRejection", (reason, promise) => {
       unhandledRejections.set(promise, reason);
     });
 
-    process.on('rejectionHandled', (promise) => {
+    process.on("rejectionHandled", promise => {
       unhandledRejections.delete(promise);
     });
 
-    process.on('exit', (_) => {
-      const log = options.logger ? (options.logger.log || options.logger.debug): console.log;
+    process.on("exit", _ => {
+      const log = options.logger
+        ? options.logger.log || options.logger.debug
+        : console.log;
       if (unhandledRejections.size) {
-        log('UnhandledRejections detected');
+        log("UnhandledRejections detected");
         unhandledRejections.forEach((reason, promise) => {
           log(promise, reason);
         });
       }
     });
 
-    return await result.run(newOptions);
+    return await result.command.run(newOptions);
   }
 
   displayGeneralHelp() {

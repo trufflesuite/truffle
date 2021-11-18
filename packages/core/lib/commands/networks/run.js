@@ -1,6 +1,6 @@
 module.exports = async function (options) {
   const Config = require("@truffle/config");
-  const Networks = require("../networks");
+  const Networks = require("../../networks");
 
   const config = Config.detect(options);
 
@@ -8,4 +8,4 @@ module.exports = async function (options) {
     return await Networks.clean(config);
   }
   return await Networks.display(config);
-}
+};
