@@ -33,13 +33,13 @@ module.exports = {
       }
     ],
 
-    "migrate:migration:deploy:savingMigration:start": [
+    "migrate:settingCompletedMigrations:start": [
       async function (data) {
         this.logger.log();
         await this.reporter.startTransaction(data);
       }
     ],
-    "migrate:migration:deploy:savingMigration:succeed": [
+    "migrate:settingCompletedMigrations:succeed": [
       async function (data) {
         const message = await this.reporter.endTransaction(data);
         this.logger.log(message);
