@@ -1,5 +1,5 @@
 import assert from "assert";
-import { describe, it } from "mocha";
+import "mocha";
 import Config from "@truffle/config";
 import { fetchAndCompile } from "../lib/index";
 import axios from "axios";
@@ -21,7 +21,7 @@ function stubAxiosGetMethod(url: string, address: string, data: object) {
 afterEach(()=>
   //@ts-ignore
   //restoring stub
-  axios.get.restore()
+   axios.get.restore()
 );
 describe("fetchAndCompile", () => {
   it('verifes contract from mainnet', async () => {
