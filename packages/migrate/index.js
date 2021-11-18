@@ -142,7 +142,7 @@ const Migrate = {
     }
 
     if (options.events) {
-      options.events.emit("migrate:preAllMigrations", {
+      options.events.emit("migrate:runMigrations:start", {
         migrations,
         dryRun: options.dryRun
       });
@@ -156,7 +156,7 @@ const Migrate = {
       }
 
       if (options.events) {
-        await options.events.emit("migrate:postAllMigrations", {
+        await options.events.emit("migrate:runMigrations:finish", {
           dryRun: options.dryRun,
           error: null
         });
@@ -164,7 +164,7 @@ const Migrate = {
       return;
     } catch (error) {
       if (options.events) {
-        await options.events.emit("migrate:postAllMigrations", {
+        await options.events.emit("migrate:runMigrations:finish", {
           dryRun: options.dryRun,
           error: error.toString()
         });
