@@ -46,21 +46,48 @@ module.exports = {
       }
     ],
 
-    "migrate:migration:deploy:error": [
-      async function (errorData) {
-        const message = await this.reporter.error(errorData);
-        this.logger.log(message);
-      }
-    ],
-    "migrate:migration:run:preMigrations": [
+    "migrate:migration:start": [
       async function (data) {
         const message = await this.reporter.preMigrate(data);
         this.logger.log(message);
       }
     ],
-    "migrate:migration:deploy:migrate:succeed": [
+    "migrate:migration:succeed": [
       async function (eventArgs) {
         const message = await this.reporter.postMigrate(eventArgs);
+        this.logger.log(message);
+      }
+    ],
+    "migrate:migration:error": [
+      async function (errorData) {
+        const message = await this.reporter.error(errorData);
+        this.logger.log(message);
+      }
+    ],
+
+    "deployment:error": [
+      async function (data) {
+        const message = await this.reporter.error(data);
+        this.logger.error(message);
+        return message;
+      }
+    ],
+    "deployment:failed": [
+      async function (data) {
+        const message = await this.reporter.deployFailed(data);
+        this.logger.log(message);
+        return message;
+      }
+    ],
+    "deployment:start": [
+      async function (data) {
+        const message = await this.reporter.preDeploy(data);
+        this.logger.log(message);
+      }
+    ],
+    "deployment:succeed": [
+      async function (data) {
+        const message = await this.reporter.postDeploy(data);
         this.logger.log(message);
       }
     ],
@@ -80,32 +107,6 @@ module.exports = {
     "deployment:txHash": [
       async function (data) {
         const message = await this.reporter.txHash(data);
-        this.logger.log(message);
-      }
-    ],
-    "deployment:postDeploy": [
-      async function (data) {
-        const message = await this.reporter.postDeploy(data);
-        this.logger.log(message);
-      }
-    ],
-    "deployment:deployFailed": [
-      async function (data) {
-        const message = await this.reporter.deployFailed(data);
-        this.logger.log(message);
-        return message;
-      }
-    ],
-    "deployment:error": [
-      async function (data) {
-        const message = await this.reporter.error(data);
-        this.logger.error(message);
-        return message;
-      }
-    ],
-    "deployment:preDeploy": [
-      async function (data) {
-        const message = await this.reporter.preDeploy(data);
         this.logger.log(message);
       }
     ],

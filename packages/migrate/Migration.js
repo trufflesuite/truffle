@@ -109,10 +109,7 @@ class Migration {
         interfaceAdapter: context.interfaceAdapter
       };
 
-      await options.events.emit(
-        "migrate:migration:deploy:migrate:succeed",
-        eventArgs
-      );
+      await options.events.emit("migrate:migration:succeed", eventArgs);
 
       let artifacts = resolver
         .contracts()
@@ -170,7 +167,7 @@ class Migration {
       };
 
       if (options.events) {
-        await options.events.emit("migrate:migration:deploy:error", errorData);
+        await options.events.emit("migrate:migration:error", errorData);
       }
       deployer.finish();
       throw error;
@@ -205,10 +202,7 @@ class Migration {
     };
 
     if (options.events) {
-      await options.events.emit(
-        "migrate:migration:run:preMigrations",
-        preMigrationsData
-      );
+      await options.events.emit("migrate:migration:start", preMigrationsData);
     }
     await this._load(options, context, deployer, resolver);
   }
