@@ -87,7 +87,7 @@ class Migration {
         if (!this.dryRun) {
           const data = { message: message };
           await options.events.emit(
-            "migrate:migration:deploy:savingMigration:start",
+            "migrate:settingCompletedMigrations:start",
             data
           );
         }
@@ -98,7 +98,7 @@ class Migration {
         if (!this.dryRun) {
           const data = { receipt: receipt, message: message };
           await options.events.emit(
-            "migrate:migration:deploy:savingMigration:succeed",
+            "migrate:settingCompletedMigrations:succeed",
             data
           );
         }
