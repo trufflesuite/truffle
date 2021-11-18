@@ -7,8 +7,15 @@ export interface Mnemonic {
   phrase: MnemonicPhrase;
   password?: MnemonicPassword;
 }
+import type { Provider as LegacyProvider } from "web3/providers";
+type Eip1193Provider = {
+  request: (options: {
+    method: string;
+    params?: unknown[] | object;
+  }) => Promise<any>;
+};
 export type PrivateKey = string;
-export type Provider = any;
+export type Provider = LegacyProvider | Eip1193Provider;
 export type ProviderUrl = string;
 export type ProviderOrUrl = Provider | ProviderUrl;
 export type AddressIndex = number;

@@ -1,5 +1,6 @@
 import assert from "assert";
 import WalletProvider from "../dist";
+import Ganache from "ganache-core";
 import { describe, it } from "mocha";
 
 const { isValidProvider } = WalletProvider;
@@ -20,8 +21,8 @@ describe("HD Wallet Provider Validator", () => {
       assert.fail("did not throw!");
     } catch (e) {
       const expectedMessage = [
-        `Malformed provider URL: '${badUrl}'`,
-        "Please specify a correct URL, using the http, https, ws, or wss protocol.",
+        `No provider or an invalid provider was specified: '${badUrl}'`,
+        "Please specify a valid provider or URL, using the http, https, ws, or wss protocol.",
         ""
       ].join("\n");
       assert.equal(e.message, expectedMessage);
@@ -35,8 +36,8 @@ describe("HD Wallet Provider Validator", () => {
       assert.fail("did not throw!");
     } catch (e) {
       const expectedMessage = [
-        `Malformed provider URL: '${badUrl}'`,
-        "Please specify a correct URL, using the http, https, ws, or wss protocol.",
+        `No provider or an invalid provider was specified: '${badUrl}'`,
+        "Please specify a valid provider or URL, using the http, https, ws, or wss protocol.",
         ""
       ].join("\n");
       assert.equal(e.message, expectedMessage);
@@ -78,6 +79,14 @@ describe("HD Wallet Provider Validator", () => {
       assert.ok(
         isValidProvider(goodUrl),
         "Good WSS Url should pass validation"
+      );
+    });
+
+    it("a provider", () => {
+      const provider = Ganache.provider();
+      assert.ok(
+        isValidProvider(provider),
+        "Good provider should pass validation."
       );
     });
   });

@@ -111,7 +111,7 @@ const matchesNewInputOptions = (
 
   // beyond that, determine based on property inclusion check for required keys
   return (
-    "providerOrUrl" in options &&
+    ("providerOrUrl" in options || "provider" in options || "url" in options) &&
     ("privateKeys" in options || "mnemonic" in options)
   );
 };
