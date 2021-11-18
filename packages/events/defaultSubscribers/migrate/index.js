@@ -14,7 +14,7 @@ module.exports = {
         this.logger.log("\n> Exiting without migrating...\n\n");
       }
     ],
-    "migrate:preAllMigrations": [
+    "migrate:runMigrations:start": [
       async function ({ dryRun, migrations }) {
         const message = this.reporter.messages.steps("preAllMigrations", {
           migrations,
@@ -23,7 +23,7 @@ module.exports = {
         this.logger.log(message);
       }
     ],
-    "migrate:postAllMigrations": [
+    "migrate:runMigrations:finish": [
       async function ({ dryRun, error }) {
         const message = this.reporter.messages.steps("postAllMigrations", {
           dryRun,
