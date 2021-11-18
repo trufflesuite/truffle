@@ -3,7 +3,7 @@ const command = {
   description: "Set user-level configuration options",
   help: {
     usage:
-      "truffle config [--enable-analytics|--disable-analytics] [[<get|set> <key>] [<value-for-set>]]",
+      "truffle config [--enable-analytics|--disable-analytics] [<list>] [[<get|set> <key>] [<value-for-set>]]",
     options: [
       {
         option: "--enable-analytics",
@@ -21,6 +21,10 @@ const command = {
       {
         option: "set",
         description: "Set a Truffle config option value."
+      },
+      {
+        option: "list",
+        description: "List a Truffle config option values.",
       }
     ],
     allowedGlobalOptions: []
@@ -32,7 +36,7 @@ const command = {
     }
   },
   /**
-   * run config commands to get/set Truffle config options
+   * run config commands to get/set/list Truffle config options
    * @param {Object} options
    */
   run: async function (options) {
@@ -73,6 +77,9 @@ const command = {
       }
 
       return;
+    } else if (command.list) {
+      options.logger.log("; Truffle configs");
+      options.logger.log(`analytics = ${googleAnalytics.getAnalytics()}`);
     } else {
       const config = Config.detect(options);
 
@@ -104,6 +111,7 @@ const parse = function (args) {
   option = option.toLowerCase();
 
   let set = false;
+  let list = false;
   let key = args[1];
   let value = args[2];
 
@@ -158,6 +166,11 @@ const parse = function (args) {
 
       break;
     }
+    case "list": {
+      set = false;
+      list = true;
+      break;
+    }
     default: {
       if (
         option !== "--enable-analytics" &&
@@ -176,6 +189,7 @@ const parse = function (args) {
 
   return {
     set,
+    list,
     userLevel: command.userLevelSettings.includes(key),
     key,
     value
