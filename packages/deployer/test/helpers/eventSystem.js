@@ -3,7 +3,7 @@ const getAllEventsByName = (options, eventName) => {
 };
 
 const preDeployOccurredForNames = (options, contractNames) => {
-  const allPreDeploys = getAllEventsByName(options, "deployment:preDeploy");
+  const allPreDeploys = getAllEventsByName(options, "deployment:start");
   return contractNames.reduce((a, name) => {
     // after finding one that didn't occur, we know the test has failed
     if (a === false) return a;
@@ -15,7 +15,7 @@ const preDeployOccurredForNames = (options, contractNames) => {
 };
 
 const postDeployOccurredForNames = (options, contractNames) => {
-  const allPostDeploys = getAllEventsByName(options, "deployment:postDeploy");
+  const allPostDeploys = getAllEventsByName(options, "deployment:succeed");
   return contractNames.reduce((a, name) => {
     if (a === false) return a;
     return allPostDeploys.some(eventData => {
@@ -42,9 +42,9 @@ const mockEventsSystem = {
     }
   },
   emittedEvents: {
-    "deployment:preDeploy": [],
+    "deployment:start": [],
     "deployment:txHash": [],
-    "deployment:postDeploy": [],
+    "deployment:succeed": [],
     "deployment:linking": [],
     "deployment:confirmation": [],
     "deployment:error": [],
