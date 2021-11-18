@@ -19,9 +19,9 @@ function stubAxiosGetMethod(url: string, address: string, data: object) {
   }).returns(Promise.resolve({ data: data }))
 };
 afterEach(()=>
-    //@ts-ignore
-    //restoring stub
-    axios.get.restore()
+  //@ts-ignore
+  //restoring stub
+  axios.get.restore()
 );
 describe("fetchAndCompile", () => {
   it('verifes contract from mainnet', async () => {
@@ -41,8 +41,7 @@ describe("fetchAndCompile", () => {
     const result = await fetchAndCompile(address, config);
     let contractName = result.sourceInfo.contractName;
     assert.equal(contractName, "UniswapV2Router02");
-    assert.notEqual(contractName, undefined);
-  })
+  });
   it('verifes contract from arbitrum', async () => {
     const config = Config.default().merge({
       networks: {
@@ -60,7 +59,6 @@ describe("fetchAndCompile", () => {
     const result = await fetchAndCompile(address, config);
     let contractName = result.sourceInfo.contractName;
     assert.equal(contractName, "stARBIS");
-    assert.notEqual(contractName, undefined);
   });
   it('verfies contract from polygon', async () => {
     const config = Config.default().merge({
@@ -79,6 +77,5 @@ describe("fetchAndCompile", () => {
     const result = await fetchAndCompile(address, config);
     let contractName = result.sourceInfo.contractName;
     assert.equal(contractName, "GrowthVault");
-    assert.notEqual(contractName, undefined);
   });
 });
