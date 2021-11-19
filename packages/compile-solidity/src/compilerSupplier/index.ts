@@ -1,3 +1,6 @@
+import debugModule from "debug";
+const debug = debugModule("compile-solidity:compilerSupplier");
+
 import path from "path";
 import fs from "fs";
 import semver from "semver";
@@ -67,6 +70,11 @@ export class CompilerSupplier {
 
     if (strategy) {
       const solc = await strategy.load(userSpecification);
+      debug(
+        "Loaded solc v%s using %s strategy",
+        solc.version(),
+        strategy.constructor.name
+      );
       return { solc };
     } else {
       throw new BadInputError(userSpecification);
