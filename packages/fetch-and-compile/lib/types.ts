@@ -6,6 +6,7 @@ export type FailureType = "fetch" | "compile" | "language";
 export interface FetchAndCompileResult {
   compileResult: WorkflowCompileResult;
   sourceInfo: SourceInfo;
+  fetchedVia: string;
 }
 
 export interface FetchExternalErrors {
@@ -19,8 +20,7 @@ export interface Recognizer {
   getAnUnrecognizedAddress(): string | undefined;
   addCompiledInfo(
     info: FetchAndCompileResult,
-    address: string,
-    fetcherName: string
+    address: string
   ): void | Promise<void>;
   markUnrecognizable(address: string, reason?: FailureType): void;
   markBadFetcher(fetcherName: string): void;

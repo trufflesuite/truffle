@@ -11,6 +11,7 @@ import type { SourceInfo } from "@truffle/source-fetcher";
 export class SingleRecognizer implements Recognizer {
   private address: string;
   private recognized: boolean = false;
+  private fetchedVia: string;
   private compileResult: WorkflowCompileResult;
   private sourceInfo: SourceInfo;
 
@@ -21,7 +22,8 @@ export class SingleRecognizer implements Recognizer {
   getResult(): FetchAndCompileResult {
     return {
       compileResult: this.compileResult,
-      sourceInfo: this.sourceInfo
+      sourceInfo: this.sourceInfo,
+      fetchedVia: this.fetchedVia
     };
   }
 
@@ -59,13 +61,13 @@ export class SingleRecognizer implements Recognizer {
 
   addCompiledInfo(
     info: FetchAndCompileResult,
-    address: string,
-    _fetcherName: string
+    address: string
   ): void {
     this.compileResult = info.compileResult;
     this.sourceInfo = info.sourceInfo;
     if (address === this.address) { //I guess? this should never be false
       this.recognized = true;
+      this.fetchedVia = info.fetchedVia;
     }
   }
 }
