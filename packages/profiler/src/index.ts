@@ -52,7 +52,8 @@ export class Profiler {
       resolver,
       paths,
       base_path: basePath,
-      contracts_directory: contractsDirectory
+      contracts_directory: contractsDirectory,
+      compiler // { name, version }
     } = options;
 
     debug("paths: %O", paths);
@@ -62,7 +63,7 @@ export class Profiler {
       //be resolved, it will show up as a compile error rather than a Truffle
       //error.
       try {
-        return await resolver.resolve(filePath, importedFrom);
+        return await resolver.resolve(filePath, importedFrom, { compiler });
       } catch (error) {
         //resolver doesn't throw structured errors at the moment,
         //so we'll check the messag to see whether this is an expected error
@@ -95,10 +96,15 @@ export class Profiler {
   async requiredSourcesForSingleFile(options: TruffleConfig) {
     expect.options(options, ["path", "base_path", "resolver"]);
 
-    const { resolver, path, base_path: basePath } = options;
+    const {
+      resolver,
+      path,
+      base_path: basePath,
+      compiler // { name, version }
+    } = options;
 
     const resolve = ({ filePath, importedFrom }: UnresolvedSource) =>
-      resolver.resolve(filePath, importedFrom);
+      resolver.resolve(filePath, importedFrom, { compiler });
 
     const allPaths = convertToAbsolutePaths([path], basePath);
     const updatedPaths = allPaths;

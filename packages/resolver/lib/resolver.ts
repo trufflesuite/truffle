@@ -81,14 +81,23 @@ export class Resolver {
 
   async resolve(
     importPath: string,
-    importedFrom: string
+    importedFrom: string,
+    options: {
+      compiler?: {
+        name: string;
+        version: string;
+      }
+    } = {}
   ): Promise<ResolvedSource> {
     let body: string | null = null;
     let filePath: string | null = null;
     let source: ResolverSource | null = null;
 
     for (source of this.sources) {
-      ({ body, filePath } = await source.resolve(importPath, importedFrom));
+      ({
+        body,
+        filePath
+      } = await source.resolve(importPath, importedFrom, options));
 
       if (body !== undefined) {
         break;

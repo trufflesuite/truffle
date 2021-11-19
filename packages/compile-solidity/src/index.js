@@ -129,6 +129,12 @@ const Compile = {
     options = Config.default().merge(options);
     options = normalizeOptions(options);
 
+    const supplier = new CompilerSupplier({
+      events: options.events,
+      solcConfig: options.compilers.solc
+    });
+    const { solc } = await supplier.load();
+
     //note: solidityPaths here still includes JSON as well!
     const [yulPaths, solidityPaths] = partition(paths, path =>
       path.endsWith(".yul")
@@ -140,7 +146,11 @@ const Compile = {
       options.with({
         paths: solidityPaths,
         base_path: options.contracts_directory,
-        resolver: options.resolver
+        resolver: options.resolver,
+        compiler: {
+          name: "solc",
+          version: solc.version()
+        }
       })
     );
     debug("compilationTargets: %O", compilationTargets);
@@ -161,7 +171,7 @@ const Compile = {
     if (Object.keys(allSources).length > 0) {
       const solidityOptions = options.with({ compilationTargets });
       debug("Compiling Solidity");
-      const compilation = await run(allSources, solidityOptions);
+      const compilation = await run(allSources, solidityOptions, { solc });
       debug("Solidity compiled successfully");
 
       // returns CompilerResult - see @truffle/compile-common
