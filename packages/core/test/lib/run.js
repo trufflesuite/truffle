@@ -2,7 +2,7 @@ const assert = require("assert");
 const sinon = require("sinon");
 const path = require("path");
 const originalRequire = require("original-require");
-const runHandler = require("../../lib/commands/run/run");
+const runHandler = require("../../lib/commands/run/runHandler");
 
 describe("run handler", () => {
   let nonCommandPluginsConfig,

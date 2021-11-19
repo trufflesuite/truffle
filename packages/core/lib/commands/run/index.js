@@ -1,4 +1,5 @@
 module.exports = {
   run: require("./run"),
-  meta: require("./meta")
+  meta: require("./meta"),
+  runHandler: require("./runHandler")
 };
