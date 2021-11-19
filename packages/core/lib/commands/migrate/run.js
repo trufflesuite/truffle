@@ -6,7 +6,8 @@ module.exports = async function (options) {
   const { Environment } = require("@truffle/environment");
   const Config = require("@truffle/config");
   const { promisify } = require("util");
-  const promisifiedCopy = promisify(require("../../copy"));
+  const copy = require("../../copy");
+  const determineDryRunSettings = require("./determineDryRunSettings");
   const tmp = require("tmp");
   tmp.setGracefulCleanup();
 
@@ -50,7 +51,7 @@ module.exports = async function (options) {
       prefix: "migrate-dry-run-"
     }).name;
 
-    await promisifiedCopy(config.contracts_build_directory, temporaryDirectory);
+    await promisify(copy)(config.contracts_build_directory, temporaryDirectory);
 
     config.contracts_build_directory = temporaryDirectory;
     // Note: Create a new artifactor and resolver with the updated config.
@@ -78,44 +79,6 @@ module.exports = async function (options) {
       }
     }
   }
-};
-
-const determineDryRunSettings = function (config, options) {
-  // Source: ethereum.stackexchange.com/questions/17051
-  const networkWhitelist = [
-    1, // Mainnet (ETH & ETC)
-    2, // Morden (ETC)
-    3, // Ropsten
-    4, // Rinkeby
-    5, // Goerli
-    8, // Ubiq
-    42, // Kovan (Parity)
-    77, // Sokol
-    99, // Core
-
-    7762959, // Musiccoin
-    61717561 // Aquachain
-  ];
-
-  let dryRunOnly, skipDryRun;
-  const networkSettingsInConfig = config.networks[config.network];
-  if (networkSettingsInConfig) {
-    dryRunOnly =
-      options.dryRun === true ||
-      networkSettingsInConfig.dryRun === true ||
-      networkSettingsInConfig["dry-run"] === true;
-    skipDryRun =
-      options.skipDryRun === true ||
-      networkSettingsInConfig.skipDryRun === true ||
-      networkSettingsInConfig["skip-dry-run"] === true;
-  } else {
-    dryRunOnly = options.dryRun === true;
-    skipDryRun = options.skipDryRun === true;
-  }
-  const production =
-    networkWhitelist.includes(parseInt(config.network_id)) || config.production;
-  const dryRunAndMigrations = production && !skipDryRun;
-  return { dryRunOnly, dryRunAndMigrations };
 };
 
 const prepareConfigForRealMigrations = async function (buildDir, options) {
