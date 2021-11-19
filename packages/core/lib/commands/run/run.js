@@ -1,15 +1,15 @@
 const TruffleError = require("@truffle/error");
 const { Plugins } = require("@truffle/plugins");
 
-module.exports = async (options) => {
+module.exports = async options => {
   const { promisify } = require("util");
   const Config = require("@truffle/config");
   const { checkPluginConfig } = require("./checkPluginConfig");
   const config = Config.detect(options);
 
   if (options._.length === 0) {
-    const help = require("../help");
-    help.displayCommandHelp("run");
+    const helpCommand = require("../help");
+    helpCommand.run({ _: ["run"] });
     return;
   }
 
