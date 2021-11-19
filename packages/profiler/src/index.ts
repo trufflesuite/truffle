@@ -70,11 +70,6 @@ export class Profiler {
         if(error.message.startsWith("Could not find ")) {
           return undefined;
         } else {
-          debug(
-            "Error resolving filePath: %o via importedFrom: %s",
-            filePath,
-            importedFrom
-          );
           //rethrow unexpected errors
           throw error;
         }
