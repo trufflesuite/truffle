@@ -95,6 +95,11 @@ const execute = {
     }
     //skipNetworkCheck flag used to skip network call for read data (calls type) methods invocation
     if (skipNetworkCheck) {
+      // Having gasPrice set (often as default gas price in truffle-config) can also cause
+      // view function fail with "insufficient funds for gas" errors"
+      // For calls intending to skip network check, it should also skip this check to.
+      // A workaround would be simply having the gasPrice field delted
+      params.gasPrice;
       return { args, params };
     }
     const network = await constructor.detectNetwork();
