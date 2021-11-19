@@ -6,7 +6,9 @@ module.exports = async options => {
   const semver = require("semver");
 
   if (!semver.satisfies(process.version, ">=12")) {
-    throw new TruffleError(`The current version of Node (${process.version}) does not support \`truffle preserve\`, please update to Node >=12`);
+    throw new TruffleError(
+      `The current version of Node (${process.version}) does not support \`truffle preserve\`, please update to Node >=12`
+    );
   }
 
   const config = getConfig(options);
@@ -57,4 +59,4 @@ module.exports = async options => {
 
     config.logger.log();
   }
-}
+};

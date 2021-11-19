@@ -92,8 +92,8 @@ class Command {
       );
     }
 
-    if (typeof result.command.help === "function") {
-      result.command.help = await result.command.help(options);
+    if (typeof result.command.meta.help === "function") {
+      result.command.meta.help = await result.command.meta.help(options);
     }
 
     const argv = result.argv;

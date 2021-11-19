@@ -1,3 +1,23 @@
+module.exports = async function (options) {
+  const SUPPORTED_COMPILERS = ["--solc"];
+  const Config = require("@truffle/config");
+  const config = Config.default().with(options);
+
+  config.events.emit("obtain:start");
+
+  if (options.solc) {
+    return await downloadAndCacheSolc({ config, options });
+  }
+
+  const message =
+    `You have specified a compiler that is unsupported by ` +
+    `Truffle.\nYou must specify one of the following ` +
+    `compilers as well as a version as arguments: ` +
+    `${SUPPORTED_COMPILERS.join(", ")}\nSee 'truffle help ` +
+    `obtain' for more information and usage.`;
+  throw new Error(message);
+};
+
 const downloadAndCacheSolc = async ({ config, options }) => {
   const { CompilerSupplier } = require("@truffle/compile-solidity");
   const semver = require("semver");
@@ -31,24 +51,4 @@ const downloadAndCacheSolc = async ({ config, options }) => {
     events.emit("obtain:fail");
     return;
   }
-};
-
-module.exports = async function (options) {
-  const SUPPORTED_COMPILERS = ["--solc"];
-  const Config = require("@truffle/config");
-  const config = Config.default().with(options);
-
-  config.events.emit("obtain:start");
-
-  if (options.solc) {
-    return await this.downloadAndCacheSolc({config, options});
-  }
-
-  const message =
-    `You have specified a compiler that is unsupported by ` +
-    `Truffle.\nYou must specify one of the following ` +
-    `compilers as well as a version as arguments: ` +
-    `${SUPPORTED_COMPILERS.join(", ")}\nSee 'truffle help ` +
-    `obtain' for more information and usage.`;
-  throw new Error(message);
 };
