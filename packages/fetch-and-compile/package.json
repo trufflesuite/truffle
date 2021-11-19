@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "@truffle/codec": "^0.11.19",
-    "@truffle/compile-solidity": "^5.3.30",
+    "@truffle/compile-solidity": "^6.0.0-1",
     "@truffle/source-fetcher": "^0.5.9",
     "semver": "^7.3.4"
   },
