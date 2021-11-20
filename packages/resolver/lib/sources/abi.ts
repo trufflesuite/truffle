@@ -17,6 +17,14 @@ export class ABI implements ResolverSource {
     return null;
   }
 
+  /**
+   * @dev This attempts to resolve an ABI JSON file as Solidity using the
+   *      abi-to-sol utility.
+   *
+   *      Note the **precondition** that `compiler`, if passed, will always
+   *      refer to a version of solc, since this ResolverSource is explicitly
+   *      disabled for Vyper.
+   */
   async resolve(
     importPath: string,
     importedFrom: string = "",
@@ -89,5 +97,9 @@ function determineSolidityVersion(
   }
 
   const { version } = compiler;
+
+  // resolver.resolve's `compiler` option may include the full version string,
+  // including commit and build target information. abi-to-sol only accepts a
+  // short-form version range, i.e. <major>.<minor>.<patch>
   return version.split("+")[0];
 }
