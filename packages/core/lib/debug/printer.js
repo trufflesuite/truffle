@@ -72,6 +72,14 @@ class DebugPrinter {
     //   loc: Local variables
     this.sectionPrintouts = new Set(["bui", "glo", "con", "loc"]);
     this.sections = ["bui", "glo", "con", "loc"]; //should remain constant
+
+    // numbers of instructions before and after the current instruction to be printed
+    // used by command (p)
+    this.instructionLines = [3, 3];
+
+    // numbers of lines before and after the current line to be printed
+    // used by command (l) and others
+    this.stateLines = [5, 3];
   }
 
   print(...args) {
@@ -135,8 +143,8 @@ class DebugPrinter {
   }
 
   printState(
-    contextBefore = 2,
-    contextAfter = 0,
+    contextBefore = this.stateLines[0],
+    contextAfter = this.stateLines[1],
     location = this.session.view(controller.current.location)
   ) {
     const {
@@ -214,8 +222,8 @@ class DebugPrinter {
     this.config.logger.log("Instructions:");
 
     // printout instructions
-    const previousInstructions = 3;
-    const upcomingInstructions = 3;
+    const previousInstructions = this.instructionLines[0];
+    const upcomingInstructions = this.instructionLines[1];
     const currentIndex = instruction.index;
 
     // add an ellipse if there exist additional instructions before

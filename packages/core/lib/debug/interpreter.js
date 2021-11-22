@@ -603,7 +603,13 @@ class DebugInterpreter {
         await this.setOrClearBreakpoint(splitArgs, false);
         break;
       case "p":
-        //first: process which locations we should print out
+        // update the numbers of instructions to be printed
+        const {beforeLines, afterLines} = this.updatePrintoutLines(
+          splitArgs,
+          this.printer.instructionLines
+        );
+        this.printer.instructionLines = [beforeLines, afterLines];
+        // process which locations we should print out
         const temporaryPrintouts = this.updatePrintouts(
           splitArgs,
           this.printer.locations,
@@ -628,7 +634,13 @@ class DebugInterpreter {
       case "l":
         if (this.session.view(session.status.loaded)) {
           this.printer.printFile();
-          this.printer.printState(LINES_BEFORE_LONG, LINES_AFTER_LONG);
+          // update the numbers of lines to be printed
+          const {beforeLines, afterLines} = this.updatePrintoutLines(
+            splitArgs,
+            this.printer.stateLines
+          );
+          this.printer.stateLines = [beforeLines, afterLines];
+          this.printer.printState();
         }
         break;
       case ";":
@@ -738,6 +750,11 @@ class DebugInterpreter {
   updatePrintouts(userArgs, selections, printOuts) {
     let tempPrintouts = new Set();
     for (let argument of userArgs) {
+      // skip line number options
+      if (((argument[0] === "-") || (argument[0] === "+")) &&
+        (!isNaN(argument.slice(1))))
+        continue;
+
       let fullSelection;
       if (argument[0] === "+" || argument[0] === "-") {
         fullSelection = argument.slice(1);
@@ -760,6 +777,21 @@ class DebugInterpreter {
       tempPrintouts.add(selection);
     }
     return tempPrintouts;
+  }
+
+  // update the numbers of lines to be printed from options -<num>|+<num> from user args
+  updatePrintoutLines(userArgs, currentLines) {
+    let beforeLines = currentLines[0], afterLines = currentLines[1];
+    for (let argument of userArgs) {
+      let newLines = Number(argument.slice(1));
+      if (isNaN(newLines)) continue;
+      if (argument[0] === "-") {
+        beforeLines = newLines;
+      } else if (argument[0] === "+") {
+        afterLines = newLines;
+      }
+    }
+    return {beforeLines, afterLines};
   }
 }
 
