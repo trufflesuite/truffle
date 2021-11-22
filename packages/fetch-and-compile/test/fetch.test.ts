@@ -6,7 +6,7 @@ import axios from "axios";
 import sinon from "sinon";
 const fixture: any = require("./fixture.js");
 
-function stubAxiosGetMethod(url: string, address: string, data: object) {
+function stubAxiosGetMethod (url: string, address: string, data: object) {
   sinon.stub(axios, 'get').withArgs(url, {
     params: {
       module: "contract",
@@ -16,14 +16,16 @@ function stubAxiosGetMethod(url: string, address: string, data: object) {
     },
     responseType: "json",
     maxRedirects: 50
-  }).returns(Promise.resolve({ data: data }))
+  }).returns(Promise.resolve({ data: data }));
 };
+
 afterEach(function (){
   //TS can't detect that is a sinon stub so we have to use ts-ignore
   //@ts-ignore
   //restoring stub
-   axios.get.restore()
+  axios.get.restore();
 });
+
 describe("fetchAndCompile", function () {
   it('verifes contract from mainnet', async function () {
     const config = Config.default().merge({
@@ -44,6 +46,7 @@ describe("fetchAndCompile", function () {
     let contractName = result.sourceInfo.contractName;
     assert.equal(contractName, "UniswapV2Router02");
   });
+
   it('verifes contract from arbitrum', async function () {
     const config = Config.default().merge({
       networks: {
@@ -63,6 +66,7 @@ describe("fetchAndCompile", function () {
     let contractName = result.sourceInfo.contractName;
     assert.equal(contractName, "stARBIS");
   });
+
   it('verfies contract from polygon', async function () {
     const config = Config.default().merge({
       networks: {
@@ -72,7 +76,7 @@ describe("fetchAndCompile", function () {
       },
       network: "polygon",
     });
-    const address = '0xBB6828C8228E5C641Eb6d89Ca22e09E6311CA398'
+    const address = '0xBB6828C8228E5C641Eb6d89Ca22e09E6311CA398';
     //asserting that polygon url and contract address is passed as args
     stubAxiosGetMethod("https://api.polygonscan.com/api", address, fixture.polygonData);
     //TS can't detect that is a sinon stub so we have to use ts-ignore
