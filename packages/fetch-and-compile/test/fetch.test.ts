@@ -18,13 +18,13 @@ function stubAxiosGetMethod(url: string, address: string, data: object) {
     maxRedirects: 50
   }).returns(Promise.resolve({ data: data }))
 };
-afterEach(()=>
+afterEach(function (){
   //@ts-ignore
   //restoring stub
    axios.get.restore()
-);
-describe("fetchAndCompile", () => {
-  it('verifes contract from mainnet', async () => {
+});
+describe("fetchAndCompile", function () {
+  it('verifes contract from mainnet', async function () {
     const config = Config.default().merge({
       networks: {
         mainnet: {
@@ -42,7 +42,7 @@ describe("fetchAndCompile", () => {
     let contractName = result.sourceInfo.contractName;
     assert.equal(contractName, "UniswapV2Router02");
   });
-  it('verifes contract from arbitrum', async () => {
+  it('verifes contract from arbitrum', async function () {
     const config = Config.default().merge({
       networks: {
         arbitrum: {
@@ -60,7 +60,7 @@ describe("fetchAndCompile", () => {
     let contractName = result.sourceInfo.contractName;
     assert.equal(contractName, "stARBIS");
   });
-  it('verfies contract from polygon', async () => {
+  it('verfies contract from polygon', async function () {
     const config = Config.default().merge({
       networks: {
         polygon: {
