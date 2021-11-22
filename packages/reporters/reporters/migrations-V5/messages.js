@@ -421,7 +421,9 @@ class MigrationsMessages {
           self.doubleline("Summary") +
           "\n" +
           `> ${"Total deployments:".padEnd(20)} ${data.totalDeployments}\n` +
-          `> ${"Final cost:".padEnd(20)} ${data.finalCost} ${data.valueUnit}\n`;
+          `> ${"Final cost:".padEnd(20)} ${data.finalCost} ${
+            data.valueUnit || "ETH"
+          }\n`;
 
         if (self.describeJson) {
           output +=
