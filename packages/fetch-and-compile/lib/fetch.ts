@@ -136,9 +136,9 @@ async function tryFetchAndCompileAddress(
       {
         compileResult,
         sourceInfo: result,
+        fetchedVia: fetcher.fetcherName
       },
-      address,
-      fetcher.fetcherName
+      address
     );
     failureReason = undefined; //mark as *not* failed in case a previous fetcher failed
     //check: did this actually help?

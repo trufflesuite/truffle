@@ -79,14 +79,13 @@ export class DebugRecognizer implements Recognizer {
 
   async addCompiledInfo(
     info: FetchAndCompileResult,
-    address: string,
-    fetcherName: string
+    address: string
   ): Promise<void> {
     debug("compileResult: %O", info.compileResult);
     const compilations = info.compileResult.compilations;
     const shimmedCompilations = Codec.Compilations.Utils.shimCompilations(
       compilations,
-      `externalFor(${address})Via(${fetcherName})`
+      `externalFor(${address})Via(${info.fetchedVia})`
     );
     await this.bugger.addExternalCompilations(shimmedCompilations);
   }
