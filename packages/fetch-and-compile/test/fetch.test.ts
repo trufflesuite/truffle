@@ -19,6 +19,7 @@ function stubAxiosGetMethod(url: string, address: string, data: object) {
   }).returns(Promise.resolve({ data: data }))
 };
 afterEach(function (){
+  //TS can't detect that is a sinon stub so we have to use ts-ignore
   //@ts-ignore
   //restoring stub
    axios.get.restore()
@@ -36,6 +37,7 @@ describe("fetchAndCompile", function () {
     const address = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
     //asserting that mainnet url and contract address is passed as args
     stubAxiosGetMethod("https://api.etherscan.io/api", address, fixture.mainnetData);
+    //TS can't detect that is a sinon stub so we have to use ts-ignore
     //@ts-ignore
     axios.get.callThrough();
     const result = await fetchAndCompile(address, config);
@@ -54,6 +56,7 @@ describe("fetchAndCompile", function () {
     const address = '0xBf00759D7E329d7A7fa1D4DCdC914C53d1d2db86';
     //asserting that arbitrum url and contract address is passed as args
     stubAxiosGetMethod("https://api.arbiscan.io/api", address, fixture.arbitrumData);
+    //TS can't detect that is a sinon stub so we have to use ts-ignore
     //@ts-ignore
     axios.get.callThrough();
     const result = await fetchAndCompile(address, config);
@@ -72,6 +75,7 @@ describe("fetchAndCompile", function () {
     const address = '0xBB6828C8228E5C641Eb6d89Ca22e09E6311CA398'
     //asserting that polygon url and contract address is passed as args
     stubAxiosGetMethod("https://api.polygonscan.com/api", address, fixture.polygonData);
+    //TS can't detect that is a sinon stub so we have to use ts-ignore
     //@ts-ignore
     axios.get.callThrough();
     const result = await fetchAndCompile(address, config);
