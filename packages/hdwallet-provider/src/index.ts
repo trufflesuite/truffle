@@ -6,9 +6,8 @@ import { hdkey as EthereumHDKey } from "ethereumjs-wallet";
 import { Transaction, FeeMarketEIP1559Transaction } from "@ethereumjs/tx";
 import Common from "@ethereumjs/common";
 
-// @ts-ignore
 import ProviderEngine from "web3-provider-engine";
-// @ts-ignore
+// @ts-ignore - web3-provider-engine doesn't have declaration files for these subproviders
 import FiltersSubprovider from "web3-provider-engine/subproviders/filters";
 // @ts-ignore
 import NonceSubProvider from "web3-provider-engine/subproviders/nonce-tracker";
