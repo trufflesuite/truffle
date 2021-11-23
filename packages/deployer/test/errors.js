@@ -1,13 +1,12 @@
 const ganache = require("ganache");
 const Web3 = require("web3");
 const assert = require("assert");
-const EventEmitter = require("events");
 const Deployer = require("../index");
 const utils = require("./helpers/utils");
 const Config = require("@truffle/config");
 const { Environment } = require("@truffle/environment");
 
-describe("Error cases", function() {
+describe("Error cases", function () {
   let owner;
   let accounts;
   let options;
@@ -22,6 +21,10 @@ describe("Error cases", function() {
   let UsesExample;
   let IsLibrary;
   let UsesLibrary;
+  let ExampleRevert;
+  let Abstract;
+  let Loops;
+  let ExampleAssert;
 
   const provider = ganache.provider({
     gasLimit: "0x6691b7",
@@ -77,9 +80,14 @@ describe("Error cases", function() {
           provider
         }
       },
+<<<<<<< HEAD
       network: "test",
+=======
+      network: "test"
+    });
+>>>>>>> Edit constructor argument format for Deployer; remove seemingly unused basePath arg
     await Environment.detect(options);
-    deployer = new Deployer({ options });
+    deployer = new Deployer(options);
   });
 
   afterEach(() => {
@@ -100,7 +108,8 @@ describe("Error cases", function() {
     } catch (err) {
       assert(err.message.includes("Deployment Failed"));
       assert(err.message.includes("IsLibrary"));
-      assert(err.message.includes("has no address"));    }
+      assert(err.message.includes("has no address"));
+    }
   });
 
   it("unlinked library", async function () {

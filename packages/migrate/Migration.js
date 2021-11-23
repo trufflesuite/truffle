@@ -208,7 +208,6 @@ class Migration {
   }
 
   prepareForMigrations(options) {
-    const logger = options.logger;
     const interfaceAdapter = createInterfaceAdapter({
       provider: options.provider,
       networkType: options.networks[options.network].type
@@ -223,11 +222,7 @@ class Migration {
     // Initial context.
     const context = { web3, interfaceAdapter, config: this.config };
 
-    const deployer = new Deployer({
-      options,
-      logger,
-      basePath: path.dirname(this.file)
-    });
+    const deployer = new Deployer(options);
 
     return { interfaceAdapter, resolver, context, deployer };
   }

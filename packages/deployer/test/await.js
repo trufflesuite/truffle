@@ -7,6 +7,8 @@ const utils = require("./helpers/utils");
 
 describe("Deployer (async / await)", function () {
   let owner;
+  let deployer;
+  let example;
   let options;
   let networkId;
   const provider = ganache.provider({
@@ -46,9 +48,7 @@ describe("Deployer (async / await)", function () {
     const Example = utils.getContract("Example", provider, networkId, owner);
     options.contracts = [Example];
 
-    deployer = new Deployer({
-      options
-    });
+    deployer = new Deployer(options);
 
     const migrate = async function () {
       await deployer.deploy(Example);
@@ -74,7 +74,7 @@ describe("Deployer (async / await)", function () {
 
     options.contracts = [Example, UsesExample];
 
-    deployer = new Deployer({ options });
+    deployer = new Deployer(options);
     const migrate = async function () {
       await deployer.deploy(Example);
       await deployer.deploy(UsesExample, Example.address);
@@ -108,7 +108,7 @@ describe("Deployer (async / await)", function () {
     );
     options.contracts = [UsesLibrary, IsLibrary];
 
-    deployer = new Deployer({ options });
+    deployer = new Deployer(options);
 
     const migrate = async function () {
       await deployer.deploy(IsLibrary);
@@ -126,7 +126,7 @@ describe("Deployer (async / await)", function () {
     await usesLibrary.fireIsLibraryEvent(5);
     await usesLibrary.fireUsesLibraryEvent(7);
 
-    eventOptions = { fromBlock: 0, toBlock: "latest" };
+    const eventOptions = { fromBlock: 0, toBlock: "latest" };
     const events = await usesLibrary.getPastEvents("allEvents", eventOptions);
 
     assert(events[0].args.eventID.toNumber() === 5);
