@@ -104,11 +104,20 @@ export class ProviderAdapter {
     if (isEip1193Provider(this.provider)) {
       return await this.provider.request({ method, params });
     } else {
+      // HACK MetaMask's injected provider doesn't allow `.send()` with
+      // a callback, so prefer `.sendAsync()` if it's defined
+      const send: LegacyProvider["send"] = (
+        "sendAsync" in this.provider
+          ? // uses `any` because LegacyProvider type doesn't define sendAsync
+            (this.provider as any).sendAsync
+          : (this.provider as LegacyProvider).send
+      ).bind(this.provider);
+
       // HACK this uses a manual `new Promise` instead of promisify because
       // users reported difficulty running this package in a browser extension
       return await new Promise(
         (accept, reject) =>
-          (this.provider as LegacyProvider).send(
+          send(
             {
               jsonrpc: "2.0",
               id: new Date().getTime(),
