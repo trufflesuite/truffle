@@ -1,6 +1,4 @@
 const debug = require("debug")("compile:test:test_oldversions");
-const fs = require("fs");
-const path = require("path");
 const { Compile } = require("@truffle/compile-solidity");
 const { CompilerSupplier } = require("../dist/compilerSupplier");
 const assert = require("assert");
@@ -21,6 +19,7 @@ const compileOptions = {
   },
   quiet: true
 };
+
 const supplierOptions = {
   solcConfig: compileOptions.compilers.solc,
   events: {
@@ -28,9 +27,33 @@ const supplierOptions = {
   }
 };
 
+//NOTE: do *not* replace this with an actual .sol
+//file named 'FilenameWith:Colon.sol', as that will
+//prevent the repo from being checked out on Windows!!
+const __OLDCONTRACT = `
+//SPDX-License-Identifier: MIT
+pragma solidity >=0.4.9 <0.4.20;
+
+contract SimpleContract {
+  uint x;
+
+  function SimpleContract() public {
+    x = 7;
+  }
+}
+`;
+
+//I've put a colon in the filename to be extra-sure
+//that this is indeed testing what it's supposed to
+//(that colons in file paths don't screw things up;
+//"project:/" should suffice to trigger the issue but
+//I want to be extra sure)
+const sourcePath = `${workingDirectory}/contracts/FilenameWith:Colon.sol`;
+const source = __OLDCONTRACT;
+const sources = { [sourcePath]: source };
+
 describe("Compile - solidity <0.4.20", function () {
   this.timeout(5000); // solc
-  let source = null;
   let solc = null; // gets loaded via supplier
 
   before("get solc", async function () {
@@ -41,16 +64,7 @@ describe("Compile - solidity <0.4.20", function () {
   });
 
   describe("Output repair", function () {
-    before("get code", function () {
-      source = fs.readFileSync(
-        path.join(__dirname, "./sources/v0.4.9/FilenameWith:Colon.sol"),
-        "utf-8"
-      );
-    });
-
     it("produces contract output correctly", async function () {
-      const sourcePath = `${workingDirectory}/contracts/FilenameWith:Colon.sol`;
-      const sources = { [sourcePath]: source };
 
       const { compilations } = await Compile.sources({
         sources,
