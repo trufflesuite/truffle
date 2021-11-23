@@ -9,7 +9,7 @@ class Deployment {
    * constructor
    * @param  {Number} confirmations   confirmations needed to resolve an instance
    */
-  constructor({ options = {} }) {
+  constructor(options) {
     const networkConfig = options.networks[options.network] || {};
     this.confirmations = options.confirmations || 0;
     this.timeoutBlocks = options.timeoutBlocks || 0;

@@ -6,9 +6,9 @@ const create = require("./src/actions/new");
 const ENS = require("./ens");
 
 class Deployer extends Deployment {
-  constructor({ options = {}, basePath }) {
+  constructor(options) {
     expect.options(options, ["provider", "networks", "network", "network_id"]);
-    super({ options });
+    super(options);
 
     this.options = options;
     this.chain = new DeferredChain();
@@ -16,7 +16,6 @@ class Deployer extends Deployment {
     this.networks = options.networks;
     this.network_id = options.network_id;
     this.provider = options.provider;
-    this.basePath = basePath || process.cwd();
     this.known_contracts = {};
     if (options.ens && options.ens.enabled) {
       options.ens.registryAddress = this.networks[this.network].registry
