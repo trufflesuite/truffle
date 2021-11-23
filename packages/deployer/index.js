@@ -6,13 +6,9 @@ const create = require("./src/actions/new");
 const ENS = require("./ens");
 
 class Deployer extends Deployment {
-  constructor({
-    options = {},
-    basePath
-  }) {
+  constructor({ options = {}, basePath }) {
     expect.options(options, ["provider", "networks", "network", "network_id"]);
-
-    super(options);
+    super({ options });
 
     this.options = options;
     this.chain = new DeferredChain();
