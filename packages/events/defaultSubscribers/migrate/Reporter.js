@@ -320,7 +320,6 @@ class Reporter {
     if (this.subscriber.config.dryRun) return;
 
     let message = this.messages.steps("hash", data);
-
     this.currentBlockWait = `Blocks: 0`.padEnd(21) + `Seconds: 0`;
 
     this.blockSpinner = new ora({

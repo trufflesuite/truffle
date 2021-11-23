@@ -18,9 +18,7 @@ class TestRunner {
       "provider",
       "contracts_build_directory"
     ]);
-
     this.config = Config.default().merge(options);
-
     this.logger = options.logger || console;
     this.provider = options.provider;
 
