@@ -12,88 +12,90 @@ import {
 import { promisify } from "util";
 
 interface UnfulfilledRequest {
-  socket: WebSocket;
+  publisher: WebSocket;
   data: WebSocket.Data;
 }
 
 export class DashboardMessageBus extends EventEmitter {
-  private requestsServer: WebSocket.Server;
-  private listenServer: WebSocket.Server;
-  private clientSockets: WebSocket[] = [];
-  private listeningSockets: WebSocket[] = [];
+  private publishServer: WebSocket.Server;
+  private subscribeServer: WebSocket.Server;
+  private publishers: WebSocket[] = [];
+  private subscribers: WebSocket[] = [];
 
   private unfulfilledRequests: Map<string, UnfulfilledRequest> = new Map([]);
 
   constructor(
-    public requestsPort: number,
-    public listenPort: number,
+    public publishPort: number,
+    public subscribePort: number,
     public host: string = "0.0.0.0"
   ) {
     super();
   }
 
   async start() {
-    this.listenServer = await startWebSocketServer({
+    this.subscribeServer = await startWebSocketServer({
       host: this.host,
-      port: this.listenPort
+      port: this.subscribePort
     });
 
-    this.listenServer.on("connection", (newListener: WebSocket) => {
-      newListener.on("close", () => {
-        this.logToClients("Listener disconnected", "connections");
+    this.subscribeServer.on("connection", (newSubscriber: WebSocket) => {
+      newSubscriber.on("close", () => {
+        this.logToPublishers("Subscriber disconnected", "connections");
 
-        this.listeningSockets = this.listeningSockets.filter(
-          listener => listener !== newListener
+        this.subscribers = this.subscribers.filter(
+          subscriber => subscriber !== newSubscriber
         );
+
         this.terminateIfNoConnections();
       });
 
-      // Require the listener to send a message *first* before being marked as ready
-      newListener.once("message", () => this.addNewListeneningSocket(newListener));
+      // Require the subscriber to send a message *first* before being marked as ready
+      newSubscriber.once("message", () => this.addNewSubscriber(newSubscriber));
     });
 
-    this.requestsServer = await startWebSocketServer({
+    this.publishServer = await startWebSocketServer({
       host: this.host,
-      port: this.requestsPort
+      port: this.publishPort
     });
 
-    this.requestsServer.on("connection", (newClient: WebSocket) => {
-      newClient.on("message", (data: WebSocket.Data) => {
-        this.processRequest(newClient, data, this.listeningSockets);
+    this.publishServer.on("connection", (newPublisher: WebSocket) => {
+      newPublisher.on("message", (data: WebSocket.Data) => {
+        this.processRequest(newPublisher, data, this.subscribers);
       });
 
-      newClient.on("close", () => {
-        this.logToClients("Client disconnected", "connections");
+      newPublisher.on("close", () => {
+        this.logToPublishers("Publisher disconnected", "connections");
 
-        this.clientSockets = this.clientSockets.filter(
-          client => client !== newClient
+        this.publishers = this.publishers.filter(
+          publisher => publisher !== newPublisher
         );
-        this.clearClientRequests(newClient);
+
+        this.clearRequestsForPublisher(newPublisher);
         this.terminateIfNoConnections();
       });
 
-      this.logToClients("Client connected", "connections");
+      this.logToPublishers("Publisher connected", "connections");
 
-      this.clientSockets.push(newClient);
+      this.publishers.push(newPublisher);
     });
   }
 
   async ready() {
-    if (this.listeningSockets.length > 0) return;
+    if (this.subscribers.length > 0) return;
     await delay(1000);
     await this.ready();
   }
 
   async terminate() {
-    await promisify(this.requestsServer.close.bind(this.requestsServer))();
-    await promisify(this.listenServer.close.bind(this.listenServer))();
+    await promisify(this.publishServer.close.bind(this.publishServer))();
+    await promisify(this.subscribeServer.close.bind(this.subscribeServer))();
     this.emit("terminate");
   }
 
   private async processRequest(
-    socket: WebSocket,
+    publisher: WebSocket,
     data: WebSocket.Data,
-    listeners: WebSocket[]
+    subscribers: WebSocket[]
   ) {
     if (typeof data !== "string") {
       data = data.toString();
@@ -101,49 +103,54 @@ export class DashboardMessageBus extends EventEmitter {
 
     await this.ready();
 
-    this.unfulfilledRequests.set(data, { socket, data });
+    this.unfulfilledRequests.set(data, { publisher, data });
     const message = base64ToJson(data);
 
     try {
-      this.logToClients(
-        `Sending message to ${listeners.length} listeners`,
+      this.logToPublishers(
+        `Sending message to ${subscribers.length} subscribers`,
         "requests"
       );
-      this.logToClients(message, "requests");
+      this.logToPublishers(message, "requests");
 
-      const response = await broadcastAndAwaitFirst(listeners, message);
+      const response = await broadcastAndAwaitFirst(subscribers, message);
 
-      this.logToClients(
+      this.logToPublishers(
         `Sending response for message ${message.id}`,
         "responses"
       );
-      this.logToClients(response, "responses");
+      this.logToPublishers(response, "responses");
 
       const encodedResponse = jsonToBase64(response);
-      socket.send(encodedResponse);
+      publisher.send(encodedResponse);
       this.unfulfilledRequests.delete(data);
 
       this.invalidateMessage(message.id);
     } catch (error) {
-      this.logToClients(
+      this.logToPublishers(
         `An error occurred while processing message ${message.id}`,
         "errors"
       );
-      this.logToClients(error, "errors");
+      this.logToPublishers(error, "errors");
     }
   }
 
   private invalidateMessage(id: number) {
     const invalidationMessage = createMessage("invalidate", id);
-    broadcastAndDisregard(this.listeningSockets, invalidationMessage);
+    broadcastAndDisregard(this.subscribers, invalidationMessage);
   }
 
-  private logToClients(logMessage: any, namespace?: string) {
-    this.logTo(logMessage, this.clientSockets, namespace);
+  private logToPublishers(logMessage: any, namespace?: string) {
+    this.logTo(logMessage, this.publishers, namespace);
   }
 
-  private logToListeners(logMessage: any, namespace?: string) {
-    this.logTo(logMessage, this.listeningSockets, namespace);
+  private logToSubscribers(logMessage: any, namespace?: string) {
+    this.logTo(logMessage, this.subscribers, namespace);
+  }
+
+  private logToAll(logMessage: any, namespace?: string) {
+    this.logToPublishers(logMessage, namespace);
+    this.logToSubscribers(logMessage, namespace);
   }
 
   private logTo(logMessage: any, receivers: WebSocket[], namespace?: string) {
@@ -161,27 +168,27 @@ export class DashboardMessageBus extends EventEmitter {
   }
 
   private terminateIfNoConnections() {
-    if (this.clientSockets.length === 0 && this.listeningSockets.length === 0) {
+    if (this.publishers.length === 0 && this.subscribers.length === 0) {
       this.terminate();
     }
   }
 
-  private clearClientRequests(client: WebSocket) {
-    this.unfulfilledRequests.forEach(({ socket }, key) => {
-      if (socket === client) {
+  private clearRequestsForPublisher(publisher: WebSocket) {
+    this.unfulfilledRequests.forEach(({ publisher: requestPublisher }, key) => {
+      if (requestPublisher === publisher) {
         this.unfulfilledRequests.delete(key);
       }
     });
   }
 
-  private addNewListeneningSocket(newListener: WebSocket) {
-    // Process all backlogged (unfulfilled) requests on new listener connection.
-    this.unfulfilledRequests.forEach(({ socket, data }) =>
-      this.processRequest(socket, data, [newListener])
+  private addNewSubscriber(newSubscriber: WebSocket) {
+    // Process all backlogged (unfulfilled) requests on new subscriber connection.
+    this.unfulfilledRequests.forEach(({ publisher, data }) =>
+      this.processRequest(publisher, data, [newSubscriber])
     );
 
-    this.logToClients("Listener connected", "connections");
+    this.logToPublishers("Subscriber connected", "connections");
 
-    this.listeningSockets.push(newListener);
+    this.subscribers.push(newSubscriber);
   };
 }

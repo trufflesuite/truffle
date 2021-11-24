@@ -10,34 +10,34 @@ import WebSocket from "ws";
 jest.setTimeout(2000000);
 
 describe("DashboardMessageBus", () => {
-  const requestsPort = 12345;
-  const listenPort = 23456;
+  const publishPort = 12345;
+  const subscribePort = 23456;
 
   let messageBus: DashboardMessageBus;
-  let client: WebSocket;
-  let listener: WebSocket;
+  let publisher: WebSocket;
+  let subscriber: WebSocket;
 
   beforeEach(async () => {
-    messageBus = new DashboardMessageBus(requestsPort, listenPort);
+    messageBus = new DashboardMessageBus(publishPort, subscribePort);
     await messageBus.start();
-    client = await connectToMessageBusWithRetries(requestsPort);
-    listener = await connectToMessageBusWithRetries(listenPort);
-    listener.send("ready");
+    publisher = await connectToMessageBusWithRetries(publishPort);
+    subscriber = await connectToMessageBusWithRetries(subscribePort);
+    subscriber.send("ready");
   });
 
   afterEach(() => {
-    client.close();
-    listener.close();
+    publisher.close();
+    subscriber.close();
   });
 
-  it("should send a message between a client and listener", async () => {
-    listener.on("message", (data: string) => {
+  it("should send a message between a publisher and subscriber", async () => {
+    subscriber.on("message", (data: string) => {
       const request = base64ToJson(data);
       const response = { ...request, payload: "response" };
-      listener.send(jsonToBase64(response));
+      subscriber.send(jsonToBase64(response));
     });
 
-    const response = await sendAndAwait(client, {
+    const response = await sendAndAwait(publisher, {
       id: 1,
       type: "test",
       payload: "request"
@@ -47,7 +47,7 @@ describe("DashboardMessageBus", () => {
     expect(response.payload).toEqual("response");
   });
 
-  it.todo("should send a message to multiple listeners");
-  it.todo("should send unfulfilled requests to new listeners");
-  it.todo("should clear client's unfulfilled requests when client disconnects");
+  it.todo("should send a message to multiple subscribers");
+  it.todo("should send unfulfilled requests to new subscribers");
+  it.todo("should clear publisher's unfulfilled requests when publisher disconnects");
 });

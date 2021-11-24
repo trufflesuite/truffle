@@ -41,7 +41,7 @@ describe("DashboardProvider", () => {
       const send = promisify(dashboardProvider.send.bind(dashboardProvider));
 
       // First connect the dashboard
-      await mockDashboard.connect(messageBusPorts.messageBusListenPort);
+      await mockDashboard.connect(messageBusPorts.subscribePort);
 
       // Then send the request
       const response = await send({
@@ -67,7 +67,7 @@ describe("DashboardProvider", () => {
       });
 
       // Then connect the dashboard
-      await mockDashboard.connect(messageBusPorts.messageBusListenPort);
+      await mockDashboard.connect(messageBusPorts.subscribePort);
 
       // Then await the response
       const response = await request;
@@ -79,7 +79,7 @@ describe("DashboardProvider", () => {
     it("should send ETH", async () => {
       const send = promisify(dashboardProvider.send.bind(dashboardProvider));
 
-      await mockDashboard.connect(messageBusPorts.messageBusListenPort);
+      await mockDashboard.connect(messageBusPorts.subscribePort);
 
       const { result: accounts } =
         (await send({
@@ -122,7 +122,7 @@ describe("DashboardProvider", () => {
 
     it("should retrieve unlocked accounts", async () => {
       // First connect the dashboard
-      await mockDashboard.connect(messageBusPorts.messageBusListenPort);
+      await mockDashboard.connect(messageBusPorts.subscribePort);
 
       // Then send the request
       const accounts = await ethersProvider.listAccounts();
@@ -135,7 +135,7 @@ describe("DashboardProvider", () => {
       const request = ethersProvider.listAccounts();
 
       // Then connect the dashboard
-      await mockDashboard.connect(messageBusPorts.messageBusListenPort);
+      await mockDashboard.connect(messageBusPorts.subscribePort);
 
       // Then await the response
       const accounts = await request;
@@ -144,7 +144,7 @@ describe("DashboardProvider", () => {
     });
 
     it("should send ETH", async () => {
-      await mockDashboard.connect(messageBusPorts.messageBusListenPort);
+      await mockDashboard.connect(messageBusPorts.subscribePort);
 
       const accounts = await ethersProvider.listAccounts();
       const signer = ethersProvider.getSigner();
@@ -161,12 +161,12 @@ describe("DashboardProvider", () => {
     it("should send ETH even when dashboard loses connection as long as keepAlive is true", async () => {
       dashboardProvider.keepAlive = true;
 
-      await mockDashboard.connect(messageBusPorts.messageBusListenPort);
+      await mockDashboard.connect(messageBusPorts.subscribePort);
       const accounts = await ethersProvider.listAccounts();
 
       // Disconnect + reconnect the dashboard between DashboardProvider requests
       mockDashboard.disconnect();
-      await mockDashboard.connect(messageBusPorts.messageBusListenPort);
+      await mockDashboard.connect(messageBusPorts.subscribePort);
 
       const signer = ethersProvider.getSigner();
       const response = await signer.sendTransaction({
@@ -192,7 +192,7 @@ describe("DashboardProvider", () => {
 
     it("should retrieve unlocked accounts", async () => {
       // First connect the dashboard
-      await mockDashboard.connect(messageBusPorts.messageBusListenPort);
+      await mockDashboard.connect(messageBusPorts.subscribePort);
 
       // Then send the request
       const accounts = await web3.eth.getAccounts();
@@ -205,7 +205,7 @@ describe("DashboardProvider", () => {
       const request = web3.eth.getAccounts();
 
       // Then connect the dashboard
-      await mockDashboard.connect(messageBusPorts.messageBusListenPort);
+      await mockDashboard.connect(messageBusPorts.subscribePort);
 
       // Then await the response
       const accounts = await request;
@@ -214,7 +214,7 @@ describe("DashboardProvider", () => {
     });
 
     it("should send ETH", async () => {
-      await mockDashboard.connect(messageBusPorts.messageBusListenPort);
+      await mockDashboard.connect(messageBusPorts.subscribePort);
 
       const accounts = await web3.eth.getAccounts();
       const response = await web3.eth.sendTransaction({
@@ -230,12 +230,12 @@ describe("DashboardProvider", () => {
     it("should send ETH even when dashboard loses connection as long as keepAlive is true", async () => {
       dashboardProvider.keepAlive = true;
 
-      await mockDashboard.connect(messageBusPorts.messageBusListenPort);
+      await mockDashboard.connect(messageBusPorts.subscribePort);
       const accounts = await web3.eth.getAccounts();
 
       // Disconnect + reconnect the dashboard between DashboardProvider requests
       mockDashboard.disconnect();
-      await mockDashboard.connect(messageBusPorts.messageBusListenPort);
+      await mockDashboard.connect(messageBusPorts.subscribePort);
 
       const response = await web3.eth.sendTransaction({
         from: accounts[0],

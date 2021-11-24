@@ -14,7 +14,7 @@ yarn add @truffle/dashboard-provider
 
 ## Usage
 
-The browser provider can be used in place where you'd use any other web3 provider. See the examples below for using it with Ethers.js and Web3.js.
+The dashboard-provider can be used in place where you'd use any other web3 provider. See the examples below for using it with Ethers.js and Web3.js.
 
 ### Ethers.js
 
@@ -68,16 +68,16 @@ export interface DashboardProviderOptions {
 
 ## Logging
 
-When setting the browser provider's `verbose` option to `true`, debug output is logged in the following "debug" namespaces
+When setting the dashboard-provider's `verbose` option to `true`, debug output is logged in the following "debug" namespaces
 
-- `dashboard-message-bus:connections` - logs connections and disconnections of message bus clients and listeners
-- `dashboard-message-bus:requests` - logs requests that get sent from clients to listeners
-- `dashboard-message-bus:responses` - logs responses sent back from listeners to clients
+- `dashboard-message-bus:connections` - logs connections and disconnections of message bus publishers and subscribers
+- `dashboard-message-bus:requests` - logs requests that get sent from publishers to subscribers
+- `dashboard-message-bus:responses` - logs responses sent back from subscribers to publishers
 - `dashboard-message-bus:errors` - logs errors that occur in the message bus
 
 ## Development
 
-The entire dashboard-provider stack consists of three separate packages within the `trufflesuite/truffle` repository. `@truffle/dashboard-provider` contains the actual `Provider` interface that forwards requests to the dashboard. The `@truffle/dashboard` package contains a React app that receives incoming requests, displays them to the user, and then forwards them to the browser's injected web3 wallet. Finally `@truffle/dashboard-message-bus` ties the two packages together with a message bus that relays requests and responses between the browser provider and the dashboard, using multiple WebSocket connections.
+The entire dashboard-provider stack consists of three separate packages within the `trufflesuite/truffle` repository. `@truffle/dashboard-provider` contains the actual `Provider` interface that forwards requests to the dashboard. The `@truffle/dashboard` package contains a React app that receives incoming requests, displays them to the user, and then forwards them to the browser's injected web3 wallet. Finally `@truffle/dashboard-message-bus` ties the two packages together with a message bus that relays requests and responses between the dashboard-provider and the dashboard, using multiple WebSocket connections.
 
 Refer to the READMEs of the other packages for more information on those components.
 
@@ -87,9 +87,7 @@ Refer to the READMEs of the other packages for more information on those compone
 
 ### Manual testing
 
-`manual-test/` contains some more "real-world" usage of the DashboardProvider. The `manual-test.ts` script contains some requests to the DashboardProvider, including `eth_sendTransaction` and `eth_signTypedData_v4`. `metacoin-truffle/` contains the source code for a simple MetaCoin project using Truffle. `metacoin-hardhat/` contains the same contract source code but using Hardhat.
-
-Note that Hardhat doesn't support custom providers in their config files, so we hacked it into the deployment script.
+`manual-test/` contains some more "real-world" usage of the DashboardProvider as well as the `truffle dashboard` command. The `manual-test.ts` script contains some requests to the DashboardProvider, including `eth_sendTransaction` and `eth_signTypedData_v4`. `metacoin-truffle/` contains the source code for a simple MetaCoin project using Truffle. `metacoin-hardhat/` contains the same contract source code but using Hardhat.
 
 To run these manual tests use the following commands:
 

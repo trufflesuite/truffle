@@ -117,12 +117,12 @@ export class DashboardProvider {
 
     this.connecting = true;
     try {
-      const { messageBusRequestsPort } = await getMessageBusPorts(
+      const { publishPort } = await getMessageBusPorts(
         this.dashboardPort,
         this.dashboardHost
       );
       this.socket = await connectToMessageBusWithRetries(
-        messageBusRequestsPort,
+        publishPort,
         this.dashboardHost
       );
       if (this.verbose) this.setupLogging();
