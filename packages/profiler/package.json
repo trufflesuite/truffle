@@ -1,6 +1,6 @@
 {
   "name": "@truffle/profiler",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Package for dealing with Solidity sources along with their Truffle artifacts",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
