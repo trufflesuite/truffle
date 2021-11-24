@@ -28,7 +28,10 @@ describe("DashboardProvider", () => {
 
   beforeEach(async () => {
     mockDashboard = new MockDashboard(ganacheServer.provider);
-    dashboardProvider = new DashboardProvider({ dashboardPort, autoOpen: false });
+    dashboardProvider = new DashboardProvider({
+      dashboardPort,
+      autoOpen: false
+    });
     messageBusPorts = await getMessageBusPorts(dashboardPort);
   });
 

@@ -190,5 +190,5 @@ export class DashboardMessageBus extends EventEmitter {
     this.logToPublishers("Subscriber connected", "connections");
 
     this.subscribers.push(newSubscriber);
-  };
+  }
 }

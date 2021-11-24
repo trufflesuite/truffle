@@ -33,7 +33,6 @@ function Dashboard() {
     } else {
       setConnectedChainId(chainId);
     }
-
   }, [chainId, connectedChainId, socket]);
 
   const initializeSocket = async () => {
