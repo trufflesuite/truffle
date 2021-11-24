@@ -135,7 +135,10 @@ export default class DashboardServer {
 
     if (this.verbose) {
       socket.addEventListener("message", (event: WebSocket.MessageEvent) => {
-        if (typeof event.data !== "string") return;
+        if (typeof event.data !== "string") {
+          event.data = event.data.toString();
+        }
+
         const message = base64ToJson(event.data);
         if (message.type === "log") {
           const logMessage = message as LogMessage;

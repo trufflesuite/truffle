@@ -30,7 +30,10 @@ export default class MockDashboard {
   }
 
   private async handleIncomingMessage(data: WebSocket.Data) {
-    if (typeof data !== "string") return;
+    if (typeof data !== "string") {
+      data = data.toString();
+    }
+
     if (!this.socket) return;
 
     const message = base64ToJson(data) as Message;

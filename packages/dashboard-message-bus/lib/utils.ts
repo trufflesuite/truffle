@@ -55,7 +55,10 @@ export const broadcastAndAwaitFirst = async (
 export const sendAndAwait = (socket: WebSocket, message: Message) => {
   return new Promise<any>((resolve, reject) => {
     socket.addEventListener("message", (event: WebSocket.MessageEvent) => {
-      if (typeof event.data !== "string") return;
+      if (typeof event.data !== "string") {
+        event.data = event.data.toString();
+      }
+
       const response = base64ToJson(event.data);
       if (response.id !== message.id) return;
       resolve(response);

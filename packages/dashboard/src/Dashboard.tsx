@@ -49,7 +49,10 @@ function Dashboard() {
     connectedSocket.addEventListener(
       "message",
       (event: WebSocket.MessageEvent) => {
-        if (typeof event.data !== "string") return;
+        if (typeof event.data !== "string") {
+          event.data = event.data.toString();
+        }
+
         const message = base64ToJson(event.data) as Message;
 
         console.debug("Received message", message);

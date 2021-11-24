@@ -95,7 +95,10 @@ export class DashboardMessageBus extends EventEmitter {
     data: WebSocket.Data,
     listeners: WebSocket[]
   ) {
-    if (typeof data !== "string") return;
+    if (typeof data !== "string") {
+      data = data.toString();
+    }
+
     await this.ready();
 
     this.unfulfilledRequests.set(data, { socket, data });
