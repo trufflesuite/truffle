@@ -99,7 +99,7 @@ const execute = {
       // view function fail with "insufficient funds for gas" errors"
       // For calls intending to skip network check, it should also skip this check to.
       // A workaround would be simply having the gasPrice field delted
-      params.gasPrice;
+      delete params.gasPrice;
       return { args, params };
     }
     const network = await constructor.detectNetwork();
