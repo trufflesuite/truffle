@@ -1,6 +1,3 @@
-import debugModule from "debug";
-const debug = debugModule("profiler:updated");
-
 import * as path from "path";
 import * as fs from "fs";
 
@@ -44,7 +41,7 @@ const getKeyFromPath = (fsPath: string): string => {
   debug(new Error().stack);
   //HACK: Not sure why there would be no source paths. We should enforce that
   //sources have paths. Tests could introduces sources with out paths, and
-  //maybe  the compile external workflow? 
+  //maybe  the compile external workflow?
   return fsPath ? fsPath.split(path.sep).join("/") : fsPath;
 }
 
@@ -58,8 +55,8 @@ function readAndParseArtifactFiles(
     sourceFilesArtifacts[getKeyFromPath(sourceFile)] = [];
   });
   // Get all the artifact files, and read them, parsing them as JSON
-  let buildFiles: string[] = fse.existsSync(contracts_build_directory)
-    ? fse.readdirSync(contracts_build_directory)
+  let buildFiles: string[] = fs.existsSync(contracts_build_directory)
+    ? fs.readdirSync(contracts_build_directory)
     : [];
 
 
