@@ -77,7 +77,7 @@ export class DashboardProvider {
   ): Promise<JSONRPCResponsePayload> {
     await this.ready();
 
-    const message = createMessage("dashboard-provider", payload);
+    const message = createMessage("provider", payload);
 
     this.concurrentRequests += 1;
 

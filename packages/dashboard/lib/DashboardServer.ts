@@ -102,7 +102,7 @@ export default class DashboardServer {
       throw new Error("Not connected to message bus");
     }
 
-    const message = createMessage("dashboard-provider", req.body);
+    const message = createMessage("provider", req.body);
     sendAndAwait(this.socket, message)
       .then(response => res.json(response.payload))
       .catch(next);

@@ -79,15 +79,20 @@ export const respondToUnsupportedRequest = (
   request: DashboardProviderMessage,
   responseSocket: WebSocket
 ) => {
+  const defaultMessage = `Method "${request.payload.method}" is unsupported by @truffle/dashboard-provider`;
+  const customMessages: { [index: string]: string } = {
+    eth_sign: "Method \"eth_sign\" is unsupported by @truffle/dashboard-provider, please use \"personal_sign\" instead"
+  };
+
+  const message = customMessages[request.payload.method] ?? defaultMessage;
+  const code = 4001;
+
   const errorResponse = {
     id: request.id,
     payload: {
       jsonrpc: request.payload.jsonrpc,
       id: request.payload.id,
-      error: {
-        code: 4001,
-        message: `Method "${request.payload.method}" is unsupported by @truffle/dashboard-provider`
-      }
+      error: { code, message }
     }
   };
 
