@@ -22,7 +22,7 @@ const {
   startDashboardInBackground
 } = require("@truffle/dashboard");
 
-const port = 5000;
+const port = 24012;
 const host = "localhost";
 const dashboardExpressApp = await startDashboard(port, host);
 const backgroundProcess = startDashboardInBackground(port, host);
@@ -30,7 +30,7 @@ const backgroundProcess = startDashboardInBackground(port, host);
 
 ## Development
 
-The `lib/` directory contains an Express server that serves the static dashboard page as well as a simple Express API that can be used to retrieve the ports used to connect to the message bus. But this requires the frontend React app to be built, which can take considerable time. So during development we've created a workaround where we start two separate servers, one for the port discovery and message bus on port 5000, and the other for the frontend React app on port 3000. This gives us all the goodness of React, such as hot reloading during development, while also running the message bus and port discovery API. This is recommended when working specifically on the dashboard frontend.
+The `lib/` directory contains an Express server that serves the static dashboard page as well as a simple Express API that can be used to retrieve the ports used to connect to the message bus. But this requires the frontend React app to be built, which can take considerable time. So during development we've created a workaround where we start two separate servers, one for the port discovery and message bus on port 24012, and the other for the frontend React app on port 3000. This gives us all the goodness of React, such as hot reloading during development, while also running the message bus and port discovery API. This is recommended when working specifically on the dashboard frontend.
 
 ```
 yarn start

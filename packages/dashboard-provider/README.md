@@ -49,7 +49,7 @@ export interface DashboardProviderOptions {
   /** Host of the Dashboard (default: localhost) */
   dashboardHost?: string;
 
-  /** Port of the Dashboard (default: 5000) */
+  /** Port of the Dashboard (default: 24012) */
   dashboardPort?: number;
 
   /** Number of seconds before a dashboard-provider request times out (default: 120) */
@@ -96,5 +96,3 @@ yarn test:manual:basic
 yarn test:manual:metacoin-truffle
 yarn test:manual:metacoin-hardhat
 ```
-
-Note that the dashboard does not automatically open so you'll have to open `http://localhost:5000` in your browser to access the dashboard.

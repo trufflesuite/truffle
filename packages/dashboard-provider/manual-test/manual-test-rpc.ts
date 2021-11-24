@@ -1,7 +1,7 @@
 import { ethers, providers } from "ethers";
 
 const run = async () => {
-  const provider = new providers.JsonRpcProvider("http://localhost:5000/rpc");
+  const provider = new providers.JsonRpcProvider("http://localhost:24012/rpc");
   const signer = provider.getSigner();
 
   console.log("eth_accounts");

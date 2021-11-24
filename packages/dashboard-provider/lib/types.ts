@@ -2,7 +2,7 @@ export interface DashboardProviderOptions {
   /** Host of the Dashboard (default: localhost) */
   dashboardHost?: string;
 
-  /** Port of the Dashboard (default: 5000) */
+  /** Port of the Dashboard (default: 24012) */
   dashboardPort?: number;
 
   /** Number of seconds before a dashboard-provider request times out (default: 120) */

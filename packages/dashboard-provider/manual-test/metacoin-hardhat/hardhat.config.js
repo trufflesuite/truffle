@@ -10,7 +10,7 @@ module.exports = {
       url: "http://localhost:8545"
     },
     browser: {
-      url: "http://localhost:5000/rpc"
+      url: "http://localhost:24012/rpc"
     }
   },
   namedAccounts: {
