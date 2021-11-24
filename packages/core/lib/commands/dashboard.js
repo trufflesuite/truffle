@@ -6,7 +6,7 @@ module.exports = {
     port: {
       describe: "Specify the port to start the dashboard and RPC endpoint on",
       type: "number",
-      default: 5000
+      default: 24012
     },
     host: {
       describe: "Specify the host to start the dashboard and RPC endpoint on",

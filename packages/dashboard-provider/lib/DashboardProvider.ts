@@ -34,7 +34,7 @@ export class DashboardProvider {
 
   constructor(options: DashboardProviderOptions = {}) {
     this.dashboardHost = options.dashboardHost ?? "localhost";
-    this.dashboardPort = options.dashboardPort ?? 5000;
+    this.dashboardPort = options.dashboardPort ?? 24012;
     this.timeoutSeconds = options.timeoutSeconds ?? 120;
     this.keepAlive = options.keepAlive ?? false;
     this.verbose = options.verbose ?? false;

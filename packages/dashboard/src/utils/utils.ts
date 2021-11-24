@@ -30,7 +30,7 @@ export const getPorts = async (): Promise<PortsConfig> => {
   const dashboardHost = window.location.hostname;
   const dashboardPort =
     process.env.NODE_ENV === "development"
-      ? 5000
+      ? 24012
       : Number(window.location.port);
   return getMessageBusPorts(dashboardPort, dashboardHost);
 };
