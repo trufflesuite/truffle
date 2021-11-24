@@ -23,7 +23,7 @@ export const base64ToJson = (base64: string) => {
 };
 
 export const startWebSocketServer = (options: ServerOptions) => {
-  return new Promise<WebSocket.Server>((resolve) => {
+  return new Promise<WebSocket.Server>(resolve => {
     const server = new WebSocket.Server(options, () => resolve(server));
   });
 };

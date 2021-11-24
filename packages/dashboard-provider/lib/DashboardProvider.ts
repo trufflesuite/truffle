@@ -50,7 +50,9 @@ export class DashboardProvider {
     };
     startDashboardInBackground(dashboardOptions);
 
-    if (this.autoOpen) open(`http://${this.dashboardHost}:${this.dashboardPort}`);
+    if (this.autoOpen) {
+      open(`http://${this.dashboardHost}:${this.dashboardPort}`);
+    }
   }
 
   public send(payload: JSONRPCRequestPayload, callback: JSONRPCErrorCallback) {

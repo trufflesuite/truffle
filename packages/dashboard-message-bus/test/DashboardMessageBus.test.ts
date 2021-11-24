@@ -49,5 +49,7 @@ describe("DashboardMessageBus", () => {
 
   it.todo("should send a message to multiple subscribers");
   it.todo("should send unfulfilled requests to new subscribers");
-  it.todo("should clear publisher's unfulfilled requests when publisher disconnects");
+  it.todo(
+    "should clear publisher's unfulfilled requests when publisher disconnects"
+  );
 });
