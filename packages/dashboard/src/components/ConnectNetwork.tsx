@@ -13,6 +13,8 @@ function ConnectNetwork({ confirm }: Props) {
   const { chainId, activate } = useWeb3React<providers.Web3Provider>();
   const injectedConnector = new InjectedConnector({});
 
+  const connectBody = "Please connect your wallet to use the Truffle Dashboard Provider.";
+
   const connectButton = (
     <Button text="CONNECT WALLET" onClick={() => activate(injectedConnector)} />
   );
@@ -37,7 +39,7 @@ function ConnectNetwork({ confirm }: Props) {
         {chainId === undefined ? (
           <Card
             header="CONNECT WALLET"
-            body="Please connect your wallet to use the Truffle Browser Provider."
+            body={connectBody}
             footer={connectButton}
           />
         ) : (

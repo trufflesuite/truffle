@@ -40,9 +40,9 @@ function Dashboard() {
     if (socket && socket.readyState === WebSocket.OPEN) return;
 
     const messageBusHost = window.location.hostname;
-    const { messageBusListenPort } = await getPorts();
+    const { subscribePort } = await getPorts();
     const connectedSocket = await connectToMessageBusWithRetries(
-      messageBusListenPort,
+      subscribePort,
       messageBusHost
     );
 

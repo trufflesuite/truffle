@@ -17,9 +17,9 @@ export default class MockDashboard {
 
   constructor(public forwardProvider: Ganache.Provider) {}
 
-  async connect(messageBusListenPort: number) {
+  async connect(subscribePort: number) {
     if (this.socket) return;
-    this.socket = await connectToMessageBusWithRetries(messageBusListenPort);
+    this.socket = await connectToMessageBusWithRetries(subscribePort);
     this.socket.on("message", this.handleIncomingMessage.bind(this));
     this.socket.send("ready");
   }

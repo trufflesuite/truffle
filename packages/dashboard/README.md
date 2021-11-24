@@ -1,6 +1,6 @@
 # Truffle Dashboard
 
-The Truffle Dashboard is the frontend that is used in certain parts of the Truffle stack. Currently it is only used for the Browser Provider by forwarding any provider requests to the dashboard, where they can be processed by an injected browser wallet such as Metamask. Additional use cases may be added to the Dashboard in the future.
+The Truffle Dashboard is the frontend that is used in certain parts of the Truffle stack. Currently it is only used for the dashboard-provider by forwarding any provider requests to the dashboard, where they can be processed by an injected browser wallet such as Metamask. Additional use cases may be added to the Dashboard in the future.
 
 ## Installation & Usage
 

@@ -92,8 +92,8 @@ export default class DashboardServer {
 
     res.json({
       dashboardPort: this.port,
-      messageBusListenPort: this.messageBus.listenPort,
-      messageBusRequestsPort: this.messageBus.requestsPort
+      subscribePort: this.messageBus.subscribePort,
+      publishPort: this.messageBus.publishPort
     });
   }
 
@@ -109,11 +109,11 @@ export default class DashboardServer {
   }
 
   private async startMessageBus() {
-    const messageBusListenPort = await getPort({ host: this.host });
-    const messageBusRequestsPort = await getPort({ host: this.host });
+    const messageBusPublishPort = await getPort({ host: this.host });
+    const messageBusSubscribePort = await getPort({ host: this.host });
     const messageBus = new DashboardMessageBus(
-      messageBusRequestsPort,
-      messageBusListenPort,
+      messageBusPublishPort,
+      messageBusSubscribePort,
       this.host
     );
 
@@ -129,7 +129,7 @@ export default class DashboardServer {
     }
 
     const socket = await connectToMessageBusWithRetries(
-      this.messageBus.requestsPort,
+      this.messageBus.publishPort,
       this.host
     );
 
