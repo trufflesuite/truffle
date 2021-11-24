@@ -36,7 +36,7 @@ Parameters:
 | `shareNonce` | `boolean` | `true` | [ ] | If `false`, a new WalletProvider will track its own nonce-state |
 | `derivationPath` | `string` | `"m/44'/60'/0'/0/"` | [ ] | If specified, will tell the wallet engine what derivation path should use to derive addresses. |
 | `pollingInterval` | `number` | `4000` | [ ] | If specified, will tell the wallet engine to use a custom interval when polling to track blocks. Specified in milliseconds. |
-| `chainId` | `number/|string` | `undefined` | [ ] | Specify to enable signed transactions that are EIP-155 compliant for major chains. |
+| `chainId` | `number\|string` | `undefined` | [ ] | Specify to enable signed transactions that are EIP-155 compliant for major chains. |
 
 Some examples can be found below:
 
@@ -112,7 +112,7 @@ Parameters:
 | `numberOfAddresses` | `number` | `1` | [ ] | If specified, will create `numberOfAddresses` addresses when instantiated |
 | `shareNonce` | `boolean` | `true` | [ ] | If `false`, a new WalletProvider will track its own nonce-state |
 | `derivationPath` | `string` | `"m/44'/60'/0'/0/"` | [ ] | If specified, will tell the wallet engine what derivation path should use to derive addresses. |
-| `chainId` | `number/|string` | `undefined` | [ ] | Specify to enable signed transactions that are EIP-155 compliant for major chains. |
+| `chainId` | `number\|string` | `undefined` | [ ] | Specify to enable signed transactions that are EIP-155 compliant for major chains. |
 
 Instead of a mnemonic, you can alternatively provide a private key or array of
 private keys as the first parameter. When providing an array, `addressIndex`
