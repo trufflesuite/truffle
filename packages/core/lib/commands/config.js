@@ -24,7 +24,7 @@ const command = {
       },
       {
         option: "list",
-        description: "List a Truffle config option values.",
+        description: "List all Truffle config values",
       }
     ],
     allowedGlobalOptions: []
@@ -78,7 +78,7 @@ const command = {
 
       return;
     } else if (command.list) {
-      options.logger.log("; Truffle configs");
+      options.logger.log("; Truffle config values");
       options.logger.log(`analytics = ${googleAnalytics.getAnalytics()}`);
     } else {
       const config = Config.detect(options);
