@@ -167,7 +167,6 @@ const parse = function (args) {
       break;
     }
     case "list": {
-      set = false;
       list = true;
       break;
     }
