@@ -82,7 +82,7 @@ Let's use `@truffle/contract` with an example contract from [Dapps For Beginners
 
 ```javascript
 // Require the package that was previosly saved by @truffle/artifactor
-var MetaCoin = require("./path/to/MetaCoin.sol");
+var MetaCoin = require("./path/to/MetaCoin.json");
 
 // Remember to set the Web3 provider (see above).
 MetaCoin.setProvider(provider);
