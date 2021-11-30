@@ -5,18 +5,15 @@ module.exports = {
   builder: {
     port: {
       describe: "Specify the port to start the dashboard and RPC endpoint on",
-      type: "number",
-      default: 24012
+      type: "number"
     },
     host: {
       describe: "Specify the host to start the dashboard and RPC endpoint on",
-      type: "string",
-      default: "0.0.0.0"
+      type: "string"
     },
     verbose: {
       describe: "Display debug logs for the dashboard server and message bus",
-      type: "boolean",
-      default: false
+      type: "boolean"
     }
   },
   help: {
@@ -39,20 +36,23 @@ module.exports = {
     allowedGlobalOptions: []
   },
   run: async function (options) {
+    const Config = require("@truffle/config");
     const { DashboardServer } = require("@truffle/dashboard");
     const address = require("address");
 
-    const dashboardServerOptions = {
-      port: options.port,
-      host: options.host,
-      rpc: true,
-      verbose: options.verbose
-    };
+    const config = Config.detect(options);
 
+    // Passed CLI options take precedence over config options, falling back on the default values
+    const port = options.port || (config.dashboard && config.dashboard.port) || 24012;
+    const host = options.host || (config.dashboard && config.dashboard.host) || "0.0.0.0";
+    const verbose = options.verbose || (config.dashboard && config.dashboard.verbose) || false;
+    const rpc = true;
+
+    const dashboardServerOptions = { port, host, verbose, rpc };
     const dashboardServer = new DashboardServer(dashboardServerOptions);
     await dashboardServer.start();
 
-    if (options.host === "0.0.0.0") {
+    if (host === "0.0.0.0") {
       // Regex taken from react-scripts to check that the address is a private IP, otherwise we discard it
       // https://en.wikipedia.org/wiki/Private_network#Private_IPv4_address_spaces
       let lanAddress = /^10[.]|^172[.](1[6-9]|2[0-9]|3[0-1])[.]|^192[.]168[.]/.test(address.ip())
@@ -60,24 +60,24 @@ module.exports = {
         : undefined;
 
       console.log(
-        `Truffle Dashboard running at http://localhost:${options.port}`
+        `Truffle Dashboard running at http://localhost:${port}`
       );
       lanAddress && console.log(
-        `                             http://${lanAddress}:${options.port}`
+        `                             http://${lanAddress}:${port}`
       );
 
       console.log(
-        `DashboardProvider RPC endpoint running at http://localhost:${options.port}/rpc`
+        `DashboardProvider RPC endpoint running at http://localhost:${port}/rpc`
       );
       lanAddress && console.log(
-        `                                          http://${lanAddress}:${options.port}/rpc`
+        `                                          http://${lanAddress}:${port}/rpc`
       );
     } else {
       console.log(
-        `Truffle Dashboard running at http://${options.host}:${options.port}`
+        `Truffle Dashboard running at http://${host}:${port}`
       );
       console.log(
-        `DashboardProvider RPC endpoint running at http://${options.host}:${options.port}/rpc`
+        `DashboardProvider RPC endpoint running at http://${host}:${port}/rpc`
       );
     }
 
