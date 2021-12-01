@@ -1,8 +1,0 @@
-deployed:
-  ethereum:
-      - contract: SumDAO
-        links: SafeMathLib
-      - contract: SafeMathLib
-      - execution: ./populate-data.js
-  arbitrum:
-      - contract: ArbiDAO
