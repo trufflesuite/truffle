@@ -16,4 +16,19 @@ const extractFlags = inputArguments => {
   return inputFlags;
 };
 
-module.exports = { extractFlags };
+const detectConfigOrDefault = options => {
+  const Config = require("@truffle/config");
+
+  try {
+    return Config.detect(options);
+  } catch (error) {
+    // Suppress error when truffle can't find a config
+    if (error.message === "Could not find suitable configuration file.") {
+      return Config.default();
+    } else {
+      throw error;
+    }
+  }
+};
+
+module.exports = { extractFlags, detectConfigOrDefault };

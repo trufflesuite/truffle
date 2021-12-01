@@ -1,3 +1,5 @@
+const { detectConfigOrDefault } = require("../utils/utils");
+
 module.exports = {
   command: "dashboard",
   description:
@@ -36,11 +38,10 @@ module.exports = {
     allowedGlobalOptions: []
   },
   run: async function (options) {
-    const Config = require("@truffle/config");
     const { DashboardServer } = require("@truffle/dashboard");
     const address = require("address");
 
-    const config = Config.detect(options);
+    const config = detectConfigOrDefault(options);
 
     // Passed CLI options take precedence over config options, falling back on the default values
     const port = options.port || (config.dashboard && config.dashboard.port) || 24012;
