@@ -21,7 +21,7 @@ const command = {
 
     // const conf = Config.detect(options);
 
-    await Solver.Solver.orchestrate(filepath);
+    await Solver.Solver.orchestrate(filepath.filepath);
   }
 };
 
