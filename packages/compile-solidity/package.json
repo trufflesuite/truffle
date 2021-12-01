@@ -15,7 +15,7 @@
   "version": "6.0.1",
   "main": "dist/index.js",
   "scripts": {
-    "prepare": "exit 0",
+    "prepare": "ttsc",
     "test": "node ./scripts/test.js"
   },
   "dependencies": {
