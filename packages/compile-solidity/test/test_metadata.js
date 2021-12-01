@@ -10,18 +10,20 @@ const assert = require("assert");
 const { findOne } = require("./helpers");
 const workingDirectory = path.join(process.cwd(), "truffleproject");
 
+const solcConfig = {
+  version: "0.4.25",
+  settings: {
+    optimizer: {
+      enabled: false,
+      runs: 200
+    }
+  }
+};
+
 const compileOptions = {
   working_directory: workingDirectory,
   compilers: {
-    solc: {
-      version: "0.4.25",
-      settings: {
-        optimizer: {
-          enabled: false,
-          runs: 200
-        }
-      }
-    }
+    solc: solcConfig
   }
 };
 const supplierOptions = {
@@ -48,16 +50,14 @@ describe("Compile - solidity ^0.4.0", function () {
     let sourcePath;
 
     before("Set up temporary directory and project", async function () {
-      tmpdir = tmp.dirSync({ unsafeCleanup: true }).name; //tmp uses callbacks, not promises, so using sync
+      let tmpdir = tmp.dirSync({ unsafeCleanup: true }).name; //tmp uses callbacks, not promises, so using sync
       await fs.promises.mkdir(path.join(tmpdir, "./contracts"));
       const contracts_directory = path.join(tmpdir, "./contracts");
       options = {
         working_directory: tmpdir,
         contracts_directory,
         contracts_build_directory: path.join(tmpdir, "./build/contracts"), //nothing is actually written, but resolver demands it
-        compilers: {
-          solc: solcConfig
-        },
+        compilers: compileOptions,
         quiet: true
       };
       options.resolver = new Resolver(options);
@@ -78,7 +78,7 @@ describe("Compile - solidity ^0.4.0", function () {
 
       const { compilations } = await Compile.sources({
         sources,
-        options: compileOptions
+        options: solcConfig
       });
 
       const SimpleOrdered = findOne("SimpleOrdered", compilations[0].contracts);
