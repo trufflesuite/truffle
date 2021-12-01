@@ -233,14 +233,14 @@ class DebugPrinter {
     this.config.logger.log(DebugUtils.formatCurrentInstruction(instruction));
 
     // printout 3 upcoming instructions
-    for (let i = Math.min(currentIndex + 1, instructions.length);
-      i <= currentIndex + upcomingInstructions;
+    for (let i = currentIndex + 1;
+      i < Math.min(currentIndex + upcomingInstructions + 1, instructions.length);
       i++) {
       this.config.logger.log(DebugUtils.formatInstruction(instructions[i]));
     }
 
     // add an ellipse if there exist additional instructions after
-    if (currentIndex + upcomingInstructions < instructions.length) {
+    if (currentIndex + upcomingInstructions + 1 < instructions.length) {
       this.config.logger.log("...");
     }
 
