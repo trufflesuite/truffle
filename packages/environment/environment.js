@@ -50,7 +50,8 @@ const Environment = {
     const ganacheOptions = {
       fork: config.provider,
       gasLimit: block.gasLimit,
-      _chainId: 1337 //temporary until Ganache v3!
+      legacyInstamine: true,
+      vmErrorsOnRPCResponse: true
     };
     if (accounts.length > 0) ganacheOptions.unlocked_accounts = accounts;
 
