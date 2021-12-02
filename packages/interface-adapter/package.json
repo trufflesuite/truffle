@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "@types/bn.js": "^4.11.4",
+    "@types/chai": "^4.2.22",
     "@types/mocha": "^5.2.7",
     "@types/web3": "^1.0.20",
     "chai": "^4.2.0",
