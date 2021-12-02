@@ -16,8 +16,8 @@ describe("Provider", function() {
     });
   });
 
-  after("Shutdown Ganache", done => {
-    server.close(done);
+  after("Shutdown Ganache", async () => {
+    await server.close(done);
   });
 
   it("accepts host and port", async () => {
@@ -75,7 +75,7 @@ describe("Provider", function() {
 
   it("accepts a provider instance", async () => {
     const provider = Provider.create({
-      provider: new Ganache.provider()
+      provider: Ganache.provider()
     });
     try {
       await Provider.testConnection({ provider });
@@ -88,7 +88,7 @@ describe("Provider", function() {
   it("accepts a function that returns a provider instance", async () => {
     const provider = Provider.create({
       provider: function() {
-        return new Ganache.provider();
+        return Ganache.provider();
       }
     });
     try {
