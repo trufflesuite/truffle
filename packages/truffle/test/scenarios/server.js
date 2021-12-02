@@ -22,7 +22,7 @@ module.exports = {
   stop: function (done) {
     var self = this;
     if (server) {
-      server.close(function () {
+      server.close().then(function () {
         server = null;
         self.cleanUp().then(done);
       });

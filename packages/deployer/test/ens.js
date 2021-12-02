@@ -33,12 +33,10 @@ describe("ENS class", () => {
     });
     provider = new Ganache.provider(providerOptions);
   });
-  after(done => {
+  after(async () => {
     if (server) {
-      server.close(() => {
-        server = null;
-        done();
-      });
+      await server.close();
+      server = null;
     }
   });
   beforeEach(async () => {
