@@ -1,10 +1,11 @@
-var assert = require("chai").assert;
-var util = require("./util");
+const assert = require("chai").assert;
+const util = require("./util");
 
 describe("Deployments", function () {
-  var Example;
-  var web3;
-  var providerOptions = { vmErrorsOnRPCResponse: false };
+  const Example;
+  const web3;
+  // ganache v2 had a default blockGasLimit of 0x6691b7, which these tests rely on
+  const providerOptions = { vmErrorsOnRPCResponse: false, gasLimit: 0x6691b7 };
 
   before(async function () {
     this.timeout(20000);
@@ -150,7 +151,7 @@ describe("Deployments", function () {
         await Example.new(2001); // Triggers error with a normal reason string
         assert.fail();
       } catch (error) {
-        assert(error.message.includes("exceeds gas limit"));
+        assert(error.message.includes("intrinsic gas too low"));
         assert(error.message.includes("reasonstring"));
         assert(error.receipt === undefined, "Expected no receipt");
         assert(error.reason === "reasonstring");
@@ -162,7 +163,7 @@ describe("Deployments", function () {
         await Example.new(20001); // Triggers error with a long reason string
         assert.fail();
       } catch (error) {
-        assert(error.message.includes("exceeds gas limit"));
+        assert(error.message.includes("intrinsic gas too low"));
         assert(
           error.message.includes(
             "solidity storage is a fun lesson in endianness"
@@ -194,7 +195,7 @@ describe("Deployments", function () {
         await Example.new(1);
         assert.fail();
       } catch (err) {
-        assert(err.message.includes("exceeds gas limit"), "Should OOG");
+        assert(err.message.includes("intrinsic gas too low"), "Should OOG");
       }
 
       Example.autoGas = true;

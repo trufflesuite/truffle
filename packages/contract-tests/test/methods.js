@@ -407,9 +407,7 @@ describe("Methods", function () {
         await example.setValue(10, { gas: 10 });
         assert.fail();
       } catch (e) {
-        const errorCorrect =
-          e.message.includes("exceeds gas limit") ||
-          e.message.includes("intrinsic gas too low");
+        const errorCorrect = e.message.includes("intrinsic gas too low");
 
         assert(errorCorrect, "Should OOG");
       }
@@ -421,7 +419,6 @@ describe("Methods", function () {
           .setValue(10, { gas: 10 })
           .on("error", e => {
             const errorCorrect =
-              e.message.includes("exceeds gas limit") ||
               e.message.includes("intrinsic gas too low");
 
             assert(errorCorrect, "Should OOG");
