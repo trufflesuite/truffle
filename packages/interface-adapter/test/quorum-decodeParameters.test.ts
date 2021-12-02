@@ -4,7 +4,7 @@ import assert from "assert";
 import { Server } from "http";
 
 import Web3 from "web3";
-import Ganache from "ganache-core";
+import Ganache from "ganache";
 
 import { Web3Shim } from "../lib";
 

@@ -3,7 +3,7 @@ const debug = debugModule("debugger:test:reset");
 
 import { assert } from "chai";
 
-import Ganache from "ganache-core";
+import Ganache from "ganache";
 
 import { prepareContracts, lineOf } from "./helpers";
 import * as Codec from "@truffle/codec";

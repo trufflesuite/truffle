@@ -1,6 +1,6 @@
 const debug = require("debug")("decoder:test:shadow-test");
 const assert = require("chai").assert;
-const Ganache = require("ganache-core");
+const Ganache = require("ganache");
 const path = require("path");
 
 const Decoder = require("../../..");

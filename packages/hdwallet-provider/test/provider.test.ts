@@ -1,5 +1,5 @@
 import assert from "assert";
-import Ganache from "ganache-core";
+import Ganache from "ganache";
 import * as EthUtil from "ethereumjs-util";
 import Web3 from "web3";
 import HDWalletProvider from "..";

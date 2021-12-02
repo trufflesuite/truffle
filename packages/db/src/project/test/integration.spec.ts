@@ -9,7 +9,7 @@ import { generateId } from "@truffle/db/system";
 import Migrate from "@truffle/migrate";
 import { Environment } from "@truffle/environment";
 import Config from "@truffle/config";
-import Ganache from "ganache-core";
+import Ganache from "ganache";
 import Web3 from "web3";
 import * as fse from "fs-extra";
 import * as tmp from "tmp";

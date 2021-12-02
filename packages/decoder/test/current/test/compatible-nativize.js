@@ -1,7 +1,7 @@
 const debug = require("debug")("decoder:test:compatible-nativize");
 const assert = require("chai").assert;
 const BN = require("bn.js");
-const Ganache = require("ganache-core");
+const Ganache = require("ganache");
 const path = require("path");
 const Web3 = require("web3");
 

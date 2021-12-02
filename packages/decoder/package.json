@@ -44,7 +44,7 @@
     "@types/debug": "^4.1.5",
     "@types/web3": "^1.0.20",
     "chai": "^4.2.0",
-    "ganache-core": "2.13.0",
+    "ganache": "7.0.0-beta.1",
     "lodash.clonedeep": "^4.5.0",
     "lodash.flatten": "^4.4.0",
     "mocha": "8.1.2",

@@ -4,10 +4,10 @@ const CommandRunner = require("../commandRunner");
 const fs = require("fs-extra");
 const path = require("path");
 const assert = require("assert");
-const Ganache = require("ganache-core");
+const Ganache = require("ganache");
 const Reporter = require("../reporter");
 
-describe("Cyclic Dependencies [ @standalone ]", function() {
+describe("Cyclic Dependencies [ @standalone ]", function () {
   let config;
   let options;
   const logger = new MemoryLogger();
@@ -24,7 +24,7 @@ describe("Cyclic Dependencies [ @standalone ]", function() {
     };
   });
 
-  before("add files with cyclic dependencies", function() {
+  before("add files with cyclic dependencies", function () {
     fs.copySync(
       path.join(__dirname, "Ping.sol"),
       path.join(config.contracts_directory, "Ping.sol")
@@ -35,7 +35,7 @@ describe("Cyclic Dependencies [ @standalone ]", function() {
     );
   });
 
-  it("will compile cyclic dependencies that Solidity is fine with (no `new`'s)", async function() {
+  it("will compile cyclic dependencies that Solidity is fine with (no `new`'s)", async function () {
     this.timeout(20000);
 
     await CommandRunner.run("compile", config);

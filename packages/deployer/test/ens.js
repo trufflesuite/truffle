@@ -1,7 +1,7 @@
 const Web3 = require("web3");
 const { sha3 } = Web3.utils;
 const assert = require("assert");
-const Ganache = require("ganache-core");
+const Ganache = require("ganache");
 const ENS = require("../ens");
 const sinon = require("sinon");
 const ENSJS = require("@ensdomains/ensjs").default;

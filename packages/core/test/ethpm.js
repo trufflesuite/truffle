@@ -6,7 +6,7 @@ const path = require("path");
 const WorkflowCompile = require("@truffle/workflow-compile");
 const Package = require("../lib/package.js");
 const Blockchain = require("@truffle/blockchain-utils");
-const Ganache = require("ganache-core");
+const Ganache = require("ganache");
 const Resolver = require("@truffle/resolver");
 const Artifactor = require("@truffle/artifactor");
 

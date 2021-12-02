@@ -35,7 +35,7 @@
     "@types/node": "12.12.21",
     "chai": "^4.2.0",
     "debug": "^4.3.1",
-    "ganache-core": "2.13.0",
+    "ganache": "7.0.0-beta.1",
     "mocha": "8.1.2",
     "require-nocache": "^1.0.0",
     "sinon": "^9.0.2",

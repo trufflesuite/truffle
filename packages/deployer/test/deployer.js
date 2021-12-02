@@ -1,4 +1,4 @@
-const ganache = require("ganache-core");
+const ganache = require("ganache");
 const Web3 = require("web3");
 const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const assert = require("assert");
