@@ -48,17 +48,16 @@ const reason = {
         resData =
           errorDetails.result /* ganache 3.0 */
           || errorDetails.return /* ganache 2.0 */;
-        }
+      }
 
-        if (resData && resData.includes(errorStringHash)) {
-          try {
-            return web3.eth.abi.decodeParameter(
-              "string",
-              resData.slice(10)
-            );
-          } catch (_) {
-            return undefined;
-          }
+      if (resData && resData.includes(errorStringHash)) {
+        try {
+          return web3.eth.abi.decodeParameter(
+            "string",
+            resData.slice(10)
+          );
+        } catch (_) {
+          return undefined;
         }
       }
     } else if (isString && res.result.includes(errorStringHash)) {
