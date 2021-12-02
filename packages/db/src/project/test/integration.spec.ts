@@ -25,9 +25,9 @@ beforeAll(async done => {
   server.listen(port, done);
 });
 
-afterAll(async done => {
+afterAll(async () => {
   tempDir.removeCallback();
-  setTimeout(() => server.close(done), 500);
+  await server.close();
 });
 
 const compilationResult = require(path.join(
