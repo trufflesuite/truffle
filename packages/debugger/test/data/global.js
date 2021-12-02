@@ -160,7 +160,7 @@ describe("Globally-available variables", function () {
     provider = Ganache.provider({
       seed: "debugger",
       gasLimit: 7000000,
-      _chainId: 1337 //temporary until Ganache v3!
+      hardfork: "istanbul"
     });
   });
 

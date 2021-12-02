@@ -20,10 +20,10 @@ describe("Error cases", function() {
   let UsesLibrary;
 
   const provider = ganache.provider({
-    vmErrorsOnRPCResponse: true,
     legacyInstamine: true,
     vmErrorsOnRPCResponse: false,
-    gasLimit: "0x6691b7"
+    gasLimit: "0x6691b7",
+    hardfork: "istanbul"
   });
 
   const mockMigration = {
