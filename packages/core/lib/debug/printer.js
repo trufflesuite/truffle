@@ -219,13 +219,15 @@ class DebugPrinter {
     const currentIndex = instruction.index;
 
     // add an ellipse if there exist additional instructions before
-    if (currentIndex - previousInstructions >= 0) {
+    if (currentIndex - previousInstructions > 0) {
       this.config.logger.log("...");
     }
     // printout 3 previous instructions
-    for (let i = Math.max(currentIndex - previousInstructions, 0);
+    for (
+      let i = Math.max(currentIndex - previousInstructions, 0);
       i < currentIndex;
-      i++) {
+      i++
+    ) {
       this.config.logger.log(DebugUtils.formatInstruction(instructions[i]));
     }
 
@@ -233,14 +235,16 @@ class DebugPrinter {
     this.config.logger.log(DebugUtils.formatCurrentInstruction(instruction));
 
     // printout 3 upcoming instructions
-    for (let i = Math.min(currentIndex + 1, instructions.length);
-      i <= currentIndex + upcomingInstructions;
-      i++) {
+    for (
+      let i = currentIndex + 1;
+      i <= Math.min(currentIndex + upcomingInstructions, instructions.length - 1);
+      i++
+    ) {
       this.config.logger.log(DebugUtils.formatInstruction(instructions[i]));
     }
 
     // add an ellipse if there exist additional instructions after
-    if (currentIndex + upcomingInstructions < instructions.length) {
+    if (currentIndex + upcomingInstructions < instructions.length - 1) {
       this.config.logger.log("...");
     }
 
