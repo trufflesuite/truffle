@@ -105,7 +105,12 @@ describe("Stack tracing", function () {
   var compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
+    provider = Ganache.provider({
+      vmErrorsOnRPCResponse: true,
+      legacyInstamine: true,
+      seed: "debugger",
+      gasLimit: 7000000
+    });
   });
 
   before("Prepare contracts and artifacts", async function () {
@@ -138,7 +143,7 @@ describe("Stack tracing", function () {
     let source = bugger.view(solidity.current.source);
     let failLine = lineOf("REQUIRE", source.source);
     let callLine = lineOf("CALL", source.source);
-    
+
     await bugger.runToEnd();
 
     let report = bugger.view(stacktrace.current.finalReport);

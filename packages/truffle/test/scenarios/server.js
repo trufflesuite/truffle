@@ -8,7 +8,11 @@ module.exports = {
   start: function (done) {
     this.stop(function () {
       if (!process.env.GETH) {
-        server = Ganache.server({ gasLimit: 6721975 });
+        server = Ganache.server({
+          vmErrorsOnRPCResponse: true,
+          legacyInstamine: true,
+          gasLimit: 6721975
+        });
         server.listen(8545, done);
       } else {
         done();

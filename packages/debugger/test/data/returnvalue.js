@@ -155,7 +155,12 @@ describe("Return value decoding", function () {
   var compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
+    provider = Ganache.provider({
+      legacyInstamine: true,
+      vmErrorsOnRPCResponse: true,
+      seed: "debugger",
+      gasLimit: 7000000
+    });
   });
 
   before("Prepare contracts and artifacts", async function () {
@@ -357,7 +362,7 @@ describe("Return value decoding", function () {
   describe("Custom errors", function() {
     it("Decodes custom errors", async function () {
       this.timeout(9000);
-  
+
       //HACK: because this transaction makes web3 throw, we have to extract the hash from
       //the resulting exception (there is supposed to be a non-hacky way but it
       //does not presently work)
@@ -368,11 +373,11 @@ describe("Return value decoding", function () {
       } catch (error) {
         txHash = error.hashes[0]; //it's the only hash involved
       }
-  
+
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
-  
+
       await bugger.runToEnd();
-  
+
       const decodings = await bugger.returnValue();
       assert.lengthOf(decodings, 1);
       const decoding = decodings[0];
@@ -396,7 +401,7 @@ describe("Return value decoding", function () {
 
     it("Decodes global custom errors", async function () {
       this.timeout(9000);
-  
+
       //HACK: because this transaction makes web3 throw, we have to extract the hash from
       //the resulting exception (there is supposed to be a non-hacky way but it
       //does not presently work)
@@ -407,11 +412,11 @@ describe("Return value decoding", function () {
       } catch (error) {
         txHash = error.hashes[0]; //it's the only hash involved
       }
-  
+
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
-  
+
       await bugger.runToEnd();
-  
+
       const decodings = await bugger.returnValue();
       assert.lengthOf(decodings, 1);
       const decoding = decodings[0];
@@ -425,7 +430,7 @@ describe("Return value decoding", function () {
 
     it("Decodes custom errors declared in other contracts", async function () {
       this.timeout(9000);
-  
+
       //HACK: because this transaction makes web3 throw, we have to extract the hash from
       //the resulting exception (there is supposed to be a non-hacky way but it
       //does not presently work)
@@ -436,11 +441,11 @@ describe("Return value decoding", function () {
       } catch (error) {
         txHash = error.hashes[0]; //it's the only hash involved
       }
-  
+
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
-  
+
       await bugger.runToEnd();
-  
+
       const decodings = await bugger.returnValue();
       assert.lengthOf(decodings, 1);
       const decoding = decodings[0];
@@ -454,7 +459,7 @@ describe("Return value decoding", function () {
 
     it("Decodes custom errors inlined from libraries", async function () {
       this.timeout(9000);
-  
+
       //HACK: because this transaction makes web3 throw, we have to extract the hash from
       //the resulting exception (there is supposed to be a non-hacky way but it
       //does not presently work)
@@ -465,11 +470,11 @@ describe("Return value decoding", function () {
       } catch (error) {
         txHash = error.hashes[0]; //it's the only hash involved
       }
-  
+
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
-  
+
       await bugger.runToEnd();
-  
+
       const decodings = await bugger.returnValue();
       assert.lengthOf(decodings, 1);
       const decoding = decodings[0];
@@ -483,7 +488,7 @@ describe("Return value decoding", function () {
 
     it("Decodes custom errors forwarded from external calls", async function () {
       this.timeout(9000);
-  
+
       //HACK: because this transaction makes web3 throw, we have to extract the hash from
       //the resulting exception (there is supposed to be a non-hacky way but it
       //does not presently work)
@@ -494,11 +499,11 @@ describe("Return value decoding", function () {
       } catch (error) {
         txHash = error.hashes[0]; //it's the only hash involved
       }
-  
+
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
-  
+
       await bugger.runToEnd();
-  
+
       const decodings = await bugger.returnValue();
       assert.lengthOf(decodings, 1);
       const decoding = decodings[0];
@@ -512,7 +517,7 @@ describe("Return value decoding", function () {
 
     it("Decodes ambiguous custom errors using stacktrace info", async function () {
       this.timeout(9000);
-  
+
       //HACK: because this transaction makes web3 throw, we have to extract the hash from
       //the resulting exception (there is supposed to be a non-hacky way but it
       //does not presently work)
@@ -523,11 +528,11 @@ describe("Return value decoding", function () {
       } catch (error) {
         txHash = error.hashes[0]; //it's the only hash involved
       }
-  
+
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
-  
+
       await bugger.runToEnd();
-  
+
       const decodings = await bugger.returnValue();
       assert.lengthOf(decodings, 1);
       const decoding = decodings[0];
@@ -546,7 +551,7 @@ describe("Return value decoding", function () {
 
     it("Decodes ambiguous custom errors forwarded from external calls using stacktrace info", async function () {
       this.timeout(9000);
-  
+
       //HACK: because this transaction makes web3 throw, we have to extract the hash from
       //the resulting exception (there is supposed to be a non-hacky way but it
       //does not presently work)
@@ -557,11 +562,11 @@ describe("Return value decoding", function () {
       } catch (error) {
         txHash = error.hashes[0]; //it's the only hash involved
       }
-  
+
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
-  
+
       await bugger.runToEnd();
-  
+
       const decodings = await bugger.returnValue();
       assert.lengthOf(decodings, 1);
       const decoding = decodings[0];
