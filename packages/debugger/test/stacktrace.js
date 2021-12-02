@@ -131,7 +131,7 @@ describe("Stack tracing", function () {
     try {
       await instance.run(0); //this will throw because of the revert
     } catch (error) {
-      txHash = error.hashes[0]; //it's the only hash involved
+      txHash = error.data.hash; //it's the only hash involved
     }
 
     let bugger = await Debugger.forTx(txHash, {
@@ -180,7 +180,7 @@ describe("Stack tracing", function () {
     try {
       await instance.run(0); //this will throw because of the revert
     } catch (error) {
-      txHash = error.hashes[0]; //it's the only hash involved
+      txHash = error.data.hash; //it's the only hash involved
     }
 
     let bugger = await Debugger.forTx(txHash, {
@@ -257,7 +257,7 @@ describe("Stack tracing", function () {
     try {
       await instance.run(1); //this will throw because of the revert
     } catch (error) {
-      txHash = error.hashes[0]; //it's the only hash involved
+      txHash = error.data.hash; //it's the only hash involved
     }
 
     let bugger = await Debugger.forTx(txHash, {
@@ -307,7 +307,7 @@ describe("Stack tracing", function () {
     try {
       await instance.run(2); //this will throw because of the revert
     } catch (error) {
-      txHash = error.hashes[0]; //it's the only hash involved
+      txHash = error.data.hash; //it's the only hash involved
     }
 
     let bugger = await Debugger.forTx(txHash, {
@@ -360,7 +360,7 @@ describe("Stack tracing", function () {
     try {
       await instance.run(3); //this will throw because of the revert
     } catch (error) {
-      txHash = error.hashes[0]; //it's the only hash involved
+      txHash = error.data.hash; //it's the only hash involved
     }
 
     let bugger = await Debugger.forTx(txHash, {

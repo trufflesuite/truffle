@@ -46,7 +46,7 @@ describe("End State", function () {
 
   before("Create Provider", async function () {
     provider = Ganache.provider({
-      vmErrorsOnRPCResponse: true, 
+      vmErrorsOnRPCResponse: true,
       legacyInstamine: true,
       seed: "debugger",
       gasLimit: 7000000
@@ -70,7 +70,7 @@ describe("End State", function () {
     try {
       await instance.run(); //this will throw because of the revert
     } catch (error) {
-      txHash = error.hashes[0]; //it's the only hash involved
+      txHash = error.data.hash; //it's the only hash involved
     }
 
     let bugger = await Debugger.forTx(txHash, {
