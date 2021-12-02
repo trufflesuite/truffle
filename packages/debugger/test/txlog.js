@@ -121,7 +121,7 @@ describe("Transaction log (visualizer)", function () {
   before("Create Provider", async function () {
     provider = Ganache.provider({
       vmErrorsOnRPCResponse: true,
-      legacyInstamine: true, 
+      legacyInstamine: true,
       seed: "debugger",
       gasLimit: 7000000
     });
@@ -381,7 +381,7 @@ describe("Transaction log (visualizer)", function () {
     try {
       await instance.testRevert(); //this will throw because of the revert
     } catch (error) {
-      txHash = error.hashes[0]; //it's the only hash involved
+      txHash = error.data.hash; //it's the only hash involved
     }
 
     let bugger = await Debugger.forTx(txHash, {
