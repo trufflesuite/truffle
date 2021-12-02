@@ -1,10 +1,8 @@
 import { describe, it } from "mocha";
-import assert from "assert";
-
-import { Server } from "http";
+import { assert } from "chai";
 
 import Web3 from "web3";
-import Ganache from "ganache";
+import Ganache, { Server } from "ganache";
 
 import { createInterfaceAdapter } from "../lib";
 import { InterfaceAdapter } from "../lib/adapter/types";
@@ -31,16 +29,23 @@ async function prepareGanache(
 
 describe("fabric-evm getId Overload", function() {
   it("returns networkID as valid string instead of number w/ fabric-evm=true", async function() {
-    const preparedGanache = await prepareGanache(true);
-    const networkID = await preparedGanache.interfaceAdapter.getNetworkId();
-    assert(typeof networkID === "string");
-    await preparedGanache.server.close();
+    const preparedGanache = await prepareGanache(true) as any;
+    try {
+      const networkID = await preparedGanache.interfaceAdapter.getNetworkId();
+      assert(typeof networkID === "string");
+    } finally {
+      await preparedGanache.server.close();
+    }
   });
 
   it("returns networkID as number w/ fabric-evm=false", async function() {
-    const preparedGanache = await prepareGanache(false);
-    const networkID = await preparedGanache.interfaceAdapter.getNetworkId();
-    assert(typeof networkID === "number");
-    await preparedGanache.server.close();
+    const preparedGanache = await prepareGanache(false) as any;
+    try {
+      const networkID = await preparedGanache.interfaceAdapter.getNetworkId();
+      assert(typeof networkID === "number");
+
+    } finally {
+      await preparedGanache.server.close();
+    }
   });
 });
