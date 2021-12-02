@@ -3128,6 +3128,11 @@
     npmlog "^4.1.2"
     write-file-atomic "^2.3.0"
 
+"@metamask/safe-event-emitter@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@metamask/safe-event-emitter/-/safe-event-emitter-2.0.0.tgz#af577b477c683fad17c619a78208cede06f9605c"
+  integrity sha512-/kSXhY692qiV1MXu6EeOZvg5nECLclxNXcKCxJ3cXQgYuRymRHpdx/t7JXfsK+JLjwA1e1c1/SBrlQYpusC29Q==
+
 "@motrix/nat-api@^0.3.1":
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/@motrix/nat-api/-/nat-api-0.3.1.tgz#de18e7101cc6ed82e9e1e7b5720cb2b40f490246"
@@ -3744,56 +3749,6 @@
     strip-indent "^2.0.0"
     super-split "^1.1.0"
 
-"@trufflesuite/eth-json-rpc-filters@^4.1.2-1":
-  version "4.1.2-1"
-  resolved "https://registry.yarnpkg.com/@trufflesuite/eth-json-rpc-filters/-/eth-json-rpc-filters-4.1.2-1.tgz#61ab78c52e98a883e5cf086925b34a30297b1824"
-  integrity sha512-/MChvC5dw2ck9NU1cZmdovCz2VKbOeIyR4tcxDvA5sT+NaL0rA2/R5U0yI7zsbo1zD+pgqav77rQHTzpUdDNJQ==
-  dependencies:
-    "@trufflesuite/eth-json-rpc-middleware" "^4.4.2-0"
-    await-semaphore "^0.1.3"
-    eth-query "^2.1.2"
-    json-rpc-engine "^5.1.3"
-    lodash.flatmap "^4.5.0"
-    safe-event-emitter "^1.0.1"
-
-"@trufflesuite/eth-json-rpc-infura@^4.0.3-0":
-  version "4.0.3-0"
-  resolved "https://registry.yarnpkg.com/@trufflesuite/eth-json-rpc-infura/-/eth-json-rpc-infura-4.0.3-0.tgz#6d22122937cf60ec9d21a02351c101fdc608c4fe"
-  integrity sha512-xaUanOmo0YLqRsL0SfXpFienhdw5bpQ1WEXxMTRi57az4lwpZBv4tFUDvcerdwJrxX9wQqNmgUgd1BrR01dumw==
-  dependencies:
-    "@trufflesuite/eth-json-rpc-middleware" "^4.4.2-1"
-    cross-fetch "^2.1.1"
-    eth-json-rpc-errors "^1.0.1"
-    json-rpc-engine "^5.1.3"
-
-"@trufflesuite/eth-json-rpc-middleware@^4.4.2-0", "@trufflesuite/eth-json-rpc-middleware@^4.4.2-1":
-  version "4.4.2-1"
-  resolved "https://registry.yarnpkg.com/@trufflesuite/eth-json-rpc-middleware/-/eth-json-rpc-middleware-4.4.2-1.tgz#8c3638ed8a7ed89a1e5e71407de068a65bef0df2"
-  integrity sha512-iEy9H8ja7/8aYES5HfrepGBKU9n/Y4OabBJEklVd/zIBlhCCBAWBqkIZgXt11nBXO/rYAeKwYuE3puH3ByYnLA==
-  dependencies:
-    "@trufflesuite/eth-sig-util" "^1.4.2"
-    btoa "^1.2.1"
-    clone "^2.1.1"
-    eth-json-rpc-errors "^1.0.1"
-    eth-query "^2.1.2"
-    ethereumjs-block "^1.6.0"
-    ethereumjs-tx "^1.3.7"
-    ethereumjs-util "^5.1.2"
-    ethereumjs-vm "^2.6.0"
-    fetch-ponyfill "^4.0.0"
-    json-rpc-engine "^5.1.3"
-    json-stable-stringify "^1.0.1"
-    pify "^3.0.0"
-    safe-event-emitter "^1.0.1"
-
-"@trufflesuite/eth-sig-util@^1.4.2":
-  version "1.4.2"
-  resolved "https://registry.yarnpkg.com/@trufflesuite/eth-sig-util/-/eth-sig-util-1.4.2.tgz#b529e2f38ac08e652116f48981132a26242a4f08"
-  integrity sha512-+GyfN6b0LNW77hbQlH3ufZ/1eCON7mMrGym6tdYf7xiNw9Vv3jBO72bmmos1EId2NgBvPMhmYYm6DSLQFTmzrA==
-  dependencies:
-    ethereumjs-abi "^0.6.8"
-    ethereumjs-util "^5.1.1"
-
 "@trufflesuite/typedoc-default-themes@^0.6.1":
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/@trufflesuite/typedoc-default-themes/-/typedoc-default-themes-0.6.1.tgz#6b733ee896519476f6721d0db3effa2ca3bff7ce"
@@ -3803,34 +3758,6 @@
     jquery "^3.4.1"
     lunr "^2.3.6"
     underscore "^1.9.1"
-
-"@trufflesuite/web3-provider-engine@15.0.14":
-  version "15.0.14"
-  resolved "https://registry.yarnpkg.com/@trufflesuite/web3-provider-engine/-/web3-provider-engine-15.0.14.tgz#8f9696f434585cc0ab2e57c312090c1f138bc471"
-  integrity sha512-6/LoWvNMxYf0oaYzJldK2a9AdnkAdIeJhHW4nuUBAeO29eK9xezEaEYQ0ph1QRTaICxGxvn+1Azp4u8bQ8NEZw==
-  dependencies:
-    "@ethereumjs/tx" "^3.3.0"
-    "@trufflesuite/eth-json-rpc-filters" "^4.1.2-1"
-    "@trufflesuite/eth-json-rpc-infura" "^4.0.3-0"
-    "@trufflesuite/eth-json-rpc-middleware" "^4.4.2-1"
-    "@trufflesuite/eth-sig-util" "^1.4.2"
-    async "^2.5.0"
-    backoff "^2.5.0"
-    clone "^2.0.0"
-    cross-fetch "^2.1.0"
-    eth-block-tracker "^4.4.2"
-    eth-json-rpc-errors "^2.0.2"
-    ethereumjs-block "^1.2.2"
-    ethereumjs-util "^5.1.5"
-    ethereumjs-vm "^2.3.4"
-    json-stable-stringify "^1.0.1"
-    promise-to-callback "^1.0.0"
-    readable-stream "^2.2.9"
-    request "^2.85.0"
-    semaphore "^1.0.3"
-    ws "^5.1.1"
-    xhr "^2.2.0"
-    xtend "^4.0.1"
 
 "@types/accepts@*", "@types/accepts@^1.3.5":
   version "1.3.5"
@@ -4759,9 +4686,9 @@
   integrity sha512-pRs2gYF5yoKYrgSaira0DJqVg2tFuF+Qjp838xS7K+mJyY2jJzjsrl6y17GbIa4uMRogMbxs+ghNCvKg6XyNrA==
 
 "@types/web3-provider-engine@^14.0.0":
-  version "14.0.0"
-  resolved "https://registry.yarnpkg.com/@types/web3-provider-engine/-/web3-provider-engine-14.0.0.tgz#43adc3b39dc9812b82aef8cd2d66577665ad59b0"
-  integrity sha512-yHr8mX2SoX3JNyfqdLXdO1UobsGhfiwSgtekbVxKLQrzD7vtpPkKbkIVsPFOhvekvNbPsCmDyeDCLkpeI9gSmA==
+  version "14.0.1"
+  resolved "https://registry.yarnpkg.com/@types/web3-provider-engine/-/web3-provider-engine-14.0.1.tgz#9ceb76af025e9359a28cff1f0fc4c19070c40ab7"
+  integrity sha512-SaAfLJY/40wKFDsNFwaNfwqFSL6kVhTx9JD18qM+Gaw1qdAXLYF/6E7TIqWEdoG4so6fki/zxURP5NsoCePYJw==
   dependencies:
     "@types/ethereum-protocol" "*"
 
@@ -6274,6 +6201,13 @@ async-limiter@^1.0.0, async-limiter@~1.0.0:
   resolved "https://registry.yarnpkg.com/async-limiter/-/async-limiter-1.0.1.tgz#dd379e94f0db8310b08291f9d64c3209766617fd"
   integrity sha512-csOlWGAcRFJaI6m+F2WKdnMKr4HhdhFVBk0H/QbJFMCr+uO2kwohwXQPxw/9OCxp05r5ghVBFSyioixx3gfkNQ==
 
+async-mutex@^0.2.6:
+  version "0.2.6"
+  resolved "https://registry.yarnpkg.com/async-mutex/-/async-mutex-0.2.6.tgz#0d7a3deb978bc2b984d5908a2038e1ae2e54ff40"
+  integrity sha512-Hs4R+4SPgamu6rSGW8C7cV9gaWUKEHykfzCCvIRuaVv636Ju10ZdeUbvb4TBEW0INuq2DHZqXbK4Nd3yG4RaRw==
+  dependencies:
+    tslib "^2.0.0"
+
 async-retry@^1.2.1, async-retry@^1.3.1:
   version "1.3.1"
   resolved "https://registry.yarnpkg.com/async-retry/-/async-retry-1.3.1.tgz#139f31f8ddce50c0870b0ba558a6079684aaed55"
@@ -6370,11 +6304,6 @@ available-typed-arrays@^1.0.2:
   integrity sha512-XWX3OX8Onv97LMk/ftVyBibpGwY5a8SmuxZPzeOxqmuEqUCOM9ZE+uIaD1VNJ5QnvU2UQusvmKbuM1FR8QWGfQ==
   dependencies:
     array-filter "^1.0.0"
-
-await-semaphore@^0.1.3:
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/await-semaphore/-/await-semaphore-0.1.3.tgz#2b88018cc8c28e06167ae1cdff02504f1f9688d3"
-  integrity sha512-d1W2aNSYcz/sxYO4pMGX9vq65qOTu0P800epMud+6cYYX0QcT7zyqcxec3VWzpgvdXo57UWmVbZpLMjX2m1I7Q==
 
 aws-sign2@~0.7.0:
   version "0.7.0"
@@ -11467,19 +11396,17 @@ eth-ens-namehash@2.0.8, eth-ens-namehash@^2.0.8:
     idna-uts46-hx "^2.3.1"
     js-sha3 "^0.5.7"
 
-eth-json-rpc-errors@^1.0.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/eth-json-rpc-errors/-/eth-json-rpc-errors-1.1.1.tgz#148377ef55155585981c21ff574a8937f9d6991f"
-  integrity sha512-WT5shJ5KfNqHi9jOZD+ID8I1kuYWNrigtZat7GOQkvwo99f8SzAVaEcWhJUv656WiZOAg3P1RiJQANtUmDmbIg==
+eth-json-rpc-filters@^4.2.1:
+  version "4.2.2"
+  resolved "https://registry.yarnpkg.com/eth-json-rpc-filters/-/eth-json-rpc-filters-4.2.2.tgz#eb35e1dfe9357ace8a8908e7daee80b2cd60a10d"
+  integrity sha512-DGtqpLU7bBg63wPMWg1sCpkKCf57dJ+hj/k3zF26anXMzkmtSBDExL8IhUu7LUd34f0Zsce3PYNO2vV2GaTzaw==
   dependencies:
-    fast-safe-stringify "^2.0.6"
-
-eth-json-rpc-errors@^2.0.1, eth-json-rpc-errors@^2.0.2:
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/eth-json-rpc-errors/-/eth-json-rpc-errors-2.0.2.tgz#c1965de0301fe941c058e928bebaba2e1285e3c4"
-  integrity sha512-uBCRM2w2ewusRHGxN8JhcuOb2RN3ueAOYH/0BhqdFmQkZx5lj5+fLKTz0mIVOzd4FG5/kUksCzCD7eTEim6gaA==
-  dependencies:
-    fast-safe-stringify "^2.0.6"
+    "@metamask/safe-event-emitter" "^2.0.0"
+    async-mutex "^0.2.6"
+    eth-json-rpc-middleware "^6.0.0"
+    eth-query "^2.1.2"
+    json-rpc-engine "^6.1.0"
+    pify "^5.0.0"
 
 eth-json-rpc-infura@^3.1.0:
   version "3.2.1"
@@ -11490,6 +11417,16 @@ eth-json-rpc-infura@^3.1.0:
     eth-json-rpc-middleware "^1.5.0"
     json-rpc-engine "^3.4.0"
     json-rpc-error "^2.0.0"
+
+eth-json-rpc-infura@^5.1.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/eth-json-rpc-infura/-/eth-json-rpc-infura-5.1.0.tgz#e6da7dc47402ce64c54e7018170d89433c4e8fb6"
+  integrity sha512-THzLye3PHUSGn1EXMhg6WTLW9uim7LQZKeKaeYsS9+wOBcamRiCQVGHa6D2/4P0oS0vSaxsBnU/J6qvn0MPdow==
+  dependencies:
+    eth-json-rpc-middleware "^6.0.0"
+    eth-rpc-errors "^3.0.0"
+    json-rpc-engine "^5.3.0"
+    node-fetch "^2.6.0"
 
 eth-json-rpc-middleware@^1.5.0:
   version "1.6.0"
@@ -11509,6 +11446,23 @@ eth-json-rpc-middleware@^1.5.0:
     json-stable-stringify "^1.0.1"
     promise-to-callback "^1.0.0"
     tape "^4.6.3"
+
+eth-json-rpc-middleware@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/eth-json-rpc-middleware/-/eth-json-rpc-middleware-6.0.0.tgz#4fe16928b34231a2537856f08a5ebbc3d0c31175"
+  integrity sha512-qqBfLU2Uq1Ou15Wox1s+NX05S9OcAEL4JZ04VZox2NS0U+RtCMjSxzXhLFWekdShUPZ+P8ax3zCO2xcPrp6XJQ==
+  dependencies:
+    btoa "^1.2.1"
+    clone "^2.1.1"
+    eth-query "^2.1.2"
+    eth-rpc-errors "^3.0.0"
+    eth-sig-util "^1.4.2"
+    ethereumjs-util "^5.1.2"
+    json-rpc-engine "^5.3.0"
+    json-stable-stringify "^1.0.1"
+    node-fetch "^2.6.1"
+    pify "^3.0.0"
+    safe-event-emitter "^1.0.1"
 
 eth-lib@0.2.7:
   version "0.2.7"
@@ -11547,6 +11501,20 @@ eth-query@^2.0.2, eth-query@^2.1.0, eth-query@^2.1.2:
   dependencies:
     json-rpc-random-id "^1.0.0"
     xtend "^4.0.1"
+
+eth-rpc-errors@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/eth-rpc-errors/-/eth-rpc-errors-3.0.0.tgz#d7b22653c70dbf9defd4ef490fd08fe70608ca10"
+  integrity sha512-iPPNHPrLwUlR9xCSYm7HHQjWBasor3+KZfRvwEWxMz3ca0yqnlBeJrnyphkGIXZ4J7AMAaOLmwy4AWhnxOiLxg==
+  dependencies:
+    fast-safe-stringify "^2.0.6"
+
+eth-rpc-errors@^4.0.2:
+  version "4.0.3"
+  resolved "https://registry.yarnpkg.com/eth-rpc-errors/-/eth-rpc-errors-4.0.3.tgz#6ddb6190a4bf360afda82790bb7d9d5e724f423a"
+  integrity sha512-Z3ymjopaoft7JDoxZcEb3pwdGh7yiYMhOwm2doUt6ASXlMavpNlK6Cre0+IMl2VSGyEU9rkiperQhp5iRxn5Pg==
+  dependencies:
+    fast-safe-stringify "^2.0.6"
 
 eth-sig-util@2.3.0:
   version "2.3.0"
@@ -11746,7 +11714,7 @@ ethereumjs-tx@2.1.2, ethereumjs-tx@^2.1.2:
     ethereumjs-common "^1.5.0"
     ethereumjs-util "^6.0.0"
 
-ethereumjs-tx@^1.1.1, ethereumjs-tx@^1.2.0, ethereumjs-tx@^1.2.2, ethereumjs-tx@^1.3.3, ethereumjs-tx@^1.3.7:
+ethereumjs-tx@^1.1.1, ethereumjs-tx@^1.2.0, ethereumjs-tx@^1.2.2, ethereumjs-tx@^1.3.3:
   version "1.3.7"
   resolved "https://registry.yarnpkg.com/ethereumjs-tx/-/ethereumjs-tx-1.3.7.tgz#88323a2d875b10549b8347e09f4862b546f3d89a"
   integrity sha512-wvLMxzt1RPhAQ9Yi3/HKZTn0FZYpnsmQdbKYfUUpi4j1SEIcbkd9tndVjcPrufY3V7j2IebOpC00Zp2P/Ay2kA==
@@ -17915,15 +17883,21 @@ json-rpc-engine@^3.4.0, json-rpc-engine@^3.6.0:
     promise-to-callback "^1.0.0"
     safe-event-emitter "^1.0.1"
 
-json-rpc-engine@^5.1.3:
-  version "5.1.8"
-  resolved "https://registry.yarnpkg.com/json-rpc-engine/-/json-rpc-engine-5.1.8.tgz#5ba0147ce571899bbaa7133ffbc05317c34a3c7f"
-  integrity sha512-vTBSDEPJV1fPAsbm2g5sEuPjsgLdiab2f1CTn2PyRr8nxggUpA996PDlNQDsM0gnrA99F8KIBLq2nIKrOFl1Mg==
+json-rpc-engine@^5.3.0:
+  version "5.4.0"
+  resolved "https://registry.yarnpkg.com/json-rpc-engine/-/json-rpc-engine-5.4.0.tgz#75758609d849e1dba1e09021ae473f3ab63161e5"
+  integrity sha512-rAffKbPoNDjuRnXkecTjnsE3xLLrb00rEkdgalINhaYVYIxDwWtvYBr9UFbhTvPB1B2qUOLoFd/cV6f4Q7mh7g==
   dependencies:
-    async "^2.0.1"
-    eth-json-rpc-errors "^2.0.1"
-    promise-to-callback "^1.0.0"
+    eth-rpc-errors "^3.0.0"
     safe-event-emitter "^1.0.1"
+
+json-rpc-engine@^6.1.0:
+  version "6.1.0"
+  resolved "https://registry.yarnpkg.com/json-rpc-engine/-/json-rpc-engine-6.1.0.tgz#bf5ff7d029e1c1bf20cb6c0e9f348dcd8be5a393"
+  integrity sha512-NEdLrtrq1jUZyfjkr9OCz9EzCNhnRyWtt1PAnvnhwy6e8XETS0Dtc+ZNCO2gvuAoKsIn2+vCSowXTYE4CkgnAQ==
+  dependencies:
+    "@metamask/safe-event-emitter" "^2.0.0"
+    eth-rpc-errors "^4.0.2"
 
 json-rpc-error@^2.0.0:
   version "2.0.0"
@@ -19450,11 +19424,6 @@ lodash.find@4.6.0:
   version "4.6.0"
   resolved "https://registry.yarnpkg.com/lodash.find/-/lodash.find-4.6.0.tgz#cb0704d47ab71789ffa0de8b97dd926fb88b13b1"
   integrity sha1-ywcE1Hq3F4n/oN6Ll92Sb7iLE7E=
-
-lodash.flatmap@^4.5.0:
-  version "4.5.0"
-  resolved "https://registry.yarnpkg.com/lodash.flatmap/-/lodash.flatmap-4.5.0.tgz#ef8cbf408f6e48268663345305c6acc0b778702e"
-  integrity sha1-74y/QI9uSCaGYzRTBcaswLd4cC4=
 
 lodash.flatten@^4.2.0, lodash.flatten@^4.4.0:
   version "4.4.0"
@@ -27531,6 +27500,11 @@ tslib@^1.8.1:
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.13.0.tgz#c881e13cc7015894ed914862d276436fa9a47043"
   integrity sha512-i/6DQjL8Xf3be4K/E6Wgpekn5Qasl1usyw++dAA35Ue5orEn65VIxOA+YvNNl9HV3qv70T7CNwjODHZrLwvd1Q==
 
+tslib@^2.0.0:
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.3.1.tgz#e8a335add5ceae51aa261d32a490158ef042ef01"
+  integrity sha512-77EbyPPpMz+FRFRuAFlWMtmgUWGe9UOG2Z25NqCwiIjRhOf5iKGuzSe5P2w1laq+FkRy4p+PCuVkJSGkzTEKVw==
+
 tslib@^2.0.3:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.1.0.tgz#da60860f1c2ecaa5703ab7d39bc05b6bf988b97a"
@@ -29086,6 +29060,34 @@ web3-provider-engine@14.2.1:
     ethereumjs-util "^5.1.5"
     ethereumjs-vm "^2.3.4"
     json-rpc-error "^2.0.0"
+    json-stable-stringify "^1.0.1"
+    promise-to-callback "^1.0.0"
+    readable-stream "^2.2.9"
+    request "^2.85.0"
+    semaphore "^1.0.3"
+    ws "^5.1.1"
+    xhr "^2.2.0"
+    xtend "^4.0.1"
+
+web3-provider-engine@16.0.3:
+  version "16.0.3"
+  resolved "https://registry.yarnpkg.com/web3-provider-engine/-/web3-provider-engine-16.0.3.tgz#8ff93edf3a8da2f70d7f85c5116028c06a0d9f07"
+  integrity sha512-Q3bKhGqLfMTdLvkd4TtkGYJHcoVQ82D1l8jTIwwuJp/sAp7VHnRYb9YJ14SW/69VMWoOhSpPLZV2tWb9V0WJoA==
+  dependencies:
+    "@ethereumjs/tx" "^3.3.0"
+    async "^2.5.0"
+    backoff "^2.5.0"
+    clone "^2.0.0"
+    cross-fetch "^2.1.0"
+    eth-block-tracker "^4.4.2"
+    eth-json-rpc-filters "^4.2.1"
+    eth-json-rpc-infura "^5.1.0"
+    eth-json-rpc-middleware "^6.0.0"
+    eth-rpc-errors "^3.0.0"
+    eth-sig-util "^1.4.2"
+    ethereumjs-block "^1.2.2"
+    ethereumjs-util "^5.1.5"
+    ethereumjs-vm "^2.3.4"
     json-stable-stringify "^1.0.1"
     promise-to-callback "^1.0.0"
     readable-stream "^2.2.9"
