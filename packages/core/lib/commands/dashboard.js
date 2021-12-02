@@ -43,10 +43,9 @@ module.exports = {
 
     const config = detectConfigOrDefault(options);
 
-    // Passed CLI options take precedence over config options, falling back on the default values
-    const port = options.port || (config.dashboard && config.dashboard.port) || 24012;
-    const host = options.host || (config.dashboard && config.dashboard.host) || "0.0.0.0";
-    const verbose = options.verbose || (config.dashboard && config.dashboard.verbose) || false;
+    const port = options.port || config.dashboard.port;
+    const host = options.host || config.dashboard.host;
+    const verbose = options.verbose || config.dashboard.verbose;
     const rpc = true;
 
     const dashboardServerOptions = { port, host, verbose, rpc };

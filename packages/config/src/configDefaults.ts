@@ -35,6 +35,11 @@ export const getInitialConfig = ({
     resolver: null,
     artifactor: null,
     quiet: false,
+    dashboard: {
+      host: '0.0.0.0',
+      port: 24012,
+      verbose: false
+    },
     ethpm: {
       ipfs_host: "ipfs.infura.io",
       ipfs_protocol: "https",
@@ -91,6 +96,7 @@ export const configProps = ({
     build() {},
     resolver() {},
     artifactor() {},
+    dashboard() {},
     ethpm() {},
     logger() {},
     compilers() {},
