@@ -1,9 +1,10 @@
-var assert = require("chai").assert;
-var util = require("./util");
+const assert = require("chai").assert;
+const util = require("./util");
 
 describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
-  var Example;
-  var providerOptions = { vmErrorsOnRPCResponse: true }; // <--- TRUE
+  const Example;
+  // legacyInstamine mode must be enabled whenever vmErrorsOnRPCResponse is true
+  const providerOptions = { legacyInstamine: true, vmErrorsOnRPCResponse: true }; // <--- TRUE
 
   before(async function () {
     this.timeout(10000);
@@ -19,14 +20,14 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
         await Example.new(1, { gas: 10 });
         assert.fail();
       } catch (error) {
-        assert(error.message.includes("exceeds gas limit"), "Should OOG");
+        assert(error.message.includes("intrinsic gas too low"), "Should OOG");
       }
     });
 
     it("should emit OOG errors", function (done) {
       Example.new(1, { gas: 10 })
         .on("error", error => {
-          assert(error.message.includes("exceeds gas limit"), "Should OOG");
+          assert(error.message.includes("intrinsic gas too low"), "Should OOG");
           done();
         })
         .catch(() => null);
@@ -43,7 +44,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
           "Should not include reason message"
         );
         assert(
-          e.message.includes("exceeds gas limit"),
+          e.message.includes("intrinsic gas too low"),
           "Error should be gas limit err"
         );
       }
@@ -63,7 +64,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
           "Error message should include reason"
         );
         assert(
-          e.message.includes("exceeds gas limit"),
+          e.message.includes("intrinsic gas too low"),
           "Error should be gas limit err"
         );
       }
@@ -89,7 +90,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
         assert.fail();
       } catch (e) {
         assert(
-          e.stack.includes("Error: base fee exceeds gas limit"),
+          e.stack.includes("Error: intrinsic gas too low"),
           "Should keep hijacked error description"
         );
         assert(
@@ -97,11 +98,11 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
           "Should include original stack details"
         );
         assert(
-          e.hijackedStack.includes("Error: base fee exceeds gas limit"),
+          e.hijackedStack.includes("Error: intrinsic gas too low"),
           "Should preserve hijacked error message"
         );
         assert(
-          e.hijackedStack.includes("dist/runTx.js:"),
+          e.hijackedStack.includes("src/transaction-pool.js:"),
           "Should preserve hijacked stack details"
         );
       }
@@ -142,7 +143,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
         await example.setValue(10, { gas: 10 });
         assert.fail();
       } catch (e) {
-        assert(e.message.includes("exceeds gas limit"), "Error should be OOG");
+        assert(e.message.includes("intrinsic gas too low"), "Error should be OOG");
       }
     });
 
@@ -297,7 +298,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
           "Should preserve hijacked error message"
         );
         assert(
-          e.hijackedStack.includes("/utils/runtimeerror.js:"),
+          e.hijackedStack.includes("/things/transaction.js:"),
           "Should preserve hijacked stack details"
         );
       }
@@ -335,7 +336,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
         assert.fail();
       } catch (e) {
         assert(
-          e.stack.includes("Error: base fee exceeds gas limit"),
+          e.stack.includes("Error: intrinsic gas too low"),
           "Should keep hijacked error description"
         );
         assert(
@@ -343,11 +344,11 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
           "Should include original stack details"
         );
         assert(
-          e.hijackedStack.includes("Error: base fee exceeds gas limit"),
+          e.hijackedStack.includes("Error: intrinsic gas too low"),
           "Should preserve hijacked error message"
         );
         assert(
-          e.hijackedStack.includes("dist/runTx.js:"),
+          e.hijackedStack.includes("src/transaction-pool.js:"),
           "Should preserve hijacked stack details"
         );
       }
