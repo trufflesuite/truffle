@@ -3,7 +3,7 @@ const debug = debugModule("debugger:test:data:global");
 
 import { assert } from "chai";
 
-import Ganache from "ganache-core";
+import Ganache from "ganache";
 
 import { prepareContracts } from "../helpers";
 import Debugger from "lib/debugger";

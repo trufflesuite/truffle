@@ -1,6 +1,6 @@
 const debug = require("debug")("test:util");
 const fs = require("fs");
-const ganache = require("ganache-core");
+const ganache = require("ganache");
 const Web3 = require("web3");
 const Web3PromiEvent = require("web3-core-promievent");
 const { Compile } = require("@truffle/compile-solidity");

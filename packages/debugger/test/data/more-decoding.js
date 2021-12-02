@@ -4,7 +4,7 @@ const debug = debugModule("debugger:test:data:more-decoding");
 import { assert } from "chai";
 import Web3 from "web3"; //just using for utils
 
-import Ganache from "ganache-core";
+import Ganache from "ganache";
 
 import { prepareContracts, lineOf } from "../helpers";
 import Debugger from "lib/debugger";

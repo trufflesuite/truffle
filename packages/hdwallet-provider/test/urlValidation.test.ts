@@ -1,6 +1,6 @@
 import assert from "assert";
 import WalletProvider from "../dist";
-import Ganache from "ganache-core";
+import Ganache from "ganache";
 import { describe, it } from "mocha";
 
 const { isValidProvider } = WalletProvider;

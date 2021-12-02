@@ -1,5 +1,5 @@
 const assert = require("assert");
-const Ganache = require("ganache-core");
+const Ganache = require("ganache");
 const Provider = require("../index");
 const Web3 = require("web3");
 

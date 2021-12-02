@@ -36,7 +36,7 @@
     "@types/ethereumjs-util": "^5.2.0",
     "@types/mocha": "^5.2.7",
     "@types/web3-provider-engine": "^14.0.0",
-    "ganache-core": "2.13.0",
+    "ganache": "7.0.0-beta.1",
     "mocha": "8.1.2",
     "ts-node": "^9.0.0",
     "typescript": "^4.1.4",
