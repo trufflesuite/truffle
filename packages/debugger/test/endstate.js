@@ -70,7 +70,7 @@ describe("End State", function () {
     try {
       await instance.run(); //this will throw because of the revert
     } catch (error) {
-      txHash = error.data.hash; //it's the only hash involved
+      txHash = error.data.hash;
     }
 
     let bugger = await Debugger.forTx(txHash, {
