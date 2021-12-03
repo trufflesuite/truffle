@@ -12948,16 +12948,6 @@ ganache@^3.0.0-filecoin.3:
     leveldown "5.6.0"
     secp256k1 "4.0.2"
 
-ganache@^7.0.0-beta.1:
-  version "7.0.0-internal.1341"
-  resolved "https://registry.yarnpkg.com/ganache/-/ganache-7.0.0-internal.1341.tgz#ee5f44b18de95f928b0216e410206ab9f2a45b83"
-  integrity sha512-mq44h7i4qXHWfzz1iVtLC/vZogBqqH6pPEfKMLqvMBETw5gcIHUZ8+J9+pgFwmtIUXnAPqw5MYP7Wic0ioBXYQ==
-  dependencies:
-    bigint-buffer "1.1.5"
-    keccak "3.0.1"
-    leveldown "5.6.0"
-    secp256k1 "4.0.2"
-
 gar@^1.0.4:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/gar/-/gar-1.0.4.tgz#f777bc7db425c0572fdeb52676172ca1ae9888b8"
