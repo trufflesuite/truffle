@@ -44,7 +44,11 @@ async function sendTransactionManual(web3, params, promiEvent) {
 
 function handleError(error) {
   debug("error: %O", error);
-  if (error.data && Object.keys(error.data).length === 3) {
+  if (error.data && error.data.hash) {
+    //ganache v7.x
+    return { txHash: error.data.hash };
+  } else if (error.data && Object.keys(error.data).length === 3) {
+    //ganache v2.x
     //error.data will have 3 keys: stack, name, and the txHash
     const transactionHash = Object.keys(error.data).find(
       key => key !== "stack" && key !== "name"
