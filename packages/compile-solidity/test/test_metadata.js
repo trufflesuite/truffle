@@ -8,25 +8,19 @@ const Resolver = require("@truffle/resolver");
 const { CompilerSupplier } = require("../dist/compilerSupplier");
 const assert = require("assert");
 const { findOne } = require("./helpers");
-const workingDirectory = path.join(
-  process.cwd(),
-  "truffleproject"
-);
 
-const compileOptions = {
-  working_directory: workingDirectory,
-  compilers: {
-    solc: {
-      version: "0.4.25",
-      settings: {
-        optimizer: {
-          enabled: false,
-          runs: 200
-        }
-      }
+const workingDirectory = tmp.dirSync({ unsafeCleanup: true }).name; //tmp uses callbacks, not promises, so using sync
+
+const solcConfig = {
+  version: "0.4.25",
+  settings: {
+    optimizer: {
+      enabled: false,
+      runs: 200
     }
   }
 };
+
 const supplierOptions = {
   solcConfig,
   events: {
@@ -36,8 +30,7 @@ const supplierOptions = {
 
 describe("Compile - solidity ^0.4.0", function () {
   this.timeout(5000); // solc
-  let source = null;
-  let solc = null; // gets loaded via supplier
+
   let options;
 
   before("get solc", async function () {
@@ -48,19 +41,22 @@ describe("Compile - solidity ^0.4.0", function () {
   });
 
   describe("Metadata", function () {
-
     let sourcePath;
 
     before("Set up temporary directory and project", async function () {
       tmpdir = tmp.dirSync({ unsafeCleanup: true }).name; //tmp uses callbacks, not promises, so using sync
-      await fs.promises.mkdir(path.join(tmpdir, "./contracts"));
-      const contracts_directory = path.join(tmpdir, "./contracts");
+
+      const contracts_directory = path.join(workingDirectory, "./contracts");
+      await fs.promises.mkdir(contracts_directory);
       options = {
-        working_directory: tmpdir,
+        working_directory: workingDirectory,
         contracts_directory,
-        contracts_build_directory: path.join(tmpdir, "./build/contracts"), //nothing is actually written, but resolver demands it
+        contracts_build_directory: path.join(
+          workingDirectory,
+          "./build/contracts"
+        ), //nothing is actually written, but resolver demands it
         compilers: {
-          solc: solcConfig,
+          solc: solcConfig
         },
         quiet: true
       };
@@ -73,28 +69,25 @@ describe("Compile - solidity ^0.4.0", function () {
     });
 
     it("does not include absolute paths in metadata", async function () {
-      const sourcePath = path.join(
-        workingDirectory,
-        "contracts",
-        "SimpleOrdered.sol"
-      )
-      const sources = { [sourcePath]: source };
-
-      const { compilations } = await Compile.sources({
-        sources,
-        options: compileOptions
+      const { compilations } = await Compile.sourcesWithDependencies({
+        paths: [sourcePath],
+        options
       });
+      debug("compilations: %0", compilations);
 
       const SimpleOrdered = findOne("SimpleOrdered", compilations[0].contracts);
       const metadata = JSON.parse(SimpleOrdered.metadata);
       const metadataSources = Object.keys(metadata.sources);
       const metadataTargets = Object.keys(metadata.settings.compilationTarget);
       const metadataPaths = metadataSources.concat(metadataTargets);
+
       debug("metadataPaths: %O", metadataPaths);
-      assert(metadataPaths.every(
-        sourcePath => sourcePath.startsWith("project:/") &&
-          !sourcePath.includes(tmpdir)
-      ));
+      assert(
+        metadataPaths.every(
+          sourcePath =>
+            sourcePath.startsWith("project:/") && !sourcePath.includes(tmpdir)
+        )
+      );
     });
   });
 });
