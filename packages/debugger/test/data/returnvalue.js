@@ -339,7 +339,7 @@ describe("Return value decoding", function () {
     try {
       await instance.panic(); //web3 throws on failure
     } catch (error) {
-      txHash = error.hashes[0];
+      txHash = error.data.hash;
     }
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
@@ -371,7 +371,7 @@ describe("Return value decoding", function () {
       try {
         await instance.local(); //web3 throws on failure
       } catch (error) {
-        txHash = error.hashes[0];
+        txHash = error.data.hash;
       }
 
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
@@ -410,7 +410,7 @@ describe("Return value decoding", function () {
       try {
         await instance.global(); //web3 throws on failure
       } catch (error) {
-        txHash = error.hashes[0];
+        txHash = error.data.hash;
       }
 
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
@@ -439,7 +439,7 @@ describe("Return value decoding", function () {
       try {
         await instance.foreign(); //web3 throws on failure
       } catch (error) {
-        txHash = error.hashes[0];
+        txHash = error.data.hash;
       }
 
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
@@ -468,7 +468,7 @@ describe("Return value decoding", function () {
       try {
         await instance.inlined(); //web3 throws on failure
       } catch (error) {
-        txHash = error.hashes[0];
+        txHash = error.data.hash;
       }
 
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
@@ -497,7 +497,7 @@ describe("Return value decoding", function () {
       try {
         await instance.makeCall(); //web3 throws on failure
       } catch (error) {
-        txHash = error.hashes[0];
+        txHash = error.data.hash;
       }
 
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
@@ -526,7 +526,7 @@ describe("Return value decoding", function () {
       try {
         await instance.ambiguous(); //web3 throws on failure
       } catch (error) {
-        txHash = error.hashes[0];
+        txHash = error.data.hash;
       }
 
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
@@ -560,7 +560,7 @@ describe("Return value decoding", function () {
       try {
         await instance.ambiguousCall(); //web3 throws on failure
       } catch (error) {
-        txHash = error.hashes[0];
+        txHash = error.data.hash;
       }
 
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
