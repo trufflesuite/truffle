@@ -23,13 +23,13 @@ describe("Schema", function () {
     }
   });
 
-  it("normalizes a correct input", function () {
+  it("validates a correct input as part of normalization", function () {
     Schema.normalize(MetaCoin, {
       validate: true
     });
   });
 
-  it("throws exception when attempting to normalize an invalid schema", function () {
+  it("throws exception when attempting to validate invalid input during normalization", function () {
     var invalid = {
       abi: -1
     };
