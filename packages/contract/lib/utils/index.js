@@ -16,6 +16,7 @@ const allowedTxParams = new Set([
   "value",
   "data",
   "nonce",
+  "accessList",
   "type",
   "privateFor",
   "overwrite"
