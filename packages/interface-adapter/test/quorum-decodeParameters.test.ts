@@ -1,5 +1,5 @@
 import { describe, it } from "mocha";
-import assert from "chai";
+import { assert } from "chai";
 
 import Web3 from "web3";
 import Ganache, { Server } from "ganache";
