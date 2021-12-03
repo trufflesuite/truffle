@@ -25,6 +25,7 @@ export const getInitialConfig = ({
     gasPrice: null,
     maxFeePerGas: null,
     maxPriorityFeePerGas: null,
+    type: undefined, //don't use null here!
     from: null,
     confirmations: 0,
     timeoutBlocks: 0,
@@ -229,6 +230,20 @@ export const configProps = ({
       set() {
         throw new Error(
           "Don't set config.maxPriorityFeePerGas directly. Instead, set config.networks and then config.networks[<network name>].maxPriorityFeePerGas"
+        );
+      }
+    },
+    type: {
+      get() {
+        try {
+          return configObject.network_config.type;
+        } catch (e) {
+          return null;
+        }
+      },
+      set() {
+        throw new Error(
+          "Don't set config.type directly. Instead, set config.networks and then config.networks[<network name>].type"
         );
       }
     },
