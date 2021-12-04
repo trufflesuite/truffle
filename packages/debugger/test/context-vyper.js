@@ -12,12 +12,12 @@ import sessionSelector from "lib/session/selectors";
 
 const __IMMUTABLE = `
 event Num:
-    num: uint256
+    num: int128
 
-imm: immutable(uint256)
+imm: immutable(int128)
 
 @external
-def __init__(x: uint256):
+def __init__(x: int128):
     imm = x
 
 @external
