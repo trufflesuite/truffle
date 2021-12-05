@@ -30,9 +30,9 @@ if [ "$INTEGRATION" = true ]; then
 
 	sudo add-apt-repository -y ppa:deadsnakes/ppa
 	sudo add-apt-repository -y ppa:ethereum/ethereum
-	sudo apt install -y jq python3.6 python3.6-dev python3.6-venv solc
+	sudo apt install -y jq python3.8 python3.8-dev python3.8-venv solc
 	wget https://bootstrap.pypa.io/get-pip.py
-	sudo python3.6 get-pip.py
+	sudo python3.8 get-pip.py
 	sudo pip3 install vyper
 	lerna run --scope truffle test --stream
 
@@ -81,9 +81,9 @@ elif [ "$PACKAGES" = true ]; then
 	sudo add-apt-repository -y ppa:deadsnakes/ppa
 	sudo add-apt-repository -y ppa:ethereum/ethereum
 	sudo apt update
-	sudo apt install -y python3.6 python3.6-dev python3.6-venv solc
+	sudo apt install -y python3.8 python3.8-dev python3.8-venv solc
 	wget https://bootstrap.pypa.io/get-pip.py
-	sudo python3.6 get-pip.py
+	sudo python3.8 get-pip.py
 	sudo pip3 install vyper
 	lerna run --ignore truffle test --stream --concurrency=1
 
@@ -93,9 +93,9 @@ elif [ "$COVERAGE" = true ]; then
 	sudo add-apt-repository -y ppa:deadsnakes/ppa
 	sudo add-apt-repository -y ppa:ethereum/ethereum
 	sudo apt update
-	sudo apt install -y jq python3.6 python3.6-dev python3.6-venv solc
+	sudo apt install -y jq python3.8 python3.8-dev python3.8-venv solc
 	wget https://bootstrap.pypa.io/get-pip.py
-	sudo python3.6 get-pip.py
+	sudo python3.8 get-pip.py
 	sudo pip3 install vyper
 	cd packages/debugger && yarn test:coverage \
 		&& cd ../../ && nyc lerna run --ignore debugger test \
