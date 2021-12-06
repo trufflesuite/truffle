@@ -117,11 +117,6 @@ module.exports = {
       const newAccessList = await Promise.all(
         inputParams.accessList.map(async (entry) => {
           if (entry && entry.address && !isAddress(entry.address)) {
-            //note: this code won't run if the entry is given in the form
-            //[address, storageKeys] rather than { address, storageKeys }.
-            //however I think that's fine, as the former form requires things
-            //to be given as Uint8Arrays rather than as strings, so I think
-            //it's safe to ignore that
             const newAddress = await this.resolveNameToAddress({
               name: entry.address,
               provider: web3.currentProvider,
