@@ -42,13 +42,17 @@ export function findContext(
 }
 
 export function matchContext(context: Context, givenBinary: string): boolean {
-  let { binary, isConstructor } = context;
-  let lengthDifference = givenBinary.length - binary.length;
-  //first: if it's not a constructor, they'd better be equal in length.
-  //if it is a constructor, the given binary must be at least as long,
-  //and the difference must be a multiple of 64
+  const { binary, compiler, isConstructor } = context;
+  const lengthDifference = givenBinary.length - binary.length;
+  //first: if it's not a constructor, and it's not Vyper,
+  //they'd better be equal in length.
+  //if it is a constructor, or is Vyper,
+  //the given binary must be at least as long,
+  //and the difference must be a multiple of 32 bytes (64 hex digits)
+  const additionalAllowed = isConstructor ||
+    (compiler != undefined && compiler.name === "vyper");
   if (
-    (!isConstructor && lengthDifference !== 0) ||
+    (!additionalAllowed && lengthDifference !== 0) ||
     lengthDifference < 0 ||
     lengthDifference % (2 * Evm.Utils.WORD_SIZE) !== 0
   ) {
