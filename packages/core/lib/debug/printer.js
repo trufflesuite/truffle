@@ -335,7 +335,7 @@ class DebugPrinter {
         switch (revertDecoding.kind) {
           case "failure":
             this.config.logger.log(
-              "There was no revert message.  This may be due to an in intentional halting expression, such as assert(), revert(), or require(), or could be due to an unintentional exception such as out-of-gas exceptions."
+              "There was no revert message.  This may be due to an intentional halting expression, such as assert(), revert(), or require(), or could be due to an unintentional exception such as out-of-gas exceptions."
             );
             break;
           case "revert":
