@@ -6,8 +6,8 @@ const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const Web3 = require("web3");
 
-describe("production", function() {
-  describe("{production: true, confirmations: 2 } [ @geth ]", function() {
+describe.skip("production", function () {
+  describe("{ production: true, confirmations: 2 } [ @geth ]", function () {
     if (!process.env.GETH) return;
 
     let config;
@@ -16,7 +16,7 @@ describe("production", function() {
     const project = path.join(__dirname, "../../sources/migrations/production");
     const logger = new MemoryLogger();
 
-    before(async function() {
+    before(async function () {
       this.timeout(10000);
       config = await sandbox.create(project);
       config.network = "ropsten";
@@ -33,7 +33,7 @@ describe("production", function() {
       networkId = await web3.eth.net.getId();
     });
 
-    it("auto dry-runs and honors confirmations option", async function() {
+    it("auto dry-runs and honors confirmations option", async function () {
       this.timeout(70000);
 
       await CommandRunner.run("migrate --network ropsten", config);
@@ -66,7 +66,7 @@ describe("production", function() {
     });
   });
 
-  describe("{production: true, skipDryRun: true } [ @geth ]", function() {
+  describe("{ production: true, skipDryRun: true } [ @geth ]", function () {
     if (!process.env.GETH) return;
 
     let config;
@@ -75,7 +75,7 @@ describe("production", function() {
     const project = path.join(__dirname, "../../sources/migrations/production");
     const logger = new MemoryLogger();
 
-    before(async function() {
+    before(async function () {
       this.timeout(10000);
       config = await sandbox.create(project);
       config.network = "fakeRopsten";
@@ -92,7 +92,7 @@ describe("production", function() {
       networkId = await web3.eth.net.getId();
     });
 
-    it("migrates without dry-run", async function() {
+    it("migrates without dry-run", async function () {
       this.timeout(70000);
 
       await CommandRunner.run("migrate --network fakeRopsten", config);
