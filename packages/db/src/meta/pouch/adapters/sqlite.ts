@@ -16,7 +16,7 @@ export interface DatabasesSettings {
 }
 
 export const getDefaultSettings: GetDefaultSettings = () => ({
-  directory: path.join(Config.getTruffleDataDirectory(), ".db", "sqlite")
+  directory: path.join(Config.detect().db.saveLocally ? Config.detect().working_directory : Config.getTruffleDataDirectory(), ".db", "json")
 });
 
 export class Databases<C extends Collections> extends Base.Databases<C> {

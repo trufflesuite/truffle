@@ -33,7 +33,8 @@ Add the following to your `truffle-config.js` file in order to enable Truffle DB
 
 ```
 db: {
-  enabled: true
+  enabled: true,
+  saveLocally: true // Optional - save the .db directory to the project directory. Default: false.
 }
 ```
 Note: Enabling Truffle DB does not affect artifacts, but will produce a new `.db`
