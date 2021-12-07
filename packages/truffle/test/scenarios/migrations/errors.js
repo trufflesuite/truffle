@@ -106,7 +106,7 @@ describe("migration errors", function () {
     }
   });
 
-  it("should error on insufficient funds correctly [ @ganache ]", async function () {
+  it("errors on insufficient funds correctly [ @ganache ]", async function () {
     this.timeout(70000);
 
     try {
@@ -127,12 +127,12 @@ describe("migration errors", function () {
     this.timeout(70000);
 
     try {
-      await CommandRunner.run("migrate -f 6", config);
+      await CommandRunner.run("migrate -f 10", config);
       assert(false, "This should have thrown.");
     } catch (_error) {
       const output = logger.contents();
       console.log(output);
-      assert(output.includes("6_migrations_funds.js.js"));
+      assert(output.includes("10_migrations_funds_geth.js"));
       assert(output.includes("Deploying 'Example'"));
       assert(output.includes("insufficient funds"));
     }
