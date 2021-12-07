@@ -14,9 +14,6 @@ const repl = require("repl");
 
 const { DebugPrinter } = require("./printer");
 
-const LINES_BEFORE_LONG = 5;
-const LINES_AFTER_LONG = 3;
-
 function watchExpressionAnalytics(raw) {
   if (raw.includes("!<")) {
     //don't send analytics for watch expressions involving selectors
@@ -603,12 +600,8 @@ class DebugInterpreter {
         await this.setOrClearBreakpoint(splitArgs, false);
         break;
       case "p":
-        // update the numbers of instructions to be printed
-        const {beforeLines, afterLines} = this.updatePrintoutLines(
-          splitArgs,
-          this.printer.instructionLines
-        );
-        this.printer.instructionLines = [beforeLines, afterLines];
+        // determine the numbers of instructions to be printed
+        this.parsePrintoutLines(splitArgs, this.printer.instructionLines);
         // process which locations we should print out
         const temporaryPrintouts = this.updatePrintouts(
           splitArgs,
@@ -634,13 +627,12 @@ class DebugInterpreter {
       case "l":
         if (this.session.view(session.status.loaded)) {
           this.printer.printFile();
-          // update the numbers of lines to be printed
-          const {beforeLines, afterLines} = this.updatePrintoutLines(
-            splitArgs,
-            this.printer.stateLines
+          // determine the numbers of lines to be printed
+          this.parsePrintoutLines(splitArgs, this.printer.sourceLines);
+          this.printer.printState(
+            this.printer.sourceLines.beforeLines,
+            this.printer.sourceLines.afterLines
           );
-          this.printer.stateLines = [beforeLines, afterLines];
-          this.printer.printState();
         }
         break;
       case ";":
@@ -663,8 +655,8 @@ class DebugInterpreter {
             this.printer.printStacktrace(true); //print final stack trace
             //Now: actually show the point where things went wrong
             this.printer.printErrorLocation(
-              LINES_BEFORE_LONG,
-              LINES_AFTER_LONG
+              this.printer.sourceLines.beforeLines,
+              this.printer.sourceLines.afterLines
             );
           } else {
             this.printer.printStacktrace(false); //intermediate call stack
@@ -750,11 +742,6 @@ class DebugInterpreter {
   updatePrintouts(userArgs, selections, printOuts) {
     let tempPrintouts = new Set();
     for (let argument of userArgs) {
-      // skip line number options
-      if (((argument[0] === "-") || (argument[0] === "+")) &&
-        (!isNaN(argument.slice(1))))
-        continue;
-
       let fullSelection;
       if (argument[0] === "+" || argument[0] === "-") {
         fullSelection = argument.slice(1);
@@ -779,19 +766,19 @@ class DebugInterpreter {
     return tempPrintouts;
   }
 
-  // update the numbers of lines to be printed from options -<num>|+<num> from user args
-  updatePrintoutLines(userArgs, currentLines) {
-    let beforeLines = currentLines[0], afterLines = currentLines[1];
-    for (let argument of userArgs) {
-      let newLines = Number(argument.slice(1));
+  // parse the numbers of lines options -<num>|+<num> from user args
+  parsePrintoutLines(userArgs, currentLines) {
+    for (const argument of userArgs) {
+      if (argument.length < 2) continue;
+      const newLines = Number(argument.slice(1));
+      // ignore the arguments that are not of the correct form, number
       if (isNaN(newLines)) continue;
       if (argument[0] === "-") {
-        beforeLines = newLines;
+        currentLines.beforeLines = newLines;
       } else if (argument[0] === "+") {
-        afterLines = newLines;
+        currentLines.afterLines = newLines;
       }
     }
-    return {beforeLines, afterLines};
   }
 }
 
