@@ -63,12 +63,13 @@ export function toBig(value: BN | number): Big {
 /**
  * @param bytes - Uint8Array | BN
  * @param padLength - number - minimum desired byte length (left-pad with zeroes)
+ * @param padRight - boolean - causes padding to occur on right instead of left
  * @return {string}
  */
 export function toHexString(
   bytes: Uint8Array | BN,
   padLength: number = 0,
-  padRight: boolean = false //pad on right instead of length
+  padRight: boolean = false
 ): string {
   if (BN.isBN(bytes)) {
     bytes = toBytes(bytes);
