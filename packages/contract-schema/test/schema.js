@@ -15,10 +15,13 @@ describe("Schema", function () {
 
     try {
       Schema.validate(invalid);
+
+      assert(false);
     } catch (err) {
       const abiErrors = err.errors.filter(function (error) {
         return error.dataPath === ".abi";
       });
+
       assert(abiErrors.length > 0);
     }
   });
@@ -38,10 +41,13 @@ describe("Schema", function () {
       Schema.normalize(invalid, {
         validate: true
       });
+
+      assert(false);
     } catch (err) {
       const abiErrors = err.errors.filter(function (error) {
         return error.dataPath === ".abi";
       });
+
       assert(abiErrors.length > 0);
     }
   });
