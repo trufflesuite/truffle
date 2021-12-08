@@ -23,7 +23,14 @@ const provision = (contractAbstraction: any, truffleConfig: TruffleConfig) => {
 
   contractAbstraction.ens = truffleConfig.ens;
 
-  ["from", "gas", "gasPrice", "maxFeePerGas", "maxPriorityFeePerGas"].forEach(key => {
+  [
+    "from",
+    "gas",
+    "gasPrice",
+    "maxFeePerGas",
+    "maxPriorityFeePerGas",
+    "type"
+  ].forEach(key => {
     if (truffleConfig[key]) {
       const obj: any = {};
       obj[key] = truffleConfig[key];

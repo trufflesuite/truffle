@@ -31,6 +31,11 @@ export async function prepareContracts(provider, sources = {}, migrations) {
         optimizer: { enabled: false, runs: 200 },
         evmVersion: "london"
       }
+    },
+    vyper: {
+      settings: {
+        evmVersion: "berlin"
+      }
     }
   };
 

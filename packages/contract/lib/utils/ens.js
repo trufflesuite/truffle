@@ -100,6 +100,7 @@ module.exports = {
     registryAddress,
     networkId
   }) {
+    let outputParams = inputParams;
     if (inputParams.from && !isAddress(inputParams.from)) {
       const newFrom = await this.resolveNameToAddress({
         name: inputParams.from,
@@ -107,12 +108,35 @@ module.exports = {
         networkId,
         registryAddress
       });
-      return {
-        ...inputParams,
+      outputParams = {
+        ...outputParams,
         from: newFrom
       };
-    } else {
-      return inputParams;
     }
+    if (inputParams.accessList && Array.isArray(inputParams.accessList)) {
+      const newAccessList = await Promise.all(
+        inputParams.accessList.map(async (entry) => {
+          if (entry && entry.address && !isAddress(entry.address)) {
+            const newAddress = await this.resolveNameToAddress({
+              name: entry.address,
+              provider: web3.currentProvider,
+              networkId,
+              registryAddress
+            });
+            return {
+              ...entry,
+              address: newAddress
+            };
+          } else {
+            return entry;
+          }
+        })
+      );
+      outputParams = {
+        ...outputParams,
+        accessList: newAccessList
+      };
+    }
+    return outputParams;
   }
 };

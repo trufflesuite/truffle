@@ -19,7 +19,7 @@
     "docs": "esdoc",
     "prepare": "yarn build",
     "start": "node ./webpack/dev-server.js",
-    "test": "mochapack --webpack-config webpack/webpack.config-test.js --recursive && rm -r dist && yarn build",
+    "test": "mochapack --webpack-config webpack/webpack.config-test.js --recursive && rm -r dist && yarn build; (exit $STATUS)",
     "test:coverage": "nyc mochapack --webpack-config webpack/webpack.config-test.js --recursive",
     "test:debug": "NODE_ENV=testing node --inspect ./node_modules/.bin/mochapack --webpack-config webpack/webpack.config-test.js --recursive"
   },
@@ -29,7 +29,7 @@
     "@truffle/source-map-utils": "^1.3.63",
     "bn.js": "^5.1.3",
     "debug": "^4.3.1",
-    "json-pointer": "^0.6.0",
+    "json-pointer": "^0.6.1",
     "json-stable-stringify": "^1.0.1",
     "lodash.flatten": "^4.4.0",
     "lodash.merge": "^4.6.2",
@@ -38,7 +38,7 @@
     "redux": "^3.7.2",
     "redux-saga": "1.0.0",
     "remote-redux-devtools": "^0.5.12",
-    "reselect-tree": "^1.3.4",
+    "reselect-tree": "^1.3.5",
     "semver": "^7.3.4",
     "web3": "1.5.3",
     "web3-eth-abi": "1.5.3"

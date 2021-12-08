@@ -25,7 +25,18 @@ const methodABI = {
   stateMutability: "pure",
   type: "function"
 };
-const args = ["my.ens.name", 555, { from: "the.other.name" }];
+const txParams = {
+  from: "the.other.name",
+  accessList: [{
+    address: "third.party",
+    storageKeys: []
+  }]
+};
+const args = [
+  "my.ens.name",
+  555,
+  txParams
+];
 const ensSettings = { enabled: true };
 const networkId = 1;
 
@@ -33,6 +44,7 @@ describe("convertENSNames", () => {
   beforeEach(() => {
     const expectedInput1 = "my.ens.name";
     const expectedInput2 = "the.other.name";
+    const expectedInput3 = "third.party";
     sinon.stub(ens, "getNewENSJS").returns({
       name: input => {
         if (input === expectedInput1) {
@@ -40,6 +52,9 @@ describe("convertENSNames", () => {
         }
         if (input === expectedInput2) {
           return { getAddress: () => Promise.resolve("0x987") };
+        }
+        if (input === expectedInput3) {
+          return { getAddress: () => Promise.resolve("0xabc") };
         }
         return Promise.reject("The input was not what was expected");
       }
@@ -69,15 +84,20 @@ describe("convertENSNames", () => {
     });
     assert(result.args[1] === 555);
   });
-  it("converts ens names in the from field of the tx object", async () => {
+  it("converts ens names in the from field and the access list of the tx object", async () => {
     let result = await ens.convertENSNames({
       networkId,
       inputArgs: args,
-      inputParams: { from: "the.other.name" },
+      inputParams: txParams,
       ens: ensSettings,
       methodABI,
       web3: Web3
     });
-    assert(result.params.from === "0x987");
+    assert.equal(result.params.from, "0x987");
+    assert(Array.isArray(result.params.accessList));
+    assert.equal(result.params.accessList.length, 1);
+    assert.equal(result.params.accessList[0].address, "0xabc");
+    assert(Array.isArray(result.params.accessList[0].storageKeys));
+    assert.equal(result.params.accessList[0].storageKeys.length, 0);
   });
 });
