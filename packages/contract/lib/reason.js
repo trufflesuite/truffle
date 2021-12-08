@@ -24,13 +24,16 @@ const reason = {
 
     if (isObject) {
       const data = res.error.data;
-      const hash = Object.keys(data)[0];
+      //new format: encoded message is in data.result
+      //old format: there is no data.result, but the encoded message can
+      //be found in data[hash].return, where hash is the first key
+      const encodedMessage = data.result || Object.values(data)[0].return;
 
-      if (data[hash].return && data[hash].return.includes(errorStringHash)) {
+      if (encodedMessage && encodedMessage.includes(errorStringHash)) {
         try {
           return web3.eth.abi.decodeParameter(
             "string",
-            data[hash].return.slice(10)
+            encodedMessage.slice(10)
           );
         } catch (_) {
           return undefined;
