@@ -17,7 +17,7 @@ describe("Provider", function() {
   });
 
   after("Shutdown Ganache", async () => {
-    await server.close(done);
+    await server.close();
   });
 
   it("accepts host and port", async () => {
