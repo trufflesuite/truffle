@@ -2,8 +2,8 @@ const assert = require("chai").assert;
 const util = require("./util");
 
 describe("Deployments", function () {
-  const Example;
-  const web3;
+  let Example;
+  let web3;
   // ganache v2 had a default blockGasLimit of 0x6691b7, which these tests rely on
   const providerOptions = {
     vmErrorsOnRPCResponse: false,
