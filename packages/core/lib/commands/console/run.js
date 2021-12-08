@@ -5,7 +5,6 @@ module.exports = async function (options) {
 
   const config = Config.detect(options);
 
-  // This require a smell?
   const commands = require("../index");
   const excluded = new Set(["console", "init", "watch", "develop"]);
 
