@@ -81,7 +81,8 @@ function lastPosition(state = null, action) {
   switch (action.type) {
     case actions.JUMP_IN:
     case actions.JUMP_OUT:
-    case actions.ETERNAL_CALL:
+    // FIXME: WHEN THIS IS ADDED IN CORRECTLY THE TESTS FAIL.
+    // case actions.EXTERNAL_CALL:
     case actions.EXTERNAL_RETURN:
     case actions.UPDATE_POSITION:
     case actions.EXECUTE_RETURN:
