@@ -19,7 +19,7 @@ describe("Schema", function () {
       const abiErrors = err.errors.filter(function (error) {
         return error.dataPath === ".abi";
       });
-      assert(abiErrors);
+      assert(abiErrors.length > 0);
     }
   });
 
@@ -42,7 +42,7 @@ describe("Schema", function () {
       const abiErrors = err.errors.filter(function (error) {
         return error.dataPath === ".abi";
       });
-      assert(abiErrors);
+      assert(abiErrors.length > 0);
     }
   });
 });
