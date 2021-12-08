@@ -601,7 +601,10 @@ class DebugInterpreter {
         break;
       case "p":
         // determine the numbers of instructions to be printed
-        this.parsePrintoutLines(splitArgs, this.printer.instructionLines);
+        this.printer.instructionLines = this.parsePrintoutLines(
+          splitArgs,
+          this.printer.instructionLines
+        );
         // process which locations we should print out
         const temporaryPrintouts = this.updatePrintouts(
           splitArgs,
@@ -628,7 +631,10 @@ class DebugInterpreter {
         if (this.session.view(session.status.loaded)) {
           this.printer.printFile();
           // determine the numbers of lines to be printed
-          this.parsePrintoutLines(splitArgs, this.printer.sourceLines);
+          this.printer.sourceLines = this.parsePrintoutLines(
+            splitArgs,
+            this.printer.sourceLines
+          );
           this.printer.printState(
             this.printer.sourceLines.beforeLines,
             this.printer.sourceLines.afterLines
@@ -768,17 +774,20 @@ class DebugInterpreter {
 
   // parse the numbers of lines options -<num>|+<num> from user args
   parsePrintoutLines(userArgs, currentLines) {
+    let { beforeLines, afterLines } = currentLines;
     for (const argument of userArgs) {
+      // ignore an option with length less than 2,such as a bare + or -
       if (argument.length < 2) continue;
       const newLines = Number(argument.slice(1));
       // ignore the arguments that are not of the correct form, number
       if (isNaN(newLines)) continue;
       if (argument[0] === "-") {
-        currentLines.beforeLines = newLines;
+        beforeLines = newLines;
       } else if (argument[0] === "+") {
-        currentLines.afterLines = newLines;
+        afterLines = newLines;
       }
     }
+    return { beforeLines, afterLines };
   }
 }
 

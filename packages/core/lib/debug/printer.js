@@ -76,14 +76,12 @@ class DebugPrinter {
     this.sections = ["bui", "glo", "con", "loc"]; //should remain constant
 
     // numbers of instructions before and after the current instruction to be printed
-    // used by command (p)
     // Note that this is a public variable and can be modified from outside.
     this.instructionLines = { beforeLines: 3, afterLines: 3 };
 
     // numbers of lines before and after the current line to be printed
-    // used by commands (l) and (s)
     // Note that this is a public variable and can be modified from outside.
-    this.sourceLines = { beforeLines: 2, afterLines: 0 };
+    this.sourceLines = { beforeLines: 5, afterLines: 3 };
   }
 
   print(...args) {
