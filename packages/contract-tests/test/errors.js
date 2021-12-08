@@ -2,7 +2,7 @@ const assert = require("chai").assert;
 const util = require("./util");
 
 describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
-  const Example;
+  let Example;
   // legacyInstamine mode must be enabled whenever vmErrorsOnRPCResponse is true
   const providerOptions = {
     legacyInstamine: true,
