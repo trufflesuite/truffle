@@ -64,7 +64,7 @@
     "fs-extra": "^9.1.0",
     "ganache-core": "2.13.0",
     "@jsdevtools/coverage-istanbul-loader": "^3.0.5",
-    "mocha": "5.2.0",
+    "mocha": "8.4.0",
     "mochapack": "^2.1.2",
     "nyc": "^13.0.1",
     "remotedev-server": "^0.3.1",
