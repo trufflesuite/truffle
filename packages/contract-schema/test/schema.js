@@ -1,7 +1,7 @@
-var Schema = require("../index.js");
-var assert = require("assert");
+const Schema = require("../index.js");
+const assert = require("assert");
 
-var MetaCoin = require("./MetaCoin.json");
+const MetaCoin = require("./MetaCoin.json");
 
 describe("Schema", function () {
   it("validates correct input", function () {
@@ -9,14 +9,14 @@ describe("Schema", function () {
   });
 
   it("throws exception on invalid input", function () {
-    var invalid = {
+    const invalid = {
       abi: -1
     };
 
     try {
       Schema.validate(invalid);
     } catch (err) {
-      var abiErrors = err.errors.filter(function (error) {
+      const abiErrors = err.errors.filter(function (error) {
         return error.dataPath === ".abi";
       });
       assert(abiErrors);
@@ -30,7 +30,7 @@ describe("Schema", function () {
   });
 
   it("throws exception when attempting to validate invalid input during normalization", function () {
-    var invalid = {
+    const invalid = {
       abi: -1
     };
 
@@ -39,7 +39,7 @@ describe("Schema", function () {
         validate: true
       });
     } catch (err) {
-      var abiErrors = err.errors.filter(function (error) {
+      const abiErrors = err.errors.filter(function (error) {
         return error.dataPath === ".abi";
       });
       assert(abiErrors);
