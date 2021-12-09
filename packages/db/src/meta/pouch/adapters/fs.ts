@@ -31,7 +31,7 @@ export const getDefaultSettings: GetDefaultSettings = () => {
       userConfig.get("db")?.saveLocally 
         ? new Config().working_directory  
         : Config.getTruffleDataDirectory()
-        , ".db", "sqlite")
+        , ".db", "json")
   };
 };
 
