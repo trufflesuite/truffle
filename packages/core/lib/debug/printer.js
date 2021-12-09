@@ -62,6 +62,7 @@ class DebugPrinter {
     //   cal: Calldata
     //   mem: Memory
     //   sta: Stack
+    // Note that this is a public variable and can be modified from outside.
     this.locationPrintouts = new Set(["sta"]);
     this.locations = ["sto", "cal", "mem", "sta"]; //should remain constant
 
@@ -70,8 +71,19 @@ class DebugPrinter {
     //   glo: Global constants
     //   con: Contract variables
     //   loc: Local variables
+    // Note that this is a public variable and can be modified from outside.
     this.sectionPrintouts = new Set(["bui", "glo", "con", "loc"]);
     this.sections = ["bui", "glo", "con", "loc"]; //should remain constant
+
+    // numbers of instructions before and after the current instruction to be printed
+    // used by command (p)
+    // Note that this is a public variable and can be modified from outside.
+    this.instructionLines = { beforeLines: 3, afterLines: 3 };
+
+    // numbers of lines before and after the current line to be printed
+    // used by commands (l) and (s)
+    // Note that this is a public variable and can be modified from outside.
+    this.sourceLines = { beforeLines: 5, afterLines: 3 };
   }
 
   print(...args) {
@@ -214,8 +226,8 @@ class DebugPrinter {
     this.config.logger.log("Instructions:");
 
     // printout instructions
-    const previousInstructions = 3;
-    const upcomingInstructions = 3;
+    const previousInstructions = this.instructionLines.beforeLines;
+    const upcomingInstructions = this.instructionLines.afterLines;
     const currentIndex = instruction.index;
 
     // add an ellipse if there exist additional instructions before
