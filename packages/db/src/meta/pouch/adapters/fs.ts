@@ -15,10 +15,25 @@ import Config from "@truffle/config";
 export interface DatabasesSettings {
   directory: string;
 }
+type UserConfigDbSettings = {
+  saveLocally: boolean | undefined,
+};
 
-export const getDefaultSettings: GetDefaultSettings = () => ({
-  directory: path.join(Config.detect().db.saveLocally ? Config.detect().working_directory : Config.getTruffleDataDirectory(), ".db", "json")
-});
+type UserConfig = {
+  get: (key: "db") => UserConfigDbSettings,
+};
+
+export const getDefaultSettings: GetDefaultSettings = () => {
+  const userConfig: UserConfig = Config.getUserConfig();
+  
+  return {
+    directory: path.join(
+      userConfig.get("db")?.saveLocally 
+        ? new Config().working_directory  
+        : Config.getTruffleDataDirectory()
+        , ".db", "sqlite")
+  };
+};
 
 export class Databases<C extends Collections> extends Base.Databases<C> {
   private directory: string;

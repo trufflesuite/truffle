@@ -17,3 +17,6 @@ packages/debugger/.tmp
 
 # @truffle/contract
 packages/contract/dist
+
+# @truffle/db
+**/*.db

@@ -15,9 +15,25 @@ export interface DatabasesSettings {
   directory: string;
 }
 
-export const getDefaultSettings: GetDefaultSettings = () => ({
-  directory: path.join(Config.detect().db.saveLocally ? Config.detect().working_directory : Config.getTruffleDataDirectory(), ".db", "sqlite")
-});
+type UserConfigDbSettings = {
+  saveLocally: boolean | undefined,
+};
+
+type UserConfig = {
+  get: (key: "db") => UserConfigDbSettings,
+};
+
+export const getDefaultSettings: GetDefaultSettings = () => {
+  const userConfig: UserConfig = Config.getUserConfig();
+  
+  return {
+    directory: path.join(
+      userConfig.get("db")?.saveLocally 
+        ? new Config().working_directory  
+        : Config.getTruffleDataDirectory()
+        , ".db", "sqlite")
+  };
+};
 
 export class Databases<C extends Collections> extends Base.Databases<C> {
   private directory: string;
