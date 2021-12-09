@@ -11,7 +11,7 @@ dotenv.config();
 import * as Codec from "@truffle/codec";
 import Config from "@truffle/config";
 //  🔨 set up by importing the fetch-and-compile.
-import { fetchAndCompile } from require("@truffle/fetch-and-compile");
+import { fetchAndCompile } from "@truffle/fetch-and-compile";
 import * as Decoder from "@truffle/decoder";
 
 const config = Config.default().merge({
