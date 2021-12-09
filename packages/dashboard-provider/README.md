@@ -2,6 +2,8 @@
 
 @truffle/dashboard-provider enables communication between command-line or desktop applications and browser-based Ethereum wallets such as Metamask. One important use case is that it allows you to use your Metamask wallet with smart contract development tools such as Truffle.
 
+**Note**: @truffle/dashboard-provider automatically starts and stops a @truffle/dashboard instance. To have more control over this dashboard instance, please use the `truffle dashboard` command and its associated RPC URL instead of the @truffle/dashboard-provider.
+
 ## Installation
 
 ```
@@ -14,7 +16,7 @@ yarn add @truffle/dashboard-provider
 
 ## Usage
 
-The dashboard-provider can be used in place where you'd use any other web3 provider. See the examples below for using it with Ethers.js and Web3.js.
+The dashboard-provider can be used in place where you would use any other web3 provider. See the examples below for using it with Ethers.js and Web3.js.
 
 ### Ethers.js
 
