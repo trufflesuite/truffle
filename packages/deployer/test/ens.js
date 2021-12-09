@@ -20,6 +20,8 @@ let ganacheOptions,
 describe("ENS class", () => {
   before(() => {
     ganacheOptions = {
+      vmErrorsOnRPCResponse: true,
+      legacyInstamine: true,
       mnemonic:
         "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
       total_accounts: 1,
