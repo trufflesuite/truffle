@@ -10,7 +10,7 @@ dotenv.config();
 
 import * as Codec from "@truffle/codec";
 import Config from "@truffle/config";
-// :hammer_and_wrench: set up by importing the fetch-and-compile.
+//  set up by importing the fetch-and-compile.
 import { fetchAndCompile } from require("@truffle/fetch-and-compile");
 import * as Decoder from "@truffle/decoder";
 
