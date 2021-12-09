@@ -101,14 +101,6 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
           e.stack.includes("/test/errors.js:"),
           "Should include original stack details"
         );
-        assert(
-          e.hijackedStack.includes("Error: intrinsic gas too low"),
-          "Should preserve hijacked error message"
-        );
-        assert(
-          e.hijackedStack.includes("src/transaction-pool.js:"),
-          "Should preserve hijacked stack details"
-        );
       }
     });
   });
@@ -297,14 +289,6 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
           e.stack.includes("/test/errors.js:"),
           "Should include original stack details"
         );
-        assert(
-          e.hijackedStack.includes("revert reasonstring"),
-          "Should preserve hijacked error message"
-        );
-        assert(
-          e.hijackedStack.includes("/src/runtime-transaction.js:"),
-          "Should preserve hijacked stack details"
-        );
       }
     });
 
@@ -321,14 +305,6 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
         assert(
           e.stack.includes("/test/errors.js:"),
           "Should include original stack details"
-        );
-        assert(
-          e.hijackedStack.includes("Error: invalid BigNumber string"),
-          "Should preserve hijacked error message"
-        );
-        assert(
-          e.hijackedStack.includes("/src.ts/abi-coder.ts:"),
-          "Should preserve hijacked stack details"
         );
       }
     });
