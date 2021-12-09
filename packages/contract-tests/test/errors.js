@@ -157,7 +157,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
           .setValue(10, { gas: 10 })
           .on("error", e => {
             assert(
-              e.message.includes("exceeds gas limit"),
+              e.message.includes("intrinsic gas too low"),
               "Error should be OOG"
             );
             done();
