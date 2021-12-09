@@ -347,14 +347,6 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
           e.stack.includes("/test/errors.js:"),
           "Should include original stack details"
         );
-        assert(
-          e.hijackedStack.includes("Error: intrinsic gas too low"),
-          "Should preserve hijacked error message"
-        );
-        assert(
-          e.hijackedStack.includes("src/transaction-pool.js:"),
-          "Should preserve hijacked stack details"
-        );
       }
     });
   });
