@@ -39,7 +39,7 @@ const commandReference = {
   "u": "step out",
   "n": "step next",
   ";": "step instruction (include number to step multiple)",
-  "p": "print instruction & state (`p [mem|cal|sto|]* [+<instrs-ahead>] [-<instrs-back>]`; see docs for more)",
+  "p": "print instruction & state (`p [mem|cal|sto]* [+<instrs-ahead>] [-<instrs-back>]`; see docs for more)",
   "l": "print additional source context (`l [+<lines-ahead>] [-<lines-back>]`; see docs for more)",
   "h": "print this help",
   "v": "print variables and values (`v [bui|glo|con|loc]*`; see docs for more)",
