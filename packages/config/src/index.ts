@@ -22,7 +22,7 @@ class TruffleConfig {
     workingDirectory?: string,
     network?: any
   ) {
-    this._deepCopy = ["compilers", "mocha", "dashboard"];
+    this._deepCopy = ["compilers", "mocha", "dashboard", "networks"];
     this._values = getInitialConfig({
       truffleDirectory,
       workingDirectory,
@@ -36,6 +36,8 @@ class TruffleConfig {
     Object.entries(props).forEach(([propName, descriptor]) =>
       this.addProp(propName, descriptor)
     );
+
+    this.addDefaultNetworks();
   }
 
   public addProp(propertyName: string, descriptor: any): void {
@@ -195,7 +197,6 @@ class TruffleConfig {
 
     config.merge(staticConfig);
     config.merge(options);
-    config.addDefaultNetworks();
 
     // When loading a user's config, ensure their subscribers are initialized
     config.events.updateSubscriberOptions(config);
