@@ -132,7 +132,7 @@ const command = {
       },
       {
         option: "--reporter|-r <name>",
-        description: "Specify the reporter type for mocha test. Default: 'spec'"
+        description: "Specify the type of mocha reporter to use during testing. Default: 'spec'"
       }
     ],
     allowedGlobalOptions: ["network", "config"]
