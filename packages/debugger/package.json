@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "9.2.5",
+  "version": "9.2.6",
   "main": "dist/debugger.js",
   "scripts": {
     "build": "webpack --config webpack/webpack.config.js",
@@ -25,8 +25,8 @@
   },
   "dependencies": {
     "@truffle/abi-utils": "^0.2.4",
-    "@truffle/codec": "^0.11.19",
-    "@truffle/source-map-utils": "^1.3.63",
+    "@truffle/codec": "^0.11.20",
+    "@truffle/source-map-utils": "^1.3.64",
     "bn.js": "^5.1.3",
     "debug": "^4.3.1",
     "json-pointer": "^0.6.1",
@@ -44,11 +44,11 @@
     "web3-eth-abi": "1.5.3"
   },
   "devDependencies": {
-    "@truffle/artifactor": "^4.0.131",
-    "@truffle/box": "^2.1.33",
-    "@truffle/migrate": "^3.2.55",
-    "@truffle/resolver": "^7.0.39",
-    "@truffle/workflow-compile": "^3.2.41",
+    "@truffle/artifactor": "^4.0.132",
+    "@truffle/box": "^2.1.34",
+    "@truffle/migrate": "^3.2.56",
+    "@truffle/resolver": "^7.0.40",
+    "@truffle/workflow-compile": "^3.2.42",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
