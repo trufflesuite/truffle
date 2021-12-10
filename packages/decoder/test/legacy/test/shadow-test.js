@@ -13,7 +13,12 @@ describe("Shadowed storage variables", function () {
   let abstractions;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({ seed: "decoder", gasLimit: 7000000 });
+    provider = Ganache.provider({
+      seed: "decoder",
+      gasLimit: 7000000,
+      vmErrorsOnRPCResponse: true,
+      legacyInstamine: true
+    });
   });
 
   before("Prepare contracts and artifacts", async function () {
