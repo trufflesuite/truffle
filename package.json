@@ -18,12 +18,10 @@
     "coveralls": "^3.0.2",
     "eslint": "^7.9.0",
     "eslint-plugin-react-hooks": "^4.2.0",
-    "husky": "^4.3.0",
     "lerna": "^3.16.4",
     "lerna-update-wizard": "^0.16.0",
-    "lint-staged": "^10.4.2",
     "nyc": "^13.0.1",
-    "prettier": "^2.0.5",
+    "prettier": "^2.5.1",
     "prs-merged-since": "^1.1.0"
   },
   "workspaces": {
@@ -31,24 +29,5 @@
       "packages/*"
     ]
   },
-  "dependencies": {},
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
-  "lint-staged": {
-    "*.js": [
-      "prettier --write",
-      "eslint --fix"
-    ],
-    "*.ts": [
-      "prettier --write",
-      "eslint --fix"
-    ],
-    "*.tsx": [
-      "prettier --write",
-      "eslint --fix"
-    ]
-  }
+  "dependencies": {}
 }
