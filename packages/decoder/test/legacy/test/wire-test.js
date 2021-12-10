@@ -17,7 +17,13 @@ describe("Over-the-wire decoding (legacy features)", function () {
   let Contracts;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({ seed: "decoder", gasLimit: 7000000 });
+    provider = Ganache.provider({
+      seed: "decoder",
+      gasLimit: 7000000,
+      vmErrorsOnRPCResponse: true,
+      legacyInstamine: true,
+      quiet: true
+    });
     web3 = new Web3(provider);
   });
 
