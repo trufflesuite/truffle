@@ -21,7 +21,10 @@ let server;
 const port = 8545;
 
 beforeAll(async done => {
-  server = Ganache.server();
+  server = Ganache.server({
+    vmErrorsOnRPCResponse: true,
+    legacyInstamine: true
+  });
   server.listen(port, done);
 });
 
