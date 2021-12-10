@@ -70,7 +70,12 @@ describe("EVM Debugging", function () {
   var compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
+    provider = Ganache.provider({
+      seed: "debugger",
+      gasLimit: 7000000,
+      vmErrorsOnRPCResponse: true,
+      legacyInstamine: true,
+    });
   });
 
   before("Prepare contracts and artifacts", async function () {
