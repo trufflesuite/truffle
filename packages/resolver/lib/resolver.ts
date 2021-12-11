@@ -10,15 +10,7 @@ import { EthPMv1, NPM, GlobalNPM, FS, Truffle, ABI, Vyper } from "./sources";
 
 export interface ResolverOptions {
   includeTruffleSources?: boolean;
-  translateJsonToSolidity?: boolean;
-  resolveVyperModules?: boolean;
 }
-
-const defaultResolverOptions = {
-  includeTruffleSources: false,
-  translateJsonToSolidity: true,
-  resolveVyperMoudles: false,
-};
 
 export class Resolver {
   options: any;
@@ -30,15 +22,7 @@ export class Resolver {
       ["working_directory", "contracts_build_directory", "contracts_directory"]
     );
 
-    resolverOptions = {
-      ...defaultResolverOptions,
-      ...resolverOptions
-    };
-    const {
-      includeTruffleSources,
-      translateJsonToSolidity,
-      resolveVyperModules
-    } = resolverOptions;
+    const { includeTruffleSources } = resolverOptions;
 
     this.options = options;
     this.sources = [
@@ -52,13 +36,13 @@ export class Resolver {
       this.sources.unshift(new Truffle(options));
     }
 
-    if (translateJsonToSolidity) {
+    if (options.compiler && options.compiler.name === "solc") {
       this.sources = [].concat(
         ...this.sources.map(source => [new ABI(source), source])
       );
     }
 
-    if (resolveVyperModules) {
+    if (options.compiler && options.compiler.name === "vyper") {
       this.sources = [new Vyper(this.sources, options.contracts_directory)];
     }
   }
