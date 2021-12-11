@@ -118,6 +118,11 @@ module.exports = {
           path.resolve(__dirname, "../environment")
         ],
         use: "shebang-loader"
+      },
+      {
+        //needed to get things working with lerna 4.0
+        test: /rx\.lite\.aggregates\.js$/,
+        parser: { amd: false }
       }
     ]
   },
