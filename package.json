@@ -19,7 +19,7 @@
     "eslint": "^7.9.0",
     "eslint-plugin-react-hooks": "^4.2.0",
     "husky": "^4.3.0",
-    "lerna": "^3.16.4",
+    "lerna": "^4.0.0",
     "lerna-update-wizard": "^0.16.0",
     "lint-staged": "^10.4.2",
     "nyc": "^13.0.1",
