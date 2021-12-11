@@ -5252,16 +5252,16 @@ abbrev@1:
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.1.1.tgz#f8f2c887ad10bf67f634f005b6987fed3179aac8"
   integrity sha512-nne9/IiQ/hzIhY6pdDnbBtz7DjPTKrY00P/zvPSm5pOFkl6xuGrGnXn/VtTNNfNtAfZ9/1RtehkszU9qcTii0Q==
 
-abi-to-sol@^0.5.1:
-  version "0.5.1"
-  resolved "https://registry.yarnpkg.com/abi-to-sol/-/abi-to-sol-0.5.1.tgz#2d1d2b54212302a893152c500c4eee3c0ed81d27"
-  integrity sha512-enN9SED82+Sz/ddJp81hyinRlbehA4FajHCZaG0QQqJsfLzjVfSsB1cEbJE3ZB9xcNbcagwJ2AlPuWt2rXtkcQ==
+abi-to-sol@^0.5.2:
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/abi-to-sol/-/abi-to-sol-0.5.2.tgz#d672c1b2bade42f35c3b30679ffcc8825ebf6afb"
+  integrity sha512-1rrxupCHnhZxJxYfssKi90SIOnPyCdI1wJK+BYd6cNLtunRzWJOkVo9o9YP73LQR7tu7F2LFBb7OLc2Hje6ZAQ==
   dependencies:
     "@truffle/abi-utils" "^0.2.2"
     "@truffle/codec" "^0.7.1"
     "@truffle/contract-schema" "^3.3.1"
     ajv "^6.12.5"
-    better-ajv-errors "^0.6.7"
+    better-ajv-errors "^0.8.2"
     neodoc "^2.0.2"
     semver "^7.3.5"
     source-map-support "^0.5.19"
@@ -7162,17 +7162,17 @@ before-after-hook@^2.0.0:
   resolved "https://registry.yarnpkg.com/before-after-hook/-/before-after-hook-2.1.0.tgz#b6c03487f44e24200dd30ca5e6a1979c5d2fb635"
   integrity sha512-IWIbu7pMqyw3EAJHzzHbWa85b6oud/yfKYg5rqB5hNE8CeMi3nX+2C2sj0HswfblST86hpVEOAb9x34NZd6P7A==
 
-better-ajv-errors@^0.6.7:
-  version "0.6.7"
-  resolved "https://registry.yarnpkg.com/better-ajv-errors/-/better-ajv-errors-0.6.7.tgz#b5344af1ce10f434fe02fc4390a5a9c811e470d1"
-  integrity sha512-PYgt/sCzR4aGpyNy5+ViSQ77ognMnWq7745zM+/flYO4/Yisdtp9wDQW2IKCyVYPUxQt3E/b5GBSwfhd1LPdlg==
+better-ajv-errors@^0.8.2:
+  version "0.8.2"
+  resolved "https://registry.yarnpkg.com/better-ajv-errors/-/better-ajv-errors-0.8.2.tgz#9abf27e19d2cee60f400753510f7a3a96d655adf"
+  integrity sha512-FnODTBJSQSHmJXDLPiC7ca0dC4S1HSTPv1+Hg2sm/C71i3Dj0l1jcUEaq/3OQ6MmnUveshTsUvUj65pDSr3Qow==
   dependencies:
     "@babel/code-frame" "^7.0.0"
     "@babel/runtime" "^7.0.0"
     chalk "^2.4.1"
     core-js "^3.2.1"
     json-to-ast "^2.0.3"
-    jsonpointer "^4.0.1"
+    jsonpointer "^5.0.0"
     leven "^3.1.0"
 
 bfj@^6.1.1:
@@ -18148,10 +18148,10 @@ jsonparse@^1.2.0:
   resolved "https://registry.yarnpkg.com/jsonparse/-/jsonparse-1.3.1.tgz#3f4dae4a91fac315f71062f8521cc239f1366280"
   integrity sha1-P02uSpH6wxX3EGL4UhzCOfE2YoA=
 
-jsonpointer@^4.0.1:
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/jsonpointer/-/jsonpointer-4.1.0.tgz#501fb89986a2389765ba09e6053299ceb4f2c2cc"
-  integrity sha512-CXcRvMyTlnR53xMcKnuMzfCA5i/nfblTnnr74CZb6C4vG39eu6w51t7nKmU5MfLfbTgGItliNyjO/ciNPDqClg==
+jsonpointer@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/jsonpointer/-/jsonpointer-5.0.0.tgz#f802669a524ec4805fa7389eadbc9921d5dc8072"
+  integrity sha512-PNYZIdMjVIvVgDSYKTT63Y+KZ6IZvGRNNWcxwD+GNnUz1MKPfv30J8ueCjdwcN0nDx2SlshgyB7Oy0epAzVRRg==
 
 jsonschema@^1.1.1:
   version "1.2.5"
