@@ -2,7 +2,7 @@
   "private": true,
   "scripts": {
     "bootstrap": "npx lerna bootstrap",
-    "prepare": "lerna run prepare --stream --concurrency=1",
+    "prepare": "lerna run prepare --stream --concurrency=1 && husky install",
     "publish-release": "./scripts/publish-release.sh",
     "publish-dist-tag": "./scripts/publish-dist-tag.sh",
     "prepare-release": "./scripts/prepare-release.sh",
@@ -17,8 +17,10 @@
     "@typescript-eslint/parser": "^5.6.0",
     "coveralls": "^3.0.2",
     "eslint": "^8.4.1",
+    "husky": ">=6",
     "lerna": "^3.16.4",
     "lerna-update-wizard": "^0.16.0",
+    "lint-staged": ">=10",
     "nyc": "^13.0.1",
     "prettier": "^2.5.1",
     "prs-merged-since": "^1.1.0"
@@ -28,5 +30,9 @@
       "packages/*"
     ]
   },
-  "dependencies": {}
+  "dependencies": {},
+  "lint-staged": {
+    "*.{js,ts,jsx,tsx}": "eslint --fix",
+    "*.{js,ts,css,md}": "prettier --write"
+  }
 }
