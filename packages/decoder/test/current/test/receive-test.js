@@ -19,8 +19,7 @@ describe("Non-function transactions", function () {
     provider = Ganache.provider({
       seed: "decoder",
       gasLimit: 7000000,
-      vmErrorsOnRPCResponse: true,
-      legacyInstamine: true
+      logging: { quiet: true }
     });
     web3 = new Web3(provider);
   });
