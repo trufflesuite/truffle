@@ -43,7 +43,12 @@ const command = {
       describe: "Produce Solidity stacktraces and compile in debug mode",
       type: "boolean",
       default: false
-    }
+    },
+    "reporter": {
+      alias: "r",
+      describe: "Specify the type of mocha reporter",
+      default: "spec"
+    },
   },
   help: {
     usage:
@@ -52,7 +57,8 @@ const command = {
       `[--network <name>]${OS.EOL}                             ` +
       `[--verbose-rpc] [--show-events] [--debug] ` +
       `[--debug-global <identifier>] [--bail|-b]${OS.EOL}                      ` +
-      `       [--stacktrace[-extra]] [--grep|-g <regex>]`,
+      `       [--stacktrace[-extra]] [--grep|-g <regex>] `  +  
+      `[--reporter|-r <name>] `,
     options: [
       {
         option: "<test_file>",
@@ -123,6 +129,10 @@ const command = {
         option: "--grep|-g",
         description: "Use mocha's \"grep\" option while running tests. This " +
           "option only runs tests that match the supplied regex/string."
+      },
+      {
+        option: "--reporter|-r <name>",
+        description: "Specify the type of mocha reporter to use during testing. Default: 'spec'"
       }
     ],
     allowedGlobalOptions: ["network", "config"]
@@ -131,10 +141,12 @@ const command = {
     // parse out command line flags to merge in to the config
     const grep = options.grep || options.g;
     const bail = options.bail || options.b;
+    const reporter = options.reporter || options.r;
     return {
       mocha: {
         grep,
-        bail
+        bail,
+        reporter
       }
     };
   },

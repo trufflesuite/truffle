@@ -214,7 +214,7 @@ export class ProviderAdapter {
   ): Promise<string> {
     return await this.sendRequest({
       method: "eth_getStorageAt",
-      params: [address, position, formatBlockSpecifier(block)]
+      params: [address, `0x${position.toString(16)}`, formatBlockSpecifier(block)]
     });
   }
 }
