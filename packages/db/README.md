@@ -22,6 +22,7 @@ system that can keep track of multiple contracts in this situation.
 ## Built With
 
 Truffle DB is built with:
+
 - TypeScript
 - GraphQL
 - Apollo
@@ -36,9 +37,17 @@ db: {
   enabled: true
 }
 ```
+
 Note: Enabling Truffle DB does not affect artifacts, but will produce a new `.db`
 directory when you compile or migrate your project.
 
+Add the following to your user truffle config (`~/.config/truffle-nodejs/config.json`) to enable saving the `.db` directory to your project directory
+
+```
+db: {
+  saveToProjectRoot: true
+}
+```
 
 It will soon be possible to load and access Truffle DB data via `truffle compile` and `truffle migrate`.
 Stay tuned!
