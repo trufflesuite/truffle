@@ -116,10 +116,9 @@ describe("Contexts", function () {
 
   before("Create Provider", async function () {
     provider = Ganache.provider({
-      vmErrorsOnRPCResponse: true,
-      legacyInstamine: true,
       seed: "debugger",
-      gasLimit: 7000000
+      gasLimit: 7000000,
+      logging: { quiet: true }
     });
   });
 
