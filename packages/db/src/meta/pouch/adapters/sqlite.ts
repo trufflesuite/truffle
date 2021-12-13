@@ -16,7 +16,7 @@ export interface DatabasesSettings {
 }
 
 type UserConfigDbSettings = {
-  saveLocally: boolean | undefined,
+  saveToProjectRoot?: boolean,
 };
 
 type UserConfig = {
@@ -28,8 +28,8 @@ export const getDefaultSettings: GetDefaultSettings = () => {
   
   return {
     directory: path.join(
-      userConfig.get("db")?.saveLocally 
-        ? Config.default().working_directory  
+      userConfig.get("db")?.saveToProjectRoot 
+        ? Config.detect().workingDirectory
         : Config.getTruffleDataDirectory()
         , ".db", "sqlite")
   };

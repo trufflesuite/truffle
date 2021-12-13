@@ -17,7 +17,7 @@ export interface DatabasesSettings {
 }
 
 type UserConfigDbSettings = {
-  saveToProjectRoot: boolean | undefined,
+  saveToProjectRoot?: boolean,
 };
 
 type UserConfig = {
