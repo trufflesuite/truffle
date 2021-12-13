@@ -29,7 +29,7 @@ export const getDefaultSettings: GetDefaultSettings = () => {
   return {
     directory: path.join(
       userConfig.get("db")?.saveLocally 
-        ? new Config().working_directory  
+        ? Config.default().working_directory 
         : Config.getTruffleDataDirectory()
         , ".db", "json")
   };
