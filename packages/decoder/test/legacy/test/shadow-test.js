@@ -16,8 +16,7 @@ describe("Shadowed storage variables", function () {
     provider = Ganache.provider({
       seed: "decoder",
       gasLimit: 7000000,
-      vmErrorsOnRPCResponse: true,
-      legacyInstamine: true
+      logging: { quiet: true }
     });
   });
 

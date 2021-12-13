@@ -20,7 +20,11 @@ describe("nativize (ethers format)", function () {
   let Contracts;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({seed: "decoder", gasLimit: 7000000});
+    provider = Ganache.provider({
+      seed: "decoder",
+      gasLimit: 7000000,
+      logging: { quiet: true }
+    });
     web3 = new Web3(provider);
   });
 

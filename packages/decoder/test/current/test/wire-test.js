@@ -21,7 +21,7 @@ describe("Over-the-wire decoding", function () {
     provider = Ganache.provider({
       seed: "decoder",
       gasLimit: 7000000,
-      vmErrorsOnRPCResponse: false
+      logging: { quiet: true }
     });
     web3 = new Web3(provider);
   });
