@@ -73,8 +73,7 @@ describe("EVM Debugging", function () {
     provider = Ganache.provider({
       seed: "debugger",
       gasLimit: 7000000,
-      vmErrorsOnRPCResponse: true,
-      legacyInstamine: true,
+      logging: { quiet: true }
     });
   });
 
