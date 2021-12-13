@@ -149,17 +149,15 @@ let migrations = {
 };
 
 describe("Return value decoding", function () {
-  var provider;
-
-  var abstractions;
-  var compilations;
+  let provider;
+  let abstractions;
+  let compilations;
 
   before("Create Provider", async function () {
     provider = Ganache.provider({
-      legacyInstamine: true,
-      vmErrorsOnRPCResponse: true,
       seed: "debugger",
-      gasLimit: 7000000
+      gasLimit: 7000000,
+      logging: { quiet: true }
     });
   });
 
@@ -284,8 +282,9 @@ describe("Return value decoding", function () {
     try {
       await instance.fail(); //web3 throws on failure
     } catch (error) {
-      txHash = error.data.hash;
+      txHash = error.receipt.transactionHash;
     }
+    if (!txHash) assert.fail("should have errored and set txHash");
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
@@ -308,8 +307,9 @@ describe("Return value decoding", function () {
     try {
       await instance.failNoisy(); //web3 throws on failure
     } catch (error) {
-      txHash = error.data.hash;
+      txHash = error.receipt.transactionHash;
     }
+    if (!txHash) assert.fail("should have errored and set txHash");
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
@@ -339,8 +339,9 @@ describe("Return value decoding", function () {
     try {
       await instance.panic(); //web3 throws on failure
     } catch (error) {
-      txHash = error.data.hash;
+      txHash = error.receipt.transactionHash;
     }
+    if (!txHash) assert.fail("should have errored and set txHash");
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
@@ -371,8 +372,9 @@ describe("Return value decoding", function () {
       try {
         await instance.local(); //web3 throws on failure
       } catch (error) {
-        txHash = error.data.hash;
+        txHash = error.receipt.transactionHash;
       }
+      if (!txHash) assert.fail("should have errored and set txHash");
 
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
@@ -410,8 +412,9 @@ describe("Return value decoding", function () {
       try {
         await instance.global(); //web3 throws on failure
       } catch (error) {
-        txHash = error.data.hash;
+        txHash = error.receipt.transactionHash;
       }
+      if (!txHash) assert.fail("should have errored and set txHash");
 
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
@@ -439,8 +442,9 @@ describe("Return value decoding", function () {
       try {
         await instance.foreign(); //web3 throws on failure
       } catch (error) {
-        txHash = error.data.hash;
+        txHash = error.receipt.transactionHash;
       }
+      if (!txHash) assert.fail("should have errored and set txHash");
 
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
@@ -468,8 +472,9 @@ describe("Return value decoding", function () {
       try {
         await instance.inlined(); //web3 throws on failure
       } catch (error) {
-        txHash = error.data.hash;
+        txHash = error.receipt.transactionHash;
       }
+      if (!txHash) assert.fail("should have errored and set txHash");
 
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
@@ -497,8 +502,9 @@ describe("Return value decoding", function () {
       try {
         await instance.makeCall(); //web3 throws on failure
       } catch (error) {
-        txHash = error.data.hash;
+        txHash = error.receipt.transactionHash;
       }
+      if (!txHash) assert.fail("should have errored and set txHash");
 
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
@@ -526,8 +532,9 @@ describe("Return value decoding", function () {
       try {
         await instance.ambiguous(); //web3 throws on failure
       } catch (error) {
-        txHash = error.data.hash;
+        txHash = error.receipt.transactionHash;
       }
+      if (!txHash) assert.fail("should have errored and set txHash");
 
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
@@ -560,8 +567,9 @@ describe("Return value decoding", function () {
       try {
         await instance.ambiguousCall(); //web3 throws on failure
       } catch (error) {
-        txHash = error.data.hash;
+        txHash = error.receipt.transactionHash;
       }
+      if (!txHash) assert.fail("should have errored and set txHash");
 
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
 

@@ -35,17 +35,15 @@ let sources = {
 };
 
 describe("Loading and unloading transactions", function () {
-  var provider;
-
-  var abstractions;
-  var compilations;
+  let provider;
+  let abstractions;
+  let compilations;
 
   before("Create Provider", async function () {
     provider = Ganache.provider({
       seed: "debugger",
       gasLimit: 7000000,
-      vmErrorsOnRPCResponse: true,
-      legacyInstamine: true
+      logging: { quiet: true }
     });
   });
 

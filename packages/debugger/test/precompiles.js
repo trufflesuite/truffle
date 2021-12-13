@@ -47,7 +47,6 @@ const TEST_CASES = [
 
 describe("Precompiled Contracts", function () {
   let provider;
-
   let abstractions;
   let compilations;
 
@@ -58,8 +57,7 @@ describe("Precompiled Contracts", function () {
     provider = Ganache.provider({
       seed: "debugger",
       gasLimit: 7000000,
-      vmErrorsOnRPCResponse: true,
-      legacyInstamine: true
+      logging: { quiet: true }
     });
   });
 

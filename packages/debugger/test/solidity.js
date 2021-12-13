@@ -148,17 +148,15 @@ let sources = {
 };
 
 describe("Solidity Debugging", function () {
-  var provider;
-
-  var abstractions;
-  var compilations;
+  let provider;
+  let abstractions;
+  let compilations;
 
   before("Create Provider", async function () {
     provider = Ganache.provider({
-      vmErrorsOnRPCResponse: true,
-      legacyInstamine: true,
       seed: "debugger",
-      gasLimit: 7000000
+      gasLimit: 7000000,
+      logging: { quiet: true }
     });
   });
 
@@ -332,8 +330,9 @@ describe("Solidity Debugging", function () {
       try {
         await instance.run(); //this will throw because of the revert
       } catch (error) {
-        txHash = error.data.hash;
+        txHash = error.receipt.transactionHash;
       }
+      if (!txHash) assert.fail("should have errored and set txHash");
 
       let bugger = await Debugger.forTx(txHash, {
         provider,
