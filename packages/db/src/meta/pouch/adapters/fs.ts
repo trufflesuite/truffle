@@ -15,8 +15,9 @@ import Config from "@truffle/config";
 export interface DatabasesSettings {
   directory: string;
 }
+
 type UserConfigDbSettings = {
-  saveLocally: boolean | undefined,
+  saveToProjectRoot: boolean | undefined,
 };
 
 type UserConfig = {
@@ -28,8 +29,8 @@ export const getDefaultSettings: GetDefaultSettings = () => {
   
   return {
     directory: path.join(
-      userConfig.get("db")?.saveLocally 
-        ? Config.default().working_directory 
+      userConfig.get("db")?.saveToProjectRoot 
+        ? Config.detect().workingDirectory
         : Config.getTruffleDataDirectory()
         , ".db", "json")
   };
