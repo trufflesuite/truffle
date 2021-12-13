@@ -38,7 +38,7 @@ const sources = {
   "SuccessTest.sol": __SUCCESS
 };
 
-describe.only("End State", function () {
+describe("End State", function () {
   let provider;
   let abstractions;
   let compilations;
