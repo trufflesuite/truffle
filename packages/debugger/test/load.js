@@ -74,6 +74,7 @@ describe("Loading and unloading transactions", function () {
   });
 
   it("Unloads a transaction and loads a new one", async function () {
+    this.timeout(4000);
     let instance1 = await abstractions.Contract1.deployed();
     let receipt1 = await instance1.run();
     let txHash1 = receipt1.tx;
