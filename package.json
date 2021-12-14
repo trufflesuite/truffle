@@ -17,10 +17,10 @@
     "@typescript-eslint/parser": "^5.6.0",
     "coveralls": "^3.0.2",
     "eslint": "^8.4.1",
-    "husky": ">=6",
+    "husky": "^7.0.4",
     "lerna": "^3.16.4",
     "lerna-update-wizard": "^0.16.0",
-    "lint-staged": ">=10",
+    "lint-staged": "^12.1.2",
     "nyc": "^13.0.1",
     "prettier": "^2.5.1",
     "prs-merged-since": "^1.1.0"
