@@ -13,17 +13,20 @@ module.exports = {
   command: "db",
   description: "Database interface commands",
   builder: function (yargs) {
-    return yargs.command(serveCommand).demandCommand();
+    return yargs.command({
+      ...serveCommand.run,
+      ...serveCommand.meta
+    }).demandCommand();
   },
 
   subCommands: {
     serve: {
       help: serveCommand.help,
-      description: serveCommand.description
+      description: serveCommand.meta
     },
     query: {
       help: queryCommand.help,
-      description: queryCommand.description
+      description: queryCommand.meta
     }
   },
 
