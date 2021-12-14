@@ -8,7 +8,7 @@ import type { Resources } from "@truffle/db";
 
 import { useConfig, useDb, DbNotEnabledError } from "./hooks";
 import { Header, ActivationInstructions } from "./components";
-import { Menu } from "./menu";
+import { Menu, MenuItem } from "./components/Menu";
 
 export interface Props {
   network?: Pick<Resources.Resource<"networks">, "name">;
@@ -22,31 +22,32 @@ export const App = ({
   configPath
 }: Props) => {
   const { exit } = useApp();
-  const [shouldQuit, setShouldQuit] = useState<boolean>(false);
+  const [shouldQuit, _setShouldQuit] = useState<boolean>(false);
+  const [_mode, setMode] = useState<string>("loading");
 
   const config = useConfig({ network, configPath });
   const { db, project, error } = useDb({ config });
 
+  function changeMode(newMode: string): void {
+    setMode(newMode);
+  }
+
   useEffect(() => {
     if (shouldQuit) {
       exit();
+      process.exit();
     }
   });
 
   return (
     <Box flexDirection="column">
       <Header />
-      {!error &&
-      project &&
-      db &&
-      config && ( // success case
-          <Menu
-            config={config}
-            db={db}
-            project={project}
-            onDone={() => setShouldQuit(true)}
-          />
-        )}
+      <Menu onEnterPress={changeMode}>
+        <MenuItem mode="address">Address</MenuItem>
+        <MenuItem mode="contract">Contract</MenuItem>
+        <MenuItem mode="Mapping">Mapping</MenuItem>
+      </Menu>
+
       {!error &&
       !(project && db && config) && ( // still loading case
           <Text>

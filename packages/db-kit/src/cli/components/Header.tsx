@@ -1,14 +1,22 @@
 import React from "react";
 import { Newline, Box, Text } from "ink";
 import BigText from "ink-big-text";
+import { brandColors } from "../brandColors";
+
+const { truffleWhite, truffleBrown } = brandColors;
 
 export const Header = () => (
   <Box flexDirection="column">
-    <BigText text="@truffle/db-kit" font="grid" colors={["yellow", "gray"]} />
+    <BigText
+      text="@truffle/db-kit"
+      font="grid"
+      colors={[truffleWhite, truffleBrown]}
+    />
     <Text>
       <Text bold>
         @truffle/db is a system of record for blockchain metadata.
       </Text>
+      <Newline />
       <Newline />
       <Text>
         This tool provides a few utilities to demo @truffle/db and other Truffle
