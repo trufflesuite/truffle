@@ -243,15 +243,16 @@ const Compile = {
       return { compilations: [] };
     }
 
-    const { version, json: useJson, jsonCommand } = await checkVyper();
-
     const { allSources, compilationTargets } = await requiredSources(
       options.with({
         paths: vyperFilesStrict,
         base_path: options.contracts_directory,
         compiler: {
-          name: "vyper",
-          version
+          name: "vyper"
+          //HACK: we leave version empty because we haven't determined
+          //it at this point and we don't want to pay the cost of doing
+          //so, and nothing in the resolver sources currently uses
+          //precise vyper version
         }
       })
     );
@@ -270,6 +271,8 @@ const Compile = {
     //having gotten the sources from the resolver, we invoke compileJson
     //ourselves, rather than going through Compile.sources()
     Compile.display(compilationTargets, options);
+
+    const { version, json: useJson, jsonCommand } = await checkVyper();
 
     if (useJson) {
       return compileJson({
