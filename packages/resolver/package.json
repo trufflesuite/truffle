@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "7.0.39",
+  "version": "7.0.40",
   "main": "dist/lib/index.js",
   "files": [
     "dist",
@@ -21,17 +21,17 @@
   "scripts": {
     "build": "tsc",
     "prepare": "yarn build",
-    "test:ts": "mocha -r ts-node/register test/*.ts",
+    "test": "yarn test:ts && yarn test:js",
     "test:js": "mocha test/*.js",
-    "test": "yarn test:ts && yarn test:js"
+    "test:ts": "mocha -r ts-node/register test/*.ts"
   },
   "types": "dist/lib/index.d.ts",
   "dependencies": {
-    "@truffle/contract": "^4.3.43",
+    "@truffle/contract": "^4.4.0",
     "@truffle/contract-sources": "^0.1.12",
     "@truffle/expect": "^0.0.18",
-    "@truffle/provisioner": "^0.2.36",
-    "abi-to-sol": "^0.5.1",
+    "@truffle/provisioner": "^0.2.37",
+    "abi-to-sol": "^0.5.2",
     "debug": "^4.3.1",
     "detect-installed": "^2.0.4",
     "get-installed-path": "^4.0.8",

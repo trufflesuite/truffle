@@ -14,9 +14,6 @@ const repl = require("repl");
 
 const { DebugPrinter } = require("./printer");
 
-const LINES_BEFORE_LONG = 5;
-const LINES_AFTER_LONG = 3;
-
 function watchExpressionAnalytics(raw) {
   if (raw.includes("!<")) {
     //don't send analytics for watch expressions involving selectors
@@ -603,7 +600,12 @@ class DebugInterpreter {
         await this.setOrClearBreakpoint(splitArgs, false);
         break;
       case "p":
-        //first: process which locations we should print out
+        // determine the numbers of instructions to be printed
+        this.printer.instructionLines = this.parsePrintoutLines(
+          splitArgs,
+          this.printer.instructionLines
+        );
+        // process which locations we should print out
         const temporaryPrintouts = this.updatePrintouts(
           splitArgs,
           this.printer.locations,
@@ -628,7 +630,15 @@ class DebugInterpreter {
       case "l":
         if (this.session.view(session.status.loaded)) {
           this.printer.printFile();
-          this.printer.printState(LINES_BEFORE_LONG, LINES_AFTER_LONG);
+          // determine the numbers of lines to be printed
+          this.printer.sourceLines = this.parsePrintoutLines(
+            splitArgs,
+            this.printer.sourceLines
+          );
+          this.printer.printState(
+            this.printer.sourceLines.beforeLines,
+            this.printer.sourceLines.afterLines
+          );
         }
         break;
       case ";":
@@ -651,8 +661,8 @@ class DebugInterpreter {
             this.printer.printStacktrace(true); //print final stack trace
             //Now: actually show the point where things went wrong
             this.printer.printErrorLocation(
-              LINES_BEFORE_LONG,
-              LINES_AFTER_LONG
+              this.printer.sourceLines.beforeLines,
+              this.printer.sourceLines.afterLines
             );
           } else {
             this.printer.printStacktrace(false); //intermediate call stack
@@ -760,6 +770,24 @@ class DebugInterpreter {
       tempPrintouts.add(selection);
     }
     return tempPrintouts;
+  }
+
+  // parse the numbers of lines options -<num>|+<num> from user args
+  parsePrintoutLines(userArgs, currentLines) {
+    let { beforeLines, afterLines } = currentLines;
+    for (const argument of userArgs) {
+      // ignore an option with length less than 2,such as a bare + or -
+      if (argument.length < 2) continue;
+      const newLines = Number(argument.slice(1));
+      // ignore the arguments that are not of the correct form, number
+      if (isNaN(newLines)) continue;
+      if (argument[0] === "-") {
+        beforeLines = newLines;
+      } else if (argument[0] === "+") {
+        afterLines = newLines;
+      }
+    }
+    return { beforeLines, afterLines };
   }
 }
 

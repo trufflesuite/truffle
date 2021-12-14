@@ -12,14 +12,14 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "2.0.30",
+  "version": "2.0.31",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0",
     "test": "mocha"
   },
   "dependencies": {
-    "@truffle/config": "^1.3.13",
+    "@truffle/config": "^1.3.14",
     "@truffle/contract-schema": "^3.4.3",
     "@truffle/expect": "^0.0.18",
     "debug": "^4.3.1",
