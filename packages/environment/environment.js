@@ -49,9 +49,7 @@ const Environment = {
     const forkedNetwork = config.network + "-fork";
     const ganacheOptions = {
       fork: config.provider,
-      gasLimit: block.gasLimit,
-      legacyInstamine: true,
-      vmErrorsOnRPCResponse: true
+      gasLimit: block.gasLimit
     };
     if (accounts.length > 0) ganacheOptions.unlocked_accounts = accounts;
 
