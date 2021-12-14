@@ -44,28 +44,15 @@
     "web3-eth-abi": "1.5.3"
   },
   "devDependencies": {
-<<<<<<< HEAD
-    "@truffle/artifactor": "^4.0.131",
-    "@truffle/box": "^2.1.33",
-    "@truffle/migrate": "^3.2.55",
-    "@truffle/resolver": "^7.0.39",
-    "@truffle/workflow-compile": "^3.2.41",
-    "@babel/core": "^7.16.0",
-    "babel-loader": "^8.2.3",
-    "@babel/plugin-transform-runtime": "^7.16.4",
-    "@babel/preset-env": "^7.16.4",
-=======
     "@truffle/artifactor": "^4.0.132",
     "@truffle/box": "^2.1.34",
     "@truffle/migrate": "^3.2.56",
     "@truffle/resolver": "^7.0.40",
     "@truffle/workflow-compile": "^3.2.42",
-    "babel-core": "^6.26.0",
-    "babel-loader": "^7.1.2",
-    "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-plugin-transform-runtime": "^6.23.0",
-    "babel-preset-env": "^1.6.1",
->>>>>>> develop
+    "@babel/core": "^7.16.0",
+    "babel-loader": "^8.2.3",
+    "@babel/plugin-transform-runtime": "^7.16.4",
+    "@babel/preset-env": "^7.16.4",
     "babel-runtime": "^6.26.0",
     "chai": "^4.2.0",
     "change-case": "3.0.2",
