@@ -52,6 +52,8 @@ module.exports = async options => {
     gasLimit: customConfig.gas || 0x6691b7,
     gasPrice: customConfig.gasPrice || 0x77359400,
     time: config.genesis_time,
+    vmErrorsOnRPCResponse: customConfig.vmErrorsOnRPCResponse || false,
+    legacyInstamine: customConfig.legacyInstamine || false,
     _chainId: 1337 //temporary until Ganache v3!
   };
 
