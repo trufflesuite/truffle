@@ -38,8 +38,8 @@ options.time = options.time ? new Date(options.time) : new Date();
 // by making vmErrorsOnRPCResponse = true and legacyInstamine = true,
 // ganache's error reporting and mining behavior
 // is mostly restored to the way it worked in v2.
-options.vmErrorsOnRPCResponse = "vmErrorsOnRPCResponse" in options ? options.vmErrorsOnRPCResponse : true;
-options.legacyInstamine = "legacyInstamine" in options ? options.legacyInstamine : true;
+options.vmErrorsOnRPCResponse = "vmErrorsOnRPCResponse" in options ? options.vmErrorsOnRPCResponse : false;
+options.legacyInstamine = "legacyInstamine" in options ? options.legacyInstamine : false;
 
 /*
  * Logging
