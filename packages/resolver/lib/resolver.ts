@@ -25,26 +25,27 @@ export class Resolver {
     const { includeTruffleSources } = resolverOptions;
 
     this.options = options;
-    this.sources = [
+
+    let basicSources: ResolverSource[] = [
       new EthPMv1(options.working_directory),
       new NPM(options.working_directory),
       new GlobalNPM(),
       new FS(options.working_directory, options.contracts_build_directory)
     ];
-
     if (includeTruffleSources) {
-      this.sources.unshift(new Truffle(options));
+      basicSources.unshift(new Truffle(options));
     }
 
-    if (options.compiler && options.compiler.name === "solc") {
-      this.sources = [].concat(
-        ...this.sources.map(source => [new ABI(source), source])
-      );
-    }
+    //set up abi-to-sol resolution
+    this.sources = [].concat(
+      ...basicSources.map(source => [new ABI(source), source])
+    );
 
-    if (options.compiler && options.compiler.name === "vyper") {
-      this.sources = [new Vyper(this.sources, options.contracts_directory)];
-    }
+    //set up vyper resolution rules
+    this.sources = [
+      new Vyper(basicSources, options.contracts_directory),
+      ...this.sources //for Vyper this is redundant
+    ];
   }
 
   // This function might be doing too much. If so, too bad (for now).
