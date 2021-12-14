@@ -78,6 +78,7 @@ describe("End State", function () {
   });
 
   it("Gets vars at end of successful contract (and marks it successful)", async function () {
+    this.timeout(4000);
     let instance = await abstractions.SuccessTest.deployed();
     let receipt = await instance.run();
     let txHash = receipt.tx;
