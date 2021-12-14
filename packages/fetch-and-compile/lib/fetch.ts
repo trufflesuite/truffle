@@ -83,6 +83,7 @@ async function tryFetchAndCompileAddress(
 ): Promise<void> {
   let found: boolean = false;
   let failureReason: FailureType | undefined; //undefined if no failure
+  let failureError: Error | undefined;
   //(this includes if no source is found)
   for (const fetcher of fetchers) {
     //now comes all the hard parts!
@@ -94,6 +95,7 @@ async function tryFetchAndCompileAddress(
     } catch (error) {
       debug("error in getting sources! %o", error);
       failureReason = "fetch";
+      failureError = error;
       continue;
     }
     if (result === null) {
@@ -129,6 +131,7 @@ async function tryFetchAndCompileAddress(
     } catch (error) {
       debug("compile error: %O", error);
       failureReason = "compile";
+      failureError = error;
       continue; //try again with a different fetcher, I guess?
     }
     //add it!
@@ -141,6 +144,7 @@ async function tryFetchAndCompileAddress(
       address
     );
     failureReason = undefined; //mark as *not* failed in case a previous fetcher failed
+    failureError = undefined;
     //check: did this actually help?
     debug("checking result");
     if (!recognizer.isAddressUnrecognized(address)) {
@@ -157,7 +161,7 @@ async function tryFetchAndCompileAddress(
   }
   if (found === false) {
     //if we couldn't find it, add it to the list of addresses to skip
-    recognizer.markUnrecognizable(address, failureReason);
+    recognizer.markUnrecognizable(address, failureReason, failureError);
   }
 }
 

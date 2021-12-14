@@ -39,9 +39,11 @@ export class SingleRecognizer implements Recognizer {
     return this.recognized ? undefined : this.address;
   }
 
-  markUnrecognizable(address: string, reason?: FailureType): never {
+  markUnrecognizable(address: string, reason?: FailureType, error?: Error): never {
     //just throw...
-    if (reason) {
+    if (error) {
+      throw error;
+    } else if (reason) {
       switch (reason) {
         case "fetch":
           throw new Error(`Error in fetching sources for ${address}`);
