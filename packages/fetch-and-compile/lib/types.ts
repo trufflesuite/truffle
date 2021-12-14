@@ -22,7 +22,7 @@ export interface Recognizer {
     info: FetchAndCompileResult,
     address: string
   ): void | Promise<void>;
-  markUnrecognizable(address: string, reason?: FailureType): void;
+  markUnrecognizable(address: string, reason?: FailureType, error?: Error): void;
   markBadFetcher(fetcherName: string): void;
 }
 

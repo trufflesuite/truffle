@@ -57,6 +57,7 @@ export class DebugRecognizer implements Recognizer {
   }
 
   markUnrecognizable(address: string, reason?: FailureType): void {
+    //debugger does not keep track of detailed errors
     if (reason) {
       switch (reason) {
         case "fetch":
