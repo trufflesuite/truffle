@@ -1,17 +1,22 @@
 import util from "util";
 
 import React, { useState, useEffect } from "react";
-import { Box, Text, Newline, useApp, Spacer } from "ink";
-import Spinner from "ink-spinner";
+import { Box, Text, Newline, Spacer } from "ink";
+import { useConfig, useDb, DbNotEnabledError } from "./hooks";
+import {
+  ActivationInstructions,
+  Footer,
+  Header,
+  LoadingSpinner,
+  Menu,
+  MenuItem,
+  ScreenRouter,
+  Screen,
+  Transaction
+} from "./components";
+import { brandColors } from "./brandColors";
 
 import type { Resources } from "@truffle/db";
-
-import { useConfig, useDb, DbNotEnabledError } from "./hooks";
-import { Header, ActivationInstructions } from "./components";
-import { Footer } from "./components/Footer";
-import { Menu, MenuItem } from "./components/Menu";
-import { ScreenRouter, Screen } from "./components/ScreenRouter";
-import { brandColors } from "./brandColors";
 
 const { truffleBrown } = brandColors;
 export interface Props {
@@ -66,18 +71,18 @@ export const App = ({
         <ScreenRouter mode={mode}>
           <Screen mode="menu">
             <Menu onEnterPress={changeMode}>
-              <MenuItem mode="address">Address</MenuItem>
+              <MenuItem mode="transaction">Transaction</MenuItem>
               <MenuItem mode="contract">Contract</MenuItem>
-              <MenuItem mode="Mapping">Mapping</MenuItem>
+              <MenuItem mode="mapping">Mapping</MenuItem>
             </Menu>
           </Screen>
+          <Screen mode="transaction">
+            <Transaction />
+          </Screen>
           <Screen mode="loading">
-            <Text>
-              <Text color="green">
-                <Spinner />
-              </Text>
-              {" Reading truffle-config and connecting to network..."}
-            </Text>
+            <LoadingSpinner
+              message={"Reading truffle-config and connecting to network..."}
+            />
           </Screen>
           <Screen mode="error-DbNotEnabled">
             <ActivationInstructions />

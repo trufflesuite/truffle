@@ -1,7 +1,7 @@
 import React from "react";
 import { Newline, Box, Text } from "ink";
 import BigText from "ink-big-text";
-import { brandColors } from "../brandColors";
+import { brandColors } from "../../brandColors";
 
 const { truffleWhite, truffleBrown } = brandColors;
 
