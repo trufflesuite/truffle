@@ -10,7 +10,6 @@
   "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint"],
   "parserOptions": {
-    "ecmaVersion": 2021,
     "sourceType": "module"
   },
   "ignorePatterns": ["dist"],
