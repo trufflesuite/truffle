@@ -1,37 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Box, Text } from "ink";
-import Spinner from "ink-spinner";
+import { Box } from "ink";
 import { UserInput } from "../UserInput";
+
+import { LoadingSpinner } from "../LoadingSpinner";
 import { useTransactionInfo } from "../../hooks/useTransactionInfo";
 import { TransactionDetails } from "./TransactionDetails";
 
-export const TransactionInfo = ({ transaction }) => {
-  if (!transaction) return null;
+const TransactionInput = ({ enabled, onSubmit }) => {
+  if (!enabled) return null;
 
   return (
-    <Box key="transaction">
-      <Box paddingLeft={1} paddingRight={1}>
-        <Text color="green">
-          <Spinner />
-        </Text>
-      </Box>
-      <Text>Reading transaction...</Text>
-    </Box>
-  );
-};
-
-export const TransactionReceiptInfo = ({ receipt }) => {
-  if (!receipt) return null;
-
-  return (
-    <Box key="receipt">
-      <Box paddingLeft={1} paddingRight={1}>
-        <Text color="green">
-          <Spinner />
-        </Text>
-      </Box>
-      <Text>Reading transaction receipt...</Text>
-    </Box>
+    <UserInput description={"Tx hash"} onSubmit={onSubmit} enabled={enabled} />
   );
 };
 
@@ -52,26 +31,30 @@ export const Transaction = ({ config, db, project }: TransactionProps) => {
 
   return (
     <Box flexDirection={"column"}>
-      {!transactionHash && (
-        <Box>
-          <UserInput
-            description={"Tx hash"}
-            onSubmit={setTransactionHash}
-            enabled={!transactionHash}
-          />
-          <TransactionInfo transaction={transaction} />
-          <TransactionReceiptInfo receipt={receipt} />
-        </Box>
-      )}
+      <TransactionInput
+        enabled={!transactionHash}
+        onSubmit={setTransactionHash}
+      />
+      <LoadingSpinner
+        message={"Reading transaction..."}
+        enabled={!!transactionHash && !addresses}
+      />
+      <LoadingSpinner
+        message={"Reading transaction receipt..."}
+        enabled={!!transactionHash && !addresses}
+      />
+
       {addresses && (
-        <TransactionDetails
-          config={config}
-          db={db}
-          project={project}
-          transaction={transaction}
-          receipt={receipt}
-          addresses={addresses}
-        />
+        <Box flexDirection={"column"}>
+          <TransactionDetails
+            config={config}
+            db={db}
+            project={project}
+            transaction={transaction}
+            receipt={receipt}
+            addresses={addresses}
+          />
+        </Box>
       )}
     </Box>
   );

@@ -30,11 +30,11 @@ export const StatusSpinners = ({ statusByAddress }: StatusSpinnersProps) => {
   );
 };
 
-type SpinnerType = {
+type StatusSpinnerType = {
   address: string;
 };
 
-export const FailedStatusSpinner = ({ address }: SpinnerType) => {
+export const FailedStatusSpinner = ({ address }: StatusSpinnerType) => {
   return (
     <Box key={`address-${address}`}>
       <Box paddingLeft={1} paddingRight={1}>
@@ -56,7 +56,7 @@ export const FailedStatusSpinner = ({ address }: SpinnerType) => {
   );
 };
 
-export const OkStatusSpinner = ({ address }: SpinnerType) => {
+export const OkStatusSpinner = ({ address }: StatusSpinnerType) => {
   return (
     <Box key={`address-${address}`}>
       <Box paddingLeft={1} paddingRight={1}>
@@ -78,7 +78,7 @@ export const OkStatusSpinner = ({ address }: SpinnerType) => {
   );
 };
 
-export const FetchingStatusSpinner = ({ address }: SpinnerType) => {
+export const FetchingStatusSpinner = ({ address }: StatusSpinnerType) => {
   return (
     <Box key={`address-${address}`}>
       <Box paddingLeft={1} paddingRight={1}>
@@ -100,7 +100,7 @@ export const FetchingStatusSpinner = ({ address }: SpinnerType) => {
   );
 };
 
-export const QueryStatusSpinner = ({ address }: SpinnerType) => {
+export const QueryStatusSpinner = ({ address }: StatusSpinnerType) => {
   return (
     <Box key={`address-${address}`}>
       <Box paddingLeft={1} paddingRight={1}>

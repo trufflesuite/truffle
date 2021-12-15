@@ -111,8 +111,8 @@ export const TransactionResults = ({
         <Divider width={10} />
       </Box>
       {
-        // @ts-ignore
         <Box
+          // @ts-ignore
           ref={ref}
           flexDirection="column"
           borderStyle="round"

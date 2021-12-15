@@ -4,9 +4,15 @@ import { Text, Box } from "ink";
 
 type LoadingSpinnerProps = {
   message?: string;
+  enabled?: boolean;
 };
 
-export const LoadingSpinner = ({ message }: LoadingSpinnerProps) => {
+export const LoadingSpinner = ({
+  message,
+  enabled = true
+}: LoadingSpinnerProps) => {
+  if (!enabled) return null;
+
   return (
     <Box>
       <Box marginRight={1}>

@@ -1,6 +1,2 @@
-export {
-  Transaction,
-  TransactionInfo,
-  TransactionReceiptInfo
-} from "./Transaction";
+export { Transaction } from "./Transaction";
 export { TransactionDetails } from "./TransactionDetails";
