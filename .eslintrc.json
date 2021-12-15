@@ -13,6 +13,7 @@
     "ecmaVersion": 9,
     "sourceType": "module"
   },
+  "ignorePatterns": ["dist"],
   "rules": {
     "@typescript-eslint/no-unused-vars": [
       "error",
