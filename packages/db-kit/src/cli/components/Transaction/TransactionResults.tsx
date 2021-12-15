@@ -1,27 +1,27 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Box, Text, measureElement } from "ink";
 import Spinner from "ink-spinner";
 import Divider from "ink-divider";
-
-import type { Transaction, TransactionReceipt } from "web3-core";
-import type { ProjectDecoder } from "@truffle/decoder";
 
 import * as Components from "@truffle/db-kit/cli/components";
 import { DefinitionList } from "@truffle/db-kit/cli/components";
 
 import { useDecodedTransaction } from "./useDecodedTransaction";
 
-export interface Props {
+import type { ProjectDecoder } from "@truffle/decoder";
+import type { Transaction, TransactionReceipt } from "web3-core";
+
+type TransactionResultsProps = {
   decoder: ProjectDecoder;
   transaction: Transaction;
   receipt: TransactionReceipt;
-}
+};
 
-export const DecodeTransactionResult = ({
+export const TransactionResults = ({
   decoder,
   transaction,
   receipt
-}: Props) => {
+}: TransactionResultsProps) => {
   const [width, setWidth] = useState(80);
   const ref = useRef();
 
@@ -103,29 +103,43 @@ export const DecodeTransactionResult = ({
       />
     );
 
+  if (!decoder || !transaction || !receipt) return null;
+
   return (
-    // @ts-ignore
-    <Box ref={ref} flexDirection="column" borderStyle="round" paddingBottom={1}>
-      <Divider
-        width={width - 2}
-        titleColor="whiteBright"
-        title="Decoded  Transaction"
-        titlePadding={2}
-        padding={0}
-      />
-      <Box marginX={2} marginY={1}>
-        {summaryElement}
+    <Box flexDirection="column">
+      <Box justifyContent="center" marginBottom={1}>
+        <Divider width={10} />
       </Box>
-      <Divider
-        width={width - 2}
-        titleColor="whiteBright"
-        title="Decoded Events"
-        titlePadding={2}
-        padding={0}
-      />
-      <Box marginX={2} marginTop={1} flexDirection="column">
-        {eventsElement}
-      </Box>
+      {
+        // @ts-ignore
+        <Box
+          ref={ref}
+          flexDirection="column"
+          borderStyle="round"
+          paddingBottom={1}
+        >
+          <Divider
+            width={width - 2}
+            titleColor="whiteBright"
+            title="Decoded  Transaction"
+            titlePadding={2}
+            padding={0}
+          />
+          <Box marginX={2} marginY={1}>
+            {summaryElement}
+          </Box>
+          <Divider
+            width={width - 2}
+            titleColor="whiteBright"
+            title="Decoded Events"
+            titlePadding={2}
+            padding={0}
+          />
+          <Box marginX={2} marginTop={1} flexDirection="column">
+            {eventsElement}
+          </Box>
+        </Box>
+      }
     </Box>
   );
 };

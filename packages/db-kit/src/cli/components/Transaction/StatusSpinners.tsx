@@ -1,9 +1,12 @@
 import React from "react";
 import { Box, Text } from "ink";
 import Spinner from "ink-spinner";
+import { Status } from "../../hooks/useCompilations";
 
 type StatusSpinnersProps = {
-  statusByAddress: string[];
+  statusByAddress: {
+    [address: string]: Status;
+  };
 };
 
 export const StatusSpinners = ({ statusByAddress }: StatusSpinnersProps) => {

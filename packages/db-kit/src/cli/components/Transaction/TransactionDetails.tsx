@@ -1,23 +1,21 @@
 import React from "react";
 import { Box, Text } from "ink";
-import Divider from "ink-divider";
 import { StatusSpinners } from "./StatusSpinners";
-import { DecodeTransactionResult as Result } from "./Result";
-
+import { TransactionResults } from "./TransactionResults";
 import { useDecoder } from "../../hooks";
 
 import type { Transaction, TransactionReceipt } from "web3-core";
 import type TruffleConfig from "@truffle/config";
 import type { Db, Resources } from "@truffle/db";
 
-export interface TransactionDetailsProps {
+type TransactionDetailsProps = {
   config: TruffleConfig;
   db: Db;
   project: Resources.IdObject<"projects">;
   transaction: Transaction;
   receipt: TransactionReceipt;
   addresses: string[];
-}
+};
 
 export const TransactionDetails = ({
   config,
@@ -39,14 +37,7 @@ export const TransactionDetails = ({
     status => status !== "ok"
   );
 
-  const body = decoder && (
-    <Box flexDirection="column">
-      <Box justifyContent="center" marginBottom={1}>
-        <Divider width={10} />
-      </Box>
-      <Result decoder={decoder} transaction={transaction} receipt={receipt} />
-    </Box>
-  );
+  if (!decoder) return null;
 
   return (
     <Box flexDirection="column">
@@ -67,7 +58,11 @@ export const TransactionDetails = ({
           </Box>
         </Box>
       )}
-      {body}
+      <TransactionResults
+        decoder={decoder}
+        transaction={transaction}
+        receipt={receipt}
+      />
     </Box>
   );
 };
