@@ -6,7 +6,6 @@ describe("Deployments", function () {
   let web3;
   // ganache v2 had a default blockGasLimit of 0x6691b7, which these tests rely on
   const providerOptions = {
-    vmErrorsOnRPCResponse: false,
     gasLimit: 0x6691b7,
     hardfork: "istanbul"
   };

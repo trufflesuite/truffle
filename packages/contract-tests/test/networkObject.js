@@ -1,9 +1,9 @@
-var assert = require("chai").assert;
-var util = require("./util");
+const assert = require("chai").assert;
+const util = require("./util");
 
 describe("Network Object [ @geth ]", function () {
-  var Example;
-  var networkId;
+  let Example;
+  let networkId;
 
   it("errors when setting an invalid provider", function (done) {
     try {
