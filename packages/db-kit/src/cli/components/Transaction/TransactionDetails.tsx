@@ -1,22 +1,16 @@
 import React from "react";
 import { Box, Text } from "ink";
 import Divider from "ink-divider";
-import {
-  FailedStatusSpinner,
-  OkStatusSpinner,
-  FetchingStatusSpinner,
-  QueryStatusSpinner
-} from "./StatusSpinners";
+import { StatusSpinners } from "./StatusSpinners";
+import { DecodeTransactionResult as Result } from "./Result";
+
+import { useDecoder } from "../../hooks";
 
 import type { Transaction, TransactionReceipt } from "web3-core";
 import type TruffleConfig from "@truffle/config";
 import type { Db, Resources } from "@truffle/db";
 
-import { useDecoder } from "@truffle/db-kit/cli/hooks";
-
-import { DecodeTransactionResult as Result } from "./Result";
-
-export interface Props {
+export interface TransactionDetailsProps {
   config: TruffleConfig;
   db: Db;
   project: Resources.IdObject<"projects">;
@@ -25,33 +19,20 @@ export interface Props {
   addresses: string[];
 }
 
-export const DecodeTransactionSplash = ({
+export const TransactionDetails = ({
   config,
   db,
   project,
   transaction,
   receipt,
   addresses
-}: Props) => {
+}: TransactionDetailsProps) => {
   const { decoder, statusByAddress } = useDecoder({
     config,
     db,
     project,
     network: { name: config.network },
     addresses
-  });
-
-  const spinners = Object.entries(statusByAddress).map(([address, status]) => {
-    switch (status) {
-      case "querying":
-        return <QueryStatusSpinner address={address} />;
-      case "fetching":
-        return <FetchingStatusSpinner address={address} />;
-      case "ok":
-        return <OkStatusSpinner address={address} />;
-      case "failed":
-        return <FailedStatusSpinner address={address} />;
-    }
   });
 
   const showLoaders = Object.values(statusByAddress).find(
@@ -82,7 +63,7 @@ export const DecodeTransactionSplash = ({
             </Text>
           </Box>
           <Box paddingX={2} flexDirection="column">
-            {...spinners}
+            <StatusSpinners statusByAddress={statusByAddress} />
           </Box>
         </Box>
       )}
