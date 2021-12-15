@@ -19,6 +19,7 @@ import { brandColors } from "./brandColors";
 import type { Resources } from "@truffle/db";
 
 const { truffleBrown } = brandColors;
+
 export interface Props {
   network?: Pick<Resources.Resource<"networks">, "name">;
   configPath?: string;
@@ -67,7 +68,7 @@ export const App = ({
       borderColor={truffleBrown}
     >
       <Header />
-      <Box height={6} marginTop={1} flexDirection="column">
+      <Box minHeight={6} marginTop={1} flexDirection="column">
         <ScreenRouter mode={mode}>
           <Screen mode="menu">
             <Menu onEnterPress={changeMode}>
@@ -77,7 +78,7 @@ export const App = ({
             </Menu>
           </Screen>
           <Screen mode="transaction">
-            <Transaction />
+            <Transaction config={config} db={db} project={project} />
           </Screen>
           <Screen mode="loading">
             <LoadingSpinner
