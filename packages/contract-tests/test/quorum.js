@@ -1,16 +1,15 @@
-var assert = require("chai").assert;
-var util = require("./util");
+const assert = require("chai").assert;
+const util = require("./util");
 
 describe("Quorum", function () {
-  var Example;
-  var providerOptions = { vmErrorsOnRPCResponse: false };
+  let Example;
 
   before(async function () {
     this.timeout(10000);
 
     Example = await util.createExample();
 
-    return util.setUpProvider(Example, providerOptions);
+    return util.setUpProvider(Example);
   });
 
   it("privateFor accepted as valid tx_param (send)", async function () {

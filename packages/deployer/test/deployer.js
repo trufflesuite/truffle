@@ -20,9 +20,7 @@ describe("Deployer (sync)", function() {
   let IsLibrary;
   let UsesLibrary;
 
-  const provider = ganache.provider({
-    vmErrorsOnRPCResponse: false
-  });
+  const provider = ganache.provider();
 
   const mockMigration = {
     emitter: new EventEmitter()

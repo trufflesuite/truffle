@@ -1,18 +1,17 @@
-var assert = require("chai").assert;
-var util = require("./util");
+const assert = require("chai").assert;
+const util = require("./util");
 
 describe("Events", function () {
-  var Example;
-  var accounts;
-  var web3;
-  var providerOptions = { vmErrorsOnRPCResponse: false };
+  let Example;
+  let accounts;
+  let web3;
 
   before(async function () {
     this.timeout(10000);
 
     Example = await util.createExample();
 
-    return util.setUpProvider(Example, providerOptions).then(result => {
+    return util.setUpProvider(Example).then(result => {
       web3 = result.web3;
       accounts = result.accounts;
     });
