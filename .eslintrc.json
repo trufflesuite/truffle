@@ -1,7 +1,7 @@
 {
   "root": true,
   "env": {
-    "es6": true,
+    "es2021": true,
     "node": true
   },
   "extends": [
@@ -10,7 +10,6 @@
   "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint"],
   "parserOptions": {
-    "ecmaVersion": 9,
     "sourceType": "module"
   },
   "ignorePatterns": ["dist"],
