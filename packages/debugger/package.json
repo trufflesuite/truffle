@@ -18,7 +18,6 @@
     "build": "webpack --config webpack/webpack.config.js",
     "docs": "esdoc",
     "prepare": "yarn build",
-    "start": "node ./webpack/dev-server.js",
     "test": "mochapack --webpack-config webpack/webpack.config-test.js --recursive",
     "test:coverage": "nyc mochapack --webpack-config webpack/webpack.config-test.js --recursive",
     "test:debug": "NODE_ENV=testing node --inspect ./node_modules/.bin/mochapack --webpack-config webpack/webpack.config-test.js --recursive"
@@ -59,7 +58,6 @@
     "esdoc": "^1.0.4",
     "esdoc-ecmascript-proposal-plugin": "^1.0.0",
     "esdoc-standard-plugin": "^1.0.0",
-    "express": "^4.16.2",
     "faker": "^5.3.1",
     "fs-extra": "^9.1.0",
     "ganache-core": "2.13.0",
@@ -67,10 +65,8 @@
     "mocha": "8.4.0",
     "mochapack": "^2.1.2",
     "nyc": "^13.0.1",
-    "remotedev-server": "^0.3.1",
     "webpack": "^5.65.0",
     "webpack-cli": "^4.9.1",
-    "webpack-dev-middleware": "^5.2.2",
     "webpack-merge": "^5.8.0",
     "webpack-node-externals": "^3.0.0"
   },
