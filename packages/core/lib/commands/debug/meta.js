@@ -27,6 +27,10 @@ module.exports = {
       describe: "Force debugger to skip compilation (dangerous!)",
       type: "boolean",
       default: false
+    },
+    "url": {
+      describe: "Forces/set server URL",
+      type: "string"
     }
   },
   help: {
@@ -59,7 +63,11 @@ module.exports = {
         option: "--compile-none",
         description:
           "Forces the debugger to use artifacts even if it detects a problem.  Dangerous; may cause errors."
-      }
+      },
+      {
+        option: "--url",
+        description: "Sets the server URL inline and ignore truffle config file"
+      },
     ],
     allowedGlobalOptions: ["network", "config"]
   }

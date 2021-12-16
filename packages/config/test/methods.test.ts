@@ -51,6 +51,16 @@ describe("when it can't find a config file", () => {
       TruffleConfig.detect();
     }, "should have thrown!");
   });
+
+  it("doesn't throw when url is provided", () => {
+    const options = { url: "http://localhost:7545" };
+    const config = TruffleConfig.detect(options);
+    const networks = config.networks
+
+    assert.equal(networks.development.host, "localhost", "wrong host detected");
+    assert.equal(networks.development.port, "7545", "wrong port detected");
+    assert.equal(networks.development.network_id, "*", "wrong network_id detected");
+  });
 });
 
 before(() => {
