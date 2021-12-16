@@ -1,18 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Box } from "ink";
+import { Box, Text } from "ink";
 import { UserInput } from "../UserInput";
 
 import { LoadingSpinner } from "../LoadingSpinner";
+import { fetchTransactionInfo } from "../../actions/fetchTransactionInfo";
 import { useTransactionInfo } from "../../hooks/useTransactionInfo";
+import { useDecoder } from "../../hooks";
 import { TransactionDetails } from "./TransactionDetails";
-
-const TransactionInput = ({ enabled, onSubmit }) => {
-  if (!enabled) return null;
-
-  return (
-    <UserInput description={"Tx hash"} onSubmit={onSubmit} enabled={enabled} />
-  );
-};
 
 type TransactionProps = {
   config: any;
@@ -22,39 +16,56 @@ type TransactionProps = {
 
 export const Transaction = ({ config, db, project }: TransactionProps) => {
   const [transactionHash, setTransactionHash] = useState<string | undefined>();
-  const { transaction, receipt, addresses } = useTransactionInfo({
-    config,
-    transactionHash
-  });
+  const [error, setError] = useState<string | undefined>();
+  const [transactionInfo, setTransactionInfo] = useState<any | undefined>();
 
-  useEffect(() => {}, [transactionHash, config]);
+  useEffect(() => {
+    async function getTxInfo() {
+      if (transactionHash) {
+        const {
+          transaction,
+          receipt,
+          addresses,
+          error
+        } = await fetchTransactionInfo({ config, transactionHash });
+        if (error) {
+          return setError(error);
+        }
+
+        setTransactionInfo({ transaction, receipt, addresses });
+      }
+    }
+
+    getTxInfo();
+  }, [transactionHash, config]);
 
   return (
     <Box flexDirection={"column"}>
-      <TransactionInput
-        enabled={!transactionHash}
+      <UserInput
+        description={"Tx hash"}
         onSubmit={setTransactionHash}
+        enabled={!transactionHash}
+        display={!transactionHash}
       />
+
       <LoadingSpinner
         message={"Reading transaction..."}
-        enabled={!!transactionHash && !addresses}
+        enabled={!!transactionHash && !transactionInfo}
       />
       <LoadingSpinner
         message={"Reading transaction receipt..."}
-        enabled={!!transactionHash && !addresses}
+        enabled={!!transactionHash && !transactionInfo}
       />
 
-      {addresses && (
-        <Box flexDirection={"column"}>
-          <TransactionDetails
-            config={config}
-            db={db}
-            project={project}
-            transaction={transaction}
-            receipt={receipt}
-            addresses={addresses}
-          />
-        </Box>
+      <Text>{error}</Text>
+
+      {transactionInfo && (
+        <TransactionDetails
+          config={config}
+          db={db}
+          project={project}
+          {...transactionInfo}
+        />
       )}
     </Box>
   );
