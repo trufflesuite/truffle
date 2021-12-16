@@ -26,7 +26,7 @@ The `@truffle/dashboard-message-bus` does contain a bunch of exported utilities 
 
 ### Architecture
 
-The message bus works by running two separate WebSocket servers. One server is for publishers to connect to and send requests, while the other server is for subscribers (dashboards) to connect to and receive requests. Any requests from publishers are sent to all subscribers, but only the first response will be returned to the publisher. When new subscribers connect, any "unfulfilled" requests will be sent to the newly connected subscribers as well. The message bus stays running as long as there is at least one publisher _or_ subscriber connected. As soon as the last one disconnects, the message bus shuts down.
+The message bus works by running two separate WebSocket servers. One server is for publishers to connect to and send requests, while the other server is for subscribers (dashboards) to connect to and receive requests. The subscribers respond to these requests by sending a message to the message bus with an ID that corresponds to the request. Any requests from publishers are sent to all subscribers, but only the first response will be returned to the publisher. When new subscribers connect, any "unfulfilled" requests will be sent to the newly connected subscribers as well. The message bus stays running as long as there is at least one publisher _or_ subscriber connected. As soon as the last one disconnects, the message bus shuts down.
 
 ### Testing
 
