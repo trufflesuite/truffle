@@ -250,15 +250,17 @@ export default class Session {
             for (let index in generatedSources) {
               index = Number(index); //it comes out as a string due to in, so let's fix that
               const source = generatedSources[index];
-              sources.internal[contextHash][index] = {
-                ...source,
-                compiler: source.compiler || compiler,
-                compilationId: compilation.id,
-                index,
-                id: makeSourceId(compilation.id, contextHash, index),
-                internal: true,
-                internalFor: contextHash
-              };
+              if (source) {
+                sources.internal[contextHash][index] = {
+                  ...source,
+                  compiler: source.compiler || compiler,
+                  compilationId: compilation.id,
+                  index,
+                  id: makeSourceId(compilation.id, contextHash, index),
+                  internal: true,
+                  internalFor: contextHash
+                };
+              }
             }
           }
         }
@@ -290,15 +292,17 @@ export default class Session {
             for (let index in deployedGeneratedSources) {
               index = Number(index); //it comes out as a string due to in, so let's fix that
               const source = deployedGeneratedSources[index];
-              sources.internal[contextHash][index] = {
-                ...source,
-                compiler: source.compiler || compiler,
-                compilationId: compilation.id,
-                index,
-                id: makeSourceId(compilation.id, contextHash, index),
-                internal: true,
-                internalFor: contextHash
-              };
+              if (source) {
+                sources.internal[contextHash][index] = {
+                  ...source,
+                  compiler: source.compiler || compiler,
+                  compilationId: compilation.id,
+                  index,
+                  id: makeSourceId(compilation.id, contextHash, index),
+                  internal: true,
+                  internalFor: contextHash
+                };
+              }
             }
           }
         }
