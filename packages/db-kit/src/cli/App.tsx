@@ -5,6 +5,7 @@ import { Box, Text, Newline, Spacer } from "ink";
 import { useConfig, useDb, DbNotEnabledError } from "./hooks";
 import {
   ActivationInstructions,
+  Address,
   Footer,
   Header,
   LoadingSpinner,
@@ -73,12 +74,15 @@ export const App = ({
           <Screen mode="menu">
             <Menu onEnterPress={changeMode}>
               <MenuItem mode="transaction">Transaction</MenuItem>
-              <MenuItem mode="contract">Contract</MenuItem>
+              <MenuItem mode="address">Address</MenuItem>
               <MenuItem mode="mapping">Mapping</MenuItem>
             </Menu>
           </Screen>
           <Screen mode="transaction">
             <Transaction config={config} db={db} project={project} />
+          </Screen>
+          <Screen mode="address">
+            <Address config={config} db={db} project={project} />
           </Screen>
           <Screen mode="loading">
             <LoadingSpinner

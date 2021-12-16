@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Box, Text } from "ink";
+import { Box } from "ink";
 import { UserInput } from "../UserInput";
 
 import { LoadingSpinner } from "../LoadingSpinner";
 import { fetchTransactionInfo } from "../../actions/fetchTransactionInfo";
-import { useTransactionInfo } from "../../hooks/useTransactionInfo";
-import { useDecoder } from "../../hooks";
+import { ErrorMessage } from "../ErrorMessage";
+
 import { TransactionDetails } from "./TransactionDetails";
 
 type TransactionProps = {
@@ -57,7 +57,7 @@ export const Transaction = ({ config, db, project }: TransactionProps) => {
         enabled={!!transactionHash && !transactionInfo}
       />
 
-      <Text>{error}</Text>
+      <ErrorMessage message={error} />
 
       {transactionInfo && (
         <TransactionDetails

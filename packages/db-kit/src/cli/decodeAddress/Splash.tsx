@@ -130,7 +130,7 @@ export const DecodeAddressSplash = ({
   );
 
   return (
-    <Box flexDirection="column">
+    <Box flexDirection="column" width={"100%"}>
       {showLoaders && (
         <Box
           key="loaders"

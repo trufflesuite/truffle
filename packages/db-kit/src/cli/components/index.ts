@@ -1,4 +1,5 @@
 export { ActivationInstructions } from "./ActivationInstructions";
+export { Address } from "./Address";
 export { DefinitionList } from "./DefinitionList";
 export { Footer } from "./Footer";
 export { Header } from "./Header";
