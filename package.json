@@ -19,7 +19,7 @@
     "eslint": "^8.4.1",
     "husky": "^7.0.4",
     "lerna": "^3.16.4",
-    "lerna-update-wizard": "^0.16.0",
+    "lerna-update-wizard": "^1.1.0",
     "lint-staged": "^12.1.2",
     "nyc": "^13.0.1",
     "prettier": "^2.5.1",
