@@ -144,7 +144,6 @@ export class ProviderAdapter {
     if (!this.provider) {
       throw new Error("There is not a valid provider present.");
     }
-<<<<<<< HEAD
     let result;
     if (isEip1193Provider(this.provider)) {
       result = await this.provider.request({ method, params });
