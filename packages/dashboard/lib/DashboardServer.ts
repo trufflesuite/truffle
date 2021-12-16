@@ -33,7 +33,7 @@ export default class DashboardServer {
 
   constructor(options: DashboardServerOptions) {
     this.port = options.port;
-    this.host = options.host ?? "0.0.0.0";
+    this.host = options.host ?? "localhost";
     this.rpc = options.rpc ?? true;
     this.verbose = options.verbose ?? false;
     this.autoOpen = options.autoOpen ?? true;

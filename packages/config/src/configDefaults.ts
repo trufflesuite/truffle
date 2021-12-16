@@ -36,7 +36,7 @@ export const getInitialConfig = ({
     artifactor: null,
     quiet: false,
     dashboard: {
-      host: '0.0.0.0',
+      host: 'localhost',
       port: 24012,
       verbose: false
     },
