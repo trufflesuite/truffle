@@ -81,13 +81,18 @@ function lastPosition(state = null, action) {
   switch (action.type) {
     case actions.JUMP_IN:
     case actions.JUMP_OUT:
-    case actions.ETERNAL_CALL:
+    case actions.EXTERNAL_CALL:
     case actions.EXTERNAL_RETURN:
     case actions.UPDATE_POSITION:
     case actions.EXECUTE_RETURN:
       const { location } = action;
-      if (location.source.id === undefined || location.source.internal) {
+      if (
+        location === null ||
+        location.source.id === undefined ||
+        location.source.internal
+      ) {
         //don't update for unmapped or internal!
+        //also don't update for null location
         return state;
       }
       return location;

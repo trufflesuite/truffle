@@ -8,8 +8,6 @@ import type {
   FetchAndCompileResult,
   Instances
 } from "./types";
-import type { WorkflowCompileResult } from "@truffle/compile-common";
-import type { SourceInfo } from "@truffle/source-fetcher";
 
 export class DebugRecognizer implements Recognizer {
   private bugger: any; //sorry, we don't have a type for the debugger
@@ -57,6 +55,7 @@ export class DebugRecognizer implements Recognizer {
   }
 
   markUnrecognizable(address: string, reason?: FailureType): void {
+    //debugger does not keep track of detailed errors
     if (reason) {
       switch (reason) {
         case "fetch":

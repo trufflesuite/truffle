@@ -1,26 +1,36 @@
 const path = require("path");
+const webpack = require("webpack");
 const nodeExternals = require("webpack-node-externals");
 
 module.exports = {
-  entry: "./debugger",
+  entry: "./debugger.js",
+  devtool: false,
+  target: "node",
 
   module: {
     rules: [
       {
         test: /\.js$/,
-        loader: "babel-loader",
-        query: {
-          presets: [["babel-preset-env", { targets: { node: "6.14" } }]],
-          plugins: ["transform-object-rest-spread", "transform-runtime"]
+        use: {
+          loader: "babel-loader",
+          options: {
+            presets: [
+              [
+                "@babel/preset-env",
+                { targets: { node: "12.0" }, modules: false }
+              ]
+            ],
+            plugins: ["@babel/plugin-transform-runtime"]
+          }
         },
+        exclude: [path.resolve(__dirname, "..", "node_modules")],
         include: [path.resolve(__dirname, "..", "lib")]
       }
     ]
   },
 
-  target: "node",
-
   output: {
+    clean: true,
     library: "Debugger",
     libraryTarget: "umd",
     umdNamedDefine: true,
@@ -31,6 +41,17 @@ module.exports = {
     devtoolFallbackModuleFilenameTemplate: "[absolute-resource-path]?[hash]"
   },
 
+  plugins: [
+    new webpack.SourceMapDevToolPlugin({
+      test: /\.js$/,
+      moduleFilenameTemplate: "[resource-path]",
+      fallbackModuleFilenameTemplate: "[absolute-resource-path]?[hash]",
+      module: true,
+      filename: "debugger.js.map",
+      sourceRoot: "../"
+    })
+  ],
+
   resolve: {
     modules: [path.resolve(__dirname, ".."), "node_modules"]
   },
@@ -39,9 +60,7 @@ module.exports = {
   externals: [
     nodeExternals({
       modulesFromFile: true,
-      whitelist: ["node-interval-tree"]
+      allowlist: ["node-interval-tree"]
     })
-  ],
-
-  devtool: "source-map"
+  ]
 };
