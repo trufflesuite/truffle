@@ -42,7 +42,7 @@ export interface DashboardServerOptions {
   /** Port of the dashboard */
   port: number;
 
-  /** Host of the dashboard (default: 0.0.0.0) */
+  /** Host of the dashboard (default: localhost) */
   host?: string;
 
   /** Boolean indicating whether the POST /rpc endpoint should be exposed (default: true) */

@@ -35,7 +35,7 @@ export const getInitialConfig = ({
     resolver: null,
     artifactor: null,
     dashboard: {
-      host: '0.0.0.0',
+      host: 'localhost',
       port: 24012,
       verbose: false
     },

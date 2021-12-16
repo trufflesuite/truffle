@@ -27,7 +27,7 @@ export class DashboardMessageBus extends EventEmitter {
   constructor(
     public publishPort: number,
     public subscribePort: number,
-    public host: string = "0.0.0.0"
+    public host: string = "localhost"
   ) {
     super();
   }
