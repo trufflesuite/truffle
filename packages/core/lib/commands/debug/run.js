@@ -1,6 +1,7 @@
 module.exports = async function (options) {
   const { promisify } = require("util");
   const debugModule = require("debug");
+  const inlineConfigNetwork = require("./inlineConfigNetwork");
   const debug = debugModule("lib:commands:debug");
 
   const { Environment } = require("@truffle/environment");
@@ -10,16 +11,7 @@ module.exports = async function (options) {
 
   let config = null;
   if (options.url) {
-    config = Config.default();
-    config.networks = {
-      inline_config: {
-        url: options.url,
-        network_id: "*"
-      }
-    }
-    config.network = options.network ? options.network : "inline_config";
-    config._ = [];
-    config.merge(options);
+    config = inlineConfigNetwork(options);
   } else {
     config = Config.detect(options);
   }
