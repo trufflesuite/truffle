@@ -163,7 +163,7 @@ export class ProjectDecoder {
       return "pending";
     }
 
-    return parseInt((await this.providerAdapter.getBlockByNumber(block)).number);
+    return (await this.providerAdapter.getBlockByNumber(block)).number;
   }
 
   /**
