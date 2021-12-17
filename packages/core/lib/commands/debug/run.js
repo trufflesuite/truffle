@@ -1,4 +1,5 @@
 module.exports = async function (options) {
+  console.log("----->>> options", options)
   const { promisify } = require("util");
   const debugModule = require("debug");
   const debug = debugModule("lib:commands:debug");
