@@ -178,21 +178,6 @@ class TruffleConfig {
   public static detect(options: any = {}, filename?: string): TruffleConfig {
     let configFile;
     const configPath = options.config;
-    const url = options.url;
-
-    if (url) {
-      const config = this.default();
-      const urlObject = new URL(url);
-      config.networks = {
-        development: {
-          host: `${urlObject.hostname}`,
-          port: `${urlObject.port}`,
-          network_id: "*"
-        }
-      };
-
-      return config.merge(options);
-    }
 
     if (configPath) {
       configFile = path.isAbsolute(configPath)
