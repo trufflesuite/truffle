@@ -19,6 +19,7 @@ module.exports = async function (options) {
     }
     config.network = options.network ? options.network : "inline_config";
     config._ = [];
+    config.merge(options);
   } else {
     config = Config.detect(options);
   }
