@@ -14,6 +14,7 @@ const DEFAULT_CONFIG_FILENAME = "truffle-config.js";
 const BACKUP_CONFIG_FILENAME = "truffle.js"; // old config filename
 
 class TruffleConfig {
+  // eslint-disable-next-line no-undef
   [key: string]: any;
 
   private _deepCopy: string[];
@@ -24,7 +25,7 @@ class TruffleConfig {
     workingDirectory?: string,
     network?: any
   ) {
-    this._deepCopy = ["compilers", "mocha", "dashboard", "networks"];
+    this._deepCopy = ["compilers", "mocha", "dashboard"];
     this._values = getInitialConfig({
       truffleDirectory,
       workingDirectory,
@@ -51,16 +52,23 @@ class TruffleConfig {
   }
 
   private addDefaultNetworks(): TruffleConfig {
-    const dashboardHost = this.dashboard.host === "0.0.0.0"
-      ? "localhost"
-      : this.dashboard.host;
+    const dashboardHost =
+      this.dashboard.host === "0.0.0.0" ? "localhost" : this.dashboard.host;
+
+    const overridableDashboardNetworkProperties = {
+      network_id: "*",
+      networkCheckTimeout: 120000
+    };
+
+    const staticDashboardNetworkProperties = {
+      url: `http://${dashboardHost}:${this.dashboard.port}/rpc`,
+      skipDryRun: true
+    };
 
     const dashboardNetwork = {
-      url: `http://${dashboardHost}:${this.dashboard.port}/rpc`,
-      network_id: "*",
-      networkCheckTimeout: 120000,
-      skipDryRun: true,
-      ...this.networks?.dashboard
+      ...overridableDashboardNetworkProperties,
+      ...this.networks?.dashboard,
+      ...staticDashboardNetworkProperties
     };
 
     this.networks = {
@@ -83,7 +91,7 @@ class TruffleConfig {
     Object.defineProperty(this, propertyName, {
       get:
         descriptor.get ||
-        function() {
+        function () {
           // value is specified
           if (propertyName in self._values) {
             return self._values[propertyName];
@@ -99,7 +107,7 @@ class TruffleConfig {
         },
       set:
         descriptor.set ||
-        function(value) {
+        function (value) {
           self._values[propertyName] = descriptor.transform
             ? descriptor.transform(value)
             : value;
@@ -232,6 +240,7 @@ class TruffleConfig {
 
     config.merge(staticConfig);
     config.merge(options);
+    config.addDefaultNetworks();
 
     // When loading a user's config, ensure their subscribers are initialized
     const eventsOptions = config.eventManagerOptions(config);
