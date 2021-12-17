@@ -28,7 +28,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@ganache/filecoin": "^0.1.2",
+    "@ganache/filecoin": "0.1.1-beta.1",
     "@truffle/preserve-to-ipfs": "^0.2.4",
     "@types/jest": "^26.0.20",
     "@types/node": "^14.14.25",

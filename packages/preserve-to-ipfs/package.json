@@ -28,7 +28,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@ganache/filecoin": "^0.1.2",
+    "@ganache/filecoin": "0.1.1-beta.1",
     "@types/jest": "^26.0.20",
     "@types/node": "^14.14.22",
     "cids": "^1.1.5",

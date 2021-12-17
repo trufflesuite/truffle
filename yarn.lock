@@ -2445,10 +2445,10 @@
     unique-filename "^1.1.1"
     which "^1.3.1"
 
-"@ganache/filecoin@^0.1.2":
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/@ganache/filecoin/-/filecoin-0.1.2.tgz#099a000d56ff4866e1982a1bae820074e197f8ad"
-  integrity sha512-C4oTwW2JmaiunQZ10YOp/gdkwmtQbl2ULudIUn5Iwb+tfsXXegc15o1RlJzCrII/lzD6u9+QbBsfihyyl6n9+Q==
+"@ganache/filecoin@0.1.1-beta.1":
+  version "0.1.1-beta.1"
+  resolved "https://registry.yarnpkg.com/@ganache/filecoin/-/filecoin-0.1.1-beta.1.tgz#27d843d0b274f6a81b9d01d000bb5e61324d2fca"
+  integrity sha512-SIFFsF3I0WjDySwvGO5PrVIjsoLT5r5Vs8is4pTaPGysPxuqaNSQ5vPbgyJj733XY19HlMfUXTM3XkyPKrirgw==
   dependencies:
     ipfs "0.52.3"
     ipfs-http-server "0.1.4"
