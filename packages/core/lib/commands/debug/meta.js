@@ -66,8 +66,9 @@ module.exports = {
       },
       {
         option: "--url",
-        description: "Connects to a specified provider given via URL, ignoring networks in config"
-      },
+        description:
+          "Connects to a specified provider given via URL, ignoring networks in config. NOTE: compileNone is set to true when url is specified"
+      }
     ],
     allowedGlobalOptions: ["network", "config"]
   }

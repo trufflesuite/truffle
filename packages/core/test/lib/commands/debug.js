@@ -4,12 +4,11 @@ let options, result;
 
 describe("debug", () => {
   describe("inlineConfigNetwork(options)", () => {
-
     describe("when the user specifies url parameter", () => {
       beforeEach(() => {
         options = {
           url: "http://urlhost:1234"
-        }
+        };
       });
 
       it("should create networks item in config", () => {
@@ -30,6 +29,11 @@ describe("debug", () => {
 
         result = inlineConfigNetwork(options);
         assert.equal(result.network, "different_network");
+      });
+
+      it("should set compileNone to true by default", () => {
+        result = inlineConfigNetwork(options);
+        assert.equal(result.compileNone, true);
       });
     });
   });

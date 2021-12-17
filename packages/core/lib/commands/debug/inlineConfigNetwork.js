@@ -7,10 +7,11 @@ module.exports = function (options) {
       url: options.url,
       network_id: "*"
     }
-  }
+  };
   configObject.network = options.network ? options.network : "inline_config";
+  configObject.compileNone = true;
   configObject._ = [];
   configObject.merge(options);
 
   return configObject;
-}
+};
