@@ -4,7 +4,7 @@ module.exports = {
   command: "debug",
   description: "Interactively debug any transaction on the blockchain",
   builder: {
-    "_": {
+    _: {
       type: "string"
     },
     "fetch-external": {
@@ -28,7 +28,7 @@ module.exports = {
       type: "boolean",
       default: false
     },
-    "url": {
+    url: {
       describe: "Use specified URL for provider",
       type: "string"
     }
@@ -67,7 +67,7 @@ module.exports = {
       {
         option: "--url",
         description:
-          "Connects to a specified provider given via URL, ignoring networks in config. NOTE: compileNone is set to true when url is specified"
+          "Connects to a specified provider given via URL, ignoring networks in config. NOTE: compileNone is set to true when a config file is not found AND url is specified"
       }
     ],
     allowedGlobalOptions: ["network", "config"]
