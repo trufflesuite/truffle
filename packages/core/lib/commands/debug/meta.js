@@ -29,7 +29,7 @@ module.exports = {
       default: false
     },
     "url": {
-      describe: "Forces/set server URL",
+      describe: "Use specified URL for provider",
       type: "string"
     }
   },
@@ -66,7 +66,7 @@ module.exports = {
       },
       {
         option: "--url",
-        description: "Sets the server URL inline and ignore truffle config file"
+        description: "Connects to a specified provider given via URL, ignoring networks in config"
       },
     ],
     allowedGlobalOptions: ["network", "config"]
