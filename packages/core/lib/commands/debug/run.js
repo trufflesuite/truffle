@@ -1,19 +1,17 @@
 module.exports = async function (options) {
   const { promisify } = require("util");
   const debugModule = require("debug");
-  const inlineConfigNetwork = require("./inlineConfigNetwork");
+  const mergeConfigNetwork = require("./mergeConfigNetwork");
+  const loadConfig = require("./loadConfig");
   const debug = debugModule("lib:commands:debug");
 
   const { Environment } = require("@truffle/environment");
-  const Config = require("@truffle/config");
-
   const { CLIDebugger } = require("../../debug");
 
-  let config = null;
+  const config = loadConfig(options);
+
   if (options.url) {
-    config = inlineConfigNetwork(options);
-  } else {
-    config = Config.detect(options);
+    mergeConfigNetwork(config, options);
   }
 
   await Environment.detect(config);
@@ -28,10 +26,8 @@ module.exports = async function (options) {
     config.compileAll = true;
   }
   if (config.compileAll && config.compileNone) {
-    throw new Error(
-      "Incompatible options passed regarding what to compile"
-    );
+    throw new Error("Incompatible options passed regarding what to compile");
   }
-  const interpreter = await new CLIDebugger(config, {txHash}).run();
+  const interpreter = await new CLIDebugger(config, { txHash }).run();
   return await promisify(interpreter.start.bind(interpreter))();
-}
+};
