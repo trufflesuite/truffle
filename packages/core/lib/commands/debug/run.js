@@ -1,5 +1,4 @@
 module.exports = async function (options) {
-  console.log("----->>> options", options)
   const { promisify } = require("util");
   const debugModule = require("debug");
   const debug = debugModule("lib:commands:debug");
@@ -9,7 +8,21 @@ module.exports = async function (options) {
 
   const { CLIDebugger } = require("../../debug");
 
-  const config = Config.detect(options);
+  let config = null;
+  if (options.url) {
+    config = Config.default();
+    config.networks = {
+      inline_config: {
+        url: options.url,
+        network_id: "*"
+      }
+    }
+    config.network = options.network ? options.network : "inline_config";
+    config._ = [];
+  } else {
+    config = Config.detect(options);
+  }
+
   await Environment.detect(config);
 
   const txHash = config._[0]; //may be undefined
