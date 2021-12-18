@@ -4,6 +4,10 @@ module.exports = {
   command: "debug",
   description: "Interactively debug any transaction on the blockchain",
   builder: {
+    "url": {
+      describe: "Use specified URL for provider",
+      type: "string"
+    },
     "_": {
       type: "string"
     },
@@ -27,10 +31,6 @@ module.exports = {
       describe: "Force debugger to skip compilation (dangerous!)",
       type: "boolean",
       default: false
-    },
-    "url": {
-      describe: "Use specified URL for provider",
-      type: "string"
     }
   },
   help: {
@@ -40,14 +40,14 @@ module.exports = {
       "                             [--compile-tests|--compile-all|--compile-none]",
     options: [
       {
-        option: "<transaction_hash>",
-        description:
-          "Transaction ID to use for debugging.  Mandatory if --fetch-external is passed."
-      },
-      {
         option: "--url",
         description:
           "Connects to a specified provider given via URL, ignoring networks in config. This option allows using the debugger outside of a Truffle project. That's why compileNone is set to true when a config file is not found AND url is specified"
+      },
+      {
+        option: "<transaction_hash>",
+        description:
+          "Transaction ID to use for debugging.  Mandatory if --fetch-external is passed."
       },
       {
         option: "--fetch-external|-x",
