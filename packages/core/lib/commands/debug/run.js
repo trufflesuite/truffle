@@ -8,10 +8,14 @@ module.exports = async function (options) {
   const { Environment } = require("@truffle/environment");
   const { CLIDebugger } = require("../../debug");
 
-  const config = loadConfig(options);
+  if (options.url && options.network) {
+    throw new Error("Url and Network options should not be specified together");
+  }
+
+  let config = loadConfig(options);
 
   if (options.url) {
-    mergeConfigNetwork(config, options);
+    config = mergeConfigNetwork(config, options);
   }
 
   await Environment.detect(config);

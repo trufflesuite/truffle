@@ -6,4 +6,5 @@ module.exports = function (config, options) {
   };
   config.network = inlineConfigNetwork;
   config.merge(options);
+  return config;
 };

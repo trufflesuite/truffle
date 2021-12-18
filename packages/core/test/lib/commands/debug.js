@@ -34,23 +34,23 @@ describe("debug", () => {
     });
 
     it("should create networks item in config", () => {
-      mergeConfigNetwork(config, options);
+      result = mergeConfigNetwork(config, options);
 
-      assert.notEqual(config.networks.inline_config, undefined);
-      assert.equal(config.networks.inline_config.url, "http://urlhost:1234");
-      assert.equal(config.networks.inline_config.network_id, "*");
+      assert.notEqual(result.networks.inline_config, undefined);
+      assert.equal(result.networks.inline_config.url, "http://urlhost:1234");
+      assert.equal(result.networks.inline_config.network_id, "*");
     });
 
     it("should set inline_network by default", () => {
-      mergeConfigNetwork(config, options);
-      assert.equal(config.network, "inline_config");
+      result = mergeConfigNetwork(result, options);
+      assert.equal(result.network, "inline_config");
     });
 
     it("should override network field when specified in options", () => {
       options.network = "different_network";
 
-      mergeConfigNetwork(config, options);
-      assert.equal(config.network, "different_network");
+      result = mergeConfigNetwork(config, options);
+      assert.equal(result.network, "different_network");
     });
   });
 });
