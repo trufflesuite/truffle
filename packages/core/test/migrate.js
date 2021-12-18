@@ -56,12 +56,12 @@ describe("migrate", function () {
     });
   });
 
-  it("profiles a new project as not having any contracts deployed", async function() {
+  it("profiles a new project as not having any contracts deployed", async function () {
     const networks = await Networks.deployed(config);
     assert.equal(
       Object.keys(networks).length,
       2,
-      "Should have results for two networks from profiler"
+      "Should have results for two networks from profiler (no default networks)"
     );
     assert.equal(
       Object.keys(networks["primary"]),
@@ -90,8 +90,8 @@ describe("migrate", function () {
 
     assert.equal(
       Object.keys(networks).length,
-      2,
-      "Should have results for two networks from profiler"
+      3,
+      "Should have results for three networks from profiler (incl default networks)"
     );
     assert.equal(
       Object.keys(networks["primary"]).length,
@@ -135,8 +135,8 @@ describe("migrate", function () {
     networks = await Networks.deployed(config);
     assert.equal(
       Object.keys(networks).length,
-      2,
-      "Should have results for two networks from profiler"
+      3,
+      "Should have results for three networks from profiler (incl default networks)"
     );
     assert.equal(
       Object.keys(networks["primary"]).length,
