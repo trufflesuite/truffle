@@ -6,10 +6,10 @@ require("hardhat-deploy");
 module.exports = {
   defaultNetwork: "localhost",
   networks: {
-    localhost: {
+    "localhost": {
       url: "http://localhost:8545"
     },
-    browser: {
+    "truffle-dashboard": {
       url: "http://localhost:24012/rpc"
     }
   },
