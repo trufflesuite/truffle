@@ -20,7 +20,7 @@
   "scripts": {
     "analyze": "./scripts/analyze.sh",
     "build": "yarn build:cli",
-    "build:cli": "node --max-old-space-size=8192 ../../node_modules/webpack/bin/webpack.js --config ./webpack.config.js",
+    "build:cli": "node --max-old-space-size=8192 ./node_modules/webpack/bin/webpack.js --config ./webpack.config.js",
     "postinstall": "node ./scripts/postinstall.js",
     "prepare": "yarn build",
     "publish:byoc": "node ./scripts/prereleaseVersion.js byoc-safe byoc",
@@ -67,7 +67,7 @@
     "web3": "1.5.3",
     "webpack": "^5.21.2",
     "webpack-bundle-analyzer": "^3.0.3",
-    "webpack-cli": "^4.5.0",
+    "webpack-cli": "^4.9.1",
     "yargs": "^8.0.2"
   },
   "publishConfig": {
