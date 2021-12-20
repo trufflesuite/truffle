@@ -36,6 +36,9 @@
     "test": "jest --verbose --detectOpenHandles --forceExit"
   },
   "dependencies": {
+    "@graphql-tools/delegate": "^8.4.3",
+    "@graphql-tools/schema": "^8.3.1",
+    "@graphql-tools/utils": "^8.5.5",
     "@truffle/abi-utils": "^0.2.5",
     "@truffle/code-utils": "^1.2.30",
     "@truffle/config": "^1.3.14",
@@ -44,7 +47,6 @@
     "fs-extra": "^9.1.0",
     "graphql": "^15.3.0",
     "graphql-tag": "^2.11.0",
-    "graphql-tools": "^6.2.4",
     "json-stable-stringify": "^1.0.1",
     "jsondown": "^1.0.0",
     "pascal-case": "^2.0.1",
