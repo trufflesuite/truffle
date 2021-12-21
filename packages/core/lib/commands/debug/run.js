@@ -1,7 +1,6 @@
 module.exports = async function (options) {
   const { promisify } = require("util");
   const debugModule = require("debug");
-  const mergeConfigNetwork = require("./mergeConfigNetwork");
   const loadConfig = require("./loadConfig");
   const debug = debugModule("lib:commands:debug");
 
@@ -13,10 +12,6 @@ module.exports = async function (options) {
   }
 
   let config = loadConfig(options);
-
-  if (options.url) {
-    config = mergeConfigNetwork(config, options);
-  }
 
   await Environment.detect(config);
 
