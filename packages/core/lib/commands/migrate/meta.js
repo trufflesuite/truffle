@@ -104,6 +104,6 @@ module.exports = {
           "Adds extra verbosity to the status of an ongoing migration"
       }
     ],
-    allowedGlobalOptions: ["network", "config"]
+    allowedGlobalOptions: ["network", "config", "quiet"]
   }
 };
