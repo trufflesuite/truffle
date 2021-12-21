@@ -40,11 +40,6 @@ module.exports = {
       "                             [--compile-tests|--compile-all|--compile-none]",
     options: [
       {
-        option: "--url",
-        description:
-          "Connects to a specified provider given via URL, ignoring networks in config. This option allows using the debugger outside of a Truffle project. That's why compileNone is set to true when a config file is not found AND url is specified"
-      },
-      {
         option: "<transaction_hash>",
         description:
           "Transaction ID to use for debugging.  Mandatory if --fetch-external is passed."
@@ -53,6 +48,11 @@ module.exports = {
         option: "--fetch-external|-x",
         description:
           "Allows debugging of external contracts with verified sources."
+      },
+      {
+        option: "--url",
+        description:
+          "Connects to a specified provider given via URL, ignoring networks in config. This option allows using the debugger outside of a Truffle project."
       },
       {
         option: "--compile-tests",
