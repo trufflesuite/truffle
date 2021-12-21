@@ -13,6 +13,8 @@ module.exports = function (options) {
       // E.g. analysing/debugging a single transaction of an external project
       config = Config.default();
       config.compileNone = true;
+      // forcing options to also set compileNone to true, otherwise it can be later override on Config.merge(...)
+      options.compileNone = true;
     } else {
       throw error;
     }

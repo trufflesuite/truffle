@@ -20,6 +20,8 @@ describe("debug", () => {
         options = { url: "https://someUrl:8888" };
         result = loadConfig(options);
         assert.equal(result.compileNone, true);
+        // options should also override compileNone
+        assert.equal(options.compileNone, true);
         assert.equal(result.network, undefined);
       });
     });
