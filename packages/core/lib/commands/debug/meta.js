@@ -4,6 +4,10 @@ module.exports = {
   command: "debug",
   description: "Interactively debug any transaction on the blockchain",
   builder: {
+    "url": {
+      describe: "Use specified URL for provider",
+      type: "string"
+    },
     "_": {
       type: "string"
     },
@@ -44,6 +48,11 @@ module.exports = {
         option: "--fetch-external|-x",
         description:
           "Allows debugging of external contracts with verified sources."
+      },
+      {
+        option: "--url",
+        description:
+          "Connects to a specified provider given via URL, ignoring networks in config. This option allows using the debugger outside of a Truffle project."
       },
       {
         option: "--compile-tests",
