@@ -6,6 +6,7 @@ module.exports = function (options) {
   let config;
   try {
     config = Config.detect(options);
+    config = mergeConfigNetwork(config, options);
   } catch (error) {
     if (error instanceof TruffleError && options.url) {
       config = Config.default();
