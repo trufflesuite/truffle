@@ -16,6 +16,7 @@ module.exports = function (options) {
       // It is assumed that truffle debug is being used for analysis and debugging and that there is nothing to compile.
       // E.g. analysing/debugging a single transaction of an external project
       config.compileNone = true;
+      config.configFileSkipped = true;
     } else {
       throw error;
     }

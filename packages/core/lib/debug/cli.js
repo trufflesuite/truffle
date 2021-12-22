@@ -50,14 +50,11 @@ class CLIDebugger {
       fetch: badAddresses,
       fetchers: badFetchers,
       compile: badCompilationAddresses
-    } = await fetchAndCompileForDebugger(
-      bugger,
-      this.config
-    ); //Note: mutates bugger!!
+    } = await fetchAndCompileForDebugger(bugger, this.config); //Note: mutates bugger!!
     if (
-      badAddresses.length === 0
-      && badFetchers.length === 0
-      && badCompilationAddresses.length === 0
+      badAddresses.length === 0 &&
+      badFetchers.length === 0 &&
+      badCompilationAddresses.length === 0
     ) {
       fetchSpinner.succeed();
     } else {
@@ -86,22 +83,28 @@ class CLIDebugger {
   }
 
   async getCompilations() {
+    //if compileNone is true and configFileSkiped
+    //we understand that user is debugging using --url and does not have a config file
+    //so instead of resolving compilations, we return an empty value
+    if (this.config.compileNone && this.config.configFileSkipped) {
+      return [];
+    }
+
     let artifacts;
     artifacts = await this.gatherArtifacts();
     if ((artifacts && !this.config.compileAll) || this.config.compileNone) {
-      let shimmedCompilations = Codec.Compilations.Utils.shimArtifacts(
-        artifacts
-      );
+      let shimmedCompilations =
+        Codec.Compilations.Utils.shimArtifacts(artifacts);
       //if they were compiled simultaneously, yay, we can use it!
       //(or if we *force* it to...)
       if (
         this.config.compileNone ||
         shimmedCompilations.every(DebugUtils.isUsableCompilation)
       ) {
-        debug("shimmed compilations usable")
+        debug("shimmed compilations usable");
         return shimmedCompilations;
       }
-      debug("shimmed compilations unusable")
+      debug("shimmed compilations unusable");
     }
     //if not, or if build directory doesn't exist, we have to recompile
     return await this.compileSources();
@@ -151,14 +154,11 @@ class CLIDebugger {
       //note that in this case we start in light mode
       //and only wake up to full mode later!
       //also, in this case, we can be sure that txHash is defined
-      bugger = await Debugger.forTx(
-        this.txHash,
-        {
-          provider: this.config.provider,
-          compilations,
-          lightMode: true
-        }
-      ); //note: may throw!
+      bugger = await Debugger.forTx(this.txHash, {
+        provider: this.config.provider,
+        compilations,
+        lightMode: true
+      }); //note: may throw!
       await this.fetchExternalSources(bugger); //note: mutates bugger!
       let startSpinner = ora(startMessage).start();
       await bugger.startFullMode();

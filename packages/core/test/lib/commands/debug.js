@@ -20,6 +20,7 @@ describe("debug", () => {
         options = { url: "https://someUrl:8888" };
         result = loadConfig(options);
         assert.equal(result.compileNone, true);
+        assert.equal(result.configFileSkipped, true);
       });
     });
   });
