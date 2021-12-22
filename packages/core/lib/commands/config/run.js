@@ -1,8 +1,8 @@
-const userLevelSettings = ["analytics"];
+const userLevelSettings = ["analytics", "saveDbToProjectRoot"];
 /**
  * run config commands to get/set/list Truffle config options
  * @param {Object} options
-**/
+ **/
 module.exports = async function (options) {
   const googleAnalytics = require("../../services/analytics/google.js");
   const Config = require("@truffle/config");
@@ -36,6 +36,15 @@ module.exports = async function (options) {
         } else {
           options.logger.log(googleAnalytics.getAnalytics());
         }
+        break;
+      }
+      case "saveDbToProjectRoot": {
+        const userDbConfig = {
+          ...Config.getUserConfig().get("db"),
+          ...{ saveDbToProjectRoot: !!command.value }
+        };
+
+        Config.getUserConfig().set("db", userDbConfig);
         break;
       }
     }
