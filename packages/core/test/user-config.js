@@ -60,11 +60,10 @@ describe("config", function () {
         expect(config.db.saveDbToProjectRoot).to.equal(true);
       });
       it("respects other config settings", () => {
-        configCommand.run({ _: ["set", "saveDbToProjectRoot", "true"] });
-
         Config.getUserConfig().set("rofl", "copters");
         Config.getUserConfig().set("db.enabled", true);
 
+        configCommand.run({ _: ["set", "saveDbToProjectRoot", "true"] });
         const config = Config.getUserConfig().get();
 
         expect(config.rofl).to.equal("copters");
