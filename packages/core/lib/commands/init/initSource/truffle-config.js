@@ -48,43 +48,31 @@ module.exports = {
     // },
     // Another network with more advanced options...
     // advanced: {
-    //  port: 8777,             // Custom port
-    //  network_id: 1342,       // Custom network
-    //  gas: 8500000,           // Gas sent with each transaction (default: ~6700000)
-    //  gasPrice: 20000000000,  // 20 gwei (in wei) (default: 100 gwei)
-    //  from: <address>,        // Account to send txs from (default: accounts[0])
+    //  port: 8777,            // Custom port
+    //  network_id: 1342,      // Custom network
+    //  gas: 8500000,          // Gas sent with each transaction (default: ~6700000)
+    //  gasPrice: 20000000000, // 20 gwei (in wei) (default: 100 gwei)
+    //  from: <address>,       // Account to send txs from (default: accounts[0])
     //  websocket: true        // Enable EventEmitter interface for web3 (default: false)
     // },
     // Useful for deploying to a public network.
+    // You can create separate configurations for multiple public networks using different names, e.g. mainnet, ropsten, rinkeby.
+    // public: {
     // NB: It's important to wrap the provider as a function.
-    // mainnet: {
-    //  provider: () => new HDWalletProvider(mnemonic, `https://mainnet.infura.io/v3/YOUR-PROJECT-ID`, 0),
-    //  network_id: 1,       // Mainnet's id
-    // NB: You need to use type 2 transactions on the main network, otherwise you may get odd errors when interacting.
-    // Type 2 transactions use the maxFeePerGas/maxPriorityFeePerGas instead of gas/gasprice parameter (https://eips.ethereum.org/EIPS/eip-1559).
-    // Please set it according to the current network condition, 20% higher than the minimum value is recommended.
-    //  maxFeePerGas: 100000000000,       // 100 gwei 
-    //  maxPriorityFeePerGas: 1500000000, // 1.5 gwei
-    //  confirmations: 2,    // # of confs to wait between deployments. (default: 0)
-    //  timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
-    //  skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
-    // },
-    // rinkeby: {
-    //  provider: () => new HDWalletProvider(mnemonic, `https://rinkeby.infura.io/v3/YOUR-PROJECT-ID`, 1),
-    //  network_id: 4,       // Rinkeby's id
-    //  gas: 6000000,        // Rinkeby has a lower block limit than mainnet
-    //  gasPrice: 1000000000,// 1 gwei
-    //  confirmations: 2,    // # of confs to wait between deployments. (default: 0)
-    //  timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
-    //  skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
-    // },
-    // ropsten: {
-    //  provider: () => new HDWalletProvider(mnemonic, `https://ropsten.infura.io/v3/YOUR-PROJECT-ID`, 2),
-    //  network_id: 3,       // Ropsten's id
-    //  gas: 5500000,        // Ropsten has a lower block limit than mainnet
-    //  confirmations: 2,    // # of confs to wait between deployments. (default: 0)
-    //  timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
-    //  skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
+    // NB: Please use a different provider URL for different public networks.For examples, 
+    // NB:   mainnet : `https://mainnet.infura.io/v3/YOUR-PROJECT-ID`
+    // NB:   rinkeby : `https://rinkeby.infura.io/v3/YOUR-PROJECT-ID`
+    // NB: Also, it is recommended to use the same mnemonic and use different indexes (0, 1, 2 ...) for different public networks.
+    //  provider: () => new HDWalletProvider(mnemonic, `https://network.io`, 0),
+    //  network_id: 1,                      // Network ID: mainnet => 1; ropsteb => 3; rinkeby => 4
+    // NB: You need to use type 2 transactions on the public network, otherwise you may get odd errors when interacting.
+    // NB: Type 2 transactions use the maxFeePerGas/maxPriorityFeePerGas instead of gas/gasprice parameter (https://eips.ethereum.org/EIPS/eip-1559).
+    // NB: This is the maximum amount of gas sent with each transaction, and a reasonable amount of gas will be used based on current network conditions.
+    //  maxFeePerGas: 100000000000,         // 100 gwei 
+    //  maxPriorityFeePerGas: 1500000000,   // 1.5 gwei
+    //  confirmations: 2,                   // # of confs to wait between deployments. (default: 0)
+    //  timeoutBlocks: 200,                 // # of blocks before a deployment times out  (minimum/default: 50)
+    //  skipDryRun: true                    // Skip dry run before migrations? (default: false for public nets )
     // },
     // Useful for private networks
     // private: {
