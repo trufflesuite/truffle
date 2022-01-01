@@ -14,13 +14,21 @@ class Migration {
   constructor(file, reporter, config) {
     this.file = path.resolve(file);
     this.reporter = reporter;
-    this.number = parseInt(path.basename(file));
+    this.number = Migration.getNumber(path.basename(file));
     this.emitter = new Emittery();
     this.isFirst = false;
     this.isLast = false;
     this.dryRun = config.dryRun;
     this.interactive = config.interactive;
     this.config = config || {};
+  }
+
+  static getNumber(fileName) {
+    const match = fileName.match(/\d+/);
+    if (!match.length) {
+      return null;
+    }
+    return Number(match[0]);
   }
 
   // ------------------------------------- Private -------------------------------------------------
@@ -114,11 +122,7 @@ class Migration {
       let artifacts = resolver
         .contracts()
         .map(abstraction => abstraction._json);
-      if (
-        this.config.db &&
-        this.config.db.enabled &&
-        artifacts.length > 0
-      ) {
+      if (this.config.db && this.config.db.enabled && artifacts.length > 0) {
         // currently if Truffle Db fails to load, getTruffleDb returns `null`
         const Db = getTruffleDb();
 
@@ -185,12 +189,8 @@ class Migration {
    * @param  {Object}   options  config and command-line
    */
   async run(options) {
-    const {
-      interfaceAdapter,
-      resolver,
-      context,
-      deployer
-    } = this.prepareForMigrations(options);
+    const { interfaceAdapter, resolver, context, deployer } =
+      this.prepareForMigrations(options);
 
     // Connect reporter to this migration
     if (this.reporter) {

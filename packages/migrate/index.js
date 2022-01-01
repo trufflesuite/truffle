@@ -42,12 +42,20 @@ const Migrate = {
     if (files.length === 0) return [];
 
     let migrations = files
-      .filter(file => isNaN(parseInt(path.basename(file))) === false)
       .filter(
         file =>
           path.extname(file).match(config.migrations_file_extension_regexp) !=
           null
       )
+      .filter(file => {
+        const hasNumber = Migration.getNumber(path.basename(file)) !== null;
+        if (!hasNumber) {
+          process.emitWarning(
+            `Migration file ${file} does not have a number, add one if you want it to be migrated.`
+          );
+        }
+        return hasNumber;
+      })
       .map(file => new Migration(file, Migrate.reporter, config));
 
     // Make sure to sort the prefixes as numbers and not strings.
@@ -72,7 +80,7 @@ const Migrate = {
         "network",
         "network_id",
         "logger",
-        "from", // address doing deployment
+        "from" // address doing deployment
       ]);
 
       if (options.reset === true) {
@@ -140,7 +148,7 @@ const Migrate = {
 
     await this.emitter.emit("preAllMigrations", {
       dryRun: options.dryRun,
-      migrations,
+      migrations
     });
 
     try {
@@ -151,13 +159,13 @@ const Migrate = {
       }
       await this.emitter.emit("postAllMigrations", {
         dryRun: options.dryRun,
-        error: null,
+        error: null
       });
       return;
     } catch (error) {
       await this.emitter.emit("postAllMigrations", {
         dryRun: options.dryRun,
-        error: error.toString(),
+        error: error.toString()
       });
       throw error;
     } finally {
@@ -173,7 +181,7 @@ const Migrate = {
         abstraction.setProvider(provider);
         return abstraction;
       },
-      resolve: resolver.resolve,
+      resolve: resolver.resolve
     };
   },
 
@@ -213,7 +221,7 @@ const Migrate = {
     } else {
       completedMigration = 0;
     }
-    return parseInt(completedMigration);
+    return Migration.getNumber(completedMigration);
   },
 
   needsMigrating: function (options) {
@@ -234,7 +242,7 @@ const Migrate = {
         })
         .catch(error => reject(error));
     });
-  },
+  }
 };
 
 module.exports = Migrate;
