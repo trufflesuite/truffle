@@ -24,8 +24,8 @@ class Migration {
   }
 
   static getNumber(fileName) {
-    const match = fileName.match(/\d+/);
-    if (!match.length) {
+    const match = fileName.match(/^\d+/);
+    if (!match) {
       return null;
     }
     return Number(match[0]);

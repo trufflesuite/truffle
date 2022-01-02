@@ -51,7 +51,8 @@ const Migrate = {
         const hasNumber = Migration.getNumber(path.basename(file)) !== null;
         if (!hasNumber) {
           process.emitWarning(
-            `Migration file ${file} does not have a number, add one if you want it to be migrated.`
+            `Migration file ${file} does not have a number at the beggining of the file, \
+            migration file names should match the schema \`\${\\d+}you_migration_file.js\``
           );
         }
         return hasNumber;
