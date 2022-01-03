@@ -52,5 +52,10 @@ describe("debug", () => {
       result = mergeConfigNetwork(config, options);
       assert.equal(result.network, "different_network");
     });
+
+    it("should not use url when url not passed", () => {
+      result = mergeConfigNetwork(config, {});
+      assert.notEqual(result.netwok, "inline_config");
+    });
   });
 });
