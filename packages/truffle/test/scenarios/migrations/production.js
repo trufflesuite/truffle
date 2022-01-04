@@ -6,7 +6,7 @@ const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const Web3 = require("web3");
 
-describe.skip("production", function () {
+describe("production", function () {
   describe("{ production: true, confirmations: 2 } [ @geth ]", function () {
     if (!process.env.GETH) return;
 
