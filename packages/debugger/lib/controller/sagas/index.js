@@ -207,8 +207,9 @@ function* stepOver() {
     // line (which may be in a new file)
     (currentDepth > startingDepth ||
       (currentLocation.source.id === startingLocation.source.id &&
-        currentLocation.sourceRange.lines.start.line ===
-          startingLocation.sourceRange.lines.start.line))
+        startingLocation.isMultiline ^
+          (currentLocation.sourceRange.lines.start.line ===
+            startingLocation.sourceRange.lines.start.line)))
   );
 }
 
@@ -297,15 +298,13 @@ function* continueUntilBreakpoint(action) {
             length === currentLength &&
             (currentSourceId !== previousSourceId ||
               currentStart !== previousStart ||
-              currentLength !== previousLength
-            ) &&
+              currentLength !== previousLength) &&
             //if we started in a user source (& allow internal is off),
             //we need to make sure we've moved from a user-source POV
             (!startedInUserSource ||
               currentSourceId !== lastUserSourceId ||
-              currentStart !== lastUserStart || 
-              currentLength !== lastUserLength
-            )
+              currentStart !== lastUserStart ||
+              currentLength !== lastUserLength)
           );
         }
         //otherwise, we have a line-style breakpoint; we want to stop at the
