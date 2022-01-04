@@ -31,7 +31,7 @@
   "devDependencies": {
     "@truffle/reporters": "^2.0.8",
     "@truffle/workflow-compile": "^3.2.47",
-    "ganache": "7.0.0-beta.1",
+    "ganache": "7.0.0-beta.2",
     "mocha": "8.1.2",
     "sinon": "^9.0.2",
     "web3": "1.5.3"
