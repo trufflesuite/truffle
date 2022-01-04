@@ -6,7 +6,7 @@ const Server = require("../server");
 const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 
-describe.skip("migrate (dry-run)", function () {
+describe("migrate (dry-run)", function () {
   let config;
   const project = path.join(__dirname, "../../sources/migrations/success");
   const logger = new MemoryLogger();
