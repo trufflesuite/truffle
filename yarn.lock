@@ -10621,6 +10621,11 @@ elliptic@6.5.4, elliptic@^6.5.3:
     minimalistic-assert "^1.0.1"
     minimalistic-crypto-utils "^1.0.1"
 
+emittery@0.10.0:
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/emittery/-/emittery-0.10.0.tgz#bb373c660a9d421bb44706ec4967ed50c02a8026"
+  integrity sha512-AGvFfs+d0JKCJQ4o01ASQLGPmSCxgfU9RFXvzPvZdjKK8oscynksuJhWrSTSw7j7Ep/sZct5b5ZhYCi8S/t0HQ==
+
 emittery@^0.4.1:
   version "0.4.1"
   resolved "https://registry.yarnpkg.com/emittery/-/emittery-0.4.1.tgz#abe9d3297389ba424ac87e53d1c701962ce7433d"
@@ -12920,12 +12925,13 @@ ganache-cli@^6.1.0:
     source-map-support "0.5.12"
     yargs "13.2.4"
 
-ganache@7.0.0-beta.1:
-  version "7.0.0-beta.1"
-  resolved "https://registry.yarnpkg.com/ganache/-/ganache-7.0.0-beta.1.tgz#b94011f13c5039782714c281ef09c7cad9a4d542"
-  integrity sha512-SA0olh9dFru4blYZbdGuW4mPqw0oUL9f06EWKP28t7yaXM4EgNc+Nx7UxHW7AVwpFvjxZLiiV6FqhsoF5qkOwA==
+ganache@7.0.0-beta.2:
+  version "7.0.0-beta.2"
+  resolved "https://registry.yarnpkg.com/ganache/-/ganache-7.0.0-beta.2.tgz#b536f71bfad9d7af86579d04477f08e9255c94e3"
+  integrity sha512-90w/tK/Ebc/ns09QC6QCq69b3izwY0QKriQAaGvTUiwyAeZ1pUayrpXal/Yug0FyjOIf8gsguvuV/dBqqmB4cQ==
   dependencies:
     "@trufflesuite/bigint-buffer" "1.1.9"
+    emittery "0.10.0"
     keccak "3.0.1"
     leveldown "5.6.0"
     secp256k1 "4.0.2"
