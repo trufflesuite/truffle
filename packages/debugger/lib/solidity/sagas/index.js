@@ -32,7 +32,14 @@ function* functionDepthSaga() {
     debug("checking guard");
     let guard = yield select(solidity.current.nextFrameIsPhantom);
     let nextSource = yield select(solidity.next.source);
-    if (jumpDirection === "i" && guard && nextSource.id !== undefined) {
+    if (
+      jumpDirection === "i" &&
+      guard &&
+      nextSource.id !== undefined &&
+      !nextSource.internal
+    ) {
+      //note that we don't want jumps into unmapped code or internal sources to clear
+      //the phantom guard; those will just be counted like normal
       yield put(actions.clearPhantomGuard());
     } else {
       yield put(actions.jump(jumpDirection));
