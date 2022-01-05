@@ -246,7 +246,14 @@ const Compile = {
     const { allSources, compilationTargets } = await requiredSources(
       options.with({
         paths: vyperFilesStrict,
-        base_path: options.contracts_directory
+        base_path: options.contracts_directory,
+        compiler: {
+          name: "vyper"
+          //HACK: we leave version empty because we haven't determined
+          //it at this point and we don't want to pay the cost of doing
+          //so, and nothing in the resolver sources currently uses
+          //precise vyper version
+        }
       })
     );
 
