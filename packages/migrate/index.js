@@ -42,12 +42,12 @@ const Migrate = {
     if (files.length === 0) return [];
 
     let migrations = files
-      .filter(
-        file =>
-          path.extname(file).match(config.migrations_file_extension_regexp) !=
-          null
-      )
       .filter(file => {
+        if (
+          !path.extname(file).match(config.migrations_file_extension_regexp)
+        ) {
+          return false;
+        }
         const hasNumber = Migration.getNumber(path.basename(file)) !== null;
         if (!hasNumber) {
           process.emitWarning(
@@ -222,7 +222,7 @@ const Migrate = {
     } else {
       completedMigration = 0;
     }
-    return Migration.getNumber(completedMigration);
+    return parseInt(completedMigration);
   },
 
   needsMigrating: function (options) {

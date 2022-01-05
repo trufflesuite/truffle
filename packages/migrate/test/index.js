@@ -2,6 +2,7 @@ const Migrate = require("../index");
 const Config = require("@truffle/config");
 const assert = require("assert");
 const sinon = require("sinon");
+const fs = require("fs");
 let options, migrations;
 
 describe("Migrate", () => {
@@ -61,6 +62,36 @@ describe("Migrate", () => {
           })
           .catch(done);
       });
+    });
+  });
+
+  describe("assemble(options)", () => {
+    before(() => {
+      sinon.stub(process, "emitWarning");
+      sinon.stub(fs, "existsSync").returns(true);
+      sinon.stub(fs, "statSync").returns({ isFile: () => true });
+      sinon.stub(Config, "detect").returns({
+        migrations_directory: "./",
+        migrations_file_extension_regexp: /js$/
+      });
+    });
+    it("shouldn't emit a warning when all files have a number at the beginning of the file name", () => {
+      sinon.stub(fs, "readdirSync").returns(["1_file.js", "3file.js"]);
+      Migrate.assemble({});
+      assert(!process.emitWarning.called);
+      fs.readdirSync.restore();
+    });
+    it("shouldn't emit a warning if the file doesn't start with a number but the extension doesn't match the regex", () => {
+      sinon.stub(fs, "readdirSync").returns(["file.sol", "file.ts"]);
+      Migrate.assemble({});
+      assert(!process.emitWarning.called);
+      fs.readdirSync.restore();
+    });
+    it("should emit a warning whenever a file doesn't have a number at the beginning of the file name", () => {
+      sinon.stub(fs, "readdirSync").returns(["file.js", "file2.js"]);
+      Migrate.assemble({});
+      assert(process.emitWarning.called);
+      fs.readdirSync.restore();
     });
   });
 
