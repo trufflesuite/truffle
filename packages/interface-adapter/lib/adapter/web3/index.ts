@@ -79,7 +79,17 @@ export class Web3InterfaceAdapter implements InterfaceAdapter {
     const gasPrice = new BN(tx.gasPrice);
     const gas = new BN(receipt.gasUsed);
     const value = new BN(tx.value);
-    const cost = gasPrice.mul(gas).add(value);
+
+    // Arbitrum fees exist in their "feeStats" attribute: https://developer.offchainlabs.com/docs/differences_overview#transaction-receipts
+    var cost = new BN(0);
+    if("feeStats" in receipt && "paid" in receipt["feeStats"]){
+      // If the receipt includes Arbitrum's "feeStats", cost == the sum of its values.
+      cost = new BN(Object.values(receipt["feeStats"]["paid"]).reduce((sum, value) => sum + value));
+    } else {
+      cost = new BN(gasPrice.mul(gas).add(value));
+    }
+    // TODO - ^this new cost calculation complexity seems a bit much for an "InterfaceAdapter".
+    // I'm leaning toward creating a new CostCalculator object for this.
 
     return {
       timestamp: block.timestamp,
