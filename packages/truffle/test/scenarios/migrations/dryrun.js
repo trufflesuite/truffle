@@ -25,7 +25,7 @@ describe("migrate (dry-run)", function () {
   });
 
   it("uses the dry-run option", async function () {
-    this.timeout(70000);
+    this.timeout(100000);
 
     await CommandRunner.run("migrate --dry-run", config);
     const output = logger.contents();
