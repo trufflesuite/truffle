@@ -2,7 +2,7 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:resources:projects:resolveContractInstances");
 
 import gql from "graphql-tag";
-import { delegateToSchema } from "graphql-tools";
+import { delegateToSchema } from "@graphql-tools/delegate";
 import type * as graphql from "graphql";
 import type {
   DataModel,

@@ -149,13 +149,8 @@ const DEFAULT_AFFECTED_INSTANCES = { byAddress: {} };
 function affectedInstances(state = DEFAULT_AFFECTED_INSTANCES, action) {
   switch (action.type) {
     case actions.ADD_AFFECTED_INSTANCE:
-      const {
-        address,
-        binary,
-        context,
-        creationBinary,
-        creationContext
-      } = action;
+      const { address, binary, context, creationBinary, creationContext } =
+        action;
       return {
         byAddress: {
           ...state.byAddress,
@@ -213,15 +208,31 @@ function callstack(state = [], action) {
   }
 }
 
+const EMPTY_ACCOUNT = {
+  code: "0x",
+  context: null,
+  storage: {}
+};
+
 const DEFAULT_CODEX = [
   {
-    accounts: {}
-    //will be more here in the future!
+    accounts: {
+      //we always include an account for the zero address;
+      //this is not actually used for the zero address, but
+      //rather is used to represent failed contract creations
+      //in cases where we can't determine what the address
+      //would have been.  So keep in mind that this does not
+      //actually represent the zero address.
+      [Codec.Evm.Utils.ZERO_ADDRESS]: EMPTY_ACCOUNT
+    }
+    //if we ever start keeping track of the self-destruct set,
+    //the log series, or various gas-related stuff, there may
+    //be more here in the future
   }
 ];
 
 function codex(state = DEFAULT_CODEX, action) {
-  let newState, topCodex;
+  let newState, topCodex, topCodexNoZero;
 
   const updateFrameStorage = (frame, address, slot, value) => ({
     ...frame,
@@ -255,10 +266,19 @@ function codex(state = DEFAULT_CODEX, action) {
     };
   };
 
-  //later: will add "force" parameter
+  const wipeZeroAccount = frame => ({
+    accounts: {
+      ...frame.accounts,
+      [Codec.Evm.Utils.ZERO_ADDRESS]: EMPTY_ACCOUNT
+    }
+  });
+
+  //later: may add "force" parameter
   const safePop = array => (array.length > 2 ? array.slice(0, -1) : array);
 
-  //later: will add "force" parameter
+  //later: may add "force" parameter
+  //note: we don't need to wipe zero account when saving, because we'll never
+  //attempt to save the zero account in the first place
   const safeSave = array =>
     array.length > 2
       ? array.slice(0, -2).concat([array[array.length - 1]])
@@ -269,24 +289,26 @@ function codex(state = DEFAULT_CODEX, action) {
       debug("call action");
       debug("codex: %O", state);
       //on a call, we can just make a new stackframe by cloning the top
-      //stackframe; there should already be an account for the address we're
+      //stackframe; except we wipe the zero account, since the information
+      //it represents is stackframe-specific
+      topCodex = state[state.length - 1];
+      topCodexNoZero = wipeZeroAccount(topCodex);
+      //note there should already be an account for the address we're
       //calling into, so we don't need to make one
-      return [...state, state[state.length - 1]];
+      return [...state, topCodexNoZero];
 
     case actions.CREATE:
       debug("create action");
-      //on a create, make a new stackframe, then add a new pages to the
-      //codex if necessary; don't add a zero page though (or pages that already
-      //exist)
+      //on a create, make a new stackframe, then add a new page to the
+      //codex if necessary
 
       //first, add a new stackframe by cloning the top one
-      newState = [...state, state[state.length - 1]];
-      topCodex = newState[newState.length - 1];
+      //(and wiping the zero page)
+      topCodex = state[state.length - 1];
+      topCodexNoZero = wipeZeroAccount(topCodex);
+      newState = [...state, topCodexNoZero];
       //now, do we need to add a new address to this stackframe?
-      if (
-        topCodex.accounts[action.storageAddress] !== undefined ||
-        action.storageAddress === Codec.Evm.Utils.ZERO_ADDRESS
-      ) {
+      if (topCodex.accounts[action.storageAddress] !== undefined) {
         //if we don't
         return newState;
       }
@@ -295,12 +317,7 @@ function codex(state = DEFAULT_CODEX, action) {
         ...topCodex,
         accounts: {
           ...topCodex.accounts,
-          [action.storageAddress]: {
-            storage: {},
-            code: "0x",
-            context: null
-            //there will be more here in the future!
-          }
+          [action.storageAddress]: EMPTY_ACCOUNT
         }
       };
       return newState;
@@ -310,10 +327,6 @@ function codex(state = DEFAULT_CODEX, action) {
       //on a store, the relevant page should already exist, so we can just
       //add or update the needed slot
       const { address, slot, value } = action;
-      if (address === Codec.Evm.Utils.ZERO_ADDRESS) {
-        //as always, we do not maintain a zero page
-        return state;
-      }
       newState = state.slice(); //clone the state
       topCodex = newState[newState.length - 1];
       newState[newState.length - 1] = updateFrameStorage(
@@ -332,7 +345,13 @@ function codex(state = DEFAULT_CODEX, action) {
       //to update *every* stackframe
       const { address, slot, value } = action;
       if (address === Codec.Evm.Utils.ZERO_ADDRESS) {
-        //as always, we do not maintain a zero page
+        //even though we now have a zero page, we still don't allow SLOADs to
+        //affect it.  firstly, because there will never be preexsting data on
+        //the zero page (it's only used for contract creations), so any SLOAD
+        //should only ever be of data that we already know (or that is zero).
+        //secondly, because the zero page represents something that is specific
+        //to a single stackframe, we definitely do *not* want to update every
+        //stackframe with its storage!
         return state;
       }
       topCodex = state[state.length - 1];

@@ -2,7 +2,7 @@ import { logger } from "@truffle/db/logger";
 const debug = logger("db:graphql:types");
 
 import type * as graphql from "graphql";
-import type { IResolvers } from "graphql-tools";
+import type { IResolvers } from "@graphql-tools/utils";
 
 import type {
   Collections,

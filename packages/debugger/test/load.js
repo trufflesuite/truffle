@@ -53,6 +53,7 @@ describe("Loading and unloading transactions", function () {
   });
 
   it("Starts in transactionless mode and loads a transaction", async function () {
+    this.timeout(4000);
     let instance = await abstractions.Contract1.deployed();
     let receipt = await instance.run();
     let txHash = receipt.tx;

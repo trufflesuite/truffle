@@ -4,7 +4,6 @@ import { generateSolidity } from "abi-to-sol";
 import type { ResolverSource } from "../source";
 
 export class ABI implements ResolverSource {
-
   wrappedSource: ResolverSource;
 
   constructor(wrappedSource: ResolverSource) {
@@ -30,6 +29,12 @@ export class ABI implements ResolverSource {
     importedFrom: string = "",
     options: { compiler?: { name: string; version: string } } = {}
   ) {
+    const { compiler } = options;
+    if (!compiler || compiler.name !== "solc") {
+      //this resolver source for use by solc only!
+      //vyper doesn't need it and would be quite thrown off by it
+      return { filePath: undefined, body: undefined };
+    }
     let filePath: string | undefined;
     let body: string | undefined;
 
@@ -46,7 +51,6 @@ export class ABI implements ResolverSource {
       return { filePath, body };
     }
 
-    const { compiler } = options;
     const solidityVersion = determineSolidityVersion(compiler);
 
     ({ filePath, body } = resolution);
@@ -85,17 +89,17 @@ export class ABI implements ResolverSource {
 
   async resolveDependencyPath(importPath: string, dependencyPath: string) {
     //just defer to wrapped source
-    return await this.wrappedSource.resolveDependencyPath(importPath, dependencyPath);
+    return await this.wrappedSource.resolveDependencyPath(
+      importPath,
+      dependencyPath
+    );
   }
 }
 
-function determineSolidityVersion(
-  compiler?: { name: string; version: string }
-): string | undefined {
-  if (!compiler) {
-    return;
-  }
-
+function determineSolidityVersion(compiler: {
+  name: string;
+  version: string;
+}): string | undefined {
   const { version } = compiler;
 
   // resolver.resolve's `compiler` option may include the full version string,

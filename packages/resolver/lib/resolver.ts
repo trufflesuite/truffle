@@ -10,57 +10,43 @@ import { EthPMv1, NPM, GlobalNPM, FS, Truffle, ABI, Vyper } from "./sources";
 
 export interface ResolverOptions {
   includeTruffleSources?: boolean;
-  translateJsonToSolidity?: boolean;
-  resolveVyperModules?: boolean;
 }
-
-const defaultResolverOptions = {
-  includeTruffleSources: false,
-  translateJsonToSolidity: true,
-  resolveVyperMoudles: false,
-};
 
 export class Resolver {
   options: any;
   sources: ResolverSource[];
 
   constructor(options: any, resolverOptions: ResolverOptions = {}) {
-    expect.options(
-      options,
-      ["working_directory", "contracts_build_directory", "contracts_directory"]
-    );
+    expect.options(options, [
+      "working_directory",
+      "contracts_build_directory",
+      "contracts_directory"
+    ]);
 
-    resolverOptions = {
-      ...defaultResolverOptions,
-      ...resolverOptions
-    };
-    const {
-      includeTruffleSources,
-      translateJsonToSolidity,
-      resolveVyperModules
-    } = resolverOptions;
+    const { includeTruffleSources } = resolverOptions;
 
     this.options = options;
-    this.sources = [
+
+    let basicSources: ResolverSource[] = [
       new EthPMv1(options.working_directory),
       new NPM(options.working_directory),
       new GlobalNPM(),
       new FS(options.working_directory, options.contracts_build_directory)
     ];
-
     if (includeTruffleSources) {
-      this.sources.unshift(new Truffle(options));
+      basicSources.unshift(new Truffle(options));
     }
 
-    if (translateJsonToSolidity) {
-      this.sources = [].concat(
-        ...this.sources.map(source => [new ABI(source), source])
-      );
-    }
+    //set up abi-to-sol resolution
+    this.sources = [].concat(
+      ...basicSources.map(source => [new ABI(source), source])
+    );
 
-    if (resolveVyperModules) {
-      this.sources = [new Vyper(this.sources, options.contracts_directory)];
-    }
+    //set up vyper resolution rules
+    this.sources = [
+      new Vyper(basicSources, options.contracts_directory),
+      ...this.sources //for Vyper this is redundant
+    ];
   }
 
   // This function might be doing too much. If so, too bad (for now).
@@ -86,7 +72,7 @@ export class Resolver {
       compiler?: {
         name: string;
         version: string;
-      }
+      };
     } = {}
   ): Promise<ResolvedSource> {
     let body: string | null = null;
@@ -94,10 +80,11 @@ export class Resolver {
     let source: ResolverSource | null = null;
 
     for (source of this.sources) {
-      ({
-        body,
-        filePath
-      } = await source.resolve(importPath, importedFrom, options));
+      ({ body, filePath } = await source.resolve(
+        importPath,
+        importedFrom,
+        options
+      ));
 
       if (body !== undefined) {
         break;
