@@ -16,7 +16,13 @@ export default class Web3Adapter {
       {
         jsonrpc: "2.0",
         method: "debug_traceTransaction",
-        params: [txHash, { enableMemory: true }], //recent geth versions require this option
+        params: [
+          txHash,
+          {
+            enableMemory: true, //recent geth versions require this option
+            disableStorage: true //we no longer use storage
+          }
+        ],
         id: new Date().getTime()
       }
     );
