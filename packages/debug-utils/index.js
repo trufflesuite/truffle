@@ -270,8 +270,11 @@ var DebugUtils = {
     //(and don't bother checking generated sources as they're
     //never Solidity)
     debug("checking Solidity ASTs for collisions");
-    return compilation.sources.every(source =>
-      !source || source.language !== "Solidity" || allIDsUnseenSoFar(source.ast)
+    return compilation.sources.every(
+      source =>
+        !source ||
+        source.language !== "Solidity" ||
+        allIDsUnseenSoFar(source.ast)
     );
   },
 
@@ -532,16 +535,19 @@ var DebugUtils = {
   },
 
   formatCurrentInstruction: function (instruction) {
+    // return warning message if the debugger does not have the code for this contract
+    if (!instruction || !instruction.pc) {
+      return "WARNING: The debugger does not have the code for this contract.";
+    }
+
     const pc = this.formatPC(instruction.pc);
     const formattedInstruction = this.formatInstruction(instruction);
-    return (
-      "-> " + truffleColors.mint(formattedInstruction) + pc
-    );
+    return "-> " + truffleColors.mint(formattedInstruction) + pc;
   },
 
   formatInstruction: function (instruction) {
-    return (
-      truffleColors.mint(instruction.name + " " + (instruction.pushData || ""))
+    return truffleColors.mint(
+      instruction.name + " " + (instruction.pushData || "")
     );
   },
 
@@ -550,7 +556,7 @@ var DebugUtils = {
     if (hex.length % 2 !== 0) {
       hex = "0" + hex; //ensure even length
     }
-    return " (PC=" + pc.toString() + ", 0x" + hex+")";
+    return " (PC=" + pc.toString() + ", 0x" + hex + ")";
   },
 
   formatStack: function (stack) {
@@ -717,21 +723,21 @@ var DebugUtils = {
       return `${name}()`;
     }
     const prefix = `${name}(`;
-    const formattedValues = decoding.arguments.map(
-      ({ name, value }) => {
-        const argumentPrefix = name
-          ? `${name}: `
-          : "";
-        const typeString = ` (type: ${Codec.Format.Types.typeStringWithoutLocation(
-          value.type
-        )})`;
-        return (DebugUtils.formatValue(value, argumentPrefix.length) + typeString + ",")
-          .split(/\r?\n/g)
-          .map(line => " ".repeat(indent) + line)
-          .join(OS.EOL);
-      }
-    );
-    return [prefix, ...formattedValues, ')'].join(OS.EOL);
+    const formattedValues = decoding.arguments.map(({ name, value }) => {
+      const argumentPrefix = name ? `${name}: ` : "";
+      const typeString = ` (type: ${Codec.Format.Types.typeStringWithoutLocation(
+        value.type
+      )})`;
+      return (
+        DebugUtils.formatValue(value, argumentPrefix.length) +
+        typeString +
+        ","
+      )
+        .split(/\r?\n/g)
+        .map(line => " ".repeat(indent) + line)
+        .join(OS.EOL);
+    });
+    return [prefix, ...formattedValues, ")"].join(OS.EOL);
   },
 
   formatStacktrace: function (stacktrace, indent = 2) {
