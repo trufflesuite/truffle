@@ -25,7 +25,7 @@ class TruffleConfig {
     workingDirectory?: string,
     network?: any
   ) {
-    this._deepCopy = ["compilers", "mocha", "dashboard"];
+    this._deepCopy = ["compilers", "mocha", "dashboard", "networks"];
     this._values = getInitialConfig({
       truffleDirectory,
       workingDirectory,
@@ -40,8 +40,6 @@ class TruffleConfig {
     Object.entries(props).forEach(([propName, descriptor]) =>
       this.addProp(propName, descriptor)
     );
-
-    this.addDefaultNetworks();
   }
 
   private eventManagerOptions(
@@ -49,34 +47,6 @@ class TruffleConfig {
   ): Partial<Pick<TruffleConfig, "quiet" | "logger" | "subscribers">> {
     const optionsWhitelist = ["quiet", "logger", "subscribers"];
     return pick(options, optionsWhitelist);
-  }
-
-  private addDefaultNetworks(): TruffleConfig {
-    const dashboardHost =
-      this.dashboard.host === "0.0.0.0" ? "localhost" : this.dashboard.host;
-
-    const overridableDashboardNetworkProperties = {
-      network_id: "*",
-      networkCheckTimeout: 120000
-    };
-
-    const staticDashboardNetworkProperties = {
-      url: `http://${dashboardHost}:${this.dashboard.port}/rpc`,
-      skipDryRun: true
-    };
-
-    const dashboardNetwork = {
-      ...overridableDashboardNetworkProperties,
-      ...this.networks?.dashboard,
-      ...staticDashboardNetworkProperties
-    };
-
-    this.networks = {
-      ...this.networks,
-      dashboard: dashboardNetwork
-    };
-
-    return this;
   }
 
   public addProp(propertyName: string, descriptor: any): void {
@@ -240,7 +210,6 @@ class TruffleConfig {
 
     config.merge(staticConfig);
     config.merge(options);
-    config.addDefaultNetworks();
 
     // When loading a user's config, ensure their subscribers are initialized
     const eventsOptions = config.eventManagerOptions(config);

@@ -17,7 +17,7 @@ const Environment = {
 
     const interfaceAdapter = createInterfaceAdapter({
       provider: config.provider,
-      networkType: config.networks[config.network].type
+      networkType: config.network_config.type
     });
 
     await Provider.testConnection(config);
@@ -31,7 +31,7 @@ const Environment = {
 
     const interfaceAdapter = createInterfaceAdapter({
       provider: config.provider,
-      networkType: config.networks[config.network].type
+      networkType: config.network_config.type
     });
 
     let accounts;
@@ -118,7 +118,7 @@ const helpers = {
   },
 
   validateNetworkConfig: config => {
-    const networkConfig = config.networks[config.network];
+    const networkConfig = config.network_config;
 
     if (!networkConfig) {
       throw new TruffleError(
@@ -127,7 +127,7 @@ const helpers = {
       );
     }
 
-    const configNetworkId = config.networks[config.network].network_id;
+    const configNetworkId = config.network_config.network_id;
 
     if (configNetworkId == null) {
       throw new Error(
