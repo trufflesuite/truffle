@@ -6,8 +6,10 @@ import * as Codec from "@truffle/codec";
 
 import Ganache from "ganache-core";
 
-import { prepareContracts } from "../helpers";
+import { prepareContracts, lineOf } from "../helpers";
 import Debugger from "lib/debugger";
+
+import solidity from "lib/solidity/selectors";
 
 const __LIBTEST = `
 pragma solidity ^0.8.0;
@@ -65,11 +67,33 @@ contract RevertTest2 {
 }
 `;
 
+const __CANT_CREATE_TEST = `
+pragma solidity ^0.8.0;
+
+contract CantCreate {
+  int n;
+  constructor() {
+    n = 3;
+    revert(); //BREAK
+  }
+}
+
+contract MakeTest {
+
+  function run() public {
+    try new CantCreate() {
+    } catch (bytes memory) {
+    }
+  }
+}
+`;
+
 const __MIGRATION = `
 var MappingPointerTest = artifacts.require("MappingPointerTest");
 var TouchLib = artifacts.require("TouchLib");
 var RevertTest = artifacts.require("RevertTest");
 var RevertTest2 = artifacts.require("RevertTest2");
+var MakeTest = artifacts.require("MakeTest");
 
 module.exports = function(deployer) {
   deployer.deploy(TouchLib);
@@ -77,12 +101,14 @@ module.exports = function(deployer) {
   deployer.deploy(MappingPointerTest);
   deployer.deploy(RevertTest);
   deployer.deploy(RevertTest2);
+  deployer.deploy(MakeTest);
 };
 `;
 
 let sources = {
   "MappingPointerTest.sol": __LIBTEST,
-  "RevertTest.sol": __REVERT_TEST
+  "RevertTest.sol": __REVERT_TEST,
+  "CantCreate.sol": __CANT_CREATE_TEST
 };
 
 let migrations = {
@@ -136,7 +162,9 @@ describe("Codex", function () {
 
     await bugger.runToEnd();
 
-    const x = Codec.Format.Utils.Inspect.unsafeNativize(await bugger.variable("x"));
+    const x = Codec.Format.Utils.Inspect.unsafeNativize(
+      await bugger.variable("x")
+    );
 
     assert.equal(x, 1);
   });
@@ -151,8 +179,34 @@ describe("Codex", function () {
 
     await bugger.runToEnd();
 
-    const x = Codec.Format.Utils.Inspect.unsafeNativize(await bugger.variable("x"));
+    const x = Codec.Format.Utils.Inspect.unsafeNativize(
+      await bugger.variable("x")
+    );
 
     assert.equal(x, 1);
+  });
+
+  it("Correctly reports storage in a failed contract creation", async function () {
+    this.timeout(6000);
+    let instance = await abstractions.MakeTest.deployed();
+    let receipt = await instance.run();
+    let txHash = receipt.tx;
+
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+
+    let sourceId = bugger.view(solidity.current.source).id;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
+      sourceId,
+      line: lineOf("BREAK", source)
+    });
+
+    await bugger.continueUntilBreakpoint();
+
+    const n = Codec.Format.Utils.Inspect.unsafeNativize(
+      await bugger.variable("n")
+    );
+
+    assert.equal(n, 3);
   });
 });
