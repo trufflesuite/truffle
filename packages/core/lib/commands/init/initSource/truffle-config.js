@@ -64,9 +64,9 @@ module.exports = {
     // NB:   rinkeby : `https://rinkeby.infura.io/v3/YOUR-PROJECT-ID`
     // NB: Also, it is recommended to use the same mnemonic and use different indexes (0, 1, 2 ...) for different public networks.
     //  provider: () => new HDWalletProvider(mnemonic, `https://network.io`, 0),
-    //  network_id: 1,                      // Network ID: mainnet => 1; ropsteb => 3; rinkeby => 4
+    //  network_id: 1,                      // Network ID: mainnet => 1; ropsten => 3; rinkeby => 4
     // NB: You need to use type 2 transactions on the public network, otherwise you may get odd errors when interacting.
-    // NB: Type 2 transactions use the maxFeePerGas/maxPriorityFeePerGas instead of gas/gasprice parameter (https://eips.ethereum.org/EIPS/eip-1559).
+    // NB: Type 2 transactions use the maxFeePerGas/maxPriorityFeePerGas instead of gas/gasPrice parameter (https://eips.ethereum.org/EIPS/eip-1559).
     // NB: This is the maximum amount of gas sent with each transaction, and a reasonable amount of gas will be used based on current network conditions.
     //  maxFeePerGas: 100000000000,         // 100 gwei 
     //  maxPriorityFeePerGas: 1500000000,   // 1.5 gwei
