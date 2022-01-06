@@ -277,9 +277,11 @@ function codex(state = DEFAULT_CODEX, action) {
   const safePop = array => (array.length > 2 ? array.slice(0, -1) : array);
 
   //later: may add "force" parameter
+  //note: we don't need to wipe zero account when saving, because we'll never
+  //attempt to save the zero account in the first place
   const safeSave = array =>
     array.length > 2
-      ? array.slice(0, -2).concat([wipeZeroAccount(array[array.length - 1])])
+      ? array.slice(0, -2).concat([array[array.length - 1]])
       : array;
 
   switch (action.type) {
