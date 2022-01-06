@@ -14,7 +14,7 @@ module.exports = {
       type: "boolean",
       default: false
     },
-    "debug": {
+    debug: {
       describe: "Enable in-test debugging",
       type: "boolean",
       default: false
@@ -28,13 +28,13 @@ module.exports = {
       type: "boolean",
       default: false
     },
-    "bail": {
+    bail: {
       alias: "b",
       describe: "Bail after first test failure",
       type: "boolean",
       default: false
     },
-    "stacktrace": {
+    stacktrace: {
       alias: "t",
       describe: "Produce Solidity stacktraces",
       type: "boolean",
@@ -45,11 +45,11 @@ module.exports = {
       type: "boolean",
       default: false
     },
-    "reporter": {
+    reporter: {
       alias: "r",
       describe: "Specify the type of mocha reporter",
       default: "spec"
-    },
+    }
   },
   help: {
     usage:
@@ -58,7 +58,7 @@ module.exports = {
       `[--network <name>]${OS.EOL}                             ` +
       `[--verbose-rpc] [--show-events] [--debug] ` +
       `[--debug-global <identifier>] [--bail|-b]${OS.EOL}                      ` +
-      `       [--stacktrace[-extra]] [--grep|-g <regex>] `  +
+      `       [--stacktrace[-extra]] [--grep|-g <regex>] ` +
       `[--reporter|-r <name>] `,
     options: [
       {
@@ -128,14 +128,16 @@ module.exports = {
       },
       {
         option: "--grep|-g",
-        description: "Use mocha's \"grep\" option while running tests. This " +
+        description:
+          'Use mocha\'s "grep" option while running tests. This ' +
           "option only runs tests that match the supplied regex/string."
       },
       {
         option: "--reporter|-r <name>",
-        description: "Specify the type of mocha reporter to use during testing. Default: 'spec'"
+        description:
+          "Specify the type of mocha reporter to use during testing. Default: 'spec'"
       }
     ],
     allowedGlobalOptions: ["network", "config"]
-  },
+  }
 };

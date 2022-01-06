@@ -17,4 +17,4 @@ module.exports = async function (options) {
   await Environment.detect(config);
   const c = new Console(consoleCommands, config.with({ noAliases: true }));
   return await c.start();
-}
+};

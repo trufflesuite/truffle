@@ -53,4 +53,4 @@ module.exports = async function (options) {
   } else {
     return await create[type](destinations[type], name, options);
   }
-}
+};

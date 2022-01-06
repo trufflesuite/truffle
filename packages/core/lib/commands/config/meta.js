@@ -2,7 +2,8 @@ module.exports = {
   command: "config",
   description: "Set user-level configuration options",
   help: {
-    usage: "truffle config [--enable-analytics|--disable-analytics] [<list>] [[<get|set> <key>] [<value-for-set>]]",
+    usage:
+      "truffle config [--enable-analytics|--disable-analytics] [<list>] [[<get|set> <key>] [<value-for-set>]]",
     options: [
       {
         option: "--enable-analytics",
@@ -23,7 +24,7 @@ module.exports = {
       },
       {
         option: "list",
-        description: "List all Truffle config values.",
+        description: "List all Truffle config values."
       }
     ],
     allowedGlobalOptions: []

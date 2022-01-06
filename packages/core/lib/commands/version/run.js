@@ -17,4 +17,4 @@ module.exports = async function (options) {
 
   version.logAll(logger, config);
   return;
-}
+};

@@ -40,4 +40,4 @@ module.exports = async function (options) {
 
     console.log(strIndex + " " + opcode.name + " " + (opcode.pushData || ""));
   });
-}
+};

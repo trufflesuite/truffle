@@ -108,4 +108,4 @@ module.exports = async options => {
     return new Promise(() => {});
   }
   return await runConsole(config, ganacheOptions);
-}
+};

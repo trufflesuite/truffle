@@ -4,7 +4,6 @@ import { generateSolidity } from "abi-to-sol";
 import type { ResolverSource } from "../source";
 
 export class ABI implements ResolverSource {
-
   wrappedSource: ResolverSource;
 
   constructor(wrappedSource: ResolverSource) {
@@ -90,14 +89,17 @@ export class ABI implements ResolverSource {
 
   async resolveDependencyPath(importPath: string, dependencyPath: string) {
     //just defer to wrapped source
-    return await this.wrappedSource.resolveDependencyPath(importPath, dependencyPath);
+    return await this.wrappedSource.resolveDependencyPath(
+      importPath,
+      dependencyPath
+    );
   }
 }
 
-function determineSolidityVersion(
-  compiler: { name: string; version: string }
-): string | undefined {
-
+function determineSolidityVersion(compiler: {
+  name: string;
+  version: string;
+}): string | undefined {
   const { version } = compiler;
 
   // resolver.resolve's `compiler` option may include the full version string,

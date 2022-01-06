@@ -2,7 +2,7 @@ const userLevelSettings = ["analytics"];
 /**
  * run config commands to get/set/list Truffle config options
  * @param {Object} options
-**/
+ **/
 module.exports = async function (options) {
   const googleAnalytics = require("../../services/analytics/google.js");
   const Config = require("@truffle/config");

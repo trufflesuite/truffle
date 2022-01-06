@@ -47,9 +47,7 @@ module.exports = async function (options) {
   watcher.on("add", watchCallback);
   watcher.on("delete", watchCallback);
 
-  config.logger.log(
-    colors.green("Watching for a change in project files...")
-  );
+  config.logger.log(colors.green("Watching for a change in project files..."));
   return new Promise(() => {});
 };
 
@@ -58,7 +56,7 @@ const build = config => {
 
   config.logger.log("Rebuilding...");
 
-  Build.build(config, function(error) {
+  Build.build(config, function (error) {
     printSummary(config, error);
   });
 };

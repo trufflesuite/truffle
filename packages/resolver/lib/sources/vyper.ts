@@ -28,7 +28,7 @@ export class Vyper implements ResolverSource {
   async resolve(
     importModule: string,
     importedFrom: string,
-    options: { compiler?: { name: string; } } = {}
+    options: { compiler?: { name: string } } = {}
   ) {
     const { compiler } = options;
     if (!compiler || compiler.name !== "vyper") {
@@ -132,7 +132,7 @@ export class Vyper implements ResolverSource {
     const resolved = await this.resolve(
       dependencyPath,
       importPath,
-      { compiler: { name: "vyper" }} //HACK
+      { compiler: { name: "vyper" } } //HACK
     );
     if (resolved) {
       return resolved.filePath;

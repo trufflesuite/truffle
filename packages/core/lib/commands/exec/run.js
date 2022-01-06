@@ -41,4 +41,4 @@ module.exports = async function (options) {
     await WorkflowCompile.save(config, compilationOutput);
   }
   return await promisify(Require.exec.bind(Require))(config.with({ file }));
-}
+};

@@ -17,10 +17,11 @@ export class Resolver {
   sources: ResolverSource[];
 
   constructor(options: any, resolverOptions: ResolverOptions = {}) {
-    expect.options(
-      options,
-      ["working_directory", "contracts_build_directory", "contracts_directory"]
-    );
+    expect.options(options, [
+      "working_directory",
+      "contracts_build_directory",
+      "contracts_directory"
+    ]);
 
     const { includeTruffleSources } = resolverOptions;
 
@@ -71,7 +72,7 @@ export class Resolver {
       compiler?: {
         name: string;
         version: string;
-      }
+      };
     } = {}
   ): Promise<ResolvedSource> {
     let body: string | null = null;
@@ -79,10 +80,11 @@ export class Resolver {
     let source: ResolverSource | null = null;
 
     for (source of this.sources) {
-      ({
-        body,
-        filePath
-      } = await source.resolve(importPath, importedFrom, options));
+      ({ body, filePath } = await source.resolve(
+        importPath,
+        importedFrom,
+        options
+      ));
 
       if (body !== undefined) {
         break;

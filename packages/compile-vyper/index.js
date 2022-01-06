@@ -139,61 +139,63 @@ async function compileNoJson({ paths: sources, options, version }) {
   targets.forEach(sourcePath => {
     promises.push(
       new Promise((resolve, reject) => {
-        execVyper(options, sourcePath, version, function (
-          error,
-          compiledContract
-        ) {
-          if (error) return reject(error);
+        execVyper(
+          options,
+          sourcePath,
+          version,
+          function (error, compiledContract) {
+            if (error) return reject(error);
 
-          debug("compiledContract: %O", compiledContract);
+            debug("compiledContract: %O", compiledContract);
 
-          // remove first extension from filename
-          const extension = path.extname(sourcePath);
-          const basename = path.basename(sourcePath, extension);
+            // remove first extension from filename
+            const extension = path.extname(sourcePath);
+            const basename = path.basename(sourcePath, extension);
 
-          // if extension is .py, remove second extension from filename
-          const contractName =
-            extension !== ".py"
-              ? basename
-              : path.basename(basename, path.extname(basename));
+            // if extension is .py, remove second extension from filename
+            const contractName =
+              extension !== ".py"
+                ? basename
+                : path.basename(basename, path.extname(basename));
 
-          const sourceContents = readSource(sourcePath);
-          const deployedSourceMap = compiledContract.source_map //there is no constructor source map
-            ? JSON.parse(compiledContract.source_map)
-            : undefined;
+            const sourceContents = readSource(sourcePath);
+            const deployedSourceMap = compiledContract.source_map //there is no constructor source map
+              ? JSON.parse(compiledContract.source_map)
+              : undefined;
 
-          const contractDefinition = {
-            contractName: contractName,
-            sourcePath: sourcePath,
-            source: sourceContents,
-            abi: JSON.parse(compiledContract.abi),
-            bytecode: {
-              bytes: compiledContract.bytecode.slice(2), //remove "0x" prefix
-              linkReferences: [] //no libraries in Vyper
-            },
-            deployedBytecode: {
-              bytes: compiledContract.bytecode_runtime.slice(2), //remove "0x" prefix
-              linkReferences: [] //no libraries in Vyper
-            },
-            deployedSourceMap,
-            compiler
-          };
+            const contractDefinition = {
+              contractName: contractName,
+              sourcePath: sourcePath,
+              source: sourceContents,
+              abi: JSON.parse(compiledContract.abi),
+              bytecode: {
+                bytes: compiledContract.bytecode.slice(2), //remove "0x" prefix
+                linkReferences: [] //no libraries in Vyper
+              },
+              deployedBytecode: {
+                bytes: compiledContract.bytecode_runtime.slice(2), //remove "0x" prefix
+                linkReferences: [] //no libraries in Vyper
+              },
+              deployedSourceMap,
+              compiler
+            };
 
-          const compilation = {
-            sources: [
-              {
-                sourcePath,
-                contents: sourceContents,
-                language: "Vyper"
-              }
-            ],
-            contracts: [contractDefinition],
-            compiler,
-            sourceIndexes: [sourcePath]
-          };
+            const compilation = {
+              sources: [
+                {
+                  sourcePath,
+                  contents: sourceContents,
+                  language: "Vyper"
+                }
+              ],
+              contracts: [contractDefinition],
+              compiler,
+              sourceIndexes: [sourcePath]
+            };
 
-          resolve(compilation);
-        });
+            resolve(compilation);
+          }
+        );
       })
     );
   });

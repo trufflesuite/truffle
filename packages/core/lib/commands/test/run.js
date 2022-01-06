@@ -42,7 +42,7 @@ module.exports = async function (options) {
     config.compileAll = true;
   }
 
-  const {file} = options;
+  const { file } = options;
   const inputArgs = options._;
   const files = determineTestFilesToRun({
     config,
@@ -52,7 +52,7 @@ module.exports = async function (options) {
 
   if (config.networks[config.network]) {
     await Environment.detect(config);
-    const {temporaryDirectory} = await copyArtifactsToTempDir(config);
+    const { temporaryDirectory } = await copyArtifactsToTempDir(config);
     const numberOfFailures = await prepareConfigAndRunTests({
       config,
       files,
@@ -60,7 +60,7 @@ module.exports = async function (options) {
     });
     return numberOfFailures;
   } else {
-    const ipcOptions = {network: "test"};
+    const ipcOptions = { network: "test" };
     const port = await require("get-port")();
 
     const ganacheOptions = {
@@ -87,4 +87,4 @@ module.exports = async function (options) {
     ipcDisconnect();
     return numberOfFailures;
   }
-}
+};

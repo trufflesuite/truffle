@@ -21,11 +21,11 @@ conditionalDescribe("preserve", () => {
 
   // Options propagates to the truffle config object so these contain config properties as well
   const defaultOptions = {
-    "plugins": ["dummy-loader", "dummy-recipe", "truffle-mock"],
-    "working_directory": process.cwd(),
+    plugins: ["dummy-loader", "dummy-recipe", "truffle-mock"],
+    working_directory: process.cwd(),
     "dummy-recipe": true,
-    "_": ["./test/mockPlugins/dummy-loader"],
-    "environments": {
+    _: ["./test/mockPlugins/dummy-loader"],
+    environments: {
       development: {
         "dummy-recipe": {
           selectedEnvironment: "development"

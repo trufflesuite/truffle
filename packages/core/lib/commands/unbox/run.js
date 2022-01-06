@@ -7,12 +7,12 @@ const normalizeDestination = (destination, workingDirectory) => {
   return path.join(workingDirectory, destination);
 };
 
-module.exports = async (options) => {
+module.exports = async options => {
   const Config = require("@truffle/config");
   const { default: Box } = require("@truffle/box");
   const fse = require("fs-extra");
 
-  const config = Config.default().with({logger: console});
+  const config = Config.default().with({ logger: console });
   // we merge in the options so that options passed on the command line
   // (for example --quiet) make it to the EventManager
   config.merge(options);
@@ -26,7 +26,7 @@ module.exports = async (options) => {
 
   fse.ensureDirSync(normalizedDestination);
 
-  const unboxOptions = Object.assign({}, options, {logger: config.logger});
+  const unboxOptions = Object.assign({}, options, { logger: config.logger });
 
   config.events.emit("unbox:start");
 

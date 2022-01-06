@@ -80,7 +80,7 @@ type FormattedBlock = {
   extraData: string;
   transactions: string[];
   uncles: string[];
-}
+};
 const stringWhitelist = [
   "latest",
   "pending",

@@ -13,4 +13,4 @@ module.exports = async function (options) {
   const config = Config.detect(options);
 
   return await Build.build(config);
-}
+};
