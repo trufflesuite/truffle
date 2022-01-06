@@ -61,7 +61,7 @@ describe("migrate", function () {
     assert.equal(
       Object.keys(networks).length,
       2,
-      "Should have results for two networks from profiler (no default networks)"
+      "Should have results for two networks from profiler"
     );
     assert.equal(
       Object.keys(networks["primary"]),
@@ -90,8 +90,8 @@ describe("migrate", function () {
 
     assert.equal(
       Object.keys(networks).length,
-      3,
-      "Should have results for three networks from profiler (incl default networks)"
+      2,
+      "Should have results for two networks from profiler"
     );
     assert.equal(
       Object.keys(networks["primary"]).length,
@@ -135,8 +135,8 @@ describe("migrate", function () {
     networks = await Networks.deployed(config);
     assert.equal(
       Object.keys(networks).length,
-      3,
-      "Should have results for three networks from profiler (incl default networks)"
+      2,
+      "Should have results for two networks from profiler"
     );
     assert.equal(
       Object.keys(networks["primary"]).length,
