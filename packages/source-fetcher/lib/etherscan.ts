@@ -23,7 +23,8 @@ const etherscanCommentHeader = `/**
 
 //this looks awkward but the TS docs actually suggest this :P
 const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
-  implements Fetcher {
+  implements Fetcher
+{
   get fetcherName(): string {
     return "etherscan";
   }
@@ -36,7 +37,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
     options?: Types.FetcherOptions
   ): Promise<EtherscanFetcher> {
     debug("options: %O", options);
-    debug("id:",id)
+    debug("id:", id);
     return new EtherscanFetcher(id, options ? options.apiKey : "");
   }
 
@@ -84,17 +85,17 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
     address: string
   ): Promise<EtherscanSuccess> {
     const initialTimeoutFactor = 1.5; //I guess?
-    return await retry(
-      async () => await this.makeRequest(address),
-      { retries: 3, minTimeout: this.delay * initialTimeoutFactor }
-    );
+    return await retry(async () => await this.makeRequest(address), {
+      retries: 3,
+      minTimeout: this.delay * initialTimeoutFactor
+    });
   }
-  
-  private urlSwitcher(address: string){
-    switch (this.networkName){
-      case "arbitrum" :
+
+  private determineUrl() {
+    switch (this.networkName) {
+      case "arbitrum":
         return "https://api.arbiscan.io/api";
-      case "polygon" :
+      case "polygon":
         return "https://api.polygonscan.com/api";
       case "mainnet":
         return "https://api.etherscan.io/api";
@@ -105,19 +106,16 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
   private async makeRequest(address: string): Promise<EtherscanSuccess> {
     //not putting a try/catch around this; if it throws, we throw
     await this.ready;
-    const responsePromise = axios.get(
-      this.urlSwitcher(this.networkName),
-      {
-        params: {
-          module: "contract",
-          action: "getsourcecode",
-          address,
-          apikey: this.apiKey
-        },
-        responseType: "json",
-        maxRedirects: 50
-      }
-    );
+    const responsePromise = axios.get(this.determineUrl(), {
+      params: {
+        module: "contract",
+        action: "getsourcecode",
+        address,
+        apikey: this.apiKey
+      },
+      responseType: "json",
+      maxRedirects: 50
+    });
     this.ready = makeTimer(this.delay);
     const response: EtherscanResponse = (await responsePromise).data;
     if (response.status === "0") {
