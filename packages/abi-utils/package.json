@@ -24,7 +24,8 @@
     "directory": "packages/abi-utils"
   },
   "scripts": {
-    "prepare": "tsc",
+    "build": "tsc",
+    "prepare": "yarn build",
     "test": "jest lib/**"
   },
   "bugs": {

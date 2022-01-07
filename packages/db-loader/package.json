@@ -27,7 +27,8 @@
     "access": "public"
   },
   "scripts": {
-    "prepare": "tsc"
+    "build": "tsc",
+    "prepare": "yarn build"
   },
   "optionalDependencies": {
     "@truffle/db": "^0.5.45"

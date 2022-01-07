@@ -15,7 +15,8 @@
   "version": "6.0.6",
   "main": "dist/index.js",
   "scripts": {
-    "prepare": "ttsc",
+    "build": "ttsc",
+    "prepare": "yarn build",
     "test": "./scripts/test.sh"
   },
   "dependencies": {
