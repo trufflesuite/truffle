@@ -194,7 +194,12 @@ export class ProjectDecoder {
    */
   public async decodeTransactionWithAdditionalContexts(
     transaction: DecoderTypes.Transaction,
-    additionalContexts: Contexts.Contexts = {}
+    additionalContexts: Contexts.Contexts = {},
+    additionalAllocations?: {
+      [
+        selector: string
+      ]: AbiData.Allocate.FunctionCalldataAndReturndataAllocation;
+    }
   ): Promise<CalldataDecoding> {
     const block = transaction.blockNumber;
     const blockNumber = await this.regularizeBlock(block);
@@ -206,6 +211,24 @@ export class ProjectDecoder {
       additionalContexts
     );
 
+    let allocations = this.allocations;
+    if (context && !(context.context in this.contexts)) {
+      //if the context comes from additionalContexts,
+      //we'll add the additional allocations to the allocations;
+      //however, we'll allow other allocations to override it...
+      //it's only supposed to be used if necessary!
+      allocations = {
+        ...this.allocations,
+        calldata: {
+          ...this.allocations.calldata,
+          functionAllocations: {
+            [context.context]: additionalAllocations,
+            ...this.allocations.calldata.functionAllocations
+          }
+        }
+      };
+    }
+
     const data = Conversion.toBytes(transaction.input);
     const info: Evm.EvmInfo = {
       state: {
@@ -213,7 +236,7 @@ export class ProjectDecoder {
         calldata: data
       },
       userDefinedTypes: this.userDefinedTypes,
-      allocations: this.allocations,
+      allocations,
       contexts: { ...this.deployedContexts, ...additionalContexts },
       currentContext: context
     };
@@ -655,7 +678,9 @@ export class ContractDecoder {
 
   private allocations: Codec.Evm.AllocationInfo;
   private noBytecodeAllocations: {
-    [selector: string]: AbiData.Allocate.CalldataAndReturndataAllocation;
+    [
+      selector: string
+    ]: AbiData.Allocate.FunctionCalldataAndReturndataAllocation;
   };
   private userDefinedTypes: Format.Types.TypesById;
   private stateVariableReferences: Storage.Allocate.StateVariableAllocation[];
@@ -974,6 +999,13 @@ export class ContractDecoder {
    */
   public getProjectDecoder() {
     return this.projectDecoder;
+  }
+
+  /**
+   * @protected
+   */
+  public getNoBytecodeAllocations() {
+    return this.noBytecodeAllocations;
   }
 
   /**
@@ -1557,14 +1589,17 @@ export class ContractInstanceDecoder {
   /**
    * **This method is asynchronous.**
    *
-   * See [[ProjectDecoder.decodeTransaction]].
+   * Behaves mostly as [[ProjectDecoder.decodeTransaction]].  However, it is
+   * capable of more robustly decoding transactions that were sent to this
+   * particular instance.
    */
   public async decodeTransaction(
     transaction: DecoderTypes.Transaction
   ): Promise<CalldataDecoding> {
     return await this.projectDecoder.decodeTransactionWithAdditionalContexts(
       transaction,
-      this.additionalContexts
+      this.additionalContexts,
+      this.contractDecoder.getNoBytecodeAllocations()
     );
   }
 
