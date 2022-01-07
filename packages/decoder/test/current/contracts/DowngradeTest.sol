@@ -82,6 +82,10 @@ contract DowngradeTest is DowngradeTestParent {
   function throwCustom() public pure {
     revert CustomError(Pair(1, MyInt.wrap(2)));
   }
+
+  function simple(uint) public {
+    emit Done();
+  }
 }
 
 library DecoyLibrary {
