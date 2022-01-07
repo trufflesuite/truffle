@@ -66,17 +66,13 @@ const execute = {
    * @param  {Object} constructor   TruffleContract constructor
    * @param  {Object} methodABI     Function ABI segment w/ inputs & outputs keys.
    * @param  {Array}  _arguments    Arguments passed to method invocation
-   * @param  {Boolean}  skipNetworkCheck    Arguments passed to skip network call for read data (calls type) methods invocation
+   * @param  {Boolean}  isCall      Used when preparing a call as opposed to a tx;
+   *                                  skips network checks and ignores default gas prices
    * @return {Promise}              Resolves object w/ tx params disambiguated from arguments
    */
-  prepareCall: async function (
-    constructor,
-    methodABI,
-    _arguments,
-    skipNetworkCheck
-  ) {
+  prepareCall: async function (constructor, methodABI, _arguments, isCall) {
     let args = Array.prototype.slice.call(_arguments);
-    let params = utils.getTxParams.call(constructor, methodABI, args);
+    let params = utils.getTxParams.call(constructor, methodABI, args, isCall);
 
     args = utils.convertToEthersBN(args);
 
@@ -93,8 +89,8 @@ const execute = {
       args = processedValues.args;
       params = processedValues.params;
     }
-    //skipNetworkCheck flag used to skip network call for read data (calls type) methods invocation
-    if (skipNetworkCheck) {
+    //isCall flag used to skip network call for read data (calls type) methods invocation
+    if (isCall) {
       return { args, params };
     }
     const network = await constructor.detectNetwork();
