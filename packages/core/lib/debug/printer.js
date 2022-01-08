@@ -217,25 +217,6 @@ class DebugPrinter {
     }
 
     this.config.logger.log("Instructions:");
-
-    // printout instructions
-    const previousInstructions = this.instructionLines.beforeLines;
-    const upcomingInstructions = this.instructionLines.afterLines;
-    const currentIndex = instruction.index;
-
-    // add an ellipse if there exist additional instructions before
-    if (currentIndex - previousInstructions > 0) {
-      this.config.logger.log("...");
-    }
-    // printout 3 previous instructions
-    for (
-      let i = Math.max(currentIndex - previousInstructions, 0);
-      i < currentIndex;
-      i++
-    ) {
-      this.config.logger.log(DebugUtils.formatInstruction(instructions[i]));
-    }
-
     if (!instruction || instruction.pc === undefined) {
       // printout warning message if the debugger does not have the code for this contract
       this.config.logger.log(
@@ -244,23 +225,41 @@ class DebugPrinter {
         )} The debugger does not have the code for this contract.`
       );
     } else {
+      // printout instructions
+      const previousInstructions = this.instructionLines.beforeLines;
+      const upcomingInstructions = this.instructionLines.afterLines;
+      const currentIndex = instruction.index;
+
+      // add an ellipse if there exist additional instructions before
+      if (currentIndex - previousInstructions > 0) {
+        this.config.logger.log("...");
+      }
+      // printout 3 previous instructions
+      for (
+        let i = Math.max(currentIndex - previousInstructions, 0);
+        i < currentIndex;
+        i++
+      ) {
+        this.config.logger.log(DebugUtils.formatInstruction(instructions[i]));
+      }
+
       // printout current instruction
       this.config.logger.log(DebugUtils.formatCurrentInstruction(instruction));
-    }
 
-    // printout 3 upcoming instructions
-    for (
-      let i = currentIndex + 1;
-      i <=
-      Math.min(currentIndex + upcomingInstructions, instructions.length - 1);
-      i++
-    ) {
-      this.config.logger.log(DebugUtils.formatInstruction(instructions[i]));
-    }
+      // printout 3 upcoming instructions
+      for (
+        let i = currentIndex + 1;
+        i <=
+        Math.min(currentIndex + upcomingInstructions, instructions.length - 1);
+        i++
+      ) {
+        this.config.logger.log(DebugUtils.formatInstruction(instructions[i]));
+      }
 
-    // add an ellipse if there exist additional instructions after
-    if (currentIndex + upcomingInstructions < instructions.length - 1) {
-      this.config.logger.log("...");
+      // add an ellipse if there exist additional instructions after
+      if (currentIndex + upcomingInstructions < instructions.length - 1) {
+        this.config.logger.log("...");
+      }
     }
 
     this.config.logger.log("");
