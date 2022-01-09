@@ -1,6 +1,6 @@
 {
   "name": "@truffle/abi-utils",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "Utilities for working with ABIs",
   "keywords": [
     "ethereum",
