@@ -147,6 +147,10 @@ const Utils = {
 
     let defaultParams = constructor.class_defaults;
     if (ignoreDefaultGasPriceParams) {
+      //this parameter is set when making calls (as opposed to transactions)
+      //gas price params can cause problems with those on some networks, so
+      //we ignore any defaults, and only include them if they were explicitly
+      //specified
       defaultParams = { ...constructor.class_defaults }; //clone
       delete defaultParams.gasPrice;
       delete defaultParams.maxFeePerGas;
