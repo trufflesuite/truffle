@@ -193,6 +193,70 @@ class Deployment {
     await contract.detectNetwork();
   }
 
+  /**
+   * Handler for contract's `transactionHash` event. Rebroadcasts as a deployer event
+   * @private
+   * @param  {Object} parent Deployment instance. Local `this` belongs to promievent
+   * @param  {String} hash   tranactionHash
+   */
+  async _hashCb(parent, state, hash) {
+    const eventArgs = {
+      contractName: state.contractName,
+      transactionHash: hash
+    };
+    state.transactionHash = hash;
+    await parent.emitter.emit("transactionHash", eventArgs);
+    this.removeListener("transactionHash", parent._hashCb);
+  }
+
+  /**
+   * Handler for contract's `receipt` event. Rebroadcasts as a deployer event
+   * @private
+   * @param  {Object} parent  Deployment instance. Local `this` belongs to promievent
+   * @param  {Object} state   store for the receipt value
+   * @param  {Object} receipt
+   */
+  async _receiptCb(parent, state, receipt) {
+    const eventArgs = {
+      contractName: state.contractName,
+      receipt: receipt
+    };
+
+    // We want this receipt available for the post-deploy event
+    // so gas reporting is at hand there.
+    state.receipt = receipt;
+    await parent.emitter.emit("receipt", eventArgs);
+    this.removeListener("receipt", parent._receiptCb);
+  }
+
+  // ----------------- Confirmations Handling (temporarily disabled) -------------------------------
+  /**
+  * There are outstanding issues at both geth (with websockets) & web3 (with confirmation handling
+  @@ -247,27 +221,6 @@ class Deployment {
+  });
+  }
+
+  /**
+  * Handler for contract's `confirmation` event. Rebroadcasts as a deployer event
+  * and maintains a table of txHashes & their current confirmation number. This
+  * table gets polled if the user needs to wait a few blocks before getting
+  * an instance back.
+  * @private
+  * @param  {Object} parent  Deployment instance. Local `this` belongs to promievent
+  * @param  {Number} num     Confirmation number
+  * @param  {Object} receipt transaction receipt
+  */
+  async _confirmationCb(parent, state, num, receipt) {
+    const eventArgs = {
+      contractName: state.contractName,
+      num: num,
+      receipt: receipt
+    };
+
+    parent.confirmationsMap[receipt.transactionHash] = num;
+    await parent.emitter.emit("confirmation", eventArgs);
+  }
+
   // ----------------- Confirmations Handling (temporarily disabled) -------------------------------
   /**
    * There are outstanding issues at both geth (with websockets) & web3 (with confirmation handling
