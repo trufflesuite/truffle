@@ -58,13 +58,8 @@ describe("fetchAndCompile", function () {
         item => item.contractName === "IUniswapV2Factory"
       )
     );
-    assert.equal(
-      contractNameSourceInfo,
-
-      "UniswapV2Router02"
-    );
+    assert.equal(contractNameSourceInfo, "UniswapV2Router02");
   });
-
   it("verifes contract from arbitrum", async function () {
     const config = Config.default().merge({
       networks: {
