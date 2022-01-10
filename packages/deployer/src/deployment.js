@@ -20,6 +20,12 @@ class Deployment {
     this.options = options;
   }
 
+  async emit(name, data) {
+    if (this.options && this.options.events) {
+      return await this.options.events.emit(name, data);
+    }
+  }
+
   // ------------------------------------  Utils ---------------------------------------------------
 
   /**
@@ -97,9 +103,7 @@ class Deployment {
         secondsWaited: secondsWaited
       };
 
-      if (this.options && this.options.events) {
-        this.options.events.emit("deployment:block", data);
-      }
+      await self.emit("deployment:block", data);
     }, self.pollingInterval);
   }
 
@@ -139,9 +143,7 @@ class Deployment {
             num: blocksHeard,
             block: currentBlock
           };
-          if (this.options && this.options.events) {
-            await this.options.events.emit("deployment:confirmation", data);
-          }
+          await self.emit("deployment:confirmation", data);
         }
 
         if (blocksHeard >= blocksToWait) {
@@ -167,10 +169,7 @@ class Deployment {
         type: "noBatches",
         contract
       };
-      let message;
-      if (this.options && this.options.events) {
-        message = await this.options.events.emit("deployment:error", data);
-      }
+      const message = await this.emit("deployment:error", data);
 
       throw new Error(sanitizeMessage(message));
     }
@@ -181,10 +180,7 @@ class Deployment {
         type: "noBytecode",
         contract
       };
-      let message;
-      if (this.options && this.options.events) {
-        message = await this.options.events.emit("deployment:error", data);
-      }
+      const message = await this.emit("deployment:error", data);
 
       throw new Error(sanitizeMessage(message));
     }
@@ -347,9 +343,8 @@ class Deployment {
         }
 
         // Emit `deployment:start` & send transaction
-        if (self.options && self.options.events) {
-          await self.options.events.emit("deployment:start", eventArgs);
-        }
+        await self.emit("deployment:start", eventArgs);
+
         const promiEvent = contract.new.apply(contract, newArgs);
 
         // Track emitters for cleanup on exit
@@ -358,13 +353,11 @@ class Deployment {
         // Subscribe to contract events / rebroadcast them to any reporters
         promiEvent
           .on("transactionHash", async hash => {
-            if (self.options && self.options.events) {
-              const data = {
-                contractName: state.contractName,
-                transactionHash: hash
-              };
-              await self.options.events.emit("deployment:txHash", data);
-            }
+            const data = {
+              contractName: state.contractName,
+              transactionHash: hash
+            };
+            await self.emit("deployment:txHash", data);
           })
           .on("receipt", receipt => {
             // We want this receipt available for the post-deploy event
@@ -381,13 +374,7 @@ class Deployment {
         } catch (err) {
           self._stopBlockPolling();
           eventArgs.error = err.error || err;
-          let message;
-          if (self.options && self.options.events) {
-            message = await self.options.events.emit(
-              "deployment:failed",
-              eventArgs
-            );
-          }
+          const message = await self.emit("deployment:failed", eventArgs);
           self.close();
           throw new Error(sanitizeMessage(message));
         }
@@ -405,9 +392,7 @@ class Deployment {
         receipt: state.receipt
       };
 
-      if (self.options && self.options.events) {
-        await self.options.events.emit("deployment:succeed", eventArgs);
-      }
+      await self.emit("deployment:succeed", eventArgs);
 
       // Wait for `n` blocks
       if (self.confirmations !== 0 && shouldDeploy) {
