@@ -136,8 +136,10 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     sourcePath: string,
     matchType: "full" | "partial"
   ): Promise<string> {
-    //note: sourcify replaces colons in paths with underscores
-    const transformedSourcePath = sourcePath.replace(/:/g, "_");
+    //note: sourcify replaces special characters in paths with underscores
+    //(special characters here being anything other than ASCII alphanumerics,
+    //hyphens, periods, and forward slashes)
+    const transformedSourcePath = sourcePath.replace(/[^\w.\/-]/g, "_");
     return await this.requestWithRetries<string>({
       url: `https://${this.domain}/contracts/${matchType}_match/${this.networkId}/${address}/sources/${transformedSourcePath}`,
       responseType: "text",
