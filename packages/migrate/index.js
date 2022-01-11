@@ -4,6 +4,7 @@ const glob = require("glob");
 const expect = require("@truffle/expect");
 const Config = require("@truffle/config");
 const Migration = require("./Migration");
+const emitEvent = require("./emitEvent");
 const inquirer = require("inquirer");
 
 /**
@@ -28,9 +29,7 @@ const Migrate = {
     if (answer.proceed) {
       return true;
     }
-    if (options.events) {
-      await options.events.emit("migrate:dryRun:notAccepted");
-    }
+    await emitEvent(options, "migrate:dryRun:notAccepted");
     return false;
   },
 
@@ -141,12 +140,10 @@ const Migrate = {
       migrations[total - 1].isLast = true;
     }
 
-    if (options.events) {
-      options.events.emit("migrate:runMigrations:start", {
-        migrations,
-        dryRun: options.dryRun
-      });
-    }
+    await emitEvent(options, "migrate:runMigrations:start", {
+      migrations,
+      dryRun: options.dryRun
+    });
 
     try {
       global.artifacts = clone.resolver;
@@ -155,20 +152,16 @@ const Migrate = {
         await migration.run(clone);
       }
 
-      if (options.events) {
-        await options.events.emit("migrate:runMigrations:finish", {
-          dryRun: options.dryRun,
-          error: null
-        });
-      }
+      await emitEvent(options, "migrate:runMigrations:finish", {
+        dryRun: options.dryRun,
+        error: null
+      });
       return;
     } catch (error) {
-      if (options.events) {
-        await options.events.emit("migrate:runMigrations:finish", {
-          dryRun: options.dryRun,
-          error: error.toString()
-        });
-      }
+      await emitEvent(options, "migrate:runMigrations:finish", {
+        dryRun: options.dryRun,
+        error: error.toString()
+      });
       throw error;
     } finally {
       delete global.artifacts;
