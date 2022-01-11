@@ -139,7 +139,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     //note: sourcify replaces special characters in paths with underscores
     //(special characters here being anything other than ASCII alphanumerics,
     //hyphens, periods, and forward slashes)
-    const transformedSourcePath = sourcePath.replace(/[^\w.\/-]/g, "_");
+    const transformedSourcePath = sourcePath.replace(/[^\w.\/-]/gu, "_");
     return await this.requestWithRetries<string>({
       url: `https://${this.domain}/contracts/${matchType}_match/${this.networkId}/${address}/sources/${transformedSourcePath}`,
       responseType: "text",
