@@ -40,7 +40,6 @@ describe("fetchAndCompile", function () {
       network: "mainnet"
     });
     const address = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
-    //asserting that mainnet url and contract address is passed as args
     stubAxiosGetMethod(
       "https://api.etherscan.io/api",
       address,
@@ -83,14 +82,11 @@ describe("fetchAndCompile", function () {
     let contractNameSourceInfo = result.sourceInfo.contractName;
     let contractNameCompliations =
       result.compileResult.compilations[0].contracts;
-    //console.log(contractNameCompliations)
     assert(
       contractNameCompliations.some(item => item.contractName === "stARBIS")
     );
     assert.equal(contractNameSourceInfo, "stARBIS");
-    //assert.equal(contractNameCompliations, "stARBIS");
   });
-
   it("verfies contract from polygon", async function () {
     const config = Config.default().merge({
       networks: {
