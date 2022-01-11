@@ -8,6 +8,7 @@ const {
 } = require("@truffle/interface-adapter");
 const ResolverIntercept = require("./ResolverIntercept");
 const { getTruffleDb } = require("@truffle/db-loader");
+const emitEvent = require("./emitEvent");
 
 class Migration {
   constructor(file, config) {
@@ -86,7 +87,8 @@ class Migration {
         const message = `Saving migration to chain.`;
         if (!this.dryRun) {
           const data = { message: message };
-          await options.events.emit(
+          await emitEvent(
+            options,
             "migrate:settingCompletedMigrations:start",
             data
           );
@@ -97,7 +99,8 @@ class Migration {
 
         if (!this.dryRun) {
           const data = { receipt: receipt, message: message };
-          await options.events.emit(
+          await emitEvent(
+            options,
             "migrate:settingCompletedMigrations:succeed",
             data
           );
@@ -109,7 +112,7 @@ class Migration {
         interfaceAdapter: context.interfaceAdapter
       };
 
-      await options.events.emit("migrate:migration:succeed", eventArgs);
+      await emitEvent(options, "migrate:migration:succeed", eventArgs);
 
       let artifacts = resolver
         .contracts()
@@ -166,9 +169,7 @@ class Migration {
         error: error
       };
 
-      if (options.events) {
-        await options.events.emit("migrate:migration:error", errorData);
-      }
+      await emitEvent(options, "migrate:migration:error", errorData);
       deployer.finish();
       throw error;
     }
@@ -181,12 +182,8 @@ class Migration {
    * @param  {Object}   options  config and command-line
    */
   async run(options) {
-    const {
-      interfaceAdapter,
-      resolver,
-      context,
-      deployer
-    } = this.prepareForMigrations(options);
+    const { interfaceAdapter, resolver, context, deployer } =
+      this.prepareForMigrations(options);
 
     // Get file path and emit pre-migration event
     const file = path.relative(options.migrations_directory, this.file);
@@ -201,9 +198,7 @@ class Migration {
       blockLimit: block.gasLimit
     };
 
-    if (options.events) {
-      await options.events.emit("migrate:migration:start", preMigrationsData);
-    }
+    await emitEvent(options, "migrate:migration:start", preMigrationsData);
     await this._load(options, context, deployer, resolver);
   }
 
