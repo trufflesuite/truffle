@@ -9,7 +9,8 @@ import retry from "async-retry";
 
 //this looks awkward but the TS docs actually suggest this :P
 const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
-  implements Fetcher {
+  implements Fetcher
+{
   get fetcherName(): string {
     return "sourcify";
   }
@@ -56,7 +57,10 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     let result = await this.fetchSourcesForAddressAndMatchType(address, "full");
     if (!result) {
       //if we got nothing when trying a full match, try for a partial match
-      result = await this.fetchSourcesForAddressAndMatchType(address, "partial");
+      result = await this.fetchSourcesForAddressAndMatchType(
+        address,
+        "partial"
+      );
     }
     //if partial match also fails, just return null
     return result;
@@ -77,7 +81,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
       {},
       ...(await Promise.all(
         Object.entries(metadata.sources).map(
-          async ([sourcePath, {content: source}]) => ({
+          async ([sourcePath, { content: source }]) => ({
             [sourcePath]:
               source !== undefined
                 ? source //sourcify doesn't support this yet but they're planning it
@@ -86,7 +90,10 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
         )
       ))
     );
-    const constructorArguments = await this.getConstructorArgs(address, matchType);
+    const constructorArguments = await this.getConstructorArgs(
+      address,
+      matchType
+    );
     return {
       contractName: Object.values(metadata.settings.compilationTarget)[0],
       sources,
@@ -129,8 +136,12 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     sourcePath: string,
     matchType: "full" | "partial"
   ): Promise<string> {
+    //note: sourcify replaces special characters in paths with underscores
+    //(special characters here being anything other than ASCII alphanumerics,
+    //hyphens, periods, and forward slashes)
+    const transformedSourcePath = sourcePath.replace(/[^\w.\/-]/g, "_");
     return await this.requestWithRetries<string>({
-      url: `https://${this.domain}/contracts/${matchType}_match/${this.networkId}/${address}/sources/${sourcePath}`,
+      url: `https://${this.domain}/contracts/${matchType}_match/${this.networkId}/${address}/sources/${transformedSourcePath}`,
       responseType: "text",
       method: "get",
       maxRedirects: 50
@@ -164,7 +175,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     requestObject: any //sorry, trying to import the type properly ran into problems
   ): Promise<T> {
     return await retry(
-      async (bail) => {
+      async bail => {
         try {
           return (await axios(requestObject)).data;
         } catch (error) {
