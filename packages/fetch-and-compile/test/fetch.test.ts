@@ -30,7 +30,7 @@ afterEach(function () {
 });
 
 describe("fetchAndCompile", function () {
-  it("verifes contract from mainnet", async function () {
+  it.only("verifes contract from mainnet", async function () {
     const config = Config.default().merge({
       networks: {
         mainnet: {
@@ -54,7 +54,7 @@ describe("fetchAndCompile", function () {
       result.compileResult.compilations[0].contracts;
     assert(
       contractNameCompliations.some(
-        item => item.contractName === "IUniswapV2Factory"
+        item => item.contractName === "UniswapV2Router02"
       )
     );
     assert.equal(contractNameSourceInfo, "UniswapV2Router02");
