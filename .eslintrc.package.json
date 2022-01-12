@@ -1,9 +1,10 @@
 {
   "overrides": [
     {
-      "files": ["./test/**/*.js"],
+      "files": ["./**/test/**/*.[tj]s"],
       "env": {
-        "mocha": true
+        "mocha": true,
+        "jest": true
       }
     }
   ]

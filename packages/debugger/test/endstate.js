@@ -87,7 +87,7 @@ describe("End State", function () {
       provider,
       compilations
     });
-    
+
     await bugger.runToEnd();
 
     assert.ok(bugger.view(evm.transaction.status));

@@ -2,7 +2,7 @@ const assert = require("assert");
 const sinon = require("sinon");
 const path = require("path");
 const originalRequire = require("original-require");
-const runHandler = require("../../lib/commands/run/run");
+const runHandler = require("../../lib/commands/run/runHandler");
 
 describe("run handler", () => {
   let nonCommandPluginsConfig,
@@ -46,7 +46,8 @@ describe("run handler", () => {
   describe("run", () => {
     describe("TruffleError handling", () => {
       it("throws when passed pluginConfigs that don't support a given command", () => {
-        const expectedError = /command not supported by any currently configured plugins/;
+        const expectedError =
+          /command not supported by any currently configured plugins/;
 
         assert.throws(() => {
           runHandler.run("stub", nonCommandPluginsConfig, spyDone);

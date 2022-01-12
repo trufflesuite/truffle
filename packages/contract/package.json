@@ -12,9 +12,10 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "4.4.0",
+  "version": "4.4.3",
   "main": "index.js",
   "scripts": {
+    "build": "yarn compile",
     "compile": "sh -c \"mkdir -p ./dist\" && browserify --debug ./index.js | exorcist ./dist/truffle-contract.js.map > ./dist/truffle-contract.js && uglifyjs ./dist/truffle-contract.js -o ./dist/truffle-contract.min.js",
     "prepare": "yarn compile",
     "publish:next": "node ../truffle/scripts/prereleaseVersion.js next next"
@@ -23,8 +24,8 @@
   "dependencies": {
     "@ensdomains/ensjs": "^2.0.1",
     "@truffle/blockchain-utils": "^0.0.31",
-    "@truffle/contract-schema": "^3.4.3",
-    "@truffle/debug-utils": "^6.0.1",
+    "@truffle/contract-schema": "^3.4.4",
+    "@truffle/debug-utils": "^6.0.4",
     "@truffle/error": "^0.0.14",
     "@truffle/interface-adapter": "^0.5.8",
     "bignumber.js": "^7.2.1",

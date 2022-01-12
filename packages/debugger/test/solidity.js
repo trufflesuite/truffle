@@ -19,8 +19,10 @@ contract SingleCall {
   event Called();
   event Done();
 
-  function run() public {
+  //note this function should call generated sources at startup
+  function run(uint x) public returns (uint) {
     emit Called();
+    return x;
   }
 
   function runSha() public {
@@ -264,11 +266,11 @@ describe("Solidity Debugging", function () {
   });
 
   describe("Function Depth", function () {
-    it("remains at 1 in absence of inner function calls", async function () {
-      const maxExpected = 1;
+    it("remains at 0 in absence of inner function calls", async function () {
+      const maxExpected = 0;
 
       let instance = await abstractions.SingleCall.deployed();
-      let receipt = await instance.run();
+      let receipt = await instance.run(1);
       let txHash = receipt.tx;
 
       let bugger = await Debugger.forTx(txHash, {
@@ -281,6 +283,8 @@ describe("Solidity Debugging", function () {
 
       do {
         await bugger.stepNext();
+        //note that we use stepNext, which skips internal sources...
+        //it may go above 0 while inside an internal source
         finished = bugger.view(trace.finished);
 
         let actual = bugger.view(solidity.current.functionDepth);

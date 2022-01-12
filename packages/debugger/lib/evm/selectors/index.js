@@ -395,10 +395,16 @@ const evm = createSelectorTree({
        * returns function (binary) => context (returns the *ID* of the context)
        * (returns null on no match)
        */
-      search: createLeaf(["/info/contexts"], contexts => binary =>
-        //HACK: the type of contexts doesn't actually match!! fortunately
-        //it's good enough to work
-        (Codec.Contexts.Utils.findContext(contexts, binary) || { context: null }).context
+      search: createLeaf(
+        ["/info/contexts"],
+        contexts => binary =>
+          //HACK: the type of contexts doesn't actually match!! fortunately
+          //it's good enough to work
+          (
+            Codec.Contexts.Utils.findContext(contexts, binary) || {
+              context: null
+            }
+          ).context
       )
     }
   },
@@ -495,7 +501,7 @@ const evm = createSelectorTree({
      */
     state: Object.assign(
       {},
-      ...["depth", "error", "gas", "memory", "stack", "storage"].map(param => ({
+      ...["depth", "error", "gas", "memory", "stack"].map(param => ({
         [param]: createLeaf([trace.step], step => step[param])
       }))
     ),
@@ -733,17 +739,12 @@ const evm = createSelectorTree({
 
       /**
        * evm.current.codex.storage
-       * the current storage, as fetched from the codex... unless we're in a
-       * failed creation call, then we just fall back on the state (which will
-       * work, since nothing else can interfere with the storage of a failed
-       * creation call!)
+       * the current storage, as fetched from the codex
        */
       storage: createLeaf(
-        ["./_", "../state/storage", "../call"],
-        (codex, rawStorage, { storageAddress }) =>
-          storageAddress === Codec.Evm.Utils.ZERO_ADDRESS
-            ? rawStorage //HACK -- if zero address ignore the codex
-            : codex[codex.length - 1].accounts[storageAddress].storage
+        ["./_", "../call"],
+        (codex, { storageAddress }) =>
+          codex[codex.length - 1].accounts[storageAddress].storage
       ),
 
       /*

@@ -25,13 +25,27 @@ export class Vyper implements ResolverSource {
     return null;
   }
 
-  async resolve(importModule: string, importedFrom: string) {
+  async resolve(
+    importModule: string,
+    importedFrom: string,
+    options: { compiler?: { name: string } } = {}
+  ) {
+    const { compiler } = options;
+    if (!compiler || compiler.name !== "vyper") {
+      //this resolver source for use by Vyper only!
+      debug("not Vyper, go away!");
+      return { body: undefined, filePath: undefined };
+    }
+
     importedFrom = importedFrom || "";
 
     debug("importModule: %s", importModule);
     debug("importedFrom: %s", importedFrom);
 
     //attempt to just resolve as if it's a file path rather than Vyper module
+    //(we have to do this rather than just leaving it to the other, unwrapped,
+    //resolver sources, because of resolveDependencyPath... yes, that results
+    //in checking those sources twice on failure :-/ )
     for (const source of this.wrappedSources) {
       const directlyResolvedSource = await source.resolve(
         importModule,
@@ -42,7 +56,8 @@ export class Vyper implements ResolverSource {
         return directlyResolvedSource;
       }
     }
-    //otherwise, it's time for some Vyper module processing...
+    //so if we've made it here, it's time for some Vyper module processing...
+    debug("running Vyper import processing!");
 
     //only attempt this if what we have looks like a Vyper module
     if (!importModule.match(/^[\w.]+$/)) {
@@ -114,7 +129,11 @@ export class Vyper implements ResolverSource {
     //unfortunately, for this sort of source to resolve a dependency path,
     //it's going to need to do a resolve :-/
     debug("importPath: %s", importPath);
-    const resolved = await this.resolve(dependencyPath, importPath);
+    const resolved = await this.resolve(
+      dependencyPath,
+      importPath,
+      { compiler: { name: "vyper" } } //HACK
+    );
     if (resolved) {
       return resolved.filePath;
     } else {

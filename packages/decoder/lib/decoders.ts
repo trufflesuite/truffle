@@ -81,7 +81,9 @@ export class ProjectDecoder {
       definitions: this.referenceDeclarations,
       typesByCompilation: this.userDefinedTypesByCompilation,
       types: this.userDefinedTypes
-    } = Compilations.Utils.collectUserDefinedTypesAndTaggedOutputs(this.compilations));
+    } = Compilations.Utils.collectUserDefinedTypesAndTaggedOutputs(
+      this.compilations
+    ));
 
     ({
       contexts: this.contexts,
@@ -133,7 +135,9 @@ export class ProjectDecoder {
   ): Promise<Uint8Array> {
     //if pending, ignore the cache
     if (block === "pending") {
-      return Conversion.toBytes(await this.providerAdapter.getCode(address, block));
+      return Conversion.toBytes(
+        await this.providerAdapter.getCode(address, block)
+      );
     }
 
     //otherwise, start by setting up any preliminary layers as needed
@@ -145,7 +149,9 @@ export class ProjectDecoder {
       return this.codeCache[block][address];
     }
     //otherwise, get it, cache it, and return it
-    let code = Conversion.toBytes(await this.providerAdapter.getCode(address, block));
+    let code = Conversion.toBytes(
+      await this.providerAdapter.getCode(address, block)
+    );
     this.codeCache[block][address] = code;
     return code;
   }
@@ -163,7 +169,7 @@ export class ProjectDecoder {
       return "pending";
     }
 
-    return parseInt((await this.providerAdapter.getBlockByNumber(block)).number);
+    return (await this.providerAdapter.getBlockByNumber(block)).number;
   }
 
   /**
@@ -698,7 +704,8 @@ export class ContractDecoder {
       //this.contexts (which is normalized) via the context getter below
     } else {
       //if there's no bytecode, allocate output data in ABI mode anyway
-      const referenceDeclarations = this.projectDecoder.getReferenceDeclarations();
+      const referenceDeclarations =
+        this.projectDecoder.getReferenceDeclarations();
       const compiler = this.compilation.compiler || this.contract.compiler;
       this.noBytecodeAllocations = Object.values(
         AbiData.Allocate.getCalldataAllocations(
@@ -738,9 +745,10 @@ export class ContractDecoder {
         this.allocations.state[this.compilation.id] &&
         this.allocations.state[this.compilation.id][this.contractNode.id]
       ) {
-        this.stateVariableReferences = this.allocations.state[
-          this.compilation.id
-        ][this.contractNode.id].members;
+        this.stateVariableReferences =
+          this.allocations.state[this.compilation.id][
+            this.contractNode.id
+          ].members;
       }
       //if it doesn't exist, we will leave it undefined, and then throw an exception when
       //we attempt to decode
@@ -819,9 +827,10 @@ export class ContractDecoder {
     const selector = AbiData.Utils.abiSelector(abi);
     let allocation: AbiData.Allocate.ReturndataAllocation;
     if (this.contextHash !== undefined) {
-      allocation = this.allocations.calldata.functionAllocations[
-        this.contextHash
-      ][selector].output;
+      allocation =
+        this.allocations.calldata.functionAllocations[this.contextHash][
+          selector
+        ].output;
     } else {
       allocation = this.noBytecodeAllocations[selector].output;
     }
@@ -1058,7 +1067,8 @@ export class ContractInstanceDecoder {
     } = this.contractDecoder.getContractInfo());
 
     this.allocations = this.contractDecoder.getAllocations();
-    this.stateVariableReferences = this.contractDecoder.getStateVariableReferences();
+    this.stateVariableReferences =
+      this.contractDecoder.getStateVariableReferences();
 
     //note that if we're in the null artifact case, this.contractAddress should have
     //been set by now, so we shouldn't end up here
@@ -1144,12 +1154,13 @@ export class ContractInstanceDecoder {
       );
       try {
         //this can fail if some of the source files are missing :(
-        this.internalFunctionsTable = SourceMapUtils.getFunctionsByProgramCounter(
-          instructions,
-          asts,
-          asts.map(SourceMapUtils.makeOverlapFunction),
-          this.compilation.id
-        );
+        this.internalFunctionsTable =
+          SourceMapUtils.getFunctionsByProgramCounter(
+            instructions,
+            asts,
+            asts.map(SourceMapUtils.makeOverlapFunction),
+            this.compilation.id
+          );
       } catch (_) {
         //just leave the internal functions table undefined
       }
@@ -1728,9 +1739,10 @@ export class ContractInstanceDecoder {
       case "struct":
         //NOTE: due to the reliance on storage allocations,
         //we don't need to use fullType or what have you
-        let allocation: Storage.Allocate.StorageMemberAllocation = this.allocations.storage[
-          parentType.id
-        ].members.find(({ name }) => name === rawIndex); //there should be exactly one
+        let allocation: Storage.Allocate.StorageMemberAllocation =
+          this.allocations.storage[parentType.id].members.find(
+            ({ name }) => name === rawIndex
+          ); //there should be exactly one
         if (!allocation) {
           throw new MemberNotFoundError(
             rawIndex,

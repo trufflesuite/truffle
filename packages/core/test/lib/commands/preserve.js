@@ -21,11 +21,11 @@ conditionalDescribe("preserve", () => {
 
   // Options propagates to the truffle config object so these contain config properties as well
   const defaultOptions = {
-    "plugins": ["dummy-loader", "dummy-recipe", "truffle-mock"],
-    "working_directory": process.cwd(),
+    plugins: ["dummy-loader", "dummy-recipe", "truffle-mock"],
+    working_directory: process.cwd(),
     "dummy-recipe": true,
-    "_": ["./test/mockPlugins/dummy-loader"],
-    "environments": {
+    _: ["./test/mockPlugins/dummy-loader"],
+    environments: {
       development: {
         "dummy-recipe": {
           selectedEnvironment: "development"
@@ -41,7 +41,7 @@ conditionalDescribe("preserve", () => {
 
   describe("help()", () => {
     it("should contain a flag for all tagged recipes (including defaults)", async () => {
-      const help = await preserveCommand.help(defaultOptions);
+      const help = await preserveCommand.meta.help(defaultOptions);
 
       const expectedFlags = [
         {
@@ -98,7 +98,7 @@ conditionalDescribe("preserve", () => {
     });
 
     it("should throw an error if no recipe dependency path can be found", async () => {
-      const options = { ...defaultOptions, plugins: ["dummy-recipe"]};
+      const options = { ...defaultOptions, plugins: ["dummy-recipe"] };
 
       const expectedError = 'No plugins found that output the label "message".';
 
@@ -132,7 +132,10 @@ conditionalDescribe("preserve", () => {
 
         await preserveCommand.run(options);
 
-        assert.include(output, "Provided path: ./test/mockPlugins/dummy-loader");
+        assert.include(
+          output,
+          "Provided path: ./test/mockPlugins/dummy-loader"
+        );
         assert.include(output, "Provided message: Hello World!");
         assert.include(output, "Provided environment name: development");
       });
@@ -142,7 +145,10 @@ conditionalDescribe("preserve", () => {
 
         await preserveCommand.run(options);
 
-        assert.include(output, "Provided path: ./test/mockPlugins/dummy-loader");
+        assert.include(
+          output,
+          "Provided path: ./test/mockPlugins/dummy-loader"
+        );
         assert.include(output, "Provided message: Hello World!");
         assert.include(output, "Provided environment name: production");
       });

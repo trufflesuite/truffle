@@ -3,7 +3,8 @@ const debug = logger("db:meta:graph:schema");
 
 import gql from "graphql-tag";
 import type * as graphql from "graphql";
-import { makeExecutableSchema, IResolvers } from "graphql-tools";
+import { makeExecutableSchema } from "@graphql-tools/schema";
+import type { IResolvers } from "@graphql-tools/utils";
 
 import type {
   Collections,
@@ -179,13 +180,8 @@ abstract class DefinitionSchema<
 
     const { typeDefs } = this.definition;
 
-    const {
-      resource,
-      resources,
-      Resource,
-      resourcesMutate,
-      ResourcesMutate
-    } = this.definition.names;
+    const { resource, resources, Resource, resourcesMutate, ResourcesMutate } =
+      this.definition.names;
 
     const result = [
       gql`

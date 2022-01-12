@@ -43,7 +43,7 @@ const command = new Command(require("./lib/commands"));
 const listeners = process.listeners("warning");
 listeners.forEach(listener => process.removeListener("warning", listener));
 
-let options = {logger: console};
+let options = { logger: console };
 
 const inputArguments = process.argv.slice(2);
 const userWantsGeneralHelp =
@@ -56,9 +56,7 @@ if (userWantsGeneralHelp) {
 
 command
   .run(inputArguments, options)
-  .then((returnStatus) => {
-    process.exit(returnStatus);
-  })
+  .then(returnStatus => process.exit(returnStatus))
   .catch(error => {
     if (error instanceof TaskError) {
       analytics.send({
@@ -107,6 +105,6 @@ command
       // Bubble up all other unexpected errors.
       console.log(error.stack || error.message || error.toString());
       version.logTruffleAndNode(options.logger);
-    };
+    }
     process.exit(1);
   });

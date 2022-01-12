@@ -9,15 +9,8 @@ const colors = require("colors");
 const Interpreter = require("js-interpreter");
 
 const selectors = require("@truffle/debugger").selectors;
-const {
-  session,
-  solidity,
-  trace,
-  controller,
-  data,
-  evm,
-  stacktrace
-} = selectors;
+const { session, solidity, trace, controller, data, evm, stacktrace } =
+  selectors;
 
 class DebugPrinter {
   constructor(config, session) {
@@ -224,48 +217,54 @@ class DebugPrinter {
     }
 
     this.config.logger.log("Instructions:");
+    if (!instruction || instruction.pc === undefined) {
+      // printout warning message if the debugger does not have the code for this contract
+      this.config.logger.log(
+        `${colors.bold(
+          "Warning:"
+        )} The debugger does not have the code for this contract.`
+      );
+    } else {
+      // printout instructions
+      const previousInstructions = this.instructionLines.beforeLines;
+      const upcomingInstructions = this.instructionLines.afterLines;
+      const currentIndex = instruction.index;
 
-    // printout instructions
-    const previousInstructions = this.instructionLines.beforeLines;
-    const upcomingInstructions = this.instructionLines.afterLines;
-    const currentIndex = instruction.index;
+      // add an ellipse if there exist additional instructions before
+      if (currentIndex - previousInstructions > 0) {
+        this.config.logger.log("...");
+      }
+      // printout 3 previous instructions
+      for (
+        let i = Math.max(currentIndex - previousInstructions, 0);
+        i < currentIndex;
+        i++
+      ) {
+        this.config.logger.log(DebugUtils.formatInstruction(instructions[i]));
+      }
 
-    // add an ellipse if there exist additional instructions before
-    if (currentIndex - previousInstructions > 0) {
-      this.config.logger.log("...");
-    }
-    // printout 3 previous instructions
-    for (
-      let i = Math.max(currentIndex - previousInstructions, 0);
-      i < currentIndex;
-      i++
-    ) {
-      this.config.logger.log(DebugUtils.formatInstruction(instructions[i]));
-    }
+      // printout current instruction
+      this.config.logger.log(DebugUtils.formatCurrentInstruction(instruction));
 
-    // printout current instruction
-    this.config.logger.log(DebugUtils.formatCurrentInstruction(instruction));
+      // printout 3 upcoming instructions
+      for (
+        let i = currentIndex + 1;
+        i <=
+        Math.min(currentIndex + upcomingInstructions, instructions.length - 1);
+        i++
+      ) {
+        this.config.logger.log(DebugUtils.formatInstruction(instructions[i]));
+      }
 
-    // printout 3 upcoming instructions
-    for (
-      let i = currentIndex + 1;
-      i <= Math.min(currentIndex + upcomingInstructions, instructions.length - 1);
-      i++
-    ) {
-      this.config.logger.log(DebugUtils.formatInstruction(instructions[i]));
-    }
-
-    // add an ellipse if there exist additional instructions after
-    if (currentIndex + upcomingInstructions < instructions.length - 1) {
-      this.config.logger.log("...");
+      // add an ellipse if there exist additional instructions after
+      if (currentIndex + upcomingInstructions < instructions.length - 1) {
+        this.config.logger.log("...");
+      }
     }
 
     this.config.logger.log("");
     this.config.logger.log(
-      "Step " +
-      (traceIndex + 1).toString() +
-      "/" +
-      totalSteps.toString()
+      "Step " + (traceIndex + 1).toString() + "/" + totalSteps.toString()
     );
     this.config.logger.log(step.gas + " gas remaining");
   }
@@ -351,8 +350,9 @@ class DebugPrinter {
             );
             break;
           case "revert":
-            const signature =
-              Codec.AbiData.Utils.abiSignature(revertDecoding.abi);
+            const signature = Codec.AbiData.Utils.abiSignature(
+              revertDecoding.abi
+            );
             switch (signature) {
               case "Error(string)":
                 const revertStringInfo =
@@ -390,7 +390,9 @@ class DebugPrinter {
                 break;
               default:
                 this.config.logger.log("The following error was thrown:");
-                this.config.logger.log(DebugUtils.formatCustomError(revertDecoding, 2));
+                this.config.logger.log(
+                  DebugUtils.formatCustomError(revertDecoding, 2)
+                );
             }
             break;
         }
@@ -401,7 +403,7 @@ class DebugPrinter {
         );
         this.config.logger.log("Possible interpretations:");
         for (const decoding of revertDecodings) {
-          this.config.logger.log(DebugUtils.formatCustomError(revertDecoding, 2));
+          this.config.logger.log(DebugUtils.formatCustomError(decoding, 2));
         }
         break;
     }
@@ -530,8 +532,10 @@ class DebugPrinter {
       decodings.filter(decoding => decoding.kind === "revert").length > 1
     ) {
       //case 10: ambiguous revert with message
-      this.config.logger.log("Ambiguous error thrown, possible interpretations:");
-      for (const decoding of revertDecodings) {
+      this.config.logger.log(
+        "Ambiguous error thrown, possible interpretations:"
+      );
+      for (const decoding of decodings) {
         if (decoding.kind !== "revert") {
           break;
         }
@@ -663,8 +667,8 @@ class DebugPrinter {
     for (const [section, variables] of Object.entries(sections)) {
       // only check the first 3 characters of each name given in the input sectionPrintouts
       // since each section name defined in the constructor contains 3 characters
-      const printThisSection = sectionOuts.has(section.slice(0,3));
-      if ( printThisSection && (variables.length > 0) ) {
+      const printThisSection = sectionOuts.has(section.slice(0, 3));
+      if (printThisSection && variables.length > 0) {
         this.config.logger.log(sectionNames[section] + ":");
         // Get the length of the longest name.
         const longestNameLength = variables.reduce((longest, name) => {
