@@ -24,15 +24,18 @@ export function makeFilename(name: string, extension: string = ".sol"): string {
   }
 }
 
-export const makeTimer: (
-  milliseconds: number
-) => Promise<void> = util.promisify(setTimeout);
+export const makeTimer: (milliseconds: number) => Promise<void> =
+  util.promisify(setTimeout);
 
 export function removeLibraries(
-  settings: Types.SolcSettings
+  settings: Types.SolcSettings,
+  alsoRemoveCompilationTarget: boolean = false
 ): Types.SolcSettings {
   let copySettings: Types.SolcSettings = { ...settings };
   delete copySettings.libraries;
+  if (alsoRemoveCompilationTarget) {
+    delete copySettings.compilationTarget;
+  }
   return copySettings;
 }
 

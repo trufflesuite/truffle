@@ -94,13 +94,16 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
       address,
       matchType
     );
+    debug("compilationTarget: %O", metadata.settings.compilationTarget);
     return {
       contractName: Object.values(metadata.settings.compilationTarget)[0],
       sources,
       options: {
         language: metadata.language,
         version: metadata.compiler.version,
-        settings: removeLibraries(metadata.settings),
+        //we also pass the flag to remove compilationTarget, as its
+        //presence can cause compile errors
+        settings: removeLibraries(metadata.settings, true),
         specializations: {
           constructorArguments,
           libraries: metadata.settings.libraries
