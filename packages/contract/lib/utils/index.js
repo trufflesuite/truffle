@@ -133,22 +133,31 @@ const Utils = {
   },
 
   // Extracts optional tx params from a list of fn arguments
-  getTxParams(methodABI, args) {
+  getTxParams(methodABI, args, ignoreDefaultGasPriceParams = false) {
     const constructor = this;
 
     const expectedArgCount = methodABI ? methodABI.inputs.length : 0;
 
-    let tx_params = {};
+    let txParams = {};
     const lastArg = args[args.length - 1];
 
-    if (
-      args.length === expectedArgCount + 1 &&
-      Utils.isTxParams(lastArg)
-    ) {
-      tx_params = args.pop();
+    if (args.length === expectedArgCount + 1 && Utils.isTxParams(lastArg)) {
+      txParams = args.pop();
     }
 
-    return Utils.merge(constructor.class_defaults, tx_params);
+    let defaultParams = constructor.class_defaults;
+    if (ignoreDefaultGasPriceParams) {
+      //this parameter is set when making calls (as opposed to transactions)
+      //gas price params can cause problems with those on some networks, so
+      //we ignore any defaults, and only include them if they were explicitly
+      //specified
+      defaultParams = { ...constructor.class_defaults }; //clone
+      delete defaultParams.gasPrice;
+      delete defaultParams.maxFeePerGas;
+      delete defaultParams.maxPriorityFeePerGas;
+    }
+
+    return Utils.merge(defaultParams, txParams);
   },
 
   // Verifies that a contracts libraries have been linked correctly.
@@ -160,9 +169,11 @@ const Utils = {
 
     if (unlinkedLibraries !== null) {
       unlinkedLibraries = unlinkedLibraries
-        .map((
-          name // Remove underscores
-        ) => name.replace(/_/g, ""))
+        .map(
+          (
+            name // Remove underscores
+          ) => name.replace(/_/g, "")
+        )
         .sort()
         .filter((name, index, arr) => {
           // Remove duplicates
@@ -174,11 +185,7 @@ const Utils = {
         })
         .join(", ");
 
-      const error = `${
-        constructor.contractName
-      } contains unresolved libraries. You must deploy and link the following libraries before you can deploy a new version of ${
-        constructor.contractName
-      }: ${unlinkedLibraries}`;
+      const error = `${constructor.contractName} contains unresolved libraries. You must deploy and link the following libraries before you can deploy a new version of ${constructor.contractName}: ${unlinkedLibraries}`;
 
       throw new Error(error);
     }
