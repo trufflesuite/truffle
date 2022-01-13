@@ -10,12 +10,12 @@ const runConsole = async (config, ganacheOptions) => {
 
   const consoleCommands = Object.keys(commands).reduce((acc, name) => {
     return !excluded.has(name)
-      ? Object.assign(acc, {[name]: commands[name]})
+      ? Object.assign(acc, { [name]: commands[name] })
       : acc;
   }, {});
 
   await Environment.develop(config, ganacheOptions);
-  const c = new Console(consoleCommands, config.with({noAliases: true}));
+  const c = new Console(consoleCommands, config.with({ noAliases: true }));
   c.on("exit", () => process.exit());
   return await c.start();
 };
@@ -39,6 +39,7 @@ module.exports = async options => {
     "Ensure you do not use it on production blockchains, or else you risk losing funds.";
 
   const ipcOptions = { log: options.log };
+  const minerOptions = customConfig.miner || {};
 
   const ganacheOptions = {
     host: customConfig.host || "127.0.0.1",
@@ -53,8 +54,7 @@ module.exports = async options => {
     gasPrice: customConfig.gasPrice || 0x77359400,
     time: config.genesis_time,
     vmErrorsOnRPCResponse: customConfig.vmErrorsOnRPCResponse || false,
-    legacyInstamine: customConfig.legacyInstamine || false,
-    _chainId: 1337 //temporary until Ganache v3!
+    miner: minerOptions
   };
 
   if (customConfig.hardfork !== null && customConfig.hardfork !== undefined) {
