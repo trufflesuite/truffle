@@ -20,12 +20,13 @@ let ganacheOptions,
 describe("ENS class", () => {
   before(() => {
     ganacheOptions = {
+      // note that when vmErrorsOnRPCResponse is true, eager instamine must be enabled (default)
       vmErrorsOnRPCResponse: true,
-      legacyInstamine: true,
       mnemonic:
         "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
       total_accounts: 1,
-      default_ether_balance: 100
+      default_ether_balance: 100,
+      logging: { quiet: true }
     };
     server = Ganache.server(ganacheOptions);
     server.listen(8545, () => {});
