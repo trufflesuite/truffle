@@ -20,7 +20,12 @@ describe("Deployer (sync)", function() {
   let IsLibrary;
   let UsesLibrary;
 
-  const provider = ganache.provider();
+  const provider = ganache.provider({
+    miner: {
+      instamine: "strict"
+    },
+    logging: { quiet: true }
+  });
 
   const mockMigration = {
     emitter: new EventEmitter()
