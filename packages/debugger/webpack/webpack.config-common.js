@@ -1,10 +1,9 @@
 const path = require("path");
-const webpack = require("webpack");
 const nodeExternals = require("webpack-node-externals");
 
 module.exports = {
   entry: "./debugger.js",
-  devtool: false,
+  devtool: "source-map",
   target: "node",
 
   module: {
@@ -40,17 +39,6 @@ module.exports = {
     devtoolModuleFilenameTemplate: "[absolute-resource-path]",
     devtoolFallbackModuleFilenameTemplate: "[absolute-resource-path]?[hash]"
   },
-
-  plugins: [
-    new webpack.SourceMapDevToolPlugin({
-      test: /\.js$/,
-      moduleFilenameTemplate: "[resource-path]",
-      fallbackModuleFilenameTemplate: "[absolute-resource-path]?[hash]",
-      module: true,
-      filename: "debugger.js.map",
-      sourceRoot: "../"
-    })
-  ],
 
   resolve: {
     modules: [path.resolve(__dirname, ".."), "node_modules"]
