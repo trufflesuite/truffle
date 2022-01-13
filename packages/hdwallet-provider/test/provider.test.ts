@@ -12,7 +12,14 @@ describe("HD Wallet Provider", function () {
   let provider: HDWalletProvider;
 
   before(done => {
-    server = Ganache.server();
+    server = Ganache.server({
+      miner: {
+        instamine: "strict"
+      },
+      logging: {
+        quiet: true
+      }
+    });
     server.listen(port, done);
   });
 

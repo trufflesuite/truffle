@@ -83,7 +83,11 @@ describe("HD Wallet Provider Validator", () => {
     });
 
     it("a provider", () => {
-      const provider = Ganache.provider();
+      const provider = Ganache.provider({
+        miner: {
+          instamine: "strict"
+        }
+      });
       assert.ok(
         isValidProvider(provider),
         "Good provider should pass validation."
