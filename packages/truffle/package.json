@@ -42,7 +42,7 @@
     "@truffle/debugger": "^9.2.11",
     "app-module-path": "^2.2.0",
     "mocha": "8.1.2",
-    "ganache": "7.0.0-beta.2",
+    "ganache": "7.0.0-rc.0",
     "original-require": "^1.0.1"
   },
   "devDependencies": {
