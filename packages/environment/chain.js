@@ -35,12 +35,6 @@ try {
 
 options.time = options.time ? new Date(options.time) : new Date();
 
-// by making vmErrorsOnRPCResponse = true and legacyInstamine = true,
-// ganache's error reporting and mining behavior
-// is mostly restored to the way it worked in v2.
-options.vmErrorsOnRPCResponse = "vmErrorsOnRPCResponse" in options ? options.vmErrorsOnRPCResponse : false;
-options.legacyInstamine = "legacyInstamine" in options ? options.legacyInstamine : false;
-
 /*
  * Logging
  */
@@ -138,14 +132,14 @@ class Supervisor {
     const basename = `${ipc.config.appspace}${ipc.config.id}`;
     const servePath = path.join(dirname, basename);
 
-    ipc.serve(servePath, function() {
+    ipc.serve(servePath, function () {
       self.handle("start", arguments);
 
-      ipc.server.on("connect", function() {
+      ipc.server.on("connect", function () {
         self.handle("connect", arguments);
       });
 
-      ipc.server.on("socket.disconnected", function() {
+      ipc.server.on("socket.disconnected", function () {
         self.handle("disconnect", arguments);
       });
     });
