@@ -3,11 +3,10 @@ const util = require("./util");
 
 describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
   let Example;
-  // legacyInstamine mode must be enabled whenever vmErrorsOnRPCResponse is true
   const providerOptions = {
-    legacyInstamine: true,
     hardfork: "istanbul",
-    vmErrorsOnRPCResponse: true // <--- TRUE
+    // ganache must use it's default instamine mode (eager) when the following is true
+    vmErrorsOnRPCResponse: true
   };
 
   before(async function () {
@@ -139,7 +138,10 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
         await example.setValue(10, { gas: 10 });
         assert.fail();
       } catch (e) {
-        assert(e.message.includes("intrinsic gas too low"), "Error should be OOG");
+        assert(
+          e.message.includes("intrinsic gas too low"),
+          "Error should be OOG"
+        );
       }
     });
 
