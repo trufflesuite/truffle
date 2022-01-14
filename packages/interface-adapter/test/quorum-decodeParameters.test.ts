@@ -15,6 +15,9 @@ async function prepareGanache(
     const server = Ganache.server({
       miner: {
         instamine: "strict"
+      },
+      logging: {
+        quiet: true
       }
     });
     server.listen(port, () => {

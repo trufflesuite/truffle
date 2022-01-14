@@ -16,7 +16,10 @@ async function prepareGanache(
 ): Promise<{ server: Server; interfaceAdapter: InterfaceAdapter }> {
   return new Promise((resolve, reject) => {
     const server = Ganache.server({
-      time: genesisBlockTime
+      time: genesisBlockTime,
+      logging: {
+        quiet: true
+      }
     });
     server.listen(port, () => {
       const interfaceAdapter = createInterfaceAdapter({

@@ -9,7 +9,14 @@ describe("Provider", function() {
   const host = "127.0.0.1";
 
   before("Initialize Ganache server", done => {
-    server = Ganache.server({});
+    server = Ganache.server({
+      miner: {
+        instamine: "strict"
+      },
+      logging: {
+        quiet: true
+      }
+    });
     server.listen(port, function(err) {
       assert.ifError(err);
       done();

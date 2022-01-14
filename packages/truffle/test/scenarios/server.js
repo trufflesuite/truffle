@@ -10,7 +10,12 @@ module.exports = {
       if (!process.env.GETH) {
         server = Ganache.server({
           gasLimit: 6721975,
-          logging: { quiet: true }
+          logging: {
+            quiet: true
+          },
+          miner: {
+            instamine: "strict"
+          }
         });
         server.listen(8545, done);
       } else {
@@ -19,7 +24,7 @@ module.exports = {
     });
   },
   stop: function (done) {
-    var self = this;
+    const self = this;
     if (server) {
       server.close().then(function () {
         server = null;
