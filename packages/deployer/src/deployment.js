@@ -275,10 +275,10 @@ class Deployment {
    * @param  {Array}  args      Constructor arguments
    * @return {Promise}          Resolves an instance
    */
-  executeDeployment(contract, args) {
+  executeDeployment1(contract, args) {
     const self = this;
 
-    return async function() {
+    return async function () {
       await self._preFlightCheck(contract);
 
       let instance;
@@ -356,9 +356,7 @@ class Deployment {
           // Reporter might not be enabled (via Migrate.launchReporter) so
           // message is a (potentially empty) array of results from the emitter
           if (!message.length) {
-            message = `while migrating ${contract.contractName}: ${
-              eventArgs.error.message
-            }`;
+            message = `while migrating ${contract.contractName}: ${eventArgs.error.message}`;
           }
 
           self.close();
@@ -393,6 +391,127 @@ class Deployment {
       contract.transactionHash = instance.transactionHash;
       return instance;
     };
+  }
+
+  /**
+   *
+   * @param  {Object} contract  Contract abstraction
+   * @param  {Array}  args      Constructor arguments
+   * @return {Promise}          Resolves an instance
+   */
+  async executeDeployment(contract, args) {
+    const self = this;
+
+    await self._preFlightCheck(contract);
+
+    let instance;
+    let eventArgs;
+    let shouldDeploy = true;
+    let state = {
+      contractName: contract.contractName
+    };
+
+    const isDeployed = contract.isDeployed();
+    const newArgs = await Promise.all(args);
+    const currentBlock = await contract.interfaceAdapter.getBlock("latest");
+
+    // Last arg can be an object that tells us not to overwrite.
+    if (newArgs.length > 0) {
+      shouldDeploy = self._canOverwrite(newArgs, isDeployed);
+    }
+
+    // Case: deploy:
+    if (shouldDeploy) {
+      /*
+        Set timeout override. If this value is zero,
+        @truffle/contract will defer to web3's defaults:
+        - 50 blocks (websockets) OR 50 * 15sec (http)
+      */
+      contract.timeoutBlocks = self.timeoutBlocks;
+
+      eventArgs = {
+        state: state,
+        contract: contract,
+        deployed: isDeployed,
+        blockLimit: currentBlock.gasLimit,
+        gas: self._extractFromArgs(newArgs, "gas") || contract.defaults().gas,
+        gasPrice:
+          self._extractFromArgs(newArgs, "gasPrice") ||
+          contract.defaults().gasPrice,
+        from: self._extractFromArgs(newArgs, "from") || contract.defaults().from
+      };
+
+      // Get an estimate for previews / detect constructor revert
+      // NB: web3 does not strip the revert msg here like it does for `deploy`
+      try {
+        eventArgs.estimate = await contract.new.estimateGas.apply(
+          contract,
+          newArgs
+        );
+      } catch (err) {
+        eventArgs.estimateError = err;
+      }
+
+      // Emit `preDeploy` & send transaction
+      await self.emitter.emit("preDeploy", eventArgs);
+      const promiEvent = contract.new.apply(contract, newArgs);
+
+      // Track emitters for cleanup on exit
+      self.promiEventEmitters.push(promiEvent);
+
+      // Subscribe to contract events / rebroadcast them to any reporters
+      promiEvent
+        .on("transactionHash", self._hashCb.bind(promiEvent, self, state))
+        .on("receipt", self._receiptCb.bind(promiEvent, self, state));
+
+      await self._startBlockPolling(contract.interfaceAdapter);
+
+      // Get instance (or error)
+      try {
+        instance = await promiEvent;
+        self._stopBlockPolling();
+      } catch (err) {
+        self._stopBlockPolling();
+        eventArgs.error = err.error || err;
+        let message = await self.emitter.emit("deployFailed", eventArgs);
+
+        // Reporter might not be enabled (via Migrate.launchReporter) so
+        // message is a (potentially empty) array of results from the emitter
+        if (!message.length) {
+          message = `while migrating ${contract.contractName}: ${eventArgs.error.message}`;
+        }
+
+        self.close();
+        throw new Error(message);
+      }
+
+      // Case: already deployed
+    } else {
+      instance = await contract.deployed();
+    }
+
+    // Emit `postDeploy`
+    eventArgs = {
+      contract: contract,
+      instance: instance,
+      deployed: shouldDeploy,
+      receipt: state.receipt
+    };
+
+    await self.emitter.emit("postDeploy", eventArgs);
+
+    // Wait for `n` blocks
+    if (self.confirmations !== 0 && shouldDeploy) {
+      await self._waitBlocks(
+        self.confirmations,
+        state,
+        contract.interfaceAdapter
+      );
+    }
+    // Finish: Ensure the address and tx-hash are set on the contract.
+    contract.address = instance.address;
+    contract.transactionHash = instance.transactionHash;
+    return instance;
   }
 
   /**

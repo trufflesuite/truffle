@@ -49,11 +49,19 @@ class Deployer extends Deployment {
     return this.queueOrExec(link(library, destinations, this));
   }
 
-  deploy() {
+  deploy1() {
     const args = Array.prototype.slice.call(arguments);
     const contract = args.shift();
 
     return this.queueOrExec(this.executeDeployment(contract, args, this));
+  }
+
+  async deploy() {
+    const args = Array.prototype.slice.call(arguments);
+    const contract = args.shift();
+
+    let instance = await this.executeDeployment(contract, args, this);
+    return instance;
   }
 
   new() {
