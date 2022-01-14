@@ -1,17 +1,17 @@
-const arbitrumDataAbi = require("./abi/arbitrum.abi");
-const arbitrumDataSol = require("./sol/arbitrum.sol");
-const polygonDataSol = require("./sol/polygon.sol");
-const polygonDataAbi = require("./abi/polygon.abi");
-const mainnetDataAbi = require("./abi/mainnet.abi");
-const mainnetDataSol = require("./sol/mainnet.sol");
+const fs = require("fs");
+const path = require("path");
 
 const mainnetData = {
   status: "1",
   message: "OK-Missing/Invalid API Key, rate limit of 1/5sec applied",
   result: [
     {
-      SourceCode: mainnetDataSol,
-      ABI: mainnetDataAbi,
+      SourceCode: fs
+        .readFileSync(path.resolve(__dirname, "./sol/mainnet.sol"))
+        .toString(),
+      ABI: fs
+        .readFileSync(path.resolve(__dirname, "./abi/mainnet.abi.json"))
+        .toString(),
       ContractName: "UniswapV2Router02",
       CompilerVersion: "v0.6.6+commit.6c089d02",
       OptimizationUsed: "1",
@@ -33,9 +33,13 @@ const arbitrumData = {
   message: "OK",
   result: [
     {
-      SourceCode: arbitrumDataSol,
-      ABI: arbitrumDataAbi,
-      ContractName: "stARBIS",
+      SourceCode: fs
+        .readFileSync(path.resolve(__dirname, "./sol/arbitrum.sol"))
+        .toString(),
+      ABI: fs
+        .readFileSync(path.resolve(__dirname, "./abi/arbitrum.abi.json"))
+        .toString(),
+      ContractName: "Storage",
       CompilerVersion: "v0.8.4+commit.c7e474f2",
       OptimizationUsed: "1",
       Runs: "1000",
@@ -55,8 +59,12 @@ const polygonData = {
   message: "OK-Missing/Invalid API Key, rate limit of 1/5sec applied",
   result: [
     {
-      SourceCode: polygonDataSol,
-      ABI: polygonDataAbi,
+      SourceCode: fs
+        .readFileSync(path.resolve(__dirname, "./sol/polygon.sol"))
+        .toString(),
+      ABI: fs
+        .readFileSync(path.resolve(__dirname, "./abi/polygon.abi.json"))
+        .toString(),
       ContractName: "GrowthVault",
       CompilerVersion: "v0.8.9+commit.e5eed63a",
       OptimizationUsed: "1",
