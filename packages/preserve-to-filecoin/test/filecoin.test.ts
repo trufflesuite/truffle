@@ -19,7 +19,15 @@ describe("preserve", () => {
   let ganacheServer: any;
 
   beforeAll(async () => {
-    ganacheServer = Ganache.server({ flavor: "filecoin" });
+    ganacheServer = Ganache.server({
+      flavor: "filecoin",
+      miner: {
+        instamine: "strict"
+      },
+      logging: {
+        quiet: true
+      }
+    });
     await ganacheServer.provider.blockchain.waitForReady();
     await ganacheServer.listen(7777);
   });
