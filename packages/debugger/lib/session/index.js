@@ -220,9 +220,8 @@ export default class Session {
         //note: simpleShimSourceMap does not handle the case where we can't just extract
         //the Solidity-style source map
         sourceMap = Codec.Compilations.Utils.simpleShimSourceMap(sourceMap);
-        deployedSourceMap = Codec.Compilations.Utils.simpleShimSourceMap(
-          deployedSourceMap
-        );
+        deployedSourceMap =
+          Codec.Compilations.Utils.simpleShimSourceMap(deployedSourceMap);
 
         if (binary && binary != "0x") {
           //NOTE: we take hash as *string*, not as bytes, because the binary may
@@ -250,6 +249,7 @@ export default class Session {
             for (let index in generatedSources) {
               index = Number(index); //it comes out as a string due to in, so let's fix that
               const source = generatedSources[index];
+              // VSCode extension breaks w/o this check
               if (source) {
                 sources.internal[contextHash][index] = {
                   ...source,
@@ -292,6 +292,7 @@ export default class Session {
             for (let index in deployedGeneratedSources) {
               index = Number(index); //it comes out as a string due to in, so let's fix that
               const source = deployedGeneratedSources[index];
+              // VSCode extension breaks w/o this check
               if (source) {
                 sources.internal[contextHash][index] = {
                   ...source,
