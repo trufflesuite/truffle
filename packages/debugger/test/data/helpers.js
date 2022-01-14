@@ -2,11 +2,11 @@ import debugModule from "debug";
 const debug = debugModule("debugger:test:data:decode");
 
 import Ganache from "ganache";
-import {assert} from "chai";
+import { assert } from "chai";
 import changeCase from "change-case";
 import * as Codec from "@truffle/codec";
 
-import {prepareContracts} from "test/helpers";
+import { prepareContracts } from "test/helpers";
 
 import Debugger from "lib/debugger";
 
@@ -29,7 +29,7 @@ function fileName(testName) {
 }
 
 function generateTests(fixtures) {
-  for (let {name, value: expected} of fixtures) {
+  for (let { name, value: expected } of fixtures) {
     it(`correctly decodes ${name}`, async () => {
       const response = await this.decode(name);
       assert.deepEqual(response, expected);
@@ -48,15 +48,27 @@ function lastStatementLine(source) {
 }
 
 async function prepareDebugger(testName, sources) {
-  const provider = Ganache.provider({seed: "debugger", gasLimit: 7000000});
+  const provider = Ganache.provider({
+    seed: "debugger",
+    gasLimit: 7000000,
+    logging: {
+      quiet: true
+    },
+    miner: {
+      instamine: "strict"
+    }
+  });
 
-  let {abstractions, compilations} = await prepareContracts(provider, sources);
+  let { abstractions, compilations } = await prepareContracts(
+    provider,
+    sources
+  );
 
   let instance = await abstractions[contractName(testName)].deployed();
   let receipt = await instance.run();
   let txHash = receipt.tx;
 
-  let bugger = await Debugger.forTx(txHash, {provider, compilations});
+  let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
   let source = sources[fileName(testName)];
 
@@ -80,7 +92,9 @@ async function prepareDebugger(testName, sources) {
 }
 
 async function decode(name) {
-  return Codec.Format.Utils.Inspect.unsafeNativize(await this.session.variable(name));
+  return Codec.Format.Utils.Inspect.unsafeNativize(
+    await this.session.variable(name)
+  );
 }
 
 export function describeDecoding(testName, fixtures, selector, generateSource) {

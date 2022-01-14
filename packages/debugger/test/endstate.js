@@ -47,7 +47,12 @@ describe("End State", function () {
     provider = Ganache.provider({
       seed: "debugger",
       gasLimit: 7000000,
-      logging: { quiet: true }
+      logging: {
+        quiet: true
+      },
+      miner: {
+        instamine: "strict"
+      }
     });
   });
 

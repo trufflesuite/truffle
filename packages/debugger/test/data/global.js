@@ -160,7 +160,13 @@ describe("Globally-available variables", function () {
     provider = Ganache.provider({
       seed: "debugger",
       gasLimit: 7000000,
-      hardfork: "istanbul"
+      hardfork: "istanbul",
+      logging: {
+        quiet: true
+      },
+      miner: {
+        instamine: "strict"
+      }
     });
   });
 
