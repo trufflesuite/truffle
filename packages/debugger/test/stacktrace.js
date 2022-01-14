@@ -107,7 +107,12 @@ describe("Stack tracing", function () {
     provider = Ganache.provider({
       seed: "debugger",
       gasLimit: 7000000,
-      logging: { quiet: true }
+      logging: {
+        quiet: true
+      },
+      miner: {
+        instamine: "strict"
+      }
     });
   });
 
@@ -341,7 +346,7 @@ describe("Stack tracing", function () {
     let contractNames = report.map(({ contractName }) => contractName);
     assert.isUndefined(contractNames[contractNames.length - 1]);
     assert.isUndefined(contractNames[contractNames.length - 2]);
-    assert(contractNames.slice(0,-2).every(name => name === "StacktraceTest"));
+    assert(contractNames.slice(0, -2).every(name => name === "StacktraceTest"));
     let addresses = report.map(({ address }) => address);
     assert(addresses.every(address => address === instance.address));
     let status = report[report.length - 1].status;

@@ -51,13 +51,21 @@ let sources = {
 };
 
 describe("Assembly decoding", function () {
-  var provider;
-
-  var abstractions;
-  var compilations;
+  let provider;
+  let abstractions;
+  let compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
+    provider = Ganache.provider({
+      seed: "debugger",
+      gasLimit: 7000000,
+      miner: {
+        instamine: "strict"
+      },
+      logging: {
+        quiet: true
+      }
+    });
   });
 
   before("Prepare contracts and artifacts", async function () {
@@ -101,7 +109,9 @@ describe("Assembly decoding", function () {
       );
 
     let variables = numberize(
-      Codec.Format.Utils.Inspect.unsafeNativizeVariables(await bugger.variables())
+      Codec.Format.Utils.Inspect.unsafeNativizeVariables(
+        await bugger.variables()
+      )
     );
 
     let expectedResult = {
@@ -119,7 +129,9 @@ describe("Assembly decoding", function () {
     await bugger.continueUntilBreakpoint();
 
     variables = numberize(
-      Codec.Format.Utils.Inspect.unsafeNativizeVariables(await bugger.variables())
+      Codec.Format.Utils.Inspect.unsafeNativizeVariables(
+        await bugger.variables()
+      )
     );
 
     expectedResult = {
@@ -138,7 +150,9 @@ describe("Assembly decoding", function () {
     await bugger.continueUntilBreakpoint();
 
     variables = numberize(
-      Codec.Format.Utils.Inspect.unsafeNativizeVariables(await bugger.variables())
+      Codec.Format.Utils.Inspect.unsafeNativizeVariables(
+        await bugger.variables()
+      )
     );
 
     expectedResult = {

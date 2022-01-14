@@ -157,7 +157,12 @@ describe("Return value decoding", function () {
     provider = Ganache.provider({
       seed: "debugger",
       gasLimit: 7000000,
-      logging: { quiet: true }
+      miner: {
+        instamine: "strict"
+      },
+      logging: {
+        quiet: true
+      }
     });
   });
 
@@ -356,11 +361,13 @@ describe("Return value decoding", function () {
     const outputs = decoding.arguments;
     assert.lengthOf(outputs, 1);
     assert.isUndefined(outputs[0].name);
-    const panicCode = Codec.Format.Utils.Inspect.unsafeNativize(outputs[0].value);
+    const panicCode = Codec.Format.Utils.Inspect.unsafeNativize(
+      outputs[0].value
+    );
     assert.strictEqual(panicCode, 1);
   });
 
-  describe("Custom errors", function() {
+  describe("Custom errors", function () {
     it("Decodes custom errors", async function () {
       this.timeout(9000);
 

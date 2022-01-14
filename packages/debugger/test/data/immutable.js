@@ -68,13 +68,21 @@ let sources = {
 };
 
 describe("Immutable state variables", function () {
-  var provider;
-
-  var abstractions;
-  var compilations;
+  let provider;
+  let abstractions;
+  let compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
+    provider = Ganache.provider({
+      seed: "debugger",
+      gasLimit: 7000000,
+      miner: {
+        instamine: "strict"
+      },
+      logging: {
+        quiet: true
+      }
+    });
   });
 
   before("Prepare contracts and artifacts", async function () {
