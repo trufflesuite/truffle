@@ -30,7 +30,7 @@ afterEach(function () {
 });
 
 describe("fetchAndCompile", function () {
-  it.only("verifies contract from mainnet", async function () {
+  it("verifies contract from mainnet", async function () {
     const config = Config.default().merge({
       networks: {
         mainnet: {
