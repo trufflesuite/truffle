@@ -30,7 +30,7 @@ afterEach(function () {
 });
 
 describe("fetchAndCompile", function () {
-  it("verifes contract from mainnet", async function () {
+  it.only("verifies contract from mainnet", async function () {
     const config = Config.default().merge({
       networks: {
         mainnet: {
@@ -49,17 +49,17 @@ describe("fetchAndCompile", function () {
     //@ts-ignore
     axios.get.callThrough();
     const result = await fetchAndCompile(address, config);
-    let contractNameSourceInfo = result.sourceInfo.contractName;
-    let contractNameCompliations =
+    const contractNameFromResult = result.sourceInfo.contractName;
+    const contractsFromCompilation =
       result.compileResult.compilations[0].contracts;
     assert(
-      contractNameCompliations.some(
+      contractsFromCompilation.some(
         item => item.contractName === "UniswapV2Router02"
       )
     );
-    assert.equal(contractNameSourceInfo, "UniswapV2Router02");
+    assert.equal(contractNameFromResult, "UniswapV2Router02");
   });
-  it("verifes contract from arbitrum", async function () {
+  it("verifies contract from arbitrum", async function () {
     const config = Config.default().merge({
       networks: {
         arbitrum: {
@@ -68,7 +68,7 @@ describe("fetchAndCompile", function () {
       },
       network: "arbitrum"
     });
-    const address = "0xBf00759D7E329d7A7fa1D4DCdC914C53d1d2db86";
+    const address = "0x2B52D1B2b359eA39536069D8c6f2a3CFE3a09c31";
     //asserting that arbitrum url and contract address is passed as args
     stubAxiosGetMethod(
       "https://api.arbiscan.io/api",
@@ -79,15 +79,15 @@ describe("fetchAndCompile", function () {
     //@ts-ignore
     axios.get.callThrough();
     const result = await fetchAndCompile(address, config);
-    let contractNameSourceInfo = result.sourceInfo.contractName;
-    let contractNameCompliations =
+    const contractNameFromResult = result.sourceInfo.contractName;
+    const contractsFromCompilation =
       result.compileResult.compilations[0].contracts;
     assert(
-      contractNameCompliations.some(item => item.contractName === "stARBIS")
+      contractsFromCompilation.some(item => item.contractName === "Storage")
     );
-    assert.equal(contractNameSourceInfo, "stARBIS");
+    assert.equal(contractNameFromResult, "Storage");
   });
-  it("verfies contract from polygon", async function () {
+  it("verifies contract from polygon", async function () {
     const config = Config.default().merge({
       networks: {
         polygon: {
@@ -107,12 +107,12 @@ describe("fetchAndCompile", function () {
     //@ts-ignore
     axios.get.callThrough();
     const result = await fetchAndCompile(address, config);
-    let contractNameSourceInfo = result.sourceInfo.contractName;
-    let contractNameCompliations =
+    const contractNameFromResult = result.sourceInfo.contractName;
+    const contractsFromCompilation =
       result.compileResult.compilations[0].contracts;
     assert(
-      contractNameCompliations.some(item => item.contractName === "GrowthVault")
+      contractsFromCompilation.some(item => item.contractName === "GrowthVault")
     );
-    assert.equal(contractNameSourceInfo, "GrowthVault");
+    assert.equal(contractNameFromResult, "GrowthVault");
   });
 });
