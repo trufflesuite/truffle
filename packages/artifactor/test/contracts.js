@@ -15,7 +15,11 @@ tmp.setGracefulCleanup();
 
 describe("artifactor + require", () => {
   let Example, accounts, abi, bytecode, networkID, artifactor, config;
-  const provider = Ganache.provider();
+  const provider = Ganache.provider({
+    miner: {
+      instamine: "strict"
+    }
+  });
   const web3 = new Web3();
   web3.setProvider(provider);
 
