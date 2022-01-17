@@ -18,7 +18,11 @@ describe("TruffleContract.new()", () => {
   });
 
   it("throws if called on a contract instance with empty bytecode", () => {
-    const provider = Ganache.provider();
+    const provider = Ganache.provider({
+      miner: {
+        instamine: "strict"
+      }
+    });
     const freshTruffleContract = TruffleContract();
     freshTruffleContract.setProvider(provider);
     assert.throws(() => {
@@ -81,7 +85,11 @@ describe("TruffleContract.deployed()", () => {
   });
 
   it("throws if network & network record exists, but contract not deployed onchain", async () => {
-    const provider = Ganache.provider();
+    const provider = Ganache.provider({
+      miner: {
+        instamine: "strict"
+      }
+    });
     const freshTruffleContract = TruffleContract();
     freshTruffleContract.setProvider(provider);
     await freshTruffleContract.detectNetwork();

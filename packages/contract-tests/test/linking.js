@@ -22,8 +22,13 @@ const log = {
   log: debug
 };
 
-let provider = Ganache.provider({ logger: log });
-let web3 = new Web3();
+const provider = Ganache.provider({
+  logger: log,
+  miner: {
+    instamine: "strict"
+  }
+});
+const web3 = new Web3();
 web3.setProvider(provider);
 
 describe("Library linking", () => {
@@ -98,10 +103,14 @@ describe("Library linking with contract objects", () => {
   let ExampleLibrary;
   let ExampleLibraryConsumer;
   let accounts;
-  let web3;
   let networkId;
-  let provider = Ganache.provider({ logger: log });
-  web3 = new Web3();
+  const provider = Ganache.provider({
+    logger: log,
+    miner: {
+      instamine: "strict"
+    }
+  });
+  const web3 = new Web3();
   web3.setProvider(provider);
 
   before(async function () {

@@ -49,12 +49,18 @@ describe("Different networks: ", function () {
     network_one = Ganache.provider({
       network_id: network_one_id,
       seed: network_one_id,
-      logger: log
+      logger: log,
+      miner: {
+        instamine: "strict"
+      }
     });
     network_two = Ganache.provider({
       network_id: network_two_id,
       seed: network_two_id,
-      logger: log
+      logger: log,
+      miner: {
+        instamine: "strict"
+      }
     });
 
     network_one.__marker = "one";
@@ -179,7 +185,11 @@ describe("Different networks: ", function () {
   });
 
   it("deployed() used as a thennable will error if contract hasn't been deployed to the network detected", function (done) {
-    const network_three = Ganache.provider();
+    const network_three = Ganache.provider({
+      miner: {
+        instamine: "strict"
+      }
+    });
 
     const Example = contract(ExampleOne.toJSON());
     Example.setProvider(network_three);
