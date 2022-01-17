@@ -70,7 +70,9 @@ module.exports = async function (options) {
       mnemonic:
         "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
       time: config.genesis_time,
-      _chainId: 1337 //temporary until Ganache v3!
+      miner: {
+        instamine: "strict"
+      }
     };
     const { disconnect } = await Develop.connectOrStart(
       ipcOptions,
