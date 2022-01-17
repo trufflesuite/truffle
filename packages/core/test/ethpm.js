@@ -32,7 +32,11 @@ describe.skip("EthPM integration", function () {
   beforeEach("Create a Ganache provider and get a blockchain uri", function (
     done
   ) {
-    provider = Ganache.provider();
+    provider = Ganache.provider({
+      miner: {
+        instamine: "strict"
+      }
+    });
 
     Blockchain.asURI(provider, function (err, uri) {
       if (err) return done(err);

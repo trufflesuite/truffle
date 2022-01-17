@@ -28,7 +28,11 @@ describe("config", function () {
         gas: customRPCConfig.gas,
         gasPrice: customRPCConfig.gasPrice,
         from: "0x1234567890123456789012345678901234567890",
-        provider: Ganache.provider()
+        provider: Ganache.provider({
+          miner: {
+            instamine: "strict"
+          }
+        })
       }
     };
   });
