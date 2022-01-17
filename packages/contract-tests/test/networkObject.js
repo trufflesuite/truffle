@@ -16,9 +16,14 @@ describe("Network Object [ @geth ]", function () {
   });
 
   it("creates a network object when an address is set if no network specified", async function () {
-    var NewExample = await util.createExample();
+    const NewExample = await util.createExample();
+    const providerOptions = {
+      miner: {
+        instamine: "strict"
+      }
+    };
 
-    const result = await util.setUpProvider(NewExample);
+    const result = await util.setUpProvider(NewExample, providerOptions);
     networkId = await result.web3.eth.net.getId();
 
     assert.equal(NewExample.networkId, null);

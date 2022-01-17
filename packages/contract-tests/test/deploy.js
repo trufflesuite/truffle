@@ -7,7 +7,10 @@ describe("Deployments", function () {
   // ganache v2 had a default blockGasLimit of 0x6691b7, which these tests rely on
   const providerOptions = {
     gasLimit: 0x6691b7,
-    hardfork: "istanbul"
+    hardfork: "istanbul",
+    miner: {
+      instamine: "strict"
+    }
   };
   before(async function () {
     this.timeout(20000);

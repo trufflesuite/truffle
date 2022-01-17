@@ -11,7 +11,13 @@ describe("instance-instance / instance-constructor separation", function () {
 
     Example = await util.createExample();
 
-    return util.setUpProvider(Example);
+    const providerOptions = {
+      miner: {
+        instamine: "strict"
+      }
+    };
+
+    return util.setUpProvider(Example, providerOptions);
   });
 
   beforeEach(async () => {

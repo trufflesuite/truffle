@@ -8,10 +8,15 @@ describe("Events", function () {
 
   before(async function () {
     this.timeout(10000);
+    const providerOptions = {
+      miner: {
+        instamine: "strict"
+      }
+    };
 
     Example = await util.createExample();
 
-    return util.setUpProvider(Example).then(result => {
+    return util.setUpProvider(Example, providerOptions).then(result => {
       web3 = result.web3;
       accounts = result.accounts;
     });

@@ -9,11 +9,11 @@ const contract = require("@truffle/contract");
 const path = require("path");
 const { Shims } = require("@truffle/compile-common");
 
-var log = {
+const log = {
   log: debug
 };
 
-var util = {
+const util = {
   // Persistent state
   web3: null,
   fakePromiEvent: null,

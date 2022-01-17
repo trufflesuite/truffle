@@ -17,7 +17,11 @@ describe("Cloning", function () {
     this.timeout(10000);
 
     ExampleOne = await util.createExample();
-    await util.setUpProvider(ExampleOne);
+    await util.setUpProvider(ExampleOne, {
+      miner: {
+        instamine: "strict"
+      }
+    });
 
     debug("ExampleOne %o", ExampleOne);
     ExampleTwo = ExampleOne.clone();

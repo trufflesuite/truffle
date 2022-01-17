@@ -23,7 +23,11 @@ describe("ABIEncoderV2", function () {
 
       const UserDirectory = await util.createABIV2UserDirectory();
 
-      await util.setUpProvider(UserDirectory, {});
+      await util.setUpProvider(UserDirectory, {
+        miner: {
+          instamine: "strict"
+        }
+      });
 
       userDirectory = await UserDirectory.new();
       const { receipt } = await userDirectory.addUser(user);

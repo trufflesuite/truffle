@@ -6,19 +6,24 @@ describe("Quorum", function () {
 
   before(async function () {
     this.timeout(10000);
+    const providerOptions = {
+      miner: {
+        instamine: "strict"
+      }
+    };
 
     Example = await util.createExample();
 
-    return util.setUpProvider(Example);
+    return util.setUpProvider(Example, providerOptions);
   });
 
   it("privateFor accepted as valid tx_param (send)", async function () {
     const originalProvider = Example.currentProvider;
     const privateID = "ROAZBWtSacxXQrOe3FGAqJDyJjFePR5ce4TSIzmJ0Bc=";
 
-    var transactionPayloads = [];
+    const transactionPayloads = [];
 
-    var hookedProvider = {
+    const hookedProvider = {
       sendAsync: function () {
         const payload = arguments[0];
 
