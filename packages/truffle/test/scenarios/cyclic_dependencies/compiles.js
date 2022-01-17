@@ -17,6 +17,9 @@ describe("Cyclic Dependencies [ @standalone ]", function () {
     config = await Box.sandbox(options);
     config.logger = logger;
     config.networks.development.provider = Ganache.provider({
+      miner: {
+        instamine: "strict"
+      },
       gasLimit: config.gas
     });
     config.mocha = {

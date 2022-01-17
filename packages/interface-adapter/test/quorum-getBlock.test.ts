@@ -14,11 +14,14 @@ const port = 12345;
 async function prepareGanache(
   quorumEnabled: boolean
 ): Promise<{ server: Server; interfaceAdapter: InterfaceAdapter }> {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     const server = Ganache.server({
       time: genesisBlockTime,
       logging: {
         quiet: true
+      },
+      miner: {
+        instamine: "strict"
       }
     });
     server.listen(port, () => {
@@ -34,8 +37,8 @@ async function prepareGanache(
   });
 }
 
-describe("Quorum getBlock Overload", function() {
-  it("recovers block timestamp as hexstring instead of number w/ quorum=true", async function() {
+describe("Quorum getBlock Overload", function () {
+  it("recovers block timestamp as hexstring instead of number w/ quorum=true", async function () {
     const preparedGanache = await prepareGanache(true);
     try {
       const block = await preparedGanache.interfaceAdapter.getBlock(0);
@@ -45,12 +48,12 @@ describe("Quorum getBlock Overload", function() {
         "0x" + expectedBlockTime.toString(16)
       );
     } finally {
-      await preparedGanache.server.close()
+      await preparedGanache.server.close();
     }
   });
 
-  it("recovers block timestamp as number w/ quorum=false", async function() {
-    const preparedGanache = await prepareGanache(false) as any;
+  it("recovers block timestamp as number w/ quorum=false", async function () {
+    const preparedGanache = (await prepareGanache(false)) as any;
     try {
       const block = await preparedGanache.interfaceAdapter.getBlock(0);
       const expectedBlockTime = new BN(genesisBlockTime.getTime()).divn(1000);
