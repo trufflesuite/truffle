@@ -1,8 +1,9 @@
 {
   "root": true,
   "env": {
-    "es2021": true,
-    "node": true
+    "es6": true,
+    "node": true,
+    "jest": true
   },
   "globals": {
     "BUNDLE_VERSION": "readonly",
@@ -15,21 +16,39 @@
     "plugin:react-hooks/recommended"
   ],
   "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint"],
+  "plugins": [
+    "@typescript-eslint"
+  ],
   "parserOptions": {
     "sourceType": "module"
   },
-  "ignorePatterns": ["dist"],
+  "ignorePatterns": [
+    "dist"
+  ],
   "rules": {
     "@typescript-eslint/no-unused-vars": [
       "error",
-      { "argsIgnorePattern": "^_", "varsIgnorePattern": "^debug$|^_" }
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^debug$|^_"
+      }
     ],
-    "quote-props": [ "error", "consistent" ],
-    "@typescript-eslint/semi": [ "error", "always" ],
+    "quote-props": [
+      "error",
+      "consistent"
+    ],
+    "@typescript-eslint/semi": [
+      "error",
+      "always"
+    ],
     "no-mixed-operators": "warn",
     "no-tabs": "warn",
     "no-useless-escape": "warn",
-    "no-undef": ["error", { "typeof": true }]
+    "no-undef": [
+      "error",
+      {
+        "typeof": true
+      }
+    ]
   }
 }

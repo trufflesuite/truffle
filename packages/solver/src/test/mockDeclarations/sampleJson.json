@@ -1,0 +1,18 @@
+{
+  "deployed": {
+    "ethereum": [
+      {
+        "contract": "SumDAO",
+        "links": "SafeMathLib"
+      },
+      {
+        "contract": "SafeMathLib"
+      }
+    ],
+    "arbitrum": [
+      {
+        "contract": "ArbiDAO"
+      }
+    ]
+  }
+}

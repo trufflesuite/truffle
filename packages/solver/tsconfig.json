@@ -35,9 +35,6 @@
     ],
     "plugins": [
       {
-        "transform": "typescript-transform-paths"
-      },
-      {
         "transform": "typescript-transform-paths",
         "afterDeclarations": true
       }
