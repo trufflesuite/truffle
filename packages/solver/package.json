@@ -4,23 +4,58 @@
   "description": "",
   "main": "dist/src/index.js",
   "scripts": {
-    "build": "yarn build:dist && cp src/sampleYaml.yaml dist/src/",
-    "clean": "rm -rf ./dist",
+    "build": "yarn build:dist && yarn copy-files",
+    "clean": "rimraf ./dist",
     "prepare": "yarn build",
     "build:dist": "ttsc",
     "madge": "madge ./src/index.ts",
-    "test": "jest --verbose --detectOpenHandles --forceExit --passWithNoTests"
+    "test": "jest --verbose --detectOpenHandles --forceExit --passWithNoTests",
+    "copy-files": "copyfiles -u 1 src/test/mockDeclarations/*.yaml src/test/mockDeclarations/*.json ./dist/src/"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "copyfiles": "^2.4.1",
+    "rimraf": "^3.0.2",
     "tslint": "^6.1.3",
     "typescript": "^4.4.4"
   },
   "dependencies": {
+    "@types/jest": "^26.0.22",
     "fse": "^4.0.1",
     "js-yaml": "^4.1.0",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "ts-jest": "^26.4.1",
+    "typescript": "^4.5.4"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "ts",
+      "js",
+      "json",
+      "node"
+    ],
+    "testEnvironment": "node",
+    "transform": {
+      "^.+\\.ts$": "ts-jest"
+    },
+    "globals": {
+      "ts-jest": {
+        "tsconfig": "<rootDir>/tsconfig.json",
+        "diagnostics": true
+      }
+    },
+    "moduleNameMapper": {
+      "^@truffle/solver/(.*)": "<rootDir>/src/$1",
+      "^@truffle/solver$": "<rootDir>/src",
+      "^test/(.*)": "<rootDir>/test/$1"
+    },
+    "testMatch": [
+      "<rootDir>/src/**/test/index.(ts|js)",
+      "<rootDir>/test/**/test/index.(ts|js)",
+      "<rootDir>/src/**/test/*\\.(spec|test)\\.(ts|js)",
+      "<rootDir>/test/**/test/*\\.(spec|test)\\.(ts|js)"
+    ]
   }
 }
