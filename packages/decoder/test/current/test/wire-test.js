@@ -1,7 +1,7 @@
 const debug = require("debug")("decoder:test:wire-test");
 const assert = require("chai").assert;
 const BN = require("bn.js");
-const Ganache = require("ganache-core");
+const Ganache = require("ganache");
 const path = require("path");
 const Web3 = require("web3");
 
@@ -21,7 +21,7 @@ describe("Over-the-wire decoding", function () {
     provider = Ganache.provider({
       seed: "decoder",
       gasLimit: 7000000,
-      vmErrorsOnRPCResponse: false
+      logging: { quiet: true }
     });
     web3 = new Web3(provider);
   });
@@ -950,7 +950,6 @@ describe("Over-the-wire decoding", function () {
 
     //we need the raw return data, and contract.call() does not exist yet,
     //so we're going to have to use web3.eth.call()
-
     let data = await web3.eth.call({
       to: deployedContract.address,
       data: selector
@@ -1019,7 +1018,6 @@ describe("Over-the-wire decoding", function () {
 
     //we need the raw return data, and contract.call() does not exist yet,
     //so we're going to have to use web3.eth.call()
-
     let data = await web3.eth.call({
       to: deployedContract.address,
       data: selector
@@ -1072,26 +1070,32 @@ describe("Over-the-wire decoding", function () {
     it("Decodes unambiguous custom errors", async function () {
       const { WireTest } = abstractions;
       const deployedContract = await WireTest.deployed();
-  
+
       const decoder = await Decoder.forContract(WireTest, {
         projectInfo: { artifacts: Contracts }
       });
-  
+
       let abiEntry = WireTest.abi.find(
         ({ type, name }) => type === "function" && name === "throwUnambiguous"
       );
       let selector = web3.eth.abi.encodeFunctionSignature(abiEntry);
-  
+
       //we need the raw return data, and contract.call() does not exist yet,
       //so we're going to have to use web3.eth.call()
-  
-      let data = await web3.eth.call({
-        to: deployedContract.address,
-        data: selector
-      });
+      let data;
+      // NOTE we wrap this in `try`/`catch` to accommodate new eth_call behavior
+      // see https://github.com/trufflesuite/ganache/issues/1496
+      try {
+        await web3.eth.call({
+          to: deployedContract.address,
+          data: selector
+        });
+      } catch (error) {
+        data = error.data.result;
+      }
 
       debug("data: %O", data);
-  
+
       let decodings = await decoder.decodeReturnValue(abiEntry, data);
       assert.lengthOf(decodings, 1);
       let decoding = decodings[0];
@@ -1113,24 +1117,28 @@ describe("Over-the-wire decoding", function () {
     it("Decodes unambiguous custom errors from external calls", async function () {
       const { WireTest } = abstractions;
       const deployedContract = await WireTest.deployed();
-  
+
       const decoder = await Decoder.forContract(WireTest, {
         projectInfo: { artifacts: Contracts }
       });
-  
+
       let abiEntry = WireTest.abi.find(
         ({ type, name }) => type === "function" && name === "callAndThrow"
       );
       let selector = web3.eth.abi.encodeFunctionSignature(abiEntry);
-  
+
       //we need the raw return data, and contract.call() does not exist yet,
       //so we're going to have to use web3.eth.call()
-  
-      let data = await web3.eth.call({
-        to: deployedContract.address,
-        data: selector
-      });
-  
+      let data;
+      try {
+        await web3.eth.call({
+          to: deployedContract.address,
+          data: selector
+        });
+      } catch (error) {
+        data = error.data.result;
+      }
+
       let decodings = await decoder.decodeReturnValue(abiEntry, data);
       assert.lengthOf(decodings, 1);
       let decoding = decodings[0];
@@ -1144,24 +1152,28 @@ describe("Over-the-wire decoding", function () {
     it("Decodes ambiguous custom errors", async function () {
       const { WireTest } = abstractions;
       const deployedContract = await WireTest.deployed();
-  
+
       const decoder = await Decoder.forContract(WireTest, {
         projectInfo: { artifacts: Contracts }
       });
-  
+
       let abiEntry = WireTest.abi.find(
         ({ type, name }) => type === "function" && name === "throwAmbiguous"
       );
       let selector = web3.eth.abi.encodeFunctionSignature(abiEntry);
-  
+
       //we need the raw return data, and contract.call() does not exist yet,
       //so we're going to have to use web3.eth.call()
-  
-      let data = await web3.eth.call({
-        to: deployedContract.address,
-        data: selector
-      });
-  
+      let data;
+      try {
+        await web3.eth.call({
+          to: deployedContract.address,
+          data: selector
+        });
+      } catch (error) {
+        data = error.data.result;
+      }
+
       let decodings = await decoder.decodeReturnValue(abiEntry, data);
       assert.lengthOf(decodings, 2);
       assert.strictEqual(decodings[0].kind, "revert");
@@ -1187,24 +1199,28 @@ describe("Over-the-wire decoding", function () {
     it("Decodes ambiguous custom errors from external calls", async function () {
       const { WireTest } = abstractions;
       const deployedContract = await WireTest.deployed();
-  
+
       const decoder = await Decoder.forContract(WireTest, {
         projectInfo: { artifacts: Contracts }
       });
-  
+
       let abiEntry = WireTest.abi.find(
         ({ type, name }) => type === "function" && name === "callAndThrowAmbiguous"
       );
       let selector = web3.eth.abi.encodeFunctionSignature(abiEntry);
-  
+
       //we need the raw return data, and contract.call() does not exist yet,
       //so we're going to have to use web3.eth.call()
-  
-      let data = await web3.eth.call({
-        to: deployedContract.address,
-        data: selector
-      });
-  
+      let data;
+      try {
+        await web3.eth.call({
+          to: deployedContract.address,
+          data: selector
+        });
+      } catch (error) {
+        data = error.data.result;
+      }
+
       let decodings = await decoder.decodeReturnValue(abiEntry, data);
       assert.lengthOf(decodings, 2);
       //note: what follows is copypasted from above

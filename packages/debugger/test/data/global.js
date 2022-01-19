@@ -3,7 +3,7 @@ const debug = debugModule("debugger:test:data:global");
 
 import { assert } from "chai";
 
-import Ganache from "ganache-core";
+import Ganache from "ganache";
 
 import { prepareContracts, lineOf } from "../helpers";
 import Debugger from "lib/debugger";
@@ -38,6 +38,7 @@ contract GlobalTest {
     uint number;
     uint timestamp;
     uint chainid;
+    uint basefee;
   }
 
   Msg _msg;
@@ -50,7 +51,8 @@ contract GlobalTest {
     _msg = Msg(msg.data, msg.sender, msg.sig, msg.value);
     _tx = Tx(tx.origin, tx.gasprice);
     _block = Block(block.coinbase, block.difficulty,
-      block.gaslimit, block.number, block.timestamp, block.chainid);
+      block.gaslimit, block.number, block.timestamp, block.chainid,
+      block.basefee);
     emit Done(x); //BREAK SIMPLE
   }
 
@@ -67,7 +69,8 @@ contract GlobalTest {
     __msg = Msg(msg.data, msg.sender, msg.sig, 0);
     __tx = Tx(tx.origin, tx.gasprice);
     __block = Block(block.coinbase, block.difficulty,
-      block.gaslimit, block.number, block.timestamp, block.chainid);
+      block.gaslimit, block.number, block.timestamp, block.chainid,
+      block.basefee);
     return x + uint160(address(__this)) //BREAK STATIC
       + __msg.value + __tx.gasprice + __block.number;
   }
@@ -107,7 +110,8 @@ contract CreationTest {
     _msg = GlobalTest.Msg(msg.data, msg.sender, msg.sig, msg.value);
     _tx = GlobalTest.Tx(tx.origin, tx.gasprice);
     _block = GlobalTest.Block(block.coinbase, block.difficulty,
-      block.gaslimit, block.number, block.timestamp, block.chainid);
+      block.gaslimit, block.number, block.timestamp, block.chainid,
+      block.basefee);
     require(succeed); //BREAK CREATE
     emit Done(x);
   }
@@ -124,7 +128,7 @@ library GlobalTestLib {
     __msg = GlobalTest.Msg(msg.data, msg.sender, msg.sig, msg.value);
     __tx = GlobalTest.Tx(tx.origin, tx.gasprice);
     __block = GlobalTest.Block(block.coinbase, block.difficulty,
-      block.gaslimit, block.number, block.timestamp, block.chainid);
+      block.gaslimit, block.number, block.timestamp, block.chainid, block.basefee);
     emit Done(x + __msg.value + __tx.gasprice + __block.number); //BREAK LIBRARY
   }
 }
@@ -160,7 +164,12 @@ describe("Globally-available variables", function () {
     provider = Ganache.provider({
       seed: "debugger",
       gasLimit: 7000000,
-      _chainId: 1337 //temporary until Ganache v3!
+      logging: {
+        quiet: true
+      },
+      miner: {
+        instamine: "strict"
+      }
     });
   });
 
@@ -189,7 +198,7 @@ describe("Globally-available variables", function () {
     assert.equal(variables.this, variables._this);
     assert.deepEqual(variables.msg, variables._msg);
     assert.deepEqual(variables.tx, variables._tx);
-    assert.deepEqual(variables.block, withBaseFeeZero(variables._block));
+    assert.deepEqual(variables.block, variables._block);
   });
 
   it("Gets globals correctly in nested call", async function () {
@@ -215,7 +224,7 @@ describe("Globally-available variables", function () {
     assert.equal(variables.this, variables._this);
     assert.deepEqual(variables.msg, variables._msg);
     assert.deepEqual(variables.tx, variables._tx);
-    assert.deepEqual(variables.block, withBaseFeeZero(variables._block));
+    assert.deepEqual(variables.block, variables._block);
   });
 
   it("Gets globals correctly in static call", async function () {
@@ -241,7 +250,7 @@ describe("Globally-available variables", function () {
     assert.equal(variables.this, variables.__this);
     assert.deepEqual(variables.msg, variables.__msg);
     assert.deepEqual(variables.tx, variables.__tx);
-    assert.deepEqual(variables.block, withBaseFeeZero(variables.__block));
+    assert.deepEqual(variables.block, variables.__block);
   });
 
   it("Gets globals correctly in library call", async function () {
@@ -268,7 +277,7 @@ describe("Globally-available variables", function () {
 
     assert.deepEqual(variables.msg, variables.__msg);
     assert.deepEqual(variables.tx, variables.__tx);
-    assert.deepEqual(variables.block, withBaseFeeZero(variables.__block));
+    assert.deepEqual(variables.block, variables.__block);
   });
 
   it("Gets globals correctly in simple creation", async function () {
@@ -287,7 +296,7 @@ describe("Globally-available variables", function () {
     assert.equal(variables.this, variables._this);
     assert.deepEqual(variables.msg, variables._msg);
     assert.deepEqual(variables.tx, variables._tx);
-    assert.deepEqual(variables.block, withBaseFeeZero(variables._block));
+    assert.deepEqual(variables.block, variables._block);
   });
 
   it("Gets globals correctly in nested creation", async function () {
@@ -313,7 +322,7 @@ describe("Globally-available variables", function () {
     assert.equal(variables.this, variables._this);
     assert.deepEqual(variables.msg, variables._msg);
     assert.deepEqual(variables.tx, variables._tx);
-    assert.deepEqual(variables.block, withBaseFeeZero(variables._block));
+    assert.deepEqual(variables.block, variables._block);
   });
 
   it("Gets globals correctly in failed CREATE2", async function () {
@@ -339,14 +348,6 @@ describe("Globally-available variables", function () {
     assert.equal(variables.this, variables._this);
     assert.deepEqual(variables.msg, variables._msg);
     assert.deepEqual(variables.tx, variables._tx);
-    assert.deepEqual(variables.block, withBaseFeeZero(variables._block));
+    assert.deepEqual(variables.block, variables._block);
   });
 });
-
-//HACK for testing until Ganache supports london
-function withBaseFeeZero(block) {
-  return {
-    ...block,
-    basefee: 0
-  };
-}

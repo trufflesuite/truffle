@@ -1,5 +1,5 @@
 import assert from "assert";
-import Ganache from "ganache-core";
+import Ganache from "ganache";
 import * as EthUtil from "ethereumjs-util";
 import Web3 from "web3";
 import HDWalletProvider from "..";
@@ -12,12 +12,19 @@ describe("HD Wallet Provider", function () {
   let provider: HDWalletProvider;
 
   before(done => {
-    server = Ganache.server();
+    server = Ganache.server({
+      miner: {
+        instamine: "strict"
+      },
+      logging: {
+        quiet: true
+      }
+    });
     server.listen(port, done);
   });
 
-  after(done => {
-    setTimeout(() => server.close(done), 100);
+  after(async () => {
+    await server.close();
   });
 
   afterEach(() => {

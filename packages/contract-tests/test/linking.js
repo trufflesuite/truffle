@@ -3,8 +3,8 @@ const Config = require("@truffle/config");
 const { assert } = require("chai");
 const contract = require("@truffle/contract");
 const Web3 = require("web3");
-const debug = require("debug")("ganache-core");
-const Ganache = require("ganache-core");
+const debug = require("debug")("ganache");
+const Ganache = require("ganache");
 const path = require("path");
 const fs = require("fs");
 const { Compile } = require("@truffle/compile-solidity");
@@ -22,8 +22,13 @@ const log = {
   log: debug
 };
 
-let provider = Ganache.provider({ logger: log });
-let web3 = new Web3();
+const provider = Ganache.provider({
+  logger: log,
+  miner: {
+    instamine: "strict"
+  }
+});
+const web3 = new Web3();
 web3.setProvider(provider);
 
 describe("Library linking", () => {
@@ -98,10 +103,14 @@ describe("Library linking with contract objects", () => {
   let ExampleLibrary;
   let ExampleLibraryConsumer;
   let accounts;
-  let web3;
   let networkId;
-  let provider = Ganache.provider({ logger: log });
-  web3 = new Web3();
+  const provider = Ganache.provider({
+    logger: log,
+    miner: {
+      instamine: "strict"
+    }
+  });
+  const web3 = new Web3();
   web3.setProvider(provider);
 
   before(async function () {

@@ -9,7 +9,7 @@ import { generateId } from "@truffle/db/system";
 import Migrate from "@truffle/migrate";
 import { Environment } from "@truffle/environment";
 import Config from "@truffle/config";
-import Ganache from "ganache-core";
+import Ganache from "ganache";
 import Web3 from "web3";
 import * as fse from "fs-extra";
 import * as tmp from "tmp";
@@ -21,13 +21,16 @@ let server;
 const port = 8545;
 
 beforeAll(async done => {
-  server = Ganache.server();
+  server = Ganache.server({
+    // note instamine must be set to eager (default) with vmErrorsOnRPCResponse enabled
+    vmErrorsOnRPCResponse: true
+  });
   server.listen(port, done);
 });
 
-afterAll(async done => {
+afterAll(async () => {
   tempDir.removeCallback();
-  setTimeout(() => server.close(done), 500);
+  await server.close();
 });
 
 const compilationResult = require(path.join(

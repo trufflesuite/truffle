@@ -137,6 +137,7 @@ module.exports = {
     /^@truffle\/db/,
     // this will be installed as a dependency of packages/truffle
     /^@truffle\/db-loader/,
+    /^ganache$/,
     // this is the commands portion shared by cli.js and console-child.js
     /^\.\/commands.bundled.js$/
   ],

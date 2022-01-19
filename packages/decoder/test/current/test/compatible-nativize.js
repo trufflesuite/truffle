@@ -1,7 +1,7 @@
 const debug = require("debug")("decoder:test:compatible-nativize");
 const assert = require("chai").assert;
 const BN = require("bn.js");
-const Ganache = require("ganache-core");
+const Ganache = require("ganache");
 const path = require("path");
 const Web3 = require("web3");
 
@@ -20,7 +20,11 @@ describe("nativize (ethers format)", function () {
   let Contracts;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({seed: "decoder", gasLimit: 7000000});
+    provider = Ganache.provider({
+      seed: "decoder",
+      gasLimit: 7000000,
+      logging: { quiet: true }
+    });
     web3 = new Web3(provider);
   });
 

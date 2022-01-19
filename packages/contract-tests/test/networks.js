@@ -1,5 +1,5 @@
-var assert = require("chai").assert;
-var util = require("./util");
+const assert = require("chai").assert;
+const util = require("./util");
 
 // Clean up after solidity. Only remove solidity's listener,
 // which happens to be the first.
@@ -8,12 +8,12 @@ process.removeListener(
   process.listeners("uncaughtException")[0] || function () {}
 );
 
-var debug = require("debug")("ganache-core");
-var Ganache = require("ganache-core");
-var BlockchainUtils = require("@truffle/blockchain-utils");
-var contract = require("@truffle/contract");
+const debug = require("debug")("ganache");
+const Ganache = require("ganache");
+const BlockchainUtils = require("@truffle/blockchain-utils");
+const contract = require("@truffle/contract");
 
-var log = {
+const log = {
   log: debug
 };
 
@@ -31,12 +31,12 @@ function getAndSetAccounts(contract, done) {
 }
 
 describe("Different networks: ", function () {
-  var network_one;
-  var network_two;
-  var network_one_id;
-  var network_two_id;
-  var ExampleOne;
-  var ExampleTwo;
+  let network_one;
+  let network_two;
+  let network_one_id;
+  let network_two_id;
+  let ExampleOne;
+  let ExampleTwo;
 
   before("Compile", async function () {
     this.timeout(10000);
@@ -49,12 +49,18 @@ describe("Different networks: ", function () {
     network_one = Ganache.provider({
       network_id: network_one_id,
       seed: network_one_id,
-      logger: log
+      logger: log,
+      miner: {
+        instamine: "strict"
+      }
     });
     network_two = Ganache.provider({
       network_id: network_two_id,
       seed: network_two_id,
-      logger: log
+      logger: log,
+      miner: {
+        instamine: "strict"
+      }
     });
 
     network_one.__marker = "one";
@@ -111,7 +117,7 @@ describe("Different networks: ", function () {
   });
 
   it("has no network if none set", function () {
-    var AnotherExample = contract({
+    const AnotherExample = contract({
       contractName: "AnotherExample",
       abi: ExampleOne.abi,
       binary: ExampleOne.binary
@@ -125,7 +131,7 @@ describe("Different networks: ", function () {
     // it has two networks, and the default network is the first one. We'll set the
     // provider to the second network, use the thennable version for deployed(), and
     // ensure the address that gets used is the one for the second network.
-    var Example = contract(ExampleOne.toJSON());
+    const Example = contract(ExampleOne.toJSON());
     Example.setProvider(network_two);
 
     // Ensure preconditions
@@ -135,7 +141,7 @@ describe("Different networks: ", function () {
 
     // Thennable checker. Since this is a custom then function, let's ensure things
     // get executed in the right order.
-    var execution_count = 0;
+    let execution_count = 0;
 
     Example.deployed()
       .then(function (instance) {
@@ -158,7 +164,7 @@ describe("Different networks: ", function () {
   });
 
   it("deployed() used as a thennable funnels errors correctly", function (done) {
-    var Example = contract(ExampleOne.toJSON());
+    const Example = contract(ExampleOne.toJSON());
 
     // No provider is set. Using deployed().then() should send errors down the promise chain.
     Example.deployed()
@@ -179,9 +185,13 @@ describe("Different networks: ", function () {
   });
 
   it("deployed() used as a thennable will error if contract hasn't been deployed to the network detected", function (done) {
-    var network_three = Ganache.provider();
+    const network_three = Ganache.provider({
+      miner: {
+        instamine: "strict"
+      }
+    });
 
-    var Example = contract(ExampleOne.toJSON());
+    const Example = contract(ExampleOne.toJSON());
     Example.setProvider(network_three);
 
     Example.deployed()
@@ -206,7 +216,7 @@ describe("Different networks: ", function () {
     // it has two networks, and the default network is the first one. We'll set the
     // provider to the second network, use the thennable version for at(), and
     // ensure the abi that gets used is the one for the second network.
-    var Example = contract(ExampleOne.toJSON());
+    const Example = contract(ExampleOne.toJSON());
     Example.setProvider(network_two);
 
     // Ensure preconditions
@@ -216,8 +226,8 @@ describe("Different networks: ", function () {
 
     // Thennable checker. Since this is a custom then function, let's ensure things
     // get executed in the right order.
-    var execution_count = 0;
-    var exampleTwoAddress = Example.toJSON().networks[network_two_id].address;
+    let execution_count = 0;
+    const exampleTwoAddress = Example.toJSON().networks[network_two_id].address;
 
     Example.at(exampleTwoAddress)
       .then(function (instance) {
@@ -238,7 +248,7 @@ describe("Different networks: ", function () {
   });
 
   it("at() used as a thennable funnels errors correctly", function (done) {
-    var Example = contract(ExampleOne.toJSON());
+    const Example = contract(ExampleOne.toJSON());
     Example.setProvider(network_one);
 
     // This address should have no code there. .at().then() should error before
@@ -265,7 +275,7 @@ describe("Different networks: ", function () {
     // it has two networks, and the default network is the first one. We'll set the
     // provider to the second network, use the thennable version for at(), and
     // ensure the abi that gets used is the one for the second network.
-    var Example = contract(ExampleOne.toJSON());
+    const Example = contract(ExampleOne.toJSON());
     Example.setProvider(network_two);
 
     // Ensure preconditions
@@ -288,8 +298,8 @@ describe("Different networks: ", function () {
     // pass that address to the second and have it make a transaction.
     // During that transaction it should detect the network since it
     // hasn't been detected already.
-    var ExampleSetup = contract(ExampleOne.toJSON());
-    var ExampleDetect = ExampleSetup.clone();
+    const ExampleSetup = contract(ExampleOne.toJSON());
+    const ExampleDetect = ExampleSetup.clone();
     ExampleSetup.setProvider(network_two);
     ExampleDetect.setProvider(network_two);
 
@@ -297,7 +307,7 @@ describe("Different networks: ", function () {
     ExampleSetup.__marker = "dummy";
 
     // Steal the from address from our other tests.
-    var from = ExampleTwo.defaults().from;
+    const from = ExampleTwo.defaults().from;
 
     return ExampleSetup.new(1, { from: from, gas: 3141592 })
       .then(function (instance) {
@@ -319,13 +329,13 @@ describe("Different networks: ", function () {
     // pass that address to the second and have it make a transaction.
     // During that transaction it should detect the network since it
     // hasn't been detected already.
-    var ExampleSetup = contract(ExampleOne.toJSON());
-    var ExampleDetect = ExampleSetup.clone();
+    const ExampleSetup = contract(ExampleOne.toJSON());
+    const ExampleDetect = ExampleSetup.clone();
     ExampleSetup.setProvider(network_two);
     ExampleDetect.setProvider(network_two);
 
     // Steal the from address from our other tests.
-    var from = ExampleTwo.defaults().from;
+    const from = ExampleTwo.defaults().from;
 
     return ExampleSetup.new(1, { from: from, gas: 3141592 })
       .then(function (instance) {
@@ -343,7 +353,7 @@ describe("Different networks: ", function () {
   it("detects the network when a blockchain uri is specified", async () => {
     const uri = await BlockchainUtils.asURI(network_two);
 
-    var json = {
+    const json = {
       contractName: "NetworkExample",
       abi: ExampleOne.abi,
       bytecode: ExampleOne.binary,
@@ -354,7 +364,7 @@ describe("Different networks: ", function () {
       address: "0x1234567890123456789012345678901234567890" // fake
     };
 
-    var NetworkExample = contract(json);
+    const NetworkExample = contract(json);
 
     NetworkExample.setProvider(network_two);
 
@@ -370,7 +380,7 @@ describe("Different networks: ", function () {
   it("resolve networks artifacts when two matching but unequal blockchain uris are passed in", async () => {
     const uri = await BlockchainUtils.asURI(network_two);
 
-    var json = {
+    const json = {
       contractName: "NetworkExampleTwo",
       abi: ExampleOne.abi,
       bytecode: ExampleOne.binary,
@@ -381,7 +391,7 @@ describe("Different networks: ", function () {
       address: "0x1234567890123456789012345678901234567890" // fake
     };
 
-    var NetworkExample = contract(json);
+    const NetworkExample = contract(json);
 
     NetworkExample.setProvider(network_two);
 
@@ -404,7 +414,7 @@ describe("Different networks: ", function () {
   it("resolve network artifacts when two equal but different network identifiers are passed in", async () => {
     const uri = await BlockchainUtils.asURI(network_two);
 
-    var json = {
+    const json = {
       contractName: "NetworkExampleThree",
       abi: ExampleOne.abi,
       bytecode: ExampleOne.binary,
@@ -415,7 +425,7 @@ describe("Different networks: ", function () {
       address: "0x1234567890123456789012345678901234567890" // fake
     };
 
-    var NetworkExample = contract(json);
+    let NetworkExample = contract(json);
 
     // Now send two transactions that, when finished, will ensure
     // we've mined two more blocks. We'll use ExampleTwo for this

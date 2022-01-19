@@ -2,7 +2,7 @@ const debug = require("debug")("decoder:test:downgrade-test");
 const assert = require("chai").assert;
 const Big = require("big.js");
 const clonedeep = require("lodash.clonedeep");
-const Ganache = require("ganache-core");
+const Ganache = require("ganache");
 const path = require("path");
 const Web3 = require("web3");
 
@@ -25,7 +25,7 @@ describe("Graceful degradation when information is missing", function () {
     provider = Ganache.provider({
       seed: "decoder",
       gasLimit: 7000000,
-      vmErrorsOnRPCResponse: false
+      logging: { quiet: true }
     });
     web3 = new Web3(provider);
     accounts = await web3.eth.getAccounts();
@@ -613,12 +613,17 @@ async function runErrorTestBody(mangledCompilations) {
 
   //we need the raw return data, and contract.call() does not exist yet,
   //so we're going to have to use web3.eth.call()
-
-  let data = await web3.eth.call({
-    to: deployedContract.address,
-    data: selector
-  });
-
+  let data;
+  // NOTE we wrap this in `try`/`catch` to accommodate new eth_call behavior
+  // see https://github.com/trufflesuite/ganache/issues/1496
+  try {
+    await web3.eth.call({
+      to: deployedContract.address,
+      data: selector
+    });
+  } catch (error) {
+    data = error.data.result;
+  }
   let decodings = await decoder.decodeReturnValue(abiEntry, data);
   assert.lengthOf(decodings, 1);
   let decoding = decodings[0];

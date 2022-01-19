@@ -3,7 +3,7 @@ const debug = debugModule("debugger:test:data:ids");
 
 import { assert } from "chai";
 
-import Ganache from "ganache-core";
+import Ganache from "ganache";
 
 import { prepareContracts, lineOf } from "../helpers";
 import Debugger from "lib/debugger";
@@ -201,13 +201,21 @@ let migrations = {
 };
 
 describe("Variable IDs", function () {
-  var provider;
-
-  var abstractions;
-  var compilations;
+  let provider;
+  let abstractions;
+  let compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
+    provider = Ganache.provider({
+      seed: "debugger",
+      gasLimit: 7000000,
+      miner: {
+        instamine: "strict"
+      },
+      logging: {
+        quiet: true
+      }
+    });
   });
 
   before("Prepare contracts and artifacts", async function () {
@@ -244,7 +252,9 @@ describe("Variable IDs", function () {
     await bugger.continueUntilBreakpoint();
     while (!bugger.view(trace.finished)) {
       values.push(
-        Codec.Format.Utils.Inspect.unsafeNativize(await bugger.variable("nbang"))
+        Codec.Format.Utils.Inspect.unsafeNativize(
+          await bugger.variable("nbang")
+        )
       );
       await bugger.continueUntilBreakpoint();
     }

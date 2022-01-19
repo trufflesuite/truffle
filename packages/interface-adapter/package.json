@@ -30,9 +30,11 @@
   },
   "devDependencies": {
     "@types/bn.js": "^4.11.4",
+    "@types/chai": "^4.2.22",
     "@types/mocha": "^5.2.7",
     "@types/web3": "^1.0.20",
-    "ganache-core": "2.13.0",
+    "chai": "^4.2.0",
+    "ganache": "7.0.0",
     "mocha": "8.1.2",
     "ts-node": "^9.0.0",
     "typescript": "^4.1.4"

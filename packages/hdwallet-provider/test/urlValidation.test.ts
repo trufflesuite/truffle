@@ -1,6 +1,6 @@
 import assert from "assert";
 import WalletProvider from "../dist";
-import Ganache from "ganache-core";
+import Ganache from "ganache";
 import { describe, it } from "mocha";
 
 const { isValidProvider } = WalletProvider;
@@ -83,7 +83,11 @@ describe("HD Wallet Provider Validator", () => {
     });
 
     it("a provider", () => {
-      const provider = Ganache.provider();
+      const provider = Ganache.provider({
+        miner: {
+          instamine: "strict"
+        }
+      });
       assert.ok(
         isValidProvider(provider),
         "Good provider should pass validation."

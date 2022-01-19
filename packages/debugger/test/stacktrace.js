@@ -3,7 +3,7 @@ const debug = debugModule("debugger:test:stacktrace");
 
 import { assert } from "chai";
 
-import Ganache from "ganache-core";
+import Ganache from "ganache";
 
 import { prepareContracts, lineOf } from "./helpers";
 import Debugger from "lib/debugger";
@@ -99,13 +99,21 @@ let migrations = {
 };
 
 describe("Stack tracing", function () {
-  var provider;
-
-  var abstractions;
-  var compilations;
+  let provider;
+  let abstractions;
+  let compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
+    provider = Ganache.provider({
+      seed: "debugger",
+      gasLimit: 7000000,
+      logging: {
+        quiet: true
+      },
+      miner: {
+        instamine: "strict"
+      }
+    });
   });
 
   before("Prepare contracts and artifacts", async function () {
@@ -126,8 +134,9 @@ describe("Stack tracing", function () {
     try {
       await instance.run(0); //this will throw because of the revert
     } catch (error) {
-      txHash = error.hashes[0]; //it's the only hash involved
+      txHash = error.receipt.transactionHash;
     }
+    assert.isDefined(txHash, "should have errored and set txHash");
 
     let bugger = await Debugger.forTx(txHash, {
       provider,
@@ -138,7 +147,7 @@ describe("Stack tracing", function () {
     let source = bugger.view(solidity.current.source);
     let failLine = lineOf("REQUIRE", source.source);
     let callLine = lineOf("CALL", source.source);
-    
+
     await bugger.runToEnd();
 
     let report = bugger.view(stacktrace.current.finalReport);
@@ -175,8 +184,9 @@ describe("Stack tracing", function () {
     try {
       await instance.run(0); //this will throw because of the revert
     } catch (error) {
-      txHash = error.hashes[0]; //it's the only hash involved
+      txHash = error.receipt.transactionHash;
     }
+    assert.isDefined(txHash, "should have errored and set txHash");
 
     let bugger = await Debugger.forTx(txHash, {
       provider,
@@ -252,8 +262,9 @@ describe("Stack tracing", function () {
     try {
       await instance.run(1); //this will throw because of the revert
     } catch (error) {
-      txHash = error.hashes[0]; //it's the only hash involved
+      txHash = error.receipt.transactionHash;
     }
+    assert.isDefined(txHash, "should have errored and set txHash");
 
     let bugger = await Debugger.forTx(txHash, {
       provider,
@@ -302,8 +313,9 @@ describe("Stack tracing", function () {
     try {
       await instance.run(2); //this will throw because of the revert
     } catch (error) {
-      txHash = error.hashes[0]; //it's the only hash involved
+      txHash = error.receipt.transactionHash;
     }
+    assert.isDefined(txHash, "should have errored and set txHash");
 
     let bugger = await Debugger.forTx(txHash, {
       provider,
@@ -334,7 +346,7 @@ describe("Stack tracing", function () {
     let contractNames = report.map(({ contractName }) => contractName);
     assert.isUndefined(contractNames[contractNames.length - 1]);
     assert.isUndefined(contractNames[contractNames.length - 2]);
-    assert(contractNames.slice(0,-2).every(name => name === "StacktraceTest"));
+    assert(contractNames.slice(0, -2).every(name => name === "StacktraceTest"));
     let addresses = report.map(({ address }) => address);
     assert(addresses.every(address => address === instance.address));
     let status = report[report.length - 1].status;
@@ -355,8 +367,9 @@ describe("Stack tracing", function () {
     try {
       await instance.run(3); //this will throw because of the revert
     } catch (error) {
-      txHash = error.hashes[0]; //it's the only hash involved
+      txHash = error.receipt.transactionHash;
     }
+    assert.isDefined(txHash, "should have errored and set txHash");
 
     let bugger = await Debugger.forTx(txHash, {
       provider,

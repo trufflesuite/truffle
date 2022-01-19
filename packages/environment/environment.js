@@ -4,7 +4,7 @@ const expect = require("@truffle/expect");
 const TruffleError = require("@truffle/error");
 const Resolver = require("@truffle/resolver");
 const Artifactor = require("@truffle/artifactor");
-const Ganache = require("ganache-core/public-exports");
+const Ganache = require("ganache");
 const Provider = require("@truffle/provider");
 
 const Environment = {
@@ -49,8 +49,7 @@ const Environment = {
     const forkedNetwork = config.network + "-fork";
     const ganacheOptions = {
       fork: config.provider,
-      gasLimit: block.gasLimit,
-      _chainId: 1337 //temporary until Ganache v3!
+      gasLimit: block.gasLimit
     };
     if (accounts.length > 0) ganacheOptions.unlocked_accounts = accounts;
 

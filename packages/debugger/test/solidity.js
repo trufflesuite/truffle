@@ -3,7 +3,7 @@ const debug = debugModule("debugger:test:solidity");
 
 import { assert } from "chai";
 
-import Ganache from "ganache-core";
+import Ganache from "ganache";
 
 import { prepareContracts, lineOf } from "./helpers";
 import Debugger from "lib/debugger";
@@ -148,13 +148,21 @@ let sources = {
 };
 
 describe("Solidity Debugging", function () {
-  var provider;
-
-  var abstractions;
-  var compilations;
+  let provider;
+  let abstractions;
+  let compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
+    provider = Ganache.provider({
+      seed: "debugger",
+      gasLimit: 7000000,
+      logging: {
+        quiet: true
+      },
+      miner: {
+        instamine: "strict"
+      }
+    });
   });
 
   before("Prepare contracts and artifacts", async function () {
@@ -327,8 +335,9 @@ describe("Solidity Debugging", function () {
       try {
         await instance.run(); //this will throw because of the revert
       } catch (error) {
-        txHash = error.hashes[0]; //it's the only hash involved
+        txHash = error.receipt.transactionHash;
       }
+      assert.isDefined(txHash, "should have errored and set txHash");
 
       let bugger = await Debugger.forTx(txHash, {
         provider,

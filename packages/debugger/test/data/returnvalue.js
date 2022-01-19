@@ -3,7 +3,7 @@ const debug = debugModule("debugger:test:data:returnvalue");
 
 import { assert } from "chai";
 
-import Ganache from "ganache-core";
+import Ganache from "ganache";
 
 import { prepareContracts } from "../helpers";
 import Debugger from "lib/debugger";
@@ -149,13 +149,21 @@ let migrations = {
 };
 
 describe("Return value decoding", function () {
-  var provider;
-
-  var abstractions;
-  var compilations;
+  let provider;
+  let abstractions;
+  let compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
+    provider = Ganache.provider({
+      seed: "debugger",
+      gasLimit: 7000000,
+      miner: {
+        instamine: "strict"
+      },
+      logging: {
+        quiet: true
+      }
+    });
   });
 
   before("Prepare contracts and artifacts", async function () {
@@ -279,8 +287,9 @@ describe("Return value decoding", function () {
     try {
       await instance.fail(); //web3 throws on failure
     } catch (error) {
-      txHash = error.hashes[0]; //it's the only hash involved
+      txHash = error.receipt.transactionHash;
     }
+    assert.isDefined(txHash, "should have errored and set txHash");
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
@@ -303,8 +312,9 @@ describe("Return value decoding", function () {
     try {
       await instance.failNoisy(); //web3 throws on failure
     } catch (error) {
-      txHash = error.hashes[0]; //it's the only hash involved
+      txHash = error.receipt.transactionHash;
     }
+    assert.isDefined(txHash, "should have errored and set txHash");
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
@@ -334,8 +344,9 @@ describe("Return value decoding", function () {
     try {
       await instance.panic(); //web3 throws on failure
     } catch (error) {
-      txHash = error.hashes[0]; //it's the only hash involved
+      txHash = error.receipt.transactionHash;
     }
+    assert.isDefined(txHash, "should have errored and set txHash");
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
@@ -350,14 +361,16 @@ describe("Return value decoding", function () {
     const outputs = decoding.arguments;
     assert.lengthOf(outputs, 1);
     assert.isUndefined(outputs[0].name);
-    const panicCode = Codec.Format.Utils.Inspect.unsafeNativize(outputs[0].value);
+    const panicCode = Codec.Format.Utils.Inspect.unsafeNativize(
+      outputs[0].value
+    );
     assert.strictEqual(panicCode, 1);
   });
 
-  describe("Custom errors", function() {
+  describe("Custom errors", function () {
     it("Decodes custom errors", async function () {
       this.timeout(9000);
-  
+
       //HACK: because this transaction makes web3 throw, we have to extract the hash from
       //the resulting exception (there is supposed to be a non-hacky way but it
       //does not presently work)
@@ -366,13 +379,14 @@ describe("Return value decoding", function () {
       try {
         await instance.local(); //web3 throws on failure
       } catch (error) {
-        txHash = error.hashes[0]; //it's the only hash involved
+        txHash = error.receipt.transactionHash;
       }
-  
+      assert.isDefined(txHash, "should have errored and set txHash");
+
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
-  
+
       await bugger.runToEnd();
-  
+
       const decodings = await bugger.returnValue();
       assert.lengthOf(decodings, 1);
       const decoding = decodings[0];
@@ -396,7 +410,7 @@ describe("Return value decoding", function () {
 
     it("Decodes global custom errors", async function () {
       this.timeout(9000);
-  
+
       //HACK: because this transaction makes web3 throw, we have to extract the hash from
       //the resulting exception (there is supposed to be a non-hacky way but it
       //does not presently work)
@@ -405,13 +419,14 @@ describe("Return value decoding", function () {
       try {
         await instance.global(); //web3 throws on failure
       } catch (error) {
-        txHash = error.hashes[0]; //it's the only hash involved
+        txHash = error.receipt.transactionHash;
       }
-  
+      assert.isDefined(txHash, "should have errored and set txHash");
+
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
-  
+
       await bugger.runToEnd();
-  
+
       const decodings = await bugger.returnValue();
       assert.lengthOf(decodings, 1);
       const decoding = decodings[0];
@@ -425,7 +440,7 @@ describe("Return value decoding", function () {
 
     it("Decodes custom errors declared in other contracts", async function () {
       this.timeout(9000);
-  
+
       //HACK: because this transaction makes web3 throw, we have to extract the hash from
       //the resulting exception (there is supposed to be a non-hacky way but it
       //does not presently work)
@@ -434,13 +449,14 @@ describe("Return value decoding", function () {
       try {
         await instance.foreign(); //web3 throws on failure
       } catch (error) {
-        txHash = error.hashes[0]; //it's the only hash involved
+        txHash = error.receipt.transactionHash;
       }
-  
+      assert.isDefined(txHash, "should have errored and set txHash");
+
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
-  
+
       await bugger.runToEnd();
-  
+
       const decodings = await bugger.returnValue();
       assert.lengthOf(decodings, 1);
       const decoding = decodings[0];
@@ -454,7 +470,7 @@ describe("Return value decoding", function () {
 
     it("Decodes custom errors inlined from libraries", async function () {
       this.timeout(9000);
-  
+
       //HACK: because this transaction makes web3 throw, we have to extract the hash from
       //the resulting exception (there is supposed to be a non-hacky way but it
       //does not presently work)
@@ -463,13 +479,14 @@ describe("Return value decoding", function () {
       try {
         await instance.inlined(); //web3 throws on failure
       } catch (error) {
-        txHash = error.hashes[0]; //it's the only hash involved
+        txHash = error.receipt.transactionHash;
       }
-  
+      assert.isDefined(txHash, "should have errored and set txHash");
+
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
-  
+
       await bugger.runToEnd();
-  
+
       const decodings = await bugger.returnValue();
       assert.lengthOf(decodings, 1);
       const decoding = decodings[0];
@@ -483,7 +500,7 @@ describe("Return value decoding", function () {
 
     it("Decodes custom errors forwarded from external calls", async function () {
       this.timeout(9000);
-  
+
       //HACK: because this transaction makes web3 throw, we have to extract the hash from
       //the resulting exception (there is supposed to be a non-hacky way but it
       //does not presently work)
@@ -492,13 +509,14 @@ describe("Return value decoding", function () {
       try {
         await instance.makeCall(); //web3 throws on failure
       } catch (error) {
-        txHash = error.hashes[0]; //it's the only hash involved
+        txHash = error.receipt.transactionHash;
       }
-  
+      assert.isDefined(txHash, "should have errored and set txHash");
+
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
-  
+
       await bugger.runToEnd();
-  
+
       const decodings = await bugger.returnValue();
       assert.lengthOf(decodings, 1);
       const decoding = decodings[0];
@@ -512,7 +530,7 @@ describe("Return value decoding", function () {
 
     it("Decodes ambiguous custom errors using stacktrace info", async function () {
       this.timeout(9000);
-  
+
       //HACK: because this transaction makes web3 throw, we have to extract the hash from
       //the resulting exception (there is supposed to be a non-hacky way but it
       //does not presently work)
@@ -521,13 +539,14 @@ describe("Return value decoding", function () {
       try {
         await instance.ambiguous(); //web3 throws on failure
       } catch (error) {
-        txHash = error.hashes[0]; //it's the only hash involved
+        txHash = error.receipt.transactionHash;
       }
-  
+      assert.isDefined(txHash, "should have errored and set txHash");
+
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
-  
+
       await bugger.runToEnd();
-  
+
       const decodings = await bugger.returnValue();
       assert.lengthOf(decodings, 1);
       const decoding = decodings[0];
@@ -546,7 +565,7 @@ describe("Return value decoding", function () {
 
     it("Decodes ambiguous custom errors forwarded from external calls using stacktrace info", async function () {
       this.timeout(9000);
-  
+
       //HACK: because this transaction makes web3 throw, we have to extract the hash from
       //the resulting exception (there is supposed to be a non-hacky way but it
       //does not presently work)
@@ -555,13 +574,14 @@ describe("Return value decoding", function () {
       try {
         await instance.ambiguousCall(); //web3 throws on failure
       } catch (error) {
-        txHash = error.hashes[0]; //it's the only hash involved
+        txHash = error.receipt.transactionHash;
       }
-  
+      assert.isDefined(txHash, "should have errored and set txHash");
+
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
-  
+
       await bugger.runToEnd();
-  
+
       const decodings = await bugger.returnValue();
       assert.lengthOf(decodings, 1);
       const decoding = decodings[0];

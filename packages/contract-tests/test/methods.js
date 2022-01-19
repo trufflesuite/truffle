@@ -1,15 +1,19 @@
-var assert = require("chai").assert;
-var BigNumber = require("bignumber.js");
-var util = require("./util");
+const assert = require("chai").assert;
+const BigNumber = require("bignumber.js");
+const util = require("./util");
 
 describe("Methods", function () {
-  var Example;
-  var accounts;
-  var web3;
-  var providerOptions = { vmErrorsOnRPCResponse: false };
+  let Example;
+  let accounts;
+  let web3;
 
   before(async function () {
     this.timeout(10000);
+    const providerOptions = {
+      miner: {
+        instamine: "strict"
+      }
+    };
 
     Example = await util.createExample();
 
@@ -407,9 +411,7 @@ describe("Methods", function () {
         await example.setValue(10, { gas: 10 });
         assert.fail();
       } catch (e) {
-        const errorCorrect =
-          e.message.includes("exceeds gas limit") ||
-          e.message.includes("intrinsic gas too low");
+        const errorCorrect = e.message.includes("intrinsic gas too low");
 
         assert(errorCorrect, "Should OOG");
       }
@@ -421,7 +423,6 @@ describe("Methods", function () {
           .setValue(10, { gas: 10 })
           .on("error", e => {
             const errorCorrect =
-              e.message.includes("exceeds gas limit") ||
               e.message.includes("intrinsic gas too low");
 
             assert(errorCorrect, "Should OOG");

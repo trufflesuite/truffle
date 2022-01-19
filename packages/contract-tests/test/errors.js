@@ -1,9 +1,13 @@
-var assert = require("chai").assert;
-var util = require("./util");
+const assert = require("chai").assert;
+const util = require("./util");
 
 describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
-  var Example;
-  var providerOptions = { vmErrorsOnRPCResponse: true }; // <--- TRUE
+  let Example;
+  const providerOptions = {
+    hardfork: "istanbul",
+    // ganache must use it's default instamine mode (eager) when the following is true
+    vmErrorsOnRPCResponse: true
+  };
 
   before(async function () {
     this.timeout(10000);
@@ -19,20 +23,20 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
         await Example.new(1, { gas: 10 });
         assert.fail();
       } catch (error) {
-        assert(error.message.includes("exceeds gas limit"), "Should OOG");
+        assert(error.message.includes("intrinsic gas too low"), "Should OOG");
       }
     });
 
-    it("should emit OOG errors", function (done) {
+    it("emits OOG errors", function (done) {
       Example.new(1, { gas: 10 })
         .on("error", error => {
-          assert(error.message.includes("exceeds gas limit"), "Should OOG");
+          assert(error.message.includes("intrinsic gas too low"), "Should OOG");
           done();
         })
         .catch(() => null);
     });
 
-    it("should error w/gas limit error if constructor reverts", async function () {
+    it("errors w/gas limit error if constructor reverts", async function () {
       try {
         await Example.new(13); // 13 fails a constructor require gate
         assert.fail();
@@ -43,13 +47,13 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
           "Should not include reason message"
         );
         assert(
-          e.message.includes("exceeds gas limit"),
+          e.message.includes("intrinsic gas too low"),
           "Error should be gas limit err"
         );
       }
     });
 
-    it("should error w/reason string if constructor reverts", async function () {
+    it("errors w/reason string if constructor reverts", async function () {
       try {
         await Example.new(2001); // 2001 fails a constructor require gate w/ a reason
         assert.fail();
@@ -63,7 +67,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
           "Error message should include reason"
         );
         assert(
-          e.message.includes("exceeds gas limit"),
+          e.message.includes("intrinsic gas too low"),
           "Error should be gas limit err"
         );
       }
@@ -71,7 +75,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
 
     // NB: constructor (?) message is unhelpful:
     // "Error: Invalid number of parameters for "undefined". Got 2 expected 1!""
-    it("should reject with web3 validation errors (constructor params)", async function () {
+    it("rejects with web3 validation errors (constructor params)", async function () {
       try {
         await Example.new(25, 25);
         assert.fail();
@@ -83,26 +87,18 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
       }
     });
 
-    it("should append original stacktrace for OOG errors", async function () {
+    it("appends original stacktrace for OOG errors", async function () {
       try {
         await Example.new(1, { gas: 10 });
         assert.fail();
       } catch (e) {
         assert(
-          e.stack.includes("Error: base fee exceeds gas limit"),
+          e.stack.includes("Error: intrinsic gas too low"),
           "Should keep hijacked error description"
         );
         assert(
           e.stack.includes("/test/errors.js:"),
           "Should include original stack details"
-        );
-        assert(
-          e.hijackedStack.includes("Error: base fee exceeds gas limit"),
-          "Should preserve hijacked error message"
-        );
-        assert(
-          e.hijackedStack.includes("dist/runTx.js:"),
-          "Should preserve hijacked stack details"
         );
       }
     });
@@ -110,7 +106,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
 
   describe(".method(): errors", function () {
     // NB: call always takes +1 param: defaultBlock
-    it("should validate method arguments for .calls", async function () {
+    it("validates method arguments for .calls", async function () {
       const example = await Example.new(5);
       try {
         await example.getValue("apples", "oranges", "pineapples");
@@ -123,7 +119,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
       }
     });
 
-    it("should validate method arguments for .sends", async function () {
+    it("validates method arguments for .sends", async function () {
       const example = await Example.new(5);
       try {
         await example.setValue(5, 5);
@@ -136,23 +132,26 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
       }
     });
 
-    it("should reject on OOG", async function () {
+    it("rejects on OOG", async function () {
       const example = await Example.new(1);
       try {
         await example.setValue(10, { gas: 10 });
         assert.fail();
       } catch (e) {
-        assert(e.message.includes("exceeds gas limit"), "Error should be OOG");
+        assert(
+          e.message.includes("intrinsic gas too low"),
+          "Error should be OOG"
+        );
       }
     });
 
-    it("should emit OOG errors", function (done) {
+    it("emits OOG errors", function (done) {
       Example.new(1).then(example => {
         example
           .setValue(10, { gas: 10 })
           .on("error", e => {
             assert(
-              e.message.includes("exceeds gas limit"),
+              e.message.includes("intrinsic gas too low"),
               "Error should be OOG"
             );
             done();
@@ -236,14 +235,14 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
       const example = await Example.new(1);
       try {
         const accounts = await Example.web3.eth.getAccounts();
-        await example.runsOutOfGas({ from: accounts[0], gas: "0x6691b7" });
+        await example.runsOutOfGas({ from: accounts[0], gasLimit: "0x6691b7" });
         assert.fail();
       } catch (e) {
         assert(e.message.includes("out of gas"));
       }
     });
 
-    it("should append original stacktrace for .calls", async function () {
+    it("appends original stacktrace for .calls", async function () {
       const example = await Example.new(1);
       try {
         await example.getValue("apples", "oranges", "pineapples");
@@ -257,18 +256,10 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
           e.stack.includes("/test/errors.js:"),
           "Should include original stack details"
         );
-        assert(
-          e.hijackedStack.includes("Error: Invalid number of"),
-          "Should preserve hijacked error message"
-        );
-        assert(
-          e.hijackedStack.includes("/lib/execute.js:"),
-          "Should preserve hijacked stack details"
-        );
       }
     });
 
-    it("should append original stacktrace for .sends", async function () {
+    it("appends original stacktrace for .sends", async function () {
       const example = await Example.new(1);
       try {
         await example.triggerRequireWithReasonError();
@@ -290,18 +281,10 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
           e.stack.includes("/test/errors.js:"),
           "Should include original stack details"
         );
-        assert(
-          e.hijackedStack.includes("revert reasonstring"),
-          "Should preserve hijacked error message"
-        );
-        assert(
-          e.hijackedStack.includes("/utils/runtimeerror.js:"),
-          "Should preserve hijacked stack details"
-        );
       }
     });
 
-    it("should append original stacktrace for argument parsing error", async function () {
+    it("appends original stacktrace for argument parsing error", async function () {
       const example = await Example.new(1);
       try {
         await example.setValue("foo");
@@ -315,38 +298,22 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
           e.stack.includes("/test/errors.js:"),
           "Should include original stack details"
         );
-        assert(
-          e.hijackedStack.includes("Error: invalid BigNumber string"),
-          "Should preserve hijacked error message"
-        );
-        assert(
-          e.hijackedStack.includes("/src.ts/abi-coder.ts:"),
-          "Should preserve hijacked stack details"
-        );
       }
     });
 
-    it("should append original stacktrace for OOG errors", async function () {
+    it("appends original stacktrace for OOG errors", async function () {
       const example = await Example.new(1);
       try {
         await example.setValue(10, { gas: 10 });
         assert.fail();
       } catch (e) {
         assert(
-          e.stack.includes("Error: base fee exceeds gas limit"),
+          e.stack.includes("Error: intrinsic gas too low"),
           "Should keep hijacked error description"
         );
         assert(
           e.stack.includes("/test/errors.js:"),
           "Should include original stack details"
-        );
-        assert(
-          e.hijackedStack.includes("Error: base fee exceeds gas limit"),
-          "Should preserve hijacked error message"
-        );
-        assert(
-          e.hijackedStack.includes("dist/runTx.js:"),
-          "Should preserve hijacked stack details"
         );
       }
     });

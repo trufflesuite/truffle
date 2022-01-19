@@ -3,7 +3,7 @@ const debug = debugModule("debugger:test:context");
 
 import { assert } from "chai";
 
-import Ganache from "ganache-core";
+import Ganache from "ganache";
 
 import { prepareContracts } from "./helpers";
 import Debugger from "lib/debugger";
@@ -42,18 +42,25 @@ const sources = {
 };
 
 describe("Contexts (Vyper)", function () {
-  var provider;
-
-  var abstractions;
-  var compilations;
+  let provider;
+  let abstractions;
+  let compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
+    provider = Ganache.provider({
+      seed: "debugger",
+      gasLimit: 7000000,
+      logging: {
+        quiet: true
+      },
+      miner: {
+        instamine: "strict"
+      }
+    });
   });
 
   before("Prepare contracts and artifacts", async function () {
     this.timeout(30000);
-
     let prepared = await prepareContracts(provider, sources, migrations);
     abstractions = prepared.abstractions;
     compilations = prepared.compilations;

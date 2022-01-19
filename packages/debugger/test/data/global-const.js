@@ -3,7 +3,7 @@ const debug = debugModule("debugger:test:data:global");
 
 import { assert } from "chai";
 
-import Ganache from "ganache-core";
+import Ganache from "ganache";
 
 import { prepareContracts } from "../helpers";
 import Debugger from "lib/debugger";
@@ -46,7 +46,16 @@ describe("Globally-defined constants", function () {
   var compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
+    provider = Ganache.provider({
+      seed: "debugger",
+      gasLimit: 7000000,
+      logging: {
+        quiet: true
+      },
+      miner: {
+        instamine: "strict"
+      }
+    });
   });
 
   before("Prepare contracts and artifacts", async function () {

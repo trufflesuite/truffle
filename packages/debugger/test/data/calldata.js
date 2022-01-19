@@ -3,7 +3,7 @@ const debug = debugModule("debugger:test:data:calldata");
 
 import { assert } from "chai";
 
-import Ganache from "ganache-core";
+import Ganache from "ganache";
 
 import { prepareContracts, lineOf } from "../helpers";
 import Debugger from "lib/debugger";
@@ -110,13 +110,21 @@ let migrations = {
 };
 
 describe("Calldata Decoding", function () {
-  var provider;
-
-  var abstractions;
-  var compilations;
+  let provider;
+  let abstractions;
+  let compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
+    provider = Ganache.provider({
+      seed: "debugger",
+      gasLimit: 7000000,
+      logging: {
+        quiet: true
+      },
+      miner: {
+        instamine: "strict"
+      }
+    });
   });
 
   before("Prepare contracts and artifacts", async function () {

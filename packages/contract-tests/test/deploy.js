@@ -1,11 +1,17 @@
-var assert = require("chai").assert;
-var util = require("./util");
+const assert = require("chai").assert;
+const util = require("./util");
 
 describe("Deployments", function () {
-  var Example;
-  var web3;
-  var providerOptions = { vmErrorsOnRPCResponse: false };
-
+  let Example;
+  let web3;
+  // ganache v2 had a default blockGasLimit of 0x6691b7, which these tests rely on
+  const providerOptions = {
+    gasLimit: 0x6691b7,
+    hardfork: "istanbul",
+    miner: {
+      instamine: "strict"
+    }
+  };
   before(async function () {
     this.timeout(20000);
 
@@ -16,7 +22,7 @@ describe("Deployments", function () {
   });
 
   describe(".at() [ @geth ]", function () {
-    it("should return a usable duplicate instance with at()", async function () {
+    it("returns a usable duplicate instance with at()", async function () {
       const example = await Example.new(1);
       const copy = await Example.at(example.address);
       let value = await copy.value.call();
@@ -34,20 +40,20 @@ describe("Deployments", function () {
   });
 
   describe(".new(): success [ @geth ]", function () {
-    it("should set the tx hash of the new contract instance", async function () {
+    it("sets the tx hash of the new contract instance", async function () {
       const example = await Example.new(1);
 
       assert(example.transactionHash, "transactionHash should be non-empty");
     });
 
-    it("should estimate gas cost of deployment", async function () {
+    it("estimates gas cost of deployment", async function () {
       const estimate = await Example.new.estimateGas(5);
 
       assert.isNumber(estimate, "Estimate should be a number");
       assert.isAbove(estimate, 0, "Estimate should be non-zero");
     });
 
-    it("should emit the tx hash & set it on the resolved instance", async function () {
+    it("emits the tx hash & set it on the resolved instance", async function () {
       let txHash;
       const example = await Example.new(1).on(
         "transactionHash",
@@ -61,7 +67,7 @@ describe("Deployments", function () {
       );
     });
 
-    it("should fire the confirmations event handler repeatedly", function (done) {
+    it("fires the confirmations event handler repeatedly", function (done) {
       Example.new(5)
         .on("confirmation", function (number, receipt) {
           if (number === 3) {
@@ -79,26 +85,20 @@ describe("Deployments", function () {
   });
 
   describe(".new(): errors [ @geth ]", function () {
-    it("should reject on OOG", async function () {
+    it("rejects on OOG", async function () {
       try {
         await Example.new(1, { gas: 10 });
         assert.fail();
       } catch (error) {
-        const errorCorrect =
-          error.message.includes("exceeds gas limit") ||
-          error.message.includes("intrinsic gas too low");
-
+        const errorCorrect = error.message.includes("intrinsic gas too low");
         assert(errorCorrect, "Should OOG");
       }
     });
 
-    it("should emit OOG errors", function (done) {
+    it("emits OOG errors", function (done) {
       Example.new(1, { gas: 10 })
         .on("error", error => {
-          const errorCorrect =
-            error.message.includes("exceeds gas limit") ||
-            error.message.includes("intrinsic gas too low");
-
+          const errorCorrect = error.message.includes("intrinsic gas too low");
           assert(errorCorrect, "Should OOG");
           done();
         })
@@ -131,7 +131,7 @@ describe("Deployments", function () {
 
     // NB: constructor (?) message is unhelpful:
     // "Error: Invalid number of parameters for "undefined". Got 2 expected 1!""
-    it("should reject with web3 validation errors (constructor params)", async function () {
+    it("rejects with web3 validation errors (constructor params)", async function () {
       try {
         await Example.new(25, 25);
         assert.fail();
@@ -145,24 +145,24 @@ describe("Deployments", function () {
   });
 
   describe(".new(): revert with reasonstring (ganache only)", function () {
-    it("should reject with reason string on revert", async function () {
+    it("rejects with reason string on revert", async function () {
       try {
         await Example.new(2001); // Triggers error with a normal reason string
         assert.fail();
       } catch (error) {
-        assert(error.message.includes("exceeds gas limit"));
+        assert(error.message.includes("intrinsic gas too low"));
         assert(error.message.includes("reasonstring"));
         assert(error.receipt === undefined, "Expected no receipt");
         assert(error.reason === "reasonstring");
       }
     });
 
-    it("should reject with long reason string on revert", async function () {
+    it("rejects with long reason string on revert", async function () {
       try {
         await Example.new(20001); // Triggers error with a long reason string
         assert.fail();
       } catch (error) {
-        assert(error.message.includes("exceeds gas limit"));
+        assert(error.message.includes("intrinsic gas too low"));
         assert(
           error.message.includes(
             "solidity storage is a fun lesson in endianness"
@@ -177,7 +177,7 @@ describe("Deployments", function () {
   });
 
   describe("pre-flight gas estimation", function () {
-    it("should automatically fund a deployment [ @geth ]", async function () {
+    it("automatically funds a deployment [ @geth ]", async function () {
       const estimate = await Example.new.estimateGas(1);
       const defaults = Example.defaults;
 
@@ -187,14 +187,14 @@ describe("Deployments", function () {
       await Example.new(1);
     });
 
-    it("should be possible to turn gas estimation on and off", async function () {
+    it("is possible to turn gas estimation on and off", async function () {
       Example.autoGas = false;
 
       try {
         await Example.new(1);
         assert.fail();
       } catch (err) {
-        assert(err.message.includes("exceeds gas limit"), "Should OOG");
+        assert(err.message.includes("intrinsic gas too low"), "Should OOG");
       }
 
       Example.autoGas = true;
@@ -209,7 +209,7 @@ describe("Deployments", function () {
     });
 
     // Constructor in this test consumes ~6388773 (ganache) vs blockLimit of 6721975.
-    it("should not multiply past the blockLimit", async function () {
+    it("doesn't multiply past the blockLimit", async function () {
       this.timeout(50000);
       let iterations = 6000; // # of times to set a uint in a loop, consuming gas.
 
@@ -229,7 +229,7 @@ describe("Deployments", function () {
   });
 
   describe("web3 timeout overrides", function () {
-    it("should override 50 blocks err / return a usable instance", async function () {
+    it("overrides 50 blocks err / return a usable instance", async function () {
       this.timeout(50000);
 
       // Mock web3 non-response, fire error @ block 50, resolve receipt @ block 52.
@@ -267,7 +267,7 @@ describe("Deployments", function () {
       );
     });
 
-    it("should override gateway tx propagation delay err / return a usable instance", async () => {
+    it("overrides gateway tx propagation delay err / return a usable instance", async () => {
       // Mock web3 non-response, fire error @ block 50, resolve receipt @ block 52.
       const tempSendTransaction = Example.web3.eth.sendTransaction;
       const tempGetTransactionReceipt = Example.web3.eth.getTransactionReceipt;

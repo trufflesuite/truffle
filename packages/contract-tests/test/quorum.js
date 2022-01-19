@@ -1,12 +1,16 @@
-var assert = require("chai").assert;
-var util = require("./util");
+const assert = require("chai").assert;
+const util = require("./util");
 
 describe("Quorum", function () {
-  var Example;
-  var providerOptions = { vmErrorsOnRPCResponse: false };
+  let Example;
 
   before(async function () {
     this.timeout(10000);
+    const providerOptions = {
+      miner: {
+        instamine: "strict"
+      }
+    };
 
     Example = await util.createExample();
 
@@ -17,9 +21,9 @@ describe("Quorum", function () {
     const originalProvider = Example.currentProvider;
     const privateID = "ROAZBWtSacxXQrOe3FGAqJDyJjFePR5ce4TSIzmJ0Bc=";
 
-    var transactionPayloads = [];
+    const transactionPayloads = [];
 
-    var hookedProvider = {
+    const hookedProvider = {
       sendAsync: function () {
         const payload = arguments[0];
 

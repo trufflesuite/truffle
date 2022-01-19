@@ -1,4 +1,4 @@
-const ganache = require("ganache-core");
+const ganache = require("ganache");
 const Web3 = require("web3");
 const assert = require("assert");
 
@@ -9,7 +9,12 @@ describe("Deployer (async / await)", function () {
   let owner;
   let options;
   let networkId;
-  const provider = ganache.provider();
+  const provider = ganache.provider({
+    miner: {
+      instamine: "strict"
+    },
+    logging: { quiet: true }
+  });
   const web3 = new Web3(provider);
 
   beforeEach(async function () {

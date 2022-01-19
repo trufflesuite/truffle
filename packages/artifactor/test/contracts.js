@@ -7,7 +7,7 @@ const fs = require("fs");
 const Config = require("@truffle/config");
 const requireNoCache = require("require-nocache")(module);
 const { Compile } = require("@truffle/compile-solidity");
-const Ganache = require("ganache-core");
+const Ganache = require("ganache");
 const Web3 = require("web3");
 const { Shims } = require("@truffle/compile-common");
 const tmp = require("tmp");
@@ -15,7 +15,11 @@ tmp.setGracefulCleanup();
 
 describe("artifactor + require", () => {
   let Example, accounts, abi, bytecode, networkID, artifactor, config;
-  const provider = Ganache.provider();
+  const provider = Ganache.provider({
+    miner: {
+      instamine: "strict"
+    }
+  });
   const web3 = new Web3();
   web3.setProvider(provider);
 

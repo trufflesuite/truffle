@@ -5,18 +5,16 @@ const assert = require("assert");
 const Server = require("../server");
 const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
-const Web3 = require("web3");
 
-describe("migrate (dry-run)", function() {
+describe("migrate (dry-run)", function () {
   let config;
-  let web3;
   const project = path.join(__dirname, "../../sources/migrations/success");
   const logger = new MemoryLogger();
 
   before(done => Server.start(done));
   after(done => Server.stop(done));
 
-  before(async function() {
+  before(async function () {
     this.timeout(10000);
     config = await sandbox.create(project);
     config.network = "development";
@@ -24,16 +22,10 @@ describe("migrate (dry-run)", function() {
     config.mocha = {
       reporter: new Reporter(logger)
     };
-
-    const provider = new Web3.providers.HttpProvider("http://localhost:8545", {
-      keepAlive: false
-    });
-    web3 = new Web3(provider);
-    networkId = await web3.eth.net.getId();
   });
 
-  it("uses the dry-run option", async function() {
-    this.timeout(70000);
+  it("uses the dry-run option", async function () {
+    this.timeout(120000);
 
     await CommandRunner.run("migrate --dry-run", config);
     const output = logger.contents();

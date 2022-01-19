@@ -1,7 +1,7 @@
 const Web3 = require("web3");
 const { sha3 } = Web3.utils;
 const assert = require("assert");
-const Ganache = require("ganache-core");
+const Ganache = require("ganache");
 const ENS = require("../ens");
 const sinon = require("sinon");
 const ENSJS = require("@ensdomains/ensjs").default;
@@ -20,10 +20,13 @@ let ganacheOptions,
 describe("ENS class", () => {
   before(() => {
     ganacheOptions = {
+      // note that when vmErrorsOnRPCResponse is true, `"eager"` instamine must be enabled (default)
+      vmErrorsOnRPCResponse: true,
       mnemonic:
         "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
       total_accounts: 1,
-      default_ether_balance: 100
+      default_ether_balance: 100,
+      logging: { quiet: true }
     };
     server = Ganache.server(ganacheOptions);
     server.listen(8545, () => {});
@@ -31,14 +34,12 @@ describe("ENS class", () => {
       port: "8545",
       host: "127.0.0.1"
     });
-    provider = new Ganache.provider(providerOptions);
+    provider = Ganache.provider(providerOptions);
   });
-  after(done => {
+  after(async () => {
     if (server) {
-      server.close(() => {
-        server = null;
-        done();
-      });
+      await server.close();
+      server = null;
     }
   });
   beforeEach(async () => {

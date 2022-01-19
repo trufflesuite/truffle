@@ -10,12 +10,12 @@ const runConsole = async (config, ganacheOptions) => {
 
   const consoleCommands = Object.keys(commands).reduce((acc, name) => {
     return !excluded.has(name)
-      ? Object.assign(acc, {[name]: commands[name]})
+      ? Object.assign(acc, { [name]: commands[name] })
       : acc;
   }, {});
 
   await Environment.develop(config, ganacheOptions);
-  const c = new Console(consoleCommands, config.with({noAliases: true}));
+  const c = new Console(consoleCommands, config.with({ noAliases: true }));
   c.on("exit", () => process.exit());
   return await c.start();
 };
@@ -51,9 +51,7 @@ module.exports = async options => {
     mnemonic,
     gasLimit: customConfig.gas || 0x6691b7,
     gasPrice: customConfig.gasPrice || 0x77359400,
-    noVMErrorsOnRPCResponse: true,
-    time: config.genesis_time,
-    _chainId: 1337 //temporary until Ganache v3!
+    time: config.genesis_time
   };
 
   if (customConfig.hardfork !== null && customConfig.hardfork !== undefined) {

@@ -1,6 +1,6 @@
 const debug = require("debug")("test:util");
 const fs = require("fs");
-const ganache = require("ganache-core");
+const ganache = require("ganache");
 const Web3 = require("web3");
 const Web3PromiEvent = require("web3-core-promievent");
 const { Compile } = require("@truffle/compile-solidity");
@@ -9,11 +9,11 @@ const contract = require("@truffle/contract");
 const path = require("path");
 const { Shims } = require("@truffle/compile-common");
 
-var log = {
+const log = {
   log: debug
 };
 
-var util = {
+const util = {
   // Persistent state
   web3: null,
   fakePromiEvent: null,
@@ -75,8 +75,8 @@ var util = {
     options = options || {};
     Object.assign(options, { logger: log, ws: true });
 
-    var provider;
-    var web3 = new Web3();
+    let provider;
+    const web3 = new Web3();
 
     process.env.GETH
       ? (provider = new Web3.providers.HttpProvider("http://127.0.0.1:8545", {
@@ -88,15 +88,15 @@ var util = {
     instance.setProvider(provider);
     util.web3 = web3;
 
-    const accs = await web3.eth.getAccounts();
+    const accounts = await web3.eth.getAccounts();
 
     instance.defaults({
-      from: accs[0]
+      from: accounts[0]
     });
 
     return {
-      web3: web3,
-      accounts: accs
+      web3,
+      accounts
     };
   },
 

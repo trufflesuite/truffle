@@ -3,7 +3,7 @@ const debug = debugModule("debugger:test:endstate");
 
 import { assert } from "chai";
 
-import Ganache from "ganache-core";
+import Ganache from "ganache";
 
 import { prepareContracts } from "./helpers";
 import Debugger from "lib/debugger";
@@ -33,42 +33,51 @@ uint x;
 }
 `;
 
-let sources = {
+const sources = {
   "FailureTest.sol": __FAILURE,
   "SuccessTest.sol": __SUCCESS
 };
 
 describe("End State", function () {
-  var provider;
-
-  var abstractions;
-  var compilations;
+  let provider;
+  let abstractions;
+  let compilations;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
+    provider = Ganache.provider({
+      seed: "debugger",
+      gasLimit: 7000000,
+      logging: {
+        quiet: true
+      },
+      miner: {
+        instamine: "strict"
+      }
+    });
   });
 
   before("Prepare contracts and artifacts", async function () {
     this.timeout(30000);
 
-    let prepared = await prepareContracts(provider, sources);
+    const prepared = await prepareContracts(provider, sources);
     abstractions = prepared.abstractions;
     compilations = prepared.compilations;
   });
 
   it("correctly marks a failed transaction as failed", async function () {
-    let instance = await abstractions.FailureTest.deployed();
+    const instance = await abstractions.FailureTest.deployed();
     //HACK: because this transaction fails, we have to extract the hash from
     //the resulting exception (there is supposed to be a non-hacky way but it
     //does not presently work)
     let txHash;
     try {
-      await instance.run(); //this will throw because of the revert
+      await instance.run();
     } catch (error) {
-      txHash = error.hashes[0]; //it's the only hash involved
+      txHash = error.receipt.transactionHash;
     }
+    assert.isDefined(txHash, "should have errored and set txHash");
 
-    let bugger = await Debugger.forTx(txHash, {
+    const bugger = await Debugger.forTx(txHash, {
       provider,
       compilations,
       lightMode: true
@@ -79,11 +88,11 @@ describe("End State", function () {
 
   it("Gets vars at end of successful contract (and marks it successful)", async function () {
     this.timeout(4000);
-    let instance = await abstractions.SuccessTest.deployed();
-    let receipt = await instance.run();
-    let txHash = receipt.tx;
+    const instance = await abstractions.SuccessTest.deployed();
+    const receipt = await instance.run();
+    const txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
+    const bugger = await Debugger.forTx(txHash, {
       provider,
       compilations
     });

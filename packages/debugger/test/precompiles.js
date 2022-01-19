@@ -3,7 +3,7 @@ const debug = debugModule("debugger:test:precompiles");
 
 import { assert } from "chai";
 
-import Ganache from "ganache-core";
+import Ganache from "ganache";
 
 import { prepareContracts } from "./helpers";
 import Debugger from "lib/debugger";
@@ -47,7 +47,6 @@ const TEST_CASES = [
 
 describe("Precompiled Contracts", function () {
   let provider;
-
   let abstractions;
   let compilations;
 
@@ -55,7 +54,16 @@ describe("Precompiled Contracts", function () {
   let results = {};
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
+    provider = Ganache.provider({
+      seed: "debugger",
+      gasLimit: 7000000,
+      logging: {
+        quiet: true
+      },
+      miner: {
+        instamine: "strict"
+      }
+    });
   });
 
   before("Prepare contracts and artifacts", async function () {

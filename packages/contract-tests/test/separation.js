@@ -1,16 +1,21 @@
-var assert = require("chai").assert;
-var util = require("./util");
+const assert = require("chai").assert;
+const util = require("./util");
 
 describe("instance-instance / instance-constructor separation", function () {
-  var Example;
-  var exampleA;
-  var exampleB;
-  var providerOptions = { vmErrorsOnRPCResponse: false };
+  let Example;
+  let exampleA;
+  let exampleB;
 
   before(async function () {
     this.timeout(10000);
 
     Example = await util.createExample();
+
+    const providerOptions = {
+      miner: {
+        instamine: "strict"
+      }
+    };
 
     return util.setUpProvider(Example, providerOptions);
   });

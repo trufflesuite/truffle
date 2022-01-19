@@ -1,6 +1,6 @@
 const debug = require("debug")("decoder:test:decoding-test");
 const assert = require("assert");
-const Ganache = require("ganache-core");
+const Ganache = require("ganache");
 const path = require("path");
 
 const Decoder = require("../../..");
@@ -14,7 +14,11 @@ describe("State variable decoding", function () {
   let abstractions;
 
   before("Create Provider", async function () {
-    provider = Ganache.provider({ seed: "decoder", gasLimit: 7000000 });
+    provider = Ganache.provider({
+      seed: "decoder",
+      gasLimit: 7000000,
+      logging: { quiet: true }
+    });
   });
 
   before("Prepare contracts and artifacts", async function () {
@@ -47,7 +51,6 @@ describe("State variable decoding", function () {
 
     const initialState = await decoder.state();
     const initialVariables = await decoder.variables();
-
     debug("initialVariables: %O", initialVariables);
 
     assert.equal(initialState.class.typeName, "DecodingSample");

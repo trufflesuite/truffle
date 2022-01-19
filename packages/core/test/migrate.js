@@ -1,18 +1,18 @@
-var assert = require("chai").assert;
-var { default: Box } = require("@truffle/box");
-var Migrate = require("@truffle/migrate");
-var WorkflowCompile = require("@truffle/workflow-compile");
-var Networks = require("../lib/networks");
-var path = require("path");
-var fs = require("fs-extra");
-var glob = require("glob");
-var Ganache = require("ganache-core");
-var Resolver = require("@truffle/resolver");
-var Artifactor = require("@truffle/artifactor");
-var Web3 = require("web3");
+const assert = require("chai").assert;
+const { default: Box } = require("@truffle/box");
+const Migrate = require("@truffle/migrate");
+const WorkflowCompile = require("@truffle/workflow-compile");
+const Networks = require("../lib/networks");
+const path = require("path");
+const fs = require("fs-extra");
+const glob = require("glob");
+const Ganache = require("ganache");
+const Resolver = require("@truffle/resolver");
+const Artifactor = require("@truffle/artifactor");
+const Web3 = require("web3");
 
 describe("migrate", function () {
-  var config;
+  let config;
 
   before("Create a sandbox", async function () {
     config = await Box.sandbox("default");
@@ -22,8 +22,13 @@ describe("migrate", function () {
   });
 
   function createProviderAndSetNetworkConfig(network) {
-    var provider = Ganache.provider({ seed: network });
-    var web3 = new Web3(provider);
+    const provider = Ganache.provider({
+      seed: network,
+      miner: {
+        instamine: "strict"
+      }
+    });
+    const web3 = new Web3(provider);
     return web3.eth.getAccounts().then(accs => {
       return web3.eth.net.getId().then(network_id => {
         config.networks[network] = {
