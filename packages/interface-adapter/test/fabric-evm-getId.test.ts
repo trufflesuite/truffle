@@ -36,7 +36,7 @@ async function prepareGanache(
 
 describe("fabric-evm getId Overload", function () {
   it("returns networkID as valid string instead of number w/ fabric-evm=true", async function () {
-    const preparedGanache = (await prepareGanache(true)) as any;
+    const preparedGanache = await prepareGanache(true);
     try {
       const networkID = await preparedGanache.interfaceAdapter.getNetworkId();
       assert(typeof networkID === "string");
