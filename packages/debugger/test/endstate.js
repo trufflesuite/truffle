@@ -75,7 +75,7 @@ describe("End State", function () {
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
-    if (!txHash) assert.fail("it should have set the txHash");
+    assert.isDefined(txHash, "should have errored and set txHash");
 
     const bugger = await Debugger.forTx(txHash, {
       provider,
