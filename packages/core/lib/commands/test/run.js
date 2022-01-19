@@ -3,13 +3,22 @@ const parseCommandLineFlags = options => {
   const grep = options.grep || options.g;
   const bail = options.bail || options.b;
   const reporter = options.reporter || options.r;
-  return {
-    mocha: {
-      grep,
-      bail,
-      reporter
-    }
-  };
+  if (reporter === undefined) {
+    return {
+      mocha: {
+        grep,
+        bail
+      }
+    };
+  } else {
+    return {
+      mocha: {
+        grep,
+        bail,
+        reporter
+      }
+    };
+  }
 };
 
 module.exports = async function (options) {

@@ -14,7 +14,7 @@ module.exports = {
       type: "boolean",
       default: false
     },
-    debug: {
+    "debug": {
       describe: "Enable in-test debugging",
       type: "boolean",
       default: false
@@ -28,13 +28,13 @@ module.exports = {
       type: "boolean",
       default: false
     },
-    bail: {
+    "bail": {
       alias: "b",
       describe: "Bail after first test failure",
       type: "boolean",
       default: false
     },
-    stacktrace: {
+    "stacktrace": {
       alias: "t",
       describe: "Produce Solidity stacktraces",
       type: "boolean",
@@ -45,10 +45,10 @@ module.exports = {
       type: "boolean",
       default: false
     },
-    reporter: {
+    "reporter": {
       alias: "r",
       describe: "Specify the type of mocha reporter",
-      default: "spec"
+      default: undefined
     }
   },
   help: {
