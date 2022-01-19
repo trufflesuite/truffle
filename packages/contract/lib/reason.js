@@ -23,8 +23,9 @@ const reason = {
       res && typeof res === "object" && typeof res.result === "string";
 
     if (isObject) {
-      // TODO: ganache 2.0 returns the reason string already when
-      // vmErrorsOnRPCResponse === true. Why not use it?
+      // NOTE that Ganache >=2 returns the reason string when
+      // vmErrorsOnRPCResponse === true, which this code could
+      // be updated to respect (instead of computing here)
       const data = res.error.data;
       let resData;
       if ("result" in data) {
@@ -32,7 +33,7 @@ const reason = {
         resData = data.result;
       } else {
         // handle `evm_mine`, `miner_start`, batch payloads, and ganache 2.0
-        // TODO: there are 1 or more failed transactions, handle multiple?
+        // NOTE this only works for a single failed transaction at a time.
         const hash = Object.keys(data)[0];
         const errorDetails = data[hash];
         resData =
