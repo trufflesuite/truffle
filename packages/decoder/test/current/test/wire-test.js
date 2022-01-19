@@ -1083,6 +1083,8 @@ describe("Over-the-wire decoding", function () {
       //we need the raw return data, and contract.call() does not exist yet,
       //so we're going to have to use web3.eth.call()
       let data;
+      // NOTE we wrap this in `try`/`catch` to accommodate new eth_call behavior
+      // see https://github.com/trufflesuite/ganache/issues/1496
       try {
         await web3.eth.call({
           to: deployedContract.address,
