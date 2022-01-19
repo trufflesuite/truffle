@@ -6,12 +6,14 @@ const mainnetData = {
   message: "OK-Missing/Invalid API Key, rate limit of 1/5sec applied",
   result: [
     {
-      SourceCode: fs
-        .readFileSync(path.resolve(__dirname, "./sources/mainnet.sol"))
-        .toString(),
-      ABI: fs
-        .readFileSync(path.resolve(__dirname, "./sources/mainnet.abi.json"))
-        .toString(),
+      SourceCode: fs.readFileSync(
+        path.resolve(__dirname, "./sources/mainnet.sol"),
+        "utf8"
+      ),
+      ABI: fs.readFileSync(
+        path.resolve(__dirname, "./sources/mainnet.abi.json"),
+        "utf8"
+      ),
       ContractName: "UniswapV2Router02",
       CompilerVersion: "v0.6.6+commit.6c089d02",
       OptimizationUsed: "1",
@@ -33,12 +35,14 @@ const arbitrumData = {
   message: "OK",
   result: [
     {
-      SourceCode: fs
-        .readFileSync(path.resolve(__dirname, "./sources/arbitrum.sol"))
-        .toString(),
-      ABI: fs
-        .readFileSync(path.resolve(__dirname, "./sources/arbitrum.abi.json"))
-        .toString(),
+      SourceCode: fs.readFileSync(
+        path.resolve(__dirname, "./sources/arbitrum.sol"),
+        "utf8"
+      ),
+      ABI: fs.readFileSync(
+        path.resolve(__dirname, "./sources/arbitrum.abi.json"),
+        "utf8"
+      ),
       ContractName: "Storage",
       CompilerVersion: "v0.8.4+commit.c7e474f2",
       OptimizationUsed: "1",
@@ -59,12 +63,14 @@ const polygonData = {
   message: "OK-Missing/Invalid API Key, rate limit of 1/5sec applied",
   result: [
     {
-      SourceCode: fs
-        .readFileSync(path.resolve(__dirname, "./sources/polygon.sol"))
-        .toString(),
-      ABI: fs
-        .readFileSync(path.resolve(__dirname, "./sources/polygon.abi.json"))
-        .toString(),
+      SourceCode: fs.readFileSync(
+        path.resolve(__dirname, "./sources/polygon.sol"),
+        "utf8"
+      ),
+      ABI: fs.readFileSync(
+        path.resolve(__dirname, "./sources/polygon.abi.json"),
+        "utf8"
+      ),
       ContractName: "GrowthVault",
       CompilerVersion: "v0.8.9+commit.e5eed63a",
       OptimizationUsed: "1",
