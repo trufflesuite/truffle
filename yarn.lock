@@ -12944,10 +12944,10 @@ ganache-cli@^6.1.0:
     source-map-support "0.5.12"
     yargs "13.2.4"
 
-ganache@7.0.0-rc.0:
-  version "7.0.0-rc.0"
-  resolved "https://registry.yarnpkg.com/ganache/-/ganache-7.0.0-rc.0.tgz#250a588ba23a98ec2ed39b192733d8b9ec964e6f"
-  integrity sha512-4VNB0rhUJBTq3aGuQm4I/PHk/DkiJWfv/odguY40/G4BTgefhksK2miy615LM791iUKeNYnllBuOmd17xQhH/w==
+ganache@7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/ganache/-/ganache-7.0.0.tgz#a3896f049793401de5353fbd263f194609da9eb5"
+  integrity sha512-XkAYQ/xT/sBkV69gED0Uqv992okK0oP3ulzapsIg1pnf7BQX9Zz3G4blu3xGsrQAxyTXyXcdT/EjBpkluKkcxA==
   dependencies:
     "@trufflesuite/bigint-buffer" "1.1.9"
     emittery "0.10.0"
