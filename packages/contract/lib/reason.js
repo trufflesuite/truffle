@@ -13,13 +13,7 @@ const reason = {
   _extract: function(res, web3, _interfaceAdapter) {
     //I'm not sure why interfaceAdapter is here if it's not used,
     //so I just put an underscore in front of its name for now...
-    if (!res) return;
-    if (!res.error && (
-        !res.result /* ganache 2.0 */
-        || (res.error && res.error.data && !res.error.data.result /* ganache 7.x */)
-      )
-    ) return;
-
+    if (!res || (!res.error && !res.result)) return;
 
     const errorStringHash = "0x08c379a0";
 
