@@ -337,7 +337,7 @@ describe("Solidity Debugging", function () {
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }
-      if (!txHash) assert.fail("should have errored and set txHash");
+      assert.isDefined(txHash, "should have errored and set txHash");
 
       let bugger = await Debugger.forTx(txHash, {
         provider,
