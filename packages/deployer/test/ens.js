@@ -20,7 +20,7 @@ let ganacheOptions,
 describe("ENS class", () => {
   before(() => {
     ganacheOptions = {
-      // note that when vmErrorsOnRPCResponse is true, eager instamine must be enabled (default)
+      // note that when vmErrorsOnRPCResponse is true, strict instamine must be enabled (default)
       vmErrorsOnRPCResponse: true,
       mnemonic:
         "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
