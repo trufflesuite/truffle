@@ -258,14 +258,6 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
           e.stack.includes("/test/errors.js:"),
           "Should include original stack details"
         );
-        assert(
-          e.hijackedStack.includes("Error: Invalid number of"),
-          "Should preserve hijacked error message"
-        );
-        assert(
-          e.hijackedStack.includes("/lib/execute.js:"),
-          "Should preserve hijacked stack details"
-        );
       }
     });
 
