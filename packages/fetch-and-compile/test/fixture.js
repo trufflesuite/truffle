@@ -7,10 +7,10 @@ const mainnetData = {
   result: [
     {
       SourceCode: fs
-        .readFileSync(path.resolve(__dirname, "./sol/mainnet.sol"))
+        .readFileSync(path.resolve(__dirname, "./sources/mainnet.sol"))
         .toString(),
       ABI: fs
-        .readFileSync(path.resolve(__dirname, "./abi/mainnet.abi.json"))
+        .readFileSync(path.resolve(__dirname, "./sources/mainnet.abi.json"))
         .toString(),
       ContractName: "UniswapV2Router02",
       CompilerVersion: "v0.6.6+commit.6c089d02",
@@ -34,10 +34,10 @@ const arbitrumData = {
   result: [
     {
       SourceCode: fs
-        .readFileSync(path.resolve(__dirname, "./sol/arbitrum.sol"))
+        .readFileSync(path.resolve(__dirname, "./sources/arbitrum.sol"))
         .toString(),
       ABI: fs
-        .readFileSync(path.resolve(__dirname, "./abi/arbitrum.abi.json"))
+        .readFileSync(path.resolve(__dirname, "./sources/arbitrum.abi.json"))
         .toString(),
       ContractName: "Storage",
       CompilerVersion: "v0.8.4+commit.c7e474f2",
@@ -60,10 +60,10 @@ const polygonData = {
   result: [
     {
       SourceCode: fs
-        .readFileSync(path.resolve(__dirname, "./sol/polygon.sol"))
+        .readFileSync(path.resolve(__dirname, "./sources/polygon.sol"))
         .toString(),
       ABI: fs
-        .readFileSync(path.resolve(__dirname, "./abi/polygon.abi.json"))
+        .readFileSync(path.resolve(__dirname, "./sources/polygon.abi.json"))
         .toString(),
       ContractName: "GrowthVault",
       CompilerVersion: "v0.8.9+commit.e5eed63a",
