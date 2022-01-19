@@ -39,7 +39,6 @@ module.exports = async options => {
     "Ensure you do not use it on production blockchains, or else you risk losing funds.";
 
   const ipcOptions = { log: options.log };
-  const minerOptions = customConfig.miner || {};
 
   const ganacheOptions = {
     host: customConfig.host || "127.0.0.1",
@@ -52,9 +51,7 @@ module.exports = async options => {
     mnemonic,
     gasLimit: customConfig.gas || 0x6691b7,
     gasPrice: customConfig.gasPrice || 0x77359400,
-    time: config.genesis_time,
-    vmErrorsOnRPCResponse: customConfig.vmErrorsOnRPCResponse || false,
-    miner: minerOptions
+    time: config.genesis_time
   };
 
   if (customConfig.hardfork !== null && customConfig.hardfork !== undefined) {
