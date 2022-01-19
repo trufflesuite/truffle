@@ -53,7 +53,7 @@ describe("Quorum getBlock Overload", function () {
   });
 
   it("recovers block timestamp as number w/ quorum=false", async function () {
-    const preparedGanache = (await prepareGanache(false)) as any;
+    const preparedGanache = await prepareGanache(false);
     try {
       const block = await preparedGanache.interfaceAdapter.getBlock(0);
       const expectedBlockTime = new BN(genesisBlockTime.getTime()).divn(1000);
