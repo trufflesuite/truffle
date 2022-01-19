@@ -50,10 +50,10 @@ describe("fetchAndCompile", function () {
     axios.get.callThrough();
     const result = await fetchAndCompile(address, config);
     const contractNameFromResult = result.sourceInfo.contractName;
-    const contractsFromCompilation =
+    const contractNameFromSourceInfo =
       result.compileResult.compilations[0].contracts;
     assert(
-      contractsFromCompilation.some(
+      contractNameFromSourceInfo.some(
         item => item.contractName === "UniswapV2Router02"
       )
     );
@@ -80,10 +80,10 @@ describe("fetchAndCompile", function () {
     axios.get.callThrough();
     const result = await fetchAndCompile(address, config);
     const contractNameFromResult = result.sourceInfo.contractName;
-    const contractsFromCompilation =
+    const contractNameFromSourceInfo =
       result.compileResult.compilations[0].contracts;
     assert(
-      contractsFromCompilation.some(item => item.contractName === "Storage")
+      contractNameFromSourceInfo.some(item => item.contractName === "Storage")
     );
     assert.equal(contractNameFromResult, "Storage");
   });
@@ -108,10 +108,12 @@ describe("fetchAndCompile", function () {
     axios.get.callThrough();
     const result = await fetchAndCompile(address, config);
     const contractNameFromResult = result.sourceInfo.contractName;
-    const contractsFromCompilation =
+    const contractNameFromSourceInfo =
       result.compileResult.compilations[0].contracts;
     assert(
-      contractsFromCompilation.some(item => item.contractName === "GrowthVault")
+      contractNameFromSourceInfo.some(
+        item => item.contractName === "GrowthVault"
+      )
     );
     assert.equal(contractNameFromResult, "GrowthVault");
   });
