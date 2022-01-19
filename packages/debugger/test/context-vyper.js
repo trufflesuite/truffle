@@ -61,9 +61,7 @@ describe("Contexts (Vyper)", function () {
 
   before("Prepare contracts and artifacts", async function () {
     this.timeout(30000);
-    console.log("in prepare ----");
     let prepared = await prepareContracts(provider, sources, migrations);
-    console.log("after prepare");
     abstractions = prepared.abstractions;
     compilations = prepared.compilations;
   });
