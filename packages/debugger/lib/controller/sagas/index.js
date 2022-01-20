@@ -202,14 +202,19 @@ function* stepOver() {
     !finished &&
     // we haven't jumped out
     currentDepth >= startingDepth &&
-    // either: function depth is greater than starting (ignore function calls)
-    // or, if we're at the same depth, keep stepping until we're on a new
-    // line (which may be in a new file)
+    // either function depth is greater than starting
+    // or if multiline, such as at the declartion of a function,
+    // keep stepping until we are at the line having the same
+    // source code range.
+    // Note that the sourceRange.lines is {
+    //   start: { line, column },
+    //   end: { line, column }
+    // }
     (currentDepth > startingDepth ||
       (currentLocation.source.id === startingLocation.source.id &&
-        startingLocation.isMultiline ^
-          (currentLocation.sourceRange.lines.start.line ===
-            startingLocation.sourceRange.lines.start.line)))
+        startingLocation.isMultiline &&
+        JSON.stringify(currentLocation.sourceRange.lines) !==
+          JSON.stringify(startingLocation.sourceRange.lines)))
   );
 }
 
