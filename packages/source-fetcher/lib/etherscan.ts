@@ -23,7 +23,8 @@ const etherscanCommentHeader = `/**
 
 //this looks awkward but the TS docs actually suggest this :P
 const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
-  implements Fetcher {
+  implements Fetcher
+{
   get fetcherName(): string {
     return "etherscan";
   }
@@ -36,6 +37,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
     options?: Types.FetcherOptions
   ): Promise<EtherscanFetcher> {
     debug("options: %O", options);
+    debug("id:", id);
     return new EtherscanFetcher(id, options ? options.apiKey : "");
   }
 
@@ -54,12 +56,14 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       "rinkeby",
       "goerli",
       "optimistic",
-      "kovan-optimistic"
+      "kovan-optimistic",
+      "arbitrum",
+      "polygon"
     ];
     if (networkName === undefined || !supportedNetworks.includes(networkName)) {
       throw new InvalidNetworkError(networkId, "etherscan");
     }
-    this.suffix = networkName === "mainnet" ? "" : `-${networkName}`;
+    this.networkName = networkName;
     debug("apiKey: %s", apiKey);
     this.apiKey = apiKey;
     const baseDelay = this.apiKey ? 200 : 3000; //etherscan permits 5 requests/sec w/a key, 1/3sec w/o
@@ -68,7 +72,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
     this.ready = makeTimer(0); //at start, it's ready to go immediately
   }
 
-  private readonly suffix: string;
+  private readonly networkName: string;
 
   async fetchSourcesForAddress(
     address: string
@@ -81,28 +85,37 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
     address: string
   ): Promise<EtherscanSuccess> {
     const initialTimeoutFactor = 1.5; //I guess?
-    return await retry(
-      async () => await this.makeRequest(address),
-      { retries: 3, minTimeout: this.delay * initialTimeoutFactor }
-    );
+    return await retry(async () => await this.makeRequest(address), {
+      retries: 3,
+      minTimeout: this.delay * initialTimeoutFactor
+    });
   }
 
+  private determineUrl() {
+    switch (this.networkName) {
+      case "arbitrum":
+        return "https://api.arbiscan.io/api";
+      case "polygon":
+        return "https://api.polygonscan.com/api";
+      case "mainnet":
+        return "https://api.etherscan.io/api";
+      default:
+        return `https://api-${this.networkName}.etherscan.io/api`;
+    }
+  }
   private async makeRequest(address: string): Promise<EtherscanSuccess> {
     //not putting a try/catch around this; if it throws, we throw
     await this.ready;
-    const responsePromise = axios.get(
-      `https://api${this.suffix}.etherscan.io/api`,
-      {
-        params: {
-          module: "contract",
-          action: "getsourcecode",
-          address,
-          apikey: this.apiKey
-        },
-        responseType: "json",
-        maxRedirects: 50
-      }
-    );
+    const responsePromise = axios.get(this.determineUrl(), {
+      params: {
+        module: "contract",
+        action: "getsourcecode",
+        address,
+        apikey: this.apiKey
+      },
+      responseType: "json",
+      maxRedirects: 50
+    });
     this.ready = makeTimer(this.delay);
     const response: EtherscanResponse = (await responsePromise).data;
     if (response.status === "0") {
