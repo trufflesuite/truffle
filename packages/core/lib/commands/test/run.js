@@ -3,6 +3,11 @@ const parseCommandLineFlags = options => {
   const grep = options.grep || options.g;
   const bail = options.bail || options.b;
   const reporter = options.reporter || options.r;
+
+  /**
+   * This if-else condition is explicitly defined so that when the reporter is not specified by the user
+   * as the command line argument, it returns the reporter specified in the config.
+   */
   if (reporter === undefined) {
     return {
       mocha: {
