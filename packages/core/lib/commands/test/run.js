@@ -5,8 +5,10 @@ const parseCommandLineFlags = options => {
   const reporter = options.reporter || options.r;
 
   /**
-   * This if-else condition is explicitly defined so that when the reporter is not specified by the user
-   * as the command line argument, it returns the reporter specified in the config.
+   * If the reporter is returned as undefined, it will overlap the reporter specified in the
+   * config and will display the default mocha reporter "spec".
+   * This if-else condition is explicitly written to avoid this overlapping when user specifies a mocha reporter type
+   * in the config and doesn't specify it as the command line argument.
    */
   if (reporter === undefined) {
     return {
