@@ -49,15 +49,15 @@ describe("fetchAndCompile", function () {
     //@ts-ignore
     axios.get.callThrough();
     const result = await fetchAndCompile(address, config);
-    const contractNameFromResult = result.sourceInfo.contractName;
-    const contractNameFromSourceInfo =
+    const contractNameFromSourceInfo = result.sourceInfo.contractName;
+    const contractsFromCompilation =
       result.compileResult.compilations[0].contracts;
     assert(
-      contractNameFromSourceInfo.some(
+      contractsFromCompilation.some(
         item => item.contractName === "UniswapV2Router02"
       )
     );
-    assert.equal(contractNameFromResult, "UniswapV2Router02");
+    assert.equal(contractNameFromSourceInfo, "UniswapV2Router02");
   });
   it("verifies contract from arbitrum", async function () {
     const config = Config.default().merge({
@@ -79,13 +79,13 @@ describe("fetchAndCompile", function () {
     //@ts-ignore
     axios.get.callThrough();
     const result = await fetchAndCompile(address, config);
-    const contractNameFromResult = result.sourceInfo.contractName;
-    const contractNameFromSourceInfo =
+    const contractNameFromSourceInfo = result.sourceInfo.contractName;
+    const contractsFromCompilation =
       result.compileResult.compilations[0].contracts;
     assert(
-      contractNameFromSourceInfo.some(item => item.contractName === "Storage")
+      contractsFromCompilation.some(item => item.contractName === "Storage")
     );
-    assert.equal(contractNameFromResult, "Storage");
+    assert.equal(contractNameFromSourceInfo, "Storage");
   });
   it("verifies contract from polygon", async function () {
     const config = Config.default().merge({
@@ -107,14 +107,12 @@ describe("fetchAndCompile", function () {
     //@ts-ignore
     axios.get.callThrough();
     const result = await fetchAndCompile(address, config);
-    const contractNameFromResult = result.sourceInfo.contractName;
-    const contractNameFromSourceInfo =
+    const contractNameFromSourceInfo = result.sourceInfo.contractName;
+    const contractsFromCompilation =
       result.compileResult.compilations[0].contracts;
     assert(
-      contractNameFromSourceInfo.some(
-        item => item.contractName === "GrowthVault"
-      )
+      contractsFromCompilation.some(item => item.contractName === "GrowthVault")
     );
-    assert.equal(contractNameFromResult, "GrowthVault");
+    assert.equal(contractNameFromSourceInfo, "GrowthVault");
   });
 });
