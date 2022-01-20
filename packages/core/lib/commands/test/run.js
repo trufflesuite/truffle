@@ -3,13 +3,31 @@ const parseCommandLineFlags = options => {
   const grep = options.grep || options.g;
   const bail = options.bail || options.b;
   const reporter = options.reporter || options.r;
-  return {
-    mocha: {
-      grep,
-      bail,
-      reporter
-    }
-  };
+
+  /**
+   * This if-else condition is explicitly written to avoid the overlapping of
+   * the config by the default mocha reporter type when user specifies a mocha reporter type
+   * in the config and doesn't specify it as the command line argument.
+   * If the reporter is returned as undefined, it ignores the specification of any reporter type in the
+   * config and displays the default mocha reporter "spec", as opposed to reporter completely being absent
+   * which results in checking for the reporter type specified in the config.
+   */
+  if (reporter === undefined) {
+    return {
+      mocha: {
+        grep,
+        bail
+      }
+    };
+  } else {
+    return {
+      mocha: {
+        grep,
+        bail,
+        reporter
+      }
+    };
+  }
 };
 
 module.exports = async function (options) {
