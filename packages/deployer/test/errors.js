@@ -74,7 +74,8 @@ describe("Error cases", function () {
           network_id: networkId,
           provider
         }
-      }
+      },
+      network: "test"
     });
     await Environment.detect(options);
     deployer = new Deployer(options);
