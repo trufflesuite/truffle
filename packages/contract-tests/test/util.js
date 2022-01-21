@@ -75,14 +75,11 @@ const util = {
     options = options || {};
     Object.assign(options, { logger: log, ws: true });
 
-    let provider;
     const web3 = new Web3();
 
-    process.env.GETH
-      ? (provider = new Web3.providers.HttpProvider("http://127.0.0.1:8545", {
-          keepAlive: false
-        }))
-      : (provider = ganache.provider(options));
+    const provider = process.env.GETH
+      ? new Web3.providers.WebsocketProvider("ws://127.0.0.1:8545")
+      : ganache.provider(options);
 
     web3.setProvider(provider);
     instance.setProvider(provider);
