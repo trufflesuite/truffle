@@ -12,7 +12,6 @@ describe("Error cases", function () {
   let options;
   let networkId;
   let deployer;
-  let reporter;
   let Abstract;
   let Loops;
   let Example;
@@ -21,10 +20,6 @@ describe("Error cases", function () {
   let UsesExample;
   let IsLibrary;
   let UsesLibrary;
-  let ExampleRevert;
-  let Abstract;
-  let Loops;
-  let ExampleAssert;
 
   const provider = ganache.provider({
     gasLimit: "0x6691b7",
@@ -79,13 +74,8 @@ describe("Error cases", function () {
           network_id: networkId,
           provider
         }
-      },
-<<<<<<< HEAD
-      network: "test",
-=======
-      network: "test"
+      }
     });
->>>>>>> Edit constructor argument format for Deployer; remove seemingly unused basePath arg
     await Environment.detect(options);
     deployer = new Deployer(options);
   });
