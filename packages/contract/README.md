@@ -25,7 +25,6 @@ var contract = require("@truffle/contract");
 
 var MyContract = contract({
   abi: ...,
-  unlinked_binary: ...,
   address: ..., // optional
   // many more
 })
