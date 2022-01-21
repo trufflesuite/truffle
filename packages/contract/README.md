@@ -10,10 +10,10 @@ $ npm install @truffle/contract
 
 ### Features
 
-* Synchronized transactions for better control flow (i.e., transactions won't finish until you're guaranteed they've been mined).
-* Promises. No more callback hell. Works well with `ES6` and `async/await`.
-* Default values for transactions, like `from` address or `gas`.
-* Returning logs, transaction receipt and transaction hash of every synchronized transaction.
+- Synchronized transactions for better control flow (i.e., transactions won't finish until you're guaranteed they've been mined).
+- Promises. No more callback hell. Works well with `ES6` and `async/await`.
+- Default values for transactions, like `from` address or `gas`.
+- Returning logs, transaction receipt and transaction hash of every synchronized transaction.
 
 ### Usage
 
@@ -25,7 +25,6 @@ var contract = require("@truffle/contract");
 
 var MyContract = contract({
   abi: ...,
-  unlinked_binary: ...,
   address: ..., // optional
   // many more
 })
@@ -34,28 +33,30 @@ MyContract.setProvider(provider);
 
 You now have access to the following functions on `MyContract`, as well as many others:
 
-* `at()`: Create an instance of `MyContract` that represents your contract at a specific address.
-* `deployed()`: Create an instance of `MyContract` that represents the default address managed by `MyContract`.
-* `new()`: Deploy a new version of this contract to the network, getting an instance of `MyContract` that represents the newly deployed instance.
+- `at()`: Create an instance of `MyContract` that represents your contract at a specific address.
+- `deployed()`: Create an instance of `MyContract` that represents the default address managed by `MyContract`.
+- `new()`: Deploy a new version of this contract to the network, getting an instance of `MyContract` that represents the newly deployed instance.
 
 Each instance is tied to a specific address on the Ethereum network, and each instance has a 1-to-1 mapping from Javascript functions to contract functions. For instance, if your Solidity contract had a function defined `someFunction(uint value) {}` (solidity), then you could execute that function on the network like so:
 
-  ```javascript
-  var deployed;
-  MyContract.deployed().then(function(instance) {
+```javascript
+var deployed;
+MyContract.deployed()
+  .then(function (instance) {
     deployed = instance;
     return instance.someFunction(5);
-  }).then(function(result) {
+  })
+  .then(function (result) {
     // Do something with the result or continue with more transactions.
   });
-  ```
+```
 
-or equivalently in ES6 <sup>(node.js 8 or newer)</sup>:  
+or equivalently in ES6 <sup>(node.js 8 or newer)</sup>:
 
-  ```javascript
-  const instance = await MyContract.deployed();
-  const result = await instance.someFunction(5);  
-  ```  
+```javascript
+const instance = await MyContract.deployed();
+const result = await instance.someFunction(5);
+```
 
 ### Browser Usage
 
@@ -96,36 +97,42 @@ var account_two = "e1fd0d4a52...";
 var contract_address = "8e2e2cf785...";
 var coin;
 
-MetaCoin.at(contract_address).then(function(instance) {
-  coin = instance;
+MetaCoin.at(contract_address)
+  .then(function (instance) {
+    coin = instance;
 
-  // Make a transaction that calls the function `sendCoin`, sending 3 MetaCoin
-  // to the account listed as account_two.
-  return coin.sendCoin(account_two, 3, {from: account_one});
-}).then(function(result) {
-  // This code block will not be executed until @truffle/contract has verified
-  // the transaction has been processed and it is included in a mined block.
-  // @truffle/contract will error if the transaction hasn't been processed in 120 seconds.
+    // Make a transaction that calls the function `sendCoin`, sending 3 MetaCoin
+    // to the account listed as account_two.
+    return coin.sendCoin(account_two, 3, { from: account_one });
+  })
+  .then(function (result) {
+    // This code block will not be executed until @truffle/contract has verified
+    // the transaction has been processed and it is included in a mined block.
+    // @truffle/contract will error if the transaction hasn't been processed in 120 seconds.
 
-  // Since we're using promises, we can return a promise for a call that will
-  // check account two's balance.
-  return coin.balances.call(account_two);
-}).then(function(balance_of_account_two) {
-  alert("Balance of account two is " + balance_of_account_two + "!"); // => 3
+    // Since we're using promises, we can return a promise for a call that will
+    // check account two's balance.
+    return coin.balances.call(account_two);
+  })
+  .then(function (balance_of_account_two) {
+    alert("Balance of account two is " + balance_of_account_two + "!"); // => 3
 
-  // But maybe too much was sent. Let's send some back.
-  // Like before, will create a transaction that returns a promise, where
-  // the callback won't be executed until the transaction has been processed.
-  return coin.sendCoin(account_one, 1.5, {from: account_two});
-}).then(function(result) {
-  // Again, get the balance of account two
-  return coin.balances.call(account_two)
-}).then(function(balance_of_account_two) {
-  alert("Balance of account two is " + balance_of_account_two + "!") // => 1.5
-}).catch(function(err) {
-  // Easily catch all errors along the whole execution.
-  alert("ERROR! " + err.message);
-});
+    // But maybe too much was sent. Let's send some back.
+    // Like before, will create a transaction that returns a promise, where
+    // the callback won't be executed until the transaction has been processed.
+    return coin.sendCoin(account_one, 1.5, { from: account_two });
+  })
+  .then(function (result) {
+    // Again, get the balance of account two
+    return coin.balances.call(account_two);
+  })
+  .then(function (balance_of_account_two) {
+    alert("Balance of account two is " + balance_of_account_two + "!"); // => 1.5
+  })
+  .catch(function (err) {
+    // Easily catch all errors along the whole execution.
+    alert("ERROR! " + err.message);
+  });
 ```
 
 # API
@@ -208,22 +215,26 @@ var MyOtherContract = MyContract.clone(1337);
 ```
 
 #### `MyContract.numberFormat = number_type`
-You can set this property to choose the number format that abstraction methods return.  The default behavior is to return BN.
+
+You can set this property to choose the number format that abstraction methods return. The default behavior is to return BN.
+
 ```javascript
 // Choices are:  `["BigNumber", "BN", "String"].
-var Example = artifacts.require('Example');
-Example.numberFormat = 'BigNumber';
+var Example = artifacts.require("Example");
+Example.numberFormat = "BigNumber";
 ```
 
 #### `MyContract.timeout(block_timeout)`
-This method allows you to set the block timeout for transactions.  Contract instances created from this abstraction will have the specified transaction block timeout.  This means that if a transaction does not immediately get mined, it will retry for the specified number of blocks.
+
+This method allows you to set the block timeout for transactions. Contract instances created from this abstraction will have the specified transaction block timeout. This means that if a transaction does not immediately get mined, it will retry for the specified number of blocks.
 
 #### `MyContract.autoGas = <boolean>`
-If this is set to true, instances created from this abstraction will use `web3.eth.estimateGas` and then apply a gas multiplier to determine the amount of gas to include with the transaction.  The default value for this is `true`.  See [gasMultiplier](/docs/truffle/reference/contract-abstractions#-code-mycontract-gasmultiplier-gas_multiplier-code-).
+
+If this is set to true, instances created from this abstraction will use `web3.eth.estimateGas` and then apply a gas multiplier to determine the amount of gas to include with the transaction. The default value for this is `true`. See [gasMultiplier](/docs/truffle/reference/contract-abstractions#-code-mycontract-gasmultiplier-gas_multiplier-code-).
 
 #### `MyContract.gasMultiplier(gas_multiplier)`
-This is the value used when `autoGas` is enabled to determine the amount of gas to include with transactions.  The gas is computed by using `web3.eth.estimateGas` and multiplying it by the gas multiplier.  The default value is `1.25`.
 
+This is the value used when `autoGas` is enabled to determine the amount of gas to include with transactions. The gas is computed by using `web3.eth.estimateGas` and multiplying it by the gas multiplier. The default value is `1.25`.
 
 ### Contract Instance API
 
@@ -250,7 +261,7 @@ From Javascript's point of view, this contract has three functions: `setValue`, 
 When we call `setValue()`, this creates a transaction. From Javascript:
 
 ```javascript
-instance.setValue(5).then(function(result) {
+instance.setValue(5).then(function (result) {
   // result object contains import information about the transaction
   console.log("Value was set to", result.logs[0].args.val);
 });
@@ -299,19 +310,19 @@ This isn't very useful in this case, since `setValue()` sets things, and the val
 
 #### Calling getters
 
-However, we can *get* the value using `getValue()`, using `.call()`. Calls are always free and don't cost any Ether, so they're good for calling functions that read data off the blockchain:
+However, we can _get_ the value using `getValue()`, using `.call()`. Calls are always free and don't cost any Ether, so they're good for calling functions that read data off the blockchain:
 
 ```javascript
-instance.getValue.call().then(function(val) {
+instance.getValue.call().then(function (val) {
   // val represents the `value` storage object in the solidity contract
   // since the contract returns that value.
 });
 ```
 
-Even more helpful, however is we *don't even need* to use `.call` when a function is marked as `view` or `pure`, because `@truffle/contract` will automatically know that that function can only be interacted with via a call:
+Even more helpful, however is we _don't even need_ to use `.call` when a function is marked as `view` or `pure`, because `@truffle/contract` will automatically know that that function can only be interacted with via a call:
 
 ```javascript
-instance.getValue().then(function(val) {
+instance.getValue().then(function (val) {
   // val reprsents the `value` storage object in the solidity contract
   // since the contract returns that value.
 });
@@ -322,7 +333,7 @@ instance.getValue().then(function(val) {
 When you make a transaction, you're given a `result` object that gives you a wealth of information about the transaction. You're given the transaction has (`result.tx`), the decoded events (also known as logs; `result.logs`), and a transaction receipt (`result.receipt`). In the below example, you'll recieve the `ValueSet()` event because you triggered the event using the `setValue()` function:
 
 ```javascript
-instance.setValue(5).then(function(result) {
+instance.setValue(5).then(function (result) {
   // result.tx => transaction hash, string
   // result.logs => array of trigger events (1 item in this case)
   // result.receipt => receipt object
@@ -344,7 +355,7 @@ This is promisified like all available contract instance functions, and has the 
 If you only want to send Ether to the contract a shorthand is available:
 
 ```javascript
-instance.send(web3.toWei(1, "ether")).then(function(result) {
+instance.send(web3.toWei(1, "ether")).then(function (result) {
   // Same result object as above.
 });
 ```
@@ -354,7 +365,7 @@ instance.send(web3.toWei(1, "ether")).then(function(result) {
 Run this function to estimate the gas usage:
 
 ```javascript
-instance.setValue.estimateGas(5).then(function(result) {
+instance.setValue.estimateGas(5).then(function (result) {
   // result => estimated gas for this transaction
 });
 ```
