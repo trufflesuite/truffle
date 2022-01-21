@@ -25,7 +25,7 @@ const ganacheOptions = {
   host: customConfig.host || "127.0.0.1",
   port: customConfig.port || 9545
 };
-const url = `http://${ganacheOptions.host}:${ganacheOptions.port}/`;
+const url = `ws://${ganacheOptions.host}:${ganacheOptions.port}/`;
 
 //set up the develop network to use, including setting up provider
 detectedConfig.networks.develop = {
@@ -33,7 +33,7 @@ detectedConfig.networks.develop = {
   port: customConfig.port || 9545,
   network_id: customConfig.network_id || 5777,
   provider: function () {
-    return new Web3.providers.HttpProvider(url, { keepAlive: false });
+    return new Web3.providers.WebsocketProvider(url);
   }
 };
 
