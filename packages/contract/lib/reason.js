@@ -38,9 +38,7 @@ const reason = {
         // NOTE this only works for a single failed transaction at a time.
         const hash = Object.keys(data)[0];
         const errorDetails = data[hash];
-        resData =
-          errorDetails.result /* ganache 3.0 */ ||
-          errorDetails.return /* ganache 2.0 */;
+        resData = errorDetails.return /* ganache 2.0 */;
       }
 
       if (resData && resData.includes(errorStringHash)) {
