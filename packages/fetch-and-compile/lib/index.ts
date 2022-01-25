@@ -18,6 +18,12 @@ export async function fetchAndCompile(
   return recognizer.getResult();
 }
 
+/**
+ * warning: while this function deduplicates inputs,
+ * it does *not* make any further effort to avoid redundant
+ * fetches (e.g. if multiple addresses share the same source),
+ * unlike fetchAndCompileForDebugger
+ */
 export async function fetchAndCompileMultiple(
   addresses: string[],
   config: Config
