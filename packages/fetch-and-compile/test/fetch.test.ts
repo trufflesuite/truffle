@@ -21,6 +21,9 @@ beforeEach(function () {
     const address = requestConfig.params.address;
     return { data: etherscanFixture[url][address] };
   });
+  //TS can't detect that is a sinon stub so we have to use ts-ignore
+  //@ts-ignore
+  axios.get.callThrough();
 });
 
 afterEach(function () {
