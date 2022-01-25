@@ -1,29 +1,27 @@
+import debugModule from "debug";
+const debug = debugModule("fetch-and-compile:test");
+
 import assert from "assert";
 import "mocha";
 import Config from "@truffle/config";
 import { fetchAndCompile, fetchAndCompileMultiple } from "../lib/index";
 import axios from "axios";
 import sinon from "sinon";
-const fixture: any = require("./fixture.js");
+const { etherscanFixture }: any = require("./fixture.js");
 
-function stubAxiosGetMethod(url: string, address: string, data: object) {
-  sinon
-    .stub(axios, "get")
-    .withArgs(url, {
-      params: {
-        module: "contract",
-        action: "getsourcecode",
-        address: address,
-        apikey: ""
-      },
-      responseType: "json",
-      maxRedirects: 50
-    })
-    .returns(Promise.resolve({ data }));
-  //TS can't detect that is a sinon stub so we have to use ts-ignore
-  //@ts-ignore
-  axios.get.callThrough();
-}
+beforeEach(function () {
+  sinon.stub(axios, "get").callsFake(async function (url, requestConfig) {
+    debug("url: %s", url);
+    debug("requestConfig: %o", requestConfig);
+    if (requestConfig === undefined) {
+      //apologies for the misuse of assertions, but I can't
+      //get this to compile otherwise due to strictNullChecks
+      assert.fail("requestConfig was undefined");
+    }
+    const address = requestConfig.params.address;
+    return { data: etherscanFixture[url][address] };
+  });
+});
 
 afterEach(function () {
   //TS can't detect that is a sinon stub so we have to use ts-ignore
@@ -43,11 +41,6 @@ describe("fetchAndCompile", function () {
       network: "mainnet"
     });
     const address = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
-    stubAxiosGetMethod(
-      "https://api.etherscan.io/api",
-      address,
-      fixture.mainnetData[address]
-    );
     const result = await fetchAndCompile(address, config);
     const contractNameFromSourceInfo = result.sourceInfo.contractName;
     assert.equal(contractNameFromSourceInfo, "UniswapV2Router02");
@@ -70,12 +63,6 @@ describe("fetchAndCompile", function () {
       network: "arbitrum"
     });
     const address = "0x2B52D1B2b359eA39536069D8c6f2a3CFE3a09c31";
-    //asserting that arbitrum url and contract address is passed as args
-    stubAxiosGetMethod(
-      "https://api.arbiscan.io/api",
-      address,
-      fixture.arbitrumData[address]
-    );
     const result = await fetchAndCompile(address, config);
     const contractNameFromSourceInfo = result.sourceInfo.contractName;
     assert.equal(contractNameFromSourceInfo, "Storage");
@@ -96,12 +83,6 @@ describe("fetchAndCompile", function () {
       network: "polygon"
     });
     const address = "0xBB6828C8228E5C641Eb6d89Ca22e09E6311CA398";
-    //asserting that polygon url and contract address is passed as args
-    stubAxiosGetMethod(
-      "https://api.polygonscan.com/api",
-      address,
-      fixture.polygonData[address]
-    );
     const result = await fetchAndCompile(address, config);
     const contractNameFromSourceInfo = result.sourceInfo.contractName;
     assert.equal(contractNameFromSourceInfo, "GrowthVault");
@@ -127,24 +108,6 @@ describe("fetchAndCompileMultiple", function () {
       "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
       "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e"
     ];
-    //doing the stubbing manually for this test since we need to cover multiple inputs
-    let stub = sinon.stub(axios, "get");
-    for (const address of addresses) {
-      stub
-        .withArgs("https://api.etherscan.io/api", {
-          params: {
-            module: "contract",
-            action: "getsourcecode",
-            address: address,
-            apikey: ""
-          },
-          responseType: "json",
-          maxRedirects: 50
-        })
-        .returns(Promise.resolve({ data: fixture.mainnetData[address] }));
-    }
-    //@ts-ignore for same reasons as above
-    axios.get.callThrough();
     const { results, failures } = await fetchAndCompileMultiple(
       addresses,
       config
