@@ -10,17 +10,20 @@ import sinon from "sinon";
 const { etherscanFixture }: any = require("./fixture.js");
 
 beforeEach(function () {
-  sinon.stub(axios, "get").callsFake(async function (url, requestConfig) {
-    debug("url: %s", url);
-    debug("requestConfig: %o", requestConfig);
-    if (requestConfig === undefined) {
-      //apologies for the misuse of assertions, but I can't
-      //get this to compile otherwise due to strictNullChecks
-      assert.fail("requestConfig was undefined");
-    }
-    const address = requestConfig.params.address;
-    return { data: etherscanFixture[url][address] };
-  });
+  sinon
+    .stub(axios, "get")
+    .withArgs(sinon.match.in(Object.keys(etherscanFixture)), sinon.match.any)
+    .callsFake(async function (url, requestConfig) {
+      debug("url: %s", url);
+      debug("requestConfig: %o", requestConfig);
+      if (requestConfig === undefined) {
+        //apologies for the misuse of assertions, but I can't
+        //get this to compile otherwise due to strictNullChecks
+        assert.fail("requestConfig was undefined");
+      }
+      const address = requestConfig.params.address;
+      return { data: etherscanFixture[url][address] };
+    });
   //TS can't detect that is a sinon stub so we have to use ts-ignore
   //@ts-ignore
   axios.get.callThrough();
