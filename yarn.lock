@@ -1428,19 +1428,6 @@
     testrpc "0.0.1"
     web3-utils "^1.0.0-beta.31"
 
-"@ensdomains/ens@^0.4.0":
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/@ensdomains/ens/-/ens-0.4.0.tgz#bca927b4ac81f5da0ab1580a2dfea5289a95357a"
-  integrity sha512-J6/Gc1ttVz//dW/BVl5Wz9tJ0wB2LMSzzbXTJ5rZLQvWMkpN8o3Rukw1EeDA1zmS3IOjOdsmu3wgQkGA7vtGRw==
-  dependencies:
-    bluebird "^3.5.2"
-    eth-ens-namehash "^2.0.8"
-    ethereumjs-testrpc "^6.0.3"
-    ganache-cli "^6.1.0"
-    solc "^0.4.20"
-    testrpc "0.0.1"
-    web3-utils "^1.0.0-beta.31"
-
 "@ensdomains/ensjs@^2.0.1":
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/@ensdomains/ensjs/-/ensjs-2.0.1.tgz#c27438f9ca074825ddb08430988c7decf2062a91"
