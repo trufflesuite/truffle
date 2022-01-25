@@ -7,6 +7,7 @@ import type {
   FetchAndCompileMultipleResult,
   FetchAndCompileFailureRecord
 } from "./types";
+import Web3Utils from "web3-utils";
 
 export class MultipleRecognizer implements Recognizer {
   private unrecognizedAddresses: string[];
@@ -16,8 +17,8 @@ export class MultipleRecognizer implements Recognizer {
 
   constructor(addresses: string[]) {
     this.unrecognizedAddresses = [
-      ...new Set(addresses.map(address => address.toLowerCase()))
-    ]; //remove duplicates (case insensitive) and clone
+      ...new Set(addresses.map(Web3Utils.toChecksumAddress))
+    ]; //remove duplicates (checksum to make case-insensitive & canonical) and clone
   }
 
   getResults(): FetchAndCompileMultipleResult {
