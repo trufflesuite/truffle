@@ -15,6 +15,8 @@ module.exports = {
   },
 
   getProvider: function (options) {
+    //TODO: why not default to websocket?
+    //ask @gnidan
     let provider;
     if (options.provider && typeof options.provider === "function") {
       provider = options.provider();
@@ -75,7 +77,9 @@ module.exports = {
           } catch (error) {
             console.log(
               "> Something went wrong while attempting to connect to the " +
-                "network at " + host + ". Check your network configuration."
+                "network at " +
+                host +
+                ". Check your network configuration."
             );
             clearTimeout(noResponseFromNetworkCall);
             clearTimeout(networkCheck);
@@ -86,5 +90,5 @@ module.exports = {
         }, networkCheckDelay);
       })();
     });
-  },
+  }
 };
