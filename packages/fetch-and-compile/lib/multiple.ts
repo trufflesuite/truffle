@@ -15,7 +15,9 @@ export class MultipleRecognizer implements Recognizer {
   private failureLog: { [address: string]: FetchAndCompileFailureRecord } = {};
 
   constructor(addresses: string[]) {
-    this.unrecognizedAddresses = [...new Set(addresses)]; //remove duplicates and clone
+    this.unrecognizedAddresses = [
+      ...new Set(addresses.map(address => address.toLowerCase()))
+    ]; //remove duplicates (case insensitive) and clone
   }
 
   getResults(): FetchAndCompileMultipleResult {
