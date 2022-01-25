@@ -1,10 +1,10 @@
-import type { WorkflowCompileResult } from "@truffle/compile-common";
+import type { CompilerResult } from "@truffle/compile-common";
 import type { SourceInfo } from "@truffle/source-fetcher";
 
 export type FailureType = "fetch" | "compile" | "language";
 
 export interface FetchAndCompileResult {
-  compileResult: WorkflowCompileResult;
+  compileResult: CompilerResult;
   sourceInfo: SourceInfo;
   fetchedVia: string;
 }

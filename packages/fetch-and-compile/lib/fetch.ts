@@ -11,7 +11,7 @@ import {
 import type Config from "@truffle/config";
 const { Compile } = require("@truffle/compile-solidity"); //sorry for untyped import!
 import type { Recognizer, FailureType } from "./types";
-import type { WorkflowCompileResult } from "@truffle/compile-common";
+import type { CompilerResult } from "@truffle/compile-common";
 
 export async function fetchAndCompileForRecognizer(
   recognizer: Recognizer,
@@ -122,7 +122,7 @@ async function tryFetchAndCompileAddress(
     //if using docker, transform it (this does nothing if not using docker)
     externalConfig = transformIfUsingDocker(externalConfig, config);
     //compile the sources
-    let compileResult: WorkflowCompileResult;
+    let compileResult: CompilerResult;
     try {
       compileResult = await Compile.sources({
         options: externalConfig.with({ quiet: true }),

@@ -1,14 +1,14 @@
 import debugModule from "debug";
 const debug = debugModule("fetch-and-compile:recognizer");
 import type { Recognizer, FailureType, FetchAndCompileResult } from "./types";
-import type { WorkflowCompileResult } from "@truffle/compile-common";
+import type { CompilerResult } from "@truffle/compile-common";
 import type { SourceInfo } from "@truffle/source-fetcher";
 
 export class SingleRecognizer implements Recognizer {
   private address: string;
   private recognized: boolean = false;
   private fetchedVia: string;
-  private compileResult: WorkflowCompileResult;
+  private compileResult: CompilerResult;
   private sourceInfo: SourceInfo;
 
   constructor(address: string) {
