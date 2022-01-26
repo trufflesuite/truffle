@@ -46,9 +46,10 @@ async function compile(config) {
     return a;
   }, []);
 
-  const contracts = compilations.reduce((a, compilation) => {
-    return a.concat(compilation.contracts);
-  }, []);
+  // collect together contracts as well as compilations
+  const contracts = rawCompilations.flatMap(
+    compilerResult => compilerResult.contracts
+  );
 
   // return WorkflowCompileResult
   return { contracts, compilations };

@@ -10,6 +10,7 @@ const findContracts = require("@truffle/contract-sources");
 const Config = require("@truffle/config");
 const { Profiler } = require("@truffle/profiler");
 const { requiredSources } = require("./profiler");
+const { Compilations } = require("@truffle/compile-common");
 
 const { compileJson } = require("./vyper-json");
 
@@ -201,7 +202,7 @@ async function compileNoJson({ paths: sources, options, version }) {
   });
   const compilations = await Promise.all(promises);
 
-  return { compilations };
+  return Compilations.promoteCompileResult({ compilations });
 }
 
 const Compile = {
@@ -216,7 +217,7 @@ const Compile = {
     // no vyper files found, no need to check vyper
     // (note that JSON-only will not activate vyper)
     if (vyperFiles.length === 0) {
-      return { compilations: [] };
+      return { compilations: [], contracts: [] };
     }
 
     Compile.display(vyperFiles, options);
@@ -242,7 +243,7 @@ const Compile = {
 
     // no vyper targets found, no need to check Vyper
     if (vyperFilesStrict.length === 0) {
-      return { compilations: [] };
+      return { compilations: [], contracts: [] };
     }
 
     const { allSources, compilationTargets } = await requiredSources(
@@ -267,7 +268,7 @@ const Compile = {
 
     // no vyper targets found, no need to activate Vyper
     if (vyperTargets.length === 0) {
-      return { compilations: [] };
+      return { compilations: [], contracts: [] };
     }
 
     //having gotten the sources from the resolver, we invoke compileJson
@@ -308,7 +309,7 @@ const Compile = {
     );
     // no vyper targets found, no need to check Vyper
     if (vyperFilesStrict.length === 0) {
-      return { compilations: [] };
+      return { compilations: [], contracts: [] };
     }
 
     return await Compile.sourcesWithDependencies({
@@ -328,7 +329,7 @@ const Compile = {
     const profiler = await new Profiler({});
     const updated = await profiler.updated(options);
     if (updated.length === 0) {
-      return { compilations: [] };
+      return { compilations: [], contracts: [] };
     }
     return await Compile.sourcesWithDependencies({
       paths: updated,

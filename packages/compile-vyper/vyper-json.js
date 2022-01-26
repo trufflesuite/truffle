@@ -16,15 +16,12 @@ function compileJson({ sources: rawSources, options, version, command }) {
   //the contracts directory is the root directory.  note this means that
   //if an imported source from somewhere other than FS uses an absolute
   //import to refer to its own project root, it won't work.  But, oh well.
-  const {
-    sources,
-    targets,
-    originalSourcePaths
-  } = Common.Sources.collectSources(
-    rawSources,
-    options.compilationTargets,
-    options.contracts_directory
-  );
+  const { sources, targets, originalSourcePaths } =
+    Common.Sources.collectSources(
+      rawSources,
+      options.compilationTargets,
+      options.contracts_directory
+    );
 
   //Vyper complains if we give it a source that is not also a target,
   //*unless* we give it as an interface.  So we have to split that out.
@@ -32,8 +29,8 @@ function compileJson({ sources: rawSources, options, version, command }) {
   const [properSourcePaths, interfacePaths] = partition(
     Object.keys(sources),
     targets.length > 0
-      ? sourcePath => !sourcePath.endsWith(".json") &&
-        targets.includes(sourcePath)
+      ? sourcePath =>
+          !sourcePath.endsWith(".json") && targets.includes(sourcePath)
       : sourcePath => !sourcePath.endsWith(".json")
   );
 
@@ -104,7 +101,9 @@ function compileJson({ sources: rawSources, options, version, command }) {
     compiler
   };
 
-  return { compilations: [compilation] };
+  return Common.Compilations.promoteCompileResult({
+    compilations: [compilation]
+  });
 }
 
 function invokeCompiler({ compilerInput, command }) {
@@ -120,12 +119,7 @@ function execVyperJson(inputString, command) {
   });
 }
 
-function prepareCompilerInput({
-  sources,
-  settings,
-  interfaces,
-  version
-}) {
+function prepareCompilerInput({ sources, settings, interfaces, version }) {
   const outputSelection = prepareOutputSelection({ version });
   return {
     language: "Vyper",
@@ -153,7 +147,7 @@ function prepareInterfaces({ interfaces }) {
       sourcePath.endsWith(".json") //for JSON we need the ABI *object*, not JSON!
         ? { [sourcePath]: { abi: JSON.parse(content) } }
         : { [sourcePath]: { content } }
-     )
+    )
     .reduce((a, b) => Object.assign({}, a, b), {});
 }
 
