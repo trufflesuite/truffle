@@ -3,7 +3,7 @@
     "declaration": true,
     "module": "commonjs",
     "esModuleInterop": true,
-    "target": "es2019",
+    "target": "es2018",
     "downlevelIteration": true,
     "noImplicitAny": true,
     "moduleResolution": "node",
