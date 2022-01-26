@@ -10,7 +10,6 @@ const SUPPORTED_COMPILERS = {
   external: require("@truffle/external-compile").Compile
 };
 
-
 async function compile(config) {
   // determine compiler(s) to use
   //
@@ -51,12 +50,8 @@ async function compile(config) {
     return a.concat(compilation.contracts);
   }, []);
 
-  const sources = compilations.reduce((a, compilation) => {
-    return a.concat(compilation.sources);
-  }, []);
-
   // return WorkflowCompileResult
-  return { contracts, sources, compilations };
+  return { contracts, compilations };
 }
 
 const WorkflowCompile = {
@@ -65,7 +60,7 @@ const WorkflowCompile = {
 
     if (config.events) config.events.emit("compile:start");
 
-    const { contracts, sources, compilations } = await compile(config);
+    const { contracts, compilations } = await compile(config);
 
     const compilers = compilations
       .reduce((a, compilation) => {
@@ -90,27 +85,22 @@ const WorkflowCompile = {
 
     return {
       contracts,
-      sources,
       compilations
     };
   },
 
   async compileAndSave(options) {
-    const { contracts, sources, compilations } = await this.compile(options);
+    const { contracts, compilations } = await this.compile(options);
 
-    return await this.save(options, { contracts, sources, compilations });
+    return await this.save(options, { contracts, compilations });
   },
 
-  async save(options, { contracts, sources, compilations }) {
+  async save(options, { contracts, compilations }) {
     const config = prepareConfig(options);
 
     await fse.ensureDir(config.contracts_build_directory);
 
-    if (
-      options.db &&
-      options.db.enabled === true &&
-      contracts.length > 0
-    ) {
+    if (options.db && options.db.enabled === true && contracts.length > 0) {
       // currently if Truffle Db fails to load, getTruffleDb returns `null`
       const Db = getTruffleDb();
 
@@ -124,7 +114,7 @@ const WorkflowCompile = {
           }
         });
         ({ contracts, compilations } = await project.loadCompile({
-          result: { contracts, sources, compilations }
+          result: { contracts, compilations }
         }));
       }
     }
@@ -132,7 +122,7 @@ const WorkflowCompile = {
     const artifacts = contracts.map(Shims.NewToLegacy.forContract);
     await config.artifactor.saveAll(artifacts);
 
-    return { contracts, sources, compilations };
+    return { contracts, compilations };
   },
 
   async assignNames(options, { contracts }) {
