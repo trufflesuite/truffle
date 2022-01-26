@@ -5,7 +5,7 @@
     "esModuleInterop": true,
     "lib": ["esnext"],
     "skipLibCheck": true,
-    "target": "es6",
+    "target": "es2018",
     "moduleResolution": "node",
     "downlevelIteration": true,
     "allowSyntheticDefaultImports": true,
