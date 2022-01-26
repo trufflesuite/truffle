@@ -10,7 +10,6 @@ import Migrate from "@truffle/migrate";
 import Box from "@truffle/box";
 import Resolver from "@truffle/resolver";
 import * as Codec from "@truffle/codec";
-import flatten from "lodash.flatten";
 
 export async function prepareContracts(provider, sources = {}, migrations) {
   let config = await createSandbox();
@@ -129,10 +128,8 @@ export async function compile(config) {
       quiet: true
     })
   );
-  const contractNames = flatten(
-    compilations.map(compilation =>
-      compilation.contracts.map(contract => contract.contractName)
-    )
+  const contractNames = compilations.flatMap(compilation =>
+    compilation.contracts.map(contract => contract.contractName)
   );
   return { compilations, contractNames };
 }

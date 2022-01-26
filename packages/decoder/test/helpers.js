@@ -6,7 +6,6 @@ const Migrate = require("@truffle/migrate");
 const Codec = require("@truffle/codec");
 const Config = require("@truffle/config");
 const { Environment } = require("@truffle/environment");
-const flatten = require("lodash.flatten");
 const tmp = require("tmp");
 tmp.setGracefulCleanup();
 
@@ -51,9 +50,8 @@ async function prepareContracts(provider, projectDir) {
     abstractions[name] = config.resolver.require(name);
   }
 
-  const compilations = Codec.Compilations.Utils.shimCompilations(
-    rawCompilations
-  );
+  const compilations =
+    Codec.Compilations.Utils.shimCompilations(rawCompilations);
 
   return {
     abstractions,
@@ -69,10 +67,8 @@ async function compile(config) {
       quiet: true
     })
   );
-  const contractNames = flatten(
-    compilations.map(compilation =>
-      compilation.contracts.map(contract => contract.contractName)
-    )
+  const contractNames = compilations.flatMap(compilation =>
+    compilation.contracts.map(contract => contract.contractName)
   );
   return { compilations, contractNames };
 }

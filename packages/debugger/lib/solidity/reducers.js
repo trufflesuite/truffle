@@ -4,7 +4,6 @@ const debug = debugModule("debugger:solidity:reducers");
 import { combineReducers } from "redux";
 
 import * as actions from "./actions";
-import flatten from "lodash.flatten";
 
 const DEFAULT_SOURCES = {
   byCompilationId: {}, //user sources
@@ -57,11 +56,10 @@ function sources(state = DEFAULT_SOURCES, action) {
           ...state.byId,
           ...Object.assign(
             {},
-            ...flatten(
-              Object.values(action.sources.user).concat(
-                Object.values(action.sources.internal)
-              )
-            ).map(source => (source ? { [source.id]: source } : {}))
+            ...Object.values(action.sources.user)
+              .concat(Object.values(action.sources.internal))
+              .flat()
+              .map(source => (source ? { [source.id]: source } : {}))
           )
         }
       };
