@@ -10,7 +10,7 @@
     "strict": true,
     "outDir": "dist",
     "baseUrl": ".",
-    "lib": ["es2017", "dom"],
+    "lib": ["es2019", "dom"],
     "rootDir": "./src",
     "typeRoots": [
       "./typings",
