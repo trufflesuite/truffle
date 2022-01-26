@@ -7,3 +7,7 @@ export function promoteCompileResult(
   const contracts = compilations.flatMap(compilation => compilation.contracts);
   return { compilations, contracts };
 }
+
+export function emptyWorkflowCompileResult(): WorkflowCompileResult {
+  return { compilations: [], contracts: [] };
+}

@@ -157,7 +157,7 @@ const Compile = {
       fileName.endsWith(".sol")
     );
     if (solidityTargets.length === 0 && yulPaths.length === 0) {
-      return { compilations: [], contracts: [] };
+      return Compilations.emptyWorkflowCompileResult();
     }
 
     reportSources({ paths: [...compilationTargets, ...yulPaths], options });
