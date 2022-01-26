@@ -9,7 +9,7 @@
     "sourceMap": true,
     "outDir": "dist",
     "baseUrl": ".",
-    "lib": ["es2017"],
+    "lib": ["es2019"],
     "paths": {
       "web3": [
         "../../node_modules/@types/web3/index",

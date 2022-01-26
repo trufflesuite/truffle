@@ -7,6 +7,7 @@ const { run } = require("./run");
 const { normalizeOptions } = require("./normalizeOptions");
 const { compileWithPragmaAnalysis } = require("./compileWithPragmaAnalysis");
 const { reportSources } = require("./reportSources");
+const { Compilations } = require("@truffle/compile-common");
 const expect = require("@truffle/expect");
 const partition = require("lodash.partition");
 const fs = require("fs-extra");
@@ -20,14 +21,11 @@ async function compileYulPaths(yulPaths, options) {
     //for simplicity, since there are no imports to worry about)
     const yulSource = fs.readFileSync(path, { encoding: "utf8" });
     debug("Compiling Yul");
-    const compilation = await run(
-      { [path]: yulSource },
-      yulOptions,
-      { language: "Yul" }
-    );
+    const compilation = await run({ [path]: yulSource }, yulOptions, {
+      language: "Yul"
+    });
     debug("Yul compiled successfully");
 
-    // returns CompilerResult - see @truffle/compile-common
     if (compilation.contracts.length > 0) {
       yulCompilations.push(compilation);
     }
@@ -61,11 +59,9 @@ const Compile = {
     let yulCompilations = [];
     if (solidityNames.length > 0) {
       debug("Compiling Solidity (specified sources)");
-      const compilation = await run(
-        soliditySources,
-        options,
-        { noTransform: true }
-      );
+      const compilation = await run(soliditySources, options, {
+        noTransform: true
+      });
       debug("Compiled Solidity");
       if (compilation.contracts.length > 0) {
         solidityCompilations = [compilation];
@@ -73,15 +69,15 @@ const Compile = {
     }
     for (const name of yulNames) {
       debug("Compiling Yul (specified sources)");
-      const compilation = await run(
-        { [name]: sources[name] },
-        options,
-        { language: "Yul", noTransform: true },
-      );
+      const compilation = await run({ [name]: sources[name] }, options, {
+        language: "Yul",
+        noTransform: true
+      });
       debug("Compiled Yul");
       yulCompilations.push(compilation);
     }
-    return { compilations: [...solidityCompilations, ...yulCompilations] };
+    const compilations = [...solidityCompilations, ...yulCompilations];
+    return Compilations.promoteCompileResult({ compilations });
   },
 
   async all(options) {
@@ -161,7 +157,7 @@ const Compile = {
       fileName.endsWith(".sol")
     );
     if (solidityTargets.length === 0 && yulPaths.length === 0) {
-      return { compilations: [] };
+      return Compilations.emptyWorkflowCompileResult();
     }
 
     reportSources({ paths: [...compilationTargets, ...yulPaths], options });
@@ -174,7 +170,6 @@ const Compile = {
       const compilation = await run(allSources, solidityOptions, { solc });
       debug("Solidity compiled successfully");
 
-      // returns CompilerResult - see @truffle/compile-common
       if (compilation.contracts.length > 0) {
         solidityCompilations = [compilation];
       }
@@ -182,9 +177,8 @@ const Compile = {
 
     const yulCompilations = await compileYulPaths(yulPaths, options);
 
-    return {
-      compilations: [...solidityCompilations, ...yulCompilations]
-    };
+    const compilations = [...solidityCompilations, ...yulCompilations];
+    return Compilations.promoteCompileResult({ compilations });
   },
 
   async sourcesWithPragmaAnalysis({ paths, options }) {

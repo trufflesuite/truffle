@@ -8,7 +8,7 @@
     "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "dist",
-    "lib": ["es2017"],
+    "lib": ["es2019"],
     "paths": {},
     "types": ["node"],
   },
