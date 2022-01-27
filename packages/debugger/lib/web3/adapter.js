@@ -10,7 +10,8 @@ export default class Web3Adapter {
   }
 
   async getTrace(txHash) {
-    let result = await promisify(this.web3.currentProvider.send)(
+    const provider = this.web3.currentProvider;
+    const result = await promisify(provider.send.bind(provider))(
       //send *only* uses callbacks, so we use promsifiy to make things more
       //readable
       {
