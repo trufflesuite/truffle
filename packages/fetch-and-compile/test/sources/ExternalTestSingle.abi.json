@@ -1,0 +1,1 @@
+[{"inputs":[{"internalType":"address","name":"input","type":"address"}],"name":"identity","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"nonpayable","type":"function"}]

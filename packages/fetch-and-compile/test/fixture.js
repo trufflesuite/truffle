@@ -32,7 +32,6 @@ const etherscanFixture = {
         }
       ]
     },
-
     "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e": {
       status: "1",
       message: "OK-Missing/Invalid API Key, rate limit of 1/5sec applied",
@@ -66,6 +65,39 @@ const etherscanFixture = {
       ]
     }
   },
+
+  "https://api-goerli.etherscan.com/api": {
+    "0xeBC990735Aafd169415D675B6e90aB901f8BDae1": {
+      status: "1",
+      message: "OK-Missing/Invalid API Key, rate limit of 1/5sec applied",
+      result: [
+        {
+          SourceCode: fs.readFileSync(
+            path.resolve(__dirname, "./sources/ExternalTestSingle.sol"),
+            "utf8"
+          ),
+          ABI: fs.readFileSync(
+            path.resolve(__dirname, "./sources/ExternalTestSingle.abi.json"),
+            "utf8"
+          ),
+          ContractName: "ExternalTestSingle",
+          CompilerVersion: "v0.6.8+commit.0bbfe453",
+          OptimizationUsed: "0",
+          Runs: "200",
+          ConstructorArguments: "",
+          EVMVersion: "Default",
+          Library:
+            "ExternalTestLibrarySingle:1d882c678b9b135bc2c685d131d26423c33451ce",
+          LicenseType: "MIT",
+          Proxy: "0",
+          Implementation: "",
+          SwarmSource:
+            "ipfs://8c97e23b847357ddeeb8c13acce8281b2c4e92cebecbc0176500e8fc2715a143"
+        }
+      ]
+    }
+  },
+
   "https://api.arbiscan.io/api": {
     "0x2B52D1B2b359eA39536069D8c6f2a3CFE3a09c31": {
       status: "1",
@@ -96,6 +128,7 @@ const etherscanFixture = {
       ]
     }
   },
+
   "https://api.polygonscan.com/api": {
     "0xBB6828C8228E5C641Eb6d89Ca22e09E6311CA398": {
       status: "1",

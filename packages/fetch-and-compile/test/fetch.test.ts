@@ -47,20 +47,50 @@ describe("fetchAndCompile", function () {
       network: "mainnet"
     });
     const address = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
+    const expectedName = "UniswapV2Router02";
     const result = await fetchAndCompile(address, config);
     assert.equal(result.fetchedVia, "etherscan");
     const contractNameFromSourceInfo = result.sourceInfo.contractName;
-    assert.equal(contractNameFromSourceInfo, "UniswapV2Router02");
+    assert.equal(contractNameFromSourceInfo, expectedName);
     const contractsFromCompilation =
       result.compileResult.compilations[0].contracts;
     assert(
       contractsFromCompilation.some(
-        contract => contract.contractName === "UniswapV2Router02"
+        contract => contract.contractName === expectedName
       )
     );
     assert(
       result.compileResult.contracts.some(
-        contract => contract.contractName === "UniswapV2Router02"
+        contract => contract.contractName === expectedName
+      )
+    );
+  });
+
+  it("verifies contract from goerli", async function () {
+    const config = Config.default().merge({
+      networks: {
+        goerli: {
+          network_id: 5
+        }
+      },
+      network: "goerli"
+    });
+    const address = "0xeBC990735Aafd169415D675B6e90aB901f8BDae1";
+    const expectedName = "ExternalTestSingle";
+    const result = await fetchAndCompile(address, config);
+    assert.equal(result.fetchedVia, "etherscan");
+    const contractNameFromSourceInfo = result.sourceInfo.contractName;
+    assert.equal(contractNameFromSourceInfo, expectedName);
+    const contractsFromCompilation =
+      result.compileResult.compilations[0].contracts;
+    assert(
+      contractsFromCompilation.some(
+        contract => contract.contractName === expectedName
+      )
+    );
+    assert(
+      result.compileResult.contracts.some(
+        contract => contract.contractName === expectedName
       )
     );
   });
@@ -75,20 +105,21 @@ describe("fetchAndCompile", function () {
       network: "arbitrum"
     });
     const address = "0x2B52D1B2b359eA39536069D8c6f2a3CFE3a09c31";
+    const expectedName = "Storage";
     const result = await fetchAndCompile(address, config);
     assert.equal(result.fetchedVia, "etherscan");
     const contractNameFromSourceInfo = result.sourceInfo.contractName;
-    assert.equal(contractNameFromSourceInfo, "Storage");
+    assert.equal(contractNameFromSourceInfo, expectedName);
     const contractsFromCompilation =
       result.compileResult.compilations[0].contracts;
     assert(
       contractsFromCompilation.some(
-        contract => contract.contractName === "Storage"
+        contract => contract.contractName === expectedName
       )
     );
     assert(
       result.compileResult.contracts.some(
-        contract => contract.contractName === "Storage"
+        contract => contract.contractName === expectedName
       )
     );
   });
@@ -103,20 +134,21 @@ describe("fetchAndCompile", function () {
       network: "polygon"
     });
     const address = "0xBB6828C8228E5C641Eb6d89Ca22e09E6311CA398";
+    const expectedName = "GrowthVault";
     const result = await fetchAndCompile(address, config);
     assert.equal(result.fetchedVia, "etherscan");
     const contractNameFromSourceInfo = result.sourceInfo.contractName;
-    assert.equal(contractNameFromSourceInfo, "GrowthVault");
+    assert.equal(contractNameFromSourceInfo, expectedName);
     const contractsFromCompilation =
       result.compileResult.compilations[0].contracts;
     assert(
       contractsFromCompilation.some(
-        contract => contract.contractName === "GrowthVault"
+        contract => contract.contractName === expectedName
       )
     );
     assert(
       result.compileResult.contracts.some(
-        contract => contract.contractName === "GrowthVault"
+        contract => contract.contractName === expectedName
       )
     );
   });
