@@ -45,7 +45,11 @@ module.exports = async function (options) {
   }
 
   async function setupDryRunEnvironmentThenRunMigrations(config) {
-    await Environment.fork(config);
+    await Environment.fork(config, {
+      logging: {
+        quiet: true
+      }
+    });
     // Copy artifacts to a temporary directory
     const temporaryDirectory = tmp.dirSync({
       unsafeCleanup: true,

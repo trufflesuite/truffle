@@ -26,7 +26,7 @@ const Environment = {
   },
 
   // Ensure you call Environment.detect() first.
-  fork: async function (config) {
+  fork: async function (config, ganacheOptions) {
     expect.options(config, ["from", "provider", "networks", "network"]);
 
     const interfaceAdapter = createInterfaceAdapter({
@@ -47,7 +47,8 @@ const Environment = {
     const upstreamNetwork = config.network;
     const upstreamConfig = config.networks[upstreamNetwork];
     const forkedNetwork = config.network + "-fork";
-    const ganacheOptions = {
+    ganacheOptions = {
+      ...ganacheOptions,
       fork: config.provider,
       gasLimit: block.gasLimit
     };
