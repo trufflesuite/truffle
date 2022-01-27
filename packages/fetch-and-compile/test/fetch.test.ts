@@ -82,7 +82,7 @@ afterEach(function () {
   axios.request.restore();
 });
 
-describe("Etherscan single-source case", function () {
+describe("Etherscan single-source Solidity case", function () {
   it("verifies contract from mainnet", async function () {
     const config = Config.default().merge({
       networks: {
@@ -200,7 +200,7 @@ describe("Etherscan single-source case", function () {
   });
 });
 
-describe("Etherscan multi-source and JSON cases", function () {
+describe("Etherscan Solidity multi-source and JSON cases", function () {
   it("verifies Etherscan multi-source contract", async function () {
     const config = Config.default().merge({
       networks: {
@@ -303,6 +303,36 @@ describe("Sourcify cases", function () {
     });
     const address = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
     const expectedName = "WETH9";
+    const result = await fetchAndCompile(address, config);
+    assert.equal(result.fetchedVia, "sourcify");
+    const contractNameFromSourceInfo = result.sourceInfo.contractName;
+    assert.equal(contractNameFromSourceInfo, expectedName);
+    const contractsFromCompilation =
+      result.compileResult.compilations[0].contracts;
+    assert(
+      contractsFromCompilation.some(
+        contract => contract.contractName === expectedName
+      )
+    );
+    assert(
+      result.compileResult.contracts.some(
+        contract => contract.contractName === expectedName
+      )
+    );
+  });
+
+  it("verifies goerli Sourcify contract with special characters in path", async function () {
+    const config = Config.default().merge({
+      networks: {
+        goerli: {
+          network_id: 5
+        }
+      },
+      network: "goerli",
+      sourceFetchers: ["sourcify", "etherscan"]
+    });
+    const address = "0x18019753569c1fa1536f11DBFd80F373D2e05728";
+    const expectedName = "ExternalTestWacky";
     const result = await fetchAndCompile(address, config);
     assert.equal(result.fetchedVia, "sourcify");
     const contractNameFromSourceInfo = result.sourceInfo.contractName;
