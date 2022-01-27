@@ -48,6 +48,7 @@ describe("fetchAndCompile", function () {
     });
     const address = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
     const result = await fetchAndCompile(address, config);
+    assert.equal(result.fetchedVia, "etherscan");
     const contractNameFromSourceInfo = result.sourceInfo.contractName;
     assert.equal(contractNameFromSourceInfo, "UniswapV2Router02");
     const contractsFromCompilation =
@@ -75,6 +76,7 @@ describe("fetchAndCompile", function () {
     });
     const address = "0x2B52D1B2b359eA39536069D8c6f2a3CFE3a09c31";
     const result = await fetchAndCompile(address, config);
+    assert.equal(result.fetchedVia, "etherscan");
     const contractNameFromSourceInfo = result.sourceInfo.contractName;
     assert.equal(contractNameFromSourceInfo, "Storage");
     const contractsFromCompilation =
@@ -102,6 +104,7 @@ describe("fetchAndCompile", function () {
     });
     const address = "0xBB6828C8228E5C641Eb6d89Ca22e09E6311CA398";
     const result = await fetchAndCompile(address, config);
+    assert.equal(result.fetchedVia, "etherscan");
     const contractNameFromSourceInfo = result.sourceInfo.contractName;
     assert.equal(contractNameFromSourceInfo, "GrowthVault");
     const contractsFromCompilation =
@@ -141,6 +144,7 @@ describe("fetchAndCompileMultiple", function () {
     const expectedNames = ["UniswapV2Router02", "ENSRegistryWithFallback"];
     for (let i = 0; i < addresses.length; i++) {
       const result = results[addresses[i]];
+      assert.equal(result.fetchedVia, "etherscan");
       const contractNameFromSourceInfo = result.sourceInfo.contractName;
       assert.equal(contractNameFromSourceInfo, expectedNames[i]);
       const contractsFromCompilation =
