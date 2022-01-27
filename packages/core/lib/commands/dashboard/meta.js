@@ -1,7 +1,7 @@
 module.exports = {
   command: "dashboard",
   description:
-    "Start a Truffle Dashboard instance + DashboardProvider RPC endpoint",
+    "Start Truffle Dashboard to sign development transactions using browser wallet",
   builder: {
     port: {
       describe: "Specify the port to start the dashboard and RPC endpoint on",
