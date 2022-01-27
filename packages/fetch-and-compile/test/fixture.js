@@ -108,6 +108,36 @@ const etherscanFixture = {
             "ipfs://d6d4801f9ee5ce4b5e274aa314f55666a990157e9d1d8c603b29a56275ea9b73"
         }
       ]
+    },
+    "0xede17dF1a202Ca498a822151079648aCa96e2633": {
+      status: "1",
+      message: "OK-Missing/Invalid API Key, rate limit of 1/5sec applied",
+      result: [
+        {
+          //note the extra braces here; Etherscan indicates JSON format
+          //(as opposed to multi-source format) by putting an extra pair
+          //of braces around the JSON
+          SourceCode: `{${fs.readFileSync(
+            path.resolve(__dirname, "./sources/L1StandardBridge.json"),
+            "utf8"
+          )}}`,
+          ABI: fs.readFileSync(
+            path.resolve(__dirname, "./sources/L1StandardBridge.abi.json"),
+            "utf8"
+          ),
+          ContractName: "L1StandardBridge",
+          CompilerVersion: "v0.8.9+commit.e5eed63a",
+          OptimizationUsed: "1",
+          Runs: "10000",
+          ConstructorArguments: "",
+          EVMVersion: "Default",
+          Library: "",
+          LicenseType: "",
+          Proxy: "0",
+          Implementation: "",
+          SwarmSource: ""
+        }
+      ]
     }
   },
 

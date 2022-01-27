@@ -183,6 +183,35 @@ describe("Multi-source cases", function () {
       )
     );
   });
+
+  it("verifies Etherscan JSON-format contract", async function () {
+    const config = Config.default().merge({
+      networks: {
+        mainnet: {
+          network_id: 1
+        }
+      },
+      network: "mainnet"
+    });
+    const address = "0xede17dF1a202Ca498a822151079648aCa96e2633";
+    const expectedName = "L1StandardBridge";
+    const result = await fetchAndCompile(address, config);
+    assert.equal(result.fetchedVia, "etherscan");
+    const contractNameFromSourceInfo = result.sourceInfo.contractName;
+    assert.equal(contractNameFromSourceInfo, expectedName);
+    const contractsFromCompilation =
+      result.compileResult.compilations[0].contracts;
+    assert(
+      contractsFromCompilation.some(
+        contract => contract.contractName === expectedName
+      )
+    );
+    assert(
+      result.compileResult.contracts.some(
+        contract => contract.contractName === expectedName
+      )
+    );
+  });
 });
 
 describe("fetchAndCompileMultiple", function () {
