@@ -54,7 +54,12 @@ describe("fetchAndCompile", function () {
       result.compileResult.compilations[0].contracts;
     assert(
       contractsFromCompilation.some(
-        item => item.contractName === "UniswapV2Router02"
+        contract => contract.contractName === "UniswapV2Router02"
+      )
+    );
+    assert(
+      result.compileResult.contracts.some(
+        contract => contract.contractName === "UniswapV2Router02"
       )
     );
   });
@@ -75,7 +80,14 @@ describe("fetchAndCompile", function () {
     const contractsFromCompilation =
       result.compileResult.compilations[0].contracts;
     assert(
-      contractsFromCompilation.some(item => item.contractName === "Storage")
+      contractsFromCompilation.some(
+        contract => contract.contractName === "Storage"
+      )
+    );
+    assert(
+      result.compileResult.contracts.some(
+        contract => contract.contractName === "Storage"
+      )
     );
   });
 
@@ -95,7 +107,14 @@ describe("fetchAndCompile", function () {
     const contractsFromCompilation =
       result.compileResult.compilations[0].contracts;
     assert(
-      contractsFromCompilation.some(item => item.contractName === "GrowthVault")
+      contractsFromCompilation.some(
+        contract => contract.contractName === "GrowthVault"
+      )
+    );
+    assert(
+      result.compileResult.contracts.some(
+        contract => contract.contractName === "GrowthVault"
+      )
     );
   });
 });
@@ -128,7 +147,12 @@ describe("fetchAndCompileMultiple", function () {
         result.compileResult.compilations[0].contracts;
       assert(
         contractsFromCompilation.some(
-          item => item.contractName === expectedNames[i]
+          contract => contract.contractName === expectedNames[i]
+        )
+      );
+      assert(
+        result.compileResult.contracts.some(
+          contract => contract.contractName === expectedNames[i]
         )
       );
     }
