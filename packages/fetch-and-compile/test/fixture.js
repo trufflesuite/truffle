@@ -32,7 +32,6 @@ const etherscanFixture = {
         }
       ]
     },
-
     "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e": {
       status: "1",
       message: "OK-Missing/Invalid API Key, rate limit of 1/5sec applied",
@@ -64,8 +63,116 @@ const etherscanFixture = {
             "bzzr://e307c1741e952c90d504ae303fa3fa1e5f6265200c65304d90abaa909d2dee4b"
         }
       ]
+    },
+    "0x60BB16c4A931b1a0B8A7D945C651DD90f41D42Cf": {
+      status: "1",
+      message: "OK-Missing/Invalid API Key, rate limit of 1/5sec applied",
+      result: [
+        {
+          SourceCode: JSON.stringify(
+            Object.fromEntries(
+              [
+                "Address.sol",
+                "Context.sol",
+                "ERC20.sol",
+                "IERC20.sol",
+                "Ownable.sol",
+                "SafeMath.sol"
+              ].map(sourceName => [
+                sourceName,
+                {
+                  content: fs.readFileSync(
+                    path.resolve(__dirname, `./sources/${sourceName}`),
+                    "utf8"
+                  )
+                }
+              ])
+            )
+          ),
+          ABI: fs.readFileSync(
+            path.resolve(__dirname, "./sources/ERC20.abi.json"),
+            "utf8"
+          ),
+          ContractName: "ERC20",
+          CompilerVersion: "v0.6.12+commit.27d51765",
+          OptimizationUsed: "0",
+          Runs: "200",
+          ConstructorArguments:
+            "00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000d46696e616e6365426c6f636b730000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000034642580000000000000000000000000000000000000000000000000000000000",
+          EVMVersion: "Default",
+          Library: "",
+          LicenseType: "MIT",
+          Proxy: "0",
+          Implementation: "",
+          SwarmSource:
+            "ipfs://d6d4801f9ee5ce4b5e274aa314f55666a990157e9d1d8c603b29a56275ea9b73"
+        }
+      ]
+    },
+    "0xede17dF1a202Ca498a822151079648aCa96e2633": {
+      status: "1",
+      message: "OK-Missing/Invalid API Key, rate limit of 1/5sec applied",
+      result: [
+        {
+          //note the extra braces here; Etherscan indicates JSON format
+          //(as opposed to multi-source format) by putting an extra pair
+          //of braces around the JSON
+          SourceCode: `{${fs.readFileSync(
+            path.resolve(__dirname, "./sources/L1StandardBridge.json"),
+            "utf8"
+          )}}`,
+          ABI: fs.readFileSync(
+            path.resolve(__dirname, "./sources/L1StandardBridge.abi.json"),
+            "utf8"
+          ),
+          ContractName: "L1StandardBridge",
+          CompilerVersion: "v0.8.9+commit.e5eed63a",
+          OptimizationUsed: "1",
+          Runs: "10000",
+          ConstructorArguments: "",
+          EVMVersion: "Default",
+          Library: "",
+          LicenseType: "",
+          Proxy: "0",
+          Implementation: "",
+          SwarmSource: ""
+        }
+      ]
     }
   },
+
+  "https://api-goerli.etherscan.com/api": {
+    "0xeBC990735Aafd169415D675B6e90aB901f8BDae1": {
+      status: "1",
+      message: "OK-Missing/Invalid API Key, rate limit of 1/5sec applied",
+      result: [
+        {
+          SourceCode: fs.readFileSync(
+            path.resolve(__dirname, "./sources/ExternalTestSingle.sol"),
+            "utf8"
+          ),
+          ABI: fs.readFileSync(
+            path.resolve(__dirname, "./sources/ExternalTestSingle.abi.json"),
+            "utf8"
+          ),
+          ContractName: "ExternalTestSingle",
+          CompilerVersion: "v0.6.8+commit.0bbfe453",
+          OptimizationUsed: "0",
+          Runs: "200",
+          ConstructorArguments: "",
+          EVMVersion: "Default",
+          Library:
+            "ExternalTestLibrarySingle:1d882c678b9b135bc2c685d131d26423c33451ce",
+          LicenseType: "MIT",
+          Proxy: "0",
+          Implementation: "",
+          SwarmSource:
+            "ipfs://8c97e23b847357ddeeb8c13acce8281b2c4e92cebecbc0176500e8fc2715a143"
+        }
+      ]
+    }
+  },
+
   "https://api.arbiscan.io/api": {
     "0x2B52D1B2b359eA39536069D8c6f2a3CFE3a09c31": {
       status: "1",
@@ -96,6 +203,7 @@ const etherscanFixture = {
       ]
     }
   },
+
   "https://api.polygonscan.com/api": {
     "0xBB6828C8228E5C641Eb6d89Ca22e09E6311CA398": {
       status: "1",
@@ -129,4 +237,6 @@ const etherscanFixture = {
   }
 };
 
-module.exports = { etherscanFixture };
+const sourcifyFixture = {};
+
+module.exports = { etherscanFixture, sourcifyFixture };

@@ -180,7 +180,8 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     return await retry(
       async bail => {
         try {
-          return (await axios(requestObject)).data;
+          //note: we use axios.request rather than just axios so we can stub it in tests!
+          return (await axios.request(requestObject)).data;
         } catch (error) {
           //check: is this a 404 error? if so give up
           if (error.response && error.response.status === 404) {
