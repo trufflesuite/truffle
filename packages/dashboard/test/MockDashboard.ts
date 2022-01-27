@@ -10,8 +10,7 @@ import { promisify } from "util";
 import WebSocket from "ws";
 import Ganache from "ganache-core";
 
-// TODO: This mock dashboard was copy-pasted from the dashboard-provider tests
-// We should figure out whether we want to make this DRYer
+// NOTE This mock dashboard was copy-pasted from the dashboard-provider tests
 export default class MockDashboard {
   socket?: WebSocket;
 

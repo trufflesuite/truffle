@@ -1,6 +1,6 @@
 import { jsonToBase64 } from "@truffle/dashboard-message-bus";
 import { spawn } from "child_process";
-import { DashboardServerOptions } from "./types";
+import type { DashboardServerOptions } from "./types";
 
 export const startDashboardInBackground = (options: DashboardServerOptions) => {
   const dashboardPath = `${__dirname}/start-dashboard`;

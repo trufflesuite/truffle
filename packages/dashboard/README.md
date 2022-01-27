@@ -4,7 +4,7 @@ The Truffle Dashboard is the frontend that is used in certain parts of the Truff
 
 ## Installation & Usage
 
-There is usually no reason to install the `@truffle/dashboard` package directly, since it will be started automatically when running `truffle dashboard` or when using `@truffle/dashboard-provider`. But if you are developing extensions to the Truffle Dashboard it can be useful to install the dashboard.
+There is usually no reason to install the @truffle/dashboard package directly, since it will be started automatically when running `truffle dashboard` or when using @truffle/dashboard-provider. But if you are developing extensions to the Truffle Dashboard it can be useful to install the dashboard.
 
 ```
 npm install @truffle/dashboard
@@ -14,7 +14,7 @@ npm install @truffle/dashboard
 yarn add @truffle/dashboard
 ```
 
-The `@truffle/dashboard` package can then be used to start a new dashboard process either in the foreground or background.
+This package can then be used to start a new dashboard process either in the foreground or background.
 
 ```js
 const {

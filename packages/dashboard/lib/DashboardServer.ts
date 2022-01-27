@@ -12,7 +12,7 @@ import {
   sendAndAwait
 } from "@truffle/dashboard-message-bus";
 import cors from "cors";
-import { Server } from "http";
+import type { Server } from "http";
 import debugModule from "debug";
 import { DashboardServerOptions } from "./types";
 
