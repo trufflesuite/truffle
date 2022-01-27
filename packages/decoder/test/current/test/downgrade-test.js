@@ -622,7 +622,7 @@ async function runErrorTestBody(mangledCompilations) {
       data: selector
     });
   } catch (error) {
-    data = error.data.result;
+    data = error.data;
   }
   let decodings = await decoder.decodeReturnValue(abiEntry, data);
   assert.lengthOf(decodings, 1);

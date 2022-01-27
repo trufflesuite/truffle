@@ -1091,7 +1091,7 @@ describe("Over-the-wire decoding", function () {
           data: selector
         });
       } catch (error) {
-        data = error.data.result;
+        data = error.data;
       }
 
       debug("data: %O", data);
@@ -1136,7 +1136,7 @@ describe("Over-the-wire decoding", function () {
           data: selector
         });
       } catch (error) {
-        data = error.data.result;
+        data = error.data;
       }
 
       let decodings = await decoder.decodeReturnValue(abiEntry, data);
@@ -1171,7 +1171,7 @@ describe("Over-the-wire decoding", function () {
           data: selector
         });
       } catch (error) {
-        data = error.data.result;
+        data = error.data;
       }
 
       let decodings = await decoder.decodeReturnValue(abiEntry, data);
@@ -1182,7 +1182,9 @@ describe("Over-the-wire decoding", function () {
       assert.strictEqual(decodings[0].definedIn.typeName, "WireTest");
       assert.lengthOf(decodings[0].arguments, 1);
       assert.strictEqual(
-        Codec.Format.Utils.Inspect.unsafeNativize(decodings[0].arguments[0].value),
+        Codec.Format.Utils.Inspect.unsafeNativize(
+          decodings[0].arguments[0].value
+        ),
         "0x0000000000000000000000000000000000000000000000000000000000000000"
       );
       assert.strictEqual(decodings[1].kind, "revert");
@@ -1191,7 +1193,9 @@ describe("Over-the-wire decoding", function () {
       assert.strictEqual(decodings[1].definedIn.typeName, "WireTestLibrary");
       assert.lengthOf(decodings[1].arguments, 1);
       assert.strictEqual(
-        Codec.Format.Utils.Inspect.unsafeNativize(decodings[1].arguments[0].value),
+        Codec.Format.Utils.Inspect.unsafeNativize(
+          decodings[1].arguments[0].value
+        ),
         0
       );
     });
@@ -1205,7 +1209,8 @@ describe("Over-the-wire decoding", function () {
       });
 
       let abiEntry = WireTest.abi.find(
-        ({ type, name }) => type === "function" && name === "callAndThrowAmbiguous"
+        ({ type, name }) =>
+          type === "function" && name === "callAndThrowAmbiguous"
       );
       let selector = web3.eth.abi.encodeFunctionSignature(abiEntry);
 
@@ -1218,7 +1223,7 @@ describe("Over-the-wire decoding", function () {
           data: selector
         });
       } catch (error) {
-        data = error.data.result;
+        data = error.data;
       }
 
       let decodings = await decoder.decodeReturnValue(abiEntry, data);
@@ -1230,7 +1235,9 @@ describe("Over-the-wire decoding", function () {
       assert.strictEqual(decodings[0].definedIn.typeName, "WireTest");
       assert.lengthOf(decodings[0].arguments, 1);
       assert.strictEqual(
-        Codec.Format.Utils.Inspect.unsafeNativize(decodings[0].arguments[0].value),
+        Codec.Format.Utils.Inspect.unsafeNativize(
+          decodings[0].arguments[0].value
+        ),
         "0x0000000000000000000000000000000000000000000000000000000000000000"
       );
       assert.strictEqual(decodings[1].kind, "revert");
@@ -1239,7 +1246,9 @@ describe("Over-the-wire decoding", function () {
       assert.strictEqual(decodings[1].definedIn.typeName, "WireTestLibrary");
       assert.lengthOf(decodings[1].arguments, 1);
       assert.strictEqual(
-        Codec.Format.Utils.Inspect.unsafeNativize(decodings[1].arguments[0].value),
+        Codec.Format.Utils.Inspect.unsafeNativize(
+          decodings[1].arguments[0].value
+        ),
         0
       );
     });
