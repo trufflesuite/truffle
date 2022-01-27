@@ -237,4 +237,6 @@ const etherscanFixture = {
   }
 };
 
-module.exports = { etherscanFixture };
+const sourcifyFixture = {};
+
+module.exports = { etherscanFixture, sourcifyFixture };

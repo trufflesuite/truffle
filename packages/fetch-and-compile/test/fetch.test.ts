@@ -7,7 +7,18 @@ import Config from "@truffle/config";
 import { fetchAndCompile, fetchAndCompileMultiple } from "../lib/index";
 import axios from "axios";
 import sinon from "sinon";
+import path from "path";
+import fs from "fs";
 const { etherscanFixture }: any = require("./fixture.js");
+
+//used by the sourcify fake
+class NotFoundError extends Error {
+  public response: { status: number };
+  constructor() {
+    super();
+    this.response = { status: 404 };
+  }
+}
 
 beforeEach(function () {
   sinon
@@ -24,16 +35,51 @@ beforeEach(function () {
       const address = requestConfig.params.address;
       return { data: etherscanFixture[url][address] };
     });
+  sinon
+    .stub(axios, "request")
+    .withArgs(
+      sinon.match.has("url", sinon.match(/^https:\/\/repo\.sourcify\.dev\//))
+    )
+    .callsFake(async function (requestConfig) {
+      if (requestConfig === undefined) {
+        //apologies *again* for the misuse of assertions, but see above
+        assert.fail("requestConfig was undefined");
+      }
+      const { url, responseType } = requestConfig;
+      if (url === undefined) {
+        //and again...
+        assert.fail("requestConfig was undefined");
+      }
+      const match = url.match(/^https:\/\/repo\.sourcify\.dev\/(.*)/);
+      if (!match) {
+        //this can't happen, but TS doesn't know that
+        assert.fail("URL didn't match despite matching");
+      }
+      const filePath = path.join(__dirname, "./sources/sourcify", match[1]);
+      debug("filePath: %s", filePath);
+      if (!fs.existsSync(filePath)) {
+        debug("throwing!");
+        throw new NotFoundError();
+      }
+      const contents = fs.readFileSync(filePath, "utf8");
+      return responseType === "json"
+        ? { data: JSON.parse(contents) }
+        : { data: contents };
+    });
   //TS can't detect that is a sinon stub so we have to use ts-ignore
   //@ts-ignore
   axios.get.callThrough();
+  //@ts-ignore
+  axios.request.callThrough();
 });
 
 afterEach(function () {
+  //restoring stubs
   //TS can't detect that is a sinon stub so we have to use ts-ignore
   //@ts-ignore
-  //restoring stub
   axios.get.restore();
+  //@ts-ignore
+  axios.request.restore();
 });
 
 describe("Etherscan single-source case", function () {
@@ -154,7 +200,7 @@ describe("Etherscan single-source case", function () {
   });
 });
 
-describe("Multi-source cases", function () {
+describe("Etherscan multi-source and JSON cases", function () {
   it("verifies Etherscan multi-source contract", async function () {
     const config = Config.default().merge({
       networks: {
@@ -197,6 +243,38 @@ describe("Multi-source cases", function () {
     const expectedName = "L1StandardBridge";
     const result = await fetchAndCompile(address, config);
     assert.equal(result.fetchedVia, "etherscan");
+    const contractNameFromSourceInfo = result.sourceInfo.contractName;
+    assert.equal(contractNameFromSourceInfo, expectedName);
+    const contractsFromCompilation =
+      result.compileResult.compilations[0].contracts;
+    assert(
+      contractsFromCompilation.some(
+        contract => contract.contractName === expectedName
+      )
+    );
+    assert(
+      result.compileResult.contracts.some(
+        contract => contract.contractName === expectedName
+      )
+    );
+  });
+});
+
+describe("Sourcify cases", function () {
+  it("verifies mainnet Sourcify contract, partial match", async function () {
+    const config = Config.default().merge({
+      networks: {
+        mainnet: {
+          network_id: 1
+        }
+      },
+      network: "mainnet",
+      sourceFetchers: ["sourcify", "etherscan"]
+    });
+    const address = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
+    const expectedName = "WETH9";
+    const result = await fetchAndCompile(address, config);
+    assert.equal(result.fetchedVia, "sourcify");
     const contractNameFromSourceInfo = result.sourceInfo.contractName;
     assert.equal(contractNameFromSourceInfo, expectedName);
     const contractsFromCompilation =
