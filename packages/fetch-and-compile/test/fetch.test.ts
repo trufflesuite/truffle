@@ -90,7 +90,8 @@ describe("Etherscan single-source Solidity case", function () {
           network_id: 1
         }
       },
-      network: "mainnet"
+      network: "mainnet",
+      sourceFetchers: ["etherscan"]
     });
     const address = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
     const expectedName = "UniswapV2Router02";
@@ -119,7 +120,8 @@ describe("Etherscan single-source Solidity case", function () {
           network_id: 5
         }
       },
-      network: "goerli"
+      network: "goerli",
+      sourceFetchers: ["etherscan"]
     });
     const address = "0xeBC990735Aafd169415D675B6e90aB901f8BDae1";
     const expectedName = "ExternalTestSingle";
@@ -148,7 +150,8 @@ describe("Etherscan single-source Solidity case", function () {
           network_id: 42161
         }
       },
-      network: "arbitrum"
+      network: "arbitrum",
+      sourceFetchers: ["etherscan"]
     });
     const address = "0x2B52D1B2b359eA39536069D8c6f2a3CFE3a09c31";
     const expectedName = "Storage";
@@ -177,7 +180,8 @@ describe("Etherscan single-source Solidity case", function () {
           network_id: 137
         }
       },
-      network: "polygon"
+      network: "polygon",
+      sourceFetchers: ["etherscan"]
     });
     const address = "0xBB6828C8228E5C641Eb6d89Ca22e09E6311CA398";
     const expectedName = "GrowthVault";
@@ -208,7 +212,8 @@ describe("Etherscan Solidity multi-source and JSON cases", function () {
           network_id: 1
         }
       },
-      network: "mainnet"
+      network: "mainnet",
+      sourceFetchers: ["etherscan"]
     });
     const address = "0x60BB16c4A931b1a0B8A7D945C651DD90f41D42Cf";
     const expectedName = "ERC20";
@@ -237,7 +242,8 @@ describe("Etherscan Solidity multi-source and JSON cases", function () {
           network_id: 1
         }
       },
-      network: "mainnet"
+      network: "mainnet",
+      sourceFetchers: ["etherscan"]
     });
     const address = "0xede17dF1a202Ca498a822151079648aCa96e2633";
     const expectedName = "L1StandardBridge";
@@ -269,7 +275,7 @@ describe("Sourcify cases", function () {
         }
       },
       network: "mainnet",
-      sourceFetchers: ["sourcify", "etherscan"]
+      sourceFetchers: ["sourcify"]
     });
     const address = "0xa300126AaFD90F59B35Fd47C1dc4D4563545Cf1e";
     const expectedName = "Forwarder";
@@ -299,7 +305,7 @@ describe("Sourcify cases", function () {
         }
       },
       network: "mainnet",
-      sourceFetchers: ["sourcify", "etherscan"]
+      sourceFetchers: ["sourcify"]
     });
     const address = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
     const expectedName = "WETH9";
@@ -329,7 +335,7 @@ describe("Sourcify cases", function () {
         }
       },
       network: "goerli",
-      sourceFetchers: ["sourcify", "etherscan"]
+      sourceFetchers: ["sourcify"]
     });
     const address = "0x18019753569c1fa1536f11DBFd80F373D2e05728";
     const expectedName = "ExternalTestWacky";
@@ -360,7 +366,8 @@ describe("fetchAndCompileMultiple", function () {
           network_id: 1
         }
       },
-      network: "mainnet"
+      network: "mainnet",
+      sourceFetchers: ["etherscan"]
     });
     const addresses = [
       "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
