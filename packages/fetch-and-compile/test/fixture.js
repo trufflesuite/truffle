@@ -63,6 +63,51 @@ const etherscanFixture = {
             "bzzr://e307c1741e952c90d504ae303fa3fa1e5f6265200c65304d90abaa909d2dee4b"
         }
       ]
+    },
+    "0x60BB16c4A931b1a0B8A7D945C651DD90f41D42Cf": {
+      status: "1",
+      message: "OK-Missing/Invalid API Key, rate limit of 1/5sec applied",
+      result: [
+        {
+          SourceCode: JSON.stringify(
+            Object.fromEntries(
+              [
+                "Address.sol",
+                "Context.sol",
+                "ERC20.sol",
+                "IERC20.sol",
+                "Ownable.sol",
+                "SafeMath.sol"
+              ].map(sourceName => [
+                sourceName,
+                {
+                  content: fs.readFileSync(
+                    path.resolve(__dirname, `./sources/${sourceName}`),
+                    "utf8"
+                  )
+                }
+              ])
+            )
+          ),
+          ABI: fs.readFileSync(
+            path.resolve(__dirname, "./sources/ERC20.abi.json"),
+            "utf8"
+          ),
+          ContractName: "ERC20",
+          CompilerVersion: "v0.6.12+commit.27d51765",
+          OptimizationUsed: "0",
+          Runs: "200",
+          ConstructorArguments:
+            "00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000d46696e616e6365426c6f636b730000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000034642580000000000000000000000000000000000000000000000000000000000",
+          EVMVersion: "Default",
+          Library: "",
+          LicenseType: "MIT",
+          Proxy: "0",
+          Implementation: "",
+          SwarmSource:
+            "ipfs://d6d4801f9ee5ce4b5e274aa314f55666a990157e9d1d8c603b29a56275ea9b73"
+        }
+      ]
     }
   },
 

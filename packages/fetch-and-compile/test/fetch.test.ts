@@ -36,7 +36,7 @@ afterEach(function () {
   axios.get.restore();
 });
 
-describe("fetchAndCompile", function () {
+describe("Etherscan single-source case", function () {
   it("verifies contract from mainnet", async function () {
     const config = Config.default().merge({
       networks: {
@@ -135,6 +135,37 @@ describe("fetchAndCompile", function () {
     });
     const address = "0xBB6828C8228E5C641Eb6d89Ca22e09E6311CA398";
     const expectedName = "GrowthVault";
+    const result = await fetchAndCompile(address, config);
+    assert.equal(result.fetchedVia, "etherscan");
+    const contractNameFromSourceInfo = result.sourceInfo.contractName;
+    assert.equal(contractNameFromSourceInfo, expectedName);
+    const contractsFromCompilation =
+      result.compileResult.compilations[0].contracts;
+    assert(
+      contractsFromCompilation.some(
+        contract => contract.contractName === expectedName
+      )
+    );
+    assert(
+      result.compileResult.contracts.some(
+        contract => contract.contractName === expectedName
+      )
+    );
+  });
+});
+
+describe("Multi-source cases", function () {
+  it("verifies Etherscan multi-source contract", async function () {
+    const config = Config.default().merge({
+      networks: {
+        mainnet: {
+          network_id: 1
+        }
+      },
+      network: "mainnet"
+    });
+    const address = "0x60BB16c4A931b1a0B8A7D945C651DD90f41D42Cf";
+    const expectedName = "ERC20";
     const result = await fetchAndCompile(address, config);
     assert.equal(result.fetchedVia, "etherscan");
     const contractNameFromSourceInfo = result.sourceInfo.contractName;
