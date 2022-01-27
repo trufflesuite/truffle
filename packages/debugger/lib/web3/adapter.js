@@ -10,22 +10,23 @@ export default class Web3Adapter {
   }
 
   async getTrace(txHash) {
-    let result = await promisify(this.web3.currentProvider.send)(
-      //send *only* uses callbacks, so we use promsifiy to make things more
-      //readable
-      {
-        jsonrpc: "2.0",
-        method: "debug_traceTransaction",
-        params: [
-          txHash,
-          {
-            enableMemory: true, //recent geth versions require this option
-            disableStorage: true //we no longer use storage
-          }
-        ],
-        id: new Date().getTime()
-      }
-    );
+    const provider = this.web3.currentProvider;
+    //send *only* uses callbacks, so we use promsifiy to make things more readable
+    //we also use bind here to prevent a problem that sometimes occurs where
+    //provider.send ends up unable to call its own methods because `this` gets
+    //set incorrectly
+    const result = await promisify(provider.send.bind(provider))({
+      jsonrpc: "2.0",
+      method: "debug_traceTransaction",
+      params: [
+        txHash,
+        {
+          enableMemory: true, //recent geth versions require this option
+          disableStorage: true //we no longer use storage
+        }
+      ],
+      id: new Date().getTime()
+    });
     if (!result.result) {
       //we assume if there's no result then there is an error.
       //note: some nodes may return an error even if there is a
