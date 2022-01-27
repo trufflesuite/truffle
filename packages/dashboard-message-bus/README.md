@@ -2,11 +2,11 @@
 
 :warning: **This is a middleware package and should only be used when developing integrations for the truffle dashboard** :warning:
 
-The `@truffle/dashboard-message-bus` manages the communication between the Truffle Dashboard and any other Truffle components, such as the dashboard-provider.
+The `@truffle/dashboard-message-bus` manages the communication between the Truffle Dashboard and any other Truffle components, such as @truffle/dashboard-provider.
 
 ## Installation
 
-End users should never have to install the message bus as it is used under the hood by other packages. If you are building a package that needs to interface with the Dashboard or message bus, you can install the package from NPM.
+End users should never have to install this message bus as it is used under the hood by other packages. If you are building a package that needs to interface with the Dashboard or message bus, you can install this package from NPM.
 
 ```
 npm install @truffle/dashboard-message-bus

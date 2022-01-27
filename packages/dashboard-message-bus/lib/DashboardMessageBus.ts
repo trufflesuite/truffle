@@ -32,6 +32,10 @@ export class DashboardMessageBus extends EventEmitter {
     super();
   }
 
+  /**
+   * Start the DashboardMessageBus
+   * @dev This starts separate websocket servers for subscribers/publishers
+   */
   async start() {
     this.subscribeServer = await startWebSocketServer({
       host: this.host,
@@ -97,6 +101,7 @@ export class DashboardMessageBus extends EventEmitter {
     data: WebSocket.Data,
     subscribers: WebSocket[]
   ) {
+    // convert to string for uniformity since WebSocket.Data can take other forms
     if (typeof data !== "string") {
       data = data.toString();
     }
