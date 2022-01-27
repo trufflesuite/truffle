@@ -261,6 +261,36 @@ describe("Etherscan multi-source and JSON cases", function () {
 });
 
 describe("Sourcify cases", function () {
+  it("verifies mainnet Sourcify contract, full match", async function () {
+    const config = Config.default().merge({
+      networks: {
+        mainnet: {
+          network_id: 1
+        }
+      },
+      network: "mainnet",
+      sourceFetchers: ["sourcify", "etherscan"]
+    });
+    const address = "0xa300126AaFD90F59B35Fd47C1dc4D4563545Cf1e";
+    const expectedName = "Forwarder";
+    const result = await fetchAndCompile(address, config);
+    assert.equal(result.fetchedVia, "sourcify");
+    const contractNameFromSourceInfo = result.sourceInfo.contractName;
+    assert.equal(contractNameFromSourceInfo, expectedName);
+    const contractsFromCompilation =
+      result.compileResult.compilations[0].contracts;
+    assert(
+      contractsFromCompilation.some(
+        contract => contract.contractName === expectedName
+      )
+    );
+    assert(
+      result.compileResult.contracts.some(
+        contract => contract.contractName === expectedName
+      )
+    );
+  });
+
   it("verifies mainnet Sourcify contract, partial match", async function () {
     const config = Config.default().merge({
       networks: {
