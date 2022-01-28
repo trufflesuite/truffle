@@ -1,22 +1,30 @@
 import debugModule from "debug";
 const debug = debugModule("codec:export");
 
-import type * as Format from "@truffle/codec/format";
+import OS from "os";
+import util from "util";
+import * as Format from "@truffle/codec/format";
 import type {
+  CalldataDecoding,
   LogDecoding,
-  ReturndataDecoding
+  ReturndataDecoding,
+  AbiArgument
 } from "@truffle/codec/types";
 import * as Conversion from "@truffle/codec/conversion";
 
-import { ResultInspector, unsafeNativize } from "@truffle/codec/format/utils/inspect";
+import {
+  ResultInspector,
+  unsafeNativize,
+  InspectOptions
+} from "@truffle/codec/format/utils/inspect";
 export { ResultInspector, unsafeNativize };
 
-type NumberFormatter = (n: BigInt) => any //not parameterized since we output any anyway
+type NumberFormatter = (n: BigInt) => any; //not parameterized since we output any anyway
 
 //HACK; this was going to be parameterized
 //but TypeScript didn't like that, so, whatever
 interface MixedArray extends Array<any> {
-  [key: string]: any
+  [key: string]: any;
 }
 
 /**
@@ -114,7 +122,8 @@ function ethersCompatibleNativize(
           )).value.asBN;
           return numberFormatter(Conversion.toBigInt(asBN));
         case "enum":
-          const numericAsBN = (<Format.Values.EnumValue>(result)).value.numericAsBN;
+          const numericAsBN = (<Format.Values.EnumValue>result).value
+            .numericAsBN;
           return numberFormatter(Conversion.toBigInt(numericAsBN));
         case "bool":
           return (<Format.Values.BoolValue>result).value.asBoolean;
@@ -153,9 +162,14 @@ function ethersCompatibleNativize(
           //in this case, we need the result to be an array, but also
           //to have the field names (where extant) as keys
           const nativized: MixedArray = [];
-          const pairs = (<Format.Values.TupleValue|Format.Values.StructValue>result).value;
+          const pairs = (<Format.Values.TupleValue | Format.Values.StructValue>(
+            result
+          )).value;
           for (const { name, value } of pairs) {
-            const nativizedValue = ethersCompatibleNativize(value, numberFormatter);
+            const nativizedValue = ethersCompatibleNativize(
+              value,
+              numberFormatter
+            );
             nativized.push(nativizedValue);
             if (name) {
               nativized[name] = nativizedValue;
@@ -168,8 +182,10 @@ function ethersCompatibleNativize(
               const coercedResult = <Format.Values.FunctionExternalValue>result;
               //ethers per se doesn't handle this, but web3's hacked version will
               //sometimes decode these as just a bytes24, so let's do that
-              return coercedResult.value.contract.address.toLowerCase() +
-                coercedResult.value.selector.slice(2);
+              return (
+                coercedResult.value.contract.address.toLowerCase() +
+                coercedResult.value.selector.slice(2)
+              );
             case "internal":
               return undefined;
           }
@@ -218,10 +234,7 @@ function ethersCompatibleNativizeReturn(
   const result: any = {};
   for (let i = 0; i < decoding.arguments.length; i++) {
     const { name, value } = decoding.arguments[i];
-    const nativized = ethersCompatibleNativize(
-      value,
-      numberFormatter
-    );
+    const nativized = ethersCompatibleNativize(value, numberFormatter);
     result[i] = nativized;
     if (name) {
       result[name] = nativized;
@@ -255,10 +268,7 @@ function ethersCompatibleNativizeEventArgs(
   const result: any = {};
   for (let i = 0; i < decoding.arguments.length; i++) {
     const { name, value } = decoding.arguments[i];
-    const nativized = ethersCompatibleNativize(
-      value,
-      numberFormatter
-    );
+    const nativized = ethersCompatibleNativize(value, numberFormatter);
     result[i] = nativized;
     if (name) {
       result[name] = nativized;
@@ -271,4 +281,213 @@ function ethersCompatibleNativizeEventArgs(
   //because it's, uh, not very useful)
   result.__length__ = decoding.arguments.length;
   return result;
+}
+
+/**
+ * Similar to [[ResultInspector]], but for a [[CalldataDecoding]].
+ * See [[ResultInspector]] for more information.
+ */
+export class CalldataDecodingInspector {
+  decoding: CalldataDecoding;
+  constructor(decoding: CalldataDecoding) {
+    this.decoding = decoding;
+  }
+  [util.inspect.custom](depth: number | null, options: InspectOptions): string {
+    switch (this.decoding.kind) {
+      case "function":
+        const fullName = `${this.decoding.class.typeName}.${this.decoding.abi.name}`;
+        return formatFunctionLike(fullName, this.decoding.arguments, options);
+      case "constructor":
+        return formatFunctionLike(
+          `new ${this.decoding.class.typeName}`,
+          this.decoding.arguments,
+          options
+        );
+      case "message":
+        const { data, abi } = this.decoding;
+        //we'll set up a value and inspect that :)
+        const codecValue: Format.Values.BytesDynamicValue = {
+          kind: "value" as const,
+          type: {
+            typeClass: "bytes" as const,
+            kind: "dynamic" as const
+          },
+          value: {
+            asHex: data
+          }
+        };
+        if (abi) {
+          return formatFunctionLike(
+            `${this.decoding.class.typeName}.${abi.type}`,
+            [{ value: codecValue }],
+            options,
+            true // we don't need to see the type here!
+          );
+        } else {
+          return `Sent raw data to ${
+            this.decoding.class.typeName
+          }: ${util.inspect(new ResultInspector(codecValue), options)}`;
+        }
+      case "unknown":
+        return "Receiving contract could not be identified.";
+      case "create":
+        return "Created contract could not be identified.";
+    }
+  }
+}
+
+/**
+ * Similar to [[ResultInspector]], but for a [[LogDecoding]].
+ * See [[ResultInspector]] for more information.
+ */
+export class LogDecodingInspector {
+  decoding: LogDecoding;
+  constructor(decoding: LogDecoding) {
+    this.decoding = decoding;
+  }
+  [util.inspect.custom](depth: number | null, options: InspectOptions): string {
+    const className = this.decoding.definedIn
+      ? this.decoding.definedIn.typeName
+      : this.decoding.class.typeName;
+    const eventName = this.decoding.abi.name;
+    const fullName = `${className}.${eventName}`;
+    switch (this.decoding.kind) {
+      case "event":
+        return formatFunctionLike(fullName, this.decoding.arguments, options);
+      case "anonymous":
+        return formatFunctionLike(
+          `<anonymous> ${fullName}`,
+          this.decoding.arguments,
+          options
+        );
+    }
+  }
+}
+
+/**
+ * Similar to [[ResultInspector]], but for a [[ReturndataDecoding]].
+ * See [[ResultInspector]] for more information.
+ */
+export class ReturndataDecodingInspector {
+  decoding: ReturndataDecoding;
+  constructor(decoding: ReturndataDecoding) {
+    this.decoding = decoding;
+  }
+  [util.inspect.custom](depth: number | null, options: InspectOptions): string {
+    switch (this.decoding.kind) {
+      case "return":
+        return formatFunctionLike(
+          "Returned values: ",
+          this.decoding.arguments,
+          options
+        );
+      case "returnmessage":
+        const { data } = this.decoding;
+        //we'll just set up a value and inspect that :)
+        const codecValue: Format.Values.BytesDynamicValue = {
+          kind: "value" as const,
+          type: {
+            typeClass: "bytes" as const,
+            kind: "dynamic" as const
+          },
+          value: {
+            asHex: data
+          }
+        };
+        const dataString = util.inspect(
+          new ResultInspector(codecValue),
+          options
+        );
+        return `Returned raw data: ${dataString}`;
+      case "selfdestruct":
+        return "The contract self-destructed.";
+      case "failure":
+        return "The transaction reverted without a message.";
+      case "revert":
+        const name = this.decoding.definedIn
+          ? `${this.decoding.definedIn.typeName}.${this.decoding.abi.name}`
+          : this.decoding.abi.name;
+        return formatFunctionLike(
+          `Error thrown:${OS.EOL}${name}`,
+          this.decoding.arguments,
+          options
+        );
+      case "bytecode":
+        //this one gets custom handling :P
+        const contractKind = this.decoding.class.contractKind || "contract";
+        const firstLine =
+          this.decoding.address !== undefined
+            ? `Returned bytecode for a ${contractKind} ${this.decoding.class.typeName} at ${this.decoding.address}.`
+            : `Returned bytecode for a ${contractKind} ${this.decoding.class.typeName}.`;
+        if (this.decoding.immutables && this.decoding.immutables.length > 0) {
+          const prefixes = this.decoding.immutables.map(
+            ({ name, class: { typeName } }) => `${typeName}.${name}: `
+          );
+          const maxLength = Math.max(...prefixes.map(prefix => prefix.length));
+          const paddedPrefixes = prefixes.map(prefix =>
+            prefix.padStart(maxLength)
+          );
+          const formattedValues = this.decoding.immutables.map(
+            (value, index) => {
+              const prefix = paddedPrefixes[index];
+              const formatted = indentExcludingFirstLine(
+                util.inspect(new ResultInspector(value.value), options),
+                maxLength
+              );
+              return prefix + formatted;
+            }
+          );
+          return `Immutable values:${OS.EOL}${formattedValues.join(OS.EOL)}`;
+        } else {
+          return firstLine;
+        }
+      case "unknownbytecode":
+        return "Bytecode was returned, but it could not be identified.";
+    }
+  }
+}
+
+//copied from TestRunner, but simplified for our purposes :)
+function indentArray(input: string[], indentation: number): string[] {
+  return input.map(line => " ".repeat(indentation) + line);
+}
+
+//copied from TestRunner, but simplified for our purposes :)
+function indentExcludingFirstLine(input: string, indentation: number): string {
+  const lines = input.split(/\r?\n/);
+  return [lines[0], ...indentArray(lines.slice(1), indentation)].join(OS.EOL);
+}
+
+//used for formatting things that look like function calls:
+//events (including anonymous events), identifiable transactions,
+//and revert messages
+//"header" param should include everything before the initial parenthesis
+function formatFunctionLike(
+  header: string,
+  values: AbiArgument[],
+  options: InspectOptions,
+  suppressType: boolean = false
+): string {
+  if (values.length === 0) {
+    return `${header}()`;
+  }
+  let formattedValues = values.map(({ name, indexed, value }, index) => {
+    const namePrefix = name ? `${name}: ` : "";
+    const indexedPrefix = indexed ? "<indexed> " : "";
+    const prefix = namePrefix + indexedPrefix;
+    const displayValue = util.inspect(new ResultInspector(value), options);
+    const typeString = suppressType
+      ? ""
+      : ` (type: ${Format.Types.typeStringWithoutLocation(value.type)})`;
+    return indentExcludingFirstLine(
+      prefix +
+        displayValue +
+        typeString +
+        (index < values.length - 1 ? "," : ""),
+      4
+    );
+  });
+  return `${header}(${OS.EOL}${indentArray(formattedValues, 2).join(OS.EOL)}${
+    OS.EOL
+  })`;
 }
