@@ -9,11 +9,17 @@ const etherscanFixture = {
       result: [
         {
           SourceCode: fs.readFileSync(
-            path.resolve(__dirname, "./sources/UniswapV2Router02.sol"),
+            path.resolve(
+              __dirname,
+              "./sources/etherscan/mainnet/0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D/UniswapV2Router02.sol"
+            ),
             "utf8"
           ),
           ABI: fs.readFileSync(
-            path.resolve(__dirname, "./sources/UniswapV2Router02.abi.json"),
+            path.resolve(
+              __dirname,
+              "./sources/etherscan/mainnet/0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D/UniswapV2Router02.abi.json"
+            ),
             "utf8"
           ),
           ContractName: "UniswapV2Router02",
@@ -38,13 +44,16 @@ const etherscanFixture = {
       result: [
         {
           SourceCode: fs.readFileSync(
-            path.resolve(__dirname, "./sources/ENSRegistryWithFallback.sol"),
+            path.resolve(
+              __dirname,
+              "./sources/etherscan/mainnet/0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e/ENSRegistryWithFallback.sol"
+            ),
             "utf8"
           ),
           ABI: fs.readFileSync(
             path.resolve(
               __dirname,
-              "./sources/ENSRegistryWithFallback.abi.json"
+              "./sources/etherscan/mainnet/0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e/ENSRegistryWithFallback.abi.json"
             ),
             "utf8"
           ),
@@ -82,7 +91,10 @@ const etherscanFixture = {
                 sourceName,
                 {
                   content: fs.readFileSync(
-                    path.resolve(__dirname, `./sources/${sourceName}`),
+                    path.resolve(
+                      __dirname,
+                      `./sources/etherscan/mainnet/0x60BB16c4A931b1a0B8A7D945C651DD90f41D42Cf/${sourceName}`
+                    ),
                     "utf8"
                   )
                 }
@@ -90,7 +102,10 @@ const etherscanFixture = {
             )
           ),
           ABI: fs.readFileSync(
-            path.resolve(__dirname, "./sources/ERC20.abi.json"),
+            path.resolve(
+              __dirname,
+              "./sources/etherscan/mainnet/0x60BB16c4A931b1a0B8A7D945C651DD90f41D42Cf/ERC20.abi.json"
+            ),
             "utf8"
           ),
           ContractName: "ERC20",
@@ -118,11 +133,17 @@ const etherscanFixture = {
           //(as opposed to multi-source format) by putting an extra pair
           //of braces around the JSON
           SourceCode: `{${fs.readFileSync(
-            path.resolve(__dirname, "./sources/L1StandardBridge.json"),
+            path.resolve(
+              __dirname,
+              "./sources/etherscan/mainnet/0xede17dF1a202Ca498a822151079648aCa96e2633/L1StandardBridge.json"
+            ),
             "utf8"
           )}}`,
           ABI: fs.readFileSync(
-            path.resolve(__dirname, "./sources/L1StandardBridge.abi.json"),
+            path.resolve(
+              __dirname,
+              "./sources/etherscan/mainnet/0xede17dF1a202Ca498a822151079648aCa96e2633/L1StandardBridge.abi.json"
+            ),
             "utf8"
           ),
           ContractName: "L1StandardBridge",
@@ -148,11 +169,17 @@ const etherscanFixture = {
       result: [
         {
           SourceCode: fs.readFileSync(
-            path.resolve(__dirname, "./sources/ExternalTestSingle.sol"),
+            path.resolve(
+              __dirname,
+              "./sources/etherscan/goerli/0xeBC990735Aafd169415D675B6e90aB901f8BDae1/ExternalTestSingle.sol"
+            ),
             "utf8"
           ),
           ABI: fs.readFileSync(
-            path.resolve(__dirname, "./sources/ExternalTestSingle.abi.json"),
+            path.resolve(
+              __dirname,
+              "./sources/etherscan/goerli/0xeBC990735Aafd169415D675B6e90aB901f8BDae1/ExternalTestSingle.abi.json"
+            ),
             "utf8"
           ),
           ContractName: "ExternalTestSingle",
@@ -180,11 +207,17 @@ const etherscanFixture = {
       result: [
         {
           SourceCode: fs.readFileSync(
-            path.resolve(__dirname, "./sources/Storage.sol"),
+            path.resolve(
+              __dirname,
+              "./sources/etherscan/arbitrum/0x2B52D1B2b359eA39536069D8c6f2a3CFE3a09c31/Storage.sol"
+            ),
             "utf8"
           ),
           ABI: fs.readFileSync(
-            path.resolve(__dirname, "./sources/Storage.abi.json"),
+            path.resolve(
+              __dirname,
+              "./sources/etherscan/arbitrum/0x2B52D1B2b359eA39536069D8c6f2a3CFE3a09c31/Storage.abi.json"
+            ),
             "utf8"
           ),
           ContractName: "Storage",
@@ -211,11 +244,17 @@ const etherscanFixture = {
       result: [
         {
           SourceCode: fs.readFileSync(
-            path.resolve(__dirname, "./sources/GrowthVault.sol"),
+            path.resolve(
+              __dirname,
+              "./sources/etherscan/polygon/0xBB6828C8228E5C641Eb6d89Ca22e09E6311CA398/GrowthVault.sol"
+            ),
             "utf8"
           ),
           ABI: fs.readFileSync(
-            path.resolve(__dirname, "./sources/GrowthVault.abi.json"),
+            path.resolve(
+              __dirname,
+              "./sources/etherscan/polygon/0xBB6828C8228E5C641Eb6d89Ca22e09E6311CA398/GrowthVault.abi.json"
+            ),
             "utf8"
           ),
           ContractName: "GrowthVault",
