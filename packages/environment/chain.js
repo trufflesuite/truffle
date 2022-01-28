@@ -227,14 +227,13 @@ class GanacheMixin {
 
   // cleanup Ganache process on exit
   exit(_supervisor) {
-    this.ganache.close(err => {
-      if (err) {
+    this.ganache
+      .close()
+      .then(() => process.exit())
+      .catch(err => {
         console.error(err.stack || err);
         process.exit(1);
-      } else {
-        process.exit();
-      }
-    });
+      });
   }
 }
 

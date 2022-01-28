@@ -129,7 +129,10 @@ const Develop = {
       disconnect = await this.connect(options);
       started = true;
     } finally {
-      return { disconnect, started };
+      return {
+        disconnect,
+        started
+      };
     }
   }
 };
