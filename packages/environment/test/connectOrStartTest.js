@@ -13,19 +13,16 @@ describe("connectOrStart test network", async function () {
     let connection;
     try {
       connection = await Develop.connectOrStart(ipcOptions, ganacheOptions);
-      assert.isTrue(connection.started, "A new server did not spin up");
-      assert.isFunction(connection.disconnect, "Disconnect is not a function");
-    } catch (error) {
-      console.log(error);
-      assert.fail("Develop.connectOrStart should not have thrown!");
+      assert.isTrue(connection.started, "A new Ganache server did not spin up");
+      assert.isFunction(connection.disconnect, "disconnect is not a function");
     } finally {
       if (connection) {
-        return connection.disconnect();
+        connection.disconnect();
       }
     }
   });
 
-  it("connects to an established ganache instance", async function () {
+  it("connects to an established Ganache instance", async function () {
     let connectionOneDisconnect, connectionTwoDisconnect;
 
     try {
@@ -37,10 +34,10 @@ describe("connectOrStart test network", async function () {
       //invoke the method again
       const result = await Develop.connectOrStart(ipcOptions, ganacheOptions);
       connectionTwoDisconnect = result.disconnect;
-      assert.isFalse(result.started);
-    } catch (error) {
-      console.log(error);
-      assert.fail("Develop.connectOrStart should not have thrown!");
+      assert.isFalse(
+        result.started,
+        "Should have connected to established Ganache server"
+      );
     } finally {
       //cleanup
       if (connectionOneDisconnect) {
