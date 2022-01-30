@@ -682,7 +682,7 @@ describe("Compilation", () => {
     );
   });
 
-  it("loads compilations", async () => {
+  it.only("loads compilations", async () => {
     const compilationsQuery = await Promise.all(
       compilationIds.map(async compilationId => {
         let compilation = (await db.execute(
