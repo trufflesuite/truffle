@@ -27,9 +27,14 @@ module.exports = {
         options.url || "ws://" + options.host + ":" + options.port
       );
     } else {
-      provider = new Web3.providers.HttpProvider(
-        options.url || `http://${options.host}:${options.port}`,
-        { keepAlive: false }
+      // WARNING BREAKING BREAKING BREAKING
+      // this would be a breaking change to all
+      // truffle projects that don't have a provider defined that
+      // rely on the HttpProvider defaulting to http
+      //
+      // Adding this as a workaround to see if CI will pass
+      provider = new Web3.providers.WebsocketProvider(
+        options.url || `ws://${options.host}:${options.port}`
       );
     }
     return provider;
