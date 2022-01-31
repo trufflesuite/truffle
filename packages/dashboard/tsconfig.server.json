@@ -18,5 +18,5 @@
     "baseUrl": ".",
     "types": ["jest", "react", "node"]
   },
-  "include": ["lib/**/*"]
+  "include": ["lib/**/*", "bin/**/*"]
 }

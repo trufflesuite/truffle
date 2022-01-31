@@ -4,7 +4,8 @@
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
   "files": [
-    "dist/lib"
+    "dist/lib",
+    "dist/bin"
   ],
   "dependencies": {
     "@truffle/dashboard-message-bus": "^0.1.0",
@@ -17,8 +18,8 @@
   },
   "scripts": {
     "start:react": "DISABLE_ESLINT_PLUGIN=true SKIP_PREFLIGHT_CHECK=true craco start",
-    "start:prebuilt": "node dist/lib/start-dev-server.js",
-    "start:dev-server": "ts-node --project tsconfig.server.json lib/start-dev-server.ts",
+    "start:prebuilt": "node dist/bin/start-dev-server.js",
+    "start:dev-server": "ts-node --project tsconfig.server.json bin/start-dev-server.ts",
     "start": "concurrently --kill-others \"yarn start:dev-server\" \"NODE_ENV=\"development\" yarn start:react\"",
     "build:react": "DISABLE_ESLINT_PLUGIN=true SKIP_PREFLIGHT_CHECK=true craco build",
     "build:server": "tsc -p tsconfig.server.json",
