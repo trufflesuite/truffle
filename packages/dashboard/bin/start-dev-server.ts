@@ -1,4 +1,4 @@
-import DashboardServer from "./DashboardServer";
+import { DashboardServer } from "../lib/DashboardServer";
 
 const options = {
   port: 24012,
