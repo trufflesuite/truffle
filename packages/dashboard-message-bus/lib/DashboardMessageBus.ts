@@ -44,17 +44,11 @@ export class DashboardMessageBus extends EventEmitter {
 
     this.subscribeServer.on("connection", (newSubscriber: WebSocket) => {
       newSubscriber.on("close", () => {
-        this.logToPublishers("Subscriber disconnected", "connections");
-
-        this.subscribers = this.subscribers.filter(
-          subscriber => subscriber !== newSubscriber
-        );
-
-        this.terminateIfNoConnections();
+        this.removeSubscriber(newSubscriber);
       });
 
-      // Require the subscriber to send a message *first* before being marked as ready
-      newSubscriber.once("message", () => this.addNewSubscriber(newSubscriber));
+      // Require the subscriber to send a message *first* before being added
+      newSubscriber.once("message", () => this.addSubscriber(newSubscriber));
     });
 
     this.publishServer = await startWebSocketServer({
@@ -63,24 +57,11 @@ export class DashboardMessageBus extends EventEmitter {
     });
 
     this.publishServer.on("connection", (newPublisher: WebSocket) => {
-      newPublisher.on("message", (data: WebSocket.Data) => {
-        this.processRequest(newPublisher, data, this.subscribers);
-      });
-
       newPublisher.on("close", () => {
-        this.logToPublishers("Publisher disconnected", "connections");
-
-        this.publishers = this.publishers.filter(
-          publisher => publisher !== newPublisher
-        );
-
-        this.clearRequestsForPublisher(newPublisher);
-        this.terminateIfNoConnections();
+        this.removePublisher(newPublisher);
       });
 
-      this.logToPublishers("Publisher connected", "connections");
-
-      this.publishers.push(newPublisher);
+      this.addPublisher(newPublisher);
     });
   }
 
@@ -90,12 +71,20 @@ export class DashboardMessageBus extends EventEmitter {
     await this.ready();
   }
 
+  /**
+   * Close both websocket servers
+   * @dev Emits a "terminate" event
+   */
   async terminate() {
     await promisify(this.publishServer.close.bind(this.publishServer))();
     await promisify(this.subscribeServer.close.bind(this.subscribeServer))();
     this.emit("terminate");
   }
 
+  /**
+   * Process a message `data` coming from `publisher` by sending it to `subscribers`
+   * and return the first received response to the `publisher`
+   */
   private async processRequest(
     publisher: WebSocket,
     data: WebSocket.Data,
@@ -172,6 +161,62 @@ export class DashboardMessageBus extends EventEmitter {
     broadcastAndDisregard(receivers, message);
   }
 
+  /**
+   * Add a publisher so it can be used to send requests to
+   * @dev Also sends all backlogged (unfulfilled) requests upon connection
+   */
+  private addSubscriber(newSubscriber: WebSocket) {
+    this.unfulfilledRequests.forEach(({ publisher, data }) =>
+      this.processRequest(publisher, data, [newSubscriber])
+    );
+
+    this.logToPublishers("Subscriber connected", "connections");
+
+    this.subscribers.push(newSubscriber);
+  }
+
+  /**
+   * Remove a subscriber
+   * @dev Will cause the server to terminate if this was the last connection
+   */
+  private removeSubscriber(subscriberToRemove: WebSocket) {
+    this.logToPublishers("Subscriber disconnected", "connections");
+
+    this.subscribers = this.subscribers.filter(
+      subscriber => subscriber !== subscriberToRemove
+    );
+
+    this.terminateIfNoConnections();
+  }
+
+  /**
+   * Add a publisher and set up message listeners to process their requests
+   */
+  private addPublisher(newPublisher: WebSocket) {
+    this.logToPublishers("Publisher connected", "connections");
+
+    newPublisher.on("message", (data: WebSocket.Data) => {
+      this.processRequest(newPublisher, data, this.subscribers);
+    });
+
+    this.publishers.push(newPublisher);
+  }
+
+  /**
+   * Remove a publisher and their corresponding requests
+   * @dev Will cause the server to terminate if this was the last connection
+   */
+  private removePublisher(publisherToRemove: WebSocket) {
+    this.logToPublishers("Publisher disconnected", "connections");
+
+    this.publishers = this.publishers.filter(
+      publisher => publisher !== publisherToRemove
+    );
+
+    this.clearRequestsForPublisher(publisherToRemove);
+    this.terminateIfNoConnections();
+  }
+
   private terminateIfNoConnections() {
     if (this.publishers.length === 0 && this.subscribers.length === 0) {
       this.terminate();
@@ -184,16 +229,5 @@ export class DashboardMessageBus extends EventEmitter {
         this.unfulfilledRequests.delete(key);
       }
     });
-  }
-
-  private addNewSubscriber(newSubscriber: WebSocket) {
-    // Process all backlogged (unfulfilled) requests on new subscriber connection.
-    this.unfulfilledRequests.forEach(({ publisher, data }) =>
-      this.processRequest(publisher, data, [newSubscriber])
-    );
-
-    this.logToPublishers("Subscriber connected", "connections");
-
-    this.subscribers.push(newSubscriber);
   }
 }
