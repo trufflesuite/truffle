@@ -10,7 +10,7 @@ import {
 } from "../../utils/utils";
 import Card from "../common/Card";
 import IncomingRequest from "./IncomingRequest";
-import { DashboardProviderMessage } from "@truffle/dashboard-message-bus";
+import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus";
 
 interface Props {
   paused: boolean;

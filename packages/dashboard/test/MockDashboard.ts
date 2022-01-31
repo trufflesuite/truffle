@@ -5,7 +5,7 @@ import {
   jsonToBase64,
   Message
 } from "@truffle/dashboard-message-bus";
-import { JSONRPCRequestPayload } from "ethereum-protocol";
+import type { JSONRPCRequestPayload } from "ethereum-protocol";
 import { promisify } from "util";
 import WebSocket from "ws";
 import Ganache from "ganache-core";

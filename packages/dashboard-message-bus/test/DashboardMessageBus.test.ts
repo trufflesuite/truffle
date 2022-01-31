@@ -5,7 +5,7 @@ import {
   jsonToBase64,
   sendAndAwait
 } from "../lib";
-import WebSocket from "ws";
+import type WebSocket from "ws";
 
 jest.setTimeout(2000000);
 

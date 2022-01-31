@@ -1,7 +1,6 @@
 import { useWeb3React } from "@web3-react/core";
 import { providers } from "ethers";
-import { useEffect } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getDisplayName } from "../../utils/utils";
 import NetworkIndicator from "../common/NetworkIndicator";
 
