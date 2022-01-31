@@ -65,10 +65,14 @@ export class DashboardMessageBus extends EventEmitter {
     });
   }
 
+  /**
+   * Wait for the message bus to be "ready" to process requests (i.e. having any subscribers).
+   * @dev Polls every second to see if the number of subscribers > 0
+   */
   async ready() {
-    if (this.subscribers.length > 0) return;
-    await delay(1000);
-    await this.ready();
+    while (this.subscribers.length === 0) {
+      await delay(1000);
+    }
   }
 
   /**
