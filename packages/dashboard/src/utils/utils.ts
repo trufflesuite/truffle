@@ -7,7 +7,7 @@ import {
 } from "@truffle/dashboard-message-bus";
 import axios from "axios";
 import { providers } from "ethers";
-import { JSONRPCRequestPayload } from "ethereum-protocol";
+import type { JSONRPCRequestPayload } from "ethereum-protocol";
 import { promisify } from "util";
 import { INTERACTIVE_REQUESTS, UNSUPPORTED_REQUESTS } from "./constants";
 

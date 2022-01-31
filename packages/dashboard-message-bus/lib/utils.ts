@@ -1,5 +1,5 @@
 import WebSocket, { ServerOptions } from "isomorphic-ws";
-import { Message, PortsConfig } from "./types";
+import type { Message, PortsConfig } from "./types";
 import any from "promise.any";
 import delay from "delay";
 import axios from "axios";

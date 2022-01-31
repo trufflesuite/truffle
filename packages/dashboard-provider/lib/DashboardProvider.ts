@@ -17,8 +17,27 @@ import {
 } from "@truffle/dashboard-message-bus";
 import { startDashboardInBackground } from "@truffle/dashboard";
 import { timeout } from "promise-timeout";
-import { DashboardProviderOptions } from "./types";
 import debugModule from "debug";
+
+export interface DashboardProviderOptions {
+  /** Host of the Dashboard (default: localhost) */
+  dashboardHost?: string;
+
+  /** Port of the Dashboard (default: 24012) */
+  dashboardPort?: number;
+
+  /** Number of seconds before a dashboard-provider request times out (default: 120) */
+  timeoutSeconds?: number;
+
+  /** Boolean indicating whether the connection to the dashboard is kept alive between requests (default: false) */
+  keepAlive?: boolean;
+
+  /** Boolean indicating whether debug output should be logged (default: false) */
+  verbose?: boolean;
+
+  /** Boolean indicating whether the dashboard should automatically get opened in the default browser (default: true) */
+  autoOpen?: boolean;
+}
 
 export class DashboardProvider {
   public dashboardHost: string;
