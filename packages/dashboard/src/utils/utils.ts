@@ -2,6 +2,7 @@ import WebSocket from "isomorphic-ws";
 import {
   DashboardProviderMessage,
   getMessageBusPorts,
+  jsonToBase64,
   PortsConfig
 } from "@truffle/dashboard-message-bus";
 import axios from "axios";
@@ -9,22 +10,6 @@ import { providers } from "ethers";
 import { JSONRPCRequestPayload } from "ethereum-protocol";
 import { promisify } from "util";
 import { INTERACTIVE_REQUESTS, UNSUPPORTED_REQUESTS } from "./constants";
-
-export const jsonToBase64 = (json: any) => {
-  const stringifiedJson = JSON.stringify(json);
-  const buffer = Buffer.from(stringifiedJson);
-  const base64 = buffer.toString("base64");
-
-  return base64;
-};
-
-export const base64ToJson = (base64: string) => {
-  const buffer = Buffer.from(base64, "base64");
-  const stringifiedJson = buffer.toString("utf8");
-  const json = JSON.parse(stringifiedJson);
-
-  return json;
-};
 
 export const getPorts = async (): Promise<PortsConfig> => {
   const dashboardHost = window.location.hostname;
@@ -81,7 +66,8 @@ export const respondToUnsupportedRequest = (
 ) => {
   const defaultMessage = `Method "${request.payload.method}" is unsupported by @truffle/dashboard-provider`;
   const customMessages: { [index: string]: string } = {
-    eth_sign: "Method \"eth_sign\" is unsupported by @truffle/dashboard-provider, please use \"personal_sign\" instead"
+    eth_sign:
+      'Method "eth_sign" is unsupported by @truffle/dashboard-provider, please use "personal_sign" instead'
   };
 
   const message = customMessages[request.payload.method] ?? defaultMessage;

@@ -4,11 +4,12 @@ import {
   connectToMessageBusWithRetries,
   isDashboardProviderMessage,
   isInvalidateMessage,
-  Message
+  Message,
+  base64ToJson
 } from "@truffle/dashboard-message-bus";
 import { useWeb3React } from "@web3-react/core";
 import { useEffect, useState } from "react";
-import { base64ToJson, getPorts } from "./utils/utils";
+import { getPorts } from "./utils/utils";
 import Header from "./components/Header/Header";
 import DashboardProvider from "./components/DashboardProvider/DashboardProvider";
 import ConnectNetwork from "./components/ConnectNetwork";
