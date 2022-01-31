@@ -31,7 +31,8 @@ export const base64ToJson = (base64: string) => {
 
 /**
  * Starts a websocket server and waits for it to be opened
- * @dev If you want to attach a listener *before* opening, so not use this
+ * @dev If you need to attach event listeners *before* the server connection opens,
+ * do not use this function since it resolves *after* the connection is opened
  */
 export const startWebSocketServer = (options: ServerOptions) => {
   return new Promise<WebSocket.Server>(resolve => {
