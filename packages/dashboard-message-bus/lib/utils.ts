@@ -6,6 +6,9 @@ import axios from "axios";
 
 any.shim();
 
+/**
+ * Convert any JS object or value to a base64 representation of it
+ */
 export const jsonToBase64 = (json: any) => {
   const stringifiedJson = JSON.stringify(json);
   const buffer = Buffer.from(stringifiedJson);
@@ -14,6 +17,10 @@ export const jsonToBase64 = (json: any) => {
   return base64;
 };
 
+/**
+ * Convert the base64 representation of a JS object or value to its JS representation
+ * @dev This is the reverse of `jsonToBase64` and is not expected to work with other base64 formats
+ */
 export const base64ToJson = (base64: string) => {
   const buffer = Buffer.from(base64, "base64");
   const stringifiedJson = buffer.toString("utf8");
@@ -22,6 +29,10 @@ export const base64ToJson = (base64: string) => {
   return json;
 };
 
+/**
+ * Starts a websocket server and waits for it to be opened
+ * @dev If you want to attach a listener *before* opening, so not use this
+ */
 export const startWebSocketServer = (options: ServerOptions) => {
   return new Promise<WebSocket.Server>(resolve => {
     const server = new WebSocket.Server(options, () => resolve(server));
@@ -33,6 +44,9 @@ export const createMessage = (type: string, payload: any): Message => {
   return { id, type, payload };
 };
 
+/**
+ * Broadcast a message to multiple websocket connections and disregard them
+ */
 export const broadcastAndDisregard = (
   sockets: WebSocket[],
   message: Message
@@ -43,6 +57,9 @@ export const broadcastAndDisregard = (
   });
 };
 
+/**
+ * Broadcast a message to multuple websocket connections and return the first response
+ */
 export const broadcastAndAwaitFirst = async (
   sockets: WebSocket[],
   message: Message
@@ -52,6 +69,10 @@ export const broadcastAndAwaitFirst = async (
   return result;
 };
 
+/**
+ * Send a message to a websocket connection and await a matching response
+ * @dev Responses are matched by looking at received messages that match the ID of the sent message
+ */
 export const sendAndAwait = (socket: WebSocket, message: Message) => {
   return new Promise<any>((resolve, reject) => {
     socket.addEventListener("message", (event: WebSocket.MessageEvent) => {
@@ -85,21 +106,19 @@ export const sendAndAwait = (socket: WebSocket, message: Message) => {
 export const connectToMessageBusWithRetries = async (
   port: number,
   host: string = "localhost",
-  retries: number = 50,
-  tryCount: number = 1
+  retries: number = 50
 ): Promise<WebSocket> => {
-  try {
-    return await connectToMessageBus(port, host);
-  } catch (e) {
-    if (tryCount === retries) throw e;
-    await delay(1000);
-    return await connectToMessageBusWithRetries(
-      port,
-      host,
-      retries,
-      tryCount + 1
-    );
+  let error = new Error();
+  for (let tryCount = 0; tryCount < retries; tryCount += 1) {
+    try {
+      return await connectToMessageBus(port, host);
+    } catch (e) {
+      error = e;
+      await delay(1000);
+    }
   }
+
+  throw error;
 };
 
 export const connectToMessageBus = (
@@ -119,26 +138,20 @@ export const connectToMessageBus = (
 export const getMessageBusPorts = async (
   dashboardPort: number,
   dashboardHost: string = "localhost",
-  retries: number = 5,
-  tryCount: number = 1
+  retries: number = 5
 ): Promise<PortsConfig> => {
-  try {
-    const { data } = await axios.get(
-      `http://${dashboardHost}:${dashboardPort}/ports`
-    );
-    return data;
-  } catch {
-    if (tryCount === retries) {
-      throw new Error(
-        `Could not connect to dashboard at http://${dashboardHost}:${dashboardPort}/ports`
+  for (let tryCount = 0; tryCount < retries; tryCount += 1) {
+    try {
+      const { data } = await axios.get(
+        `http://${dashboardHost}:${dashboardPort}/ports`
       );
+      return data;
+    } catch (e) {
+      await delay(1000);
     }
-    await delay(1000);
-    return await getMessageBusPorts(
-      dashboardPort,
-      dashboardHost,
-      retries,
-      tryCount + 1
-    );
   }
+
+  throw new Error(
+    `Could not connect to dashboard at http://${dashboardHost}:${dashboardPort}/ports`
+  );
 };
