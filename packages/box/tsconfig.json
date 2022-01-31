@@ -6,11 +6,11 @@
     "target": "es2016",
     "noImplicitAny": true,
     "moduleResolution": "node",
+    "skipLibCheck": true,
     "sourceMap": true,
     "outDir": "dist",
     "baseUrl": ".",
-    "lib": ["es2019"],
-    "skipLibCheck": true
+    "lib": ["es2019"]
   },
   "include": [
     "./**/*.ts",
