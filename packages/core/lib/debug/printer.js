@@ -2,6 +2,7 @@ const debugModule = require("debug");
 const debug = debugModule("lib:debug:printer");
 
 const path = require("path");
+const util = require("util");
 
 const DebugUtils = require("@truffle/debug-utils");
 const Codec = require("@truffle/codec");
@@ -415,6 +416,12 @@ class DebugPrinter {
   async printReturnValue() {
     //note: when printing revert messages, this will do so in a somewhat
     //different way than printRevertMessage does
+    const inspectOptions = {
+      colors: true,
+      depth: null,
+      maxArrayLength: null,
+      breakLength: 30
+    }; //copypaste warning: copied from debug-utils!
     const allocationFound = Boolean(
       this.session.view(data.current.returnAllocation)
     );
@@ -467,33 +474,13 @@ class DebugPrinter {
     } else if (decodings[0].kind === "bytecode") {
       //case 8: known bytecode
       this.config.logger.log("");
-      const decoding = decodings[0];
-      const contractKind = decoding.class.contractKind || "contract";
-      if (decoding.address !== undefined) {
-        this.config.logger.log(
-          `Returned bytecode for a ${contractKind} ${decoding.class.typeName} at ${decoding.address}.`
-        );
-      } else {
-        this.config.logger.log(
-          `Returned bytecode for a ${contractKind} ${decoding.class.typeName}.`
-        );
-      }
-      if (decoding.immutables && decoding.immutables.length > 0) {
-        this.config.logger.log("Immutable values:");
-        const prefixes = decoding.immutables.map(
-          ({ name, class: { typeName } }) => `${typeName}.${name}: `
-        );
-        const maxLength = Math.max(...prefixes.map(prefix => prefix.length));
-        const paddedPrefixes = prefixes.map(prefix =>
-          prefix.padStart(maxLength)
-        );
-        for (let index = 0; index < decoding.immutables.length; index++) {
-          const { value } = decoding.immutables[index];
-          const prefix = paddedPrefixes[index];
-          const formatted = DebugUtils.formatValue(value, maxLength);
-          this.config.logger.log(prefix + formatted);
-        }
-      }
+      //we just defer to the ReturndataDecodingInspector in this case
+      this.config.logger.log(
+        util.inspect(
+          new Codec.Export.ReturndataDecodingInspector(decodings[0]),
+          inspectOptions
+        )
+      );
       this.config.logger.log("");
     } else if (
       decodings[0].kind === "revert" &&
@@ -506,6 +493,7 @@ class DebugPrinter {
       switch (signature) {
         case "Error(string)": {
           //case 9a: revert string
+          //(special handling, don't use inspector)
           const prefix = "Revert string: ";
           const value = decodings[0].arguments[0].value;
           const formatted = DebugUtils.formatValue(value, prefix.length);
@@ -514,6 +502,7 @@ class DebugPrinter {
         }
         case "Panic(uint)": {
           //case 9b: panic code
+          //(special handling, don't use inspector)
           const prefix = "Panic code: ";
           const value = decodings[0].arguments[0].value;
           const formatted = DebugUtils.formatValue(value, prefix.length);
@@ -523,8 +512,13 @@ class DebugPrinter {
         }
         default:
           //case 9c: custom error
-          this.config.logger.log("Error thrown:");
-          this.config.logger.log(DebugUtils.formatCustomError(decodings[0], 2));
+          //just use the inspector
+          this.config.logger.log(
+            util.inspect(
+              new Codec.Export.ReturndataDecodingInspector(decodings[0]),
+              inspectOptions
+            )
+          );
       }
       this.config.logger.log("");
     } else if (
@@ -539,13 +533,21 @@ class DebugPrinter {
         if (decoding.kind !== "revert") {
           break;
         }
-        this.config.logger.log(DebugUtils.formatCustomError(decoding, 2));
+        //again, we can use the inspector
+        this.config.logger.log(
+          util.inspect(
+            new Codec.Export.ReturndataDecodingInspector(decodings[0]),
+            inspectOptions
+          )
+        );
       }
     } else if (
       decodings[0].kind === "return" &&
       decodings[0].arguments.length > 0
     ) {
       //case 11: actual return values to print!
+      //we're not going to use the inspector here, we're going to
+      //handle this in a custom manner
       this.config.logger.log("");
       const values = decodings[0].arguments;
       if (values.length === 1 && !values[0].name) {
@@ -574,6 +576,7 @@ class DebugPrinter {
       this.config.logger.log("");
     } else if (decodings[0].kind === "returnmessage") {
       //case 12: raw binary data
+      //(special handling, don't use inspector)
       this.config.logger.log("");
       const fallbackOutputDefinition = this.session.view(
         data.current.fallbackOutputForContext

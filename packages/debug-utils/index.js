@@ -710,6 +710,7 @@ var DebugUtils = {
   },
 
   //note: only intended to be used for *custom* errors :)
+  //note: this is now pretty duplicative of the ReturndataDecodingInspector...
   formatCustomError: function (decoding, indent = 0) {
     const name = decoding.definedIn
       ? `${decoding.definedIn.typeName}.${decoding.abi.name}`
