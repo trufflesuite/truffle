@@ -1,6 +1,6 @@
 {
   "name": "@truffle/dashboard",
-  "version": "0.1.0",
+  "version": "0.1.1-dashboard.0",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
   "files": [
@@ -8,7 +8,7 @@
     "dist/bin"
   ],
   "dependencies": {
-    "@truffle/dashboard-message-bus": "^0.1.0",
+    "@truffle/dashboard-message-bus": "^0.1.1-dashboard.0",
     "cors": "^2.8.5",
     "debug": "^4.3.2",
     "express": "^4.17.1",
