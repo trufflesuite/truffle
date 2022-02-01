@@ -185,6 +185,7 @@ function* stepOut() {
 function* stepOver() {
   const startingDepth = yield select(controller.current.functionDepth);
   const startingLocation = yield select(controller.current.location);
+  const startingNode = startingLocation.node;
   var currentDepth;
   var currentLocation;
   var finished;
@@ -205,10 +206,15 @@ function* stepOver() {
     // either: function depth is greater than starting (ignore function calls)
     // or, if we're at the same depth, keep stepping until we're on a new
     // line (which may be in a new file)
+    // or if we're at the declaration of a function, keep stepping if the
+    // function depth is greater than or equal to starting, i.e. we're inside
+    // the function, which is already required above. Consequently, we're past
+    // the end of the function.
     (currentDepth > startingDepth ||
       (currentLocation.source.id === startingLocation.source.id &&
         currentLocation.sourceRange.lines.start.line ===
-          startingLocation.sourceRange.lines.start.line))
+          startingLocation.sourceRange.lines.start.line) ||
+      startingNode.nodeType === "FunctionDefinition")
   );
 }
 
@@ -297,15 +303,13 @@ function* continueUntilBreakpoint(action) {
             length === currentLength &&
             (currentSourceId !== previousSourceId ||
               currentStart !== previousStart ||
-              currentLength !== previousLength
-            ) &&
+              currentLength !== previousLength) &&
             //if we started in a user source (& allow internal is off),
             //we need to make sure we've moved from a user-source POV
             (!startedInUserSource ||
               currentSourceId !== lastUserSourceId ||
-              currentStart !== lastUserStart || 
-              currentLength !== lastUserLength
-            )
+              currentStart !== lastUserStart ||
+              currentLength !== lastUserLength)
           );
         }
         //otherwise, we have a line-style breakpoint; we want to stop at the
