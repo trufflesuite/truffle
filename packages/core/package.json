@@ -101,5 +101,6 @@
       "url": "https://github.com/tcoulter"
     }
   ],
-  "namespace": "consensys"
+  "namespace": "consensys",
+  "gitHead": "6d465a48f5b67ce6a40e0b851d168103ac173e56"
 }

@@ -44,5 +44,6 @@
     "isomorphic-ws": "^4.0.1",
     "iter-tools": "^7.0.2",
     "ws": "^7.2.0"
-  }
+  },
+  "gitHead": "6d465a48f5b67ce6a40e0b851d168103ac173e56"
 }
