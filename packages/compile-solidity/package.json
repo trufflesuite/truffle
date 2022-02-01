@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "6.0.11-dashboard.0",
+  "version": "6.0.11-dashboard.1",
   "main": "dist/index.js",
   "scripts": {
     "build": "ttsc",
@@ -21,10 +21,10 @@
   },
   "dependencies": {
     "@truffle/compile-common": "^0.7.25",
-    "@truffle/config": "^1.3.17-dashboard.0",
+    "@truffle/config": "^1.3.17-dashboard.1",
     "@truffle/contract-sources": "^0.1.12",
     "@truffle/expect": "^0.0.19",
-    "@truffle/profiler": "^0.1.9-dashboard.0",
+    "@truffle/profiler": "^0.1.9-dashboard.1",
     "axios": "^0.21.1",
     "axios-retry": "^3.1.9",
     "debug": "^4.3.1",
@@ -40,8 +40,8 @@
   },
   "devDependencies": {
     "@truffle/artifactor": "^4.0.138",
-    "@truffle/box": "^2.1.37-dashboard.0",
-    "@truffle/resolver": "^8.0.5-dashboard.0",
+    "@truffle/box": "^2.1.37-dashboard.1",
+    "@truffle/resolver": "^8.0.5-dashboard.1",
     "babel-core": "^6.26.0",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",

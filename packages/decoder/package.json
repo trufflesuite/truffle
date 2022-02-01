@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.1.10-dashboard.0",
+  "version": "5.1.10-dashboard.1",
   "main": "dist/index.js",
   "directories": {
     "lib": "lib"
@@ -34,11 +34,11 @@
     "web3-utils": "1.5.3"
   },
   "devDependencies": {
-    "@truffle/config": "^1.3.17-dashboard.0",
+    "@truffle/config": "^1.3.17-dashboard.1",
     "@truffle/contract-schema": "^3.4.4",
-    "@truffle/migrate": "^3.2.64-dashboard.0",
-    "@truffle/provider": "^0.2.45-dashboard.0",
-    "@truffle/workflow-compile": "^4.0.1-dashboard.0",
+    "@truffle/migrate": "^3.2.64-dashboard.1",
+    "@truffle/provider": "^0.2.45-dashboard.1",
+    "@truffle/workflow-compile": "^4.0.1-dashboard.1",
     "@types/big.js": "^4.0.5",
     "@types/bn.js": "^4.11.4",
     "@types/debug": "^4.1.5",

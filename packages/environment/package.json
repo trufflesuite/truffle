@@ -13,7 +13,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.2.91-dashboard.0",
+  "version": "0.2.91-dashboard.1",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0",
@@ -24,7 +24,7 @@
     "@truffle/error": "^0.0.15",
     "@truffle/expect": "^0.0.19",
     "@truffle/interface-adapter": "^0.5.10",
-    "@truffle/resolver": "^8.0.5-dashboard.0",
+    "@truffle/resolver": "^8.0.5-dashboard.1",
     "ganache": "7.0.1",
     "node-ipc": "^9.1.1",
     "source-map-support": "^0.5.19",

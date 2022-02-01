@@ -1,6 +1,6 @@
 {
   "name": "@truffle/dashboard-message-bus",
-  "version": "0.1.1-dashboard.0",
+  "version": "0.1.1-dashboard.1",
   "description": "Message bus that handles communication between the Dashboard and its components",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",

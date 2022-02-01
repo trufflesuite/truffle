@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "4.0.1-dashboard.0",
+  "version": "4.0.1-dashboard.1",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0",
@@ -21,13 +21,13 @@
   "dependencies": {
     "@truffle/artifactor": "^4.0.138",
     "@truffle/compile-common": "^0.7.25",
-    "@truffle/compile-solidity": "^6.0.11-dashboard.0",
-    "@truffle/compile-vyper": "^3.1.46-dashboard.0",
-    "@truffle/config": "^1.3.17-dashboard.0",
-    "@truffle/db-loader": "^0.0.29-dashboard.0",
+    "@truffle/compile-solidity": "^6.0.11-dashboard.1",
+    "@truffle/compile-vyper": "^3.1.46-dashboard.1",
+    "@truffle/config": "^1.3.17-dashboard.1",
+    "@truffle/db-loader": "^0.0.29-dashboard.1",
     "@truffle/expect": "^0.0.19",
-    "@truffle/external-compile": "^2.0.35-dashboard.0",
-    "@truffle/resolver": "^8.0.5-dashboard.0",
+    "@truffle/external-compile": "^2.0.35-dashboard.1",
+    "@truffle/resolver": "^8.0.5-dashboard.1",
     "fs-extra": "^9.1.0"
   },
   "devDependencies": {
