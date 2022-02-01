@@ -468,7 +468,7 @@ class DebugPrinter {
       //case 8: known bytecode
       this.config.logger.log("");
       const decoding = decodings[0];
-      const contractKind = decoding.contractKind || "contract";
+      const contractKind = decoding.class.contractKind || "contract";
       if (decoding.address !== undefined) {
         this.config.logger.log(
           `Returned bytecode for a ${contractKind} ${decoding.class.typeName} at ${decoding.address}.`
