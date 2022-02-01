@@ -1,11 +1,10 @@
 const ganache = require("ganache");
 const Web3 = require("web3");
 const assert = require("assert");
-const Reporter = require("@truffle/reporters").migrationsV5;
-const EventEmitter = require("events");
-
 const Deployer = require("../index");
 const utils = require("./helpers/utils");
+const Config = require("@truffle/config");
+const { Environment } = require("@truffle/environment");
 
 describe("Error cases", function () {
   let owner;
@@ -13,7 +12,6 @@ describe("Error cases", function () {
   let options;
   let networkId;
   let deployer;
-  let reporter;
   let Abstract;
   let Loops;
   let Example;
@@ -31,10 +29,6 @@ describe("Error cases", function () {
     },
     logging: { quiet: true }
   });
-
-  const mockMigration = {
-    emitter: new EventEmitter()
-  };
 
   const web3 = new Web3(provider);
 
@@ -64,7 +58,7 @@ describe("Error cases", function () {
     Abstract = utils.getContract("Abstract", provider, networkId, owner);
     Loops = utils.getContract("Loops", provider, networkId, owner);
 
-    options = {
+    options = Config.default().merge({
       contracts: [
         Example,
         ExampleRevert,
@@ -76,21 +70,15 @@ describe("Error cases", function () {
         Loops
       ],
       networks: {
-        test: {}
+        test: {
+          network_id: networkId,
+          provider
+        }
       },
-      network: "test",
-      network_id: networkId,
-      provider: provider,
-      logger: {
-        log: () => {},
-        error: () => {}
-      }
-    };
+      network: "test"
+    });
+    await Environment.detect(options);
     deployer = new Deployer(options);
-    reporter = new Reporter();
-    reporter.setDeployer(deployer);
-    reporter.setMigration(mockMigration);
-    reporter.listen();
   });
 
   afterEach(() => {
@@ -302,10 +290,7 @@ describe("Error cases", function () {
       await deployer.start();
       assert.fail();
     } catch (err) {
-      assert(err.message.includes("Example"));
       assert(err.message.includes("insufficient funds"));
-      assert(err.message.includes("Account"));
-      assert(err.message.includes("Balance"));
     }
   });
 });

@@ -28,7 +28,7 @@ describe("truffle develop", function () {
     };
   });
 
-  describe("Globals", () => {
+  describe("Globals", function () {
     let output;
     before(async function () {
       this.timeout(10000);

@@ -2,19 +2,23 @@ const ganache = require("ganache");
 const Web3 = require("web3");
 const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const assert = require("assert");
-const Reporter = require("@truffle/reporters").migrationsV5;
-const EventEmitter = require("events");
 
 const Deployer = require("../index");
 const utils = require("./helpers/utils");
 
-describe("Deployer (sync)", function() {
+const {
+  mockEventsSystem,
+  getAllEventsByName,
+  preDeployOccurredForNames,
+  postDeployOccurredForNames,
+  linkingOccurredForName
+} = require("./helpers/eventSystem");
+
+describe("Deployer (sync)", function () {
   let owner;
   let options;
   let networkId;
   let deployer;
-  let reporter;
-  let output = "";
   let Example;
   let UsesExample;
   let IsLibrary;
@@ -27,13 +31,9 @@ describe("Deployer (sync)", function() {
     logging: { quiet: true }
   });
 
-  const mockMigration = {
-    emitter: new EventEmitter()
-  };
-
   const web3 = new Web3(provider);
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     networkId = await web3.eth.net.getId();
     const accounts = await web3.eth.getAccounts();
 
@@ -52,6 +52,8 @@ describe("Deployer (sync)", function() {
     IsLibrary = utils.getContract("IsLibrary", provider, networkId, owner);
     const Abstract = utils.getContract("Abstract", provider, networkId, owner);
 
+    mockEventsSystem.clearEmittedEvents();
+
     options = {
       contracts: [
         Example,
@@ -69,35 +71,23 @@ describe("Deployer (sync)", function() {
       network: "test",
       network_id: networkId,
       provider: provider,
-      logger: {
-        log: val => {
-          if (val) output += `${val}\n`;
-        },
-        error: val => {
-          if (val) output += `${val}\n`;
-        }
-      }
+      events: mockEventsSystem
     };
   });
 
   afterEach(() => {
-    output = "";
     utils.cleanUp();
     deployer.finish();
   });
 
-  async function setUpWithConfig(config) {
-    deployer = new Deployer(config);
-    reporter = new Reporter();
-    reporter.setDeployer(deployer);
-    reporter.setMigration(mockMigration);
-    reporter.listen();
+  async function setUpWithConfig(options) {
+    deployer = new Deployer(options);
   }
 
   // in this describe block, `setUpWithConfig` is **not** called in a `beforeEach`
   // as each test is expected to vary the truffle config passed to `Deployer`
-  describe('custom config', () => {
-    it("deployment with default polling interval", async function() {
+  describe("custom config", () => {
+    it("deployment with default polling interval", async function () {
       const customConfig = {
         ...options,
         networks: {
@@ -110,10 +100,11 @@ describe("Deployer (sync)", function() {
       assert.strictEqual(
         deployer.pollingInterval,
         4000,
-        "default value of config.networks.test.deploymentPollingInterval expected");
+        "default value of config.networks.test.deploymentPollingInterval expected"
+      );
     });
 
-    it("deployment configurable with custom polling interval", async function() {
+    it("deployment configurable with custom polling interval", async function () {
       const customConfig = {
         ...options,
         networks: {
@@ -126,25 +117,24 @@ describe("Deployer (sync)", function() {
       assert.strictEqual(
         deployer.pollingInterval,
         8000,
-        "custom value from config.networks.test.deploymentPollingInterval expected");
+        "custom value from config.networks.test.deploymentPollingInterval expected"
+      );
     });
   });
 
   // in this describe block, `setUpWithConfig` **is** called in a `beforeEach`
   // as each test is expected to pass the default truffle config into `Deployer`
-  describe('default config', () => {
+  describe("default config", () => {
     beforeEach(async function beforeEachWithDefaultConfig() {
       // simply pass default options
       await setUpWithConfig(options);
     });
 
-    it("deploy()", async function() {
-      const migrate = function() {
+    it("deploy()", async function () {
+      function migrate() {
         deployer.deploy(Example);
-      };
-
+      }
       migrate();
-
       await deployer.start();
 
       assert(Example.address !== null);
@@ -154,14 +144,12 @@ describe("Deployer (sync)", function() {
       const id = await example.id();
 
       assert(id === "Example");
-      assert(output.includes("Example"));
-      assert(output.includes("Deploying"));
-      assert(output.includes("transaction hash"));
-      assert(output.includes("address"));
-      assert(output.includes("gas used"));
+      assert(preDeployOccurredForNames(options, ["Example"]));
+      assert(postDeployOccurredForNames(options, ["Example"]));
+      assert(getAllEventsByName(options, "deployment:txHash").length === 1);
     });
 
-    it("deploy().then", async function() {
+    it("deploy().then", async function () {
       function migrate() {
         deployer
           .deploy(Example)
@@ -182,15 +170,14 @@ describe("Deployer (sync)", function() {
       assert(usesExampleId === "UsesExample");
       assert(other === Example.address);
 
-      assert(output.includes("Replacing"));
-      assert(output.includes("Deploying"));
-      assert(output.includes("Example"));
-      assert(output.includes("UsesExample"));
+      assert(preDeployOccurredForNames(options, ["Example", "UsesExample"]));
+      assert(postDeployOccurredForNames(options, ["Example", "UsesExample"]));
+      assert(getAllEventsByName(options, "deployment:txHash").length === 2);
     });
 
-    it("deployer.then", async function() {
+    it("deployer.then", async function () {
       function migrate() {
-        deployer.then(async function() {
+        deployer.then(async function () {
           const example = await deployer.deploy(Example);
           await deployer.deploy(UsesExample, example.address);
         });
@@ -210,13 +197,13 @@ describe("Deployer (sync)", function() {
       assert(usesExampleId === "UsesExample");
       assert(other === Example.address);
 
-      assert(output.includes("Replacing"));
-      assert(output.includes("Example"));
-      assert(output.includes("UsesExample"));
+      assert(preDeployOccurredForNames(options, ["Example", "UsesExample"]));
+      assert(postDeployOccurredForNames(options, ["Example", "UsesExample"]));
+      assert(getAllEventsByName(options, "deployment:txHash").length === 2);
     });
 
-    it("deployer.link", async function() {
-      const migrate = function() {
+    it("deployer.link", async function () {
+      const migrate = function () {
         deployer.deploy(IsLibrary);
         deployer.link(IsLibrary, UsesLibrary);
         deployer.deploy(UsesLibrary);
@@ -239,48 +226,40 @@ describe("Deployer (sync)", function() {
       assert(events[0].args.eventID.toNumber() === 5);
       assert(events[1].args.eventID.toNumber() === 7);
 
-      assert(output.includes("Deploying"));
-      assert(output.includes("Linking"));
-      assert(output.includes("IsLibrary"));
-      assert(output.includes("UsesLibrary"));
+      assert(preDeployOccurredForNames(options, ["IsLibrary", "UsesLibrary"]));
+      assert(postDeployOccurredForNames(options, ["IsLibrary", "UsesLibrary"]));
+      assert(linkingOccurredForName(options, "UsesLibrary", "IsLibrary"));
     });
 
     // There's a chain like this in the @truffle/core solidity-tests
-    it("deployer.deploy().then()", async function() {
-      const migrate = function() {
+    it("deployer.deploy().then()", async function () {
+      const migrate = function () {
         deployer
           .deploy(Example)
-          .then(function() {
-            return Example.deployed();
-          })
-          .then(function(instance) {
-            return instance.id();
-          })
-          .then(function() {
+          .then(() => Example.deployed())
+          .then(instance => instance.id())
+          .then(function () {
             return deployer
               .deploy(UsesExample, utils.zeroAddress)
-              .then(function() {
-                return UsesExample.deployed();
-              })
-              .then(function(usesExample) {
-                return usesExample.id();
-              });
+              .then(() => UsesExample.deployed())
+              .then(usesExample => usesExample.id());
           });
       };
       migrate();
 
       await deployer.start();
-      assert(output.includes("Example"));
-      assert(output.includes("UsesExample"));
+      assert(preDeployOccurredForNames(options, ["Example", "UsesExample"]));
+      assert(postDeployOccurredForNames(options, ["Example", "UsesExample"]));
+      assert(getAllEventsByName(options, "deployment:txHash").length === 2);
     });
 
-    it("waits for confirmations", async function() {
+    it("waits for confirmations", async function () {
       this.timeout(15000);
       const startBlock = await web3.eth.getBlockNumber();
 
       utils.startAutoMine(web3, 1500);
 
-      const migrate = function() {
+      const migrate = function () {
         deployer.deploy(IsLibrary);
         deployer.deploy(Example);
       };
@@ -307,15 +286,15 @@ describe("Deployer (sync)", function() {
       deployer.confirmationsRequired = 0;
     });
 
-    it("emits block events while waiting for a tx to mine", async function() {
+    it("emits block events while waiting for a tx to mine", async function () {
       this.timeout(15000);
 
       utils.startAutoMine(web3, 4000);
 
       const interfaceAdapter = createInterfaceAdapter({ provider });
 
-      const migrate = function() {
-        deployer.then(async function() {
+      const migrate = function () {
+        deployer.then(async function () {
           await deployer._startBlockPolling(interfaceAdapter);
           await utils.waitMS(9000);
           await deployer._startBlockPolling(interfaceAdapter);
@@ -326,7 +305,6 @@ describe("Deployer (sync)", function() {
       await deployer.start();
       utils.stopAutoMine();
 
-      // We used to test output here but the ora spinner doesn't use the logger
       // Keeping this test just to run the logic, make sure it's not crashing.
     });
   });

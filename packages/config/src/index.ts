@@ -1,7 +1,6 @@
 import path from "path";
 import assignIn from "lodash.assignin";
 import merge from "lodash.merge";
-import pick from "lodash.pick";
 import Module from "module";
 import findUp from "find-up";
 import Conf from "conf";
@@ -31,21 +30,13 @@ class TruffleConfig {
       network
     });
 
-    const eventsOptions = this.eventManagerOptions(this);
-    this.events = new EventManager(eventsOptions);
+    this.events = new EventManager(this);
 
     const props = configProps({ configObject: this });
 
     Object.entries(props).forEach(([propName, descriptor]) =>
       this.addProp(propName, descriptor)
     );
-  }
-
-  private eventManagerOptions(
-    options: Partial<TruffleConfig>
-  ): Partial<Pick<TruffleConfig, "quiet" | "logger" | "subscribers">> {
-    const optionsWhitelist = ["quiet", "logger", "subscribers"];
-    return pick(options, optionsWhitelist);
   }
 
   public addProp(propertyName: string, descriptor: any): void {
@@ -104,18 +95,14 @@ class TruffleConfig {
     const current = this.normalize(this);
     const normalized = this.normalize(obj);
 
-    const currentEventsOptions = this.eventManagerOptions(this);
-    const optionsToMerge = this.eventManagerOptions(obj);
-    this.events.updateSubscriberOptions({
-      ...currentEventsOptions,
-      ...optionsToMerge
-    });
-
-    return assignIn(
+    const newConfig = assignIn(
       Object.create(TruffleConfig.prototype),
       current,
       normalized
     );
+
+    this.events.updateSubscriberOptions(newConfig);
+    return newConfig;
   }
 
   public merge(obj: any): TruffleConfig {
@@ -136,9 +123,7 @@ class TruffleConfig {
       }
     });
 
-    const eventsOptions = this.eventManagerOptions(this);
-    this.events.updateSubscriberOptions(eventsOptions);
-
+    this.events.updateSubscriberOptions(this);
     return this;
   }
 
@@ -211,9 +196,8 @@ class TruffleConfig {
     config.merge(options);
 
     // When loading a user's config, ensure their subscribers are initialized
-    const eventsOptions = config.eventManagerOptions(config);
-    config.events.updateSubscriberOptions(eventsOptions);
-    config.events.initializeUserSubscribers(eventsOptions);
+    config.events.updateSubscriberOptions(config);
+    config.events.initializeUserSubscribers(config);
 
     return config;
   }

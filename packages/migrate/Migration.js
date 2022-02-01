@@ -2,20 +2,18 @@ const debug = require("debug")("migrate:Migration");
 const path = require("path");
 const Deployer = require("@truffle/deployer");
 const Require = require("@truffle/require");
-const Emittery = require("emittery");
 const {
   Web3Shim,
   createInterfaceAdapter
 } = require("@truffle/interface-adapter");
 const ResolverIntercept = require("./ResolverIntercept");
 const { getTruffleDb } = require("@truffle/db-loader");
+const emitEvent = require("./emitEvent");
 
 class Migration {
-  constructor(file, reporter, config) {
+  constructor(file, config) {
     this.file = path.resolve(file);
-    this.reporter = reporter;
     this.number = parseInt(path.basename(file));
-    this.emitter = new Emittery();
     this.isFirst = false;
     this.isLast = false;
     this.dryRun = config.dryRun;
@@ -68,7 +66,6 @@ class Migration {
   async _deploy(options, context, deployer, resolver, migrateFn) {
     try {
       await deployer.start();
-
       // Allow migrations method to be async and
       // deploy to use await
       if (migrateFn && migrateFn.then !== undefined) {
@@ -79,7 +76,6 @@ class Migration {
       if (options.save === false) return;
 
       let Migrations;
-
       // Attempt to write migrations record to chain
       try {
         Migrations = resolver.require("Migrations");
@@ -89,10 +85,13 @@ class Migration {
 
       if (Migrations && Migrations.isDeployed()) {
         const message = `Saving migration to chain.`;
-
         if (!this.dryRun) {
           const data = { message: message };
-          await this.emitter.emit("startTransaction", data);
+          await emitEvent(
+            options,
+            "migrate:settingCompletedMigrations:start",
+            data
+          );
         }
 
         const migrations = await Migrations.deployed();
@@ -100,7 +99,11 @@ class Migration {
 
         if (!this.dryRun) {
           const data = { receipt: receipt, message: message };
-          await this.emitter.emit("endTransaction", data);
+          await emitEvent(
+            options,
+            "migrate:settingCompletedMigrations:succeed",
+            data
+          );
         }
       }
 
@@ -109,16 +112,12 @@ class Migration {
         interfaceAdapter: context.interfaceAdapter
       };
 
-      await this.emitter.emit("postMigrate", eventArgs);
+      await emitEvent(options, "migrate:migration:succeed", eventArgs);
 
       let artifacts = resolver
         .contracts()
         .map(abstraction => abstraction._json);
-      if (
-        this.config.db &&
-        this.config.db.enabled &&
-        artifacts.length > 0
-      ) {
+      if (this.config.db && this.config.db.enabled && artifacts.length > 0) {
         // currently if Truffle Db fails to load, getTruffleDb returns `null`
         const Db = getTruffleDb();
 
@@ -157,8 +156,6 @@ class Migration {
 
       // Cleanup
       if (this.isLast) {
-        this.emitter.clearListeners();
-
         // Exiting w provider-engine appears to be hopeless. This hack on
         // our fork just swallows errors from eth-block-tracking
         // as we unwind the handlers downstream from here.
@@ -167,12 +164,12 @@ class Migration {
         }
       }
     } catch (error) {
-      const payload = {
+      const errorData = {
         type: "migrateErr",
         error: error
       };
 
-      await this.emitter.emit("error", payload);
+      await emitEvent(options, "migrate:migration:error", errorData);
       deployer.finish();
       throw error;
     }
@@ -185,20 +182,8 @@ class Migration {
    * @param  {Object}   options  config and command-line
    */
   async run(options) {
-    const {
-      interfaceAdapter,
-      resolver,
-      context,
-      deployer
-    } = this.prepareForMigrations(options);
-
-    // Connect reporter to this migration
-    if (this.reporter) {
-      this.reporter.setMigration(this);
-      this.reporter.setDeployer(deployer);
-      this.reporter.confirmations = options.confirmations || 0;
-      this.reporter.listen();
-    }
+    const { interfaceAdapter, resolver, context, deployer } =
+      this.prepareForMigrations(options);
 
     // Get file path and emit pre-migration event
     const file = path.relative(options.migrations_directory, this.file);
@@ -213,12 +198,11 @@ class Migration {
       blockLimit: block.gasLimit
     };
 
-    await this.emitter.emit("preMigrate", preMigrationsData);
+    await emitEvent(options, "migrate:migration:start", preMigrationsData);
     await this._load(options, context, deployer, resolver);
   }
 
   prepareForMigrations(options) {
-    const logger = options.logger;
     const interfaceAdapter = createInterfaceAdapter({
       provider: options.provider,
       networkType: options.networks[options.network].type
@@ -233,17 +217,7 @@ class Migration {
     // Initial context.
     const context = { web3, interfaceAdapter, config: this.config };
 
-    const deployer = new Deployer({
-      logger,
-      confirmations: options.confirmations,
-      timeoutBlocks: options.timeoutBlocks,
-      networks: options.networks,
-      network: options.network,
-      network_id: options.network_id,
-      provider: options.provider,
-      basePath: path.dirname(this.file),
-      ens: options.ens
-    });
+    const deployer = new Deployer(options);
 
     return { interfaceAdapter, resolver, context, deployer };
   }

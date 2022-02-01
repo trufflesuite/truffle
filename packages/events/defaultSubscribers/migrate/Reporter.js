@@ -1,10 +1,9 @@
 const debug = require("debug")("reporters:migrations:reporter"); // eslint-disable-line no-unused-vars
 const web3Utils = require("web3-utils");
-const readline = require("readline");
 const ora = require("ora");
 
 const indentedSpinner = require("./indentedSpinner");
-const MigrationsMessages = require("./messages");
+const Messages = require("./Messages");
 
 /**
  *  Reporter consumed by a migrations sequence which iteself consumes a series of Migration and
@@ -16,16 +15,9 @@ const MigrationsMessages = require("./messages");
  *  suite:: deployer.start to deployer.finish
  *  test file:: migrations file
  *
- *  Each time a new migrations file loads, the reporter needs the following properties
- *  updated to reflect the current emitter source:
- *  + `this.migration`
- *  + `this.deployer`
  */
 class Reporter {
-  constructor(describeJson) {
-    this.migrator = null;
-    this.deployer = null;
-    this.migration = null;
+  constructor({ subscriber }) {
     this.currentGasTotal = new web3Utils.BN(0);
     this.currentCostTotal = new web3Utils.BN(0);
     this.finalCostTotal = new web3Utils.BN(0);
@@ -35,93 +27,12 @@ class Reporter {
     this.currentFileIndex = -1;
     this.blockSpinner = null;
     this.currentBlockWait = "";
-    this.describeJson = describeJson;
+    this.subscriber = subscriber;
 
-    this.messages = new MigrationsMessages(this);
+    this.messages = new Messages(this);
   }
 
   // ------------------------------------  Utilities -----------------------------------------------
-
-  /**
-   * Sets a Migrator instance to be the current master migrator events emitter source
-   * @param {Migration} migrator
-   */
-  setMigrator(migrator) {
-    this.migrator = migrator;
-  }
-
-  /**
-   * Sets a Migration instance to be the current migrations events emitter source
-   * @param {Migration} migration
-   */
-  setMigration(migration) {
-    this.migration = migration;
-  }
-
-  /**
-   * Sets a Deployer instance as the current deployer events emitter source
-   * @param {Deployer} deployer
-   */
-  setDeployer(deployer) {
-    this.deployer = deployer;
-  }
-
-  /**
-   * Registers emitter handlers for the migrator
-   */
-  listenMigrator() {
-    // Migrator
-    if (this.migrator && this.migrator.emitter) {
-      this.migrator.emitter.on(
-        "preAllMigrations",
-        this.preAllMigrations.bind(this)
-      );
-      this.migrator.emitter.on(
-        "postAllMigrations",
-        this.postAllMigrations.bind(this)
-      );
-    }
-  }
-
-  /**
-   * Registers emitter handlers for a migration/deployment
-   */
-  listen() {
-    // Migration
-    if (this.migration && this.migration.emitter) {
-      this.migration.emitter.on("preMigrate", this.preMigrate.bind(this));
-      this.migration.emitter.on(
-        "startTransaction",
-        this.startTransaction.bind(this)
-      );
-      this.migration.emitter.on(
-        "endTransaction",
-        this.endTransaction.bind(this)
-      );
-      this.migration.emitter.on("postMigrate", this.postMigrate.bind(this));
-      this.migration.emitter.on("error", this.error.bind(this));
-    }
-
-    // Deployment
-    if (this.deployer && this.deployer.emitter) {
-      this.deployer.emitter.on("preDeploy", this.preDeploy.bind(this));
-      this.deployer.emitter.on("postDeploy", this.postDeploy.bind(this));
-      this.deployer.emitter.on("deployFailed", this.deployFailed.bind(this));
-      this.deployer.emitter.on("linking", this.linking.bind(this));
-      this.deployer.emitter.on("error", this.error.bind(this));
-      this.deployer.emitter.on("transactionHash", this.hash.bind(this));
-      this.deployer.emitter.on("confirmation", this.confirmation.bind(this));
-      this.deployer.emitter.on("block", this.block.bind(this));
-      this.deployer.emitter.on(
-        "startTransaction",
-        this.startTransaction.bind(this)
-      );
-      this.deployer.emitter.on(
-        "endTransaction",
-        this.endTransaction.bind(this)
-      );
-    }
-  }
 
   /**
    * Retrieves gas usage totals per migrations file / totals since the reporter
@@ -141,39 +52,6 @@ class Reporter {
       finalCost: interfaceAdapter.displayCost(this.finalCostTotal),
       deployments: this.deployments.toString()
     };
-  }
-
-  /**
-   * Queries the user for a true/false response and resolves the result.
-   * @param  {String} type identifier the reporter consumes to format query
-   * @return {Promise}
-   */
-  askBoolean(type) {
-    const self = this;
-    const question = this.messages.questions(type);
-    const exitLine = this.messages.exitLines(type);
-
-    // NB: We need direct access to a writeable stream here.
-    // This ignores `quiet` - but we only use that mode for `truffle test`.
-    const input = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout
-    });
-
-    const affirmations = ["y", "yes", "YES", "Yes"];
-
-    return new Promise(resolve => {
-      input.question(question, answer => {
-        if (affirmations.includes(answer.trim())) {
-          input.close();
-          return resolve(true);
-        }
-
-        input.close();
-        self.deployer && self.deployer.logger.log(exitLine);
-        resolve(false);
-      });
-    });
   }
 
   /**
@@ -253,32 +131,6 @@ class Reporter {
     }
   }
 
-  // ---------------------------- Interaction Handlers ---------------------------------------------
-
-  async acceptDryRun() {
-    return this.askBoolean("acceptDryRun");
-  }
-
-  // -------------------------  Migrator File Handlers --------------------------------------------
-
-  /**
-   * Run when before any migration has started
-   * @param  {Object} data
-   */
-  async preAllMigrations(data) {
-    const message = this.messages.steps("preAllMigrations", data);
-    this.migrator.logger.log(message);
-  }
-
-  /**
-   * Run after all migrations have finished
-   * @param  {Object} data
-   */
-  async postAllMigrations(data) {
-    const message = this.messages.steps("postAllMigrations", data);
-    this.migrator.logger.log(message);
-  }
-
   // -------------------------  Migration File Handlers --------------------------------------------
 
   /**
@@ -289,7 +141,6 @@ class Reporter {
     let message;
     if (data.isFirst) {
       message = this.messages.steps("firstMigrate", data);
-      this.deployer.logger.log(message);
     }
 
     this.summary.push({
@@ -300,8 +151,13 @@ class Reporter {
 
     this.currentFileIndex++;
 
-    message = this.messages.steps("preMigrate", data);
-    this.deployer.logger.log(message);
+    const messagePart2 = this.messages.steps("preMigrate", data);
+    if (message && messagePart2) {
+      return message + "\n" + messagePart2;
+    } else if (message) {
+      return message;
+    }
+    return messagePart2;
   }
 
   /**
@@ -315,10 +171,9 @@ class Reporter {
     let messageData = {
       number: this.summary[this.currentFileIndex].number,
       cost: totals.cost,
-      valueUnit: this.valueUnit,
+      valueUnit: this.valueUnit
     };
     let message = this.messages.steps("postMigrate", messageData);
-    this.deployer.logger.log(message);
 
     if (data.isLast) {
       messageData.totalDeployments = totals.deployments;
@@ -327,9 +182,9 @@ class Reporter {
       this.summary.totalDeployments = messageData.totalDeployments;
       this.summary.finalCost = messageData.finalCost;
 
-      message = this.messages.steps("lastMigrate", messageData);
-      this.deployer.logger.log(message);
+      message += this.messages.steps("lastMigrate", messageData);
     }
+    return message;
   }
 
   // ----------------------------  Deployment Handlers --------------------------------------------
@@ -344,7 +199,7 @@ class Reporter {
       ? (message = this.messages.steps("replacing", data))
       : (message = this.messages.steps("deploying", data));
 
-    !this.deployingMany && this.deployer.logger.log(message);
+    return message;
   }
 
   /**
@@ -370,7 +225,9 @@ class Reporter {
   async postDeploy(data) {
     let message;
     if (data.deployed) {
-      const txCostReport = await data.contract.interfaceAdapter.getTransactionCostReport(data.receipt);
+      const txCostReport = await data.contract.interfaceAdapter.getTransactionCostReport(
+        data.receipt
+      );
 
       // if it returns null, try again!
       if (!txCostReport) return this.postDeploy(data);
@@ -396,13 +253,12 @@ class Reporter {
       message = this.messages.steps("reusing", data);
     }
 
-    this.deployer.logger.log(message);
+    return message;
   }
 
   /**
    * Runs on deployment error. Forwards err to the error parser/dispatcher after shutting down
-   * any `pending` UI.any `pending` UI. Returns the error message OR logs it out from the reporter
-   * if data.log is true.
+   * any `pending` UI.any `pending` UI.
    * @param  {Object}  data  event args
    * @return {Promise}       resolves string error message
    */
@@ -410,10 +266,7 @@ class Reporter {
     if (this.blockSpinner) {
       this.blockSpinner.stop();
     }
-
-    const message = await this.processDeploymentError(data);
-
-    return data.log ? this.deployer.logger.error(message) : message;
+    return await this.processDeploymentError(data);
   }
 
   // --------------------------  Transaction Handlers  ------------------------------------------
@@ -425,14 +278,11 @@ class Reporter {
    */
   async startTransaction(data) {
     const message = data.message || "Starting unknown transaction...";
-    this.deployer.logger.log();
-
     this.blockSpinner = new ora({
       text: message,
       spinner: indentedSpinner,
       color: "red"
     });
-
     this.blockSpinner.start();
   }
 
@@ -443,13 +293,12 @@ class Reporter {
   async endTransaction(data) {
     data.message = data.message || "Ending unknown transaction....";
     const message = this.messages.steps("endTransaction", data);
-    this.deployer.logger.log(message);
+    return message;
   }
 
   // ----------------------------  Library Event Handlers ------------------------------------------
   linking(data) {
-    let message = this.messages.steps("linking", data);
-    this.deployer.logger.log(message);
+    return this.messages.steps("linking", data);
   }
 
   // ----------------------------  PromiEvent Handlers --------------------------------------------
@@ -459,9 +308,7 @@ class Reporter {
    * @param  {Object} data
    */
   async error(data) {
-    const message = this.messages.errors(data.type, data);
-
-    return data.log ? this.deployer.logger.error(message) : message;
+    return this.messages.errors(data.type, data);
   }
 
   /**
@@ -469,12 +316,10 @@ class Reporter {
    * a block / time counter.
    * @param  {Object} data
    */
-  async hash(data) {
-    if (this.migration.dryRun) return;
+  async txHash(data) {
+    if (this.subscriber.config.dryRun) return;
 
     let message = this.messages.steps("hash", data);
-    this.deployer.logger.log(message);
-
     this.currentBlockWait = `Blocks: 0`.padEnd(21) + `Seconds: 0`;
 
     this.blockSpinner = new ora({
@@ -484,6 +329,7 @@ class Reporter {
     });
 
     this.blockSpinner.start();
+    return message;
   }
 
   /**
@@ -491,8 +337,7 @@ class Reporter {
    * @param  {Object} data
    */
   async confirmation(data) {
-    let message = this.messages.steps("confirmation", data);
-    this.deployer.logger.log(message);
+    return this.messages.steps("confirmation", data);
   }
 }
 

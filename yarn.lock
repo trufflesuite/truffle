@@ -18879,7 +18879,7 @@ lodash.partition@^4.6.0:
   resolved "https://registry.yarnpkg.com/lodash.partition/-/lodash.partition-4.6.0.tgz#a38e46b73469e0420b0da1212e66d414be364ba4"
   integrity sha1-o45GtzRp4EILDaEhLmbUFL42S6Q=
 
-lodash.pick@^4.2.1, lodash.pick@^4.4.0:
+lodash.pick@^4.2.1:
   version "4.4.0"
   resolved "https://registry.yarnpkg.com/lodash.pick/-/lodash.pick-4.4.0.tgz#52f05610fff9ded422611441ed1fc123a03001b3"
   integrity sha1-UvBWEP/53tQiYRRB7R/BI6AwAbM=

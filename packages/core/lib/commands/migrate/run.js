@@ -69,8 +69,6 @@ module.exports = async function (options) {
   }
 
   async function runMigrations(config) {
-    Migrate.launchReporter(config);
-
     if (options.f) {
       return await Migrate.runFrom(options.f, config);
     } else {

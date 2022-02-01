@@ -59,7 +59,7 @@ module.exports = {
           outputBuffer += data;
         }
 
-        // child process is ready for input when it displays the readyPrompt 
+        // child process is ready for input when it displays the readyPrompt
         if (!seenChildPrompt && outputBuffer.includes(readyPrompt)) {
           seenChildPrompt = true;
           commands.forEach(command => {
@@ -75,7 +75,6 @@ module.exports = {
         config.logger.log("EXIT: ", code);
         resolve();
       });
-
     });
   }
 };

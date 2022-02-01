@@ -1,4 +1,5 @@
 const debug = require("debug")("deployer:deployment"); // eslint-disable-line no-unused-vars
+const sanitizeMessage = require("./sanitizeMessage");
 
 /**
  * @class  Deployment
@@ -6,18 +7,23 @@ const debug = require("debug")("deployer:deployment"); // eslint-disable-line no
 class Deployment {
   /**
    * constructor
-   * @param  {Object} emitter         async `Emittery` emitter
    * @param  {Number} confirmations   confirmations needed to resolve an instance
    */
-  constructor(emitter, options) {
+  constructor(options) {
     const networkConfig = options.networks[options.network] || {};
     this.confirmations = options.confirmations || 0;
     this.timeoutBlocks = options.timeoutBlocks || 0;
     this.pollingInterval = networkConfig.deploymentPollingInterval || 4000;
-    this.emitter = emitter;
     this.promiEventEmitters = [];
     this.confirmationsMap = {};
     this.blockPoll;
+    this.options = options;
+  }
+
+  async emit(name, data) {
+    if (this.options && this.options.events) {
+      return await this.options.events.emit(name, data);
+    }
   }
 
   // ------------------------------------  Utils ---------------------------------------------------
@@ -91,13 +97,13 @@ class Deployment {
       currentBlock = newBlock;
       secondsWaited = Math.floor((new Date().getTime() - startTime) / 1000);
 
-      const eventArgs = {
+      const data = {
         blockNumber: newBlock,
         blocksWaited: blocksWaited,
         secondsWaited: secondsWaited
       };
 
-      await self.emitter.emit("block", eventArgs);
+      await self.emit("deployment:block", data);
     }, self.pollingInterval);
   }
 
@@ -127,19 +133,17 @@ class Deployment {
 
       const poll = setInterval(async () => {
         const newBlock = await interfaceAdapter.getBlockNumber();
-
         if (newBlock > currentBlock) {
           blocksHeard = newBlock - currentBlock + blocksHeard;
           currentBlock = newBlock;
 
-          const eventArgs = {
+          const data = {
             contractName: state.contractName,
             receipt: state.receipt,
             num: blocksHeard,
             block: currentBlock
           };
-
-          await self.emitter.emit("confirmation", eventArgs);
+          await self.emit("deployment:confirmation", data);
         }
 
         if (blocksHeard >= blocksToWait) {
@@ -161,22 +165,24 @@ class Deployment {
   async _preFlightCheck(contract) {
     // Check that contract is not array
     if (Array.isArray(contract)) {
-      const message = await this.emitter.emit("error", {
+      const data = {
         type: "noBatches",
-        contract: null
-      });
+        contract
+      };
+      const message = await this.emit("deployment:error", data);
 
-      throw new Error(message);
+      throw new Error(sanitizeMessage(message));
     }
 
     // Check bytecode
     if (contract.bytecode === "0x") {
-      const message = await this.emitter.emit("error", {
+      const data = {
         type: "noBytecode",
-        contract: contract
-      });
+        contract
+      };
+      const message = await this.emit("deployment:error", data);
 
-      throw new Error(message);
+      throw new Error(sanitizeMessage(message));
     }
 
     // Check network
@@ -221,6 +227,34 @@ class Deployment {
 
   // ----------------- Confirmations Handling (temporarily disabled) -------------------------------
   /**
+  * There are outstanding issues at both geth (with websockets) & web3 (with confirmation handling
+  @@ -247,27 +221,6 @@ class Deployment {
+  });
+  }
+
+  /**
+  * Handler for contract's `confirmation` event. Rebroadcasts as a deployer event
+  * and maintains a table of txHashes & their current confirmation number. This
+  * table gets polled if the user needs to wait a few blocks before getting
+  * an instance back.
+  * @private
+  * @param  {Object} parent  Deployment instance. Local `this` belongs to promievent
+  * @param  {Number} num     Confirmation number
+  * @param  {Object} receipt transaction receipt
+  */
+  async _confirmationCb(parent, state, num, receipt) {
+    const eventArgs = {
+      contractName: state.contractName,
+      num: num,
+      receipt: receipt
+    };
+
+    parent.confirmationsMap[receipt.transactionHash] = num;
+    await parent.emitter.emit("confirmation", eventArgs);
+  }
+
+  // ----------------- Confirmations Handling (temporarily disabled) -------------------------------
+  /**
    * There are outstanding issues at both geth (with websockets) & web3 (with confirmation handling
    * over RPC) that impair the confirmations handlers' reliability. In the interim we're using
    * simple block polling instead. (See also _confirmationCb )
@@ -247,27 +281,6 @@ class Deployment {
     });
   }
 
-  /**
-   * Handler for contract's `confirmation` event. Rebroadcasts as a deployer event
-   * and maintains a table of txHashes & their current confirmation number. This
-   * table gets polled if the user needs to wait a few blocks before getting
-   * an instance back.
-   * @private
-   * @param  {Object} parent  Deployment instance. Local `this` belongs to promievent
-   * @param  {Number} num     Confirmation number
-   * @param  {Object} receipt transaction receipt
-   */
-  async _confirmationCb(parent, state, num, receipt) {
-    const eventArgs = {
-      contractName: state.contractName,
-      num: num,
-      receipt: receipt
-    };
-
-    parent.confirmationsMap[receipt.transactionHash] = num;
-    await parent.emitter.emit("confirmation", eventArgs);
-  }
-
   // ------------------------------------ Methods --------------------------------------------------
   /**
    *
@@ -277,8 +290,7 @@ class Deployment {
    */
   executeDeployment(contract, args) {
     const self = this;
-
-    return async function() {
+    return async function () {
       await self._preFlightCheck(contract);
 
       let instance;
@@ -330,8 +342,9 @@ class Deployment {
           eventArgs.estimateError = err;
         }
 
-        // Emit `preDeploy` & send transaction
-        await self.emitter.emit("preDeploy", eventArgs);
+        // Emit `deployment:start` & send transaction
+        await self.emit("deployment:start", eventArgs);
+
         const promiEvent = contract.new.apply(contract, newArgs);
 
         // Track emitters for cleanup on exit
@@ -339,8 +352,18 @@ class Deployment {
 
         // Subscribe to contract events / rebroadcast them to any reporters
         promiEvent
-          .on("transactionHash", self._hashCb.bind(promiEvent, self, state))
-          .on("receipt", self._receiptCb.bind(promiEvent, self, state));
+          .on("transactionHash", async hash => {
+            const data = {
+              contractName: state.contractName,
+              transactionHash: hash
+            };
+            await self.emit("deployment:txHash", data);
+          })
+          .on("receipt", receipt => {
+            // We want this receipt available for the post-deploy event
+            // so gas reporting is at hand there.
+            state.receipt = receipt;
+          });
 
         await self._startBlockPolling(contract.interfaceAdapter);
 
@@ -351,18 +374,9 @@ class Deployment {
         } catch (err) {
           self._stopBlockPolling();
           eventArgs.error = err.error || err;
-          let message = await self.emitter.emit("deployFailed", eventArgs);
-
-          // Reporter might not be enabled (via Migrate.launchReporter) so
-          // message is a (potentially empty) array of results from the emitter
-          if (!message.length) {
-            message = `while migrating ${contract.contractName}: ${
-              eventArgs.error.message
-            }`;
-          }
-
+          const message = await self.emit("deployment:failed", eventArgs);
           self.close();
-          throw new Error(message);
+          throw new Error(sanitizeMessage(message));
         }
 
         // Case: already deployed
@@ -378,7 +392,7 @@ class Deployment {
         receipt: state.receipt
       };
 
-      await self.emitter.emit("postDeploy", eventArgs);
+      await self.emit("deployment:succeed", eventArgs);
 
       // Wait for `n` blocks
       if (self.confirmations !== 0 && shouldDeploy) {
@@ -399,7 +413,6 @@ class Deployment {
    * Cleans up promiEvents' emitter listeners
    */
   close() {
-    this.emitter.clearListeners();
     this.promiEventEmitters.forEach(item => {
       item.removeAllListeners();
     });

@@ -3,16 +3,13 @@ const Emittery = require("emittery");
 const defaultSubscribers = require("./defaultSubscribers");
 
 class EventManager {
-  constructor(eventManagerOptions) {
-    let { logger, quiet, subscribers } = eventManagerOptions;
+  constructor(config) {
     this.emitter = new Emittery();
     this.subscriberAggregators = [];
 
     this.initializationOptions = {
-      emitter: this.emitter,
-      logger,
-      quiet,
-      subscribers
+      config,
+      emitter: this.emitter
     };
     this.initializeDefaultSubscribers(this.initializationOptions);
   }
@@ -22,9 +19,10 @@ class EventManager {
   }
 
   initializeDefaultSubscribers(initializationOptions) {
-    const aggregatorOptions = Object.assign({}, initializationOptions, {
+    const aggregatorOptions = {
+      ...initializationOptions,
       subscribers: defaultSubscribers
-    });
+    };
     this.subscriberAggregators.push(
       new SubscriberAggregator(aggregatorOptions)
     );
