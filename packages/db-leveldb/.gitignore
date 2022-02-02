@@ -1,0 +1,4 @@
+db
+node_modules
+database.sqlite
+.nyc_output
