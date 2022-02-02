@@ -8,7 +8,7 @@
     "esModuleInterop": true,
     "strict": true,
     "lib": [
-      "es2019"
+      "es2017"
     ],
     "outDir": "dist",
     "baseUrl": ".",
