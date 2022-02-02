@@ -16,6 +16,7 @@ pragma solidity ^0.8.0;
 contract ReturnValues {
 
   int8 immutable minus = -1;
+  function() internal immutable trap = fail;
 
   constructor(bool fail) {
     if(fail) {
@@ -37,6 +38,10 @@ contract ReturnValues {
 
   function panic() public {
     assert(false);
+  }
+
+  function dummy() public {
+    trap();
   }
 }
 
@@ -218,12 +223,19 @@ describe("Return value decoding", function () {
     assert.strictEqual(decoding.kind, "bytecode");
     assert.strictEqual(decoding.class.typeName, "ReturnValues");
     const immutables = decoding.immutables;
-    assert.lengthOf(immutables, 1);
+    debug("immutables: %O", immutables);
+    assert.lengthOf(immutables, 2);
     assert.strictEqual(immutables[0].name, "minus");
     assert.strictEqual(immutables[0].class.typeName, "ReturnValues");
     assert.strictEqual(
       Codec.Format.Utils.Inspect.unsafeNativize(immutables[0].value),
       -1
+    );
+    assert.strictEqual(immutables[1].name, "trap");
+    assert.strictEqual(immutables[1].class.typeName, "ReturnValues");
+    assert.strictEqual(
+      Codec.Format.Utils.Inspect.unsafeNativize(immutables[1].value),
+      "ReturnValues.fail"
     );
   });
 
