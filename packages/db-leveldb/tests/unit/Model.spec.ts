@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { expect } from "chai";
-import { Storage } from "../src/storage";
+import { Storage } from "../../src/storage";
 
 const os = require("os");
 

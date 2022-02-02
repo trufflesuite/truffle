@@ -1,4 +1,4 @@
-const Model = require("../../src/storage/Model");
+const Model = require("../../../src/storage/Model");
 const { soliditySha3 } = require("web3-utils");
 
 class GenerateID extends Model {

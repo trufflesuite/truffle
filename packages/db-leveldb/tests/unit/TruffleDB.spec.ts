@@ -1,4 +1,4 @@
-import { TruffleDB } from "../src";
+import { TruffleDB } from "../../src";
 import { expect } from "chai";
 
 const os = require("os");

@@ -1,4 +1,4 @@
-import { Storage } from "../src/storage";
+import { Storage } from "../../src/storage";
 import { expect, assert } from "chai";
 
 const os = require("os");

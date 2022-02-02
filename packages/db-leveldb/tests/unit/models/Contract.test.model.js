@@ -1,4 +1,4 @@
-const Model = require("../../src/storage/Model");
+const Model = require("../../../src/storage/Model");
 
 class Contract extends Model {
   name = "Default Value";

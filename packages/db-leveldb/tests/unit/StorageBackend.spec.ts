@@ -1,4 +1,4 @@
-import { StorageBackend } from "../src/storage/backend";
+import { StorageBackend } from "../../src/storage/backend";
 import { expect, assert } from "chai";
 
 const os = require("os");
