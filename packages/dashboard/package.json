@@ -74,6 +74,9 @@
     "ts-node": "^10.4.0",
     "typescript": "^4.1.4"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "browser": {
     "ws": false
   }
