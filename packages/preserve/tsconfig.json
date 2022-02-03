@@ -3,7 +3,7 @@
     "module": "commonjs",
     "esModuleInterop": true,
     "declaration": true,
-    "target": "es2016",
+    "target": "es2018",
     "noImplicitAny": true,
     "moduleResolution": "node",
     "experimentalDecorators": true,
