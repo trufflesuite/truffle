@@ -4,9 +4,6 @@
   "description": "A contract packager for Ethereum and Javascript",
   "license": "MIT",
   "author": "Tim Coulter",
-  "bugs": {
-    "url": "https://github.com/trufflesuite/truffle/issues"
-  },
   "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/artifactor#readme",
   "repository": {
     "type": "git",
@@ -14,6 +11,9 @@
     "directory": "packages/artifactor"
   },
   "version": "4.0.139",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -35,7 +35,7 @@
     "@types/node": "12.12.21",
     "chai": "^4.2.0",
     "debug": "^4.3.1",
-    "ganache": "7.0.1",
+    "ganache": "7.0.2",
     "mocha": "8.1.2",
     "require-nocache": "^1.0.0",
     "sinon": "^9.0.2",

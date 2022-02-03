@@ -2,8 +2,19 @@
   "name": "@truffle/preserve-to-ipfs",
   "version": "0.2.7",
   "description": "Truffle `preserve` command support for IPFS",
+  "license": "MIT",
+  "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/preserve-to-ipfs#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/preserve-to-ipfs"
+  },
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "version": "0.2.6",
   "main": "dist/lib/index.js",
-  "types": "dist/lib/index.d.ts",
   "files": [
     "dist",
     "truffle-plugin.json"
@@ -13,26 +24,18 @@
     "prepare": "yarn build",
     "test": "./scripts/test.sh"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/trufflesuite/truffle.git",
-    "directory": "packages/preserve-to-ipfs"
-  },
-  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/preserve-to-ipfs#readme",
-  "bugs": {
-    "url": "https://github.com/trufflesuite/truffle/issues"
-  },
-  "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
-  "license": "MIT",
-  "publishConfig": {
-    "access": "public"
+  "types": "dist/lib/index.d.ts",
+  "dependencies": {
+    "@truffle/preserve": "^0.2.5",
+    "ipfs-http-client": "^48.2.2",
+    "iter-tools": "^7.0.2"
   },
   "devDependencies": {
     "@ganache/filecoin": "^0.1.2",
     "@types/jest": "^26.0.20",
     "@types/node": "^14.14.22",
     "cids": "^1.1.5",
-    "ganache": "^3.0.0-filecoin.3",
+    "ganache": "7.0.2",
     "jest": "^26.6.3",
     "semver": "^7.3.4",
     "ts-jest": "^26.5.0",
@@ -42,5 +45,8 @@
     "@truffle/preserve": "^0.2.6",
     "ipfs-http-client": "^48.2.2",
     "iter-tools": "^7.0.2"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
