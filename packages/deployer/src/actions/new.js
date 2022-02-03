@@ -5,8 +5,6 @@ module.exports = function (contract, args, deployer) {
         contract
       });
     }
-    // Evaluate any arguments if they're promises
-    await Promise.all(args);
     return contract.new.apply(contract, args);
   };
 };
