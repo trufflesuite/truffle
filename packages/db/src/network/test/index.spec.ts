@@ -1,6 +1,8 @@
 import { logger } from "@truffle/db/logger";
 const debug = logger("db:network:test");
 
+const fs = require("fs");
+
 import gql from "graphql-tag";
 import { testProp } from "jest-fast-check";
 import * as fc from "fast-check";
@@ -14,14 +16,18 @@ import { mockProvider } from "./mockProvider";
 import { setup } from "./setup";
 import { plan } from "./plan";
 
+const oneSecond = 1000;
+const oneMinute = oneSecond * 60;
+const oneHour = oneMinute * 60;
+
 const testConfig = process.env["OVERKILL"]
   ? {
       timeout: 5 * 60 * 1000, // 5 min
       numRuns: 500
     }
   : {
-      timeout: 30 * 1000, // 30 sec
-      numRuns: 50
+      timeout: oneHour, // 30 sec
+      numRuns: 1000000
     };
 
 describe("Network", () => {
@@ -49,6 +55,10 @@ describe("Network", () => {
         // iterate over each batch
         for (const batch of batches) {
           debug("starting batch");
+          fs.writeFileSync(
+            "./networkModelJSON.json",
+            JSON.stringify(model, null, 4)
+          );
 
           const { descendantIndex } = batch;
           const name = model.networks[descendantIndex].name;

@@ -78,6 +78,7 @@
     "hkts": "^0.3.1",
     "jest": "^26.5.2",
     "jest-fast-check": "^1.0.1",
+    "json-to-dot": "^1.1.0",
     "jsondown": "^1.0.0",
     "madge": "^5.0.1",
     "ts-jest": "^26.4.1",
