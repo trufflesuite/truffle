@@ -43,7 +43,7 @@ export function* decodeBasic(
       if (!fullType.underlyingType) {
         const error = {
           kind: "UserDefinedTypeNotFoundError" as const,
-          type: fullType,
+          type: fullType
         };
         if (strict || options.allowRetry) {
           throw new StopDecodingError(error, true);
@@ -61,10 +61,13 @@ export function* decodeBasic(
         info,
         options
       );
-      switch (underlyingResult.kind) { //yes this switch is a little unnecessary :P
+      switch (
+        underlyingResult.kind //yes this switch is a little unnecessary :P
+      ) {
         case "value":
           //wrap the value and return
-          return <Format.Values.UserDefinedValueTypeValue>{ //no idea why need coercion here
+          return <Format.Values.UserDefinedValueTypeValue>{
+            //no idea why need coercion here
             type: fullType,
             kind: "value" as const,
             value: underlyingResult
@@ -76,7 +79,8 @@ export function* decodeBasic(
           //does not cause an error in the whole thing, but to do that here
           //would cause problems for the type system :-/
           //so we'll just be inconsistent
-          return <Format.Errors.UserDefinedValueTypeErrorResult>{ //TS is being bad again :-/
+          return <Format.Errors.UserDefinedValueTypeErrorResult>{
+            //TS is being bad again :-/
             type: fullType,
             kind: "error" as const,
             error: {
@@ -280,7 +284,7 @@ export function* decodeBasic(
       switch (dataType.visibility) {
         case "external":
           if (!checkPadding(bytes, dataType, paddingMode)) {
-            let error = {
+            const error = {
               kind: "FunctionExternalNonStackPaddingError" as const,
               paddingType: getPaddingType(dataType, paddingMode),
               raw: Conversion.toHexString(bytes)
@@ -306,22 +310,26 @@ export function* decodeBasic(
             value: yield* decodeExternalFunction(address, selector, info)
           };
         case "internal":
-          if (strict) {
-            //internal functions don't go in the ABI!
-            //this should never happen, but just to be sure...
-            throw new StopDecodingError({
-              kind: "InternalFunctionInABIError" as const
-            });
-          }
+          //note: we used to error if we hit this point with strict === true,
+          //since internal function pointers don't go in the ABI, and strict
+          //mode is intended for ABI decoding.  however, there are times when
+          //we want to use strict mode to decode immutables, and immutables can
+          //include internal function pointers.  so now we allow this.  yes,
+          //this is a bit of an abuse of strict mode, which was after all meant
+          //for ABI decoding, but oh well.
           if (!checkPadding(bytes, dataType, paddingMode)) {
+            const error = {
+              kind: "FunctionInternalPaddingError" as const,
+              paddingType: getPaddingType(dataType, paddingMode),
+              raw: Conversion.toHexString(bytes)
+            };
+            if (strict) {
+              throw new StopDecodingError(error);
+            }
             return {
               type: dataType,
               kind: "error" as const,
-              error: {
-                kind: "FunctionInternalPaddingError" as const,
-                paddingType: getPaddingType(dataType, paddingMode),
-                raw: Conversion.toHexString(bytes)
-              }
+              error
             };
           }
           bytes = removePadding(bytes, dataType, paddingMode);
@@ -334,7 +342,8 @@ export function* decodeBasic(
             dataType,
             deployedPc,
             constructorPc,
-            info
+            info,
+            strict
           );
       }
       break; //to satisfy TypeScript
@@ -584,16 +593,16 @@ export function* decodeExternalFunction(
 }
 
 //this one works a bit differently -- in order to handle errors, it *does* return a FunctionInternalResult
-//also note, I haven't put the same sort of error-handling in this one since it's only intended to run with full info (for now, anyway)
-export function decodeInternalFunction(
+function decodeInternalFunction(
   dataType: Format.Types.FunctionInternalType,
   deployedPcBytes: Uint8Array,
   constructorPcBytes: Uint8Array,
-  info: Evm.EvmInfo
+  info: Evm.EvmInfo,
+  strict: boolean
 ): Format.Values.FunctionInternalResult {
-  let deployedPc: number = Conversion.toBN(deployedPcBytes).toNumber();
-  let constructorPc: number = Conversion.toBN(constructorPcBytes).toNumber();
-  let context: Format.Types.ContractType = Contexts.Import.contextToType(
+  const deployedPc: number = Conversion.toBN(deployedPcBytes).toNumber();
+  const constructorPc: number = Conversion.toBN(constructorPcBytes).toNumber();
+  const context: Format.Types.ContractType = Contexts.Import.contextToType(
     info.currentContext
   );
   //before anything else: do we even have an internal functions table?
@@ -625,44 +634,56 @@ export function decodeInternalFunction(
   }
   //another check: is only the deployed PC zero?
   if (deployedPc === 0 && constructorPc !== 0) {
+    const error = {
+      kind: "MalformedInternalFunctionError" as const,
+      context,
+      deployedProgramCounter: 0,
+      constructorProgramCounter: constructorPc
+    };
+    if (strict) {
+      throw new StopDecodingError(error);
+    }
     return {
       type: dataType,
       kind: "error" as const,
-      error: {
-        kind: "MalformedInternalFunctionError" as const,
-        context,
-        deployedProgramCounter: 0,
-        constructorProgramCounter: constructorPc
-      }
+      error
     };
   }
   //one last pre-check: is this a deployed-format pointer in a constructor?
   if (info.currentContext.isConstructor && constructorPc === 0) {
+    const error = {
+      kind: "DeployedFunctionInConstructorError" as const,
+      context,
+      deployedProgramCounter: deployedPc,
+      constructorProgramCounter: 0
+    };
+    if (strict) {
+      throw new StopDecodingError(error);
+    }
     return {
       type: dataType,
       kind: "error" as const,
-      error: {
-        kind: "DeployedFunctionInConstructorError" as const,
-        context,
-        deployedProgramCounter: deployedPc,
-        constructorProgramCounter: 0
-      }
+      error
     };
   }
   //otherwise, we get our function
-  let pc = info.currentContext.isConstructor ? constructorPc : deployedPc;
-  let functionEntry = info.internalFunctionsTable[pc];
+  const pc = info.currentContext.isConstructor ? constructorPc : deployedPc;
+  const functionEntry = info.internalFunctionsTable[pc];
   if (!functionEntry) {
     //if it's not zero and there's no entry... error!
+    const error = {
+      kind: "NoSuchInternalFunctionError" as const,
+      context,
+      deployedProgramCounter: deployedPc,
+      constructorProgramCounter: constructorPc
+    };
+    if (strict) {
+      throw new StopDecodingError(error);
+    }
     return {
       type: dataType,
       kind: "error" as const,
-      error: {
-        kind: "NoSuchInternalFunctionError" as const,
-        context,
-        deployedProgramCounter: deployedPc,
-        constructorProgramCounter: constructorPc
-      }
+      error
     };
   }
   if (functionEntry.isDesignatedInvalid) {
@@ -677,10 +698,10 @@ export function decodeInternalFunction(
       }
     };
   }
-  let name = functionEntry.name;
-  let mutability = functionEntry.mutability;
-  let definedIn = Evm.Import.functionTableEntryToType(functionEntry); //may be null
-  let id = Evm.Import.makeInternalFunctionId(functionEntry);
+  const name = functionEntry.name;
+  const mutability = functionEntry.mutability;
+  const definedIn = Evm.Import.functionTableEntryToType(functionEntry); //may be null
+  const id = Evm.Import.makeInternalFunctionId(functionEntry);
   return {
     type: dataType,
     kind: "value" as const,
@@ -757,7 +778,9 @@ function checkPaddingDirect(
     case "signed":
       return checkPaddingSigned(bytes, length);
     case "signedOrLeft":
-      return checkPaddingSigned(bytes, length) || checkPaddingLeft(bytes, length);
+      return (
+        checkPaddingSigned(bytes, length) || checkPaddingLeft(bytes, length)
+      );
   }
 }
 
