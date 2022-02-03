@@ -60,9 +60,15 @@ const logWeb3 = (logger = console) => {
   logger.log(`Web3.js v${web3Version}`);
 };
 
+const logGanache = (logger = console) => {
+  const ganacheVersion = pkg.dependencies.ganache;
+  logger.log(`Ganache V${ganacheVersion}`);
+};
+
 const logAll = (logger = console, config) => {
   const versionInformation = info(config);
   logTruffle(logger, versionInformation);
+  logGanache(logger);
   logSolidity(logger, versionInformation, config);
   logNode(logger);
   logWeb3(logger);
