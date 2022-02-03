@@ -154,6 +154,7 @@ class Messages {
   steps(kind, data) {
     const self = this;
     const reporter = self.reporter;
+    const valueUnit = data.valueUnit || "ETH";
 
     const kinds = {
       // Deployments
@@ -241,8 +242,8 @@ class Messages {
           `   > ${"balance:".padEnd(20)} ${data.balance}\n` +
           `   > ${"gas used:".padEnd(20)} ${self.decAndHex(data.gas)}\n` +
           `   > ${"gas price:".padEnd(20)} ${data.gasPrice} ${data.gasUnit}\n` +
-          `   > ${"value sent:".padEnd(20)} ${data.value} ${data.valueUnit}\n` +
-          `   > ${"total cost:".padEnd(20)} ${data.cost} ${data.valueUnit}\n`;
+          `   > ${"value sent:".padEnd(20)} ${data.value} ${valueUnit}\n` +
+          `   > ${"total cost:".padEnd(20)} ${data.cost} ${valueUnit}\n`;
 
         if (
           reporter.subscriber.config.confirmations !== undefined &&
@@ -374,9 +375,9 @@ class Messages {
         output +=
           self.underline(37) +
           "\n" +
-          `   > ${"Total cost:".padEnd(15)} ${data.cost.padStart(15)} ${
-            data.valueUnit
-          }\n`;
+          `   > ${"Total cost:".padEnd(15)} ${data.cost.padStart(
+            15
+          )} ${valueUnit}\n`;
 
         if (self.reporter.subscriber.config.describeJson) {
           output +=
@@ -398,7 +399,7 @@ class Messages {
           self.doubleline("Summary") +
           "\n" +
           `> ${"Total deployments:".padEnd(20)} ${data.totalDeployments}\n` +
-          `> ${"Final cost:".padEnd(20)} ${data.finalCost} ${data.valueUnit}\n`;
+          `> ${"Final cost:".padEnd(20)} ${data.finalCost} ${valueUnit}\n`;
 
         if (self.reporter.subscriber.config.describeJson) {
           output +=
