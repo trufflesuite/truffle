@@ -3,7 +3,7 @@
     "module": "commonjs",
     "esModuleInterop": true,
     "declaration": true,
-    "target": "es2018",
+    "target": "es2016",
     // We disable this because of IPFS dependencies that don't adhere
     "noImplicitAny": false,
     "moduleResolution": "node",
