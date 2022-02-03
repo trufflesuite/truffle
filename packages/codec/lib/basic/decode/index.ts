@@ -310,10 +310,13 @@ export function* decodeBasic(
             value: yield* decodeExternalFunction(address, selector, info)
           };
         case "internal":
-          //note: we no longer error here if strict is true, because we
-          //want to be able to use strict mode to decode immutables, and
-          //these can be immutables.  yes, this is a bit of an abuse of
-          //strict mode, which was meant for ABI decoding, but oh well.
+          //note: we used to error if we hit this point with strict === true,
+          //since internal function pointers don't go in the ABI, and strict
+          //mode is intended for ABI decoding.  however, there are times when
+          //we want to use strict mode to decode immutables, and immutables can
+          //include internal function pointers.  so now we allow this.  yes,
+          //this is a bit of an abuse of strict mode, which was after all meant
+          //for ABI decoding, but oh well.
           if (!checkPadding(bytes, dataType, paddingMode)) {
             const error = {
               kind: "FunctionInternalPaddingError" as const,
