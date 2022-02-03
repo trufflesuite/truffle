@@ -8,6 +8,7 @@ import { testProp } from "jest-fast-check";
 import * as fc from "fast-check";
 
 import * as Arbitrary from "test/arbitraries/networks";
+import { generateGenealogiesDiagram } from "./diagrams";
 
 import { Query } from "@truffle/db/process";
 import * as Network from "..";
@@ -52,6 +53,8 @@ describe("Network", () => {
           identifier: "test:network:property:latestDescendants"
         });
 
+        await generateGenealogiesDiagram({ db });
+
         // iterate over each batch
         for (const batch of batches) {
           debug("starting batch");
@@ -83,6 +86,8 @@ describe("Network", () => {
               disableIndex
             }
           });
+
+          await generateGenealogiesDiagram({ db });
         }
 
         // compute expected
