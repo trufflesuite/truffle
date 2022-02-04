@@ -7427,6 +7427,13 @@ big.js@^5.2.2:
   resolved "https://registry.yarnpkg.com/big.js/-/big.js-5.2.2.tgz#65f0af382f578bcdc742bd9c281e9cb2d7768328"
   integrity sha512-vyL2OymJxmarO8gxMr0mhChsO9QGwhynfuu4+MHTAW6czfq9humCB7rKpUjDd9YUiDPU4mzpyupFSvOClAwbmQ==
 
+bigint-buffer@1.1.5:
+  version "1.1.5"
+  resolved "https://registry.yarnpkg.com/bigint-buffer/-/bigint-buffer-1.1.5.tgz#d038f31c8e4534c1f8d0015209bf34b4fa6dd442"
+  integrity sha512-trfYco6AoZ+rKhKnxA0hgX0HAbVP/s808/EuDSe2JDzUnCp/xAsli35Orvk67UrTEcwuxZqYZDmfA2RXJgxVvA==
+  dependencies:
+    bindings "^1.3.0"
+
 bignumber.js@7.2.1, bignumber.js@^7.2.1:
   version "7.2.1"
   resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-7.2.1.tgz#80c048759d826800807c4bfd521e50edbba57a5f"
@@ -13012,6 +13019,16 @@ ganache-cli@^6.1.0:
     ethereumjs-util "6.1.0"
     source-map-support "0.5.12"
     yargs "13.2.4"
+
+ganache@^3.0.0-filecoin.3:
+  version "3.0.0-internal.16"
+  resolved "https://registry.yarnpkg.com/ganache/-/ganache-3.0.0-internal.16.tgz#2e338cba76ac5d9b9cbfb0b349b27edbf5b1ee00"
+  integrity sha512-N8vOmDaYVo1Kg9xQ2GKOSubLsySBD2VMU3NwB1tDiHJ7qsMraz9UxrrEU3KAOrbs4FXfqZzBCI6PgTnx5BYLag==
+  dependencies:
+    bigint-buffer "1.1.5"
+    keccak "3.0.1"
+    leveldown "5.6.0"
+    secp256k1 "4.0.2"
 
 ganache@^7.0.2:
   version "7.0.2"
