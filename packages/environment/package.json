@@ -25,7 +25,7 @@
     "@truffle/expect": "^0.1.0",
     "@truffle/interface-adapter": "^0.5.11",
     "@truffle/resolver": "^8.0.10",
-    "ganache": "7.0.1",
+    "ganache": "^7.0.2",
     "node-ipc": "^9.1.1",
     "source-map-support": "^0.5.19",
     "web3": "1.5.3"

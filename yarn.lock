@@ -15983,10 +15983,10 @@ ganache-core@^2.13.2:
     ethereumjs-wallet "0.6.5"
     web3 "1.2.11"
 
-ganache@7.0.1:
-  version "7.0.1"
-  resolved "https://registry.yarnpkg.com/ganache/-/ganache-7.0.1.tgz#a79470c03f992dd64077c9ab602a053f26c10d5d"
-  integrity sha512-P3mw+O23fD7BuWTdhr0WweOrTJCBRBFX22nMpmQDZgb1vmcYEv7PzNiKIfsI6PGOLh7PO8GuoRiMYBF+SlFikg==
+ganache@^7.0.2:
+  version "7.0.2"
+  resolved "https://registry.yarnpkg.com/ganache/-/ganache-7.0.2.tgz#c6b43061dd37d722dbf02db992cc38600389b757"
+  integrity sha512-cywtnBJQY/olx87mb6IT0NiBr8aTk58WccRF8fHtVQLQXxyEUbQfozqAZmpTA25Vdme+i+kFrGr9TrEA0GGq7g==
   dependencies:
     "@trufflesuite/bigint-buffer" "1.1.9"
     emittery "0.10.0"
