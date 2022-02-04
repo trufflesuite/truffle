@@ -61,7 +61,7 @@ jobs:
         with:
           channel: '#truffle-ci-notifications'
           status: ${{ job.status }}
-          fields: workflow,job,commit,message,ref,author,pullRequest
+          fields: commit,author,pullRequest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
