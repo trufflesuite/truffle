@@ -1,6 +1,6 @@
 {
   "extends": ["../../.eslintrc.package.json"],
   "globals": {
-    "BUNDLE_VERSION":"readonly"
+    "BUNDLE_VERSION": "readonly"
   }
 }

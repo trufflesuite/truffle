@@ -62,7 +62,7 @@ const logWeb3 = (logger = console) => {
 
 const logGanache = (logger = console) => {
   const ganacheVersion = pkg.dependencies.ganache;
-  logger.log(`Ganache V${ganacheVersion}`);
+  logger.log(`Ganache v${ganacheVersion}`);
 };
 
 const logAll = (logger = console, config) => {
