@@ -4062,6 +4062,25 @@
   resolved "https://registry.yarnpkg.com/@truffle/error/-/error-0.0.8.tgz#dc94ca36393403449d4b7461bf9452c241e53ec1"
   integrity sha512-x55rtRuNfRO1azmZ30iR0pf0OJ6flQqbax1hJz+Avk1K5fdmOv5cr22s9qFnwTWnS6Bw0jvJEoR0ITsM7cPKtQ==
 
+"@truffle/preserve-to-filecoin@^0.2.7":
+  version "0.2.7"
+  resolved "https://registry.yarnpkg.com/@truffle/preserve-to-filecoin/-/preserve-to-filecoin-0.2.7.tgz#f1132fba92dbdf039ae5793c883833fbed2e7dba"
+  integrity sha512-hQBCvcvgnSsKGKS3RZaFSHKFjP6553HATNaw3ee55Pgyp+Qzy2c+d6x34Mu23A+6qsfeVoGJ2BoPGwT4JSJkrA==
+  dependencies:
+    "@truffle/preserve" "^0.2.6"
+    cids "^1.1.5"
+    delay "^5.0.0"
+    filecoin.js "^0.0.5-alpha"
+
+"@truffle/preserve-to-ipfs@^0.2.7":
+  version "0.2.7"
+  resolved "https://registry.yarnpkg.com/@truffle/preserve-to-ipfs/-/preserve-to-ipfs-0.2.7.tgz#3664ea46c6065c3b18ee1ae5d20b276f36e5923b"
+  integrity sha512-gAf73biK/OX3+MoA092tKrw7r398v05q7yTJ85P2sQdN2Mj9dmiIZ7iDOccu47LtrYFAbar9NWBllDx1kqK3zQ==
+  dependencies:
+    "@truffle/preserve" "^0.2.6"
+    ipfs-http-client "^48.2.2"
+    iter-tools "^7.0.2"
+
 "@trufflesuite/bigint-buffer@1.1.9":
   version "1.1.9"
   resolved "https://registry.yarnpkg.com/@trufflesuite/bigint-buffer/-/bigint-buffer-1.1.9.tgz#e2604d76e1e4747b74376d68f1312f9944d0d75d"
