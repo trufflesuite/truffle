@@ -5,7 +5,7 @@ import { Storage } from "../../src/storage";
 const os = require("os");
 
 describe("Generate ID", () => {
-  const testModelDirectory = `${__dirname}/models`;
+  const testModelDirectory = `${__dirname}/testModels`;
   Storage.modelDirectory = testModelDirectory;
   const tmpDir = os.tmpdir();
   let databaseName = "truffledbTest";
@@ -19,11 +19,11 @@ describe("Generate ID", () => {
     "0x5190734208e3b85ce411083a60a9c5a25a3ac44f9aef6e9d4450ac15cc7449e3";
 
   beforeEach(() => {
-    const DB = Storage.createStorage(
+    const DB = Storage.createStorage({
       databaseEngine,
       databaseDirectory,
       databaseName
-    );
+    });
 
     levelDB = DB.levelDB;
 
@@ -32,6 +32,7 @@ describe("Generate ID", () => {
   afterEach(async () => {
     await levelDB.close();
   });
+
   it("returns an id from a defined function based on model instance properties", async () => {
     const example = GenerateID.build();
 

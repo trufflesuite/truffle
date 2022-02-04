@@ -5,7 +5,7 @@ import { Storage } from "../../src/storage";
 const os = require("os");
 
 describe("Model Instance", () => {
-  const testModelDirectory = `${__dirname}/models`;
+  const testModelDirectory = `${__dirname}/testModels`;
   Storage.modelDirectory = testModelDirectory;
   const tmpDir = os.tmpdir();
   let databaseName = "truffledbTest";
@@ -21,11 +21,11 @@ describe("Model Instance", () => {
   };
 
   beforeEach(() => {
-    const DB = Storage.createStorage(
+    const DB = Storage.createStorage({
       databaseEngine,
       databaseDirectory,
       databaseName
-    );
+    });
 
     levelDB = DB.levelDB;
     models = DB.models;

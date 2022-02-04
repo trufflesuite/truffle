@@ -2,7 +2,7 @@ import { Storage } from "./storage";
 
 type TruffleDBConfig = {
   databaseName: string;
-  databaseBackend: string;
+  databaseEngine: string;
   databaseDirectory: string;
 };
 
@@ -13,12 +13,12 @@ export class TruffleDB {
 
   constructor(config?: TruffleDBConfig) {
     this.config = { ...TruffleDB.DEFAULTS, ...config };
-    const { databaseName, databaseBackend, databaseDirectory } = this.config;
+    const { databaseName, databaseEngine, databaseDirectory } = this.config;
 
     const { levelDB, models } = Storage.createStorage({
       databaseName,
       databaseDirectory,
-      databaseBackend
+      databaseEngine
     });
 
     this.levelDB = levelDB;
@@ -32,7 +32,7 @@ export class TruffleDB {
   static get DEFAULTS(): TruffleDBConfig {
     return {
       databaseName: "truffledb",
-      databaseBackend: "memory",
+      databaseEngine: "memory",
       databaseDirectory: "./db"
     };
   }

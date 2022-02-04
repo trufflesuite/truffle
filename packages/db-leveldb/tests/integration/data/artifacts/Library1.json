@@ -1,0 +1,276 @@
+{
+  "contractName": "Library1",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [],
+      "name": "Library1Event",
+      "type": "event"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.8.11+commit.d7f03943\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[],\"name\":\"Library1Event\",\"type\":\"event\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/library1.sol\":\"Library1\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/library1.sol\":{\"keccak256\":\"0xa00346cdbda51b2efe33acd9db85e7e30088a4cc94f555f200e9bf1c01feaafa\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://af8888a83f44bd0ff9298df49b273524203f9d30659987002fb92783b81140ae\",\"dweb:/ipfs/QmQXCjdu4dvL385zfs6AsHbNmxgNC2eL79vHJiEcZNJpbq\"]}},\"version\":1}",
+  "bytecode": "0x60b0610051600b82828239805160001a6073146044577f4e487b7100000000000000000000000000000000000000000000000000000000600052600060045260246000fd5b30600052607381538281f3fe730000000000000000000000000000000000000000301460806040526004361060335760003560e01c8063874f33a1146038575b600080fd5b818015604357600080fd5b50604a604c565b005b7f272c515c55a1233db06e0387356acaf9427dc9e16a4cdc97bd867ffeccab0f4260405160405180910390a156fea26469706673582212200e7715c12ecfed215ff2e98cb469653f27d3f04324d6cec121a71a7144ee319b64736f6c634300080b0033",
+  "deployedBytecode": "0x730000000000000000000000000000000000000000301460806040526004361060335760003560e01c8063874f33a1146038575b600080fd5b818015604357600080fd5b50604a604c565b005b7f272c515c55a1233db06e0387356acaf9427dc9e16a4cdc97bd867ffeccab0f4260405160405180910390a156fea26469706673582212200e7715c12ecfed215ff2e98cb469653f27d3f04324d6cec121a71a7144ee319b64736f6c634300080b0033",
+  "immutableReferences": {},
+  "generatedSources": [],
+  "deployedGeneratedSources": [],
+  "sourceMap": "56:109:2:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;",
+  "deployedSourceMap": "56:109:2:-:0;;;;;;;;;;;;;;;;;;;;;;;;104:59;;;;;;;;;;;;;:::i;:::-;;;143:15;;;;;;;;;;104:59::o",
+  "source": "//SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\nlibrary Library1 {\n\n  event Library1Event();\n\n  function doStuff() external {\n    emit Library1Event();\n  }\n}\n",
+  "sourcePath": "/home/hayek/proj/truffle/packages/db-leveldb/tests/integration/data/artifacts/library1.sol",
+  "ast": {
+    "absolutePath": "project:/contracts/library1.sol",
+    "exportedSymbols": {
+      "Library1": [90]
+    },
+    "id": 91,
+    "license": "MIT",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 80,
+        "literals": ["solidity", "^", "0.8", ".0"],
+        "nodeType": "PragmaDirective",
+        "src": "31:23:2"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "Library1",
+        "contractDependencies": [],
+        "contractKind": "library",
+        "fullyImplemented": true,
+        "id": 90,
+        "linearizedBaseContracts": [90],
+        "name": "Library1",
+        "nameLocation": "64:8:2",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "anonymous": false,
+            "id": 82,
+            "name": "Library1Event",
+            "nameLocation": "84:13:2",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 81,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "97:2:2"
+            },
+            "src": "78:22:2"
+          },
+          {
+            "body": {
+              "id": 88,
+              "nodeType": "Block",
+              "src": "132:31:2",
+              "statements": [
+                {
+                  "eventCall": {
+                    "arguments": [],
+                    "expression": {
+                      "argumentTypes": [],
+                      "id": 85,
+                      "name": "Library1Event",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 82,
+                      "src": "143:13:2",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_event_nonpayable$__$returns$__$",
+                        "typeString": "function ()"
+                      }
+                    },
+                    "id": 86,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "143:15:2",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 87,
+                  "nodeType": "EmitStatement",
+                  "src": "138:20:2"
+                }
+              ]
+            },
+            "functionSelector": "874f33a1",
+            "id": 89,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "doStuff",
+            "nameLocation": "113:7:2",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 83,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "120:2:2"
+            },
+            "returnParameters": {
+              "id": 84,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "132:0:2"
+            },
+            "scope": 90,
+            "src": "104:59:2",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 91,
+        "src": "56:109:2",
+        "usedErrors": []
+      }
+    ],
+    "src": "31:135:2"
+  },
+  "legacyAST": {
+    "absolutePath": "project:/contracts/library1.sol",
+    "exportedSymbols": {
+      "Library1": [90]
+    },
+    "id": 91,
+    "license": "MIT",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 80,
+        "literals": ["solidity", "^", "0.8", ".0"],
+        "nodeType": "PragmaDirective",
+        "src": "31:23:2"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "Library1",
+        "contractDependencies": [],
+        "contractKind": "library",
+        "fullyImplemented": true,
+        "id": 90,
+        "linearizedBaseContracts": [90],
+        "name": "Library1",
+        "nameLocation": "64:8:2",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "anonymous": false,
+            "id": 82,
+            "name": "Library1Event",
+            "nameLocation": "84:13:2",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 81,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "97:2:2"
+            },
+            "src": "78:22:2"
+          },
+          {
+            "body": {
+              "id": 88,
+              "nodeType": "Block",
+              "src": "132:31:2",
+              "statements": [
+                {
+                  "eventCall": {
+                    "arguments": [],
+                    "expression": {
+                      "argumentTypes": [],
+                      "id": 85,
+                      "name": "Library1Event",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 82,
+                      "src": "143:13:2",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_event_nonpayable$__$returns$__$",
+                        "typeString": "function ()"
+                      }
+                    },
+                    "id": 86,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "143:15:2",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 87,
+                  "nodeType": "EmitStatement",
+                  "src": "138:20:2"
+                }
+              ]
+            },
+            "functionSelector": "874f33a1",
+            "id": 89,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "doStuff",
+            "nameLocation": "113:7:2",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 83,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "120:2:2"
+            },
+            "returnParameters": {
+              "id": 84,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "132:0:2"
+            },
+            "scope": 90,
+            "src": "104:59:2",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 91,
+        "src": "56:109:2",
+        "usedErrors": []
+      }
+    ],
+    "src": "31:135:2"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.8.11+commit.d7f03943.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.4.4",
+  "updatedAt": "2022-02-04T09:11:19.888Z",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  }
+}

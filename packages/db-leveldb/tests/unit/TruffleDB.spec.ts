@@ -9,7 +9,7 @@ describe("TruffleDB", () => {
 
   let testConfig = {
     databaseName: "testproject",
-    databaseBackend: "memory",
+    databaseEngine: "memory",
     databaseDirectory: tmpDirectory
   };
 

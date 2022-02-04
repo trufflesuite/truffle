@@ -5,11 +5,11 @@ const os = require("os");
 
 describe("Storage", () => {
   let tmpDir = os.tmpdir();
-  const testModelDirectory = `${__dirname}/models`;
+  const testModelDirectory = `${__dirname}/testModels`;
 
   const storageOptions = {
     databaseName: "storageTest",
-    databaseBackend: "memory",
+    databaseEngine: "memory",
     databaseDirectory: tmpDir
   };
 

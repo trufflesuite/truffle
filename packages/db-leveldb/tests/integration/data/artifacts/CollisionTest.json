@@ -1,0 +1,483 @@
+{
+  "contractName": "CollisionTest",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "run",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.8.11+commit.d7f03943\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"run\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/CollisionTest.sol\":\"CollisionTest\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/CollisionTest.sol\":{\"keccak256\":\"0xcff37ffa7bffe8ec6231990561351ece212b909e2320e3d397016c8b1fb79229\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://d6ba449f690219fbeadea53ab2cfb7729654c931401ecebbf2f53314a736d2a7\",\"dweb:/ipfs/QmVqnyyxNREDpGfsXWcw1UNL87vepj5RiQ65BFzS959v1R\"]},\"project:/contracts/library1.sol\":{\"keccak256\":\"0xa00346cdbda51b2efe33acd9db85e7e30088a4cc94f555f200e9bf1c01feaafa\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://af8888a83f44bd0ff9298df49b273524203f9d30659987002fb92783b81140ae\",\"dweb:/ipfs/QmQXCjdu4dvL385zfs6AsHbNmxgNC2eL79vHJiEcZNJpbq\"]},\"project:/contracts/library2.sol\":{\"keccak256\":\"0xe18bbf3ae2d59e97db7f2522b83958000e1102f0177ee3c55b7fee2498d7ea0b\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://59b8b560f8b00894dd9e1deb9f8a4af82b2b774bbd154f6e40d14d1d6a3f4c36\",\"dweb:/ipfs/QmcFqNuijcPkiZBZxM7mgRTHA2p4uBFyoovrkhNHSAZdoQ\"]}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b50610121806100206000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c8063c040622614602d575b600080fd5b60336035565b005b73__Library1______________________________63874f33a16040518163ffffffff1660e01b815260040160006040518083038186803b158015607857600080fd5b505af4158015608b573d6000803e3d6000fd5b5050505073__Library2______________________________63874f33a16040518163ffffffff1660e01b815260040160006040518083038186803b15801560d257600080fd5b505af415801560e5573d6000803e3d6000fd5b5050505056fea2646970667358221220b4b01a367a5b856b03b8a35e4c0578e5adeaf3bd28b78f996fdb2a859226a22164736f6c634300080b0033",
+  "deployedBytecode": "0x6080604052348015600f57600080fd5b506004361060285760003560e01c8063c040622614602d575b600080fd5b60336035565b005b73__Library1______________________________63874f33a16040518163ffffffff1660e01b815260040160006040518083038186803b158015607857600080fd5b505af4158015608b573d6000803e3d6000fd5b5050505073__Library2______________________________63874f33a16040518163ffffffff1660e01b815260040160006040518083038186803b15801560d257600080fd5b505af415801560e5573d6000803e3d6000fd5b5050505056fea2646970667358221220b4b01a367a5b856b03b8a35e4c0578e5adeaf3bd28b78f996fdb2a859226a22164736f6c634300080b0033",
+  "immutableReferences": {},
+  "generatedSources": [],
+  "deployedGeneratedSources": [],
+  "sourceMap": "167:104:0:-:0;;;;;;;;;;;;;;;;;;;",
+  "deployedSourceMap": "167:104:0:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;194:75;;;:::i;:::-;;;222:8;:16;:18;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;246:8;:16;:18;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;194:75::o",
+  "source": "//SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\nimport { Library1 as Library1 } from \"./library1.sol\";\nimport { Library2 as Library2 } from \"./library2.sol\";\n\ncontract CollisionTest {\n  function run() public {\n    Library1.doStuff();\n    Library2.doStuff();\n  }\n}\n",
+  "sourcePath": "/home/hayek/proj/truffle/packages/db-leveldb/tests/integration/data/artifacts/CollisionTest.sol",
+  "ast": {
+    "absolutePath": "project:/contracts/CollisionTest.sol",
+    "exportedSymbols": {
+      "CollisionTest": [20],
+      "Library1": [90],
+      "Library2": [102]
+    },
+    "id": 21,
+    "license": "MIT",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 1,
+        "literals": ["solidity", "^", "0.8", ".0"],
+        "nodeType": "PragmaDirective",
+        "src": "31:23:0"
+      },
+      {
+        "absolutePath": "project:/contracts/library1.sol",
+        "file": "./library1.sol",
+        "id": 3,
+        "nameLocation": "-1:-1:-1",
+        "nodeType": "ImportDirective",
+        "scope": 21,
+        "sourceUnit": 91,
+        "src": "56:54:0",
+        "symbolAliases": [
+          {
+            "foreign": {
+              "id": 2,
+              "name": "Library1",
+              "nodeType": "Identifier",
+              "overloadedDeclarations": [],
+              "src": "65:8:0",
+              "typeDescriptions": {}
+            },
+            "local": "Library1",
+            "nameLocation": "-1:-1:-1"
+          }
+        ],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "project:/contracts/library2.sol",
+        "file": "./library2.sol",
+        "id": 5,
+        "nameLocation": "-1:-1:-1",
+        "nodeType": "ImportDirective",
+        "scope": 21,
+        "sourceUnit": 103,
+        "src": "111:54:0",
+        "symbolAliases": [
+          {
+            "foreign": {
+              "id": 4,
+              "name": "Library2",
+              "nodeType": "Identifier",
+              "overloadedDeclarations": [],
+              "src": "120:8:0",
+              "typeDescriptions": {}
+            },
+            "local": "Library2",
+            "nameLocation": "-1:-1:-1"
+          }
+        ],
+        "unitAlias": ""
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "CollisionTest",
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "fullyImplemented": true,
+        "id": 20,
+        "linearizedBaseContracts": [20],
+        "name": "CollisionTest",
+        "nameLocation": "176:13:0",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": {
+              "id": 18,
+              "nodeType": "Block",
+              "src": "216:53:0",
+              "statements": [
+                {
+                  "expression": {
+                    "arguments": [],
+                    "expression": {
+                      "argumentTypes": [],
+                      "expression": {
+                        "id": 8,
+                        "name": "Library1",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 90,
+                        "src": "222:8:0",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_type$_t_contract$_Library1_$90_$",
+                          "typeString": "type(library Library1)"
+                        }
+                      },
+                      "id": 10,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "doStuff",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 89,
+                      "src": "222:16:0",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_delegatecall_nonpayable$__$returns$__$",
+                        "typeString": "function ()"
+                      }
+                    },
+                    "id": 11,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "222:18:0",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 12,
+                  "nodeType": "ExpressionStatement",
+                  "src": "222:18:0"
+                },
+                {
+                  "expression": {
+                    "arguments": [],
+                    "expression": {
+                      "argumentTypes": [],
+                      "expression": {
+                        "id": 13,
+                        "name": "Library2",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 102,
+                        "src": "246:8:0",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_type$_t_contract$_Library2_$102_$",
+                          "typeString": "type(library Library2)"
+                        }
+                      },
+                      "id": 15,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "doStuff",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 101,
+                      "src": "246:16:0",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_delegatecall_nonpayable$__$returns$__$",
+                        "typeString": "function ()"
+                      }
+                    },
+                    "id": 16,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "246:18:0",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 17,
+                  "nodeType": "ExpressionStatement",
+                  "src": "246:18:0"
+                }
+              ]
+            },
+            "functionSelector": "c0406226",
+            "id": 19,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "run",
+            "nameLocation": "203:3:0",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 6,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "206:2:0"
+            },
+            "returnParameters": {
+              "id": 7,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "216:0:0"
+            },
+            "scope": 20,
+            "src": "194:75:0",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "public"
+          }
+        ],
+        "scope": 21,
+        "src": "167:104:0",
+        "usedErrors": []
+      }
+    ],
+    "src": "31:241:0"
+  },
+  "legacyAST": {
+    "absolutePath": "project:/contracts/CollisionTest.sol",
+    "exportedSymbols": {
+      "CollisionTest": [20],
+      "Library1": [90],
+      "Library2": [102]
+    },
+    "id": 21,
+    "license": "MIT",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 1,
+        "literals": ["solidity", "^", "0.8", ".0"],
+        "nodeType": "PragmaDirective",
+        "src": "31:23:0"
+      },
+      {
+        "absolutePath": "project:/contracts/library1.sol",
+        "file": "./library1.sol",
+        "id": 3,
+        "nameLocation": "-1:-1:-1",
+        "nodeType": "ImportDirective",
+        "scope": 21,
+        "sourceUnit": 91,
+        "src": "56:54:0",
+        "symbolAliases": [
+          {
+            "foreign": {
+              "id": 2,
+              "name": "Library1",
+              "nodeType": "Identifier",
+              "overloadedDeclarations": [],
+              "src": "65:8:0",
+              "typeDescriptions": {}
+            },
+            "local": "Library1",
+            "nameLocation": "-1:-1:-1"
+          }
+        ],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "project:/contracts/library2.sol",
+        "file": "./library2.sol",
+        "id": 5,
+        "nameLocation": "-1:-1:-1",
+        "nodeType": "ImportDirective",
+        "scope": 21,
+        "sourceUnit": 103,
+        "src": "111:54:0",
+        "symbolAliases": [
+          {
+            "foreign": {
+              "id": 4,
+              "name": "Library2",
+              "nodeType": "Identifier",
+              "overloadedDeclarations": [],
+              "src": "120:8:0",
+              "typeDescriptions": {}
+            },
+            "local": "Library2",
+            "nameLocation": "-1:-1:-1"
+          }
+        ],
+        "unitAlias": ""
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "CollisionTest",
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "fullyImplemented": true,
+        "id": 20,
+        "linearizedBaseContracts": [20],
+        "name": "CollisionTest",
+        "nameLocation": "176:13:0",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": {
+              "id": 18,
+              "nodeType": "Block",
+              "src": "216:53:0",
+              "statements": [
+                {
+                  "expression": {
+                    "arguments": [],
+                    "expression": {
+                      "argumentTypes": [],
+                      "expression": {
+                        "id": 8,
+                        "name": "Library1",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 90,
+                        "src": "222:8:0",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_type$_t_contract$_Library1_$90_$",
+                          "typeString": "type(library Library1)"
+                        }
+                      },
+                      "id": 10,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "doStuff",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 89,
+                      "src": "222:16:0",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_delegatecall_nonpayable$__$returns$__$",
+                        "typeString": "function ()"
+                      }
+                    },
+                    "id": 11,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "222:18:0",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 12,
+                  "nodeType": "ExpressionStatement",
+                  "src": "222:18:0"
+                },
+                {
+                  "expression": {
+                    "arguments": [],
+                    "expression": {
+                      "argumentTypes": [],
+                      "expression": {
+                        "id": 13,
+                        "name": "Library2",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 102,
+                        "src": "246:8:0",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_type$_t_contract$_Library2_$102_$",
+                          "typeString": "type(library Library2)"
+                        }
+                      },
+                      "id": 15,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "doStuff",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 101,
+                      "src": "246:16:0",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_delegatecall_nonpayable$__$returns$__$",
+                        "typeString": "function ()"
+                      }
+                    },
+                    "id": 16,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "246:18:0",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 17,
+                  "nodeType": "ExpressionStatement",
+                  "src": "246:18:0"
+                }
+              ]
+            },
+            "functionSelector": "c0406226",
+            "id": 19,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "run",
+            "nameLocation": "203:3:0",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 6,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "206:2:0"
+            },
+            "returnParameters": {
+              "id": 7,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "216:0:0"
+            },
+            "scope": 20,
+            "src": "194:75:0",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "public"
+          }
+        ],
+        "scope": 21,
+        "src": "167:104:0",
+        "usedErrors": []
+      }
+    ],
+    "src": "31:241:0"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.8.11+commit.d7f03943.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.4.4",
+  "updatedAt": "2022-02-04T09:11:19.884Z",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  }
+}

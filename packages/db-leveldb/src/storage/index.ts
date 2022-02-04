@@ -5,7 +5,7 @@ const fs = require("fs");
 import { StorageBackend } from "./backend";
 
 type CreateStorageOptions = {
-  databaseBackend: string;
+  databaseEngine: string;
   databaseDirectory: string;
   databaseName?: string;
 };
@@ -16,7 +16,7 @@ export class Storage {
   static availableBackends: string[] = StorageBackend.availableBackends();
 
   static createStorage({
-    databaseBackend,
+    databaseEngine,
     databaseDirectory,
     databaseName
   }: CreateStorageOptions) {
@@ -24,7 +24,7 @@ export class Storage {
     const models = this.createModelsFromFiles(modelFiles);
 
     const levelDB = this.createDB({
-      databaseBackend,
+      databaseEngine,
       databaseDirectory,
       databaseName
     });
@@ -35,12 +35,12 @@ export class Storage {
   }
 
   static createDB({
-    databaseBackend,
+    databaseEngine,
     databaseDirectory,
     databaseName
   }: CreateStorageOptions) {
     const levelDB = sublevel(
-      levelup(StorageBackend.createBackend(databaseBackend, databaseDirectory)),
+      levelup(StorageBackend.createBackend(databaseEngine, databaseDirectory)),
       databaseName,
       {
         valueEncoding: "json"
