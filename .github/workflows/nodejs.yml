@@ -59,9 +59,9 @@ jobs:
       - uses: 8398a7/action-slack@v3
         continue-on-error: true
         with:
-          channel: '#buidl-status'
+          channel: '#truffle-ci-notifications'
           status: ${{ job.status }}
-          fields: repo,message,commit,author,eventName,took,pullRequest
+          fields: commit,author,pullRequest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
