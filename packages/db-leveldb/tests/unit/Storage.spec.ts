@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Storage } from "../../src/storage";
 import { expect, assert } from "chai";
 
@@ -5,7 +6,7 @@ const os = require("os");
 
 describe("Storage", () => {
   let tmpDir = os.tmpdir();
-  const testModelDirectory = `${__dirname}/testModels`;
+  const testModelDirectory = [`${__dirname}/testModels`];
 
   const storageOptions = {
     databaseName: "storageTest",
@@ -21,14 +22,13 @@ describe("Storage", () => {
   });
 
   it("has a modelDirectory property with default value", () => {
-    expect(Storage.modelDirectory.length > 0).to.equal(true);
+    expect(Storage.modelDirectories.length > 0).to.equal(true);
   });
   it("has a modelBaseName property with default value", () => {
     expect(Storage.modelBaseName.length > 0).to.equal(true);
   });
-
   it("creates models from a list of model files", () => {
-    const modelFiles = Storage.getModelFilesFromDirectory(testModelDirectory);
+    const modelFiles = Storage.getModelFiles(testModelDirectory);
 
     const models = Storage.createModelsFromFiles(modelFiles);
 
@@ -40,9 +40,10 @@ describe("Storage", () => {
 
     expect(!!levelDB).to.equal(true);
   });
+
   it("attaches the models to a database", () => {
     const levelDB = Storage.createDB(storageOptions);
-    const modelFiles = Storage.getModelFilesFromDirectory(testModelDirectory);
+    const modelFiles = Storage.getModelFiles(testModelDirectory);
 
     const models = Storage.createModelsFromFiles(modelFiles);
     Storage.attachModelsToDatabase(models, levelDB);
@@ -50,25 +51,62 @@ describe("Storage", () => {
   });
 
   it("gets the model file names from the modelDirectory matching the modelBaseName pattern", () => {
-    const modelFiles = Storage.getModelFilesFromDirectory(testModelDirectory);
+    const modelFiles = Storage.getModelFiles(testModelDirectory);
 
     expect(modelFiles.length).to.equal(3);
   });
+
+  it("accepts additional model directories, overwrites default models of the same name", () => {
+    const storageWithModelDirectory = {
+      ...storageOptions,
+      modelDirectories: testModelDirectory
+    };
+
+    let { levelDB, models } = Storage.createStorage(storageOptions);
+    expect(!!levelDB).to.equal(true);
+
+    let defaultModels = models;
+
+    ({ models } = Storage.createStorage(storageWithModelDirectory));
+
+    for (const key in defaultModels) {
+      expect(!!models[key]).to.equal(true);
+    }
+
+    const modelDirectories = Storage.modelDirectories;
+    expect(modelDirectories.length).to.equal(2);
+  });
+
   describe("throws", () => {
-    it("invalid model folder throws", () => {
-      const fakeFolder = "lkjasdlfkjasldkfjsdf";
+    it("no model directories, or directories is not an array", () => {
+      const invalidDirectory = "test";
 
       assert.throws(() => {
-        Storage.getModelFilesFromDirectory(fakeFolder),
+        Storage.getModelFiles(invalidDirectory),
           Error,
-          "folder does not exist";
+          "no model directories provided";
+      });
+      assert.throws(() => {
+        Storage.getModelFiles(undefined),
+          Error,
+          "no model directories provided";
       });
 
       assert.throws(() => {
         // @ts-ignore
-        Storage.getModelFilesFromDirectory(null),
-          Error,
-          "folder does not exist";
+        Storage.getModelFiles(null), Error, "directory does not exist";
+      });
+    });
+    it("invalid model directory throws", () => {
+      const fakeDirectory = ["lkjasdlfkjasldkfjsdf"];
+
+      assert.throws(() => {
+        Storage.getModelFiles(fakeDirectory), Error, "directory does not exist";
+      });
+
+      assert.throws(() => {
+        // @ts-ignore
+        Storage.getModelFiles(null), Error, "directory does not exist";
       });
     });
     it("invalid model paths parameter", () => {

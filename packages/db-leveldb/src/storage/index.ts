@@ -8,19 +8,22 @@ type CreateStorageOptions = {
   databaseEngine: string;
   databaseDirectory: string;
   databaseName?: string;
+  modelDirectories?: string[];
 };
 
 export class Storage {
-  static modelDirectory = `${__dirname}/models`;
+  static #modelDirectories = [`${__dirname}/models`];
   static modelBaseName = ".model.js";
   static availableBackends: string[] = StorageBackend.availableBackends();
 
   static createStorage({
     databaseEngine,
     databaseDirectory,
-    databaseName
+    databaseName,
+    modelDirectories
   }: CreateStorageOptions) {
-    const modelFiles = this.getModelFilesFromDirectory(this.modelDirectory);
+    this.addModelDirectories(modelDirectories);
+    const modelFiles = this.getModelFiles(this.#modelDirectories);
     const models = this.createModelsFromFiles(modelFiles);
 
     const levelDB = this.createDB({
@@ -50,18 +53,39 @@ export class Storage {
     return levelDB;
   }
 
-  static getModelFilesFromDirectory(folder: string): string[] {
-    if (!folder || !fs.existsSync(folder))
-      throw new Error("folder does not exist");
+  static addModelDirectories(directories: string[] | undefined) {
+    if (!directories) return;
+    if (!Array.isArray(directories))
+      throw new Error("Model directories is not an array");
 
-    return fs
-      .readdirSync(folder)
-      .filter((file: string) => {
-        return file.indexOf(this.modelBaseName) !== -1;
-      })
-      .map((file: string) => {
-        return `${folder}/${file}`;
-      });
+    this.#modelDirectories = Array.from(
+      new Set(this.#modelDirectories.concat(directories))
+    );
+  }
+
+  static get modelDirectories() {
+    return this.#modelDirectories;
+  }
+
+  static getModelFiles(directories: string[]): string[] {
+    if (!directories || !Array.isArray(directories))
+      throw new Error("no model directories provided");
+
+    return directories.reduce((files, directory) => {
+      if (!fs.existsSync(directory))
+        throw new Error("directory does not exist");
+
+      return files.concat(
+        fs
+          .readdirSync(directory)
+          .filter((file: string) => {
+            return file.indexOf(this.modelBaseName) !== -1;
+          })
+          .map((file: string) => {
+            return `${directory}/${file}`;
+          })
+      );
+    }, []);
   }
 
   static createModelsFromFiles(files: string[]) {

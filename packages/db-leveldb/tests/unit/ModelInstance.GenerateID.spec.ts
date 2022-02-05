@@ -5,8 +5,8 @@ import { Storage } from "../../src/storage";
 const os = require("os");
 
 describe("Generate ID", () => {
-  const testModelDirectory = `${__dirname}/testModels`;
-  Storage.modelDirectory = testModelDirectory;
+  const modelDirectories = [`${__dirname}/testModels`];
+
   const tmpDir = os.tmpdir();
   let databaseName = "truffledbTest";
   let databaseEngine = "memory";
@@ -22,7 +22,8 @@ describe("Generate ID", () => {
     const DB = Storage.createStorage({
       databaseEngine,
       databaseDirectory,
-      databaseName
+      databaseName,
+      modelDirectories
     });
 
     levelDB = DB.levelDB;
