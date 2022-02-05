@@ -91,6 +91,36 @@ describe("Model", () => {
     });
   });
 
+  describe("find", () => {
+    it("accepts a mongo query to search strings", async () => {
+      const query = { name: "name2" };
+
+      await Project.create({ ...project, id: "1", name: "name1" });
+      await Project.create({ ...project, id: "2", name: "name2" });
+      await Project.create({ ...project, id: "3", name: "name3" });
+      await Project.create({ ...project, id: "4", name: "name4" });
+      await Project.create({ ...project, id: "5", name: "name5" });
+
+      const searchResults = await Project.find(query);
+
+      expect(searchResults.length).to.equal(1);
+      expect(searchResults[0].name).to.equal("name2");
+    });
+    it("accepts a mongo query to a range of numbers", async () => {
+      const query = { id: { $and: [{ $gte: 2 }, { $lte: 4 }] } };
+
+      await Project.create({ ...project, id: "1", name: "name1" });
+      await Project.create({ ...project, id: "2", name: "name2" });
+      await Project.create({ ...project, id: "3", name: "name3" });
+      await Project.create({ ...project, id: "4", name: "name4" });
+      await Project.create({ ...project, id: "5", name: "name5" });
+
+      const searchResults = await Project.find(query);
+
+      expect(searchResults.length).to.equal(3);
+    });
+  });
+
   describe("get", () => {
     it("returns a model instance for a given key", async () => {
       await Project.create(project);

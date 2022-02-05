@@ -1,4 +1,5 @@
-var sublevel = require("subleveldown");
+const sublevel = require("subleveldown");
+const jsonquery = require("jsonquery");
 
 module.exports = class Model {
   static levelDB;
@@ -137,6 +138,25 @@ module.exports = class Model {
 
   static async delete(key) {
     await this.levelDB.del(key);
+  }
+
+  static async find(query = {}, options) {
+    const results = [];
+
+    return new Promise((resolve, reject) => {
+      return this.levelDB
+        .createValueStream(options)
+        .pipe(jsonquery(query))
+        .on("data", data => {
+          results.push(this.build(data));
+        })
+        .on("error", err => {
+          reject(err);
+        })
+        .on("end", () => {
+          resolve(results);
+        });
+    });
   }
 
   static async get(key) {

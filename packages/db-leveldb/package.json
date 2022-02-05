@@ -10,6 +10,7 @@
     "nyc": "npx nyc@15.1.0 npm test"
   },
   "dependencies": {
+    "jsonquery": "^0.2.0",
     "level": "^7.0.1",
     "memdown": "^6.1.1",
     "sqldown": "^2.1.0",
