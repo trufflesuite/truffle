@@ -17727,6 +17727,11 @@ jsonpointer@^5.0.0:
   resolved "https://registry.yarnpkg.com/jsonpointer/-/jsonpointer-5.0.0.tgz#f802669a524ec4805fa7389eadbc9921d5dc8072"
   integrity sha512-PNYZIdMjVIvVgDSYKTT63Y+KZ6IZvGRNNWcxwD+GNnUz1MKPfv30J8ueCjdwcN0nDx2SlshgyB7Oy0epAzVRRg==
 
+jsonquery@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/jsonquery/-/jsonquery-0.2.0.tgz#8d8e9f8e33cf99dee96f21abd7b7bbb4d92ec4c1"
+  integrity sha512-fOnV7cfPAq327jiB9e6AGBGk1x7OO65oipsETx6+QxpspJrrytGJ65zwBISkUW7YTxQW6aR+qYg2Wx0EkoyIoA==
+
 jsonschema@^1.1.1:
   version "1.2.5"
   resolved "https://registry.yarnpkg.com/jsonschema/-/jsonschema-1.2.5.tgz#bab69d97fa28946aec0a56a9cc266d23fe80ae61"

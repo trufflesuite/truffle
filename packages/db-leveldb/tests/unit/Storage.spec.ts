@@ -53,7 +53,7 @@ describe("Storage", () => {
   it("gets the model file names from the modelDirectory matching the modelBaseName pattern", () => {
     const modelFiles = Storage.getModelFiles(testModelDirectory);
 
-    expect(modelFiles.length).to.equal(3);
+    expect(modelFiles.length).to.equal(4);
   });
 
   it("accepts additional model directories, overwrites default models of the same name", () => {
