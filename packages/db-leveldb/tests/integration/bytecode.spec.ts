@@ -7,6 +7,7 @@ const ContractArtifact = require("./data/artifacts/CollisionTest.json");
 
 describe("Bytecode", () => {
   const tmpDir = os.tmpdir();
+
   let databaseName = "truffledbTest";
   let databaseEngine = "memory";
   let databaseDirectory = tmpDir;
@@ -18,6 +19,7 @@ describe("Bytecode", () => {
   const shimmedBytecode = Shims.LegacyToNew.forBytecode(
     ContractArtifact.bytecode
   );
+
   const shimmedBytecodeID =
     "0x3ae9187a8f676e45d39b06305dc9257e8cb80eb4a777ec308282d0a0d586cd9c";
 
@@ -46,7 +48,15 @@ describe("Bytecode", () => {
     expect(bytecode.id).to.equal(shimmedBytecodeID);
 
     const savedBytecode = await Bytecode.get(bytecode.id);
+
     expect(bytecode).to.eql(savedBytecode);
   });
-  it("query");
+  it("query", async () => {
+    const bytecode = await Bytecode.create(shimmedBytecode);
+
+    const query = { bytes: shimmedBytecode.bytes };
+    const savedBytecode = await Bytecode.find(query);
+
+    expect(bytecode).to.eql(savedBytecode[0]);
+  });
 });
