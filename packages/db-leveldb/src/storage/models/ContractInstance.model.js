@@ -1,15 +1,12 @@
 const Model = require("../Model");
 const { soliditySha3 } = require("web3-utils");
 
-class Contract extends Model {
-  name;
-  abi;
-  compilation;
-  processedSource;
-  createBytecode;
+class ContractInstance extends Model {
+  address;
+  network;
+  creation;
   callBytecode;
-  callBytecodeGeneratedSources;
-  createBytecodeGeneratedSources;
+  contract;
 
   async beforeSave() {
     const newId = this.generateID();
@@ -17,19 +14,18 @@ class Contract extends Model {
     // Key exists in db, but data fields have changed so remove old key
     // This could also become a batch operation and would then be atomic
     if (this.id && this.id !== newId) {
-      await Contract.delete(this.id);
+      await ContractInstance.delete(this.id);
     }
     this.id = newId;
   }
 
   generateID() {
     return soliditySha3(
-      this.name +
-        JSON.stringify(this.abi) +
-        JSON.stringify(this.processedSource) +
-        JSON.stringify(this.compilation)
+      JSON.stringify(this.contract) +
+        this.address +
+        JSON.stringify(this.creation)
     );
   }
 }
 
-module.exports = Contract;
+module.exports = ContractInstance;
