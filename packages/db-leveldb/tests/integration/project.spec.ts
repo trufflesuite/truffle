@@ -3,7 +3,7 @@ import { Storage } from "../../src/storage";
 import { expect } from "chai";
 const os = require("os");
 
-describe("Source", () => {
+describe("Project", () => {
   const tmpDir = os.tmpdir();
 
   let databaseName = "truffledbTest";
@@ -12,7 +12,7 @@ describe("Source", () => {
 
   let levelDB;
   let models: object;
-  let Source;
+  let Project;
 
   beforeEach(() => {
     const DB = Storage.createStorage({
@@ -24,14 +24,14 @@ describe("Source", () => {
     levelDB = DB.levelDB;
     models = DB.models;
 
-    Source = models.Source;
+    Project = models.Project;
   });
   afterEach(() => {
     levelDB.close();
   });
 
   it("generates an id from the content addressable fields", () => {
-    expect(typeof Source).to.equal("function");
+    expect(typeof Project).to.equal("function");
   });
   it("query");
   it("save");
