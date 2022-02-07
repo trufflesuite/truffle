@@ -32,7 +32,7 @@ export class Storage {
       databaseName
     });
 
-    this.attachModelsToDatabase(models, levelDB);
+    this.attachDatabaseToModels(models, levelDB);
 
     return { levelDB, models };
   }
@@ -103,8 +103,9 @@ export class Storage {
       }, {});
   }
 
-  static attachModelsToDatabase(models: object, levelDB: typeof levelup) {
+  static attachDatabaseToModels(models: object, levelDB: typeof levelup) {
     Object.values(models).forEach(model => {
+      model.setModels(models);
       model.setLevelDB(levelDB);
     });
   }

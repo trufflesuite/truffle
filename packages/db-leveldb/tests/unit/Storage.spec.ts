@@ -6,6 +6,7 @@ const os = require("os");
 
 describe("Storage", () => {
   let tmpDir = os.tmpdir();
+  const modelCount = 5; // models in testModels folder
   const testModelDirectory = [`${__dirname}/testModels`];
 
   const storageOptions = {
@@ -41,19 +42,29 @@ describe("Storage", () => {
     expect(!!levelDB).to.equal(true);
   });
 
-  it("attaches the models to a database", () => {
+  it("attaches the database to the models", () => {
     const levelDB = Storage.createDB(storageOptions);
     const modelFiles = Storage.getModelFiles(testModelDirectory);
 
     const models = Storage.createModelsFromFiles(modelFiles);
-    Storage.attachModelsToDatabase(models, levelDB);
+    Storage.attachDatabaseToModels(models, levelDB);
     expect(typeof models.Project.levelDB === "object").to.equal(true);
+  });
+
+  it("attaches the models lookup to each model", () => {
+    const levelDB = Storage.createDB(storageOptions);
+    const modelFiles = Storage.getModelFiles(testModelDirectory);
+
+    const models = Storage.createModelsFromFiles(modelFiles);
+    Storage.attachDatabaseToModels(models, levelDB);
+
+    expect(Object.keys(models.Project.models).length).to.equal(modelCount);
   });
 
   it("gets the model file names from the modelDirectory matching the modelBaseName pattern", () => {
     const modelFiles = Storage.getModelFiles(testModelDirectory);
 
-    expect(modelFiles.length).to.equal(4);
+    expect(modelFiles.length).to.equal(modelCount);
   });
 
   it("accepts additional model directories, overwrites default models of the same name", () => {

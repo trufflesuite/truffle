@@ -3,6 +3,7 @@ const jsonquery = require("jsonquery");
 
 module.exports = class Model {
   static levelDB;
+  static models;
   #modelProperties = [];
   #validationFunctions = {};
   #requiredFields = {};
@@ -98,6 +99,10 @@ module.exports = class Model {
     this.levelDB = sublevel(levelDB, this.constructor.name, {
       valueEncoding: "json"
     });
+  }
+
+  static setModels(models) {
+    this.models = models;
   }
 
   static async all(options) {

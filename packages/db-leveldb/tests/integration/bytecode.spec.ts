@@ -41,6 +41,7 @@ describe("Bytecode", () => {
 
   it("generates an id from the content addressable fields", () => {
     const bytecode = Bytecode.build(shimmedBytecode);
+
     expect(bytecode.generateID()).to.equal(shimmedBytecodeID);
   });
   it("create", async () => {
