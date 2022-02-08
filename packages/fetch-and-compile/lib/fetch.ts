@@ -28,8 +28,12 @@ export async function fetchAndCompileForRecognizer(
 }
 
 //sort/filter fetchers by user's order, if given; otherwise use default order
-function getSortedFetcherConstructors(config: Config): FetcherConstructor[] {
-  const userFetcherNames: string[] | undefined = config.sourceFetchers;
+export function getSortedFetcherConstructors(
+  config?: Config
+): FetcherConstructor[] {
+  const userFetcherNames: string[] | undefined = (
+    config || { sourceFetchers: undefined }
+  ).sourceFetchers;
   let sortedFetchers: FetcherConstructor[] = [];
   if (userFetcherNames) {
     for (let name of userFetcherNames) {

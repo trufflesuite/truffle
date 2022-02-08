@@ -4,7 +4,10 @@ import type Config from "@truffle/config";
 import { SingleRecognizer } from "./recognizer";
 import { MultipleRecognizer } from "./multiple";
 import { DebugRecognizer } from "./debug";
-import { fetchAndCompileForRecognizer } from "./fetch";
+import {
+  fetchAndCompileForRecognizer,
+  getSortedFetcherConstructors
+} from "./fetch";
 import type * as Types from "./types";
 
 export { fetchAndCompileForRecognizer };
@@ -42,4 +45,26 @@ export async function fetchAndCompileForDebugger(
   const recognizer = new DebugRecognizer(bugger);
   await fetchAndCompileForRecognizer(recognizer, config);
   return recognizer.getErrors();
+}
+
+export function getSupportedNetworks(config?: Config): Types.NetworkInfos {
+  const fetchers = getSortedFetcherConstructors(config);
+  //strictly speaking these are fetcher constructors, but since we
+  //won't be using fetcher instances in this function, I'm not going
+  //to worry about the difference
+  let supportedNetworks: Types.NetworkInfos = {};
+  for (const fetcher of fetchers) {
+    const fetcherNetworks = fetcher.getSupportedNetworks();
+    for (const name in fetcherNetworks) {
+      if (name in supportedNetworks) {
+        supportedNetworks[name].fetchers.push(fetcher.fetcherName);
+      } else {
+        supportedNetworks[name] = {
+          ...fetcherNetworks[name],
+          fetchers: [fetcher.fetcherName]
+        };
+      }
+    }
+  }
+  return supportedNetworks;
 }

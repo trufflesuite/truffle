@@ -1,5 +1,16 @@
 import type { WorkflowCompileResult } from "@truffle/compile-common";
-import type { SourceInfo } from "@truffle/source-fetcher";
+import type {
+  SourceInfo,
+  NetworkInfo as FetcherNetworkInfo
+} from "@truffle/source-fetcher";
+
+export interface NetworkInfo extends FetcherNetworkInfo {
+  fetchers: string[];
+}
+
+export interface NetworkInfos {
+  [name: string]: NetworkInfo;
+}
 
 export type FailureType = "fetch" | "compile" | "language";
 
