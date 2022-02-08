@@ -1,9 +1,9 @@
-const { Plugins } = require("@truffle/plugins");
 const TruffleError = require("@truffle/error");
 
 const Run = {
   // executes command or throws user helpful error
   run(customCommand, config, done) {
+    const { Plugins } = require("@truffle/plugins");
     const [foundPlugin] = Plugins.findPluginsForCommand(config, customCommand);
 
     if (!foundPlugin) {
