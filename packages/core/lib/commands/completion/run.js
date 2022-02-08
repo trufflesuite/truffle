@@ -12,7 +12,6 @@ module.exports = async _ => {
   writeCompletionScript(completionScript);
   appendToShellConfig(completionScript);
 
-  // TODO: handle for other shells
   // TODO: handle for other OS's (bash_profile instead of bashrc)
   // TODO: Uninstall
   // TODO: make faster
@@ -27,19 +26,14 @@ function completionScriptName() {
 }
 
 function locationFromShell() {
-  // const shell = shellName();
-  // console.log(`Shell name: ${shell}`);
-  // if (shell === 'zsh') {
-  //   return path.resolve(OS.homedir(), '.zshrc');
-
-  // } else if (shell === 'fish') {
-  //   return path.resolve(
-  //     OS.homedir(), '~/.config/fish/config.fish'
-  //   );
-
-  // } else {
-  return path.resolve(OS.homedir(), ".bashrc");
-  // }
+  const shell = shellName();
+  if (shell === "zsh") {
+    return path.resolve(OS.homedir(), ".zshrc");
+  } else if (shell === "fish") {
+    return path.resolve(OS.homedir(), "~/.config/fish/config.fish");
+  } else {
+    return path.resolve(OS.homedir(), ".bashrc");
+  }
 }
 
 function writeCompletionScript(filePath) {
@@ -51,9 +45,9 @@ function writeCompletionScript(filePath) {
   //   1. To capture completion script from yargs (no other way)
   //   2. To prevent it from printing to stdout during installation
   let content;
-  const origFuncHandle = global.console.log.apply;
-  global.console.log.apply = (thisArg, args) => {
-    content = args.join("");
+  const origFuncHandle = global.console.log;
+  global.console.log = args => {
+    content = args;
   };
   require("yargs/yargs")().showCompletionScript();
   global.console.log.apply = origFuncHandle;
