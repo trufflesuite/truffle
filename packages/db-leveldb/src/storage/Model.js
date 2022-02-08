@@ -16,7 +16,7 @@ module.exports = class Model {
   #didInit = false;
 
   constructor(levelDB, historicalLevelDB) {
-    this.#key = this.key || "id";
+    this.#key = "id";
     this.#db = levelDB;
     this.#historicalDB = historicalLevelDB;
   }
