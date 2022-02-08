@@ -3,7 +3,8 @@ const debug = debugModule("source-fetcher:sourcify");
 
 import type { Fetcher, FetcherConstructor } from "./types";
 import type * as Types from "./types";
-import { networksById, removeLibraries, InvalidNetworkError } from "./common";
+import { removeLibraries, InvalidNetworkError } from "./common";
+import { networkNamesById, networksByName } from "./networks";
 import axios from "axios";
 import retry from "async-retry";
 
@@ -33,22 +34,31 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
 
   private readonly domain: string = "repo.sourcify.dev";
 
+  private static readonly supportedNetworks = new Set([
+    "mainnet",
+    "ropsten",
+    "kovan",
+    "rinkeby",
+    "goerli"
+  ]);
+
   constructor(networkId: number) {
     this.networkId = networkId;
-    this.networkName = networksById[networkId];
-    const supportedNetworks = [
-      "mainnet",
-      "ropsten",
-      "kovan",
-      "rinkeby",
-      "goerli"
-    ];
+    this.networkName = networkNamesById[networkId];
     if (
       this.networkName === undefined ||
-      !supportedNetworks.includes(this.networkName)
+      !SourcifyFetcher.supportedNetworks.has(this.networkName)
     ) {
       throw new InvalidNetworkError(networkId, "sourcify");
     }
+  }
+
+  static getSupportedNetworks(): Types.NetworkInfos {
+    return Object.fromEntries(
+      Object.entries(networksByName).filter(([name, _]) =>
+        SourcifyFetcher.supportedNetworks.has(name)
+      )
+    );
   }
 
   async fetchSourcesForAddress(
