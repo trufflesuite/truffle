@@ -1986,91 +1986,10 @@
     "@ethersproject/properties" "^5.1.0"
     "@ethersproject/strings" "^5.1.0"
 
-<<<<<<< HEAD
-"@ganache/filecoin@^0.1.2":
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/@ganache/filecoin/-/filecoin-0.1.2.tgz#099a000d56ff4866e1982a1bae820074e197f8ad"
-  integrity sha512-C4oTwW2JmaiunQZ10YOp/gdkwmtQbl2ULudIUn5Iwb+tfsXXegc15o1RlJzCrII/lzD6u9+QbBsfihyyl6n9+Q==
-=======
-"@evocateur/libnpmaccess@^3.1.2":
-  version "3.1.2"
-  resolved "https://registry.yarnpkg.com/@evocateur/libnpmaccess/-/libnpmaccess-3.1.2.tgz#ecf7f6ce6b004e9f942b098d92200be4a4b1c845"
-  integrity sha512-KSCAHwNWro0CF2ukxufCitT9K5LjL/KuMmNzSu8wuwN2rjyKHD8+cmOsiybK+W5hdnwc5M1SmRlVCaMHQo+3rg==
-  dependencies:
-    "@evocateur/npm-registry-fetch" "^4.0.0"
-    aproba "^2.0.0"
-    figgy-pudding "^3.5.1"
-    get-stream "^4.0.0"
-    npm-package-arg "^6.1.0"
-
-"@evocateur/libnpmpublish@^1.2.2":
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/@evocateur/libnpmpublish/-/libnpmpublish-1.2.2.tgz#55df09d2dca136afba9c88c759ca272198db9f1a"
-  integrity sha512-MJrrk9ct1FeY9zRlyeoyMieBjGDG9ihyyD9/Ft6MMrTxql9NyoEx2hw9casTIP4CdqEVu+3nQ2nXxoJ8RCXyFg==
-  dependencies:
-    "@evocateur/npm-registry-fetch" "^4.0.0"
-    aproba "^2.0.0"
-    figgy-pudding "^3.5.1"
-    get-stream "^4.0.0"
-    lodash.clonedeep "^4.5.0"
-    normalize-package-data "^2.4.0"
-    npm-package-arg "^6.1.0"
-    semver "^5.5.1"
-    ssri "^6.0.1"
-
-"@evocateur/npm-registry-fetch@^4.0.0":
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/@evocateur/npm-registry-fetch/-/npm-registry-fetch-4.0.0.tgz#8c4c38766d8d32d3200fcb0a83f064b57365ed66"
-  integrity sha512-k1WGfKRQyhJpIr+P17O5vLIo2ko1PFLKwoetatdduUSt/aQ4J2sJrJwwatdI5Z3SiYk/mRH9S3JpdmMFd/IK4g==
-  dependencies:
-    JSONStream "^1.3.4"
-    bluebird "^3.5.1"
-    figgy-pudding "^3.4.1"
-    lru-cache "^5.1.1"
-    make-fetch-happen "^5.0.0"
-    npm-package-arg "^6.1.0"
-    safe-buffer "^5.1.2"
-
-"@evocateur/pacote@^9.6.3":
-  version "9.6.5"
-  resolved "https://registry.yarnpkg.com/@evocateur/pacote/-/pacote-9.6.5.tgz#33de32ba210b6f17c20ebab4d497efc6755f4ae5"
-  integrity sha512-EI552lf0aG2nOV8NnZpTxNo2PcXKPmDbF9K8eCBFQdIZwHNGN/mi815fxtmUMa2wTa1yndotICIDt/V0vpEx2w==
-  dependencies:
-    "@evocateur/npm-registry-fetch" "^4.0.0"
-    bluebird "^3.5.3"
-    cacache "^12.0.3"
-    chownr "^1.1.2"
-    figgy-pudding "^3.5.1"
-    get-stream "^4.1.0"
-    glob "^7.1.4"
-    infer-owner "^1.0.4"
-    lru-cache "^5.1.1"
-    make-fetch-happen "^5.0.0"
-    minimatch "^3.0.4"
-    minipass "^2.3.5"
-    mississippi "^3.0.0"
-    mkdirp "^0.5.1"
-    normalize-package-data "^2.5.0"
-    npm-package-arg "^6.1.0"
-    npm-packlist "^1.4.4"
-    npm-pick-manifest "^3.0.0"
-    osenv "^0.1.5"
-    promise-inflight "^1.0.1"
-    promise-retry "^1.1.1"
-    protoduck "^5.0.1"
-    rimraf "^2.6.3"
-    safe-buffer "^5.2.0"
-    semver "^5.7.0"
-    ssri "^6.0.1"
-    tar "^4.4.10"
-    unique-filename "^1.1.1"
-    which "^1.3.1"
-
 "@ganache/filecoin@^0.1.5":
   version "0.1.5"
   resolved "https://registry.yarnpkg.com/@ganache/filecoin/-/filecoin-0.1.5.tgz#9fc5c63840c7b7f9bf668f7f465ff29767e52361"
   integrity sha512-AohwMs/kJsYtfUDeJIg61Gqb0NQ1tNawdZF3TwmVFZ2MrTKSjUxGyC4NRGU3heFWvts2e/zKO4u/fblLDdZUyg==
->>>>>>> build: Update yarn.lock
   dependencies:
     ipfs "0.52.3"
     ipfs-http-server "0.1.4"
