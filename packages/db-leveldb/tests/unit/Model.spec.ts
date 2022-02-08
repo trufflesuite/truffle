@@ -155,7 +155,7 @@ describe("Model", () => {
   });
 
   describe("bulk", () => {
-    const modelsToCreate = 10000;
+    const modelsToCreate = 1000;
     const batchData = [];
     let batchKeys;
     before(async () => {
@@ -205,7 +205,7 @@ describe("Model", () => {
         };
         const projects = await Project.all(options);
 
-        expect(projects.length).to.equal(55);
+        expect(projects.length).to.equal(5);
       });
       it("accepts reverse and limit option", async () => {
         const theLimit = 5;
@@ -260,8 +260,81 @@ describe("Model", () => {
       beforeEach(async () => {
         await Project.batchCreate(batchData);
       });
-      it("deletes an array of ids", async () => {
-        await Project.batchDelete(batchKeys);
+      it("deletes an array of ids");
+    });
+
+    describe("getHistoricalVersions", () => {
+      it("gets historical data for a key", async () => {
+        const savedProject = await Project.create(project);
+
+        savedProject.name = "new version";
+        await savedProject.save();
+
+        const historicalVersions = await Project.getHistoricalVersions(
+          savedProject.id
+        );
+
+        expect(historicalVersions.length).to.equal(2);
+      });
+      it("gets historical data for a deleted record", async () => {
+        const savedProject = await Project.create(project);
+
+        savedProject.name = "new version";
+        await savedProject.save();
+
+        await Project.delete(savedProject.id);
+
+        const historicalVersions = await Project.getHistoricalVersions(
+          savedProject.id
+        );
+
+        expect(historicalVersions.length).to.equal(2);
+      });
+      it("contains historical data even when a deleted key is reused", async () => {
+        const savedProject = await Project.create(project);
+
+        savedProject.name = "new version";
+        await savedProject.save();
+
+        await Project.delete(savedProject.id);
+
+        await Project.create({ ...project, name: "reused" });
+
+        const historicalVersions = await Project.getHistoricalVersions(
+          savedProject.id
+        );
+
+        expect(historicalVersions.length).to.equal(3);
+        expect(historicalVersions[2].name).to.equal("reused");
+      });
+      it("supports limit and reverse (getFirst, getLast)", async () => {
+        const savedProject = await Project.create(project);
+        let historicalVersionCount =
+          await savedProject.countHistoricalVersions();
+
+        expect(historicalVersionCount).to.equal(1);
+
+        savedProject.name = "version 2";
+        await savedProject.save();
+
+        savedProject.name = "version 3";
+        await savedProject.save();
+
+        const lastVersion = await Project.getHistoricalVersions(
+          savedProject.id,
+          1,
+          true
+        );
+        const firstVersion = await Project.getHistoricalVersions(
+          savedProject.id,
+          1
+        );
+
+        expect(firstVersion.length).to.equal(1);
+        expect(firstVersion[0].name).to.equal(project.name);
+
+        expect(lastVersion.length).to.equal(1);
+        expect(lastVersion[0].name).to.equal(savedProject.name);
       });
     });
   });

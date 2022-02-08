@@ -15,6 +15,13 @@ describe("Model Instance", () => {
   let levelDB;
   let models: object;
   let Project;
+  const projectData = {
+    id: 100,
+    name: "project100",
+    directory: "./db",
+    requiredField: "roflcopter",
+    requiredNoDefault: "test"
+  };
   const justRequiredFields = {
     id: 1,
     requiredNoDefault: "test"
@@ -161,6 +168,63 @@ describe("Model Instance", () => {
         expect(beforeSave).to.equal(true);
         expect(savedProject.name).to.equal(oldName);
       });
+    });
+  });
+  describe("getHistoricalVersions", () => {
+    it("on save, stores a snapshot of the data in a historical namespace", async () => {
+      const savedProject = await Project.create(projectData);
+      let historicalVersionCount = await savedProject.countHistoricalVersions();
+
+      expect(historicalVersionCount).to.equal(1);
+
+      savedProject.name = "version 2";
+      await savedProject.save();
+
+      savedProject.name = "version 3";
+      await savedProject.save();
+
+      historicalVersionCount = await savedProject.countHistoricalVersions();
+
+      expect(historicalVersionCount).to.equal(3);
+    });
+    it("returns all the historical versions of the data", async () => {
+      const savedProject = await Project.create(projectData);
+      let historicalVersionCount = await savedProject.countHistoricalVersions();
+
+      expect(historicalVersionCount).to.equal(1);
+
+      savedProject.name = "version 2";
+      await savedProject.save();
+
+      savedProject.name = "version 3";
+      await savedProject.save();
+
+      const historicalData = await savedProject.getHistoricalVersions();
+
+      expect(historicalData.length).to.equal(3);
+      expect(historicalData[0].name === projectData.name);
+      expect(historicalData[2].name === savedProject.name);
+    });
+    it("supports limit and reverse (getFirst, getLast)", async () => {
+      const savedProject = await Project.create(projectData);
+      let historicalVersionCount = await savedProject.countHistoricalVersions();
+
+      expect(historicalVersionCount).to.equal(1);
+
+      savedProject.name = "version 2";
+      await savedProject.save();
+
+      savedProject.name = "version 3";
+      await savedProject.save();
+
+      const lastVersion = await savedProject.getHistoricalVersions(1, true);
+      const firstVersion = await savedProject.getHistoricalVersions(1);
+
+      expect(firstVersion.length).to.equal(1);
+      expect(firstVersion[0].name).to.equal(projectData.name);
+
+      expect(lastVersion.length).to.equal(1);
+      expect(lastVersion[0].name).to.equal(savedProject.name);
     });
   });
 });

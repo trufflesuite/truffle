@@ -3,18 +3,22 @@ const jsonquery = require("jsonquery");
 
 module.exports = class Model {
   static levelDB;
+  static historicalLevelDB;
   static models;
+  static maxHistoricalVersions = 999999999;
   #modelProperties = [];
   #validationFunctions = {};
   #requiredFields = {};
   #key;
-  #historicalPostfix = "";
+  #maxHistoricalVersions = 999999999;
   #db;
+  #historicalDB;
   #didInit = false;
 
-  constructor(levelDB) {
+  constructor(levelDB, historicalLevelDB) {
     this.#key = this.key || "id";
     this.#db = levelDB;
+    this.#historicalDB = historicalLevelDB;
   }
 
   init() {
@@ -72,8 +76,50 @@ module.exports = class Model {
     this.runValidationFunctions();
     this.checkRequiredFields();
 
+    await this.saveHistoricalVersion();
     await this.#db.put(key, this);
     await this.afterSave();
+  }
+
+  async saveHistoricalVersion() {
+    const historicalVersionCount = await this.countHistoricalVersions();
+
+    const historicalKey = `${this[this.#key]}${historicalVersionCount}`;
+
+    this.#historicalDB.put(historicalKey, this);
+  }
+
+  async countHistoricalVersions() {
+    const historicalVersions = await this.getHistoricalVersions();
+    return historicalVersions.length;
+  }
+
+  async getHistoricalVersions(limit = -1, reverse = false) {
+    let historicalData = [];
+
+    const smallestHistoricalKey = `${this[this.#key]}`;
+    const maxHistoricalKey = `${this[this.#key]}${this.#maxHistoricalVersions}`;
+
+    const options = {
+      gte: smallestHistoricalKey,
+      lte: maxHistoricalKey,
+      limit,
+      reverse
+    };
+
+    return new Promise((resolve, reject) => {
+      return this.#historicalDB
+        .createValueStream(options)
+        .on("data", data => {
+          historicalData.push(data);
+        })
+        .on("error", err => {
+          reject(err);
+        })
+        .on("end", () => {
+          resolve(historicalData);
+        });
+    });
   }
 
   runValidationFunctions() {
@@ -100,6 +146,13 @@ module.exports = class Model {
     this.levelDB = sublevel(levelDB, this.constructor.name, {
       valueEncoding: "json"
     });
+    this.historicalLevelDB = sublevel(
+      levelDB,
+      `${this.constructor.name}-historical`,
+      {
+        valueEncoding: "json"
+      }
+    );
   }
 
   static setModels(models) {
@@ -125,7 +178,7 @@ module.exports = class Model {
   }
 
   static build(data) {
-    const modelInstance = new this(this.levelDB);
+    const modelInstance = new this(this.levelDB, this.historicalLevelDB);
     modelInstance.init();
     modelInstance.setModelProperties(data);
     return modelInstance;
@@ -177,6 +230,39 @@ module.exports = class Model {
     const records = await this.levelDB.getMany(keys);
     return records.map(record => {
       return this.build(record);
+    });
+  }
+
+  static async countHistoricalVersions() {
+    const historicalVersions = await this.getHistoricalVersions();
+    return historicalVersions.length;
+  }
+
+  static async getHistoricalVersions(key, limit = -1, reverse = false) {
+    let historicalData = [];
+
+    const smallestHistoricalKey = `${key}`;
+    const maxHistoricalKey = `${key}${this.maxHistoricalVersions}`;
+
+    const options = {
+      gte: smallestHistoricalKey,
+      lte: maxHistoricalKey,
+      limit,
+      reverse
+    };
+
+    return new Promise((resolve, reject) => {
+      return this.historicalLevelDB
+        .createValueStream(options)
+        .on("data", data => {
+          historicalData.push(data);
+        })
+        .on("error", err => {
+          reject(err);
+        })
+        .on("end", () => {
+          resolve(historicalData);
+        });
     });
   }
 
