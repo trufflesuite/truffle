@@ -155,7 +155,7 @@ describe("Model", () => {
   });
 
   describe("bulk", () => {
-    const modelsToCreate = 1000;
+    const modelsToCreate = 10000;
     const batchData = [];
     let batchKeys;
     before(async () => {
@@ -172,7 +172,6 @@ describe("Model", () => {
         const modelInstances = await Project.batchCreate(batchData);
 
         expect(modelInstances.length).to.equal(modelsToCreate);
-
         expect(modelInstances[0].id).to.equal(batchData[0].id);
         expect(modelInstances[0].name).to.equal(batchData[0].name);
         expect(modelInstances[0].directory).to.equal(batchData[0].directory);
@@ -199,14 +198,14 @@ describe("Model", () => {
         expect(projects[0].directory).to.equal(batchData[0].directory);
       });
 
-      it("accepts gt(e), lt(e) option", async () => {
+      it("accepts gt(e), lt(e) option (leveldb does lexicographical sort)", async () => {
         const options = {
           gte: 500,
           lt: 505
         };
         const projects = await Project.all(options);
 
-        expect(projects.length).to.equal(5);
+        expect(projects.length).to.equal(55);
       });
       it("accepts reverse and limit option", async () => {
         const theLimit = 5;

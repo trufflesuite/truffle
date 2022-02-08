@@ -8,6 +8,7 @@ module.exports = class Model {
   #validationFunctions = {};
   #requiredFields = {};
   #key;
+  #historicalPostfix = "";
   #db;
   #didInit = false;
 
@@ -188,15 +189,11 @@ module.exports = class Model {
   static async batchCreate(batchData) {
     let modelInstances;
     try {
-      modelInstances = this.batchBuild(batchData);
-
-      const keyProperty = this.build(modelInstances[0]).getKeyProperty();
-
-      const batchOperations = batchData.map(data => {
-        return { type: "put", key: data[keyProperty], value: data };
-      });
-
-      await this.levelDB.batch(batchOperations);
+      modelInstances = Promise.all(
+        batchData.map(async data => {
+          return await this.create(data);
+        })
+      );
     } catch (e) {
       throw new Error("batchCreate operation failed");
     }
