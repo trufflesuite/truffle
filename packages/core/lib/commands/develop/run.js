@@ -1,5 +1,4 @@
 const emoji = require("node-emoji");
-const mnemonicInfo = require("../../mnemonics/mnemonic");
 const {
   configureManagedGanache,
   getFirstDefinedValue
@@ -35,6 +34,8 @@ module.exports = async options => {
     customConfig.total_accounts,
     10 // Use as default number of accounts
   );
+
+  const mnemonicInfo = require("../../mnemonics/mnemonic");
   const { mnemonic, accounts, privateKeys } =
     mnemonicInfo.getAccountsInfo(numberOfAccounts);
 
