@@ -26,7 +26,9 @@
 - [Model Instance](model-instance)
   - [Model Instance API](#model-instance-api)
 - [Examples](#examples)
-  - [GenerateID](#generateid)
+  - [Content Addressable Storage ID](#generateid)
+  - [Virtuals](#virtuals)
+  - [Historical Versioning](#historical-versioning)
 - [Roadmap](#roadmap)
 
 ## Usage
@@ -70,10 +72,6 @@ If this property is `undefined` or `null` the record will not save to the databa
 
 This function is invoked when the `save` operation is called. It must return `true` or the save operation will error. The validation function will pass its property value to the function as a parameter.
 
-#### `keyField` - TODO
-
-Currently set to 'id' for all models. Used to denote a property on the Model that serves as the key used by the database.
-
 ```javascript
 const Model = require("../Model");
 
@@ -93,7 +91,7 @@ class Project extends Model {
 module.exports = Project;
 ```
 
-Each model provides also static methods for accessing the database - `all`, `build`, `create`, `delete`, `get`, `getMany`, `batchBuild`, and `batchCreate` operations.
+Each model provides also static methods for accessing the database - `all`, `build`, `create`, `delete`, `get`, `getMany`, `batchBuild`, `batchCreate`, and `getHistoricalVersions` operations.
 
 ## Model API
 
@@ -197,13 +195,30 @@ const projectData = [
 const projects = await Project.batchCreate(projectData);
 ```
 
+### `Model.getHistoricalVersions(key, [limit], [reverse])`
+
+```javascript
+const project = await Project.create({ id: 1, name: "project1" });
+
+project.name = "new version";
+await project.save();
+
+const historicalData = await Project.getHistoricalVersions(1);
+/*
+historicalData = [
+  { id: 1, name: "project1" },
+  {id: 1, name: "new version"}
+]
+*/
+```
+
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ## Model Instance
 
 A model instance is a Data Access Object representing a stored record of the Model. Model instances are created through a factory pattern by invoking the Model's `build` or `create` functions and should **never** be created by instantiating the model using `new`.
 
-A model instance can be changed by directly changing the class properties. Changes will not persist to the database without invoking the `save`.
+A model instance can be changed by directly changing the class properties. Changes will not persist to the database without invoking the `save`. Every model instance is aware of it's own version history and may call the `getHistoricalVersions` method as on a Model without a key parameter.
 
 ## Model Instance API
 
@@ -218,6 +233,23 @@ await project.save();
 ```
 
 Save will attempt to persist the current object properties to the database. Any properties that were set that do not exist on the model definition will be ignored. `save` will check for required fields and run any validation functions that were defined for the model.
+
+### `instance.getHistoricalVersions([limit], [reverse])`
+
+```javascript
+const project = await Project.create({ id: 1, name: "project1" });
+
+project.name = "new version";
+await project.save();
+
+const historicalData = await project.getHistoricalVersions();
+/*
+historicalData = [
+  { id: 1, name: "project1" },
+  {id: 1, name: "new version"}
+]
+*/
+```
 
 ## Model Instance Hooks
 
@@ -270,6 +302,74 @@ class GenerateID extends Model {
 }
 
 module.exports = GenerateID;
+```
+
+### Virtuals
+
+JavaScript class getters and setters can be used as virtual fields for a Model Instance.
+
+```javascript
+class Virtual extends Model {
+  firstName = {
+    defaultValue: "First"
+  };
+
+  lastName = {
+    defaultValue: "Last"
+  };
+
+  get fullName() {
+    return `${this.firstName} ${this.lastName}`;
+  }
+
+  set fullName(fullName) {
+    if (fullName.indexOf(" ") >= 0) {
+      const name = fullName.split(" ");
+      this.firstName = name[0];
+      this.lastName = name[1];
+    }
+  }
+}
+```
+
+### Historical Versioning
+
+Both Models and Model Instances are aware of data histories. Every time a `save` operation is performed, the existing data is snapshotted into the version history. Models require a records key and may query any historic version. Model Instances are only aware of their own historic data.
+
+Records that are deleted will persist in the historical database and cannot be deleted. Keys that are re-used will continue appending to the same history. Both functions accept a `limit` and a `reverse` parameter.
+
+#### Model
+
+```javascript
+const project = await Project.create({ id: 1, name: "project1" });
+
+project.name = "new version";
+await project.save();
+
+const historicalData = await Project.getHistoricalVersions(1);
+/*
+historicalData = [
+  { id: 1, name: "project1" },
+  {id: 1, name: "new version"}
+]
+*/
+```
+
+#### Model Instance
+
+```javascript
+const project = await Project.create({ id: 1, name: "project1" });
+
+project.name = "new version";
+await project.save();
+
+const historicalData = await project.getHistoricalVersions();
+/*
+historicalData = [
+  { id: 1, name: "project1" },
+  {id: 1, name: "new version"}
+]
+*/
 ```
 
 _For more examples, please refer to the Unit Tests in the `tests` directory_

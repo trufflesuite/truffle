@@ -4,7 +4,7 @@ import { Storage } from "../../src/storage";
 
 const os = require("os");
 
-describe("Generate ID", () => {
+describe("Relations", () => {
   const modelDirectories = [`${__dirname}/testModels`];
 
   const tmpDir = os.tmpdir();
