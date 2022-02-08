@@ -395,7 +395,7 @@ describe("fetchAndCompileMultiple", function () {
       addresses,
       config
     );
-    assert.equal(Object.keys(failures).length, 0); //there should be no failures
+    assert.isEmpty(failures); //there should be no failures
     const expectedNames = ["UniswapV2Router02", "ENSRegistryWithFallback"];
     for (let i = 0; i < addresses.length; i++) {
       const result = results[addresses[i]];
