@@ -12,11 +12,11 @@ import retry from "async-retry";
 const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
   implements Fetcher
 {
-  get fetcherName(): string {
-    return "sourcify";
-  }
   static get fetcherName(): string {
     return "sourcify";
+  }
+  get fetcherName(): string {
+    return SourcifyFetcher.fetcherName;
   }
 
   static async forNetworkId(

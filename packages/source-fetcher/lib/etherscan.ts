@@ -25,11 +25,11 @@ const etherscanCommentHeader = `/**
 const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
   implements Fetcher
 {
-  get fetcherName(): string {
-    return "etherscan";
-  }
   static get fetcherName(): string {
     return "etherscan";
+  }
+  get fetcherName(): string {
+    return EtherscanFetcher.fetcherName;
   }
 
   static async forNetworkId(
