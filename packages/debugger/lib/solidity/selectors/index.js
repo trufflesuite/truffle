@@ -16,6 +16,9 @@ function contextRequiresPhantomStackframes(context, data) {
   const selector = data
     .slice(0, 2 + 2 * Codec.Evm.Utils.SELECTOR_SIZE)
     .padEnd(2 + 2 * Codec.Evm.Utils.SELECTOR_SIZE, "00");
+  const hasFallbackOrReceive = (context.abi || []).some(
+    abiEntry => abiEntry.type === "fallback" || abiEntry.type === "receive"
+  );
   return (
     context.compiler !== undefined && //(do NOT just put context.compiler here,
     //we need this to be a boolean, not undefined, because it gets put in the state)
@@ -24,7 +27,12 @@ function contextRequiresPhantomStackframes(context, data) {
       includePrerelease: true
     }) &&
     !context.isConstructor && //constructors should not get a phantom stackframe!
-    selector in Codec.AbiData.Utils.computeSelectors(context.abi || []) //fallbacks & receive should not get phantom
+    (!hasFallbackOrReceive || //if there's no fallback or receive, we don't apply the
+      //fallback/receive check on the next line; this is to solve a problem with libraries,
+      //because libraries don't always have a reliable ABI we can use for our purposes here.
+      //fortunately, since libraries don't have fallbacks or receives, the condition isn't
+      //relevant to them anyway!
+      selector in Codec.AbiData.Utils.computeSelectors(context.abi || [])) //fallbacks & receive should not get phantom
   );
 }
 
