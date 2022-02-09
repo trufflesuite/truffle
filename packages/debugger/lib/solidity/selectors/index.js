@@ -3,14 +3,19 @@ const debug = debugModule("debugger:solidity:selectors");
 
 import { createSelectorTree, createLeaf } from "reselect-tree";
 import SourceMapUtils from "@truffle/source-map-utils";
+import * as Codec from "@truffle/codec";
 
 import semver from "semver";
 
 import evm from "lib/evm/selectors";
 import trace from "lib/trace/selectors";
 
-function contextRequiresPhantomStackframes(context) {
+function contextRequiresPhantomStackframes(context, data) {
   debug("context: %O", context);
+  debug("data: %O", data);
+  const selector = data
+    .slice(0, 2 + 2 * Codec.Evm.Utils.SELECTOR_SIZE)
+    .padEnd(2 + 2 * Codec.Evm.Utils.SELECTOR_SIZE, "00");
   return (
     context.compiler !== undefined && //(do NOT just put context.compiler here,
     //we need this to be a boolean, not undefined, because it gets put in the state)
@@ -18,7 +23,8 @@ function contextRequiresPhantomStackframes(context) {
     semver.satisfies(context.compiler.version, ">=0.5.1", {
       includePrerelease: true
     }) &&
-    !context.isConstructor //constructors should not get a phantom stackframe!
+    !context.isConstructor && //constructors should not get a phantom stackframe!
+    selector in Codec.AbiData.Utils.computeSelectors(context.abi || []) //fallbacks & receive should not get phantom
   );
 }
 
@@ -130,8 +136,12 @@ let solidity = createSelectorTree({
      * solidity.transaction.bottomStackframeRequiresPhantomFrame
      */
     bottomStackframeRequiresPhantomFrame: createLeaf(
-      [evm.transaction.startingContext],
-      contextRequiresPhantomStackframes
+      [
+        evm.transaction.startingContext,
+        evm.current.callstack //only getting bottom frame so this is tx-level in this context
+      ],
+      (context, callstack) =>
+        contextRequiresPhantomStackframes(context, callstack[0].data)
     )
   },
 
@@ -218,7 +228,7 @@ let solidity = createSelectorTree({
      * solidity.current.callRequiresPhantomFrame
      */
     callRequiresPhantomFrame: createLeaf(
-      [evm.current.context],
+      [evm.current.step.callContext, evm.current.step.callData],
       contextRequiresPhantomStackframes
     ),
 
