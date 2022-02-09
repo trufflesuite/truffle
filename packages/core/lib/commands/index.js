@@ -1,7 +1,7 @@
 module.exports = {
+  autocomplete: require("./autocomplete"),
   build: require("./build"),
   compile: require("./compile"),
-  completion: require("./completion"),
   config: require("./config"),
   console: require("./console"),
   create: require("./create"),
