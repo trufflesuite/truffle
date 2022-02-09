@@ -120,7 +120,7 @@ try {
   console.log("Balance of account two is " + balance_of_account_two + "!"); // => 1.5
 } catch(function (err) {
   // Easily catch all errors along the whole execution.
-  alert("ERROR! " + err.message);
+  console.log("ERROR! " + err.message);
 };
 ```
 
