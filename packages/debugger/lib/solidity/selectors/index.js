@@ -32,7 +32,11 @@ function contextRequiresPhantomStackframes(context, data) {
       //because libraries don't always have a reliable ABI we can use for our purposes here.
       //fortunately, since libraries don't have fallbacks or receives, the condition isn't
       //relevant to them anyway!
-      selector in Codec.AbiData.Utils.computeSelectors(context.abi || [])) //fallbacks & receive should not get phantom
+      (context.abi || []).some(
+        abiEntry =>
+          abiEntry.type === "function" &&
+          Codec.AbiData.Utils.abiSelector(abiEntry) === selector //fallback & receive should not get phantom
+      ))
   );
 }
 
