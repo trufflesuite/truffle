@@ -3,7 +3,7 @@ module.exports = {
   description: "Install CLI tab-completion",
   builder: {},
   help: {
-    usage: "truffle completion install",
+    usage: "truffle autocomplete install",
     options: [],
     allowedGlobalOptions: []
   }
