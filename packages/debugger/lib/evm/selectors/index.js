@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("debugger:evm:selectors"); // eslint-disable-line no-unused-vars
+const debug = debugModule("debugger:evm:selectors");
 
 import { createSelectorTree, createLeaf } from "reselect-tree";
 import BN from "bn.js";
