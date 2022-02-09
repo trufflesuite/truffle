@@ -1,6 +1,7 @@
 export interface FetcherConstructor {
   readonly fetcherName: string;
   forNetworkId(networkId: number, options?: FetcherOptions): Promise<Fetcher>;
+  getSupportedNetworks(): SupportedNetworks;
 }
 
 export interface Fetcher {
@@ -14,6 +15,16 @@ export interface Fetcher {
    * case, although currently there are no such cases)
    */
   fetchSourcesForAddress(address: string): Promise<SourceInfo | null>;
+}
+
+export interface NetworkInfo {
+  name: string;
+  networkId: number;
+  chainId: number;
+}
+
+export interface SupportedNetworks {
+  [name: string]: NetworkInfo;
 }
 
 export interface FetcherOptions {
@@ -57,7 +68,8 @@ export interface SolcSettings {
   metadata?: MetadataSettings;
   viaIR?: boolean;
   libraries?: LibrarySettings; //note: we don't actually want to return this!
-  compilationTarget?: { //not actually a valid compiler setting, but rather where the
+  compilationTarget?: {
+    //not actually a valid compiler setting, but rather where the
     //contract name is stored! (as the lone value, the lone key being the source
     //where it's defined)
     [sourcePath: string]: string;

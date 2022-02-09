@@ -6,12 +6,12 @@ const Web3Utils = require("web3-utils");
 import type { Fetcher, FetcherConstructor } from "./types";
 import type * as Types from "./types";
 import {
-  networksById,
   makeFilename,
   makeTimer,
   removeLibraries,
   InvalidNetworkError
 } from "./common";
+import { networkNamesById, networksByName } from "./networks";
 import axios from "axios";
 import retry from "async-retry";
 
@@ -25,11 +25,11 @@ const etherscanCommentHeader = `/**
 const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
   implements Fetcher
 {
-  get fetcherName(): string {
-    return "etherscan";
-  }
   static get fetcherName(): string {
     return "etherscan";
+  }
+  get fetcherName(): string {
+    return EtherscanFetcher.fetcherName;
   }
 
   static async forNetworkId(
@@ -41,26 +41,32 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
     return new EtherscanFetcher(id, options ? options.apiKey : "");
   }
 
+  private readonly networkName: string;
+
   private readonly apiKey: string;
   private readonly delay: number; //minimum # of ms to wait between requests
 
   private ready: Promise<void>; //always await this timer before making a request.
   //then, afterwards, start a new timer.
 
+  private static readonly supportedNetworks = new Set([
+    "mainnet",
+    "ropsten",
+    "kovan",
+    "rinkeby",
+    "goerli",
+    "optimistic",
+    "kovan-optimistic",
+    "arbitrum",
+    "polygon"
+  ]);
+
   constructor(networkId: number, apiKey: string = "") {
-    const networkName = networksById[networkId];
-    const supportedNetworks = [
-      "mainnet",
-      "ropsten",
-      "kovan",
-      "rinkeby",
-      "goerli",
-      "optimistic",
-      "kovan-optimistic",
-      "arbitrum",
-      "polygon"
-    ];
-    if (networkName === undefined || !supportedNetworks.includes(networkName)) {
+    const networkName = networkNamesById[networkId];
+    if (
+      networkName === undefined ||
+      !EtherscanFetcher.supportedNetworks.has(networkName)
+    ) {
       throw new InvalidNetworkError(networkId, "etherscan");
     }
     this.networkName = networkName;
@@ -72,7 +78,13 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
     this.ready = makeTimer(0); //at start, it's ready to go immediately
   }
 
-  private readonly networkName: string;
+  static getSupportedNetworks(): Types.SupportedNetworks {
+    return Object.fromEntries(
+      Object.entries(networksByName).filter(([name, _]) =>
+        EtherscanFetcher.supportedNetworks.has(name)
+      )
+    );
+  }
 
   async fetchSourcesForAddress(
     address: string

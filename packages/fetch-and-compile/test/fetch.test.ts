@@ -1,10 +1,14 @@
 import debugModule from "debug";
 const debug = debugModule("fetch-and-compile:test");
 
-import assert from "assert";
+import { assert } from "chai";
 import "mocha";
 import Config from "@truffle/config";
-import { fetchAndCompile, fetchAndCompileMultiple } from "../lib/index";
+import {
+  fetchAndCompile,
+  fetchAndCompileMultiple,
+  getSupportedNetworks
+} from "../lib/index";
 import axios from "axios";
 import sinon from "sinon";
 import path from "path";
@@ -80,6 +84,20 @@ afterEach(function () {
   axios.get.restore();
   //@ts-ignore
   axios.request.restore();
+});
+
+describe("Supported networks", function () {
+  it("Lists supported networks", function () {
+    const networks = getSupportedNetworks();
+    assert.property(networks, "mainnet");
+    assert.notProperty(networks, "completelymadeupnetworkthatwillneverexist");
+    assert.deepEqual(networks.mainnet, {
+      name: "mainnet",
+      networkId: 1,
+      chainId: 1,
+      fetchers: ["etherscan", "sourcify"]
+    });
+  });
 });
 
 describe("Etherscan single-source Solidity case", function () {
@@ -377,7 +395,7 @@ describe("fetchAndCompileMultiple", function () {
       addresses,
       config
     );
-    assert.equal(Object.keys(failures).length, 0); //there should be no failures
+    assert.isEmpty(failures); //there should be no failures
     const expectedNames = ["UniswapV2Router02", "ENSRegistryWithFallback"];
     for (let i = 0; i < addresses.length; i++) {
       const result = results[addresses[i]];
