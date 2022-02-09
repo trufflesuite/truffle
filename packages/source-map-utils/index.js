@@ -9,7 +9,9 @@ var SourceMapUtils = {
   getCharacterOffsetToLineAndColumnMapping: function (source) {
     var mapping = [];
 
-    source = source.split("");
+    source = Array.from(source); //note: this will correctly handle
+    //surrogate pairs, but there's still the problem of grapheme
+    //clusters!  We should do something about that later.
 
     var line = 0;
     var column = 0;
@@ -422,9 +424,7 @@ var SourceMapUtils = {
       for (let offset = 0; offset < template.length; offset++) {
         const instruction = instructions[index + offset];
         const comparison = template[offset];
-        if (
-          !instruction || instruction.name !== comparison.name
-        ) {
+        if (!instruction || instruction.name !== comparison.name) {
           return false;
         }
         if (
