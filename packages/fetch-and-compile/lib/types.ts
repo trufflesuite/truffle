@@ -8,7 +8,7 @@ export interface NetworkInfo extends FetcherNetworkInfo {
   fetchers: string[];
 }
 
-export interface NetworkInfos {
+export interface SupportedNetworks {
   [name: string]: NetworkInfo;
 }
 

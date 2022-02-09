@@ -12,7 +12,7 @@ export const networkNamesById: { [id: number]: string } = {
   137: "polygon"
 };
 
-export const networksByName: Types.NetworkInfos = Object.fromEntries(
+export const networksByName: Types.SupportedNetworks = Object.fromEntries(
   Object.entries(networkNamesById).map(
     ([id, name]) => [name, { name, networkId: Number(id), chainId: Number(id) }] //id is a string since it's a key so must use Number()
   )

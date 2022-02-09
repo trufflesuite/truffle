@@ -78,7 +78,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
     this.ready = makeTimer(0); //at start, it's ready to go immediately
   }
 
-  static getSupportedNetworks(): Types.NetworkInfos {
+  static getSupportedNetworks(): Types.SupportedNetworks {
     return Object.fromEntries(
       Object.entries(networksByName).filter(([name, _]) =>
         EtherscanFetcher.supportedNetworks.has(name)

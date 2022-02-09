@@ -53,7 +53,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     }
   }
 
-  static getSupportedNetworks(): Types.NetworkInfos {
+  static getSupportedNetworks(): Types.SupportedNetworks {
     return Object.fromEntries(
       Object.entries(networksByName).filter(([name, _]) =>
         SourcifyFetcher.supportedNetworks.has(name)

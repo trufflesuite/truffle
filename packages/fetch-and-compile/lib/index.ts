@@ -47,12 +47,12 @@ export async function fetchAndCompileForDebugger(
   return recognizer.getErrors();
 }
 
-export function getSupportedNetworks(config?: Config): Types.NetworkInfos {
+export function getSupportedNetworks(config?: Config): Types.SupportedNetworks {
   const fetchers = getSortedFetcherConstructors(config);
   //strictly speaking these are fetcher constructors, but since we
   //won't be using fetcher instances in this function, I'm not going
   //to worry about the difference
-  let supportedNetworks: Types.NetworkInfos = {};
+  let supportedNetworks: Types.SupportedNetworks = {};
   for (const fetcher of fetchers) {
     const fetcherNetworks = fetcher.getSupportedNetworks();
     for (const name in fetcherNetworks) {

@@ -1,7 +1,7 @@
 export interface FetcherConstructor {
   readonly fetcherName: string;
   forNetworkId(networkId: number, options?: FetcherOptions): Promise<Fetcher>;
-  getSupportedNetworks(): NetworkInfos;
+  getSupportedNetworks(): SupportedNetworks;
 }
 
 export interface Fetcher {
@@ -23,7 +23,7 @@ export interface NetworkInfo {
   chainId: number;
 }
 
-export interface NetworkInfos {
+export interface SupportedNetworks {
   [name: string]: NetworkInfo;
 }
 
