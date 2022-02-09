@@ -24,8 +24,8 @@ function locationFromShell() {
 
 function shellConfigSetting(filePath) {
   return (
-    `\n# Truffle tab-complete CLI feature. Uninstall by removing this line` +
-    `\n[ -f ${filePath} ] && . ${filePath} || true\n`
+    `${OS.EOL}# Truffle tab-complete CLI feature. Uninstall by removing this line` +
+    `${OS.EOL}[ -f ${filePath} ] && . ${filePath} || true${OS.EOL}`
   );
 }
 
