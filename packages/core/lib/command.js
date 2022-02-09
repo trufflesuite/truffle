@@ -1,9 +1,7 @@
 const TaskError = require("./errors/taskerror");
 const yargs = require("yargs/yargs");
-const { bundled, core } = require("../lib/version").info();
 const OS = require("os");
-const analytics = require("../lib/services/analytics");
-const { extractFlags } = require("./utils/utils"); // Contains utility methods
+const { extractFlags, sendAnalytics } = require("./utils/utils"); // Contains utility methods
 const commandOptions = require("./command-options");
 const debugModule = require("debug");
 const debug = debugModule("core:command:run");
@@ -157,11 +155,9 @@ class Command {
     }
 
     const newOptions = Object.assign({}, clone, argv);
-
-    analytics.send({
+    sendAnalytics({
       command: result.name ? result.name : "other",
-      args: result.argv._,
-      version: bundled || "(unbundled) " + core
+      args: result.argv._
     });
 
     const unhandledRejections = new Map();
@@ -190,6 +186,7 @@ class Command {
   }
 
   displayGeneralHelp() {
+    const { bundled, core } = require("../lib/version").info();
     this.args
       .usage(
         "Truffle v" +
