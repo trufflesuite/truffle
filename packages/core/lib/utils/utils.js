@@ -31,4 +31,14 @@ const detectConfigOrDefault = options => {
   }
 };
 
-module.exports = { extractFlags, detectConfigOrDefault };
+const sendAnalytics = options => {
+  const analytics = require("../services/analytics");
+  const version = require("../version");
+  const versionInfo = version.info();
+  analytics.send({
+    ...options,
+    version: versionInfo.bundle || "(unbundled) " + versionInfo.core
+  });
+};
+
+module.exports = { extractFlags, detectConfigOrDefault, sendAnalytics };

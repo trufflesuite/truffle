@@ -1,4 +1,5 @@
 const fs = require("fs");
+const OS = require("os");
 const TruffleError = require("@truffle/error");
 const {
   completionScriptName,
@@ -45,5 +46,5 @@ function removeFromShellConfig(filePath) {
     linesToRemove.includes(line) ? "" : line
   );
 
-  fs.writeFileSync(scriptConfigLocation, newFileContents.join("\n").trim());
+  fs.writeFileSync(scriptConfigLocation, newFileContents.join(OS.EOL).trim());
 }

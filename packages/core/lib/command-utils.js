@@ -1,7 +1,6 @@
 const { bundled, core } = require("../lib/version").info();
 const OS = require("os");
-const analytics = require("../lib/services/analytics");
-const { extractFlags } = require("./utils/utils"); // contains utility methods
+const { extractFlags, sendAnalytics } = require("./utils/utils"); // contains utility methods
 const globalCommandOptions = require("./global-command-options");
 const debugModule = require("debug");
 const debug = debugModule("core:command:run");
@@ -170,10 +169,9 @@ const runCommand = async function (command, options) {
     debug("Truffle data migration failed: %o", error);
   }
 
-  analytics.send({
+  sendAnalytics({
     command: command.name ? command.name : "other",
     args: options._,
-    version: bundled || "(unbundled) " + core
   });
 
   const unhandledRejections = new Map();
