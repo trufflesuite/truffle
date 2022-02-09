@@ -9,7 +9,9 @@ var SourceMapUtils = {
   getCharacterOffsetToLineAndColumnMapping: function (source) {
     var mapping = [];
 
-    source = Array.from(source);
+    source = Array.from(source); //note: this will correctly handle
+    //surrogate pairs, but there's still the problem of grapheme
+    //clusters!  We should do something about that later.
 
     var line = 0;
     var column = 0;
