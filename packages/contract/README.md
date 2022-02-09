@@ -39,13 +39,15 @@ You now have access to the following functions on `MyContract`, as well as many 
 Each instance is tied to a specific address on the Ethereum network, and each instance has a 1-to-1 mapping from Javascript functions to contract functions. For instance, if your Solidity contract had a function defined `someFunction(uint value) {}` (solidity), then you could execute that function on the network like so:
 
 ```javascript
-const deployed;
-MyContract.deployed().then(function(instance) {
-  deployed = instance;
-  return instance.someFunction(5);
-}).then(function(result) {
-  // Do something with the result or continue with more transactions.
-});
+let deployed;
+MyContract.deployed()
+  .then(function (instance) {
+    deployed = instance;
+    return instance.someFunction(5);
+  })
+  .then(function (result) {
+    // Do something with the result or continue with more transactions.
+  });
 ```
 
 or equivalently in ES6 <sup>(node.js 8 or newer)</sup>:
