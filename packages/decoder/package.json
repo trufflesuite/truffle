@@ -21,7 +21,7 @@
     "build": "tsc",
     "prepare": "yarn build",
     "start": "tsc --watch",
-    "test": "mocha ./test/current/test/* ./test/legacy/test/*"
+    "test": "DEBUG=decoder:* mocha ./test/current/test/* ./test/legacy/test/*"
   },
   "types": "dist/index.d.ts",
   "dependencies": {
@@ -47,6 +47,7 @@
     "ganache": "7.0.1",
     "lodash.clonedeep": "^4.5.0",
     "mocha": "8.1.2",
+    "segfault-handler": "^1.3.0",
     "tmp": "^0.2.1",
     "typescript": "^4.1.4",
     "web3": "1.5.3"

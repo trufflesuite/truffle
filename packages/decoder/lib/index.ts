@@ -137,6 +137,15 @@ documentation for these individual functions.
  * @packageDocumentation
  */
 
+//HACK hook up segfault handler
+const SegfaultHandler = require("segfault-handler");
+//@ts-ignore
+SegfaultHandler.registerHandler("crash.log", function (signal, address, stack) {
+  console.log("signal", signal);
+  console.log("address", address);
+  console.log("stack", stack);
+});
+
 import {
   ContractDecoder,
   ContractInstanceDecoder,
