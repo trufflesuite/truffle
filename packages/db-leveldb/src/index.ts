@@ -1,16 +1,20 @@
 import { Storage } from "./storage";
 
-type TruffleDBConfig = {
+export type TruffleDBConfig = {
   databaseName: string;
   databaseEngine: string;
   databaseDirectory: string;
   modelDirectories?: string[];
 };
 
+export type ModelLookup = {
+  [model: string]: { levelDB: { close: Function } };
+};
+
 export class TruffleDB {
   config: TruffleDBConfig;
   levelDB: { close: Function };
-  models: { [model: string]: { levelDB: { close: Function } } };
+  models: ModelLookup;
 
   constructor(config?: TruffleDBConfig) {
     this.config = { ...TruffleDB.DEFAULTS, ...config };
