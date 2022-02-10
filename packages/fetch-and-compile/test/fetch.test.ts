@@ -140,9 +140,9 @@ describe("Etherscan single-source Solidity case", function () {
   it("verifies contract from polygon", async function () {
     await runTestBody(
       137,
-      "0xBB6828C8228E5C641Eb6d89Ca22e09E6311CA398",
+      "0xCF79C5417934ECde6BA055C0119A03380CE28DEC",
       "etherscan",
-      "GrowthVault"
+      "Auction"
     );
   });
 
