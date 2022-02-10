@@ -128,12 +128,75 @@ describe("Etherscan single-source Solidity case", function () {
     );
   });
 
+  it("verifies contract from arbitrum rinkeby", async function () {
+    await runTestBody(
+      421611,
+      "0x1167d145919642dac82e03a6cfe2848db7a94995",
+      "etherscan",
+      "ProxyRegistry"
+    );
+  });
+
   it("verifies contract from polygon", async function () {
     await runTestBody(
       137,
       "0xBB6828C8228E5C641Eb6d89Ca22e09E6311CA398",
       "etherscan",
       "GrowthVault"
+    );
+  });
+
+  it("verifies contract from polygon mumbai", async function () {
+    await runTestBody(
+      80001,
+      "0xF618d6deB4C4F24776810ec3221dFe211b979B4F",
+      "etherscan",
+      "HelloWorld"
+    );
+  });
+
+  it("verifies contract from optimism", async function () {
+    await runTestBody(
+      10,
+      "0xca5f37e6D8bB24c5A7958d5eccE7Bd9Aacc944f2",
+      "etherscan",
+      "InstaERC20Resolver"
+    );
+  });
+
+  it("verifies contract from optimism kovan", async function () {
+    await runTestBody(
+      69,
+      "0x5bb6699ef885ca997d1467380ff9e51c606a07e1",
+      "etherscan",
+      "Wormhole"
+    );
+  });
+
+  it("verifies contract from moonbeam", async function () {
+    await runTestBody(
+      1284,
+      "0x23eA13c920aF82353872E36CaE99797fb28a8981",
+      "etherscan",
+      "TimelockController"
+    );
+  });
+
+  it("verifies contract from moonriver", async function () {
+    await runTestBody(
+      1285,
+      "0x56f4ca4f9dbb29c9438d9de48bd07f4b7fa765a3",
+      "etherscan",
+      "ERC1967Proxy"
+    );
+  });
+
+  it("verifies contract from moonbase alpha", async function () {
+    await runTestBody(
+      1287,
+      "0xf85544ea3dd634ebe9a61d963295b054adb0c803",
+      "etherscan",
+      "AddressStore"
     );
   });
 });
@@ -230,7 +293,12 @@ describe("fetchAndCompileMultiple", function () {
   });
 });
 
-async function runTestBody(networkId: number, address: string, fetcherName: string, expectedName: string) {
+async function runTestBody(
+  networkId: number,
+  address: string,
+  fetcherName: string,
+  expectedName: string
+) {
   const config = Config.default().merge({
     networks: {
       testnetwork: {
