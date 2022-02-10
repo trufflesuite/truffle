@@ -6,7 +6,7 @@ export class StorageBackend {
   static availableBackends() {
     return ["leveldown", "sqlite", "memory"];
   }
-  static createBackend(database: string, directory?: string) {
+  static createBackend(database?: string, directory?: string) {
     switch (database) {
       case "leveldown":
         return leveldown(directory);

@@ -1,9 +1,9 @@
 import { Storage } from "./storage";
 
 export type TruffleDBConfig = {
-  databaseName: string;
-  databaseEngine: string;
-  databaseDirectory: string;
+  databaseName?: string;
+  databaseEngine?: string;
+  databaseDirectory?: string;
   modelDirectories?: string[];
 };
 
