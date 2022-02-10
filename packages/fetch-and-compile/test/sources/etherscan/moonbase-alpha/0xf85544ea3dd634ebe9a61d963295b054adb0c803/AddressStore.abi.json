@@ -1,0 +1,1 @@
+[{"constant":false,"inputs":[{"name":"_addresses","type":"address[]"}],"name":"setStore","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"bought","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"}]

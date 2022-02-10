@@ -58,7 +58,19 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
     "optimistic",
     "kovan-optimistic",
     "arbitrum",
-    "polygon"
+    "rinkeby-arbitrum",
+    "polygon",
+    "mumbai-polygon",
+    "binance",
+    "testnet-binance",
+    "fantom",
+    "testnet-fantom",
+    //we don't support avalanche, even though etherscan has snowtrace.io
+    "heco",
+    "testnet-heco",
+    "moonbeam",
+    "moonriver",
+    "moonbase-alpha"
   ]);
 
   constructor(networkId: number, apiKey: string = "") {
@@ -104,17 +116,45 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
   }
 
   private determineUrl() {
-    switch (this.networkName) {
-      case "arbitrum":
-        return "https://api.arbiscan.io/api";
-      case "polygon":
-        return "https://api.polygonscan.com/api";
-      case "mainnet":
-        return "https://api.etherscan.io/api";
-      default:
-        return `https://api-${this.networkName}.etherscan.io/api`;
+    const scanners: { [network: string]: string } = {
+      //etherscan.io is treated separately
+      polygon: "polygonscan.com",
+      arbitrum: "arbiscan.io",
+      binance: "bscscan.com",
+      fantom: "ftmscan.com",
+      //we don't support avalanche's snowtrace.io
+      heco: "hecoinfo.com"
+      //moonscan.io is treated separately
+    };
+    const [part1, part2] = this.networkName.split("-");
+    if (part2 === undefined && this.networkName in scanners) {
+      //mainnet for one of the above scanners
+      return `https://api.${scanners[this.networkName]}/api`;
+    } else if (part2 in scanners) {
+      //a testnet for one of the above scanners;
+      //part1 is the testnet name, part2 is the broader mainnet name
+      let [testnet, network] = [part1, part2];
+      if (network === "arbitrum" && testnet === "rinkeby") {
+        //special case: arbitrum rinkeby is testnet.arbiscan.io,
+        //not rinkeby.arbiscan.io
+        //note: if we supported avalanche, it would have a similar special case
+        testnet = "testnet";
+      }
+      return `https://api-${testnet}.${scanners[network]}/api`;
+    } else if (part1.startsWith("moon")) {
+      //one of the moonbeam networks; here even the moonbeam mainnet
+      //gets a prefix (we use part1 to get moonbase, not moonbase-alpha)
+      const shortName = part1;
+      return `https://api-${shortName}.moonscan.io/api`;
+    } else if (this.networkName === "mainnet") {
+      //ethereum mainnet
+      return "https://api.etherscan.io/api";
+    } else {
+      //default case: an ethereum testnet, or an optimistic network (main or test)
+      return `https://api-${this.networkName}.etherscan.io/api`;
     }
   }
+
   private async makeRequest(address: string): Promise<EtherscanSuccess> {
     //not putting a try/catch around this; if it throws, we throw
     await this.ready;

@@ -39,7 +39,36 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "ropsten",
     "kovan",
     "rinkeby",
-    "goerli"
+    "goerli",
+    "kovan",
+    "optimistic",
+    "kovan-optimistic",
+    "arbitrum",
+    "rinkeby-arbitrum",
+    "polygon",
+    "mumbai-polygon",
+    "xdai",
+    "sokol",
+    "binance",
+    "testnet-binance",
+    "celo",
+    "alfajores-celo",
+    "baklava-celo",
+    //again, we don't support avalanche, even though sourcify does
+    "telos",
+    "testnet-telos",
+    "ubiq",
+    //sourcify does *not* support oneledger mainnet...?
+    "frankenstein-oneledger",
+    "syscoin",
+    "tanenbaum-syscoin",
+    "boba",
+    "rinkeby-boba",
+    "velas",
+    "meter",
+    "testnet-meter",
+    "aurora",
+    "testnet-aurora"
   ]);
 
   constructor(networkId: number) {
