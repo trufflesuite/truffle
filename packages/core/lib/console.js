@@ -14,6 +14,7 @@ const path = require("path");
 const EventEmitter = require("events");
 const spawnSync = require("child_process").spawnSync;
 const Require = require("@truffle/require");
+const debug = require("debug")("console");
 
 const processInput = input => {
   const inputComponents = input.trim().split(" ");
@@ -69,7 +70,7 @@ class Console extends EventEmitter {
       });
 
       // Get and set Truffle and User Globals
-      const truffleAndUserGlobals = await this.calculateTruffleAndUserGlobals() ;
+      const truffleAndUserGlobals = await this.calculateTruffleAndUserGlobals();
       Object.entries(truffleAndUserGlobals).forEach(([key, value]) => {
         this.repl.context[key] = value;
       });
@@ -272,7 +273,7 @@ class Console extends EventEmitter {
       // Theoretically stderr can contain multiple errors.
       // So let's just print it instead of throwing through
       // the error handling mechanism. Bad call?
-      console.log(spawnResult.stderr.toString());
+      debug(spawnResult.stderr.toString());
     }
 
     // re-provision to ensure any changes are available in the repl
@@ -322,7 +323,8 @@ class Console extends EventEmitter {
       - this is overly restrictive but is easier to maintain
     - capture `await <anything that follows it>`
     */
-    let includesAwait = /^\s*((?:(?:var|const|let)\s+)?[a-zA-Z_$][0-9a-zA-Z_$]*\s*=\s*)?(\(?\s*await[\s\S]*)/;
+    let includesAwait =
+      /^\s*((?:(?:var|const|let)\s+)?[a-zA-Z_$][0-9a-zA-Z_$]*\s*=\s*)?(\(?\s*await[\s\S]*)/;
 
     const match = processedInput.match(includesAwait);
     let source = processedInput;
