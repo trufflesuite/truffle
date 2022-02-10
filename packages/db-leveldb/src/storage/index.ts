@@ -5,8 +5,8 @@ const fs = require("fs");
 import { StorageBackend } from "./backend";
 
 type CreateStorageOptions = {
-  databaseEngine: string;
-  databaseDirectory: string;
+  databaseEngine?: string;
+  databaseDirectory?: string;
   databaseName?: string;
   modelDirectories?: string[];
 };
@@ -108,5 +108,13 @@ export class Storage {
       model.setModels(models);
       model.setLevelDB(levelDB);
     });
+  }
+  static get DEFAULTS(): CreateStorageOptions {
+    return {
+      databaseEngine: "memory",
+      databaseDirectory: "./db",
+      databaseName: "truffledb",
+      modelDirectories: []
+    };
   }
 }

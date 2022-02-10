@@ -25,11 +25,11 @@ module.exports = class Model {
     if (this.#didInit)
       throw new Error("init has already been called for Model");
 
-    this.processModelDefinition();
+    this.defineModelInstance();
     this.#didInit = true;
   }
 
-  processModelDefinition() {
+  defineModelInstance() {
     Object.keys(this).forEach(property => {
       this.#modelProperties.push(property);
 
@@ -56,7 +56,7 @@ module.exports = class Model {
     return this.#key;
   }
 
-  setModelProperties(data) {
+  hydrate(data) {
     // set keyfield to value from data - temp until key generation is added to model
     if (data) this[this.#key] = data[this.#key];
 
@@ -180,7 +180,7 @@ module.exports = class Model {
   static build(data) {
     const modelInstance = new this(this.levelDB, this.historicalLevelDB);
     modelInstance.init();
-    modelInstance.setModelProperties(data);
+    modelInstance.hydrate(data);
     return modelInstance;
   }
 

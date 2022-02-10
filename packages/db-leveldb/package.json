@@ -1,10 +1,11 @@
 {
-  "name": "graphql-leveldb",
+  "name": "truffleDB-leveldb",
   "version": "0.0.1",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
     "start": "node src/index.js",
+    "build": "tsc --allowJS",
     "dev": "nodemon src/index.js",
     "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'tests/**/*.ts'",
     "nyc": "npx nyc@15.1.0 npm test"
