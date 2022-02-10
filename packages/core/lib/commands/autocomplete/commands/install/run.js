@@ -52,7 +52,10 @@ function writeCompletionScript(filePath) {
 function appendToShellConfig(filePath) {
   const scriptConfigLocation = locationFromShell();
   const linesToAdd = shellConfigSetting(filePath);
-  if (stringInFile(linesToAdd, scriptConfigLocation)) {
+  if (
+    !fs.existsSync(scriptConfigLocation) ||
+    stringInFile(linesToAdd, scriptConfigLocation)
+  ) {
     return;
   }
 
