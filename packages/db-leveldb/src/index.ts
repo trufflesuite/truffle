@@ -1,4 +1,5 @@
 import { Storage } from "./storage";
+import Config from "@truffle/config";
 
 export type TruffleDBConfig = {
   databaseName?: string;
@@ -17,7 +18,9 @@ export class TruffleDB {
   models: ModelLookup;
 
   constructor(config?: TruffleDBConfig) {
-    this.config = { ...TruffleDB.DEFAULTS, ...config };
+    const truffleConfig = this.getTruffleConfig();
+    this.config = { ...TruffleDB.DEFAULTS, ...truffleConfig, ...config };
+
     const {
       databaseName,
       databaseEngine,
@@ -38,6 +41,23 @@ export class TruffleDB {
 
   async close() {
     await this.levelDB.close();
+  }
+
+  getTruffleConfig() {
+    let truffleConfig = {};
+    let projectConfig = {};
+    let userConfig = {};
+    try {
+      projectConfig = Config.detect(); // This throws
+      const UserConfig: { get: (key: string) => {} } = Config.getUserConfig();
+      userConfig = UserConfig.get("db");
+    } catch (e) {
+      // debug log this but package has default values.
+    }
+
+    truffleConfig = { ...userConfig, ...projectConfig };
+
+    return truffleConfig;
   }
 
   static get DEFAULTS(): TruffleDBConfig {
