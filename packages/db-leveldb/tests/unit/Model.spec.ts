@@ -42,8 +42,6 @@ describe("Model", () => {
   describe("build", () => {
     it("returns a model instance", () => {
       const builtProject = Project.build(project);
-      console.log(builtProject);
-      console.log(project);
       expect(builtProject).to.eql(project);
     });
     it("does not save the data", async () => {
