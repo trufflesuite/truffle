@@ -6,7 +6,7 @@ export interface DeclarationTarget {
   network: string;
   // other contracts, any captured variables from a previous deployment
   // not sure what the best way to arrange these will be, just an array of any for now
-  dependencies?: Array<any>;
+  dependencies: Array<any>;
   //this will be a function to check whether the target in question
   //has finished successfully
   isCompleted: any;
@@ -14,6 +14,15 @@ export interface DeclarationTarget {
   //actually deploy, link, execute, etc.; ultimately the execution layer of the declarative
   //deployments module will look something like DeploymentSteps[0].run(contractName, options), etc.;
   run: any;
+}
+
+export interface DeclarationEntry {
+  [network: string]: [
+    {
+      contract: string;
+      links?: Array<string>;
+    }
+  ];
 }
 
 export type DeploymentSteps = Array<DeclarationTarget>;
