@@ -6,7 +6,7 @@ interface Props {
 }
 
 function NetworkIndicator({ chainId }: Props) {
-  const [networkName, setNetworkName] = useState<string>(`CHAIN ID ${chainId}`);
+  const [networkName, setNetworkName] = useState<string>(`Chain ID ${chainId}`);
   const textColor = chainId === 1 ? "text-truffle-red" : "";
 
   useEffect(() => {
@@ -20,7 +20,7 @@ function NetworkIndicator({ chainId }: Props) {
     updateNetwork(chainId);
   }, [chainId]);
 
-  return <div className={`rounded ${textColor}`}>{networkName}</div>;
+  return <div className={`rounded uppercase ${textColor}`}>{networkName}</div>;
 }
 
 export default NetworkIndicator;

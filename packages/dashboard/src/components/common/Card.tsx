@@ -9,7 +9,7 @@ interface Props {
 function Card({ header, body, footer }: Props) {
   const headerOrNull = header && (
     <div className="border-b border-grey py-3 mx-3">
-      <h2 className="text-center">{header}</h2>
+      <h2 className="text-center uppercase">{header}</h2>
     </div>
   );
 

@@ -71,7 +71,7 @@ function DashboardProvider({ paused, socket, requests, setRequests }: Props) {
   return (
     <div className="flex justify-center items-center py-20">
       <div className="mx-3 w-3/4 max-w-4xl h-2/3">
-        <Card header="INCOMING REQUESTS" body={incomingRequests} />
+        <Card header="Incoming Requests" body={incomingRequests} />
       </div>
     </div>
   );

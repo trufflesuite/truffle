@@ -59,9 +59,9 @@ function IncomingRequest({ provider, socket, request, setRequests }: Props) {
         const [messageParams, from] = request.payload.params;
         return (
           <div>
-            <div>ACCOUNT: {from}</div>
+            <div>Account: {from}</div>
             <div className="flex gap-2">
-              <div>MESSAGE:</div>
+              <div>Message:</div>
               <ReactJson name="message params" src={messageParams} />
             </div>
           </div>
@@ -73,9 +73,9 @@ function IncomingRequest({ provider, socket, request, setRequests }: Props) {
         const { message } = JSON.parse(messageParams);
         return (
           <div>
-            <div>ACCOUNT: {from}</div>
+            <div>Account: {from}</div>
             <div className="flex gap-2">
-              <div>MESSAGE:</div>
+              <div>Message:</div>
               <ReactJson name="message" src={message} />
             </div>
           </div>
@@ -85,9 +85,9 @@ function IncomingRequest({ provider, socket, request, setRequests }: Props) {
         const [message, from] = request.payload.params;
         return (
           <div>
-            <div>ACCOUNT: {from}</div>
+            <div>Account: {from}</div>
             <div className="flex gap-2">
-              <div>MESSAGE:</div>
+              <div>Message:</div>
               <div>{message}</div>
             </div>
           </div>
@@ -100,14 +100,14 @@ function IncomingRequest({ provider, socket, request, setRequests }: Props) {
     }
   };
 
-  const header = request.payload.method;
+  const header = <div className="normal-case">{request.payload.method}</div>;
 
   const body = <div>{formatDashboardProviderRequestParameters(request)}</div>;
 
   const footer = (
     <div className="flex justify-start items-center gap-2">
-      <Button onClick={process} text="PROCESS" />
-      <Button onClick={reject} text="REJECT" />
+      <Button onClick={process} text="Process" />
+      <Button onClick={reject} text="Reject" />
     </div>
   );
 

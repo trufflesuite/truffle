@@ -30,13 +30,13 @@ function ConfirmNetworkChanged({
     </div>
   );
 
-  const confirmButton = <Button text="CONFIRM" onClick={confirm} />;
+  const confirmButton = <Button text="Confirm" onClick={confirm} />;
 
   return (
     <div className="flex justify-center items-center py-20">
       <div className="mx-3 w-3/4 max-w-4xl h-2/3 text-center">
         <Card
-          header="CONFIRM NETWORK CHANGED"
+          header="Confirm Network Changed"
           body={confirmBody}
           footer={confirmButton}
         />

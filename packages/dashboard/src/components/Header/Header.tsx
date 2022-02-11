@@ -23,11 +23,11 @@ function Header({}: Props) {
   }, [library, account]);
 
   return (
-    <header className="grid grid-cols-2 py-2 px-4 border-b-2 border-truffle-light text-md">
+    <header className="grid grid-cols-2 py-2 px-4 border-b-2 border-truffle-light text-md uppercase">
       <div className="flex justify-start items-center">
         <span className="inline-flex items-center gap-3">
           <img src="/truffle-logomark.svg" width="32px" />
-          TRUFFLE DASHBOARD
+          Truffle Dashboard
         </span>
       </div>
       <div className="flex justify-end items-center gap-4 text-md">

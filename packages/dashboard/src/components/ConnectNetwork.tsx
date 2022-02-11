@@ -17,7 +17,7 @@ function ConnectNetwork({ confirm }: Props) {
     "Please connect your wallet to use the Truffle Dashboard Provider.";
 
   const connectButton = (
-    <Button text="CONNECT WALLET" onClick={() => activate(injectedConnector)} />
+    <Button text="Connect Wallet" onClick={() => activate(injectedConnector)} />
   );
 
   const confirmBody = chainId && (
@@ -32,20 +32,20 @@ function ConnectNetwork({ confirm }: Props) {
     </div>
   );
 
-  const confirmButton = <Button text="CONFIRM" onClick={confirm} />;
+  const confirmButton = <Button text="Confirm" onClick={confirm} />;
 
   return (
     <div className="flex justify-center items-center py-20">
       <div className="mx-3 w-3/4 max-w-4xl h-2/3 text-center">
         {chainId === undefined ? (
           <Card
-            header="CONNECT WALLET"
+            header="Connect Wallet"
             body={connectBody}
             footer={connectButton}
           />
         ) : (
           <Card
-            header="CONNECT WALLET"
+            header="Connect Wallet"
             body={confirmBody}
             footer={confirmButton}
           />

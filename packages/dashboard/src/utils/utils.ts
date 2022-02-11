@@ -99,8 +99,8 @@ export const getNetworkName = async (chainId: number) => {
     "https://chainid.network/chains.json"
   );
   const [chain] = chainList.filter((chain: any) => chain.chainId === chainId);
-  if (!chain) return `CHAIN ID ${chainId}`;
-  return chain.name.toUpperCase();
+  if (!chain) return `Chain ID ${chainId}`;
+  return chain.name;
 };
 
 export const getDisplayName = async (
@@ -109,7 +109,7 @@ export const getDisplayName = async (
 ) => {
   const ensName = await reverseLookup(library, address);
   const shortenedAccount = shortenAddress(address);
-  const displayName = (ensName ?? shortenedAccount).toUpperCase();
+  const displayName = ensName ?? shortenedAccount;
   return displayName;
 };
 
