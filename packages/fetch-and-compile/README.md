@@ -4,9 +4,9 @@ This is used to obtain external verified sourced and compile them.
 
 Note: If you import this into your TS project, you may need to set `skipLibCheck` in your tsconfig due to an indirect dependency on @truffle/contract-schema.
 
-### Usage
+## Usage
 
-## `fetchAndCompile`
+### `fetchAndCompile`
 
 ```ts
 import * as dotenv from "dotenv";
@@ -69,7 +69,7 @@ async function decode(address: string) {
 decode("0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e");
 ```
 
-## `fetchAndCompileMultiple`
+### `fetchAndCompileMultiple`
 
 If you want to fetch and compile multiple contracts from the same network, you can use `fetchAndCompileMultiple`:
 
@@ -87,7 +87,7 @@ for (const address in failures) {
 }
 ```
 
-## `getSupportedNetworks`
+### `getSupportedNetworks`
 
 If you want a list of supported networks, you can call `getSupportedNetworks`:
 
