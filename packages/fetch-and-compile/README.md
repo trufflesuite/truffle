@@ -4,6 +4,8 @@ This is used to obtain external verified sourced and compile them.
 
 ### Usage
 
+## `fetchAndCompile`
+
 ```ts
 import * as dotenv from "dotenv";
 dotenv.config();
@@ -65,6 +67,8 @@ async function decode(address: string) {
 decode("0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e");
 ```
 
+## `fetchAndCompileMultiple`
+
 If you want to fetch and compile multiple contracts from the same network, you can use `fetchAndCompileMultiple`:
 
 ```ts
@@ -81,7 +85,9 @@ for (const address in failures) {
 }
 ```
 
-Finally, if you want a list of supported networks, you can call `getSupportedNetworks`:
+## `getSupportedNetworks`
+
+If you want a list of supported networks, you can call `getSupportedNetworks`:
 
 ```ts
 import { getSupportedNetworks } from "@truffle/fetch-and-compile";
