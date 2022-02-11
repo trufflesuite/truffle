@@ -41,6 +41,7 @@
   "dependencies": {
     "@truffle/codec": "^0.11.26",
     "@truffle/compile-solidity": "^6.0.12",
+    "@truffle/config": "^1.3.18",
     "@truffle/source-fetcher": "^1.0.0",
     "debug": "^4.3.2",
     "semver": "^7.3.5",
@@ -48,7 +49,6 @@
   },
   "devDependencies": {
     "@truffle/compile-common": "^0.7.27",
-    "@truffle/config": "^1.3.18",
     "@types/chai": "^4.2.22",
     "@types/debug": "^4.1.7",
     "@types/mocha": "^9.0.0",
