@@ -65,5 +65,56 @@ async function decode(address: string) {
 decode("0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e");
 ```
 
+If you want to fetch and compile multiple contracts from the same network, you can use `fetchAndCompileMultiple`:
+
+```ts
+import { fetchAndCompileMultiple } from "@truffle/fetch-and-compile";
+const config = /* set up config */;
+const addresses: string[] = /* set addresses */;
+const { results, failures } = await fetchAndCompileMultiple(addresses, config);
+for (const address in results) {
+  const compileResult = results[address];
+  /* do things with compileResult as above */
+}
+for (const address in failures) {
+  /* do things with failed addresses */
+}
+```
+
+Finally, if you want a list of supported networks, you can call `getSupportedNetworks`:
+
+```ts
+import { getSupportedNetworks } from "@truffle/fetch-and-compile";
+const networks = getSupportedNetworks();
+// networks = {
+//  mainnet: {
+//    name: "mainnet",
+//    networkId: 1,
+//    chainId: 1,
+//    fetchers: ["etherscan", "sourcify"] //which fetchers support this network?
+//  },
+//  ...
+//}
+```
+
+If you have a config with the `sourceFetchers` property set, you can call `getSupportedNetworks(config)`
+and the output will be restricted to the networks supported by the fetchers listed there.
+
+```ts
+import { getSupportedNetworks } from "@truffle/fetch-and-compile";
+import Config from "@truffle/config";
+const config = Config.default().with({ sourceFetchers: ["etherscan"] });
+const networks = getSupportedNetworks(config); //will only list those supported by etherscan fetcher
+// networks = {
+//  mainnet: {
+//    name: "mainnet",
+//    networkId: 1,
+//    chainId: 1,
+//    fetchers: ["etherscan"] //sourcify is not listed since it's not being checked
+//  },
+//  ...
+//}
+```
+
 Please see the [README for @truffle/decoder](https://github.com/trufflesuite/truffle/tree/develop/packages/decoder)
 for more information on using Truffle decoder.
