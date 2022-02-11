@@ -2,6 +2,8 @@
 
 This is used to obtain external verified sourced and compile them.
 
+Note: If you import this into your TS project, you may need to set `skipLibCheck` in your tsconfig due to an indirect dependency on @truffle/contract-schema.
+
 ### Usage
 
 ## `fetchAndCompile`
