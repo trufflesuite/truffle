@@ -1,0 +1,49 @@
+{
+  "name": "@truffle/dashboard-message-bus",
+  "version": "0.1.0",
+  "description": "Message bus that handles communication between the Dashboard and its components",
+  "main": "dist/lib/index.js",
+  "types": "dist/lib/index.d.ts",
+  "files": [
+    "dist/lib"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepare": "yarn build",
+    "test": "jest --verbose"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/dashboard-mesasge-bus"
+  },
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/dashboard-message-bus#readme",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "author": "Rosco Kalis <roscokalis@gmail.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/jest": "^27.0.3",
+    "@types/node": "^12.0.0",
+    "@types/promise.any": "^2.0.0",
+    "@types/web3": "^1.2.2",
+    "jest": "^27.4.5",
+    "ts-jest": "^27.1.2",
+    "typescript": "^4.1.4"
+  },
+  "dependencies": {
+    "@types/ws": "^7.2.0",
+    "axios": "^0.24.0",
+    "delay": "^5.0.0",
+    "isomorphic-ws": "^4.0.1",
+    "promise.any": "^2.0.2",
+    "ws": "^7.2.0"
+  },
+  "browser": {
+    "ws": false
+  }
+}

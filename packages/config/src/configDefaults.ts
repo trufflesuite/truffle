@@ -19,7 +19,14 @@ export const getInitialConfig = ({
     truffle_directory,
     working_directory,
     network,
-    networks: {},
+    networks: {
+      dashboard: {
+        network_id: "*",
+        networkCheckTimeout: 120000,
+        url: "http://localhost:24012/rpc",
+        skipDryRun: true
+      }
+    },
     verboseRpc: false,
     gas: null,
     gasPrice: null,
@@ -35,6 +42,11 @@ export const getInitialConfig = ({
     resolver: null,
     artifactor: null,
     quiet: false,
+    dashboard: {
+      host: "localhost",
+      port: 24012,
+      verbose: false
+    },
     ethpm: {
       ipfs_host: "ipfs.infura.io",
       ipfs_protocol: "https",
@@ -91,6 +103,7 @@ export const configProps = ({
     build() {},
     resolver() {},
     artifactor() {},
+    dashboard() {},
     ethpm() {},
     logger() {},
     compilers() {},
@@ -155,6 +168,22 @@ export const configProps = ({
 
         if (config === null || config === undefined) {
           config = {};
+        }
+
+        if (network === "dashboard") {
+          const { host: configuredHost, port } = configObject.dashboard;
+          const host =
+            configuredHost === "0.0.0.0" ? "localhost" : configuredHost;
+
+          const userOverrides = config;
+
+          config = {
+            network_id: "*",
+            networkCheckTimeout: 120000,
+            ...userOverrides,
+            url: `http://${host}:${port}/rpc`,
+            skipDryRun: true
+          };
         }
 
         return config;

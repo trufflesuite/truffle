@@ -56,7 +56,7 @@ describe("migrate", function () {
     });
   });
 
-  it("profiles a new project as not having any contracts deployed", async function() {
+  it("profiles a new project as not having any contracts deployed", async function () {
     const networks = await Networks.deployed(config);
     assert.equal(
       Object.keys(networks).length,

@@ -22,7 +22,7 @@ class TruffleConfig {
     workingDirectory?: string,
     network?: any
   ) {
-    this._deepCopy = ["compilers", "mocha"];
+    this._deepCopy = ["compilers", "mocha", "dashboard", "networks"];
     this._values = getInitialConfig({
       truffleDirectory,
       workingDirectory,
