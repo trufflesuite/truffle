@@ -84,6 +84,10 @@ module.exports = class Model extends ModelInstance {
     });
   }
 
+  static async exists(key) {
+    return !!(await this.get(key));
+  }
+
   static async get(key) {
     try {
       return this.build(await this.levelDB.get(key));

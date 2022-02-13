@@ -8,7 +8,7 @@ describe("Model", () => {
   const modelDirectories = [`${__dirname}/testModels`];
   const tmpDir = os.tmpdir();
   let databaseName = "truffledbTest";
-  let databaseEngine = "memory";
+  let databaseEngine = "leveldb";
   let databaseDirectory = tmpDir;
 
   let levelDB;
@@ -88,6 +88,15 @@ describe("Model", () => {
       expect(error.message.indexOf("Model is not connected") > -1).to.equal(
         true
       );
+    });
+  });
+
+  describe("exists", () => {
+    it("returns true if the key is found", async () => {
+      await Project.create(project);
+
+      expect(await Project.exists(project.id)).to.equal(true);
+      expect(await Project.exists(12345)).to.equal(false);
     });
   });
 

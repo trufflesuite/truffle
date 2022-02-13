@@ -1,5 +1,6 @@
 import { Storage } from "./storage";
 import Config from "@truffle/config";
+const path = require("path");
 
 export type TruffleDBConfig = {
   projectName?: string;
@@ -10,7 +11,7 @@ export type TruffleDBConfig = {
 };
 
 export type ModelLookup = {
-  [model: string]: { get: Function };
+  [model: string]: { exists: Function; get: Function; create: Function };
 };
 
 export class TruffleDB {
@@ -45,7 +46,15 @@ export class TruffleDB {
   }
 
   async getProject(name = this.config.projectName) {
-    return await this.models.Project.get(name);
+    const { Project } = this.models;
+
+    if (await Project.exists(name)) {
+      console.log("found project");
+      return await Project.get(name);
+    } else {
+      console.log("create project");
+      return await Project.create({ name });
+    }
   }
 
   getTruffleConfig() {
@@ -53,23 +62,23 @@ export class TruffleDB {
     let projectConfig = {};
     let userConfig = {};
     try {
-      projectConfig = Config.detect(); // This throws
+      projectConfig = Config.detect().db; // This throws
+
       const UserConfig: { get: (key: string) => {} } = Config.getUserConfig();
       userConfig = UserConfig.get("db");
+      truffleConfig = { ...userConfig, ...projectConfig };
     } catch (e) {
       // debug log this but package has default values.
     }
-
-    truffleConfig = { ...userConfig, ...projectConfig };
 
     return truffleConfig;
   }
 
   static get DEFAULTS(): TruffleDBConfig {
     return {
-      projectName: "default",
+      projectName: path.basename(path.resolve()),
       databaseName: "truffledb",
-      databaseEngine: "memory",
+      databaseEngine: "leveldown",
       databaseDirectory: "./db",
       modelDirectories: []
     };
