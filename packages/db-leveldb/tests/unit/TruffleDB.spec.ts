@@ -8,6 +8,7 @@ describe("TruffleDB", () => {
   const tmpDirectory: string = os.tmpdir();
 
   let testConfig = {
+    projectName: "default",
     databaseName: "testproject",
     databaseEngine: "memory",
     databaseDirectory: tmpDirectory,

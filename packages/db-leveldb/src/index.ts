@@ -2,6 +2,7 @@ import { Storage } from "./storage";
 import Config from "@truffle/config";
 
 export type TruffleDBConfig = {
+  projectName?: string;
   databaseName?: string;
   databaseEngine?: string;
   databaseDirectory?: string;
@@ -9,7 +10,7 @@ export type TruffleDBConfig = {
 };
 
 export type ModelLookup = {
-  [model: string]: { levelDB: { close: Function } };
+  [model: string]: { get: Function };
 };
 
 export class TruffleDB {
@@ -43,6 +44,10 @@ export class TruffleDB {
     await this.levelDB.close();
   }
 
+  async getProject(name = this.config.projectName) {
+    return await this.models.Project.get(name);
+  }
+
   getTruffleConfig() {
     let truffleConfig = {};
     let projectConfig = {};
@@ -62,6 +67,7 @@ export class TruffleDB {
 
   static get DEFAULTS(): TruffleDBConfig {
     return {
+      projectName: "default",
       databaseName: "truffledb",
       databaseEngine: "memory",
       databaseDirectory: "./db",

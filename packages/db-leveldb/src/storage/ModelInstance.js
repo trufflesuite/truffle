@@ -18,6 +18,12 @@ module.exports = class ModelInstance {
     if (this.#didInit)
       throw new Error("init has already been called for Model");
 
+    this.defineModel();
+
+    this.#didInit = true;
+  }
+
+  defineModel() {
     Object.keys(this).forEach(property => {
       this.#modelProperties.push(property);
 
@@ -38,8 +44,6 @@ module.exports = class ModelInstance {
         if (required) this.#requiredFields[property] = true;
       }
     });
-
-    this.#didInit = true;
   }
 
   hydrate(data) {

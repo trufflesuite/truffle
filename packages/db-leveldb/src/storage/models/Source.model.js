@@ -17,7 +17,9 @@ class Source extends Model {
   }
 
   generateID() {
-    return soliditySha3(this.sourcePath + this.contents);
+    return soliditySha3(
+      JSON.stringify(this.sourcePath) + JSON.stringify(this.contents)
+    );
   }
 }
 
