@@ -139,12 +139,90 @@ contract AdjustTest {
 }
 `;
 
+const __COMPLEX_CALLS = `
+pragma solidity ^0.8.0;
+
+enum Color { Red, Green, Blue }
+
+contract DepthTest {
+
+  Secondary secondary;
+
+  function run() public {
+    secondary.doStuff();
+    DepthLibrary.doStuff(Color.Red, secondary);
+  }
+
+  constructor(Secondary it) {
+    secondary = it;
+    secondary.doStuff();
+    DepthLibrary.doStuff(Color.Green, secondary);
+  }
+
+  fallback() external {
+    secondary.doStuff();
+    DepthLibrary.doStuff(Color.Blue, secondary);
+  }
+}
+
+contract Secondary {
+
+  event Here();
+
+  function doStuff() public {
+    this.doMoreStuff();
+  }
+
+  function doMoreStuff() public {
+    emit Here();
+  }
+}
+
+library DepthLibrary {
+  event Show(Color);
+
+  function doStuff(Color color, Secondary secondary) external {
+    secondary.doMoreStuff();
+    emit Show(color);
+  }
+}
+`;
+
+const __MIGRATION = `
+const SingleCall = artifacts.require("SingleCall");
+const NestedCall = artifacts.require("NestedCall");
+const RevertTest = artifacts.require("RevertTest");
+const BadTransferTest = artifacts.require("BadTransferTest");
+const AdjustTest = artifacts.require("AdjustTest");
+const DepthTest = artifacts.require("DepthTest");
+const DepthLibrary = artifacts.require("DepthLibrary");
+const Secondary = artifacts.require("Secondary");
+
+module.exports = async function(deployer) {
+  await deployer.deploy(SingleCall);
+  await deployer.deploy(NestedCall);
+  await deployer.deploy(RevertTest);
+  await deployer.deploy(BadTransferTest);
+  await deployer.deploy(AdjustTest);
+  await deployer.deploy(DepthLibrary);
+  await deployer.link(DepthLibrary, DepthTest);
+  await deployer.deploy(Secondary);
+  const secondary = await Secondary.deployed();
+  await deployer.deploy(DepthTest, secondary.address);
+};
+`;
+
+let migrations = {
+  "2_deploy_contracts.js": __MIGRATION
+};
+
 let sources = {
   "SingleCall.sol": __SINGLE_CALL,
   "NestedCall.sol": __NESTED_CALL,
   "FailedCall.sol": __FAILED_CALL,
   "AdjustTest.sol": __ADJUSTMENT,
-  "BadTransfer.sol": __OVER_TRANSFER
+  "BadTransfer.sol": __OVER_TRANSFER,
+  "DepthTest.sol": __COMPLEX_CALLS
 };
 
 describe("Solidity Debugging", function () {
@@ -168,7 +246,7 @@ describe("Solidity Debugging", function () {
   before("Prepare contracts and artifacts", async function () {
     this.timeout(30000);
 
-    let prepared = await prepareContracts(provider, sources);
+    let prepared = await prepareContracts(provider, sources, migrations);
     abstractions = prepared.abstractions;
     compilations = prepared.compilations;
   });
@@ -275,30 +353,25 @@ describe("Solidity Debugging", function () {
 
   describe("Function Depth", function () {
     it("remains at 0 in absence of inner function calls", async function () {
-      const maxExpected = 0;
+      const instance = await abstractions.SingleCall.deployed();
+      const receipt = await instance.run(1);
+      const txHash = receipt.tx;
 
-      let instance = await abstractions.SingleCall.deployed();
-      let receipt = await instance.run(1);
-      let txHash = receipt.tx;
-
-      let bugger = await Debugger.forTx(txHash, {
+      const bugger = await Debugger.forTx(txHash, {
         provider,
         compilations,
         lightMode: true
       });
 
-      var finished;
-
       do {
         await bugger.stepNext();
         //note that we use stepNext, which skips internal sources...
         //it may go above 0 while inside an internal source
-        finished = bugger.view(trace.finished);
 
-        let actual = bugger.view(solidity.current.functionDepth);
+        const depth = bugger.view(solidity.current.functionDepth);
 
-        assert.isAtMost(actual, maxExpected);
-      } while (!finished);
+        assert.equal(depth, 0);
+      } while (!bugger.view(trace.finished));
     });
 
     it("is unaffected by precompiles", async function () {
@@ -419,6 +492,90 @@ describe("Solidity Debugging", function () {
       let depthAfter = bugger.view(solidity.current.functionDepth);
 
       assert.equal(depthAfter, depthBefore);
+    });
+
+    it("counts each external call for 1, not 0 or 2", async function () {
+      const instance = await abstractions.DepthTest.deployed();
+      const receipt = await instance.run();
+      const txHash = receipt.tx;
+
+      const bugger = await Debugger.forTx(txHash, {
+        provider,
+        compilations,
+        lightMode: true
+      });
+
+      let hasReachedTwo = false;
+
+      do {
+        await bugger.stepNext();
+        //note that we use stepNext, which skips internal sources...
+        //it may go above 2 while inside an internal source
+
+        const depth = bugger.view(solidity.current.functionDepth);
+
+        assert.isAtMost(depth, 2);
+        if (depth === 2) {
+          hasReachedTwo = true;
+        }
+      } while (!bugger.view(trace.finished));
+      assert(hasReachedTwo);
+    });
+
+    it("counts each external call for 1 in fallback", async function () {
+      const instance = await abstractions.DepthTest.deployed();
+      const receipt = await instance.sendTransaction({ data: "0xdeadbeef" });
+      const txHash = receipt.tx;
+
+      const bugger = await Debugger.forTx(txHash, {
+        provider,
+        compilations,
+        lightMode: true
+      });
+
+      let hasReachedTwo = false;
+
+      do {
+        await bugger.stepNext();
+        //note that we use stepNext, which skips internal sources...
+        //it may go above 2 while inside an internal source
+
+        const depth = bugger.view(solidity.current.functionDepth);
+
+        assert.isAtMost(depth, 2);
+        if (depth === 2) {
+          hasReachedTwo = true;
+        }
+      } while (!bugger.view(trace.finished));
+      assert(hasReachedTwo);
+    });
+
+    it("counts each external call for 1 in constructor", async function () {
+      const secondary = await abstractions.Secondary.deployed();
+      const instance = await abstractions.DepthTest.new(secondary.address);
+      const txHash = instance.transactionHash;
+
+      const bugger = await Debugger.forTx(txHash, {
+        provider,
+        compilations,
+        lightMode: true
+      });
+
+      let hasReachedTwo = false;
+
+      do {
+        await bugger.stepNext();
+        //note that we use stepNext, which skips internal sources...
+        //it may go above 2 while inside an internal source
+
+        const depth = bugger.view(solidity.current.functionDepth);
+
+        assert.isAtMost(depth, 2);
+        if (depth === 2) {
+          hasReachedTwo = true;
+        }
+      } while (!bugger.view(trace.finished));
+      assert(hasReachedTwo);
     });
   });
 });

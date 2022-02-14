@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("debugger:evm:selectors"); // eslint-disable-line no-unused-vars
+const debug = debugModule("debugger:evm:selectors");
 
 import { createSelectorTree, createLeaf } from "reselect-tree";
 import BN from "bn.js";
@@ -252,10 +252,13 @@ function createStepSelectors(step, state = null) {
        * data passed to EVM call
        */
       callData: createLeaf(
-        ["./isCall", "./isShortCall", state],
-        (isCall, short, { stack, memory }) => {
+        ["./isCall", "./isShortCall", "./isCreate", state],
+        (isCall, short, isCreate, { stack, memory }) => {
           if (!isCall) {
-            return null;
+            //if it's not a call or create, this is invalid and we return null.
+            //for creations, we return 0x (if you want the binary, use createBinary
+            //instead)
+            return isCreate ? "0x" : null;
           }
 
           //if it's 6-argument call, the data start and offset will be one spot
