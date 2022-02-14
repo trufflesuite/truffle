@@ -5,6 +5,15 @@ const getInstalledPath: any = require("get-installed-path");
 
 import type { ResolverSource } from "../source";
 
+const getGlobalPackagePath = (packageName: string): string => {
+  const suffix = `${path.sep}${packageName}`;
+
+  let globalPackagePath = getInstalledPath.getInstalledPath(packageName);
+
+  return globalPackagePath.endWith(suffix)
+    ? globalPackagePath.slice(0, globalPackagePath.length - suffix.length)
+    : globalPackagePath;
+};
 export class GlobalNPM implements ResolverSource {
   require(importPath: string) {
     if (importPath.indexOf(".") === 0 || path.isAbsolute(importPath)) {
@@ -14,13 +23,8 @@ export class GlobalNPM implements ResolverSource {
 
     let [packageName] = importPath.split("/", 1);
     if (detectInstalled.sync(packageName)) {
-      const regex = new RegExp(`/${packageName}$`);
-      const globalPackagePath = getInstalledPath
-        .getInstalledPathSync(packageName)
-        .replace(regex, "");
-
       const result = this.resolveAndParse(
-        globalPackagePath,
+        getGlobalPackagePath(packageName),
         packageName,
         contractName
       );
@@ -44,7 +48,7 @@ export class GlobalNPM implements ResolverSource {
       try {
         const result = fs.readFileSync(possiblePath, "utf8");
         return JSON.parse(result);
-      } catch (e) {
+      } catch {
         continue;
       }
     }
@@ -55,11 +59,10 @@ export class GlobalNPM implements ResolverSource {
     let [packageName] = importPath.split("/", 1);
     let body;
     if (detectInstalled.sync(packageName)) {
-      const regex = new RegExp(`/${packageName}$`);
-      const globalPackagePath = getInstalledPath
-        .getInstalledPathSync(packageName)
-        .replace(regex, "");
-      const expectedPath = path.join(globalPackagePath, importPath);
+      const expectedPath = path.join(
+        getGlobalPackagePath(packageName),
+        importPath
+      );
       try {
         body = fs.readFileSync(expectedPath, { encoding: "utf8" });
       } catch (err) {}

@@ -13,15 +13,14 @@ export interface UpdatedOptions {
 
 export async function updated({
   paths,
-  contractsBuildDirectory,
+  contractsBuildDirectory
 }: UpdatedOptions): Promise<string[]> {
   const sourceFilesArtifacts = readAndParseArtifactFiles(
     paths,
     contractsBuildDirectory
   );
-  const sourceFilesArtifactsUpdatedTimes = minimumUpdatedTimePerSource(
-    sourceFilesArtifacts
-  );
+  const sourceFilesArtifactsUpdatedTimes =
+    minimumUpdatedTimePerSource(sourceFilesArtifacts);
   return findUpdatedFiles(
     sourceFilesArtifacts,
     sourceFilesArtifactsUpdatedTimes
@@ -36,31 +35,25 @@ interface SourceFilesArtifactsUpdatedTimes {
   [filePath: string]: number; // ms since epoch
 }
 
+const getKeyFromPath = (fsPath: string): string =>
+  fsPath.split(path.sep).join("/");
+
 function readAndParseArtifactFiles(
   paths: string[],
   contracts_build_directory: string
 ): SourceFilesArtifacts {
   const sourceFilesArtifacts: SourceFilesArtifacts = {};
   // Get all the source files and create an object out of them.
-  paths.forEach((sourceFile) => {
-    sourceFilesArtifacts[sourceFile] = [];
+  paths.forEach(sourceFile => {
+    sourceFilesArtifacts[getKeyFromPath(sourceFile)] = [];
   });
   // Get all the artifact files, and read them, parsing them as JSON
-  let buildFiles: string[];
-  try {
-    buildFiles = fs.readdirSync(contracts_build_directory);
-  } catch (error) {
-    // The build directory may not always exist.
-    if (error.message.includes("ENOENT: no such file or directory")) {
-      // Ignore it.
-      buildFiles = [];
-    } else {
-      throw error;
-    }
-  }
+  let buildFiles: string[] = fs.existsSync(contracts_build_directory)
+    ? fs.readdirSync(contracts_build_directory)
+    : [];
 
-  buildFiles = buildFiles.filter((file) => path.extname(file) === ".json");
-  const jsonData = buildFiles.map((file) => {
+  buildFiles = buildFiles.filter(file => path.extname(file) === ".json");
+  const jsonData = buildFiles.map(file => {
     const body = fs.readFileSync(
       path.join(contracts_build_directory, file),
       "utf8"
@@ -71,13 +64,13 @@ function readAndParseArtifactFiles(
   for (let i = 0; i < jsonData.length; i++) {
     try {
       const data: ContractObject = JSON.parse(jsonData[i].body);
-
+      const key = getKeyFromPath(data.sourcePath);
       // In case there are artifacts from other source locations.
-      if (sourceFilesArtifacts[data.sourcePath] == null) {
-        sourceFilesArtifacts[data.sourcePath] = [];
+      if (sourceFilesArtifacts[key] == null) {
+        sourceFilesArtifacts[key] = [];
       }
 
-      sourceFilesArtifacts[data.sourcePath].push(data);
+      sourceFilesArtifacts[key].push(data);
     } catch (error) {
       // JSON.parse throws SyntaxError objects
       if (error instanceof SyntaxError) {
@@ -99,7 +92,7 @@ function findUpdatedFiles(
   const sourceFiles = Object.keys(sourceFilesArtifacts);
 
   let sourceFileStats: (fs.Stats | null)[];
-  sourceFileStats = sourceFiles.map((file) => {
+  sourceFileStats = sourceFiles.map(file => {
     try {
       return fs.statSync(file);
     } catch (error) {
@@ -110,22 +103,20 @@ function findUpdatedFiles(
     }
   });
 
-  return sourceFiles
-    .map((sourceFile, index) => {
-      const sourceFileStat = sourceFileStats[index];
+  return sourceFiles.filter((sourceFile, index) => {
+    const sourceFileStat = sourceFileStats[index];
 
-      // Ignore updating artifacts if source file has been removed.
-      if (sourceFileStat == null) return;
+    // Ignore updating artifacts if source file has been removed.
+    if (sourceFileStat == null) return;
 
-      const artifactsUpdatedTime =
-        sourceFilesArtifactsUpdatedTimes[sourceFile] || 0;
-      const sourceFileUpdatedTime = (
-        sourceFileStat.mtime || sourceFileStat.ctime
-      ).getTime();
+    const artifactsUpdatedTime =
+      sourceFilesArtifactsUpdatedTimes[sourceFile] || 0;
+    const sourceFileUpdatedTime = (
+      sourceFileStat.mtime || sourceFileStat.ctime
+    ).getTime();
 
-      if (sourceFileUpdatedTime > artifactsUpdatedTime) return sourceFile;
-    })
-    .filter((file) => file);
+    return sourceFileUpdatedTime > artifactsUpdatedTime;
+  });
 }
 
 function minimumUpdatedTimePerSource(
@@ -137,24 +128,17 @@ function minimumUpdatedTimePerSource(
   for (const sourceFile of Object.keys(sourceFilesArtifacts)) {
     const artifacts = sourceFilesArtifacts[sourceFile];
 
-    sourceFilesArtifactsUpdatedTimes[sourceFile] = artifacts.reduce(
-      (minimum, current) => {
-        const updatedAt = new Date(current.updatedAt).getTime();
+    let minTime = artifacts.reduce((minimum, current) => {
+      const updatedAt = new Date(current.updatedAt).getTime();
 
-        if (updatedAt < minimum) {
-          return updatedAt;
-        }
-        return minimum;
-      },
-      Number.MAX_SAFE_INTEGER
-    );
+      return updatedAt < minimum ? updatedAt : minimum;
+    }, Number.MAX_SAFE_INTEGER);
 
-    // Empty array?
-    if (
-      sourceFilesArtifactsUpdatedTimes[sourceFile] === Number.MAX_SAFE_INTEGER
-    ) {
-      sourceFilesArtifactsUpdatedTimes[sourceFile] = 0;
+    // Empty artifacts array?
+    if (minTime === Number.MAX_SAFE_INTEGER) {
+      minTime = 0;
     }
+    sourceFilesArtifactsUpdatedTimes[sourceFile] = minTime;
   }
   return sourceFilesArtifactsUpdatedTimes;
 }
