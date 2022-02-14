@@ -78,6 +78,7 @@ export interface SolcSettings {
 
 export interface VyperSettings {
   evmVersion?: string; //not gonna enumerate these
+  optimize?: boolean; //warning: defaults to true if not specified! not currently supported by Etherscan
 }
 
 export interface SolcSpecializations {

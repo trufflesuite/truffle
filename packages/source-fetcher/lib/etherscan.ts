@@ -360,6 +360,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
   ): Types.VyperSettings {
     const evmVersion: string =
       result.EVMVersion === "Default" ? undefined : result.EVMVersion;
+    //the optimize flag is not currently supported by etherscan
     if (evmVersion !== undefined) {
       return { evmVersion };
     } else {
