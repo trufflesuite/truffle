@@ -1,5 +1,16 @@
 {
   "name": "@truffle/dashboard",
+  "license": "MIT",
+  "author": "Rosco Kalis <roscokalis@gmail.com>",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/dashboard#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/dashboard"
+  },
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
   "version": "0.1.0",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
