@@ -30,7 +30,6 @@
     "bignumber.js": "^7.2.1",
     "debug": "^4.3.1",
     "ethers": "^4.0.32",
-    "vm-browserify": "^1.1.2",
     "web3": "1.7.4",
     "web3-core-helpers": "1.7.4",
     "web3-core-promievent": "1.7.4",
