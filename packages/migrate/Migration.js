@@ -114,11 +114,7 @@ class Migration {
       let artifacts = resolver
         .contracts()
         .map(abstraction => abstraction._json);
-      if (
-        this.config.db &&
-        this.config.db.enabled &&
-        artifacts.length > 0
-      ) {
+      if (this.config.db && this.config.db.enabled && artifacts.length > 0) {
         // currently if Truffle Db fails to load, getTruffleDb returns `null`
         const Db = getTruffleDb();
 
@@ -185,12 +181,8 @@ class Migration {
    * @param  {Object}   options  config and command-line
    */
   async run(options) {
-    const {
-      interfaceAdapter,
-      resolver,
-      context,
-      deployer
-    } = this.prepareForMigrations(options);
+    const { interfaceAdapter, resolver, context, deployer } =
+      this.prepareForMigrations(options);
 
     // Connect reporter to this migration
     if (this.reporter) {

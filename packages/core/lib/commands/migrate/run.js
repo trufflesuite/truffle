@@ -2,7 +2,6 @@ module.exports = async function (options) {
   const Artifactor = require("@truffle/artifactor");
   const Resolver = require("@truffle/resolver");
   const Migrate = require("@truffle/migrate");
-  const WorkflowCompile = require("@truffle/workflow-compile");
   const { Environment } = require("@truffle/environment");
   const Config = require("@truffle/config");
   const { promisify } = require("util");
@@ -17,8 +16,6 @@ module.exports = async function (options) {
     conf.compiler = "none";
   }
 
-  const result = await WorkflowCompile.compileAndSave(conf);
-  await WorkflowCompile.assignNames(conf, result);
   await Environment.detect(conf);
 
   const { dryRunOnly, dryRunAndMigrations } = determineDryRunSettings(

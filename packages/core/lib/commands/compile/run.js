@@ -36,9 +36,7 @@ module.exports = async function (options) {
   }
 
   const result = await WorkflowCompile.save(config, compilationOutput);
-  if (config.db && config.db.enabled) {
-    await WorkflowCompile.assignNames(config, result);
-  }
+
   return result;
 };
 
