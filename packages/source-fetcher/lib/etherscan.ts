@@ -360,6 +360,12 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
   ): Types.VyperSettings {
     const evmVersion: string =
       result.EVMVersion === "Default" ? undefined : result.EVMVersion;
+    //the optimize flag is not currently supported by etherscan;
+    //any Vyper contract currently verified on etherscan necessarily has
+    //optimize flag left unspecified (and therefore effectively true).
+    //do NOT look at OptimizationUsed for Vyper contracts; it will always
+    //be "0" even though in fact optimization *was* used.  just leave
+    //the optimize flag unspecified.
     if (evmVersion !== undefined) {
       return { evmVersion };
     } else {
