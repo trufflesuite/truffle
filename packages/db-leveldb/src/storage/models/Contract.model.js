@@ -1,9 +1,25 @@
 const Model = require("../Model");
 
 class Contract extends Model {
-  name;
-  abi;
-  compilation;
+  contractName = {
+    defaultValue: ""
+  };
+  abi = {
+    defaultValue: []
+  };
+
+  metadata;
+  devdoc;
+  userdoc;
+  sourcePath;
+  source;
+  sourceMap;
+  ast;
+  legacyAST;
+  bytecode;
+  deployedBytecode;
+  compiler;
+
   processedSource;
   createBytecode;
   callBytecode;

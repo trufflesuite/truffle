@@ -72,7 +72,9 @@ module.exports = class ModelInstance {
     this.checkRequiredFields();
 
     await this.saveHistoricalVersion();
+
     await this.#db.put(key, this);
+
     await this.afterSave();
   }
 
