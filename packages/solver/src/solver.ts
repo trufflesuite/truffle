@@ -31,7 +31,7 @@ export const Solver = {
   },
   // put together a list of contracts that need to be deployed, with relevant information for the deployment
   orchestrate: async function (filepath: string): Promise<DeploymentSteps> {
-    let declarations: any = await this.read(filepath);
+    let declarations: Array<any> = await this.read(filepath);
     let deploymentSteps: DeploymentSteps = [];
     let dependencies: Array<any> = [];
 

@@ -8,11 +8,9 @@ const expectedDeclarationTargets = [
   {
     contractName: "SafeMathLib",
     network: "ethereum",
-    action: "deploy",
+    // action: "deploy",
     dependencies: [],
-    isCompleted: () => {
-      return false;
-    },
+    isCompleted: false,
     run: (network, contractName, deployer, artifacts) => {
       artifacts.require(contractName);
       deployer.deploy(contractName);
@@ -23,9 +21,7 @@ const expectedDeclarationTargets = [
     network: "ethereum",
     action: "link",
     dependencies: ["SafeMathLib"],
-    isCompleted: () => {
-      return false;
-    },
+    isCompleted: false,
     run: (network, link, contractName, deployer, artifacts) => {
       artifacts.require(link);
       artifacts.require(contractName);
@@ -37,9 +33,7 @@ const expectedDeclarationTargets = [
     network: "ethereum",
     action: "deploy",
     dependencies: [],
-    isCompleted: () => {
-      return false;
-    },
+    isCompleted: false,
     run: (network, contractName, deployer, artifacts) => {
       artifacts.require(contractName);
       deployer.deploy(contractName);
@@ -50,9 +44,7 @@ const expectedDeclarationTargets = [
     network: "arbitrum",
     action: "deploy",
     dependencies: [],
-    isCompleted: () => {
-      return false;
-    },
+    isCompleted: false,
     run: (network, contractName, deployer, artifacts) => {
       artifacts.require(contractName);
       deployer.deploy(contractName);
@@ -79,11 +71,12 @@ describe("Solver", () => {
     expect(yamlDeclarations.deployed).toBeDefined;
   });
   test("reads a json file", () => {
-    console.log("json here " + JSON.stringify(jsonDeclarations));
-    console.log("deployed " + JSON.stringify(jsonDeclarations.deployed));
     expect(jsonDeclarations).toBeDefined;
     // readFile returns the json file read as an array? @TODO look into this
     expect(jsonDeclarations[0].deployed).toBeDefined();
+  });
+  test("returns same data regardless of file extension", () => {
+    expect(yamlDeclarations).toEqual(jsonDeclarations);
   });
   test("sorts the yaml file into a set of deployment steps", () => {
     //the file should be turned into an ordered list of truffle commands
