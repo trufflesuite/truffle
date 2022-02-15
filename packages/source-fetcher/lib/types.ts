@@ -78,7 +78,9 @@ export interface SolcSettings {
 
 export interface VyperSettings {
   evmVersion?: string; //not gonna enumerate these
-  optimize?: boolean; //warning: defaults to true if not specified! not currently supported by Etherscan
+  optimize?: boolean; //warning: the Vyper compiler treats this as true if it's not specified!
+  //also Etherscan currently doesn't support this flag; any Vyper contract currently
+  //verified on Etherscan necessarily has this field unspecified (and thus effectively true)
 }
 
 export interface SolcSpecializations {
