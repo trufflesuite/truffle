@@ -3,7 +3,6 @@ const Suite = require("mocha/lib/suite.js");
 const Deployer = require("@truffle/deployer");
 const { Compile } = require("@truffle/compile-solidity");
 const { Shims } = require("@truffle/compile-common");
-const RangeUtils = require("@truffle/compile-solidity/dist/compilerSupplier/rangeUtils");
 const debug = require("debug")("lib:testing:soliditytest");
 
 const SolidityTest = {
@@ -107,8 +106,6 @@ const SolidityTest = {
   async compileNewAbstractInterface(runner) {
     debug("compiling");
     const config = runner.config;
-    let solcVersion = config.compilers.solc.version;
-    solcVersion = RangeUtils.resolveToRange(solcVersion);
 
     const truffleLibraries = [
       "truffle/Assert.sol",

@@ -137,6 +137,9 @@ export function* decodeReturnValue() {
   const status = yield select(data.current.returnStatus); //may be undefined
   const returnAllocation = yield select(data.current.returnAllocation); //may be null
   const errorId = yield select(data.current.errorId);
+  const internalFunctionsTable = yield select(
+    data.current.functionsByProgramCounter
+  );
   debug("returnAllocation: %O", returnAllocation);
 
   const decoder = Codec.decodeReturndata(
@@ -145,7 +148,8 @@ export function* decodeReturnValue() {
       state,
       allocations,
       contexts,
-      currentContext
+      currentContext,
+      internalFunctionsTable
     },
     returnAllocation,
     status,
@@ -533,14 +537,16 @@ function* variablesAndMappingsSaga() {
       }
       //one more: add in the fallback input assignment here
       const fallbackDefinition = node.nodes.find(
-        subNode => subNode.nodeType === "FunctionDefinition" &&
+        subNode =>
+          subNode.nodeType === "FunctionDefinition" &&
           Codec.Ast.Utils.functionKind(subNode) === "fallback"
       );
       if (fallbackDefinition) {
-        const fallbackInputDefinition = fallbackDefinition.parameters.parameters[0]; //may be undefined
+        const fallbackInputDefinition =
+          fallbackDefinition.parameters.parameters[0]; //may be undefined
         if (fallbackInputDefinition) {
           const base = yield select(data.current.fallbackBase);
-          const ref = { 
+          const ref = {
             location: "stack",
             from: base,
             to: base + Codec.Ast.Utils.stackSize(fallbackInputDefinition) - 1
@@ -554,8 +560,7 @@ function* variablesAndMappingsSaga() {
             stackframe: currentDepth, //note the lack of a jump into fallbacks
             modifierDepth: null //it's a function body variable
           };
-          const assignment =
-            makeAssignment(idObj, ref);
+          const assignment = makeAssignment(idObj, ref);
           assignments[assignment.id] = assignment;
         }
       }
@@ -1120,18 +1125,17 @@ export function* reset() {
 export function* recordAllocations() {
   const contracts = yield select(data.views.contractAllocationInfo);
   const referenceDeclarations = yield select(data.views.referenceDeclarations);
-  const userDefinedTypesByCompilation =
-    yield select(data.views.userDefinedTypesByCompilation);
+  const userDefinedTypesByCompilation = yield select(
+    data.views.userDefinedTypesByCompilation
+  );
   const userDefinedTypes = yield select(data.views.userDefinedTypes);
   const storageAllocations = Codec.Storage.Allocate.getStorageAllocations(
     userDefinedTypesByCompilation
   );
-  const memoryAllocations = Codec.Memory.Allocate.getMemoryAllocations(
-    userDefinedTypes
-  );
-  const abiAllocations = Codec.AbiData.Allocate.getAbiAllocations(
-    userDefinedTypes
-  );
+  const memoryAllocations =
+    Codec.Memory.Allocate.getMemoryAllocations(userDefinedTypes);
+  const abiAllocations =
+    Codec.AbiData.Allocate.getAbiAllocations(userDefinedTypes);
   const calldataAllocations = Codec.AbiData.Allocate.getCalldataAllocations(
     contracts,
     referenceDeclarations,

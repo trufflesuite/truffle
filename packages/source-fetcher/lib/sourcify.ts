@@ -3,7 +3,8 @@ const debug = debugModule("source-fetcher:sourcify");
 
 import type { Fetcher, FetcherConstructor } from "./types";
 import type * as Types from "./types";
-import { networksById, removeLibraries, InvalidNetworkError } from "./common";
+import { removeLibraries, InvalidNetworkError } from "./common";
+import { networkNamesById, networksByName } from "./networks";
 import axios from "axios";
 import retry from "async-retry";
 
@@ -11,11 +12,11 @@ import retry from "async-retry";
 const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
   implements Fetcher
 {
-  get fetcherName(): string {
-    return "sourcify";
-  }
   static get fetcherName(): string {
     return "sourcify";
+  }
+  get fetcherName(): string {
+    return SourcifyFetcher.fetcherName;
   }
 
   static async forNetworkId(
@@ -33,22 +34,60 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
 
   private readonly domain: string = "repo.sourcify.dev";
 
+  private static readonly supportedNetworks = new Set([
+    "mainnet",
+    "ropsten",
+    "kovan",
+    "rinkeby",
+    "goerli",
+    "kovan",
+    "optimistic",
+    "kovan-optimistic",
+    "arbitrum",
+    "rinkeby-arbitrum",
+    "polygon",
+    "mumbai-polygon",
+    "xdai",
+    "sokol",
+    "binance",
+    "testnet-binance",
+    "celo",
+    "alfajores-celo",
+    "baklava-celo",
+    //again, we don't support avalanche, even though sourcify does
+    "telos",
+    "testnet-telos",
+    "ubiq",
+    //sourcify does *not* support oneledger mainnet...?
+    "frankenstein-oneledger",
+    "syscoin",
+    "tanenbaum-syscoin",
+    "boba",
+    "rinkeby-boba",
+    "velas",
+    "meter",
+    "testnet-meter",
+    "aurora",
+    "testnet-aurora"
+  ]);
+
   constructor(networkId: number) {
     this.networkId = networkId;
-    this.networkName = networksById[networkId];
-    const supportedNetworks = [
-      "mainnet",
-      "ropsten",
-      "kovan",
-      "rinkeby",
-      "goerli"
-    ];
+    this.networkName = networkNamesById[networkId];
     if (
       this.networkName === undefined ||
-      !supportedNetworks.includes(this.networkName)
+      !SourcifyFetcher.supportedNetworks.has(this.networkName)
     ) {
       throw new InvalidNetworkError(networkId, "sourcify");
     }
+  }
+
+  static getSupportedNetworks(): Types.SupportedNetworks {
+    return Object.fromEntries(
+      Object.entries(networksByName).filter(([name, _]) =>
+        SourcifyFetcher.supportedNetworks.has(name)
+      )
+    );
   }
 
   async fetchSourcesForAddress(

@@ -3,9 +3,9 @@ const path = require("path");
 const glob = require("glob");
 const expect = require("@truffle/expect");
 const Config = require("@truffle/config");
-const Reporter = require("@truffle/reporters").migrationsV5;
 const Migration = require("./Migration");
-const Emittery = require("emittery");
+const emitEvent = require("./emitEvent");
+const inquirer = require("inquirer");
 
 /**
  *  This API is consumed by `@truffle/core` at the `migrate` and `test` commands via
@@ -13,17 +13,24 @@ const Emittery = require("emittery");
  */
 const Migrate = {
   Migration: Migration,
-  reporter: null,
-  emitter: new Emittery(),
   logger: null,
 
-  launchReporter: function (config) {
-    Migrate.reporter = new Reporter(config.describeJson || false);
-    this.logger = config.logger;
-  },
+  promptToAcceptDryRun: async function (options) {
+    const prompt = [
+      {
+        type: "confirm",
+        name: "proceed",
+        message: `Dry-run successful. Do you want to proceed with real deployment?  >> (y/n): `,
+        default: false
+      }
+    ];
 
-  acceptDryRun: async function () {
-    return Migrate.reporter.acceptDryRun();
+    const answer = await inquirer.prompt(prompt);
+    if (answer.proceed) {
+      return true;
+    }
+    await emitEvent(options, "migrate:dryRun:notAccepted");
+    return false;
   },
 
   assemble: function (options) {
@@ -48,7 +55,7 @@ const Migrate = {
           path.extname(file).match(config.migrations_file_extension_regexp) !=
           null
       )
-      .map(file => new Migration(file, Migrate.reporter, config));
+      .map(file => new Migration(file, config));
 
     // Make sure to sort the prefixes as numbers and not strings.
     migrations = migrations.sort((a, b) => {
@@ -72,7 +79,7 @@ const Migrate = {
         "network",
         "network_id",
         "logger",
-        "from", // address doing deployment
+        "from" // address doing deployment
       ]);
 
       if (options.reset === true) {
@@ -133,14 +140,9 @@ const Migrate = {
       migrations[total - 1].isLast = true;
     }
 
-    if (this.reporter) {
-      this.reporter.setMigrator(this);
-      this.reporter.listenMigrator();
-    }
-
-    await this.emitter.emit("preAllMigrations", {
-      dryRun: options.dryRun,
+    await emitEvent(options, "migrate:runMigrations:start", {
       migrations,
+      dryRun: options.dryRun
     });
 
     try {
@@ -149,15 +151,16 @@ const Migrate = {
       for (const migration of migrations) {
         await migration.run(clone);
       }
-      await this.emitter.emit("postAllMigrations", {
+
+      await emitEvent(options, "migrate:runMigrations:finish", {
         dryRun: options.dryRun,
-        error: null,
+        error: null
       });
       return;
     } catch (error) {
-      await this.emitter.emit("postAllMigrations", {
+      await emitEvent(options, "migrate:runMigrations:finish", {
         dryRun: options.dryRun,
-        error: error.toString(),
+        error: error.toString()
       });
       throw error;
     } finally {
@@ -173,7 +176,7 @@ const Migrate = {
         abstraction.setProvider(provider);
         return abstraction;
       },
-      resolve: resolver.resolve,
+      resolve: resolver.resolve
     };
   },
 
@@ -234,7 +237,7 @@ const Migrate = {
         })
         .catch(error => reject(error));
     });
-  },
+  }
 };
 
 module.exports = Migrate;

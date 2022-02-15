@@ -6,12 +6,12 @@ const Web3Utils = require("web3-utils");
 import type { Fetcher, FetcherConstructor } from "./types";
 import type * as Types from "./types";
 import {
-  networksById,
   makeFilename,
   makeTimer,
   removeLibraries,
   InvalidNetworkError
 } from "./common";
+import { networkNamesById, networksByName } from "./networks";
 import axios from "axios";
 import retry from "async-retry";
 
@@ -25,11 +25,11 @@ const etherscanCommentHeader = `/**
 const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
   implements Fetcher
 {
-  get fetcherName(): string {
-    return "etherscan";
-  }
   static get fetcherName(): string {
     return "etherscan";
+  }
+  get fetcherName(): string {
+    return EtherscanFetcher.fetcherName;
   }
 
   static async forNetworkId(
@@ -41,26 +41,44 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
     return new EtherscanFetcher(id, options ? options.apiKey : "");
   }
 
+  private readonly networkName: string;
+
   private readonly apiKey: string;
   private readonly delay: number; //minimum # of ms to wait between requests
 
   private ready: Promise<void>; //always await this timer before making a request.
   //then, afterwards, start a new timer.
 
+  private static readonly supportedNetworks = new Set([
+    "mainnet",
+    "ropsten",
+    "kovan",
+    "rinkeby",
+    "goerli",
+    "optimistic",
+    "kovan-optimistic",
+    "arbitrum",
+    "rinkeby-arbitrum",
+    "polygon",
+    "mumbai-polygon",
+    "binance",
+    "testnet-binance",
+    "fantom",
+    "testnet-fantom",
+    //we don't support avalanche, even though etherscan has snowtrace.io
+    "heco",
+    "testnet-heco",
+    "moonbeam",
+    "moonriver",
+    "moonbase-alpha"
+  ]);
+
   constructor(networkId: number, apiKey: string = "") {
-    const networkName = networksById[networkId];
-    const supportedNetworks = [
-      "mainnet",
-      "ropsten",
-      "kovan",
-      "rinkeby",
-      "goerli",
-      "optimistic",
-      "kovan-optimistic",
-      "arbitrum",
-      "polygon"
-    ];
-    if (networkName === undefined || !supportedNetworks.includes(networkName)) {
+    const networkName = networkNamesById[networkId];
+    if (
+      networkName === undefined ||
+      !EtherscanFetcher.supportedNetworks.has(networkName)
+    ) {
       throw new InvalidNetworkError(networkId, "etherscan");
     }
     this.networkName = networkName;
@@ -72,7 +90,13 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
     this.ready = makeTimer(0); //at start, it's ready to go immediately
   }
 
-  private readonly networkName: string;
+  static getSupportedNetworks(): Types.SupportedNetworks {
+    return Object.fromEntries(
+      Object.entries(networksByName).filter(([name, _]) =>
+        EtherscanFetcher.supportedNetworks.has(name)
+      )
+    );
+  }
 
   async fetchSourcesForAddress(
     address: string
@@ -92,17 +116,45 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
   }
 
   private determineUrl() {
-    switch (this.networkName) {
-      case "arbitrum":
-        return "https://api.arbiscan.io/api";
-      case "polygon":
-        return "https://api.polygonscan.com/api";
-      case "mainnet":
-        return "https://api.etherscan.io/api";
-      default:
-        return `https://api-${this.networkName}.etherscan.io/api`;
+    const scanners: { [network: string]: string } = {
+      //etherscan.io is treated separately
+      polygon: "polygonscan.com",
+      arbitrum: "arbiscan.io",
+      binance: "bscscan.com",
+      fantom: "ftmscan.com",
+      //we don't support avalanche's snowtrace.io
+      heco: "hecoinfo.com"
+      //moonscan.io is treated separately
+    };
+    const [part1, part2] = this.networkName.split("-");
+    if (part2 === undefined && this.networkName in scanners) {
+      //mainnet for one of the above scanners
+      return `https://api.${scanners[this.networkName]}/api`;
+    } else if (part2 in scanners) {
+      //a testnet for one of the above scanners;
+      //part1 is the testnet name, part2 is the broader mainnet name
+      let [testnet, network] = [part1, part2];
+      if (network === "arbitrum" && testnet === "rinkeby") {
+        //special case: arbitrum rinkeby is testnet.arbiscan.io,
+        //not rinkeby.arbiscan.io
+        //note: if we supported avalanche, it would have a similar special case
+        testnet = "testnet";
+      }
+      return `https://api-${testnet}.${scanners[network]}/api`;
+    } else if (part1.startsWith("moon")) {
+      //one of the moonbeam networks; here even the moonbeam mainnet
+      //gets a prefix (we use part1 to get moonbase, not moonbase-alpha)
+      const shortName = part1;
+      return `https://api-${shortName}.moonscan.io/api`;
+    } else if (this.networkName === "mainnet") {
+      //ethereum mainnet
+      return "https://api.etherscan.io/api";
+    } else {
+      //default case: an ethereum testnet, or an optimistic network (main or test)
+      return `https://api-${this.networkName}.etherscan.io/api`;
     }
   }
+
   private async makeRequest(address: string): Promise<EtherscanSuccess> {
     //not putting a try/catch around this; if it throws, we throw
     await this.ready;
@@ -308,6 +360,12 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
   ): Types.VyperSettings {
     const evmVersion: string =
       result.EVMVersion === "Default" ? undefined : result.EVMVersion;
+    //the optimize flag is not currently supported by etherscan;
+    //any Vyper contract currently verified on etherscan necessarily has
+    //optimize flag left unspecified (and therefore effectively true).
+    //do NOT look at OptimizationUsed for Vyper contracts; it will always
+    //be "0" even though in fact optimization *was* used.  just leave
+    //the optimize flag unspecified.
     if (evmVersion !== undefined) {
       return { evmVersion };
     } else {

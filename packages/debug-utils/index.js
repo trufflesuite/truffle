@@ -822,8 +822,6 @@ var DebugUtils = {
       tabsToSpaces: false, //we handle this ourself and don't
       //want chromafi's padding
       lineEndPad: false
-      //NOTE: you might think you should pass highlight: true,
-      //but you'd be wrong!  I don't understand this either
     };
     switch (language) {
       case "Solidity":
