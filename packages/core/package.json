@@ -2,6 +2,7 @@
   "name": "@truffle/core",
   "description": "Core code for Truffle command line tool",
   "author": "consensys.net",
+  "license": "MIT",
   "homepage": "https://github.com/trufflesuite/truffle#readme",
   "repository": {
     "type": "git",
