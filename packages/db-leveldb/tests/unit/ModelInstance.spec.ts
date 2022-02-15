@@ -226,5 +226,22 @@ describe("Model Instance", () => {
       expect(lastVersion.length).to.equal(1);
       expect(lastVersion[0].name).to.equal(savedProject.name);
     });
+    it("only saves historical snapshots if the data has changed", async () => {
+      const savedProject = await Project.create(projectData);
+      await savedProject.save();
+      await savedProject.save();
+      await savedProject.save();
+
+      let historicalVersionCount = await savedProject.countHistoricalVersions();
+
+      expect(historicalVersionCount).to.equal(1);
+
+      savedProject.name = "version 2";
+      await savedProject.save();
+
+      historicalVersionCount = await savedProject.countHistoricalVersions();
+
+      expect(historicalVersionCount).to.equal(2);
+    });
   });
 });

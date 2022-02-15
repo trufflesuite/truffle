@@ -1,3 +1,5 @@
+const { soliditySha3 } = require("web3-utils");
+
 module.exports = class ModelInstance {
   #modelProperties = [];
   #validationFunctions = {};
@@ -75,8 +77,15 @@ module.exports = class ModelInstance {
   }
 
   async saveHistoricalVersion() {
-    const historicalVersionCount = await this.countHistoricalVersions();
+    const lastVersion = await this.getHistoricalVersions(1, true);
 
+    if (lastVersion.length > 0) {
+      const lastHash = this.sha3(lastVersion[0]);
+      const thisHash = this.sha3(this);
+      if (lastHash === thisHash) return;
+    }
+
+    const historicalVersionCount = await this.countHistoricalVersions();
     const historicalKey = `${this[this.#key]}${historicalVersionCount}`;
 
     this.#historicalDB.put(historicalKey, this);
@@ -130,6 +139,10 @@ module.exports = class ModelInstance {
         throw new Error(`Missing required field: ${property}`);
       }
     }
+  }
+
+  sha3(data) {
+    return soliditySha3(JSON.stringify(data));
   }
 
   async beforeSave() {}

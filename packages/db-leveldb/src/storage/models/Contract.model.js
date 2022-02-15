@@ -1,5 +1,4 @@
 const Model = require("../Model");
-const { soliditySha3 } = require("web3-utils");
 
 class Contract extends Model {
   name;
@@ -23,7 +22,7 @@ class Contract extends Model {
   }
 
   generateID() {
-    return soliditySha3(
+    return this.sha3(
       this.name +
         JSON.stringify(this.abi) +
         JSON.stringify(this.processedSource) +

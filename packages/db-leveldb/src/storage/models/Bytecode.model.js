@@ -1,5 +1,4 @@
 const Model = require("../Model");
-const { soliditySha3 } = require("web3-utils");
 
 class Bytecode extends Model {
   bytes;
@@ -18,7 +17,7 @@ class Bytecode extends Model {
   }
 
   generateID() {
-    return soliditySha3(this.bytes + JSON.stringify(this.linkReferences));
+    return this.sha3(this.bytes + JSON.stringify(this.linkReferences));
   }
 }
 

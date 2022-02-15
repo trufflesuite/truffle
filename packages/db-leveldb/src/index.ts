@@ -49,10 +49,8 @@ export class TruffleDB {
     const { Project } = this.models;
 
     if (await Project.exists(name)) {
-      console.log("found project");
       return await Project.get(name);
     } else {
-      console.log("create project");
       return await Project.create({ name });
     }
   }
@@ -78,7 +76,7 @@ export class TruffleDB {
     return {
       projectName: path.basename(path.resolve()),
       databaseName: "truffledb",
-      databaseEngine: "leveldown",
+      databaseEngine: "memory",
       databaseDirectory: "./db",
       modelDirectories: []
     };

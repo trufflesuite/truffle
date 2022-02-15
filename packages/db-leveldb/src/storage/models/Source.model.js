@@ -1,5 +1,4 @@
 const Model = require("../Model");
-const { soliditySha3 } = require("web3-utils");
 
 class Source extends Model {
   sourcePath;
@@ -17,7 +16,7 @@ class Source extends Model {
   }
 
   generateID() {
-    return soliditySha3(
+    return this.sha3(
       JSON.stringify(this.sourcePath) + JSON.stringify(this.contents)
     );
   }
