@@ -10,7 +10,7 @@ const getGlobalPackagePath = (packageName: string): string => {
 
   let globalPackagePath = getInstalledPath.getInstalledPath(packageName);
 
-  return globalPackagePath.endWith(suffix)
+  return globalPackagePath.endsWith(suffix)
     ? globalPackagePath.slice(0, globalPackagePath.length - suffix.length)
     : globalPackagePath;
 };
