@@ -21,7 +21,7 @@ describe("Bytecode", () => {
   );
 
   const shimmedBytecodeID =
-    "0x3ae9187a8f676e45d39b06305dc9257e8cb80eb4a777ec308282d0a0d586cd9c";
+    "0x3ecd59fbc26f2cb9feeda956ebc022bcb78467e15ed226e7ecdc939c90a7a34d";
 
   beforeEach(() => {
     const DB = Storage.createStorage({
