@@ -3,6 +3,7 @@ const Model = require("../Model");
 class Compilation extends Model {
   compiler;
   sources;
+  sourceIndexes;
   processedSources;
   sourceMaps;
   contracts;

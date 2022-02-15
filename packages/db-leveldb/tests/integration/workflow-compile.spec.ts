@@ -34,6 +34,19 @@ describe("Project", () => {
     project.compilations = compilations;
 
     await project.save();
+
+    const { Contract, Compilation } = db.models;
+    const contractIDs = project.getContractIDs();
+
+    contractIDs.forEach(async id => {
+      expect(await Contract.get(id)).to.exist();
+    });
+
+    const compilationIDs = project.getCompilationIDs();
+
+    compilationIDs.forEach(async id => {
+      expect(await Compilation.get(id)).to.exist();
+    });
   });
   it("save");
   it("lookup names");

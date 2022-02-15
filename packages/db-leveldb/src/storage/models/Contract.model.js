@@ -1,13 +1,8 @@
 const Model = require("../Model");
 
 class Contract extends Model {
-  contractName = {
-    defaultValue: ""
-  };
-  abi = {
-    defaultValue: []
-  };
-
+  contractName;
+  abi;
   metadata;
   devdoc;
   userdoc;

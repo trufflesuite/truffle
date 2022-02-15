@@ -46,6 +46,10 @@ describe("Generate ID", () => {
 
     virtual.fullName = fullName;
 
+    const [firstName, lastName] = fullName.split(" ");
+
     expect(virtual.fullName).to.equal(fullName);
+    expect(virtual.firstName).to.equal(firstName);
+    expect(virtual.lastName).to.equal(lastName);
   });
 });
