@@ -172,6 +172,17 @@ class DebugPrinter {
     const colorizedLines = splitLines(colorizedSource);
 
     this.config.logger.log("");
+    // printout a warning message and display the end of source code when the instruction's
+    // byte-offset to the start of the range in the source code is past the end of source code
+    const instruction = this.session.view(solidity.current.instruction);
+    if (instruction.start > source.length - 1) {
+      this.config.logger.log(
+        `${colors.bold(
+          "Warning:"
+        )} The end of source code is displayed since the instruction's source range is past the end of source code.`
+      );
+      this.config.logger.log("");
+    }
 
     //HACK -- the line-pointer formatter doesn't work right with colorized
     //lines, so we pass in the uncolored version too
