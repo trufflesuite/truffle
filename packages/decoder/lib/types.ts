@@ -190,6 +190,11 @@ export interface DecodeLogOptions {
    * the event -- should be returned.  Defaults to `"off"`.
    */
   extras?: ExtrasAllowed;
+  /**
+   * Allows decodings that don't pass the re-encoding test.  Don't turn
+   * this on unless you know what you're doing!
+   */
+  disableChecks?: boolean;
 }
 
 /**

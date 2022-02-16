@@ -18,11 +18,16 @@ const SolidityTest = {
       // contracts) which need to be compiled before initializing the runner
       await self.compileNewAbstractInterface.bind(this)(runner);
       await runner.initialize.bind(runner)();
+      runner.disableChecks(); //for handling of test events on Solidity <0.7.6 due to empty string problem
       await self.deployTestDependencies.bind(this)(
         abstraction,
         dependencyPaths,
         runner
       );
+    });
+
+    suite.afterAll("clean up", function () {
+      runner.reEnableChecks();
     });
 
     suite.beforeEach("before test", async function () {
@@ -33,7 +38,9 @@ const SolidityTest = {
     async function checkResultForFailure(result) {
       const logs = result.receipt.rawLogs;
       for (const log of logs) {
-        const decodings = await runner.decoder.decodeLog(log);
+        const decodings = await runner.decoder.decodeLog(log, {
+          disableChecks: true
+        });
         for (const decoding of decodings) {
           //check: is this a TestEvent?
           //note: we don't check the argument names
