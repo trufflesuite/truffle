@@ -23,12 +23,12 @@ describe("utils", () => {
   });
 
   describe("fetchRepository", () => {
-    it("rejects when passed non-strings and non-objects", () => {
-      assert.rejects(async () => {
+    it("rejects when passed non-strings and non-objects", async () => {
+      await assert.rejects(async () => {
         await utils.fetchRepository(false);
       }, "should have rejected!");
 
-      assert.rejects(async () => {
+      await assert.rejects(async () => {
         await utils.fetchRepository(123214);
       }, "should have rejected!");
     });
