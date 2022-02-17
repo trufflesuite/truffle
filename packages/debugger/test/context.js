@@ -79,12 +79,37 @@ contract Created {
 }
 `;
 
+const __YUL_IMMUTABLE = `
+object "YulImmutableTest" {
+  code {
+    let size := datasize("runtime")
+    let offset := dataoffset("runtime")
+    setimmutable(offset, "secret", 1)
+    datacopy(0, offset, size)
+    return(0, size)
+  }
+  object "runtime" {
+    code {
+      mstore(
+        0,
+        xor(
+          loadimmutable("secret"),
+          linkersymbol("project:/contracts/ImmutableTest.sol:TestLibrary")
+        )
+      )
+      return(0, 0x20)
+    }
+  }
+}
+`;
+
 const __MIGRATION = `
 let OuterContract = artifacts.require("OuterContract");
 let InnerContract = artifacts.require("InnerContract");
 let ImmutableTest = artifacts.require("ImmutableTest");
 let TestLibrary = artifacts.require("TestLibrary");
 let CreationTest = artifacts.require("CreationTest");
+let YulImmutableTest = artifacts.require("YulImmutableTest");
 
 module.exports = async function(deployer) {
   await deployer.deploy(InnerContract);
@@ -94,6 +119,8 @@ module.exports = async function(deployer) {
   await deployer.link(TestLibrary, ImmutableTest);
   await deployer.deploy(ImmutableTest);
   await deployer.deploy(CreationTest);
+  await deployer.link(TestLibrary, YulImmutableTest);
+  await deployer.deploy(YulImmutableTest);
 };
 `;
 
@@ -105,7 +132,8 @@ let sources = {
   "OuterLibrary.sol": __OUTER,
   "InnerContract.sol": __INNER,
   "ImmutableTest.sol": __IMMUTABLE,
-  "CreationTest.sol": __CREATION
+  "CreationTest.sol": __CREATION,
+  "YulImmutableTest.yul": __YUL_IMMUTABLE
 };
 
 describe("Contexts", function () {
@@ -197,6 +225,27 @@ describe("Contexts", function () {
     assert.equal(affectedInstances[address].contractName, "ImmutableTest");
     assert.property(affectedInstances, libraryAddress);
     assert.equal(affectedInstances[libraryAddress].contractName, "TestLibrary");
+  });
+
+  it("correctly identifies context in presence of linkersymbols and immutables (Yul)", async function () {
+    let ImmutableTest = await abstractions.YulImmutableTest.deployed();
+    let address = ImmutableTest.address;
+
+    let result = await ImmutableTest.sendTransaction({ data: "0x" });
+    let txHash = result.tx;
+
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      compilations,
+      lightMode: true
+    });
+    debug("debugger ready");
+
+    let affectedInstances = bugger.view(sessionSelector.info.affectedInstances);
+    debug("affectedInstances: %o", affectedInstances);
+
+    assert.property(affectedInstances, address);
+    assert.equal(affectedInstances[address].contractName, "YulImmutableTest");
   });
 
   it("determines encoded constructor arguments for creations", async function () {
