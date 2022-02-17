@@ -119,6 +119,10 @@ module.exports = Contract => ({
   },
 
   async detectNetwork() {
+    // guard interfaceAdapter!
+    if (this.interfaceAdapter == null) {
+      throw new Error("Provider not set or invalid");
+    }
     // if artifacts already have a network_id and network configuration synced,
     // use that network and use latest block gasLimit
     if (this.network_id && this.networks[this.network_id] != null) {
