@@ -25,7 +25,7 @@ describe("TestEvents and mixed sol/js testing", function () {
   });
 
   it("will correctly decode events as appropriate", async function () {
-    this.timeout(70000);
+    this.timeout(120000);
 
     try {
       //will fail, since we included a failing test
