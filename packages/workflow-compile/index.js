@@ -2,10 +2,9 @@ const debug = require("debug")("workflow-compile");
 const fse = require("fs-extra");
 const { prepareConfig } = require("./utils");
 const { Shims } = require("@truffle/compile-common");
-
 const { TruffleDB } = require("../db-leveldb/dist");
 
-const DB = new TruffleDB();
+const db = new TruffleDB();
 
 const SUPPORTED_COMPILERS = {
   solc: require("@truffle/compile-solidity").Compile,
@@ -105,34 +104,12 @@ const WorkflowCompile = {
     await fse.ensureDir(config.contracts_build_directory);
 
     if (options.db && options.db.enabled === true && contracts.length > 0) {
-      const project = await DB.getProject();
-      console.log(DB.config);
-      console.log(project);
+      const project = await db.getProject();
 
       project.contracts = contracts;
       project.compilations = compilations;
 
       await project.save();
-
-      console.log(await project.getHistoricalVersions());
-
-      // currently if Truffle Db fails to load, getTruffleDb returns `null`
-      /*
-
-      if (Db) {
-        debug("saving to @truffle/db");
-        const db = Db.connect(config.db);
-        const project = await Db.Project.initialize({
-          db,
-          project: {
-            directory: config.working_directory
-          }
-        });
-        ({ contracts, compilations } = await project.loadCompile({
-          result: { contracts, compilations }
-        }));
-      }
-      */
     }
 
     const artifacts = contracts.map(Shims.NewToLegacy.forContract);

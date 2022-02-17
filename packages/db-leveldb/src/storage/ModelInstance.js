@@ -1,4 +1,5 @@
 const { soliditySha3 } = require("web3-utils");
+const jsonDiff = require("json-diff");
 
 module.exports = class ModelInstance {
   #modelProperties = [];
@@ -71,15 +72,15 @@ module.exports = class ModelInstance {
     this.runValidationFunctions();
     this.checkRequiredFields();
 
-    await this.saveHistoricalVersion();
+    await this.saveHistory();
 
     await this.#db.put(key, this);
 
     await this.afterSave();
   }
 
-  async saveHistoricalVersion() {
-    const lastVersion = await this.getHistoricalVersions(1, true);
+  async saveHistory() {
+    const lastVersion = await this.history(1, true);
 
     if (lastVersion.length > 0) {
       const lastHash = this.sha3(lastVersion[0]);
@@ -87,18 +88,37 @@ module.exports = class ModelInstance {
       if (lastHash === thisHash) return;
     }
 
-    const historicalVersionCount = await this.countHistoricalVersions();
+    const historicalVersionCount = await this.historyCount();
     const historicalKey = `${this[this.#key]}${historicalVersionCount}`;
 
     this.#historicalDB.put(historicalKey, this);
   }
 
-  async countHistoricalVersions() {
-    const historicalVersions = await this.getHistoricalVersions();
+  async historyCount() {
+    const historicalVersions = await this.history();
     return historicalVersions.length;
   }
 
-  async getHistoricalVersions(limit = -1, reverse = false) {
+  async historyDiff(limit = -1) {
+    if (limit > 0) limit++;
+
+    const history = await this.history(limit, true);
+
+    if (history.length < 2) {
+      return [];
+    }
+
+    const diff = [];
+    for (let i = 1; i < history.length; i++) {
+      const prevRecord = history[i];
+      const curRecord = history[i - 1];
+      diff.push(jsonDiff.diff(prevRecord, curRecord));
+    }
+
+    return diff;
+  }
+
+  async history(limit = -1, reverse = false) {
     let historicalData = [];
 
     const smallestHistoricalKey = `${this[this.#key]}`;

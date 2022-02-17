@@ -42,7 +42,7 @@ describe("Historical Versions", () => {
   describe("Model Instance", () => {
     it("on save, stores a snapshot of the data in a historical namespace", async () => {
       const savedProject = await Project.create(projectData);
-      let historicalVersionCount = await savedProject.countHistoricalVersions();
+      let historicalVersionCount = await savedProject.historyCount();
 
       expect(historicalVersionCount).to.equal(1);
 
@@ -52,13 +52,13 @@ describe("Historical Versions", () => {
       savedProject.name = "version 3";
       await savedProject.save();
 
-      historicalVersionCount = await savedProject.countHistoricalVersions();
+      historicalVersionCount = await savedProject.historyCount();
 
       expect(historicalVersionCount).to.equal(3);
     });
     it("returns all the historical versions of the data", async () => {
       const savedProject = await Project.create(projectData);
-      let historicalVersionCount = await savedProject.countHistoricalVersions();
+      let historicalVersionCount = await savedProject.historyCount();
 
       expect(historicalVersionCount).to.equal(1);
 
@@ -68,7 +68,7 @@ describe("Historical Versions", () => {
       savedProject.name = "version 3";
       await savedProject.save();
 
-      const historicalData = await savedProject.getHistoricalVersions();
+      const historicalData = await savedProject.history();
 
       expect(historicalData.length).to.equal(3);
       expect(historicalData[0].name === projectData.name);
@@ -76,7 +76,7 @@ describe("Historical Versions", () => {
     });
     it("supports limit and reverse (getFirst, getLast)", async () => {
       const savedProject = await Project.create(projectData);
-      let historicalVersionCount = await savedProject.countHistoricalVersions();
+      let historicalVersionCount = await savedProject.historyCount();
 
       expect(historicalVersionCount).to.equal(1);
 
@@ -86,8 +86,8 @@ describe("Historical Versions", () => {
       savedProject.name = "version 3";
       await savedProject.save();
 
-      const lastVersion = await savedProject.getHistoricalVersions(1, true);
-      const firstVersion = await savedProject.getHistoricalVersions(1);
+      const lastVersion = await savedProject.history(1, true);
+      const firstVersion = await savedProject.history(1);
 
       expect(firstVersion.length).to.equal(1);
       expect(firstVersion[0].name).to.equal(projectData.name);
@@ -101,29 +101,80 @@ describe("Historical Versions", () => {
       await savedProject.save();
       await savedProject.save();
 
-      let historicalVersionCount = await savedProject.countHistoricalVersions();
+      let historicalVersionCount = await savedProject.historyCount();
 
       expect(historicalVersionCount).to.equal(1);
 
       savedProject.name = "version 2";
       await savedProject.save();
 
-      historicalVersionCount = await savedProject.countHistoricalVersions();
+      historicalVersionCount = await savedProject.historyCount();
 
       expect(historicalVersionCount).to.equal(2);
     });
+    it("gets a diff for a range of historical snapshots", async () => {
+      const v2Name = "version 2";
+      const v3Name = "version 3";
+
+      const savedProject = await Project.create(projectData);
+
+      savedProject.name = v2Name;
+      await savedProject.save();
+
+      savedProject.name = v3Name;
+      await savedProject.save();
+
+      let historyDiff = await savedProject.historyDiff();
+
+      expect(historyDiff.length).to.equal(2);
+
+      expect(historyDiff[1].name.__old).to.equal(projectData.name);
+      expect(historyDiff[1].name.__new).to.equal(v2Name);
+
+      expect(historyDiff[0].name.__old).to.equal(v2Name);
+      expect(historyDiff[0].name.__new).to.equal(v3Name);
+    });
+    it("returns an empty diff if there are < 2 historical versions", async () => {
+      const savedProject = await Project.create(projectData);
+      let historyDiff = await savedProject.historyDiff();
+
+      expect(historyDiff.length).to.equal(0);
+
+      savedProject.name = "new name that won't be tested";
+      await savedProject.save();
+      historyDiff = await savedProject.historyDiff();
+
+      expect(historyDiff.length).to.equal(1);
+    });
+    it("limits the range of history from the most recent changes", async () => {
+      const v2Name = "version 2";
+      const v3Name = "version 3";
+
+      const savedProject = await Project.create(projectData);
+
+      savedProject.name = v2Name;
+      await savedProject.save();
+
+      savedProject.name = v3Name;
+      await savedProject.save();
+
+      let historyDiff = await savedProject.historyDiff(1);
+
+      expect(historyDiff.length).to.equal(1);
+
+      historyDiff = await savedProject.historyDiff(2);
+      expect(historyDiff.length).to.equal(2);
+    });
   });
   describe("Model", () => {
-    describe("getHistoricalVersions", () => {
+    describe("history", () => {
       it("gets historical data for a key", async () => {
         const savedProject = await Project.create(projectData);
 
         savedProject.name = "new version";
         await savedProject.save();
 
-        const historicalVersions = await Project.getHistoricalVersions(
-          savedProject.id
-        );
+        const historicalVersions = await Project.history(savedProject.id);
 
         expect(historicalVersions.length).to.equal(2);
       });
@@ -135,9 +186,7 @@ describe("Historical Versions", () => {
 
         await Project.delete(savedProject.id);
 
-        const historicalVersions = await Project.getHistoricalVersions(
-          savedProject.id
-        );
+        const historicalVersions = await Project.history(savedProject.id);
 
         expect(historicalVersions.length).to.equal(2);
       });
@@ -151,17 +200,14 @@ describe("Historical Versions", () => {
 
         await Project.create({ ...projectData, name: "reused" });
 
-        const historicalVersions = await Project.getHistoricalVersions(
-          savedProject.id
-        );
+        const historicalVersions = await Project.history(savedProject.id);
 
         expect(historicalVersions.length).to.equal(3);
         expect(historicalVersions[2].name).to.equal("reused");
       });
       it("supports limit and reverse (getFirst, getLast)", async () => {
         const savedProject = await Project.create(projectData);
-        let historicalVersionCount =
-          await savedProject.countHistoricalVersions();
+        let historicalVersionCount = await savedProject.historyCount();
 
         expect(historicalVersionCount).to.equal(1);
 
@@ -171,15 +217,8 @@ describe("Historical Versions", () => {
         savedProject.name = "version 3";
         await savedProject.save();
 
-        const lastVersion = await Project.getHistoricalVersions(
-          savedProject.id,
-          1,
-          true
-        );
-        const firstVersion = await Project.getHistoricalVersions(
-          savedProject.id,
-          1
-        );
+        const lastVersion = await Project.history(savedProject.id, 1, true);
+        const firstVersion = await Project.history(savedProject.id, 1);
 
         expect(firstVersion.length).to.equal(1);
         expect(firstVersion[0].name).to.equal(projectData.name);

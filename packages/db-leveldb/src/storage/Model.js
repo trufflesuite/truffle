@@ -103,12 +103,12 @@ module.exports = class Model extends ModelInstance {
     });
   }
 
-  static async countHistoricalVersions() {
-    const historicalVersions = await this.getHistoricalVersions();
+  static async historyCount() {
+    const historicalVersions = await this.history();
     return historicalVersions.length;
   }
 
-  static async getHistoricalVersions(key, limit = -1, reverse = false) {
+  static async history(key, limit = -1, reverse = false) {
     let historicalData = [];
 
     const smallestHistoricalKey = `${key}`;

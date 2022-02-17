@@ -91,7 +91,7 @@ class Project extends Model {
 module.exports = Project;
 ```
 
-Each model provides also static methods for accessing the database - `all`, `build`, `create`, `delete`, `get`, `getMany`, `batchBuild`, `batchCreate`, and `getHistoricalVersions` operations.
+Each model provides also static methods for accessing the database - `all`, `build`, `create`, `delete`, `get`, `getMany`, `batchBuild`, `batchCreate`, and `history` operations.
 
 ## Model API
 
@@ -195,7 +195,7 @@ const projectData = [
 const projects = await Project.batchCreate(projectData);
 ```
 
-### `Model.getHistoricalVersions(key, [limit], [reverse])`
+### `Model.history(key, [limit], [reverse])`
 
 ```javascript
 const project = await Project.create({ id: 1, name: "project1" });
@@ -203,7 +203,7 @@ const project = await Project.create({ id: 1, name: "project1" });
 project.name = "new version";
 await project.save();
 
-const historicalData = await Project.getHistoricalVersions(1);
+const historicalData = await Project.history(1);
 /*
 historicalData = [
   { id: 1, name: "project1" },
@@ -218,7 +218,7 @@ historicalData = [
 
 A model instance is a Data Access Object representing a stored record of the Model. Model instances are created through a factory pattern by invoking the Model's `build` or `create` functions and should **never** be created by instantiating the model using `new`.
 
-A model instance can be changed by directly changing the class properties. Changes will not persist to the database without invoking the `save`. Every model instance is aware of it's own version history and may call the `getHistoricalVersions` method as on a Model without a key parameter.
+A model instance can be changed by directly changing the class properties. Changes will not persist to the database without invoking the `save`. Every model instance is aware of it's own version history and may call the `history` method as on a Model without a key parameter.
 
 ## Model Instance API
 
@@ -234,7 +234,7 @@ await project.save();
 
 Save will attempt to persist the current object properties to the database. Any properties that were set that do not exist on the model definition will be ignored. `save` will check for required fields and run any validation functions that were defined for the model.
 
-### `instance.getHistoricalVersions([limit], [reverse])`
+### `instance.history([limit], [reverse])`
 
 ```javascript
 const project = await Project.create({ id: 1, name: "project1" });
@@ -242,7 +242,7 @@ const project = await Project.create({ id: 1, name: "project1" });
 project.name = "new version";
 await project.save();
 
-const historicalData = await project.getHistoricalVersions();
+const historicalData = await project.history();
 /*
 historicalData = [
   { id: 1, name: "project1" },
@@ -346,7 +346,7 @@ const project = await Project.create({ id: 1, name: "project1" });
 project.name = "new version";
 await project.save();
 
-const historicalData = await Project.getHistoricalVersions(1);
+const historicalData = await Project.history(1);
 /*
 historicalData = [
   { id: 1, name: "project1" },
@@ -363,7 +363,7 @@ const project = await Project.create({ id: 1, name: "project1" });
 project.name = "new version";
 await project.save();
 
-const historicalData = await project.getHistoricalVersions();
+const historicalData = await project.history();
 /*
 historicalData = [
   { id: 1, name: "project1" },
