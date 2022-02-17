@@ -120,7 +120,7 @@ module.exports = Contract => ({
 
   async detectNetwork() {
     // guard interfaceAdapter!
-    if (!Boolean(this.interfaceAdapter)) {
+    if (this.interfaceAdapter == null) {
       throw new Error("Provider not set or invalid");
     }
     // if artifacts already have a network_id and network configuration synced,
