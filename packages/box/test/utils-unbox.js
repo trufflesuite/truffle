@@ -34,7 +34,7 @@ describe("utils", () => {
     });
   });
 
-  describe("verifySourcePath", async() => {
+  describe("verifySourcePath", async () => {
     const errorStatus = 401;
     const errorMessage = "Network error: oh noes!";
     const authError = {
@@ -43,10 +43,11 @@ describe("utils", () => {
       },
       message: errorMessage
     };
+    let url;
 
-    before(async() => {
+    before(async () => {
       url = "https://github.com/truffle-box/bare-box";
-      sinon.stub(axios, 'head').throws(authError);
+      sinon.stub(axios, "head").throws(authError);
     });
 
     it("Includes network error message on non 404 failure", async () => {
@@ -55,11 +56,12 @@ describe("utils", () => {
         assert(false, "verifyVCSURL should have thrown!");
       } catch (error) {
         const { response, message } = error;
-        assert.equal(response.status, errorStatus); 
-        assert(message.endsWith(errorMessage), "Axios error message should be the suffix");
+        assert.equal(response.status, errorStatus);
+        assert(
+          message.endsWith(errorMessage),
+          "Axios error message should be the suffix"
+        );
       }
-    })
-
+    });
   });
-
 });
