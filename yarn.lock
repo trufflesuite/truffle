@@ -13970,6 +13970,16 @@ duplexify@^3.2.0, duplexify@^3.4.2, duplexify@^3.6.0:
     readable-stream "^2.0.0"
     stream-shift "^1.0.0"
 
+duplexify@^4.1.1:
+  version "4.1.2"
+  resolved "https://registry.yarnpkg.com/duplexify/-/duplexify-4.1.2.tgz#18b4f8d28289132fa0b9573c898d9f903f81c7b0"
+  integrity sha512-fz3OjcNCHmRP12MJoZMPglx8m4rrFP8rovnk4vT8Fs+aonZoCwGg10dSsQsfP/E62eZcPTMSMP6686fu9Qlqtw==
+  dependencies:
+    end-of-stream "^1.4.1"
+    inherits "^2.0.3"
+    readable-stream "^3.1.1"
+    stream-shift "^1.0.0"
+
 dynamic-dedupe@^0.3.0:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/dynamic-dedupe/-/dynamic-dedupe-0.3.0.tgz#06e44c223f5e4e94d78ef9db23a6515ce2f962a1"
@@ -14178,7 +14188,7 @@ encoding@^0.1.11, encoding@^0.1.12, encoding@^0.1.13:
   dependencies:
     iconv-lite "^0.6.2"
 
-end-of-stream@^1.0.0, end-of-stream@^1.1.0:
+end-of-stream@^1.0.0, end-of-stream@^1.1.0, end-of-stream@^1.4.1:
   version "1.4.4"
   resolved "https://registry.yarnpkg.com/end-of-stream/-/end-of-stream-1.4.4.tgz#5ae64a5f45057baf3626ec14da0ca5e4b2431eb0"
   integrity sha512-+uw1inIHVPQoaVuHzRyXd21icM+cnt4CzD5rW+NC1wjOUSTOs+Te7FOv7AhN7vS9x/oIyhLP5PR1H+phQAHu5Q==
@@ -22987,6 +22997,15 @@ left-pad@^1.1.3:
   resolved "https://registry.yarnpkg.com/left-pad/-/left-pad-1.3.0.tgz#5b8a3a7765dfe001261dde915589e782f8c94d1e"
   integrity sha512-XI5MPzVNApjAyhQzphX8BkmKsKUxD4LdyK24iZeQGinBN9yTQT3bFlCBy/aVx2HrNcqQGsdot8ghrjyrvMCoEA==
 
+length-prefixed-stream@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/length-prefixed-stream/-/length-prefixed-stream-2.0.0.tgz#16e603c97aefb46f43ae4b5d22f1734ecd14ffce"
+  integrity sha512-dvjTuWTKWe0oEznQcG6a9osfiYknCs7DEFJMP88n9Y581IFhYh1sZIgAFcuDOojKB0G7ftPreKhh4D0kh/VPjQ==
+  dependencies:
+    inherits "^2.0.3"
+    readable-stream "^3.1.1"
+    varint "^5.0.0"
+
 lerna-update-wizard@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/lerna-update-wizard/-/lerna-update-wizard-1.1.0.tgz#dd3c209f692dfc374d8405e5c54bf920935067cf"
@@ -23188,6 +23207,15 @@ level-packager@~4.0.0:
   dependencies:
     encoding-down "~5.0.0"
     levelup "^3.0.0"
+
+level-party@^5.1.1:
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/level-party/-/level-party-5.1.1.tgz#f4c1570c75a332cb2f7e26a48460f956d5ac4d93"
+  integrity sha512-Q8+7Ag0QSvHl5wydcRLN2yzU4TEN68vVtJxJtXeG/f12hV9VsJ8+dH2ITDK8RGwSXCiAeY6mquhV/GCidEn4lQ==
+  dependencies:
+    level "^7.0.1"
+    multileveldown "^5.0.1"
+    readable-stream "^3.6.0"
 
 level-post@^1.0.7:
   version "1.0.7"
@@ -25925,6 +25953,21 @@ multihashing-async@^2.0.0, multihashing-async@^2.0.1:
     murmurhash3js-revisited "^3.0.0"
     uint8arrays "^2.0.5"
 
+multileveldown@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/multileveldown/-/multileveldown-5.0.1.tgz#fdf822a313443dd14bf7e73b7091b8d420e35f74"
+  integrity sha512-iBZxEPLGE3zZOgGTbVSs4sDrR3b4u3ZpyV66mIAIsd3ECGZWEkdLgJl6pwm7YsqNDVQFOJxgq5G60aFlP7cP4w==
+  dependencies:
+    abstract-leveldown "^7.2.0"
+    duplexify "^4.1.1"
+    encoding-down "^7.1.0"
+    end-of-stream "^1.1.0"
+    length-prefixed-stream "^2.0.0"
+    levelup "^5.1.1"
+    numeric-id-map "^1.1.0"
+    protocol-buffers-encodings "^1.1.0"
+    reachdown "^1.1.0"
+
 multimatch@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/multimatch/-/multimatch-5.0.0.tgz#932b800963cea7a31a033328fa1e0c3a1874dbe6"
@@ -26753,6 +26796,11 @@ number-to-bn@1.7.0:
   dependencies:
     bn.js "4.11.6"
     strip-hex-prefix "1.0.0"
+
+numeric-id-map@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/numeric-id-map/-/numeric-id-map-1.1.0.tgz#1110e4445ae683e83d479eadd0f6d9249fda3bd6"
+  integrity sha1-ERDkRFrmg+g9R56t0PbZJJ/aO9Y=
 
 "nwmatcher@>= 1.3.7 < 2.0.0":
   version "1.4.4"
@@ -29531,6 +29579,14 @@ protobufjs@^6.10.1, protobufjs@^6.10.2:
     "@types/long" "^4.0.1"
     "@types/node" "^13.7.0"
     long "^4.0.0"
+
+protocol-buffers-encodings@^1.1.0:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/protocol-buffers-encodings/-/protocol-buffers-encodings-1.1.1.tgz#f1e4a386711823137330171d2c82b49d062e75d3"
+  integrity sha512-5aFshI9SbhtcMiDiZZu3g2tMlZeS5lhni//AGJ7V34PQLU5JA91Cva7TIs6inZhYikS3OpnUzAUuL6YtS0CyDA==
+  dependencies:
+    signed-varint "^2.0.1"
+    varint "5.0.0"
 
 protocol-buffers-schema@^3.3.1:
   version "3.5.1"
@@ -35194,6 +35250,11 @@ varint-decoder@^1.0.0:
   integrity sha512-JkOvdztASWGUAsXshCFHrB9f6AgR2Q8W08CEyJ+43b1qtFocmI8Sp1R/M0E/hDOY2FzVIqk63tOYLgDYWuJ7IQ==
   dependencies:
     varint "^5.0.0"
+
+varint@5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/varint/-/varint-5.0.0.tgz#d826b89f7490732fabc0c0ed693ed475dcb29ebf"
+  integrity sha1-2Ca4n3SQcy+rwMDtaT7Uddyynr8=
 
 varint@^5.0.0, varint@^5.0.2, varint@~5.0.0:
   version "5.0.2"
