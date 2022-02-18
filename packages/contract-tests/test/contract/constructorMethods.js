@@ -32,55 +32,51 @@ describe("TruffleContract.new()", () => {
 });
 
 describe("TruffleContract.at()", () => {
-  it("throws if passed an invalid address", () => {
+  it("throws if passed an invalid address", async () => {
     const freshTruffleContract = TruffleContract();
-    assert.rejects(
+    await assert.rejects(
       async () => {
         await freshTruffleContract.at();
       },
       {
         name: "Error",
         message: /(Invalid address passed)/
-      },
-      "should have thrown!"
+      }
     );
 
-    assert.rejects(
+    await assert.rejects(
       async () => {
         await freshTruffleContract.at(12345);
       },
       {
         name: "Error",
         message: /(Invalid address passed)/
-      },
-      "should have thrown!"
+      }
     );
 
-    assert.rejects(
+    await assert.rejects(
       async () => {
         await freshTruffleContract.at("0x000323332");
       },
       {
         name: "Error",
         message: /(Invalid address passed)/
-      },
-      "should have thrown!"
+      }
     );
   });
 });
 
 describe("TruffleContract.deployed()", () => {
-  it("throws if called before setting a provider", () => {
+  it("throws if called before setting a provider", async () => {
     const freshTruffleContract = TruffleContract();
-    assert.rejects(
+    await assert.rejects(
       async () => {
         await freshTruffleContract.deployed();
       },
       {
         name: "Error",
         message: /(Please call setProvider\(\) first)/
-      },
-      "should have thrown!"
+      }
     );
   });
 
@@ -95,15 +91,14 @@ describe("TruffleContract.deployed()", () => {
     await freshTruffleContract.detectNetwork();
     freshTruffleContract.networks[freshTruffleContract.network_id] =
       "fakeNetworkRecord";
-    assert.rejects(
+    await assert.rejects(
       async () => {
         await freshTruffleContract.deployed();
       },
       {
         name: "Error",
         message: /(Contract).*(not).*(deployed to detected network)/
-      },
-      "should have thrown!"
+      }
     );
   });
 });
@@ -124,29 +119,27 @@ describe("TruffleContract.isDeployed()", () => {
 });
 
 describe("TruffleContract.detectNetwork()", () => {
-  it("throws when provider not present", () => {
+  it("throws when provider not present", async () => {
     const freshTruffleContract = TruffleContract();
-    assert.rejects(
+    await assert.rejects(
       async () => await freshTruffleContract.detectNetwork(),
       {
         name: "Error",
         message: /(Provider not set or invalid)/
-      },
-      "should have thrown!"
+      }
     );
   });
 });
 
 describe("TruffleContract.detectNetwork()", () => {
-  it("throws when network not set and provider not present", () => {
+  it("throws when network not set and provider not present", async () => {
     const freshTruffleContract = TruffleContract();
-    assert.rejects(
+    await assert.rejects(
       async () => await freshTruffleContract.detectNetwork(),
       {
         name: "Error",
         message: /(Provider not set or invalid)/
-      },
-      "should have thrown!"
+      }
     );
   });
 
@@ -155,13 +148,12 @@ describe("TruffleContract.detectNetwork()", () => {
     freshTruffleContract.network_id = 1234;
     freshTruffleContract.networks[freshTruffleContract.network_id] =
       "dummyNetwork";
-    assert.rejects(
+    await assert.rejects(
       async () => await freshTruffleContract.detectNetwork(),
       {
         name: "Error",
         message: /(Provider not set or invalid)/
-      },
-      "should have thrown!"
+      }
     );
   });
 });

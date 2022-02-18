@@ -1,6 +1,6 @@
 {
   "name": "@truffle/preserve-to-buckets",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "Truffle `preserve` command support for Textile Buckets",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
