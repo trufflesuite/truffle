@@ -1,9 +1,8 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:trace:sagas");
 
-import {take, takeEvery, put, select} from "redux-saga/effects";
+import { take, put, select } from "redux-saga/effects";
 import {
-  prefixName,
   isCallMnemonic,
   isCreateMnemonic,
   isSelfDestructMnemonic
@@ -25,14 +24,6 @@ export function* addSubmoduleToCount(increment = 1) {
 }
 
 export function* advance() {
-  yield put(actions.next());
-
-  debug("TOCK to take");
-  yield take([actions.TOCK, actions.END_OF_TRACE]);
-  debug("TOCK taken");
-}
-
-function* next() {
   let remaining = yield select(trace.stepsRemaining);
   debug("remaining: %o", remaining);
   let steps = yield select(trace.steps);
@@ -80,7 +71,7 @@ export function* processTrace(steps) {
   let createdBinaries = {};
 
   for (let index = 0; index < steps.length; index++) {
-    const {op, depth, stack, memory} = steps[index];
+    const { op, depth, stack, memory } = steps[index];
     if (isCallMnemonic(op)) {
       callAddresses.add(Codec.Evm.Utils.toAddress(stack[stack.length - 2]));
     } else if (isCreateMnemonic(op)) {
@@ -130,9 +121,3 @@ export function* reset() {
 export function* unload() {
   yield put(actions.unloadTransaction());
 }
-
-export function* saga() {
-  yield takeEvery(actions.NEXT, next);
-}
-
-export default prefixName("trace", saga);

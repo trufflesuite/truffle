@@ -150,7 +150,7 @@ function* forkListeners(moduleOptions) {
     mainApps.push(data);
     mainApps.push(txlog);
   }
-  let otherApps = [trace, controller, web3];
+  let otherApps = [controller, web3];
   const submoduleCount = mainApps.length;
   const apps = mainApps.concat(otherApps);
   yield* trace.setSubmoduleCount(submoduleCount);
