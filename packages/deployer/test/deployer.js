@@ -11,7 +11,7 @@ const {
   getAllEventsByName,
   preDeployOccurredForNames,
   postDeployOccurredForNames,
-  linkingOccurredForName
+  linkingOccurred
 } = require("./helpers/eventSystem");
 
 describe("Deployer (sync)", function () {
@@ -228,7 +228,32 @@ describe("Deployer (sync)", function () {
 
       assert(preDeployOccurredForNames(options, ["IsLibrary", "UsesLibrary"]));
       assert(postDeployOccurredForNames(options, ["IsLibrary", "UsesLibrary"]));
-      assert(linkingOccurredForName(options, "UsesLibrary", "IsLibrary"));
+      assert(
+        linkingOccurred(options, "UsesLibrary", "IsLibrary", IsLibrary.address)
+      );
+    });
+
+    it("deployer.link with library instance", async function () {
+      const newLibrary = await IsLibrary.new();
+
+      await deployer.start();
+      const migrate = async function () {
+        await deployer.deploy(IsLibrary); //just for comparison below
+        const isLibrary = await IsLibrary.at(newLibrary.address);
+        await deployer.link(isLibrary, UsesLibrary);
+        await deployer.deploy(UsesLibrary);
+      };
+
+      await migrate();
+
+      assert(UsesLibrary.address !== null);
+      assert(IsLibrary.address !== null);
+      assert(newLibrary.address !== null);
+      assert(newLibrary.address !== IsLibrary.address);
+
+      assert(
+        linkingOccurred(options, "UsesLibrary", "IsLibrary", newLibrary.address)
+      );
     });
 
     // There's a chain like this in the @truffle/core solidity-tests
