@@ -6,11 +6,6 @@ export function saveSteps(steps) {
   };
 }
 
-export const NEXT = "TRACE_NEXT";
-export function next() {
-  return { type: NEXT };
-}
-
 export const TICK = "TRACE_TICK";
 export function tick() {
   return { type: TICK };
