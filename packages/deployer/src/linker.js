@@ -3,9 +3,15 @@ const sanitizeMessage = require("./sanitizeMessage");
 module.exports = {
   link: async function (library, destinations, deployer) {
     let eventArgs;
+    let libraryName = library.contractName;
+    if (libraryName == null && library.constructor) {
+      //allow for the possibility that library is an instance rather
+      //than a class
+      libraryName = library.constructor.contractName;
+    }
 
-    // Validate name
-    if (library.contract_name == null) {
+    // Validate name (it might still be undefined)
+    if (libraryName == null) {
       eventArgs = {
         type: "noLibName"
       };
@@ -23,7 +29,7 @@ module.exports = {
     // Validate address: don't want to use .address directly because it will throw.
     let hasAddress;
 
-    typeof library.isDeployed
+    typeof library.isDeployed === "function"
       ? (hasAddress = library.isDeployed())
       : (hasAddress = library.address != null);
 
@@ -49,15 +55,13 @@ module.exports = {
 
     for (let destination of destinations) {
       // Don't link if result will have no effect.
-      const alreadyLinked =
-        destination.links[library.contract_name] === library.address;
-      const noLinkage =
-        destination.unlinked_binary.indexOf(library.contract_name) < 0;
+      const alreadyLinked = destination.links[libraryName] === library.address;
+      const noLinkage = !destination.unlinked_binary.includes(libraryName);
 
       if (alreadyLinked || noLinkage) continue;
 
       eventArgs = {
-        libraryName: library.contractName,
+        libraryName,
         libraryAddress: library.address,
         contractName: destination.contractName,
         contractAddress: destination.contractAddress
