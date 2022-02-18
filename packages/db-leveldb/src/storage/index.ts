@@ -42,13 +42,31 @@ export class Storage {
     databaseDirectory,
     databaseName
   }: CreateStorageOptions) {
-    const levelDB = sublevel(
-      levelup(StorageBackend.createBackend(databaseEngine, databaseDirectory)),
-      databaseName,
-      {
-        valueEncoding: "json"
-      }
-    );
+    const backend = StorageBackend.createBackend(databaseEngine, databaseDirectory);
+    
+    let levelDB;
+    switch (databaseEngine) {
+      case "memory":
+        levelDB = sublevel(
+          levelup(backend),
+          databaseName,
+          {
+            valueEncoding: "json"
+          }
+        );
+      break;
+      case "leveldb":
+        levelDB = sublevel(
+          backend,
+          databaseName,
+          {
+            valueEncoding: "json"
+          }
+        );
+      break;
+
+    }
+    
 
     return levelDB;
   }

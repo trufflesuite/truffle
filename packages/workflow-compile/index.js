@@ -4,8 +4,6 @@ const { prepareConfig } = require("./utils");
 const { Shims } = require("@truffle/compile-common");
 const { TruffleDB } = require("../db-leveldb/dist");
 
-const db = new TruffleDB();
-
 const SUPPORTED_COMPILERS = {
   solc: require("@truffle/compile-solidity").Compile,
   vyper: require("@truffle/compile-vyper").Compile,
@@ -104,12 +102,15 @@ const WorkflowCompile = {
     await fse.ensureDir(config.contracts_build_directory);
 
     if (options.db && options.db.enabled === true && contracts.length > 0) {
+      const db = new TruffleDB(options.db);
+
       const project = await db.getProject();
 
       project.contracts = contracts;
       project.compilations = compilations;
 
       await project.save();
+      await db.close();
     }
 
     const artifacts = contracts.map(Shims.NewToLegacy.forContract);

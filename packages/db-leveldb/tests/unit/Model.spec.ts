@@ -1,12 +1,11 @@
 // @ts-nocheck
 import { expect } from "chai";
 import { Storage } from "../../src/storage";
-
 const os = require("os");
 
 describe("Model", () => {
   const modelDirectories = [`${__dirname}/testModels`];
-  const tmpDir = os.tmpdir();
+  const tmpDir = os.tmpdir() + "/leveldb-test";
   let databaseName = "truffledbTest";
   let databaseEngine = "leveldb";
   let databaseDirectory = tmpDir;
@@ -36,6 +35,7 @@ describe("Model", () => {
     Project = models.Project;
   });
   afterEach(async () => {
+    await levelDB.clear();
     await levelDB.close();
   });
 
@@ -96,7 +96,7 @@ describe("Model", () => {
       await Project.create(project);
 
       expect(await Project.exists(project.id)).to.equal(true);
-      expect(await Project.exists(12345)).to.equal(false);
+      expect(await Project.exists(1e10)).to.equal(false);
     });
   });
 
@@ -164,7 +164,7 @@ describe("Model", () => {
   });
 
   describe("bulk", () => {
-    const modelsToCreate = 1000;
+    const modelsToCreate = 100;
     const batchData = [];
     let batchKeys;
     before(async () => {
@@ -209,8 +209,8 @@ describe("Model", () => {
 
       it("accepts gt(e), lt(e) option (leveldb does lexicographical sort)", async () => {
         const options = {
-          gte: 500,
-          lt: 505
+          gte: 50,
+          lt: 55
         };
         const projects = await Project.all(options);
 

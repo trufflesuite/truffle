@@ -2,53 +2,78 @@
 import { TruffleDB } from "../../src";
 import { expect } from "chai";
 
+const os = require("os");
+const WorkflowCompile = require("@truffle/workflow-compile");
 const compileData = require("./data/workflow-compile/compile");
 
 describe("Project", () => {
   let db;
+  let databaseDirectory = os.tmpdir() + "/workflow-compile";
+
+  const workflowCompileConfig = {
+    db: {
+      enabled: true,
+      projectName: "workflow-compile-test",
+      databaseName: "truffledb",
+      databaseEngine: "leveldb",
+      databaseDirectory
+    },
+    contracts_build_directory: os.tmpdir(),
+    contracts_directory: os.tmpdir()
+  };
 
   beforeEach(() => {
-    db = new TruffleDB();
+    db = new TruffleDB(workflowCompileConfig.db);
   });
 
-  it("Add workflow compile data to a project", async () => {
+  afterEach(async () => {
+    await db.levelDB.clear();
+    await db.close();
+  });
+
+  it("save workflow compile data to a project", async () => {
     const { contracts, compilations } = compileData;
+
+    await WorkflowCompile.save(workflowCompileConfig, {
+      contracts,
+      compilations
+    });
 
     const project = await db.getProject();
 
-    project.contracts = contracts;
-    project.compilations = compilations;
+    expect(project.compilations.length).to.equal(compilations.length);
+    expect(project.contracts.length).to.equal(contracts.length);
 
-    await project.save();
+    Object.keys(project.compilations[0]).forEach(key => {
+      if (key === "id") return;
+      expect(project.compilations[0][key]).to.eql(compilations[0][key]);
+    });
 
-    const savedProject = await db.models.Project.get(project.id);
-
-    expect(savedProject).to.eql(project);
+    Object.keys(project.contracts[0]).forEach(key => {
+      if (key === "id") return;
+      expect(project.contracts[0][key]).to.eql(contracts[0][key]);
+    });
   });
-  it("saves the contracts and compilations on a project save", async () => {
+  it("gets the history of workflow compile saves for the project", async () => {
     const { contracts, compilations } = compileData;
 
+    for (let i = 0; i < contracts.length; i++) {
+      await WorkflowCompile.save(workflowCompileConfig, {
+        contracts: [contracts[i]],
+        compilations
+      });
+    }
+
     const project = await db.getProject();
+    const projectHistory = await project.history();
 
-    project.contracts = contracts;
-    project.compilations = compilations;
+    expect(projectHistory.length).to.equal(contracts.length + 1); // 0 is state at creation
 
-    await project.save();
+    projectHistory.shift(); // remove initial state
 
-    const { Contract, Compilation } = db.models;
-    const contractIDs = project.getContractIDs();
-
-    contractIDs.forEach(async id => {
-      expect(await Contract.get(id)).to.exist();
-    });
-
-    const compilationIDs = project.getCompilationIDs();
-
-    compilationIDs.forEach(async id => {
-      expect(await Compilation.get(id)).to.exist();
-    });
+    for (let i = 1; i < projectHistory.length; i++) {
+      const p = db.models.Project.build(projectHistory[i]);
+      expect(p.contracts[0].contractName).to.equal(contracts[i].contractName);
+    }
   });
-  it("save");
-  it("lookup names");
-  it("enumerate resources");
 });

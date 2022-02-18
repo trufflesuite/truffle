@@ -165,6 +165,24 @@ describe("Historical Versions", () => {
       historyDiff = await savedProject.historyDiff(2);
       expect(historyDiff.length).to.equal(2);
     });
+    it("builds a model instance from the historic data", async () => {
+      const v2Name = "version 2";
+      const v3Name = "version 3";
+
+      const savedProject = await Project.create(projectData);
+
+      savedProject.name = v2Name;
+      await savedProject.save();
+
+      savedProject.name = v3Name;
+      await savedProject.save();
+
+      const history = await savedProject.history();
+
+      const historicProject = Project.build(history[history.length - 1]);
+
+      expect(historicProject instanceof Project);
+    });
   });
   describe("Model", () => {
     describe("history", () => {

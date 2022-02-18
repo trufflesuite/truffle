@@ -19,18 +19,11 @@ describe("StorageBackend", () => {
       expect(storage.constructor.name).to.equal("MemDOWN");
     });
   });
-  describe("sqlite", () => {
-    it("creates a sqlite db", () => {
-      storage = StorageBackend.createBackend("sqlite", testDirectory);
-
-      expect(storage.constructor.name).to.equal("SQLdown");
-    });
-  });
   describe("leveldown", () => {
     it("creates a leveldown db", () => {
       storage = StorageBackend.createBackend("leveldown", testDirectory);
 
-      expect(storage.constructor.name).to.equal("LevelDOWN");
+      expect(storage.constructor.name).to.equal("LevelUP");
     });
   });
   describe("default", () => {
@@ -46,18 +39,7 @@ describe("StorageBackend", () => {
             StorageBackend.createBackend("leveldown");
           },
           Error,
-          "constructor requires a location string argument"
-        );
-      });
-    });
-    describe("sqlite", () => {
-      it("no directory provided", () => {
-        assert.throws(
-          () => {
-            StorageBackend.createBackend("sqlite");
-          },
-          Error,
-          "constructor requires at least a location argument"
+          'The "path" argument must be of type string. Received undefined'
         );
       });
     });

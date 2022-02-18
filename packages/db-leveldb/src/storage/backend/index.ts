@@ -1,5 +1,4 @@
-const leveldown = require("leveldown");
-const sqldown = require("sqldown");
+const level = require("level-party");
 const memdown = require("memdown");
 
 export class StorageBackend {
@@ -9,9 +8,13 @@ export class StorageBackend {
   static createBackend(database?: string, directory?: string) {
     switch (database) {
       case "leveldown":
-        return leveldown(directory);
-      case "sqlite":
-        return sqldown(directory);
+        return level(directory, {
+          valueEncoding: "json"
+        });
+      case "leveldb":
+        return level(directory, {
+          valueEncoding: "json"
+        });
       case "memory":
         return memdown();
       default:

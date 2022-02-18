@@ -14,6 +14,7 @@
     "json-diff": "^0.7.1",
     "jsonquery": "^0.2.0",
     "level": "^7.0.1",
+    "level-party": "^5.1.1",
     "memdown": "^6.1.1",
     "sqldown": "^2.1.0",
     "sqlite3": "^5.0.2",

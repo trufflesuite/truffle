@@ -11,12 +11,17 @@ export type TruffleDBConfig = {
 };
 
 export type ModelLookup = {
-  [model: string]: { exists: Function; get: Function; create: Function };
+  [model: string]: {
+    exists: Function;
+    get: Function;
+    create: Function;
+    all: Function;
+  };
 };
 
 export class TruffleDB {
   config: TruffleDBConfig;
-  levelDB: { close: Function };
+  levelDB: { close: Function; clear: Function };
   models: ModelLookup;
 
   constructor(config?: TruffleDBConfig) {
@@ -48,10 +53,14 @@ export class TruffleDB {
   async getProject(name = this.config.projectName) {
     const { Project } = this.models;
 
-    if (await Project.exists(name)) {
-      return await Project.get(name);
-    } else {
-      return await Project.create({ name });
+    try {
+      if (await Project.exists(name)) {
+        return await Project.get(name);
+      } else {
+        return await Project.create({ name });
+      }
+    } catch (e) {
+      console.log(e);
     }
   }
 

@@ -1,19 +1,45 @@
 const Model = require("../Model");
 
 class Contract extends Model {
-  contractName;
-  abi;
-  metadata;
-  devdoc;
-  userdoc;
-  sourcePath;
-  source;
-  sourceMap;
-  ast;
-  legacyAST;
-  bytecode;
-  deployedBytecode;
-  compiler;
+  contractName = {
+    defaultValue: ""
+  };
+  abi = {
+    defaultValue: []
+  };
+  metadata = {
+    defaultValue: ""
+  };
+  devdoc = {
+    defaultValue: ""
+  };
+  userdoc = {
+    defaultValue: ""
+  };
+  sourcePath = {
+    defaultValue: ""
+  };
+  source = {
+    defaultValue: ""
+  };
+  sourceMap = {
+    defaultValue: ""
+  };
+  ast = {
+    defaultValue: {}
+  };
+  legacyAST = {
+    defaultValue: {}
+  };
+  bytecode = {
+    defaultValue: ""
+  };
+  deployedBytecode = {
+    defaultValue: ""
+  };
+  compiler = {
+    defaultValue: {}
+  };
 
   processedSource;
   createBytecode;
@@ -24,11 +50,6 @@ class Contract extends Model {
   async beforeSave() {
     const newId = this.generateID();
 
-    // Key exists in db, but data fields have changed so remove old key
-    // This could also become a batch operation and would then be atomic
-    if (this.id && this.id !== newId) {
-      await Contract.delete(this.id);
-    }
     this.id = newId;
   }
 
