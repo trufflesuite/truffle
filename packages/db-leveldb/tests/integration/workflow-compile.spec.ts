@@ -3,10 +3,10 @@ import { TruffleDB } from "../../src";
 import { expect } from "chai";
 
 const os = require("os");
-const WorkflowCompile = require("@truffle/workflow-compile");
+const WorkflowCompile = require("./mocks/workflow-compile");
 const compileData = require("./data/workflow-compile/compile");
 
-describe("Project", () => {
+describe("Workflow Compile", () => {
   let db;
   let databaseDirectory = os.tmpdir() + "/workflow-compile";
 

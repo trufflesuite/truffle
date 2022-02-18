@@ -21,10 +21,13 @@ export const projects: Definition<"projects"> = {
   typeDefs: gql`
     type Project implements Resource {
       directory: String!
+
       contract(name: String!): Contract
       contracts: [Contract!]!
+
       network(name: String!): Network
       networks: [Network!]!
+
       contractInstance(
         contract: ResourceNameInput
         address: Address
