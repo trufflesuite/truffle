@@ -31,16 +31,13 @@ export function* advance() {
   let waitingForSubmodules = 0;
 
   if (remaining > 0) {
-    debug("putting TICK");
     // updates state for current step
     waitingForSubmodules = yield select(trace.application.submoduleCount);
     yield put(actions.tick());
-    debug("put TICK");
 
     //wait for all backticks before continuing
     while (waitingForSubmodules > 0) {
-      yield take(actions.BACKTICK);
-      debug("got BACKTICK");
+      yield take(actions.TOCK);
       waitingForSubmodules--;
     }
 
@@ -48,19 +45,15 @@ export function* advance() {
   }
 
   if (remaining) {
-    debug("putting TOCK");
     // updates step to next step in trace
-    yield put(actions.tock());
-    debug("put TOCK");
+    yield put(actions.advance());
   } else {
-    debug("putting END_OF_TRACE");
     yield put(actions.endTrace());
-    debug("put END_OF_TRACE");
   }
 }
 
 export function* signalTickSagaCompletion() {
-  yield put(actions.backtick());
+  yield put(actions.tock());
 }
 
 export function* processTrace(steps) {
