@@ -18,7 +18,7 @@ const SolidityTest = {
       // contracts) which need to be compiled before initializing the runner
       await self.compileNewAbstractInterface.bind(this)(runner);
       await runner.initialize.bind(runner)();
-      runner.disableChecks(); //for handling of test events on Solidity <0.7.6 due to empty string problem
+      runner.disableChecksOnEventDecoding(); //for handling of test events on Solidity <0.7.6 due to empty string problem
       await self.deployTestDependencies.bind(this)(
         abstraction,
         dependencyPaths,
@@ -27,7 +27,7 @@ const SolidityTest = {
     });
 
     suite.afterAll("clean up", function () {
-      runner.reEnableChecks();
+      runner.reEnableChecksOnEventDecoding();
     });
 
     suite.beforeEach("before test", async function () {

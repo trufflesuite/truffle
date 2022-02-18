@@ -39,11 +39,11 @@ class TestRunner {
     this.TEST_TIMEOUT = (options.mocha && options.mocha.timeout) || 300000;
   }
 
-  disableChecks() {
+  disableChecksOnEventDecoding() {
     this.disableChecks = true; //used by Solidity testing due to empty string problem on Solidity <0.7.6
   }
 
-  reEnableChecks() {
+  reEnableChecksOnEventDecoding() {
     this.disableChecks = false;
   }
 
