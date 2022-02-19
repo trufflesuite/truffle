@@ -1,10 +1,11 @@
 export const JUMP_IN = "STACKTRACE_JUMP_IN";
-export function jumpIn(location, functionNode, contractNode) {
+export function jumpIn(location, functionNode, contractNode, sourceIsInternal) {
   return {
     type: JUMP_IN,
     location,
     functionNode,
-    contractNode
+    contractNode,
+    sourceIsInternal
   };
 }
 

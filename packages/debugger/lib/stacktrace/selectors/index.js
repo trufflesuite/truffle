@@ -24,7 +24,8 @@ function generateReport(rawStack, location, status, message) {
     if (
       frame.combineWithNextInternal &&
       i < rawStack.length - 1 &&
-      rawStack[i + 1].type === "internal"
+      rawStack[i + 1].type === "internal" &&
+      !rawStack[i + 1].sourceIsInternal
     ) {
       const combinedFrame = {
         ...rawStack[i + 1],
@@ -100,6 +101,14 @@ function createMultistepSelectors(stepSelector) {
        */
       pointer: createLeaf([stepSelector.pointer], identity)
     },
+
+    /**
+     * .sourceIsInternal
+     */
+    sourceIsInternal: createLeaf(
+      ["./location/source"],
+      source => source.id === undefined || source.internal
+    ),
 
     /**
      * .strippedLocation

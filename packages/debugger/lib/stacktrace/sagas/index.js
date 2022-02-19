@@ -62,7 +62,15 @@ function* stacktraceSaga() {
     //note: do NOT process jumps while there are returns waiting to execute
     const nextLocation = yield select(stacktrace.next.location);
     const nextParent = yield select(stacktrace.next.contractNode);
-    yield put(actions.jumpIn(currentLocation, nextLocation.node, nextParent));
+    const nextSourceIsInternal = yield select(stacktrace.next.sourceIsInternal);
+    yield put(
+      actions.jumpIn(
+        currentLocation,
+        nextLocation.node,
+        nextParent,
+        nextSourceIsInternal
+      )
+    );
     positionUpdated = true;
   } else if (
     (yield select(stacktrace.current.willJumpOut)) &&
