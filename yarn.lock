@@ -5489,10 +5489,10 @@
   dependencies:
     "@truffle/preserve" "^0.2.6"
 
-"@truffle/preserve-to-buckets@^0.2.6":
-  version "0.2.6"
-  resolved "https://registry.yarnpkg.com/@truffle/preserve-to-buckets/-/preserve-to-buckets-0.2.6.tgz#1d25ad137a304e56698196b4bfafe62260ae2821"
-  integrity sha512-dKnxz9yJ0iGRVtYPTfBa84Zz+YF0BC/dLsI0qXnRACQV4kiwtppSHfJaFu0z+FqTWmF9qnpjxXuQvXwSzILU6g==
+"@truffle/preserve-to-buckets@^0.2.7":
+  version "0.2.7"
+  resolved "https://registry.yarnpkg.com/@truffle/preserve-to-buckets/-/preserve-to-buckets-0.2.7.tgz#352d8e746cbd0963afe49155de786bcd6c169417"
+  integrity sha512-CBH3qRVRrzrAbmCCW8AkoI3FzLpmJ/cPCqHKn+Lk7AuA+i/QuwVbyUL6Jvgz2B0kU3bUqf9uxOMdhPbOBufISA==
   dependencies:
     "@textile/hub" "^6.0.2"
     "@truffle/preserve" "^0.2.6"
@@ -5500,7 +5500,7 @@
     ipfs-http-client "^48.2.2"
     isomorphic-ws "^4.0.1"
     iter-tools "^7.0.2"
-    ws "^7.4.3"
+    ws "^7.2.0"
 
 "@truffle/preserve-to-filecoin@^0.2.7":
   version "0.2.7"
@@ -33524,7 +33524,7 @@ ws@^6.2.1:
   dependencies:
     async-limiter "~1.0.0"
 
-ws@^7.2.0, ws@^7.4.3, ws@^7.4.6:
+ws@^7.2.0, ws@^7.4.6:
   version "7.5.7"
   resolved "https://registry.yarnpkg.com/ws/-/ws-7.5.7.tgz#9e0ac77ee50af70d58326ecff7e85eb3fa375e67"
   integrity sha512-KMvVuFzpKBuiIXW3E4u3mySRO2/mCHSyZDJQM5NQ9Q9KHWHWh0NHgfbRMLLrceUK5qAL4ytALJbpRMjixFZh8A==
