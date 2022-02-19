@@ -50,7 +50,7 @@ contract StacktraceTest {
 
   function runRequire(bool succeed) public {
     emit Num(1); //EMIT
-    require(succeed); //REQUIRE
+    require(succeed, "requirement failed"); //REQUIRE
   }
 
   function runPay(bool succeed) public {
@@ -83,8 +83,10 @@ contract StacktraceTest {
     fail(); //CANTFALLBACK
   }
 
+  error CustomFailure();
+
   function fail() public {
-    revert("Nope!"); //FALLBACKFAIL
+    revert CustomFailure(); //FALLBACKFAIL
   }
 
   function runFallback(bool succeed) public {
@@ -220,6 +222,7 @@ describe("Stack tracing", function () {
     let prevLocation = report[report.length - 2].location;
     assert.strictEqual(location.sourceRange.lines.start.line, failLine);
     assert.strictEqual(prevLocation.sourceRange.lines.start.line, callLine);
+    assert.strictEqual(report[0].message, "requirement failed");
   });
 
   it("Generates correct stack trace at an intermediate state", async function () {
@@ -386,6 +389,7 @@ describe("Stack tracing", function () {
     let prevLocation = report[report.length - 4].location; //similar
     assert.strictEqual(location.sourceRange.lines.start.line, failLine);
     assert.strictEqual(prevLocation.sourceRange.lines.start.line, callLine);
+    assert.strictEqual(report[0].panic.toNumber(), 0x51);
   });
 
   it("Generates correct stack trace on unexpected self-destruct", async function () {
@@ -515,6 +519,7 @@ describe("Stack tracing", function () {
       callLine,
       "wrong call line"
     );
+    assert.strictEqual(report[0].message, "Nope!");
   });
 
   it("Generates correct stack trace after an internal call in a fallback function", async function () {
@@ -572,6 +577,7 @@ describe("Stack tracing", function () {
       callLine,
       "wrong call line"
     );
+    assert.isTrue(report[0].custom);
   });
 
   it("Generates correct stack trace after an internal call in a constructor", async function () {
@@ -636,5 +642,6 @@ describe("Stack tracing", function () {
     let prevLocation = report[report.length - 2].location;
     assert.strictEqual(location.sourceRange.lines.start.line, failLine);
     assert.strictEqual(prevLocation.sourceRange.lines.start.line, callLine);
+    assert.strictEqual(report[0].message, "Nope!");
   });
 });
