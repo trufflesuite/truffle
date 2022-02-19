@@ -32,12 +32,14 @@ function* stacktraceSaga() {
     const index = yield select(stacktrace.current.index);
     const updateIndex = yield select(stacktrace.current.updateIndex);
     debug("returning!");
-    yield put(actions.externalReturn(
-      lastLocation,
-      status,
-      currentLocation,
-      updateIndex ? index : null //we use null to mean don't update
-    ));
+    yield put(
+      actions.externalReturn(
+        lastLocation,
+        status,
+        currentLocation,
+        updateIndex ? index : null //we use null to mean don't update
+      )
+    );
     positionUpdated = true;
   } else if (
     //next: are we *executing* a return?
@@ -80,7 +82,17 @@ function* stacktraceSaga() {
     //doesn't work across call contexts!
     const nextContext = yield select(stacktrace.current.callContext);
     const nextAddress = yield select(stacktrace.current.callAddress);
-    yield put(actions.externalCall(currentLocation, nextContext, nextAddress));
+    const combineWithNextInternal = yield select(
+      stacktrace.current.callCombinesWithNextJumpIn
+    );
+    yield put(
+      actions.externalCall(
+        currentLocation,
+        nextContext,
+        nextAddress,
+        combineWithNextInternal
+      )
+    );
     positionUpdated = true;
   }
   //finally, if no other action updated the position, do so here
@@ -100,7 +112,12 @@ export function* unload() {
 export function* begin() {
   const context = yield select(stacktrace.current.context);
   const address = yield select(stacktrace.current.address);
-  yield put(actions.externalCall(null, context, address));
+  const combineWithNextInternal = yield select(
+    stacktrace.transaction.initialCallCombinesWithNextJumpIn
+  );
+  yield put(
+    actions.externalCall(null, context, address, combineWithNextInternal)
+  );
 }
 
 export function* saga() {
