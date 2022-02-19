@@ -153,12 +153,9 @@ describe("Stack tracing", function () {
     let report = bugger.view(stacktrace.current.finalReport);
     let functionNames = report.map(({ functionName }) => functionName);
     assert.deepEqual(functionNames, [
-      undefined,
       "run",
-      undefined,
       "run3",
       "run2",
-      undefined,
       "run1",
       "runRequire"
     ]);
@@ -206,15 +203,7 @@ describe("Stack tracing", function () {
 
     let report = bugger.view(stacktrace.current.report);
     let functionNames = report.map(({ functionName }) => functionName);
-    assert.deepEqual(functionNames, [
-      undefined,
-      "run",
-      undefined,
-      "run2",
-      undefined,
-      "run1",
-      "runRequire"
-    ]);
+    assert.deepEqual(functionNames, ["run", "run2", "run1", "runRequire"]);
     let contractNames = report.map(({ contractName }) => contractName);
     assert(contractNames.every(name => name === "StacktraceTest"));
     let addresses = report.map(({ address }) => address);
@@ -231,12 +220,9 @@ describe("Stack tracing", function () {
     report = bugger.view(stacktrace.current.report);
     functionNames = report.map(({ functionName }) => functionName);
     assert.deepEqual(functionNames, [
-      undefined,
       "run",
-      undefined,
       "run3",
       "run2",
-      undefined,
       "run1",
       "runRequire"
     ]);
@@ -281,12 +267,9 @@ describe("Stack tracing", function () {
     let report = bugger.view(stacktrace.current.finalReport);
     let functionNames = report.map(({ functionName }) => functionName);
     assert.deepEqual(functionNames, [
-      undefined,
       "run",
-      undefined,
       "run3",
       "run2",
-      undefined,
       "run1",
       "runPay",
       undefined
@@ -332,12 +315,9 @@ describe("Stack tracing", function () {
     let report = bugger.view(stacktrace.current.finalReport);
     let functionNames = report.map(({ functionName }) => functionName);
     assert.deepEqual(functionNames, [
-      undefined,
       "run",
-      undefined,
       "run3",
       "run2",
-      undefined,
       "run1",
       "runInternal",
       undefined,
@@ -351,7 +331,7 @@ describe("Stack tracing", function () {
     assert(addresses.every(address => address === instance.address));
     let status = report[report.length - 1].status;
     assert.isFalse(status);
-    let location = report[report.length - 3].location; //note, -2 because of panic & undefined on top
+    let location = report[report.length - 3].location; //note, -3 because of panic & undefined on top
     let prevLocation = report[report.length - 4].location; //similar
     assert.strictEqual(location.sourceRange.lines.start.line, failLine);
     assert.strictEqual(prevLocation.sourceRange.lines.start.line, callLine);
@@ -387,37 +367,30 @@ describe("Stack tracing", function () {
     let report = bugger.view(stacktrace.current.finalReport);
     let functionNames = report.map(({ functionName }) => functionName);
     assert.deepEqual(functionNames, [
-      undefined,
       "run",
-      undefined,
       "run3",
       "run2",
-      undefined,
       "run1",
       "runBoom",
-      undefined,
       "boom"
     ]);
     let contractNames = report.map(({ contractName }) => contractName);
     assert.strictEqual(contractNames[contractNames.length - 1], "Boom");
     contractNames.pop(); //top frame
-    assert.strictEqual(contractNames[contractNames.length - 1], "Boom");
-    contractNames.pop(); //second-top frame
     assert(contractNames.every(name => name === "StacktraceTest"));
     let addresses = report.map(({ address }) => address);
-    assert.strictEqual(
+    assert.notEqual(
+      //check that Boom and StacktraceTest are not same address
       addresses[addresses.length - 1],
       addresses[addresses.length - 2]
     );
-    addresses.pop();
     addresses.pop();
     assert(addresses.every(address => address === instance.address));
     let status = report[report.length - 1].status;
     assert.isTrue(status);
     let location = report[report.length - 1].location;
-    //skip a frame for the junk frame
-    let prevLocation = report[report.length - 3].location;
-    let prev2Location = report[report.length - 4].location;
+    let prevLocation = report[report.length - 2].location;
+    let prev2Location = report[report.length - 3].location;
     assert.strictEqual(location.sourceRange.lines.start.line, failLine);
     assert.strictEqual(prevLocation.sourceRange.lines.start.line, callLine);
     assert.strictEqual(
