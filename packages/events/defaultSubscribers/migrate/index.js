@@ -39,7 +39,7 @@ module.exports = {
     "migrate:settingCompletedMigrations:start": [
       async function (data) {
         if (this.config.quiet) return;
-        this.logger.log();
+
         await this.reporter.startTransaction(data);
       }
     ],
@@ -120,8 +120,7 @@ module.exports = {
     "deployment:txHash": [
       async function (data) {
         if (this.config.quiet) return;
-        const message = await this.reporter.txHash(data);
-        this.logger.log(message);
+        await this.reporter.txHash(data);
       }
     ],
     "deployment:linking": [
