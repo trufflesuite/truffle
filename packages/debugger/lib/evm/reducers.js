@@ -18,44 +18,17 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
      * Adding a new context
      */
     case actions.ADD_CONTEXT:
-      const {
-        context,
-        contractName,
-        binary,
-        sourceMap,
-        primarySource,
-        immutableReferences,
-        compiler,
-        compilationId,
-        abi,
-        contractId,
-        contractKind,
-        isConstructor,
-        linearizedBaseContracts
-      } = action;
-      debug("action %O", action);
+      let contextObject = { ...action };
+      delete contextObject.type; //this doesn't go in a context!
+      contextObject.payable = Codec.AbiData.Utils.abiHasPayableFallback(
+        contextObject.abi
+      );
 
       return {
         ...state,
         byContext: {
           ...state.byContext,
-          [context]: {
-            context,
-            contractName,
-            context,
-            binary,
-            sourceMap,
-            primarySource,
-            immutableReferences,
-            compiler,
-            compilationId,
-            abi,
-            contractId,
-            contractKind,
-            isConstructor,
-            linearizedBaseContracts,
-            payable: Codec.AbiData.Utils.abiHasPayableFallback(abi)
-          }
+          [contextObject.context]: contextObject
         }
       };
 

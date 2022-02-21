@@ -20,9 +20,10 @@ function contextRequiresPhantomStackframes(context, data) {
     abiEntry => abiEntry.type === "fallback" || abiEntry.type === "receive"
   );
   return (
+    context.primaryLanguage === "Solidity" && //do not use phantom frames for Yul or Vyper!
     context.compiler !== undefined && //(do NOT just put context.compiler here,
     //we need this to be a boolean, not undefined, because it gets put in the state)
-    context.compiler.name === "solc" &&
+    context.compiler.name === "solc" && //this check is possibly redundant now but I'll keep it in
     semver.satisfies(context.compiler.version, ">=0.5.1", {
       includePrerelease: true
     }) &&

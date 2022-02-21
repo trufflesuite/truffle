@@ -1,34 +1,8 @@
 export const ADD_CONTEXT = "EVM_ADD_CONTEXT";
-export function addContext({
-  context,
-  contractName,
-  binary,
-  sourceMap,
-  primarySource,
-  immutableReferences,
-  compiler,
-  compilationId,
-  abi,
-  contractId,
-  contractKind,
-  isConstructor,
-  linearizedBaseContracts
-}) {
+export function addContext(context) {
   return {
-    type: ADD_CONTEXT,
-    context,
-    contractName,
-    binary,
-    sourceMap,
-    primarySource,
-    immutableReferences,
-    compiler,
-    compilationId,
-    abi,
-    contractId,
-    contractKind,
-    isConstructor,
-    linearizedBaseContracts
+    ...context,
+    type: ADD_CONTEXT
   };
 }
 
