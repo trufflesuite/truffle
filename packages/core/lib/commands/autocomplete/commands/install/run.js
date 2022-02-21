@@ -3,7 +3,8 @@ const TruffleError = require("@truffle/error");
 const {
   completionScriptName,
   locationFromShell,
-  shellConfigSetting
+  shellConfigSetting,
+  shellName
 } = require("../../helpers");
 
 module.exports = async function (_) {
@@ -14,52 +15,41 @@ module.exports = async function (_) {
     completionScriptName()
   );
 
-  writeCompletionScript(completionScript);
-
   try {
+    writeCompletionScript(completionScript);
     appendToShellConfig(completionScript);
   } catch (err) {
-    if (err instanceof TruffleError) {
-      const colors = require("colors");
-      const warning = colors.yellow(
-        `> Will not install CLI tab-complete: ${err.message}`
-      );
-      console.log(warning);
-    } else {
-      throw err;
-    }
+    const colors = require("colors");
+    const warning = colors.yellow(
+      `> Will not install CLI tab-complete: ${err.message}`
+    );
+    console.log(warning);
   }
 };
 
 function writeCompletionScript(filePath) {
-  if (fs.existsSync(filePath)) {
-    return;
+  const templates = require("./templates");
+  const shell = shellName();
+  let completion = templates[shell];
+  if (!completion) {
+    throw TruffleError(
+      `Cannot create completion script for shell of type ${shell}`
+    );
   }
 
-  // Monkey patch console.log. Done for two reasons:
-  //   1. To capture completion script from yargs (no other way)
-  //   2. To prevent it from printing to stdout during installation
-  let content;
-  const origFuncHandle = global.console.log;
-  global.console.log = args => {
-    content = args;
-  };
-  require("yargs/yargs")().showCompletionScript();
-  global.console.log.apply = origFuncHandle;
-  fs.writeFileSync(filePath, content);
+  completion = completion.replace(/{{app_name}}/g, "truffle");
+  fs.writeFileSync(
+    filePath,
+    completion.replace(/{{app_path}}/g, process.argv[1])
+  );
 }
 
 function appendToShellConfig(filePath) {
   const scriptConfigLocation = locationFromShell();
   const linesToAdd = shellConfigSetting(filePath);
-  if (
-    !fs.existsSync(scriptConfigLocation) ||
-    stringInFile(linesToAdd, scriptConfigLocation)
-  ) {
-    return;
+  if (!stringInFile(linesToAdd, scriptConfigLocation)) {
+    fs.appendFileSync(scriptConfigLocation, linesToAdd);
   }
-
-  fs.appendFileSync(scriptConfigLocation, linesToAdd);
 }
 
 function stringInFile(string, fileName) {
