@@ -188,6 +188,25 @@ library DepthLibrary {
 }
 `;
 
+const __CALL_YUL = `
+object "YulFnTest" {
+  code {
+    let size := datasize("runtime")
+    datacopy(0, dataoffset("runtime"), size)
+    return(0, size)
+  }
+  object "runtime" {
+    code {
+      function one() -> a {
+        a := 1 //BREAK
+      }
+      mstore(0, one())
+      return(0, 0x20)
+    }
+  }
+}
+`;
+
 const __MIGRATION = `
 const SingleCall = artifacts.require("SingleCall");
 const NestedCall = artifacts.require("NestedCall");
@@ -197,6 +216,7 @@ const AdjustTest = artifacts.require("AdjustTest");
 const DepthTest = artifacts.require("DepthTest");
 const DepthLibrary = artifacts.require("DepthLibrary");
 const Secondary = artifacts.require("Secondary");
+const YulFnTest = artifacts.require("YulFnTest");
 
 module.exports = async function(deployer) {
   await deployer.deploy(SingleCall);
@@ -204,6 +224,7 @@ module.exports = async function(deployer) {
   await deployer.deploy(RevertTest);
   await deployer.deploy(BadTransferTest);
   await deployer.deploy(AdjustTest);
+  await deployer.deploy(YulFnTest);
   await deployer.deploy(DepthLibrary);
   await deployer.link(DepthLibrary, DepthTest);
   await deployer.deploy(Secondary);
@@ -222,7 +243,8 @@ let sources = {
   "FailedCall.sol": __FAILED_CALL,
   "AdjustTest.sol": __ADJUSTMENT,
   "BadTransfer.sol": __OVER_TRANSFER,
-  "DepthTest.sol": __COMPLEX_CALLS
+  "DepthTest.sol": __COMPLEX_CALLS,
+  "YulFnTest.yul": __CALL_YUL
 };
 
 describe("Solidity Debugging", function () {
@@ -576,6 +598,30 @@ describe("Solidity Debugging", function () {
         }
       } while (!bugger.view(trace.finished));
       assert(hasReachedTwo);
+    });
+
+    it("counts each function call in Yul", async function () {
+      const instance = await abstractions.YulFnTest.deployed();
+      const receipt = await instance.sendTransaction();
+      const txHash = receipt.tx;
+
+      const bugger = await Debugger.forTx(txHash, {
+        provider,
+        compilations,
+        lightMode: true
+      });
+
+      const source = bugger.view(solidity.current.source);
+      const breakLine = lineOf("BREAK", source.source);
+      const breakpoint = {
+        sourceId: source.id,
+        line: breakLine
+      };
+
+      await bugger.addBreakpoint(breakpoint);
+      await bugger.continueUntilBreakpoint();
+
+      assert.equal(bugger.view(solidity.current.functionDepth), 1);
     });
   });
 });
