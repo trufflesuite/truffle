@@ -3,8 +3,20 @@ const uninstall = require("./commands/uninstall");
 
 module.exports = {
   command: "autocomplete",
-  description: false, // Not intended to be used by clients
-  builder: {},
+  description: false, // Will not be displayed on help menu
+  builder: function (yargs) {
+    return yargs
+      .command({
+        ...install.run,
+        ...install.meta
+      })
+      .demandCommand()
+      .command({
+        ...uninstall.run,
+        ...uninstall.meta
+      })
+      .demandCommand();
+  },
   help: {
     usage: "truffle autocomplete <command>",
     options: [],
