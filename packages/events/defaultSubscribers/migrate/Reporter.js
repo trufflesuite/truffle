@@ -225,9 +225,10 @@ class Reporter {
   async postDeploy(data) {
     let message;
     if (data.deployed) {
-      const txCostReport = await data.contract.interfaceAdapter.getTransactionCostReport(
-        data.receipt
-      );
+      const txCostReport =
+        await data.contract.interfaceAdapter.getTransactionCostReport(
+          data.receipt
+        );
 
       // if it returns null, try again!
       if (!txCostReport) return this.postDeploy(data);
@@ -320,6 +321,8 @@ class Reporter {
     if (this.subscriber.config.dryRun) return;
 
     let message = this.messages.steps("hash", data);
+    this.subscriber.logger.log(message);
+
     this.currentBlockWait = `Blocks: 0`.padEnd(21) + `Seconds: 0`;
 
     this.blockSpinner = new ora({
@@ -329,7 +332,6 @@ class Reporter {
     });
 
     this.blockSpinner.start();
-    return message;
   }
 
   /**
