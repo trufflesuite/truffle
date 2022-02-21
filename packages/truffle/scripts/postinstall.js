@@ -29,7 +29,6 @@ const postinstallAutocomplete = () => {
         `> To manually install tab-complete, type truffle autocomplete install\n`
     );
     console.log(warning);
-    process.exit(child.status);
   }
 };
 
@@ -38,5 +37,4 @@ try {
   postinstallAutocomplete();
 } catch (error) {
   console.error(error);
-  process.exit(1);
 }
