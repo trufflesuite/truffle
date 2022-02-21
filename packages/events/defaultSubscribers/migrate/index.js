@@ -107,8 +107,7 @@ module.exports = {
     "deployment:block": [
       async function (data) {
         if (this.config.quiet) return;
-        const message = await this.reporter.block(data);
-        this.logger.log(message);
+        await this.reporter.block(data);
       }
     ],
     "deployment:confirmation": [
