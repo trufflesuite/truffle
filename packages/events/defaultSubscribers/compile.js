@@ -27,8 +27,7 @@ module.exports = {
 
           for (const compiler of compilers) {
             const padding = " ".repeat(maxLength - compiler.name.length);
-            const versionReport =
-              `   - ${compiler.name}:${padding} ${compiler.version}`;
+            const versionReport = `   - ${compiler.name}:${padding} ${compiler.version}`;
 
             if (!versionReports.has(versionReport)) {
               this.logger.log(versionReport);
@@ -36,7 +35,6 @@ module.exports = {
             }
           }
         }
-        this.logger.log();
       }
     ],
     "compile:sourcesToCompile": [
