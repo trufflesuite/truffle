@@ -20,6 +20,10 @@ let mockHomeDir;
 
 describe("autocomplete", () => {
   before("Create a sandbox", async () => {
+    if (!process.env.SHELL) {
+      process.env.SHELL = "";
+    }
+
     config = await Box.sandbox("default");
     config.resolver = new Resolver(config);
     config.artifactor = new Artifactor(config.contracts_build_directory);
@@ -95,6 +99,15 @@ describe("autocomplete", () => {
 
     it("can handle unknown shells", async () => {
       sinon.stub(process.env, "SHELL").value("fish");
+
+      const options = { _: ["install"] };
+      await autocomplete.run(config.with(options));
+
+      // Test passes as long as it doesn't throw
+    });
+
+    it("can handle undefined SHELL", async () => {
+      sinon.stub(process.env, "SHELL").value(undefined);
 
       const options = { _: ["install"] };
       await autocomplete.run(config.with(options));
