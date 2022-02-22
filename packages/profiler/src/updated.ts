@@ -15,16 +15,9 @@ export async function updated({
   paths,
   contractsBuildDirectory
 }: UpdatedOptions): Promise<string[]> {
-  const sourceFilesArtifacts = readAndParseArtifactFiles(
-    paths,
-    contractsBuildDirectory
-  );
-  const sourceFilesArtifactsUpdatedTimes =
-    minimumUpdatedTimePerSource(sourceFilesArtifacts);
-  return findUpdatedFiles(
-    sourceFilesArtifacts,
-    sourceFilesArtifactsUpdatedTimes
-  );
+  const artifacts = readAndParseArtifactFiles(paths, contractsBuildDirectory);
+  const artifactsUpdatedTimes = minimumUpdatedTimePerSource(artifacts);
+  return findUpdatedFiles(artifacts, artifactsUpdatedTimes);
 }
 
 interface SourceFilesArtifacts {
@@ -84,12 +77,12 @@ function readAndParseArtifactFiles(
 }
 
 function findUpdatedFiles(
-  sourceFilesArtifacts: SourceFilesArtifacts,
-  sourceFilesArtifactsUpdatedTimes: SourceFilesArtifactsUpdatedTimes
+  sourceArtifacts: SourceFilesArtifacts,
+  sourceArtifactsUpdatedTimes: SourceFilesArtifactsUpdatedTimes
 ): string[] {
   // Stat all the source files, getting there updated times, and comparing them to
   // the artifact updated times.
-  const sourceFiles = Object.keys(sourceFilesArtifacts);
+  const sourceFiles = Object.keys(sourceArtifacts);
 
   let sourceFileStats: (fs.Stats | null)[];
   sourceFileStats = sourceFiles.map(file => {
@@ -104,16 +97,13 @@ function findUpdatedFiles(
   });
 
   return sourceFiles.filter((sourceFile, index) => {
-    const sourceFileStat = sourceFileStats[index];
+    const stat = sourceFileStats[index];
 
     // Ignore updating artifacts if source file has been removed.
-    if (sourceFileStat == null) return;
+    if (stat == null) return;
 
-    const artifactsUpdatedTime =
-      sourceFilesArtifactsUpdatedTimes[sourceFile] || 0;
-    const sourceFileUpdatedTime = (
-      sourceFileStat.mtime || sourceFileStat.ctime
-    ).getTime();
+    const artifactsUpdatedTime = sourceArtifactsUpdatedTimes[sourceFile] || 0;
+    const sourceFileUpdatedTime = (stat.mtime || stat.ctime).getTime();
 
     return sourceFileUpdatedTime > artifactsUpdatedTime;
   });
@@ -122,7 +112,7 @@ function findUpdatedFiles(
 function minimumUpdatedTimePerSource(
   sourceFilesArtifacts: SourceFilesArtifacts
 ) {
-  let sourceFilesArtifactsUpdatedTimes: SourceFilesArtifactsUpdatedTimes = {};
+  let updatedTimes: SourceFilesArtifactsUpdatedTimes = {};
   // Get the minimum updated time for all of a source file's artifacts
   // (note: one source file might have multiple artifacts).
   for (const sourceFile of Object.keys(sourceFilesArtifacts)) {
@@ -138,7 +128,7 @@ function minimumUpdatedTimePerSource(
     if (minTime === Number.MAX_SAFE_INTEGER) {
       minTime = 0;
     }
-    sourceFilesArtifactsUpdatedTimes[sourceFile] = minTime;
+    updatedTimes[sourceFile] = minTime;
   }
-  return sourceFilesArtifactsUpdatedTimes;
+  return updatedTimes;
 }
