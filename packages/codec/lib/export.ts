@@ -469,7 +469,8 @@ export function formatFunctionLike(
   header: string,
   values: AbiArgument[],
   options: InspectOptions,
-  suppressType: boolean = false
+  suppressType: boolean = false,
+  indent: number = 2 //for use by debug-utils
 ): string {
   if (values.length === 0) {
     return `${header}()`;
@@ -487,10 +488,10 @@ export function formatFunctionLike(
         displayValue +
         typeString +
         (index < values.length - 1 ? "," : ""),
-      4
+      2 * indent
     );
   });
-  return `${header}(${OS.EOL}${indentArray(formattedValues, 2).join(OS.EOL)}${
+  return `${header}(${OS.EOL}${indentArray(formattedValues, indent).join(
     OS.EOL
-  })`;
+  )}${OS.EOL})`;
 }
