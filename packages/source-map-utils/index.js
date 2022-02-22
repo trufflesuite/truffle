@@ -170,31 +170,16 @@ var SourceMapUtils = {
         }
         const lineAndColumnMapping =
           lineAndColumnMappings[instruction.file] || {};
-        // we set the source range of an instruction to the end of source code for display
-        // purpose when its byte-offset to the start of the range in the source code is past
-        // the end of source code
-        if (
-          instruction.file !== -1 &&
-          instruction.start > lineAndColumnMapping.length - 1
-        ) {
-          instruction.range = {
-            start: lineAndColumnMapping[lineAndColumnMapping.length - 1],
-            end: lineAndColumnMapping[lineAndColumnMapping.length - 1]
-          };
-        } else {
-          instruction.range = {
-            start: lineAndColumnMapping[instruction.start] || {
-              line: null,
-              column: null
-            },
-            end: lineAndColumnMapping[
-              instruction.start + instruction.length
-            ] || {
-              line: null,
-              column: null
-            }
-          };
-        }
+        instruction.range = {
+          start: lineAndColumnMapping[instruction.start] || {
+            line: null,
+            column: null
+          },
+          end: lineAndColumnMapping[instruction.start + instruction.length] || {
+            line: null,
+            column: null
+          }
+        };
 
         return instruction;
       });
