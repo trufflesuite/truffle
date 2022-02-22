@@ -13,7 +13,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.2.93",
+  "version": "0.2.94",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0",
@@ -24,7 +24,7 @@
     "@truffle/error": "^0.1.0",
     "@truffle/expect": "^0.1.0",
     "@truffle/interface-adapter": "^0.5.11",
-    "@truffle/resolver": "^8.0.7",
+    "@truffle/resolver": "^8.0.8",
     "ganache": "7.0.1",
     "node-ipc": "^9.1.1",
     "source-map-support": "^0.5.19",
