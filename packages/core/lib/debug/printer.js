@@ -392,7 +392,7 @@ class DebugPrinter {
               default:
                 this.config.logger.log("The following error was thrown:");
                 this.config.logger.log(
-                  DebugUtils.formatCustomError(revertDecoding, 2)
+                  DebugUtils.formatCustomError(revertDecoding)
                 );
             }
             break;
@@ -404,7 +404,7 @@ class DebugPrinter {
         );
         this.config.logger.log("Possible interpretations:");
         for (const decoding of revertDecodings) {
-          this.config.logger.log(DebugUtils.formatCustomError(decoding, 2));
+          this.config.logger.log(DebugUtils.formatCustomError(decoding));
         }
         break;
     }

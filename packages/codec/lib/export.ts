@@ -462,7 +462,10 @@ function indentExcludingFirstLine(input: string, indentation: number): string {
 //events (including anonymous events), identifiable transactions,
 //and revert messages
 //"header" param should include everything before the initial parenthesis
-function formatFunctionLike(
+/**
+ * @hidden
+ */
+export function formatFunctionLike(
   header: string,
   values: AbiArgument[],
   options: InspectOptions,
