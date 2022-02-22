@@ -81,7 +81,7 @@
     "web3": "1.7.4",
     "web3-utils": "1.7.4",
     "xregexp": "^4.2.4",
-    "yargs": "^17.3.1"
+    "yargs": "^13.3.0"
   },
   "devDependencies": {
     "@truffle/blockchain-utils": "^0.1.4",
