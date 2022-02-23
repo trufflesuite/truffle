@@ -172,6 +172,8 @@ class DebugPrinter {
     const colorizedLines = splitLines(colorizedSource);
 
     this.config.logger.log("");
+    // We clone range though only "lines" is used here.
+    let rangePrintout = JSON.parse(JSON.stringify(range));
     // We print a warning message and display the end of source code when the
     // instruction's byte-offset to the start of the range in the source code
     // is past the end of source code
@@ -181,11 +183,11 @@ class DebugPrinter {
         `${colors.bold("Warning:")} Past end of source, displaying end.`
       );
       this.config.logger.log("");
-      // We set the source range to the end of source code for printing purpose only
-      // Note that the object "lines" is the split lines of source code as defined above
-      range.lines = {
-        start: { line: Object.keys(lines).length - 1, column: 0 },
-        end: { line: Object.keys(lines).length - 1, column: 0 }
+      // We set the lines of the cloned range with the end of source code.
+      // Note that "lines" is the split lines of source code as defined above.
+      rangePrintout.lines = {
+        start: { line: lines.length - 1, column: 0 },
+        end: { line: lines.length - 1, column: 0 }
       };
     }
 
@@ -194,7 +196,7 @@ class DebugPrinter {
     this.config.logger.log(
       DebugUtils.formatRangeLines(
         colorizedLines,
-        range.lines,
+        rangePrintout.lines,
         lines,
         contextBefore,
         contextAfter
