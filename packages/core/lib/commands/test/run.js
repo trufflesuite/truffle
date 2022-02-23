@@ -68,7 +68,42 @@ module.exports = async function (options) {
     inputFile: file
   });
 
-  if (config.networks[config.network]) {
+  /**
+   * If test network exists and provider, host or url exists, then it connects to that external network.
+   * If test network exists and provider, host or url doesn't exist, then internal ganache is started with the user specified
+   * configurations in the config.
+   * If no network is specified in the config, then internal ganache is started with default configuration.
+   * If development network exists, then it connects to the development network specified in the config.
+   */
+  if (
+    config.networks[config.network] &&
+    config.network == "test" &&
+    !config.networks[config.network]["provider"] &&
+    !config.networks[config.network]["host"] &&
+    !config.networks[config.network]["url"]
+  ) {
+    const ipcOptions = { network: "test" };
+    const port = await require("get-port")();
+
+    const ganacheOptions = {
+      host: "127.0.0.1",
+      port,
+      network_id: 4447,
+      mnemonic:
+        "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
+      time: config.genesis_time,
+      miner: {
+        instamine: "strict"
+      },
+      ...config.networks[config.network]
+    };
+    const numberOfFailures = await startGanache(
+      ipcOptions,
+      ganacheOptions,
+      config
+    );
+    return numberOfFailures;
+  } else if (config.networks[config.network]) {
     await Environment.detect(config);
     const { temporaryDirectory } = await copyArtifactsToTempDir(config);
     const numberOfFailures = await prepareConfigAndRunTests({
@@ -92,6 +127,16 @@ module.exports = async function (options) {
         instamine: "strict"
       }
     };
+    const numberOfFailures = await startGanache(
+      ipcOptions,
+      ganacheOptions,
+      config
+    );
+    return numberOfFailures;
+  }
+
+  // Start internal ganache network
+  async function startGanache(ipcOptions, ganacheOptions, config) {
     const { disconnect } = await Develop.connectOrStart(
       ipcOptions,
       ganacheOptions
