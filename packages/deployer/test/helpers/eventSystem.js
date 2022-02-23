@@ -24,12 +24,18 @@ const postDeployOccurredForNames = (options, contractNames) => {
   }, true);
 };
 
-const linkingOccurredForName = (options, contractName, libraryName) => {
+const linkingOccurred = (
+  options,
+  contractName,
+  libraryName,
+  libraryAddress
+) => {
   const allLinks = getAllEventsByName(options, "deployment:linking");
   return allLinks.some(linkEvent => {
     return (
       linkEvent.libraryName === libraryName &&
-      linkEvent.contractName === contractName
+      linkEvent.contractName === contractName &&
+      linkEvent.libraryAddress === libraryAddress
     );
   });
 };
@@ -68,5 +74,5 @@ module.exports = {
   getAllEventsByName,
   preDeployOccurredForNames,
   postDeployOccurredForNames,
-  linkingOccurredForName
+  linkingOccurred
 };
