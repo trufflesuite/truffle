@@ -7,7 +7,6 @@ const autocomplete = require("../../../lib/commands/autocomplete");
 const chai = require("chai");
 const { default: Box } = require("@truffle/box");
 const fs = require("fs");
-const fsPromises = require("fs/promises");
 const path = require("path");
 const sinon = require("sinon");
 
@@ -40,8 +39,9 @@ describe("autocomplete", () => {
   });
 
   beforeEach("Set up mock home directory", async () => {
-    mockConfigDir = await fsPromises.mkdtemp("config-");
-    mockHomeDir = await fsPromises.mkdtemp("home-");
+    mockConfigDir = await fs.promises.mkdtemp("config-");
+    mockHomeDir = await fs.promises.mkdtemp("home-");
+    console.log(`Made directory ${mockConfigDir}`);
 
     sinon.stub(Config, "getTruffleDataDirectory").returns(mockConfigDir);
     sinon.stub(OS, "homedir").returns(mockHomeDir);
@@ -50,8 +50,8 @@ describe("autocomplete", () => {
   afterEach("Restore mocks and clean out temp files", async () => {
     sinon.restore();
     await Promise.all([
-      fsPromises.rm(mockConfigDir, { force: true, recursive: true }),
-      fsPromises.rm(mockHomeDir, { force: true, recursive: true })
+      fs.promises.rmdir(mockConfigDir, { recursive: true }),
+      fs.promises.rmdir(mockHomeDir, { recursive: true })
     ]);
   });
 
@@ -66,13 +66,13 @@ describe("autocomplete", () => {
         shellConfig.match(/\.(\w+)_profile/))[1];
 
       sinon.stub(process.env, "SHELL").value(shell);
-      await fsPromises.writeFile(path.resolve(mockHomeDir, shellConfig), " ");
+      await fs.promises.writeFile(path.resolve(mockHomeDir, shellConfig), " ");
 
       const options = { _: ["install"] };
       await autocomplete.run(config.with(options));
 
       const fileContents = new TextDecoder().decode(
-        await fsPromises.readFile(path.resolve(mockHomeDir, shellConfig))
+        await fs.promises.readFile(path.resolve(mockHomeDir, shellConfig))
       );
 
       assert.isTrue(
@@ -118,14 +118,17 @@ describe("autocomplete", () => {
     it("will not add a duplicate line to .bashrc", async () => {
       const shell = "bash";
       sinon.stub(process.env, "SHELL").value(shell);
-      await fsPromises.writeFile(path.resolve(mockHomeDir, `.${shell}rc`), " ");
+      await fs.promises.writeFile(
+        path.resolve(mockHomeDir, `.${shell}rc`),
+        " "
+      );
 
       const options = { _: ["install"] };
       await autocomplete.run(config.with(options));
       await autocomplete.run(config.with(options));
 
       const fileContents = new TextDecoder().decode(
-        await fsPromises.readFile(path.resolve(mockHomeDir, `.${shell}rc`))
+        await fs.promises.readFile(path.resolve(mockHomeDir, `.${shell}rc`))
       );
 
       const numMatches = [
@@ -142,7 +145,7 @@ describe("autocomplete", () => {
         shellConfig.match(/\.(\w+)_profile/))[1];
 
       sinon.stub(process.env, "SHELL").value(shell);
-      await fsPromises.writeFile(path.resolve(mockHomeDir, shellConfig), " ");
+      await fs.promises.writeFile(path.resolve(mockHomeDir, shellConfig), " ");
       await autocomplete.run(config.with({ _: ["install"] }));
       await autocomplete.run(config.with({ _: ["uninstall"] }));
 
@@ -150,7 +153,7 @@ describe("autocomplete", () => {
         fs.existsSync(path.resolve(mockConfigDir, `completion.${shell}`))
       );
       const fileContents = new TextDecoder().decode(
-        await fsPromises.readFile(path.resolve(mockHomeDir, shellConfig))
+        await fs.promises.readFile(path.resolve(mockHomeDir, shellConfig))
       );
 
       assert.notInclude(fileContents, `completion.${shell}`);
