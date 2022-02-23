@@ -31649,18 +31649,16 @@ solc@0.6.0:
     semver "^5.5.0"
     tmp "0.0.33"
 
-solc@0.8.10:
-  version "0.8.10"
-  resolved "https://registry.yarnpkg.com/solc/-/solc-0.8.10.tgz#3f761794677a36cdd8054f4ec57d84bab8455358"
-  integrity sha512-I/Mcn6J5bEtJqveNLplQm9IRrhemm6v+qkw5S2+wM4x9HItJ1sYdrqVTN3j4DMhFDM3ZbvM0QywVzpPx666PHw==
+solc@0.8.12:
+  version "0.8.12"
+  resolved "https://registry.yarnpkg.com/solc/-/solc-0.8.12.tgz#3002ed3092ee2f7672f1a2ab80c0d8df8df3ef2b"
+  integrity sha512-TU3anAhKWBQ/WrerJ9EcHrNwGOA1y5vIk5Flz7dBNamLDkX9VQTIwcKd3FiZsT0Ew8rSU7RTmJyGNHRGzP5TBA==
   dependencies:
     command-exists "^1.2.8"
     commander "^8.1.0"
     follow-redirects "^1.12.1"
-    fs-extra "^0.30.0"
     js-sha3 "0.8.0"
     memorystream "^0.3.1"
-    require-from-string "^2.0.0"
     semver "^5.5.0"
     tmp "0.0.33"
 
