@@ -194,6 +194,11 @@ export default class Session {
           );
         }
         //otherwise leave it undefined
+        let primaryLanguage;
+        if (primarySourceIndex !== undefined) {
+          primaryLanguage = compilation.sources[primarySourceIndex].language;
+        }
+        //leave undefined if can't locate primary source
 
         //now: we need to find the contract node.
         //note: ideally we'd hold this off till later, but that would break the
@@ -242,6 +247,7 @@ export default class Session {
             contractId,
             contractKind,
             linearizedBaseContracts,
+            primaryLanguage,
             isConstructor: true
           });
           if (generatedSources) {
@@ -285,6 +291,7 @@ export default class Session {
             contractId,
             contractKind,
             linearizedBaseContracts,
+            primaryLanguage,
             isConstructor: false
           });
           if (deployedGeneratedSources) {
