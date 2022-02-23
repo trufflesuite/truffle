@@ -46,6 +46,7 @@ export interface DebuggerContext {
   abi?: Abi.Abi;
   sourceMap?: string;
   primarySource?: number;
+  primaryLanguage?: string;
   compiler?: Compiler.CompilerVersion;
   compilationId?: string;
   payable?: boolean;
