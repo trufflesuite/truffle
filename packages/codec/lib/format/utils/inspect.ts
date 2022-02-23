@@ -7,20 +7,17 @@ import * as Exception from "./exception";
 
 //we'll need to write a typing for the options type ourself, it seems; just
 //going to include the relevant properties here
-interface InspectOptions {
+export interface InspectOptions {
   stylize?: (toMaybeColor: string, style?: string) => string;
   colors: boolean;
   breakLength: number;
 }
 
-//HACK -- inspect options are ridiculous, I swear >_>
-function cleanStylize(options: InspectOptions) {
-  return Object.assign(
-    {},
-    ...Object.entries(options).map(([key, value]) =>
-      key === "stylize" ? {} : { [key]: value }
-    )
-  );
+//HACK?
+function cleanStylize(options: InspectOptions): InspectOptions {
+  const clonedOptions: InspectOptions = { ...options };
+  delete clonedOptions.stylize;
+  return clonedOptions;
 }
 
 /**
@@ -126,12 +123,12 @@ export class ResultInspector {
           case "mapping":
             return util.inspect(
               new Map(
-                (<Format.Values.MappingValue>(
-                  this.result
-                )).value.map(({ key, value }) => [
-                  new ResultInspector(key),
-                  new ResultInspector(value)
-                ])
+                (<Format.Values.MappingValue>this.result).value.map(
+                  ({ key, value }) => [
+                    new ResultInspector(key),
+                    new ResultInspector(value)
+                  ]
+                )
               ),
               options
             );
@@ -151,8 +148,12 @@ export class ResultInspector {
             );
           }
           case "userDefinedValueType": {
-            const typeName = Format.Types.typeStringWithoutLocation(this.result.type);
-            const coercedResult = <Format.Values.UserDefinedValueTypeValue>this.result;
+            const typeName = Format.Types.typeStringWithoutLocation(
+              this.result.type
+            );
+            const coercedResult = <Format.Values.UserDefinedValueTypeValue>(
+              this.result
+            );
             const inspectOfUnderlying = util.inspect(
               new ResultInspector(coercedResult.value),
               options
@@ -544,7 +545,9 @@ function unsafeNativizeWithTable(
       }
     }
     case "userDefinedValueType": {
-      return unsafeNativize((<Format.Values.UserDefinedValueTypeValue>result).value);
+      return unsafeNativize(
+        (<Format.Values.UserDefinedValueTypeValue>result).value
+      );
     }
     case "mapping":
       return Object.assign(
@@ -605,9 +608,9 @@ function unsafeNativizeWithTable(
     case "magic":
       return Object.assign(
         {},
-        ...Object.entries(
-          (<Format.Values.MagicValue>result).value
-        ).map(([key, value]) => ({ [key]: unsafeNativize(value) }))
+        ...Object.entries((<Format.Values.MagicValue>result).value).map(
+          ([key, value]) => ({ [key]: unsafeNativize(value) })
+        )
       );
     case "enum":
       return enumFullName(<Format.Values.EnumValue>result);

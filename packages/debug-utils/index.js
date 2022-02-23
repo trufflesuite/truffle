@@ -697,7 +697,7 @@ var DebugUtils = {
     };
     let valueToInspect = nativized
       ? value
-      : new Codec.Format.Utils.Inspect.ResultInspector(value);
+      : new Codec.Export.ResultInspector(value);
     return util
       .inspect(valueToInspect, inspectOptions)
       .split(/\r?\n/g)
@@ -711,28 +711,22 @@ var DebugUtils = {
 
   //note: only intended to be used for *custom* errors :)
   formatCustomError: function (decoding, indent = 0) {
+    const inspectOptions = {
+      colors: true,
+      depth: null,
+      maxArrayLength: null,
+      breakLength: 30
+    };
     const name = decoding.definedIn
       ? `${decoding.definedIn.typeName}.${decoding.abi.name}`
       : decoding.abi.name;
-    if (decoding.arguments.length === 0) {
-      return `${name}()`;
-    }
-    const prefix = `${name}(`;
-    const formattedValues = decoding.arguments.map(({ name, value }) => {
-      const argumentPrefix = name ? `${name}: ` : "";
-      const typeString = ` (type: ${Codec.Format.Types.typeStringWithoutLocation(
-        value.type
-      )})`;
-      return (
-        DebugUtils.formatValue(value, argumentPrefix.length) +
-        typeString +
-        ","
-      )
-        .split(/\r?\n/g)
-        .map(line => " ".repeat(indent) + line)
-        .join(OS.EOL);
-    });
-    return [prefix, ...formattedValues, ")"].join(OS.EOL);
+    return Codec.Export.formatFunctionLike(
+      name,
+      decoding.arguments,
+      inspectOptions,
+      false,
+      indent
+    );
   },
 
   formatStacktrace: function (stacktrace, indent = 2) {

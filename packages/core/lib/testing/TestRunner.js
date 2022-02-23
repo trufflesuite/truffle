@@ -10,6 +10,7 @@ const path = require("path");
 const debug = require("debug")("lib:testing:testrunner");
 const Decoder = require("@truffle/decoder");
 const Codec = require("@truffle/codec");
+const OS = require("os");
 
 class TestRunner {
   constructor(options = {}) {
@@ -113,55 +114,28 @@ class TestRunner {
     }
 
     function indent(input, indentation, initialPrefix = "") {
-      const unindented = typeof input === "string" ? input.split("\n") : input;
+      const unindented = input.split(/\r?\n/);
       return unindented
         .map((line, index) =>
           index === 0
             ? initialPrefix + " ".repeat(indentation - initialPrefix) + line
             : " ".repeat(indentation) + line
         )
-        .join("\n");
+        .join(OS.EOL);
     }
 
     function printEvent(decoding, indentation = 0, initialPrefix = "") {
       debug("raw event: %O", decoding);
-      const anonymousPrefix =
-        decoding.kind === "anonymous" ? "<anonymous> " : "";
-      const className = decoding.definedIn
-        ? decoding.definedIn.typeName
-        : decoding.class.typeName;
-      const eventName = decoding.abi.name;
-      const fullEventName = anonymousPrefix + `${className}.${eventName}`;
-      const eventArgs = decoding.arguments.map(({ name, indexed, value }) => {
-        let namePrefix = name ? `${name}: ` : "";
-        let indexedPrefix = indexed ? "<indexed> " : "";
-        let displayValue = util.inspect(
-          new Codec.Format.Utils.Inspect.ResultInspector(value),
-          {
-            depth: null,
-            colors: true,
-            maxArrayLength: null,
-            breakLength: 80 - indentation //should this include prefix lengths as well?
-          }
-        );
-        let typeString = ` (type: ${Codec.Format.Types.typeStringWithoutLocation(
-          value.type
-        )})`;
-        return namePrefix + indexedPrefix + displayValue + typeString + ",";
-      });
-      if (eventArgs.length > 0) {
-        const len = eventArgs.length - 1;
-        eventArgs[len] = eventArgs[len].slice(0, -1); // remove the final comma
-      }
-      if (decoding.arguments.length > 0) {
-        return indent(
-          `${fullEventName}(\n${indent(eventArgs, 2)}\n)`,
-          indentation,
-          initialPrefix
-        );
-      } else {
-        return indent(`${fullEventName}()`, indentation, initialPrefix);
-      }
+      const inspected = util.inspect(
+        new Codec.Export.LogDecodingInspector(decoding),
+        {
+          depth: null,
+          colors: true,
+          maxArrayLength: null,
+          breakLength: 80 - indentation //should this include prefix lengths as well?
+        }
+      );
+      return indent(inspected, indentation, initialPrefix);
     }
 
     const logs = await this.decoder.events({
