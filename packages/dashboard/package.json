@@ -2,6 +2,7 @@
   "name": "@truffle/dashboard",
   "license": "MIT",
   "author": "Rosco Kalis <roscokalis@gmail.com>",
+  "description": "Web-server component for signing CLI transactions with browser",
   "repository": {
     "type": "git",
     "url": "https://github.com/trufflesuite/truffle.git",
