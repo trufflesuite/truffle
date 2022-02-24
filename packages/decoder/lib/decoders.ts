@@ -287,6 +287,9 @@ export class ProjectDecoder {
    * Changing `options.extras = "on"` or `options.extras = "necessary"` will change the
    * above behavior; see the documentation on [[ExtrasAllowed]] for more.
    *
+   * If absolutely necessary, you can also set `options.disableChecks = true` to allow
+   * looser decoding.  Only use this option if you know what you are doing.
+   *
    * @param log The log to be decoded.
    * @param options Options for controlling decoding.
    */

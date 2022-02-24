@@ -4,7 +4,6 @@ const debug = debugModule("codec:core");
 import type * as Abi from "@truffle/abi-utils";
 import * as Ast from "@truffle/codec/ast";
 import * as AbiData from "@truffle/codec/abi-data";
-import * as Compiler from "@truffle/codec/compiler";
 import * as Topic from "@truffle/codec/topic";
 import type * as Pointer from "@truffle/codec/pointer";
 import type {
@@ -19,7 +18,6 @@ import type {
   LogDecoding,
   LogOptions
 } from "@truffle/codec/types";
-import type { ConstructorReturndataAllocation } from "@truffle/codec/abi-data/allocate";
 import * as Evm from "@truffle/codec/evm";
 import * as Contexts from "@truffle/codec/contexts";
 import { abifyType, abifyResult } from "@truffle/codec/abify";
@@ -234,10 +232,8 @@ export function* decodeEvent(
       );
       selector = Conversion.toHexString(rawSelector);
       if (allocations[topicsCount].bySelector[selector]) {
-        ({
-          contract: contractAllocations,
-          library: libraryAllocations
-        } = allocations[topicsCount].bySelector[selector]);
+        ({ contract: contractAllocations, library: libraryAllocations } =
+          allocations[topicsCount].bySelector[selector]);
       } else {
         debug("no allocations for that selector!");
         contractAllocations = {};
@@ -314,9 +310,10 @@ export function* decodeEvent(
   const possibleAllocations = possibleContractAllocations.concat(
     possibleLibraryAllocations
   );
-  const possibleAnonymousAllocations = possibleContractAnonymousAllocations.concat(
-    possibleLibraryAnonymousAllocations
-  );
+  const possibleAnonymousAllocations =
+    possibleContractAnonymousAllocations.concat(
+      possibleLibraryAnonymousAllocations
+    );
   const possibleAllocationsTotalMinusExtras = possibleAllocations.concat(
     possibleAnonymousAllocations
   );
@@ -420,24 +417,28 @@ export function* decodeEvent(
           : { indexed, value }
       );
     }
-    //OK, so, having decoded the result, the question is: does it reencode to the original?
-    //first, we have to filter out the indexed arguments, and also get rid of the name information
-    const nonIndexedValues = decodedArguments
-      .filter(argument => !argument.indexed)
-      .map(argument => argument.value);
-    //now, we can encode!
-    const reEncodedData = AbiData.Encode.encodeTupleAbi(
-      nonIndexedValues,
-      info.allocations.abi
-    );
-    const encodedData = info.state.eventdata; //again, not great to read this directly, but oh well
-    //are they equal?
-    if (!Evm.Utils.equalData(reEncodedData, encodedData)) {
-      //if not, this allocation doesn't work
-      debug("rejected due to [non-indexed] mismatch");
-      continue;
+    if (!options.disableChecks) {
+      //OK, so, having decoded the result, the question is: does it reencode to the original?
+      //NOTE: we skip this check if disableChecks is passed! (it shouldn't be passed :P )
+      //first, we have to filter out the indexed arguments, and also get rid of the name information
+      const nonIndexedValues = decodedArguments
+        .filter(argument => !argument.indexed)
+        .map(argument => argument.value);
+      //now, we can encode!
+      const reEncodedData = AbiData.Encode.encodeTupleAbi(
+        nonIndexedValues,
+        info.allocations.abi
+      );
+      const encodedData = info.state.eventdata; //again, not great to read this directly, but oh well
+      //are they equal?
+      if (!Evm.Utils.equalData(reEncodedData, encodedData)) {
+        //if not, this allocation doesn't work
+        debug("rejected due to [non-indexed] mismatch");
+        continue;
+      }
     }
     //one last check -- let's check that the indexed arguments match up, too
+    //(we won't skip this even if disableChecks was passed)
     const indexedValues = decodedArguments
       .filter(argument => argument.indexed)
       .map(argument => argument.value);
@@ -597,10 +598,12 @@ export function* decodeReturndata(
   id?: string //useful when status = false
 ): Generator<DecoderRequest, ReturndataDecoding[], Uint8Array> {
   let possibleAllocations: AbiData.Allocate.ReturndataAllocation[];
-  const selector = Conversion.toHexString(info.state.returndata.slice(0,4));
+  const selector = Conversion.toHexString(info.state.returndata.slice(0, 4));
   const contextHash = (info.currentContext || { context: "" }).context; //HACK: "" is used to represent no context
   const customRevertAllocations =
-    (((info.allocations.returndata || { [contextHash]: {} })[contextHash]) || { [selector]: [] })[selector] || [];
+    ((info.allocations.returndata || { [contextHash]: {} })[contextHash] || {
+      [selector]: []
+    })[selector] || [];
   if (successAllocation === null) {
     possibleAllocations = [
       ...defaultRevertAllocations,
@@ -837,7 +840,8 @@ function* decodeBytecode(
   const contractType = Contexts.Import.contextToType(context);
   //now: ignore original allocation (which we didn't even pass :) )
   //and lookup allocation by context
-  const allocation = info.allocations.calldata.constructorAllocations[context.context].output;
+  const allocation =
+    info.allocations.calldata.constructorAllocations[context.context].output;
   debug("bytecode allocation: %O", allocation);
   //now: add immutables if applicable
   let immutables: StateVariable[] | undefined;

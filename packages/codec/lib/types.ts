@@ -605,4 +605,9 @@ export interface LogOptions {
    * with this option.
    */
   id?: string;
+  /**
+   * Allows decodings that don't pass the re-encoding test.  Don't turn
+   * this on unless you know what you're doing!
+   */
+  disableChecks?: boolean;
 }

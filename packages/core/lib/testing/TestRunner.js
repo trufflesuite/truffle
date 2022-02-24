@@ -40,6 +40,14 @@ class TestRunner {
     this.TEST_TIMEOUT = (options.mocha && options.mocha.timeout) || 300000;
   }
 
+  disableChecksOnEventDecoding() {
+    this.disableChecks = true; //used by Solidity testing due to empty string problem on Solidity <0.7.6
+  }
+
+  reEnableChecksOnEventDecoding() {
+    this.disableChecks = false;
+  }
+
   async initialize() {
     debug("initializing");
     this.config.resolver = new Resolver(this.config, {
@@ -143,7 +151,8 @@ class TestRunner {
       //should be fine, but should change this once decoder
       //accepts more general types for blocks
       fromBlock: this.currentTestStartBlock.toNumber(),
-      extras: "necessary" //include weird decodings if usual ones fail :P
+      extras: "necessary", //include weird decodings if usual ones fail :P
+      disableChecks: this.disableChecks //for Solidity testing
     });
 
     const userDefinedEventLogs = logs.filter(log => {
