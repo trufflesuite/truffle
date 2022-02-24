@@ -69,22 +69,22 @@ module.exports = async function (options) {
   });
 
   /**
-   * If test network exists and provider, host or url exists, then it connects to that external network.
    * If test network exists and provider, host or url doesn't exist, then internal ganache is started with the user specified
    * configurations in the config.
+   * If development or test network with provider, host or url exists, then it connects to that network specified in the config.
    * If no network is specified in the config, then internal ganache is started with default configuration.
-   * If development network exists, then it connects to the development network specified in the config.
    */
-  if (
-    config.networks[config.network] &&
-    config.network == "test" &&
-    !config.networks[config.network]["provider"] &&
-    !config.networks[config.network]["host"] &&
-    !config.networks[config.network]["url"]
-  ) {
-    const ipcOptions = { network: "test" };
-    const port = await require("get-port")();
+  const configuredNetwork = config.networks[config.network];
+  const testNetworkDefined = configuredNetwork && config.network == "test";
+  const noProviderHostOrUrlConfigured =
+    !configuredNetwork["provider"] &&
+    !configuredNetwork["host"] &&
+    !configuredNetwork["url"];
+  const port = await require("get-port")();
+  const ipcOptions = { network: "test" };
+  let numberOfFailures;
 
+  if (testNetworkDefined && noProviderHostOrUrlConfigured) {
     const ganacheOptions = {
       host: "127.0.0.1",
       port,
@@ -97,25 +97,20 @@ module.exports = async function (options) {
       },
       ...config.networks[config.network]
     };
-    const numberOfFailures = await startGanache(
+    numberOfFailures = await startGanacheAndRunTests(
       ipcOptions,
       ganacheOptions,
       config
     );
-    return numberOfFailures;
-  } else if (config.networks[config.network]) {
+  } else if (configuredNetwork) {
     await Environment.detect(config);
     const { temporaryDirectory } = await copyArtifactsToTempDir(config);
-    const numberOfFailures = await prepareConfigAndRunTests({
+    numberOfFailures = await prepareConfigAndRunTests({
       config,
       files,
       temporaryDirectory
     });
-    return numberOfFailures;
   } else {
-    const ipcOptions = { network: "test" };
-    const port = await require("get-port")();
-
     const ganacheOptions = {
       host: "127.0.0.1",
       port,
@@ -127,16 +122,16 @@ module.exports = async function (options) {
         instamine: "strict"
       }
     };
-    const numberOfFailures = await startGanache(
+    numberOfFailures = await startGanacheAndRunTests(
       ipcOptions,
       ganacheOptions,
       config
     );
-    return numberOfFailures;
   }
+  return numberOfFailures;
 
   // Start internal ganache network
-  async function startGanache(ipcOptions, ganacheOptions, config) {
+  async function startGanacheAndRunTests(ipcOptions, ganacheOptions, config) {
     const { disconnect } = await Develop.connectOrStart(
       ipcOptions,
       ganacheOptions
