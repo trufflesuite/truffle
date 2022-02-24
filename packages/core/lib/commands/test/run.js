@@ -82,6 +82,7 @@ module.exports = async function (options) {
     !configuredNetwork["url"];
   const port = await require("get-port")();
   const ipcOptions = { network: "test" };
+  let numberOfFailures;
 
   if (testNetworkDefined && noProviderHostOrUrlConfigured) {
     const ganacheOptions = {
@@ -96,21 +97,19 @@ module.exports = async function (options) {
       },
       ...config.networks[config.network]
     };
-    const numberOfFailures = await startGanacheAndRunTests(
+    numberOfFailures = await startGanacheAndRunTests(
       ipcOptions,
       ganacheOptions,
       config
     );
-    return numberOfFailures;
   } else if (configuredNetwork) {
     await Environment.detect(config);
     const { temporaryDirectory } = await copyArtifactsToTempDir(config);
-    const numberOfFailures = await prepareConfigAndRunTests({
+    numberOfFailures = await prepareConfigAndRunTests({
       config,
       files,
       temporaryDirectory
     });
-    return numberOfFailures;
   } else {
     const ganacheOptions = {
       host: "127.0.0.1",
@@ -123,13 +122,13 @@ module.exports = async function (options) {
         instamine: "strict"
       }
     };
-    const numberOfFailures = await startGanacheAndRunTests(
+    numberOfFailures = await startGanacheAndRunTests(
       ipcOptions,
       ganacheOptions,
       config
     );
-    return numberOfFailures;
   }
+  return numberOfFailures;
 
   // Start internal ganache network
   async function startGanacheAndRunTests(ipcOptions, ganacheOptions, config) {
