@@ -7,7 +7,7 @@ import * as actions from "./actions";
 
 function index(state = 0, action) {
   switch (action.type) {
-    case actions.TOCK:
+    case actions.ADVANCE:
       return state + 1;
 
     case actions.RESET:
