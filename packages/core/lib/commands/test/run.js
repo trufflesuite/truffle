@@ -51,6 +51,24 @@ module.exports = async function (options) {
     await Environment.detect(config);
   }
 
+  // Start managed ganache network
+  async function startGanacheAndRunTests(ipcOptions, ganacheOptions, config) {
+    const { disconnect } = await Develop.connectOrStart(
+      ipcOptions,
+      ganacheOptions
+    );
+    const ipcDisconnect = disconnect;
+    await Environment.develop(config, ganacheOptions);
+    const { temporaryDirectory } = await copyArtifactsToTempDir(config);
+    const numberOfFailures = await prepareConfigAndRunTests({
+      config,
+      files,
+      temporaryDirectory
+    });
+    ipcDisconnect();
+    return numberOfFailures;
+  }
+
   if (config.stacktraceExtra) {
     config.stacktrace = true;
     config.compileAllDebug = true;
@@ -69,7 +87,7 @@ module.exports = async function (options) {
   });
 
   const configuredNetwork = config.networks[config.network];
-  const testNetworkDefined = configuredNetwork && config.network == "test";
+  const testNetworkDefined = configuredNetwork && config.network === "test";
   const noProviderHostOrUrlConfigured =
     configuredNetwork &&
     !configuredNetwork.provider &&
@@ -89,8 +107,11 @@ module.exports = async function (options) {
     }
   };
 
-  if (testNetworkDefined && noProviderHostOrUrlConfigured) {
-    // Use managed ganache with overriding user specified config
+  if (
+    (testNetworkDefined && noProviderHostOrUrlConfigured) ||
+    !configuredNetwork
+  ) {
+    // Use managed ganache with overriding user specified config or without any specification in the config
     port = await require("get-port")();
     ganacheOptions = { ...ganacheOptions, port, ...configuredNetwork };
     numberOfFailures = await startGanacheAndRunTests(
@@ -98,7 +119,7 @@ module.exports = async function (options) {
       ganacheOptions,
       config
     );
-  } else if (configuredNetwork) {
+  } else {
     // Use unmanaged network with user specified config if provider, host or url exists
     await Environment.detect(config);
     const { temporaryDirectory } = await copyArtifactsToTempDir(config);
@@ -107,33 +128,6 @@ module.exports = async function (options) {
       files,
       temporaryDirectory
     });
-  } else {
-    // Use managed ganache if no network is specified in the config
-    port = await require("get-port")();
-    ganacheOptions = { ...ganacheOptions, port };
-    numberOfFailures = await startGanacheAndRunTests(
-      ipcOptions,
-      ganacheOptions,
-      config
-    );
   }
   return numberOfFailures;
-
-  // Start managed ganache network
-  async function startGanacheAndRunTests(ipcOptions, ganacheOptions, config) {
-    const { disconnect } = await Develop.connectOrStart(
-      ipcOptions,
-      ganacheOptions
-    );
-    const ipcDisconnect = disconnect;
-    await Environment.develop(config, ganacheOptions);
-    const { temporaryDirectory } = await copyArtifactsToTempDir(config);
-    const numberOfFailures = await prepareConfigAndRunTests({
-      config,
-      files,
-      temporaryDirectory
-    });
-    ipcDisconnect();
-    return numberOfFailures;
-  }
 };
