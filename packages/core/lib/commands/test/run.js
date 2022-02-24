@@ -77,9 +77,10 @@ module.exports = async function (options) {
   const configuredNetwork = config.networks[config.network];
   const testNetworkDefined = configuredNetwork && config.network == "test";
   const noProviderHostOrUrlConfigured =
-    !configuredNetwork["provider"] &&
-    !configuredNetwork["host"] &&
-    !configuredNetwork["url"];
+    configuredNetwork &&
+    !configuredNetwork.provider &&
+    !configuredNetwork.host &&
+    !configuredNetwork.url;
   const port = await require("get-port")();
   const ipcOptions = { network: "test" };
 
