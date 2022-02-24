@@ -1,3 +1,0 @@
-# `truffle preserve`
-
-Yum! :d
