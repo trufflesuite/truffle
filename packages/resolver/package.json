@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "8.0.8",
+  "version": "8.0.9",
   "main": "dist/lib/index.js",
   "files": [
     "dist",
@@ -27,7 +27,7 @@
   },
   "types": "dist/lib/index.d.ts",
   "dependencies": {
-    "@truffle/contract": "^4.4.9",
+    "@truffle/contract": "^4.4.10",
     "@truffle/contract-sources": "^0.1.12",
     "@truffle/expect": "^0.1.0",
     "@truffle/provisioner": "^0.2.43",
