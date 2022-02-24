@@ -68,12 +68,6 @@ module.exports = async function (options) {
     inputFile: file
   });
 
-  /**
-   * If test network exists and provider, host or url doesn't exist, then internal ganache is started with the user specified
-   * configurations in the config.
-   * If development or test network with provider, host or url exists, then it connects to that network specified in the config.
-   * If no network is specified in the config, then internal ganache is started with default configuration.
-   */
   const configuredNetwork = config.networks[config.network];
   const testNetworkDefined = configuredNetwork && config.network == "test";
   const noProviderHostOrUrlConfigured =
@@ -81,29 +75,31 @@ module.exports = async function (options) {
     !configuredNetwork.provider &&
     !configuredNetwork.host &&
     !configuredNetwork.url;
-  const port = await require("get-port")();
   const ipcOptions = { network: "test" };
-  let numberOfFailures;
+  let numberOfFailures, port;
+  let ganacheOptions = {
+    host: "127.0.0.1",
+    port,
+    network_id: 4447,
+    mnemonic:
+      "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
+    time: config.genesis_time,
+    miner: {
+      instamine: "strict"
+    }
+  };
 
   if (testNetworkDefined && noProviderHostOrUrlConfigured) {
-    const ganacheOptions = {
-      host: "127.0.0.1",
-      port,
-      network_id: 4447,
-      mnemonic:
-        "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
-      time: config.genesis_time,
-      miner: {
-        instamine: "strict"
-      },
-      ...config.networks[config.network]
-    };
+    // Use managed ganache with overriding user specified config
+    port = await require("get-port")();
+    ganacheOptions = { ...ganacheOptions, port, ...configuredNetwork };
     numberOfFailures = await startGanacheAndRunTests(
       ipcOptions,
       ganacheOptions,
       config
     );
   } else if (configuredNetwork) {
+    // Use unmanaged network with user specified config if provider, host or url exists
     await Environment.detect(config);
     const { temporaryDirectory } = await copyArtifactsToTempDir(config);
     numberOfFailures = await prepareConfigAndRunTests({
@@ -112,17 +108,9 @@ module.exports = async function (options) {
       temporaryDirectory
     });
   } else {
-    const ganacheOptions = {
-      host: "127.0.0.1",
-      port,
-      network_id: 4447,
-      mnemonic:
-        "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
-      time: config.genesis_time,
-      miner: {
-        instamine: "strict"
-      }
-    };
+    // Use managed ganache if no network is specified in the config
+    port = await require("get-port")();
+    ganacheOptions = { ...ganacheOptions, port };
     numberOfFailures = await startGanacheAndRunTests(
       ipcOptions,
       ganacheOptions,
@@ -131,7 +119,7 @@ module.exports = async function (options) {
   }
   return numberOfFailures;
 
-  // Start internal ganache network
+  // Start managed ganache network
   async function startGanacheAndRunTests(ipcOptions, ganacheOptions, config) {
     const { disconnect } = await Develop.connectOrStart(
       ipcOptions,
