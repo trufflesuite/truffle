@@ -113,6 +113,8 @@ module.exports = async function (options) {
   ) {
     // Use managed ganache with overriding user specified config or without any specification in the config
     port = await require("get-port")();
+
+    //configuredNetwork will spread only when it is defined and ignored when undefined
     ganacheOptions = { ...ganacheOptions, port, ...configuredNetwork };
     numberOfFailures = await startGanacheAndRunTests(
       ipcOptions,
