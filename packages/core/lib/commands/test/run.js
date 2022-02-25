@@ -51,6 +51,24 @@ module.exports = async function (options) {
     await Environment.detect(config);
   }
 
+  // Start managed ganache network
+  async function startGanacheAndRunTests(ipcOptions, ganacheOptions, config) {
+    const { disconnect } = await Develop.connectOrStart(
+      ipcOptions,
+      ganacheOptions
+    );
+    const ipcDisconnect = disconnect;
+    await Environment.develop(config, ganacheOptions);
+    const { temporaryDirectory } = await copyArtifactsToTempDir(config);
+    const numberOfFailures = await prepareConfigAndRunTests({
+      config,
+      files,
+      temporaryDirectory
+    });
+    ipcDisconnect();
+    return numberOfFailures;
+  }
+
   if (config.stacktraceExtra) {
     config.stacktrace = true;
     config.compileAllDebug = true;
@@ -68,43 +86,50 @@ module.exports = async function (options) {
     inputFile: file
   });
 
-  if (config.networks[config.network]) {
-    await Environment.detect(config);
-    const { temporaryDirectory } = await copyArtifactsToTempDir(config);
-    const numberOfFailures = await prepareConfigAndRunTests({
-      config,
-      files,
-      temporaryDirectory
-    });
-    return numberOfFailures;
-  } else {
-    const ipcOptions = { network: "test" };
+  const configuredNetwork = config.networks[config.network];
+  const testNetworkDefinedAndUsed =
+    configuredNetwork && config.network === "test";
+  const noProviderHostOrUrlConfigured =
+    configuredNetwork &&
+    !configuredNetwork.provider &&
+    !configuredNetwork.host &&
+    !configuredNetwork.url;
+  const ipcOptions = { network: "test" };
+  let numberOfFailures;
+  let ganacheOptions = {
+    host: "127.0.0.1",
+    network_id: 4447,
+    mnemonic:
+      "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
+    time: config.genesis_time,
+    miner: {
+      instamine: "strict"
+    }
+  };
+
+  if (
+    (testNetworkDefinedAndUsed && noProviderHostOrUrlConfigured) ||
+    !configuredNetwork
+  ) {
+    // Use managed ganache with overriding user specified config or without any specification in the config
     const port = await require("get-port")();
 
-    const ganacheOptions = {
-      host: "127.0.0.1",
-      port,
-      network_id: 4447,
-      mnemonic:
-        "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
-      time: config.genesis_time,
-      miner: {
-        instamine: "strict"
-      }
-    };
-    const { disconnect } = await Develop.connectOrStart(
+    // configuredNetwork will spread only when it is defined and ignored when undefined
+    ganacheOptions = { ...ganacheOptions, port, ...configuredNetwork };
+    numberOfFailures = await startGanacheAndRunTests(
       ipcOptions,
-      ganacheOptions
+      ganacheOptions,
+      config
     );
-    const ipcDisconnect = disconnect;
-    await Environment.develop(config, ganacheOptions);
+  } else {
+    // Use unmanaged network with user specified config if provider, host or url exists
+    await Environment.detect(config);
     const { temporaryDirectory } = await copyArtifactsToTempDir(config);
-    const numberOfFailures = await prepareConfigAndRunTests({
+    numberOfFailures = await prepareConfigAndRunTests({
       config,
       files,
       temporaryDirectory
     });
-    ipcDisconnect();
-    return numberOfFailures;
   }
+  return numberOfFailures;
 };
