@@ -87,17 +87,17 @@ module.exports = async function (options) {
   });
 
   const configuredNetwork = config.networks[config.network];
-  const testNetworkDefined = configuredNetwork && config.network === "test";
+  const testNetworkDefinedAndUsed =
+    configuredNetwork && config.network === "test";
   const noProviderHostOrUrlConfigured =
     configuredNetwork &&
     !configuredNetwork.provider &&
     !configuredNetwork.host &&
     !configuredNetwork.url;
   const ipcOptions = { network: "test" };
-  let numberOfFailures, port;
+  let numberOfFailures;
   let ganacheOptions = {
     host: "127.0.0.1",
-    port,
     network_id: 4447,
     mnemonic:
       "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
@@ -108,13 +108,13 @@ module.exports = async function (options) {
   };
 
   if (
-    (testNetworkDefined && noProviderHostOrUrlConfigured) ||
+    (testNetworkDefinedAndUsed && noProviderHostOrUrlConfigured) ||
     !configuredNetwork
   ) {
     // Use managed ganache with overriding user specified config or without any specification in the config
     const port = await require("get-port")();
 
-    //configuredNetwork will spread only when it is defined and ignored when undefined
+    // configuredNetwork will spread only when it is defined and ignored when undefined
     ganacheOptions = { ...ganacheOptions, port, ...configuredNetwork };
     numberOfFailures = await startGanacheAndRunTests(
       ipcOptions,
