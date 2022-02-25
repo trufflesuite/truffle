@@ -26,6 +26,9 @@
     "prettier": "^2.5.1",
     "prs-merged-since": "^1.1.0"
   },
+  "resolutions": {
+    "lodash.template": "^4.5.0"
+  },
   "workspaces": {
     "packages": [
       "packages/*"
