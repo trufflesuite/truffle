@@ -211,18 +211,26 @@ describe("Deployments", function () {
     // Constructor in this test consumes ~6388773 (ganache) vs blockLimit of 6721975.
     it("doesn't multiply past the blockLimit", async function () {
       this.timeout(50000);
-      let iterations = 6000; // # of times to set a uint in a loop, consuming gas.
+      let iterations = 5000; // # of times to set a uint in a loop, consuming gas.
 
       const estimate = await Example.new.estimateGas(iterations);
       const block = await web3.eth.getBlock("latest");
       const multiplier = Example.gasMultiplier;
 
-      assert(multiplier === 1.25, "Multiplier should be initialized to 1.25");
+      assert.equal(
+        multiplier,
+        1.25,
+        "Multiplier should be initialized to 1.25"
+      );
       assert(
         multiplier * estimate > block.gasLimit,
         "Multiplied estimate should be too high"
       );
-      assert(estimate < block.gasLimit, "Estimate on it's own should be ok");
+      assert.isAtMost(
+        estimate,
+        block.gasLimit,
+        "Estimate on its own should be ok"
+      );
 
       await Example.new(iterations);
     });

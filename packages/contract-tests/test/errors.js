@@ -202,7 +202,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
     it("errors with invalid opcode when gas specified", async function () {
       const example = await Example.new(1);
       try {
-        await example.triggerAssertError({ gas: 200000 });
+        await example.triggerInvalidOpcode({ gas: 200000 });
         assert.fail();
       } catch (e) {
         assert(!e.reason, "Should not include reason string");
@@ -220,7 +220,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
     it("errors with invalid opcode when gas not specified", async function () {
       const example = await Example.new(1);
       try {
-        await example.triggerAssertError();
+        await example.triggerInvalidOpcode();
         assert.fail();
       } catch (e) {
         assert(e.message.includes("invalid opcode"));
