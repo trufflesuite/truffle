@@ -181,9 +181,17 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
         await example.triggerRequireWithReasonError();
         assert.fail();
       } catch (e) {
-        assert(e.reason === "reasonstring", "Should include reason property");
-        assert(e.message.includes("reasonstring"), "Should reason in message");
-        assert(e.message.includes("revert"), "Should include revert message");
+        assert.equal(
+          e.reason,
+          "reasonstring",
+          "Should include reason property"
+        );
+        assert.include(
+          e.message,
+          "reasonstring",
+          "Should include reason in message"
+        );
+        assert.include(e.message, "revert", "Should include revert");
       }
     });
 
@@ -193,9 +201,57 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
         await example.triggerRequireWithReasonError({ gas: 200000 });
         assert.fail();
       } catch (e) {
-        assert(e.reason === "reasonstring", "Should include reason property");
-        assert(e.message.includes("reasonstring"), "Should reason in message");
-        assert(e.message.includes("revert"), "Should include revert");
+        assert.equal(
+          e.reason,
+          "reasonstring",
+          "Should include reason property"
+        );
+        assert.include(
+          e.message,
+          "reasonstring",
+          "Should include reason in message"
+        );
+        assert.include(e.message, "revert", "Should include revert");
+      }
+    });
+
+    it("errors with panic code on panic", async function () {
+      const example = await Example.new(1);
+      try {
+        await example.triggerAssertError();
+        assert.fail();
+      } catch (e) {
+        assert.equal(
+          e.reason,
+          "Panic: Failed assertion",
+          "Should include reason property"
+        );
+        assert.include(
+          e.message,
+          "Failed assertion",
+          "Should include panic reason in message"
+        );
+        assert.include(e.message, "Panic", "Should include 'Panic'");
+      }
+    });
+
+    it("errors with panic code on panic (gas specified)", async function () {
+      const example = await Example.new(1);
+      try {
+        await example.triggerAssertError({ gas: 200000 });
+        assert.fail();
+      } catch (e) {
+        assert.equal(
+          e.reason,
+          "Panic: Failed assertion",
+          "Should include reason property"
+        );
+        assert.include(
+          e.message,
+          "Failed assertion",
+          "Should include panic reason in message"
+        );
+        assert.include(e.message, "Panic", "Should include 'Panic'");
       }
     });
 
