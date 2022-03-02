@@ -172,22 +172,39 @@ class DebugPrinter {
     const colorizedLines = splitLines(colorizedSource);
 
     this.config.logger.log("");
-    // We clone range though only "lines" is used here.
-    let rangePrintout = JSON.parse(JSON.stringify(range));
+    // We create printoutRange with range.lines as initial value for printing.
+    let printoutRange = {
+      start: {
+        line: range.lines.start.line,
+        column: range.lines.start.column
+      },
+      end: {
+        line: range.lines.end.line,
+        column: range.lines.end.column
+      }
+    };
+
     // We print a warning message and display the end of source code when the
     // instruction's byte-offset to the start of the range in the source code
-    // is past the end of source code
-    const instruction = this.session.view(solidity.current.instruction);
-    if (instruction.start >= source.length) {
+    // is past the end of source code.
+    if (range.start >= source.length) {
       this.config.logger.log(
-        `${colors.bold("Warning:")} Past end of source, displaying end.`
+        `${colors.bold(
+          "Warning:"
+        )} Location is past end of source, displaying end.`
       );
       this.config.logger.log("");
-      // We set the lines of the cloned range with the end of source code.
+      // We set the printoutRange with the end of source code.
       // Note that "lines" is the split lines of source code as defined above.
-      rangePrintout.lines = {
-        start: { line: lines.length - 1, column: 0 },
-        end: { line: lines.length - 1, column: 0 }
+      printoutRange = {
+        start: {
+          line: lines.length - 1,
+          column: 0
+        },
+        end: {
+          line: lines.length - 1,
+          column: 0
+        }
       };
     }
 
@@ -196,7 +213,7 @@ class DebugPrinter {
     this.config.logger.log(
       DebugUtils.formatRangeLines(
         colorizedLines,
-        rangePrintout.lines,
+        printoutRange,
         lines,
         contextBefore,
         contextAfter
