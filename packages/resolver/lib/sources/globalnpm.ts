@@ -1,30 +1,37 @@
 import path from "path";
 import fs from "fs";
-const detectInstalled: any = require("detect-installed");
-const getInstalledPath: any = require("get-installed-path");
+const detectInstalled = require("detect-installed");
+const { getInstalledPathSync } = require("get-installed-path");
 
 import type { ResolverSource } from "../source";
+import { debug } from "console";
+import { ContractObject } from "@truffle/contract-schema";
 
-const getGlobalPackagePath = (packageName: string): string => {
+const getGlobalPackagePath = (packageName: string): string | null => {
   const suffix = `${path.sep}${packageName}`;
+  let globalPackagePath: string | null = null;
 
-  let globalPackagePath = getInstalledPath.getInstalledPath(packageName);
+  globalPackagePath = getInstalledPathSync(packageName);
 
-  return globalPackagePath.endsWith(suffix)
+  globalPackagePath = globalPackagePath.endsWith(suffix)
     ? globalPackagePath.slice(0, globalPackagePath.length - suffix.length)
     : globalPackagePath;
+
+  return globalPackagePath;
 };
 export class GlobalNPM implements ResolverSource {
-  require(importPath: string) {
-    if (importPath.indexOf(".") === 0 || path.isAbsolute(importPath)) {
+  require(importPath: string): ContractObject | null {
+    if (importPath.startsWith(".") || path.isAbsolute(importPath)) {
       return null;
     }
     const contractName = path.basename(importPath, ".sol");
-
     let [packageName] = importPath.split("/", 1);
+
+    const globalPackagePath = getGlobalPackagePath(packageName);
+
     if (detectInstalled.sync(packageName)) {
       const result = this.resolveAndParse(
-        getGlobalPackagePath(packageName),
+        globalPackagePath,
         packageName,
         contractName
       );
@@ -60,7 +67,7 @@ export class GlobalNPM implements ResolverSource {
     let body;
     if (detectInstalled.sync(packageName)) {
       const expectedPath = path.join(
-        getGlobalPackagePath(packageName),
+        await getGlobalPackagePath(packageName),
         importPath
       );
       try {
