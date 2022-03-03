@@ -1,5 +1,4 @@
-pragma solidity ^0.5.0;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.8.0;
 
 // credit where it's due - this contract was lifted from this gist:
 // https://gist.github.com/ricmoo/e38d4d71dff7156033922d2e5de88d37
@@ -22,7 +21,7 @@ contract ABIV2UserDirectory {
 
   // User struct in the event
   event UserAdded(address indexed addr, User user);
-  constructor() public {
+  constructor() {
     _admin = msg.sender;
   }
 

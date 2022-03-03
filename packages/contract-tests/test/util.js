@@ -43,7 +43,7 @@ const util = {
       quiet: true,
       compilers: {
         solc: {
-          version: "0.5.0",
+          version: "0.8.12",
           settings: {
             optimizer: {
               enabled: false,
