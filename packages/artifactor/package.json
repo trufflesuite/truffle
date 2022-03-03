@@ -24,14 +24,12 @@
   "dependencies": {
     "@truffle/contract-schema": "^3.4.5",
     "fs-extra": "^9.1.0",
-    "lodash.assign": "^4.2.0",
-    "lodash.merge": "^4.6.2"
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
     "@truffle/contract": "^4.4.10",
     "@types/fs-extra": "^8.1.0",
-    "@types/lodash.assign": "^4.2.6",
-    "@types/lodash.merge": "^4.6.6",
+    "@types/lodash": "^4.14.179",
     "@types/node": "12.12.21",
     "chai": "^4.2.0",
     "debug": "^4.3.1",

@@ -8,7 +8,7 @@ import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
 
 import jsonpointer from "json-pointer";
-import zipWith from "lodash.zipwith";
+import { zipWith } from "lodash";
 import { popNWhere } from "lib/helpers";
 import * as Codec from "@truffle/codec";
 

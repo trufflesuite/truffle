@@ -21,7 +21,7 @@ import type { ImmutableReferences } from "@truffle/contract-schema/spec";
 import * as Evm from "@truffle/codec/evm";
 import * as Format from "@truffle/codec/format";
 import BN from "bn.js";
-import partition from "lodash.partition";
+import { partition } from "lodash";
 
 export {
   StorageAllocation,
@@ -305,9 +305,8 @@ function allocateContractState(
   //base contracts are listed from most derived to most base, so we
   //have to reverse before processing, but reverse() is in place, so we
   //clone with slice first
-  let linearizedBaseContractsFromBase: number[] = contract.linearizedBaseContracts
-    .slice()
-    .reverse();
+  let linearizedBaseContractsFromBase: number[] =
+    contract.linearizedBaseContracts.slice().reverse();
 
   //first, let's get all the variables under consideration
   let variables = [].concat(
@@ -571,8 +570,8 @@ function storageSizeAndAllocate(
           allocations: existingAllocations
         };
       }
-      //otherwise, treat them normally
-      //DELIBERATE FALL-TRHOUGH
+    //otherwise, treat them normally
+    //DELIBERATE FALL-TRHOUGH
     default:
       //otherwise, it's a direct type
       return {
