@@ -2,7 +2,9 @@
   "root": true,
   "env": {
     "es2021": true,
-    "node": true
+    "node": true,
+    "mocha": true,
+    "jest": true
   },
   "globals": {
     "BUNDLE_VERSION": "readonly",
