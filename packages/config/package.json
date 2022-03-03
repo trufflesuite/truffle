@@ -26,13 +26,13 @@
     "@truffle/provider": "^0.2.47",
     "conf": "^10.0.2",
     "find-up": "^2.1.0",
-    "lodash.merge": "^4.6.2",
+    "lodash": "^4.17.21",
     "original-require": "^1.0.1"
   },
   "devDependencies": {
     "@types/configstore": "^4.0.0",
     "@types/find-up": "^2.1.0",
-    "@types/lodash.merge": "^4.6.6",
+    "@types/lodash": "^4.14.179",
     "@types/node": "12.12.21",
     "@types/sinon": "^9.0.10",
     "mocha": "8.1.2",

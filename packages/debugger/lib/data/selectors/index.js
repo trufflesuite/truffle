@@ -3,7 +3,7 @@ const debug = debugModule("debugger:data:selectors");
 
 import { createSelectorTree, createLeaf } from "reselect-tree";
 import jsonpointer from "json-pointer";
-import merge from "lodash.merge";
+import { merge } from "lodash";
 import semver from "semver";
 
 import { stableKeccak256, makePath } from "lib/helpers";
@@ -463,12 +463,18 @@ const data = createSelectorTree({
       /*
        * data.info.allocations.calldata
        */
-      calldata: createLeaf(["/state"], state => state.info.allocations.calldata),
+      calldata: createLeaf(
+        ["/state"],
+        state => state.info.allocations.calldata
+      ),
 
       /*
        * data.info.allocations.returndata
        */
-      returndata: createLeaf(["/state"], state => state.info.allocations.returndata)
+      returndata: createLeaf(
+        ["/state"],
+        state => state.info.allocations.returndata
+      )
     },
 
     /**
@@ -483,17 +489,14 @@ const data = createSelectorTree({
      * data.info.taggedOutputs
      * "Tagged outputs" means user-defined things that are output by a contract
      * (not input to a contract), and which are distinguished by (potentially
-     * ambiguous) selectors.  So, events and custom errors are tagged outputs.  
+     * ambiguous) selectors.  So, events and custom errors are tagged outputs.
      * Function arguments are not tagged outputs (they're not outputs).
      * Return values are not tagged outputs (they don't have a selector).
      * Built-in errors (Error(string) and Panic(uint))... OK I guess those could
      * be considered tagged outputs, but we're only looking at user-defined ones
      * here.
      */
-    taggedOutputs: createLeaf(
-      ["/state"],
-      state => state.info.taggedOutputs
-    )
+    taggedOutputs: createLeaf(["/state"], state => state.info.taggedOutputs)
   },
 
   /**
@@ -655,9 +658,8 @@ const data = createSelectorTree({
               //note that Solidity gives us the linearization in order from most
               //derived to most base, but we want most base to most derived;
               //annoyingly, reverse() is in-place, so we clone with slice() first
-              const linearizedBaseContractsFromBase = definition.linearizedBaseContracts
-                .slice()
-                .reverse();
+              const linearizedBaseContractsFromBase =
+                definition.linearizedBaseContracts.slice().reverse();
               linearizedBaseContractsFromBase.pop(); //remove the last element, i.e.,
               //the contract itself, because we want to treat that one specially
               //now, we put it all together
@@ -1079,7 +1081,7 @@ const data = createSelectorTree({
             //I don't think this case should happen, but I'm including it
             //for extra certainty
             errorNode = errorNode.errorCall;
-            //DELIBERATE FALL-THROUGH
+          //DELIBERATE FALL-THROUGH
           case "FunctionCall":
             //this should work for both qualified & unqualified errors
             const errorId = errorNode.expression.referencedDeclaration;

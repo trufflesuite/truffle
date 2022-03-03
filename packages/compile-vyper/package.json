@@ -25,7 +25,7 @@
     "@truffle/resolver": "^8.0.9",
     "colors": "1.4.0",
     "debug": "^4.3.1",
-    "lodash.partition": "^4.6.0",
+    "lodash": "^4.17.21",
     "minimatch": "^3.0.4",
     "semver": "^7.3.4"
   },
