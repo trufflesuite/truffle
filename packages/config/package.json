@@ -27,7 +27,6 @@
     "conf": "^10.0.2",
     "find-up": "^2.1.0",
     "lodash.merge": "^4.6.2",
-    "module": "^1.2.5",
     "original-require": "^1.0.1"
   },
   "devDependencies": {

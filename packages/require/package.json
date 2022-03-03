@@ -22,7 +22,6 @@
     "@truffle/config": "^1.3.20",
     "@truffle/expect": "^0.1.0",
     "@truffle/interface-adapter": "^0.5.11",
-    "module": "^1.2.5",
     "original-require": "^1.0.1"
   },
   "devDependencies": {
