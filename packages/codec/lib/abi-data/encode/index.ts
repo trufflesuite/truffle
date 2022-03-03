@@ -11,7 +11,7 @@ import {
   AbiSizeInfo,
   abiSizeInfo
 } from "@truffle/codec/abi-data/allocate";
-import { sum } from "lodash";
+import sum from "lodash/sum";
 
 //UGH -- it turns out TypeScript can't handle nested tagged unions
 //see: https://github.com/microsoft/TypeScript/issues/18758

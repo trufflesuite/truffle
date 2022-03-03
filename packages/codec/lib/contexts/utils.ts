@@ -7,7 +7,7 @@ import type * as Ast from "@truffle/codec/ast";
 import * as Conversion from "@truffle/codec/conversion";
 import type { CompilerVersion } from "@truffle/codec/compiler";
 import type { Context, Contexts } from "./types";
-import { escapeRegExp } from "lodash";
+import escapeRegExp from "lodash/escapeRegExp";
 import * as cbor from "cbor";
 import { Shims } from "@truffle/compile-common";
 import * as Abi from "@truffle/abi-utils";

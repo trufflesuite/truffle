@@ -21,7 +21,7 @@ import type { ImmutableReferences } from "@truffle/contract-schema/spec";
 import * as Evm from "@truffle/codec/evm";
 import * as Format from "@truffle/codec/format";
 import BN from "bn.js";
-import { partition } from "lodash";
+import partition from "lodash/partition";
 
 export {
   StorageAllocation,
