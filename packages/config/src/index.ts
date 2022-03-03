@@ -1,5 +1,5 @@
 import path from "path";
-import { merge } from "lodash";
+import merge from "lodash/merge";
 import Module from "module";
 import findUp from "find-up";
 import Conf from "conf";

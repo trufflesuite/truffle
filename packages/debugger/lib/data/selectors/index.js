@@ -3,7 +3,7 @@ const debug = debugModule("debugger:data:selectors");
 
 import { createSelectorTree, createLeaf } from "reselect-tree";
 import jsonpointer from "json-pointer";
-import { merge } from "lodash";
+import merge from "lodash/merge";
 import semver from "semver";
 
 import { stableKeccak256, makePath } from "lib/helpers";

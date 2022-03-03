@@ -6,7 +6,7 @@ import * as Common from "@truffle/codec/common";
 
 import type { AstNode, AstNodes, Scopes } from "./types";
 import BN from "bn.js";
-import { cloneDeep } from "lodash";
+import cloneDeep from "lodash/cloneDeep";
 
 /** @category Definition Reading */
 export function typeIdentifier(definition: AstNode): string {

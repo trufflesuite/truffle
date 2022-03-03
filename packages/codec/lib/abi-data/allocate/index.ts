@@ -45,7 +45,7 @@ import type {
 } from "./types";
 import type { DecodingMode } from "@truffle/codec/types";
 import * as Format from "@truffle/codec/format";
-import { partition } from "lodash";
+import partition from "lodash/partition";
 
 export {
   AbiAllocations,
