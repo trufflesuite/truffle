@@ -47,12 +47,11 @@ class Artifactor {
     if (Array.isArray(artifactObjects)) {
       const tmpArtifactArray = artifactObjects;
       tmpArtifactArray.forEach(artifactObj => {
-        const contractName = artifactObj.contract_name || artifactObj.contractName;
+        const contractName =
+          artifactObj.contract_name || artifactObj.contractName;
         if (newArtifactObjects[contractName]) {
           console.warn(
-            `${OS.EOL}> Duplicate contract names found for ${
-              contractName
-            }.${OS.EOL}` +
+            `${OS.EOL}> Duplicate contract names found for ${contractName}.${OS.EOL}` +
               `> This can cause errors and unknown behavior. Please rename one of your contracts.`
           );
         }

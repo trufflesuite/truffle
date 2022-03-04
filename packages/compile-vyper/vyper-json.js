@@ -3,7 +3,7 @@ const execSync = require("child_process").execSync;
 const path = require("path");
 const semver = require("semver");
 const Common = require("@truffle/compile-common");
-const partition = require("lodash.partition");
+const partition = require("lodash/partition");
 
 //NOTE: this file has a fair bit of copypaste-with-modifications
 //from compile-solidity/run.js, so be warned...

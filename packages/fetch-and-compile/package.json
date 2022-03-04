@@ -1,6 +1,6 @@
 {
   "name": "@truffle/fetch-and-compile",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "Used to obtain external verified sources and compile them",
   "main": "dist/index.js",
   "scripts": {
@@ -39,9 +39,9 @@
     "access": "public"
   },
   "dependencies": {
-    "@truffle/codec": "^0.12.0",
-    "@truffle/compile-solidity": "^6.0.15",
-    "@truffle/config": "^1.3.20",
+    "@truffle/codec": "^0.12.1",
+    "@truffle/compile-solidity": "^6.0.16",
+    "@truffle/config": "^1.3.21",
     "@truffle/source-fetcher": "^1.0.1",
     "debug": "^4.3.2",
     "semver": "^7.3.5",

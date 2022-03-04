@@ -7,7 +7,7 @@ import type * as Ast from "@truffle/codec/ast";
 import * as Conversion from "@truffle/codec/conversion";
 import type { CompilerVersion } from "@truffle/codec/compiler";
 import type { Context, Contexts } from "./types";
-import escapeRegExp from "lodash.escaperegexp";
+import escapeRegExp from "lodash/escapeRegExp";
 import * as cbor from "cbor";
 import { Shims } from "@truffle/compile-common";
 import * as Abi from "@truffle/abi-utils";
@@ -49,8 +49,8 @@ export function matchContext(context: Context, givenBinary: string): boolean {
   //if it is a constructor, or is Vyper,
   //the given binary must be at least as long,
   //and the difference must be a multiple of 32 bytes (64 hex digits)
-  const additionalAllowed = isConstructor ||
-    (compiler != undefined && compiler.name === "vyper");
+  const additionalAllowed =
+    isConstructor || (compiler != undefined && compiler.name === "vyper");
   if (
     (!additionalAllowed && lengthDifference !== 0) ||
     lengthDifference < 0 ||
@@ -208,7 +208,7 @@ export function normalizeContexts(contexts: Contexts): Contexts {
       context.compiler = detectCompilerInfo(decodedCbors[contextHash]);
     }
   }
-  
+
   debug("versions complete");
 
   //one last step: where there's CBOR with a metadata hash, we'll allow the
@@ -223,9 +223,7 @@ export function normalizeContexts(contexts: Contexts): Contexts {
         contextHash in decodedCbors &&
         isObjectWithHash(decodedCbors[contextHash])
     )
-    .map(
-      ([_contextHash, cborInfo]) => cborInfo
-    );
+    .map(([_contextHash, cborInfo]) => cborInfo);
   const cborRegexps = externalCborInfos.map(cborInfo => ({
     input: new RegExp(cborInfo.cborSegment, "g"), //hex string so no need for escape
     output: "..".repeat(cborInfo.cborLength) + cborInfo.cborLengthHex

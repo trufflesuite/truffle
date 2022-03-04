@@ -18,7 +18,7 @@ import * as web3 from "lib/web3/sagas";
 
 import data from "../selectors";
 
-import sum from "lodash.sum";
+import sum from "lodash/sum";
 import jsonpointer from "json-pointer";
 
 import * as Codec from "@truffle/codec";

@@ -6,7 +6,7 @@ import * as Common from "@truffle/codec/common";
 
 import type { AstNode, AstNodes, Scopes } from "./types";
 import BN from "bn.js";
-import cloneDeep from "lodash.clonedeep";
+import cloneDeep from "lodash/cloneDeep";
 
 /** @category Definition Reading */
 export function typeIdentifier(definition: AstNode): string {
@@ -307,9 +307,8 @@ export function baseDefinition(definition: AstNode): AstNode {
   }
 
   //otherwise, we'll have to spoof it up ourselves
-  let baseIdentifier = typeIdentifier(definition).match(
-    /^t_array\$_(.*)_\$/
-  )[1];
+  let baseIdentifier =
+    typeIdentifier(definition).match(/^t_array\$_(.*)_\$/)[1];
   //greedy match to extract everything from first to last dollar sign
 
   // HACK - internal types for memory or storage also seem to be pointers

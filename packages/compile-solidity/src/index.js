@@ -9,7 +9,7 @@ const { compileWithPragmaAnalysis } = require("./compileWithPragmaAnalysis");
 const { reportSources } = require("./reportSources");
 const { Compilations } = require("@truffle/compile-common");
 const expect = require("@truffle/expect");
-const partition = require("lodash.partition");
+const partition = require("lodash/partition");
 const fs = require("fs-extra");
 
 async function compileYulPaths(yulPaths, options) {

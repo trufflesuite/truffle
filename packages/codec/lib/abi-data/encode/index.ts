@@ -11,7 +11,7 @@ import {
   AbiSizeInfo,
   abiSizeInfo
 } from "@truffle/codec/abi-data/allocate";
-import sum from "lodash.sum";
+import sum from "lodash/sum";
 
 //UGH -- it turns out TypeScript can't handle nested tagged unions
 //see: https://github.com/microsoft/TypeScript/issues/18758
@@ -42,9 +42,9 @@ export function encodeAbi(
         case "static":
           return Basic.Encode.encodeBasic(input);
         case "dynamic":
-          bytes = Bytes.Encode.encodeBytes(<Format.Values.BytesDynamicValue>(
-            input
-          ));
+          bytes = Bytes.Encode.encodeBytes(
+            <Format.Values.BytesDynamicValue>input
+          );
           return padAndPrependLength(bytes);
       }
     case "string":

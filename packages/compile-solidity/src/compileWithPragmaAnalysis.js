@@ -5,7 +5,7 @@ const Profiler = require("./profiler");
 const { run } = require("./run");
 const { reportSources } = require("./reportSources");
 const OS = require("os");
-const cloneDeep = require("lodash.clonedeep");
+const cloneDeep = require("lodash/cloneDeep");
 
 const getSemverExpression = source => {
   return source.match(/pragma solidity(.*);/)[1]
