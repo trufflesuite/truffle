@@ -13,8 +13,7 @@ describe("globalnpm", () => {
   describe("require function", () => {
     let syncStub: sinon.SinonStub;
     let getInstalledPathSyncStub: sinon.SinonStub;
-    let readFileSyncStub: sinon.SinonStub;
-    // let globalNpmStub: sinon.SinonStub;
+    // let readFileSyncStub: sinon.SinonStub;
 
     beforeEach(() => {
       syncStub = sinon.stub(detectInstalled, "sync");
@@ -22,13 +21,13 @@ describe("globalnpm", () => {
         getInstalledPath,
         "getInstalledPathSync"
       );
-      readFileSyncStub = sinon.stub(fs, "readFileSync");
+      // readFileSyncStub = sinon.stub(fs, "readFileSync");
     });
 
     afterEach(() => {
       syncStub.restore();
       getInstalledPathSyncStub.restore();
-      readFileSyncStub.restore();
+      // readFileSyncStub.restore();
     });
 
     it("returns null if the import_path starts with '.'", () => {
@@ -41,7 +40,7 @@ describe("globalnpm", () => {
       assert.deepEqual(result, null);
     });
 
-    it.only("returns the contents of json (in build/contracts)", () => {
+    it("returns the contents of json (in build/contracts)", () => {
       syncStub.withArgs("package").returns(true);
 
       getInstalledPathSyncStub
@@ -72,15 +71,21 @@ describe("globalnpm", () => {
     });
 
     it("returns undefined if the import_path does not exist", () => {
+      // const read_file_sync_stub = sinon.stub(fs, "readFileSync");
+
       syncStub.withArgs("package").returns(false);
 
       const result = globalNpm.require("package/contracts/Test.sol");
 
       assert.ok(!getInstalledPathSyncStub.called);
       assert.deepEqual(result, undefined);
+
+      // read_file_sync_stub.restore();
     });
 
     it("returns null if readFileSync throws Error", () => {
+      const readFileSyncStub = sinon.stub(fs, "readFileSync");
+
       syncStub.withArgs("package").returns(true);
       getInstalledPathSyncStub
         .withArgs("package")
@@ -92,13 +97,15 @@ describe("globalnpm", () => {
       const result = globalNpm.require("package/contracts/Test.sol");
 
       assert.deepEqual(result, null);
+
+      readFileSyncStub.restore();
     });
   });
 
   describe("resolve function", () => {
     let syncStub: sinon.SinonStub;
     let getInstalledPathSyncStub: sinon.SinonStub;
-    let readFileSyncStub: sinon.SinonStub;
+    // let readFileSyncStub: sinon.SinonStub;
 
     beforeEach(() => {
       syncStub = sinon.stub(detectInstalled, "sync");
@@ -106,13 +113,13 @@ describe("globalnpm", () => {
         getInstalledPath,
         "getInstalledPathSync"
       );
-      readFileSyncStub = sinon.stub(fs, "readFileSync");
+      // readFileSyncStub = sinon.stub(fs, "readFileSync");
     });
 
     afterEach(() => {
       syncStub.restore();
       getInstalledPathSyncStub.restore();
-      readFileSyncStub.restore();
+      // readFileSyncStub.restore();
     });
 
     it("returns the contents of solidity file if the import_path exists", async () => {
@@ -148,6 +155,8 @@ describe("globalnpm", () => {
     });
 
     it("returns undefined body if readFileSync throws Error", async () => {
+      const readFileSyncStub = sinon.stub(fs, "readFileSync");
+
       syncStub.withArgs("package").returns(true);
       getInstalledPathSyncStub
         .withArgs("package")
@@ -162,6 +171,8 @@ describe("globalnpm", () => {
 
       assert.strictEqual(body, undefined);
       assert.strictEqual(filePath, "package/contracts/Test.sol");
+
+      readFileSyncStub.restore();
     });
   });
 });

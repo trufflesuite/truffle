@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs";
 const detectInstalled = require("detect-installed");
-const { getInstalledPathSync } = require("get-installed-path");
+const getInstalledPath = require("get-installed-path");
 
 import type { ResolverSource } from "../source";
 import { debug } from "console";
@@ -11,7 +11,7 @@ const getGlobalPackagePath = (packageName: string): string | null => {
   const suffix = `${path.sep}${packageName}`;
   let globalPackagePath: string | null = null;
 
-  globalPackagePath = getInstalledPathSync(packageName);
+  globalPackagePath = getInstalledPath.getInstalledPathSync(packageName);
 
   globalPackagePath = globalPackagePath.endsWith(suffix)
     ? globalPackagePath.slice(0, globalPackagePath.length - suffix.length)
