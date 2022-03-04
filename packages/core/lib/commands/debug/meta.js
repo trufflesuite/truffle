@@ -35,7 +35,7 @@ module.exports = {
   },
   help: {
     usage:
-      "truffle debug [<transaction_hash>] [--fetch-external|-x]" +
+      "truffle debug [<transaction_hash>] [--fetch-external|-x] [--url <provider_url>]" +
       OS.EOL +
       "                             [--compile-tests|--compile-all|--compile-none]",
     options: [
