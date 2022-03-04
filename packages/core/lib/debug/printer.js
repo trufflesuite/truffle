@@ -172,13 +172,39 @@ class DebugPrinter {
     const colorizedLines = splitLines(colorizedSource);
 
     this.config.logger.log("");
+    // We create printoutRange with range.lines as initial value for printing.
+    let printoutRange = range.lines;
+
+    // We print a warning message and display the end of source code when the
+    // instruction's byte-offset to the start of the range in the source code
+    // is past the end of source code.
+    if (range.start >= source.length) {
+      this.config.logger.log(
+        `${colors.bold(
+          "Warning:"
+        )} Location is past end of source, displaying end.`
+      );
+      this.config.logger.log("");
+      // We set the printoutRange with the end of source code.
+      // Note that "lines" is the split lines of source code as defined above.
+      printoutRange = {
+        start: {
+          line: lines.length - 1,
+          column: 0
+        },
+        end: {
+          line: lines.length - 1,
+          column: 0
+        }
+      };
+    }
 
     //HACK -- the line-pointer formatter doesn't work right with colorized
     //lines, so we pass in the uncolored version too
     this.config.logger.log(
       DebugUtils.formatRangeLines(
         colorizedLines,
-        range.lines,
+        printoutRange,
         lines,
         contextBefore,
         contextAfter
