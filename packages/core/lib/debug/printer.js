@@ -173,16 +173,7 @@ class DebugPrinter {
 
     this.config.logger.log("");
     // We create printoutRange with range.lines as initial value for printing.
-    let printoutRange = {
-      start: {
-        line: range.lines.start.line,
-        column: range.lines.start.column
-      },
-      end: {
-        line: range.lines.end.line,
-        column: range.lines.end.column
-      }
-    };
+    let printoutRange = range.lines;
 
     // We print a warning message and display the end of source code when the
     // instruction's byte-offset to the start of the range in the source code
