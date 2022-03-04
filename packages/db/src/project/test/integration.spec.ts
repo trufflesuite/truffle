@@ -19,7 +19,7 @@ import type { Query, Mutation } from "@truffle/db/process";
 
 let server;
 const port = 8545;
-// @ts-ignore
+// @ts-ignore jest-specific pedantry
 beforeAll(async done => {
   server = Ganache.server({
     // note instamine must be set to eager (default) with vmErrorsOnRPCResponse enabled
@@ -520,7 +520,6 @@ describe("Compilation", () => {
         );
         // @ts-ignore won't be undefined
         let bytecodeId: string = generateId("bytecodes", shimBytecodeObject);
-        //let callBytecodeId = generateId("bytecodes", shimCallBytecodeObject);
 
         // @ts-ignore won't be updefined
         let contractId: string = generateId("contracts", {
@@ -864,8 +863,6 @@ describe("Compilation", () => {
 
   it("loads contracts", async () => {
     for (let index in artifacts) {
-      //let expectedId = contractIds[index];
-
       let {
         data: {
           contract: {
