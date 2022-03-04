@@ -19,7 +19,7 @@ import type { Query, Mutation } from "@truffle/db/process";
 
 let server;
 const port = 8545;
-
+// @ts-ignore
 beforeAll(async done => {
   server = Ganache.server({
     // note instamine must be set to eager (default) with vmErrorsOnRPCResponse enabled
@@ -463,24 +463,35 @@ describe("Compilation", () => {
     migrationConfig.reset = true;
     await Migrate.run(migrationConfig);
 
-    sourceIds = artifacts.map(artifact => ({
-      id: generateId("sources", {
-        contents: artifact["source"],
-        sourcePath: artifact["sourcePath"]
-      })
-    } as IdObject<"sources">));
+    sourceIds = artifacts.map(
+      artifact =>
+        ({
+          id: generateId("sources", {
+            contents: artifact["source"],
+            sourcePath: artifact["sourcePath"]
+          })
+        } as IdObject<"sources">)
+    );
 
-    bytecodeIds = artifacts.map(artifact => ({
-      id: generateId(
-        "bytecodes", Shims.LegacyToNew.forBytecode(artifact["bytecode"])
-      )
-    } as IdObject<"bytecodes">));
+    bytecodeIds = artifacts.map(
+      artifact =>
+        ({
+          id: generateId(
+            "bytecodes",
+            Shims.LegacyToNew.forBytecode(artifact["bytecode"])
+          )
+        } as IdObject<"bytecodes">)
+    );
 
-    callBytecodeIds = artifacts.map(artifact => ({
-      id: generateId(
-        "bytecodes", Shims.LegacyToNew.forBytecode(artifact["deployedBytecode"])
-      )
-    } as IdObject<"bytecodes">));
+    callBytecodeIds = artifacts.map(
+      artifact =>
+        ({
+          id: generateId(
+            "bytecodes",
+            Shims.LegacyToNew.forBytecode(artifact["deployedBytecode"])
+          )
+        } as IdObject<"bytecodes">)
+    );
 
     expectedSolcCompilationId = generateId("compilations", {
       compiler: artifacts[0].compiler,
@@ -509,7 +520,7 @@ describe("Compilation", () => {
         );
         // @ts-ignore won't be undefined
         let bytecodeId: string = generateId("bytecodes", shimBytecodeObject);
-        let callBytecodeId = generateId("bytecodes", shimCallBytecodeObject);
+        //let callBytecodeId = generateId("bytecodes", shimCallBytecodeObject);
 
         // @ts-ignore won't be updefined
         let contractId: string = generateId("contracts", {
@@ -574,7 +585,7 @@ describe("Compilation", () => {
                 createBytecode: {
                   bytecode: { id: bytecodeId },
                   linkValues: shimBytecodeObject.linkReferences
-                    .filter((linkReference) => !!linkReference.name)
+                    .filter(linkReference => !!linkReference.name)
                     .map(({ name }, index) => ({
                       // @ts-ignore name won't be null because filter
                       value: links[name],
@@ -587,9 +598,9 @@ describe("Compilation", () => {
               }
             }
           });
-          contractInstanceIds.push({ id: contractInstanceId } as IdObject<
-            "contractInstances"
-          >);
+          contractInstanceIds.push({
+            id: contractInstanceId
+          } as IdObject<"contractInstances">);
           contractInstances.push({
             address: networksArray[networksArray.length - 1][1]["address"],
             network: {
@@ -740,9 +751,8 @@ describe("Compilation", () => {
       })
     );
 
-    const solcCompilation = compilationsQuery[0].data.compilation as Resource<
-      "compilations"
-    >;
+    const solcCompilation = compilationsQuery[0].data
+      .compilation as Resource<"compilations">;
 
     expect(solcCompilation.compiler.version).toEqual(
       artifacts[0].compiler.version
@@ -854,7 +864,7 @@ describe("Compilation", () => {
 
   it("loads contracts", async () => {
     for (let index in artifacts) {
-      let expectedId = contractIds[index];
+      //let expectedId = contractIds[index];
 
       let {
         data: {
@@ -956,7 +966,6 @@ describe("Compilation", () => {
   });
 
   it("loads contract instances", async () => {
-
     for (const contractInstanceId of contractInstanceIds) {
       let {
         data: {

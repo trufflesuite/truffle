@@ -37,9 +37,9 @@
     "test": "jest --verbose --detectOpenHandles --forceExit --passWithNoTests"
   },
   "devDependencies": {
-    "@types/jest": "^26.0.20",
+    "@types/jest": "^27.4.1",
     "@types/node": "12.12.21",
-    "@types/react": "^17.0.2",
+    "@types/react": "^16.8.0",
     "@types/web3": "^1.0.20",
     "eslint-plugin-react-hooks": "^4.3.0",
     "jest": "^26.5.2",
@@ -72,7 +72,7 @@
     "ink-syntax-highlight": "^1.0.1",
     "ink-text-input": "^4.0.1",
     "meow": "^9.0.0",
-    "react": "^17.0.1",
+    "react": "^16.8.0",
     "source-map-support": "^0.5.19"
   }
 }
