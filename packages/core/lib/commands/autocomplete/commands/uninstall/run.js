@@ -4,23 +4,13 @@ const TruffleError = require("@truffle/error");
 const {
   completionScriptName,
   locationFromShell,
-  shellConfigSetting
+  shellConfigSetting,
+  shellName
 } = require("../../helpers");
 
 module.exports = async function (_) {
-  const path = require("path");
-  const Config = require("@truffle/config");
-  const completionScript = path.resolve(
-    Config.getTruffleDataDirectory(),
-    completionScriptName()
-  );
-
-  if (fs.existsSync(completionScript)) {
-    fs.unlinkSync(completionScript);
-  }
-
   try {
-    removeFromShellConfig(completionScript);
+    uninstall(shellName());
   } catch (err) {
     if (err instanceof TruffleError) {
       const colors = require("colors");
@@ -34,17 +24,43 @@ module.exports = async function (_) {
   }
 };
 
-function removeFromShellConfig(filePath) {
-  const scriptConfigLocation = locationFromShell();
+function uninstall(shell) {
+  if (shell === "zsh") {
+    removeFromZshConfig();
+  } else if (shell === "bash") {
+    uninstallBashCompletion();
+  } else {
+    throw new TruffleError(`Unrecognized shell type: ${shell}`);
+  }
+}
+
+function removeFromZshConfig() {
+  const path = require("path");
+  const Config = require("@truffle/config");
+  const completionScript = path.resolve(
+    Config.getTruffleDataDirectory(),
+    completionScriptName("zsh")
+  );
+
+  if (fs.existsSync(completionScript)) {
+    fs.unlinkSync(completionScript);
+  }
+
+  const scriptConfigLocation = locationFromShell("zsh");
   if (!fs.existsSync(scriptConfigLocation)) {
     return;
   }
 
   const contents = fs.readFileSync(scriptConfigLocation, "utf8").split(/\r?\n/);
-  const linesToRemove = shellConfigSetting(filePath).split(/\r?\n/);
+  const linesToRemove = shellConfigSetting("zsh").split(/\r?\n/);
   const newFileContents = contents.map(line =>
     linesToRemove.includes(line) ? "" : line
   );
 
   fs.writeFileSync(scriptConfigLocation, newFileContents.join(OS.EOL).trim());
+}
+
+function uninstallBashCompletion() {
+  const completionPath = completionScriptName("bash");
+  fs.unlinkSync(completionPath);
 }
