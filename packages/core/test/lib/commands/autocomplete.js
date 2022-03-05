@@ -41,7 +41,6 @@ describe("autocomplete", () => {
   beforeEach("Set up mock home directory", async () => {
     mockConfigDir = await fs.promises.mkdtemp("config-");
     mockHomeDir = await fs.promises.mkdtemp("home-");
-    console.log(`Made directory ${mockConfigDir}`);
 
     sinon.stub(Config, "getTruffleDataDirectory").returns(mockConfigDir);
     sinon.stub(OS, "homedir").returns(mockHomeDir);
@@ -61,7 +60,7 @@ describe("autocomplete", () => {
   });
 
   describe("autocomplete install", () => {
-    async function testAutocompleteInstall(shellConfig) {
+    async function testInstallInProfile(shellConfig) {
       const shell = (shellConfig.match(/\.(\w+)rc/) ||
         shellConfig.match(/\.(\w+)_profile/))[1];
 
@@ -81,20 +80,31 @@ describe("autocomplete", () => {
       assert.include(fileContents, `completion.${shell}`);
     }
 
-    it("adds a bash completion script to truffle config directory", async () => {
-      await testAutocompleteInstall(".bashrc");
-    });
+    it("implements bash completion", async () => {
+      sinon.stub(process.env, "SHELL").value("bash");
+      const localShare = await fs.promises.mkdir(
+        path.resolve(mockHomeDir, ".local/share/"),
+        { recursive: true }
+      );
 
-    it("loads bash completion script from .bash_profile", async () => {
-      await testAutocompleteInstall(".bash_profile");
+      const options = { _: ["install"] };
+      await autocomplete.run(config.with(options));
+
+      const fileContents = new TextDecoder().decode(
+        await fs.promises.readFile(
+          path.resolve(localShare, "share/bash-completion/completions/truffle")
+        )
+      );
+
+      assert.include(fileContents, `_truffle_yargs_completions`);
     });
 
     it("adds a zsh completion script to truffle config directory", async () => {
-      await testAutocompleteInstall(".zshrc");
+      await testInstallInProfile(".zshrc");
     });
 
     it("loads zsh completion script from .zsh_profile", async () => {
-      await testAutocompleteInstall(".zsh_profile");
+      await testInstallInProfile(".zsh_profile");
     });
 
     it("can handle unknown shells", async () => {
@@ -115,8 +125,8 @@ describe("autocomplete", () => {
       // Test passes as long as it doesn't throw
     });
 
-    it("will not add a duplicate line to .bashrc", async () => {
-      const shell = "bash";
+    it("will not add a duplicate line to .zshrc", async () => {
+      const shell = "zsh";
       sinon.stub(process.env, "SHELL").value(shell);
       await fs.promises.writeFile(
         path.resolve(mockHomeDir, `.${shell}rc`),
@@ -140,7 +150,7 @@ describe("autocomplete", () => {
   });
 
   describe("autocomplete uninstall", () => {
-    async function testAutocompleteUninstall(shellConfig) {
+    async function testUninstallFromConfig(shellConfig) {
       const shell = (shellConfig.match(/\.(\w+)rc/) ||
         shellConfig.match(/\.(\w+)_profile/))[1];
 
@@ -159,20 +169,29 @@ describe("autocomplete", () => {
       assert.notInclude(fileContents, `completion.${shell}`);
     }
 
-    it("uninstalls from .bashrc", async () => {
-      await testAutocompleteUninstall(".bashrc");
-    });
+    it("uninstalls bash completion", async () => {
+      sinon.stub(process.env, "SHELL").value("bash");
+      const localShare = await fs.promises.mkdir(
+        path.resolve(mockHomeDir, ".local/share"),
+        { recursive: true }
+      );
 
-    it("uninstalls from .bash_profile", async () => {
-      await testAutocompleteUninstall(".bash_profile");
+      await autocomplete.run(config.with({ _: ["install"] }));
+      await autocomplete.run(config.with({ _: ["uninstall"] }));
+
+      assert.isFalse(
+        fs.existsSync(
+          path.resolve(localShare, "share/bash-completion/completions/truffle")
+        )
+      );
     });
 
     it("uninstalls from .zshrc", async () => {
-      await testAutocompleteUninstall(".zshrc");
+      await testUninstallFromConfig(".zshrc");
     });
 
     it("uninstalls from .zsh_profile", async () => {
-      await testAutocompleteUninstall(".zsh_profile");
+      await testUninstallFromConfig(".zsh_profile");
     });
 
     it("can handle unknown shells", async () => {

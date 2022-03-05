@@ -1,5 +1,7 @@
 const fs = require("fs");
 const TruffleError = require("@truffle/error");
+const OS = require("os");
+const path = require("path");
 const {
   completionScriptName,
   locationFromShell,
@@ -8,16 +10,9 @@ const {
 } = require("../../helpers");
 
 module.exports = async function (_) {
-  const path = require("path");
-  const Config = require("@truffle/config");
-  const completionScript = path.resolve(
-    Config.getTruffleDataDirectory(),
-    completionScriptName()
-  );
-
+  const shell = shellName();
   try {
-    writeCompletionScript(completionScript);
-    appendToShellConfig(completionScript);
+    writeCompletionScript(shell);
   } catch (err) {
     const colors = require("colors");
     const warning = colors.yellow(
@@ -27,32 +22,60 @@ module.exports = async function (_) {
   }
 };
 
-function writeCompletionScript(filePath) {
+function writeCompletionScript(shell) {
   const templates = require("./templates");
-  const shell = shellName();
-  let completion = templates[shell];
-  if (!completion) {
-    throw TruffleError(
-      `Cannot create completion script for shell of type ${shell}`
-    );
-  }
 
-  completion = completion.replace(/{{app_name}}/g, "truffle");
-  fs.writeFileSync(
-    filePath,
-    completion.replace(/{{app_path}}/g, process.argv[1])
-  );
+  switch (shell) {
+    case "zsh":
+      writeZshCompletion(templates[shell]);
+      break;
+    case "bash":
+      writeBashCompletion(templates[shell]);
+      break;
+    default:
+      throw new TruffleError(
+        `Cannot create completion script for shell of type ${shell}`
+      );
+  }
 }
 
-function appendToShellConfig(filePath) {
-  const scriptConfigLocation = locationFromShell();
-  const linesToAdd = shellConfigSetting(filePath);
+function writeZshCompletion(template) {
+  const Config = require("@truffle/config");
+  const completionScript = path.resolve(
+    Config.getTruffleDataDirectory(),
+    completionScriptName("zsh")
+  );
+
+  fs.writeFileSync(completionScript, fillTemplate(template));
+
+  const scriptConfigLocation = locationFromShell("zsh");
+  const linesToAdd = shellConfigSetting("zsh");
   if (!stringInFile(linesToAdd, scriptConfigLocation)) {
     fs.appendFileSync(scriptConfigLocation, linesToAdd);
   }
 }
 
 function stringInFile(string, fileName) {
-  const contents = fs.readFileSync(fileName);
+  let contents = "";
+  try {
+    contents = fs.readFileSync(fileName);
+  } catch (err) {
+    // Handle error silently - will return false
+  }
+
   return contents.includes(string);
+}
+
+function writeBashCompletion(template) {
+  const localShare = path.resolve(OS.homedir(), ".local/share");
+  fs.accessSync(localShare, fs.constants.W_OK);
+
+  const completionPath = completionScriptName("bash");
+  fs.mkdirSync(path.dirname(completionPath), { recursive: true });
+  fs.writeFileSync(completionPath, fillTemplate(template));
+}
+
+function fillTemplate(template) {
+  const completion = template.replace(/{{app_name}}/g, "truffle");
+  return completion.replace(/{{app_path}}/g, process.argv[1]);
 }
