@@ -21,8 +21,9 @@ contract StacktraceTest {
   function(bool) internal run0;
 
   function run(uint fnId) public {
-    function(bool) internal[4] memory run0s = [
-      runRequire, runPay, runInternal, runBoom
+    function(bool) internal[7] memory run0s = [
+      runRequire, runPay, runInternal, runBoom,
+      runCreate, runFallback, runLib
     ];
     if(fnId < run0s.length) {
       run0 = run0s[fnId];
@@ -49,7 +50,7 @@ contract StacktraceTest {
 
   function runRequire(bool succeed) public {
     emit Num(1); //EMIT
-    require(succeed); //REQUIRE
+    require(succeed, "requirement failed"); //REQUIRE
   }
 
   function runPay(bool succeed) public {
@@ -70,6 +71,35 @@ contract StacktraceTest {
       garbage(); //GARBAGE
     }
   }
+
+  function runCreate(bool succeed) public {
+    if(!succeed) {
+      new CantCreate{salt: 0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}();
+      //passing a salt here so it'll use CREATE2 and we can get an actual address
+    }
+  }
+
+  fallback() external {
+    fail(); //CANTFALLBACK
+  }
+
+  error CustomFailure();
+
+  function fail() public {
+    revert CustomFailure(); //FALLBACKFAIL
+  }
+
+  function runFallback(bool succeed) public {
+    if(!succeed) {
+      Boom(payable(address(this))).boom(); //this function doesn't exist, so it'll hit fallback
+    }
+  }
+
+  function runLib(bool succeed) public {
+    if(!succeed) {
+      Library.outerFail();
+    }
+  }
 }
 
 contract Boom {
@@ -80,21 +110,44 @@ contract Boom {
   receive() external payable{
   }
 }
+
+contract CantCreate {
+  constructor() {
+    fail(); //CANTCREATE
+  }
+
+  function fail() public {
+    revert("Nope!"); //CREATEFAIL
+  }
+}
+
+library Library {
+  function outerFail() external {
+    innerFail(); //CANTLIB
+  }
+
+  function innerFail() internal {
+    revert("Nope!"); //LIBFAIL
+  }
+}
 `;
 
-let sources = {
+const sources = {
   "StacktraceTest.sol": __STACKTRACE
 };
 
 const __MIGRATION = `
-let StacktraceTest = artifacts.require("StacktraceTest");
+const StacktraceTest = artifacts.require("StacktraceTest");
+const Library = artifacts.require("Library");
 
-module.exports = function(deployer) {
-  deployer.deploy(StacktraceTest, { value: 1 });
+module.exports = async function(deployer) {
+  await deployer.deploy(Library);
+  await deployer.link(Library, StacktraceTest);
+  await deployer.deploy(StacktraceTest, { value: 1 });
 };
 `;
 
-let migrations = {
+const migrations = {
   "2_deploy_contracts.js": __MIGRATION
 };
 
@@ -153,12 +206,9 @@ describe("Stack tracing", function () {
     let report = bugger.view(stacktrace.current.finalReport);
     let functionNames = report.map(({ functionName }) => functionName);
     assert.deepEqual(functionNames, [
-      undefined,
       "run",
-      undefined,
       "run3",
       "run2",
-      undefined,
       "run1",
       "runRequire"
     ]);
@@ -172,6 +222,7 @@ describe("Stack tracing", function () {
     let prevLocation = report[report.length - 2].location;
     assert.strictEqual(location.sourceRange.lines.start.line, failLine);
     assert.strictEqual(prevLocation.sourceRange.lines.start.line, callLine);
+    assert.strictEqual(report[0].message, "requirement failed");
   });
 
   it("Generates correct stack trace at an intermediate state", async function () {
@@ -206,15 +257,7 @@ describe("Stack tracing", function () {
 
     let report = bugger.view(stacktrace.current.report);
     let functionNames = report.map(({ functionName }) => functionName);
-    assert.deepEqual(functionNames, [
-      undefined,
-      "run",
-      undefined,
-      "run2",
-      undefined,
-      "run1",
-      "runRequire"
-    ]);
+    assert.deepEqual(functionNames, ["run", "run2", "run1", "runRequire"]);
     let contractNames = report.map(({ contractName }) => contractName);
     assert(contractNames.every(name => name === "StacktraceTest"));
     let addresses = report.map(({ address }) => address);
@@ -231,12 +274,9 @@ describe("Stack tracing", function () {
     report = bugger.view(stacktrace.current.report);
     functionNames = report.map(({ functionName }) => functionName);
     assert.deepEqual(functionNames, [
-      undefined,
       "run",
-      undefined,
       "run3",
       "run2",
-      undefined,
       "run1",
       "runRequire"
     ]);
@@ -281,12 +321,9 @@ describe("Stack tracing", function () {
     let report = bugger.view(stacktrace.current.finalReport);
     let functionNames = report.map(({ functionName }) => functionName);
     assert.deepEqual(functionNames, [
-      undefined,
       "run",
-      undefined,
       "run3",
       "run2",
-      undefined,
       "run1",
       "runPay",
       undefined
@@ -332,12 +369,9 @@ describe("Stack tracing", function () {
     let report = bugger.view(stacktrace.current.finalReport);
     let functionNames = report.map(({ functionName }) => functionName);
     assert.deepEqual(functionNames, [
-      undefined,
       "run",
-      undefined,
       "run3",
       "run2",
-      undefined,
       "run1",
       "runInternal",
       undefined,
@@ -351,10 +385,11 @@ describe("Stack tracing", function () {
     assert(addresses.every(address => address === instance.address));
     let status = report[report.length - 1].status;
     assert.isFalse(status);
-    let location = report[report.length - 3].location; //note, -2 because of panic & undefined on top
+    let location = report[report.length - 3].location; //note, -3 because of panic & undefined on top
     let prevLocation = report[report.length - 4].location; //similar
     assert.strictEqual(location.sourceRange.lines.start.line, failLine);
     assert.strictEqual(prevLocation.sourceRange.lines.start.line, callLine);
+    assert.strictEqual(report[0].panic.toNumber(), 0x51);
   });
 
   it("Generates correct stack trace on unexpected self-destruct", async function () {
@@ -387,42 +422,226 @@ describe("Stack tracing", function () {
     let report = bugger.view(stacktrace.current.finalReport);
     let functionNames = report.map(({ functionName }) => functionName);
     assert.deepEqual(functionNames, [
-      undefined,
       "run",
-      undefined,
       "run3",
       "run2",
-      undefined,
       "run1",
       "runBoom",
-      undefined,
       "boom"
     ]);
     let contractNames = report.map(({ contractName }) => contractName);
     assert.strictEqual(contractNames[contractNames.length - 1], "Boom");
     contractNames.pop(); //top frame
-    assert.strictEqual(contractNames[contractNames.length - 1], "Boom");
-    contractNames.pop(); //second-top frame
     assert(contractNames.every(name => name === "StacktraceTest"));
     let addresses = report.map(({ address }) => address);
-    assert.strictEqual(
+    assert.notEqual(
+      //check that Boom and StacktraceTest are not same address
       addresses[addresses.length - 1],
       addresses[addresses.length - 2]
     );
-    addresses.pop();
     addresses.pop();
     assert(addresses.every(address => address === instance.address));
     let status = report[report.length - 1].status;
     assert.isTrue(status);
     let location = report[report.length - 1].location;
-    //skip a frame for the junk frame
-    let prevLocation = report[report.length - 3].location;
-    let prev2Location = report[report.length - 4].location;
+    let prevLocation = report[report.length - 2].location;
+    let prev2Location = report[report.length - 3].location;
     assert.strictEqual(location.sourceRange.lines.start.line, failLine);
     assert.strictEqual(prevLocation.sourceRange.lines.start.line, callLine);
     assert.strictEqual(
       prev2Location.sourceRange.lines.start.line,
       prevCallLine
     );
+  });
+
+  it("Generates correct stack trace after an internal call in a constructor", async function () {
+    this.timeout(12000);
+    let instance = await abstractions.StacktraceTest.deployed();
+    //HACK: because this transaction fails, we have to extract the hash from
+    //the resulting exception (there is supposed to be a non-hacky way but it
+    //does not presently work)
+    let txHash;
+    try {
+      await instance.run(4); //this will throw because of the revert
+    } catch (error) {
+      txHash = error.receipt.transactionHash;
+    }
+    assert.isDefined(txHash, "should have errored and set txHash");
+
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      compilations,
+      lightMode: true
+    });
+
+    let source = bugger.view(solidity.current.source);
+    let failLine = lineOf("CREATEFAIL", source.source);
+    let callLine = lineOf("CANTCREATE", source.source);
+
+    await bugger.runToEnd();
+
+    let report = bugger.view(stacktrace.current.finalReport);
+    let functionNames = report.map(({ functionName }) => functionName);
+    assert.deepEqual(functionNames, [
+      "run",
+      "run3",
+      "run2",
+      "run1",
+      "runCreate",
+      undefined,
+      "fail"
+    ]);
+    let contractNames = report.map(({ contractName }) => contractName);
+    assert.strictEqual(contractNames[contractNames.length - 1], "CantCreate");
+    contractNames.pop(); //top frame
+    assert.strictEqual(contractNames[contractNames.length - 1], "CantCreate");
+    contractNames.pop(); //second-to-top frame
+    assert(contractNames.every(name => name === "StacktraceTest"));
+    let addresses = report.map(({ address }) => address);
+    assert.strictEqual(
+      //top two frames should both be CantCreate
+      addresses[addresses.length - 1],
+      addresses[addresses.length - 2]
+    );
+    addresses = addresses.slice(0, -2); //cut off top two frames that we just checked
+    assert(addresses.every(address => address === instance.address));
+    let status = report[report.length - 1].status;
+    assert.isFalse(status);
+    let location = report[report.length - 1].location;
+    let prevLocation = report[report.length - 2].location;
+    assert.strictEqual(
+      location.sourceRange.lines.start.line,
+      failLine,
+      "wrong final line"
+    );
+    assert.strictEqual(
+      prevLocation.sourceRange.lines.start.line,
+      callLine,
+      "wrong call line"
+    );
+    assert.strictEqual(report[0].message, "Nope!");
+  });
+
+  it("Generates correct stack trace after an internal call in a fallback function", async function () {
+    this.timeout(12000);
+    let instance = await abstractions.StacktraceTest.deployed();
+    //HACK: because this transaction fails, we have to extract the hash from
+    //the resulting exception (there is supposed to be a non-hacky way but it
+    //does not presently work)
+    let txHash;
+    try {
+      await instance.run(5); //this will throw because of the revert
+    } catch (error) {
+      txHash = error.receipt.transactionHash;
+    }
+    assert.isDefined(txHash, "should have errored and set txHash");
+
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      compilations,
+      lightMode: true
+    });
+
+    let source = bugger.view(solidity.current.source);
+    let failLine = lineOf("FALLBACKFAIL", source.source);
+    let callLine = lineOf("CANTFALLBACK", source.source);
+
+    await bugger.runToEnd();
+
+    let report = bugger.view(stacktrace.current.finalReport);
+    let functionNames = report.map(({ functionName }) => functionName);
+    assert.deepEqual(functionNames, [
+      "run",
+      "run3",
+      "run2",
+      "run1",
+      "runFallback",
+      undefined,
+      "fail"
+    ]);
+    let contractNames = report.map(({ contractName }) => contractName);
+    assert(contractNames.every(name => name === "StacktraceTest"));
+    let addresses = report.map(({ address }) => address);
+    assert(addresses.every(address => address === instance.address));
+    let status = report[report.length - 1].status;
+    assert.isFalse(status);
+    let location = report[report.length - 1].location;
+    let prevLocation = report[report.length - 2].location;
+    assert.strictEqual(
+      location.sourceRange.lines.start.line,
+      failLine,
+      "wrong final line"
+    );
+    assert.strictEqual(
+      prevLocation.sourceRange.lines.start.line,
+      callLine,
+      "wrong call line"
+    );
+    assert.isTrue(report[0].custom);
+  });
+
+  it("Generates correct stack trace after an internal call in a constructor", async function () {
+    this.timeout(12000);
+    const instance = await abstractions.StacktraceTest.deployed();
+    const library = await abstractions.Library.deployed();
+    //HACK: because this transaction fails, we have to extract the hash from
+    //the resulting exception (there is supposed to be a non-hacky way but it
+    //does not presently work)
+    let txHash;
+    try {
+      await instance.run(6); //this will throw because of the revert
+    } catch (error) {
+      txHash = error.receipt.transactionHash;
+    }
+    assert.isDefined(txHash, "should have errored and set txHash");
+
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      compilations,
+      lightMode: true
+    });
+
+    let source = bugger.view(solidity.current.source);
+    let failLine = lineOf("LIBFAIL", source.source);
+    let callLine = lineOf("CANTLIB", source.source);
+
+    await bugger.runToEnd();
+
+    let report = bugger.view(stacktrace.current.finalReport);
+    let functionNames = report.map(({ functionName }) => functionName);
+    assert.deepEqual(functionNames, [
+      "run",
+      "run3",
+      "run2",
+      "run1",
+      "runLib",
+      "outerFail",
+      "innerFail"
+    ]);
+    let contractNames = report.map(({ contractName }) => contractName);
+    assert.strictEqual(contractNames[contractNames.length - 1], "Library");
+    contractNames.pop(); //top frame
+    assert.strictEqual(contractNames[contractNames.length - 1], "Library");
+    contractNames.pop(); //second-to-top frame
+    assert(
+      contractNames.every(name => name === "StacktraceTest"),
+      "unexpected remaining names"
+    );
+    let addresses = report.map(({ address }) => address);
+    assert.strictEqual(addresses[addresses.length - 1], library.address);
+    addresses.pop(); //top frame
+    assert.strictEqual(addresses[addresses.length - 1], library.address);
+    addresses.pop(); //second-to-top frame
+    assert(
+      addresses.every(address => address === instance.address),
+      "unexpected remaining addresses"
+    );
+    let status = report[report.length - 1].status;
+    assert.isFalse(status);
+    let location = report[report.length - 1].location;
+    let prevLocation = report[report.length - 2].location;
+    assert.strictEqual(location.sourceRange.lines.start.line, failLine);
+    assert.strictEqual(prevLocation.sourceRange.lines.start.line, callLine);
+    assert.strictEqual(report[0].message, "Nope!");
   });
 });

@@ -14,8 +14,35 @@ import * as Codec from "@truffle/codec";
 
 const identity = x => x;
 
-function generateReport(callstack, location, status, message) {
-  //step 1: shift everything over by 1 and recombine :)
+function generateReport(rawStack, location, status, message) {
+  //step 1: process combined frames
+  let callstack = [];
+  //we're doing a C-style loop here!
+  //because we want to skip some items <grin>
+  for (let i = 0; i < rawStack.length; i++) {
+    const frame = rawStack[i];
+    if (
+      frame.combineWithNextInternal &&
+      i < rawStack.length - 1 &&
+      rawStack[i + 1].type === "internal" &&
+      !rawStack[i + 1].sourceIsInternal
+    ) {
+      const combinedFrame = {
+        ...rawStack[i + 1],
+        calledFromLocation: frame.calledFromLocation
+        //note: since the next frame is internal, it will have the
+        //same address as this, so we don't have to specify which
+        //one to take the address from
+      };
+      callstack.push(combinedFrame);
+      i++; //!! SKIP THE NEXT FRAME!
+    } else {
+      //ordinary case: just push the frame
+      callstack.push(frame);
+    }
+  }
+  debug("callstack: %O", callstack);
+  //step 2: shift everything over by 1 and recombine :)
   let locations = callstack.map(frame => frame.calledFromLocation);
   //remove initial null, add final location on end
   locations.shift();
@@ -76,6 +103,14 @@ function createMultistepSelectors(stepSelector) {
     },
 
     /**
+     * .sourceIsInternal
+     */
+    sourceIsInternal: createLeaf(
+      ["./location/source"],
+      source => source.id === undefined || source.internal
+    ),
+
+    /**
      * .strippedLocation
      */
     strippedLocation: createLeaf(
@@ -112,6 +147,19 @@ let stacktrace = createSelectorTree({
    * stacktrace.state
    */
   state: state => state.stacktrace,
+
+  /**
+   * stacktrace.transaction
+   */
+  transaction: {
+    /**
+     * stacktrace.transaction.initialCallCombinesWithNextJumpIn
+     */
+    initialCallCombinesWithNextJumpIn: createLeaf(
+      [solidity.transaction.bottomStackframeRequiresPhantomFrame],
+      identity
+    )
+  },
 
   /**
    * stacktrace.current
@@ -211,6 +259,14 @@ let stacktrace = createSelectorTree({
      * stacktrace.current.callContext
      */
     callContext: createLeaf([evm.current.step.callContext], identity),
+
+    /**
+     * stacktrace.current.callCombinesWithNextJumpIn
+     */
+    callCombinesWithNextJumpIn: createLeaf(
+      [solidity.current.callRequiresPhantomFrame],
+      identity
+    ),
 
     /**
      * stacktrace.current.willReturn
