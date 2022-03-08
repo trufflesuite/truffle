@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("debugger:solidity:selectors");
+const debug = debugModule("debugger:sourcemapping:selectors");
 
 import { createSelectorTree, createLeaf } from "reselect-tree";
 import SourceMapUtils from "@truffle/source-map-utils";
@@ -49,10 +49,10 @@ function createMultistepSelectors(stepSelector) {
      */
     instruction: createLeaf(
       ["/current/instructionAtProgramCounter", stepSelector.programCounter],
-      //HACK: we use solidity.current.instructionAtProgramCounter
-      //even if we're looking at solidity.next.
+      //HACK: we use sourcemapping.current.instructionAtProgramCounter
+      //even if we're looking at sourcemapping.next.
       //This is harmless... so long as the current instruction isn't a context
-      //change.  So, don't use solidity.next when it is.
+      //change.  So, don't use sourcemapping.next when it is.
 
       (map, pc) => map[pc] || {}
     ),
@@ -125,28 +125,28 @@ function createMultistepSelectors(stepSelector) {
   };
 }
 
-let solidity = createSelectorTree({
+let sourcemapping = createSelectorTree({
   /**
-   * solidity.state
+   * sourcemapping.state
    */
-  state: state => state.solidity,
+  state: state => state.sourcemapping,
 
   /**
-   * solidity.info
+   * sourcemapping.info
    */
   info: {
     /**
-     * solidity.info.sources
+     * sourcemapping.info.sources
      */
     sources: createLeaf(["/state"], state => state.info.sources)
   },
 
   /**
-   * solidity.transaction
+   * sourcemapping.transaction
    */
   transaction: {
     /**
-     * solidity.transaction.bottomStackframeRequiresPhantomFrame
+     * sourcemapping.transaction.bottomStackframeRequiresPhantomFrame
      */
     bottomStackframeRequiresPhantomFrame: createLeaf(
       [
@@ -159,12 +159,12 @@ let solidity = createSelectorTree({
   },
 
   /**
-   * solidity.current
+   * sourcemapping.current
    */
   current: {
     /**
-     * solidity.current.sourceIds
-     * like solidity.current.sources, but just has the IDs, not the sources
+     * sourcemapping.current.sourceIds
+     * like sourcemapping.current.sources, but just has the IDs, not the sources
      */
     sourceIds: createLeaf(
       ["/info/sources", evm.current.context],
@@ -194,8 +194,8 @@ let solidity = createSelectorTree({
     ),
 
     /**
-     * solidity.current.sources
-     * This takes the place of the old solidity.info.sources,
+     * sourcemapping.current.sources
+     * This takes the place of the old sourcemapping.info.sources,
      * returning only the sources for the current compilation and context.
      */
     sources: createLeaf(
@@ -204,7 +204,7 @@ let solidity = createSelectorTree({
     ),
 
     /**
-     * solidity.current.sourceMap
+     * sourcemapping.current.sourceMap
      */
     sourceMap: createLeaf(
       [evm.current.context],
@@ -213,24 +213,24 @@ let solidity = createSelectorTree({
     ),
 
     /**
-     * solidity.current.humanReadableSourceMap
+     * sourcemapping.current.humanReadableSourceMap
      */
     humanReadableSourceMap: createLeaf(["./sourceMap"], sourceMap =>
       sourceMap ? SourceMapUtils.getHumanReadableSourceMap(sourceMap) : null
     ),
 
     /**
-     * solidity.current.functionDepthStack
+     * sourcemapping.current.functionDepthStack
      */
-    functionDepthStack: state => state.solidity.proc.functionDepthStack,
+    functionDepthStack: state => state.sourcemapping.proc.functionDepthStack,
 
     /**
-     * solidity.current.nextFrameIsPhantom
+     * sourcemapping.current.nextFrameIsPhantom
      */
-    nextFrameIsPhantom: state => state.solidity.proc.nextFrameIsPhantom,
+    nextFrameIsPhantom: state => state.sourcemapping.proc.nextFrameIsPhantom,
 
     /**
-     * solidity.current.functionDepth
+     * sourcemapping.current.functionDepth
      */
     functionDepth: createLeaf(
       ["./functionDepthStack"],
@@ -238,7 +238,7 @@ let solidity = createSelectorTree({
     ),
 
     /**
-     * solidity.current.callRequiresPhantomFrame
+     * sourcemapping.current.callRequiresPhantomFrame
      */
     callRequiresPhantomFrame: createLeaf(
       [evm.current.step.callContext, evm.current.step.callData],
@@ -246,7 +246,7 @@ let solidity = createSelectorTree({
     ),
 
     /**
-     * solidity.current.instructions
+     * sourcemapping.current.instructions
      */
     instructions: createLeaf(
       ["./sources", evm.current.context, "./humanReadableSourceMap"],
@@ -266,7 +266,7 @@ let solidity = createSelectorTree({
     ),
 
     /**
-     * solidity.current.instructionAtProgramCounter
+     * sourcemapping.current.instructionAtProgramCounter
      */
     instructionAtProgramCounter: createLeaf(
       ["./instructions"],
@@ -283,7 +283,7 @@ let solidity = createSelectorTree({
     ...createMultistepSelectors(evm.current.step),
 
     /**
-     * solidity.current.isSourceRangeFinalRaw
+     * sourcemapping.current.isSourceRangeFinalRaw
      * the old version; doesn't account for internal-source problems
      */
     isSourceRangeFinalRaw: createLeaf(
@@ -311,7 +311,7 @@ let solidity = createSelectorTree({
     ),
 
     /**
-     * solidity.current.isSourceRangeFinal
+     * sourcemapping.current.isSourceRangeFinal
      * if there's no context change, then don't return final
      * on jumping from a user source to an internal source
      */
@@ -332,7 +332,7 @@ let solidity = createSelectorTree({
     ),
 
     /*
-     * solidity.current.functionsByProgramCounter
+     * sourcemapping.current.functionsByProgramCounter
      */
     functionsByProgramCounter: createLeaf(
       [
@@ -354,7 +354,7 @@ let solidity = createSelectorTree({
     ),
 
     /**
-     * solidity.current.isMultiline
+     * sourcemapping.current.isMultiline
      */
     isMultiline: createLeaf(
       ["./sourceRange"],
@@ -363,17 +363,17 @@ let solidity = createSelectorTree({
     ),
 
     /**
-     * solidity.current.willJump
+     * sourcemapping.current.willJump
      */
     willJump: createLeaf([evm.current.step.isJump], isJump => isJump),
 
     /**
-     * solidity.current.jumpDirection
+     * sourcemapping.current.jumpDirection
      */
     jumpDirection: createLeaf(["./instruction"], (i = {}) => i.jump || "-"),
 
     /**
-     * solidity.current.willCall
+     * sourcemapping.current.willCall
      * note: includes creations, does *not* include instareturns
      */
     willCall: createLeaf(
@@ -386,7 +386,7 @@ let solidity = createSelectorTree({
     ),
 
     /**
-     * solidity.current.willReturn
+     * sourcemapping.current.willReturn
      *
      * covers both normal returns & failures
      */
@@ -396,7 +396,7 @@ let solidity = createSelectorTree({
     ),
 
     /**
-     * solidity.current.nextUserStep
+     * sourcemapping.current.nextUserStep
      * returns the next trace step after this one which is sourcemapped to
      * a user source (not -1 or an internal source)
      * HACK: this assumes we're not about to change context! don't use this if
@@ -422,9 +422,9 @@ let solidity = createSelectorTree({
     ),
 
     /**
-     * solidity.current.overlapFunctions
-     * like solidity.views.overlapFunctions, but just returns
-     * an array appropriate to the current context (like solidity.current.sources)
+     * sourcemapping.current.overlapFunctions
+     * like sourcemapping.views.overlapFunctions, but just returns
+     * an array appropriate to the current context (like sourcemapping.current.sources)
      */
     overlapFunctions: createLeaf(
       ["/views/overlapFunctions", "/current/sourceIds"],
@@ -433,25 +433,25 @@ let solidity = createSelectorTree({
   },
 
   /**
-   * solidity.next
+   * sourcemapping.next
    * HACK WARNING: do not use these selectors when the current instruction is a
    * context change! (evm call or evm return)
    */
   next: createMultistepSelectors(evm.next.step),
 
   /**
-   * solidity.views
+   * sourcemapping.views
    */
   views: {
     /**
-     * solidity.views.sources
-     * just the byId part of solidity.info.sources
+     * sourcemapping.views.sources
+     * just the byId part of sourcemapping.info.sources
      * (effectively flattening them)
      */
     sources: createLeaf(["/info/sources"], sources => sources.byId),
 
     /**
-     * solidity.views.overlapFunctions
+     * sourcemapping.views.overlapFunctions
      * organized by source ID
      */
     overlapFunctions: createLeaf(["/views/sources"], sources =>
@@ -465,4 +465,4 @@ let solidity = createSelectorTree({
   }
 });
 
-export default solidity;
+export default sourcemapping;

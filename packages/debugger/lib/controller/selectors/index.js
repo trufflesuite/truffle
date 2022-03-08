@@ -5,7 +5,7 @@ import { createSelectorTree, createLeaf } from "reselect-tree";
 import { isSkippedNodeType } from "lib/helpers";
 
 import evm from "lib/evm/selectors";
-import solidity from "lib/solidity/selectors";
+import sourcemapping from "lib/sourcemapping/selectors";
 import data from "lib/data/selectors";
 import trace from "lib/trace/selectors";
 
@@ -54,7 +54,7 @@ const controller = createSelectorTree({
     /**
      * controller.current.functionDepth
      */
-    functionDepth: createLeaf([solidity.current.functionDepth], identity),
+    functionDepth: createLeaf([sourcemapping.current.functionDepth], identity),
 
     /**
      * controller.current.executionContext
@@ -74,7 +74,7 @@ const controller = createSelectorTree({
        * controller.current.location.sourceRange
        */
       sourceRange: createLeaf(
-        [solidity.current.sourceRange, "/current/trace/loaded"],
+        [sourcemapping.current.sourceRange, "/current/trace/loaded"],
         (range, loaded) => (loaded ? range : null)
       ),
 
@@ -82,7 +82,7 @@ const controller = createSelectorTree({
        * controller.current.location.source
        */
       source: createLeaf(
-        [solidity.current.source, "/current/trace/loaded"],
+        [sourcemapping.current.source, "/current/trace/loaded"],
         (source, loaded) => (loaded ? source : null)
       ),
 
@@ -90,7 +90,7 @@ const controller = createSelectorTree({
        * controller.current.location.node
        */
       node: createLeaf(
-        [solidity.current.node, "/current/trace/loaded"],
+        [sourcemapping.current.node, "/current/trace/loaded"],
         (node, loaded) => (loaded ? node : null)
       ),
 
@@ -103,7 +103,7 @@ const controller = createSelectorTree({
        * controller.current.location.isMultiline
        */
       isMultiline: createLeaf(
-        [solidity.current.isMultiline, "/current/trace/loaded"],
+        [sourcemapping.current.isMultiline, "/current/trace/loaded"],
         (raw, loaded) => (loaded ? raw : false)
       )
     },
@@ -142,7 +142,7 @@ const controller = createSelectorTree({
      * returns null instead.
      */
     resolver: createLeaf(
-      [solidity.views.sources, solidity.views.overlapFunctions],
+      [sourcemapping.views.sources, sourcemapping.views.overlapFunctions],
       (sources, functions) => breakpoint => {
         let adjustedBreakpoint;
         if (breakpoint.node === undefined) {
@@ -211,7 +211,10 @@ const controller = createSelectorTree({
   /**
    * controller.stepIntoInternalSources
    */
-  stepIntoInternalSources: createLeaf(["./state"], state => state.stepIntoInternalSources)
+  stepIntoInternalSources: createLeaf(
+    ["./state"],
+    state => state.stepIntoInternalSources
+  )
 });
 
 export default controller;

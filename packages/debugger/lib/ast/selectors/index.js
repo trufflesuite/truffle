@@ -3,7 +3,7 @@ const debug = debugModule("debugger:ast:selectors");
 
 import { createSelectorTree, createLeaf } from "reselect-tree";
 
-import solidity from "lib/solidity/selectors";
+import sourcemapping from "lib/sourcemapping/selectors";
 
 /**
  * ast
@@ -17,7 +17,7 @@ const ast = createSelectorTree({
      * ast.views.sources
      * let's just flatten this into an array
      */
-    sources: createLeaf([solidity.views.sources], sources =>
+    sources: createLeaf([sourcemapping.views.sources], sources =>
       Object.values(sources)
     )
   }

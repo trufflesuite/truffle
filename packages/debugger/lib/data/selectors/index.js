@@ -10,7 +10,7 @@ import { stableKeccak256, makePath } from "lib/helpers";
 
 import trace from "lib/trace/selectors";
 import evm from "lib/evm/selectors";
-import solidity from "lib/solidity/selectors";
+import sourcemapping from "lib/sourcemapping/selectors";
 import stacktrace from "lib/stacktrace/selectors";
 
 import * as Codec from "@truffle/codec";
@@ -194,7 +194,7 @@ const data = createSelectorTree({
      * data.views.atLastInstructionForSourceRange
      */
     atLastInstructionForSourceRange: createLeaf(
-      [solidity.current.isSourceRangeFinal],
+      [sourcemapping.current.isSourceRangeFinal],
       final => final
     ),
 
@@ -222,7 +222,7 @@ const data = createSelectorTree({
        * inlines, but still no inheritance data
        */
       inlined: createLeaf(
-        ["./_", solidity.views.sources],
+        ["./_", sourcemapping.views.sources],
 
         (scopes, sources) =>
           Object.assign(
@@ -253,7 +253,7 @@ const data = createSelectorTree({
         "/info/userDefinedTypes",
         "./referenceDeclarations",
         "./scopes/inlined",
-        solidity.views.sources
+        sourcemapping.views.sources
       ],
       (userDefinedTypes, referenceDeclarations, scopes, sources) => {
         let typesByCompilation = {};
@@ -298,7 +298,7 @@ const data = createSelectorTree({
       [
         "/info/userDefinedTypes",
         "/views/scopes/inlined",
-        solidity.views.sources,
+        sourcemapping.views.sources,
         evm.info.contexts
       ],
       (userDefinedTypes, scopes, sources, contexts) =>
@@ -351,7 +351,7 @@ const data = createSelectorTree({
         "./scopes/inlined",
         "/info/userDefinedTypes",
         "/info/taggedOutputs",
-        solidity.views.sources
+        sourcemapping.views.sources
       ],
       (scopes, userDefinedTypes, taggedOutputs, sources) =>
         merge(
@@ -615,26 +615,32 @@ const data = createSelectorTree({
     /**
      * data.current.sourceIndex
      */
-    sourceIndex: createLeaf([solidity.current.source], ({ index }) => index),
+    sourceIndex: createLeaf(
+      [sourcemapping.current.source],
+      ({ index }) => index
+    ),
 
     /**
      * data.current.language
      */
-    language: createLeaf([solidity.current.source], ({ language }) => language),
+    language: createLeaf(
+      [sourcemapping.current.source],
+      ({ language }) => language
+    ),
 
     /**
      * data.current.internalSourceFor
      * returns null if in a user source
      */
     internalSourceFor: createLeaf(
-      [solidity.current.source],
+      [sourcemapping.current.source],
       ({ internalFor }) => internalFor || null
     ),
 
     /**
      * data.current.root
      */
-    root: createLeaf([solidity.current.source], ({ ast }) => ast),
+    root: createLeaf([sourcemapping.current.source], ({ ast }) => ast),
 
     /**
      * data.current.scopes (namespace)
@@ -735,7 +741,7 @@ const data = createSelectorTree({
        * Current scopes, with inheritance not handled and no inlining
        */
       raw: createLeaf(
-        ["/views/scopes", solidity.current.sourceIds],
+        ["/views/scopes", sourcemapping.current.sourceIds],
         (scopes, sourceIds) =>
           Object.assign({}, ...sourceIds.map(sourceId => scopes[sourceId]))
       ),
@@ -767,7 +773,7 @@ const data = createSelectorTree({
          * inlines definitions but does not account for inheritance
          */
         raw: createLeaf(
-          ["/views/scopes/inlined", solidity.current.sourceIds],
+          ["/views/scopes/inlined", sourcemapping.current.sourceIds],
           (scopes, sourceIds) =>
             Object.assign({}, ...sourceIds.map(sourceId => scopes[sourceId]))
         )
@@ -880,19 +886,23 @@ const data = createSelectorTree({
     /**
      * data.current.node
      */
-    node: createLeaf([solidity.current.node], identity),
+    node: createLeaf([sourcemapping.current.node], identity),
 
     /**
      * data.current.pointer
      */
-    pointer: createLeaf([solidity.current.pointer], identity),
+    pointer: createLeaf([sourcemapping.current.pointer], identity),
 
     /**
      * data.current.astRef
      * returns null when not in a mapped source
      */
     astRef: createLeaf(
-      [solidity.current.node, solidity.current.pointer, "./sourceIndex"],
+      [
+        sourcemapping.current.node,
+        sourcemapping.current.pointer,
+        "./sourceIndex"
+      ],
       (node, pointer, sourceIndex) =>
         node
           ? node.id !== undefined
@@ -995,13 +1005,13 @@ const data = createSelectorTree({
      * data.current.functionDepth
      */
 
-    functionDepth: createLeaf([solidity.current.functionDepth], identity),
+    functionDepth: createLeaf([sourcemapping.current.functionDepth], identity),
 
     /**
      * data.current.modifierDepth
      */
 
-    modifierDepth: createLeaf([solidity.current.modifierDepth], identity),
+    modifierDepth: createLeaf([sourcemapping.current.modifierDepth], identity),
 
     /**
      * data.current.address
@@ -1015,7 +1025,7 @@ const data = createSelectorTree({
      * data.current.functionsByProgramCounter
      */
     functionsByProgramCounter: createLeaf(
-      [solidity.current.functionsByProgramCounter],
+      [sourcemapping.current.functionsByProgramCounter],
       functions => functions
     ),
 
@@ -1662,18 +1672,18 @@ const data = createSelectorTree({
     },
 
     //HACK WARNING
-    //the following selectors depend on solidity.next
+    //the following selectors depend on sourcemapping.next
     //do not use them when the current instruction is a context change!
 
     /**
      * data.next.node
      */
-    node: createLeaf([solidity.next.node], identity),
+    node: createLeaf([sourcemapping.next.node], identity),
 
     /**
      * data.next.pointer
      */
-    pointer: createLeaf([solidity.next.pointer], identity),
+    pointer: createLeaf([sourcemapping.next.pointer], identity),
 
     /**
      * data.next.modifierInvocation
@@ -1735,7 +1745,7 @@ const data = createSelectorTree({
        * data.nextUserStep.state.stack
        */
       stack: createLeaf(
-        [solidity.current.nextUserStep],
+        [sourcemapping.current.nextUserStep],
 
         step =>
           ((step || {}).stack || []).map(word => Codec.Conversion.toBytes(word))
