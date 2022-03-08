@@ -9,7 +9,7 @@ import Ganache from "ganache";
 import { prepareContracts, lineOf } from "../helpers";
 import Debugger from "lib/debugger";
 
-import solidity from "lib/solidity/selectors";
+import sourcemapping from "lib/sourcemapping/selectors";
 
 const __LIBTEST = `
 pragma solidity ^0.8.0;
@@ -203,8 +203,8 @@ describe("Codex", function () {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let sourceId = bugger.view(solidity.current.source).id;
-    let source = bugger.view(solidity.current.source).source;
+    let sourceId = bugger.view(sourcemapping.current.source).id;
+    let source = bugger.view(sourcemapping.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
       line: lineOf("BREAK", source)

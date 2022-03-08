@@ -5,7 +5,7 @@ import { createSelectorTree, createLeaf } from "reselect-tree";
 
 import trace from "lib/trace/selectors";
 import evm from "lib/evm/selectors";
-import solidity from "lib/solidity/selectors";
+import sourcemapping from "lib/sourcemapping/selectors";
 
 import jsonpointer from "json-pointer";
 import zipWith from "lodash/zipWith";
@@ -156,7 +156,7 @@ let stacktrace = createSelectorTree({
      * stacktrace.transaction.initialCallCombinesWithNextJumpIn
      */
     initialCallCombinesWithNextJumpIn: createLeaf(
-      [solidity.transaction.bottomStackframeRequiresPhantomFrame],
+      [sourcemapping.transaction.bottomStackframeRequiresPhantomFrame],
       identity
     )
   },
@@ -205,7 +205,7 @@ let stacktrace = createSelectorTree({
       state => state.proc.innerErrorIndex
     ),
 
-    ...createMultistepSelectors(solidity.current),
+    ...createMultistepSelectors(sourcemapping.current),
 
     /**
      * stacktrace.current.index
@@ -232,7 +232,7 @@ let stacktrace = createSelectorTree({
      * stacktrace.current.willJumpIn
      */
     willJumpIn: createLeaf(
-      [solidity.current.willJump, solidity.current.jumpDirection],
+      [sourcemapping.current.willJump, sourcemapping.current.jumpDirection],
       (willJump, jumpDirection) => willJump && jumpDirection === "i"
     ),
 
@@ -240,7 +240,7 @@ let stacktrace = createSelectorTree({
      * stacktrace.current.willJumpOut
      */
     willJumpOut: createLeaf(
-      [solidity.current.willJump, solidity.current.jumpDirection],
+      [sourcemapping.current.willJump, sourcemapping.current.jumpDirection],
       (willJump, jumpDirection) => willJump && jumpDirection === "o"
     ),
 
@@ -248,7 +248,7 @@ let stacktrace = createSelectorTree({
      * stacktrace.current.willCall
      * note: includes creations!
      */
-    willCall: createLeaf([solidity.current.willCall], identity),
+    willCall: createLeaf([sourcemapping.current.willCall], identity),
 
     /**
      * stacktrace.current.context
@@ -264,14 +264,14 @@ let stacktrace = createSelectorTree({
      * stacktrace.current.callCombinesWithNextJumpIn
      */
     callCombinesWithNextJumpIn: createLeaf(
-      [solidity.current.callRequiresPhantomFrame],
+      [sourcemapping.current.callRequiresPhantomFrame],
       identity
     ),
 
     /**
      * stacktrace.current.willReturn
      */
-    willReturn: createLeaf([solidity.current.willReturn], identity),
+    willReturn: createLeaf([sourcemapping.current.willReturn], identity),
 
     /**
      * stacktrace.current.returnStatus
@@ -440,7 +440,7 @@ let stacktrace = createSelectorTree({
    * stacktrace.next
    */
   next: {
-    ...createMultistepSelectors(solidity.next)
+    ...createMultistepSelectors(sourcemapping.next)
   }
 });
 

@@ -9,7 +9,7 @@ import { prepareContracts, lineOf } from "../helpers";
 import Debugger from "lib/debugger";
 import * as Codec from "@truffle/codec";
 
-import solidity from "lib/solidity/selectors";
+import sourcemapping from "lib/sourcemapping/selectors";
 
 const __EXTERNALS = `
 pragma solidity ^0.8.0;
@@ -167,8 +167,8 @@ describe("Function Pointer Decoding", function () {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let sourceId = bugger.view(solidity.current.source).id;
-    let source = bugger.view(solidity.current.source).source;
+    let sourceId = bugger.view(sourcemapping.current.source).id;
+    let source = bugger.view(sourcemapping.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
       line: lineOf("BREAK HERE", source)
@@ -205,8 +205,8 @@ describe("Function Pointer Decoding", function () {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let sourceId = bugger.view(solidity.current.source).id;
-    let source = bugger.view(solidity.current.source).source;
+    let sourceId = bugger.view(sourcemapping.current.source).id;
+    let source = bugger.view(sourcemapping.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
       line: lineOf("BREAK HERE (DEPLOYED)", source)
@@ -240,8 +240,8 @@ describe("Function Pointer Decoding", function () {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let sourceId = bugger.view(solidity.current.source).id;
-    let source = bugger.view(solidity.current.source).source;
+    let sourceId = bugger.view(sourcemapping.current.source).id;
+    let source = bugger.view(sourcemapping.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
       line: lineOf("BREAK HERE (CONSTRUCTOR)", source)

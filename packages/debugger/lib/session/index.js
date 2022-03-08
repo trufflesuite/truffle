@@ -23,7 +23,7 @@ import { createNestedSelector } from "reselect-tree";
 import ast from "lib/ast/selectors";
 import trace from "lib/trace/selectors";
 import evm from "lib/evm/selectors";
-import solidity from "lib/solidity/selectors";
+import sourcemapping from "lib/sourcemapping/selectors";
 
 import rootSaga from "./sagas";
 import reducer from "./reducers";
@@ -202,7 +202,7 @@ export default class Session {
 
         //now: we need to find the contract node.
         //note: ideally we'd hold this off till later, but that would break the
-        //direction of the evm/solidity dependence, so we do it now
+        //direction of the evm/sourcemapping dependence, so we do it now
         const contractNode = Codec.Compilations.Utils.getContractNode(
           contract,
           compilation
@@ -547,7 +547,8 @@ export default class Session {
       txlog,
       trace,
       evm,
-      solidity,
+      sourcemapping,
+      solidity: sourcemapping, //for compatibility
       stacktrace,
       session,
       controller: controllerSelector

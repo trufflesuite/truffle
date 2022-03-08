@@ -5,7 +5,7 @@ import { combineReducers } from "redux";
 
 import data from "lib/data/reducers";
 import evm from "lib/evm/reducers";
-import solidity from "lib/solidity/reducers";
+import sourcemapping from "lib/sourcemapping/reducers";
 import trace from "lib/trace/reducers";
 import controller from "lib/controller/reducers";
 import stacktrace from "lib/stacktrace/reducers";
@@ -99,7 +99,7 @@ const reduceState = combineReducers({
   data,
   txlog,
   evm,
-  solidity,
+  sourcemapping,
   stacktrace,
   trace,
   controller

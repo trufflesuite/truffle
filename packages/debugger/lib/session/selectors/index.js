@@ -5,7 +5,7 @@ import { createSelectorTree, createLeaf } from "reselect-tree";
 
 import evm from "lib/evm/selectors";
 import trace from "lib/trace/selectors";
-import solidity from "lib/solidity/selectors";
+import sourcemapping from "lib/sourcemapping/selectors";
 
 const session = createSelectorTree({
   /*
@@ -26,7 +26,7 @@ const session = createSelectorTree({
       [
         evm.transaction.affectedInstances,
         evm.info.contexts,
-        solidity.info.sources
+        sourcemapping.info.sources
       ],
 
       (instances, contexts, sources) =>

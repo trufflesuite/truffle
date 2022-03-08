@@ -10,7 +10,7 @@ import Debugger from "lib/debugger";
 
 import * as Codec from "@truffle/codec";
 
-import solidity from "lib/solidity/selectors";
+import sourcemapping from "lib/sourcemapping/selectors";
 
 const __IMMUTABLE = `
 pragma solidity ^0.8.8;
@@ -102,8 +102,8 @@ describe("Immutable state variables", function () {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let sourceId = bugger.view(solidity.current.source).id;
-    let source = bugger.view(solidity.current.source).source;
+    let sourceId = bugger.view(sourcemapping.current.source).id;
+    let source = bugger.view(sourcemapping.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
       line: lineOf("BREAK DEPLOYED", source)
@@ -139,8 +139,8 @@ describe("Immutable state variables", function () {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let sourceId = bugger.view(solidity.current.source).id;
-    let source = bugger.view(solidity.current.source).source;
+    let sourceId = bugger.view(sourcemapping.current.source).id;
+    let source = bugger.view(sourcemapping.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
       line: lineOf("BREAK CONSTRUCTOR", source)

@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("debugger:solidity:reducers");
+const debug = debugModule("debugger:sourcemapping:reducers");
 
 import { combineReducers } from "redux";
 

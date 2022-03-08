@@ -10,7 +10,7 @@ import txlogSelector from "./txlog/selectors";
 import astSelector from "./ast/selectors";
 import traceSelector from "./trace/selectors";
 import evmSelector from "./evm/selectors";
-import soliditySelector from "./solidity/selectors";
+import sourcemappingSelector from "./sourcemapping/selectors";
 import sessionSelector from "./session/selectors";
 import stacktraceSelector from "./stacktrace/selectors";
 import controllerSelector from "./controller/selectors";
@@ -66,7 +66,7 @@ const Debugger = {
    * Debugger.selectors.ast.current.tree
    *
    * @example
-   * Debugger.selectors.solidity.current.instruction
+   * Debugger.selectors.sourcemapping.current.instruction
    *
    * @example
    * Debugger.selectors.trace.steps
@@ -78,7 +78,8 @@ const Debugger = {
       txlog: txlogSelector,
       trace: traceSelector,
       evm: evmSelector,
-      solidity: soliditySelector,
+      sourcemapping: sourcemappingSelector,
+      solidity: sourcemappingSelector, //for compatibility
       stacktrace: stacktraceSelector,
       session: sessionSelector,
       controller: controllerSelector

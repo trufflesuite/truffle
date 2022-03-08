@@ -7,7 +7,7 @@ import { prefixName } from "lib/helpers";
 
 import * as ast from "lib/ast/sagas";
 import * as controller from "lib/controller/sagas";
-import * as solidity from "lib/solidity/sagas";
+import * as sourcemapping from "lib/sourcemapping/sagas";
 import * as stacktrace from "lib/stacktrace/sagas";
 import * as evm from "lib/evm/sagas";
 import * as trace from "lib/trace/sagas";
@@ -145,7 +145,7 @@ export default prefixName("session", saga);
 function* forkListeners(moduleOptions) {
   yield fork(listenerSaga); //session listener; this one is separate, sorry
   //(I didn't want to mess w/ the existing structure of defaults)
-  let mainApps = [evm, solidity, stacktrace];
+  let mainApps = [evm, sourcemapping, stacktrace];
   if (!moduleOptions.lightMode) {
     mainApps.push(data);
     mainApps.push(txlog);
@@ -201,7 +201,7 @@ function* fetchTx(txHash) {
 
   debug("sending initial call");
   yield* evm.begin(result); //note: this must occur *before* the other ones!
-  yield* solidity.begin();
+  yield* sourcemapping.begin();
   yield* stacktrace.begin();
   if (!(yield select(session.status.lightMode))) {
     //full-mode-only modules
@@ -216,7 +216,7 @@ function* recordContexts(contexts) {
 }
 
 function* recordSources(sources) {
-  yield* solidity.addSources(sources);
+  yield* sourcemapping.addSources(sources);
 }
 
 //creationBinary can be omitted; should only be used for creations
@@ -245,7 +245,7 @@ function* error(err) {
 export function* unload() {
   debug("unloading");
   yield* data.reset();
-  yield* solidity.unload();
+  yield* sourcemapping.unload();
   yield* evm.unload();
   yield* trace.unload();
   yield* stacktrace.unload();

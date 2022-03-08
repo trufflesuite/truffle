@@ -8,7 +8,7 @@ import Ganache from "ganache";
 import { prepareContracts, lineOf } from "./helpers";
 import Debugger from "lib/debugger";
 
-import solidity from "lib/solidity/selectors";
+import sourcemapping from "lib/sourcemapping/selectors";
 import stacktrace from "lib/stacktrace/selectors";
 
 const __STACKTRACE = `
@@ -197,7 +197,7 @@ describe("Stack tracing", function () {
       lightMode: true
     });
 
-    let source = bugger.view(solidity.current.source);
+    let source = bugger.view(sourcemapping.current.source);
     let failLine = lineOf("REQUIRE", source.source);
     let callLine = lineOf("CALL", source.source);
 
@@ -245,7 +245,7 @@ describe("Stack tracing", function () {
       lightMode: true
     });
 
-    let source = bugger.view(solidity.current.source);
+    let source = bugger.view(sourcemapping.current.source);
     let breakLine = lineOf("EMIT", source.source);
     let callLine = lineOf("CALL", source.source);
     let breakpoint = {
@@ -312,7 +312,7 @@ describe("Stack tracing", function () {
       lightMode: true
     });
 
-    let source = bugger.view(solidity.current.source);
+    let source = bugger.view(sourcemapping.current.source);
     let failLine = lineOf("PAY", source.source);
     let callLine = lineOf("CALL", source.source);
 
@@ -360,7 +360,7 @@ describe("Stack tracing", function () {
       lightMode: true
     });
 
-    let source = bugger.view(solidity.current.source);
+    let source = bugger.view(sourcemapping.current.source);
     let failLine = lineOf("GARBAGE", source.source);
     let callLine = lineOf("CALL", source.source);
 
@@ -412,7 +412,7 @@ describe("Stack tracing", function () {
       lightMode: true
     });
 
-    let source = bugger.view(solidity.current.source);
+    let source = bugger.view(sourcemapping.current.source);
     let failLine = lineOf("BOOM", source.source);
     let callLine = lineOf("UHOH", source.source);
     let prevCallLine = lineOf("CALL", source.source);
@@ -474,7 +474,7 @@ describe("Stack tracing", function () {
       lightMode: true
     });
 
-    let source = bugger.view(solidity.current.source);
+    let source = bugger.view(sourcemapping.current.source);
     let failLine = lineOf("CREATEFAIL", source.source);
     let callLine = lineOf("CANTCREATE", source.source);
 
@@ -542,7 +542,7 @@ describe("Stack tracing", function () {
       lightMode: true
     });
 
-    let source = bugger.view(solidity.current.source);
+    let source = bugger.view(sourcemapping.current.source);
     let failLine = lineOf("FALLBACKFAIL", source.source);
     let callLine = lineOf("CANTFALLBACK", source.source);
 
@@ -601,7 +601,7 @@ describe("Stack tracing", function () {
       lightMode: true
     });
 
-    let source = bugger.view(solidity.current.source);
+    let source = bugger.view(sourcemapping.current.source);
     let failLine = lineOf("LIBFAIL", source.source);
     let callLine = lineOf("CANTLIB", source.source);
 

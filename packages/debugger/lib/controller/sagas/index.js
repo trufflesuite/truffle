@@ -9,7 +9,7 @@ import * as trace from "lib/trace/sagas";
 import * as data from "lib/data/sagas";
 import * as txlog from "lib/txlog/sagas";
 import * as evm from "lib/evm/sagas";
-import * as solidity from "lib/solidity/sagas";
+import * as sourcemapping from "lib/sourcemapping/sagas";
 import * as stacktrace from "lib/stacktrace/sagas";
 
 import * as actions from "../actions";
@@ -297,15 +297,13 @@ function* continueUntilBreakpoint(action) {
             length === currentLength &&
             (currentSourceId !== previousSourceId ||
               currentStart !== previousStart ||
-              currentLength !== previousLength
-            ) &&
+              currentLength !== previousLength) &&
             //if we started in a user source (& allow internal is off),
             //we need to make sure we've moved from a user-source POV
             (!startedInUserSource ||
               currentSourceId !== lastUserSourceId ||
-              currentStart !== lastUserStart || 
-              currentLength !== lastUserLength
-            )
+              currentStart !== lastUserStart ||
+              currentLength !== lastUserLength)
           );
         }
         //otherwise, we have a line-style breakpoint; we want to stop at the
@@ -332,7 +330,7 @@ function* continueUntilBreakpoint(action) {
 export function* reset() {
   yield* data.reset();
   yield* evm.reset();
-  yield* solidity.reset();
+  yield* sourcemapping.reset();
   yield* trace.reset();
   yield* stacktrace.reset();
   yield* txlog.reset();

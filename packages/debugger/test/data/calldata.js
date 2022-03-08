@@ -10,7 +10,7 @@ import Debugger from "lib/debugger";
 
 import * as Codec from "@truffle/codec";
 
-import solidity from "lib/solidity/selectors";
+import sourcemapping from "lib/sourcemapping/selectors";
 
 const __CALLDATA = `
 pragma solidity ^0.8.0;
@@ -143,8 +143,8 @@ describe("Calldata Decoding", function () {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let sourceId = bugger.view(solidity.current.source).id;
-    let source = bugger.view(solidity.current.source).source;
+    let sourceId = bugger.view(sourcemapping.current.source).id;
+    let source = bugger.view(sourcemapping.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
       line: lineOf("break multi", source)
@@ -173,8 +173,8 @@ describe("Calldata Decoding", function () {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let sourceId = bugger.view(solidity.current.source).id;
-    let source = bugger.view(solidity.current.source).source;
+    let sourceId = bugger.view(sourcemapping.current.source).id;
+    let source = bugger.view(sourcemapping.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
       line: lineOf("break simple", source)
@@ -201,8 +201,8 @@ describe("Calldata Decoding", function () {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let sourceId = bugger.view(solidity.current.source).id;
-    let source = bugger.view(solidity.current.source).source;
+    let sourceId = bugger.view(sourcemapping.current.source).id;
+    let source = bugger.view(sourcemapping.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
       line: lineOf("break stringBox", source)
@@ -234,8 +234,8 @@ describe("Calldata Decoding", function () {
       compilations
     });
 
-    let sourceId = bugger.view(solidity.current.source).id;
-    let source = bugger.view(solidity.current.source).source;
+    let sourceId = bugger.view(sourcemapping.current.source).id;
+    let source = bugger.view(sourcemapping.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
       line: lineOf("break static", source)
@@ -265,8 +265,8 @@ describe("Calldata Decoding", function () {
       compilations
     });
 
-    let sourceId = bugger.view(solidity.current.source).id;
-    let source = bugger.view(solidity.current.source).source;
+    let sourceId = bugger.view(sourcemapping.current.source).id;
+    let source = bugger.view(sourcemapping.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
       line: lineOf("break delegate", source)
@@ -296,8 +296,8 @@ describe("Calldata Decoding", function () {
       compilations
     });
 
-    let sourceId = bugger.view(solidity.current.source).id;
-    let source = bugger.view(solidity.current.source).source;
+    let sourceId = bugger.view(sourcemapping.current.source).id;
+    let source = bugger.view(sourcemapping.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
       line: lineOf("break slice", source)
@@ -327,8 +327,8 @@ describe("Calldata Decoding", function () {
       compilations
     });
 
-    let sourceId = bugger.view(solidity.current.source).id;
-    let source = bugger.view(solidity.current.source).source;
+    let sourceId = bugger.view(sourcemapping.current.source).id;
+    let source = bugger.view(sourcemapping.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
       line: lineOf("break fallback", source)

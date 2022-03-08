@@ -10,7 +10,7 @@ import Debugger from "lib/debugger";
 
 import evm from "lib/evm/selectors";
 import trace from "lib/trace/selectors";
-import solidity from "lib/solidity/selectors";
+import sourcemapping from "lib/sourcemapping/selectors";
 
 const __PRECOMPILE = `
 pragma solidity ^0.8.0;
@@ -40,8 +40,8 @@ const TEST_CASES = [
     selector: evm.current.context
   },
   {
-    name: "solidity.current.sourceRange",
-    selector: solidity.current.sourceRange
+    name: "sourcemapping.current.sourceRange",
+    selector: sourcemapping.current.sourceRange
   }
 ];
 
@@ -146,7 +146,7 @@ describe("Precompiled Contracts", function () {
   });
 
   it("never throws an exception for missing source range", async function () {
-    const result = results["solidity.current.sourceRange"];
+    const result = results["sourcemapping.current.sourceRange"];
 
     for (let step of result) {
       if (step.error) {
