@@ -12,12 +12,16 @@ const getGlobalPackagePath = (packageName: string): string | null => {
   let globalPackagePath: string | null = null;
 
   globalPackagePath = getInstalledPath.getInstalledPathSync(packageName);
+  //we should catch the error from getInstalledPathSync
+  if (globalPackagePath) {
+    globalPackagePath = globalPackagePath.endsWith(suffix)
+      ? globalPackagePath.slice(0, globalPackagePath.length - suffix.length)
+      : globalPackagePath;
 
-  globalPackagePath = globalPackagePath.endsWith(suffix)
-    ? globalPackagePath.slice(0, globalPackagePath.length - suffix.length)
-    : globalPackagePath;
-
-  return globalPackagePath;
+    return globalPackagePath;
+  } else {
+    return null;
+  }
 };
 export class GlobalNPM implements ResolverSource {
   require(importPath: string): ContractObject | null {

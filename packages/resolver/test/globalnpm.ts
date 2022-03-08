@@ -70,17 +70,17 @@ describe("globalnpm", () => {
       assert.deepEqual(result.wallace, "grommit");
     });
 
-    it("returns undefined if the import_path does not exist", () => {
-      // const read_file_sync_stub = sinon.stub(fs, "readFileSync");
+    it("returns null if the package is not installed", () => {
+      const read_file_sync_stub = sinon.stub(fs, "readFileSync");
 
       syncStub.withArgs("package").returns(false);
 
       const result = globalNpm.require("package/contracts/Test.sol");
 
-      assert.ok(!getInstalledPathSyncStub.called);
-      assert.deepEqual(result, undefined);
+      // assert.ok(getInstalledPathSyncStub.called);
+      assert.deepEqual(result, null);
 
-      // read_file_sync_stub.restore();
+      read_file_sync_stub.restore();
     });
 
     it("returns null if readFileSync throws Error", () => {
