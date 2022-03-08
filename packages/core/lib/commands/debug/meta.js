@@ -35,7 +35,9 @@ module.exports = {
   },
   help: {
     usage:
-      "truffle debug [<transaction_hash>] [--fetch-external|-x] [--url <provider_url>]" +
+      "truffle debug [<transaction_hash>] [--fetch-external|-x]" +
+      OS.EOL +
+      "                             [--network <network>|--url <provider_url>]" +
       OS.EOL +
       "                             [--compile-tests|--compile-all|--compile-none]",
     options: [
@@ -48,6 +50,11 @@ module.exports = {
         option: "--fetch-external|-x",
         description:
           "Allows debugging of external contracts with verified sources."
+      },
+      {
+        option: "--network",
+        description:
+          "The network to connect to, as specified in the Truffle config."
       },
       {
         option: "--url",
@@ -70,6 +77,6 @@ module.exports = {
           "Forces the debugger to use artifacts even if it detects a problem.  Dangerous; may cause errors."
       }
     ],
-    allowedGlobalOptions: ["network", "config"]
+    allowedGlobalOptions: ["config"] //network is allowed but is handled separately above so usage can be combined w/url
   }
 };
