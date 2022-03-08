@@ -9,7 +9,7 @@ import { prepareContracts, lineOf } from "../helpers";
 import Debugger from "lib/debugger";
 
 import trace from "lib/trace/selectors";
-import solidity from "lib/solidity/selectors";
+import sourcemapping from "lib/sourcemapping/selectors";
 import * as Codec from "@truffle/codec";
 
 const __FACTORIAL = `
@@ -234,10 +234,10 @@ describe("Variable IDs", function () {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    debug("sourceId %d", bugger.view(solidity.current.source).id);
+    debug("sourceId %d", bugger.view(sourcemapping.current.source).id);
 
-    let sourceId = bugger.view(solidity.current.source).id;
-    let source = bugger.view(solidity.current.source).source;
+    let sourceId = bugger.view(sourcemapping.current.source).id;
+    let source = bugger.view(sourcemapping.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
       line: lineOf("break here #1", source)
@@ -270,10 +270,10 @@ describe("Variable IDs", function () {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    debug("sourceId %d", bugger.view(solidity.current.source).id);
+    debug("sourceId %d", bugger.view(sourcemapping.current.source).id);
 
-    let sourceId = bugger.view(solidity.current.source).id;
-    let source = bugger.view(solidity.current.source).source;
+    let sourceId = bugger.view(sourcemapping.current.source).id;
+    let source = bugger.view(sourcemapping.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
       line: lineOf("BREAK HERE #1", source)
@@ -309,10 +309,10 @@ describe("Variable IDs", function () {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    debug("sourceId %d", bugger.view(solidity.current.source).id);
+    debug("sourceId %d", bugger.view(sourcemapping.current.source).id);
 
-    let sourceId = bugger.view(solidity.current.source).id;
-    let source = bugger.view(solidity.current.source).source;
+    let sourceId = bugger.view(sourcemapping.current.source).id;
+    let source = bugger.view(sourcemapping.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
       line: lineOf("break here #1", source)
@@ -329,10 +329,10 @@ describe("Variable IDs", function () {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    debug("sourceId %d", bugger.view(solidity.current.source).id);
+    debug("sourceId %d", bugger.view(sourcemapping.current.source).id);
 
-    let sourceId = bugger.view(solidity.current.source).id;
-    let source = bugger.view(solidity.current.source).source;
+    let sourceId = bugger.view(sourcemapping.current.source).id;
+    let source = bugger.view(sourcemapping.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
       line: lineOf("break here #2", source)
@@ -349,10 +349,10 @@ describe("Variable IDs", function () {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    debug("sourceId %d", bugger.view(solidity.current.source).id);
+    debug("sourceId %d", bugger.view(sourcemapping.current.source).id);
 
-    let sourceId = bugger.view(solidity.current.source).id;
-    let source = bugger.view(solidity.current.source).source;
+    let sourceId = bugger.view(sourcemapping.current.source).id;
+    let source = bugger.view(sourcemapping.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
       line: lineOf("BREAK", source)

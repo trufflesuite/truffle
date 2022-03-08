@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("debugger:test:solidity");
+const debug = debugModule("debugger:test:sourcemapping");
 
 import { assert } from "chai";
 
@@ -8,7 +8,7 @@ import Ganache from "ganache";
 import { prepareContracts, lineOf } from "./helpers";
 import Debugger from "lib/debugger";
 
-import solidity from "lib/solidity/selectors";
+import sourcemapping from "lib/sourcemapping/selectors";
 import controller from "lib/controller/selectors";
 import trace from "lib/trace/selectors";
 
@@ -247,7 +247,7 @@ let sources = {
   "YulFnTest.yul": __CALL_YUL
 };
 
-describe("Solidity Debugging", function () {
+describe("Source mapping (location and jumps))", function () {
   let provider;
   let abstractions;
   let compilations;
@@ -286,7 +286,7 @@ describe("Solidity Debugging", function () {
     });
 
     // at `second();`
-    let source = bugger.view(solidity.current.source);
+    let source = bugger.view(sourcemapping.current.source);
     let breakLine = lineOf("BREAK", source.source);
     let breakpoint = {
       sourceId: source.id,
@@ -299,7 +299,7 @@ describe("Solidity Debugging", function () {
       await bugger.continueUntilBreakpoint();
 
       if (!bugger.view(trace.finished)) {
-        let range = bugger.view(solidity.current.sourceRange);
+        let range = bugger.view(sourcemapping.current.sourceRange);
         assert.equal(range.lines.start.line, breakLine);
       }
     } while (!bugger.view(trace.finished));
@@ -318,7 +318,7 @@ describe("Solidity Debugging", function () {
     });
 
     // at `second();`
-    let source = bugger.view(solidity.current.source);
+    let source = bugger.view(sourcemapping.current.source);
     let breakLine = lineOf("BREAK", source.source);
     let breakpoint = { sourceId: source.id, line: breakLine };
 
@@ -326,7 +326,7 @@ describe("Solidity Debugging", function () {
       await bugger.continueUntilBreakpoint([breakpoint]);
 
       if (!bugger.view(trace.finished)) {
-        let range = bugger.view(solidity.current.sourceRange);
+        let range = bugger.view(sourcemapping.current.sourceRange);
         assert.equal(range.lines.start.line, breakLine);
       }
     } while (!bugger.view(trace.finished));
@@ -345,7 +345,7 @@ describe("Solidity Debugging", function () {
     });
 
     let resolver = bugger.view(controller.breakpoints.resolver);
-    let source = bugger.view(solidity.current.source);
+    let source = bugger.view(sourcemapping.current.source);
 
     let breakpoints = [];
     let expectedResolutions = [];
@@ -390,7 +390,7 @@ describe("Solidity Debugging", function () {
         //note that we use stepNext, which skips internal sources...
         //it may go above 0 while inside an internal source
 
-        const depth = bugger.view(solidity.current.functionDepth);
+        const depth = bugger.view(sourcemapping.current.functionDepth);
 
         assert.equal(depth, 0);
       } while (!bugger.view(trace.finished));
@@ -410,7 +410,7 @@ describe("Solidity Debugging", function () {
       });
 
       while (!bugger.view(trace.finished)) {
-        let depth = bugger.view(solidity.current.functionDepth);
+        let depth = bugger.view(sourcemapping.current.functionDepth);
         assert.equal(depth, numExpected);
 
         await bugger.stepNext();
@@ -441,7 +441,7 @@ describe("Solidity Debugging", function () {
       });
 
       while (!bugger.view(trace.finished)) {
-        let depth = bugger.view(solidity.current.functionDepth);
+        let depth = bugger.view(sourcemapping.current.functionDepth);
         assert.equal(depth, numExpected);
 
         await bugger.stepNext();
@@ -463,7 +463,7 @@ describe("Solidity Debugging", function () {
       // follow functionDepth values in list
       // see source above
       let expectedDepthSequence = [0, 1, 2, 1, 0, 1, 0];
-      let actualSequence = [bugger.view(solidity.current.functionDepth)];
+      let actualSequence = [bugger.view(sourcemapping.current.functionDepth)];
 
       var finished;
 
@@ -471,7 +471,7 @@ describe("Solidity Debugging", function () {
         await bugger.stepNext();
         finished = bugger.view(trace.finished);
 
-        let currentDepth = bugger.view(solidity.current.functionDepth);
+        let currentDepth = bugger.view(sourcemapping.current.functionDepth);
         let lastKnown = actualSequence[actualSequence.length - 1];
 
         if (currentDepth !== lastKnown) {
@@ -494,7 +494,7 @@ describe("Solidity Debugging", function () {
         lightMode: true
       });
 
-      let source = bugger.view(solidity.current.source);
+      let source = bugger.view(sourcemapping.current.source);
       let breakLine1 = lineOf("BREAK #1", source.source);
       let breakpoint1 = {
         sourceId: source.id,
@@ -509,9 +509,9 @@ describe("Solidity Debugging", function () {
       await bugger.addBreakpoint(breakpoint2);
 
       await bugger.continueUntilBreakpoint();
-      let depthBefore = bugger.view(solidity.current.functionDepth);
+      let depthBefore = bugger.view(sourcemapping.current.functionDepth);
       await bugger.continueUntilBreakpoint();
-      let depthAfter = bugger.view(solidity.current.functionDepth);
+      let depthAfter = bugger.view(sourcemapping.current.functionDepth);
 
       assert.equal(depthAfter, depthBefore);
     });
@@ -534,7 +534,7 @@ describe("Solidity Debugging", function () {
         //note that we use stepNext, which skips internal sources...
         //it may go above 2 while inside an internal source
 
-        const depth = bugger.view(solidity.current.functionDepth);
+        const depth = bugger.view(sourcemapping.current.functionDepth);
 
         assert.isAtMost(depth, 2);
         if (depth === 2) {
@@ -562,7 +562,7 @@ describe("Solidity Debugging", function () {
         //note that we use stepNext, which skips internal sources...
         //it may go above 2 while inside an internal source
 
-        const depth = bugger.view(solidity.current.functionDepth);
+        const depth = bugger.view(sourcemapping.current.functionDepth);
 
         assert.isAtMost(depth, 2);
         if (depth === 2) {
@@ -590,7 +590,7 @@ describe("Solidity Debugging", function () {
         //note that we use stepNext, which skips internal sources...
         //it may go above 2 while inside an internal source
 
-        const depth = bugger.view(solidity.current.functionDepth);
+        const depth = bugger.view(sourcemapping.current.functionDepth);
 
         assert.isAtMost(depth, 2);
         if (depth === 2) {
@@ -611,7 +611,7 @@ describe("Solidity Debugging", function () {
         lightMode: true
       });
 
-      const source = bugger.view(solidity.current.source);
+      const source = bugger.view(sourcemapping.current.source);
       const breakLine = lineOf("BREAK", source.source);
       const breakpoint = {
         sourceId: source.id,
@@ -621,7 +621,7 @@ describe("Solidity Debugging", function () {
       await bugger.addBreakpoint(breakpoint);
       await bugger.continueUntilBreakpoint();
 
-      assert.equal(bugger.view(solidity.current.functionDepth), 1);
+      assert.equal(bugger.view(sourcemapping.current.functionDepth), 1);
     });
   });
 });

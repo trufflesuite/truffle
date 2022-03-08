@@ -9,7 +9,7 @@ import Ganache from "ganache";
 import { prepareContracts, lineOf } from "../helpers";
 import Debugger from "lib/debugger";
 
-import solidity from "lib/solidity/selectors";
+import sourcemapping from "lib/sourcemapping/selectors";
 import data from "lib/data/selectors";
 import evm from "lib/evm/selectors";
 
@@ -356,8 +356,8 @@ describe("Further Decoding", function () {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let sourceId = bugger.view(solidity.current.source).id;
-    let source = bugger.view(solidity.current.source).source;
+    let sourceId = bugger.view(sourcemapping.current.source).id;
+    let source = bugger.view(sourcemapping.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
       line: lineOf("break here", source)
@@ -393,8 +393,8 @@ describe("Further Decoding", function () {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let sourceId = bugger.view(solidity.current.source).id;
-    let source = bugger.view(solidity.current.source).source;
+    let sourceId = bugger.view(sourcemapping.current.source).id;
+    let source = bugger.view(sourcemapping.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
       line: lineOf("break here", source)
@@ -413,7 +413,7 @@ describe("Further Decoding", function () {
       bytesMap: { "0x01": "0x01" },
       uintMap: { 1: 1, 2: 2 },
       intMap: { "-1": -1 },
-      stringMap: { "0xdeadbeef": "0xdeadbeef", 12345: "12345", hello: "hello" },
+      stringMap: { "0xdeadbeef": "0xdeadbeef", "12345": "12345", "hello": "hello" },
       addressMap: { [address]: address },
       contractMap: { [address]: address },
       enumMap: { "ElementaryTest.Ternary.Blue": "ElementaryTest.Ternary.Blue" },
@@ -443,8 +443,8 @@ describe("Further Decoding", function () {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let sourceId = bugger.view(solidity.current.source).id;
-    let source = bugger.view(solidity.current.source).source;
+    let sourceId = bugger.view(sourcemapping.current.source).id;
+    let source = bugger.view(sourcemapping.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
       line: lineOf("break here", source)
@@ -584,8 +584,8 @@ describe("Further Decoding", function () {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let sourceId = bugger.view(solidity.current.source).id;
-    let source = bugger.view(solidity.current.source).source;
+    let sourceId = bugger.view(sourcemapping.current.source).id;
+    let source = bugger.view(sourcemapping.current.source).source;
     await bugger.addBreakpoint({
       sourceId,
       line: lineOf("BREAK HERE", source)
@@ -611,8 +611,8 @@ describe("Further Decoding", function () {
 
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-      let sourceId = bugger.view(solidity.current.source).id;
-      let source = bugger.view(solidity.current.source).source;
+      let sourceId = bugger.view(sourcemapping.current.source).id;
+      let source = bugger.view(sourcemapping.current.source).source;
       await bugger.addBreakpoint({
         sourceId,
         line: lineOf("BREAK UNSIGNED", source)
@@ -641,8 +641,8 @@ describe("Further Decoding", function () {
 
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-      let sourceId = bugger.view(solidity.current.source).id;
-      let source = bugger.view(solidity.current.source).source;
+      let sourceId = bugger.view(sourcemapping.current.source).id;
+      let source = bugger.view(sourcemapping.current.source).source;
       await bugger.addBreakpoint({
         sourceId,
         line: lineOf("BREAK SIGNED", source)
@@ -671,8 +671,8 @@ describe("Further Decoding", function () {
 
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-      let sourceId = bugger.view(solidity.current.source).id;
-      let source = bugger.view(solidity.current.source).source;
+      let sourceId = bugger.view(sourcemapping.current.source).id;
+      let source = bugger.view(sourcemapping.current.source).source;
       await bugger.addBreakpoint({
         sourceId,
         line: lineOf("BREAK RAW", source)

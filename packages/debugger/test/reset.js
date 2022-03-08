@@ -9,7 +9,7 @@ import { prepareContracts, lineOf } from "./helpers";
 import * as Codec from "@truffle/codec";
 import Debugger from "lib/debugger";
 
-import solidity from "lib/solidity/selectors";
+import sourcemapping from "lib/sourcemapping/selectors";
 
 const __SETSTHINGS = `
 pragma solidity ^0.8.0;
@@ -69,8 +69,8 @@ describe("Reset Button", function () {
       compilations
     });
 
-    let sourceId = bugger.view(solidity.current.source).id;
-    let source = bugger.view(solidity.current.source).source;
+    let sourceId = bugger.view(sourcemapping.current.source).id;
+    let source = bugger.view(sourcemapping.current.source).source;
 
     let variables = [];
     variables[0] = []; //collected during 1st run

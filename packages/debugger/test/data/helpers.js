@@ -10,7 +10,7 @@ import { prepareContracts } from "test/helpers";
 
 import Debugger from "lib/debugger";
 
-import solidity from "lib/solidity/selectors";
+import sourcemapping from "lib/sourcemapping/selectors";
 
 export function* generateUints() {
   let x = 0;
@@ -73,7 +73,7 @@ async function prepareDebugger(testName, sources) {
   let source = sources[fileName(testName)];
 
   //we'll need the debugger-internal ID of this source
-  let debuggerSources = Object.values(bugger.view(solidity.views.sources));
+  let debuggerSources = Object.values(bugger.view(sourcemapping.views.sources));
   let matchingSources = debuggerSources.filter(sourceObject =>
     sourceObject.sourcePath.includes(contractName(testName))
   );

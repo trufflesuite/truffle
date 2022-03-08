@@ -8,7 +8,7 @@ import Ganache from "ganache";
 import { prepareContracts } from "./helpers";
 import Debugger from "lib/debugger";
 
-import solidity from "lib/solidity/selectors";
+import sourcemapping from "lib/sourcemapping/selectors";
 import trace from "lib/trace/selectors";
 
 import SourceMapUtils from "@truffle/source-map-utils";
@@ -86,15 +86,15 @@ describe("AST", function () {
       });
 
       do {
-        let { start, length } = bugger.view(solidity.current.sourceRange);
+        let { start, length } = bugger.view(sourcemapping.current.sourceRange);
         let end = start + length;
 
-        let node = bugger.view(solidity.current.node);
+        let node = bugger.view(sourcemapping.current.node);
 
         let [nodeStart, nodeLength] = SourceMapUtils.getRange(node);
         let nodeEnd = nodeStart + nodeLength;
 
-        let pointer = bugger.view(solidity.current.pointer);
+        let pointer = bugger.view(sourcemapping.current.pointer);
 
         assert.isAtMost(
           nodeStart,
