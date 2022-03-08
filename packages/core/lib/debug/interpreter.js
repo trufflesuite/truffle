@@ -7,7 +7,8 @@ const ora = require("ora");
 
 const DebugUtils = require("@truffle/debug-utils");
 const selectors = require("@truffle/debugger").selectors;
-const { session, solidity, stacktrace, trace, evm, controller } = selectors;
+const { session, sourcemapping, stacktrace, trace, evm, controller } =
+  selectors;
 
 const analytics = require("../services/analytics");
 const repl = require("repl");
@@ -42,7 +43,7 @@ class DebugInterpreter {
   }
 
   async setOrClearBreakpoint(args, setOrClear) {
-    const breakpoints = this.determineBreakpoints(args, setOrClear); //note: not pure, can print
+    const breakpoints = this.determineBreakpoints(args); //note: not pure, can print
     if (breakpoints !== null) {
       for (const breakpoint of breakpoints) {
         await this.setOrClearBreakpointObject(breakpoint, setOrClear);
@@ -63,8 +64,7 @@ class DebugInterpreter {
   //returns an array of the breakpoints, unless it's remove all breakpoints,
   //in which case it returns null
   //(if something goes wrong it will return [] to indicate do nothing)
-  determineBreakpoints(args, setOrClear) {
-    //setOrClear: true for set, false for clear
+  determineBreakpoints(args) {
     const currentLocation = this.session.view(controller.current.location);
 
     const currentStart = currentLocation.sourceRange
@@ -89,13 +89,15 @@ class DebugInterpreter {
         this.printer.print("Cannot determine current location.");
         return [];
       }
-      return [{
-        start: currentStart,
-        line: currentLine, //this isn't necessary for the
-        //breakpoint to work, but we use it for printing messages
-        length: currentLength,
-        sourceId: currentSourceId
-      }];
+      return [
+        {
+          start: currentStart,
+          line: currentLine, //this isn't necessary for the
+          //breakpoint to work, but we use it for printing messages
+          length: currentLength,
+          sourceId: currentSourceId
+        }
+      ];
     }
 
     //the special case of "B all"
@@ -119,10 +121,12 @@ class DebugInterpreter {
         return [];
       }
 
-      return [{
-        sourceId: currentSourceId,
-        line: currentLine + delta
-      }];
+      return [
+        {
+          sourceId: currentSourceId,
+          line: currentLine + delta
+        }
+      ];
     }
 
     //if it contains a colon, it's in the form source:line
@@ -141,7 +145,9 @@ class DebugInterpreter {
       }
 
       //search sources for given string
-      let sources = Object.values(this.session.view(solidity.views.sources));
+      let sources = Object.values(
+        this.session.view(sourcemapping.views.sources)
+      );
       //we will indeed need the sources here, not just IDs
       let matchingSources = sources.filter(source =>
         source.sourcePath.includes(sourceArg)
@@ -156,11 +162,11 @@ class DebugInterpreter {
         //however, if one of them has a source path that is a substring of all
         //the others...
         if (
-          matchingSources.some(
-            shortSource => matchingSources.every(
+          matchingSources.some(shortSource =>
+            matchingSources.every(
               source =>
-                typeof source.sourcePath !== "string" //just ignore these I guess?
-                || source.sourcePath.includes(shortSource.sourcePath)
+                typeof source.sourcePath !== "string" || //just ignore these I guess?
+                source.sourcePath.includes(shortSource.sourcePath)
             )
           )
         ) {
@@ -168,12 +174,10 @@ class DebugInterpreter {
           this.printer.print(
             `WARNING: Acting on all matching sources because disambiguation between them is not possible.`
           );
-          return matchingSources.map(
-            source => ({
-              sourceId: source.id,
-              line: line - 1 //adjust for breakpoint!
-            })
-          );
+          return matchingSources.map(source => ({
+            sourceId: source.id,
+            line: line - 1 //adjust for breakpoint!
+          }));
         } else {
           //normal case
           this.printer.print(
@@ -188,10 +192,12 @@ class DebugInterpreter {
       }
 
       //otherwise, we found it!
-      return [{
-        sourceId: matchingSources[0].id,
-        line: line - 1 //adjust for zero-indexing!
-      }];
+      return [
+        {
+          sourceId: matchingSources[0].id,
+          line: line - 1 //adjust for zero-indexing!
+        }
+      ];
     }
 
     //otherwise, it's a simple line number
@@ -209,10 +215,12 @@ class DebugInterpreter {
         return [];
       }
 
-      return [{
-        sourceId: currentSourceId,
-        line: line - 1 //adjust for zero-indexing!
-      }];
+      return [
+        {
+          sourceId: currentSourceId,
+          line: line - 1 //adjust for zero-indexing!
+        }
+      ];
     }
   }
 
@@ -240,7 +248,7 @@ class DebugInterpreter {
 
     //having constructed and adjusted breakpoint, here's now a
     //user-readable message describing its location
-    let sources = this.session.view(solidity.views.sources);
+    let sources = this.session.view(sourcemapping.views.sources);
     let sourceNames = Object.assign(
       //note: only include user sources
       {},
@@ -292,7 +300,6 @@ class DebugInterpreter {
       this.printer.print(`Breakpoint removed at ${locationMessage}.`);
     }
   }
-
 
   start(terminate) {
     // if terminate is not passed, return a Promise instead
@@ -426,7 +433,9 @@ class DebugInterpreter {
       if (this.session.view(session.status.loaded)) {
         if (this.session.view(trace.finished)) {
           if (!this.session.view(evm.current.step.isExceptionalHalting)) {
-            const errorIndex = this.session.view(stacktrace.current.innerErrorIndex);
+            const errorIndex = this.session.view(
+              stacktrace.current.innerErrorIndex
+            );
             if (errorIndex !== null) {
               const stepSpinner = ora("Stepping...").start();
               await this.session.reset();
@@ -437,11 +446,15 @@ class DebugInterpreter {
             }
           } else {
             this.printer.print("You are already at the final error.");
-            this.printer.print("Use the `Y` command to return to the previous error.");
+            this.printer.print(
+              "Use the `Y` command to return to the previous error."
+            );
             this.printer.print("");
           }
         } else {
-          this.printer.print("This command is only usable at end of transaction; did you mean `Y`?");
+          this.printer.print(
+            "This command is only usable at end of transaction; did you mean `Y`?"
+          );
         }
       } else {
         this.printer.print("No transaction loaded.");
@@ -450,7 +463,9 @@ class DebugInterpreter {
     }
     if (cmd === "Y") {
       if (this.session.view(session.status.loaded)) {
-        const errorIndex = this.session.view(stacktrace.current.innerErrorIndex);
+        const errorIndex = this.session.view(
+          stacktrace.current.innerErrorIndex
+        );
         if (errorIndex !== null) {
           const stepSpinner = ora("Stepping...").start();
           await this.session.reset();
@@ -541,7 +556,9 @@ class DebugInterpreter {
       } else {
         //case if transaction succeeded
         this.printer.print("Transaction completed successfully.");
-        if (this.session.view(solidity.current.source).language !== "Vyper") {
+        if (
+          this.session.view(sourcemapping.current.source).language !== "Vyper"
+        ) {
           //HACK: not supported for vyper yet
           await this.printer.printReturnValue();
         }
@@ -570,7 +587,9 @@ class DebugInterpreter {
         this.printer.printGeneratedSourcesState();
         break;
       case "v":
-        if (this.session.view(solidity.current.source).language === "Vyper") {
+        if (
+          this.session.view(sourcemapping.current.source).language === "Vyper"
+        ) {
           this.printer.print(
             "Decoding of variables is not currently supported for Vyper."
           );
@@ -677,7 +696,7 @@ class DebugInterpreter {
       case "y":
       case "Y":
         if (!this.session.view(trace.finishedOrUnloaded)) {
-          if (!this.session.view(solidity.current.source).source) {
+          if (!this.session.view(sourcemapping.current.source).source) {
             this.printer.printInstruction();
           }
           this.printer.printFile();

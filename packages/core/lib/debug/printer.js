@@ -10,7 +10,7 @@ const colors = require("colors");
 const Interpreter = require("js-interpreter");
 
 const selectors = require("@truffle/debugger").selectors;
-const { session, solidity, trace, controller, data, evm, stacktrace } =
+const { session, sourcemapping, trace, controller, data, evm, stacktrace } =
   selectors;
 
 class DebugPrinter {
@@ -44,7 +44,7 @@ class DebugPrinter {
 
     this.colorizedSources = Object.assign(
       {},
-      ...Object.entries(this.session.view(solidity.views.sources)).map(
+      ...Object.entries(this.session.view(sourcemapping.views.sources)).map(
         ([id, source]) => ({
           [id]: colorizeSourceObject(source)
         })
@@ -159,7 +159,8 @@ class DebugPrinter {
 
     //we don't just get extract the source text from the location because passed-in location may be
     //missing the source text
-    const source = this.session.view(solidity.views.sources)[sourceId].source;
+    const source = this.session.view(sourcemapping.views.sources)[sourceId]
+      .source;
     const colorizedSource = this.colorizedSources[sourceId];
 
     debug("range: %o", range);
@@ -215,8 +216,8 @@ class DebugPrinter {
   }
 
   printInstruction(locations = this.locationPrintouts) {
-    const instruction = this.session.view(solidity.current.instruction);
-    const instructions = this.session.view(solidity.current.instructions);
+    const instruction = this.session.view(sourcemapping.current.instruction);
+    const instructions = this.session.view(sourcemapping.current.instructions);
     const step = this.session.view(trace.step);
     const traceIndex = this.session.view(trace.index);
     const totalSteps = this.session.view(trace.steps).length;
@@ -319,7 +320,7 @@ class DebugPrinter {
   }
 
   printBreakpoints() {
-    const sources = this.session.view(solidity.views.sources);
+    const sources = this.session.view(sourcemapping.views.sources);
     const sourceNames = Object.assign(
       //note: only include user sources
       {},
