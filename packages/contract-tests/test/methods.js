@@ -291,6 +291,16 @@ describe("Methods", function () {
       Example.numberFormat = "BigNumber";
     });
 
+    it("should output int values as BigInt when set to 'BigInt' (call)", async function () {
+      let value;
+      Example.numberFormat = "BigInt";
+      const example = await Example.new(1);
+
+      value = await example.returnsInt();
+      assert(typeof value === "bigint");
+      Example.numberFormat = "BigNumber";
+    });
+
     it("should emit a transaction hash", function (done) {
       Example.new(5).then(function (instance) {
         instance.setValue(25).on("transactionHash", function (hash) {
