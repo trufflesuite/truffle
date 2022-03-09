@@ -122,15 +122,18 @@ module.exports = async function (options) {
     }
   }
 
+  if (configuredNetwork) {
+    configuredNetwork.network_id = sanitizeNetworkID(
+      configuredNetwork.network_id
+    );
+  }
+
   if (
     (testNetworkDefinedAndUsed && noProviderHostOrUrlConfigured) ||
     !configuredNetwork
   ) {
     // Use managed ganache with overriding user specified config or without any specification in the config
     const port = await require("get-port")();
-    configuredNetwork.network_id = sanitizeNetworkID(
-      configuredNetwork.network_id
-    );
 
     // configuredNetwork will spread only when it is defined and ignored when undefined
     ganacheOptions = { ...ganacheOptions, port, ...configuredNetwork };
