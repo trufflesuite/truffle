@@ -135,9 +135,9 @@ export const getOptions = (
     return fromArguments(args);
   } else {
     const message =
-      "Unknown arguments format passed to new HDWalletProvider." +
-      " Please ensure you passed both provider information and a menmonic or " +
-      "private keys.";
+      "Unknown arguments format passed to new HDWalletProvider. " +
+      "Please ensure you passed provider information along with either a " +
+      "mnemonic or private keys.";
     throw new Error(message);
   }
 };
