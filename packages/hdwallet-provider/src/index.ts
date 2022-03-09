@@ -279,30 +279,28 @@ class HDWalletProvider {
           // always resolve the Promise - if an error occurs, throw it when
           // this.initialized is checked so errors can be handled by the user
           if (error) {
-            resolve({
+            return resolve({
               success: false,
               error
             });
-            return;
           } else if (response.error) {
-            resolve({
+            return resolve({
               success: false,
               error: response.error
             });
-            return;
           }
           if (isNaN(parseInt(response.result, 16))) {
             const message =
               "When requesting the chain id from the node, it" +
               `returned the malformed result ${response.result}.`;
             const error = new Error(message);
-            resolve({
+            return resolve({
               success: false,
               error
             });
           }
           this.chainId = parseInt(response.result, 16);
-          resolve({
+          return resolve({
             success: true,
             error: null
           });
