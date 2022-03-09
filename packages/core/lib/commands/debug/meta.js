@@ -77,6 +77,10 @@ module.exports = {
           "Forces the debugger to use artifacts even if it detects a problem.  Dangerous; may cause errors."
       }
     ],
-    allowedGlobalOptions: ["config"] //network is allowed but is handled separately above so usage can be combined w/url
+    allowedGlobalOptions: ["config"]
+    //although network is an allowed global option, it isn't listed here because listing it here would cause
+    //it to be tacked on to the end of usage, which would prevent us from doing the thing above where we
+    //combine its usage instructions with url to show that they're mutually exclusive.  so as a workaround
+    //we've excluded network from here, and added it manually above.
   }
 };
