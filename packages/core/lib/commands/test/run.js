@@ -107,12 +107,30 @@ module.exports = async function (options) {
     }
   };
 
+  function sanitizeNetworkID(network_id) {
+    if (network_id !== "*") {
+      if (!parseInt(network_id, 10)) {
+        const error =
+          `The network id specified in the truffle config ` +
+          `(${network_id}) is not valid. Please properly configure the network id as an integer value.`;
+        throw new Error(error);
+      }
+      return network_id;
+    } else {
+      // We have a "*" network. Return the default.
+      return 4447;
+    }
+  }
+
   if (
     (testNetworkDefinedAndUsed && noProviderHostOrUrlConfigured) ||
     !configuredNetwork
   ) {
     // Use managed ganache with overriding user specified config or without any specification in the config
     const port = await require("get-port")();
+    configuredNetwork.network_id = sanitizeNetworkID(
+      configuredNetwork.network_id
+    );
 
     // configuredNetwork will spread only when it is defined and ignored when undefined
     ganacheOptions = { ...ganacheOptions, port, ...configuredNetwork };
