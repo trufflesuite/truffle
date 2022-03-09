@@ -32,10 +32,10 @@
   },
   "optionalDependencies": {
     "@truffle/db": "^0.5.55",
-    "@truffle/preserve-fs": "^0.2.6",
-    "@truffle/preserve-to-buckets": "^0.2.7",
-    "@truffle/preserve-to-filecoin": "^0.2.7",
-    "@truffle/preserve-to-ipfs": "^0.2.7"
+    "@truffle/preserve-fs": "^0.2.7",
+    "@truffle/preserve-to-buckets": "^0.2.8",
+    "@truffle/preserve-to-filecoin": "^0.2.8",
+    "@truffle/preserve-to-ipfs": "^0.2.8"
   },
   "dependencies": {
     "@truffle/db-loader": "^0.1.5",
