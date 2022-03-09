@@ -216,6 +216,7 @@ describe("Stack tracing", function () {
     assert(contractNames.every(name => name === "StacktraceTest"));
     let addresses = report.map(({ address }) => address);
     assert(addresses.every(address => address === instance.address));
+    assert(report.every(({ isConstructor }) => !isConstructor));
     let status = report[report.length - 1].status;
     assert.isFalse(status);
     let location = report[report.length - 1].location;
@@ -262,6 +263,7 @@ describe("Stack tracing", function () {
     assert(contractNames.every(name => name === "StacktraceTest"));
     let addresses = report.map(({ address }) => address);
     assert(addresses.every(address => address === instance.address));
+    assert(report.every(({ isConstructor }) => !isConstructor));
     let status = report[report.length - 1].status;
     assert.isUndefined(status);
     let location = report[report.length - 1].location;
@@ -332,6 +334,7 @@ describe("Stack tracing", function () {
     assert(contractNames.every(name => name === "StacktraceTest"));
     let addresses = report.map(({ address }) => address);
     assert(addresses.every(address => address === instance.address));
+    assert(report.every(({ isConstructor }) => !isConstructor));
     let status = report[report.length - 1].status;
     assert.isFalse(status);
     let location = report[report.length - 2].location; //note, -2 because of undefined on top
@@ -383,6 +386,7 @@ describe("Stack tracing", function () {
     assert(contractNames.slice(0, -2).every(name => name === "StacktraceTest"));
     let addresses = report.map(({ address }) => address);
     assert(addresses.every(address => address === instance.address));
+    assert(report.every(({ isConstructor }) => !isConstructor));
     let status = report[report.length - 1].status;
     assert.isFalse(status);
     let location = report[report.length - 3].location; //note, -3 because of panic & undefined on top
@@ -441,6 +445,7 @@ describe("Stack tracing", function () {
     );
     addresses.pop();
     assert(addresses.every(address => address === instance.address));
+    assert(report.every(({ isConstructor }) => !isConstructor));
     let status = report[report.length - 1].status;
     assert.isTrue(status);
     let location = report[report.length - 1].location;
@@ -505,6 +510,12 @@ describe("Stack tracing", function () {
     );
     addresses = addresses.slice(0, -2); //cut off top two frames that we just checked
     assert(addresses.every(address => address === instance.address));
+    let isConstructorArray = report.map(({ isConstructor }) => isConstructor);
+    assert.isTrue(isConstructorArray[isConstructorArray.length - 1]);
+    isConstructorArray.pop(); //top frame
+    assert.isTrue(isConstructorArray[isConstructorArray.length - 1]);
+    isConstructorArray.pop(); //second-to-top frame
+    assert(isConstructorArray.every(isConstructor => !isConstructor));
     let status = report[report.length - 1].status;
     assert.isFalse(status);
     let location = report[report.length - 1].location;
@@ -563,6 +574,7 @@ describe("Stack tracing", function () {
     assert(contractNames.every(name => name === "StacktraceTest"));
     let addresses = report.map(({ address }) => address);
     assert(addresses.every(address => address === instance.address));
+    assert(report.every(({ isConstructor }) => !isConstructor));
     let status = report[report.length - 1].status;
     assert.isFalse(status);
     let location = report[report.length - 1].location;
@@ -580,7 +592,7 @@ describe("Stack tracing", function () {
     assert.isTrue(report[0].custom);
   });
 
-  it("Generates correct stack trace after an internal call in a constructor", async function () {
+  it("Generates correct stack trace after an internal call in a library", async function () {
     this.timeout(12000);
     const instance = await abstractions.StacktraceTest.deployed();
     const library = await abstractions.Library.deployed();
@@ -636,6 +648,7 @@ describe("Stack tracing", function () {
       addresses.every(address => address === instance.address),
       "unexpected remaining addresses"
     );
+    assert(report.every(({ isConstructor }) => !isConstructor));
     let status = report[report.length - 1].status;
     assert.isFalse(status);
     let location = report[report.length - 1].location;
