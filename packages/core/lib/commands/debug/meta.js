@@ -37,6 +37,8 @@ module.exports = {
     usage:
       "truffle debug [<transaction_hash>] [--fetch-external|-x]" +
       OS.EOL +
+      "                             [--network <network>|--url <provider_url>]" +
+      OS.EOL +
       "                             [--compile-tests|--compile-all|--compile-none]",
     options: [
       {
@@ -48,6 +50,11 @@ module.exports = {
         option: "--fetch-external|-x",
         description:
           "Allows debugging of external contracts with verified sources."
+      },
+      {
+        option: "--network",
+        description:
+          "The network to connect to, as specified in the Truffle config."
       },
       {
         option: "--url",
@@ -70,6 +77,10 @@ module.exports = {
           "Forces the debugger to use artifacts even if it detects a problem.  Dangerous; may cause errors."
       }
     ],
-    allowedGlobalOptions: ["network", "config"]
+    allowedGlobalOptions: ["config"]
+    //although network is an allowed global option, it isn't listed here because listing it here would cause
+    //it to be tacked on to the end of usage, which would prevent us from doing the thing above where we
+    //combine its usage instructions with url to show that they're mutually exclusive.  so as a workaround
+    //we've excluded network from here, and added it manually above.
   }
 };
