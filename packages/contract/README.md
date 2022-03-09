@@ -209,7 +209,7 @@ var MyOtherContract = MyContract.clone(1337);
 #### `MyContract.numberFormat = number_type`
 You can set this property to choose the number format that abstraction methods return.  The default behavior is to return BN.
 ```javascript
-// Choices are:  `["BigNumber", "BN", "String"].
+// Choices are:  `["BigNumber", "BN", "String", "BigInt"].
 var Example = artifacts.require('Example');
 Example.numberFormat = 'BigNumber';
 ```

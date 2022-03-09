@@ -57,7 +57,7 @@ module.exports = {
       return this._json.numberFormat;
     },
     set: function (val) {
-      const allowedFormats = ["BigNumber", "BN", "String"];
+      const allowedFormats = ["BigNumber", "BN", "String", "BigInt"];
 
       const msg =
         `Invalid number format setting: "${val}": ` +

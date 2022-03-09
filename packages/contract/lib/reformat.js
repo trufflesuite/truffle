@@ -20,6 +20,8 @@ const _convertNumber = function(val, format) {
       return web3Utils.toBN(val);
     case "String":
       return val;
+    case "BigInt":
+      return BigInt(val);
     default:
       throw new Error(badFormatMsg);
   }
