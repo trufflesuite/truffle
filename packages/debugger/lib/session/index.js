@@ -548,7 +548,6 @@ export default class Session {
       trace,
       evm,
       sourcemapping,
-      solidity: sourcemapping, //for compatibility
       stacktrace,
       session,
       controller: controllerSelector

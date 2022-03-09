@@ -79,7 +79,6 @@ const Debugger = {
       trace: traceSelector,
       evm: evmSelector,
       sourcemapping: sourcemappingSelector,
-      solidity: sourcemappingSelector, //for compatibility
       stacktrace: stacktraceSelector,
       session: sessionSelector,
       controller: controllerSelector
