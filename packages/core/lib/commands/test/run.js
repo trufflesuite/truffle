@@ -107,25 +107,20 @@ module.exports = async function (options) {
     }
   };
 
-  function sanitizeNetworkID(network_id) {
-    if (network_id !== "*") {
-      if (!parseInt(network_id, 10)) {
-        const error =
-          `The network id specified in the truffle config ` +
-          `(${network_id}) is not valid. Please properly configure the network id as an integer value.`;
-        throw new Error(error);
-      }
-      return network_id;
-    } else {
-      // We have a "*" network. Return the default.
-      return 4447;
+  function sanitizeGanacheOptions(ganacheOptions) {
+    if (ganacheOptions.network_id === "*") {
+      ganacheOptions.network_id = 4447;
+      return ganacheOptions;
     }
-  }
-
-  if (configuredNetwork) {
-    configuredNetwork.network_id = sanitizeNetworkID(
-      configuredNetwork.network_id
-    );
+    const parsedNetworkId = parseInt(ganacheOptions.network_id, 10);
+    if (isNaN(parsedNetworkId)) { 
+      const error =
+          `The network id specified in the truffle config ` +
+          `(${ganacheOptions.network_id}) is not valid. Please properly configure the network id as an integer value.`;
+      throw new Error(error);
+    }
+    ganacheOptions.network_id = parsedNetworkId;
+    return ganacheOptions;
   }
 
   if (
@@ -137,6 +132,11 @@ module.exports = async function (options) {
 
     // configuredNetwork will spread only when it is defined and ignored when undefined
     ganacheOptions = { ...ganacheOptions, port, ...configuredNetwork };
+
+    // Sanitize the ganache options if required
+    const sanitizedGanacheOptions = sanitizeGanacheOptions(ganacheOptions);
+
+    ganacheOptions = { ...ganacheOptions, ...sanitizedGanacheOptions };
     numberOfFailures = await startGanacheAndRunTests(
       ipcOptions,
       ganacheOptions,
