@@ -49,7 +49,7 @@ class HDWalletProvider {
   private chainId?: ChainId;
   private chainSettings: ChainSettings;
   private hardfork: Hardfork;
-  private initialized: Promise<void>;
+  private initialized: Promise<{ error: any; success: boolean }>;
 
   public engine: ProviderEngine;
 
@@ -95,7 +95,7 @@ class HDWalletProvider {
         [
           `No provider or an invalid provider was specified: '${providerToUse}'`,
           "Please specify a valid provider or URL, using the http, https, " +
-          "ws, or wss protocol.",
+            "ws, or wss protocol.",
           ""
         ].join("\n")
       );
@@ -128,7 +128,10 @@ class HDWalletProvider {
       (chainSettings && typeof chainSettings.chainId !== "undefined")
     ) {
       this.chainId = chainId || chainSettings.chainId;
-      this.initialized = Promise.resolve();
+      this.initialized = Promise.resolve({
+        error: null,
+        success: true
+      });
     } else {
       this.initialized = this.initialize();
     }
@@ -154,7 +157,9 @@ class HDWalletProvider {
           }
         },
         async signTransaction(txParams: any, cb: any) {
-          await self.initialized;
+          const { success, error } = await self.initialized;
+          if (!success) throw error;
+
           // we need to rename the 'gas' field
           txParams.gasLimit = txParams.gas;
           delete txParams.gas;
@@ -259,8 +264,8 @@ class HDWalletProvider {
     this.engine.start();
   }
 
-  private initialize(): Promise<void> {
-    return new Promise((resolve, reject) => {
+  private initialize(): Promise<{ error: any; success: boolean }> {
+    return new Promise(resolve => {
       this.engine.sendAsync(
         {
           jsonrpc: "2.0",
@@ -271,21 +276,36 @@ class HDWalletProvider {
         // @ts-ignore - the type doesn't take into account the possibility
         // that response.error could be a thing
         (error: any, response: JSONRPCResponsePayload & { error?: any }) => {
+          // always resolve the Promise - if an error occurs, throw it when
+          // this.initialized is checked so errors can be handled by the user
           if (error) {
-            reject(error);
+            resolve({
+              success: false,
+              error
+            });
             return;
           } else if (response.error) {
-            reject(response.error);
+            resolve({
+              success: false,
+              error: response.error
+            });
             return;
           }
           if (isNaN(parseInt(response.result, 16))) {
             const message =
               "When requesting the chain id from the node, it" +
               `returned the malformed result ${response.result}.`;
-            throw new Error(message);
+            const error = new Error(message);
+            resolve({
+              success: false,
+              error
+            });
           }
           this.chainId = parseInt(response.result, 16);
-          resolve();
+          resolve({
+            success: true,
+            error: null
+          });
         }
       );
     });
@@ -347,18 +367,26 @@ class HDWalletProvider {
     // @ts-ignore we patch this method so it doesn't conform to type
     callback: (error: null | Error, response: JSONRPCResponsePayload) => void
   ): void {
-    this.initialized.then(() => {
-      this.engine.sendAsync(payload, callback);
-    });
+    this.initialized
+      .then(() => {
+        this.engine.sendAsync(payload, callback);
+      })
+      .catch(error => {
+        throw error;
+      });
   }
 
   public sendAsync(
     payload: JSONRPCRequestPayload,
     callback: (error: null | Error, response: JSONRPCResponsePayload) => void
   ): void {
-    this.initialized.then(() => {
-      this.engine.sendAsync(payload, callback);
-    });
+    this.initialized
+      .then(() => {
+        this.engine.sendAsync(payload, callback);
+      })
+      .catch(error => {
+        throw error;
+      });
   }
 
   public getAddress(idx?: number): string {
