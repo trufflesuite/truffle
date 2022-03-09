@@ -33,6 +33,7 @@ function generateReport(rawStack, location, status, message) {
         //note: since the next frame is internal, it will have the
         //same address as this, so we don't have to specify which
         //one to take the address from
+        //(same with isConstructor)
       };
       callstack.push(combinedFrame);
       i++; //!! SKIP THE NEXT FRAME!
@@ -49,10 +50,11 @@ function generateReport(rawStack, location, status, message) {
   locations.push(location);
   debug("locations: %O", locations);
   const names = callstack.map(
-    ({ functionName, contractName, address, type }) => ({
+    ({ functionName, contractName, address, isConstructor, type }) => ({
       functionName,
       contractName,
       address,
+      isConstructor,
       type
     })
   );
