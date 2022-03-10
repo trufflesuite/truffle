@@ -108,19 +108,24 @@ module.exports = async function (options) {
   };
 
   function sanitizeGanacheOptions(ganacheOptions) {
-    if (ganacheOptions.network_id === "*") {
-      ganacheOptions.network_id = 4447;
-      return ganacheOptions;
+    let network_id = ganacheOptions.network_id;
+
+    // Use default network_id if "*" is defined in config
+    if (network_id === "*") {
+      network_id = 4447;
+      let ganacheOptionsChanged = { ...ganacheOptions, network_id };
+      return ganacheOptionsChanged;
     }
-    const parsedNetworkId = parseInt(ganacheOptions.network_id, 10);
-    if (isNaN(parsedNetworkId)) { 
+    const parsedNetworkId = parseInt(network_id, 10);
+    if (isNaN(parsedNetworkId)) {
       const error =
-          `The network id specified in the truffle config ` +
-          `(${ganacheOptions.network_id}) is not valid. Please properly configure the network id as an integer value.`;
+        `The network id specified in the truffle config ` +
+        `(${network_id}) is not valid. Please properly configure the network id as an integer value.`;
       throw new Error(error);
     }
-    ganacheOptions.network_id = parsedNetworkId;
-    return ganacheOptions;
+    network_id = parsedNetworkId;
+    let ganacheOptionsChanged = { ...ganacheOptions, network_id };
+    return ganacheOptionsChanged;
   }
 
   if (
