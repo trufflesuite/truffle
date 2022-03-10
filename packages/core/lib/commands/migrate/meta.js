@@ -62,7 +62,7 @@ module.exports = {
       "                                " + // spacing to align with previous line
       "[--compile-all] [--compile-none] [--verbose-rpc] [--interactive]\n" +
       "                                " + // spacing to align with previous line
-      "[--skip-dry-run] [--describe-json] [--dry-run]",
+      "[--skip-dry-run] [--describe-json] [--dry-run] [--show-plan]",
     options: [
       {
         option: "--reset",

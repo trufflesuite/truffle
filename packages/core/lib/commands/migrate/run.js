@@ -8,8 +8,18 @@ module.exports = async function (options) {
   const setUpDryRunEnvironmentThenRunMigrations = require("./setUpDryRunEnvironmentThenRunMigrations");
   const tmp = require("tmp");
   tmp.setGracefulCleanup();
+  const { Solver } = require("@truffle/solver");
 
   const config = Config.detect(options);
+
+  // if declarative deployments are enabled, run the solver package to kick of migrations
+  if (config.declarativeDeployment.enabled) {
+    await Solver.Solver.orchestrate(
+      config.declarativeDeployment.filepath,
+      options
+    );
+  }
+
   if (config.compileNone || config["compile-none"]) {
     config.compiler = "none";
   }
