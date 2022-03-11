@@ -24,21 +24,21 @@ The input to the `contract` function is a JSON blob defined by [@truffle/contrac
 const provider = new Web3.providers.HttpProvider("http://localhost:8545");
 const contract = require("@truffle/contract");
 
-const MyContract = contract({
+const instance = contract({
   abi: [...], // minimum required
   address: "0x...", // optional
   // many more
 });
-MyContract.setProvider(provider);
+instance.setProvider(provider);
 ```
 
-Instead of providing these values manually though, the contract-scheme matches the output of the @truffle/artifactor
+Instead of providing these values individually though, the contract-scheme matches the output of the [@truffle/artifactor](https://github.com/trufflesuite/truffle/tree/master/packages/artifactor) so you might initialize it like so:
 
 ```javascript
 // json output provided by @truffle/artifactor
-const contractArtifact = require("./path/to/contractArtifact.json");
+const ContractArtifact = require("./path/to/contractArtifact.json");
 
-const MyContract = contract(contractArtifact);
+const instance = contract(ContractArtifact);
 ```
 
 You now have access to the following functions on `MyContract`, as well as many others:
@@ -90,11 +90,11 @@ Let's use `@truffle/contract` with an example contract from [Dapps For Beginners
 ```javascript
 const contract = require("@truffle/contract");
 // Require the package that was previosly saved by @truffle/artifactor
-const metacoinArtifact = require("./path/to/MetaCoin.json");
-const metacoin = contract(metacoinArtifact)
+const MetacoinArtifact = require("./path/to/MetaCoin.json");
+const instance = contract(MetacoinArtifact);
 
 // Remember to set the Web3 provider (see above).
-metacoin.setProvider(provider);
+instance.setProvider(provider);
 
 // In this scenario, two users will send MetaCoin back and forth, showing
 // how @truffle/contract allows for easy control flow.
@@ -104,7 +104,7 @@ const account_two = "e1fd0d4a52...";
 // Note our MetaCoin contract exists at a specific address.
 const contract_address = "8e2e2cf785...";
 
-const coin = await metacoin.at(contract_address)
+const coin = await instance.at(contract_address);
 
 try {
   // Make a transaction that calls the function `sendCoin`, sending 3 MetaCoin
@@ -125,10 +125,10 @@ try {
   result = await coin.sendCoin(account_one, 1.5, { from: account_two });
   balance_of_account_two = await coin.balances.call(account_two);
   console.log("Balance of account two is " + balance_of_account_two + "!"); // => 1.5
-} catch(function (err) {
+} catch (err) {
   // Easily catch all errors along the whole execution.
   console.log("ERROR! " + err.message);
-};
+}
 ```
 
 # API
