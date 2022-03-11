@@ -30,6 +30,30 @@ const parseCommandLineFlags = options => {
   }
 };
 
+// Sanitize ganache options specified in the config
+function sanitizeGanacheOptions(ganacheOptions) {
+  let network_id = ganacheOptions.network_id;
+  let ganacheOptionsChanged;
+
+  // Use default network_id if "*" is defined in config
+  if (network_id === "*") {
+    network_id = 4447;
+    ganacheOptionsChanged = { ...ganacheOptions, network_id };
+    return ganacheOptionsChanged;
+  }
+
+  const parsedNetworkId = parseInt(network_id, 10);
+  if (isNaN(parsedNetworkId)) {
+    const error =
+      `The network id specified in the truffle config ` +
+      `(${network_id}) is not valid. Please properly configure the network id as an integer value.`;
+    throw new Error(error);
+  }
+  network_id = parsedNetworkId;
+  ganacheOptionsChanged = { ...ganacheOptions, network_id };
+  return ganacheOptionsChanged;
+}
+
 module.exports = async function (options) {
   const Config = require("@truffle/config");
   const { Environment, Develop } = require("@truffle/environment");
@@ -107,27 +131,6 @@ module.exports = async function (options) {
     }
   };
 
-  function sanitizeGanacheOptions(ganacheOptions) {
-    let network_id = ganacheOptions.network_id;
-
-    // Use default network_id if "*" is defined in config
-    if (network_id === "*") {
-      network_id = 4447;
-      let ganacheOptionsChanged = { ...ganacheOptions, network_id };
-      return ganacheOptionsChanged;
-    }
-    const parsedNetworkId = parseInt(network_id, 10);
-    if (isNaN(parsedNetworkId)) {
-      const error =
-        `The network id specified in the truffle config ` +
-        `(${network_id}) is not valid. Please properly configure the network id as an integer value.`;
-      throw new Error(error);
-    }
-    network_id = parsedNetworkId;
-    let ganacheOptionsChanged = { ...ganacheOptions, network_id };
-    return ganacheOptionsChanged;
-  }
-
   if (
     (testNetworkDefinedAndUsed && noProviderHostOrUrlConfigured) ||
     !configuredNetwork
@@ -141,10 +144,9 @@ module.exports = async function (options) {
     // Sanitize the ganache options if required
     const sanitizedGanacheOptions = sanitizeGanacheOptions(ganacheOptions);
 
-    ganacheOptions = { ...ganacheOptions, ...sanitizedGanacheOptions };
     numberOfFailures = await startGanacheAndRunTests(
       ipcOptions,
-      ganacheOptions,
+      sanitizedGanacheOptions,
       config
     );
   } else {
