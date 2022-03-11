@@ -17,17 +17,28 @@ $ npm install @truffle/contract
 
 ### Usage
 
-First, set up a new web3 provider instance and initialize your contract, then `require("@truffle/contract")`. The input to the `contract` function is a JSON blob defined by [@truffle/contract-schema](https://github.com/trufflesuite/truffle/tree/master/packages/contract-schema). This JSON blob is structured in a way that can be passed to all truffle-related projects.
+First, set up a new web3 provider instance and initialize your contract, then `require("@truffle/contract")`.
+The input to the `contract` function is a JSON blob defined by [@truffle/contract-schema](https://github.com/trufflesuite/truffle/tree/master/packages/contract-schema). This JSON blob is structured in a way that can be passed to all truffle-related projects.
 
 ```javascript
 const provider = new Web3.providers.HttpProvider("http://localhost:8545");
 const contract = require("@truffle/contract");
 
-// Artifact json previosly saved by @truffle/artifactor
+const MyContract = contract({
+  abi: [...], // minimum required
+  address: "0x...", // optional
+  // many more
+});
+MyContract.setProvider(provider);
+```
+
+Instead of providing these values manually though, the contract-scheme matches the output of the @truffle/artifactor
+
+```javascript
+// json output provided by @truffle/artifactor
 const contractArtifact = require("./path/to/contractArtifact.json");
 
 const MyContract = contract(contractArtifact);
-MyContract.setProvider(provider);
 ```
 
 You now have access to the following functions on `MyContract`, as well as many others:
