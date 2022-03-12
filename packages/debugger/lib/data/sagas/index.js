@@ -69,214 +69,6 @@ function* tickSaga() {
   yield* trace.signalTickSagaCompletion();
 }
 
-export function* decode(
-  definition,
-  ref,
-  compilationId,
-  indicateUnknown = false
-) {
-  const userDefinedTypes = yield select(data.views.userDefinedTypes);
-  const state = yield select(data.current.state);
-  const mappingKeys = yield select(data.views.mappingKeys);
-  const allocations = yield select(data.info.allocations);
-  const contexts = yield select(data.views.contexts);
-  const currentContext = yield select(data.current.context);
-  const internalFunctionsTable = yield select(
-    data.current.functionsByProgramCounter
-  );
-
-  debug("definition: %o");
-  debug("ref: %o");
-  debug("compilationId: %s", compilationId);
-
-  const ZERO_WORD = new Uint8Array(Codec.Evm.Utils.WORD_SIZE); //automatically filled with zeroes
-
-  const decoder = Codec.decodeVariable(
-    definition,
-    ref,
-    {
-      userDefinedTypes,
-      state,
-      mappingKeys,
-      allocations,
-      contexts,
-      currentContext,
-      internalFunctionsTable
-    },
-    compilationId
-  );
-
-  debug("beginning decoding");
-  let result = decoder.next();
-  while (!result.done) {
-    debug("request received");
-    let request = result.value;
-    let response;
-    switch (request.type) {
-      case "storage":
-        //the debugger supplies all storage it knows at the beginning.
-        //any storage it does not know is presumed to be zero.
-        //(unlesss indicateUnknown is passed, in which case we use
-        //null as a deliberately invalid response)
-        response = indicateUnknown ? null : ZERO_WORD;
-        break;
-      case "code":
-        response = yield* requestCode(request.address);
-        break;
-      default:
-        debug("unrecognized request type!");
-    }
-    debug("sending response");
-    result = decoder.next(response);
-  }
-  //at this point, result.value holds the final value
-  debug("done decoding");
-  debug("decoded value: %O", result.value);
-  return result.value;
-}
-
-export function* decodeReturnValue() {
-  const userDefinedTypes = yield select(data.views.userDefinedTypes);
-  const state = yield select(data.next.state); //next state has the return data
-  const allocations = yield select(data.info.allocations);
-  const contexts = yield select(data.views.contexts);
-  const currentContext = yield select(data.current.context);
-  const status = yield select(data.current.returnStatus); //may be undefined
-  const returnAllocation = yield select(data.current.returnAllocation); //may be null
-  const errorId = yield select(data.current.errorId);
-  const internalFunctionsTable = yield select(
-    data.current.functionsByProgramCounter
-  );
-  debug("returnAllocation: %O", returnAllocation);
-
-  const decoder = Codec.decodeReturndata(
-    {
-      userDefinedTypes,
-      state,
-      allocations,
-      contexts,
-      currentContext,
-      internalFunctionsTable
-    },
-    returnAllocation,
-    status,
-    errorId
-  );
-
-  debug("beginning decoding");
-  let result = decoder.next();
-  while (!result.done) {
-    debug("request received");
-    let request = result.value;
-    let response;
-    switch (request.type) {
-      //skip storage case, it won't happen here
-      case "code":
-        response = yield* requestCode(request.address);
-        break;
-      default:
-        debug("unrecognized request type!");
-    }
-    debug("sending response");
-    result = decoder.next(response);
-  }
-  //at this point, result.value holds the final value
-  debug("done decoding");
-  debug("decoded value: %O", result.value);
-  return result.value;
-}
-
-//by default, decodes the call being made at the current step;
-//if the flag is passed, instead decodes the call you're currently in
-export function* decodeCall(decodeCurrent = false) {
-  const isCall = yield select(data.current.isCall);
-  const isCreate = yield select(data.current.isCreate);
-  if (!isCall && !isCreate && !decodeCurrent) {
-    return null;
-  }
-  const currentCallIsCreate = yield select(data.current.currentCallIsCreate);
-  const userDefinedTypes = yield select(data.views.userDefinedTypes);
-  let state = decodeCurrent
-    ? yield select(data.current.state)
-    : yield select(data.next.state);
-  if (decodeCurrent && currentCallIsCreate) {
-    //if we want to decode the *current* call, but the current call
-    //is a creation, we had better pass in the code, not the calldata
-    state = {
-      ...state,
-      calldata: state.code
-    };
-  }
-  const allocations = yield select(data.info.allocations);
-  debug("allocations: %O", allocations);
-  const contexts = yield select(data.views.contexts);
-  const context = decodeCurrent
-    ? yield select(data.current.context)
-    : yield select(data.current.callContext);
-  const isConstructor = decodeCurrent
-    ? yield select(data.current.currentCallIsCreate)
-    : isCreate;
-
-  const decoder = Codec.decodeCalldata(
-    {
-      state,
-      userDefinedTypes,
-      allocations,
-      contexts,
-      currentContext: context
-    },
-    isConstructor
-  );
-
-  debug("beginning decoding");
-  let result = decoder.next();
-  while (!result.done) {
-    debug("request received");
-    let request = result.value;
-    let response;
-    switch (request.type) {
-      //skip storage case, it won't happen here
-      case "code":
-        response = yield* requestCode(request.address);
-        break;
-      default:
-        debug("unrecognized request type!");
-    }
-    debug("sending response");
-    result = decoder.next(response);
-  }
-  //at this point, result.value holds the final value
-  debug("done decoding");
-  return result.value;
-}
-
-//NOTE: calling this *can* add a new instance, which will not
-//go away on a reset!  Yes, this is a little weird, but we
-//decided this is OK for now
-function* requestCode(address) {
-  const NO_CODE = new Uint8Array(); //empty array
-  const blockNumber = yield select(data.views.blockNumber);
-  const instances = yield select(data.views.instances);
-
-  if (address in instances) {
-    return instances[address];
-  } else if (address === Codec.Evm.Utils.ZERO_ADDRESS) {
-    //HACK: to avoid displaying the zero address to the user as an
-    //affected address just because they decoded a contract or external
-    //function variable that hadn't been initialized yet, we give the
-    //zero address's codelessness its own private cache :P
-    return NO_CODE;
-  } else {
-    //I don't want to write a new web3 saga, so let's just use
-    //obtainBinaries with a one-element array
-    debug("fetching binary");
-    let binary = (yield* web3.obtainBinaries([address], blockNumber))[0];
-    debug("adding instance");
-    yield* evm.addInstance(address, binary);
-    return Codec.Conversion.toBytes(binary);
-  }
-}
-
 function* variablesAndMappingsSaga() {
   // stack is only ready for interpretation after the last step of each
   // source range
@@ -1125,54 +917,6 @@ function* decodeMappingKeyCore(indexDefinition, keyDefinition) {
   }
 }
 
-export function* reset() {
-  yield put(actions.reset());
-}
-
-export function* recordAllocations() {
-  const contracts = yield select(data.views.contractAllocationInfo);
-  const referenceDeclarations = yield select(data.views.referenceDeclarations);
-  const userDefinedTypesByCompilation = yield select(
-    data.views.userDefinedTypesByCompilation
-  );
-  const userDefinedTypes = yield select(data.views.userDefinedTypes);
-  const storageAllocations = Codec.Storage.Allocate.getStorageAllocations(
-    userDefinedTypesByCompilation
-  );
-  const memoryAllocations =
-    Codec.Memory.Allocate.getMemoryAllocations(userDefinedTypes);
-  const abiAllocations =
-    Codec.AbiData.Allocate.getAbiAllocations(userDefinedTypes);
-  const calldataAllocations = Codec.AbiData.Allocate.getCalldataAllocations(
-    contracts,
-    referenceDeclarations,
-    userDefinedTypes,
-    abiAllocations
-  );
-  const returndataAllocations = Codec.AbiData.Allocate.getReturndataAllocations(
-    contracts,
-    referenceDeclarations,
-    userDefinedTypes,
-    abiAllocations
-  );
-  const stateAllocations = Codec.Storage.Allocate.getStateAllocations(
-    contracts,
-    referenceDeclarations,
-    userDefinedTypes,
-    storageAllocations
-  );
-  yield put(
-    actions.allocate(
-      storageAllocations,
-      memoryAllocations,
-      abiAllocations,
-      calldataAllocations,
-      returndataAllocations,
-      stateAllocations
-    )
-  );
-}
-
 function literalAssignments(
   compilationId,
   internalFor,
@@ -1296,6 +1040,262 @@ function fetchBasePath(
   }
   //if that doesn't work either, give up
   return null;
+}
+
+export function* decode(
+  definition,
+  ref,
+  compilationId,
+  indicateUnknown = false
+) {
+  const userDefinedTypes = yield select(data.views.userDefinedTypes);
+  const state = yield select(data.current.state);
+  const mappingKeys = yield select(data.views.mappingKeys);
+  const allocations = yield select(data.info.allocations);
+  const contexts = yield select(data.views.contexts);
+  const currentContext = yield select(data.current.context);
+  const internalFunctionsTable = yield select(
+    data.current.functionsByProgramCounter
+  );
+
+  debug("definition: %o");
+  debug("ref: %o");
+  debug("compilationId: %s", compilationId);
+
+  const ZERO_WORD = new Uint8Array(Codec.Evm.Utils.WORD_SIZE); //automatically filled with zeroes
+
+  const decoder = Codec.decodeVariable(
+    definition,
+    ref,
+    {
+      userDefinedTypes,
+      state,
+      mappingKeys,
+      allocations,
+      contexts,
+      currentContext,
+      internalFunctionsTable
+    },
+    compilationId
+  );
+
+  debug("beginning decoding");
+  let result = decoder.next();
+  while (!result.done) {
+    debug("request received");
+    let request = result.value;
+    let response;
+    switch (request.type) {
+      case "storage":
+        //the debugger supplies all storage it knows at the beginning.
+        //any storage it does not know is presumed to be zero.
+        //(unlesss indicateUnknown is passed, in which case we use
+        //null as a deliberately invalid response)
+        response = indicateUnknown ? null : ZERO_WORD;
+        break;
+      case "code":
+        response = yield* requestCode(request.address);
+        break;
+      default:
+        debug("unrecognized request type!");
+    }
+    debug("sending response");
+    result = decoder.next(response);
+  }
+  //at this point, result.value holds the final value
+  debug("done decoding");
+  debug("decoded value: %O", result.value);
+  return result.value;
+}
+
+export function* decodeReturnValue() {
+  const userDefinedTypes = yield select(data.views.userDefinedTypes);
+  const state = yield select(data.next.state); //next state has the return data
+  const allocations = yield select(data.info.allocations);
+  const contexts = yield select(data.views.contexts);
+  const currentContext = yield select(data.current.context);
+  const status = yield select(data.current.returnStatus); //may be undefined
+  const returnAllocation = yield select(data.current.returnAllocation); //may be null
+  const errorId = yield select(data.current.errorId);
+  const internalFunctionsTable = yield select(
+    data.current.functionsByProgramCounter
+  );
+  debug("returnAllocation: %O", returnAllocation);
+
+  const decoder = Codec.decodeReturndata(
+    {
+      userDefinedTypes,
+      state,
+      allocations,
+      contexts,
+      currentContext,
+      internalFunctionsTable
+    },
+    returnAllocation,
+    status,
+    errorId
+  );
+
+  debug("beginning decoding");
+  let result = decoder.next();
+  while (!result.done) {
+    debug("request received");
+    let request = result.value;
+    let response;
+    switch (request.type) {
+      //skip storage case, it won't happen here
+      case "code":
+        response = yield* requestCode(request.address);
+        break;
+      default:
+        debug("unrecognized request type!");
+    }
+    debug("sending response");
+    result = decoder.next(response);
+  }
+  //at this point, result.value holds the final value
+  debug("done decoding");
+  debug("decoded value: %O", result.value);
+  return result.value;
+}
+
+//by default, decodes the call being made at the current step;
+//if the flag is passed, instead decodes the call you're currently in
+export function* decodeCall(decodeCurrent = false) {
+  const isCall = yield select(data.current.isCall);
+  const isCreate = yield select(data.current.isCreate);
+  if (!isCall && !isCreate && !decodeCurrent) {
+    return null;
+  }
+  const currentCallIsCreate = yield select(data.current.currentCallIsCreate);
+  const userDefinedTypes = yield select(data.views.userDefinedTypes);
+  let state = decodeCurrent
+    ? yield select(data.current.state)
+    : yield select(data.next.state);
+  if (decodeCurrent && currentCallIsCreate) {
+    //if we want to decode the *current* call, but the current call
+    //is a creation, we had better pass in the code, not the calldata
+    state = {
+      ...state,
+      calldata: state.code
+    };
+  }
+  const allocations = yield select(data.info.allocations);
+  debug("allocations: %O", allocations);
+  const contexts = yield select(data.views.contexts);
+  const context = decodeCurrent
+    ? yield select(data.current.context)
+    : yield select(data.current.callContext);
+  const isConstructor = decodeCurrent
+    ? yield select(data.current.currentCallIsCreate)
+    : isCreate;
+
+  const decoder = Codec.decodeCalldata(
+    {
+      state,
+      userDefinedTypes,
+      allocations,
+      contexts,
+      currentContext: context
+    },
+    isConstructor
+  );
+
+  debug("beginning decoding");
+  let result = decoder.next();
+  while (!result.done) {
+    debug("request received");
+    let request = result.value;
+    let response;
+    switch (request.type) {
+      //skip storage case, it won't happen here
+      case "code":
+        response = yield* requestCode(request.address);
+        break;
+      default:
+        debug("unrecognized request type!");
+    }
+    debug("sending response");
+    result = decoder.next(response);
+  }
+  //at this point, result.value holds the final value
+  debug("done decoding");
+  return result.value;
+}
+
+//NOTE: calling this *can* add a new instance, which will not
+//go away on a reset!  Yes, this is a little weird, but we
+//decided this is OK for now
+function* requestCode(address) {
+  const NO_CODE = new Uint8Array(); //empty array
+  const blockNumber = yield select(data.views.blockNumber);
+  const instances = yield select(data.views.instances);
+
+  if (address in instances) {
+    return instances[address];
+  } else if (address === Codec.Evm.Utils.ZERO_ADDRESS) {
+    //HACK: to avoid displaying the zero address to the user as an
+    //affected address just because they decoded a contract or external
+    //function variable that hadn't been initialized yet, we give the
+    //zero address's codelessness its own private cache :P
+    return NO_CODE;
+  } else {
+    //I don't want to write a new web3 saga, so let's just use
+    //obtainBinaries with a one-element array
+    debug("fetching binary");
+    let binary = (yield* web3.obtainBinaries([address], blockNumber))[0];
+    debug("adding instance");
+    yield* evm.addInstance(address, binary);
+    return Codec.Conversion.toBytes(binary);
+  }
+}
+
+export function* reset() {
+  yield put(actions.reset());
+}
+
+export function* recordAllocations() {
+  const contracts = yield select(data.views.contractAllocationInfo);
+  const referenceDeclarations = yield select(data.views.referenceDeclarations);
+  const userDefinedTypesByCompilation = yield select(
+    data.views.userDefinedTypesByCompilation
+  );
+  const userDefinedTypes = yield select(data.views.userDefinedTypes);
+  const storageAllocations = Codec.Storage.Allocate.getStorageAllocations(
+    userDefinedTypesByCompilation
+  );
+  const memoryAllocations =
+    Codec.Memory.Allocate.getMemoryAllocations(userDefinedTypes);
+  const abiAllocations =
+    Codec.AbiData.Allocate.getAbiAllocations(userDefinedTypes);
+  const calldataAllocations = Codec.AbiData.Allocate.getCalldataAllocations(
+    contracts,
+    referenceDeclarations,
+    userDefinedTypes,
+    abiAllocations
+  );
+  const returndataAllocations = Codec.AbiData.Allocate.getReturndataAllocations(
+    contracts,
+    referenceDeclarations,
+    userDefinedTypes,
+    abiAllocations
+  );
+  const stateAllocations = Codec.Storage.Allocate.getStateAllocations(
+    contracts,
+    referenceDeclarations,
+    userDefinedTypes,
+    storageAllocations
+  );
+  yield put(
+    actions.allocate(
+      storageAllocations,
+      memoryAllocations,
+      abiAllocations,
+      calldataAllocations,
+      returndataAllocations,
+      stateAllocations
+    )
+  );
 }
 
 export function* saga() {
