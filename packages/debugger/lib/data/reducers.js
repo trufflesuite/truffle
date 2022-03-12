@@ -99,6 +99,7 @@ const DEFAULT_ALLOCATIONS = {
   abi: {},
   calldata: {},
   returndata: {},
+  event: {},
   state: {}
 };
 
@@ -111,6 +112,7 @@ function allocations(state = DEFAULT_ALLOCATIONS, action) {
       abi: action.abi,
       calldata: action.calldata,
       returndata: action.returndata,
+      event: action.event,
       state: action.state
     };
   } else {
@@ -256,10 +258,9 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
           //parent!
           newSlot = {
             ...slot,
-            path:
-              newState.byAddress[address].byType[parentType].bySlotAddress[
-                parentAddress
-              ]
+            path: newState.byAddress[address].byType[parentType].bySlotAddress[
+              parentAddress
+            ]
           };
         } else {
           newSlot = slot;

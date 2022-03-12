@@ -474,7 +474,12 @@ const data = createSelectorTree({
       returndata: createLeaf(
         ["/state"],
         state => state.info.allocations.returndata
-      )
+      ),
+
+      /*
+       * data.info.allocations.event
+       */
+      event: createLeaf(["/state"], state => state.info.allocations.event)
     },
 
     /**
@@ -554,6 +559,24 @@ const data = createSelectorTree({
         [evm.current.call],
 
         ({ data }) => Codec.Conversion.toBytes(data)
+      ),
+
+      /**
+       * data.current.state.eventdata
+       * usually undefined; used for log decoding
+       */
+      eventdata: createLeaf([evm.current.step.logData], data =>
+        data !== null ? Codec.Conversion.toBytes(data) : undefined
+      ),
+
+      /**
+       * data.current.state.eventtopics
+       * usually undefined; used for log decoding
+       */
+      eventtopics: createLeaf([evm.current.step.logTopics], words =>
+        words !== null
+          ? words.map(word => Codec.Conversion.toBytes(word))
+          : undefined
       ),
 
       /**
@@ -1093,9 +1116,48 @@ const data = createSelectorTree({
             errorNode = errorNode.errorCall;
           //DELIBERATE FALL-THROUGH
           case "FunctionCall":
+            if (
+              Codec.Ast.Utils.functionClass(errorNode.expression) !== "error"
+            ) {
+              return undefined;
+            }
             //this should work for both qualified & unqualified errors
             const errorId = errorNode.expression.referencedDeclaration;
             return Codec.Contexts.Import.makeTypeId(errorId, compilationId);
+          default:
+            //I'm not going to try to handle other cases that maybe could
+            //occur with the optimizer on
+            return undefined;
+        }
+      }
+    ),
+
+    /**
+     * data.current.eventId
+     * similar to errorId but for events
+     * (and unlike errorId it can just use the current node!)
+     */
+    eventId: createLeaf(
+      ["./node", "./compilationId"],
+      (eventNode, compilationId) => {
+        if (eventNode === null) {
+          return undefined;
+        }
+        switch (eventNode.nodeType) {
+          case "EmitStatement":
+            //I don't think this case should happen, but I'm including it
+            //for extra certainty
+            eventNode = eventNode.eventCall;
+          //DELIBERATE FALL-THROUGH
+          case "FunctionCall":
+            if (
+              Codec.Ast.Utils.functionClass(eventNode.expression) !== "event"
+            ) {
+              return undefined;
+            }
+            //this should work for both qualified & unqualified errors
+            const eventId = eventNode.expression.referencedDeclaration;
+            return Codec.Contexts.Import.makeTypeId(eventId, compilationId);
           default:
             //I'm not going to try to handle other cases that maybe could
             //occur with the optimizer on

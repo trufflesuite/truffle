@@ -71,7 +71,15 @@ export function defineTaggedOutput(node, sourceId) {
 }
 
 export const ALLOCATE = "DATA_ALLOCATE";
-export function allocate(storage, memory, abi, calldata, returndata, state) {
+export function allocate(
+  storage,
+  memory,
+  abi,
+  calldata,
+  returndata,
+  event,
+  state
+) {
   return {
     type: ALLOCATE,
     storage,
@@ -79,6 +87,7 @@ export function allocate(storage, memory, abi, calldata, returndata, state) {
     abi,
     calldata,
     returndata,
+    event,
     state
   };
 }

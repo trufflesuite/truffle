@@ -163,7 +163,29 @@ function createStepSelectors(step, state = null) {
      * .isPop
      * used by data
      */
-    isPop: createLeaf(["./trace"], step => step.op === "POP")
+    isPop: createLeaf(["./trace"], step => step.op === "POP"),
+
+    /**
+     * .isLog
+     */
+    isLog: createLeaf(["./topicCount"], topicCount => topicCount !== null),
+
+    /**
+     * .topicCount
+     * returns null if not on a logging step
+     */
+    topicCount: createLeaf(["./trace"], step => {
+      if (!step.op) {
+        return null;
+      }
+
+      const match = step.op.match(/LOG(\d+)/);
+      if (!match) {
+        return null;
+      }
+
+      return Number(match[1]);
+    })
   };
 
   if (state) {
@@ -366,6 +388,56 @@ function createStepSelectors(step, state = null) {
         ],
         (address, binary, instances, search, contexts) =>
           determineFullContext({ address, binary }, instances, search, contexts)
+      ),
+
+      /**
+       * .logData
+       *
+       * the data portion of what's getting logged
+       */
+      logData: createLeaf(["./isLog", state], (isLog, { stack, memory }) => {
+        if (!isLog) {
+          return null;
+        }
+
+        // Get the data from memory.
+        // Note we multiply by 2 because these offsets are in bytes.
+        // (note the data offset/length comes before the topics, so
+        // we don't neeed ot adjust for the topic count)
+        const offset = parseInt(stack[stack.length - 1], 16) * 2;
+        const length = parseInt(stack[stack.length - 2], 16) * 2;
+
+        return (
+          "0x" +
+          memory
+            .join("")
+            .substring(offset, offset + length)
+            .padEnd(length, "00")
+        );
+      }),
+
+      /**
+       * .logTopics
+       * returns an array of hex strings
+       */
+      logTopics: createLeaf(
+        ["./isLog", "./topicCount", state],
+        (isLog, topicCount, { stack }) => {
+          if (!isLog) {
+            return null;
+          }
+
+          //the topics (if any) start with the third argument,
+          //so we take the appropriate number of entries from
+          //the end of the stack (excluding than the last two), then
+          //reverse to put them in order; we also prepend "0x" for
+          //convenience
+          //note the use of reverse() is safe due to the use of slice() first
+          return stack
+            .slice(-2 - topicCount, -2)
+            .reverse()
+            .map(word => "0x" + word);
+        }
       )
     });
   }

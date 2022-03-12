@@ -1223,6 +1223,55 @@ export function* decodeCall(decodeCurrent = false) {
   return result.value;
 }
 
+export function* decodeLog() {
+  const userDefinedTypes = yield select(data.views.userDefinedTypes);
+  const state = yield select(data.current.state); //note: this includes the data to be decoded!
+  const allocations = yield select(data.info.allocations);
+  const contexts = yield select(data.views.contexts);
+  const currentContext = yield select(data.current.context);
+  const eventId = yield select(data.current.eventId);
+  const internalFunctionsTable = yield select(
+    data.current.functionsByProgramCounter
+  );
+
+  const decoder = Codec.decodeEvent(
+    {
+      userDefinedTypes,
+      state,
+      allocations,
+      contexts,
+      currentContext,
+      internalFunctionsTable
+    },
+    null, //pass null as address to indicate we know the context already
+    {
+      id: eventId
+    }
+  );
+
+  debug("beginning decoding");
+  let result = decoder.next();
+  while (!result.done) {
+    debug("request received");
+    let request = result.value;
+    let response;
+    switch (request.type) {
+      //skip storage case, it won't happen here
+      case "code":
+        response = yield* requestCode(request.address);
+        break;
+      default:
+        debug("unrecognized request type!");
+    }
+    debug("sending response");
+    result = decoder.next(response);
+  }
+  //at this point, result.value holds the final value
+  debug("done decoding");
+  debug("decoded value: %O", result.value);
+  return result.value;
+}
+
 //NOTE: calling this *can* add a new instance, which will not
 //go away on a reset!  Yes, this is a little weird, but we
 //decided this is OK for now
@@ -1280,6 +1329,12 @@ export function* recordAllocations() {
     userDefinedTypes,
     abiAllocations
   );
+  const eventAllocations = Codec.AbiData.Allocate.getEventAllocations(
+    contracts,
+    referenceDeclarations,
+    userDefinedTypes,
+    abiAllocations
+  );
   const stateAllocations = Codec.Storage.Allocate.getStateAllocations(
     contracts,
     referenceDeclarations,
@@ -1293,6 +1348,7 @@ export function* recordAllocations() {
       abiAllocations,
       calldataAllocations,
       returndataAllocations,
+      eventAllocations,
       stateAllocations
     )
   );

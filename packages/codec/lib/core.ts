@@ -199,7 +199,7 @@ export function* decodeCalldata(
  */
 export function* decodeEvent(
   info: Evm.EvmInfo,
-  address: string,
+  address: string | null, //if null is passed, must pass currentContext in info
   options: LogOptions = {}
 ): Generator<DecoderRequest, LogDecoding[], Uint8Array> {
   const allocations = info.allocations.event;
@@ -255,13 +255,18 @@ export function* decodeEvent(
     debug("no allocations for that topic count!");
     return [];
   }
-  //now: what contract are we (probably) dealing with? let's get its code to find out
-  const codeBytes: Uint8Array = yield {
-    type: "code",
-    address
-  };
-  const codeAsHex = Conversion.toHexString(codeBytes);
-  const contractContext = Contexts.Utils.findContext(info.contexts, codeAsHex);
+  let contractContext: Contexts.Context;
+  if (address !== null) {
+    //now: what contract are we (probably) dealing with? let's get its code to find out
+    const codeBytes: Uint8Array = yield {
+      type: "code",
+      address
+    };
+    const codeAsHex = Conversion.toHexString(codeBytes);
+    contractContext = Contexts.Utils.findContext(info.contexts, codeAsHex);
+  } else {
+    contractContext = info.currentContext;
+  }
   let possibleContractAllocations: AbiData.Allocate.EventAllocation[]; //excludes anonymous events
   let possibleContractAnonymousAllocations: AbiData.Allocate.EventAllocation[];
   let possibleExtraAllocations: AbiData.Allocate.EventAllocation[]; //excludes anonymous events
