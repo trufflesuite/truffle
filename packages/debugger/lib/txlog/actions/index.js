@@ -180,6 +180,16 @@ export function identifyFunctionCall(
   };
 }
 
+export const LOG_EVENT = "TXLOG_LOG_EVENT";
+export function logEvent(pointer, newPointer, decoding) {
+  return {
+    type: LOG_EVENT,
+    pointer,
+    newPointer, //does not actually affect current pointer!
+    decoding
+  };
+}
+
 export const RECORD_ORIGIN = "TXLOG_RECORD_ORIGIN";
 export function recordOrigin(pointer, address) {
   return {

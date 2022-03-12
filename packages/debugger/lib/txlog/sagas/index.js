@@ -50,7 +50,7 @@ function* updateTransactionLogSaga() {
         //we don't do any decoding/fn identification here because that's handled by
         //the function identification case
         if (!(yield select(txlog.current.waitingForInternalCallToAbsorb))) {
-          const newPointer = yield select(txlog.current.nextCallPointer);
+          const newPointer = yield select(txlog.current.nextActionPointer);
           debug("internal call: %o %o", pointer, newPointer);
           yield put(actions.internalCall(pointer, newPointer));
         } else {
@@ -92,7 +92,7 @@ function* updateTransactionLogSaga() {
       }
     }
   } else if (yield select(txlog.current.isCall)) {
-    const newPointer = yield select(txlog.current.nextCallPointer);
+    const newPointer = yield select(txlog.current.nextActionPointer);
     const address = yield select(txlog.current.callAddress);
     const value = yield select(txlog.current.callValue);
     //distinguishing DELEGATECALL vs CALLCODE seems unnecessary here
@@ -142,7 +142,7 @@ function* updateTransactionLogSaga() {
       );
     }
   } else if (yield select(txlog.current.isCreate)) {
-    const newPointer = yield select(txlog.current.nextCallPointer);
+    const newPointer = yield select(txlog.current.nextActionPointer);
     const address = yield select(txlog.current.createdAddress);
     const context = yield select(txlog.current.callContext);
     const value = yield select(txlog.current.createValue);
@@ -181,6 +181,11 @@ function* updateTransactionLogSaga() {
         )
       );
     }
+  } else if (yield select(txlog.current.isLog)) {
+    const decoding = (yield* data.decodeLog())[0]; //just assume first decoding is correct
+    //(note: because we know the event ID, there should typically only be one decoding)
+    const newPointer = yield select(txlog.current.nextActionPointer);
+    yield put(actions.logEvent(pointer, newPointer, decoding));
   } else if (yield select(txlog.current.onFunctionDefinition)) {
     if (yield select(txlog.current.waitingForFunctionDefinition)) {
       debug("identifying");
@@ -249,7 +254,7 @@ export function* unload() {
 
 export function* begin() {
   const pointer = yield select(txlog.current.pointer);
-  const newPointer = yield select(txlog.current.nextCallPointer);
+  const newPointer = yield select(txlog.current.nextActionPointer);
   const origin = yield select(txlog.transaction.origin);
   debug("origin: %o", pointer);
   yield put(actions.recordOrigin(pointer, origin));
