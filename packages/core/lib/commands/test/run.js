@@ -33,13 +33,11 @@ const parseCommandLineFlags = options => {
 // Sanitize ganache options specified in the config
 function sanitizeGanacheOptions(ganacheOptions) {
   let network_id = ganacheOptions.network_id;
-  let ganacheOptionsChanged;
 
   // Use default network_id if "*" is defined in config
   if (network_id === "*") {
     network_id = 4447;
-    ganacheOptionsChanged = { ...ganacheOptions, network_id };
-    return ganacheOptionsChanged;
+    return { ...ganacheOptions, network_id };
   }
 
   const parsedNetworkId = parseInt(network_id, 10);
@@ -50,8 +48,7 @@ function sanitizeGanacheOptions(ganacheOptions) {
     throw new Error(error);
   }
   network_id = parsedNetworkId;
-  ganacheOptionsChanged = { ...ganacheOptions, network_id };
-  return ganacheOptionsChanged;
+  return { ...ganacheOptions, network_id };
 }
 
 module.exports = async function (options) {
