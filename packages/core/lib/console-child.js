@@ -4,14 +4,15 @@ const Config = require("@truffle/config");
 const Web3 = require("web3");
 const yargs = require("yargs");
 
-const crypto = require("crypto");
-global.crypto = crypto;
-// we need to make sure this function exists so ensjs doesn't complain
-// it requires getRandomValues for some functionalities
-global.crypto.getRandomValues = require("get-random-values");
-
 const input = process.argv[2].split(" -- ");
 const inputStrings = input[1];
+
+// we need to make sure this function exists so ensjs doesn't complain as it requires
+// getRandomValues for some functionalities - webpack strips out the crypto lib
+// so we shim it here
+global.crypto = {
+  getRandomValues: require("get-random-values")
+};
 
 //detect config so we can get the provider and resolver without having to serialize
 //and deserialize them

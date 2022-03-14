@@ -2,19 +2,19 @@
 require("source-map-support/register");
 
 const semver = require("semver"); // to validate Node version
-
-const crypto = require("crypto");
-global.crypto = crypto;
-// we need to make sure this function exists so ensjs doesn't complain
-// it requires getRandomValues for some functionalities
-global.crypto.getRandomValues = require("get-random-values");
-
 const TruffleError = require("@truffle/error");
 const TaskError = require("./lib/errors/taskerror");
 const analytics = require("./lib/services/analytics");
 const version = require("./lib/version");
 const versionInfo = version.info();
 const XRegExp = require("xregexp");
+
+// we need to make sure this function exists so ensjs doesn't complain as it requires
+// getRandomValues for some functionalities - webpack strips out the crypto lib
+// so we shim it here
+global.crypto = {
+  getRandomValues: require("get-random-values")
+};
 
 // pre-flight check: Node version compatibility
 const minimumNodeVersion = "10.9.0";
