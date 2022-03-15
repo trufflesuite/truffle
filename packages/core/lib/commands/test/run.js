@@ -34,7 +34,7 @@ const parseCommandLineFlags = options => {
 
 // Sanitize ganache options specified in the config
 function sanitizeGanacheOptions(ganacheOptions) {
-  let network_id = ganacheOptions.network_id;
+  const network_id = ganacheOptions.network_id;
 
   // Use default network_id if "*" is defined in config
   if (network_id === "*") {
@@ -137,8 +137,6 @@ module.exports = async function (options) {
 
     // configuredNetwork will spread only when it is defined and ignored when undefined
     ganacheOptions = { ...ganacheOptions, port, ...configuredNetwork };
-
-    // Sanitize the ganache options if required
     const sanitizedGanacheOptions = sanitizeGanacheOptions(ganacheOptions);
 
     numberOfFailures = await startGanacheAndRunTests(
