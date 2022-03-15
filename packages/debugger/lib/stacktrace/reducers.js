@@ -15,6 +15,7 @@ function callstack(state = [], action) {
         type: "internal",
         calledFromLocation: location,
         address: state[state.length - 1].address,
+        isConstructor: state[state.length - 1].isConstructor,
         functionName:
           functionNode &&
           (functionNode.nodeType === "FunctionDefinition" ||
@@ -47,6 +48,7 @@ function callstack(state = [], action) {
         calledFromLocation: action.location,
         functionName: undefined,
         contractName: action.context.contractName,
+        isConstructor: action.context.isConstructor,
         combineWithNextInternal: action.combineWithNextInternal
         //sourceIsInternal doesn't really apply here, so let's just omit it
       };
