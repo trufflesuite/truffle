@@ -3,10 +3,10 @@ const TruffleError = require("@truffle/error");
 const OS = require("os");
 const path = require("path");
 const {
-  completionScriptName,
+  completionScriptPath,
   locationFromShell,
-  shellConfigSetting,
-  shellName
+  shellName,
+  zshCompletionSetting
 } = require("../../helpers");
 
 module.exports = async function (_) {
@@ -40,16 +40,11 @@ function writeCompletionScript(shell) {
 }
 
 function writeZshCompletion(template) {
-  const Config = require("@truffle/config");
-  const completionScript = path.resolve(
-    Config.getTruffleDataDirectory(),
-    completionScriptName("zsh")
-  );
-
+  const completionScript = completionScriptPath("zsh");
   fs.writeFileSync(completionScript, fillTemplate(template));
 
   const scriptConfigLocation = locationFromShell("zsh");
-  const linesToAdd = shellConfigSetting("zsh");
+  const linesToAdd = zshCompletionSetting();
   if (!stringInFile(linesToAdd, scriptConfigLocation)) {
     fs.appendFileSync(scriptConfigLocation, linesToAdd);
   }
@@ -70,7 +65,7 @@ function writeBashCompletion(template) {
   const localShare = path.resolve(OS.homedir(), ".local/share");
   fs.accessSync(localShare, fs.constants.W_OK);
 
-  const completionPath = completionScriptName("bash");
+  const completionPath = completionScriptPath("bash");
   fs.mkdirSync(path.dirname(completionPath), { recursive: true });
   fs.writeFileSync(completionPath, fillTemplate(template));
 }
