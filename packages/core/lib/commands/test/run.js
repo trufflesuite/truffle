@@ -38,8 +38,7 @@ function sanitizeGanacheOptions(ganacheOptions) {
 
   // Use default network_id if "*" is defined in config
   if (network_id === "*") {
-    network_id = defaultNetworkIdForTestCommand;
-    return { ...ganacheOptions, network_id };
+    return { ...ganacheOptions, network_id: defaultNetworkIdForTestCommand };
   }
 
   const parsedNetworkId = parseInt(network_id, 10);
