@@ -1,3 +1,5 @@
+const defaultNetworkIdForTestCommand = 4447;
+
 const parseCommandLineFlags = options => {
   // parse out command line flags to merge in to the config
   const grep = options.grep || options.g;
@@ -36,7 +38,7 @@ function sanitizeGanacheOptions(ganacheOptions) {
 
   // Use default network_id if "*" is defined in config
   if (network_id === "*") {
-    network_id = 4447;
+    network_id = defaultNetworkIdForTestCommand;
     return { ...ganacheOptions, network_id };
   }
 
@@ -119,7 +121,7 @@ module.exports = async function (options) {
   let numberOfFailures;
   let ganacheOptions = {
     host: "127.0.0.1",
-    network_id: 4447,
+    network_id: defaultNetworkIdForTestCommand,
     mnemonic:
       "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
     time: config.genesis_time,
