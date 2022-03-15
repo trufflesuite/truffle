@@ -15,9 +15,10 @@ import * as Conversion from "@truffle/codec/conversion";
 import {
   ResultInspector,
   unsafeNativize,
-  InspectOptions
+  InspectOptions,
+  nativizeAccessList
 } from "@truffle/codec/format/utils/inspect";
-export { ResultInspector, unsafeNativize };
+export { ResultInspector, unsafeNativize, nativizeAccessList };
 
 type NumberFormatter = (n: BigInt) => any; //not parameterized since we output any anyway
 

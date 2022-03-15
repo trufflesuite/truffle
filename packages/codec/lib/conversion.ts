@@ -3,22 +3,26 @@ const debug = debugModule("codec:conversion");
 
 import BN from "bn.js";
 import Big from "big.js";
-import type * as Format from "@truffle/codec/format";
+import utf8 from "utf8";
+import type * as Types from "@truffle/codec/format/types";
+import type * as Values from "@truffle/codec/format/values";
 
 /**
  * @param bytes - undefined | string | number | BN | Uint8Array | Big
  * @return {BN}
  */
 export function toBN(
-  bytes: undefined | string | number | BN | Uint8Array | Big
+  bytes: undefined | string | number | BN | Uint8Array | Big | bigint
 ): BN {
   if (bytes === undefined) {
     return undefined;
-  } else if (typeof bytes == "string") {
+  } else if (typeof bytes === "string") {
     return new BN(bytes, 16);
+  } else if (typeof bytes === "bigint") {
+    return new BN(bytes.toString(16), 16);
   } else if (typeof bytes == "number" || BN.isBN(bytes)) {
     return new BN(bytes);
-  } else if (bytes instanceof Big) {
+  } else if (isBig(bytes)) {
     return new BN(bytes.toFixed()); //warning, better hope input is integer!
     //note: going through string may seem silly but it's actually not terrible here,
     //since BN is binary-based and Big is decimal-based
@@ -29,6 +33,27 @@ export function toBN(
       new BN(0)
     );
   }
+}
+
+//Big doesnt provide this function, so we'll make one ourselves
+//HACK
+export function isBig(input: any): input is Big {
+  return (
+    typeof input === "object" &&
+    input !== null &&
+    (input.s === 1 || input.s === -1) &&
+    typeof input.e === "number" &&
+    Array.isArray(input.c) &&
+    //we want to be sure this is *not* a BigNumber instead,
+    //but we can't use isBigNumber here because we don't want
+    //to import that library here, so, HACK, we'll check that
+    //it lacks a particular BigNumber method that would be meaningless
+    //for Bigs
+    !input.isFinite
+  );
+  //(BigNumbers have this method because it supports Infinity and NaN,
+  //but Big doesn't, so this method doesn't exist, because it would
+  //be pointless)
 }
 
 /**
@@ -54,24 +79,29 @@ export function toBigInt(value: BN): BigInt {
     : -BigInt("0x" + value.neg().toString(16)); //can't directly make negative BigInt from hex string
 }
 
-export function toBig(value: BN | number): Big {
+export function toBig(value: BN | number | bigint): Big {
   //note: going through string may seem silly but it's actually not terrible here,
   //since BN (& number) is binary-based and Big is decimal-based
   return new Big(value.toString());
 }
 
 /**
- * @param bytes - Uint8Array | BN
+ * @param bytes - Uint8Array | BN | bigint
  * @param padLength - number - minimum desired byte length (left-pad with zeroes)
  * @param padRight - boolean - causes padding to occur on right instead of left
  * @return {string}
  */
 export function toHexString(
-  bytes: Uint8Array | BN,
+  bytes: Uint8Array | BN | bigint | number | Big,
   padLength: number = 0,
   padRight: boolean = false
 ): string {
-  if (BN.isBN(bytes)) {
+  if (
+    BN.isBN(bytes) ||
+    typeof bytes === "bigint" ||
+    typeof bytes === "number" ||
+    isBig(bytes)
+  ) {
     bytes = toBytes(bytes);
   }
 
@@ -107,7 +137,7 @@ export function toHexString(
 }
 
 export function toBytes(
-  data: BN | string | number | Big,
+  data: BN | string | number | Big | bigint,
   length: number = 0
 ): Uint8Array {
   //note that length is a minimum output length
@@ -117,6 +147,10 @@ export function toBytes(
   //you will get an error!
   //(note that strings passed in should be hex strings; this is not for converting
   //generic strings to hex)
+
+  if (typeof data === "bigint") {
+    data = data.toString(16);
+  }
 
   if (typeof data === "string") {
     let hex = data; //renaming for clarity
@@ -150,7 +184,7 @@ export function toBytes(
     // BN/Big/number case
     if (typeof data === "number") {
       data = new BN(data);
-    } else if (data instanceof Big) {
+    } else if (isBig(data)) {
       //note: going through string may seem silly but it's actually not terrible here,
       //since BN is binary-based and Big is decimal-based
       data = new BN(data.toFixed());
@@ -161,6 +195,17 @@ export function toBytes(
     return data.toTwos(length * 8).toArrayLike(Uint8Array as any, "be", length);
     //big-endian
   }
+}
+
+export function stringToBytes(input: string): Uint8Array {
+  input = utf8.encode(input);
+  let bytes = new Uint8Array(input.length);
+  for (let i = 0; i < input.length; i++) {
+    bytes[i] = input.charCodeAt(i);
+  }
+  return bytes;
+  //NOTE: this will throw an error if the string contained malformed UTF-16!
+  //but, well, it shouldn't contain that...
 }
 
 //computes value * 10**decimalPlaces
@@ -177,7 +222,6 @@ export function shiftBigDown(value: Big, decimalPlaces: number): Big {
   return newValue;
 }
 
-//we don't need this yet, but we will eventually
 export function countDecimalPlaces(value: Big): number {
   return Math.max(0, value.c.length - value.e - 1);
 }
@@ -187,8 +231,8 @@ export function countDecimalPlaces(value: Big): number {
 //I mean, those aren't elementary and therefore aren't in the domain
 //anyway, but still
 export function cleanBool(
-  result: Format.Values.ElementaryResult
-): Format.Values.ElementaryResult {
+  result: Values.ElementaryResult
+): Values.ElementaryResult {
   switch (result.kind) {
     case "value":
       return result;
@@ -197,7 +241,7 @@ export function cleanBool(
         case "BoolOutOfRangeError":
           //return true
           return {
-            type: <Format.Types.BoolType>result.type,
+            type: <Types.BoolType>result.type,
             kind: "value",
             value: {
               asBoolean: true

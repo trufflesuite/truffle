@@ -24,6 +24,7 @@ export function abifyType(
     case "mapping":
     case "magic":
     case "type":
+    case "options":
       return undefined;
     //Next: address & contract, these can get handled together
     case "address":

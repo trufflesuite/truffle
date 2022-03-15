@@ -3,6 +3,9 @@ const debug = debugModule("codec:format:utils:inspect");
 
 import util from "util";
 import * as Format from "@truffle/codec/format/common";
+import * as Common from "@truffle/codec/common";
+import * as Conversion from "@truffle/codec/conversion";
+import * as EvmUtils from "@truffle/codec/evm/utils";
 import * as Exception from "./exception";
 
 //we'll need to write a typing for the options type ourself, it seems; just
@@ -648,4 +651,30 @@ function unsafeNativizeWithTable(
         }
       }
   }
+}
+
+/**
+ * Turns a wrapped access list into a usable form.
+ * Will fail if the input is not a wrapped access list!
+ * Note that the storage keys must be given as uint256, not bytes32.
+ * Primarily meant for internal use.
+ */
+export function nativizeAccessList(
+  wrappedAccessList: Format.Values.ArrayValue //this should really be a more specific type
+): Common.AccessList {
+  return wrappedAccessList.value.map(wrappedAccessListForAddress => {
+    //HACK: we're just going to coerce all over the place here
+    const addressStorageKeysPair = <Format.Values.OptionallyNamedValue[]>(
+      <Format.Values.TupleValue>wrappedAccessListForAddress
+    ).value;
+    const wrappedAddress = <Format.Values.AddressValue>addressStorageKeysPair[0].value;
+    const wrappedStorageKeys = <Format.Values.ArrayValue>addressStorageKeysPair[1].value;
+    const wrappedStorageKeysArray = <Format.Values.UintValue[]>wrappedStorageKeys.value;
+    return {
+      address: wrappedAddress.value.asAddress,
+      storageKeys: wrappedStorageKeysArray.map(wrappedStorageKey =>
+        Conversion.toHexString(wrappedStorageKey.value.asBN, EvmUtils.WORD_SIZE)
+      )
+    };
+  });
 }

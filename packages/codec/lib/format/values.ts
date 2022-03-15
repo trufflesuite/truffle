@@ -60,7 +60,9 @@ export type Result =
   | MagicResult
   | TypeResult
   | FunctionExternalResult
-  | FunctionInternalResult;
+  | FunctionInternalResult
+  | OptionsResult;
+
 /**
  * An actual value, not an error (although if a container type it may contain errors!)
  *
@@ -75,7 +77,8 @@ export type Value =
   | MagicValue
   | TypeValue
   | FunctionExternalValue
-  | FunctionInternalValue;
+  | FunctionInternalValue
+  | OptionsValue;
 
 /**
  * A value that can go in the ABI
@@ -589,4 +592,26 @@ export interface FunctionInternalValueInfoUnknown {
   context: Types.ContractType;
   deployedProgramCounter: number;
   constructorProgramCounter: number;
+}
+
+/*
+ * SECTION 7: Options
+ */
+
+/**
+ * An options value or error
+ *
+ * @Category Special types (encoder-only)
+ */
+export type OptionsResult = OptionsValue | Errors.OptionsErrorResult;
+
+/**
+ * An options value
+ *
+ * @Category Special types (encoder-only)
+ */
+export interface OptionsValue {
+  type: Types.OptionsType;
+  kind: "value";
+  value: Common.Options;
 }

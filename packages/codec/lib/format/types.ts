@@ -50,7 +50,8 @@ export type Type =
   | ContractType
   | MagicType
   | TypeType
-  | TupleType;
+  | TupleType
+  | OptionsType;
 
 /**
  * Type of an unsigned integer
@@ -619,6 +620,16 @@ export interface TypeTypeEnum {
 }
 
 /**
+ * Fictitious type used for a transaction options argument
+ * (e.g. value, from, etc).
+ *
+ * @Category Special types (encoder-only)
+ */
+export interface OptionsType {
+  typeClass: "options";
+}
+
+/**
  * Reference types
  *
  * @Category General categories
@@ -852,6 +863,9 @@ export function typeStringWithoutLocation(dataType: Type): string {
       let inputString = `function(${inputList})`;
       let outputString = outputList === "" ? "" : ` returns (${outputList})`; //again, note the deliberate space
       return inputString + mutabilityString + visibilityString + outputString;
+    case "options":
+      //note: not a real Solidity type! just for error messaging!
+      return "options";
   }
 }
 

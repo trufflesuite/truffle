@@ -10,6 +10,7 @@ TSCONFIG=./docs/tsconfig.json
 OPTIONS=./docs/typedoc.json
 CODEC=../codec/lib/index.ts
 DECODER=../decoder/lib/index.ts
+ENCODER=../encoder/lib/index.ts
 README=./docs/README.md
 MEDIA=./docs/media
 
@@ -22,4 +23,4 @@ $typedoc \
     --out $DIST_HTML \
     --json $DIST_JSON \
     --media $MEDIA \
-  $CODEC $DECODER $@ # entrypoints to display
+  $CODEC $DECODER $ENCODER $@ # entrypoints to display

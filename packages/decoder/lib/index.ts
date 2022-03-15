@@ -162,8 +162,7 @@ export type {
   DecodeLogOptions,
   ExtrasAllowed,
   Transaction,
-  Log,
-  BlockSpecifier
+  Log
 } from "./types";
 import type { EnsSettings, DecoderSettings } from "./types";
 export { EnsSettings, DecoderSettings };
