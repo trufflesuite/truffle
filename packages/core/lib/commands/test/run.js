@@ -48,8 +48,7 @@ function sanitizeGanacheOptions(ganacheOptions) {
       `(${network_id}) is not valid. Please properly configure the network id as an integer value.`;
     throw new Error(error);
   }
-  network_id = parsedNetworkId;
-  return { ...ganacheOptions, network_id };
+  return { ...ganacheOptions, network_id: parsedNetworkId };
 }
 
 module.exports = async function (options) {
