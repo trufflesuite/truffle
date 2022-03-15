@@ -2,10 +2,10 @@ const fs = require("fs");
 const OS = require("os");
 const TruffleError = require("@truffle/error");
 const {
-  completionScriptName,
+  completionScriptPath,
   locationFromShell,
-  shellConfigSetting,
-  shellName
+  shellName,
+  zshCompletionSetting
 } = require("../../helpers");
 
 module.exports = async function (_) {
@@ -35,32 +35,26 @@ function uninstall(shell) {
 }
 
 function removeFromZshConfig() {
-  const path = require("path");
-  const Config = require("@truffle/config");
-  const completionScript = path.resolve(
-    Config.getTruffleDataDirectory(),
-    completionScriptName("zsh")
-  );
-
+  const completionScript = completionScriptPath("zsh");
   if (fs.existsSync(completionScript)) {
     fs.unlinkSync(completionScript);
   }
 
-  const scriptConfigLocation = locationFromShell("zsh");
-  if (!fs.existsSync(scriptConfigLocation)) {
+  const zshConfigPath = locationFromShell("zsh");
+  if (!fs.existsSync(zshConfigPath)) {
     return;
   }
 
-  const contents = fs.readFileSync(scriptConfigLocation, "utf8").split(/\r?\n/);
-  const linesToRemove = shellConfigSetting("zsh").split(/\r?\n/);
+  const contents = fs.readFileSync(zshConfigPath, "utf8").split(OS.EOL);
+  const linesToRemove = zshCompletionSetting().split(OS.EOL);
   const newFileContents = contents.map(line =>
     linesToRemove.includes(line) ? "" : line
   );
 
-  fs.writeFileSync(scriptConfigLocation, newFileContents.join(OS.EOL).trim());
+  fs.writeFileSync(zshConfigPath, newFileContents.join(OS.EOL).trim());
 }
 
 function uninstallBashCompletion() {
-  const completionPath = completionScriptName("bash");
+  const completionPath = completionScriptPath("bash");
   fs.unlinkSync(completionPath);
 }

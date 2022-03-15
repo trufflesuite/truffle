@@ -7,15 +7,19 @@ function shellName() {
   return (process.env.SHELL || "").split("/").slice(-1)[0];
 }
 
-function completionScriptName(shell) {
+function completionScriptPath(shell) {
   switch (shell) {
     case "zsh":
-      return `completion.${shell}`;
+      const Config = require("@truffle/config");
+      const scriptName = `completion.${shell}`;
+      return path.resolve(Config.getTruffleDataDirectory(), scriptName);
+
     case "bash":
       return path.resolve(
         OS.homedir(),
         ".local/share/bash-completion/completions/truffle"
       );
+
     default:
       throw new TruffleError(
         `Cannot create completion script for shell of type ${shell}`
@@ -36,13 +40,8 @@ function locationFromShell(shell) {
   }
 }
 
-function shellConfigSetting(shell) {
-  const Config = require("@truffle/config");
-  const completionScript = path.resolve(
-    Config.getTruffleDataDirectory(),
-    completionScriptName(shell)
-  );
-
+function zshCompletionSetting() {
+  const completionScript = completionScriptPath("zsh");
   return (
     `${OS.EOL}# Truffle tab-complete CLI feature. Uninstall by removing this line` +
     `${OS.EOL}. ${completionScript}`
@@ -50,8 +49,8 @@ function shellConfigSetting(shell) {
 }
 
 module.exports = {
-  completionScriptName,
+  completionScriptPath,
   locationFromShell,
-  shellConfigSetting,
-  shellName
+  shellName,
+  zshCompletionSetting
 };
