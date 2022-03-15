@@ -17,7 +17,7 @@ const versionInfo = version.info();
 const XRegExp = require("xregexp");
 
 // pre-flight check: Node version compatibility
-const minimumNodeVersion = "10.9.0";
+const minimumNodeVersion = "12.0.0";
 if (!semver.gte(process.version, minimumNodeVersion)) {
   console.log(
     "Error: Node version not supported. You are currently using version " +
