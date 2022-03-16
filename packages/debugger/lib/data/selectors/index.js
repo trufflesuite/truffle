@@ -409,20 +409,18 @@ const data = createSelectorTree({
     /*
      * data.views.contexts
      * same as evm.info.contexts, but:
-     * 0. we only include non-constructor contexts
-     * 1. we strip out sourceMap and primarySource
-     * 2. we alter abi in two ways:
+     * 1. we strip out fields irrelevant to codec
+     * 2. we alter abi in a few ways ways:
      * 2a. we strip out everything but functions
      * 2b. abi is now an object, not an array, and indexed by these signatures
+     * 2c. fallback/receive stuff instead goes in the fallbackAbi field
      */
     contexts: createLeaf([evm.info.contexts], contexts =>
       Object.assign(
         {},
-        ...Object.values(contexts)
-          .filter(context => !context.isConstructor)
-          .map(context => ({
-            [context.contractId]: debuggerContextToDecoderContext(context)
-          }))
+        ...Object.values(contexts).map(context => ({
+          [context.contractId]: debuggerContextToDecoderContext(context)
+        }))
       )
     )
   },
