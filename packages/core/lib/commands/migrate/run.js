@@ -48,6 +48,11 @@ module.exports = async function (options) {
     await Environment.fork(config, {
       logging: {
         quiet: true
+      },
+      // we need to tell Ganache to not unlock any accounts so that only
+      // user's accounts are unlocked since this will be a dry run
+      wallet: {
+        totalAccounts: 0
       }
     });
     // Copy artifacts to a temporary directory
