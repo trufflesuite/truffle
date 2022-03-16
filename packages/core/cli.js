@@ -57,7 +57,9 @@ if (userWantsGeneralHelp) {
 command
   .run(inputArguments, options)
   .then(returnStatus => {
-    returnStatus ? (process.exitCode = returnStatus) : (process.exitCode = 0);
+    typeof returnStatus !== undefined
+      ? (process.exitCode = returnStatus)
+      : (process.exitCode = 0);
   })
   .catch(error => {
     if (error instanceof TaskError) {
