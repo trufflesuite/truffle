@@ -1,3 +1,5 @@
+const defaultNetworkIdForTestCommand = 4447;
+
 const parseCommandLineFlags = options => {
   // parse out command line flags to merge in to the config
   const grep = options.grep || options.g;
@@ -29,6 +31,25 @@ const parseCommandLineFlags = options => {
     };
   }
 };
+
+// Sanitize ganache options specified in the config
+function sanitizeGanacheOptions(ganacheOptions) {
+  const network_id = ganacheOptions.network_id;
+
+  // Use default network_id if "*" is defined in config
+  if (network_id === "*") {
+    return { ...ganacheOptions, network_id: defaultNetworkIdForTestCommand };
+  }
+
+  const parsedNetworkId = parseInt(network_id, 10);
+  if (isNaN(parsedNetworkId)) {
+    const error =
+      `The network id specified in the truffle config ` +
+      `(${network_id}) is not valid. Please properly configure the network id as an integer value.`;
+    throw new Error(error);
+  }
+  return { ...ganacheOptions, network_id: parsedNetworkId };
+}
 
 module.exports = async function (options) {
   const Config = require("@truffle/config");
@@ -98,7 +119,7 @@ module.exports = async function (options) {
   let numberOfFailures;
   let ganacheOptions = {
     host: "127.0.0.1",
-    network_id: 4447,
+    network_id: defaultNetworkIdForTestCommand,
     mnemonic:
       "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
     time: config.genesis_time,
@@ -116,9 +137,11 @@ module.exports = async function (options) {
 
     // configuredNetwork will spread only when it is defined and ignored when undefined
     ganacheOptions = { ...ganacheOptions, port, ...configuredNetwork };
+    const sanitizedGanacheOptions = sanitizeGanacheOptions(ganacheOptions);
+
     numberOfFailures = await startGanacheAndRunTests(
       ipcOptions,
-      ganacheOptions,
+      sanitizedGanacheOptions,
       config
     );
   } else {
