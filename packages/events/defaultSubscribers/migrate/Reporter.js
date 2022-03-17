@@ -231,7 +231,9 @@ class Reporter {
         );
 
       // if it returns null, try again!
-      if (!txCostReport) return this.postDeploy(data);
+      if (!txCostReport) {
+        return this.postDeploy(data);
+      }
 
       data = {
         ...data,
@@ -318,7 +320,9 @@ class Reporter {
    * @param  {Object} data
    */
   async txHash(data) {
-    if (this.subscriber.config.dryRun) return;
+    if (this.subscriber.config.dryRun) {
+      return;
+    }
 
     let message = this.messages.steps("hash", data);
     this.subscriber.logger.log(message);

@@ -226,10 +226,11 @@ class Messages {
 
         let output = "";
 
-        if (!reporter.subscriber.config.dryRun)
+        if (!reporter.subscriber.config.dryRun) {
           output += `   > ${"contract address:".padEnd(20)} ${
             data.receipt.contractAddress
           }\n`;
+        }
 
         output += `   > ${"block number:".padEnd(20)} ${
           data.receipt.blockNumber
@@ -248,10 +249,11 @@ class Messages {
         if (
           reporter.subscriber.config.confirmations !== undefined &&
           reporter.subscriber.config.confirmations !== 0
-        )
+        ) {
           output += self.underline(
             `Pausing for ${reporter.subscriber.config.confirmations} confirmations...\n`
           );
+        }
 
         if (reporter.subscriber.config.describeJson) {
           output += self.migrationStatus({
@@ -275,7 +277,9 @@ class Messages {
 
       // Transactions
       endTransaction: () => {
-        if (reporter.blockSpinner) reporter.blockSpinner.stop();
+        if (reporter.blockSpinner) {
+          reporter.blockSpinner.stop();
+        }
         return `   > ${data.message}`;
       },
 
@@ -285,8 +289,9 @@ class Messages {
           self.underline(`Linking`) +
           `\n   * Contract: ${data.contractName} <--> Library: ${data.libraryName} `;
 
-        if (!reporter.subscriber.config.dryRun)
+        if (!reporter.subscriber.config.dryRun) {
           output += `(at address: ${data.libraryAddress})`;
+        }
 
         return output;
       },
@@ -369,8 +374,9 @@ class Messages {
         let deployments =
           self.reporter.summary[self.reporter.currentFileIndex].deployments;
 
-        if (!self.reporter.subscriber.config.dryRun && deployments.length)
+        if (!self.reporter.subscriber.config.dryRun && deployments.length) {
           output += `   > Saving artifacts\n`;
+        }
 
         output +=
           self.underline(37) +
