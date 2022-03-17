@@ -1333,7 +1333,8 @@ export function* recordAllocations() {
     contracts,
     referenceDeclarations,
     userDefinedTypes,
-    abiAllocations
+    abiAllocations,
+    true //signals that we are allowing events from constructors
   );
   const stateAllocations = Codec.Storage.Allocate.getStateAllocations(
     contracts,
