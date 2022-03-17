@@ -247,7 +247,7 @@ let sources = {
   "YulFnTest.yul": __CALL_YUL
 };
 
-describe("Source mapping (location and jumps))", function () {
+describe("Source mapping (location and jumps)", function () {
   let provider;
   let abstractions;
   let compilations;
