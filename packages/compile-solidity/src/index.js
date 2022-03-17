@@ -186,9 +186,7 @@ const Compile = {
       paths,
       options
     });
-    return Compilations.promoteCompileResult({
-      compilations: compilationResult.compilations
-    });
+    return Compilations.promoteCompileResult(compilationResult);
   }
 };
 
