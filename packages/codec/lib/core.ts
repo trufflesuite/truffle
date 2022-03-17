@@ -26,8 +26,7 @@ import type * as Format from "@truffle/codec/format";
 import { StopDecodingError } from "@truffle/codec/errors";
 import read from "@truffle/codec/read";
 import decode from "@truffle/codec/decode";
-// untyped import since no @types/web3-utils exists
-const Web3Utils = require("web3-utils");
+import Web3Utils from "web3-utils";
 
 /**
  * @Category Decoding

@@ -4,17 +4,12 @@ const debug = debugModule("codec:wrap:function");
 import * as Format from "@truffle/codec/format";
 import { wrapWithCases } from "./dispatch";
 import { TypeMismatchError } from "./errors";
-import type {
-  WrapRequest,
-  WrapResponse
-} from "../types";
+import type { WrapRequest, WrapResponse } from "../types";
 import type { Case, WrapOptions } from "./types";
 import * as Messages from "./messages";
-import * as Conversion from "@truffle/codec/conversion";
 import * as Utils from "./utils";
 import * as EvmUtils from "@truffle/codec/evm/utils";
-import type { Options } from "@truffle/codec/common";
-const Web3Utils = require("web3-utils"); //importing untyped, sorry!
+import Web3Utils from "web3-utils";
 
 import { addressCases } from "./address";
 import { bytesCases } from "./bytes";
@@ -34,17 +29,14 @@ export const functionExternalCases: Case<
   Format.Types.FunctionExternalType,
   Format.Values.FunctionExternalValue,
   WrapRequest
->[] = [
-  functionFromTypeValueInput,
-  ...functionExternalCasesBasic
-];
+>[] = [functionFromTypeValueInput, ...functionExternalCasesBasic];
 
 function* functionFromFunctionExternalInput(
   dataType: Format.Types.FunctionExternalType,
   input: unknown,
   wrapOptions: WrapOptions
 ): Generator<WrapRequest, Format.Values.FunctionExternalValue, WrapResponse> {
-  if(!Utils.isFunctionExternalInput(input)) {
+  if (!Utils.isFunctionExternalInput(input)) {
     throw new TypeMismatchError(
       dataType,
       input,
@@ -53,18 +45,16 @@ function* functionFromFunctionExternalInput(
       "Input was not an object with address & selector"
     );
   }
-  const wrappedAddress = <Format.Values.AddressValue>(
-    yield* wrapWithCases(
-      { typeClass: "address", kind: "general" },
-      input.address,
-      {
-        ...wrapOptions,
-        name: `${wrapOptions.name}.address`,
-        specificityFloor: 5
-      },
-      addressCases
-    )
-  );
+  const wrappedAddress = (yield* wrapWithCases(
+    { typeClass: "address", kind: "general" },
+    input.address,
+    {
+      ...wrapOptions,
+      name: `${wrapOptions.name}.address`,
+      specificityFloor: 5
+    },
+    addressCases
+  )) as Format.Values.AddressValue;
   const address = wrappedAddress.value.asAddress;
   const wrappedSelector = yield* wrapWithCases(
     { typeClass: "bytes", kind: "static", length: 4 },
@@ -184,8 +174,11 @@ function* functionFromHexString(
       )
     );
   }
-  let address: string = input.slice(0, EvmUtils.ADDRESS_SIZE * 2 + 2).toLowerCase();
-  const selector = "0x" + input.slice(EvmUtils.ADDRESS_SIZE * 2 + 2).toLowerCase();
+  let address: string = input
+    .slice(0, EvmUtils.ADDRESS_SIZE * 2 + 2)
+    .toLowerCase();
+  const selector =
+    "0x" + input.slice(EvmUtils.ADDRESS_SIZE * 2 + 2).toLowerCase();
   //address & selector must now have the correct length, and we are deliberately *not*
   //checking the checksum on address in this case.  So, the only thing remaining
   //to do is to normalize address.
