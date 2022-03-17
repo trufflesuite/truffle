@@ -33,6 +33,10 @@
   "devDependencies": {
     "debug": "^4.3.1"
   },
+   "overrides": {
+    "node-ipc@>9.2.1 <10": "9.2.1",
+    "node-ipc@>10.1.0": "10.1.0"
+  },
   "publishConfig": {
     "access": "public"
   },
