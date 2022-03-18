@@ -57,7 +57,7 @@ if (userWantsGeneralHelp) {
 command
   .run(inputArguments, options)
   .then(returnStatus => {
-    typeof returnStatus !== undefined
+    returnStatus !== undefined
       ? (process.exitCode = returnStatus)
       : (process.exitCode = 0);
   })
