@@ -7,6 +7,9 @@ const parseCommandLineFlags = options => {
   const reporter = options.reporter || options.r;
 
   /**
+   * If the reporter is returned as undefined, it ignores the specification of any reporter type in the
+   * config and displays the default mocha reporter "spec", as opposed to reporter completely being absent
+   * which results in checking for the reporter type specified in the config.
    * Reporter value passed on the command line has precedence over a reporter value in the config.
    * If neither exist, then nothing is passed to mocha and it uses its default reporter type "spec".
    */
