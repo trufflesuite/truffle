@@ -182,7 +182,11 @@ const Compile = {
   },
 
   async sourcesWithPragmaAnalysis({ paths, options }) {
-    return compileWithPragmaAnalysis({ paths, options });
+    const compilationResult = await compileWithPragmaAnalysis({
+      paths,
+      options
+    });
+    return Compilations.promoteCompileResult(compilationResult);
   }
 };
 
