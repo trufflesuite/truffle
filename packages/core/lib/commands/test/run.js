@@ -7,32 +7,16 @@ const parseCommandLineFlags = options => {
   const reporter = options.reporter || options.r;
 
   /**
-   * This if-else condition is explicitly written to avoid the overlapping of
-   * the config by the default mocha reporter type when user specifies a mocha reporter type
-   * in the config and doesn't specify it as the command line argument.
-   * If the reporter is returned as undefined, it ignores the specification of any reporter type in the
-   * config and displays the default mocha reporter "spec", as opposed to reporter completely being absent
-   * which results in checking for the reporter type specified in the config.
+   * Reporter value passed on the command line has precedence over a reporter value in the config.
+   * If neither exist, then nothing is passed to mocha and it uses its default reporter type "spec".
+   * Note: It is important that reporter be completely omitted, and not be set to undefined!
+   * As setting it to undefined will ignore the reporter value specified in the config.
    */
-  if (reporter === undefined) {
-    return {
-      mocha: {
-        grep,
-        bail
-      }
-    };
-  } else {
-    return {
-      mocha: {
-        grep,
-        bail,
-        reporter
-      }
-    };
-  }
+  return reporter === undefined
+    ? { mocha: { grep, bail } }
+    : { mocha: { grep, bail, reporter } };
 };
 
-// Sanitize ganache options specified in the config
 function sanitizeGanacheOptions(ganacheOptions) {
   const network_id = ganacheOptions.network_id;
 
@@ -115,30 +99,34 @@ module.exports = async function (options) {
     !configuredNetwork.provider &&
     !configuredNetwork.host &&
     !configuredNetwork.url;
-  const ipcOptions = { network: "test" };
   let numberOfFailures;
-  let ganacheOptions = {
-    host: "127.0.0.1",
-    network_id: defaultNetworkIdForTestCommand,
-    mnemonic:
-      "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
-    time: config.genesis_time,
-    miner: {
-      instamine: "strict"
-    }
-  };
 
   if (
     (testNetworkDefinedAndUsed && noProviderHostOrUrlConfigured) ||
     !configuredNetwork
   ) {
     // Use managed ganache with overriding user specified config or without any specification in the config
-    const port = await require("get-port")();
+    const defaultPort = await require("get-port")();
+    const defaultHost = "127.0.0.1";
+    const defaultMnemonic =
+      "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
 
     // configuredNetwork will spread only when it is defined and ignored when undefined
-    ganacheOptions = { ...ganacheOptions, port, ...configuredNetwork };
+    const ganacheOptions = {
+      host: defaultHost,
+      port: defaultPort,
+      network_id: defaultNetworkIdForTestCommand,
+      mnemonic: defaultMnemonic,
+      time: config.genesis_time,
+      miner: {
+        instamine: "strict"
+      },
+      ...configuredNetwork
+    };
+
     const sanitizedGanacheOptions = sanitizeGanacheOptions(ganacheOptions);
 
+    const ipcOptions = { network: "test" };
     numberOfFailures = await startGanacheAndRunTests(
       ipcOptions,
       sanitizedGanacheOptions,
