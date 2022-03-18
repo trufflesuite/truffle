@@ -9,13 +9,12 @@ import type {
   Case,
   AddressLikeType,
   AddressLikeValue,
-  WrapOptions,
+  WrapOptions
 } from "./types";
-import * as Conversion from "@truffle/codec/conversion";
 import * as Utils from "./utils";
 import * as EvmUtils from "@truffle/codec/evm/utils";
 import * as Messages from "./messages";
-const Web3Utils = require("web3-utils"); //importing untyped, sorry!
+import Web3Utils from "web3-utils";
 
 //no separate cases for contracts; even with loose turned off,
 //we consider these interchangeable
@@ -27,7 +26,7 @@ const addressFromStringCases: Case<
 >[] = [
   addressFromHexString,
   addressFromPrefixlessHexString,
-  addressFromOtherString, //Please put after other string cases! Also, can yield
+  addressFromOtherString //Please put after other string cases! Also, can yield
 ];
 
 const addressCasesBasic: Case<
@@ -47,10 +46,7 @@ export const addressCases: Case<
   AddressLikeType,
   AddressLikeValue,
   AddressWrapRequest
->[] = [
-  addressFromTypeValueInput,
-  ...addressCasesBasic
-];
+>[] = [addressFromTypeValueInput, ...addressCasesBasic];
 
 function* addressFromHexString(
   dataType: AddressLikeType,
@@ -101,7 +97,12 @@ function* addressFromPrefixlessHexString(
       "Input was not an unprefixed hex string"
     );
   }
-  return validateNormalizeAndWrap(dataType, "0x" + input, input, wrapOptions.name);
+  return validateNormalizeAndWrap(
+    dataType,
+    "0x" + input,
+    input,
+    wrapOptions.name
+  );
 }
 
 function* addressFromOtherString(
@@ -151,7 +152,12 @@ function* addressFromBoxedString(
     );
   }
   //unbox and try again
-  return yield* wrapWithCases(dataType, input.valueOf(), wrapOptions, addressFromStringCases);
+  return yield* wrapWithCases(
+    dataType,
+    input.valueOf(),
+    wrapOptions,
+    addressFromStringCases
+  );
 }
 
 function* addressFromContractInput(
@@ -168,7 +174,12 @@ function* addressFromContractInput(
       "Input was not a contract-like object"
     );
   }
-  return validateNormalizeAndWrap(dataType, input.address, input, wrapOptions.name);
+  return validateNormalizeAndWrap(
+    dataType,
+    input.address,
+    input,
+    wrapOptions.name
+  );
 }
 
 function* addressFromCodecAddressLikeValue(
@@ -234,9 +245,7 @@ function* addressFromCodecUdvtValue(
       "Input was not a wrapped result"
     );
   }
-  if (
-    input.type.typeClass !== "userDefinedValueType"
-  ) {
+  if (input.type.typeClass !== "userDefinedValueType") {
     throw new TypeMismatchError(
       dataType,
       input,
@@ -254,7 +263,11 @@ function* addressFromCodecUdvtValue(
       Messages.errorResultMessage
     );
   }
-  return yield* addressFromCodecAddressLikeValue(dataType, input.value, wrapOptions);
+  return yield* addressFromCodecAddressLikeValue(
+    dataType,
+    input.value,
+    wrapOptions
+  );
 }
 
 function* addressFromTypeValueInput(
@@ -299,7 +312,7 @@ function* addressFailureCase(
     input,
     wrapOptions.name,
     2,
-   "Input was not recognizable as an address"
+    "Input was not recognizable as an address"
   );
 }
 
@@ -376,5 +389,8 @@ function validateNormalizeAndWrap(
   input: unknown, //for errors
   name: string //for errors
 ): AddressLikeValue {
-  return wrapAsAppropriateType(dataType, validateAndNormalize(asAddress, dataType, input, name));
+  return wrapAsAppropriateType(
+    dataType,
+    validateAndNormalize(asAddress, dataType, input, name)
+  );
 }

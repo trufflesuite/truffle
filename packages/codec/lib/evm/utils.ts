@@ -2,8 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:evm:utils");
 
 import BN from "bn.js";
-// untyped import since no @types/web3-utils exists
-const Web3Utils = require("web3-utils");
+import Web3Utils from "web3-utils";
 import * as Conversion from "@truffle/codec/conversion";
 
 export const WORD_SIZE = 0x20;

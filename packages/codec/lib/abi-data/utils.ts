@@ -1,8 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:abi-data:utils");
 
-// untyped import since no @types/web3-utils exists
-const Web3Utils = require("web3-utils");
+import Web3Utils from "web3-utils";
 import * as Evm from "@truffle/codec/evm";
 import * as Ast from "@truffle/codec/ast";
 import type * as Abi from "@truffle/abi-utils";
@@ -171,9 +170,8 @@ function abiParameterIsObviouslyIllTyped(abiParameter: Abi.Parameter): boolean {
     "tuple"
   ];
   const baseTypeClass = abiParameter.type.match(/^([a-z]*)/)[1];
-  const baseTypeClassIsObviouslyWrong = !legalBaseTypeClasses.includes(
-    baseTypeClass
-  );
+  const baseTypeClassIsObviouslyWrong =
+    !legalBaseTypeClasses.includes(baseTypeClass);
   if (abiParameter.components) {
     return (
       abiParameter.components.some(abiParameterIsObviouslyIllTyped) ||
