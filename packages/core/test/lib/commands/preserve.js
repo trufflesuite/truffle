@@ -1,5 +1,5 @@
 const path = require("path");
-const originalRequire = require("original-require");
+const originalRequire = eval("require");
 const preserveCommand = require("../../../lib/commands/preserve");
 
 const chai = require("chai");

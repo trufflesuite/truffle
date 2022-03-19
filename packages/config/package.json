@@ -26,8 +26,7 @@
     "@truffle/provider": "^0.2.48",
     "conf": "^10.0.2",
     "find-up": "^2.1.0",
-    "lodash": "^4.17.21",
-    "original-require": "^1.0.1"
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
     "@types/configstore": "^4.0.0",

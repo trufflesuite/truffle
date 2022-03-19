@@ -1,6 +1,6 @@
 import { Plugin, Plugins, TruffleConfig } from "../lib";
 import path from "path";
-const originalRequire = require("original-require");
+const originalRequire = eval("require");
 
 describe("Plugins", () => {
   // Add fixture folder to require path so dummy plugins can be found

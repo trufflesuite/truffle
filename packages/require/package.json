@@ -21,8 +21,7 @@
   "dependencies": {
     "@truffle/config": "^1.3.22",
     "@truffle/expect": "^0.1.0",
-    "@truffle/interface-adapter": "^0.5.12",
-    "original-require": "^1.0.1"
+    "@truffle/interface-adapter": "^0.5.12"
   },
   "devDependencies": {
     "mocha": "8.1.2"

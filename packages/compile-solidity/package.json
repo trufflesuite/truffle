@@ -32,7 +32,6 @@
     "iter-tools": "^7.0.2",
     "lodash": "^4.17.21",
     "ora": "^3.4.0",
-    "original-require": "^1.0.1",
     "require-from-string": "^2.0.2",
     "semver": "^7.3.4",
     "solc": "0.8.12"

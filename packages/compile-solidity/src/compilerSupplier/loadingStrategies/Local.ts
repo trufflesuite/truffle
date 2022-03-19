@@ -1,5 +1,5 @@
 import path from "path";
-import originalRequire from "original-require";
+const originalRequire = eval("require");
 import solcWrap from "solc/wrapper";
 import { observeListeners } from "../observeListeners";
 

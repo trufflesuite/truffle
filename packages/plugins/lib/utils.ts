@@ -1,7 +1,7 @@
 import type { PluginConfig, RawPluginConfig } from "./types";
 
 const TruffleError = require("@truffle/error");
-const originalRequire = require("original-require");
+const originalRequire = eval("require");
 
 /**
  * Returns true or false based on whether or not a particular plugin
@@ -9,9 +9,10 @@ const originalRequire = require("original-require");
  */
 export const resolves = (module: string): boolean => {
   try {
-    originalRequire.resolve(module);
+    const m = originalRequire.resolve(module);
     return true;
-  } catch (_) {
+  } catch (err) {
+    console.log(err);
     return false;
   }
 };

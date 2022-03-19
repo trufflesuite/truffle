@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const Module = require("module");
 const vm = require("vm");
-const originalrequire = require("original-require");
+const originalrequire = eval("require");
 const expect = require("@truffle/expect");
 const {
   Web3Shim,

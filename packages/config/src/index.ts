@@ -4,7 +4,7 @@ import Module from "module";
 import findUp from "find-up";
 import Conf from "conf";
 import TruffleError from "@truffle/error";
-import originalRequire from "original-require";
+const originalRequire = eval("require");
 import { getInitialConfig, configProps } from "./configDefaults";
 import { EventManager } from "@truffle/events";
 

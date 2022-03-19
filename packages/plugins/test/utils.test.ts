@@ -17,7 +17,7 @@ describe("Plugin utilities", () => {
       expect(moduleResolved).toBeTruthy();
     });
 
-    it("should return false when using any relative path", () => {
+    it.only("should return false when using any relative path", () => {
       const moduleResolved = resolves("../lib");
 
       expect(moduleResolved).toBeFalsy();

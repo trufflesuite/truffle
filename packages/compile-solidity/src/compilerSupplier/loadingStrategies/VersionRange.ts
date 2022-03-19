@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("compile:compilerSupplier");
 
 import requireFromString from "require-from-string";
-import originalRequire from "original-require";
+const originalRequire = eval("require");
 import axios from "axios";
 import semver from "semver";
 import solcWrap from "solc/wrapper";

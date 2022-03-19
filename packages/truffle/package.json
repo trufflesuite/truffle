@@ -42,8 +42,7 @@
     "@truffle/debugger": "^10.0.1",
     "app-module-path": "^2.2.0",
     "ganache": "^7.0.3",
-    "mocha": "8.1.2",
-    "original-require": "^1.0.1"
+    "mocha": "8.1.2"
   },
   "devDependencies": {
     "@truffle/box": "^2.1.42",
