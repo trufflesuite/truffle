@@ -60,6 +60,8 @@ module.exports = {
         );
       }
 
+      if (options.events) options.events.emit("rpc:request", { payload });
+
       return payload;
     };
   },
@@ -70,13 +72,22 @@ module.exports = {
       // web3 websocket providers return false and web3 http providers
       // return null when no error has occurred...kind of obnoxious
       if (error) {
-        error = new ProviderError(error.message, options);
-        return [payload, error, result];
+        error = new ProviderError(error.message, {
+          ...options,
+          underlyingError: error
+        });
       }
 
-      if (options.verbose) {
+      if (result && options.verbose) {
         options.logger.log(
           " <   " + JSON.stringify(result, null, 2).split("\n").join("\n <   ")
+        );
+      }
+
+      if (options.events) {
+        options.events.emit(
+          "rpc:result",
+          error ? { payload, error } : { payload, result }
         );
       }
 
