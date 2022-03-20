@@ -4515,7 +4515,7 @@
     npmlog "^4.1.2"
     upath "^2.0.1"
 
-"@lerna/project@4.0.0":
+"@lerna/project@4.0.0", "@lerna/project@^4.0.0":
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/@lerna/project/-/project-4.0.0.tgz#ff84893935833533a74deff30c0e64ddb7f0ba6b"
   integrity sha512-o0MlVbDkD5qRPkFKlBZsXZjoNTWPyuL58564nSfZJ6JYNmgAptnWPB2dQlAc7HWRZkmnC2fCkEdoU+jioPavbg==
@@ -20542,6 +20542,15 @@ left-pad@^1.1.3:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/left-pad/-/left-pad-1.3.0.tgz#5b8a3a7765dfe001261dde915589e782f8c94d1e"
   integrity sha512-XI5MPzVNApjAyhQzphX8BkmKsKUxD4LdyK24iZeQGinBN9yTQT3bFlCBy/aVx2HrNcqQGsdot8ghrjyrvMCoEA==
+
+lerna-dependency-graph@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/lerna-dependency-graph/-/lerna-dependency-graph-1.1.0.tgz#ee3f679107c5c49eb7dbe290db2a7200eda4c068"
+  integrity sha512-WddA3FjyTw6vespay42d8vB5NzL09Es/zR7bK/2FbEzaMzUGCGyCPVUp5Kr1kAPuGlXI33T+5UYD/783SyDfOQ==
+  dependencies:
+    "@lerna/project" "^4.0.0"
+    graphviz "0.0.9"
+    yargs "^16.2.0"
 
 lerna-update-wizard@^1.1.0:
   version "1.1.0"

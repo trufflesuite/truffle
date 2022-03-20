@@ -9,6 +9,7 @@
     "test": "lerna run test --stream --concurrency=1 -- --colors",
     "ci": "./scripts/ci.sh",
     "geth": "./scripts/geth.sh",
+    "dependency-graph": "lerna-dependency-graph -f pdf -o dependency-graph.pdf",
     "solc-bump": "node ./scripts/solc-bump.js",
     "update": "lernaupdate"
   },
@@ -20,6 +21,7 @@
     "eslint-plugin-react-hooks": "^4.2.0",
     "husky": "^7.0.4",
     "lerna": "^4.0.0",
+    "lerna-dependency-graph": "^1.1.0",
     "lerna-update-wizard": "^1.1.0",
     "lint-staged": "^12.1.2",
     "nyc": "^13.0.1",
