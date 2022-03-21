@@ -102,6 +102,9 @@ export type MessageType =
   | DebugMessageType
   | InvalidateMessageType;
 
-export const isSetAnalytics = (message: Message): message is SetAnalyticsMessage => {
+
+export const isSetAnalyticsMessage = (
+  message: Message
+): message is SetAnalyticsMessage => {
   return message.type === "analytics";
 };
