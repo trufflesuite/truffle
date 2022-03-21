@@ -1,16 +1,9 @@
 const Spinner = require("@truffle/spinners").Spinner;
 
 module.exports = {
-  initialization: function (config) {
-    this._logger = {
-      log: ((...args) => {
-        if (config.quiet) {
-          return;
-        }
-
-        (this.logger || config.logger || console).log(...args);
-      }).bind(this)
-    };
+  initialization: function () {
+    this.logger = this.logger || console;
+    this.pendingTransactions = [];
   },
   handlers: {
     "rpc:request": [
@@ -28,14 +21,18 @@ module.exports = {
     ],
     "rpc:result": [
       function (event) {
-        const { payload, error, result } = event;
+        let { error } = event;
+        const { payload, result } = event;
 
         if (payload.method === "eth_sendTransaction") {
+          error = error || result.error;
           if (error) {
             const errMessage = `Transaction submission failed with error ${error.code}: '${error.message}'`;
             this.spinner.fail(errMessage);
           } else {
-            this.spinner.succeed(`Transaction submitted successfully. Hash: ${result.result}`);
+            this.spinner.succeed(
+              `Transaction submitted successfully. Hash: ${result.result}`
+            );
           }
 
           delete this.pendingTransactions[payload.id];
