@@ -9,6 +9,8 @@ interface Props {
   confirm: () => void;
 }
 
+// TODO: Rework this code to use the WAGMI connectors.
+
 function ConnectNetwork({ confirm }: Props) {
   const { chainId, activate } = useWeb3React<providers.Web3Provider>();
   const injectedConnector = new InjectedConnector({});
