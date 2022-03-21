@@ -4,6 +4,7 @@ import Dashboard from "./Dashboard";
 
 function App() {
   return (
+    //  Rework this to use WAGMI
     <Web3ReactProvider getLibrary={getLibrary}>
       <Dashboard />
     </Web3ReactProvider>
