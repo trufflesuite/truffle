@@ -41,6 +41,16 @@ export interface InvalidateMessage extends Message {
   payload: number;
 }
 
+/**
+ * Message intended to set analytic collection preference for user.
+ * The payload indicate whether or not the user opts in to share anonymous usage data with Truffle.
+ * This message payload is a truffle command request to update user config that should be forwarded.
+ */
+export interface SetAnalytics extends Message {
+  type: "analytics";
+  payload: boolean;
+}
+
 export const isDashboardProviderMessage = (
   message: Message
 ): message is DashboardProviderMessage => {
@@ -55,4 +65,8 @@ export const isInvalidateMessage = (
   message: Message
 ): message is InvalidateMessage => {
   return message.type === "invalidate";
+};
+
+export const isSetAnalytics = (message: Message): message is SetAnalytics => {
+  return message.type === "analytics";
 };
