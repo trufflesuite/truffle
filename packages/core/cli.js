@@ -87,7 +87,7 @@ command
           : "(unbundled) " + versionInfo.core
       });
       // If a number is returned, exit with that number.
-      process.exit(error);
+      process.exitCode = error;
     } else {
       let errorData = error.stack || error.message || error.toString();
       //remove identifying information if error stack is passed to analytics
@@ -110,5 +110,5 @@ command
       console.log(error.stack || error.message || error.toString());
       version.logTruffleAndNode(options.logger);
     }
-    process.exit(1);
+    process.exitCode = 1;
   });
