@@ -10,7 +10,6 @@ module.exports = async function (config) {
       return await Migrate.run(config);
     } else {
       config.logger.log("Network up to date.");
-      return;
     }
   }
-}
+};
