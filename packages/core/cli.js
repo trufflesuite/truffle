@@ -70,7 +70,9 @@ const options = prepareOptions({
 });
 
 runCommand(command, options)
-  .then(returnStatus => process.exit(returnStatus))
+  .then(returnStatus => {
+    setInterval(() => process.exit(returnStatus), 1000);
+  })
   .catch(error => {
     if (error instanceof TaskError) {
       analytics.send({
