@@ -56,7 +56,7 @@ if (userWantsGeneralHelp) {
 
 command
   .run(inputArguments, options)
-  .then(returnStatus => process.exit(returnStatus))
+  .then(returnStatus => (process.exitCode = returnStatus))
   .catch(error => {
     if (error instanceof TaskError) {
       analytics.send({
