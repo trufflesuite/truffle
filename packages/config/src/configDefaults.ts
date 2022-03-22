@@ -45,7 +45,24 @@ export const getInitialConfig = ({
     dashboard: {
       host: "localhost",
       port: 24012,
-      verbose: false
+      verbose: false,
+      publicChains: [
+        { chainId: "0x1", chainName: "mainnet" },
+        { chainId: "0x3", chainName: "ropsten" },
+        { chainId: "0x4", chainName: "rinkeby" },
+        { chainId: "0x2A", chainName: "kovan" },
+        { chainId: "0x5", chainName: "görli" },
+        {
+          chainId: "0x38",
+          chainName: "Binance Smart Chain Mainnet",
+          nativeCurrency: {
+            symbol: "BNB",
+            decimals: 18
+          },
+          rpcUrls: ["https://bsc-dataseed.binance.org/"],
+          blockExplorerUrls: ["https://bscscan.com"]
+        }
+      ]
     },
     ethpm: {
       ipfs_host: "ipfs.infura.io",
