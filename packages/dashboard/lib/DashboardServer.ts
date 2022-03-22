@@ -142,6 +142,10 @@ export class DashboardServer {
    * Emits an event of type "initialize" to send initial data to dashboard UI.
    */
   private sendInitializeMessage() {
+    if (!this.socket) {
+      throw new Error("Not connected to message bus");
+    }
+
     const data = {
       type: "initialize",
       payload: this.publicChains,
