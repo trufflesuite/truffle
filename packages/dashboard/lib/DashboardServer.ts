@@ -15,6 +15,23 @@ import cors from "cors";
 import type { Server } from "http";
 import debugModule from "debug";
 
+/**
+ * Public ethereum chains that can be added to a wallet and switched via the
+ * dashboard's network manager. Currently based off of https://docs.metamask.io/guide/rpc-api.html#unrestricted-methods
+ */
+export interface PublicChain {
+  chainId: string;
+  chainName: string;
+  nativeCurrency: {
+    name?: string;
+    symbol: string;
+    decimals: number;
+  };
+  rpcUrls: string[];
+  blockExplorerUrls?: string[];
+  iconUrls?: string[];
+}
+
 export interface DashboardServerOptions {
   /** Port of the dashboard */
   port: number;
