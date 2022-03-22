@@ -148,7 +148,7 @@ export class DashboardServer {
 
     const data = {
       type: "initialize",
-      payload: this.publicChains,
+      payload: { publicChains: this.publicChains },
       id: Math.random()
     };
 
