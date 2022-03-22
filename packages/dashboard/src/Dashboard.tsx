@@ -108,12 +108,14 @@ function Dashboard() {
       )}
       {!paused && !socket && <ConnectNetwork confirm={initializeSocket} />}
       {!paused && socket && (
-        <DashboardProvider
-          paused={paused}
-          socket={socket}
-          requests={dashboardProviderRequests}
-          setRequests={setDashboardProviderRequests}
-        />
+        <>
+          <DashboardProvider
+            paused={paused}
+            socket={socket}
+            requests={dashboardProviderRequests}
+            setRequests={setDashboardProviderRequests}
+          />
+          </>
       )}
     </div>
   );

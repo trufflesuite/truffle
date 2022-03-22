@@ -8,6 +8,7 @@ import {
 } from "src/utils/utils";
 import Card from "src/components/common/Card";
 import IncomingRequest from "./IncomingRequest";
+import Migrations from "../Migrations/Migrations";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus";
 import { useConnect } from "wagmi";
 
@@ -71,9 +72,14 @@ function DashboardProvider({ paused, socket, requests, setRequests }: Props) {
           ))
       : [];
 
+  const migrations: string[] = [`1_initial_migration.js`, `2_deploy_marketplace.js`];
+
   return (
     <div className="flex justify-center items-center py-20">
-      <div className="mx-3 w-3/4 max-w-4xl h-2/3">
+      <div className="mx-3 w-1/4 max-w-3xl h-2/3">
+        <Migrations migrations={migrations} />
+      </div>
+      <div className="mx-3 w-3/4 max-w-3xl h-2/3">
         <Card header="Incoming Requests" body={incomingRequests} />
       </div>
     </div>
