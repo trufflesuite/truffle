@@ -29,7 +29,7 @@ function Dashboard() {
   >([]);
 
   const [{ data }] = useNetwork();
-  const [{}, disconnect] = useAccount();
+  const [{ }, disconnect] = useAccount();
   const [{ data: connectData }] = useConnect();
 
   useEffect(() => {
@@ -138,6 +138,7 @@ function Dashboard() {
           setRequests={setDashboardProviderRequests}
         />
       )}
+      <SettingsIcon />
     </div>
   );
 }
