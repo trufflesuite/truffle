@@ -9,8 +9,8 @@ function Migrations({ migrations }: Props) {
 
     const stages = (
         <div>
-          <Step step={migrations[0]} />
-          <Step step={migrations[1]} />
+          <Step name={migrations[0]} completed={true} />
+          <Step name={migrations[1]} completed={false} />
         </div>
       );
 

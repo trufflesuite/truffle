@@ -1,12 +1,13 @@
 interface Props {
-  step: string;
+  name: string;
+  completed: boolean;
 }
 
-function Step({ step }: Props) {
+function Step({ name, completed }: Props) {
 
   return (
       <div>
-         <input type="checkbox" checked /> {step}
+         <input type="checkbox" checked={completed} /> {name}
       </div>
   );
 }
