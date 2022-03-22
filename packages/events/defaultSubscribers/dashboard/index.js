@@ -17,6 +17,16 @@ module.exports = {
     this.pendingTransactions = [];
   },
   handlers: {
+    "compile:start": [
+      async function () {
+        await this.messageBus.sendAndAwait({
+          type: "debug",
+          payload: {
+            message: "compile:start"
+          }
+        });
+      }
+    ],
     "rpc:request": [
       function (event) {
         if (!isDashboardNetwork(this.config)) {
