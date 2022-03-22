@@ -4,28 +4,32 @@ import {
   connectToMessageBusWithRetries,
   isDashboardProviderMessage,
   isInvalidateMessage,
+  isDebugMessage,
   Message,
   base64ToJson
 } from "@truffle/dashboard-message-bus";
-import {useEffect, useState} from "react";
-import {getPorts} from "./utils/utils";
+import { useEffect, useState } from "react";
+import { getPorts, respond } from "./utils/utils";
 import Header from "./components/Header/Header";
 import DashboardProvider from "./components/DashboardProvider/DashboardProvider";
 import ConnectNetwork from "./components/ConnectNetwork";
 import ConfirmNetworkChanged from "./components/ConfirmNetworkChange";
-import {useAccount, useConnect, useNetwork} from "wagmi";
+import { useAccount, useConnect, useNetwork } from "wagmi";
 
 function Dashboard() {
   const [paused, setPaused] = useState<boolean>(false);
-  const [connectedChainId, setConnectedChainId] = useState<number | undefined>();
+  const [connectedChainId, setConnectedChainId] = useState<
+    number | undefined
+  >();
   const [chainId, setChainId] = useState<number>();
   const [socket, setSocket] = useState<WebSocket | undefined>();
-  const [dashboardProviderRequests, setDashboardProviderRequests] = useState<DashboardProviderMessage[]>([]);
+  const [dashboardProviderRequests, setDashboardProviderRequests] = useState<
+    DashboardProviderMessage[]
+  >([]);
 
-  const [{data}] = useNetwork();
+  const [{ data }] = useNetwork();
   const [{}, disconnect] = useAccount();
-  const [{data: connectData}] = useConnect();
-
+  const [{ data: connectData }] = useConnect();
 
   useEffect(() => {
     setChainId(data.chain?.id);
@@ -43,7 +47,7 @@ function Dashboard() {
     if (socket && socket.readyState === WebSocket.OPEN) return;
 
     const messageBusHost = window.location.hostname;
-    const {subscribePort} = await getPorts();
+    const { subscribePort } = await getPorts();
     const connectedSocket = await connectToMessageBusWithRetries(
       subscribePort,
       messageBusHost
@@ -69,6 +73,10 @@ function Dashboard() {
           setDashboardProviderRequests(previousRequests =>
             previousRequests.filter(request => request.id !== message.payload)
           );
+        } else if (isDebugMessage(message)) {
+          const { payload } = message;
+          console.log(payload.message);
+          respond({ id: message.id }, connectedSocket);
         }
       }
     );
@@ -90,7 +98,7 @@ function Dashboard() {
 
   return (
     <div className="h-full min-h-screen bg-gradient-to-b from-truffle-lighter to-truffle-light">
-      <Header disconnect={disconnectAccount}/>
+      <Header disconnect={disconnectAccount} />
       {paused && chainId && connectedChainId && (
         <ConfirmNetworkChanged
           newChainId={chainId}
@@ -98,7 +106,7 @@ function Dashboard() {
           confirm={() => setConnectedChainId(chainId)}
         />
       )}
-      {!paused && !socket && <ConnectNetwork confirm={initializeSocket}/>}
+      {!paused && !socket && <ConnectNetwork confirm={initializeSocket} />}
       {!paused && socket && (
         <DashboardProvider
           paused={paused}
