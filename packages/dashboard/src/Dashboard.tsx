@@ -26,6 +26,7 @@ function Dashboard() {
   const [dashboardProviderRequests, setDashboardProviderRequests] = useState<
     DashboardProviderMessage[]
   >([]);
+  const [publicChains, setPublicChains] = useState<object[]>([]);
 
   const [{ data }] = useNetwork();
   const [{}, disconnect] = useAccount();
@@ -115,6 +116,7 @@ function Dashboard() {
           setRequests={setDashboardProviderRequests}
         />
       )}
+      {!paused && socket && <div>{JSON.stringify(publicChains)}</div>}
     </div>
   );
 }
