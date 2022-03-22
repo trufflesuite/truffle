@@ -21,9 +21,10 @@ interface Props {
       | ((requests: DashboardProviderMessage[]) => DashboardProviderMessage[])
   ) => void;
   socket: WebSocket;
+  migrations: any;
 }
 
-function DashboardProvider({ paused, socket, requests, setRequests }: Props) {
+function DashboardProvider({ paused, socket, requests, setRequests, migrations }: Props) {
   const [{ data: connectData }] = useConnect();
   const provider = connectData.connector?.getProvider();
   const connector = connectData.connector;
@@ -71,8 +72,6 @@ function DashboardProvider({ paused, socket, requests, setRequests }: Props) {
             />
           ))
       : [];
-
-  const migrations: any[] = [{name:`1_initial_migration.js`, completed: true}, {name:`2_deploy_marketplace.js`, completed: false}];
 
   return (
     <div className="flex justify-center items-center py-20">

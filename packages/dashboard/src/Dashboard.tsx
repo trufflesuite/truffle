@@ -30,6 +30,7 @@ function Dashboard() {
   const [{ data }] = useNetwork();
   const [{}, disconnect] = useAccount();
   const [{ data: connectData }] = useConnect();
+  const [migrations, setMigrations] = useState<any[]>([]);
 
   useEffect(() => {
     setChainId(data.chain?.id);
@@ -84,6 +85,8 @@ function Dashboard() {
     connectedSocket.send("ready");
 
     setSocket(connectedSocket);
+
+    setMigrations([{name:`1_initial_migration.js`, completed: true}, {name:`2_deploy_marketplace.js`, completed: false}]);
   };
 
   const disconnectAccount = () => {
@@ -114,6 +117,7 @@ function Dashboard() {
             socket={socket}
             requests={dashboardProviderRequests}
             setRequests={setDashboardProviderRequests}
+            migrations={migrations}
           />
           </>
       )}
