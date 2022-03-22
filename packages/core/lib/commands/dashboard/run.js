@@ -9,8 +9,9 @@ module.exports = async function (options) {
   const host = options.host || config.dashboard.host;
   const verbose = options.verbose || config.dashboard.verbose;
   const rpc = true;
+  const publicChains = config.dashboard.publicChains;
 
-  const dashboardServerOptions = { port, host, verbose, rpc };
+  const dashboardServerOptions = { port, host, verbose, rpc, publicChains };
   const dashboardServer = new DashboardServer(dashboardServerOptions);
   await dashboardServer.start();
 
