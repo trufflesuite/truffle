@@ -4,6 +4,7 @@ import {
   connectToMessageBusWithRetries,
   isDashboardProviderMessage,
   isInvalidateMessage,
+  isInitializeMessage,
   Message,
   base64ToJson
 } from "@truffle/dashboard-message-bus";
@@ -22,6 +23,7 @@ function Dashboard() {
   const [dashboardProviderRequests, setDashboardProviderRequests] = useState<
     DashboardProviderMessage[]
   >([]);
+  const [publicChains, setPublicChains] = useState<object[]>([]);
 
   const { chainId } = useWeb3React();
 
@@ -66,6 +68,8 @@ function Dashboard() {
           setDashboardProviderRequests(previousRequests =>
             previousRequests.filter(request => request.id !== message.payload)
           );
+        } else if (isInitializeMessage(message)) {
+          setPublicChains(message.payload.publicChains);
         }
       }
     );
@@ -94,6 +98,7 @@ function Dashboard() {
           setRequests={setDashboardProviderRequests}
         />
       )}
+      {!paused && socket && <div>{JSON.stringify(publicChains)}</div>}
     </div>
   );
 }
