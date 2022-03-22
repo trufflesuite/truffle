@@ -29,7 +29,7 @@ function Dashboard() {
   >([]);
 
   const [{ data }] = useNetwork();
-  const [{}, disconnect] = useAccount();
+  const [{ }, disconnect] = useAccount();
   const [{ data: connectData }] = useConnect();
 
   useEffect(() => {
@@ -92,6 +92,7 @@ function Dashboard() {
             )
           );
         } else if (isDebugMessage(message)) {
+<<<<<<< HEAD
           console.debug(`received invalidate message `, message);
           const { payload } = message;
           console.log(payload.message);
@@ -103,6 +104,11 @@ function Dashboard() {
           console.log(payload.message);
 
           lifecycle.respond({ payload: undefined });
+=======
+          const { payload } = message;
+          console.log(payload.message);
+          respond({ id: message.id }, connectedSocket);
+>>>>>>> 295f5070f (Add DebugMessage for browser console display)
         }
       }
     );
