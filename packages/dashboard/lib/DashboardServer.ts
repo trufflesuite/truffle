@@ -47,6 +47,9 @@ export interface DashboardServerOptions {
 
   /** Boolean indicating whether whether starting the DashboardServer should automatically open the dashboard (default: true) */
   autoOpen?: boolean;
+
+  /** Chain array used to populate the list of public chains to display in the dashboard network manager. */
+  publicChains: PublicChain[];
 }
 
 export class DashboardServer {
@@ -56,6 +59,7 @@ export class DashboardServer {
   verbose: boolean;
   autoOpen: boolean;
   frontendPath: string;
+  publicChains: PublicChain[];
 
   private expressApp?: Application;
   private httpServer?: Server;
@@ -76,6 +80,7 @@ export class DashboardServer {
       "dashboard-frontend",
       "build"
     );
+    this.publicChains = options.publicChains;
 
     this.boundTerminateListener = () => this.stop();
   }
