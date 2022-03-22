@@ -58,8 +58,6 @@
     "@types/react-dom": "^17.0.11",
     "@types/web3": "^1.2.2",
     "@types/ws": "^7.2.0",
-    "@web3-react/core": "^6.1.9",
-    "@web3-react/injected-connector": "^6.0.7",
     "autoprefixer": "^9",
     "axios": "^0.24.0",
     "concurrently": "^6.5.1",

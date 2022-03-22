@@ -4,6 +4,7 @@ packages/**/node_modules
 node_modules
 yarn-error.log
 .vscode
+.idea
 .DS_Store
 
 # truffle
