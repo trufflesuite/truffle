@@ -1,7 +1,10 @@
 const Writable = require("stream").Writable;
+const DashboardMessageBusClient = require("./client");
 
 module.exports = {
   initialization: function (config) {
+    this.messageBus = new DashboardMessageBusClient(config);
+
     this._logger = {
       log: ((...args) => {
         if (config.quiet) {
