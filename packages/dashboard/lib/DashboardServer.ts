@@ -9,7 +9,8 @@ import {
   createMessage,
   DashboardMessageBus,
   LogMessage,
-  sendAndAwait
+  sendAndAwait,
+  jsonToBase64
 } from "@truffle/dashboard-message-bus";
 import cors from "cors";
 import type { Server } from "http";
@@ -100,6 +101,8 @@ export class DashboardServer {
 
     if (this.rpc) {
       this.socket = await this.connectToMessageBus();
+
+      this.sendInitializeMessage();
       this.expressApp.post("/rpc", this.postRpc.bind(this));
     }
 
@@ -133,6 +136,19 @@ export class DashboardServer {
       subscribePort: this.messageBus.subscribePort,
       publishPort: this.messageBus.publishPort
     });
+  }
+
+  /**
+   * Emits an event of type "initialize" to send initial data to dashboard UI.
+   */
+  private sendInitializeMessage() {
+    const data = {
+      type: "initialize",
+      payload: this.publicChains,
+      id: Math.random()
+    };
+
+    this.socket.send(jsonToBase64(data));
   }
 
   private postRpc(req: Request, res: Response, next: NextFunction) {
