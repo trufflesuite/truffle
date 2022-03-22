@@ -51,6 +51,17 @@ export interface InvalidateMessage extends Message {
   payload: number;
 }
 
+/**
+ * Message intended to be passed from Server to Dashboard UI on initialization
+ * of the dashboard.
+ */
+export interface InitializeMessage extends Message {
+  type: "initialize";
+  payload: {
+    publicChains: object[];
+  };
+}
+
 export const isDashboardProviderMessage = (
   message: Message
 ): message is DashboardProviderMessage => {
@@ -69,4 +80,10 @@ export const isInvalidateMessage = (
   message: Message
 ): message is InvalidateMessage => {
   return message.type === "invalidate";
+};
+
+export const isInitializeMessage = (
+  message: Message
+): message is InitializeMessage => {
+  return message.type === "initialize";
 };
