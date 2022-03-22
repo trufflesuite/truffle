@@ -72,7 +72,7 @@ function DashboardProvider({ paused, socket, requests, setRequests }: Props) {
           ))
       : [];
 
-  const migrations: string[] = [`1_initial_migration.js`, `2_deploy_marketplace.js`];
+  const migrations: any[] = [{name:`1_initial_migration.js`, completed: true}, {name:`2_deploy_marketplace.js`, completed: false}];
 
   return (
     <div className="flex justify-center items-center py-20">

@@ -7,10 +7,13 @@ interface Props {
 
 function Migrations({ migrations }: Props) {
 
+    const steps = migrations.map((step: any) => {
+         return <Step name={step.name} completed={step.completed} />;
+    });
+
     const stages = (
         <div>
-          <Step name={migrations[0]} completed={true} />
-          <Step name={migrations[1]} completed={false} />
+          {steps}
         </div>
       );
 
