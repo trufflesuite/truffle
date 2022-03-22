@@ -5,6 +5,7 @@ import {
   isDashboardProviderMessage,
   isDebugMessage,
   isInvalidateMessage,
+  isInitializeMessage,
   Message
 } from "@truffle/dashboard-message-bus";
 import WebSocket from "isomorphic-ws";
@@ -26,6 +27,7 @@ function Dashboard() {
   const [dashboardProviderRequests, setDashboardProviderRequests] = useState<
     DashboardProviderMessage[]
   >([]);
+  const [publicChains, setPublicChains] = useState<object[]>([]);
 
   const [{ data }] = useNetwork();
   const [{}, disconnect] = useAccount();
@@ -77,6 +79,8 @@ function Dashboard() {
           const { payload } = message;
           console.log(payload.message);
           respond({ id: message.id }, connectedSocket);
+        } else if (isInitializeMessage(message)) {
+          setPublicChains(message.payload.publicChains);
         }
       }
     );
@@ -115,6 +119,7 @@ function Dashboard() {
           setRequests={setDashboardProviderRequests}
         />
       )}
+      {!paused && socket && <div>{JSON.stringify(publicChains)}</div>}
     </div>
   );
 }
