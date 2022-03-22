@@ -16,6 +16,16 @@ module.exports = {
     };
   },
   handlers: {
+    "compile:start": [
+      async function () {
+        await this.messageBus.sendAndAwait({
+          type: "debug",
+          payload: {
+            message: "compile:start"
+          }
+        });
+      }
+    ],
     "rpc:request": [
       function (event) {
         const { payload } = event;
