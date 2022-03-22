@@ -32,8 +32,7 @@ export const forwardDashboardProviderRequest = async (
 ) => {
   const sendAsync = promisify(provider.sendAsync.bind(provider));
   try {
-    const response = await sendAsync(payload);
-    return response;
+    return await sendAsync(payload);
   } catch (error) {
     return {
       jsonrpc: payload.jsonrpc,
@@ -91,9 +90,6 @@ export const respond = (response: any, socket: WebSocket) => {
   socket.send(encodedResponse);
 };
 
-export const getLibrary = (provider: any) =>
-  new providers.Web3Provider(provider);
-
 export const getNetworkName = async (chainId: number) => {
   const { data: chainList } = await axios.get(
     "https://chainid.network/chains.json"
@@ -104,21 +100,20 @@ export const getNetworkName = async (chainId: number) => {
 };
 
 export const getDisplayName = async (
-  library: providers.Web3Provider,
+  provider: providers.BaseProvider,
   address: string
 ) => {
-  const ensName = await reverseLookup(library, address);
+  const ensName = await reverseLookup(provider, address);
   const shortenedAccount = shortenAddress(address);
-  const displayName = ensName ?? shortenedAccount;
-  return displayName;
+  return ensName ?? shortenedAccount;
 };
 
 export const reverseLookup = async (
-  library: providers.Web3Provider,
+  provider: providers.BaseProvider,
   address: string
 ) => {
   try {
-    return await library.lookupAddress(address);
+    return await provider.lookupAddress(address);
   } catch {
     return undefined;
   }

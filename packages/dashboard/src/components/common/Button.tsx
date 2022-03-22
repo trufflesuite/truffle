@@ -9,11 +9,8 @@ interface Props {
 function Button({ disabled, onClick, text }: Props) {
   return (
     <button
-      className={
-        "rounded p-2 " + (disabled ? "" : "bg-truffle-blue") +
-          " text-truffle-brown uppercase hover:bg-white"
-      }
       disabled={disabled}
+      className="rounded p-4 mx-2 bg-truffle-blue text-truffle-brown uppercase hover:bg-white"
       onClick={onClick}
     >
       {text}

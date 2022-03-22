@@ -1,25 +1,31 @@
-import { useWeb3React } from "@web3-react/core";
-import { providers } from "ethers";
 import Card from "./common/Card";
 import Button from "./common/Button";
-import { InjectedConnector } from "@web3-react/injected-connector";
 import NetworkIndicator from "./common/NetworkIndicator";
+import { useConnect, useNetwork } from "wagmi";
 
 interface Props {
   confirm: () => void;
 }
 
-// TODO: Rework this code to use the WAGMI connectors.
-
 function ConnectNetwork({ confirm }: Props) {
-  const { chainId, activate } = useWeb3React<providers.Web3Provider>();
-  const injectedConnector = new InjectedConnector({});
+  const [{ data: connectData }, connect] = useConnect();
+  const [{ data: networkData }] = useNetwork();
 
+  const chainId = networkData.chain?.id;
   const connectBody =
     "Please connect your wallet to use the Truffle Dashboard Provider.";
 
   const connectButton = (
-    <Button text="Connect Wallet" onClick={() => activate(injectedConnector)} />
+    <div>
+      {connectData.connectors.map(connector => (
+        <Button
+          // disabled={!connector.ready}
+          key={connector.id}
+          onClick={() => connect(connector)}
+          text={connector.name}
+        />
+      ))}
+    </div>
   );
 
   const confirmBody = chainId && (
@@ -33,9 +39,7 @@ function ConnectNetwork({ confirm }: Props) {
       </div>
     </div>
   );
-
   const confirmButton = <Button text="Confirm" onClick={confirm} />;
-
   return (
     <div className="flex justify-center items-center py-20">
       <div className="mx-3 w-3/4 max-w-4xl h-2/3 text-center">

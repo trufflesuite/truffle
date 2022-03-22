@@ -7,13 +7,13 @@ import {
   Message,
   base64ToJson
 } from "@truffle/dashboard-message-bus";
-import { useWeb3React } from "@web3-react/core";
 import { useEffect, useState } from "react";
 import { getPorts } from "./utils/utils";
 import Header from "./components/Header/Header";
 import DashboardProvider from "./components/DashboardProvider/DashboardProvider";
 import ConnectNetwork from "./components/ConnectNetwork";
 import ConfirmNetworkChanged from "./components/ConfirmNetworkChange";
+import { useNetwork } from "wagmi";
 
 function Dashboard() {
   const [paused, setPaused] = useState<boolean>(false);
@@ -23,7 +23,8 @@ function Dashboard() {
     DashboardProviderMessage[]
   >([]);
 
-  const { chainId } = useWeb3React();
+  const [{ data }] = useNetwork();
+  const chainId = data.chain?.id;
 
   useEffect(() => {
     if (!chainId || !socket) return;

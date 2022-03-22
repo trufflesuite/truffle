@@ -1,7 +1,5 @@
 import WebSocket from "isomorphic-ws";
 import { useEffect } from "react";
-import { useWeb3React } from "@web3-react/core";
-import { providers } from "ethers";
 import {
   handleDashboardProviderRequest,
   isInteractiveRequest,
@@ -11,6 +9,7 @@ import {
 import Card from "../common/Card";
 import IncomingRequest from "./IncomingRequest";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus";
+import { useConnect, useProvider } from "wagmi";
 
 interface Props {
   paused: boolean;
@@ -24,7 +23,8 @@ interface Props {
 }
 
 function DashboardProvider({ paused, socket, requests, setRequests }: Props) {
-  const { account, library } = useWeb3React<providers.Web3Provider>();
+  const provider = useProvider();
+  const [{ data: connectData }] = useConnect();
 
   useEffect(() => {
     const removeFromRequests = (id: number) => {
@@ -33,7 +33,7 @@ function DashboardProvider({ paused, socket, requests, setRequests }: Props) {
       );
     };
 
-    if (!account || !library) return;
+    if (!connectData.connected || !provider) return;
     if (paused) return;
 
     // Automatically respond with an error for unsupported requests
@@ -49,20 +49,20 @@ function DashboardProvider({ paused, socket, requests, setRequests }: Props) {
           !isInteractiveRequest(request) && !isUnsupportedRequest(request)
       )
       .forEach(request => {
-        handleDashboardProviderRequest(request, library.provider, socket);
+        handleDashboardProviderRequest(request, provider, socket);
         removeFromRequests(request.id);
       });
-  }, [paused, requests, setRequests, socket, account, library]);
+  }, [paused, requests, setRequests, socket, connectData, provider]);
 
   const incomingRequests =
-    account && library && socket
+    connectData.connected && provider && socket
       ? requests
           .filter(isInteractiveRequest)
           .map(request => (
             <IncomingRequest
               request={request}
               setRequests={setRequests}
-              provider={library.provider}
+              provider={provider}
               socket={socket}
             />
           ))

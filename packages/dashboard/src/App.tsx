@@ -1,13 +1,25 @@
-import { getLibrary } from "./utils/utils";
-import { Web3ReactProvider } from "@web3-react/core";
 import Dashboard from "./Dashboard";
+
+import { Provider, defaultChains } from "wagmi";
+import { InjectedConnector } from "wagmi/connectors/injected";
+import { WalletConnectConnector } from "wagmi/connectors/walletConnect";
+
+const connectors = [
+  new InjectedConnector({ chains: defaultChains }),
+  new WalletConnectConnector({
+    chains: defaultChains,
+    options: {
+      // infuraId: 'Your infura id',
+      qrcode: true
+    }
+  })
+];
 
 function App() {
   return (
-    //  Rework this to use WAGMI
-    <Web3ReactProvider getLibrary={getLibrary}>
+    <Provider connectors={connectors}>
       <Dashboard />
-    </Web3ReactProvider>
+    </Provider>
   );
 }
 
