@@ -1,8 +1,19 @@
 const Spinner = require("@truffle/spinners").Spinner;
+const DashboardMessageBusClient = require("./client");
 
 module.exports = {
-  initialization: function () {
-    this.logger = this.logger || console;
+  initialization: function (config) {
+    this.messageBus = new DashboardMessageBusClient(config);
+
+    this._logger = {
+      log: ((...args) => {
+        if (config.quiet) {
+          return;
+        }
+
+        (this.logger || config.logger || console).log(...args);
+      }).bind(this)
+    };
     this.pendingTransactions = [];
   },
   handlers: {
