@@ -21,10 +21,10 @@ const minimumNodeVersion = "12.0.0";
 if (!semver.gte(process.version, minimumNodeVersion)) {
   console.log(
     "Error: Node version not supported. You are currently using version " +
-      process.version.slice(1) +
-      " of Node. Truffle requires Node v" +
-      minimumNodeVersion +
-      " or higher."
+    process.version.slice(1) +
+    " of Node. Truffle requires Node v" +
+    minimumNodeVersion +
+    " or higher."
   );
 
   analytics.send({
