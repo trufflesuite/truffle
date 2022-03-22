@@ -23,6 +23,7 @@ function Dashboard() {
   const [dashboardProviderRequests, setDashboardProviderRequests] = useState<
     DashboardProviderMessage[]
   >([]);
+  const [publicChains, setPublicChains] = useState<object[]>([]);
 
   const { chainId } = useWeb3React();
 
@@ -99,6 +100,7 @@ function Dashboard() {
           setRequests={setDashboardProviderRequests}
         />
       )}
+      {!paused && socket && <div>{JSON.stringify(publicChains)}</div>}
     </div>
   );
 }
