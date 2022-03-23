@@ -25,7 +25,7 @@ function NetworkSwitcher({ chainId, publicChains }: Props) {
 
     if (!chainId) return;
     updateNetwork(chainId);
-  }, [chainId]);
+  }, [chainId, publicChains]);
 
   async function addNetwork(chain: any) {
     if (!library) return; // handle better
