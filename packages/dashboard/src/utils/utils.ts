@@ -34,6 +34,7 @@ export const forwardDashboardProviderRequest = async (
   try {
     return await sendAsync(payload);
   } catch (error) {
+    console.error(error);
     return {
       jsonrpc: payload.jsonrpc,
       id: payload.id,

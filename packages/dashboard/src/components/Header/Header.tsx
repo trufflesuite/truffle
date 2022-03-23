@@ -2,7 +2,7 @@ import { providers } from "ethers";
 import { useEffect, useState } from "react";
 import { getDisplayName } from "../../utils/utils";
 import NetworkIndicator from "../common/NetworkIndicator";
-import { useAccount, useNetwork, useProvider } from "wagmi";
+import { useAccount, useConnect, useNetwork } from "wagmi";
 
 interface Props {}
 
@@ -12,19 +12,22 @@ function Header({}: Props) {
 
   const [{ data: accountData }] = useAccount();
   const [{ data: networkData }] = useNetwork();
-  const provider = useProvider();
+  const [{ data: connectData }] = useConnect();
 
   useEffect(() => {
     const updateAccountDisplay = async (
-      provider: providers.BaseProvider,
+      provider: providers.Web3Provider,
       address: string
     ) => {
       setDisplayName(await getDisplayName(provider, address));
     };
 
-    if (!provider || !accountData) return;
-    updateAccountDisplay(provider, accountData.address);
-  }, [provider, accountData]);
+    if (!connectData || !accountData) return;
+    updateAccountDisplay(
+      connectData.connector?.getProvider(),
+      accountData.address
+    );
+  }, [connectData, accountData]);
 
   return (
     <header className="grid grid-cols-2 py-2 px-4 border-b-2 border-truffle-light text-md uppercase">

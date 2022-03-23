@@ -62,7 +62,7 @@
     "cpy-cli": "^3.1.1",
     "delay": "^5.0.0",
     "ethereum-protocol": "^1.0.1",
-    "ethers": "^5.5.2",
+    "ethers": "^5.6.1",
     "jest": "27.5.1",
     "postcss": "^8",
     "react": "^17.0.2",

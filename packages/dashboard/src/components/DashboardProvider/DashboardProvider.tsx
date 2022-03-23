@@ -9,7 +9,7 @@ import {
 import Card from "../common/Card";
 import IncomingRequest from "./IncomingRequest";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus";
-import { useConnect, useProvider } from "wagmi";
+import { useConnect } from "wagmi";
 
 interface Props {
   paused: boolean;
@@ -23,8 +23,8 @@ interface Props {
 }
 
 function DashboardProvider({ paused, socket, requests, setRequests }: Props) {
-  const provider = useProvider();
   const [{ data: connectData }] = useConnect();
+  const provider = connectData.connector?.getProvider();
 
   useEffect(() => {
     const removeFromRequests = (id: number) => {
@@ -60,6 +60,7 @@ function DashboardProvider({ paused, socket, requests, setRequests }: Props) {
           .filter(isInteractiveRequest)
           .map(request => (
             <IncomingRequest
+              key={request.id}
               request={request}
               setRequests={setRequests}
               provider={provider}
