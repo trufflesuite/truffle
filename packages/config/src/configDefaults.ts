@@ -96,16 +96,6 @@ export const getInitialConfig = ({
           },
           rpcUrls: ["https://goerli.infura.io/v3/"],
           blockExplorerUrls: ["https://goerli.etherscan.com"]
-        },
-        {
-          chainId: "0x38",
-          chainName: "Binance Smart Chain Mainnet",
-          nativeCurrency: {
-            symbol: "BNB",
-            decimals: 18
-          },
-          rpcUrls: ["https://bsc-dataseed.binance.org/"],
-          blockExplorerUrls: ["https://bscscan.com"]
         }
       ]
     },
