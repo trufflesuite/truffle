@@ -110,33 +110,6 @@ function Dashboard() {
         }
       }
     );
-    socket.send("ready");
-
-    setSubscribeSocket(socket);
-  };
-
-  const initializePubSocket = async () => {
-    if (publishSocket && publishSocket.readyState === WebSocket.OPEN) return;
-
-    const { publishPort } = await getPorts();
-    const socket = await initializeSocket(
-      publishPort,
-      (event: WebSocket.MessageEvent) => {
-        if (typeof event.data !== "string") {
-          event.data = event.data.toString();
-        }
-
-        const message = base64ToJson(event.data);
-        if (isLogMessage(message)) {
-          const logMessage = message as LogMessage;
-          console.log(
-            logMessage.payload.namespace +
-              ": " +
-              JSON.stringify(logMessage.payload.message)
-          );
-        }
-      }
-    );
 
     const message = createMessage("initialize", jsonToBase64({}));
     const response = await sendAndAwait(socket, message);
