@@ -27,8 +27,10 @@ function Dashboard() {
     number | undefined
   >();
   const [chainId, setChainId] = useState<number>();
-  const [subSocket, setSubSocket] = useState<WebSocket | undefined>();
-  const [pubSocket, setPubSocket] = useState<WebSocket | undefined>();
+  const [subscribeSocket, setSubscribeSocket] = useState<
+    WebSocket | undefined
+  >();
+  const [publishSocket, setPublishSocket] = useState<WebSocket | undefined>();
   const [dashboardProviderRequests, setDashboardProviderRequests] = useState<
     DashboardProviderMessage[]
   >([]);
@@ -40,7 +42,7 @@ function Dashboard() {
 
   useEffect(() => {
     setChainId(data.chain?.id);
-    if (!chainId || !subSocket) return;
+    if (!chainId || !subscribeSocket) return;
 
     if (connectedChainId) {
       if (connectedChainId !== chainId) setPaused(true);
@@ -48,7 +50,7 @@ function Dashboard() {
     } else {
       setConnectedChainId(chainId);
     }
-  }, [data, connectData, subSocket, chainId, connectedChainId]);
+  }, [data, connectData, subscribeSocket, chainId, connectedChainId]);
 
   const initializeSockets = async () => {
     await initializeSubSocket();
@@ -56,7 +58,8 @@ function Dashboard() {
   };
 
   const initializeSubSocket = async () => {
-    if (subSocket && subSocket.readyState === WebSocket.OPEN) return;
+    if (subscribeSocket && subscribeSocket.readyState === WebSocket.OPEN)
+      return;
 
     const { subscribePort } = await getPorts();
     const socket = await initializeSocket(
@@ -88,11 +91,11 @@ function Dashboard() {
     );
     socket.send("ready");
 
-    setSubSocket(socket);
+    setSubscribeSocket(socket);
   };
 
   const initializePubSocket = async () => {
-    if (pubSocket && pubSocket.readyState === WebSocket.OPEN) return;
+    if (publishSocket && publishSocket.readyState === WebSocket.OPEN) return;
 
     const { publishPort } = await getPorts();
     const socket = await initializeSocket(
@@ -121,7 +124,7 @@ function Dashboard() {
     } else {
       setPublicChains(response.payload.publicChains);
     }
-    setPubSocket(socket);
+    setPublishSocket(socket);
   };
 
   const initializeSocket = async (
@@ -145,8 +148,8 @@ function Dashboard() {
     disconnect();
     setConnectedChainId(undefined);
     setPaused(false);
-    subSocket?.close();
-    setSubSocket(undefined);
+    subscribeSocket?.close();
+    setSubscribeSocket(undefined);
   };
 
   return (
@@ -159,11 +162,13 @@ function Dashboard() {
           confirm={() => setConnectedChainId(chainId)}
         />
       )}
-      {!paused && !subSocket && <ConnectNetwork confirm={initializeSockets} />}
-      {!paused && subSocket && (
+      {!paused && !subscribeSocket && (
+        <ConnectNetwork confirm={initializeSockets} />
+      )}
+      {!paused && subscribeSocket && (
         <DashboardProvider
           paused={paused}
-          socket={subSocket}
+          socket={subscribeSocket}
           requests={dashboardProviderRequests}
           setRequests={setDashboardProviderRequests}
         />
