@@ -107,11 +107,7 @@ function Dashboard() {
     // since our socket is open, request some initial data from the server
     const message = createMessage("initialize", ""); // no payload needed
     const response = await sendAndAwait(socket, message);
-    if (response.payload.error) {
-      console.log("error on initialization: " + JSON.stringify(response));
-    } else {
-      setPublicChains(response.payload.publicChains);
-    }
+    setPublicChains(response.payload.publicChains);
 
     setPublishSocket(socket);
   };
