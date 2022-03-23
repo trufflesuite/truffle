@@ -3,12 +3,17 @@ import { providers } from "ethers";
 import { useEffect, useState } from "react";
 import { getDisplayName } from "../../utils/utils";
 import NetworkIndicator from "../common/NetworkIndicator";
+import NetworkSwitcher from "../common/NetworkSwitcher";
 
-interface Props {}
+interface Props {
+  publicChains: object[];
+}
 
-function Header({}: Props) {
+function Header({ publicChains }: Props) {
   const [displayName, setDisplayName] = useState<string>();
   const { account, library, chainId } = useWeb3React<providers.Web3Provider>();
+  const networkSwitchingSupported = true;
+  console.log(useWeb3React());
 
   useEffect(() => {
     const updateAccountDisplay = async (
@@ -31,7 +36,12 @@ function Header({}: Props) {
         </span>
       </div>
       <div className="flex justify-end items-center gap-4 text-md">
-        {chainId && <NetworkIndicator chainId={chainId} />}
+        {chainId &&
+          (networkSwitchingSupported ? (
+            <NetworkSwitcher chainId={chainId} publicChains={publicChains} />
+          ) : (
+            <NetworkIndicator chainId={chainId} />
+          ))}
         <div>{displayName}</div>
       </div>
     </header>
