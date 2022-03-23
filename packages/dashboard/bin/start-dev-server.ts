@@ -4,7 +4,6 @@ const options = {
   port: 24012,
   host: "localhost",
   verbose: true,
-  rpc: true,
   autoOpen: false,
   publicChains: [
     {

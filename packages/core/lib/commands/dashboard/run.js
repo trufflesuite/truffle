@@ -8,10 +8,9 @@ module.exports = async function (options) {
   const port = options.port || config.dashboard.port;
   const host = options.host || config.dashboard.host;
   const verbose = options.verbose || config.dashboard.verbose;
-  const rpc = true;
   const publicChains = config.dashboard.publicChains;
 
-  const dashboardServerOptions = { port, host, verbose, rpc, publicChains };
+  const dashboardServerOptions = { port, host, verbose, publicChains };
   const dashboardServer = new DashboardServer(dashboardServerOptions);
   await dashboardServer.start();
 
