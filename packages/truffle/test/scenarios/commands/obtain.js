@@ -41,7 +41,7 @@ describe("truffle obtain", function () {
   });
 
   it("respects the `quiet` option", async function () {
-    this.timeout(70000);
+    this.timeout(80000);
     // ensure the compiler does not yet exist
     try {
       fse.unlinkSync(expectedPath);
