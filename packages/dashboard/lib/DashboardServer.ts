@@ -206,13 +206,12 @@ export class DashboardServer {
       this.messageBus.subscribePort,
       this.host
     );
-    console.log("server connected to subscribe port");
 
     socket.addEventListener("message", (event: WebSocket.MessageEvent) => {
       if (typeof event.data !== "string") {
         event.data = event.data.toString();
       }
-      console.log("server subscribe socket received message: " + event.data);
+
       const message = base64ToJson(event.data);
       if (isInitializeMessage(message)) {
         const responseMessage = {
