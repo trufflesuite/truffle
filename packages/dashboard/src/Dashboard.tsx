@@ -7,10 +7,8 @@ import {
   isDebugMessage,
   Message,
   base64ToJson,
-  LogMessage,
   sendAndAwait,
-  createMessage,
-  isLogMessage
+  createMessage
 } from "@truffle/dashboard-message-bus";
 import { useEffect, useState } from "react";
 import { getPorts, respond } from "./utils/utils";
@@ -60,33 +58,37 @@ function Dashboard() {
       return;
 
     const { subscribePort } = await getPorts();
-    const socket = await initializeSocket(
+    const messageBusHost = window.location.hostname;
+    const socket = await connectToMessageBusWithRetries(
       subscribePort,
-      (event: WebSocket.MessageEvent) => {
-        if (typeof event.data !== "string") {
-          event.data = event.data.toString();
-        }
-
-        const message = base64ToJson(event.data) as Message;
-
-        console.debug("Received message", message);
-
-        if (isDashboardProviderMessage(message)) {
-          setDashboardProviderRequests(previousRequests => [
-            ...previousRequests,
-            message
-          ]);
-        } else if (isInvalidateMessage(message)) {
-          setDashboardProviderRequests(previousRequests =>
-            previousRequests.filter(request => request.id !== message.payload)
-          );
-        } else if (isDebugMessage(message)) {
-          const { payload } = message;
-          console.log(payload.message);
-          respond({ id: message.id }, socket);
-        }
-      }
+      messageBusHost
     );
+
+    socket.addEventListener("message", (event: WebSocket.MessageEvent) => {
+      if (typeof event.data !== "string") {
+        event.data = event.data.toString();
+      }
+
+      const message = base64ToJson(event.data) as Message;
+
+      console.debug("Received message", message);
+
+      if (isDashboardProviderMessage(message)) {
+        setDashboardProviderRequests(previousRequests => [
+          ...previousRequests,
+          message
+        ]);
+      } else if (isInvalidateMessage(message)) {
+        setDashboardProviderRequests(previousRequests =>
+          previousRequests.filter(request => request.id !== message.payload)
+        );
+      } else if (isDebugMessage(message)) {
+        const { payload } = message;
+        console.log(payload.message);
+        respond({ id: message.id }, socket);
+      }
+    });
+
     socket.send("ready");
 
     setSubscribeSocket(socket);
@@ -96,23 +98,10 @@ function Dashboard() {
     if (publishSocket && publishSocket.readyState === WebSocket.OPEN) return;
 
     const { publishPort } = await getPorts();
-    const socket = await initializeSocket(
+    const messageBusHost = window.location.hostname;
+    const socket = await connectToMessageBusWithRetries(
       publishPort,
-      (event: WebSocket.MessageEvent) => {
-        if (typeof event.data !== "string") {
-          event.data = event.data.toString();
-        }
-
-        const message = base64ToJson(event.data);
-        if (isLogMessage(message)) {
-          const logMessage = message as LogMessage;
-          console.log(
-            logMessage.payload.namespace +
-              ": " +
-              JSON.stringify(logMessage.payload.message)
-          );
-        }
-      }
+      messageBusHost
     );
 
     // since our socket is open, request some initial data from the server
@@ -127,21 +116,6 @@ function Dashboard() {
     setPublishSocket(socket);
   };
 
-  const initializeSocket = async (
-    port: number,
-    messageEventHandler: (event: WebSocket.MessageEvent) => void
-  ) => {
-    const messageBusHost = window.location.hostname;
-    const connectedSocket = await connectToMessageBusWithRetries(
-      port,
-      messageBusHost
-    );
-
-    connectedSocket.addEventListener("message", messageEventHandler);
-
-    return connectedSocket;
-  };
-
   const disconnectAccount = () => {
     console.log("Disconnecting:");
     // turn everything off.
@@ -150,6 +124,8 @@ function Dashboard() {
     setPaused(false);
     subscribeSocket?.close();
     setSubscribeSocket(undefined);
+    publishSocket?.close();
+    setPublishSocket(undefined);
   };
 
   return (
