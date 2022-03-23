@@ -46,8 +46,7 @@ function Dashboard() {
   }, [chainId, connectedChainId, subscribeSocket]);
 
   const initializeSockets = async () => {
-    await initializeSubSocket();
-    await initializePubSocket();
+    await Promise.all([initializeSubSocket(), initializePubSocket()]);
   };
 
   const initializeSubSocket = async () => {
