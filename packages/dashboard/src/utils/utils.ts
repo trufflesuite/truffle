@@ -31,16 +31,20 @@ export const forwardDashboardProviderRequest = async (
   connector: any,
   payload: JSONRPCRequestPayload
 ) => {
+  console.log("forwardDashboardProviderRequest:input", {
+    id: payload.id,
+    provider,
+    connector,
+    payload
+  });
   const sendAsync = promisify(provider.sendAsync.bind(provider));
   try {
     let result = await sendAsync(payload);
     let connectorId: string | undefined = connector?.id;
-    console.log("forwardDashboardProviderRequest:", {
-      provider,
+    console.log("forwardDashboardProviderRequest:result", {
+      id: payload.id,
       payload,
-      t: typeof result,
-      result,
-      connector
+      result
     });
     if (connectorId === "injected") {
       // we should get full RPC json payloads returned.
@@ -69,6 +73,11 @@ export const handleDashboardProviderRequest = async (
   connector: any,
   responseSocket: WebSocket
 ) => {
+  console.log("handleDashboardProviderRequest:input", {
+    request,
+    provider,
+    connector
+  });
   const responsePayload = await forwardDashboardProviderRequest(
     provider,
     connector,
@@ -78,10 +87,8 @@ export const handleDashboardProviderRequest = async (
     id: request.id,
     payload: responsePayload
   };
-  console.debug("handleDashboardProviderRequest", {
+  console.log("handleDashboardProviderRequest:responding", {
     request,
-    provider,
-    responsePayload,
     response
   });
   respond(response, responseSocket);

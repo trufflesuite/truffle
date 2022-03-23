@@ -14,29 +14,39 @@ import Header from "./components/Header/Header";
 import DashboardProvider from "./components/DashboardProvider/DashboardProvider";
 import ConnectNetwork from "./components/ConnectNetwork";
 import ConfirmNetworkChanged from "./components/ConfirmNetworkChange";
-import { useNetwork } from "wagmi";
+import { useAccount, useConnect, useNetwork } from "wagmi";
 
 function Dashboard() {
   const [paused, setPaused] = useState<boolean>(false);
-  const [connectedChainId, setConnectedChainId] = useState<number>();
+  const [connected, setConnected] = useState<boolean>(false);
+  const [connectedChainId, setConnectedChainId] = useState<
+    number | undefined
+  >();
+  const [chainId, setChainId] = useState<number>();
   const [socket, setSocket] = useState<WebSocket | undefined>();
   const [dashboardProviderRequests, setDashboardProviderRequests] = useState<
     DashboardProviderMessage[]
   >([]);
 
   const [{ data }] = useNetwork();
+  const [{}, disconnect] = useAccount();
+  const [{ data: connectData }] = useConnect();
+
+  const [{ data }] = useNetwork();
   const chainId = data.chain?.id;
 
   useEffect(() => {
-    if (!chainId || !socket) return;
+    setConnected(connectData.connected);
+    setChainId(chainId);
 
+    if (!chainId || !socket) return;
     if (connectedChainId) {
       if (connectedChainId !== chainId) setPaused(true);
       if (connectedChainId === chainId) setPaused(false);
     } else {
       setConnectedChainId(chainId);
     }
-  }, [chainId, connectedChainId, socket]);
+  }, [data, connectData, socket, chainId, connectedChainId]);
 
   const initializeSocket = async () => {
     if (socket && socket.readyState === WebSocket.OPEN) return;
@@ -81,9 +91,22 @@ function Dashboard() {
     setSocket(connectedSocket);
   };
 
+  const disconnectAccount = () => {
+    console.log("Disconnecting:");
+    // turn everything off.
+    disconnect();
+    setConnectedChainId(undefined);
+    setPaused(false);
+    socket?.close();
+    setSocket(undefined);
+  };
+
   return (
     <div className="h-full min-h-screen bg-gradient-to-b from-truffle-lighter to-truffle-light">
-      <Header />
+      <Header disconnect={disconnectAccount} />
+      STATUS: connected: [{connected}] chainID: [{chainId}] paused: [
+      {paused.toString()}] connectedChainId: [{connectedChainId}] socket: [
+      {socket?.toString()}]
       {paused && chainId && connectedChainId && (
         <ConfirmNetworkChanged
           newChainId={chainId}
