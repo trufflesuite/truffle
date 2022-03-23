@@ -1,7 +1,10 @@
 const Writable = require("stream").Writable;
+const DashboardMessageBusClient = require("./client");
 
 module.exports = {
   initialization: function (config) {
+    this.messageBus = new DashboardMessageBusClient(config);
+
     this._logger = {
       log: ((...args) => {
         if (config.quiet) {
@@ -13,6 +16,16 @@ module.exports = {
     };
   },
   handlers: {
+    "compile:start": [
+      async function () {
+        await this.messageBus.sendAndAwait({
+          type: "debug",
+          payload: {
+            message: "compile:start"
+          }
+        });
+      }
+    ],
     "rpc:request": [
       function (event) {
         const { payload } = event;
