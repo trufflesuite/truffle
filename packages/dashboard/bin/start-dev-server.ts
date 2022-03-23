@@ -58,14 +58,14 @@ const options = {
       blockExplorerUrls: ["https://goerli.etherscan.com"]
     },
     {
-      chainId: "0x38",
-      chainName: "Binance Smart Chain Mainnet",
+      chainId: "0xFA",
+      chainName: "Fantom Opera",
       nativeCurrency: {
-        symbol: "BNB",
+        symbol: "FTM",
         decimals: 18
       },
-      rpcUrls: ["https://bsc-dataseed.binance.org/"],
-      blockExplorerUrls: ["https://bscscan.com"]
+      rpcUrls: ["https://rpc.ftm.tools/"],
+      blockExplorerUrls: ["https://ftmscan.com/"]
     }
   ]
 };
