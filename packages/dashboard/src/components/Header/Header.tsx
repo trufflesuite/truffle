@@ -13,7 +13,6 @@ function Header({ publicChains }: Props) {
   const [displayName, setDisplayName] = useState<string>();
   const { account, library, chainId } = useWeb3React<providers.Web3Provider>();
   const networkSwitchingSupported = true;
-  console.log(useWeb3React());
 
   useEffect(() => {
     const updateAccountDisplay = async (
