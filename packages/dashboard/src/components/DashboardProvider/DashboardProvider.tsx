@@ -11,6 +11,7 @@ import {
 import Card from "../common/Card";
 import IncomingRequest from "./IncomingRequest";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus";
+import SendTransaction from "./SendTransaction";
 
 interface Props {
   paused: boolean;
@@ -69,9 +70,16 @@ function DashboardProvider({ paused, socket, requests, setRequests }: Props) {
       : [];
 
   return (
-    <div className="flex justify-center items-center py-20">
-      <div className="mx-3 w-3/4 max-w-4xl h-2/3">
-        <Card header="Incoming Requests" body={incomingRequests} />
+    <div>
+      <div className="flex justify-center items-center py-20 pb-0">
+        <div className="mx-3 w-3/4 max-w-4xl h-1/3">
+          <SendTransaction requests={requests} setRequests={setRequests} />
+        </div>
+      </div>
+      <div className="flex justify-center items-center py-10">
+        <div className="mx-3 w-3/4 max-w-4xl h-2/3">
+          <Card header="Incoming Requests" body={incomingRequests} />
+        </div>
       </div>
     </div>
   );

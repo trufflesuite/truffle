@@ -18,6 +18,7 @@ import DashboardProvider from "./components/DashboardProvider/DashboardProvider"
 import ConnectNetwork from "./components/ConnectNetwork";
 import ConfirmNetworkChanged from "./components/ConfirmNetworkChange";
 
+
 function Dashboard() {
   const [paused, setPaused] = useState<boolean>(false);
   const [connectedChainId, setConnectedChainId] = useState<number>();
