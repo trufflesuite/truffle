@@ -10,7 +10,8 @@ import {
   DashboardMessageBus,
   LogMessage,
   sendAndAwait,
-  jsonToBase64
+  jsonToBase64,
+  isInitializeMessage
 } from "@truffle/dashboard-message-bus";
 import cors from "cors";
 import type { Server } from "http";
@@ -65,7 +66,8 @@ export class DashboardServer {
   private expressApp?: Application;
   private httpServer?: Server;
   private messageBus?: DashboardMessageBus;
-  private socket?: WebSocket;
+  private publishSocket?: WebSocket;
+  private subscribeSocket: WebSocket;
 
   boundTerminateListener: () => void;
 
@@ -99,10 +101,11 @@ export class DashboardServer {
 
     this.expressApp.get("/ports", this.getPorts.bind(this));
 
-    if (this.rpc) {
-      this.socket = await this.connectToMessageBus();
+    this.subscribeSocket = await this.connectToSubscribePort();
 
-      this.sendInitializeMessage();
+    if (this.rpc) {
+      this.publishSocket = await this.connectToPublishPort();
+
       this.expressApp.post("/rpc", this.postRpc.bind(this));
     }
 
@@ -120,7 +123,8 @@ export class DashboardServer {
   async stop() {
     this.messageBus?.off("terminate", this.boundTerminateListener);
     await this.messageBus?.terminate();
-    this.socket?.terminate();
+    this.publishSocket?.terminate();
+    this.subscribeSocket.terminate();
     return new Promise<void>(resolve => {
       this.httpServer?.close(() => resolve());
     });
@@ -138,30 +142,13 @@ export class DashboardServer {
     });
   }
 
-  /**
-   * Emits an event of type "initialize" to send initial data to dashboard UI.
-   */
-  private sendInitializeMessage() {
-    if (!this.socket) {
-      throw new Error("Not connected to message bus");
-    }
-
-    const data = {
-      type: "initialize",
-      payload: { publicChains: this.publicChains },
-      id: Math.random()
-    };
-
-    this.socket.send(jsonToBase64(data));
-  }
-
   private postRpc(req: Request, res: Response, next: NextFunction) {
-    if (!this.socket) {
+    if (!this.publishSocket) {
       throw new Error("Not connected to message bus");
     }
 
     const message = createMessage("provider", req.body);
-    sendAndAwait(this.socket, message)
+    sendAndAwait(this.publishSocket, message)
       .then(response => res.json(response.payload))
       .catch(next);
   }
@@ -181,7 +168,7 @@ export class DashboardServer {
     return messageBus;
   }
 
-  private async connectToMessageBus() {
+  private async connectToPublishPort() {
     if (!this.messageBus) {
       throw new Error("Message bus has not been started yet");
     }
@@ -207,6 +194,35 @@ export class DashboardServer {
       });
     }
 
+    return socket;
+  }
+
+  private async connectToSubscribePort() {
+    if (!this.messageBus) {
+      throw new Error("Message bus has not been started yet");
+    }
+
+    const socket = await connectToMessageBusWithRetries(
+      this.messageBus.subscribePort,
+      this.host
+    );
+    console.log("server connected to subscribe port");
+
+    socket.addEventListener("message", (event: WebSocket.MessageEvent) => {
+      if (typeof event.data !== "string") {
+        event.data = event.data.toString();
+      }
+      console.log("server subscribe socket received message: " + event.data);
+      const message = base64ToJson(event.data);
+      if (isInitializeMessage(message)) {
+        const responseMessage = {
+          id: message.id,
+          payload: { publicChains: this.publicChains }
+        };
+        socket.send(jsonToBase64(responseMessage));
+      }
+    });
+    socket.send("ready");
     return socket;
   }
 }

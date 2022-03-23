@@ -6,7 +6,12 @@ import {
   isInvalidateMessage,
   isDebugMessage,
   Message,
-  base64ToJson
+  base64ToJson,
+  LogMessage,
+  sendAndAwait,
+  createMessage,
+  jsonToBase64,
+  isLogMessage
 } from "@truffle/dashboard-message-bus";
 import { useWeb3React } from "@web3-react/core";
 import { useEffect, useState } from "react";
@@ -19,7 +24,8 @@ import ConfirmNetworkChanged from "./components/ConfirmNetworkChange";
 function Dashboard() {
   const [paused, setPaused] = useState<boolean>(false);
   const [connectedChainId, setConnectedChainId] = useState<number>();
-  const [socket, setSocket] = useState<WebSocket | undefined>();
+  const [subSocket, setSubSocket] = useState<WebSocket | undefined>();
+  const [pubSocket, setPubSocket] = useState<WebSocket | undefined>();
   const [dashboardProviderRequests, setDashboardProviderRequests] = useState<
     DashboardProviderMessage[]
   >([]);
@@ -28,7 +34,7 @@ function Dashboard() {
   const { chainId } = useWeb3React();
 
   useEffect(() => {
-    if (!chainId || !socket) return;
+    if (!chainId || !subSocket) return;
 
     if (connectedChainId) {
       if (connectedChainId !== chainId) setPaused(true);
@@ -36,20 +42,19 @@ function Dashboard() {
     } else {
       setConnectedChainId(chainId);
     }
-  }, [chainId, connectedChainId, socket]);
+  }, [chainId, connectedChainId, subSocket]);
 
-  const initializeSocket = async () => {
-    if (socket && socket.readyState === WebSocket.OPEN) return;
+  const initializeSockets = async () => {
+    await initializeSubSocket();
+    await initializePubSocket();
+  };
 
-    const messageBusHost = window.location.hostname;
+  const initializeSubSocket = async () => {
+    if (subSocket && subSocket.readyState === WebSocket.OPEN) return;
+
     const { subscribePort } = await getPorts();
-    const connectedSocket = await connectToMessageBusWithRetries(
+    const socket = await initializeSocket(
       subscribePort,
-      messageBusHost
-    );
-
-    connectedSocket.addEventListener(
-      "message",
       (event: WebSocket.MessageEvent) => {
         if (typeof event.data !== "string") {
           event.data = event.data.toString();
@@ -71,14 +76,61 @@ function Dashboard() {
         } else if (isDebugMessage(message)) {
           const { payload } = message;
           console.log(payload.message);
-          respond({ id: message.id }, connectedSocket);
+          respond({ id: message.id }, socket);
+        }
+      }
+    );
+    socket.send("ready");
+
+    setSubSocket(socket);
+  };
+
+  const initializePubSocket = async () => {
+    if (pubSocket && pubSocket.readyState === WebSocket.OPEN) return;
+
+    const { publishPort } = await getPorts();
+    const socket = await initializeSocket(
+      publishPort,
+      (event: WebSocket.MessageEvent) => {
+        if (typeof event.data !== "string") {
+          event.data = event.data.toString();
+        }
+
+        const message = base64ToJson(event.data);
+        if (isLogMessage(message)) {
+          const logMessage = message as LogMessage;
+          console.log(
+            logMessage.payload.namespace +
+              ": " +
+              JSON.stringify(logMessage.payload.message)
+          );
         }
       }
     );
 
-    connectedSocket.send("ready");
+    const message = createMessage("initialize", jsonToBase64({}));
+    const response = await sendAndAwait(socket, message);
+    if (response.payload.error) {
+      console.log("error on initialization: " + JSON.stringify(response));
+    } else {
+      setPublicChains(response.payload.publicChains);
+    }
+    setPubSocket(socket);
+  };
 
-    setSocket(connectedSocket);
+  const initializeSocket = async (
+    port: number,
+    messageEventHandler: (event: WebSocket.MessageEvent) => void
+  ) => {
+    const messageBusHost = window.location.hostname;
+    const connectedSocket = await connectToMessageBusWithRetries(
+      port,
+      messageBusHost
+    );
+
+    connectedSocket.addEventListener("message", messageEventHandler);
+
+    return connectedSocket;
   };
 
   return (
@@ -91,11 +143,11 @@ function Dashboard() {
           confirm={() => setConnectedChainId(chainId)}
         />
       )}
-      {!paused && !socket && <ConnectNetwork confirm={initializeSocket} />}
-      {!paused && socket && (
+      {!paused && !subSocket && <ConnectNetwork confirm={initializeSockets} />}
+      {!paused && subSocket && (
         <DashboardProvider
           paused={paused}
-          socket={socket}
+          socket={subSocket}
           requests={dashboardProviderRequests}
           setRequests={setDashboardProviderRequests}
         />
