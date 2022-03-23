@@ -25,6 +25,7 @@ interface Props {
 function DashboardProvider({paused, socket, requests, setRequests}: Props) {
   const [{data: connectData}] = useConnect();
   const provider = connectData.connector?.getProvider();
+  const connector = connectData.connector;
 
   useEffect(() => {
     const removeFromRequests = (id: number) => {
@@ -49,10 +50,10 @@ function DashboardProvider({paused, socket, requests, setRequests}: Props) {
           !isInteractiveRequest(request) && !isUnsupportedRequest(request)
       )
       .forEach(request => {
-        handleDashboardProviderRequest(request, provider, socket);
+        handleDashboardProviderRequest(request, provider, connector, socket);
         removeFromRequests(request.id);
       });
-  }, [paused, requests, setRequests, socket, connectData, provider]);
+  }, [paused, requests, setRequests, socket, connectData, provider, connector]);
 
   const incomingRequests =
     connectData.connected && provider && socket
@@ -64,6 +65,7 @@ function DashboardProvider({paused, socket, requests, setRequests}: Props) {
             request={request}
             setRequests={setRequests}
             provider={provider}
+            connector={connector}
             socket={socket}
           />
         ))

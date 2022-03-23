@@ -5,17 +5,20 @@ import {InjectedConnector} from 'wagmi/connectors/injected';
 import {WalletConnectConnector} from 'wagmi/connectors/walletConnect';
 
 import {getDefaultProvider, providers as ethproviders} from "ethers";
-import { getNetwork } from "@ethersproject/providers";
+import {getNetwork} from "@ethersproject/providers";
 
 const defaultChain = chain.mainnet;
 
 const getProvider = (_config: { chainId?: number; connector?: Connector }) => {
-  let wProvider: any = window.ethereum;
-  console.log("getProvider", {wProvider, winEth: window.ethereum});
+  let wProvider = _config.connector?.getProvider(true);
+  console.log("getProvider", {wProvider, winEth: window.ethereum, _config, INFURA_ID: process.env.REACT_APP_INFURA_ID});
   let ret: any;
-  if(!wProvider){
+  if (!wProvider) {
     ret = getDefaultProvider(getNetwork(_config.chainId ?? defaultChain.id));
   } else {
+    wProvider.enable()
+      .then((r: any) => console.log(r))
+      .catch((e: any) => console.error(e));
     ret = new ethproviders.Web3Provider(wProvider);
   }
   console.log("getProvider.returning", {wProvider, winEth: window.ethereum, ret});
@@ -27,6 +30,7 @@ const connectors = [
   new WalletConnectConnector({
     chains: defaultChains,
     options: {
+      infuraId: process.env.REACT_APP_INFURA_ID,
       qrcode: true,
     },
   }),
