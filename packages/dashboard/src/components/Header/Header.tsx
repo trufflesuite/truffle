@@ -2,6 +2,7 @@ import { useWeb3React } from "@web3-react/core";
 import { providers } from "ethers";
 import { useEffect, useState } from "react";
 import { getDisplayName } from "../../utils/utils";
+import Dropdown from "../common/Dropdown";
 import NetworkIndicator from "../common/NetworkIndicator";
 
 interface Props {}
@@ -33,6 +34,7 @@ function Header({}: Props) {
       <div className="flex justify-end items-center gap-4 text-md">
         {chainId && <NetworkIndicator chainId={chainId} />}
         <div>{displayName}</div>
+        <Dropdown networkOne="Hello" networkTwo="hola" networkThree="Yo"></Dropdown>
       </div>
     </header>
   );
