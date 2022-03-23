@@ -2,30 +2,46 @@ const {
   connectToMessageBusWithRetries,
   createMessage,
   getMessageBusPorts,
-  sendAndAwait
+  sendAndAwait,
+  MessageBusConnectionError
 } = require("@truffle/dashboard-message-bus");
 
 module.exports = class DashboardMessageBusClient {
   constructor(config) {
-    this.ready = (async () => {
-      const dashboard = config.dashboard || {
-        host: "localhost",
-        port: 24012
-      };
+    this.config = config.dashboard || {
+      host: "localhost",
+      port: 24012
+    };
+  }
 
-      const { publishPort } = await getMessageBusPorts(
-        dashboard.port,
-        dashboard.host
-      );
+  async _getSocket() {
+    if (this._socket) {
+      return this._socket;
+    }
 
-      return await connectToMessageBusWithRetries(publishPort, dashboard.host);
-    })();
+    const { publishPort } = await getMessageBusPorts(
+      this.config.port,
+      this.config.host
+    );
+
+    this._socket = await connectToMessageBusWithRetries(
+      publishPort,
+      this.config.host
+    );
+
+    return this._socket;
   }
 
   async sendAndAwait({ type, payload }) {
-    const socket = await this.ready;
-    const message = createMessage(type, payload);
+    try {
+      const socket = await this._getSocket();
+      const message = createMessage(type, payload);
 
-    return await sendAndAwait(socket, message);
+      return await sendAndAwait(socket, message);
+    } catch (err) {
+      if (!(err instanceof MessageBusConnectionError)) {
+        throw err;
+      } else return;
+    }
   }
 };
