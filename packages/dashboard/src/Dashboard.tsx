@@ -10,7 +10,6 @@ import {
   LogMessage,
   sendAndAwait,
   createMessage,
-  jsonToBase64,
   isLogMessage
 } from "@truffle/dashboard-message-bus";
 import { useEffect, useState } from "react";
@@ -117,13 +116,15 @@ function Dashboard() {
       }
     );
 
-    const message = createMessage("initialize", jsonToBase64({}));
+    // since our socket is open, request some initial data from the server
+    const message = createMessage("initialize", ""); // no payload needed
     const response = await sendAndAwait(socket, message);
     if (response.payload.error) {
       console.log("error on initialization: " + JSON.stringify(response));
     } else {
       setPublicChains(response.payload.publicChains);
     }
+
     setPublishSocket(socket);
   };
 
