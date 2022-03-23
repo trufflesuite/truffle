@@ -32,6 +32,16 @@ export interface LogMessage extends Message {
 }
 
 /**
+ * Message to log in Dashboard browser console
+ */
+export interface DebugMessage extends Message {
+  type: "debug";
+  payload: {
+    message: string;
+  };
+}
+
+/**
  * Message intended to invalidate earlier messages.
  * The payload is the ID of the message that should be invalidated.
  * This is an internal message type that is not intended to be used by publishers or subscribers.
@@ -49,6 +59,10 @@ export const isDashboardProviderMessage = (
 
 export const isLogMessage = (message: Message): message is LogMessage => {
   return message.type === "log";
+};
+
+export const isDebugMessage = (message: Message): message is DebugMessage => {
+  return message.type === "debug";
 };
 
 export const isInvalidateMessage = (
