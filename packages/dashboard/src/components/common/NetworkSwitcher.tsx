@@ -1,4 +1,5 @@
 import { useWeb3React } from "@web3-react/core";
+import axios from "axios";
 import { providers } from "ethers";
 import { useEffect, useState } from "react";
 import {
@@ -27,6 +28,20 @@ function NetworkSwitcher({ chainId, publicChains }: Props) {
     updateNetwork(chainId);
   }, [chainId, publicChains]);
 
+  async function getVerifiedChainId(chain: any) {
+    try {
+      const { data } = await axios.post(chain.rpcUrls[0], {
+        jsonrpc: "2.0",
+        method: "eth_chainId",
+        params: [],
+        id: 0
+      });
+      return data.result;
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
   async function addNetwork(chain: any) {
     if (!library) return; // handle better
     const provider = library.provider;
@@ -52,6 +67,9 @@ function NetworkSwitcher({ chainId, publicChains }: Props) {
   async function setOrAddNetwork(chain: any) {
     if (!library) return; // handle better
     const provider = library.provider;
+    if (!chain.chainId) {
+      chain.chainId = await getVerifiedChainId(chain);
+    }
     const switchNetworkPayload = {
       jsonrpc: "2.0",
       method: "wallet_switchEthereumChain",
