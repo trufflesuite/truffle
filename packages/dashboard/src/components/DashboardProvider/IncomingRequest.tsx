@@ -14,10 +14,17 @@ interface Props {
       | ((requests: DashboardProviderMessage[]) => DashboardProviderMessage[])
   ) => void;
   provider: any;
+  connector: any;
   socket: WebSocket;
 }
 
-function IncomingRequest({ provider, socket, request, setRequests }: Props) {
+function IncomingRequest({
+  provider,
+  connector,
+  socket,
+  request,
+  setRequests
+}: Props) {
   const [disable, setDisable] = useState(false);
 
   const removeFromRequests = () => {
@@ -27,7 +34,7 @@ function IncomingRequest({ provider, socket, request, setRequests }: Props) {
   };
 
   const process = async () => {
-    await handleDashboardProviderRequest(request, provider, socket);
+    await handleDashboardProviderRequest(request, provider, connector, socket);
     removeFromRequests();
   };
 
@@ -107,14 +114,22 @@ function IncomingRequest({ provider, socket, request, setRequests }: Props) {
 
   const body = <div>{formatDashboardProviderRequestParameters(request)}</div>;
 
-  const footer = disable
-    ? <div className="flex justify-start items-center gap-2">
-        <Button disabled onClick={() => {}} text="Processing..." />
-      </div>
-    : <div className="flex justify-start items-center gap-2">
-        <Button onClick={() => {process(); setDisable(true);}} text="Process" />
-        <Button onClick={reject} text="Reject" />
-      </div>;
+  const footer = disable ? (
+    <div className="flex justify-start items-center gap-2">
+      <Button disabled onClick={() => {}} text="Processing..." />
+    </div>
+  ) : (
+    <div className="flex justify-start items-center gap-2">
+      <Button
+        onClick={() => {
+          process();
+          setDisable(true);
+        }}
+        text="Process"
+      />
+      <Button onClick={reject} text="Reject" />
+    </div>
+  );
 
   return (
     <div key={request.id} className="flex justify-center items-center">

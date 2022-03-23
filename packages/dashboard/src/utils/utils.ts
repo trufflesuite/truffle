@@ -28,11 +28,31 @@ export const isUnsupportedRequest = (request: DashboardProviderMessage) =>
 
 export const forwardDashboardProviderRequest = async (
   provider: any,
+  connector: any,
   payload: JSONRPCRequestPayload
 ) => {
   const sendAsync = promisify(provider.sendAsync.bind(provider));
   try {
-    return await sendAsync(payload);
+    let result = await sendAsync(payload);
+    let connectorId: string | undefined = connector?.id;
+    console.log("forwardDashboardProviderRequest:", {
+      provider,
+      payload,
+      t: typeof result,
+      result,
+      connector
+    });
+    if (connectorId === "injected") {
+      // we should get full RPC json payloads returned.
+      return result;
+    } else {
+      // we may just get the result object itself, no RPC wrapper.
+      return {
+        jsonrpc: payload.jsonrpc,
+        id: payload.id,
+        result
+      };
+    }
   } catch (error) {
     console.error(error);
     return {
@@ -46,17 +66,24 @@ export const forwardDashboardProviderRequest = async (
 export const handleDashboardProviderRequest = async (
   request: DashboardProviderMessage,
   provider: any,
+  connector: any,
   responseSocket: WebSocket
 ) => {
   const responsePayload = await forwardDashboardProviderRequest(
     provider,
+    connector,
     request.payload
   );
   const response = {
     id: request.id,
     payload: responsePayload
   };
-
+  console.debug("handleDashboardProviderRequest", {
+    request,
+    provider,
+    responsePayload,
+    response
+  });
   respond(response, responseSocket);
 };
 

@@ -19,7 +19,6 @@ function ConnectNetwork({ confirm }: Props) {
     <div>
       {connectData.connectors.map(connector => (
         <Button
-          // disabled={!connector.ready}
           key={connector.id}
           onClick={() => connect(connector)}
           text={connector.name}
