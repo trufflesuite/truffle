@@ -2,19 +2,22 @@ import { providers } from "ethers";
 import { useEffect, useState } from "react";
 import { getDisplayName } from "src/utils/utils";
 import NetworkIndicator from "src/components/common/NetworkIndicator";
+import NetworkSwitcher from "src/components/common/NetworkSwitcher";
 import { useAccount, useConnect, useNetwork } from "wagmi";
 import Button from "../common/Button";
 
 interface Props {
   disconnect: () => void;
+  publicChains: object[];
 }
 
-function Header({ disconnect }: Props) {
+function Header({ disconnect, publicChains }: Props) {
   const [displayName, setDisplayName] = useState<string>();
 
   const [{ data: accountData }] = useAccount();
   const [{ data: networkData }] = useNetwork();
   const [{ data: connectData }] = useConnect();
+  const networkSwitchingSupported = true;
 
   useEffect(() => {
     const updateAccountDisplay = async (
@@ -44,9 +47,15 @@ function Header({ disconnect }: Props) {
         </span>
       </div>
       <div className="flex justify-end items-center gap-4 text-md">
-        {networkData.chain?.id && (
-          <NetworkIndicator chainId={networkData.chain.id} />
-        )}
+        {networkData.chain?.id &&
+          (networkSwitchingSupported ? (
+            <NetworkSwitcher
+              chainId={networkData.chain.id}
+              publicChains={publicChains}
+            />
+          ) : (
+            <NetworkIndicator chainId={networkData.chain.id} />
+          ))}
         {networkData.chain?.id && (
           <Button onClick={disconnect} size={"sm"} color={"red"}>
             disconnect
