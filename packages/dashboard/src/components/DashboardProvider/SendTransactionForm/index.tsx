@@ -56,6 +56,8 @@ function SendTransactionForm({
 }: Props) {
   const { chainId } = useWeb3React<providers.Web3Provider>();
   const [contracts, setContracts] = useState([]);
+  const [transactionRequest, setTransactionRequest] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
 
   useEffect(() => {
     if (artifactsExist(artifacts)) {
@@ -77,12 +79,19 @@ function SendTransactionForm({
             <Body
               contracts={contracts}
               chainId={chainId}
-              requests={requests}
-              setRequests={setRequests}
+              setTransactionRequest={setTransactionRequest}
+              setErrorMessage={setErrorMessage}
             />
           )
         }
-        footer={<Footer />}
+        footer={
+          <Footer
+            requests={requests}
+            setRequests={setRequests}
+            transactionRequest={transactionRequest}
+            errorMessage={errorMessage}
+          />
+        }
       />
     )
   );
@@ -91,28 +100,25 @@ function SendTransactionForm({
 function Body({
   contracts,
   chainId,
-  requests,
-  setRequests
+  setTransactionRequest,
+  setErrorMessage
 }: {
   contracts: ContractData[];
   chainId: number;
-  requests: DashboardProviderMessage[];
-  setRequests: (
-    requests:
-      | DashboardProviderMessage[]
-      | ((requests: DashboardProviderMessage[]) => DashboardProviderMessage[])
-  ) => void;
+  setTransactionRequest: Function;
+  setErrorMessage: Function;
 }) {
   const [currentContract, setCurrentContract] = useState(contracts[0]);
   const [contractInstance, setContractInstance] = useState(
     createContractInstance(contracts[0])
   );
   const [contractFunction, setContractFunction] = useState(contracts[0].abi[0]);
-  const [functionParams, setFunctionParams] = useState([""]);
+  const [functionParams, setFunctionParameters] = useState([""]);
 
   useEffect(() => {
     setContractInstance(createContractInstance(currentContract));
-  }, [currentContract]);
+    createTransactionRequest();
+  }, [currentContract, contractFunction, functionParams]);
 
   const contractNames = contracts.reduce(
     (contractNames: string[], contract) => {
@@ -144,7 +150,9 @@ function Body({
     })[0];
     setCurrentContract(contract);
     setContractFunction(contract.abi[0]);
+    setFunctionParameters([""]);
   }
+
   function changeABIFunction(e: any) {
     const methodName = e.target.value;
 
@@ -153,36 +161,56 @@ function Body({
         return method.name === methodName;
       })[0]
     );
+    setFunctionParameters([""]);
   }
 
-  async function sendTransaction() {
-    const { data, to, from } = await contractInstance.populateTransaction[
-      contractFunction.name
-    ](...functionParams);
-
-    const request: DashboardProviderMessage = {
-      id: 0,
-      type: "provider",
-      payload: {
-        jsonrpc: "2.0",
-        method: "eth_sendTransaction",
-        params: [{ data, to, from }],
-        id: 1
-      }
-    };
-
-    const newRequests = [...requests, request];
-    setRequests(newRequests);
-  }
-
-  function setFunctionParameters(value: string, index: number) {
+  function setFunctionParameter(value: string, index: number) {
     let newParams = [...functionParams];
-
     newParams[index] = value;
 
-    setFunctionParams(newParams);
+    setFunctionParameters(newParams);
   }
 
+  function validateTransactionRequest() {
+    return (
+      !contractInstance ||
+      !contractFunction ||
+      (contractFunction.inputs.length === functionParams.length &&
+        functionParams[0] !== "")
+    );
+  }
+
+  async function createTransactionRequest() {
+    setErrorMessage(null);
+
+    if (!validateTransactionRequest()) {
+      setTransactionRequest(null);
+      return;
+    }
+
+    try {
+      const { data, to, from } = await contractInstance.populateTransaction[
+        contractFunction.name
+      ](...functionParams);
+
+      const request: DashboardProviderMessage = {
+        id: 0,
+        type: "provider",
+        payload: {
+          jsonrpc: "2.0",
+          method: "eth_sendTransaction",
+          params: [{ data, to, from }],
+          id: 1
+        }
+      };
+      setTransactionRequest(request);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        setErrorMessage(e.message);
+      }
+      setTransactionRequest(null);
+    }
+  }
   return (
     <div className="grid grid-cols-1 gap-6  ">
       <Select
@@ -198,17 +226,45 @@ function Body({
       <ContractMethodParams
         parameters={contractFunction.inputs}
         functionParams={functionParams}
-        setFunctionParameters={setFunctionParameters}
+        setFunctionParameters={setFunctionParameter}
       />
-      <Button onClick={sendTransaction} text={"Send Transaction"} />
     </div>
   );
 }
 
-function Footer() {
+function Footer({
+  requests,
+  setRequests,
+  transactionRequest,
+  errorMessage
+}: {
+  requests: DashboardProviderMessage[];
+  setRequests: (
+    requests:
+      | DashboardProviderMessage[]
+      | ((requests: DashboardProviderMessage[]) => DashboardProviderMessage[])
+  ) => void;
+  transactionRequest: DashboardProviderMessage | null;
+  errorMessage: string | null;
+}) {
+  function sendTransaction() {
+    if (!transactionRequest) {
+      return;
+    }
+
+    const newRequests = [...requests, transactionRequest];
+
+    setRequests(newRequests);
+  }
+
   return (
     <div className="text-center">
-      <Button onClick={() => {}} text={"Send Transaction"} />
+      <Button
+        onClick={sendTransaction}
+        text={"Send Transaction"}
+        disabled={!transactionRequest}
+      />
+      <p className={"text-red-600"}>{errorMessage}</p>
     </div>
   );
 }
