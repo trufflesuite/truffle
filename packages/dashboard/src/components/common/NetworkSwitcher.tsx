@@ -56,11 +56,9 @@ function NetworkSwitcher({ chainId, publicChains }: Props) {
       addNetworkPayload
     );
     if (addNetworkResponse.error) {
-      console.log(
+      console.error(
         "add network error: " + JSON.stringify(addNetworkResponse.error)
       );
-    } else {
-      console.log("added network!" + JSON.stringify(addNetworkResponse));
     }
   }
 
@@ -76,6 +74,7 @@ function NetworkSwitcher({ chainId, publicChains }: Props) {
       params: [{ chainId: chain.chainId }],
       id: 0
     };
+    console.log(switchNetworkPayload);
     const switchNetworkResponse = await forwardDashboardProviderRequest(
       provider,
       switchNetworkPayload
@@ -86,7 +85,7 @@ function NetworkSwitcher({ chainId, publicChains }: Props) {
         addNetwork(chain);
       } else {
         // handle other errors
-        console.log(
+        console.error(
           "some other switch network error: " + switchNetworkResponse.error
         );
       }
