@@ -45,7 +45,11 @@ function getNameNetworksAbi(
   return contracts;
 }
 
-function SendTransaction({
+function artifactsExist(artifacts: Object[]) {
+  return Array.isArray(artifacts) && artifacts.length > 0;
+}
+
+function SendTransactionForm({
   artifacts = mockArtifacts,
   requests,
   setRequests
@@ -54,7 +58,7 @@ function SendTransaction({
   const [contracts, setContracts] = useState([]);
 
   useEffect(() => {
-    if (Array.isArray(artifacts) && artifacts.length > 0) {
+    if (artifactsExist(artifacts)) {
       setContracts(
         artifacts
           .filter(filterByChainId(chainId))
@@ -135,11 +139,11 @@ function Body({
 
   function changeContract(e: any) {
     const contractName = e.target.value;
-    setCurrentContract(
-      contracts.filter(contract => {
-        return contract.contractName === contractName;
-      })[0]
-    );
+    const contract = contracts.filter(contract => {
+      return contract.contractName === contractName;
+    })[0];
+    setCurrentContract(contract);
+    setContractFunction(contract.abi[0]);
   }
   function changeABIFunction(e: any) {
     const methodName = e.target.value;
@@ -209,4 +213,4 @@ function Footer() {
   );
 }
 
-export default SendTransaction;
+export default SendTransactionForm;
