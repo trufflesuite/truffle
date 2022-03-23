@@ -2,6 +2,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@tailwind forms;
 
 @import url("https://fonts.googleapis.com/css2?family=Oswald&display=swap");
 
