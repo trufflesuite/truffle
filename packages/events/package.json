@@ -22,8 +22,8 @@
     "access": "public"
   },
   "dependencies": {
+    "@truffle/spinners": "^0.1.0-0",
     "emittery": "^0.4.1",
-    "ora": "^3.4.0",
     "web3-utils": "1.5.3"
   }
 }
