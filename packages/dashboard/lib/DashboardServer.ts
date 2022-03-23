@@ -41,9 +41,6 @@ export interface DashboardServerOptions {
   /** Host of the dashboard (default: localhost) */
   host?: string;
 
-  /** Boolean indicating whether the POST /rpc endpoint should be exposed (default: true) */
-  rpc?: boolean;
-
   /** Boolean indicating whether debug output should be logged (default: false) */
   verbose?: boolean;
 
@@ -57,7 +54,6 @@ export interface DashboardServerOptions {
 export class DashboardServer {
   port: number;
   host: string;
-  rpc: boolean;
   verbose: boolean;
   autoOpen: boolean;
   frontendPath: string;
@@ -74,7 +70,6 @@ export class DashboardServer {
   constructor(options: DashboardServerOptions) {
     this.port = options.port;
     this.host = options.host ?? "localhost";
-    this.rpc = options.rpc ?? true;
     this.verbose = options.verbose ?? false;
     this.autoOpen = options.autoOpen ?? true;
     this.frontendPath = path.join(
@@ -103,11 +98,9 @@ export class DashboardServer {
 
     this.subscribeSocket = await this.connectToSubscribePort();
 
-    if (this.rpc) {
-      this.publishSocket = await this.connectToPublishPort();
+    this.publishSocket = await this.connectToPublishPort();
 
-      this.expressApp.post("/rpc", this.postRpc.bind(this));
-    }
+    this.expressApp.post("/rpc", this.postRpc.bind(this));
 
     await new Promise<void>(resolve => {
       this.httpServer = this.expressApp!.listen(this.port, this.host, () => {
