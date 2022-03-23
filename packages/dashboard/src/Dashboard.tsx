@@ -138,7 +138,7 @@ function Dashboard() {
           setRequests={setDashboardProviderRequests}
         />
       )}
-      <SettingsIcon />
+      <SettingsIcon analyticsSet={true} />
     </div>
   );
 }
