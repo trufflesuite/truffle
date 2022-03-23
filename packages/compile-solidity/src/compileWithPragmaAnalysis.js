@@ -22,7 +22,7 @@ const validateSemverExpressions = semverExpressions => {
   for (const expression of semverExpressions) {
     if (semver.validRange(expression) === null) {
       const message =
-        `Invalid semver expression (${expression}) found in` +
+        `Invalid semver expression (${expression}) found in ` +
         `one of your contract's imports.`;
       throw new Error(message);
     }

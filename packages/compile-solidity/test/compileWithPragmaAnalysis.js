@@ -1,9 +1,11 @@
 const assert = require("assert");
 const Config = require("@truffle/config");
-const {CompilerSupplier} = require("../dist/index");
+const { CompilerSupplier } = require("../dist/index");
 const Resolver = require("@truffle/resolver");
 const sinon = require("sinon");
-const {compileWithPragmaAnalysis} = require("../dist/compileWithPragmaAnalysis");
+const {
+  compileWithPragmaAnalysis
+} = require("../dist/compileWithPragmaAnalysis");
 const path = require("path");
 let paths = [];
 
@@ -13,14 +15,7 @@ const sourceDirectory = path.resolve(
   "multipleSolcVersions"
 );
 
-const config = new Config().with({
-  compilers: {
-    solc: {
-      settings: {},
-      version: "analyzePragmas"
-    }
-  }
-});
+const config = new Config();
 
 const releases = {
   prereleases: [],
@@ -149,6 +144,25 @@ describe("compileWithPragmaAnalysis", function () {
   });
 
   describe("when there is a semver expression error", function () {
+    it("throws an error when a 'direct source' lacks a pragma expression", async function () {
+      try {
+        await compileWithPragmaAnalysis({
+          options: config,
+          paths: [path.join(__dirname, "sources", "badSources", "NoPragma.sol")]
+        });
+        assert.fail("The function should have thrown.");
+      } catch (error) {
+        const expectedMessage = "Could not find a valid pragma expression";
+        if (error.message.includes(expectedMessage)) {
+          return "all good";
+        }
+        assert.fail(
+          "The function call threw in an unexpected way. The " +
+            `error is ${error.message}.`
+        );
+      }
+    });
+
     it("throws an error when it can't determine parser version", async function () {
       try {
         await compileWithPragmaAnalysis({
@@ -157,11 +171,14 @@ describe("compileWithPragmaAnalysis", function () {
         });
         assert.fail("The function should have thrown.");
       } catch (error) {
-        const expectedMessage = "Could not find a pragma expression";
+        const expectedMessage = "Could not find a valid pragma expression";
         if (error.message.includes(expectedMessage)) {
           return "all good";
         }
-        throw error;
+        assert.fail(
+          "The function call threw in an unexpected way. The " +
+            `error is ${error.message}.`
+        );
       }
     });
 
@@ -179,7 +196,10 @@ describe("compileWithPragmaAnalysis", function () {
         if (error.message.includes(expectedMessage)) {
           return "all good";
         }
-        throw error;
+        assert.fail(
+          "The function call threw in an unexpected way. The " +
+            `error is ${error.message}.`
+        );
       }
     });
   });
