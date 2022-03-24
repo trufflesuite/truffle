@@ -62,26 +62,32 @@ module.exports = async function (options) {
   ];
 
   const mainnet = publicChains[0];
+  const mergedChains = [...publicChains];
   if (config.networks) {
-    const networkNames = Object.keys(config.networks);
-    const configuredNetworks = networkNames
-      .filter(networkName => {
-        return networkName !== "dashboard";
+    const chainNames = Object.keys(config.networks);
+    const configuredNetworks = chainNames
+      .filter(chainName => {
+        return chainName !== "dashboard";
       })
-      .map(networkName => {
-        const network = config.networks[networkName];
+      .map(chainName => {
+        const network = config.networks[chainName];
         return {
           chainId: "",
-          chainName: networkName,
+          chainName: chainName,
           nativeCurrency: mainnet.nativeCurrency,
           rpcUrls: [`http://${network.host}:${network.port}`]
         };
       });
-    publicChains.push(...configuredNetworks);
+    mergedChains.push(...configuredNetworks);
     console.log(configuredNetworks);
   }
 
-  const dashboardServerOptions = { port, host, verbose, publicChains };
+  const dashboardServerOptions = {
+    port,
+    host,
+    verbose,
+    dashboardChains: mergedChains
+  };
   const dashboardServer = new DashboardServer(dashboardServerOptions);
   await dashboardServer.start();
 
