@@ -1,9 +1,10 @@
-import { providers } from "ethers";
-import { useEffect, useState } from "react";
-import { getDisplayName } from "../../utils/utils";
+import {providers} from "ethers";
+import {useEffect, useState} from "react";
+import {getDisplayName} from "../../utils/utils";
 import NetworkIndicator from "../common/NetworkIndicator";
 import {useAccount, useConnect, useNetwork} from "wagmi";
 import Button from "../common/Button";
+import WalletModal from "src/components/Modal/WalletModal";
 
 interface Props {
   disconnect: () => void;
@@ -12,9 +13,15 @@ interface Props {
 function Header({disconnect}: Props) {
   const [displayName, setDisplayName] = useState<string>();
 
-  const [{ data: accountData}] = useAccount();
-  const [{ data: networkData }] = useNetwork();
+  const [{data: accountData},] = useAccount(
+    {fetchEns: true}
+  );
+  const [{data: networkData}] = useNetwork();
   const [{data: connectData}] = useConnect();
+  // FIXME
+  const pending: any[] = [undefined]; // sortedRecentTransactions.filter((tx) => !tx.receipt).map((tx) => tx.hash)
+  const confirmed: any[] = [undefined]; //sortedRecentTransactions.filter((tx) => tx.receipt).map((tx) => tx.hash)
+  const ENSName = accountData?.ens?.name;
 
   useEffect(() => {
     const updateAccountDisplay = async (
@@ -24,7 +31,7 @@ function Header({disconnect}: Props) {
       setDisplayName(await getDisplayName(provider, address));
     };
 
-    if(!connectData.connected) {
+    if (!connectData.connected) {
       setDisplayName(undefined);
     }
 
@@ -42,8 +49,9 @@ function Header({disconnect}: Props) {
         </span>
       </div>
       <div className="flex justify-end items-center gap-4 text-md">
-        {networkData.chain?.id && <NetworkIndicator chainId={networkData.chain.id} />}
+        {networkData.chain?.id && <NetworkIndicator chainId={networkData.chain.id}/>}
         {networkData.chain?.id && <Button onClick={disconnect} text={'disconnect'}/>}
+        <WalletModal ENSName={ENSName ?? undefined} pendingTransactions={pending} confirmedTransactions={confirmed}/>
         <div>{displayName}</div>
       </div>
     </header>
