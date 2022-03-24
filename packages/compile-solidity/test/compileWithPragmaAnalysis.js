@@ -116,6 +116,16 @@ describe("compileWithPragmaAnalysis", function () {
       assert.equal(compilations.length, 3);
     });
 
+    it.only("compiles files with imports without pragma expressions", async function () {
+      const { compilations } = await compileWithPragmaAnalysis({
+        options: config,
+        paths: paths.concat([
+          path.join(sourceDirectory, "withImports", "D.sol")
+        ])
+      });
+      assert.equal(compilations.length, 1);
+    });
+
     it("finds a version that satisfies all pragmas if it exists", async function () {
       const { compilations } = await compileWithPragmaAnalysis({
         options: config,
