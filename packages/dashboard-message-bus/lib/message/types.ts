@@ -58,7 +58,7 @@ export interface InvalidateMessage extends Message {
 export interface InitializeMessage extends Message {
   type: "initialize";
   payload: {
-    publicChains: object[];
+    dashboardChains: object[];
   };
 }
 

@@ -8,10 +8,10 @@ import Button from "../common/Button";
 
 interface Props {
   disconnect: () => void;
-  publicChains: object[];
+  dashboardChains: object[];
 }
 
-function Header({ disconnect, publicChains }: Props) {
+function Header({ disconnect, dashboardChains }: Props) {
   const [displayName, setDisplayName] = useState<string>();
 
   const [{ data: accountData }] = useAccount();
@@ -55,7 +55,7 @@ function Header({ disconnect, publicChains }: Props) {
           (networkSwitchingSupported ? (
             <NetworkSwitcher
               chainId={networkData.chain.id}
-              publicChains={publicChains}
+              dashboardChains={dashboardChains}
             />
           ) : (
             [
