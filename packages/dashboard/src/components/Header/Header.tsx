@@ -1,48 +1,72 @@
-import { useWeb3React } from "@web3-react/core";
 import { providers } from "ethers";
 import { useEffect, useState } from "react";
 import { getDisplayName } from "../../utils/utils";
 import NetworkIndicator from "../common/NetworkIndicator";
 import NetworkSwitcher from "../common/NetworkSwitcher";
+import { useAccount, useConnect, useNetwork } from "wagmi";
+import Button from "../common/Button";
 
 interface Props {
+  disconnect: () => void;
   dashboardChains: object[];
 }
 
-function Header({ dashboardChains }: Props) {
+function Header({ disconnect, dashboardChains }: Props) {
   const [displayName, setDisplayName] = useState<string>();
-  const { account, library, chainId } = useWeb3React<providers.Web3Provider>();
-  const networkSwitchingSupported = true;
+
+  const [{ data: accountData }] = useAccount();
+  const [{ data: networkData }] = useNetwork();
+  const [{ data: connectData }] = useConnect();
+  const [switchNetwork] = useNetwork();
+  const networkSwitchingSupported = !!switchNetwork;
 
   useEffect(() => {
     const updateAccountDisplay = async (
-      library: providers.Web3Provider,
-      account: string
+      provider: providers.Web3Provider,
+      address: string
     ) => {
-      setDisplayName(await getDisplayName(library, account));
+      setDisplayName(await getDisplayName(provider, address));
     };
 
-    if (!library || !account) return;
-    updateAccountDisplay(library, account);
-  }, [library, account]);
+    if (!connectData.connected) {
+      setDisplayName(undefined);
+    }
+
+    if (!connectData || !accountData) return;
+    updateAccountDisplay(
+      connectData.connector?.getProvider(),
+      accountData.address
+    );
+  }, [connectData, accountData]);
 
   return (
     <header className="grid grid-cols-2 py-2 px-4 border-b-2 border-truffle-light text-md uppercase">
       <div className="flex justify-start items-center">
         <span className="inline-flex items-center gap-3">
-          <img src="/truffle-logomark.svg" width="32px" />
+          <img
+            src={"/truffle-logomark.svg"}
+            width="32px"
+            alt={"Truffle Logo"}
+          />
           Truffle Dashboard
         </span>
       </div>
       <div className="flex justify-end items-center gap-4 text-md">
-        {chainId &&
+        {networkData.chain?.id &&
           (networkSwitchingSupported ? (
             <NetworkSwitcher
-              chainId={chainId}
+              chainId={networkData.chain.id}
               dashboardChains={dashboardChains}
             />
           ) : (
-            <NetworkIndicator chainId={chainId} />
+            [
+              networkData.chain?.id && (
+                <NetworkIndicator chainId={networkData.chain.id} />
+              ),
+              networkData.chain?.id && (
+                <Button onClick={disconnect} text={"disconnect"} />
+              )
+            ]
           ))}
         <div>{displayName}</div>
       </div>

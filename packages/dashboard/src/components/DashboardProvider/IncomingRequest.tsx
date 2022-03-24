@@ -13,10 +13,11 @@ interface Props {
       | ((requests: DashboardProviderMessage[]) => DashboardProviderMessage[])
   ) => void;
   provider: any;
+  connector: any;
   socket: WebSocket;
 }
 
-function IncomingRequest({ provider, socket, request, setRequests }: Props) {
+function IncomingRequest({ provider, connector, socket, request, setRequests }: Props) {
   const removeFromRequests = () => {
     setRequests(previousRequests =>
       previousRequests.filter(other => other.id !== request.id)
@@ -24,7 +25,7 @@ function IncomingRequest({ provider, socket, request, setRequests }: Props) {
   };
 
   const process = async () => {
-    await handleDashboardProviderRequest(request, provider, socket);
+    await handleDashboardProviderRequest(request, provider, connector, socket);
     removeFromRequests();
   };
 

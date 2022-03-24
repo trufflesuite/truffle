@@ -1,7 +1,5 @@
 import WebSocket from "isomorphic-ws";
-import { useEffect } from "react";
-import { useWeb3React } from "@web3-react/core";
-import { providers } from "ethers";
+import {useEffect} from "react";
 import {
   handleDashboardProviderRequest,
   isInteractiveRequest,
@@ -10,7 +8,8 @@ import {
 } from "../../utils/utils";
 import Card from "../common/Card";
 import IncomingRequest from "./IncomingRequest";
-import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus";
+import type {DashboardProviderMessage} from "@truffle/dashboard-message-bus";
+import {useConnect} from "wagmi";
 
 interface Props {
   paused: boolean;
@@ -23,8 +22,10 @@ interface Props {
   socket: WebSocket;
 }
 
-function DashboardProvider({ paused, socket, requests, setRequests }: Props) {
-  const { account, library } = useWeb3React<providers.Web3Provider>();
+function DashboardProvider({paused, socket, requests, setRequests}: Props) {
+  const [{data: connectData}] = useConnect();
+  const provider = connectData.connector?.getProvider();
+  const connector = connectData.connector;
 
   useEffect(() => {
     const removeFromRequests = (id: number) => {
@@ -33,7 +34,7 @@ function DashboardProvider({ paused, socket, requests, setRequests }: Props) {
       );
     };
 
-    if (!account || !library) return;
+    if (!connectData.connected || !provider) return;
     if (paused) return;
 
     // Automatically respond with an error for unsupported requests
@@ -49,29 +50,31 @@ function DashboardProvider({ paused, socket, requests, setRequests }: Props) {
           !isInteractiveRequest(request) && !isUnsupportedRequest(request)
       )
       .forEach(request => {
-        handleDashboardProviderRequest(request, library.provider, socket);
+        handleDashboardProviderRequest(request, provider, connector, socket);
         removeFromRequests(request.id);
       });
-  }, [paused, requests, setRequests, socket, account, library]);
+  }, [paused, requests, setRequests, socket, connectData, provider, connector]);
 
   const incomingRequests =
-    account && library && socket
+    connectData.connected && provider && socket
       ? requests
-          .filter(isInteractiveRequest)
-          .map(request => (
-            <IncomingRequest
-              request={request}
-              setRequests={setRequests}
-              provider={library.provider}
-              socket={socket}
-            />
-          ))
+        .filter(isInteractiveRequest)
+        .map(request => (
+          <IncomingRequest
+            key={request.id}
+            request={request}
+            setRequests={setRequests}
+            provider={provider}
+            connector={connector}
+            socket={socket}
+          />
+        ))
       : [];
 
   return (
     <div className="flex justify-center items-center py-20">
       <div className="mx-3 w-3/4 max-w-4xl h-2/3">
-        <Card header="Incoming Requests" body={incomingRequests} />
+        <Card header="Incoming Requests" body={incomingRequests}/>
       </div>
     </div>
   );

@@ -10,17 +10,20 @@ import {
   sendAndAwait,
   createMessage
 } from "@truffle/dashboard-message-bus";
-import { useWeb3React } from "@web3-react/core";
 import { useEffect, useState } from "react";
 import { getPorts, respond } from "./utils/utils";
 import Header from "./components/Header/Header";
 import DashboardProvider from "./components/DashboardProvider/DashboardProvider";
 import ConnectNetwork from "./components/ConnectNetwork";
 import ConfirmNetworkChanged from "./components/ConfirmNetworkChange";
+import { useAccount, useConnect, useNetwork } from "wagmi";
 
 function Dashboard() {
   const [paused, setPaused] = useState<boolean>(false);
-  const [connectedChainId, setConnectedChainId] = useState<number>();
+  const [connectedChainId, setConnectedChainId] = useState<
+    number | undefined
+  >();
+  const [chainId, setChainId] = useState<number>();
   const [subscribeSocket, setSubscribeSocket] = useState<
     WebSocket | undefined
   >();
@@ -30,9 +33,12 @@ function Dashboard() {
   >([]);
   const [dashboardChains, setDashboardChains] = useState<object[]>([]);
 
-  const { chainId } = useWeb3React();
+  const [{ data }] = useNetwork();
+  const [{}, disconnect] = useAccount();
+  const [{ data: connectData }] = useConnect();
 
   useEffect(() => {
+    setChainId(data.chain?.id);
     if (!chainId || !subscribeSocket) return;
 
     if (connectedChainId) {
@@ -41,7 +47,7 @@ function Dashboard() {
     } else {
       setConnectedChainId(chainId);
     }
-  }, [chainId, connectedChainId, subscribeSocket]);
+  }, [data, connectData, subscribeSocket, chainId, connectedChainId]);
 
   const initializeSockets = async () => {
     await Promise.all([initializeSubSocket(), initializePubSocket()]);
@@ -106,9 +112,21 @@ function Dashboard() {
     setPublishSocket(socket);
   };
 
+  const disconnectAccount = () => {
+    console.log("Disconnecting:");
+    // turn everything off.
+    disconnect();
+    setConnectedChainId(undefined);
+    setPaused(false);
+    subscribeSocket?.close();
+    setSubscribeSocket(undefined);
+    publishSocket?.close();
+    setPublishSocket(undefined);
+  };
+
   return (
     <div className="h-full min-h-screen bg-gradient-to-b from-truffle-lighter to-truffle-light">
-      <Header dashboardChains={dashboardChains} />
+      <Header disconnect={disconnectAccount} dashboardChains={dashboardChains} />
       {paused && chainId && connectedChainId && (
         <ConfirmNetworkChanged
           newChainId={chainId}
