@@ -21,11 +21,13 @@ function Dropdown({ networkOne, networkTwo, networkThree }: Props) {
 
     return (
         <div className="border-grey border rounded bg-white" style={{ paddingLeft: "10px" }}>
-                <select>
+                <div className="block">
+                <select className="form-select block px-4 py-3 w-1/4 max-w-4xl focus:outline-truffle-brown focus:ring-truffle-brown focus:border-truffle-brown">
                     {networkOneOrNull}
                     {networkTwoOrNull}
                     {networkThreeOrNull}
                 </select>
+                </div>
         </div>
     );
 }
