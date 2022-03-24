@@ -1,0 +1,32 @@
+{
+  "name": "@truffle/dashboard-message-bus-common",
+  "version": "0.1.0-0",
+  "description": "Message types that are used when communicating with the Truffle dashboard message bus",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/lib"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepare": "yarn build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/dashboard-mesasge-bus"
+  },
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/dashboard-message-bus-common#readme",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "author": "Rosco Kalis <roscokalis@gmail.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/node": "^12.0.0",
+    "typescript": "^4.1.4"
+  }
+}

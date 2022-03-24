@@ -1,4 +1,3 @@
-import WebSocket from "isomorphic-ws";
 import { useEffect } from "react";
 import {
   handleDashboardProviderRequest,
@@ -8,21 +7,23 @@ import {
 } from "../../utils/utils";
 import Card from "../common/Card";
 import IncomingRequest from "./IncomingRequest";
-import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus";
+import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
 import { useConnect } from "wagmi";
+import { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 
 interface Props {
   paused: boolean;
-  requests: DashboardProviderMessage[];
+  requests: ReceivedMessageLifecycle<DashboardProviderMessage>[];
   setRequests: (
     requests:
-      | DashboardProviderMessage[]
-      | ((requests: DashboardProviderMessage[]) => DashboardProviderMessage[])
+      | ReceivedMessageLifecycle<DashboardProviderMessage>[]
+      | ((
+          requests: ReceivedMessageLifecycle<DashboardProviderMessage>[]
+        ) => ReceivedMessageLifecycle<DashboardProviderMessage>[])
   ) => void;
-  socket: WebSocket;
 }
 
-function DashboardProvider({ paused, socket, requests, setRequests }: Props) {
+function DashboardProvider({ paused, requests, setRequests }: Props) {
   const [{ data: connectData }] = useConnect();
   const provider = connectData.connector?.getProvider();
   const connector = connectData.connector;
@@ -30,7 +31,7 @@ function DashboardProvider({ paused, socket, requests, setRequests }: Props) {
   useEffect(() => {
     const removeFromRequests = (id: number) => {
       setRequests(previousRequests =>
-        previousRequests.filter(request => request.id !== id)
+        previousRequests.filter(request => request.message.id !== id)
       );
     };
 
@@ -39,8 +40,8 @@ function DashboardProvider({ paused, socket, requests, setRequests }: Props) {
 
     // Automatically respond with an error for unsupported requests
     requests.filter(isUnsupportedRequest).forEach(request => {
-      respondToUnsupportedRequest(request, socket);
-      removeFromRequests(request.id);
+      respondToUnsupportedRequest(request);
+      removeFromRequests(request.message.id);
     });
 
     // Automatically handle all non-interactive requests
@@ -50,23 +51,21 @@ function DashboardProvider({ paused, socket, requests, setRequests }: Props) {
           !isInteractiveRequest(request) && !isUnsupportedRequest(request)
       )
       .forEach(request => {
-        handleDashboardProviderRequest(request, provider, connector, socket);
-        removeFromRequests(request.id);
+        handleDashboardProviderRequest(request, provider, connector);
+        removeFromRequests(request.message.id);
       });
-  }, [paused, requests, setRequests, socket, connectData, provider, connector]);
+  }, [paused, requests, setRequests, connectData, provider, connector]);
 
   const incomingRequests =
-    connectData.connected && provider && socket
+    connectData.connected && provider
       ? requests
           .filter(isInteractiveRequest)
           .map(request => (
             <IncomingRequest
-              key={request.id}
               request={request}
               setRequests={setRequests}
               provider={provider}
               connector={connector}
-              socket={socket}
             />
           ))
       : [];

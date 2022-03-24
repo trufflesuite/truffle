@@ -1,0 +1,41 @@
+{
+  "name": "@truffle/dashboard-message-bus-e2e-test",
+  "version": "0.1.0-0",
+  "description": "Private e2e test package for testing the dashboard-message-bus and the dashboard-message-bus-client without circular dependencies",
+  "scripts": {
+    "test": "jest --verbose"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/dashboard-message-bus-e2e-test#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/dashboard-message-bus-e2e-test"
+  },
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "files": [
+    "dist"
+  ],
+  "directories": {
+    "test": "test"
+  },
+  "publishConfig": {
+    "access": "private"
+  },
+  "devDependencies": {
+    "@types/debug": "^4.1.5",
+    "@types/jest": "^27.0.3",
+    "@types/node": "^16.11.6",
+    "@types/web3": "^1.2.2",
+    "@ganache/ethereum": "^0.1.5",
+    "@truffle/dashboard": "^0.1.0",
+    "@truffle/dashboard-message-bus": "^0.1.0",
+    "@truffle/dashboard-message-bus-client": "0.1.0-0",
+    "@truffle/dashboard-message-bus-common": "0.1.0-0",
+    "ethers": "^5.6.2",
+    "jest": "^27.4.5",
+    "ts-jest": "^27.1.2"
+  }
+}

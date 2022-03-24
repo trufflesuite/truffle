@@ -1,30 +1,18 @@
-import WebSocket from "isomorphic-ws";
-import {
-  DashboardProviderMessage,
-  getMessageBusPorts,
-  jsonToBase64,
-  PortsConfig
-} from "@truffle/dashboard-message-bus";
 import axios from "axios";
 import { providers } from "ethers";
 import type { JSONRPCRequestPayload } from "ethereum-protocol";
 import { promisify } from "util";
 import { INTERACTIVE_REQUESTS, UNSUPPORTED_REQUESTS } from "./constants";
+import { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
+import { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 
-export const getPorts = async (): Promise<PortsConfig> => {
-  const dashboardHost = window.location.hostname;
-  const dashboardPort =
-    process.env.NODE_ENV === "development"
-      ? 24012
-      : Number(window.location.port);
-  return getMessageBusPorts(dashboardPort, dashboardHost);
-};
+export const isInteractiveRequest = (
+  request: ReceivedMessageLifecycle<DashboardProviderMessage>
+) => INTERACTIVE_REQUESTS.includes(request.message.payload.method);
 
-export const isInteractiveRequest = (request: DashboardProviderMessage) =>
-  INTERACTIVE_REQUESTS.includes(request.payload.method);
-
-export const isUnsupportedRequest = (request: DashboardProviderMessage) =>
-  UNSUPPORTED_REQUESTS.includes(request.payload.method);
+export const isUnsupportedRequest = (
+  request: ReceivedMessageLifecycle<DashboardProviderMessage>
+) => UNSUPPORTED_REQUESTS.includes(request.message.payload.method);
 
 export const forwardDashboardProviderRequest = async (
   provider: any,
@@ -68,52 +56,38 @@ export const forwardDashboardProviderRequest = async (
 };
 
 export const handleDashboardProviderRequest = async (
-  request: DashboardProviderMessage,
+  lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>,
   provider: any,
-  connector: any,
-  responseSocket: WebSocket
+  connector: any
 ) => {
-  const responsePayload = await forwardDashboardProviderRequest(
+  const payload = await forwardDashboardProviderRequest(
     provider,
     connector,
-    request.payload
+    lifecycle.message.payload
   );
-  const response = {
-    id: request.id,
-    payload: responsePayload
-  };
-  respond(response, responseSocket);
+  return lifecycle.respond({ payload });
 };
 
-export const respondToUnsupportedRequest = (
-  request: DashboardProviderMessage,
-  responseSocket: WebSocket
+export const respondToUnsupportedRequest = async (
+  lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>
 ) => {
-  const defaultMessage = `Method "${request.payload.method}" is unsupported by @truffle/dashboard-provider`;
+  const defaultMessage = `Method "${lifecycle.message.payload.method}" is unsupported by @truffle/dashboard-provider`;
   const customMessages: { [index: string]: string } = {
     eth_sign:
       'Method "eth_sign" is unsupported by @truffle/dashboard-provider, please use "personal_sign" instead'
   };
 
-  const message = customMessages[request.payload.method] ?? defaultMessage;
+  const message =
+    customMessages[lifecycle.message.payload.method] ?? defaultMessage;
   const code = 4001;
 
-  const errorResponse = {
-    id: request.id,
-    payload: {
-      jsonrpc: request.payload.jsonrpc,
-      id: request.payload.id,
-      error: { code, message }
-    }
+  const payload = {
+    jsonrpc: lifecycle.message.payload.jsonrpc,
+    id: lifecycle.message.payload.id,
+    error: { code, message }
   };
 
-  respond(errorResponse, responseSocket);
-};
-
-export const respond = (response: any, socket: WebSocket) => {
-  console.debug("Sending response", response);
-  const encodedResponse = jsonToBase64(response);
-  socket.send(encodedResponse);
+  return lifecycle.respond({ payload });
 };
 
 export const getNetworkName = async (chainId: number) => {

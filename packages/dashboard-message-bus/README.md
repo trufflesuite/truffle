@@ -34,6 +34,4 @@ This package is meant to be used with the `@truffle/dashboard` package. So manua
 
 ### Adding new message types
 
-Right now there are very few message types. The most important one is `"provider"`, which sends RPC requests for the dashboard-provider. Other message types are `"invalidate"`, which can be sent to invalidate earlier messages, and `"log"`, which is sent by the message bus to send log messages over the wire. The interfaces of these messages are defined inside the `@truffle/dashboard-message-bus` package, from where they can be imported by consumers.
-
-To add additional message types, the interface for the new message type should be defined in this package under `lib/message/types.ts`. To use these new messge formats, support needs to be added to any consuming packages such as `@truffle/dashboard` as well.
+Right now there are very few message types. The most important one is `"provider"`, which sends RPC requests for the `dashboard-provider`. Other message types are `"invalidate"`, which can be sent to invalidate earlier messages, and `"log"`, which is sent by the message bus to send log messages over the wire. See the [`@truffle/dashboard-message-bus-common` README](https://github.com/trufflesuite/truffle/tree/master/packages/dashboard-message-bus-common#readme) for details about adding new message types.

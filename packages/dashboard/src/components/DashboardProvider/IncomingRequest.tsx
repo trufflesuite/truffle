@@ -1,54 +1,46 @@
-import WebSocket from "isomorphic-ws";
 import ReactJson from "react-json-view";
-import { handleDashboardProviderRequest, respond } from "../../utils/utils";
+import { handleDashboardProviderRequest } from "../../utils/utils";
 import Button from "../common/Button";
 import Card from "../common/Card";
-import { DashboardProviderMessage } from "@truffle/dashboard-message-bus";
+import { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
+import { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 
 interface Props {
-  request: DashboardProviderMessage;
+  request: ReceivedMessageLifecycle<DashboardProviderMessage>;
   setRequests: (
     requests:
-      | DashboardProviderMessage[]
-      | ((requests: DashboardProviderMessage[]) => DashboardProviderMessage[])
+      | ReceivedMessageLifecycle<DashboardProviderMessage>[]
+      | ((
+          requests: ReceivedMessageLifecycle<DashboardProviderMessage>[]
+        ) => ReceivedMessageLifecycle<DashboardProviderMessage>[])
   ) => void;
   provider: any;
   connector: any;
-  socket: WebSocket;
 }
 
-function IncomingRequest({
-  provider,
-  connector,
-  socket,
-  request,
-  setRequests
-}: Props) {
+function IncomingRequest({ provider, connector, request, setRequests }: Props) {
   const removeFromRequests = () => {
     setRequests(previousRequests =>
-      previousRequests.filter(other => other.id !== request.id)
+      previousRequests.filter(other => other.message.id !== request.message.id)
     );
   };
 
   const process = async () => {
-    await handleDashboardProviderRequest(request, provider, connector, socket);
+    await handleDashboardProviderRequest(request, provider, connector);
     removeFromRequests();
   };
 
   const reject = async () => {
-    const errorResponse = {
-      id: request.id,
-      payload: {
-        jsonrpc: request.payload.jsonrpc,
-        id: request.payload.id,
-        error: {
-          code: 4001,
-          message: "User rejected @truffle/dashboard-provider request"
-        }
+    const payload = {
+      jsonrpc: request.message.payload.jsonrpc,
+      id: request.message.payload.id,
+      error: {
+        code: 4001,
+        message: "User rejected @truffle/dashboard-provider request"
       }
     };
 
-    respond(errorResponse, socket);
+    request.respond({ payload });
     removeFromRequests();
   };
 
@@ -107,9 +99,13 @@ function IncomingRequest({
     }
   };
 
-  const header = <div className="normal-case">{request.payload.method}</div>;
+  const header = (
+    <div className="normal-case">{request.message.payload.method}</div>
+  );
 
-  const body = <div>{formatDashboardProviderRequestParameters(request)}</div>;
+  const body = (
+    <div>{formatDashboardProviderRequestParameters(request.message)}</div>
+  );
 
   const footer = (
     <div className="flex justify-start items-center gap-2">
@@ -119,7 +115,7 @@ function IncomingRequest({
   );
 
   return (
-    <div key={request.id} className="flex justify-center items-center">
+    <div key={request.message.id} className="flex justify-center items-center">
       <Card header={header} body={body} footer={footer} />
     </div>
   );

@@ -1,12 +1,14 @@
 import WebSocket from "isomorphic-ws";
-import delay from "delay";
 import { EventEmitter } from "events";
 import {
   base64ToJson,
+  createMessage,
+  jsonToBase64
+} from "@truffle/dashboard-message-bus-common";
+
+import {
   broadcastAndAwaitFirst,
   broadcastAndDisregard,
-  createMessage,
-  jsonToBase64,
   startWebSocketServer
 } from "./utils";
 import { promisify } from "util";
@@ -21,6 +23,8 @@ export class DashboardMessageBus extends EventEmitter {
   private subscribeServer: WebSocket.Server;
   private publishers: WebSocket[] = [];
   private subscribers: WebSocket[] = [];
+  private readyPromise: Promise<void>;
+  private resolveReadyPromise: () => void;
 
   private unfulfilledRequests: Map<string, UnfulfilledRequest> = new Map([]);
 
@@ -30,6 +34,7 @@ export class DashboardMessageBus extends EventEmitter {
     public host: string = "localhost"
   ) {
     super();
+    this.resetReadyState();
   }
 
   /**
@@ -43,7 +48,7 @@ export class DashboardMessageBus extends EventEmitter {
     });
 
     this.subscribeServer.on("connection", (newSubscriber: WebSocket) => {
-      newSubscriber.on("close", () => {
+      newSubscriber.once("close", () => {
         this.removeSubscriber(newSubscriber);
       });
 
@@ -57,7 +62,7 @@ export class DashboardMessageBus extends EventEmitter {
     });
 
     this.publishServer.on("connection", (newPublisher: WebSocket) => {
-      newPublisher.on("close", () => {
+      newPublisher.once("close", () => {
         this.removePublisher(newPublisher);
       });
 
@@ -66,13 +71,11 @@ export class DashboardMessageBus extends EventEmitter {
   }
 
   /**
-   * Wait for the message bus to be "ready" to process requests (i.e. having any subscribers).
-   * @dev Polls every second to see if the number of subscribers > 0
+   * A promise that resolves when the message bus is ready to process requests
+   * (i.e. having any subscribers).
    */
-  async ready() {
-    while (this.subscribers.length === 0) {
-      await delay(1000);
-    }
+  get ready(): Promise<void> {
+    return this.readyPromise;
   }
 
   /**
@@ -99,7 +102,7 @@ export class DashboardMessageBus extends EventEmitter {
       data = data.toString();
     }
 
-    await this.ready();
+    await this.ready;
 
     this.unfulfilledRequests.set(data, { publisher, data });
     const message = base64ToJson(data);
@@ -177,6 +180,10 @@ export class DashboardMessageBus extends EventEmitter {
     this.logToPublishers("Subscriber connected", "connections");
 
     this.subscribers.push(newSubscriber);
+
+    if (this.subscribers.length == 1) {
+      this.resolveReadyPromise();
+    }
   }
 
   /**
@@ -189,6 +196,10 @@ export class DashboardMessageBus extends EventEmitter {
     this.subscribers = this.subscribers.filter(
       subscriber => subscriber !== subscriberToRemove
     );
+
+    if (this.subscribers.length === 0) {
+      this.resetReadyState();
+    }
 
     this.terminateIfNoConnections();
   }
@@ -233,5 +244,13 @@ export class DashboardMessageBus extends EventEmitter {
         this.unfulfilledRequests.delete(key);
       }
     });
+  }
+
+  private resetReadyState() {
+    this.readyPromise = new Promise(
+      (resolve => {
+        this.resolveReadyPromise = resolve;
+      }).bind(this)
+    );
   }
 }
