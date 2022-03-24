@@ -1,4 +1,5 @@
-export * from "./message/types";
+export * from "./messages";
+export * from "./utils";
 
 export interface PortsConfig {
   dashboardPort: number;
