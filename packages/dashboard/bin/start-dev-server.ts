@@ -8,7 +8,7 @@ const options = {
   dashboardChains: [
     {
       chainId: "0x1",
-      chainName: "mainnet",
+      chainName: "ethereum mainnet",
       nativeCurrency: {
         symbol: "ETH",
         decimals: 18
