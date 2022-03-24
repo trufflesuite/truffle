@@ -9,6 +9,7 @@ import {
   BigNumber as EthersBigNumber,
   FixedNumber
 } from "@ethersproject/bignumber";
+import isNumber from "lodash/isNumber";
 
 import * as fc from "fast-check";
 import { testProp } from "jest-fast-check";
@@ -20,6 +21,8 @@ const Bytes = () => fc.nat(31).map(k => 32 - k);
 const Bits = () => Bytes().map(k => 8 * k);
 const DecimalPlaces = () => fc.nat(79).map(k => ((k + 17) % 80) + 1);
 const Precision = () => fc.record({ bits: Bits(), places: DecimalPlaces() });
+
+const tolerance = 1e-24; //for encoding of JS numbers only!
 
 const addBoxes = (inputs: any[]) => {
   let boxed: any[] = [];
@@ -41,14 +44,20 @@ const addBoxes = (inputs: any[]) => {
 };
 
 const UintInfo = () =>
-  Bits().chain((bits: number) => fc.record({
-    bits: fc.constant(bits),
-    value: fc.bigUintN(bits)
-  })).chain(({ bits, value }: { bits: number, value: bigint }) => fc.record({
-    type: fc.constant({ typeClass: "uint" as const, bits }),
-    value: fc.constant(value),
-    input: UintInput(value, bits)
-  }));
+  Bits()
+    .chain((bits: number) =>
+      fc.record({
+        bits: fc.constant(bits),
+        value: fc.bigUintN(bits)
+      })
+    )
+    .chain(({ bits, value }: { bits: number; value: bigint }) =>
+      fc.record({
+        type: fc.constant({ typeClass: "uint" as const, bits }),
+        value: fc.constant(value),
+        input: UintInput(value, bits)
+      })
+    );
 
 const UintInput = (value: bigint, bits: number) => {
   let representations: any[] = [
@@ -76,14 +85,20 @@ const UintInput = (value: bigint, bits: number) => {
 };
 
 const IntInfo = () =>
-  Bits().chain((bits: number) => fc.record({
-    bits: fc.constant(bits),
-    value: fc.bigIntN(bits)
-  })).chain(({ bits, value }: { bits: number, value: bigint }) => fc.record({
-    type: fc.constant({ typeClass: "int" as const, bits }),
-    value: fc.constant(value),
-    input: IntInput(value, bits)
-  }));
+  Bits()
+    .chain((bits: number) =>
+      fc.record({
+        bits: fc.constant(bits),
+        value: fc.bigIntN(bits)
+      })
+    )
+    .chain(({ bits, value }: { bits: number; value: bigint }) =>
+      fc.record({
+        type: fc.constant({ typeClass: "int" as const, bits }),
+        value: fc.constant(value),
+        input: IntInput(value, bits)
+      })
+    );
 
 const IntInput = (value: bigint, bits: number) => {
   let representations: any[] = [
@@ -104,7 +119,9 @@ const IntInput = (value: bigint, bits: number) => {
     representations.push("-0x" + value.toString(16).slice(1)); //string (neg hex)
     representations.push("-0o" + value.toString(8).slice(1)); //string (neg octal)
     representations.push("-0b" + value.toString(2).slice(1)); //string (neg binary)
-    representations.push(EthersBigNumber.from("-0x" + value.toString(16).slice(1))); //BigNumber (ethers)
+    representations.push(
+      EthersBigNumber.from("-0x" + value.toString(16).slice(1))
+    ); //BigNumber (ethers)
   }
   try {
     const asNumber = Number(value);
@@ -117,11 +134,14 @@ const IntInput = (value: bigint, bits: number) => {
   return fc.oneof(...addBoxes(representations).map(fc.constant));
 };
 
-const StringInfo = () => fc.fullUnicodeString().chain((value: string) => fc.record({
-  type: fc.constant({ typeClass: "string" as const }),
-  value: fc.constant(value),
-  input: StringInput(value)
-}));
+const StringInfo = () =>
+  fc.fullUnicodeString().chain((value: string) =>
+    fc.record({
+      type: fc.constant({ typeClass: "string" as const }),
+      value: fc.constant(value),
+      input: StringInput(value)
+    })
+  );
 
 const StringInput = (value: string) => {
   let representations: any[] = [value]; //string
@@ -129,27 +149,42 @@ const StringInput = (value: string) => {
 };
 
 const BytesStaticInfo = () =>
-  Bytes().chain((bytes: number) => fc.record({
-    bytes: fc.constant(bytes),
-    value: fc.uint8Array({ maxLength: bytes })
-  })).chain(({ bytes, value }: { bytes: number, value: Uint8Array }) => fc.record({
-    type: fc.constant({ typeClass: "bytes" as const, kind: "static" as const, length: bytes }),
-    value: fc.constant(value),
-    input: BytesInput(value)
-  }));
+  Bytes()
+    .chain((bytes: number) =>
+      fc.record({
+        bytes: fc.constant(bytes),
+        value: fc.uint8Array({ maxLength: bytes })
+      })
+    )
+    .chain(({ bytes, value }: { bytes: number; value: Uint8Array }) =>
+      fc.record({
+        type: fc.constant({
+          typeClass: "bytes" as const,
+          kind: "static" as const,
+          length: bytes
+        }),
+        value: fc.constant(value),
+        input: BytesInput(value)
+      })
+    );
 
 const BytesDynamicInfo = () =>
-  fc.uint8Array().chain((value: Uint8Array) => fc.record({
-    type: fc.constant({ typeClass: "bytes" as const, kind: "dynamic" as const }),
-    value: fc.constant(value),
-    input: BytesInput(value)
-  }));
+  fc.uint8Array().chain((value: Uint8Array) =>
+    fc.record({
+      type: fc.constant({
+        typeClass: "bytes" as const,
+        kind: "dynamic" as const
+      }),
+      value: fc.constant(value),
+      input: BytesInput(value)
+    })
+  );
 
 const BytesInput = (value: Uint8Array) => {
   let representations: any[] = [
     value, //Uint8Array,
     Codec.Conversion.toHexString(value), //string (lowercase)
-    "0X" + Codec.Conversion.toHexString(value).toUpperCase().slice(2), //string (uppercase)
+    "0X" + Codec.Conversion.toHexString(value).toUpperCase().slice(2) //string (uppercase)
   ];
   //I wanted to do mixed-case but uh that turned out to be harder than expected
   try {
@@ -166,11 +201,16 @@ const BytesInput = (value: Uint8Array) => {
 };
 
 const AddressInfo = () =>
-  fc.hexaString({ minLength: 40, maxLength: 40 }).chain((value: string) => fc.record({
-    type: fc.constant({ typeClass: "address" as const, kind: "general" as const }),
-    value: fc.constant(value),
-    input: AddressInput(value)
-  }));
+  fc.hexaString({ minLength: 40, maxLength: 40 }).chain((value: string) =>
+    fc.record({
+      type: fc.constant({
+        typeClass: "address" as const,
+        kind: "general" as const
+      }),
+      value: fc.constant(value),
+      input: AddressInput(value)
+    })
+  );
 
 const AddressInput = (value: string) => {
   let representations: any[] = [
@@ -186,28 +226,55 @@ const AddressInput = (value: string) => {
 };
 
 const UfixedInfo = () =>
-  Precision().chain(({ bits, places }: { bits: number, places: number }) => fc.record({
-    bits: fc.constant(bits),
-    places: fc.constant(places),
-    value: fc.bigUintN(bits).map(value => Codec.Conversion.shiftBigDown(new Big(value.toString()), places))
-  })).chain(({ bits, places, value }: { bits: number, places: number, value: Big }) => fc.record({
-    type: fc.constant({ typeClass: "ufixed" as const, bits, places }),
-    value: fc.constant(value),
-    input: FixedInput(value, bits, places, false)
-  }));
+  Precision()
+    .chain(({ bits, places }: { bits: number; places: number }) =>
+      fc.record({
+        bits: fc.constant(bits),
+        places: fc.constant(places),
+        value: fc
+          .bigUintN(bits)
+          .map(value =>
+            Codec.Conversion.shiftBigDown(new Big(value.toString()), places)
+          )
+      })
+    )
+    .chain(
+      ({ bits, places, value }: { bits: number; places: number; value: Big }) =>
+        fc.record({
+          type: fc.constant({ typeClass: "ufixed" as const, bits, places }),
+          value: fc.constant(value),
+          input: FixedInput(value, bits, places, false)
+        })
+    );
 
 const FixedInfo = () =>
-  Precision().chain(({ bits, places }: { bits: number, places: number }) => fc.record({
-    bits: fc.constant(bits),
-    places: fc.constant(places),
-    value: fc.bigIntN(bits).map(value => Codec.Conversion.shiftBigDown(new Big(value.toString()), places))
-  })).chain(({ bits, places, value }: { bits: number, places: number, value: Big }) => fc.record({
-    type: fc.constant({ typeClass: "fixed" as const, bits, places }),
-    value: fc.constant(value),
-    input: FixedInput(value, bits, places, true)
-  }));
+  Precision()
+    .chain(({ bits, places }: { bits: number; places: number }) =>
+      fc.record({
+        bits: fc.constant(bits),
+        places: fc.constant(places),
+        value: fc
+          .bigIntN(bits)
+          .map(value =>
+            Codec.Conversion.shiftBigDown(new Big(value.toString()), places)
+          )
+      })
+    )
+    .chain(
+      ({ bits, places, value }: { bits: number; places: number; value: Big }) =>
+        fc.record({
+          type: fc.constant({ typeClass: "fixed" as const, bits, places }),
+          value: fc.constant(value),
+          input: FixedInput(value, bits, places, true)
+        })
+    );
 
-const FixedInput = (value: Big, bits: number, places: number, signed: boolean) => {
+const FixedInput = (
+  value: Big,
+  bits: number,
+  places: number,
+  signed: boolean
+) => {
   let prefix = signed ? "" : "u";
   let representations: any[] = [
     value, //Big
@@ -229,11 +296,13 @@ const FixedInput = (value: Big, bits: number, places: number, signed: boolean) =
 };
 
 const BoolInfo = () =>
-  fc.boolean().chain((value: boolean) => fc.record({
-    type: fc.constant({ typeClass: "bool" as const }),
-    value: fc.constant(value),
-    input: BoolInput(value)
-  }));
+  fc.boolean().chain((value: boolean) =>
+    fc.record({
+      type: fc.constant({ typeClass: "bool" as const }),
+      value: fc.constant(value),
+      input: BoolInput(value)
+    })
+  );
 
 const BoolInput = (value: boolean) => {
   let representations: any[] = [
@@ -277,48 +346,81 @@ describe("Wrapping of elementary values", () => {
       await encoder.wrapElementaryValue(info.type, info.input)
     );
     assert.strictEqual(wrapped.value.kind, "valid");
-    assert.strictEqual((<Codec.Format.Values.StringValueInfoValid>wrapped.value).asString, info.value);
+    assert.strictEqual(
+      (<Codec.Format.Values.StringValueInfoValid>wrapped.value).asString,
+      info.value
+    );
   });
 
   testProp("Bytes (static-length)", [BytesStaticInfo()], async info => {
     const wrapped = <Codec.Format.Values.BytesValue>(
       await encoder.wrapElementaryValue(info.type, info.input)
     );
-    assert.strictEqual(wrapped.value.asHex, Codec.Conversion.toHexString(info.value).padEnd(2 + 2 * info.type.length, "0"));
+    assert.strictEqual(
+      wrapped.value.asHex,
+      Codec.Conversion.toHexString(info.value).padEnd(
+        2 + 2 * info.type.length,
+        "0"
+      )
+    );
   });
 
   testProp("Bytes (dynamic-length)", [BytesDynamicInfo()], async info => {
     const wrapped = <Codec.Format.Values.BytesValue>(
       await encoder.wrapElementaryValue(info.type, info.input)
     );
-    assert.strictEqual(wrapped.value.asHex, Codec.Conversion.toHexString(info.value));
+    assert.strictEqual(
+      wrapped.value.asHex,
+      Codec.Conversion.toHexString(info.value)
+    );
   });
 
   testProp("Addresses", [AddressInfo()], async info => {
     const wrapped = <Codec.Format.Values.AddressValue>(
       await encoder.wrapElementaryValue(info.type, info.input)
     );
-    assert.strictEqual(wrapped.value.asAddress, Web3Utils.toChecksumAddress("0x" + info.value));
+    assert.strictEqual(
+      wrapped.value.asAddress,
+      Web3Utils.toChecksumAddress("0x" + info.value)
+    );
   });
 
   testProp("Unsigned decimals", [UfixedInfo()], async info => {
     const wrapped = <Codec.Format.Values.UfixedValue>(
       await encoder.wrapElementaryValue(info.type, info.input)
     );
-    assert(
-      wrapped.value.asBig.eq(info.value),
-      `Wrapped Big ${wrapped.value.asBig.toFixed()} did not match original value ${info.value.toFixed()}`
-    );
+    if (isNumber(info.input)) {
+      //for numbers and Numbers, we'll allow a tiny bit of wiggle room
+      assert(
+        wrapped.value.asBig.minus(info.value).abs().lte(tolerance),
+        `Wrapped Big ${wrapped.value.asBig.toFixed()} was not within tolerance ${tolerance} of original value ${info.value.toFixed()}`
+      );
+    } else {
+      //normal case: compare for exact equality
+      assert(
+        wrapped.value.asBig.eq(info.value),
+        `Wrapped Big ${wrapped.value.asBig.toFixed()} did not match original value ${info.value.toFixed()}`
+      );
+    }
   });
 
   testProp("Signed decimals", [FixedInfo()], async info => {
     const wrapped = <Codec.Format.Values.FixedValue>(
       await encoder.wrapElementaryValue(info.type, info.input)
     );
-    assert(
-      wrapped.value.asBig.eq(info.value),
-      `Wrapped Big ${wrapped.value.asBig.toFixed()} did not match original value ${info.value.toFixed()}`
-    );
+    if (isNumber(info.input)) {
+      //for numbers and Numbers, we'll allow a tiny bit of wiggle room
+      assert(
+        wrapped.value.asBig.minus(info.value).abs().lte(tolerance),
+        `Wrapped Big ${wrapped.value.asBig.toFixed()} was not within tolerance ${tolerance} of original value ${info.value.toFixed()}`
+      );
+    } else {
+      //normal case: compare for exact equality
+      assert(
+        wrapped.value.asBig.eq(info.value),
+        `Wrapped Big ${wrapped.value.asBig.toFixed()} did not match original value ${info.value.toFixed()}`
+      );
+    }
   });
 
   testProp("Booleans", [BoolInfo()], async info => {
