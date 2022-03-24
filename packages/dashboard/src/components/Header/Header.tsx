@@ -6,10 +6,10 @@ import NetworkIndicator from "../common/NetworkIndicator";
 import NetworkSwitcher from "../common/NetworkSwitcher";
 
 interface Props {
-  publicChains: object[];
+  dashboardChains: object[];
 }
 
-function Header({ publicChains }: Props) {
+function Header({ dashboardChains }: Props) {
   const [displayName, setDisplayName] = useState<string>();
   const { account, library, chainId } = useWeb3React<providers.Web3Provider>();
   const networkSwitchingSupported = true;
@@ -37,7 +37,10 @@ function Header({ publicChains }: Props) {
       <div className="flex justify-end items-center gap-4 text-md">
         {chainId &&
           (networkSwitchingSupported ? (
-            <NetworkSwitcher chainId={chainId} publicChains={publicChains} />
+            <NetworkSwitcher
+              chainId={chainId}
+              dashboardChains={dashboardChains}
+            />
           ) : (
             <NetworkIndicator chainId={chainId} />
           ))}

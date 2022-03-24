@@ -9,10 +9,10 @@ import {
 
 interface Props {
   chainId: number;
-  publicChains?: object[];
+  dashboardChains?: object[];
 }
 
-function NetworkSwitcher({ chainId, publicChains }: Props) {
+function NetworkSwitcher({ chainId, dashboardChains }: Props) {
   const [networkName, setNetworkName] = useState<string>(`Chain ID ${chainId}`);
   const textColor = chainId === 1 ? "text-truffle-red" : "";
   const { library } = useWeb3React<providers.Web3Provider>();
@@ -26,7 +26,7 @@ function NetworkSwitcher({ chainId, publicChains }: Props) {
 
     if (!chainId) return;
     updateNetwork(chainId);
-  }, [chainId, publicChains]);
+  }, [chainId, dashboardChains]);
 
   async function getVerifiedChainId(chain: any) {
     try {
@@ -98,8 +98,8 @@ function NetworkSwitcher({ chainId, publicChains }: Props) {
     }
   }
   const chainIdHex = `0x${chainId.toString(16)}`;
-  const chainOptions = publicChains ? (
-    publicChains.map((chain: any) => {
+  const chainOptions = dashboardChains ? (
+    dashboardChains.map((chain: any) => {
       return (
         <div
           key={chain.chainId}
