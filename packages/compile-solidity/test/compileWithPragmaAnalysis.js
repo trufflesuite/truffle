@@ -144,10 +144,9 @@ describe("compileWithPragmaAnalysis", function () {
         assert.fail("compiling that source should have failed");
       } catch (error) {
         const expectedSnippet = "Could not find a single version of the";
-        assert(
-          error.message.includes(expectedSnippet),
-          `The function call threw in an unexpected way. The error: ${error}.`
-        );
+        if (!error.message.includes(expectedSnippet)) {
+          throw error;
+        }
       }
     });
   });
@@ -162,10 +161,9 @@ describe("compileWithPragmaAnalysis", function () {
         assert.fail("The function should have thrown.");
       } catch (error) {
         const expectedMessage = "Could not find a valid pragma expression";
-        assert(
-          error.message.includes(expectedMessage),
-          `The function call threw in an unexpected way. The error: ${error}.`
-        );
+        if (!error.message.includes(expectedMessage)) {
+          throw error;
+        }
       }
     });
 
@@ -178,10 +176,9 @@ describe("compileWithPragmaAnalysis", function () {
         assert.fail("The function should have thrown.");
       } catch (error) {
         const expectedMessage = "Could not find a valid pragma expression";
-        assert(
-          error.message.includes(expectedMessage),
-          `The function call threw in an unexpected way. The error: ${error}.`
-        );
+        if (!error.message.includes(expectedMessage)) {
+          throw error;
+        }
       }
     });
 
@@ -196,10 +193,9 @@ describe("compileWithPragmaAnalysis", function () {
         assert.fail("The function should have thrown.");
       } catch (error) {
         const expectedMessage = "Invalid semver expression ($0.5.3)";
-        assert(
-          error.message.includes(expectedMessage),
-          `The function call threw in an unexpected way. The error: ${error}.`
-        );
+        if (!error.message.includes(expectedMessage)) {
+          throw error;
+        }
       }
     });
   });
