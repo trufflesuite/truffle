@@ -4,6 +4,7 @@ import { handleDashboardProviderRequest, respond } from "../../utils/utils";
 import Button from "../common/Button";
 import Card from "../common/Card";
 import { DashboardProviderMessage } from "@truffle/dashboard-message-bus";
+import React from "react";
 
 interface Props {
   request: DashboardProviderMessage;
@@ -17,6 +18,8 @@ interface Props {
 }
 
 function IncomingRequest({ provider, socket, request, setRequests }: Props) {
+  const [disable, setDisable]=React.useState(false);
+
   const removeFromRequests = () => {
     setRequests(previousRequests =>
       previousRequests.filter(other => other.id !== request.id)
@@ -104,12 +107,26 @@ function IncomingRequest({ provider, socket, request, setRequests }: Props) {
 
   const body = <div>{formatDashboardProviderRequestParameters(request)}</div>;
 
-  const footer = (
-    <div className="flex justify-start items-center gap-2">
-      <Button onClick={process} text="Process" />
-      <Button onClick={reject} text="Reject" />
-    </div>
-  );
+  var footer;
+  if (disable) {
+    footer = (
+      <div className="flex justify-start items-center gap-2">
+        <button
+          className="rounded p-2 text-truffle-brown uppercase hover:bg-white"
+          disabled={disable}
+        >
+          Processing...
+        </button>
+      </div>
+    );
+  } else {
+    footer = (
+      <div className="flex justify-start items-center gap-2">
+        <Button onClick={() => {process(); setDisable(true);}} text="Process" />
+        <Button onClick={reject} text="Reject" />
+      </div>
+    );
+  }
 
   return (
     <div key={request.id} className="flex justify-center items-center">
