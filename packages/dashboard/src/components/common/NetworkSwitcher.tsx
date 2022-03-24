@@ -1,10 +1,9 @@
-import { useWeb3React } from "@web3-react/core";
-import { providers } from "ethers";
 import { useEffect, useState } from "react";
 import {
   forwardDashboardProviderRequest,
   getNetworkName
 } from "src/utils/utils";
+import { useConnect } from "wagmi";
 
 interface Props {
   chainId: number;
@@ -14,7 +13,9 @@ interface Props {
 function NetworkSwitcher({ chainId, publicChains }: Props) {
   const [networkName, setNetworkName] = useState<string>(`Chain ID ${chainId}`);
   const textColor = chainId === 1 ? "text-truffle-red" : "";
-  const { library } = useWeb3React<providers.Web3Provider>();
+  const [{ data: connectData }] = useConnect();
+  const provider = connectData.connector?.getProvider();
+  const connector = connectData.connector;
 
   useEffect(() => {
     const updateNetwork = async (chainId: number) => {
@@ -28,8 +29,7 @@ function NetworkSwitcher({ chainId, publicChains }: Props) {
   }, [chainId, publicChains]);
 
   async function addNetwork(chain: any) {
-    if (!library) return; // handle better
-    const provider = library.provider;
+    if (!provider) return; // handle b
     const addNetworkPayload = {
       jsonrpc: "2.0",
       method: "wallet_addEthereumChain",
@@ -38,6 +38,7 @@ function NetworkSwitcher({ chainId, publicChains }: Props) {
     };
     const addNetworkResponse = await forwardDashboardProviderRequest(
       provider,
+      connector,
       addNetworkPayload
     );
     if (addNetworkResponse.error) {
@@ -50,8 +51,7 @@ function NetworkSwitcher({ chainId, publicChains }: Props) {
   }
 
   async function setOrAddNetwork(chain: any) {
-    if (!library) return; // handle better
-    const provider = library.provider;
+    if (!provider) return; // TODO: handle better
     const switchNetworkPayload = {
       jsonrpc: "2.0",
       method: "wallet_switchEthereumChain",
@@ -60,6 +60,7 @@ function NetworkSwitcher({ chainId, publicChains }: Props) {
     };
     const switchNetworkResponse = await forwardDashboardProviderRequest(
       provider,
+      connector,
       switchNetworkPayload
     );
     if (switchNetworkResponse.error) {
