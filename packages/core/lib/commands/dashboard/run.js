@@ -61,7 +61,54 @@ module.exports = async function (options) {
     }
   ];
 
-  const dashboardServerOptions = { port, host, verbose, publicChains };
+  const mainnet = publicChains[0];
+  const mergedChains = [...publicChains];
+  if (config.networks) {
+    const chainNames = Object.keys(config.networks);
+
+    // filters out all truffle-config chains that wouldn't make valid dashboard
+    // networks. for the rest, it assembles the relevant data and fills in
+    // mainnet data where needed to make a `dashboardChain`
+    const configuredNetworks = chainNames.reduce((filtered, chainName) => {
+      const chain = config.networks[chainName];
+      if (
+        chainName !== "dashboard" &&
+        chainName !== "test" &&
+        chainName !== "develop" &&
+        ((chain.host && chain.port) || // either has a host/port
+          (chain.rpcUrls && chain.rpcUrls.length > 0)) // or they provided an rpc url
+      ) {
+        // if they didn't provide an rpc url and thus are using local host,
+        // assume this is their own local instance of a chain
+        const isLocalChain = !chain.rpcUrls || chain.rpcUrls.length === 0;
+        filtered.push({
+          chainId: chain.chainId ? chain.chainId : undefined,
+          chainName: chainName,
+          nativeCurrency: chain.nativeCurrency
+            ? chain.nativeCurrency
+            : mainnet.nativeCurrency,
+          rpcUrls: chain.rpcUrls
+            ? chain.rpcUrls
+            : [`http://${chain.host}:${chain.port}`],
+          blockExplorerUrls: chain.blockExplorerUrls
+            ? chain.blockExplorerUrls
+            : undefined,
+          isLocalChain
+        });
+      }
+      return filtered;
+    }, []);
+
+    mergedChains.push(...configuredNetworks);
+    console.log(mergedChains);
+  }
+
+  const dashboardServerOptions = {
+    port,
+    host,
+    verbose,
+    dashboardChains: mergedChains
+  };
   const dashboardServer = new DashboardServer(dashboardServerOptions);
   await dashboardServer.start();
 

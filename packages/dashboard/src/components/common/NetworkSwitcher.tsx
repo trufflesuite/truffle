@@ -1,4 +1,5 @@
 import { useWeb3React } from "@web3-react/core";
+import axios from "axios";
 import { providers } from "ethers";
 import { useEffect, useState } from "react";
 import {
@@ -8,13 +9,13 @@ import {
 
 interface Props {
   chainId: number;
-  publicChains?: object[];
+  dashboardChains?: object[];
 }
 
-function NetworkSwitcher({ chainId, publicChains }: Props) {
+function NetworkSwitcher({ chainId, dashboardChains }: Props) {
   const [networkName, setNetworkName] = useState<string>(`Chain ID ${chainId}`);
   const textColor = chainId === 1 ? "text-truffle-red" : "";
-  const { library } = useWeb3React<providers.Web3Provider>();
+  const { library, account } = useWeb3React<providers.Web3Provider>();
 
   useEffect(() => {
     const updateNetwork = async (chainId: number) => {
@@ -25,7 +26,41 @@ function NetworkSwitcher({ chainId, publicChains }: Props) {
 
     if (!chainId) return;
     updateNetwork(chainId);
-  }, [chainId, publicChains]);
+  }, [chainId, dashboardChains]);
+
+  const postRpc = async (url: string, method: string, params: any[] = []) => {
+    try {
+      const { data } = await axios.post(url, {
+        jsonrpc: "2.0",
+        method,
+        params,
+        id: 0
+      });
+      console.log(`${method} result: ${JSON.stringify(data)}`);
+      return data.result;
+    } catch (e) {
+      console.log(e);
+    }
+  };
+  async function fundAccount(chain: any) {
+    const rpcUrl = chain.rpcUrls[0];
+    const clientVersion = await postRpc(rpcUrl, "web3_clientVersion");
+    if (clientVersion.includes("Ganache")) {
+      const funded = await postRpc(rpcUrl, "evm_setAccountBalance", [
+        account,
+        "0x56BC75E2D63100000"
+      ]); // give them 100 ETH for good measure
+      if (!funded) {
+        console.warn(`Something went wrong when funding account ${account}`);
+      }
+    } else if (clientVersion.includes("HardhatNetwork")) {
+      console.warn("Hardhat Network account funding not yet supported.");
+    }
+  }
+  async function getVerifiedChainId(chain: any) {
+    const result = await postRpc(chain.rpcUrls[0], "eth_chainId");
+    return result;
+  }
 
   async function addNetwork(chain: any) {
     if (!library) return; // handle better
@@ -41,23 +76,31 @@ function NetworkSwitcher({ chainId, publicChains }: Props) {
       addNetworkPayload
     );
     if (addNetworkResponse.error) {
-      console.log(
+      console.error(
         "add network error: " + JSON.stringify(addNetworkResponse.error)
       );
-    } else {
-      console.log("added network!" + JSON.stringify(addNetworkResponse));
     }
   }
 
   async function setOrAddNetwork(chain: any) {
     if (!library) return; // handle better
     const provider = library.provider;
+    if (!chain.chainId) {
+      chain.chainId = await getVerifiedChainId(chain);
+      if (!chain.chainId) {
+        console.error(
+          `Chain ${chain.chainName} does not have a valid chainId and the provided RPC URL is invalid.`
+        );
+        return;
+      }
+    }
     const switchNetworkPayload = {
       jsonrpc: "2.0",
       method: "wallet_switchEthereumChain",
       params: [{ chainId: chain.chainId }],
       id: 0
     };
+    console.log(switchNetworkPayload);
     const switchNetworkResponse = await forwardDashboardProviderRequest(
       provider,
       switchNetworkPayload
@@ -68,7 +111,7 @@ function NetworkSwitcher({ chainId, publicChains }: Props) {
         addNetwork(chain);
       } else {
         // handle other errors
-        console.log(
+        console.error(
           "some other switch network error: " + switchNetworkResponse.error
         );
       }
@@ -78,11 +121,14 @@ function NetworkSwitcher({ chainId, publicChains }: Props) {
       // imported from web3React will be changed, which will call the useEffect
       // for all components that are dependent on that chainId
       console.log("switched network! " + JSON.stringify(switchNetworkResponse));
+      if (chain.isLocalChain) {
+        await fundAccount(chain);
+      }
     }
   }
   const chainIdHex = `0x${chainId.toString(16)}`;
-  const chainOptions = publicChains ? (
-    publicChains.map((chain: any) => {
+  const chainOptions = dashboardChains ? (
+    dashboardChains.map((chain: any) => {
       return (
         <div
           key={chain.chainId}

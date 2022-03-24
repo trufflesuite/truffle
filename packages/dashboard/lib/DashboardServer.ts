@@ -21,7 +21,7 @@ import debugModule from "debug";
  * Public ethereum chains that can be added to a wallet and switched via the
  * dashboard's network manager. Currently based off of https://docs.metamask.io/guide/rpc-api.html#unrestricted-methods
  */
-export interface PublicChain {
+export interface DashboardChain {
   chainId: string;
   chainName: string;
   nativeCurrency: {
@@ -32,6 +32,7 @@ export interface PublicChain {
   rpcUrls: string[];
   blockExplorerUrls?: string[];
   iconUrls?: string[];
+  isLocalChain?: boolean;
 }
 
 export interface DashboardServerOptions {
@@ -48,7 +49,7 @@ export interface DashboardServerOptions {
   autoOpen?: boolean;
 
   /** Chain array used to populate the list of public chains to display in the dashboard network manager. */
-  publicChains: PublicChain[];
+  dashboardChains: DashboardChain[];
 }
 
 export class DashboardServer {
@@ -57,7 +58,7 @@ export class DashboardServer {
   verbose: boolean;
   autoOpen: boolean;
   frontendPath: string;
-  publicChains: PublicChain[];
+  dashboardChains: DashboardChain[];
 
   private expressApp?: Application;
   private httpServer?: Server;
@@ -78,7 +79,7 @@ export class DashboardServer {
       "dashboard-frontend",
       "build"
     );
-    this.publicChains = options.publicChains;
+    this.dashboardChains = options.dashboardChains;
 
     this.boundTerminateListener = () => this.stop();
   }
@@ -209,7 +210,7 @@ export class DashboardServer {
       if (isInitializeMessage(message)) {
         const responseMessage = {
           id: message.id,
-          payload: { publicChains: this.publicChains }
+          payload: { dashboardChains: this.dashboardChains }
         };
         socket.send(jsonToBase64(responseMessage));
       }
