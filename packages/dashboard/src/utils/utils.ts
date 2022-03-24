@@ -31,7 +31,7 @@ export const forwardDashboardProviderRequest = async (
   connector: any,
   payload: JSONRPCRequestPayload
 ) => {
-  console.log("forwardDashboardProviderRequest:input", {
+  console.debug("forwardDashboardProviderRequest:input", {
     id: payload.id,
     provider,
     connector,
@@ -41,7 +41,7 @@ export const forwardDashboardProviderRequest = async (
   try {
     let result = await sendAsync(payload);
     let connectorId: string | undefined = connector?.id;
-    console.log("forwardDashboardProviderRequest:result", {
+    console.debug("forwardDashboardProviderRequest:result", {
       id: payload.id,
       payload,
       result
@@ -73,11 +73,6 @@ export const handleDashboardProviderRequest = async (
   connector: any,
   responseSocket: WebSocket
 ) => {
-  console.log("handleDashboardProviderRequest:input", {
-    request,
-    provider,
-    connector
-  });
   const responsePayload = await forwardDashboardProviderRequest(
     provider,
     connector,
@@ -87,10 +82,6 @@ export const handleDashboardProviderRequest = async (
     id: request.id,
     payload: responsePayload
   };
-  console.log("handleDashboardProviderRequest:responding", {
-    request,
-    response
-  });
   respond(response, responseSocket);
 };
 

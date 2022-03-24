@@ -13,7 +13,6 @@ function NetworkIndicator({chainId}: Props) {
     const updateNetwork = async (chainId: number) => {
       const connectedNetworkName = await getNetworkName(chainId);
       setNetworkName(connectedNetworkName);
-      console.log(connectedNetworkName);
     };
 
     if (!chainId) return;

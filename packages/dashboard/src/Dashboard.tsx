@@ -17,7 +17,6 @@ import {useAccount, useConnect, useNetwork} from "wagmi";
 
 function Dashboard() {
   const [paused, setPaused] = useState<boolean>(false);
-  const [connected, setConnected] = useState<boolean>(false);
   const [connectedChainId, setConnectedChainId] = useState<number | undefined>();
   const [chainId, setChainId] = useState<number>();
   const [socket, setSocket] = useState<WebSocket | undefined>();
@@ -29,7 +28,6 @@ function Dashboard() {
 
 
   useEffect(() => {
-    setConnected(connectData.connected);
     setChainId(data.chain?.id);
 
     if (!chainId || !socket) return;
@@ -93,8 +91,6 @@ function Dashboard() {
   return (
     <div className="h-full min-h-screen bg-gradient-to-b from-truffle-lighter to-truffle-light">
       <Header disconnect={disconnectAccount}/>
-      STATUS: connected: [{connected}] chainID: [{chainId}] paused: [{paused.toString()}] connectedChainId:
-      [{connectedChainId}] socket: [{socket?.toString()}]
       {paused && chainId && connectedChainId && (
         <ConfirmNetworkChanged
           newChainId={chainId}
