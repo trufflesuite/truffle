@@ -84,19 +84,22 @@ function NetworkSwitcher({ chainId, publicChains }: Props) {
   const chainOptions = publicChains ? (
     publicChains.map((chain: any) => {
       return (
-        <div
+        <option
           key={chain.chainId}
           className={`rounded uppercase ${textColor}`}
           onClick={() => setOrAddNetwork(chain)}
         >
-          {(chain.chainId === chainIdHex ? "Selected: " : "") + chain.chainName}
-        </div>
+          {(chain.chainId === chainIdHex ? "" : "") + chain.chainName}
+        </option>
       );
     })
   ) : (
     <div className={`rounded uppercase ${textColor}`}>{networkName}</div>
   );
-  return <div>{chainOptions}</div>;
+  return (
+  <select className="form-select block px-4 py-3 w-1/4 max-w-4xl focus:outline-truffle-brown focus:ring-truffle-brown focus:border-truffle-brown"
+  >{chainOptions}</select>
+  );
 }
 
 export default NetworkSwitcher;
