@@ -5,7 +5,7 @@ const options = {
   host: "localhost",
   verbose: true,
   autoOpen: false,
-  publicChains: [
+  dashboardChains: [
     {
       chainId: "0x1",
       chainName: "mainnet",
