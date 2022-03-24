@@ -1,3 +1,4 @@
+import type { WorkflowCompileResult } from "@truffle/compile-common";
 export interface Message {
   id: number;
   type?: string;
@@ -56,6 +57,7 @@ export interface DebugMessage extends Message {
 
 export type InvalidateMessageType = "invalidate";
 export const invalidateMessageType = "invalidate";
+
 /**
  * Message intended to invalidate earlier messages.
  * The payload is the ID of the message that should be invalidated.
@@ -64,6 +66,19 @@ export const invalidateMessageType = "invalidate";
 export interface InvalidateMessage extends Message {
   type: InvalidateMessageType;
   payload: number;
+}
+
+export type WorkflowCompileResultMessageType = "workflow-compile-result";
+export const workflowCompileResultMessageType = "workflow-compile-result";
+
+/**
+ * Message to inform subscribers of a new WorkflowCompileResult
+ */
+export interface WorkflowCompileResultMessage extends Message {
+  type: WorkflowCompileResultMessageType;
+  payload: {
+    result: WorkflowCompileResult;
+  };
 }
 
 export const isDashboardProviderMessage = (
@@ -86,8 +101,15 @@ export const isInvalidateMessage = (
   return message.type === invalidateMessageType;
 };
 
+export const isWorkflowCompileResultMessage = (
+  message: Message
+): message is WorkflowCompileResultMessage => {
+  return message.type === "workflow-compile-result";
+};
+
 export type MessageType =
   | DashboardProviderMessageType
   | LogMessageType
   | DebugMessageType
-  | InvalidateMessageType;
+  | InvalidateMessageType
+  | WorkflowCompileResultMessageType;

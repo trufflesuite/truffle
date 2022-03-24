@@ -1,4 +1,8 @@
 import { useEffect } from "react";
+import { useConnect } from "wagmi";
+import type { WorkflowCompileResult } from "@truffle/compile-common";
+import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
+import { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import {
   handleDashboardProviderRequest,
   isInteractiveRequest,
@@ -7,9 +11,7 @@ import {
 } from "src/utils/utils";
 import Card from "src/components/common/Card";
 import IncomingRequest from "./IncomingRequest";
-import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
-import { useConnect } from "wagmi";
-import { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
+import { useDecoder, DecoderContext } from "../../decoding";
 
 interface Props {
   paused: boolean;
@@ -21,9 +23,15 @@ interface Props {
           requests: ReceivedMessageLifecycle<DashboardProviderMessage>[]
         ) => ReceivedMessageLifecycle<DashboardProviderMessage>[])
   ) => void;
+  workflowCompileResult: WorkflowCompileResult | undefined;
 }
 
-function DashboardProvider({ paused, requests, setRequests }: Props) {
+function DashboardProvider({
+  paused,
+  requests,
+  setRequests,
+  workflowCompileResult
+}: Props) {
   const [{ data: connectData }] = useConnect();
   const provider = connectData.connector?.getProvider();
   const connector = connectData.connector;
@@ -56,6 +64,11 @@ function DashboardProvider({ paused, requests, setRequests }: Props) {
       });
   }, [paused, requests, setRequests, connectData, provider, connector]);
 
+  const decoder = useDecoder({
+    workflowCompileResult,
+    provider
+  });
+
   const incomingRequests =
     connectData.connected && provider
       ? requests
@@ -73,7 +86,9 @@ function DashboardProvider({ paused, requests, setRequests }: Props) {
   return (
     <div className="flex justify-center items-center py-20">
       <div className="mx-3 w-3/4 max-w-4xl h-2/3">
-        <Card header="Incoming Requests" body={incomingRequests} />
+        <DecoderContext.Provider value={decoder}>
+          <Card header="Incoming Requests" body={incomingRequests} />
+        </DecoderContext.Provider>
       </div>
     </div>
   );

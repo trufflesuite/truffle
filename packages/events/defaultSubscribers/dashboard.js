@@ -39,6 +39,21 @@ module.exports = {
         }
       }
     ],
+    "compile:succeed": [
+      async function ({ result }) {
+        try {
+          const publishLifecycle = await this.messageBus.publish({
+            type: "workflow-compile-result",
+            payload: {
+              result
+            }
+          });
+          publishLifecycle.abandon();
+        } catch (err) {
+          // best effort only, dashboard might not even be alive
+        }
+      }
+    ],
     "rpc:request": [
       function (event) {
         if (!isDashboardNetwork(this.config)) {

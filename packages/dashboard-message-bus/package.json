@@ -36,6 +36,7 @@
   },
   "dependencies": {
     "@truffle/dashboard-message-bus-common": "0.1.0-0",
+    "@truffle/compile-common": "^0.7.31",
     "@types/ws": "^7.2.0",
     "delay": "^5.0.0",
     "isomorphic-ws": "^4.0.1",

@@ -10,12 +10,14 @@ import {
   isDebugMessage,
   isInvalidateMessage,
   isLogMessage,
+  isWorkflowCompileResultMessage,
   Message
 } from "@truffle/dashboard-message-bus-common";
 import {
   DashboardMessageBusClient,
   ReceivedMessageLifecycle
 } from "@truffle/dashboard-message-bus-client";
+import type { WorkflowCompileResult } from "@truffle/compile-common";
 
 function Dashboard() {
   const [paused, setPaused] = useState<boolean>(false);
@@ -31,6 +33,9 @@ function Dashboard() {
   const [{ data }] = useNetwork();
   const [{}, disconnect] = useAccount();
   const [{ data: connectData }] = useConnect();
+  const [workflowCompileResult, setWorkflowCompileResult] = useState<
+    WorkflowCompileResult | undefined
+  >();
 
   useEffect(() => {
     setChainId(chainId);
@@ -91,6 +96,12 @@ function Dashboard() {
               request => request.message.id !== message.payload
             )
           );
+        } else if (isWorkflowCompileResultMessage(message)) {
+          const {
+            payload: { result }
+          } = message;
+          setWorkflowCompileResult(result);
+          lifecycle.respond({ payload: undefined });
         } else if (isDebugMessage(message)) {
           console.debug(`received invalidate message `, message);
           const { payload } = message;
@@ -136,6 +147,7 @@ function Dashboard() {
           paused={paused}
           requests={dashboardProviderRequests}
           setRequests={setDashboardProviderRequests}
+          workflowCompileResult={workflowCompileResult}
         />
       )}
     </div>
