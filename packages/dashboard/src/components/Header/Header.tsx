@@ -15,9 +15,8 @@ function Header({ disconnect, publicChains }: Props) {
   const [displayName, setDisplayName] = useState<string>();
 
   const [{ data: accountData }] = useAccount();
-  const [{ data: networkData }] = useNetwork();
+  const [{ data: networkData }, switchNetwork] = useNetwork();
   const [{ data: connectData }] = useConnect();
-  const [switchNetwork] = useNetwork();
   const networkSwitchingSupported = !!switchNetwork;
 
   useEffect(() => {
