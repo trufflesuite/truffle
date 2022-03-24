@@ -29,7 +29,7 @@ function NetworkSwitcher({ chainId, dashboardChains }: Props) {
   }, [chainId, dashboardChains]);
 
   async function addNetwork(chain: any) {
-    if (!provider) return; // handle b
+    if (!provider) return; // TODO: handle better
     const addNetworkPayload = {
       jsonrpc: "2.0",
       method: "wallet_addEthereumChain",
