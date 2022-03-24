@@ -86,7 +86,7 @@ describe("compileWithPragmaAnalysis", function () {
 
     // note that it will find the newest version of Solidity that satisifes
     // each pragma expression and then do one compilation per version
-    it("will make one compilation per compiler version", async function () {
+    it("makes one compilation per compiler version", async function () {
       const { compilations } = await compileWithPragmaAnalysis({
         options: config,
         paths
@@ -94,7 +94,7 @@ describe("compileWithPragmaAnalysis", function () {
       assert.equal(compilations.length, 3);
     });
 
-    it("will compile files with the same version together", async function () {
+    it("compiles files with the same version together", async function () {
       const { compilations } = await compileWithPragmaAnalysis({
         options: config,
         paths: paths.concat(
@@ -116,12 +116,10 @@ describe("compileWithPragmaAnalysis", function () {
       assert.equal(compilations.length, 3);
     });
 
-    it.only("compiles files with imports without pragma expressions", async function () {
+    it("compiles files with imports without pragma expressions", async function () {
       const { compilations } = await compileWithPragmaAnalysis({
         options: config,
-        paths: paths.concat([
-          path.join(sourceDirectory, "withImports", "D.sol")
-        ])
+        paths: [path.join(sourceDirectory, "withImports", "D.sol")]
       });
       assert.equal(compilations.length, 1);
     });
@@ -146,9 +144,10 @@ describe("compileWithPragmaAnalysis", function () {
         assert.fail("compiling that source should have failed");
       } catch (error) {
         const expectedSnippet = "Could not find a single version of the";
-        if (!error.message.includes(expectedSnippet)) {
-          throw error;
-        }
+        assert(
+          error.message.includes(expectedSnippet),
+          `The function call threw in an unexpected way. The error: ${error}.`
+        );
       }
     });
   });
@@ -163,12 +162,9 @@ describe("compileWithPragmaAnalysis", function () {
         assert.fail("The function should have thrown.");
       } catch (error) {
         const expectedMessage = "Could not find a valid pragma expression";
-        if (error.message.includes(expectedMessage)) {
-          return "all good";
-        }
-        assert.fail(
-          "The function call threw in an unexpected way. The " +
-            `error is ${error.message}.`
+        assert(
+          error.message.includes(expectedMessage),
+          `The function call threw in an unexpected way. The error: ${error}.`
         );
       }
     });
@@ -182,12 +178,9 @@ describe("compileWithPragmaAnalysis", function () {
         assert.fail("The function should have thrown.");
       } catch (error) {
         const expectedMessage = "Could not find a valid pragma expression";
-        if (error.message.includes(expectedMessage)) {
-          return "all good";
-        }
-        assert.fail(
-          "The function call threw in an unexpected way. The " +
-            `error is ${error.message}.`
+        assert(
+          error.message.includes(expectedMessage),
+          `The function call threw in an unexpected way. The error: ${error}.`
         );
       }
     });
@@ -203,12 +196,9 @@ describe("compileWithPragmaAnalysis", function () {
         assert.fail("The function should have thrown.");
       } catch (error) {
         const expectedMessage = "Invalid semver expression ($0.5.3)";
-        if (error.message.includes(expectedMessage)) {
-          return "all good";
-        }
-        assert.fail(
-          "The function call threw in an unexpected way. The " +
-            `error is ${error.message}.`
+        assert(
+          error.message.includes(expectedMessage),
+          `The function call threw in an unexpected way. The error: ${error}.`
         );
       }
     });
