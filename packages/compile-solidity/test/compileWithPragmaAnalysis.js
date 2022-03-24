@@ -1,9 +1,11 @@
 const assert = require("assert");
 const Config = require("@truffle/config");
-const {CompilerSupplier} = require("../dist/index");
+const { CompilerSupplier } = require("../dist/index");
 const Resolver = require("@truffle/resolver");
 const sinon = require("sinon");
-const {compileWithPragmaAnalysis} = require("../dist/compileWithPragmaAnalysis");
+const {
+  compileWithPragmaAnalysis
+} = require("../dist/compileWithPragmaAnalysis");
 const path = require("path");
 let paths = [];
 
@@ -13,14 +15,7 @@ const sourceDirectory = path.resolve(
   "multipleSolcVersions"
 );
 
-const config = new Config().with({
-  compilers: {
-    solc: {
-      settings: {},
-      version: "analyzePragmas"
-    }
-  }
-});
+const config = new Config();
 
 const releases = {
   prereleases: [],
@@ -91,7 +86,7 @@ describe("compileWithPragmaAnalysis", function () {
 
     // note that it will find the newest version of Solidity that satisifes
     // each pragma expression and then do one compilation per version
-    it("will make one compilation per compiler version", async function () {
+    it("makes one compilation per compiler version", async function () {
       const { compilations } = await compileWithPragmaAnalysis({
         options: config,
         paths
@@ -99,7 +94,7 @@ describe("compileWithPragmaAnalysis", function () {
       assert.equal(compilations.length, 3);
     });
 
-    it("will compile files with the same version together", async function () {
+    it("compiles files with the same version together", async function () {
       const { compilations } = await compileWithPragmaAnalysis({
         options: config,
         paths: paths.concat(
@@ -119,6 +114,14 @@ describe("compileWithPragmaAnalysis", function () {
         ])
       });
       assert.equal(compilations.length, 3);
+    });
+
+    it("compiles files with imports without pragma expressions", async function () {
+      const { compilations } = await compileWithPragmaAnalysis({
+        options: config,
+        paths: [path.join(sourceDirectory, "withImports", "D.sol")]
+      });
+      assert.equal(compilations.length, 1);
     });
 
     it("finds a version that satisfies all pragmas if it exists", async function () {
@@ -149,6 +152,21 @@ describe("compileWithPragmaAnalysis", function () {
   });
 
   describe("when there is a semver expression error", function () {
+    it("throws an error when a 'direct source' lacks a pragma expression", async function () {
+      try {
+        await compileWithPragmaAnalysis({
+          options: config,
+          paths: [path.join(__dirname, "sources", "badSources", "NoPragma.sol")]
+        });
+        assert.fail("The function should have thrown.");
+      } catch (error) {
+        const expectedMessage = "Could not find a valid pragma expression";
+        if (!error.message.includes(expectedMessage)) {
+          throw error;
+        }
+      }
+    });
+
     it("throws an error when it can't determine parser version", async function () {
       try {
         await compileWithPragmaAnalysis({
@@ -157,11 +175,10 @@ describe("compileWithPragmaAnalysis", function () {
         });
         assert.fail("The function should have thrown.");
       } catch (error) {
-        const expectedMessage = "Could not find a pragma expression";
-        if (error.message.includes(expectedMessage)) {
-          return "all good";
+        const expectedMessage = "Could not find a valid pragma expression";
+        if (!error.message.includes(expectedMessage)) {
+          throw error;
         }
-        throw error;
       }
     });
 
@@ -176,10 +193,9 @@ describe("compileWithPragmaAnalysis", function () {
         assert.fail("The function should have thrown.");
       } catch (error) {
         const expectedMessage = "Invalid semver expression ($0.5.3)";
-        if (error.message.includes(expectedMessage)) {
-          return "all good";
+        if (!error.message.includes(expectedMessage)) {
+          throw error;
         }
-        throw error;
       }
     });
   });
