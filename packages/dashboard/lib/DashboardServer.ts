@@ -32,6 +32,7 @@ export interface DashboardChain {
   rpcUrls: string[];
   blockExplorerUrls?: string[];
   iconUrls?: string[];
+  isLocalChain?: boolean;
 }
 
 export interface DashboardServerOptions {
