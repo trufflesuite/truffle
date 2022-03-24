@@ -31,7 +31,7 @@ function Dashboard() {
   const [dashboardProviderRequests, setDashboardProviderRequests] = useState<
     DashboardProviderMessage[]
   >([]);
-  const [publicChains, setPublicChains] = useState<object[]>([]);
+  const [dashboardChains, setDashboardChains] = useState<object[]>([]);
 
   const [{ data }] = useNetwork();
   const [{}, disconnect] = useAccount();
@@ -107,14 +107,14 @@ function Dashboard() {
     // since our socket is open, request some initial data from the server
     const message = createMessage("initialize", ""); // no payload needed
     const response = await sendAndAwait(socket, message);
-    setPublicChains(response.payload.publicChains);
+    setDashboardChains(response.payload.dashboardChains);
 
     setPublishSocket(socket);
   };
 
   return (
     <div className="h-full min-h-screen bg-gradient-to-b from-truffle-lighter to-truffle-light">
-      <Header disconnect={disconnect} publicChains={publicChains} />
+      <Header disconnect={disconnect} dashboardChains={dashboardChains} />
       {paused && chainId && connectedChainId && (
         <ConfirmNetworkChanged
           newChainId={chainId}
