@@ -15,9 +15,9 @@ function Header({ disconnect, dashboardChains }: Props) {
   const [displayName, setDisplayName] = useState<string>();
 
   const [{ data: accountData }] = useAccount();
-  const [{ data: networkData }] = useNetwork();
+  const [{ data: networkData }, switchNetwork] = useNetwork();
   const [{ data: connectData }] = useConnect();
-  const networkSwitchingSupported = true;
+  const networkSwitchingSupported = !!switchNetwork;
 
   useEffect(() => {
     const updateAccountDisplay = async (
