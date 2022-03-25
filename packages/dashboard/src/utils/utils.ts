@@ -148,3 +148,26 @@ export const reverseLookup = async (
 export const shortenAddress = (address: string) => {
   return `${address.substr(0, 6)}...${address.substr(address.length - 4, 4)}`;
 };
+
+export const createRpcPayload = (method: string, params: any[]) => {
+  return {
+    jsonrpc: "2.0",
+    method,
+    params,
+    id: 0
+  };
+};
+
+export const postRpc = async (
+  url: string,
+  method: string,
+  params: any[] = []
+) => {
+  try {
+    const { data } = await axios.post(url, createRpcPayload(method, params));
+    console.log(`${method} result: ${JSON.stringify(data)}`);
+    return data.result;
+  } catch (e) {
+    console.log(e);
+  }
+};

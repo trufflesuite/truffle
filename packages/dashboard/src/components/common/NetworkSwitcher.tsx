@@ -1,8 +1,9 @@
-import axios from "axios";
 import { useEffect, useState } from "react";
 import {
+  createRpcPayload,
   forwardDashboardProviderRequest,
-  getNetworkName
+  getNetworkName,
+  postRpc
 } from "src/utils/utils";
 import { useConnect, useAccount } from "wagmi";
 
@@ -21,7 +22,19 @@ function NetworkSwitcher({ chainId, dashboardChains }: Props) {
 
   useEffect(() => {
     const updateNetwork = async (chainId: number) => {
-      const connectedNetworkName = await getNetworkName(chainId);
+      let connectedNetworkName = "";
+      const chainIdHex = `0x${chainId.toString(16)}`;
+      await dashboardChains?.forEach(async (chain: any) => {
+        if (!chain.chainId) {
+          chain.chainId = await postRpc(chain.rpcUrls[0], "eth_chainId");
+        }
+        if (chain.chainId === chainIdHex) {
+          connectedNetworkName = chain.chainName;
+        }
+      });
+      if (!connectedNetworkName) {
+        connectedNetworkName = await getNetworkName(chainId);
+      }
       setNetworkName(connectedNetworkName);
       console.log(connectedNetworkName);
     };
@@ -30,106 +43,119 @@ function NetworkSwitcher({ chainId, dashboardChains }: Props) {
     updateNetwork(chainId);
   }, [chainId, dashboardChains]);
 
-  const postRpc = async (url: string, method: string, params: any[] = []) => {
-    try {
-      const { data } = await axios.post(url, {
-        jsonrpc: "2.0",
-        method,
-        params,
-        id: 0
-      });
-      console.log(`${method} result: ${JSON.stringify(data)}`);
-      return data.result;
-    } catch (e) {
-      console.log(e);
-    }
-  };
+  /**
+   * Attempts to fund the wallet's connected address on the supplied chain.
+   * @param chain The chain on which to fund the account.
+   */
   async function fundAccount(chain: any) {
     const rpcUrl = chain.rpcUrls[0];
+    // get the rpc url's client version to determine what rpc method to use
+    // to fund the account
     const clientVersion = await postRpc(rpcUrl, "web3_clientVersion");
+    let method = "";
+    // as of now both rpc methods use the same params, but that could potentially
+    // change and also let's give hardhat users less eth just for fun :)
+    let params = [];
     if (clientVersion.includes("Ganache")) {
-      const funded = await postRpc(rpcUrl, "evm_setAccountBalance", [
-        accountData?.address,
-        "0x56BC75E2D63100000"
-      ]); // give them 100 ETH for good measure
-      if (!funded) {
-        console.warn(
-          `Something went wrong when funding account ${accountData?.address}`
-        );
-      }
+      method = "evm_setAccountBalance";
+      params.push(accountData?.address);
+      params.push("0x56BC75E2D63100000");
     } else if (clientVersion.includes("HardhatNetwork")) {
-      console.warn("Hardhat Network account funding not yet supported.");
+      method = "hardhat_setBalance";
+      params.push(accountData?.address);
+      params.push("0x2B5E3AF16B1880000");
+    } else {
+      // TODO: display error to user
+      console.error(`Account funding for ${clientVersion} not yet supported.`);
+      return;
+    }
+
+    const funded = await postRpc(rpcUrl, method, params);
+    if (!funded) {
+      // TODO: display error to user
+      console.error(
+        `Something went wrong when funding account ${accountData?.address}`
+      );
     }
   }
-  async function getVerifiedChainId(chain: any) {
-    const result = await postRpc(chain.rpcUrls[0], "eth_chainId");
-    return result;
-  }
 
+  /**
+   * Attempts to add the chain to a wallet.
+   * @param chain Chain to add to wallet.
+   */
   async function addNetwork(chain: any) {
     if (!provider) return; // TODO: handle better
-    const addNetworkPayload = {
-      jsonrpc: "2.0",
-      method: "wallet_addEthereumChain",
-      params: [{ ...chain }],
-      id: 0
-    };
+    // wallets are very strict about what properties are on the chain data you
+    // send. `isLocalProvider` needs to be removed because they aren't expecting it
+    const clone = JSON.parse(JSON.stringify(chain));
+    delete clone.isLocalChain;
+    const addNetworkPayload = createRpcPayload("wallet_addEthereumChain", [
+      { ...clone }
+    ]);
     const addNetworkResponse = await forwardDashboardProviderRequest(
       provider,
       connector,
       addNetworkPayload
     );
     if (addNetworkResponse.error) {
+      // TODO: display error to user
       console.error(
-        "add network error: " + JSON.stringify(addNetworkResponse.error)
+        `Error adding network: ${JSON.stringify(addNetworkResponse.error)}`
       );
     }
   }
 
+  /**
+   * Switches the wallet's connected chain if the chain is added to the
+   * wallet. Attempts to add the chain if not.
+   * @param chain Chain to switch to or add to wallet.
+   * @dev We don't need to propagate the state change back up the chain when the
+   * network changes. The chainId is imported from wagmi, which will detect the
+   * wallet change an rerender dependent components.
+   */
   async function setOrAddNetwork(chain: any) {
     if (!provider) return; // TODO: handle better
+
+    // we need a chainId to switch networks, so request from rpcUrl of chain
+    // if it isn't available.
     if (!chain.chainId) {
-      chain.chainId = await getVerifiedChainId(chain);
+      chain.chainId = await postRpc(chain.rpcUrls[0], "eth_chainId");
       if (!chain.chainId) {
+        // TODO: display error to user
         console.error(
           `Chain ${chain.chainName} does not have a valid chainId and the provided RPC URL is invalid.`
         );
         return;
       }
     }
-    const switchNetworkPayload = {
-      jsonrpc: "2.0",
-      method: "wallet_switchEthereumChain",
-      params: [{ chainId: chain.chainId }],
-      id: 0
-    };
-    console.log(switchNetworkPayload);
+
+    const switchNetworkPayload = createRpcPayload(
+      "wallet_switchEthereumChain",
+      [{ chainId: chain.chainId }]
+    );
     const switchNetworkResponse = await forwardDashboardProviderRequest(
       provider,
       connector,
       switchNetworkPayload
     );
+
     if (switchNetworkResponse.error) {
       // MetaMask's error for the network not being added to MetaMask
       if (switchNetworkResponse.error.code === 4902) {
         addNetwork(chain);
       } else {
-        // handle other errors
+        // TODO: display error to user
         console.error(
-          "some other switch network error: " + switchNetworkResponse.error
+          `Error switching networks : ${switchNetworkResponse.error}`
         );
       }
     } else {
-      // we actually don't need to propagate this state change back up the chain
-      // when the provider request to switch networks is fulfilled, the chainId
-      // imported from web3React will be changed, which will call the useEffect
-      // for all components that are dependent on that chainId
-      console.log("switched network! " + JSON.stringify(switchNetworkResponse));
       if (chain.isLocalChain) {
         await fundAccount(chain);
       }
     }
   }
+
   const chainIdHex = `0x${chainId.toString(16)}`;
   const chainOptions = dashboardChains ? (
     dashboardChains.map((chain: any) => {
