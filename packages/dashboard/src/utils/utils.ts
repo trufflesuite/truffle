@@ -165,7 +165,6 @@ export const postRpc = async (
 ) => {
   try {
     const { data } = await axios.post(url, createRpcPayload(method, params));
-    console.log(`${method} result: ${JSON.stringify(data)}`);
     return data.result;
   } catch (e) {
     console.log(e);
