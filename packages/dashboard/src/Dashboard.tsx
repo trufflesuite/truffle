@@ -124,7 +124,10 @@ function Dashboard() {
 
   return (
     <div className="h-full min-h-screen bg-gradient-to-b from-truffle-lighter to-truffle-light">
-      <Header disconnect={disconnectAccount} dashboardChains={dashboardChains} />
+      <Header
+        disconnect={disconnectAccount}
+        dashboardChains={dashboardChains}
+      />
       {paused && chainId && connectedChainId && (
         <ConfirmNetworkChanged
           newChainId={chainId}
