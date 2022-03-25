@@ -149,8 +149,8 @@ function NetworkSwitcher({ chainId, dashboardChains }: Props) {
       await fundAccount(chain);
     }
   }
-  
-  let chosenChain:any;
+
+  let chosenChain: any;
   const chainOptions = dashboardChains ? (
     dashboardChains.map((chain: any) => {
       if (chain.chainId == `0x${chainId.toString(16)}`) {
@@ -160,18 +160,18 @@ function NetworkSwitcher({ chainId, dashboardChains }: Props) {
         <option
           value={JSON.stringify(chain)}
           key={chain.chainId}
-          className={`rounded uppercase ${textColor}`} 
+          className={`rounded uppercase ${textColor}`}
         >
           {chain.chainName}
-        </option> 
+        </option>
       );
     })
   ) : (
     <div className={`rounded uppercase ${textColor}`}>{networkName}</div>
   );
   return (
-  <select value={chosenChain} onChange={(e) => {setOrAddNetwork(JSON.parse(e.target.value));}} className="rounded uppercase form-select block px-4 py-3 w-1/4 max-w-4xl focus:outline-truffle-brown focus:ring-truffle-brown focus:border-truffle-brown"
-  >{chainOptions}</select>
+    <select value={chosenChain} onChange={(e) => { setOrAddNetwork(JSON.parse(e.target.value)); }} className="rounded uppercase form-select block px-4 py-3 w-1/4 max-w-4xl focus:outline-truffle-brown focus:ring-truffle-brown focus:border-truffle-brown"
+    >{chainOptions}</select>
   );
 }
 
