@@ -140,6 +140,15 @@ const Migrate = {
       migrations[total - 1].isLast = true;
     }
 
+    await emitEvent(options, "migrate:start", {
+      migrations
+    });
+
+    await emitEvent(options, "migrate:runMigrations:start", {
+      migrations,
+      dryRun: options.dryRun
+    });
+
     await emitEvent(options, "migrate:runMigrations:start", {
       migrations,
       dryRun: options.dryRun

@@ -41,6 +41,13 @@ export interface DebugMessage extends Message {
   };
 }
 
+export interface MigrateMessage extends Message {
+  type: "migrate";
+  payload: {
+    message: string;
+  };
+}
+
 /**
  * Message intended to invalidate earlier messages.
  * The payload is the ID of the message that should be invalidated.
@@ -63,6 +70,12 @@ export const isLogMessage = (message: Message): message is LogMessage => {
 
 export const isDebugMessage = (message: Message): message is DebugMessage => {
   return message.type === "debug";
+};
+
+export const isMigrateMessage = (
+  message: Message
+): message is MigrateMessage => {
+  return message.type === "migrate";
 };
 
 export const isInvalidateMessage = (
