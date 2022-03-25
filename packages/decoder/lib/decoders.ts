@@ -257,7 +257,45 @@ export class ProjectDecoder {
       result = decoder.next(response);
     }
     //at this point, result.value holds the final value
-    return result.value;
+    let decoding = result.value;
+
+    //...except wait!  we're not done yet! we need to do multicall processing!
+    if (
+      decoding.kind === "function" &&
+      decoding.abi.name === "multicall" &&
+      decoding.arguments.length === 1 &&
+      decoding.arguments[0].value.type.typeClass === "array" &&
+      decoding.arguments[0].value.type.baseType.typeClass === "bytes" &&
+      decoding.arguments[0].value.type.baseType.kind === "dynamic" &&
+      decoding.arguments[0].value.kind === "value"
+    ) {
+      const decodedArray = decoding.arguments[0]
+        .value as Format.Values.ArrayValue;
+      const multicallArray = await Promise.all(
+        decodedArray.value.map(async callResult => {
+          const coercedResult = callResult as Format.Values.BytesResult;
+          switch (coercedResult.kind) {
+            case "value":
+              return await this.decodeTransactionWithAdditionalContexts(
+                { ...transaction, input: coercedResult.value.asHex },
+                additionalContexts,
+                additionalAllocations
+              );
+            case "error":
+              return null;
+          }
+        })
+      );
+      //it's safe to modify decoding -- we've gotten it straight out of codec,
+      //it's not shared with anything else, so for convenience I'm just going to
+      //mutate rather than cloning
+      decoding.interpretations = {
+        ...decoding.interpretations,
+        multicall: multicallArray
+      };
+    }
+
+    return decoding;
   }
 
   /**
@@ -484,13 +522,11 @@ export class ProjectDecoder {
    */
 
   public async forArtifact(artifact: Artifact): Promise<ContractDecoder> {
-    let {
-      compilation,
-      contract
-    } = Compilations.Utils.findCompilationAndContract(
-      this.compilations,
-      artifact
-    );
+    let { compilation, contract } =
+      Compilations.Utils.findCompilationAndContract(
+        this.compilations,
+        artifact
+      );
     //to be *sure* we've got the right ABI, we trust the input over what was
     //found
     contract = {
@@ -1128,10 +1164,8 @@ export class ContractInstanceDecoder {
 
     //set up encoder for wrapping elementary values.
     //we pass it a provider, so it can handle ENS names.
-    let {
-      provider: ensProvider,
-      registryAddress
-    } = this.projectDecoder.getEnsSettings();
+    let { provider: ensProvider, registryAddress } =
+      this.projectDecoder.getEnsSettings();
     if (ensProvider === undefined) {
       //note: NOT if it's null, if it's null we leave it null
       ensProvider = this.providerAdapter.provider;
@@ -1750,9 +1784,10 @@ export class ContractInstanceDecoder {
             ({ name }) => name === rawIndex
           ); //there should be exactly one
         if (!allocation) {
-          const stringIndex = typeof rawIndex === "string"
-            ? rawIndex
-            : "specified by non-string argument";
+          const stringIndex =
+            typeof rawIndex === "string"
+              ? rawIndex
+              : "specified by non-string argument";
           throw new MemberNotFoundError(
             stringIndex,
             parentType,
