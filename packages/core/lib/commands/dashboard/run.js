@@ -65,19 +65,36 @@ module.exports = async function (options) {
   const mergedChains = [...publicChains];
   if (config.networks) {
     const chainNames = Object.keys(config.networks);
-    const configuredNetworks = chainNames
-      .filter(chainName => {
-        return chainName !== "dashboard";
-      })
-      .map(chainName => {
-        const network = config.networks[chainName];
-        return {
-          chainId: "",
+
+    // filters out all truffle-config chains that wouldn't make valid dashboard
+    // networks. for the rest, it assembles the relevant data and fills in
+    // mainnet data where needed to make a `dashboardChain`
+    const configuredNetworks = chainNames.reduce((filtered, chainName) => {
+      const chain = config.networks[chainName];
+      if (
+        chainName !== "dashboard" &&
+        chainName !== "test" &&
+        chainName !== "develop" &&
+        ((chain.host && chain.port) || // either has a host/port
+          (chain.url && chain.url.length > 0)) // or they provided an rpc url
+      ) {
+        filtered.push({
+          chainId: chain.chainId ? chain.chainId : undefined,
           chainName: chainName,
-          nativeCurrency: mainnet.nativeCurrency,
-          rpcUrls: [`http://${network.host}:${network.port}`]
-        };
-      });
+          nativeCurrency: chain.nativeCurrency
+            ? chain.nativeCurrency
+            : mainnet.nativeCurrency,
+          rpcUrls: chain.url
+            ? [chain.url]
+            : [`http://${chain.host}:${chain.port}`],
+          blockExplorerUrls: chain.blockExplorerUrls
+            ? chain.blockExplorerUrls
+            : undefined
+        });
+      }
+      return filtered;
+    }, []);
+
     mergedChains.push(...configuredNetworks);
     console.log(configuredNetworks);
   }

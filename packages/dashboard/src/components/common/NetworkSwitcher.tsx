@@ -85,12 +85,8 @@ function NetworkSwitcher({ chainId, dashboardChains }: Props) {
    */
   async function addNetwork(chain: any) {
     if (!provider) return; // TODO: handle better
-    // wallets are very strict about what properties are on the chain data you
-    // send. `isLocalProvider` needs to be removed because they aren't expecting it
-    const clone = JSON.parse(JSON.stringify(chain));
-    delete clone.isLocalChain;
     const addNetworkPayload = createRpcPayload("wallet_addEthereumChain", [
-      { ...clone }
+      { ...chain }
     ]);
     const addNetworkResponse = await forwardDashboardProviderRequest(
       provider,
@@ -150,9 +146,7 @@ function NetworkSwitcher({ chainId, dashboardChains }: Props) {
         );
       }
     } else {
-      if (chain.isLocalChain) {
-        await fundAccount(chain);
-      }
+      await fundAccount(chain);
     }
   }
 
