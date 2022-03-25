@@ -165,10 +165,16 @@ function NetworkSwitcher({ chainId, dashboardChains }: Props) {
     <div className={`rounded uppercase ${textColor}`}>{networkName}</div>
   );
   return (
-    <select value={chosenChain} onChange={(e) => { setOrAddNetwork(JSON.parse(e.target.value)); }} className="rounded uppercase form-select block px-4 py-3 w-1/4 max-w-4xl focus:outline-truffle-brown focus:ring-truffle-brown focus:border-truffle-brown"
-    >{chainOptions}</select>
+    <select
+      value={chosenChain}
+      onChange={e => {
+        setOrAddNetwork(JSON.parse(e.target.value));
+      }}
+      className="rounded uppercase form-select block px-4 py-3 w-1/4 max-w-4xl focus:outline-truffle-brown focus:ring-truffle-brown focus:border-truffle-brown"
+    >
+      {chainOptions}
+    </select>
   );
 }
 
 export default NetworkSwitcher;
-
