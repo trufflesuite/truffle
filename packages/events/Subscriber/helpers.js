@@ -54,8 +54,8 @@ const convertHandlerNameToRegex = name => {
     start += match.index + matchLength;
     str += cleanString + starRegex;
   }
-  str += name.substr(start).replace(reRegExpChar, "\\$&");
-  return new RegExp(`^${str.substr(1)}$`, "i");
+  str += name.slice(start).replace(reRegExpChar, "\\$&");
+  return new RegExp(`^${str.slice(1)}$`, "i");
 };
 
 const createLookupTable = handlerNames => {
