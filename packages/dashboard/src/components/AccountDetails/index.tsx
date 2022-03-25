@@ -1,15 +1,17 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {FC, useMemo} from "react";
-import {useAccount, useConnect} from "wagmi";
+import {useAccount, useConnect, useNetwork} from "wagmi";
 import {HeadlessUiModal} from 'src/components/Modal';
-import {shortenAddress} from "../../utils/utils";
-import Button from "../common/Button";
+import {shortenAddress} from "src/utils/utils";
+import Button from "src/components/common/Button";
+import ExternalLink from "src/components/ExternalLink";
+import {ExternalLinkIcon} from '@heroicons/react/outline';
+import {getExplorerLink} from "src/functions/explorer";
 
 interface AccountDetailsProps {
   toggleWalletModal: () => void
   pendingTransactions: string[]
   confirmedTransactions: string[]
-  ENSName?: string
   openOptions: () => void
   onDisconnect: () => void
 }
@@ -18,18 +20,15 @@ const AccountDetails: FC<AccountDetailsProps> = ({
                                                    toggleWalletModal,
                                                    pendingTransactions,
                                                    confirmedTransactions,
-                                                   ENSName,
                                                    openOptions,
                                                    onDisconnect
                                                  }) => {
 
   const [{data: accountData}] = useAccount({fetchEns: true});
   const [{data: connectData}] = useConnect();
+  const [{data: networkData}] = useNetwork();
 
   const connectorName = useMemo(() => {
-    // const {ethereum} = window;
-    // const isMetaMask = !!(ethereum && ethereum.isMetaMask);
-    // console.log("Providers: ", {conn: connectData.connector, ethereum});
     const name = connectData.connector?.name;
     return (
       <div> Connected with {name} </div>
@@ -48,28 +47,26 @@ const AccountDetails: FC<AccountDetailsProps> = ({
           <div id="web3-account-identifier-row" className="flex flex-col justify-center gap-4">
             <div className="flex items-center gap-4">
               <div className="overflow-hidden rounded-full">
+                {accountData?.ens ? accountData?.ens?.name : accountData?.address && shortenAddress(accountData?.address)}
               </div>
-              {ENSName ? ENSName : accountData?.address && shortenAddress(accountData?.address)}
+              {accountData?.connector?.id && accountData?.address && (
+                <ExternalLink
+                  color="blue"
+                  startIcon={<ExternalLinkIcon className={'h-16 w-16'}/>}
+                  href={getExplorerLink(networkData.chain?.id, accountData?.ens?.name || accountData.address, 'address')}
+                >
+                  <div> View on explorer</div>
+                </ExternalLink>
+              )}
+              {accountData?.address && (
+                <div>copy thingo </div>
+                // <Copy toCopy={account}>
+                //   <div variant="xs" weight={700}>Copy Address</div>
+                // </Copy>
+              )}
             </div>
             {/*    <div className="flex items-center gap-2 space-x-3">*/}
-            {/*      {chainId && account && (*/}
-            {/*        <ExternalLink*/}
-            {/*          color="blue"*/}
-            {/*          startIcon={<LinkIcon size={16} />}*/}
-            {/*          href={getExplorerLink(chainId, ENSName || account, 'address')}*/}
-            {/*        >*/}
-            {/*          <Typography variant="xs" weight={700}>*/}
-            {/*            {i18n._(t`View on explorer`)}*/}
-            {/*          </Typography>*/}
-            {/*        </ExternalLink>*/}
-            {/*      )}*/}
-            {/*      {account && (*/}
-            {/*        <Copy toCopy={account}>*/}
-            {/*          <Typography variant="xs" weight={700}>*/}
-            {/*            {i18n._(t`Copy Address`)}*/}
-            {/*          </Typography>*/}
-            {/*        </Copy>*/}
-            {/*      )}*/}
+
             {/*    </div>*/}
           </div>
         </HeadlessUiModal.BorderedContent>

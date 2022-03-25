@@ -16,7 +16,8 @@ function NetworkIndicator({chainId}: Props) {
     };
 
     if (!chainId) return;
-    updateNetwork(chainId);
+    updateNetwork(chainId)
+      .catch((e) => console.error(e));
   }, [chainId]);
 
   return <div className={`rounded uppercase ${textColor}`}>{networkName}</div>;

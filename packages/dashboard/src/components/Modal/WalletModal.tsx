@@ -1,19 +1,34 @@
-import React, {FC, useState} from 'react';
+import React, {FC, useEffect, useState} from 'react';
 import AccountDetails from "../AccountDetails";
 import HeadlessUiModal from "src/components/Modal/HeadlessUIModal";
-import {useConnect} from "wagmi";
+import {useAccount, useConnect} from "wagmi";
+import {shortenAddress} from "../../utils/utils";
 
 interface WalletModal {
   pendingTransactions: string[] // hashes of pending
   confirmedTransactions: string[] // hashes of confirmed
-  ENSName?: string,
   onDisconnect: () => void
 }
 
-const WalletModal: FC<WalletModal> = ({pendingTransactions, confirmedTransactions, ENSName, onDisconnect}) => {
+const WalletModal: FC<WalletModal> = ({pendingTransactions, confirmedTransactions, onDisconnect}) => {
   const [showModal, setShowModal] = useState(false);
+  const [displayAddress, setDisplayAddress] = useState<string | undefined>(undefined);
   const toggleWalletModal = () => setShowModal(false);
   const [{data}] = useConnect();
+  const [{data: accountData}] = useAccount({fetchEns: true});
+
+
+  useEffect(() => {
+    // get the values
+    if(accountData?.ens){
+      setDisplayAddress(accountData?.ens.name);
+    }else if(accountData?.address){
+      setDisplayAddress(shortenAddress(accountData?.address));
+    } else {
+      setDisplayAddress(undefined);
+    }
+  },[accountData]);
+
 
   return (<>
     <HeadlessUiModal.Controlled isOpen={showModal} onDismiss={toggleWalletModal} maxWidth="md">
@@ -35,17 +50,17 @@ const WalletModal: FC<WalletModal> = ({pendingTransactions, confirmedTransaction
               toggleWalletModal={toggleWalletModal}
               pendingTransactions={pendingTransactions}
               confirmedTransactions={confirmedTransactions}
-              ENSName={ENSName}
               openOptions={() => console.log("openOptions")}
               onDisconnect={onDisconnect}
           />}
     </HeadlessUiModal.Controlled>
 
-
-    <button
-      className="bg-pink-500 text-white active:bg-pink-600 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
-      type="button" onClick={() => setShowModal(true)}> Open regular modal
-    </button>
+    {data.connected &&
+        <button
+            className="bg-truffle-blue text-black active:bg-red font-bold uppercase text-sm px-2 py-1 rounded-xl shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
+            type="button" onClick={() => setShowModal(true)}> {displayAddress}
+        </button>
+    }
   </>);
 };
 

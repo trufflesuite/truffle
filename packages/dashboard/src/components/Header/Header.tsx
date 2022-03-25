@@ -1,8 +1,5 @@
-import {providers} from "ethers";
-import {useEffect, useState} from "react";
-import {getDisplayName} from "../../utils/utils";
 import NetworkIndicator from "../common/NetworkIndicator";
-import {useAccount, useConnect, useNetwork} from "wagmi";
+import {useNetwork} from "wagmi";
 import WalletModal from "src/components/Modal/WalletModal";
 
 interface Props {
@@ -10,34 +7,12 @@ interface Props {
 }
 
 function Header({disconnect}: Props) {
-  const [displayName, setDisplayName] = useState<string>();
 
-  const [{data: accountData},] = useAccount(
-    {fetchEns: true}
-  );
   const [{data: networkData}] = useNetwork();
-  const [{data: connectData}] = useConnect();
+
   // FIXME
   const pending: any[] = [undefined]; // sortedRecentTransactions.filter((tx) => !tx.receipt).map((tx) => tx.hash)
   const confirmed: any[] = [undefined]; //sortedRecentTransactions.filter((tx) => tx.receipt).map((tx) => tx.hash)
-  const ENSName = accountData?.ens?.name;
-
-  useEffect(() => {
-    const updateAccountDisplay = async (
-      provider: providers.Web3Provider,
-      address: string
-    ) => {
-      setDisplayName(await getDisplayName(provider, address));
-    };
-
-    if (!connectData.connected) {
-      setDisplayName(undefined);
-    }
-
-    if (!connectData || !accountData) return;
-    updateAccountDisplay(connectData.connector?.getProvider(), accountData.address);
-  }, [connectData, accountData]);
-
 
   return (
     <header className="grid grid-cols-2 py-2 px-4 border-b-2 border-truffle-light text-md uppercase">
@@ -49,9 +24,8 @@ function Header({disconnect}: Props) {
       </div>
       <div className="flex justify-end items-center gap-4 text-md">
         {networkData.chain?.id && <NetworkIndicator chainId={networkData.chain.id}/>}
-        <WalletModal ENSName={ENSName ?? undefined} pendingTransactions={pending} confirmedTransactions={confirmed}
+        <WalletModal pendingTransactions={pending} confirmedTransactions={confirmed}
                      onDisconnect={disconnect}/>
-        <div>{displayName}</div>
       </div>
     </header>
   );

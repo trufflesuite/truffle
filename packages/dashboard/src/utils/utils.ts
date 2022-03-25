@@ -9,7 +9,7 @@ import axios from "axios";
 import { providers } from "ethers";
 import type { JSONRPCRequestPayload } from "ethereum-protocol";
 import { promisify } from "util";
-import { INTERACTIVE_REQUESTS, UNSUPPORTED_REQUESTS } from "./constants";
+import { INTERACTIVE_REQUESTS, UNSUPPORTED_REQUESTS } from "../constants";
 
 export const getPorts = async (): Promise<PortsConfig> => {
   const dashboardHost = window.location.hostname;
