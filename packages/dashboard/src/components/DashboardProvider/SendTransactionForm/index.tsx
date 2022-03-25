@@ -71,7 +71,8 @@ function SendTransactionForm({
 
   return (
     chainId &&
-    artifacts && (
+    artifacts &&
+    contracts.length > 0 && (
       <Card
         header={"Send Transaction"}
         body={
