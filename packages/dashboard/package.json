@@ -43,8 +43,8 @@
     "get-port": "^5.1.1",
     "isomorphic-ws": "^4.0.1",
     "open": "^8.4.0",
-    "ws": "^7.2.0",
-    "react-icons": "^4.3.1"
+    "react-icons": "^4.3.1",
+    "ws": "^7.2.0"
   },
   "devDependencies": {
     "@craco/craco": "^6.4.3",

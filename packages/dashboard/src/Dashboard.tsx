@@ -17,6 +17,8 @@ import {
   ReceivedMessageLifecycle
 } from "@truffle/dashboard-message-bus-client";
 
+import SettingsPopover from "./components/common/Popover";
+
 function Dashboard() {
   const [paused, setPaused] = useState<boolean>(false);
   const [connectedChainId, setConnectedChainId] = useState<
@@ -138,7 +140,8 @@ function Dashboard() {
           setRequests={setDashboardProviderRequests}
         />
       )}
-      <SettingsIcon analyticsSet={true} />
+      {/* <SettingsIcon analyticsSet={true} /> */}
+      <SettingsPopover />
     </div>
   );
 }
