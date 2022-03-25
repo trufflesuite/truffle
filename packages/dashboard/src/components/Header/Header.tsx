@@ -36,8 +36,8 @@ function Header({ publicChains }: Props) {
       </div>
       <div className="flex justify-end items-center gap-4 text-md">
         {chainId &&
-          (networkSwitchingSupported ? (
-            <NetworkSwitcher chainId={chainId} publicChains={publicChains} />
+          (networkSwitchingSupported && publicChains && publicChains.length>0 ?  (
+          <NetworkSwitcher chainId={chainId} publicChains={publicChains} />
           ) : (
             <NetworkIndicator chainId={chainId} />
           ))}

@@ -52,6 +52,7 @@ function NetworkSwitcher({ chainId, publicChains }: Props) {
   async function setOrAddNetwork(chain: any) {
     if (!library) return; // handle better
     const provider = library.provider;
+    console.log(JSON.stringify(chain));
     const switchNetworkPayload = {
       jsonrpc: "2.0",
       method: "wallet_switchEthereumChain",
@@ -80,24 +81,29 @@ function NetworkSwitcher({ chainId, publicChains }: Props) {
       console.log("switched network! " + JSON.stringify(switchNetworkResponse));
     }
   }
-  const chainIdHex = `0x${chainId.toString(16)}`;
+  let chosenChain:any;
+
   const chainOptions = publicChains ? (
     publicChains.map((chain: any) => {
+      console.log("NAMES",chain.chainName, networkName);
+      if (chain.chainId == `0x${chainId.toString(16)}`) {
+        chosenChain = JSON.stringify(chain);
+      }
       return (
         <option
+          value={JSON.stringify(chain)}
           key={chain.chainId}
-          className={`rounded uppercase ${textColor}`}
-          onClick={() => setOrAddNetwork(chain)}
+          className={`rounded uppercase ${textColor}`} 
         >
-          {(chain.chainId === chainIdHex ? "" : "") + chain.chainName}
-        </option>
+          {chain.chainName}
+        </option> 
       );
     })
   ) : (
     <div className={`rounded uppercase ${textColor}`}>{networkName}</div>
   );
   return (
-  <select className="form-select block px-4 py-3 w-1/4 max-w-4xl focus:outline-truffle-brown focus:ring-truffle-brown focus:border-truffle-brown"
+  <select value={chosenChain} onChange={(e) => {setOrAddNetwork(JSON.parse(e.target.value));}} className="rounded uppercase form-select block px-4 py-3 w-1/4 max-w-4xl focus:outline-truffle-brown focus:ring-truffle-brown focus:border-truffle-brown"
   >{chainOptions}</select>
   );
 }
