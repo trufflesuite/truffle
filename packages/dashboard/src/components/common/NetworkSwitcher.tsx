@@ -153,7 +153,6 @@ function NetworkSwitcher({ chainId, dashboardChains }: Props) {
   let chosenChain:any;
   const chainOptions = dashboardChains ? (
     dashboardChains.map((chain: any) => {
-      console.log("NAMES",chain.chainName, networkName);
       if (chain.chainId == `0x${chainId.toString(16)}`) {
         chosenChain = JSON.stringify(chain);
       }
