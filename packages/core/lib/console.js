@@ -17,7 +17,7 @@ const Require = require("@truffle/require");
 const debug = require("debug")("console");
 
 const processInput = input => {
-  const inputComponents = input.trim().split(" ");
+  const inputComponents = input.trim().split(/\s+/);
   if (inputComponents.length === 0) return input;
 
   if (inputComponents[0] === "truffle") {
