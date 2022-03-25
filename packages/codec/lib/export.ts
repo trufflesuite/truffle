@@ -305,6 +305,16 @@ export class CalldataDecodingInspector {
     switch (this.decoding.kind) {
       case "function":
         const fullName = `${this.decoding.class.typeName}.${this.decoding.abi.name}`;
+        if (
+          this.decoding.interpretations &&
+          this.decoding.interpretations.multicall
+        ) {
+          return formatMulticall(
+            fullName,
+            this.decoding.interpretations.multicall,
+            options
+          );
+        }
         return formatFunctionLike(fullName, this.decoding.arguments, options);
       case "constructor":
         return formatFunctionLike(
@@ -475,10 +485,21 @@ function indentArray(input: string[], indentation: number): string[] {
   return input.map(line => " ".repeat(indentation) + line);
 }
 
-//copied from TestRunner, but simplified for our purposes :)
 function indentExcludingFirstLine(input: string, indentation: number): string {
   const lines = input.split(/\r?\n/);
   return [lines[0], ...indentArray(lines.slice(1), indentation)].join(OS.EOL);
+}
+
+function indentMiddleLines(input: string, indentation: number): string {
+  const lines = input.split(/\r?\n/);
+  if (lines.length < 2) {
+    return input;
+  }
+  return [
+    lines[0],
+    ...indentArray(lines.slice(1, -1), indentation),
+    lines[lines.length - 1]
+  ].join(OS.EOL);
 }
 
 //used for formatting things that look like function calls:
@@ -506,15 +527,38 @@ export function formatFunctionLike(
     const typeString = suppressType
       ? ""
       : ` (type: ${Format.Types.typeStringWithoutLocation(value.type)})`;
-    return indentExcludingFirstLine(
+    return indentMiddleLines(
       prefix +
         displayValue +
         typeString +
         (index < values.length - 1 ? "," : ""),
-      2 * indent
+      indent
     );
   });
-  return `${header}(${OS.EOL}${indentArray(formattedValues, indent).join(
-    OS.EOL
-  )}${OS.EOL})`;
+  return indentMiddleLines(
+    `${header}(${OS.EOL}${formattedValues.join(OS.EOL)}${OS.EOL})`,
+    indent
+  );
+}
+
+function formatMulticall(
+  fullName: string,
+  decodings: (CalldataDecoding | null)[],
+  options: InspectOptions
+): string {
+  if (decodings.length === 0) {
+    return `${fullName}()`;
+  }
+  const indent = 2;
+  const formattedDecodings = decodings.map((decoding, index) => {
+    const formattedDecoding =
+      decoding === null
+        ? "<decoding error>"
+        : util.inspect(new CalldataDecodingInspector(decoding), options);
+    return formattedDecoding + (index < decodings.length - 1 ? "," : "");
+  });
+  return indentMiddleLines(
+    `${fullName}(${OS.EOL}${formattedDecodings.join(OS.EOL)}${OS.EOL})`,
+    indent
+  );
 }
