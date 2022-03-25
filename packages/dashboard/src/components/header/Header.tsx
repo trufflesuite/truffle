@@ -1,7 +1,6 @@
 import { providers } from "ethers";
 import { useEffect, useState } from "react";
 import { getDisplayName } from "src/utils/utils";
-import Dropdown from "../common/Dropdown";
 import NetworkIndicator from "src/components/common/NetworkIndicator";
 import NetworkSwitcher from "src/components/common/NetworkSwitcher";
 import { useAccount, useConnect, useNetwork } from "wagmi";
@@ -65,11 +64,6 @@ function Header({ disconnect, dashboardChains }: Props) {
           </Button>
         )}
         <div>{displayName}</div>
-        <Dropdown
-          networkOne="Hello"
-          networkTwo="hola"
-          networkThree="Yo"
-        ></Dropdown>
       </div>
     </header>
   );
