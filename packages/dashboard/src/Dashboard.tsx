@@ -71,8 +71,6 @@ function Dashboard() {
 
       const message = base64ToJson(event.data) as Message;
 
-      console.debug("Received message", message);
-
       if (isDashboardProviderMessage(message)) {
         setDashboardProviderRequests(previousRequests => [
           ...previousRequests,
