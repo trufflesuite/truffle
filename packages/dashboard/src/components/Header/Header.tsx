@@ -3,7 +3,6 @@ import {useEffect, useState} from "react";
 import {getDisplayName} from "../../utils/utils";
 import NetworkIndicator from "../common/NetworkIndicator";
 import {useAccount, useConnect, useNetwork} from "wagmi";
-import Button from "../common/Button";
 import WalletModal from "src/components/Modal/WalletModal";
 
 interface Props {
@@ -50,8 +49,8 @@ function Header({disconnect}: Props) {
       </div>
       <div className="flex justify-end items-center gap-4 text-md">
         {networkData.chain?.id && <NetworkIndicator chainId={networkData.chain.id}/>}
-        {networkData.chain?.id && <Button onClick={disconnect} text={'disconnect'}/>}
-        <WalletModal ENSName={ENSName ?? undefined} pendingTransactions={pending} confirmedTransactions={confirmed}/>
+        <WalletModal ENSName={ENSName ?? undefined} pendingTransactions={pending} confirmedTransactions={confirmed}
+                     onDisconnect={disconnect}/>
         <div>{displayName}</div>
       </div>
     </header>

@@ -10,8 +10,9 @@ import React, {
   useRef,
   useState
 } from "react";
-import {classNames} from "../../functions/styling";
+import {classNames} from "src/functions/styling";
 import ModalHeader, { ModalHeaderProps } from 'src/components/Modal/Header';
+import {BorderedModalContent, ModalContentBorderedProps} from "src/components/Modal/Content";
 
 
 const MAX_WIDTH_CLASS_MAPPING = {
@@ -38,7 +39,7 @@ type HeadlessUiModalType<P> = FC<P> & {
   // Body: FC<ModalBodyProps>
   // Actions: FC<ModalActionsProps>
   // Content: FC<ModalContentProps>
-  // BorderedContent: FC<ModalContentBorderedProps>
+  BorderedContent: FC<ModalContentBorderedProps>
   Header: FC<ModalHeaderProps>
   // Action: FC<ModalActionProps>
   // SubmittedModalContent: FC<SubmittedModalContentProps>
@@ -120,7 +121,7 @@ const HeadlessUiModalControlled: FC<ControlledModalProps> = ({
               leaveTo="opacity-0"
             >
               {/* Use the overlay to style a dim backdrop for your dialog */}
-              <Dialog.Overlay className="fixed inset-0 bg-[rgb(0,0,0,0.4)]" />
+              <Dialog.Overlay className="fixed inset-0 bg-black bg-opacity-40" />
               {/*<Dialog.Overlay*/}
               {/*  className={classNames(*/}
               {/*    'backdrop-blur-[10px]  bg-[rgb(0,0,0,0.4)]',*/}
@@ -166,7 +167,7 @@ HeadlessUiModal.Controlled = HeadlessUiModalControlled;
 HeadlessUiModal.Header = ModalHeader;
 // HeadlessUiModal.Body = ModalBody
 // HeadlessUiModal.Content = ModalContent
-// HeadlessUiModal.BorderedContent = BorderedModalContent
+HeadlessUiModal.BorderedContent = BorderedModalContent;
 // HeadlessUiModal.Actions = ModalActions
 // HeadlessUiModal.Action = ModalAction
 // HeadlessUiModal.Error = ModalError

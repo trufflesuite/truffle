@@ -1,15 +1,15 @@
 import WebSocket from "isomorphic-ws";
 import {
-  DashboardProviderMessage,
+  base64ToJson,
   connectToMessageBusWithRetries,
+  DashboardProviderMessage,
   isDashboardProviderMessage,
-  isInvalidateMessage,
   isDebugMessage,
-  Message,
-  base64ToJson
+  isInvalidateMessage,
+  Message
 } from "@truffle/dashboard-message-bus";
 import {useEffect, useState} from "react";
-import {getPorts, respond } from "./utils/utils";
+import {getPorts, respond} from "./utils/utils";
 import Header from "./components/Header/Header";
 import DashboardProvider from "./components/DashboardProvider/DashboardProvider";
 import ConnectNetwork from "./components/ConnectNetwork";
@@ -71,9 +71,9 @@ function Dashboard() {
             previousRequests.filter(request => request.id !== message.payload)
           );
         } else if (isDebugMessage(message)) {
-          const { payload } = message;
+          const {payload} = message;
           console.log(payload.message);
-          respond({ id: message.id }, connectedSocket);
+          respond({id: message.id}, connectedSocket);
         }
       }
     );

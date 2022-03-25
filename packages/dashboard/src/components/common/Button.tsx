@@ -1,14 +1,24 @@
-import type { MouseEventHandler } from "react";
+import type {MouseEventHandler} from "react";
+import {classNames} from "../../functions";
 
 interface Props {
   onClick: MouseEventHandler<HTMLElement>;
   text: string;
+  variant?: "sm" | "lg"
 }
 
-function Button({ onClick, text }: Props) {
+const STYLES = {
+  "sm": "p-1 px-2",
+  "lg": "p-4 mx-2 ",
+};
+
+function Button({onClick, text, variant = "lg"}: Props) {
   return (
     <button
-      className="rounded p-4 mx-2 bg-truffle-blue text-truffle-brown uppercase hover:bg-white"
+      className={classNames(
+        STYLES[variant],
+        "rounded bg-truffle-blue text-truffle-brown uppercase hover:bg-white"
+      )}
       onClick={onClick}
     >
       {text}

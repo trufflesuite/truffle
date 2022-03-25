@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import {FC} from "react";
-import {useAccount} from "wagmi";
-import { HeadlessUiModal } from 'src/components/Modal';
+import {FC, useMemo} from "react";
+import {useAccount, useConnect} from "wagmi";
+import {HeadlessUiModal} from 'src/components/Modal';
+import {shortenAddress} from "../../utils/utils";
+import Button from "../common/Button";
 
 interface AccountDetailsProps {
   toggleWalletModal: () => void
@@ -9,6 +11,7 @@ interface AccountDetailsProps {
   confirmedTransactions: string[]
   ENSName?: string
   openOptions: () => void
+  onDisconnect: () => void
 }
 
 const AccountDetails: FC<AccountDetailsProps> = ({
@@ -17,62 +20,59 @@ const AccountDetails: FC<AccountDetailsProps> = ({
                                                    confirmedTransactions,
                                                    ENSName,
                                                    openOptions,
+                                                   onDisconnect
                                                  }) => {
 
-  const [{data: accountData}] =useAccount({fetchEns: true});
+  const [{data: accountData}] = useAccount({fetchEns: true});
+  const [{data: connectData}] = useConnect();
+
+  const connectorName = useMemo(() => {
+    // const {ethereum} = window;
+    // const isMetaMask = !!(ethereum && ethereum.isMetaMask);
+    // console.log("Providers: ", {conn: connectData.connector, ethereum});
+    const name = connectData.connector?.name;
+    return (
+      <div> Connected with {name} </div>
+    );
+  }, [connectData.connector]);
 
   return (
     <div className="space-y-3">
       <div className="space-y-3">
-        account details goes in here...
-        Address: {accountData?.address}
-        <HeadlessUiModal.Header header={`Account`} onClose={toggleWalletModal} />
-        {/*<HeadlessUiModal.BorderedContent className="flex flex-col gap-3">*/}
-        {/*  <div className="flex items-center justify-between">*/}
-        {/*    {connectorName}*/}
-        {/*    <Button variant="outlined" color="blue" size="xs" onClick={deactivate}>*/}
-        {/*      {i18n._(t`Disconnect`)}*/}
-        {/*    </Button>*/}
-        {/*  </div>*/}
-        {/*  <div id="web3-account-identifier-row" className="flex flex-col justify-center gap-4">*/}
-        {/*    <div className="flex items-center gap-4">*/}
-        {/*      <div className="overflow-hidden rounded-full">*/}
-        {/*        <Davatar*/}
-        {/*          size={48}*/}
-        {/*          // @ts-ignore TYPE NEEDS FIXING*/}
-        {/*          address={account}*/}
-        {/*          defaultComponent={*/}
-        {/*            <Image src="https://app.sushi.com/images/chef.svg" alt="Sushi Chef" width={48} height={48} />*/}
-        {/*          }*/}
-        {/*          provider={library}*/}
-        {/*        />*/}
-        {/*      </div>*/}
-        {/*      <Typography weight={700} variant="lg" className="text-white">*/}
-        {/*        {ENSName ? ENSName : account && shortenAddress(account)}*/}
-        {/*      </Typography>*/}
-        {/*    </div>*/}
-        {/*    <div className="flex items-center gap-2 space-x-3">*/}
-        {/*      {chainId && account && (*/}
-        {/*        <ExternalLink*/}
-        {/*          color="blue"*/}
-        {/*          startIcon={<LinkIcon size={16} />}*/}
-        {/*          href={getExplorerLink(chainId, ENSName || account, 'address')}*/}
-        {/*        >*/}
-        {/*          <Typography variant="xs" weight={700}>*/}
-        {/*            {i18n._(t`View on explorer`)}*/}
-        {/*          </Typography>*/}
-        {/*        </ExternalLink>*/}
-        {/*      )}*/}
-        {/*      {account && (*/}
-        {/*        <Copy toCopy={account}>*/}
-        {/*          <Typography variant="xs" weight={700}>*/}
-        {/*            {i18n._(t`Copy Address`)}*/}
-        {/*          </Typography>*/}
-        {/*        </Copy>*/}
-        {/*      )}*/}
-        {/*    </div>*/}
-        {/*  </div>*/}
-        {/*</HeadlessUiModal.BorderedContent>*/}
+        <HeadlessUiModal.Header header={`Account`} onClose={toggleWalletModal}/>
+        <HeadlessUiModal.BorderedContent className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            {connectorName}
+            <Button onClick={onDisconnect} text={'disconnect'} variant={"sm"}/>
+          </div>
+          <div id="web3-account-identifier-row" className="flex flex-col justify-center gap-4">
+            <div className="flex items-center gap-4">
+              <div className="overflow-hidden rounded-full">
+              </div>
+              {ENSName ? ENSName : accountData?.address && shortenAddress(accountData?.address)}
+            </div>
+            {/*    <div className="flex items-center gap-2 space-x-3">*/}
+            {/*      {chainId && account && (*/}
+            {/*        <ExternalLink*/}
+            {/*          color="blue"*/}
+            {/*          startIcon={<LinkIcon size={16} />}*/}
+            {/*          href={getExplorerLink(chainId, ENSName || account, 'address')}*/}
+            {/*        >*/}
+            {/*          <Typography variant="xs" weight={700}>*/}
+            {/*            {i18n._(t`View on explorer`)}*/}
+            {/*          </Typography>*/}
+            {/*        </ExternalLink>*/}
+            {/*      )}*/}
+            {/*      {account && (*/}
+            {/*        <Copy toCopy={account}>*/}
+            {/*          <Typography variant="xs" weight={700}>*/}
+            {/*            {i18n._(t`Copy Address`)}*/}
+            {/*          </Typography>*/}
+            {/*        </Copy>*/}
+            {/*      )}*/}
+            {/*    </div>*/}
+          </div>
+        </HeadlessUiModal.BorderedContent>
         {/*<HeadlessUiModal.BorderedContent className="flex flex-col gap-3">*/}
         {/*  <div className="flex items-center justify-between">*/}
         {/*    <Typography variant="xs" weight={700} className="text-secondary">*/}
