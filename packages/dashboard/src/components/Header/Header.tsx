@@ -1,7 +1,6 @@
 import { providers } from "ethers";
 import { useEffect, useState } from "react";
 import { getDisplayName } from "../../utils/utils";
-import Dropdown from "../common/Dropdown";
 import NetworkIndicator from "../common/NetworkIndicator";
 import NetworkSwitcher from "../common/NetworkSwitcher";
 import { useAccount, useConnect, useNetwork } from "wagmi";
@@ -52,12 +51,9 @@ function Header({ disconnect, dashboardChains }: Props) {
         </span>
       </div>
       <div className="flex justify-end items-center gap-4 text-md">
-        {networkData.chain?.id &&
-          (networkSwitchingSupported ? (
-            <NetworkSwitcher
-              chainId={networkData.chain.id}
-              dashboardChains={dashboardChains}
-            />
+    {networkData.chain?.id &&
+          (networkSwitchingSupported && dashboardChains && dashboardChains.length>0 ?  (
+          <NetworkSwitcher chainId={networkData.chain.id} dashboardChains={dashboardChains} />
           ) : (
             [
               networkData.chain?.id && (
@@ -69,10 +65,10 @@ function Header({ disconnect, dashboardChains }: Props) {
             ]
           ))}
         <div>{displayName}</div>
-        <Dropdown networkOne="Hello" networkTwo="hola" networkThree="Yo"></Dropdown>
       </div>
     </header>
   );
 }
 
 export default Header;
+
