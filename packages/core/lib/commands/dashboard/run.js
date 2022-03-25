@@ -58,16 +58,6 @@ module.exports = async function (options) {
       },
       rpcUrls: ["https://goerli.infura.io/v3/"],
       blockExplorerUrls: ["https://goerli.etherscan.com"]
-    },
-    {
-      chainId: "0xFA",
-      chainName: "fantom opera",
-      nativeCurrency: {
-        symbol: "FTM",
-        decimals: 18
-      },
-      rpcUrls: ["https://rpc.ftm.tools/"],
-      blockExplorerUrls: []
     }
   ];
 
