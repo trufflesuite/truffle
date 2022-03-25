@@ -32,7 +32,6 @@ export interface DashboardChain {
   rpcUrls: string[];
   blockExplorerUrls?: string[];
   iconUrls?: string[];
-  isLocalChain?: boolean;
 }
 
 export interface DashboardServerOptions {
@@ -210,7 +209,9 @@ export class DashboardServer {
       if (isInitializeMessage(message)) {
         const responseMessage = {
           id: message.id,
-          payload: { dashboardChains: this.dashboardChains }
+          payload: {
+            dashboardChains: this.dashboardChains
+          }
         };
         socket.send(jsonToBase64(responseMessage));
       }

@@ -76,24 +76,20 @@ module.exports = async function (options) {
         chainName !== "test" &&
         chainName !== "develop" &&
         ((chain.host && chain.port) || // either has a host/port
-          (chain.rpcUrls && chain.rpcUrls.length > 0)) // or they provided an rpc url
+          (chain.url && chain.url.length > 0)) // or they provided an rpc url
       ) {
-        // if they didn't provide an rpc url and thus are using local host,
-        // assume this is their own local instance of a chain
-        const isLocalChain = !chain.rpcUrls || chain.rpcUrls.length === 0;
         filtered.push({
           chainId: chain.chainId ? chain.chainId : undefined,
           chainName: chainName,
           nativeCurrency: chain.nativeCurrency
             ? chain.nativeCurrency
             : mainnet.nativeCurrency,
-          rpcUrls: chain.rpcUrls
-            ? chain.rpcUrls
+          rpcUrls: chain.url
+            ? [chain.url]
             : [`http://${chain.host}:${chain.port}`],
           blockExplorerUrls: chain.blockExplorerUrls
             ? chain.blockExplorerUrls
-            : undefined,
-          isLocalChain
+            : undefined
         });
       }
       return filtered;
