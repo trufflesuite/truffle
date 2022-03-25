@@ -7,7 +7,6 @@ on:
     - master
     - develop
     - next
-    - feature/dashboard
 
   pull_request:
     branches:
