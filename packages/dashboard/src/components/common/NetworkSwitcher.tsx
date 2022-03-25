@@ -52,6 +52,10 @@ function NetworkSwitcher({ chainId, dashboardChains }: Props) {
     // get the rpc url's client version to determine what rpc method to use
     // to fund the account
     const clientVersion = await postRpc(rpcUrl, "web3_clientVersion");
+    if (!clientVersion) {
+      console.warn(`Account funding not supported for ${chain.chainName}.`);
+      return;
+    }
     let method = "";
     // as of now both rpc methods use the same params, but that could potentially
     // change and also let's give hardhat users less eth just for fun :)
