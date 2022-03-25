@@ -49,7 +49,9 @@ function Header({ disconnect, dashboardChains }: Props) {
       </div>
       <div className="flex justify-end items-center gap-4 text-md">
         {networkData.chain?.id &&
-          (networkSwitchingSupported ? (
+          (networkSwitchingSupported &&
+          dashboardChains &&
+          dashboardChains.length > 0 ? (
             <NetworkSwitcher
               chainId={networkData.chain.id}
               dashboardChains={dashboardChains}
