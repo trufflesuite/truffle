@@ -23,11 +23,11 @@ function NetworkSwitcher({ chainId, dashboardChains }: Props) {
   useEffect(() => {
     const updateNetwork = async (chainId: number) => {
       let connectedNetworkName = "";
+      // we can get the chain's name in a number of places. first see if they
+      // have this chainId listed in their config's chains. if so, use that name.
+      // if not, go make a request from elsewhere
       const chainIdHex = `0x${chainId.toString(16)}`;
       await dashboardChains?.forEach(async (chain: any) => {
-        if (!chain.chainId) {
-          chain.chainId = await postRpc(chain.rpcUrls[0], "eth_chainId");
-        }
         if (chain.chainId === chainIdHex) {
           connectedNetworkName = chain.chainName;
         }
@@ -112,17 +112,12 @@ function NetworkSwitcher({ chainId, dashboardChains }: Props) {
   async function setOrAddNetwork(chain: any) {
     if (!provider) return; // TODO: handle better
 
-    // we need a chainId to switch networks, so request from rpcUrl of chain
-    // if it isn't available.
+    // we need a chainId to switch networks
     if (!chain.chainId) {
-      chain.chainId = await postRpc(chain.rpcUrls[0], "eth_chainId");
-      if (!chain.chainId) {
-        // TODO: display error to user
         console.error(
-          `Chain ${chain.chainName} does not have a valid chainId and the provided RPC URL is invalid.`
+        `Couldn't switch network: chain ${chain.chainName} does not have a chainId.`
         );
         return;
-      }
     }
 
     const switchNetworkPayload = createRpcPayload(
