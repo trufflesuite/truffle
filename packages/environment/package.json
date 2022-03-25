@@ -20,13 +20,13 @@
     "test": "mocha ./test/** ./test/**/*"
   },
   "dependencies": {
-    "@truffle/artifactor": "^4.0.146",
+    "@achrinza/node-ipc": "9.2.2",
+    "@truffle/artifactor": "^4.0.145",
     "@truffle/error": "^0.1.0",
     "@truffle/expect": "^0.1.0",
     "@truffle/interface-adapter": "^0.5.12",
     "@truffle/resolver": "^8.0.13",
     "ganache": "^7.0.3",
-    "node-ipc": "9.2.1",
     "source-map-support": "^0.5.19",
     "web3": "1.5.3"
   },

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 require("source-map-support/register");
 
-const IPC = require("node-ipc").IPC;
+const IPC = require("@achrinza/node-ipc").IPC;
 const Ganache = require("ganache");
 const path = require("path");
 const debug = require("debug");
