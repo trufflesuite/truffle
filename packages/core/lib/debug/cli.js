@@ -1,7 +1,6 @@
 const debugModule = require("debug");
 const debug = debugModule("lib:debug:cli");
 
-const ora = require("ora");
 const fs = require("fs-extra");
 const path = require("path");
 
@@ -12,6 +11,8 @@ const { fetchAndCompileForDebugger } = require("@truffle/fetch-and-compile");
 
 const { DebugInterpreter } = require("./interpreter");
 const { DebugCompiler } = require("./compiler");
+
+const Spinner = require("@truffle/spinners").Spinner;
 
 class CLIDebugger {
   constructor(config, { compilations, txHash } = {}) {
@@ -43,9 +44,10 @@ class CLIDebugger {
   }
 
   async fetchExternalSources(bugger) {
-    const fetchSpinner = ora(
+    const fetchSpinner = new Spinner(
+      "core:debug:cli:fetch",
       "Getting and compiling external sources..."
-    ).start();
+    );
     const {
       fetch: badAddresses,
       fetchers: badFetchers,
@@ -78,7 +80,12 @@ class CLIDebugger {
           )}.`
         );
       }
-      fetchSpinner.warn(warningStrings.join("  "));
+      // simulate ora's "warn" feature
+      fetchSpinner.stop({
+        text: `⚠ ${warningStrings.join("  ")}`,
+        color: "yellow",
+        status: "stopped"
+      });
     }
   }
 
@@ -111,7 +118,10 @@ class CLIDebugger {
   }
 
   async compileSources() {
-    const compileSpinner = ora("Compiling your contracts...").start();
+    const compileSpinner = new Spinner(
+      "core:debug:cli:compile",
+      "Compiling your contracts..."
+    );
 
     const compilationResult = await new DebugCompiler(this.config).compile({
       withTests: this.config.compileTests
@@ -130,8 +140,7 @@ class CLIDebugger {
     let bugger;
     if (!this.config.fetchExternal) {
       //ordinary case, not doing fetch-external
-      let startSpinner;
-      startSpinner = ora(startMessage).start();
+      const startSpinner = new Spinner("core:debug:cli:start", startMessage);
       bugger = await Debugger.forProject({
         provider: this.config.provider,
         compilations
@@ -160,7 +169,7 @@ class CLIDebugger {
         lightMode: true
       }); //note: may throw!
       await this.fetchExternalSources(bugger); //note: mutates bugger!
-      let startSpinner = ora(startMessage).start();
+      const startSpinner = ("core:debug:cli:start", startMessage);
       await bugger.startFullMode();
       //I'm removing the failure check here because I don't think that can
       //actually happen
