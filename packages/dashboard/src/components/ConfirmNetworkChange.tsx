@@ -30,7 +30,7 @@ function ConfirmNetworkChanged({
     </div>
   );
 
-  const confirmButton = <Button text="Confirm" onClick={confirm} />;
+  const confirmButton = <Button text="Confirm" disabled={false} onClick={confirm} />;
 
   return (
     <div className="flex justify-center items-center py-20">

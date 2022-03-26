@@ -109,16 +109,11 @@ function IncomingRequest({ provider, socket, request, setRequests }: Props) {
 
   const footer = disable
     ? <div className="flex justify-start items-center gap-2">
-        <button
-          className="rounded p-2 text-truffle-brown uppercase hover:bg-white"
-          disabled={disable}
-        >
-          Processing...
-        </button>
+        <Button disabled={disable} onClick={() => {}} text="Processing..." />
       </div>
     : <div className="flex justify-start items-center gap-2">
-        <Button onClick={() => {process(); setDisable(true);}} text="Process" />
-        <Button onClick={reject} text="Reject" />
+        <Button disabled={false} onClick={() => {process(); setDisable(true);}} text="Process" />
+        <Button disabled={false} onClick={reject} text="Reject" />
       </div>;
 
   return (
