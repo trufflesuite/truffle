@@ -12,7 +12,7 @@ export default function AnalyticsToggle() {
           checked={enabled}
           onChange={setEnabled}
           className={`${enabled ? 'bg-truffle-blue' : 'bg-truffle-brown'
-            } relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-truffle-blue`}
+            } sr-only>{{"This switch enables anonymous analytics tracking"}} relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-truffle-blue`}
         >
           <span
             className={`${enabled ? 'translate-x-6' : 'translate-x-1'
@@ -24,3 +24,33 @@ export default function AnalyticsToggle() {
     </Switch.Group>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
