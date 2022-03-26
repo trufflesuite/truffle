@@ -1,5 +1,4 @@
 import { MdSettings } from "react-icons/md";
-// import PopoverRender from "./SettingsPopover";
 interface Props {
   analyticsSet: boolean;
 }
