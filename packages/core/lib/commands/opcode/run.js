@@ -3,6 +3,8 @@ module.exports = async function (options) {
   const TruffleError = require("@truffle/error");
   const WorkflowCompile = require("@truffle/workflow-compile");
   const CodeUtils = require("@truffle/code-utils");
+  const Codec = require("@truffle/codec");
+  const Conversion = Codec.Conversion;
 
   if (options._.length === 0) {
     throw new TruffleError("Please specify a contract name.");
@@ -31,8 +33,8 @@ module.exports = async function (options) {
 
   const indexLength = (opcodes.length + "").length;
 
-  opcodes.forEach((opcode, index) => {
-    let strIndex = index + ":";
+  opcodes.forEach(opcode => {
+    let strIndex = Conversion.toHexString(opcode.pc) + ":";
 
     while (strIndex.length < indexLength + 1) {
       strIndex += " ";
