@@ -3,7 +3,7 @@ import {FC, useMemo} from "react";
 import {useAccount, useConnect, useNetwork} from "wagmi";
 import {HeadlessUiModal} from 'src/components/Modal';
 import {shortenAddress} from "src/utils/utils";
-import Button from "src/components/common/Button";
+import Button from "src/components/Common/Button";
 import ExternalLink from "src/components/ExternalLink";
 import {ExternalLinkIcon} from '@heroicons/react/outline';
 import {getExplorerLink} from "src/functions/explorer";

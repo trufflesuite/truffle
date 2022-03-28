@@ -1,15 +1,15 @@
+import type {DashboardProviderMessage} from "@truffle/dashboard-message-bus";
 import WebSocket from "isomorphic-ws";
 import {useEffect} from "react";
+import {useConnect} from "wagmi";
 import {
   handleDashboardProviderRequest,
   isInteractiveRequest,
   isUnsupportedRequest,
   respondToUnsupportedRequest
-} from "../../utils/utils";
-import Card from "../common/Card";
+} from "src/utils/utils";
+import Card from "src/components/Common/Card";
 import IncomingRequest from "./IncomingRequest";
-import type {DashboardProviderMessage} from "@truffle/dashboard-message-bus";
-import {useConnect} from "wagmi";
 
 interface Props {
   paused: boolean;

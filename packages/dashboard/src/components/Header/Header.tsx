@@ -1,4 +1,4 @@
-import NetworkIndicator from "../common/NetworkIndicator";
+import NetworkIndicator from "../Network/NetworkIndicator";
 import {useNetwork} from "wagmi";
 import WalletModal from "src/components/Modal/WalletModal";
 

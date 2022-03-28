@@ -9,11 +9,12 @@ import {
   Message
 } from "@truffle/dashboard-message-bus";
 import {useEffect, useState} from "react";
-import {getPorts, respond} from "./utils/utils";
-import Header from "./components/Header/Header";
-import DashboardProvider from "./components/DashboardProvider/DashboardProvider";
-import ConnectNetwork from "./components/ConnectNetwork";
-import ConfirmNetworkChanged from "./components/ConfirmNetworkChange";
+import Popups from "src/components/Popups";
+import {getPorts, respond} from "src/utils/utils";
+import Header from "src/components/Header/Header";
+import DashboardProvider from "src/components/DashboardProvider/DashboardProvider";
+import ConnectNetwork from "src/components/Network/ConnectNetwork";
+import ConfirmNetworkChanged from "src/components/Network/ConfirmNetworkChanged";
 import {useAccount, useConnect, useNetwork} from "wagmi";
 
 function Dashboard() {
@@ -94,7 +95,8 @@ function Dashboard() {
   };
 
   return (
-    <div className="h-full min-h-screen bg-gradient-to-b from-truffle-lighter to-truffle-light">
+    <div className="z-0 flex flex-col items-center w-full h-full min-h-screen bg-gradient-to-b from-truffle-lighter to-truffle-light">
+    {/*<div className="h-full min-h-screen bg-gradient-to-b from-truffle-lighter to-truffle-light">*/}
       <Header disconnect={disconnectAccount}/>
       {paused && chainId && connectedChainId && (
         <ConfirmNetworkChanged
@@ -112,6 +114,7 @@ function Dashboard() {
           setRequests={setDashboardProviderRequests}
         />
       )}
+      <Popups />
     </div>
   );
 }

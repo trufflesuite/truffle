@@ -4,7 +4,10 @@
     "sourceMap": true,
     "declaration": true,
     "esModuleInterop": true,
-    "lib": ["esnext", "dom"],
+    "lib": [
+      "esnext",
+      "dom",
+    ],
     "skipLibCheck": true,
     "target": "es6",
     "moduleResolution": "node",
@@ -16,7 +19,11 @@
     "strictNullChecks": true,
     "rootDir": ".",
     "baseUrl": ".",
-    "types": ["jest", "react", "node"],
+    "types": [
+      "jest",
+      "react",
+      "node"
+    ],
     "allowJs": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
@@ -25,5 +32,7 @@
     "isolatedModules": true,
     "noEmit": true
   },
-  "include": ["src"]
+  "include": [
+    "src"
+  ]
 }

@@ -1,6 +1,6 @@
-import Card from "./common/Card";
-import Button from "./common/Button";
-import NetworkIndicator from "./common/NetworkIndicator";
+import Card from "../Common/Card";
+import Button from "../Common/Button";
+import NetworkIndicator from "./NetworkIndicator";
 
 interface Props {
   confirm: () => void;
