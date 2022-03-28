@@ -85,12 +85,18 @@ const chains: ChainObject = {
   //   },
 };
 
+/**
+ * Return blockexplorer URL, if you are on a chainID it doesn't know it will return a response.
+ * @param chainId
+ * @param data
+ * @param type
+ */
 export function getExplorerLink(
   chainId: number | undefined,
   data: string,
   type: "transaction" | "token" | "address" | "block"
-): string {
+): string | undefined {
   if (!chainId) return "";
   const chain = chains[chainId];
-  return chain.builder(chain.link, data, type);
+  return chain ? chain.builder(chain.link, data, type) : undefined;
 }

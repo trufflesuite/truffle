@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import {ExclamationCircleIcon, ExternalLinkIcon} from "@heroicons/react/solid";
 import {FC, useMemo} from "react";
-import {useAccount, useConnect, useNetwork} from "wagmi";
-import {HeadlessUiModal} from 'src/components/Modal';
-import {shortenAddress} from "src/utils/utils";
 import Button from "src/components/Common/Button";
 import ExternalLink from "src/components/ExternalLink";
-import {ExternalLinkIcon} from '@heroicons/react/outline';
+import {HeadlessUiModal} from 'src/components/Modal';
 import {getExplorerLink} from "src/functions/explorer";
+import {shortenAddress} from "src/utils/utils";
+import {useAccount, useConnect, useNetwork} from "wagmi";
 import Copy from './Copy';
 
 interface AccountDetailsProps {
@@ -16,6 +16,25 @@ interface AccountDetailsProps {
   openOptions: () => void
   onDisconnect: () => void
 }
+
+const BlockExplorerLink = ({address, chainId}: { address: string | undefined, chainId: number | undefined }) => {
+  let explorerLink;
+  if (chainId && address) {
+    explorerLink = getExplorerLink(chainId, address, 'address');
+  }
+  return (
+    <>
+      <div className={"flex items-left gap-1 text-xs font-bold"}>
+        {explorerLink &&
+            <ExternalLink color="blue" startIcon={<ExternalLinkIcon className={'h-4 w-4'}/>} href={explorerLink}>
+              <div className="text-xs font-bold"> View on explorer</div>
+            </ExternalLink>}
+        {!explorerLink && <><ExclamationCircleIcon className={'h-4 w-4'}/>No Explorer: {chainId}</>}
+      </div>
+    </>
+  );
+};
+
 
 const AccountDetails: FC<AccountDetailsProps> = ({
                                                    toggleWalletModal,
@@ -36,6 +55,7 @@ const AccountDetails: FC<AccountDetailsProps> = ({
     );
   }, [connectData.connector]);
 
+
   return (
     <div className="space-y-3">
       <div className="space-y-3">
@@ -51,21 +71,14 @@ const AccountDetails: FC<AccountDetailsProps> = ({
                 {accountData?.ens ? accountData?.ens?.name : accountData?.address && shortenAddress(accountData?.address)}
               </div>
             </div>
-            <div className="flex items-left gap-4">
-                {accountData?.connector?.id && accountData?.address && (
-                  <ExternalLink
-                    color="blue"
-                    startIcon={<ExternalLinkIcon className={'h-4 w-4'}/>}
-                    href={getExplorerLink(networkData.chain?.id, accountData?.ens?.name || accountData.address, 'address')}
-                  >
-                    <div className="text-xs font-bold"> View on explorer</div>
-                  </ExternalLink>
-                )}
-                {accountData?.address && (
-                  <Copy toCopy={accountData.address}>
-                    <div className="text-xs font-bold"> Copy Address</div>
-                  </Copy>
-                )}
+            <div className={"flex items-left gap-4"}>
+              <BlockExplorerLink address={accountData?.ens?.name || accountData?.address}
+                                 chainId={networkData.chain?.id}/>
+              {accountData?.address && (
+                <div><Copy toCopy={accountData.address}>
+                  <div className={"text-xs font-bold"}> Copy Address</div>
+                </Copy></div>
+              )}
             </div>
           </div>
         </HeadlessUiModal.BorderedContent>
