@@ -1,5 +1,5 @@
 import type {MouseEventHandler} from "react";
-import {classNames} from "../../functions";
+import {classNames} from "src/functions";
 
 interface Props {
   onClick: MouseEventHandler<HTMLElement>;
