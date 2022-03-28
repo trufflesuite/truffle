@@ -5,6 +5,15 @@
     "node": true,
     "jest": true
   },
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "globals": {
+    "JSX": "readonly"
+  },
   "overrides": [
     {
       "files": ["*.ts", "*.tsx"],
