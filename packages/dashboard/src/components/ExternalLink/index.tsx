@@ -1,9 +1,8 @@
-/* eslint-disable no-undef */
 import {classNames} from 'src/functions';
 import React, {FC, HTMLProps, useCallback} from 'react';
 
-const COLOR = {
-  default: 'text-primary hover:text-high-emphasis focus:text-high-emphasis',
+const COLOR: Record<string, string> = {
+  default: 'text-primary hover:text-blue focus:text-blue',
   blue: 'text-blue opacity-80 hover:opacity-100 focus:opacity-100',
 };
 
@@ -43,7 +42,6 @@ const ExternalLink: FC<ExternalLinkProps> = ({
       onClick={handleClick}
       className={classNames(
         'text-baseline whitespace-nowrap',
-        // @ts-ignore TYPE NEEDS FIXING
         COLOR[color],
         (startIcon || endIcon) && 'space-x-1 flex items-center justify-center',
         className

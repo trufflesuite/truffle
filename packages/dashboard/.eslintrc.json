@@ -4,5 +4,13 @@
     "browser": true,
     "node": true,
     "jest": true
-  }
+  },
+  "overrides": [
+    {
+      "files": ["*.ts", "*.tsx"],
+      "rules": {
+        "no-undef": "off"
+      }
+    }
+  ]
 }

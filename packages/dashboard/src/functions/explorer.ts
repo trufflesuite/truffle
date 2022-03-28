@@ -62,6 +62,10 @@ const chains: ChainObject = {
   [ChainId.FANTOM_TESTNET]: {
     link: "https://testnet.ftmscan.com",
     builder: explorers.etherscan
+  },
+  [ChainId.KILN]: {
+    link: "https://explorer.kiln.themerge.dev/",
+    builder: explorers.etherscan
   }
   //   [ChainId.BSC]: {
   //     link: 'https://bscscan.com',
