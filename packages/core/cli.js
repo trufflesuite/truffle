@@ -57,9 +57,7 @@ if (userWantsGeneralHelp) {
 command
   .run(inputArguments, options)
   .then(returnStatus => {
-    returnStatus !== undefined
-      ? (process.exitCode = returnStatus)
-      : (process.exitCode = 0);
+    returnStatus !== undefined ? process.exit(returnStatus) : process.exit();
   })
   .catch(error => {
     if (error instanceof TaskError) {
@@ -87,7 +85,7 @@ command
           : "(unbundled) " + versionInfo.core
       });
       // If a number is returned, exit with that number.
-      process.exitCode = error;
+      process.exit(error);
     } else {
       let errorData = error.stack || error.message || error.toString();
       //remove identifying information if error stack is passed to analytics
@@ -110,5 +108,5 @@ command
       console.log(error.stack || error.message || error.toString());
       version.logTruffleAndNode(options.logger);
     }
-    process.exitCode = 1;
+    process.exit(1);
   });
