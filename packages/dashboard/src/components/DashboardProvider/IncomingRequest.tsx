@@ -107,8 +107,8 @@ function IncomingRequest({ provider, connector, socket, request, setRequests }: 
 
   const footer = (
     <div className="flex justify-start items-center gap-2">
-      <Button onClick={process} text="Process" />
-      <Button onClick={reject} text="Reject" />
+      <Button onClick={process}>Process</Button>
+      <Button onClick={reject}>Reject</Button>
     </div>
   );
 

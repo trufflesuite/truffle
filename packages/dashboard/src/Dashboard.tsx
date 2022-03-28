@@ -96,7 +96,6 @@ function Dashboard() {
 
   return (
     <div className="z-0 flex flex-col items-center w-full h-full min-h-screen bg-gradient-to-b from-truffle-lighter to-truffle-light">
-    {/*<div className="h-full min-h-screen bg-gradient-to-b from-truffle-lighter to-truffle-light">*/}
       <Header disconnect={disconnectAccount}/>
       {paused && chainId && connectedChainId && (
         <ConfirmNetworkChanged

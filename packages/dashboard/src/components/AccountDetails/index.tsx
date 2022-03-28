@@ -56,6 +56,10 @@ const AccountDetails: FC<AccountDetailsProps> = ({
   }, [connectData.connector]);
 
 
+  function clearAllTransactionsCallback() {
+
+  }
+
   return (
     <div className="space-y-3">
       <div className="space-y-3">
@@ -63,7 +67,7 @@ const AccountDetails: FC<AccountDetailsProps> = ({
         <HeadlessUiModal.BorderedContent className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
             {connectorName}
-            <Button onClick={onDisconnect} text={'disconnect'} variant={"sm"}/>
+            <Button onClick={onDisconnect} size={"sm"}>disconnect</Button>
           </div>
           <div id="web3-account-identifier-row" className="flex flex-col justify-center gap-4">
             <div className="flex items-center gap-4">
@@ -82,32 +86,28 @@ const AccountDetails: FC<AccountDetailsProps> = ({
             </div>
           </div>
         </HeadlessUiModal.BorderedContent>
-        {/*<HeadlessUiModal.BorderedContent className="flex flex-col gap-3">*/}
-        {/*  <div className="flex items-center justify-between">*/}
-        {/*    <Typography variant="xs" weight={700} className="text-secondary">*/}
-        {/*      {i18n._(t`Recent Transactions`)}*/}
-        {/*    </Typography>*/}
-        {/*    <Button variant="outlined" color="blue" size="xs" onClick={clearAllTransactionsCallback}>*/}
-        {/*      {i18n._(t`Clear all`)}*/}
-        {/*    </Button>*/}
-        {/*  </div>*/}
-        {/*  <div className="flex flex-col divide-y divide-dark-800">*/}
-        {/*    {!!pendingTransactions.length || !!confirmedTransactions.length ? (*/}
-        {/*      <>*/}
-        {/*        {pendingTransactions.map((el, index) => (*/}
-        {/*          <Transaction key={index} hash={el} />*/}
-        {/*        ))}*/}
-        {/*        {confirmedTransactions.map((el, index) => (*/}
-        {/*          <Transaction key={index} hash={el} />*/}
-        {/*        ))}*/}
-        {/*      </>*/}
-        {/*    ) : (*/}
-        {/*      <Typography variant="xs" weight={700} className="text-secondary">*/}
-        {/*        {i18n._(t`Your transactions will appear here...`)}*/}
-        {/*      </Typography>*/}
-        {/*    )}*/}
-        {/*  </div>*/}
-        {/*</HeadlessUiModal.BorderedContent>*/}
+        <HeadlessUiModal.BorderedContent className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <div className={"text-xs"}>Recent Transactions</div>
+            <Button color="red" size="xs" onClick={clearAllTransactionsCallback}> Clear all </Button>
+          </div>
+          <div className="flex flex-col divide-y divide-dark-800">
+            {/*    {!!pendingTransactions.length || !!confirmedTransactions.length ? (*/}
+            {/*      <>*/}
+            {/*        {pendingTransactions.map((el, index) => (*/}
+            {/*          <Transaction key={index} hash={el} />*/}
+            {/*        ))}*/}
+            {/*        {confirmedTransactions.map((el, index) => (*/}
+            {/*          <Transaction key={index} hash={el} />*/}
+            {/*        ))}*/}
+            {/*      </>*/}
+            {/*    ) : (*/}
+            {/*      <Typography variant="xs" weight={700} className="text-secondary">*/}
+            {/*        {i18n._(t`Your transactions will appear here...`)}*/}
+            {/*      </Typography>*/}
+            {/*    )}*/}
+          </div>
+        </HeadlessUiModal.BorderedContent>
       </div>
     </div>
   );

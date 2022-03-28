@@ -1,7 +1,7 @@
 import {FC} from 'react';
 
 import PopupItem from './PopupItem';
-import {useActivePopups} from "src/state/popups/hooks";
+import {useActivePopups} from "src/context/popups/hooks";
 
 const Popups: FC = () => {
   const activePopups = useActivePopups();

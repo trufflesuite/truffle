@@ -1,17 +1,24 @@
-import Dashboard from "./Dashboard";
-
-import {Provider, chain, defaultChains, Connector} from 'wagmi';
-import {InjectedConnector} from 'wagmi/connectors/injected';
-import {WalletConnectConnector} from 'wagmi/connectors/walletConnect';
+import {getNetwork} from "@ethersproject/providers";
 
 import {getDefaultProvider, providers as ethproviders} from "ethers";
-import {getNetwork} from "@ethersproject/providers";
+import {TransactionContext} from "src/context/transactions/context";
+import {useTransactions} from "src/context/transactions/hooks";
+
+import {chain, Connector, defaultChains, Provider} from 'wagmi';
+import {InjectedConnector} from 'wagmi/connectors/injected';
+import {WalletConnectConnector} from 'wagmi/connectors/walletConnect';
+import Dashboard from "./Dashboard";
 
 const defaultChain = chain.mainnet;
 
 const getProvider = (_config: { chainId?: number; connector?: Connector }) => {
   let wProvider = _config.connector?.getProvider(true);
-  console.debug("getProvider", {wProvider, winEth: window.ethereum, _config, INFURA_ID: process.env.REACT_APP_INFURA_ID});
+  console.debug("getProvider", {
+    wProvider,
+    winEth: window.ethereum,
+    _config,
+    INFURA_ID: process.env.REACT_APP_INFURA_ID
+  });
   let ret: any;
   if (!wProvider) {
     ret = getDefaultProvider(getNetwork(_config.chainId ?? defaultChain.id));
@@ -37,9 +44,13 @@ const connectors = [
 ];
 
 function App() {
+  let transactions = useTransactions();
+
   return (
     <Provider connectors={connectors} provider={getProvider}>
-      <Dashboard/>
+      <TransactionContext.Provider value={transactions}>
+        <Dashboard/>
+      </TransactionContext.Provider>
     </Provider>
   );
 }

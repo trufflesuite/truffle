@@ -1,5 +1,5 @@
-import Card from "../Common/Card";
 import Button from "../Common/Button";
+import Card from "../Common/Card";
 import NetworkIndicator from "./NetworkIndicator";
 
 interface Props {
@@ -9,10 +9,10 @@ interface Props {
 }
 
 function ConfirmNetworkChanged({
-  confirm,
-  newChainId,
-  previousChainId
-}: Props) {
+                                 confirm,
+                                 newChainId,
+                                 previousChainId
+                               }: Props) {
   const confirmBody = (
     <div className="flex flex-col gap-2">
       <div>
@@ -21,16 +21,16 @@ function ConfirmNetworkChanged({
       </div>
       <div>Your previous connected network was:</div>
       <div className="flex justify-center">
-        <NetworkIndicator chainId={previousChainId} />
+        <NetworkIndicator chainId={previousChainId}/>
       </div>
       <div>Your new connected network is:</div>
       <div className="flex justify-center">
-        <NetworkIndicator chainId={newChainId} />
+        <NetworkIndicator chainId={newChainId}/>
       </div>
     </div>
   );
 
-  const confirmButton = <Button text="Confirm" onClick={confirm} />;
+  const confirmButton = <Button onClick={confirm}>Confirm</Button>;
 
   return (
     <div className="flex justify-center items-center py-20">
