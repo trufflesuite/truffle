@@ -13,9 +13,7 @@ export interface SerializableTransactionReceipt {
 
 export interface TransactionDetails {
   hash: string;
-  approval?: { tokenAddress: string; spender: string };
   summary?: string;
-  claim?: { recipient: string };
   receipt?: SerializableTransactionReceipt;
   lastCheckedBlockNumber?: number;
   addedTime: number;

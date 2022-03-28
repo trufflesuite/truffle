@@ -21,6 +21,8 @@ export const TransactionContext = React.createContext<{
 
 TransactionContext.displayName = 'Transactions';
 
+const initialState: TransactionState = {};
+
 export const useTransactionStore = () => React.useContext(TransactionContext);
 
 export const txReducer = (state: TransactionState, action: Action) => {
@@ -45,8 +47,9 @@ export const txReducer = (state: TransactionState, action: Action) => {
   }
 };
 
+
 export const TransactionProvider: React.FC = ({children}) => {
-  const [state, dispatch] = React.useReducer(txReducer, {});
+  const [state, dispatch] = React.useReducer(txReducer, initialState);
   return (
     <TransactionContext.Provider value={{state, dispatch}}>
       {children}
