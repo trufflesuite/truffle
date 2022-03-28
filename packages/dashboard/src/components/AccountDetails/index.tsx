@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {ExclamationCircleIcon, ExternalLinkIcon} from "@heroicons/react/solid";
 import {FC, useMemo} from "react";
+import {Transactions} from "src/components/AccountDetails/Transactions";
 import Button from "src/components/Common/Button";
 import ExternalLink from "src/components/ExternalLink";
 import {HeadlessUiModal} from 'src/components/Modal';
@@ -56,10 +57,6 @@ const AccountDetails: FC<AccountDetailsProps> = ({
   }, [connectData.connector]);
 
 
-  function clearAllTransactionsCallback() {
-
-  }
-
   return (
     <div className="space-y-3">
       <div className="space-y-3">
@@ -87,26 +84,7 @@ const AccountDetails: FC<AccountDetailsProps> = ({
           </div>
         </HeadlessUiModal.BorderedContent>
         <HeadlessUiModal.BorderedContent className="flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <div className={"text-xs"}>Recent Transactions</div>
-            <Button color="red" size="xs" onClick={clearAllTransactionsCallback}> Clear all </Button>
-          </div>
-          <div className="flex flex-col divide-y divide-dark-800">
-            {/*    {!!pendingTransactions.length || !!confirmedTransactions.length ? (*/}
-            {/*      <>*/}
-            {/*        {pendingTransactions.map((el, index) => (*/}
-            {/*          <Transaction key={index} hash={el} />*/}
-            {/*        ))}*/}
-            {/*        {confirmedTransactions.map((el, index) => (*/}
-            {/*          <Transaction key={index} hash={el} />*/}
-            {/*        ))}*/}
-            {/*      </>*/}
-            {/*    ) : (*/}
-            {/*      <Typography variant="xs" weight={700} className="text-secondary">*/}
-            {/*        {i18n._(t`Your transactions will appear here...`)}*/}
-            {/*      </Typography>*/}
-            {/*    )}*/}
-          </div>
+          <Transactions />
         </HeadlessUiModal.BorderedContent>
       </div>
     </div>

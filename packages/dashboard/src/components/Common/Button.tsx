@@ -1,8 +1,8 @@
 import React, {ReactNode} from "react";
 import {classNames} from "src/functions";
 
-export type ButtonColor = 'blue' | 'red' | 'pink' | 'default';
-export type ButtonSize =  'xs' | 'sm' | 'lg';
+export type ButtonColor = 'blue' | 'red' | 'brown' | 'default';
+export type ButtonSize = 'xs' | 'sm' | 'lg';
 export type ButtonVariant = 'outlined' | 'filled' | 'empty';
 
 const DIMENSIONS = {
@@ -13,23 +13,25 @@ const DIMENSIONS = {
 };
 
 const SIZE: Record<string, string> = {
-  "xs": "text-xs rounded-full",
-  "sm": "text-sm rounded-full",
+  "xs": "text-xs rounded-xl",
+  "sm": "text-sm rounded-l",
   "lg": "text-lg rounded",
 };
 
 const FILLED = {
-  default: 'rounded bg-truffle-blue text-truffle-brown uppercase hover:bg-white',
+  default: 'rounded bg-truffle-blue uppercase hover:bg-truffle-light',
   blue: 'bg-truffle-blue',
-  red: 'bg-truffle-red text-truffle-lighter',
-  pink: 'bg-pink'
+  red: 'bg-truffle-red text-truffle-lighter hover:text-black',
+  brown: 'bg-truffle-brown text-truffle-lighter hover:text-black'
 };
 
 const OUTLINED = {
-  default: 'border-2 disabled:pointer-events-none disabled:opacity-40',
-  blue: 'border-none bg-truffle-blue/20 hover:bg-blue/40 active:bg-blue/60 text-blue focus:bg-blue/40',
-  red: 'border-none bg-truffle-red/20 hover:bg-truffle-red/40 active:bg-truffle-red/60 text-red focus:bg-truffle-red/40',
-  pink: 'border-none bg-pink/20 hover:bg-pink/40 active:bg-pink/60 text-pink focus:bg-pink/40',
+  default: 'border-2 border-truffle-blue disabled:pointer-events-none disabled:opacity-40',
+  blue: 'border-none text-truffle-blue bg-truffle-blue bg-opacity-20 hover:bg-truffle-blue hover:bg-opacity-40 focus:bg-truffle-blue focus:bg-opacity-40 active:bg-truffle-blue active:bg-opacity-40',
+  red: 'border-none text-truffle-red bg-truffle-red bg-opacity-20 hover:bg-truffle-red hover:bg-opacity-40 focus:bg-truffle-red focus:bg-opacity-40 active:bg-truffle-red active:bg-opacity-40',
+  // red: 'border-none bg-truffle-red bg-opacity-20 hover:bg-truffle-red/40 active:bg-truffle-red/60 text-red focus:bg-truffle-red/40',
+  brown: 'border-none text-truffle-brown bg-truffle-brown bg-opacity-20 hover:bg-truffle-brown hover:bg-opacity-40 focus:bg-truffle-brown focus:bg-opacity-40 active:bg-truffle-brown active:bg-opacity-40',
+  //brown: 'border-none bg-truffle-brown bg-opacity-20 hover:bg-pink/40 active:bg-pink/60 text-pink focus:bg-pink/40',
 };
 
 const EMPTY = {
@@ -37,7 +39,7 @@ const EMPTY = {
     'bg-transparent hover:brightness-[90%] focus:brightness-[90%] active:brightness-[80%] disabled:pointer-events-none disabled:opacity-40',
   blue: 'text-truffle-blue',
   red: 'text-truffle-red',
-  pink: 'text-pink',
+  brown: 'text-truffle-brown',
 };
 
 const VARIANT = {
@@ -61,7 +63,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     {
       children,
       className = '',
-      color = 'truffle-blue',
+      color = 'blue',
       size = 'lg',
       variant = 'filled',
       startIcon = undefined,

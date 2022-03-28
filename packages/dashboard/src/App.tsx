@@ -1,8 +1,7 @@
 import {getNetwork} from "@ethersproject/providers";
 
 import {getDefaultProvider, providers as ethproviders} from "ethers";
-import {TransactionContext} from "src/context/transactions/context";
-import {useTransactions} from "src/context/transactions/hooks";
+import {TransactionProvider} from "src/context/transactions/context";
 
 import {chain, Connector, defaultChains, Provider} from 'wagmi';
 import {InjectedConnector} from 'wagmi/connectors/injected';
@@ -44,13 +43,11 @@ const connectors = [
 ];
 
 function App() {
-  let transactions = useTransactions();
-
   return (
     <Provider connectors={connectors} provider={getProvider}>
-      <TransactionContext.Provider value={transactions}>
+      <TransactionProvider>
         <Dashboard/>
-      </TransactionContext.Provider>
+      </TransactionProvider>
     </Provider>
   );
 }
