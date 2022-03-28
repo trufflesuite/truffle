@@ -7,7 +7,7 @@ export default function AnalyticsToggle() {
   return (
     <Switch.Group>
       <div className="flex justify-center mt-4">
-        <span className="pr-3 float-left">Disabled</span>
+        <span className="pr-3 float-left">No</span>
         <Switch
           checked={enabled}
           onChange={setEnabled}
@@ -19,7 +19,7 @@ export default function AnalyticsToggle() {
               } inline-block w-4 h-4 transform bg-white rounded-full transition-transform`}
           />
         </Switch>
-        <span className="pl-3 float-right">Enabled</span>
+        <span className="pl-3 float-right">Yes</span>
       </div>
     </Switch.Group>
   );
