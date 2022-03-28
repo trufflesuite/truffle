@@ -131,5 +131,10 @@ declare module "spinnies" {
      * @returns false if all spinners have succeeded, failed or have been stopped
      */
     hasActiveSpinners: () => boolean;
+
+    /**
+     * Updates the spinning interval if no spinners are left active
+     */
+    checkIfActiveSpinners: () => void;
   }
 }

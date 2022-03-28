@@ -45,6 +45,7 @@ export class Spinner {
       return;
     }
     spinnies.remove(this.name);
+    spinnies.checkIfActiveSpinners();
   }
 
   /**
