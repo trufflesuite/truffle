@@ -23,7 +23,7 @@ const AnimatedFader = ({duration}: { duration: number }) => (
         }
       }
     `}</style>
-    <div className="animation h-1 bg-pink-500"/>
+    <div className="animation h-1 bg-truffle-blue"/>
   </div>
 );
 
