@@ -7,6 +7,7 @@ import Button from "src/components/Common/Button";
 import ExternalLink from "src/components/ExternalLink";
 import {ExternalLinkIcon} from '@heroicons/react/outline';
 import {getExplorerLink} from "src/functions/explorer";
+import Copy from './Copy';
 
 interface AccountDetailsProps {
   toggleWalletModal: () => void
@@ -49,25 +50,23 @@ const AccountDetails: FC<AccountDetailsProps> = ({
               <div className="overflow-hidden rounded-full">
                 {accountData?.ens ? accountData?.ens?.name : accountData?.address && shortenAddress(accountData?.address)}
               </div>
-              {accountData?.connector?.id && accountData?.address && (
-                <ExternalLink
-                  color="blue"
-                  startIcon={<ExternalLinkIcon className={'h-16 w-16'}/>}
-                  href={getExplorerLink(networkData.chain?.id, accountData?.ens?.name || accountData.address, 'address')}
-                >
-                  <div> View on explorer</div>
-                </ExternalLink>
-              )}
-              {accountData?.address && (
-                <div>copy thingo </div>
-                // <Copy toCopy={account}>
-                //   <div variant="xs" weight={700}>Copy Address</div>
-                // </Copy>
-              )}
             </div>
-            {/*    <div className="flex items-center gap-2 space-x-3">*/}
-
-            {/*    </div>*/}
+            <div className="flex items-left gap-4">
+                {accountData?.connector?.id && accountData?.address && (
+                  <ExternalLink
+                    color="blue"
+                    startIcon={<ExternalLinkIcon className={'h-4 w-4'}/>}
+                    href={getExplorerLink(networkData.chain?.id, accountData?.ens?.name || accountData.address, 'address')}
+                  >
+                    <div className="text-xs font-bold"> View on explorer</div>
+                  </ExternalLink>
+                )}
+                {accountData?.address && (
+                  <Copy toCopy={accountData.address}>
+                    <div className="text-xs font-bold"> Copy Address</div>
+                  </Copy>
+                )}
+            </div>
           </div>
         </HeadlessUiModal.BorderedContent>
         {/*<HeadlessUiModal.BorderedContent className="flex flex-col gap-3">*/}

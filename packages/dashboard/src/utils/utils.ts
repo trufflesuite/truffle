@@ -10,6 +10,8 @@ import { providers } from "ethers";
 import type { JSONRPCRequestPayload } from "ethereum-protocol";
 import { promisify } from "util";
 import { INTERACTIVE_REQUESTS, UNSUPPORTED_REQUESTS } from "../constants";
+import copy from "copy-to-clipboard";
+import { useCallback, useEffect, useState } from "react";
 
 export const getPorts = async (): Promise<PortsConfig> => {
   const dashboardHost = window.location.hostname;
@@ -148,3 +150,29 @@ export const reverseLookup = async (
 export const shortenAddress = (address: string) => {
   return `${address.substr(0, 6)}...${address.substr(address.length - 4, 4)}`;
 };
+
+export function useCopyClipboard(
+  timeout: number = 500
+): [boolean, (toCopy: string) => void] {
+  const [isCopied, setIsCopied] = useState(false);
+
+  const staticCopy = useCallback(text => {
+    const didCopy = copy(text);
+    setIsCopied(didCopy);
+  }, []);
+
+  useEffect(() => {
+    if (isCopied) {
+      const hide = setTimeout(() => {
+        setIsCopied(false);
+      }, timeout);
+
+      return () => {
+        clearTimeout(hide);
+      };
+    }
+    return undefined;
+  }, [isCopied, setIsCopied, timeout]);
+
+  return [isCopied, staticCopy];
+}
