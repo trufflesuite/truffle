@@ -2,6 +2,7 @@ import {CheckCircleIcon, ExclamationIcon, XCircleIcon} from '@heroicons/react/ou
 
 import React, {FC} from 'react';
 import ExternalLink from "src/components/ExternalLink";
+import Loader from "src/components/Loader";
 import {useAllTransactions} from "src/context/transactions/hooks";
 import {classNames, getExplorerLink} from 'src/functions';
 import {useNetwork} from "wagmi";
@@ -28,8 +29,7 @@ const Transaction: FC<{ hash: string }> = ({hash}) => {
           )}
         >
           {pending ? (
-            // <Loader />
-            <div> loading....</div>
+            <Loader />
           ) : success ? (
             <CheckCircleIcon width={16} height={16}/>
           ) : cancelled ? (

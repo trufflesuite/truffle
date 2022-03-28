@@ -30,23 +30,23 @@ module.exports = {
         "high-emphasis": "#E3E3E3",
         "higher-emphasis": "#FCFCFD"
       }
-    },
-    animation: {
-      "ellipsis": "ellipsis 1.25s infinite",
-      "spin-slow": "spin 2s linear infinite",
-      "fade": "opacity 150ms linear"
-    },
-    keyframes: {
-      ellipsis: {
-        "0%": { content: '"."' },
-        "33%": { content: '".."' },
-        "66%": { content: '"..."' }
-      },
-      opacity: {
-        "0%": { opacity: 0 },
-        "100%": { opacity: 100 }
-      }
     }
+    // animation: {
+    //   "ellipsis": "ellipsis 1.25s infinite",
+    //   "spin-slow": "spin 2s linear infinite",
+    //   "fade": "opacity 150ms linear"
+    // },
+    // keyframes: {
+    //   ellipsis: {
+    //     "0%": { content: '"."' },
+    //     "33%": { content: '".."' },
+    //     "66%": { content: '"..."' }
+    //   },
+    //   opacity: {
+    //     "0%": { opacity: 0 },
+    //     "100%": { opacity: 100 }
+    //   }
+    // }
   },
   variants: {
     extend: {}
