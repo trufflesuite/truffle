@@ -30,15 +30,15 @@ module.exports = async function (options) {
   }
   const opcodes = CodeUtils.parseCode(bytecode, numInstructions);
 
-  const indexLength = (opcodes.length + "").length;
+  const lastPCByteLength = Conversion.toBytes(
+    opcodes[opcodes.length - 1].pc
+  ).byteLength;
 
   opcodes.forEach(opcode => {
-    let strIndex = Conversion.toHexString(opcode.pc) + ":";
-
-    while (strIndex.length < indexLength + 1) {
-      strIndex += " ";
-    }
-
-    console.log(strIndex + " " + opcode.name + " " + (opcode.pushData || ""));
+    console.log(
+      Conversion.toHexString(opcode.pc, lastPCByteLength) + ":",
+      opcode.name,
+      opcode.pushData || ""
+    );
   });
 };
