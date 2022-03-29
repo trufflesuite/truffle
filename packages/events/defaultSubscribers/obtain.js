@@ -1,22 +1,25 @@
-const ora = require("ora");
+const Spinner = require("@truffle/spinners").Spinner;
 const OS = require("os");
 
 module.exports = {
-  initialization: function() {
+  initialization: function () {
     this.logger = console;
-    this.ora = ora;
   },
   handlers: {
     "obtain:start": [
-      function() {
-        if (this.quiet) return;
+      function () {
+        if (this.quiet) {
+          return;
+        }
         this.logger.log(`${OS.EOL}Starting obtain...`);
         this.logger.log(`==================${OS.EOL}`);
       }
     ],
     "obtain:succeed": [
-      function({ compiler }) {
-        if (this.quiet) return;
+      function ({ compiler }) {
+        if (this.quiet) {
+          return;
+        }
         const { name, version } = compiler;
         this.logger.log(
           `    > successfully downloaded and cached version ${version} ` +
@@ -25,47 +28,71 @@ module.exports = {
       }
     ],
     "obtain:fail": [
-      function() {
-        if (this.quiet) return;
-        if (this.spinner.isSpinning) this.spinner.fail();
+      function () {
+        if (this.quiet) {
+          return;
+        }
+
+        this.spinner.fail();
         this.logger.log("Unbox failed!");
       }
     ],
 
     "downloadCompiler:start": [
-      function({ attemptNumber }) {
-        if (this.quiet) return;
-        this.spinner = this.ora({
-          text: `Downloading compiler. Attempt #${attemptNumber}.`,
-          color: "red"
-        });
+      function ({ attemptNumber }) {
+        if (this.quiet) {
+          return;
+        }
+        this.downloadSpinner = new Spinner(
+          "events:subscribers:obtain:download",
+          {
+            text: `Downloading compiler. Attempt #${attemptNumber}.`,
+            color: "red"
+          }
+        );
       }
     ],
     "downloadCompiler:succeed": [
-      function() {
-        if (this.quiet) return;
-        this.spinner.succeed();
+      function () {
+        if (this.quiet) {
+          return;
+        }
+        this.downloadSpinner.succeed();
+      }
+    ],
+    "downloadCompiler:fail": [
+      function () {
+        if (this.quiet) {
+          return;
+        }
+        this.downloadSpinner.fail();
       }
     ],
     "fetchSolcList:start": [
-      function({ attemptNumber }) {
-        if (this.quiet) return;
-        this.spinner = this.ora({
+      function ({ attemptNumber }) {
+        if (this.quiet) {
+          return;
+        }
+        this.fetchSpinner = new Spinner("events:subscribers:obtain:fetch", {
           text: `Fetching solc version list from solc-bin. Attempt #${attemptNumber}`,
           color: "yellow"
-        }).start();
+        });
       }
     ],
     "fetchSolcList:succeed": [
-      function() {
-        if (this.quiet) return;
-        if (this.spinner.isSpinning) this.spinner.succeed();
+      function () {
+        if (this.quiet) {
+          return;
+        }
+        this.fetchSpinner.succeed();
       }
     ],
     "fetchSolcList:fail": [
-      function() {
-        if (this.quiet) return;
-        if (this.spinner.isSpinning) this.spinner.fail();
+      function () {
+        if (this.quiet) {
+          return;
+        }
+        this.fetchSpinner.fail();
       }
     ]
   }

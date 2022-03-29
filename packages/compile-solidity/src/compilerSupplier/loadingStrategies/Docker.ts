@@ -1,8 +1,8 @@
+import { Spinner } from "@truffle/spinners";
 import axios from "axios";
 import axiosRetry from "axios-retry";
 import fs from "fs";
 import { execSync } from "child_process";
-import ora from "ora";
 import semver from "semver";
 import { Cache } from "../Cache";
 import { normalizeSolcVersion } from "../normalizeSolcVersion";
@@ -106,14 +106,14 @@ export class Docker {
         `Please ensure that ${image} is a valid docker image name.`;
       throw new Error(message);
     }
-    const spinner = ora({
+    const spinner = new Spinner("compile-solidity:docker-download", {
       text: "Downloading Docker image",
       color: "red"
-    }).start();
+    });
     try {
       execSync(`docker pull ethereum/solc:${image}`);
     } finally {
-      spinner.stop();
+      spinner.remove();
     }
   }
 
@@ -165,12 +165,13 @@ export class Docker {
       shouldResetTimeout: true,
       retryCondition: error => {
         const tooManyRequests = !!(
-          error && error.response && error.response.status === 429
+          error &&
+          error.response &&
+          error.response.status === 429
         );
 
         return (
-          axiosRetry.isNetworkOrIdempotentRequestError(error) ||
-          tooManyRequests
+          axiosRetry.isNetworkOrIdempotentRequestError(error) || tooManyRequests
         );
       }
     });

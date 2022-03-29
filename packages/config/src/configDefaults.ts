@@ -286,6 +286,7 @@ export const configProps = ({
 
         const options = configObject.network_config;
         options.verboseRpc = configObject.verboseRpc;
+        options.events = configObject.events;
 
         return Provider.create(options);
       },

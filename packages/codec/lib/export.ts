@@ -290,8 +290,16 @@ function ethersCompatibleNativizeEventArgs(
  */
 export class CalldataDecodingInspector {
   decoding: CalldataDecoding;
+
   constructor(decoding: CalldataDecoding) {
     this.decoding = decoding;
+  }
+  /**
+   * @dev non-standard alternative interface name used by browser-util-inspect
+   *      package
+   */
+  inspect(depth: number | null, options: InspectOptions): string {
+    return this[util.inspect.custom].bind(this)(depth, options);
   }
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
     switch (this.decoding.kind) {
@@ -346,6 +354,13 @@ export class LogDecodingInspector {
   constructor(decoding: LogDecoding) {
     this.decoding = decoding;
   }
+  /**
+   * @dev non-standard alternative interface name used by browser-util-inspect
+   *      package
+   */
+  inspect(depth: number | null, options: InspectOptions): string {
+    return this[util.inspect.custom].bind(this)(depth, options);
+  }
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
     const className = this.decoding.definedIn
       ? this.decoding.definedIn.typeName
@@ -373,6 +388,13 @@ export class ReturndataDecodingInspector {
   decoding: ReturndataDecoding;
   constructor(decoding: ReturndataDecoding) {
     this.decoding = decoding;
+  }
+  /**
+   * @dev non-standard alternative interface name used by browser-util-inspect
+   *      package
+   */
+  inspect(depth: number | null, options: InspectOptions): string {
+    return this[util.inspect.custom].bind(this)(depth, options);
   }
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
     switch (this.decoding.kind) {
