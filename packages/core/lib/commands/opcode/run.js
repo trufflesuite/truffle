@@ -3,8 +3,7 @@ module.exports = async function (options) {
   const TruffleError = require("@truffle/error");
   const WorkflowCompile = require("@truffle/workflow-compile");
   const CodeUtils = require("@truffle/code-utils");
-  const Codec = require("@truffle/codec");
-  const Conversion = Codec.Conversion;
+  const { Conversion } = require("@truffle/codec");
 
   if (options._.length === 0) {
     throw new TruffleError("Please specify a contract name.");
