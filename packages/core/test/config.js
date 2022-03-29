@@ -31,6 +31,9 @@ describe("config", function () {
         provider: Ganache.provider({
           miner: {
             instamine: "strict"
+          },
+          logging: {
+            quiet: true
           }
         })
       }
