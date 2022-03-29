@@ -108,7 +108,7 @@ export interface FunctionDecoding {
    * may be added by things that use @truffle/codec, such as @truffle/decoder, rather than by
    * @truffle/codec itself.  See individual interpretations for details.
    */
-  interpretations?: {
+  interpretations: {
     /**
      * If this interpretation is present, indicates that the transaction can be
      * understood as a multicall.  The field contains decodings for the individual
@@ -164,7 +164,7 @@ export interface ConstructorDecoding {
    * @truffle/codec itself.  See individual interpretations for details.
    * (Currently there are none for this type.)
    */
-  interpretations?: {};
+  interpretations: {};
 }
 
 /**
@@ -203,7 +203,7 @@ export interface MessageDecoding {
    * @truffle/codec itself.  See individual interpretations for details.
    * (Currently there are none for this type.)
    */
-  interpretations?: {};
+  interpretations: {};
 }
 
 /**
@@ -232,7 +232,7 @@ export interface UnknownCallDecoding {
    * @truffle/codec itself.  See individual interpretations for details.
    * (Currently there are none for this type.)
    */
-  interpretations?: {};
+  interpretations: {};
 }
 
 /**
@@ -261,7 +261,7 @@ export interface UnknownCreationDecoding {
    * @truffle/codec itself.  See individual interpretations for details.
    * (Currently there are none for this type.)
    */
-  interpretations?: {};
+  interpretations: {};
 }
 
 /**
@@ -310,7 +310,7 @@ export interface EventDecoding {
    * @truffle/codec itself.  See individual interpretations for details.
    * (Currently there are none for this type.)
    */
-  interpretations?: {};
+  interpretations: {};
 }
 
 /**
@@ -355,7 +355,7 @@ export interface AnonymousDecoding {
    * @truffle/codec itself.  See individual interpretations for details.
    * (Currently there are none for this type.)
    */
-  interpretations?: {};
+  interpretations: {};
 }
 
 /**
@@ -387,7 +387,7 @@ export interface ReturnDecoding {
    * @truffle/codec itself.  See individual interpretations for details.
    * (Currently there are none for this type.)
    */
-  interpretations?: {};
+  interpretations: {};
 }
 
 /**
@@ -419,7 +419,7 @@ export interface RawReturnDecoding {
    * @truffle/codec itself.  See individual interpretations for details.
    * (Currently there are none for this type.)
    */
-  interpretations?: {};
+  interpretations: {};
 }
 
 /**
@@ -447,7 +447,7 @@ export interface SelfDestructDecoding {
    * @truffle/codec itself.  See individual interpretations for details.
    * (Currently there are none for this type.)
    */
-  interpretations?: {};
+  interpretations: {};
 }
 
 /**
@@ -475,7 +475,7 @@ export interface EmptyFailureDecoding {
    * @truffle/codec itself.  See individual interpretations for details.
    * (Currently there are none for this type.)
    */
-  interpretations?: {};
+  interpretations: {};
 }
 
 /**
@@ -523,7 +523,7 @@ export interface RevertMessageDecoding {
    * @truffle/codec itself.  See individual interpretations for details.
    * (Currently there are none for this type.)
    */
-  interpretations?: {};
+  interpretations: {};
 }
 
 /**
@@ -576,7 +576,7 @@ export interface BytecodeDecoding {
    * @truffle/codec itself.  See individual interpretations for details.
    * (Currently there are none for this type.)
    */
-  interpretations?: {};
+  interpretations: {};
 }
 
 /**
@@ -613,7 +613,7 @@ export interface UnknownBytecodeDecoding {
    * @truffle/codec itself.  See individual interpretations for details.
    * (Currently there are none for this type.)
    */
-  interpretations?: {};
+  interpretations: {};
 }
 
 /**

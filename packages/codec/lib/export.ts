@@ -305,10 +305,7 @@ export class CalldataDecodingInspector {
     switch (this.decoding.kind) {
       case "function":
         const fullName = `${this.decoding.class.typeName}.${this.decoding.abi.name}`;
-        if (
-          this.decoding.interpretations &&
-          this.decoding.interpretations.multicall
-        ) {
+        if (this.decoding.interpretations.multicall) {
           return formatMulticall(
             fullName,
             this.decoding.interpretations.multicall,

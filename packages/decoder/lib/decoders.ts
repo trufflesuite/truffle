@@ -289,10 +289,7 @@ export class ProjectDecoder {
       //it's safe to modify decoding -- we've gotten it straight out of codec,
       //it's not shared with anything else, so for convenience I'm just going to
       //mutate rather than cloning
-      decoding.interpretations = {
-        ...decoding.interpretations,
-        multicall: multicallArray
-      };
+      decoding.interpretations.multicall = multicallArray;
     }
 
     return decoding;
