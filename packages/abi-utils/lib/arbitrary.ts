@@ -1,5 +1,5 @@
 import * as fc from "fast-check";
-import faker from "@faker-js/faker";
+import faker from "faker";
 import { camelCase, pascalCase } from "change-case";
 
 import type * as Types from "./types";

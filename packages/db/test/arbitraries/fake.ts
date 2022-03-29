@@ -1,5 +1,5 @@
 import * as fc from "fast-check";
-import faker from "@faker-js/faker";
+import faker from "faker";
 import { camelCase } from "change-case";
 
 // borrowed from https://runkit.com/dubzzz/faker-to-fast-check

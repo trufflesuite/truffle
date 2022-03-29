@@ -55,7 +55,7 @@
     "esdoc": "^1.0.4",
     "esdoc-ecmascript-proposal-plugin": "^1.0.0",
     "esdoc-standard-plugin": "^1.0.0",
-    "@faker-js/faker": "^5.3.1",
+    "faker": "5.5.3",
     "fs-extra": "^9.1.0",
     "ganache": "^7.0.3",
     "mocha": "8.4.0",
