@@ -1,7 +1,10 @@
 const Spinner = require("@truffle/spinners").Spinner;
+const DashboardMessageBusClient = require("./client");
 
 module.exports = {
-  initialization: function () {
+  initialization: function (config) {
+    this.messageBus = new DashboardMessageBusClient(config);
+
     this.logger = this.logger || console;
     this.pendingTransactions = [];
   },
