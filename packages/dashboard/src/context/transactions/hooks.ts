@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { ChainId } from "src/constants/ChainId";
+import { sendToast } from "src/context/popups/functions";
 import { useTransactionStore } from "src/context/transactions/context";
 import {
   TransactionDetails,
@@ -80,6 +81,7 @@ export function useProviderResponseAdder(): (
             chainId: networkData.chain?.id
           });
           // push toast
+          sendToast(payload.result);
         }
       } // else ignore.
     },

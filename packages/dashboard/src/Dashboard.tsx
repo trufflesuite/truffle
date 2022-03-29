@@ -9,11 +9,12 @@ import {
 } from "@truffle/dashboard-message-bus";
 import WebSocket from "isomorphic-ws";
 import {useEffect, useState} from "react";
+import {ToastContainer} from "react-toastify";
 import DashboardProvider from "src/components/DashboardProvider/DashboardProvider";
 import Header from "src/components/Header/Header";
 import ConfirmNetworkChanged from "src/components/Network/ConfirmNetworkChanged";
 import ConnectNetwork from "src/components/Network/ConnectNetwork";
-import Popups from "src/components/Popups";
+import {sendToast} from "src/context/popups/functions";
 import {getPorts, respond} from "src/utils/utils";
 import {useAccount, useConnect, useNetwork} from "wagmi";
 
@@ -94,10 +95,14 @@ function Dashboard() {
     setSocket(undefined);
   };
 
+
+  const notify = () => sendToast("12345");
+
   return (
     <div
       className="z-0 flex flex-col items-center w-full h-full min-h-screen bg-gradient-to-b from-truffle-lighter to-truffle-light">
       <Header disconnect={disconnectAccount}/>
+      <button onClick={notify}>Notify !</button>
       {paused && chainId && connectedChainId && (
         <ConfirmNetworkChanged
           newChainId={chainId}
@@ -114,7 +119,7 @@ function Dashboard() {
           setRequests={setDashboardProviderRequests}
         />
       )}
-      <Popups/>
+      <ToastContainer theme={"dark"}/>
     </div>
   );
 }
