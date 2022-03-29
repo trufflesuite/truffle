@@ -4,16 +4,6 @@ const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const wrapper = require("./wrapper");
 const DEFAULT_NETWORK_CHECK_TIMEOUT = 5000;
 
-function memo(fn) {
-  return (...args) => {
-    if (!global.__truffleProvider) {
-      global.__truffleProvider = fn(...args);
-    }
-
-    return global.__truffleProvider;
-  };
-}
-
 module.exports = {
   wrap: function (provider, options) {
     return wrapper.wrap(provider, options);
@@ -54,6 +44,7 @@ module.exports = {
     } else {
       networkCheckTimeout = DEFAULT_NETWORK_CHECK_TIMEOUT;
     }
+
     const provider = this.getProvider(options);
     const { host } = provider;
     const interfaceAdapter = createInterfaceAdapter({ provider, networkType });
@@ -102,5 +93,3 @@ module.exports = {
     });
   }
 };
-
-exports.getProvider = memo(exports.getProvider);
