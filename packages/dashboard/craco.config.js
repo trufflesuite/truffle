@@ -4,8 +4,5 @@ module.exports = {
     postcss: {
       plugins: [require("tailwindcss"), require("autoprefixer")]
     }
-  },
-  babel: {
-    plugins: ["styled-jsx/babel"]
   }
 };
