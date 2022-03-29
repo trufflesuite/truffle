@@ -54,8 +54,18 @@ describe("truffle obtain", function () {
     await CommandRunner.run("obtain --solc=0.7.2 --quiet", config);
     // logger.contents() returns false as long as nothing is written to the
     // stream that is used for logging in MemoryLogger
+
+    // in Node12, Ganache prints a warning and it cannot be suppressed
+    // I guess we have to allow it until we stop supporting Node12
+    const ganacheNode12WarningRegex =
+      /This\sversion\sof\sµWS.*?may\sbe\sdegraded\.\n\n\n/s;
+    const removeGanacheWarning = text => {
+      return text ? text.replace(ganacheNode12WarningRegex, "") : text;
+    };
+
+    const loggedStuff = removeGanacheWarning(logger.contents());
     assert(
-      !logger.contents(),
+      !loggedStuff,
       "The command logged to the console when it shouldn't have."
     );
     fse.unlinkSync(expectedPath);
