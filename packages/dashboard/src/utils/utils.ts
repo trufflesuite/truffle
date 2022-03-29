@@ -73,7 +73,8 @@ export const handleDashboardProviderRequest = async (
   request: DashboardProviderMessage,
   provider: any,
   connector: any,
-  responseSocket: WebSocket
+  responseSocket: WebSocket,
+  responseProcessor: (method: string, payload: any) => void
 ) => {
   const responsePayload = await forwardDashboardProviderRequest(
     provider,
@@ -84,6 +85,7 @@ export const handleDashboardProviderRequest = async (
     id: request.id,
     payload: responsePayload
   };
+  responseProcessor(request.payload.method, responsePayload);
   respond(response, responseSocket);
 };
 

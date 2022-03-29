@@ -5,7 +5,7 @@ import {
   TransactionDetails,
   TransactionState
 } from "src/context/transactions/types";
-import { useNetwork } from "wagmi";
+import { useAccount, useNetwork } from "wagmi";
 
 export const useTransactions = (): TransactionState => {
   return {};
@@ -49,4 +49,40 @@ export function useAllTransactions(): { [txHash: string]: TransactionDetails } {
  */
 export function isTransactionRecent(tx: TransactionDetails): boolean {
   return new Date().getTime() - tx.addedTime < 86_400_000;
+}
+
+export function useProviderResponseAdder(): (
+  method: string,
+  payload: any
+) => void {
+  const { dispatch } = useTransactionStore();
+  const [{ data: networkData }] = useNetwork();
+  const [{ data: accountData }] = useAccount();
+  return useCallback(
+    (method: string, payload: any) => {
+      console.log("parsing response tx: ", { method, payload });
+      // return early if we aren't connected properly.
+      if (!networkData.chain?.id || !accountData) {
+        return;
+      }
+
+      if (method === "eth_sendTransaction" && payload) {
+        // we need to dispatch this...
+        if (payload.error) {
+          console.error("Got an error:", { error: payload.error });
+        } else if (payload.result) {
+          // dispatch txHash - from RPC result.
+          console.log("Got an result", { result: payload.result });
+          dispatch({
+            type: "ADD",
+            hash: payload.result,
+            from: accountData.address,
+            chainId: networkData.chain?.id
+          });
+          // push toast
+        }
+      } // else ignore.
+    },
+    [dispatch, networkData, accountData]
+  );
 }

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {ExclamationCircleIcon, ExternalLinkIcon} from "@heroicons/react/solid";
 import {FC, useMemo} from "react";
-import {Transactions} from "src/components/AccountDetails/Transactions";
+import {TransactionList} from "src/components/AccountDetails/TransactionList";
 import Button from "src/components/Common/Button";
 import ExternalLink from "src/components/ExternalLink";
 import {HeadlessUiModal} from 'src/components/Modal';
@@ -12,9 +12,6 @@ import Copy from './Copy';
 
 interface AccountDetailsProps {
   toggleWalletModal: () => void
-  pendingTransactions: string[]
-  confirmedTransactions: string[]
-  openOptions: () => void
   onDisconnect: () => void
 }
 
@@ -39,9 +36,6 @@ const BlockExplorerLink = ({address, chainId}: { address: string | undefined, ch
 
 const AccountDetails: FC<AccountDetailsProps> = ({
                                                    toggleWalletModal,
-                                                   pendingTransactions,
-                                                   confirmedTransactions,
-                                                   openOptions,
                                                    onDisconnect
                                                  }) => {
 
@@ -84,7 +78,7 @@ const AccountDetails: FC<AccountDetailsProps> = ({
           </div>
         </HeadlessUiModal.BorderedContent>
         <HeadlessUiModal.BorderedContent className="flex flex-col gap-3">
-          <Transactions />
+          <TransactionList />
         </HeadlessUiModal.BorderedContent>
       </div>
     </div>

@@ -7,13 +7,7 @@ interface Props {
 }
 
 function Header({disconnect}: Props) {
-
   const [{data: networkData}] = useNetwork();
-
-  // FIXME
-  const pending: any[] = [undefined]; // sortedRecentTransactions.filter((tx) => !tx.receipt).map((tx) => tx.hash)
-  const confirmed: any[] = [undefined]; //sortedRecentTransactions.filter((tx) => tx.receipt).map((tx) => tx.hash)
-
   return (
     <header className={"w-full grid grid-cols-2 py-2 px-4 border-b-2 border-truffle-light text-md uppercase"}>
       <div className={"flex justify-start items-center"}>
@@ -24,8 +18,7 @@ function Header({disconnect}: Props) {
       </div>
       <div className={"flex justify-end items-center gap-4 text-md"}>
         {networkData.chain?.id && <NetworkIndicator chainId={networkData.chain.id}/>}
-        <WalletModal pendingTransactions={pending} confirmedTransactions={confirmed}
-                     onDisconnect={disconnect}/>
+        <WalletModal onDisconnect={disconnect}/>
       </div>
     </header>
   );

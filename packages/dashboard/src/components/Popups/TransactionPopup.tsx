@@ -1,6 +1,5 @@
 import React from 'react';
 import {CheckCircleIcon, ExclamationCircleIcon} from '@heroicons/react/solid';
-import {TransactionContext} from "src/context/transactions/context";
 // import {ExternalLinkIcon} from '@heroicons/react/outline';
 // import {getExplorerLink} from 'src/functions/explorer';
 // import ExternalLink from 'src/components/ExternalLink';
@@ -29,13 +28,6 @@ export default function TransactionPopup({
           {summary ?? 'Hash: ' + hash.slice(0, 8) + '...' + hash.slice(58, 65)}
         </div>
         Transaction details here:
-        <TransactionContext.Consumer>
-          {value => {
-            console.log("TXs:", {value});
-            return <div>Something: {JSON.stringify(value)}</div>;
-          }}
-        </TransactionContext.Consumer>
-
 
         {/*{data.chain?.id && hash && (*/}
         {/*  <ExternalLink*/}

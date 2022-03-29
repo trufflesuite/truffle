@@ -6,12 +6,10 @@ import {useAccount, useConnect} from "wagmi";
 import {shortenAddress} from "src/utils/utils";
 
 interface WalletModal {
-  pendingTransactions: string[] // hashes of pending
-  confirmedTransactions: string[] // hashes of confirmed
   onDisconnect: () => void
 }
 
-const WalletModal: FC<WalletModal> = ({pendingTransactions, confirmedTransactions, onDisconnect}) => {
+const WalletModal: FC<WalletModal> = ({onDisconnect}) => {
   const [showModal, setShowModal] = useState(false);
   const [displayAddress, setDisplayAddress] = useState<string | undefined>(undefined);
   const toggleWalletModal = () => setShowModal(false);
@@ -49,9 +47,6 @@ const WalletModal: FC<WalletModal> = ({pendingTransactions, confirmedTransaction
       {data.connected &&
           <AccountDetails
               toggleWalletModal={toggleWalletModal}
-              pendingTransactions={pendingTransactions}
-              confirmedTransactions={confirmedTransactions}
-              openOptions={() => console.log("openOptions")}
               onDisconnect={onDisconnect}
           />}
     </HeadlessUiModal.Controlled>

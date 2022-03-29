@@ -12,7 +12,7 @@ interface TransactionsProps {
 // we want the latest one to come first, so return negative if a is after b
 const newTransactionsFirst = (a: TransactionDetails, b: TransactionDetails) => b.addedTime - a.addedTime;
 
-export const Transactions: FC<TransactionsProps> = () => {
+export const TransactionList: FC<TransactionsProps> = () => {
 
   const addTx = useTransactionAdder();
 

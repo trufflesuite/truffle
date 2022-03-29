@@ -1,14 +1,15 @@
 import type {DashboardProviderMessage} from "@truffle/dashboard-message-bus";
 import WebSocket from "isomorphic-ws";
 import {useEffect} from "react";
-import {useConnect} from "wagmi";
+import Card from "src/components/Common/Card";
+import {useProviderResponseAdder} from "src/context/transactions/hooks";
 import {
   handleDashboardProviderRequest,
   isInteractiveRequest,
   isUnsupportedRequest,
   respondToUnsupportedRequest
 } from "src/utils/utils";
-import Card from "src/components/Common/Card";
+import {useConnect} from "wagmi";
 import IncomingRequest from "./IncomingRequest";
 
 interface Props {
@@ -26,6 +27,7 @@ function DashboardProvider({paused, socket, requests, setRequests}: Props) {
   const [{data: connectData}] = useConnect();
   const provider = connectData.connector?.getProvider();
   const connector = connectData.connector;
+  const processor = useProviderResponseAdder();
 
   useEffect(() => {
     const removeFromRequests = (id: number) => {
@@ -50,10 +52,10 @@ function DashboardProvider({paused, socket, requests, setRequests}: Props) {
           !isInteractiveRequest(request) && !isUnsupportedRequest(request)
       )
       .forEach(request => {
-        handleDashboardProviderRequest(request, provider, connector, socket);
+        handleDashboardProviderRequest(request, provider, connector, socket, processor);
         removeFromRequests(request.id);
       });
-  }, [paused, requests, setRequests, socket, connectData, provider, connector]);
+  }, [paused, requests, setRequests, socket, connectData, provider, connector, processor]);
 
   const incomingRequests =
     connectData.connected && provider && socket

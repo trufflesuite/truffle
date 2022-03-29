@@ -21,11 +21,11 @@ const Transaction: FC<{ hash: string }> = ({hash}) => {
 
   return (
     <div className="flex flex-col w-full py-1">
-      <ExternalLink href={getExplorerLink(data.chain?.id, hash, 'transaction') || "href://blah"}
+      <ExternalLink href={getExplorerLink(data.chain?.id, hash, 'transaction') || "#"}
                     className="flex items-center gap-2">
         <div
           className={classNames(
-            pending ? 'text-black' : success ? 'text-green' : cancelled ? 'text-red' : 'text-red'
+            pending ? 'text-black' : success ? 'text-truffle-green' : cancelled ? 'text-truffle-red' : 'text-truffle-red'
           )}
         >
           {pending ? (
@@ -38,7 +38,7 @@ const Transaction: FC<{ hash: string }> = ({hash}) => {
             <ExclamationIcon width={16} height={16}/>
           )}
         </div>
-        <div>          {summary ?? hash}        </div>
+        <div className={"text-xs flex items-center hover:underline py-0.5"} >{summary ?? hash}</div>
       </ExternalLink>
     </div>
   );

@@ -1,5 +1,6 @@
 import WebSocket from "isomorphic-ws";
 import ReactJson from "react-json-view";
+import {useProviderResponseAdder} from "src/context/transactions/hooks";
 import { handleDashboardProviderRequest, respond } from "src/utils/utils";
 import Button from "../Common/Button";
 import Card from "../Common/Card";
@@ -18,6 +19,8 @@ interface Props {
 }
 
 function IncomingRequest({ provider, connector, socket, request, setRequests }: Props) {
+  const processor = useProviderResponseAdder();
+
   const removeFromRequests = () => {
     setRequests(previousRequests =>
       previousRequests.filter(other => other.id !== request.id)
@@ -25,7 +28,7 @@ function IncomingRequest({ provider, connector, socket, request, setRequests }: 
   };
 
   const process = async () => {
-    await handleDashboardProviderRequest(request, provider, connector, socket);
+    await handleDashboardProviderRequest(request, provider, connector, socket, processor);
     removeFromRequests();
   };
 
