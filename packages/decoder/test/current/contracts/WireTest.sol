@@ -224,6 +224,11 @@ contract WireTest is WireTestParent, WireTestAbstract {
     WireTestLibrary.throwAmbiguous();
   }
 
+  function multicall(bytes[] calldata datas) external {
+    for (uint i = 0; i < datas.length; i++) {
+      address(this).call(datas[i]);
+    }
+  }
 }
 
 library WireTestLibrary {

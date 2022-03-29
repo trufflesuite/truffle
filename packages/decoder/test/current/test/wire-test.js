@@ -1253,6 +1253,59 @@ describe("Over-the-wire decoding", function () {
       );
     });
   });
+
+  describe("Interpretations", function () {
+    it("Decodes multicalls", async function () {
+      const deployedContract = await abstractions.WireTest.deployed();
+      const address = deployedContract.address;
+
+      const decoder = await Decoder.forProject({
+        provider: web3.currentProvider,
+        projectInfo: { artifacts: Contracts }
+      });
+
+      //first, let's encode some calls
+      const methodNames = ["moreStuff", "notImplemented", "indexTest"];
+      const methods = methodNames.map(name => deployedContract[name]);
+      const argsNamed = [
+        { notThis: address, bunchOfInts: [8, 8, 8, 7, 8, 8, 8] },
+        {},
+        { a: 7, b: 89, c: "hello", d: "indecipherable", e: 62 }
+      ];
+      const args = argsNamed.map(argsObject => Object.values(argsObject));
+      let encodedTxs = [];
+      for (let i = 0; i < methods.length; i++) {
+        encodedTxs.push((await methods[i].request(...args[i])).data);
+      }
+
+      //now, let's perform a multicall
+      debug("encodedTxs: %O", encodedTxs);
+      const multicall = await deployedContract.multicall(encodedTxs);
+      const multicallHash = multicall.tx;
+      const multicallTx = await web3.eth.getTransaction(multicallHash);
+
+      //now let's decode it and check the result!
+      const multicallDecoding = await decoder.decodeTransaction(multicallTx);
+      assert.isDefined(multicallDecoding.interpretations);
+      const decodings = multicallDecoding.interpretations.multicall;
+      assert.isArray(decodings);
+      assert.lengthOf(decodings, methods.length);
+      for (let i = 0; i < methods.length; i++) {
+        const decoding = decodings[i];
+        assert.strictEqual(decoding.kind, "function");
+        assert.strictEqual(decoding.decodingMode, "full");
+        assert.strictEqual(decoding.abi.name, methodNames[i]);
+        assert.strictEqual(decoding.class.typeName, "WireTest");
+        const variablesByName = Object.fromEntries(
+          decoding.arguments.map(({ name, value }) => [name, value])
+        );
+        assert.deepEqual(
+          Codec.Format.Utils.Inspect.unsafeNativizeVariables(variablesByName),
+          argsNamed[i]
+        );
+      }
+    });
+  });
 });
 
 function testNoneWithoutExtras(decodings) {
