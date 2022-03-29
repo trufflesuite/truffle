@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:test:data:decode");
 
-import faker from "@faker-js/faker";
+import faker from "faker";
 
 import evm from "lib/evm/selectors";
 
