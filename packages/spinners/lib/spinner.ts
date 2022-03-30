@@ -5,9 +5,9 @@ const spinnies = new Spinnies();
 export class Spinner {
   name: string;
 
-  constructor(name: string, options: SpinnerOptions);
+  constructor(name: string, options: Partial<SpinnerOptions>);
   constructor(name: string, text: string);
-  constructor(name: string, optionsOrText: SpinnerOptions | string) {
+  constructor(name: string, optionsOrText: Partial<SpinnerOptions> | string) {
     this.name = name;
 
     const options =
@@ -51,7 +51,7 @@ export class Spinner {
   /**
    * Stops the spinner without a failed or succeeded status
    */
-  stop(options?: SpinnerOptions) {
+  stop(options?: Partial<SpinnerOptions>) {
     const currentOptions = spinnies.pick(this.name);
     if (!currentOptions) {
       return;
@@ -221,6 +221,6 @@ export class Spinner {
 
     options[key] = value;
 
-    spinnies.update(this.name, options as SpinnerOptions);
+    spinnies.update(this.name, options);
   }
 }
