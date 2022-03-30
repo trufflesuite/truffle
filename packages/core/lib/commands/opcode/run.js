@@ -30,6 +30,10 @@ module.exports = async function (options) {
   }
   const opcodes = CodeUtils.parseCode(bytecode, numInstructions);
 
+  if (opcodes.length === 0) {
+    throw new TruffleError("List of instructions is empty!");
+  }
+
   const lastPCByteLength = Conversion.toBytes(
     opcodes[opcodes.length - 1].pc
   ).byteLength;
