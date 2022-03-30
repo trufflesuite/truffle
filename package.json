@@ -36,6 +36,6 @@
   "dependencies": {},
   "lint-staged": {
     "*.{js,ts,jsx,tsx}": "eslint --fix",
-    "*.{js,ts,css,md}": "prettier --write"
+    "*.{js,ts,jsx,tsx,css,md}": "prettier --write"
   }
 }
