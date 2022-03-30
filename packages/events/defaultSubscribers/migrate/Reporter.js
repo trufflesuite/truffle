@@ -267,12 +267,10 @@ class Reporter {
   async deployFailed(data) {
     if (this.blockSpinner) {
       this.blockSpinner.fail();
-      this.blockSpinner.remove();
     }
 
     if (this.transactionSpinner) {
       this.transactionSpinner.fail();
-      this.transactionSpinner.remove();
     }
     return await this.processDeploymentError(data);
   }
@@ -304,7 +302,6 @@ class Reporter {
     data.message = data.message || "Ending unknown transaction....";
     const message = this.messages.steps("endTransaction", data);
     this.transactionSpinner.succeed();
-    this.transactionSpinner.remove();
     return message;
   }
 

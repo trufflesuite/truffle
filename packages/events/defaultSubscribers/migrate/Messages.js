@@ -220,7 +220,7 @@ class Messages {
       deployed: () => {
         let stopText;
         if (reporter.blockSpinner) {
-          reporter.blockSpinner.stop();
+          reporter.blockSpinner.remove();
           stopText = `   > ${reporter.currentBlockWait}`;
         }
 
@@ -277,7 +277,7 @@ class Messages {
       // Transactions
       endTransaction: () => {
         if (reporter.blockSpinner) {
-          reporter.blockSpinner.stop();
+          reporter.blockSpinner.remove();
         }
         return `   > ${data.message}`;
       },

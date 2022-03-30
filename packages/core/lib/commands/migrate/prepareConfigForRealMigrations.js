@@ -25,7 +25,10 @@ module.exports = async function (buildDir, options) {
     }
 
     config.dryRun = false;
-    return { config, proceed: true };
+    return {
+      preparedConfig: config,
+      proceed: true
+    };
   } else {
     return { proceed: false };
   }

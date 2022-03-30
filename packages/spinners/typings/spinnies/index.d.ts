@@ -1,4 +1,25 @@
 declare module "spinnies" {
+  const dots: Spinner;
+  const dashes: Spinner;
+
+  type Color =
+    | "black"
+    | "red"
+    | "green"
+    | "yellow"
+    | "blue"
+    | "magenta"
+    | "cyan"
+    | "white"
+    | "gray"
+    | "redBright"
+    | "greenBright"
+    | "yellowBright"
+    | "blueBright"
+    | "magentaBright"
+    | "cyanBright"
+    | "whiteBright";
+
   type StopAllStatus = "succeed" | "fail" | "stopped";
   type SpinnerStatus = StopAllStatus | "spinning" | "non-spinnable";
 
@@ -7,129 +28,184 @@ declare module "spinnies" {
     frames: string[];
   }
 
+  /**
+   * The configuration for a given spinner
+   */
   interface SpinnerOptions {
     /**
-     * Optional text to show in the spinner. If none is provided, the name field will be shown.
+     * Text to show in the spinner. If none is provided, the name field will be shown.
      */
-    text?: string;
+    text: string;
 
     /**
-     *  Optional, indent the spinner with the given number of spaces.
-     * */
-    indent?: number;
+     * Indent the spinner with the given number of spaces.
+     */
+    indent: number;
 
     /**
-     * Initial status of the spinner. Valid statuses are: succeed, fail, spinning, non-spinnable and stopped.
+     * Initial status of the spinner.
      */
-    status?: SpinnerStatus;
+    status: SpinnerStatus;
 
     /**
-     * Any valid chalk color.
+     * The color of the text that accompanies the spinner. If not specified, the console's default foreground color is used.
      */
-    color?: string;
+    color?: Color;
 
     /**
-     * Any valid chalk color.
+     * The color for the text on success. Default value is `"green"`
      */
-    succeedColor?: string;
+    succeedColor: Color;
 
     /**
-     * Any valid chalk color.
+     * The color for the text on failure. Default value is `"red"`.
      */
-    failColor?: string;
+    failColor: Color;
 
     /**
-     * Any valid chalk color. The default value is greenBright.
+     * The color of the spinner, when active. The default value is `"greenBright"`
      */
-    spinnerColor?: string;
+    spinnerColor: Color;
   }
 
+  /**
+   * Contains top-level configuration for the Spinnies class. Also allows the
+   * caller to override default values used in `SpinnerOptions`.
+   */
   interface Options {
     /**
-     * Any valid chalk color. The default value is white.
+     * The color of the text that accompanies the spinner. If not specified, the console's default foreground color is used.
      */
-    color?: string;
+    color?: Color;
 
     /**
-     * Any valid chalk color. The default value is green.
+     * The color for the text on success. Default value is `"green"`
      */
-    succeedColor?: string;
+    succeedColor: Color;
 
     /**
-     * Any valid chalk color. The default value is red.
+     * The color for the text on failure. Default value is `"red"`.
      */
-    failColor?: string;
+    failColor: Color;
 
     /**
-     * Any valid chalk color. The default value is greenBright.
+     * The color of the spinner, when active. The default value is `"greenBright"`
      */
-    spinnerColor?: string;
+    spinnerColor: Color;
 
     /**
-     * The default value is ✓.
+     * The symbol to be used in place of the spinner on success. The default value is ✓.
      */
-    succeedPrefix?: string;
+    succeedPrefix: string;
 
     /**
-     * The default value is ✖.
+     * The symbol to be used in place of the spinner on failure. The default value is ✖.
      */
-    failPrefix?: string;
+    failPrefix: string;
 
     /**
-     * Disable spins (will still print raw messages).
+     * Disable spinner animations (will still print raw messages if `true`). The default value is `false`.
      */
-    disableSpins?: boolean;
+    disableSpins: boolean;
 
     /**
-     * Spinner configuration
+     * Defines the animated spinner to be used while each spinner is active/spinning.
      */
-    spinner?: Spinner;
+    spinner: Spinner;
   }
 
+  /**
+   * A class that manages multiple CLI spinners.
+   */
   export default class Spinnies {
-    static dots: Spinner;
-    static dashes: Spinner;
-    options: Options;
-    constructor(options?: Options);
+    /**
+     * The current configuration of this Spinnies object.
+     */
+    options: Spinnies.Options;
+
+    constructor(options?: Partial<Spinnies.Options>);
 
     /**
      * Add a new spinner with the given name.
+     *
+     * @returns full `SpinnerOptions` object for the given spinner, with
+     * defaults applied
      */
-    add: (name: string, options?: SpinnerOptions) => SpinnerOptions;
+    add: (
+      name: string,
+      options?: Partial<Spinnies.SpinnerOptions>
+    ) => Spinnies.SpinnerOptions;
 
     /**
      * Get spinner by name.
+     *
+     * @returns full `SpinnerOptions` object for the given spinner, with
+     * defaults applied
      */
-    pick: (name: string) => SpinnerOptions;
+    pick: (name: string) => Spinnies.SpinnerOptions;
 
     /**
      * Remove spinner with name.
+     *
+     * @returns full `SpinnerOptions` object for the given spinner, with
+     * defaults applied
      */
-    remove: (name: string) => SpinnerOptions;
+    remove: (name: string) => Spinnies.SpinnerOptions;
 
     /**
-     * Updates the spinner with name name with the provided options.
+     * Updates the spinner with name name with the provided options. Retains
+     * the value of options that aren't specified.
+     *
+     * @returns full `SpinnerOptions` object for the given spinner, with
+     * defaults applied
      */
-    update: (name: string, options?: SpinnerOptions) => SpinnerOptions;
+    update: (
+      name: string,
+      options?: Partial<Spinnies.SpinnerOptions>
+    ) => Spinnies.SpinnerOptions;
 
     /**
      * Sets the specified spinner status as succeed.
+     *
+     * @returns full `SpinnerOptions` object for the given spinner, with
+     * defaults applied
      */
-    succeed: (name: string, options?: SpinnerOptions) => SpinnerOptions;
+    succeed: (
+      name: string,
+      options?: Partial<Spinnies.SpinnerOptions>
+    ) => Spinnies.SpinnerOptions;
 
     /**
      * Sets the specified spinner status as fail.
+     *
+     * @returns full `SpinnerOptions` object for the given spinner, with
+     * defaults applied
      */
-    fail: (name: string, options?: SpinnerOptions) => SpinnerOptions;
+    fail: (
+      name: string,
+      options?: Partial<Spinnies.SpinnerOptions>
+    ) => Spinnies.SpinnerOptions;
 
     /**
      * Stops the spinners and sets the non-succeeded and non-failed ones to the provided status.
+     *
+     * @returns an object that maps spinner names to final `SpinnerOptions` objects for each spinner, with
+     * defaults applied
      */
-    stopAll: (status?: StopAllStatus) => { [name: string]: SpinnerOptions };
+    stopAll: (status?: Spinnies.StopAllStatus) => {
+      [name: string]: Spinnies.SpinnerOptions;
+    };
 
     /**
      * @returns false if all spinners have succeeded, failed or have been stopped
      */
     hasActiveSpinners: () => boolean;
+
+    /**
+     * Disables the spinner loop after all spinners have deactivated. Must be
+     * called after calling `remove` on the final spinner, otherwise the
+     * spinner loop will prevent the process from exiting.
+     */
+    checkIfActiveSpinners: () => void;
   }
 }
