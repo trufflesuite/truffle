@@ -6,6 +6,8 @@ import axios from "axios";
 
 any.shim();
 
+export class MessageBusConnectionError extends Error {}
+
 /**
  * Convert any JS object or value to a base64 representation of it
  */
@@ -152,7 +154,7 @@ export const getMessageBusPorts = async (
     }
   }
 
-  throw new Error(
+  throw new MessageBusConnectionError(
     `Could not connect to dashboard at http://${dashboardHost}:${dashboardPort}/ports`
   );
 };

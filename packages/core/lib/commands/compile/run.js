@@ -39,7 +39,6 @@ module.exports = async function (options) {
   if (config.db && config.db.enabled) {
     await WorkflowCompile.assignNames(config, result);
   }
-  return result;
 };
 
 const listVersions = async function (options) {

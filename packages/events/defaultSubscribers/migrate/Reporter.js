@@ -1,8 +1,7 @@
 const debug = require("debug")("reporters:migrations:reporter"); // eslint-disable-line no-unused-vars
 const web3Utils = require("web3-utils");
-const ora = require("ora");
+const Spinner = require("@truffle/spinners").Spinner;
 
-const indentedSpinner = require("./indentedSpinner");
 const Messages = require("./Messages");
 
 /**
@@ -25,7 +24,6 @@ class Reporter {
     this.separator = "\n";
     this.summary = [];
     this.currentFileIndex = -1;
-    this.blockSpinner = null;
     this.currentBlockWait = "";
     this.subscriber = subscriber;
 
@@ -210,6 +208,7 @@ class Reporter {
     this.currentBlockWait =
       `Blocks: ${data.blocksWaited}`.padEnd(21) +
       `Seconds: ${data.secondsWaited}`;
+
     if (this.blockSpinner) {
       this.blockSpinner.text = this.currentBlockWait;
     }
@@ -231,7 +230,9 @@ class Reporter {
         );
 
       // if it returns null, try again!
-      if (!txCostReport) return this.postDeploy(data);
+      if (!txCostReport) {
+        return this.postDeploy(data);
+      }
 
       data = {
         ...data,
@@ -265,7 +266,11 @@ class Reporter {
    */
   async deployFailed(data) {
     if (this.blockSpinner) {
-      this.blockSpinner.stop();
+      this.blockSpinner.fail();
+    }
+
+    if (this.transactionSpinner) {
+      this.transactionSpinner.fail();
     }
     return await this.processDeploymentError(data);
   }
@@ -279,12 +284,14 @@ class Reporter {
    */
   async startTransaction(data) {
     const message = data.message || "Starting unknown transaction...";
-    this.blockSpinner = new ora({
-      text: message,
-      spinner: indentedSpinner,
-      color: "red"
-    });
-    this.blockSpinner.start();
+    this.transactionSpinner = new Spinner(
+      "events:subscribers:migrate:reporter:transactions",
+      {
+        text: message,
+        indent: 3,
+        color: "red"
+      }
+    );
   }
 
   /**
@@ -294,6 +301,7 @@ class Reporter {
   async endTransaction(data) {
     data.message = data.message || "Ending unknown transaction....";
     const message = this.messages.steps("endTransaction", data);
+    this.transactionSpinner.succeed();
     return message;
   }
 
@@ -318,20 +326,20 @@ class Reporter {
    * @param  {Object} data
    */
   async txHash(data) {
-    if (this.subscriber.config.dryRun) return;
+    if (this.subscriber.config.dryRun) {
+      return;
+    }
 
     let message = this.messages.steps("hash", data);
     this.subscriber.logger.log(message);
 
     this.currentBlockWait = `Blocks: 0`.padEnd(21) + `Seconds: 0`;
 
-    this.blockSpinner = new ora({
+    this.blockSpinner = new Spinner("events:subscribers:migrate:reporter", {
       text: this.currentBlockWait,
-      spinner: indentedSpinner,
+      indent: 3,
       color: "red"
     });
-
-    this.blockSpinner.start();
   }
 
   /**

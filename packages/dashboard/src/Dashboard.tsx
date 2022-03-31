@@ -3,6 +3,7 @@ import {
   connectToMessageBusWithRetries,
   DashboardProviderMessage,
   isDashboardProviderMessage,
+  isDebugMessage,
   isInvalidateMessage,
   Message
 } from "@truffle/dashboard-message-bus";
@@ -10,10 +11,10 @@ import WebSocket from "isomorphic-ws";
 import { useEffect, useState } from "react";
 import { useAccount, useConnect, useNetwork } from "wagmi";
 import ConfirmNetworkChanged from "./components/ConfirmNetworkChange";
-import ConnectNetwork from "./components/ConnectNetwork";
-import DashboardProvider from "./components/DashboardProvider/DashboardProvider";
+import { getPorts, respond } from "./utils/utils";
 import Header from "./components/Header/Header";
-import { getPorts } from "./utils/utils";
+import DashboardProvider from "./components/DashboardProvider/DashboardProvider";
+import ConnectNetwork from "./components/ConnectNetwork";
 
 function Dashboard() {
   const [paused, setPaused] = useState<boolean>(false);
@@ -72,6 +73,10 @@ function Dashboard() {
           setDashboardProviderRequests(previousRequests =>
             previousRequests.filter(request => request.id !== message.payload)
           );
+        } else if (isDebugMessage(message)) {
+          const { payload } = message;
+          console.log(payload.message);
+          respond({ id: message.id }, connectedSocket);
         }
       }
     );
