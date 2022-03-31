@@ -11,7 +11,7 @@ const defaultChain = chain.mainnet;
 
 const getProvider = (_config: { chainId?: number; connector?: Connector }) => {
   let wProvider = _config.connector?.getProvider(true);
-  console.log("getProvider", {
+  console.debug("getProvider", {
     wProvider,
     winEth: window.ethereum,
     _config,

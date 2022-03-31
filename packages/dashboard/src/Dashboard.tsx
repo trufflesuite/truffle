@@ -1,13 +1,13 @@
-import WebSocket from "isomorphic-ws";
 import {
-  DashboardProviderMessage,
+  base64ToJson,
   connectToMessageBusWithRetries,
+  DashboardProviderMessage,
   isDashboardProviderMessage,
   isInvalidateMessage,
   isDebugMessage,
-  Message,
-  base64ToJson
+  Message
 } from "@truffle/dashboard-message-bus";
+import WebSocket from "isomorphic-ws";
 import { useEffect, useState } from "react";
 import { getPorts, respond } from "./utils/utils";
 import Header from "./components/Header/Header";
@@ -30,9 +30,6 @@ function Dashboard() {
   const [{ data }] = useNetwork();
   const [{}, disconnect] = useAccount();
   const [{ data: connectData }] = useConnect();
-
-  const [{ data }] = useNetwork();
-  const chainId = data.chain?.id;
 
   useEffect(() => {
     setChainId(chainId);

@@ -52,7 +52,7 @@ function Header({ disconnect }: Props) {
           <NetworkIndicator chainId={networkData.chain.id} />
         )}
         {networkData.chain?.id && (
-          <Button onClick={disconnect} text={"disconnect"} />
+          <Button onClick={disconnect} text="disconnect" />
         )}
         <div>{displayName}</div>
       </div>
