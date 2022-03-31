@@ -17,7 +17,13 @@ interface Props {
   socket: WebSocket;
 }
 
-function IncomingRequest({ provider, connector, socket, request, setRequests }: Props) {
+function IncomingRequest({
+  provider,
+  connector,
+  socket,
+  request,
+  setRequests
+}: Props) {
   const removeFromRequests = () => {
     setRequests(previousRequests =>
       previousRequests.filter(other => other.id !== request.id)

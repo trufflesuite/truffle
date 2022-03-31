@@ -1,5 +1,5 @@
 import WebSocket from "isomorphic-ws";
-import {useEffect} from "react";
+import { useEffect } from "react";
 import {
   handleDashboardProviderRequest,
   isInteractiveRequest,
@@ -8,8 +8,8 @@ import {
 } from "../../utils/utils";
 import Card from "../common/Card";
 import IncomingRequest from "./IncomingRequest";
-import type {DashboardProviderMessage} from "@truffle/dashboard-message-bus";
-import {useConnect} from "wagmi";
+import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus";
+import { useConnect } from "wagmi";
 
 interface Props {
   paused: boolean;
@@ -22,8 +22,8 @@ interface Props {
   socket: WebSocket;
 }
 
-function DashboardProvider({paused, socket, requests, setRequests}: Props) {
-  const [{data: connectData}] = useConnect();
+function DashboardProvider({ paused, socket, requests, setRequests }: Props) {
+  const [{ data: connectData }] = useConnect();
   const provider = connectData.connector?.getProvider();
   const connector = connectData.connector;
 
@@ -58,23 +58,23 @@ function DashboardProvider({paused, socket, requests, setRequests}: Props) {
   const incomingRequests =
     connectData.connected && provider && socket
       ? requests
-        .filter(isInteractiveRequest)
-        .map(request => (
-          <IncomingRequest
-            key={request.id}
-            request={request}
-            setRequests={setRequests}
-            provider={provider}
-            connector={connector}
-            socket={socket}
-          />
-        ))
+          .filter(isInteractiveRequest)
+          .map(request => (
+            <IncomingRequest
+              key={request.id}
+              request={request}
+              setRequests={setRequests}
+              provider={provider}
+              connector={connector}
+              socket={socket}
+            />
+          ))
       : [];
 
   return (
     <div className="flex justify-center items-center py-20">
       <div className="mx-3 w-3/4 max-w-4xl h-2/3">
-        <Card header="Incoming Requests" body={incomingRequests}/>
+        <Card header="Incoming Requests" body={incomingRequests} />
       </div>
     </div>
   );

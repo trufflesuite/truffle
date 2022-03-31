@@ -1,16 +1,15 @@
 import Card from "./common/Card";
 import Button from "./common/Button";
 import NetworkIndicator from "./common/NetworkIndicator";
-import {useConnect, useNetwork} from "wagmi";
+import { useConnect, useNetwork } from "wagmi";
 
 interface Props {
   confirm: () => void;
 }
 
-function ConnectNetwork({confirm}: Props) {
-
-  const [{data: connectData}, connect] = useConnect();
-  const [{data: networkData,}] = useNetwork();
+function ConnectNetwork({ confirm }: Props) {
+  const [{ data: connectData }, connect] = useConnect();
+  const [{ data: networkData }] = useNetwork();
 
   const chainId = networkData.chain?.id;
   const connectBody =
@@ -18,14 +17,13 @@ function ConnectNetwork({confirm}: Props) {
 
   const connectButton = (
     <div>
-      {connectData.connectors.map((connector) => (
+      {connectData.connectors.map(connector => (
         <Button
           key={connector.id}
           onClick={() => connect(connector)}
           text={connector.name}
         />
-      ))
-      }
+      ))}
     </div>
   );
 
@@ -36,11 +34,11 @@ function ConnectNetwork({confirm}: Props) {
         right one) before continuing.
       </div>
       <div className="flex justify-center">
-        <NetworkIndicator chainId={chainId}/>
+        <NetworkIndicator chainId={chainId} />
       </div>
     </div>
   );
-  const confirmButton = <Button text="Confirm" onClick={confirm}/>;
+  const confirmButton = <Button text="Confirm" onClick={confirm} />;
   return (
     <div className="flex justify-center items-center py-20">
       <div className="mx-3 w-3/4 max-w-4xl h-2/3 text-center">
