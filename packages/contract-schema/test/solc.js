@@ -5,7 +5,7 @@ const debug = require("debug")("test:solc");
 
 describe("solc", function () {
   const exampleSolidity = `// SPDX-License-Identifier: MIT
-  pragma solidity 0.8.13;
+  pragma solidity ^0.8.0;
 
   contract A {
     uint x;
