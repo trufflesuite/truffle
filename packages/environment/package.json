@@ -13,18 +13,18 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.2.99",
+  "version": "0.2.100",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0",
     "test": "mocha ./test/** ./test/**/*"
   },
   "dependencies": {
-    "@truffle/artifactor": "^4.0.146",
+    "@truffle/artifactor": "^4.0.147",
     "@truffle/error": "^0.1.0",
     "@truffle/expect": "^0.1.0",
     "@truffle/interface-adapter": "^0.5.12",
-    "@truffle/resolver": "^8.0.13",
+    "@truffle/resolver": "^8.0.14",
     "ganache": "^7.0.3",
     "node-ipc": "9.2.1",
     "source-map-support": "^0.5.19",

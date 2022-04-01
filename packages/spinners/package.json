@@ -1,6 +1,6 @@
 {
   "name": "@truffle/spinners",
-  "version": "0.1.0-0",
+  "version": "0.1.0",
   "description": "CLI spinners singleton",
   "main": "dist/index.js",
   "scripts": {
