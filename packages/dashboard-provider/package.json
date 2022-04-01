@@ -1,6 +1,6 @@
 {
   "name": "@truffle/dashboard-provider",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Web3 provider that uses a browser-based web3 wallet through the Truffle Dasboard",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
@@ -46,7 +46,7 @@
     "web3": "^1.6.1"
   },
   "dependencies": {
-    "@truffle/dashboard": "^0.1.1",
+    "@truffle/dashboard": "^0.1.2",
     "@truffle/dashboard-message-bus": "^0.1.0",
     "debug": "^4.3.3",
     "delay": "^5.0.0",
