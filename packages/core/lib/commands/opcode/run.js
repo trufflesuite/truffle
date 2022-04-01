@@ -31,7 +31,10 @@ module.exports = async function (options) {
   const opcodes = CodeUtils.parseCode(bytecode, numInstructions);
 
   if (opcodes.length === 0) {
-    throw new TruffleError("List of instructions is empty!");
+    console.log(
+      "Contract has no bytecode. Please check to make sure it's not an `abstract contract` or an `interface`."
+    );
+    return;
   }
 
   const lastPCByteLength = Conversion.toBytes(
