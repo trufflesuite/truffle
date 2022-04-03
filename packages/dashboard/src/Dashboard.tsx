@@ -1,41 +1,47 @@
-import WebSocket from "isomorphic-ws";
 import {
-  DashboardProviderMessage,
+  base64ToJson,
   connectToMessageBusWithRetries,
+  DashboardProviderMessage,
   isDashboardProviderMessage,
-  isInvalidateMessage,
   isDebugMessage,
-  Message,
-  base64ToJson
+  isInvalidateMessage,
+  Message
 } from "@truffle/dashboard-message-bus";
-import { useWeb3React } from "@web3-react/core";
+import WebSocket from "isomorphic-ws";
 import { useEffect, useState } from "react";
+import { useAccount, useConnect, useNetwork } from "wagmi";
+import ConfirmNetworkChanged from "./components/ConfirmNetworkChange";
 import { getPorts, respond } from "./utils/utils";
 import Header from "./components/Header/Header";
 import DashboardProvider from "./components/DashboardProvider/DashboardProvider";
 import ConnectNetwork from "./components/ConnectNetwork";
-import ConfirmNetworkChanged from "./components/ConfirmNetworkChange";
 
 function Dashboard() {
   const [paused, setPaused] = useState<boolean>(false);
-  const [connectedChainId, setConnectedChainId] = useState<number>();
+  const [connectedChainId, setConnectedChainId] = useState<
+    number | undefined
+  >();
+  const [chainId, setChainId] = useState<number>();
   const [socket, setSocket] = useState<WebSocket | undefined>();
   const [dashboardProviderRequests, setDashboardProviderRequests] = useState<
     DashboardProviderMessage[]
   >([]);
 
-  const { chainId } = useWeb3React();
+  const [{ data }] = useNetwork();
+  const [{}, disconnect] = useAccount();
+  const [{ data: connectData }] = useConnect();
 
   useEffect(() => {
-    if (!chainId || !socket) return;
+    setChainId(data.chain?.id);
 
+    if (!chainId || !socket) return;
     if (connectedChainId) {
       if (connectedChainId !== chainId) setPaused(true);
       if (connectedChainId === chainId) setPaused(false);
     } else {
       setConnectedChainId(chainId);
     }
-  }, [chainId, connectedChainId, socket]);
+  }, [data, connectData, socket, chainId, connectedChainId]);
 
   const initializeSocket = async () => {
     if (socket && socket.readyState === WebSocket.OPEN) return;
@@ -80,9 +86,19 @@ function Dashboard() {
     setSocket(connectedSocket);
   };
 
+  const disconnectAccount = () => {
+    console.log("Disconnecting:");
+    // turn everything off.
+    disconnect();
+    setConnectedChainId(undefined);
+    setPaused(false);
+    socket?.close();
+    setSocket(undefined);
+  };
+
   return (
     <div className="h-full min-h-screen bg-gradient-to-b from-truffle-lighter to-truffle-light">
-      <Header />
+      <Header disconnect={disconnectAccount} />
       {paused && chainId && connectedChainId && (
         <ConfirmNetworkChanged
           newChainId={chainId}
