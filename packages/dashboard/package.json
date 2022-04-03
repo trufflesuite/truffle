@@ -1,8 +1,8 @@
 {
   "name": "@truffle/dashboard",
+  "description": "Web-server component for signing CLI transactions with browser",
   "license": "MIT",
   "author": "Rosco Kalis <roscokalis@gmail.com>",
-  "description": "Web-server component for signing CLI transactions with browser",
   "repository": {
     "type": "git",
     "url": "https://github.com/trufflesuite/truffle.git",
@@ -13,11 +13,26 @@
   },
   "version": "0.1.2",
   "main": "dist/lib/index.js",
-  "types": "dist/lib/index.d.ts",
+  "browser": {
+    "ws": false
+  },
   "files": [
-    "dist/lib",
-    "dist/bin"
+    "dist/bin",
+    "dist/lib"
   ],
+  "scripts": {
+    "build": "yarn build:react && yarn build:server && yarn copy:react",
+    "build:react": "DISABLE_ESLINT_PLUGIN=true SKIP_PREFLIGHT_CHECK=true craco build",
+    "build:server": "tsc -p tsconfig.server.json",
+    "copy:react": "cpy build/** dist/lib/dashboard-frontend/ --parents --dot",
+    "prepare": "yarn build",
+    "start": "concurrently --kill-others \"yarn start:dev-server\" \"NODE_ENV=\"development\" yarn start:react\"",
+    "start:dev-server": "ts-node --project tsconfig.server.json bin/start-dev-server.ts",
+    "start:prebuilt": "node dist/bin/start-dev-server.js",
+    "start:react": "DISABLE_ESLINT_PLUGIN=true SKIP_PREFLIGHT_CHECK=true craco start",
+    "test": "jest"
+  },
+  "types": "dist/lib/index.d.ts",
   "dependencies": {
     "@truffle/dashboard-message-bus": "^0.1.0",
     "cors": "^2.8.5",
@@ -26,30 +41,6 @@
     "isomorphic-ws": "^4.0.1",
     "open": "^8.4.0",
     "ws": "^7.2.0"
-  },
-  "scripts": {
-    "start:react": "DISABLE_ESLINT_PLUGIN=true SKIP_PREFLIGHT_CHECK=true craco start",
-    "start:prebuilt": "node dist/bin/start-dev-server.js",
-    "start:dev-server": "ts-node --project tsconfig.server.json bin/start-dev-server.ts",
-    "start": "concurrently --kill-others \"yarn start:dev-server\" \"NODE_ENV=\"development\" yarn start:react\"",
-    "build:react": "DISABLE_ESLINT_PLUGIN=true SKIP_PREFLIGHT_CHECK=true craco build",
-    "build:server": "tsc -p tsconfig.server.json",
-    "copy:react": "cpy build/** dist/lib/dashboard-frontend/ --parents --dot",
-    "build": "yarn build:react && yarn build:server && yarn copy:react",
-    "prepare": "yarn build",
-    "test": "jest"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
   },
   "devDependencies": {
     "@craco/craco": "^6.4.3",
@@ -68,7 +59,7 @@
     "@web3-react/core": "^6.1.9",
     "@web3-react/injected-connector": "^6.0.7",
     "autoprefixer": "^9",
-    "axios": "^0.24.0",
+    "axios": "0.26.1",
     "concurrently": "^6.5.1",
     "cpy-cli": "^3.1.1",
     "delay": "^5.0.0",
@@ -88,7 +79,16 @@
   "publishConfig": {
     "access": "public"
   },
-  "browser": {
-    "ws": false
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }
