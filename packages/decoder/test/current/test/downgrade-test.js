@@ -27,6 +27,7 @@ describe("Graceful degradation when information is missing", function () {
       gasLimit: 7000000,
       logging: { quiet: true }
     });
+    provider.thisIsGanache = true;
     web3 = new Web3(provider);
     accounts = await web3.eth.getAccounts();
   });

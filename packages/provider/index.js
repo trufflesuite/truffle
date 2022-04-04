@@ -3,6 +3,7 @@ const Web3 = require("web3");
 const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const wrapper = require("./wrapper");
 const DEFAULT_NETWORK_CHECK_TIMEOUT = 5000;
+let prov;
 
 module.exports = {
   wrap: function (provider, options) {
@@ -10,22 +11,32 @@ module.exports = {
   },
 
   create: function (options) {
-    const provider = this.getProvider(options);
-    return this.wrap(provider, options);
+    console.log(new Error("STACK").stack);
+    if (prov) {
+      return prov;
+    } else {
+      const provider = this.getProvider(options);
+      prov = provider;
+      return this.wrap(provider, options);
+    }
   },
 
   getProvider: function (options) {
     let provider;
 
     if (options.provider && typeof options.provider === "function") {
+      console.log("function");
       provider = options.provider();
     } else if (options.provider) {
+      console.log("options.provider");
       provider = options.provider;
     } else if (options.websockets || /^wss?:\/\//.test(options.url)) {
+      console.log("socket");
       provider = new Web3.providers.WebsocketProvider(
         options.url || "ws://" + options.host + ":" + options.port
       );
     } else {
+      console.log("http");
       provider = new Web3.providers.HttpProvider(
         options.url || `http://${options.host}:${options.port}`,
         { keepAlive: false }

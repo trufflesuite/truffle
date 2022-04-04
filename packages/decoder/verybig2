@@ -1,0 +1,5862 @@
+yarn run v1.22.18
+$ mocha ./test/current/test/* ./test/legacy/test/*
+
+
+  nativize (ethers format)
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+No memo provider
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  },
+  send: [Function] {
+    [length]: 2,
+    [name]: '',
+    [arguments]: null,
+    [caller]: null,
+    [prototype]: { [constructor]: [Circular] }
+  },
+  _alreadyWrapped: true
+}
+undefined
+undefined
+undefined
+undefined
+    ✓ should compatibly nativize return values and event arguments (219ms)
+
+  State variable decoding
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+    ✓ should get the initial state properly (135ms)
+    ✓ should spawn decoders based on address alone (72ms)
+
+  Graceful degradation when information is missing
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+    1) Correctly degrades on allocation when no node
+    2) Correctly degrades on allocation when error
+    3) Correctly degrades on decoding when error
+    4) Correctly abifies after finishing
+    5) Correctly decodes decimals
+    6) Correctly decodes inherited events when no node
+    ✓ Decodes external functions via additionalContexts (74ms)
+    7) Decodes transactions sent to the instance via additionalContexts
+    ✓ Partially decodes internal functions when unreliable order (56ms)
+    8) Decodes return values even with no deployedBytecode
+    Out-of-range enums
+      9) Doesn't include out-of-range enums in full mode
+      10) Abifies correctly when failure occurs in first enum
+      11) Abifies correctly when failure occurs in second enum
+    Custom errors
+      12) Degrades correctly when no node
+      13) Degrades correctly when no usedErrors
+      14) Degrades correctly on no error node
+      15) Degrades correctly on error
+
+  Non-function transactions
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+    16) should decode transactions that invoke fallback or receive
+
+  Over-the-wire decoding
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+    17) should correctly decode transactions and events
+    18) disambiguates events when possible and not when impossible
+    19) Handles anonymous events
+    20) respects the extras option
+    21) Decodes return values
+    22) Decodes return values when given superclass
+    Custom error decoding
+      23) Decodes unambiguous custom errors
+      24) Decodes unambiguous custom errors from external calls
+      25) Decodes ambiguous custom errors
+      26) Decodes ambiguous custom errors from external calls
+
+  Shadowed storage variables
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+    ✓ Includes shadowed storage variables in variables
+    ✓ Fetches variables by name or qualified name
+
+  Over-the-wire decoding (legacy features)
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+EthereumProvider {
+  debug: { enabled: false, logger: [Function] { [length]: 4, [name]: '' } },
+  removeListener: [Function: off] { [length]: 2, [name]: 'off' },
+  disconnect: [AsyncFunction] {
+    [length]: 0,
+    [name]: '',
+    [Symbol(Symbol.toStringTag)]: 'AsyncFunction'
+  }
+}
+undefined
+undefined
+undefined
+undefined
+    27) should decode overridden events & events inherited from abstract contracts
+
+
+  7 passing (31s)
+  27 failing
+
+  1) Graceful degradation when information is missing
+       Correctly degrades on allocation when no node:
+     TypeError: Cannot read property 'blockNumber' of null
+      at ProjectDecoder.<anonymous> (lib/decoders.ts:206:31)
+      at Generator.next (<anonymous>)
+      at /home/hayek/proj/truffle/packages/decoder/dist/decoders.js:27:71
+      at new Promise (<anonymous>)
+      at __awaiter (dist/decoders.js:23:12)
+      at ProjectDecoder.decodeTransactionWithAdditionalContexts (dist/decoders.js:145:16)
+      at ProjectDecoder.<anonymous> (lib/decoders.ts:191:23)
+      at Generator.next (<anonymous>)
+      at /home/hayek/proj/truffle/packages/decoder/dist/decoders.js:27:71
+      at new Promise (<anonymous>)
+      at __awaiter (dist/decoders.js:23:12)
+      at ProjectDecoder.decodeTransaction (dist/decoders.js:137:16)
+      at runTestBody (test/current/test/downgrade-test.js:520:34)
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+      at Context.<anonymous> (test/current/test/downgrade-test.js:56:5)
+
+  2) Graceful degradation when information is missing
+       Correctly degrades on allocation when error:
+     TypeError: Cannot read property 'blockNumber' of null
+      at ProjectDecoder.<anonymous> (lib/decoders.ts:206:31)
+      at Generator.next (<anonymous>)
+      at /home/hayek/proj/truffle/packages/decoder/dist/decoders.js:27:71
+      at new Promise (<anonymous>)
+      at __awaiter (dist/decoders.js:23:12)
+      at ProjectDecoder.decodeTransactionWithAdditionalContexts (dist/decoders.js:145:16)
+      at ProjectDecoder.<anonymous> (lib/decoders.ts:191:23)
+      at Generator.next (<anonymous>)
+      at /home/hayek/proj/truffle/packages/decoder/dist/decoders.js:27:71
+      at new Promise (<anonymous>)
+      at __awaiter (dist/decoders.js:23:12)
+      at ProjectDecoder.decodeTransaction (dist/decoders.js:137:16)
+      at runTestBody (test/current/test/downgrade-test.js:520:34)
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+      at Context.<anonymous> (test/current/test/downgrade-test.js:75:5)
+
+  3) Graceful degradation when information is missing
+       Correctly degrades on decoding when error:
+     TypeError: Cannot read property 'blockNumber' of null
+      at ProjectDecoder.<anonymous> (lib/decoders.ts:206:31)
+      at Generator.next (<anonymous>)
+      at /home/hayek/proj/truffle/packages/decoder/dist/decoders.js:27:71
+      at new Promise (<anonymous>)
+      at __awaiter (dist/decoders.js:23:12)
+      at ProjectDecoder.decodeTransactionWithAdditionalContexts (dist/decoders.js:145:16)
+      at ProjectDecoder.<anonymous> (lib/decoders.ts:191:23)
+      at Generator.next (<anonymous>)
+      at /home/hayek/proj/truffle/packages/decoder/dist/decoders.js:27:71
+      at new Promise (<anonymous>)
+      at __awaiter (dist/decoders.js:23:12)
+      at ProjectDecoder.decodeTransaction (dist/decoders.js:137:16)
+      at runTestBody (test/current/test/downgrade-test.js:520:34)
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+      at Context.<anonymous> (test/current/test/downgrade-test.js:94:5)
+
+  4) Graceful degradation when information is missing
+       Correctly abifies after finishing:
+     TypeError: Cannot read property 'blockNumber' of null
+      at ProjectDecoder.<anonymous> (lib/decoders.ts:206:31)
+      at Generator.next (<anonymous>)
+      at /home/hayek/proj/truffle/packages/decoder/dist/decoders.js:27:71
+      at new Promise (<anonymous>)
+      at __awaiter (dist/decoders.js:23:12)
+      at ProjectDecoder.decodeTransactionWithAdditionalContexts (dist/decoders.js:145:16)
+      at ProjectDecoder.<anonymous> (lib/decoders.ts:191:23)
+      at Generator.next (<anonymous>)
+      at /home/hayek/proj/truffle/packages/decoder/dist/decoders.js:27:71
+      at new Promise (<anonymous>)
+      at __awaiter (dist/decoders.js:23:12)
+      at ProjectDecoder.decodeTransaction (dist/decoders.js:137:16)
+      at runTestBody (test/current/test/downgrade-test.js:520:34)
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+      at Context.<anonymous> (test/current/test/downgrade-test.js:98:5)
+
+  5) Graceful degradation when information is missing
+       Correctly decodes decimals:
+
+      AssertionError: expected 'full' to equal 'abi'
+      + expected - actual
+
+      -full
+      +abi
+      
+      at Context.<anonymous> (test/current/test/downgrade-test.js:159:12)
+
+  6) Graceful degradation when information is missing
+       Correctly decodes inherited events when no node:
+     Error: header not found
+      at BlockManager.number [as get] (/home/hayek/proj/truffle/node_modules/ganache/dist/node/webpack:/Ganache/chains/ethereum/ethereum/lib/src/data-managers/block-manager.js:196:15)
+      at AccountManager.data [as getRaw] (/home/hayek/proj/truffle/node_modules/ganache/dist/node/webpack:/Ganache/chains/ethereum/ethereum/lib/src/data-managers/account-manager.js:33:28)
+      at AccountManager.getCode (/home/hayek/proj/truffle/node_modules/ganache/dist/node/webpack:/Ganache/chains/ethereum/ethereum/lib/src/data-managers/account-manager.js:73:15)
+
+  7) Graceful degradation when information is missing
+       Decodes transactions sent to the instance via additionalContexts:
+     TypeError: Cannot read property 'blockNumber' of null
+      at ProjectDecoder.<anonymous> (lib/decoders.ts:206:31)
+      at Generator.next (<anonymous>)
+      at /home/hayek/proj/truffle/packages/decoder/dist/decoders.js:27:71
+      at new Promise (<anonymous>)
+      at __awaiter (dist/decoders.js:23:12)
+      at ProjectDecoder.decodeTransactionWithAdditionalContexts (dist/decoders.js:145:16)
+      at ContractInstanceDecoder.<anonymous> (lib/decoders.ts:1570:38)
+      at Generator.next (<anonymous>)
+      at /home/hayek/proj/truffle/packages/decoder/dist/decoders.js:27:71
+      at new Promise (<anonymous>)
+      at __awaiter (dist/decoders.js:23:12)
+      at ContractInstanceDecoder.decodeTransaction (dist/decoders.js:1191:16)
+      at Context.<anonymous> (test/current/test/downgrade-test.js:309:34)
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+
+  8) Graceful degradation when information is missing
+       Decodes return values even with no deployedBytecode:
+
+      AssertionError: expected [ Array(2) ] to have a length of 1 but got 2
+      + expected - actual
+
+      -2
+      +1
+      
+      at Context.<anonymous> (test/current/test/downgrade-test.js:371:12)
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+
+  9) Graceful degradation when information is missing
+       Out-of-range enums
+         Doesn't include out-of-range enums in full mode:
+     Error: header not found
+      at BlockManager.number [as get] (/home/hayek/proj/truffle/node_modules/ganache/dist/node/webpack:/Ganache/chains/ethereum/ethereum/lib/src/data-managers/block-manager.js:196:15)
+      at AccountManager.data [as getRaw] (/home/hayek/proj/truffle/node_modules/ganache/dist/node/webpack:/Ganache/chains/ethereum/ethereum/lib/src/data-managers/account-manager.js:33:28)
+      at AccountManager.getCode (/home/hayek/proj/truffle/node_modules/ganache/dist/node/webpack:/Ganache/chains/ethereum/ethereum/lib/src/data-managers/account-manager.js:73:15)
+
+  10) Graceful degradation when information is missing
+       Out-of-range enums
+         Abifies correctly when failure occurs in first enum:
+     Error: header not found
+      at BlockManager.number [as get] (/home/hayek/proj/truffle/node_modules/ganache/dist/node/webpack:/Ganache/chains/ethereum/ethereum/lib/src/data-managers/block-manager.js:196:15)
+      at AccountManager.data [as getRaw] (/home/hayek/proj/truffle/node_modules/ganache/dist/node/webpack:/Ganache/chains/ethereum/ethereum/lib/src/data-managers/account-manager.js:33:28)
+      at AccountManager.getCode (/home/hayek/proj/truffle/node_modules/ganache/dist/node/webpack:/Ganache/chains/ethereum/ethereum/lib/src/data-managers/account-manager.js:73:15)
+
+  11) Graceful degradation when information is missing
+       Out-of-range enums
+         Abifies correctly when failure occurs in second enum:
+     Error: header not found
+      at BlockManager.number [as get] (/home/hayek/proj/truffle/node_modules/ganache/dist/node/webpack:/Ganache/chains/ethereum/ethereum/lib/src/data-managers/block-manager.js:196:15)
+      at AccountManager.data [as getRaw] (/home/hayek/proj/truffle/node_modules/ganache/dist/node/webpack:/Ganache/chains/ethereum/ethereum/lib/src/data-managers/account-manager.js:33:28)
+      at AccountManager.getCode (/home/hayek/proj/truffle/node_modules/ganache/dist/node/webpack:/Ganache/chains/ethereum/ethereum/lib/src/data-managers/account-manager.js:73:15)
+
+  12) Graceful degradation when information is missing
+       Custom errors
+         Degrades correctly when no node:
+     TypeError: Cannot read property 'toTwos' of undefined
+      at Object.toBytes (/home/hayek/proj/truffle/packages/codec/lib/conversion.ts:195:17)
+      at ContractDecoder.<anonymous> (lib/decoders.ts:831:30)
+      at Generator.next (<anonymous>)
+      at fulfilled (dist/decoders.js:24:58)
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+
+  13) Graceful degradation when information is missing
+       Custom errors
+         Degrades correctly when no usedErrors:
+     TypeError: Cannot read property 'toTwos' of undefined
+      at Object.toBytes (/home/hayek/proj/truffle/packages/codec/lib/conversion.ts:195:17)
+      at ContractDecoder.<anonymous> (lib/decoders.ts:831:30)
+      at Generator.next (<anonymous>)
+      at fulfilled (dist/decoders.js:24:58)
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+
+  14) Graceful degradation when information is missing
+       Custom errors
+         Degrades correctly on no error node:
+     TypeError: Cannot read property 'toTwos' of undefined
+      at Object.toBytes (/home/hayek/proj/truffle/packages/codec/lib/conversion.ts:195:17)
+      at ContractDecoder.<anonymous> (lib/decoders.ts:831:30)
+      at Generator.next (<anonymous>)
+      at fulfilled (dist/decoders.js:24:58)
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+
+  15) Graceful degradation when information is missing
+       Custom errors
+         Degrades correctly on error:
+     TypeError: Cannot read property 'toTwos' of undefined
+      at Object.toBytes (/home/hayek/proj/truffle/packages/codec/lib/conversion.ts:195:17)
+      at ContractDecoder.<anonymous> (lib/decoders.ts:831:30)
+      at Generator.next (<anonymous>)
+      at fulfilled (dist/decoders.js:24:58)
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+
+  16) Non-function transactions
+       should decode transactions that invoke fallback or receive:
+     TypeError: Cannot read property 'blockNumber' of null
+      at ProjectDecoder.<anonymous> (lib/decoders.ts:206:31)
+      at Generator.next (<anonymous>)
+      at /home/hayek/proj/truffle/packages/decoder/dist/decoders.js:27:71
+      at new Promise (<anonymous>)
+      at __awaiter (dist/decoders.js:23:12)
+      at ProjectDecoder.decodeTransactionWithAdditionalContexts (dist/decoders.js:145:16)
+      at ProjectDecoder.<anonymous> (lib/decoders.ts:191:23)
+      at Generator.next (<anonymous>)
+      at /home/hayek/proj/truffle/packages/decoder/dist/decoders.js:27:71
+      at new Promise (<anonymous>)
+      at __awaiter (dist/decoders.js:23:12)
+      at ProjectDecoder.decodeTransaction (dist/decoders.js:137:16)
+      at Context.<anonymous> (test/current/test/receive-test.js:61:41)
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+
+  17) Over-the-wire decoding
+       should correctly decode transactions and events:
+     TypeError: Cannot read property 'blockNumber' of null
+      at ProjectDecoder.<anonymous> (lib/decoders.ts:206:31)
+      at Generator.next (<anonymous>)
+      at /home/hayek/proj/truffle/packages/decoder/dist/decoders.js:27:71
+      at new Promise (<anonymous>)
+      at __awaiter (dist/decoders.js:23:12)
+      at ProjectDecoder.decodeTransactionWithAdditionalContexts (dist/decoders.js:145:16)
+      at ProjectDecoder.<anonymous> (lib/decoders.ts:191:23)
+      at Generator.next (<anonymous>)
+      at /home/hayek/proj/truffle/packages/decoder/dist/decoders.js:27:71
+      at new Promise (<anonymous>)
+      at __awaiter (dist/decoders.js:23:12)
+      at ProjectDecoder.decodeTransaction (dist/decoders.js:137:16)
+      at Context.<anonymous> (test/current/test/wire-test.js:123:45)
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+
+  18) Over-the-wire decoding
+       disambiguates events when possible and not when impossible:
+
+      AssertionError: expected [] to have a length of 1 but got 0
+      + expected - actual
+
+      -0
+      +1
+      
+      at Context.<anonymous> (test/current/test/wire-test.js:596:12)
+
+  19) Over-the-wire decoding
+       Handles anonymous events:
+
+      AssertionError: expected [] to have a length of 4 but got 0
+      + expected - actual
+
+      -0
+      +4
+      
+      at Context.<anonymous> (test/current/test/wire-test.js:739:12)
+
+  20) Over-the-wire decoding
+       respects the extras option:
+
+      AssertionError: expected [] to have a length of 1 but got 0
+      + expected - actual
+
+      -0
+      +1
+      
+      at Context.<anonymous> (test/current/test/wire-test.js:916:12)
+
+  21) Over-the-wire decoding
+       Decodes return values:
+
+      AssertionError: expected [ Array(2) ] to have a length of 1 but got 2
+      + expected - actual
+
+      -2
+      +1
+      
+      at Context.<anonymous> (test/current/test/wire-test.js:959:12)
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+
+  22) Over-the-wire decoding
+       Decodes return values when given superclass:
+
+      AssertionError: expected [ Array(2) ] to have a length of 1 but got 2
+      + expected - actual
+
+      -2
+      +1
+      
+      at Context.<anonymous> (test/current/test/wire-test.js:1027:12)
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+
+  23) Over-the-wire decoding
+       Custom error decoding
+         Decodes unambiguous custom errors:
+     TypeError: Cannot read property 'toTwos' of undefined
+      at Object.toBytes (/home/hayek/proj/truffle/packages/codec/lib/conversion.ts:195:17)
+      at ContractDecoder.<anonymous> (lib/decoders.ts:831:30)
+      at Generator.next (<anonymous>)
+      at fulfilled (dist/decoders.js:24:58)
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+
+  24) Over-the-wire decoding
+       Custom error decoding
+         Decodes unambiguous custom errors from external calls:
+     TypeError: Cannot read property 'toTwos' of undefined
+      at Object.toBytes (/home/hayek/proj/truffle/packages/codec/lib/conversion.ts:195:17)
+      at ContractDecoder.<anonymous> (lib/decoders.ts:831:30)
+      at Generator.next (<anonymous>)
+      at fulfilled (dist/decoders.js:24:58)
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+
+  25) Over-the-wire decoding
+       Custom error decoding
+         Decodes ambiguous custom errors:
+     TypeError: Cannot read property 'toTwos' of undefined
+      at Object.toBytes (/home/hayek/proj/truffle/packages/codec/lib/conversion.ts:195:17)
+      at ContractDecoder.<anonymous> (lib/decoders.ts:831:30)
+      at Generator.next (<anonymous>)
+      at fulfilled (dist/decoders.js:24:58)
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+
+  26) Over-the-wire decoding
+       Custom error decoding
+         Decodes ambiguous custom errors from external calls:
+     TypeError: Cannot read property 'toTwos' of undefined
+      at Object.toBytes (/home/hayek/proj/truffle/packages/codec/lib/conversion.ts:195:17)
+      at ContractDecoder.<anonymous> (lib/decoders.ts:831:30)
+      at Generator.next (<anonymous>)
+      at fulfilled (dist/decoders.js:24:58)
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+
+  27) Over-the-wire decoding (legacy features)
+       should decode overridden events & events inherited from abstract contracts:
+
+      AssertionError: expected [] to have a length of 5 but got 0
+      + expected - actual
+
+      -0
+      +5
+      
+      at Context.<anonymous> (test/legacy/test/wire-test.js:61:12)
+
+
+
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.

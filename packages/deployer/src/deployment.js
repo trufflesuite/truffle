@@ -376,6 +376,7 @@ class Deployment {
           eventArgs.error = err.error || err;
           const message = await self.emit("deployment:failed", eventArgs);
           self.close();
+          console.log(err.message);
           throw new Error(sanitizeMessage(message));
         }
 
