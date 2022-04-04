@@ -2,8 +2,8 @@
   "name": "@truffle/encoder",
   "version": "0.1.4",
   "description": "Recognizes user input for Soldiity values, resolves overloads, and encodes to binary",
-  "author": "Harry Altman",
   "license": "MIT",
+  "author": "Harry Altman",
   "homepage": "https://github.com/trufflesuite/truffle#readme",
   "repository": {
     "type": "git",
@@ -24,18 +24,6 @@
     "test": "jest --detectOpenHandles --forceExit --verbose --silent=false"
   },
   "types": "dist/index.d.ts",
-  "keywords": [
-    "abi",
-    "contract",
-    "encoder",
-    "ethereum",
-    "solidity",
-    "overload",
-    "resolution"
-  ],
-  "publishConfig": {
-    "access": "public"
-  },
   "dependencies": {
     "@ensdomains/ensjs": "^2.0.0",
     "@ethersproject/address": "^5.0.10",
@@ -77,6 +65,18 @@
     "ts-jest": "^26.5.4",
     "typescript": "^4.1.4",
     "utf8": "^3.0.0",
-    "web3": "1.5.3"
+    "web3": "1.7.1"
+  },
+  "keywords": [
+    "abi",
+    "contract",
+    "encoder",
+    "ethereum",
+    "overload",
+    "resolution",
+    "solidity"
+  ],
+  "publishConfig": {
+    "access": "public"
   }
 }
