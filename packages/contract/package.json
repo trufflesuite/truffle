@@ -34,7 +34,7 @@
     "web3": "1.7.1",
     "web3-core-helpers": "1.7.1",
     "web3-core-promievent": "1.7.1",
-    "web3-eth-abi": "1.5.3",
+    "web3-eth-abi": "1.7.1",
     "web3-utils": "1.5.3"
   },
   "devDependencies": {
