@@ -3,13 +3,13 @@
  * need ...rest for layered styles on top
  */
 export default function Loader({
-  size = '16px',
-  stroke = '#000000',
+  size = "16px",
+  stroke = "#000000",
   ...rest
 }: {
-  size?: string
-  stroke?: string
-  [_: string]: any
+  size?: string;
+  stroke?: string;
+  [_: string]: any;
 }) {
   return (
     <svg

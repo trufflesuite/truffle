@@ -1,4 +1,4 @@
-import {Dialog, Transition} from '@headlessui/react';
+import { Dialog, Transition } from "@headlessui/react";
 import React, {
   cloneElement,
   FC,
@@ -10,43 +10,50 @@ import React, {
   useRef,
   useState
 } from "react";
-import {classNames} from "src/functions/styling";
-import ModalHeader, { ModalHeaderProps } from 'src/components/Modal/Header';
-import {BorderedModalContent, ModalContentBorderedProps} from "src/components/Modal/Content";
-
+import { classNames } from "src/functions/styling";
+import ModalHeader, { ModalHeaderProps } from "src/components/Modal/Header";
+import {
+  BorderedModalContent,
+  ModalContentBorderedProps
+} from "src/components/Modal/Content";
 
 const MAX_WIDTH_CLASS_MAPPING = {
-  "sm": 'lg:max-w-sm',
-  "md": 'lg:max-w-md',
-  "lg": 'lg:max-w-lg',
-  "xl": 'lg:max-w-xl',
-  '2xl': 'lg:max-w-2xl',
-  '3xl': 'lg:max-w-3xl',
+  sm: "lg:max-w-sm",
+  md: "lg:max-w-md",
+  lg: "lg:max-w-lg",
+  xl: "lg:max-w-xl",
+  "2xl": "lg:max-w-2xl",
+  "3xl": "lg:max-w-3xl"
 };
 
 interface TriggerProps {
-  open: boolean
-  setOpen: (x: boolean) => void
-  onClick: () => void
+  open: boolean;
+  setOpen: (x: boolean) => void;
+  onClick: () => void;
 }
 
 interface Props {
-  trigger?: (({open, onClick, setOpen}: TriggerProps) => ReactNode) | ReactNode
+  trigger?:
+    | (({ open, onClick, setOpen }: TriggerProps) => ReactNode)
+    | ReactNode;
 }
 
 type HeadlessUiModalType<P> = FC<P> & {
-  Controlled: FC<ControlledModalProps>
+  Controlled: FC<ControlledModalProps>;
   // Body: FC<ModalBodyProps>
   // Actions: FC<ModalActionsProps>
   // Content: FC<ModalContentProps>
-  BorderedContent: FC<ModalContentBorderedProps>
-  Header: FC<ModalHeaderProps>
+  BorderedContent: FC<ModalContentBorderedProps>;
+  Header: FC<ModalHeaderProps>;
   // Action: FC<ModalActionProps>
   // SubmittedModalContent: FC<SubmittedModalContentProps>
   // Error: FC<ModalActionErrorProps>
 };
 
-const HeadlessUiModal: HeadlessUiModalType<Props> = ({children: childrenProp, trigger: triggerProp}) => {
+const HeadlessUiModal: HeadlessUiModalType<Props> = ({
+  children: childrenProp,
+  trigger: triggerProp
+}) => {
   const [open, setOpen] = useState(false);
 
   const onClick = useCallback(() => {
@@ -57,11 +64,11 @@ const HeadlessUiModal: HeadlessUiModalType<Props> = ({children: childrenProp, tr
   // Else (default), check if element is valid and pass click handler
   const trigger = useMemo(
     () =>
-      typeof triggerProp === 'function'
-        ? triggerProp({onClick, open, setOpen})
+      typeof triggerProp === "function"
+        ? triggerProp({ onClick, open, setOpen })
         : isValidElement(triggerProp)
-          ? cloneElement(triggerProp, {onClick})
-          : null,
+        ? cloneElement(triggerProp, { onClick })
+        : null,
     [onClick, open, triggerProp]
   );
 
@@ -69,7 +76,10 @@ const HeadlessUiModal: HeadlessUiModalType<Props> = ({children: childrenProp, tr
   // Else just render normally
   // @ts-ignore TYPE NEEDS FIXING
   const children = useMemo(
-    () => (typeof childrenProp === 'function' ? childrenProp({onClick, open, setOpen}) : children),
+    () =>
+      typeof childrenProp === "function"
+        ? childrenProp({ onClick, open, setOpen })
+        : children,
     [onClick, open, childrenProp]
   );
 
@@ -84,31 +94,42 @@ const HeadlessUiModal: HeadlessUiModalType<Props> = ({children: childrenProp, tr
 };
 
 interface ControlledModalProps {
-  isOpen: boolean
-  onDismiss: () => void
-  afterLeave?: () => void
-  children?: React.ReactNode
-  transparent?: boolean
-  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl'
-  unmount?: boolean
+  isOpen: boolean;
+  onDismiss: () => void;
+  afterLeave?: () => void;
+  children?: React.ReactNode;
+  transparent?: boolean;
+  maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl" | "3xl";
+  unmount?: boolean;
 }
 
 const HeadlessUiModalControlled: FC<ControlledModalProps> = ({
-                                                               isOpen,
-                                                               onDismiss,
-                                                               afterLeave,
-                                                               children,
-                                                               transparent = false,
-                                                               maxWidth = 'lg',
-                                                               unmount,
-                                                             }) => {
-
+  isOpen,
+  onDismiss,
+  afterLeave,
+  children,
+  transparent = false,
+  maxWidth = "lg",
+  unmount
+}) => {
   let completeButtonRef = useRef(null);
 
   return (
     <>
-      <Transition appear show={isOpen} as={Fragment} afterLeave={afterLeave} unmount={unmount}>
-        <Dialog as="div" className="fixed z-50 inset-0" onClose={onDismiss} unmount={unmount} initialFocus={completeButtonRef}>
+      <Transition
+        appear
+        show={isOpen}
+        as={Fragment}
+        afterLeave={afterLeave}
+        unmount={unmount}
+      >
+        <Dialog
+          as="div"
+          className="fixed z-50 inset-0"
+          onClose={onDismiss}
+          unmount={unmount}
+          initialFocus={completeButtonRef}
+        >
           <div className="relative flex items-center justify-center block min-h-screen text-center">
             <Transition.Child
               unmount={false}
@@ -131,7 +152,10 @@ const HeadlessUiModalControlled: FC<ControlledModalProps> = ({
             </Transition.Child>
 
             {/* This element is to trick the browser into centering the modal contents. */}
-            <span className="inline-block h-screen align-middle" aria-hidden="true">
+            <span
+              className="inline-block h-screen align-middle"
+              aria-hidden="true"
+            >
               &#8203;
             </span>
 
@@ -147,10 +171,10 @@ const HeadlessUiModalControlled: FC<ControlledModalProps> = ({
             >
               <div
                 className={classNames(
-                  transparent ? '' : 'bg-white border border-grey',
+                  transparent ? "" : "bg-white border border-grey",
                   MAX_WIDTH_CLASS_MAPPING[maxWidth],
                   `w-full`,
-                  'inline-block align-bottom rounded-xl text-left overflow-hidden transform p-4'
+                  "inline-block align-bottom rounded-xl text-left overflow-hidden transform p-4"
                 )}
               >
                 {children}

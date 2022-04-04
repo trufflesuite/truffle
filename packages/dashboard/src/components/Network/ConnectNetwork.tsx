@@ -1,4 +1,4 @@
-import {useConnect, useNetwork} from "wagmi";
+import { useConnect, useNetwork } from "wagmi";
 import Button from "../Common/Button";
 import Card from "../Common/Card";
 import NetworkIndicator from "./NetworkIndicator";
@@ -18,7 +18,9 @@ function ConnectNetwork({ confirm }: Props) {
   const connectButton = (
     <div>
       {connectData.connectors.map(connector => (
-        <Button key={connector.id} onClick={() => connect(connector)}>{connector.name}</Button>
+        <Button key={connector.id} onClick={() => connect(connector)}>
+          {connector.name}
+        </Button>
       ))}
     </div>
   );
