@@ -11156,11 +11156,6 @@ command-exists@^1.2.8:
   resolved "https://registry.yarnpkg.com/command-exists/-/command-exists-1.2.8.tgz#715acefdd1223b9c9b37110a149c6392c2852291"
   integrity sha512-PM54PkseWbiiD/mMsbvW351/u+dafwTJ0ye2qB60G1aGQP9j3xK2gmMDc+R34L3nDtx4qMCitXT75mkbkGJDLw==
 
-commander@3.0.2:
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/commander/-/commander-3.0.2.tgz#6837c3fb677ad9933d1cfba42dd14d5117d6b39e"
-  integrity sha512-Gar0ASD4BDyKC4hl4DwHqDrmvjoxWKZigVnAbn5H1owvm4CxCPdb0HQDehwNYMJpla5+M2tPmPARzhtYuwpHow==
-
 commander@^2.11.0, commander@^2.15.0, commander@^2.16.0, commander@^2.18.0, commander@^2.20.0, commander@^2.20.3, commander@^2.8.1, commander@^2.9.0:
   version "2.20.3"
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.20.3.tgz#fd485e84c03eb4881c20722ba48035e8531aeb33"
@@ -26976,7 +26971,7 @@ require-from-string@^1.1.0:
   resolved "https://registry.yarnpkg.com/require-from-string/-/require-from-string-1.2.1.tgz#529c9ccef27380adfec9a2f965b649bbee636418"
   integrity sha1-UpyczvJzgK3+yaL5ZbZJu+5jZBg=
 
-require-from-string@^2.0.0, require-from-string@^2.0.2:
+require-from-string@^2.0.2:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/require-from-string/-/require-from-string-2.0.2.tgz#89a7fdd938261267318eafe14f9c32e598c36909"
   integrity sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw==
@@ -28203,24 +28198,23 @@ socks@^2.3.3, socks@^2.6.1:
     ip "^1.1.5"
     smart-buffer "^4.1.0"
 
-solc@0.6.0:
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/solc/-/solc-0.6.0.tgz#061a36075087b5ca16e1c4fc4fad565aa2851fe4"
-  integrity sha512-fYVRKbJLbg0oETBuAJN/ts0X/hj2YgOAl3ly3nrm/qhleVr22ecl3OSXW3hRmOWvH81hJ2KHRYRQWgqioK6d0A==
-  dependencies:
-    command-exists "^1.2.8"
-    commander "3.0.2"
-    fs-extra "^0.30.0"
-    js-sha3 "0.8.0"
-    memorystream "^0.3.1"
-    require-from-string "^2.0.0"
-    semver "^5.5.0"
-    tmp "0.0.33"
-
 solc@0.8.12:
   version "0.8.12"
   resolved "https://registry.yarnpkg.com/solc/-/solc-0.8.12.tgz#3002ed3092ee2f7672f1a2ab80c0d8df8df3ef2b"
   integrity sha512-TU3anAhKWBQ/WrerJ9EcHrNwGOA1y5vIk5Flz7dBNamLDkX9VQTIwcKd3FiZsT0Ew8rSU7RTmJyGNHRGzP5TBA==
+  dependencies:
+    command-exists "^1.2.8"
+    commander "^8.1.0"
+    follow-redirects "^1.12.1"
+    js-sha3 "0.8.0"
+    memorystream "^0.3.1"
+    semver "^5.5.0"
+    tmp "0.0.33"
+
+solc@0.8.13:
+  version "0.8.13"
+  resolved "https://registry.yarnpkg.com/solc/-/solc-0.8.13.tgz#bafc7fcc11a627e2281e489076b80497123bb704"
+  integrity sha512-C0yTN+rjEOGO6uVOXI8+EKa75SFMuZpQ2tryex4QxWIg0HRWZvCHKfVPuLZ5wx06Sb6GBp6uQA5yqQyXZnXOJw==
   dependencies:
     command-exists "^1.2.8"
     commander "^8.1.0"
