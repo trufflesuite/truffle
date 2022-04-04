@@ -9,10 +9,10 @@ const DIMENSIONS = {
   xs: "py-1 px-2 h-[28px] !border",
   sm: "py-2 px-2 h-[36px]",
   md: "px-2 h-[52px]",
-  lg: "p-2 " // h-[60px]
+  lg: "p-2 "
 };
 
-const SIZE: Record<string, string> = {
+const SIZE = {
   xs: "text-xs rounded-xl",
   sm: "text-sm rounded-l",
   lg: "text-lg rounded"
@@ -30,10 +30,8 @@ const OUTLINED = {
     "border-2 border-truffle-blue disabled:pointer-events-none disabled:opacity-40",
   blue: "border-none text-truffle-blue bg-truffle-blue bg-opacity-20 hover:bg-truffle-blue hover:bg-opacity-40 focus:bg-truffle-blue focus:bg-opacity-40 active:bg-truffle-blue active:bg-opacity-40",
   red: "border-none text-truffle-red bg-truffle-red bg-opacity-20 hover:bg-truffle-red hover:bg-opacity-40 focus:bg-truffle-red focus:bg-opacity-40 active:bg-truffle-red active:bg-opacity-40",
-  // red: 'border-none bg-truffle-red bg-opacity-20 hover:bg-truffle-red/40 active:bg-truffle-red/60 text-red focus:bg-truffle-red/40',
   brown:
     "border-none text-truffle-brown bg-truffle-brown bg-opacity-20 hover:bg-truffle-brown hover:bg-opacity-40 focus:bg-truffle-brown focus:bg-opacity-40 active:bg-truffle-brown active:bg-opacity-40"
-  //brown: 'border-none bg-truffle-brown bg-opacity-20 hover:bg-pink/40 active:bg-pink/60 text-pink focus:bg-pink/40',
 };
 
 const EMPTY = {
@@ -87,12 +85,12 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           VARIANT[variant]["default"],
           // @ts-ignore TYPE NEEDS FIXING
           VARIANT[variant][color],
+          // @ts-ignore TYPE NEEDS FIXING
           SIZE[size],
           // @ts-ignore TYPE NEEDS FIXING
           variant !== "empty" ? DIMENSIONS[size] : "",
           fullWidth ? "w-full" : "",
           "mx-2",
-          //'font-bold flex items-center justify-center gap-1',
           className
         )}
       >
