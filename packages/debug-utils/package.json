@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "chai": "^4.2.0",
-    "mocha": "8.1.2"
+    "mocha": "9.2.2"
   },
   "publishConfig": {
     "access": "public"
