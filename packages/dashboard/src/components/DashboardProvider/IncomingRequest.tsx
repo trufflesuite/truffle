@@ -1,6 +1,6 @@
 import WebSocket from "isomorphic-ws";
 import ReactJson from "react-json-view";
-import { handleDashboardProviderRequest, respond } from "src/utils/utils";
+import { handleDashboardProviderRequest, respond } from "../../utils/utils";
 import { DashboardProviderMessage } from "@truffle/dashboard-message-bus";
 import { useState } from "react";
 import Button from "../common/Button";
