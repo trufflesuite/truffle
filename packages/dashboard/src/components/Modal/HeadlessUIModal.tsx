@@ -18,10 +18,10 @@ import {
 } from "src/components/Modal/Content";
 
 const MAX_WIDTH_CLASS_MAPPING = {
-  sm: "lg:max-w-sm",
-  md: "lg:max-w-md",
-  lg: "lg:max-w-lg",
-  xl: "lg:max-w-xl",
+  "sm": "lg:max-w-sm",
+  "md": "lg:max-w-md",
+  "lg": "lg:max-w-lg",
+  "xl": "lg:max-w-xl",
   "2xl": "lg:max-w-2xl",
   "3xl": "lg:max-w-3xl"
 };
