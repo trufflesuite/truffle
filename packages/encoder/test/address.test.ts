@@ -173,6 +173,18 @@ describe("Encoding", () => {
       );
     });
 
+    it("Encodes callable objects with an address field", async () => {
+      let input: any = () => undefined;
+      input.address = "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D";
+      input.garbate = "garbage";
+      const { data } = await encoder.encodeTxNoResolution(abi, [input]);
+      assert.strictEqual(
+        data,
+        selector +
+          "00000000000000000000000010ca7e901d10ca7e901d10ca7e901d10ca7e901d"
+      );
+    });
+
     it("Encodes ENS names", async () => {
       const { data } = await encoder.encodeTxNoResolution(abi, ["locate.gold"]);
       assert.strictEqual(
