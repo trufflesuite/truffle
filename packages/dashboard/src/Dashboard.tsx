@@ -9,12 +9,12 @@ import {
 } from "@truffle/dashboard-message-bus";
 import WebSocket from "isomorphic-ws";
 import { useEffect, useState } from "react";
-import { getPorts, respond } from "./utils/utils";
-import Header from "./components/Header/Header";
-import DashboardProvider from "./components/DashboardProvider/DashboardProvider";
-import ConnectNetwork from "./components/ConnectNetwork";
-import ConfirmNetworkChanged from "./components/ConfirmNetworkChange";
 import { useAccount, useConnect, useNetwork } from "wagmi";
+import ConfirmNetworkChanged from "src/components/ConfirmNetworkChange";
+import { getPorts, respond } from "src/utils/utils";
+import Header from "src/components/Header/Header";
+import DashboardProvider from "src/components/DashboardProvider";
+import ConnectNetwork from "src/components/ConnectNetwork";
 
 function Dashboard() {
   const [paused, setPaused] = useState<boolean>(false);

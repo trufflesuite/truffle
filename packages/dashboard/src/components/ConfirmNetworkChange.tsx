@@ -1,6 +1,6 @@
-import Card from "./common/Card";
-import Button from "./common/Button";
-import NetworkIndicator from "./common/NetworkIndicator";
+import NetworkIndicator from "src/components/common/NetworkIndicator";
+import Button from "src/components/common/Button";
+import Card from "src/components/common/Card";
 
 interface Props {
   confirm: () => void;
@@ -30,7 +30,7 @@ function ConfirmNetworkChanged({
     </div>
   );
 
-  const confirmButton = <Button text="Confirm" onClick={confirm} />;
+  const confirmButton = <Button onClick={confirm}>Confirm</Button>;
 
   return (
     <div className="flex justify-center items-center py-20">
