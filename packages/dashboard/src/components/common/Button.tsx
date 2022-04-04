@@ -90,7 +90,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           variant !== "empty" ? DIMENSIONS[size] : "",
           fullWidth ? "w-full" : "",
           "mx-2",
-          //'font-bold flex items-center justify-center gap-1',
           className
         )}
       >
