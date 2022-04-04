@@ -1,5 +1,5 @@
 import React, { ReactNode } from "react";
-import { classNames } from "../../functions";
+import { classNames } from "src/functions";
 
 export type ButtonColor = "blue" | "red" | "brown" | "default";
 export type ButtonSize = "xs" | "sm" | "lg";

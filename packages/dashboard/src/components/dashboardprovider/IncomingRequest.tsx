@@ -1,9 +1,9 @@
 import WebSocket from "isomorphic-ws";
 import ReactJson from "react-json-view";
-import { handleDashboardProviderRequest, respond } from "../../utils/utils";
+import { handleDashboardProviderRequest, respond } from "src/utils/utils";
 import { DashboardProviderMessage } from "@truffle/dashboard-message-bus";
-import Button from "../Common/Button";
-import Card from "../Common/Card";
+import Button from "src/components/common/Button";
+import Card from "src/components/common/Card";
 
 interface Props {
   request: DashboardProviderMessage;

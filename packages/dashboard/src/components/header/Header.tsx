@@ -1,9 +1,9 @@
 import { providers } from "ethers";
 import { useEffect, useState } from "react";
 import { getDisplayName } from "src/utils/utils";
-import NetworkIndicator from "src/components/Common/NetworkIndicator";
+import NetworkIndicator from "src/components/common/NetworkIndicator";
 import { useAccount, useConnect, useNetwork } from "wagmi";
-import Button from "../Common/Button";
+import Button from "../common/Button";
 
 interface Props {
   disconnect: () => void;
