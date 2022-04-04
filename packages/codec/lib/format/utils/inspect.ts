@@ -57,6 +57,13 @@ export class ResultInspector {
   constructor(result: Format.Values.Result) {
     this.result = result;
   }
+  /**
+   * @dev non-standard alternative interface name used by browser-util-inspect
+   *      package
+   */
+  inspect(depth: number | null, options: InspectOptions): string {
+    return this[util.inspect.custom].bind(this)(depth, options);
+  }
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
     switch (this.result.kind) {
       case "value":
@@ -665,11 +672,17 @@ export function nativizeAccessList(
   return wrappedAccessList.value.map(wrappedAccessListForAddress => {
     //HACK: we're just going to coerce all over the place here
     const addressStorageKeysPair = <Format.Values.OptionallyNamedValue[]>(
-      <Format.Values.TupleValue>wrappedAccessListForAddress
-    ).value;
-    const wrappedAddress = <Format.Values.AddressValue>addressStorageKeysPair[0].value;
-    const wrappedStorageKeys = <Format.Values.ArrayValue>addressStorageKeysPair[1].value;
-    const wrappedStorageKeysArray = <Format.Values.UintValue[]>wrappedStorageKeys.value;
+      (<Format.Values.TupleValue>wrappedAccessListForAddress).value
+    );
+    const wrappedAddress = <Format.Values.AddressValue>(
+      addressStorageKeysPair[0].value
+    );
+    const wrappedStorageKeys = <Format.Values.ArrayValue>(
+      addressStorageKeysPair[1].value
+    );
+    const wrappedStorageKeysArray = <Format.Values.UintValue[]>(
+      wrappedStorageKeys.value
+    );
     return {
       address: wrappedAddress.value.asAddress,
       storageKeys: wrappedStorageKeysArray.map(wrappedStorageKey =>

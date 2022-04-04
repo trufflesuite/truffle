@@ -11460,11 +11460,6 @@ cli-spinners@^1.1.0:
   resolved "https://registry.yarnpkg.com/cli-spinners/-/cli-spinners-1.3.1.tgz#002c1990912d0d59580c93bd36c056de99e4259a"
   integrity sha512-1QL4544moEsDVH9T/l6Cemov/37iv1RtoKf7NJ04A60+4MREXNfx/QvavbH6QoGdsD4N4Mwy49cmaINR/o2mdg==
 
-cli-spinners@^2.0.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/cli-spinners/-/cli-spinners-2.2.0.tgz#e8b988d9206c692302d8ee834e7a85c0144d8f77"
-  integrity sha512-tgU3fKwzYjiLEQgPMD9Jt+JjHVL9kW93FiIMX/l7rivvOD4/LL0Mf7gda3+4U2KJBloybwgj5KEoQgGRioMiKQ==
-
 cli-spinners@^2.3.0:
   version "2.5.0"
   resolved "https://registry.yarnpkg.com/cli-spinners/-/cli-spinners-2.5.0.tgz#12763e47251bf951cb75c201dfa58ff1bcb2d047"
@@ -15947,10 +15942,10 @@ fake-merkle-patricia-tree@^1.0.1:
   dependencies:
     checkpoint-store "^1.1.0"
 
-faker@^5.3.1:
-  version "5.3.1"
-  resolved "https://registry.yarnpkg.com/faker/-/faker-5.3.1.tgz#67f8f5c170b97a76b875389e0e8b9155da7b4853"
-  integrity sha512-sVdoApX/awJHO9DZHZsHVaJBNFiJW0n3lPs0q/nFxp/Mtya1dr2sCMktST3mdxNMHjkvKTTMAW488E+jH1eSbg==
+faker@5.5.3:
+  version "5.5.3"
+  resolved "https://registry.yarnpkg.com/faker/-/faker-5.5.3.tgz#c57974ee484431b25205c2c8dc09fda861e51e0e"
+  integrity sha512-wLTv2a28wjUyWkbnX7u/ABZBkUkIF2fCd73V6P2oFqEGEktDfzWx4UxrSqtPRw0xPRAcjeAOIiJWqZm3pP4u3g==
 
 fast-check@^2.12.1:
   version "2.12.1"
@@ -24365,18 +24360,6 @@ ora@^2.0.0:
     cli-spinners "^1.1.0"
     log-symbols "^2.2.0"
     strip-ansi "^4.0.0"
-    wcwidth "^1.0.1"
-
-ora@^3.4.0:
-  version "3.4.0"
-  resolved "https://registry.yarnpkg.com/ora/-/ora-3.4.0.tgz#bf0752491059a3ef3ed4c85097531de9fdbcd318"
-  integrity sha512-eNwHudNbO1folBP3JsZ19v9azXWtQZjICdr3Q0TDPIaeBQ3mXLrh54wM+er0+hSp+dWKf+Z8KM58CYzEyIYxYg==
-  dependencies:
-    chalk "^2.4.2"
-    cli-cursor "^2.1.0"
-    cli-spinners "^2.0.0"
-    log-symbols "^2.2.0"
-    strip-ansi "^5.2.0"
     wcwidth "^1.0.1"
 
 ora@^5.4.1:

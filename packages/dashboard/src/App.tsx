@@ -22,31 +22,36 @@ const getProvider = (_config: { chainId?: number; connector?: Connector }) => {
   if (!wProvider) {
     ret = getDefaultProvider(getNetwork(_config.chainId ?? defaultChain.id));
   } else {
-    wProvider.enable()
+    wProvider
+      .enable()
       .then((r: any) => console.debug(r))
       .catch((e: any) => console.error(e));
     ret = new ethproviders.Web3Provider(wProvider);
   }
-  console.debug("getProvider.returning", {wProvider, winEth: window.ethereum, ret});
+  console.debug("getProvider.returning", {
+    wProvider,
+    winEth: window.ethereum,
+    ret
+  });
   return ret;
 };
 
 const connectors = [
-  new InjectedConnector({chains: defaultChains}),
+  new InjectedConnector({ chains: defaultChains }),
   new WalletConnectConnector({
     chains: defaultChains,
     options: {
       infuraId: process.env.REACT_APP_INFURA_ID,
-      qrcode: true,
-    },
-  }),
+      qrcode: true
+    }
+  })
 ];
 
 function App() {
   return (
     <Provider connectors={connectors} provider={getProvider}>
       <TransactionProvider>
-        <Dashboard/>
+        <Dashboard />
       </TransactionProvider>
     </Provider>
   );

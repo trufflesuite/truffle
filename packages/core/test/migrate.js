@@ -26,6 +26,9 @@ describe("migrate", function () {
       seed: network,
       miner: {
         instamine: "strict"
+      },
+      logging: {
+        quiet: true
       }
     });
     const web3 = new Web3(provider);

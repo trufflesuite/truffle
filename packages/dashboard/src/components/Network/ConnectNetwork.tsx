@@ -7,10 +7,9 @@ interface Props {
   confirm: () => void;
 }
 
-function ConnectNetwork({confirm}: Props) {
-
-  const [{data: connectData}, connect] = useConnect();
-  const [{data: networkData,}] = useNetwork();
+function ConnectNetwork({ confirm }: Props) {
+  const [{ data: connectData }, connect] = useConnect();
+  const [{ data: networkData }] = useNetwork();
 
   const chainId = networkData.chain?.id;
   const connectBody =
@@ -18,10 +17,9 @@ function ConnectNetwork({confirm}: Props) {
 
   const connectButton = (
     <div>
-      {connectData.connectors.map((connector) => (
+      {connectData.connectors.map(connector => (
         <Button key={connector.id} onClick={() => connect(connector)}>{connector.name}</Button>
-      ))
-      }
+      ))}
     </div>
   );
 
@@ -32,7 +30,7 @@ function ConnectNetwork({confirm}: Props) {
         right one) before continuing.
       </div>
       <div className="flex justify-center">
-        <NetworkIndicator chainId={chainId}/>
+        <NetworkIndicator chainId={chainId} />
       </div>
     </div>
   );

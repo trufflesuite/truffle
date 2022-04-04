@@ -60,8 +60,9 @@ module.exports = {
         );
       }
 
-      if (options.events) options.events.emit("rpc:request", { payload });
-
+      if (options.events) {
+        options.events.emit("rpc:request", { payload });
+      }
       return payload;
     };
   },

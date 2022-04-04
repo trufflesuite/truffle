@@ -1,11 +1,11 @@
-import {useEffect, useState} from "react";
-import {getNetworkName} from "src/utils/utils";
+import { useEffect, useState } from "react";
+import { getNetworkName } from "src/utils/utils";
 
 interface Props {
   chainId: number;
 }
 
-function NetworkIndicator({chainId}: Props) {
+function NetworkIndicator({ chainId }: Props) {
   const [networkName, setNetworkName] = useState<string>(`Chain ID ${chainId}`);
   const textColor = chainId === 1 ? "text-truffle-red" : "";
 

@@ -8,14 +8,14 @@ import {
   Message
 } from "@truffle/dashboard-message-bus";
 import WebSocket from "isomorphic-ws";
-import {useEffect, useState} from "react";
-import {ToastContainer} from "react-toastify";
+import { useEffect, useState } from "react";
+import { ToastContainer } from "react-toastify";
 import DashboardProvider from "src/components/DashboardProvider/DashboardProvider";
 import Header from "src/components/Header/Header";
 import ConfirmNetworkChanged from "src/components/Network/ConfirmNetworkChanged";
 import ConnectNetwork from "src/components/Network/ConnectNetwork";
-import {getPorts, respond} from "src/utils/utils";
-import {useAccount, useConnect, useNetwork} from "wagmi";
+import { getPorts, respond } from "src/utils/utils";
+import { useAccount, useConnect, useNetwork } from "wagmi";
 
 function Dashboard() {
   const [paused, setPaused] = useState<boolean>(false);
@@ -27,7 +27,6 @@ function Dashboard() {
   const [{data}] = useNetwork();
   const [{}, disconnect] = useAccount();
   const [{data: connectData}] = useConnect();
-
 
   useEffect(() => {
     setChainId(data.chain?.id);
@@ -47,36 +46,36 @@ function Dashboard() {
     const messageBusHost = window.location.hostname;
     const {subscribePort} = await getPorts();
     const connectedSocket = await connectToMessageBusWithRetries(
-      subscribePort,
-      messageBusHost
+        subscribePort,
+        messageBusHost
     );
 
     connectedSocket.addEventListener(
-      "message",
-      (event: WebSocket.MessageEvent) => {
-        if (typeof event.data !== "string") {
-          event.data = event.data.toString();
+        "message",
+        (event: WebSocket.MessageEvent) => {
+          if (typeof event.data !== "string") {
+            event.data = event.data.toString();
+          }
+
+          const message = base64ToJson(event.data) as Message;
+
+          console.debug("Received message", message);
+
+          if (isDashboardProviderMessage(message)) {
+            setDashboardProviderRequests(previousRequests => [
+              ...previousRequests,
+              message
+            ]);
+          } else if (isInvalidateMessage(message)) {
+            setDashboardProviderRequests(previousRequests =>
+                previousRequests.filter(request => request.id !== message.payload)
+            );
+          } else if (isDebugMessage(message)) {
+            const {payload} = message;
+            console.log(payload.message);
+            respond({id: message.id}, connectedSocket);
+          }
         }
-
-        const message = base64ToJson(event.data) as Message;
-
-        console.debug("Received message", message);
-
-        if (isDashboardProviderMessage(message)) {
-          setDashboardProviderRequests(previousRequests => [
-            ...previousRequests,
-            message
-          ]);
-        } else if (isInvalidateMessage(message)) {
-          setDashboardProviderRequests(previousRequests =>
-            previousRequests.filter(request => request.id !== message.payload)
-          );
-        } else if (isDebugMessage(message)) {
-          const {payload} = message;
-          console.log(payload.message);
-          respond({id: message.id}, connectedSocket);
-        }
-      }
     );
 
     connectedSocket.send("ready");
@@ -95,27 +94,27 @@ function Dashboard() {
   };
 
   return (
-    <div
-      className="z-0 flex flex-col items-center w-full h-full min-h-screen bg-gradient-to-b from-truffle-lighter to-truffle-light">
-      <Header disconnect={disconnectAccount}/>
-      {paused && chainId && connectedChainId && (
-        <ConfirmNetworkChanged
-          newChainId={chainId}
-          previousChainId={connectedChainId}
-          confirm={() => setConnectedChainId(chainId)}
-        />
-      )}
-      {!paused && !socket && <ConnectNetwork confirm={initializeSocket}/>}
-      {!paused && socket && (
-        <DashboardProvider
-          paused={paused}
-          socket={socket}
-          requests={dashboardProviderRequests}
-          setRequests={setDashboardProviderRequests}
-        />
-      )}
-      <ToastContainer theme={"dark"}/>
-    </div>
+      <div
+          className="z-0 flex flex-col items-center w-full h-full min-h-screen bg-gradient-to-b from-truffle-lighter to-truffle-light">
+        <Header disconnect={disconnectAccount}/>
+        {paused && chainId && connectedChainId && (
+            <ConfirmNetworkChanged
+                newChainId={chainId}
+                previousChainId={connectedChainId}
+                confirm={() => setConnectedChainId(chainId)}
+            />
+        )}
+        {!paused && !socket && <ConnectNetwork confirm={initializeSocket}/>}
+        {!paused && socket && (
+            <DashboardProvider
+                paused={paused}
+                socket={socket}
+                requests={dashboardProviderRequests}
+                setRequests={setDashboardProviderRequests}
+            />
+        )}
+        <ToastContainer theme={"dark"}/>
+      </div>
   );
 }
 

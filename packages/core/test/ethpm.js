@@ -35,6 +35,9 @@ describe.skip("EthPM integration", function () {
     provider = Ganache.provider({
       miner: {
         instamine: "strict"
+      },
+      logging: {
+        quiet: true
       }
     });
 
