@@ -31076,14 +31076,6 @@ web3-core-helpers@1.2.11:
     web3-eth-iban "1.2.11"
     web3-utils "1.2.11"
 
-web3-core-helpers@1.5.3:
-  version "1.5.3"
-  resolved "https://registry.yarnpkg.com/web3-core-helpers/-/web3-core-helpers-1.5.3.tgz#099030235c477aadf39a94199ef40092151d563c"
-  integrity sha512-Ip1IjB3S8vN7Kf1PPjK41U5gskmMk6IJQlxIVuS8/1U7n/o0jC8krqtpRwiMfAgYyw3TXwBFtxSRTvJtnLyXZw==
-  dependencies:
-    web3-eth-iban "1.5.3"
-    web3-utils "1.5.3"
-
 web3-core-helpers@1.7.0:
   version "1.7.0"
   resolved "https://registry.yarnpkg.com/web3-core-helpers/-/web3-core-helpers-1.7.0.tgz#0eaef7bc55ff7ec5ba726181d0e8529be5d60903"
@@ -31547,14 +31539,6 @@ web3-eth-iban@1.2.11:
   dependencies:
     bn.js "^4.11.9"
     web3-utils "1.2.11"
-
-web3-eth-iban@1.5.3:
-  version "1.5.3"
-  resolved "https://registry.yarnpkg.com/web3-eth-iban/-/web3-eth-iban-1.5.3.tgz#91b1475893a877b10eac1de5cce6eb379fb81b5d"
-  integrity sha512-vMzmGqolYZvRHwP9P4Nf6G8uYM5aTLlQu2a34vz78p0KlDC+eV1th3+90Qeaupa28EG7OO0IT1F0BejiIauOPw==
-  dependencies:
-    bn.js "^4.11.9"
-    web3-utils "1.5.3"
 
 web3-eth-iban@1.7.0:
   version "1.7.0"
