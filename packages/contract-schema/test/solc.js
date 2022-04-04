@@ -88,9 +88,8 @@ describe("solc", function () {
       );
     });
 
-    //check that ast and legacyAST have the correct form
+    //check that ast has the correct form
     assert.equal(A.ast.nodeType, "SourceUnit");
-    assert.equal(A.legacyAST.nodeType, "SourceUnit");
 
     // throws error if invalid
     Schema.validate(A);
