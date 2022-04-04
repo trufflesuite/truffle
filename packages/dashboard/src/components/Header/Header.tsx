@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { getDisplayName } from "src/utils/utils";
 import NetworkIndicator from "src/components/Common/NetworkIndicator";
 import { useAccount, useConnect, useNetwork } from "wagmi";
-import Button from "src/components/Common/Button";
+import Button from "../Common/Button";
 
 interface Props {
   disconnect: () => void;

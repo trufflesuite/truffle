@@ -1,7 +1,7 @@
-import Card from "src/components/Common/Card";
-import Button from "src/components/Common/Button";
-import NetworkIndicator from "src/components/Common/NetworkIndicator";
 import { useConnect, useNetwork } from "wagmi";
+import Button from "./Common/Button";
+import NetworkIndicator from "./Common/NetworkIndicator";
+import Card from "./Common/Card";
 
 interface Props {
   confirm: () => void;
