@@ -1,9 +1,22 @@
 {
   "name": "@truffle/dashboard-message-bus",
-  "version": "0.1.0",
   "description": "Message bus that handles communication between the Dashboard and its components",
+  "license": "MIT",
+  "author": "Rosco Kalis <roscokalis@gmail.com>",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/dashboard-message-bus#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/dashboard-mesasge-bus"
+  },
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "version": "0.1.0",
   "main": "dist/lib/index.js",
-  "types": "dist/lib/index.d.ts",
+  "browser": {
+    "ws": false
+  },
   "files": [
     "dist/lib"
   ],
@@ -12,19 +25,14 @@
     "prepare": "yarn build",
     "test": "jest --verbose"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/trufflesuite/truffle.git",
-    "directory": "packages/dashboard-mesasge-bus"
-  },
-  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/dashboard-message-bus#readme",
-  "bugs": {
-    "url": "https://github.com/trufflesuite/truffle/issues"
-  },
-  "author": "Rosco Kalis <roscokalis@gmail.com>",
-  "license": "MIT",
-  "publishConfig": {
-    "access": "public"
+  "types": "dist/lib/index.d.ts",
+  "dependencies": {
+    "@types/ws": "^7.2.0",
+    "axios": "0.26.1",
+    "delay": "^5.0.0",
+    "isomorphic-ws": "^4.0.1",
+    "promise.any": "^2.0.2",
+    "ws": "^7.2.0"
   },
   "devDependencies": {
     "@types/jest": "^27.0.3",
@@ -35,15 +43,7 @@
     "ts-jest": "^27.1.2",
     "typescript": "^4.1.4"
   },
-  "dependencies": {
-    "@types/ws": "^7.2.0",
-    "axios": "^0.24.0",
-    "delay": "^5.0.0",
-    "isomorphic-ws": "^4.0.1",
-    "promise.any": "^2.0.2",
-    "ws": "^7.2.0"
-  },
-  "browser": {
-    "ws": false
+  "publishConfig": {
+    "access": "public"
   }
 }
