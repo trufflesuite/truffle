@@ -12,8 +12,8 @@ import { useEffect, useState } from "react";
 import { useAccount, useConnect, useNetwork } from "wagmi";
 import ConfirmNetworkChanged from "./components/ConfirmNetworkChange";
 import { getPorts, respond } from "./utils/utils";
-import Header from "./components/Header/Header";
-import DashboardProvider from "./components/DashboardProvider";
+import Header from "./components/header/Header";
+import DashboardProvider from "./components/dashboardprovider";
 import ConnectNetwork from "./components/ConnectNetwork";
 
 function Dashboard() {
