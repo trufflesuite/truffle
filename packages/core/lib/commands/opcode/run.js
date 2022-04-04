@@ -3,6 +3,7 @@ module.exports = async function (options) {
   const TruffleError = require("@truffle/error");
   const WorkflowCompile = require("@truffle/workflow-compile");
   const CodeUtils = require("@truffle/code-utils");
+  const { Conversion } = require("@truffle/codec");
 
   if (options._.length === 0) {
     throw new TruffleError("Please specify a contract name.");
@@ -29,15 +30,22 @@ module.exports = async function (options) {
   }
   const opcodes = CodeUtils.parseCode(bytecode, numInstructions);
 
-  const indexLength = (opcodes.length + "").length;
+  if (opcodes.length === 0) {
+    console.log(
+      "Contract has no bytecode. Please check to make sure it's not an `abstract contract` or an `interface`."
+    );
+    return;
+  }
 
-  opcodes.forEach((opcode, index) => {
-    let strIndex = index + ":";
+  const lastPCByteLength = Conversion.toBytes(
+    opcodes[opcodes.length - 1].pc
+  ).byteLength;
 
-    while (strIndex.length < indexLength + 1) {
-      strIndex += " ";
-    }
-
-    console.log(strIndex + " " + opcode.name + " " + (opcode.pushData || ""));
+  opcodes.forEach(opcode => {
+    console.log(
+      Conversion.toHexString(opcode.pc, lastPCByteLength) + ":",
+      opcode.name,
+      opcode.pushData || ""
+    );
   });
 };
