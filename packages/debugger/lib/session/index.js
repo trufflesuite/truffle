@@ -466,7 +466,10 @@ export default class Session {
     return true;
   }
 
-  async variable(name) {
+  /**
+   * see variables() for supported options
+   */
+  async variable(name, options) {
     const definitions = this.view(data.current.identifiers.definitions);
     const refs = this.view(data.current.identifiers.refs);
     const compilationId = this.view(data.current.compilationId);
@@ -478,11 +481,16 @@ export default class Session {
       dataSagas.decode,
       definitions[name],
       refs[name],
-      compilationId
+      compilationId,
+      (options || {}).indicateUnknown
     );
   }
 
-  async variables() {
+  /**
+   * only current option is indicateUnknown, which causes unknown storage
+   * to yield a ReadErrorStorageDeliberate instead of zero
+   */
+  async variables(options) {
     if (!this.view(session.status.loaded)) {
       return {};
     }
@@ -496,7 +504,8 @@ export default class Session {
           dataSagas.decode,
           definitions[identifier],
           ref,
-          compilationId
+          compilationId,
+          (options || {}).indicateUnknown
         );
       }
     }

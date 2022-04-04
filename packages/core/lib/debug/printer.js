@@ -681,7 +681,7 @@ class DebugPrinter {
   }
 
   async printVariables(sectionOuts = this.sectionPrintouts) {
-    const values = await this.session.variables();
+    const values = await this.session.variables({ indicateUnknown: true });
     const sections = this.session.view(data.current.identifiers.sections);
 
     const sectionNames = {
@@ -731,7 +731,7 @@ class DebugPrinter {
    *        :!<trace.step.stack>[1]
    */
   async evalAndPrintExpression(raw, indent, suppress) {
-    let variables = await this.session.variables();
+    let variables = await this.session.variables({ indicateUnknown: true });
 
     //if we're just dealing with a single variable, handle that case
     //separately (so that we can do things in a better way for that

@@ -814,6 +814,7 @@ export type ReadError =
   | ReadErrorStack
   | ReadErrorBytes
   | ReadErrorStorage
+  | ReadErrorStorageDeliberate
   | UnusedImmutableError;
 
 /**
@@ -908,6 +909,18 @@ export interface ReadErrorBytes {
  */
 export interface ReadErrorStorage {
   kind: "ReadErrorStorage";
+  range: Storage.Range;
+}
+
+/**
+ * A read error in storage, but one triggered deliberately to indicate
+ * that that particular area of storage is unknown, rather than due to
+ * an unexpected error condition.
+ *
+ * @Category Generic errors
+ */
+export interface ReadErrorStorageDeliberate {
+  kind: "ReadErrorStorageDeliberate";
   range: Storage.Range;
 }
 
