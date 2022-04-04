@@ -72,7 +72,7 @@ export function isEncodingTextInput(input: any): input is EncodingTextInput {
 
 export function isContractInput(input: any): input is ContractInput {
   return (
-    typeof input === "object" &&
+    (typeof input === "object" || typeof input === "function") &&
     input !== null &&
     typeof input.address === "string" &&
     //we *don't* check anything more for addresses, we'll let the
@@ -85,7 +85,7 @@ export function isFunctionExternalInput(
   input: any
 ): input is FunctionExternalInput {
   return (
-    typeof input === "object" &&
+    (typeof input === "object" || typeof input === "function") &&
     input !== null &&
     "address" in input &&
     "selector" in input
