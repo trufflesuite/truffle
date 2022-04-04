@@ -30,10 +30,8 @@ const OUTLINED = {
     "border-2 border-truffle-blue disabled:pointer-events-none disabled:opacity-40",
   blue: "border-none text-truffle-blue bg-truffle-blue bg-opacity-20 hover:bg-truffle-blue hover:bg-opacity-40 focus:bg-truffle-blue focus:bg-opacity-40 active:bg-truffle-blue active:bg-opacity-40",
   red: "border-none text-truffle-red bg-truffle-red bg-opacity-20 hover:bg-truffle-red hover:bg-opacity-40 focus:bg-truffle-red focus:bg-opacity-40 active:bg-truffle-red active:bg-opacity-40",
-  // red: 'border-none bg-truffle-red bg-opacity-20 hover:bg-truffle-red/40 active:bg-truffle-red/60 text-red focus:bg-truffle-red/40',
   brown:
     "border-none text-truffle-brown bg-truffle-brown bg-opacity-20 hover:bg-truffle-brown hover:bg-opacity-40 focus:bg-truffle-brown focus:bg-opacity-40 active:bg-truffle-brown active:bg-opacity-40"
-  //brown: 'border-none bg-truffle-brown bg-opacity-20 hover:bg-pink/40 active:bg-pink/60 text-pink focus:bg-pink/40',
 };
 
 const EMPTY = {
