@@ -7,9 +7,9 @@ export type ButtonVariant = "outlined" | "filled" | "empty";
 
 const DIMENSIONS = {
   xs: "py-1 px-2 h-[28px] !border",
-  sm: "py-2 px-3 h-[36px]",
-  md: "px-4 h-[52px]",
-  lg: "p-4 " // h-[60px]
+  sm: "py-2 px-2 h-[36px]",
+  md: "px-2 h-[52px]",
+  lg: "p-2 " // h-[60px]
 };
 
 const SIZE: Record<string, string> = {
