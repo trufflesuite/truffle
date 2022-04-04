@@ -1,6 +1,6 @@
-import Card from "./common/Card";
-import Button from "./common/Button";
-import NetworkIndicator from "./common/NetworkIndicator";
+import Card from "src/components/Common/Card";
+import Button from "src/components/Common/Button";
+import NetworkIndicator from "src/components/Common/NetworkIndicator";
 import { useConnect, useNetwork } from "wagmi";
 
 interface Props {
@@ -18,11 +18,9 @@ function ConnectNetwork({ confirm }: Props) {
   const connectButton = (
     <div>
       {connectData.connectors.map(connector => (
-        <Button
-          key={connector.id}
-          onClick={() => connect(connector)}
-          text={connector.name}
-        />
+        <Button key={connector.id} onClick={() => connect(connector)}>
+          {connector.name}
+        </Button>
       ))}
     </div>
   );
@@ -38,7 +36,7 @@ function ConnectNetwork({ confirm }: Props) {
       </div>
     </div>
   );
-  const confirmButton = <Button text="Confirm" onClick={confirm} />;
+  const confirmButton = <Button onClick={confirm}>Confirm</Button>;
   return (
     <div className="flex justify-center items-center py-20">
       <div className="mx-3 w-3/4 max-w-4xl h-2/3 text-center">

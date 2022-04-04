@@ -1,9 +1,9 @@
 import { providers } from "ethers";
 import { useEffect, useState } from "react";
-import { getDisplayName } from "../../utils/utils";
-import NetworkIndicator from "../common/NetworkIndicator";
+import { getDisplayName } from "src/utils/utils";
+import NetworkIndicator from "src/components/Common/NetworkIndicator";
 import { useAccount, useConnect, useNetwork } from "wagmi";
-import Button from "../common/Button";
+import Button from "src/components/Common/Button";
 
 interface Props {
   disconnect: () => void;
@@ -48,7 +48,9 @@ function Header({ disconnect }: Props) {
           <NetworkIndicator chainId={networkData.chain.id} />
         )}
         {networkData.chain?.id && (
-          <Button onClick={disconnect} text="disconnect" />
+          <Button onClick={disconnect} size={"sm"} color={"red"}>
+            disconnect
+          </Button>
         )}
         <div>{displayName}</div>
       </div>
