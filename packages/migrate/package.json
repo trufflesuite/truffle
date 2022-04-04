@@ -26,7 +26,7 @@
     "@truffle/interface-adapter": "^0.5.12",
     "@truffle/require": "^2.0.93",
     "glob": "^7.1.6",
-    "inquirer": "^7.0.0"
+    "inquirer": "8.2.2"
   },
   "devDependencies": {
     "mocha": "8.1.2",
