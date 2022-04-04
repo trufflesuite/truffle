@@ -22,9 +22,9 @@
     "husky": "^7.0.4",
     "lerna": "^4.0.0",
     "lerna-dependency-graph": "^1.1.0",
-    "lerna-update-wizard": "^1.1.0",
+    "lerna-update-wizard": "1.1.2",
     "lint-staged": "^12.1.2",
-    "nyc": "^13.0.1",
+    "nyc": "15.1.0",
     "prettier": "^2.5.1",
     "prs-merged-since": "^1.1.0"
   },
