@@ -90,6 +90,19 @@ describe("Encoding", () => {
       );
     });
 
+    it("Encodes callable objects w/ address & selector", async () => {
+      let input: any = () => undefined;
+      input.address = "0x10ca7e901d10CA7E901D10Ca7e901D10CA7e901D";
+      input.selector = "0xdeadbeef";
+      input.garbate = "garbage";
+      const { data } = await encoder.encodeTxNoResolution(abi, [input]);
+      assert.strictEqual(
+        data,
+        selector +
+          "10ca7e901d10ca7e901d10ca7e901d10ca7e901ddeadbeef0000000000000000"
+      );
+    });
+
     it("Encodes objects w/ address & selector (unusual forms for these)", async () => {
       const { data } = await encoder.encodeTxNoResolution(abi, [
         {
