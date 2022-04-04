@@ -1,8 +1,8 @@
 {
   "name": "@truffle/core",
   "description": "Core code for Truffle command line tool",
-  "author": "consensys.net",
   "license": "MIT",
+  "author": "consensys.net",
   "homepage": "https://github.com/trufflesuite/truffle#readme",
   "repository": {
     "type": "git",
@@ -72,7 +72,7 @@
     "hdkey": "^1.1.0",
     "inquirer": "^7.0.0",
     "js-interpreter": "2.2.0",
-    "mocha": "8.1.2",
+    "mocha": "9.2.2",
     "node-emoji": "^1.8.1",
     "original-require": "^1.0.1",
     "sane": "^4.0.2",
