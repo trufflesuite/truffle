@@ -2,10 +2,8 @@
   "name": "@truffle/events",
   "version": "0.1.4",
   "description": "Event system for Truffle",
-  "main": "index.js",
-  "keywords": [],
-  "author": "Nick D'Andrea and Tyler Feickert",
   "license": "ISC",
+  "author": "Nick D'Andrea and Tyler Feickert",
   "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/events#readme",
   "repository": {
     "type": "git",
@@ -15,15 +13,17 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
+  "main": "index.js",
   "scripts": {
     "prepare": "exit 0"
-  },
-  "publishConfig": {
-    "access": "public"
   },
   "dependencies": {
     "@truffle/spinners": "^0.1.1",
     "emittery": "^0.4.1",
-    "web3-utils": "1.5.3"
+    "web3-utils": "1.7.1"
+  },
+  "keywords": [],
+  "publishConfig": {
+    "access": "public"
   }
 }
