@@ -309,7 +309,50 @@ contract GlobalDeclarationTest {
 }
 `;
 
-let sources = {
+const __UNKNOWN = `
+//SPDX-License-Identifier: MIT
+
+pragma solidity ^0.8.0;
+
+contract UnknownTest {
+
+  struct Pair {
+    uint x;
+    uint y;
+  }
+
+  uint known;
+  uint unknown;
+  Pair partialPair;
+  uint[2] partialArray;
+  uint[] partialDynamic;
+  mapping(uint => uint) theMap;
+
+  event Num(uint);
+
+  constructor() {
+    known = 1;
+    unknown = 2;
+    partialPair.x = 3;
+    partialPair.y = 4;
+    partialArray[0] = 5;
+    partialArray[1] = 6;
+    partialDynamic.push(7);
+    partialDynamic.push(8);
+    theMap[9] = 9;
+  }
+
+  function run() public { //BREAK
+    emit Num(known);
+    emit Num(partialPair.x);
+    emit Num(partialArray[0]);
+    emit Num(partialDynamic[0]);
+    emit Num(theMap[9]);
+  }
+}
+`;
+
+const sources = {
   "ContainersTest.sol": __CONTAINERS,
   "ElementaryTest.sol": __KEYSANDBYTES,
   "SpliceTest.sol": __SPLICING,
@@ -317,7 +360,8 @@ let sources = {
   "OverflowTest.sol": __OVERFLOW,
   "BadBoolTest.sol": __BADBOOL,
   "Circular.sol": __CIRCULAR,
-  "GlobalDeclarations.sol": __GLOBALDECLS
+  "GlobalDeclarations.sol": __GLOBALDECLS,
+  "UnknownTest.sol": __UNKNOWN
 };
 
 describe("Further Decoding", function () {
@@ -413,7 +457,7 @@ describe("Further Decoding", function () {
       bytesMap: { "0x01": "0x01" },
       uintMap: { 1: 1, 2: 2 },
       intMap: { "-1": -1 },
-      stringMap: { "0xdeadbeef": "0xdeadbeef", "12345": "12345", "hello": "hello" },
+      stringMap: { "0xdeadbeef": "0xdeadbeef", 12345: "12345", hello: "hello" },
       addressMap: { [address]: address },
       contractMap: { [address]: address },
       enumMap: { "ElementaryTest.Ternary.Blue": "ElementaryTest.Ternary.Blue" },
@@ -601,6 +645,58 @@ describe("Further Decoding", function () {
     assert.isArray(circular.children);
     assert.lengthOf(circular.children, 1);
     assert.strictEqual(circular.children[0], circular);
+  });
+
+  it("Distinguishes known and unknown storage", async function () {
+    this.timeout(12000);
+
+    let instance = await abstractions.UnknownTest.deployed();
+    let receipt = await instance.run();
+    let txHash = receipt.tx;
+
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+
+    let sourceId = bugger.view(sourcemapping.current.source).id;
+    let source = bugger.view(sourcemapping.current.source).source;
+    await bugger.addBreakpoint({
+      sourceId,
+      line: lineOf("BREAK", source)
+    });
+
+    const assertIsUnknown = variable => {
+      assert.equal(variable.kind, "error");
+      assert.equal(variable.error.kind, "ReadErrorStorageDeliberate");
+    };
+
+    await bugger.continueUntilBreakpoint();
+    let variables = await bugger.variables({ indicateUnknown: true });
+    assertIsUnknown(variables.known); //it's not known yet
+    assertIsUnknown(variables.unknown);
+    assert.equal(variables.partialPair.kind, "value"); //it's known but individual entries are not
+    assertIsUnknown(variables.partialPair.value[0].value);
+    assertIsUnknown(variables.partialPair.value[1].value);
+    assert.equal(variables.partialArray.kind, "value"); //again, it's known but individual entries are not
+    assertIsUnknown(variables.partialArray.value[0]);
+    assertIsUnknown(variables.partialArray.value[1]);
+    assertIsUnknown(variables.partialDynamic); //this OTOH is wholly unknown since we don't know its length
+    assert.equal(variables.theMap.kind, "value"); //maps should never turn up unknown
+    assert.lengthOf(variables.theMap.value, 0); //no keys recorded
+
+    await bugger.runToEnd();
+    variables = await bugger.variables({ indicateUnknown: true });
+    assert.equal(variables.known.kind, "value"); //known now
+    assertIsUnknown(variables.unknown); //still unknown
+    assert.equal(variables.partialPair.kind, "value"); //first entry now known, second still unknown
+    assert.equal(variables.partialPair.value[0].value.kind, "value");
+    assertIsUnknown(variables.partialPair.value[1].value);
+    assert.equal(variables.partialArray.kind, "value"); //similar
+    assert.equal(variables.partialArray.value[0].kind, "value");
+    assertIsUnknown(variables.partialArray.value[1]);
+    assert.equal(variables.partialDynamic.kind, "value"); //length & first entry now known
+    assert.equal(variables.partialDynamic.value[0].kind, "value");
+    assertIsUnknown(variables.partialDynamic.value[1]);
+    assert.equal(variables.theMap.kind, "value"); //maps should never turn up unknown
+    assert.lengthOf(variables.theMap.value, 1); //1 key recorded
   });
 
   describe("Overflow", function () {
