@@ -6,8 +6,11 @@ const mvdirOptions = {
   copy: true
 };
 
-const copy = async function (from, to) {
-  await mvdir(from, to, mvdirOptions);
+const copy = async function (from, to, options) {
+  return await mvdir(from, to, {
+    ...mvdirOptions,
+    ...options
+  });
 };
 
 module.exports = copy;
