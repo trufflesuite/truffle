@@ -16,13 +16,6 @@ const memoryAdapter = {
   name: "memory" as const
 };
 
-const fsAdapter = {
-  name: "fs" as const,
-  settings: {
-    directory: path.join(tempDir.name, "json")
-  }
-};
-
 const sqliteAdapter = {
   name: "sqlite" as const,
   settings: {
@@ -46,25 +39,6 @@ describe("Memory-based Workspace", () => {
 
     // and don't get data out!
     expect(await workspace2.get("bytecodes", id)).toBeUndefined();
-  });
-});
-
-describe("FS-based Workspace", () => {
-  it("does persist data", async () => {
-    // create first workspace and add to it
-    const workspace1 = attach({ adapter: fsAdapter });
-    await workspace1.add("bytecodes", {
-      bytecodes: [bytecode]
-    });
-
-    // make sure we can get data out of that workspace
-    expect(await workspace1.get("bytecodes", id)).toBeDefined();
-
-    // create a second workspace and don't add anything
-    const workspace2 = attach({ adapter: fsAdapter });
-
-    // but DO get data out
-    expect(await workspace2.get("bytecodes", id)).toBeDefined();
   });
 });
 
