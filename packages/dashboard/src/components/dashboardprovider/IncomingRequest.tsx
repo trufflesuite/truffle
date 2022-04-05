@@ -4,6 +4,7 @@ import { handleDashboardProviderRequest, respond } from "src/utils/utils";
 import { DashboardProviderMessage } from "@truffle/dashboard-message-bus";
 import Button from "src/components/common/Button";
 import Card from "src/components/common/Card";
+import { useState } from "react";
 
 interface Props {
   request: DashboardProviderMessage;
@@ -24,6 +25,8 @@ function IncomingRequest({
   request,
   setRequests
 }: Props) {
+  const [disable, setDisable] = useState(false);
+
   const removeFromRequests = () => {
     setRequests(previousRequests =>
       previousRequests.filter(other => other.id !== request.id)
@@ -31,6 +34,7 @@ function IncomingRequest({
   };
 
   const process = async () => {
+    setDisable(true);
     await handleDashboardProviderRequest(request, provider, connector, socket);
     removeFromRequests();
   };
@@ -111,7 +115,13 @@ function IncomingRequest({
 
   const body = <div>{formatDashboardProviderRequestParameters(request)}</div>;
 
-  const footer = (
+  const footer = disable ? (
+    <div className="flex justify-start items-center gap-2">
+      <Button disabled onClick={() => {}}>
+        Processing...{" "}
+      </Button>
+    </div>
+  ) : (
     <div className="flex justify-start items-center gap-2">
       <Button onClick={process}>Process</Button>
       <Button onClick={reject}>Reject</Button>

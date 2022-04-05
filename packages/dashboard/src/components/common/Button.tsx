@@ -91,6 +91,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           variant !== "empty" ? DIMENSIONS[size] : "",
           fullWidth ? "w-full" : "",
           "mx-2",
+          disabled ? "" : "", // TODO - style the disabled button??
           className
         )}
       >

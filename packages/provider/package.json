@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.2.49",
+  "version": "0.2.50",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0",
@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "ganache": "^7.0.3",
-    "mocha": "8.1.2"
+    "mocha": "9.2.2"
   },
   "keywords": [
     "ethereum",
