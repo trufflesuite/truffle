@@ -9,7 +9,7 @@
     "@nomiclabs/hardhat-waffle": "^2.0.1",
     "@tenderly/hardhat-tenderly": "^1.0.0",
     "chalk": "^4.1.0",
-    "ethers": "^5.0.17",
+    "ethers": "5.6.2",
     "hardhat": "^2.0.11",
     "hardhat-deploy": "^0.8.11"
   },
