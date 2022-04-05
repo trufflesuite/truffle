@@ -301,7 +301,7 @@ class Reporter {
   async endTransaction(data) {
     data.message = data.message || "Ending unknown transaction....";
     const message = this.messages.steps("endTransaction", data);
-    this.transactionSpinner.succeed();
+    this.transactionSpinner.remove();
     return message;
   }
 
