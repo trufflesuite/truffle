@@ -141,15 +141,7 @@ var properties = {
   source: {},
   sourcePath: {},
   ast: {},
-  legacyAST: {
-    transform: function (value, obj) {
-      if (value) {
-        return value;
-      } else {
-        return obj.ast;
-      }
-    }
-  },
+  legacyAST: {},
   compiler: {},
   networks: {
     /**
