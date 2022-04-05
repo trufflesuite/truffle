@@ -8,7 +8,7 @@ module.exports = async function (buildDir, options) {
   let accept = true;
 
   if (options.interactive) {
-    accept = await Migrate.acceptDryRun();
+    accept = await Migrate.promptToAcceptDryRun();
   }
 
   if (accept) {
