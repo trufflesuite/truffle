@@ -1,7 +1,7 @@
 import BN from "bn.js";
 import type { Web3Shim } from "..";
 import type { EvmTransaction } from "../../adapter/types";
-import { AbiCoder as EthersAbi } from "ethers/utils/abi-coder";
+import { ethers } from "ethers";
 
 export const QuorumDefinition = {
   async initNetworkType(web3: Web3Shim) {
@@ -110,7 +110,7 @@ const overrides = {
   decodeParameters: (web3: Web3Shim) => {
     const _oldDecodeParameters = web3.eth.abi.decodeParameters;
 
-    const ethersAbiCoder = new EthersAbi((type, value) => {
+    const ethersAbiCoder = new ethers.utils.AbiCoder((type, value) => {
       if (
         type.match(/^u?int/) &&
         !Array.isArray(value) &&
