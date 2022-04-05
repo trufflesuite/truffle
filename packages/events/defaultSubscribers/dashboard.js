@@ -30,9 +30,7 @@ module.exports = {
             const errMessage = `Transaction submission failed with error ${error.code}: '${error.message}'`;
             this.spinner.fail(errMessage);
           } else {
-            this.spinner.succeed(
-              `Transaction submitted successfully. Hash: ${result.result}`
-            );
+            this.spinner.remove();
           }
 
           delete this.pendingTransactions[payload.id];
