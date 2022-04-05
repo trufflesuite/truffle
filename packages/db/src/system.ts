@@ -22,11 +22,7 @@ import {
  *         name: "couch";
  *         settings?: Meta.Pouch.Adapters.Couch.DatabasesSettings;
  *       }
- *     | {
- *         name: "fs";
- *         settings?: Meta.Pouch.Adapters.Fs.DatabasesSettings;
- *       }
- *     | {
+ *     |
  *         name: "memory";
  *         settings?: Meta.Pouch.Adapters.Memory.DatabasesSettings;
  *       }
