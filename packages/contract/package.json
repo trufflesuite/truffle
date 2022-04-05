@@ -30,7 +30,7 @@
     "@truffle/interface-adapter": "^0.5.14",
     "bignumber.js": "^7.2.1",
     "debug": "^4.3.1",
-    "ethers": "^4.0.32",
+    "ethers": "5.6.2",
     "web3": "1.5.3",
     "web3-core-helpers": "1.5.3",
     "web3-core-promievent": "1.5.3",

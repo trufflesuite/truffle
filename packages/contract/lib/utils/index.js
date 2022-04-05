@@ -1,6 +1,6 @@
 const debug = require("debug")("contract:utils");
 const web3Utils = require("web3-utils");
-const { bigNumberify } = require("ethers/utils/bignumber");
+const ethers = require("ethers");
 const abi = require("web3-eth-abi");
 const BlockchainUtils = require("@truffle/blockchain-utils");
 const reformat = require("../reformat");
@@ -206,7 +206,7 @@ const Utils = {
         const stringValue = item.toFixed
           ? item.toFixed() //prevents use of scientific notation
           : item.toString();
-        const ethersBN = bigNumberify(stringValue);
+        const ethersBN = ethers.BigNumber.from(stringValue);
         converted.push(ethersBN);
       } else {
         converted.push(item);
@@ -219,7 +219,7 @@ const Utils = {
    * Multiplies an ethers.js BigNumber and a number with decimal places using
    * integer math rather than using an arbitrary floating-point library like
    * `bignumber.js`.
-   * @param  {BigNumber} bignum            an ethers.js BigNumber (use bigNumberify)
+   * @param  {BigNumber} bignum            an ethers.js BigNumber
    * @param  {Number}    decimal           a number which has 0+ decimal places
    * @param  {Number}    [maxPrecision=5]  the max number of signficant figures
    *                                       `decimal` can have. (default: 5)
@@ -235,9 +235,9 @@ const Utils = {
       maxPrecision
     );
 
-    const denominator = bigNumberify(10).pow(significantFigures);
+    const denominator = ethers.BigNumber.from(10).pow(significantFigures);
     const multiplier = Math.round(decimal * denominator);
-    const numerator = bigNumberify(multiplier).mul(bignum);
+    const numerator = ethers.BigNumber.from(multiplier).mul(bignum);
 
     return numerator.div(denominator);
   },
@@ -332,6 +332,6 @@ const Utils = {
 };
 
 Utils.ens = ens;
-Utils.bigNumberify = bigNumberify;
+Utils.BigNumber = ethers.BigNumber;
 
 module.exports = Utils;

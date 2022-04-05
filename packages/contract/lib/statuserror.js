@@ -11,7 +11,9 @@ class StatusError extends TruffleError {
 
     if (reason) reasonString = `Reason given: ${reason}.`;
 
-    if (utils.bigNumberify(receipt.gasUsed).eq(utils.bigNumberify(gasLimit))) {
+    if (
+      utils.BigNumber.from(receipt.gasUsed).eq(utils.BigNumber.from(gasLimit))
+    ) {
       message =
         "Transaction: " +
         tx +

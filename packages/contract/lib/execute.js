@@ -39,15 +39,15 @@ const execute = {
           // note: this means if a transaction will revert but the user does not have stacktracing enabled,
           // they will get an error from the gas estimation and be unable to proceed; we may need to revisit this
           if (gas === null) {
-            const defaultGas = utils.bigNumberify(Math.floor(blockLimit / 2));
+            const defaultGas = utils.BigNumber.from(Math.floor(blockLimit / 2));
             accept(defaultGas.toHexString());
           } else {
-            const limit = utils.bigNumberify(blockLimit);
+            const limit = utils.BigNumber.from(blockLimit);
             // if we did get a numerical gas estimate from interfaceAdapter, we
             // multiply that estimate by the gasMultiplier to help ensure we
             // have enough gas for the transaction
             const bestEstimate = utils.multiplyBigNumberByDecimal(
-              utils.bigNumberify(gas),
+              utils.BigNumber.from(gas),
               constructor.gasMultiplier
             );
             // Check that we don't go over blockLimit
