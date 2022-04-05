@@ -693,6 +693,8 @@ class DebugPrinter {
 
     this.config.logger.log();
 
+    let printLegend = false;
+
     // printout the sections that are included in the inputs and have positive contents length
     for (const [section, variables] of Object.entries(sections)) {
       // only check the first 3 characters of each name given in the input sectionPrintouts
@@ -712,9 +714,18 @@ class DebugPrinter {
             longestNameLength + 5
           );
           this.config.logger.log("  " + paddedName, formatted);
+          if (Codec.Export.containsDeliberateReadError(value)) {
+            printLegend = true;
+          }
         }
         this.config.logger.log();
       }
+    }
+
+    if (printLegend) {
+      this.config.logger.log(
+        "Note: Some storage variables could not be fully decoded; the debugger can only see storage it has seen touched during the transaction."
+      );
     }
   }
 
@@ -741,6 +752,11 @@ class DebugPrinter {
       let formatted = DebugUtils.formatValue(variables[variable], indent);
       this.config.logger.log(formatted);
       this.config.logger.log();
+      if (Codec.Export.containsDeliberateReadError(variables[variable])) {
+        this.config.logger.log(
+          "Note: Variable could not be fully decoded as the debugger can only see storage it has seen touched during the transaction."
+        );
+      }
       return;
     }
     debug("expression case");
