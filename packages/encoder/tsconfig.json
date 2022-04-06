@@ -19,18 +19,10 @@
         "node_modules/web3/index",
         "../../node_modules/@types/web3/index"
       ]
-    },
-    "typeRoots": [
-      "./typings"
-    ],
-    "types": [
-      "jest"
-    ]
-
+    }
   },
   "include": [
     "./lib/**/*.ts",
     "./typings/**/*.d.ts"
   ]
-
 }
