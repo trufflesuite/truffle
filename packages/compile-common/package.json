@@ -21,7 +21,7 @@
   },
   "types": "dist/src/index.d.ts",
   "dependencies": {
-    "@truffle/error": "^0.1.0",
+    "@truffle/error": "0.1.0",
     "colors": "1.4.0"
   },
   "devDependencies": {

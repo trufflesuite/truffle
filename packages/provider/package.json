@@ -20,7 +20,7 @@
   },
   "types": "./typings/index.d.ts",
   "dependencies": {
-    "@truffle/error": "^0.1.0",
+    "@truffle/error": "0.1.0",
     "@truffle/interface-adapter": "^0.5.12",
     "web3": "1.5.3"
   },

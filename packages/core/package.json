@@ -34,7 +34,7 @@
     "@truffle/decoder": "^5.2.5",
     "@truffle/deployer": "^3.2.73",
     "@truffle/environment": "^0.2.100",
-    "@truffle/error": "^0.1.0",
+    "@truffle/error": "0.1.0",
     "@truffle/expect": "^0.1.0",
     "@truffle/fetch-and-compile": "^0.4.8",
     "@truffle/interface-adapter": "^0.5.12",
