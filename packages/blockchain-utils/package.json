@@ -26,7 +26,7 @@
     "@types/node": "12.12.21",
     "@types/web3": "^1.0.20",
     "mocha": "9.2.2",
-    "ts-node": "^9.0.0",
+    "ts-node": "10.7.0",
     "typescript": "^4.1.4"
   },
   "keywords": [

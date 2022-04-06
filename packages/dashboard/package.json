@@ -73,7 +73,7 @@
     "react-scripts": "^4.0.0",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat",
     "ts-jest": "27.1.4",
-    "ts-node": "^10.4.0",
+    "ts-node": "10.7.0",
     "typescript": "^4.1.4"
   },
   "publishConfig": {

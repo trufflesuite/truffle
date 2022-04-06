@@ -29,7 +29,7 @@
     "@types/mocha": "^5.2.7",
     "@types/node": "12.12.21",
     "mocha": "9.2.2",
-    "ts-node": "^9.0.0",
+    "ts-node": "10.7.0",
     "typescript": "^4.1.4"
   },
   "gitHead": "6b84be7849142588ef2e3224d8a9d7c2ceeb6e4a"

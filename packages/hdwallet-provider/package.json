@@ -38,7 +38,7 @@
     "@types/web3-provider-engine": "^14.0.0",
     "ganache": "^7.0.3",
     "mocha": "9.2.2",
-    "ts-node": "^9.0.0",
+    "ts-node": "10.7.0",
     "typescript": "^4.1.4",
     "web3": "1.5.3"
   },
