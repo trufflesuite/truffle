@@ -76,7 +76,7 @@
     "fast-check": "^2.12.1",
     "ganache": "^7.0.3",
     "hkts": "^0.3.1",
-    "jest": "^26.5.2",
+    "jest": "27.5.1",
     "jest-fast-check": "^1.0.1",
     "madge": "^5.0.1",
     "ts-jest": "27.1.4",

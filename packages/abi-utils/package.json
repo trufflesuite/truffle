@@ -33,7 +33,7 @@
     "@types/faker": "^5.1.2",
     "@types/jest": "^26.0.20",
     "@types/jest-json-schema": "^2.1.2",
-    "jest": "^26.5.2",
+    "jest": "27.5.1",
     "jest-extended": "^0.11.5",
     "jest-fast-check": "^1.0.1",
     "jest-json-schema": "^2.1.0",
