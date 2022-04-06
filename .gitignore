@@ -6,6 +6,7 @@ yarn-error.log
 .vscode
 .DS_Store
 Thumbs.db
+$RECYCLE.BIN/
 
 # truffle
 packages/truffle/build
@@ -14,6 +15,7 @@ packages/truffle/.DS_Store
 packages/truffle/Thumbs.db
 packages/truffle/.tern-port
 packages/truffle/dependencies
+packages/truffle/$RECYCLE.BIN/
 
 # @truffle/debugger
 packages/debugger/.tmp
