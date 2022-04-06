@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@truffle/artifactor": "^4.0.147",
-    "@truffle/error": "^0.1.0",
+    "@truffle/error": "0.1.0",
     "@truffle/expect": "^0.1.0",
     "@truffle/interface-adapter": "^0.5.12",
     "@truffle/resolver": "^8.0.14",

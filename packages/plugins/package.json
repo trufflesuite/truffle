@@ -1,9 +1,19 @@
 {
   "name": "@truffle/plugins",
-  "version": "0.2.5",
   "description": "Truffle plugin support",
+  "license": "MIT",
+  "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/plugins#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/plugins"
+  },
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "version": "0.2.5",
   "main": "dist/lib/index.js",
-  "types": "dist/lib/index.d.ts",
   "files": [
     "dist"
   ],
@@ -12,19 +22,11 @@
     "prepare": "yarn build",
     "test": "jest --verbose --detectOpenHandles"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/trufflesuite/truffle.git",
-    "directory": "packages/plugins"
-  },
-  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/plugins#readme",
-  "bugs": {
-    "url": "https://github.com/trufflesuite/truffle/issues"
-  },
-  "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
-  "license": "MIT",
-  "publishConfig": {
-    "access": "public"
+  "types": "dist/lib/index.d.ts",
+  "dependencies": {
+    "@truffle/error": "0.1.0",
+    "app-module-path": "^2.2.0",
+    "original-require": "^1.0.1"
   },
   "devDependencies": {
     "@types/jest": "^26.0.0",
@@ -33,9 +35,7 @@
     "ts-jest": "^26.1.0",
     "typescript": "^4.1.4"
   },
-  "dependencies": {
-    "@truffle/error": "^0.0.8",
-    "app-module-path": "^2.2.0",
-    "original-require": "^1.0.1"
+  "publishConfig": {
+    "access": "public"
   }
 }
