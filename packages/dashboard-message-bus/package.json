@@ -35,7 +35,7 @@
     "ws": "^7.2.0"
   },
   "devDependencies": {
-    "@types/jest": "^27.0.3",
+    "@types/jest": "27.4.1",
     "@types/node": "^12.0.0",
     "@types/promise.any": "^2.0.0",
     "@types/web3": "^1.2.2",

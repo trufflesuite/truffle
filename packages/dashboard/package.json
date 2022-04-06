@@ -50,7 +50,7 @@
     "@types/cors": "^2.8.12",
     "@types/ethereum-protocol": "^1.0.2",
     "@types/express": "^4.17.13",
-    "@types/jest": "^27.0.3",
+    "@types/jest": "27.4.1",
     "@types/node": "^12.0.0",
     "@types/react": "^17.0.37",
     "@types/react-dom": "^17.0.11",

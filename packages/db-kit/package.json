@@ -54,7 +54,7 @@
     "source-map-support": "^0.5.19"
   },
   "devDependencies": {
-    "@types/jest": "^27.4.1",
+    "@types/jest": "27.4.1",
     "@types/node": "12.12.21",
     "@types/react": "^16.8.0",
     "@types/web3": "^1.0.20",
