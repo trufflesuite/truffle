@@ -23,9 +23,7 @@ module.exports = async function (config) {
     prefix: "migrate-dry-run-"
   }).name;
 
-  await copy(config.contracts_build_directory, temporaryDirectory, {
-    overwrite: true
-  });
+  await copy(config.contracts_build_directory, temporaryDirectory);
 
   config.contracts_build_directory = temporaryDirectory;
   // Note: Create a new artifactor and resolver with the updated config.

@@ -2,7 +2,7 @@ const mvdir = require("mvdir");
 
 const mvdirOptions = {
   log: false,
-  overwrite: false,
+  overwrite: true,
   copy: true
 };
 
