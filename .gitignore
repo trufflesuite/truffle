@@ -5,11 +5,13 @@ node_modules
 yarn-error.log
 .vscode
 .DS_Store
+Thumbs.db
 
 # truffle
 packages/truffle/build
 packages/truffle/stats.json
 packages/truffle/.DS_Store
+packages/truffle/Thumbs.db
 packages/truffle/.tern-port
 packages/truffle/dependencies
 
