@@ -381,6 +381,9 @@ export class ResultInspector {
           case "ReadErrorStorage":
           case "ReadErrorBytes":
             return Exception.message(errorResult.error); //yay, these five are already defined!
+          case "StorageNotSuppliedError":
+            //this one has a message, but we're going to special-case it
+            return options.stylize("?", "undefined");
         }
       }
     }

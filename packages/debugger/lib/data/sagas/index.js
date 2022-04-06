@@ -69,7 +69,12 @@ function* tickSaga() {
   yield* trace.signalTickSagaCompletion();
 }
 
-export function* decode(definition, ref, compilationId) {
+export function* decode(
+  definition,
+  ref,
+  compilationId,
+  indicateUnknown = false
+) {
   const userDefinedTypes = yield select(data.views.userDefinedTypes);
   const state = yield select(data.current.state);
   const mappingKeys = yield select(data.views.mappingKeys);
@@ -111,7 +116,9 @@ export function* decode(definition, ref, compilationId) {
       case "storage":
         //the debugger supplies all storage it knows at the beginning.
         //any storage it does not know is presumed to be zero.
-        response = ZERO_WORD;
+        //(unlesss indicateUnknown is passed, in which case we use
+        //null as a deliberately invalid response)
+        response = indicateUnknown ? null : ZERO_WORD;
         break;
       case "code":
         response = yield* requestCode(request.address);

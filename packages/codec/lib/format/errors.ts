@@ -814,6 +814,7 @@ export type ReadError =
   | ReadErrorStack
   | ReadErrorBytes
   | ReadErrorStorage
+  | StorageNotSuppliedError
   | UnusedImmutableError;
 
 /**
@@ -908,6 +909,19 @@ export interface ReadErrorBytes {
  */
 export interface ReadErrorStorage {
   kind: "ReadErrorStorage";
+  range: Storage.Range;
+}
+
+/**
+ * A read error in storage, but one triggered deliberately to indicate
+ * that that particular area of storage is unknown, rather than due to
+ * an unexpected error condition.  This error is triggered by passing
+ * null in response to a storage request.
+ *
+ * @Category Generic errors
+ */
+export interface StorageNotSuppliedError {
+  kind: "StorageNotSuppliedError";
   range: Storage.Range;
 }
 

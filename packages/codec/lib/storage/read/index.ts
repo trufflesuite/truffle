@@ -85,9 +85,14 @@ export function* readStorage(
   for (let i = 0; i < totalWords; i++) {
     let offset = from.slot.offset.addn(i);
     const word = yield* readSlot(storage, { ...from.slot, offset });
-    if (typeof word !== "undefined") {
-      data.set(word, i * Evm.Utils.WORD_SIZE);
+    if (word === null) {
+      //check for null as a way to deliberately indicate an error
+      throw new DecodingError({
+        kind: "StorageNotSuppliedError" as const,
+        range
+      });
     }
+    data.set(word, i * Evm.Utils.WORD_SIZE);
   }
   debug("words %o", data);
 

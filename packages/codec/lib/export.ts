@@ -345,6 +345,39 @@ export class CalldataDecodingInspector {
   }
 }
 
+export function containsDeliberateReadError(
+  result: Format.Values.Result
+): boolean {
+  switch (result.kind) {
+    case "value":
+      switch (result.type.typeClass) {
+        case "struct":
+          //this is currently only intended for use with storage variables, so I
+          //won't bother with handling tuple, magic, options
+          return (result as Format.Values.StructValue).value.some(({ value }) =>
+            containsDeliberateReadError(value)
+          );
+        case "array":
+          return (result as Format.Values.ArrayValue).value.some(
+            containsDeliberateReadError
+          );
+        case "mapping":
+          return (result as Format.Values.MappingValue).value.some(
+            ({ value }) => containsDeliberateReadError(value)
+          );
+        default:
+          return false;
+      }
+    case "error":
+      switch (result.error.kind) {
+        case "StorageNotSuppliedError":
+          return true;
+        default:
+          return false;
+      }
+  }
+}
+
 /**
  * Similar to [[ResultInspector]], but for a [[LogDecoding]].
  * See [[ResultInspector]] for more information.
