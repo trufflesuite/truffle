@@ -53,12 +53,7 @@ export class DashboardServer {
     this.rpc = options.rpc ?? true;
     this.verbose = options.verbose ?? false;
     this.autoOpen = options.autoOpen ?? true;
-    this.frontendPath = path.join(
-      __dirname,
-      ".",
-      "dashboard-frontend",
-      "build"
-    );
+    this.frontendPath = path.join(__dirname, ".", "dashboard-frontend", "out");
 
     this.boundTerminateListener = () => this.stop();
   }
@@ -101,7 +96,7 @@ export class DashboardServer {
     });
   }
 
-  private getPorts(req: Request, res: Response) {
+  private getPorts(_: Request, res: Response) {
     if (!this.messageBus) {
       throw new Error("Message bus has not been started yet");
     }

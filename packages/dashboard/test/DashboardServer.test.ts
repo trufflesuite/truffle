@@ -3,7 +3,7 @@ import { providers, utils } from "ethers";
 import Web3 from "web3";
 import { getMessageBusPorts } from "@truffle/dashboard-message-bus";
 import MockDashboard from "./MockDashboard";
-import { DashboardServer } from "../lib";
+import { DashboardServer } from "lib";
 
 jest.setTimeout(200000);
 

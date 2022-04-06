@@ -5,9 +5,9 @@ import {
   isInteractiveRequest,
   isUnsupportedRequest,
   respondToUnsupportedRequest
-} from "../../utils/utils";
-import Card from "../common/Card";
-import IncomingRequest from "./IncomingRequest";
+} from "src/utils/utils";
+import Card from "src/components/common/Card";
+import IncomingRequest from "src/components/dashboardprovider/IncomingRequest";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus";
 import { useConnect } from "wagmi";
 

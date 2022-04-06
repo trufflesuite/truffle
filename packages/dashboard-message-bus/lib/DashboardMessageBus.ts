@@ -17,8 +17,8 @@ interface UnfulfilledRequest {
 }
 
 export class DashboardMessageBus extends EventEmitter {
-  private publishServer: WebSocket.Server;
-  private subscribeServer: WebSocket.Server;
+  private declare publishServer: WebSocket.Server;
+  private declare subscribeServer: WebSocket.Server;
   private publishers: WebSocket[] = [];
   private subscribers: WebSocket[] = [];
 
@@ -95,9 +95,7 @@ export class DashboardMessageBus extends EventEmitter {
     subscribers: WebSocket[]
   ) {
     // convert to string for uniformity since WebSocket.Data can take other forms
-    if (typeof data !== "string") {
-      data = data.toString();
-    }
+    data = data.toString();
 
     await this.ready();
 
@@ -139,19 +137,23 @@ export class DashboardMessageBus extends EventEmitter {
   }
 
   private logToPublishers(logMessage: any, namespace?: string) {
-    this.logTo(logMessage, this.publishers, namespace);
+    DashboardMessageBus.logTo(logMessage, this.publishers, namespace);
   }
 
-  private logToSubscribers(logMessage: any, namespace?: string) {
-    this.logTo(logMessage, this.subscribers, namespace);
-  }
+  // private logToSubscribers(logMessage: any, namespace?: string) {
+  //   DashboardMessageBus.logTo(logMessage, this.subscribers, namespace);
+  // }
 
-  private logToAll(logMessage: any, namespace?: string) {
-    this.logToPublishers(logMessage, namespace);
-    this.logToSubscribers(logMessage, namespace);
-  }
+  // private logToAll(logMessage: any, namespace?: string) {
+  //   this.logToPublishers(logMessage, namespace);
+  //   this.logToSubscribers(logMessage, namespace);
+  // }
 
-  private logTo(logMessage: any, receivers: WebSocket[], namespace?: string) {
+  private static logTo(
+    logMessage: any,
+    receivers: WebSocket[],
+    namespace?: string
+  ) {
     const payload = {
       namespace: "dashboard-message-bus",
       message: logMessage

@@ -1,3 +1,6 @@
+import type { NextPage } from "next";
+import { useEffect, useState } from "react";
+import WebSocket from "isomorphic-ws";
 import {
   base64ToJson,
   connectToMessageBusWithRetries,
@@ -7,16 +10,14 @@ import {
   isInvalidateMessage,
   Message
 } from "@truffle/dashboard-message-bus";
-import WebSocket from "isomorphic-ws";
-import { useEffect, useState } from "react";
 import { useAccount, useConnect, useNetwork } from "wagmi";
-import ConfirmNetworkChanged from "./components/ConfirmNetworkChange";
-import { getPorts, respond } from "./utils/utils";
-import Header from "./components/Header/Header";
-import DashboardProvider from "./components/DashboardProvider/DashboardProvider";
-import ConnectNetwork from "./components/ConnectNetwork";
+import { getPorts, respond } from "src/utils/utils";
+import Header from "src/components/header";
+import ConfirmNetworkChanged from "src/components/ConfirmNetworkChange";
+import ConnectNetwork from "src/components/ConnectNetwork";
+import DashboardProvider from "src/components/dashboardprovider";
 
-function Dashboard() {
+const Home: NextPage = () => {
   const [paused, setPaused] = useState<boolean>(false);
   const [connectedChainId, setConnectedChainId] = useState<
     number | undefined
@@ -117,6 +118,6 @@ function Dashboard() {
       )}
     </div>
   );
-}
+};
 
-export default Dashboard;
+export default Home;

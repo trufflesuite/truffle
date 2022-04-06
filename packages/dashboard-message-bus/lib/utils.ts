@@ -13,10 +13,7 @@ export class MessageBusConnectionError extends Error {}
  */
 export const jsonToBase64 = (json: any) => {
   const stringifiedJson = JSON.stringify(json);
-  const buffer = Buffer.from(stringifiedJson);
-  const base64 = buffer.toString("base64");
-
-  return base64;
+  return Buffer.from(stringifiedJson).toString("base64");
 };
 
 /**
@@ -25,10 +22,7 @@ export const jsonToBase64 = (json: any) => {
  */
 export const base64ToJson = (base64: string) => {
   const buffer = Buffer.from(base64, "base64");
-  const stringifiedJson = buffer.toString("utf8");
-  const json = JSON.parse(stringifiedJson);
-
-  return json;
+  return JSON.parse(buffer.toString("utf8"));
 };
 
 /**
@@ -38,7 +32,9 @@ export const base64ToJson = (base64: string) => {
  */
 export const startWebSocketServer = (options: ServerOptions) => {
   return new Promise<WebSocket.Server>(resolve => {
-    const server = new WebSocket.Server(options, () => resolve(server));
+    const server: WebSocket.Server = new WebSocket.Server(options, () =>
+      resolve(server)
+    );
   });
 };
 
@@ -68,8 +64,7 @@ export const broadcastAndAwaitFirst = async (
   message: Message
 ) => {
   const promises = sockets.map(socket => sendAndAwait(socket, message));
-  const result = await Promise.any(promises);
-  return result;
+  return await Promise.any(promises);
 };
 
 /**
@@ -89,11 +84,11 @@ export const sendAndAwait = (socket: WebSocket, message: Message) => {
     });
 
     // TODO: Need to check that the error corresponds to the sent message?
-    socket.addEventListener("error", (event: WebSocket.ErrorEvent) => {
+    socket.addEventListener("error", event => {
       reject(event.error);
     });
 
-    socket.addEventListener("close", (event: WebSocket.CloseEvent) => {
+    socket.addEventListener("close", event => {
       reject(
         new Error(
           `Socket connection closed with code '${event.code}' and reason '${event.reason}'`
@@ -115,8 +110,8 @@ export const connectToMessageBusWithRetries = async (
   for (let tryCount = 0; tryCount < retries; tryCount += 1) {
     try {
       return await connectToMessageBus(port, host);
-    } catch (e) {
-      error = e;
+    } catch (e: unknown) {
+      error = <Error>e;
       await delay(1000);
     }
   }

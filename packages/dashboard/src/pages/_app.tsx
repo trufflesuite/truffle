@@ -1,4 +1,5 @@
-import Dashboard from "./Dashboard";
+import "src/styles/globals.css";
+import type { AppProps } from "next/app";
 
 import { chain, Connector, defaultChains, Provider } from "wagmi";
 import { InjectedConnector } from "wagmi/connectors/injected";
@@ -11,12 +12,6 @@ const defaultChain = chain.mainnet;
 
 const getProvider = (_config: { chainId?: number; connector?: Connector }) => {
   let wProvider = _config.connector?.getProvider(true);
-  console.debug("getProvider", {
-    wProvider,
-    winEth: window.ethereum,
-    _config,
-    INFURA_ID: process.env.REACT_APP_INFURA_ID
-  });
   let ret: any;
   if (!wProvider) {
     ret = getDefaultProvider(getNetwork(_config.chainId ?? defaultChain.id));
@@ -27,11 +22,6 @@ const getProvider = (_config: { chainId?: number; connector?: Connector }) => {
       .catch((e: any) => console.error(e));
     ret = new ethproviders.Web3Provider(wProvider);
   }
-  console.debug("getProvider.returning", {
-    wProvider,
-    winEth: window.ethereum,
-    ret
-  });
   return ret;
 };
 
@@ -46,12 +36,12 @@ const connectors = [
   })
 ];
 
-function App() {
+function MyApp({ Component, pageProps }: AppProps) {
   return (
     <Provider connectors={connectors} provider={getProvider}>
-      <Dashboard />
+      <Component {...pageProps} />
     </Provider>
   );
 }
 
-export default App;
+export default MyApp;

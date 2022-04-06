@@ -1,10 +1,16 @@
 import WebSocket from "isomorphic-ws";
-import ReactJson from "react-json-view";
-import { handleDashboardProviderRequest, respond } from "../../utils/utils";
-import Button from "../common/Button";
-import Card from "../common/Card";
+//import ReactJson from "react-json-view";
+import { handleDashboardProviderRequest, respond } from "src/utils/utils";
+import Button from "src/components/common/Button";
+import Card from "src/components/common/Card";
 import { DashboardProviderMessage } from "@truffle/dashboard-message-bus";
 import { useState } from "react";
+
+// hacky mc hack face: https://github.com/mac-s-g/react-json-view/issues/121
+import dynamic from "next/dynamic";
+const ReactJson = dynamic(() => import("react-json-view"), {
+  ssr: false
+});
 
 interface Props {
   request: DashboardProviderMessage;

@@ -10,7 +10,7 @@ function Button({ disabled, onClick, text }: Props) {
   return (
     <button
       className={
-        "rounded p-2 " +
+        "rounded p-2 mx-2 " +
         (disabled ? "" : "bg-truffle-blue") +
         " text-truffle-brown uppercase hover:bg-white"
       }

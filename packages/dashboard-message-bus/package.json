@@ -13,30 +13,31 @@
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "version": "0.1.0",
-  "main": "dist/lib/index.js",
+  "module": "dist/esm/lib/index.js",
+  "main": "dist/cjs/lib/index.js",
+  "types": "dist/cjs/lib/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "browser": {
     "ws": false
   },
-  "files": [
-    "dist/lib"
-  ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig-cjs.json",
     "prepare": "yarn build",
     "test": "jest --verbose"
   },
-  "types": "dist/lib/index.d.ts",
   "dependencies": {
-    "@types/ws": "^7.2.0",
+    "@types/ws": "^7.4.7",
     "axios": "0.26.1",
     "delay": "^5.0.0",
     "isomorphic-ws": "^4.0.1",
     "promise.any": "^2.0.2",
-    "ws": "^7.2.0"
+    "ws": "^7.5.7"
   },
   "devDependencies": {
     "@types/jest": "^27.0.3",
-    "@types/node": "^12.0.0",
+    "@types/node": "^14.18.12",
     "@types/promise.any": "^2.0.0",
     "@types/web3": "^1.2.2",
     "jest": "^27.4.5",

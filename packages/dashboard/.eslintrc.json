@@ -1,5 +1,8 @@
 {
-  "extends": ["../../.eslintrc.package.json"],
+  "extends": ["../../.eslintrc.package.json", "next/core-web-vitals"],
+  "rules": {
+    "@next/next/no-img-element": "off"
+  },
   "env": {
     "browser": true,
     "node": true,

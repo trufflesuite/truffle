@@ -1,6 +1,6 @@
-import Card from "./common/Card";
-import Button from "./common/Button";
-import NetworkIndicator from "./common/NetworkIndicator";
+import Card from "src/components/common/Card";
+import Button from "src/components/common/Button";
+import NetworkIndicator from "src/components/common/NetworkIndicator";
 import { useConnect, useNetwork } from "wagmi";
 
 interface Props {
@@ -30,7 +30,7 @@ function ConnectNetwork({ confirm }: Props) {
   const confirmBody = chainId && (
     <div className="flex flex-col gap-2">
       <div>
-        Please confirm you're connected to the right network (or switch to the
+        Please confirm you`re connected to the right network (or switch to the
         right one) before continuing.
       </div>
       <div className="flex justify-center">
