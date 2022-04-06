@@ -457,7 +457,7 @@ describe("Further Decoding", function () {
       bytesMap: { "0x01": "0x01" },
       uintMap: { 1: 1, 2: 2 },
       intMap: { "-1": -1 },
-      stringMap: { "0xdeadbeef": "0xdeadbeef", "12345": "12345", "hello": "hello" },
+      stringMap: { "0xdeadbeef": "0xdeadbeef", 12345: "12345", hello: "hello" },
       addressMap: { [address]: address },
       contractMap: { [address]: address },
       enumMap: { "ElementaryTest.Ternary.Blue": "ElementaryTest.Ternary.Blue" },
@@ -665,7 +665,7 @@ describe("Further Decoding", function () {
 
     const assertIsUnknown = variable => {
       assert.equal(variable.kind, "error");
-      assert.equal(variable.error.kind, "ReadErrorStorageDeliberate");
+      assert.equal(variable.error.kind, "StorageNotSuppliedError");
     };
 
     await bugger.continueUntilBreakpoint();
@@ -677,13 +677,19 @@ describe("Further Decoding", function () {
     assert.equal(variables.partialPair.kind, "value"); //it's known but individual entries are not
     assertIsUnknown(variables.partialPair.value[0].value);
     assertIsUnknown(variables.partialPair.value[1].value);
-    assert.isTrue(Codec.Export.containsDeliberateReadError(variables.partialPair));
+    assert.isTrue(
+      Codec.Export.containsDeliberateReadError(variables.partialPair)
+    );
     assert.equal(variables.partialArray.kind, "value"); //again, it's known but individual entries are not
     assertIsUnknown(variables.partialArray.value[0]);
     assertIsUnknown(variables.partialArray.value[1]);
-    assert.isTrue(Codec.Export.containsDeliberateReadError(variables.partialArray));
+    assert.isTrue(
+      Codec.Export.containsDeliberateReadError(variables.partialArray)
+    );
     assertIsUnknown(variables.partialDynamic); //this OTOH is wholly unknown since we don't know its length
-    assert.isTrue(Codec.Export.containsDeliberateReadError(variables.partialDynamic));
+    assert.isTrue(
+      Codec.Export.containsDeliberateReadError(variables.partialDynamic)
+    );
     assert.equal(variables.theMap.kind, "value"); //maps should never turn up unknown
     assert.lengthOf(variables.theMap.value, 0); //no keys recorded
     assert.isFalse(Codec.Export.containsDeliberateReadError(variables.theMap));
@@ -697,15 +703,21 @@ describe("Further Decoding", function () {
     assert.equal(variables.partialPair.kind, "value"); //first entry now known, second still unknown
     assert.equal(variables.partialPair.value[0].value.kind, "value");
     assertIsUnknown(variables.partialPair.value[1].value);
-    assert.isTrue(Codec.Export.containsDeliberateReadError(variables.partialPair));
+    assert.isTrue(
+      Codec.Export.containsDeliberateReadError(variables.partialPair)
+    );
     assert.equal(variables.partialArray.kind, "value"); //similar
     assert.equal(variables.partialArray.value[0].kind, "value");
     assertIsUnknown(variables.partialArray.value[1]);
-    assert.isTrue(Codec.Export.containsDeliberateReadError(variables.partialArray));
+    assert.isTrue(
+      Codec.Export.containsDeliberateReadError(variables.partialArray)
+    );
     assert.equal(variables.partialDynamic.kind, "value"); //length & first entry now known
     assert.equal(variables.partialDynamic.value[0].kind, "value");
     assertIsUnknown(variables.partialDynamic.value[1]);
-    assert.isTrue(Codec.Export.containsDeliberateReadError(variables.partialDynamic));
+    assert.isTrue(
+      Codec.Export.containsDeliberateReadError(variables.partialDynamic)
+    );
     assert.equal(variables.theMap.kind, "value"); //maps should never turn up unknown
     assert.lengthOf(variables.theMap.value, 1); //1 key recorded
     assert.isFalse(Codec.Export.containsDeliberateReadError(variables.theMap));
