@@ -88,7 +88,7 @@ export function* readStorage(
     if (word === null) {
       //check for null as a way to deliberately indicate an error
       throw new DecodingError({
-        kind: "ReadErrorStorageDeliberate" as const,
+        kind: "StorageNotSuppliedError" as const,
         range
       });
     }
