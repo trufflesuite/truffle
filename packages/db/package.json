@@ -79,7 +79,7 @@
     "jest": "^26.5.2",
     "jest-fast-check": "^1.0.1",
     "madge": "^5.0.1",
-    "ts-jest": "^26.4.1",
+    "ts-jest": "27.1.4",
     "ts-node": "^9.1.1",
     "ts-node-dev": "^1.0.0-pre.32",
     "tsconfig-paths": "^3.9.0",
