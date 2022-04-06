@@ -1,5 +1,4 @@
 const copyArtifactsToTempDir = async config => {
-  const {promisify} = require("util");
   const copy = require("../../copy");
   const fs = require("fs");
   const OS = require("os");
@@ -16,14 +15,15 @@ const copyArtifactsToTempDir = async config => {
   try {
     fs.statSync(config.contracts_build_directory);
   } catch (_error) {
-    return {temporaryDirectory};
+    return { temporaryDirectory };
   }
 
-  await promisify(copy)(config.contracts_build_directory, temporaryDirectory);
+  await copy(config.contracts_build_directory, temporaryDirectory);
+
   if (config.runnerOutputOnly !== true) {
     config.logger.log("Using network '" + config.network + "'." + OS.EOL);
   }
-  return {temporaryDirectory};
+  return { temporaryDirectory };
 };
 
 module.exports = {
