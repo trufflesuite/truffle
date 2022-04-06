@@ -18,9 +18,7 @@ const copyArtifactsToTempDir = async config => {
     return { temporaryDirectory };
   }
 
-  await copy(config.contracts_build_directory, temporaryDirectory, {
-    overwrite: true
-  });
+  await copy(config.contracts_build_directory, temporaryDirectory);
 
   if (config.runnerOutputOnly !== true) {
     config.logger.log("Using network '" + config.network + "'." + OS.EOL);
