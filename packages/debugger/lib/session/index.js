@@ -488,7 +488,7 @@ export default class Session {
 
   /**
    * only current option is indicateUnknown, which causes unknown storage
-   * to yield a ReadErrorStorageDeliberate instead of zero
+   * to yield a StorageNotSuppliedError instead of zero
    */
   async variables(options) {
     if (!this.view(session.status.loaded)) {

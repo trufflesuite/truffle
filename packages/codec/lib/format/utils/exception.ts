@@ -44,7 +44,7 @@ export function message(error: Format.Errors.ErrorForThrowing): string {
           error.range.to.index
         } in ${slotAddressPrintout(error.range.to.slot)}`;
       }
-    case "ReadErrorStorageDeliberate":
+    case "StorageNotSuppliedError":
       if (error.range.length) {
         return `Unknown storage for ${
           error.range.length
