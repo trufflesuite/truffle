@@ -2,58 +2,36 @@
   "name": "@truffle/db-kit",
   "version": "0.1.64",
   "description": "Utility belt for Truffle and @truffle/db",
-  "keywords": [
-    "smart-contract",
-    "truffle"
-  ],
+  "license": "MIT",
   "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
   "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/db-kit#readme",
-  "license": "MIT",
-  "main": "dist/src/index.js",
-  "directories": {
-    "dist": "dist"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/db-kit"
   },
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "version": "0.1.62",
+  "main": "dist/src/index.js",
   "bin": {
     "db-kit": "./dist/bin/cli.js"
   },
   "files": [
     "dist"
   ],
-  "publishConfig": {
-    "access": "public"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/trufflesuite/truffle.git",
-    "directory": "packages/db-kit"
+  "directories": {
+    "dist": "dist"
   },
   "scripts": {
     "build": "yarn build:dist && yarn build:docs",
-    "clean": "rm -rf ./dist",
-    "prepare": "yarn build",
     "build:dist": "ttsc",
     "build:docs": "typedoc",
+    "clean": "rm -rf ./dist",
     "madge": "madge ./src/index.ts",
+    "prepare": "yarn build",
     "test": "jest --verbose --detectOpenHandles --forceExit --passWithNoTests"
-  },
-  "devDependencies": {
-    "@types/jest": "^27.4.1",
-    "@types/node": "12.12.21",
-    "@types/react": "^16.8.0",
-    "@types/web3": "^1.0.20",
-    "eslint-plugin-react-hooks": "^4.3.0",
-    "jest": "^26.5.2",
-    "madge": "^5.0.1",
-    "ts-jest": "^26.4.1",
-    "ts-node": "^9.1.1",
-    "tsconfig-paths": "^3.9.0",
-    "ttypescript": "^1.5.7",
-    "typedoc": "^0.20.19",
-    "typescript": "^4.1.4",
-    "typescript-transform-paths": "^2.1.0"
-  },
-  "bugs": {
-    "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "dependencies": {
     "@truffle/codec": "^0.12.7",
@@ -74,5 +52,28 @@
     "meow": "^9.0.0",
     "react": "^16.8.0",
     "source-map-support": "^0.5.19"
+  },
+  "devDependencies": {
+    "@types/jest": "^27.4.1",
+    "@types/node": "12.12.21",
+    "@types/react": "^16.8.0",
+    "@types/web3": "^1.0.20",
+    "eslint-plugin-react-hooks": "^4.3.0",
+    "jest": "^26.5.2",
+    "madge": "^5.0.1",
+    "ts-jest": "27.1.4",
+    "ts-node": "^9.1.1",
+    "tsconfig-paths": "^3.9.0",
+    "ttypescript": "^1.5.7",
+    "typedoc": "^0.20.19",
+    "typescript": "^4.1.4",
+    "typescript-transform-paths": "^2.1.0"
+  },
+  "keywords": [
+    "smart-contract",
+    "truffle"
+  ],
+  "publishConfig": {
+    "access": "public"
   }
 }
