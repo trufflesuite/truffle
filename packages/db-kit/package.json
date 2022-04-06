@@ -62,7 +62,7 @@
     "jest": "^26.5.2",
     "madge": "^5.0.1",
     "ts-jest": "27.1.4",
-    "ts-node": "^9.1.1",
+    "ts-node": "10.7.0",
     "tsconfig-paths": "^3.9.0",
     "ttypescript": "^1.5.7",
     "typedoc": "^0.20.19",

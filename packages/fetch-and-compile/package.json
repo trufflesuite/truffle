@@ -44,7 +44,7 @@
     "@types/semver": "^7.3.9",
     "chai": "^4.2.0",
     "mocha": "9.2.2",
-    "ts-node": "^10.4.0",
+    "ts-node": "10.7.0",
     "typescript": "^4.1.4"
   },
   "keywords": [
