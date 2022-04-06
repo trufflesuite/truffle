@@ -27,7 +27,7 @@ jobs:
     strategy:
       matrix:
         platform: [ubuntu-latest]
-        node-version: [14.x, 16.x, 17.x]
+        node-version: [14.x, 16.x]
         env: [GETH=true, PACKAGES=true, INTEGRATION=true]
     runs-on: ${{ matrix.platform }}
 
