@@ -22,7 +22,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@truffle/spinners": "^0.1.2",
+    "@truffle/spinners": "^0.2.0-0",
     "emittery": "^0.4.1",
     "web3-utils": "1.5.3"
   }

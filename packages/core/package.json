@@ -50,7 +50,7 @@
     "@truffle/require": "^2.0.95",
     "@truffle/resolver": "^8.0.17",
     "@truffle/source-fetcher": "^1.0.2",
-    "@truffle/spinners": "^0.1.2",
+    "@truffle/spinners": "^0.2.0-0",
     "@truffle/workflow-compile": "^4.0.13",
     "address": "^1.1.2",
     "chai": "^4.2.0",

@@ -5687,6 +5687,15 @@
     websocket "^1.0.31"
     ws "^7.3.1"
 
+"@trufflesuite/spinnies@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@trufflesuite/spinnies/-/spinnies-0.1.0.tgz#da09ff7c526b563ff6e4d4d86b7884ec00a77be2"
+  integrity sha512-22rVi7rECyAg9vsopa9jR84xQ9kSbjRxCYI9SPbHx4jjfRQODDzmVZtXLobUuXEQZYLgP1pXBtgY5kReb72E2g==
+  dependencies:
+    chalk "^4.1.2"
+    cli-cursor "^3.1.0"
+    strip-ansi "^6.0.0"
+
 "@trufflesuite/typedoc-default-themes@^0.6.1":
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/@trufflesuite/typedoc-default-themes/-/typedoc-default-themes-0.6.1.tgz#6b733ee896519476f6721d0db3effa2ca3bff7ce"

@@ -289,7 +289,7 @@ class Reporter {
       {
         text: message,
         indent: 3,
-        color: "red"
+        prefixColor: "red"
       }
     );
   }
@@ -338,7 +338,7 @@ class Reporter {
     this.blockSpinner = new Spinner("events:subscribers:migrate:reporter", {
       text: this.currentBlockWait,
       indent: 3,
-      color: "red"
+      prefixColor: "red"
     });
   }
 

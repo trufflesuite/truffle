@@ -81,11 +81,7 @@ class CLIDebugger {
         );
       }
       // simulate ora's "warn" feature
-      fetchSpinner.stop({
-        text: `⚠ ${warningStrings.join("  ")}`,
-        color: "yellow",
-        status: "stopped"
-      });
+      fetchSpinner.warn(warningStrings.join("  "));
     }
   }
 
