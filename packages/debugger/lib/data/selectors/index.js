@@ -298,10 +298,11 @@ const data = createSelectorTree({
       [
         "/info/userDefinedTypes",
         "/views/scopes/inlined",
+        "/info/contracts",
         sourcemapping.views.sources,
         evm.info.contexts
       ],
-      (userDefinedTypes, scopes, sources, contexts) =>
+      (userDefinedTypes, scopes, contracts, sources, contexts) =>
         Object.values(userDefinedTypes)
           .filter(
             ({ sourceId, id }) =>
@@ -312,29 +313,17 @@ const data = createSelectorTree({
             debug("id: %O", id);
             const compilationId = sources[sourceId].compilationId;
             debug("compilationId: %O", compilationId);
-            let deployedContext = Object.values(contexts).find(
-              context =>
-                !context.isConstructor &&
-                context.compilationId === compilationId &&
-                context.contractId === id
-            );
-            let constructorContext = Object.values(contexts).find(
-              context =>
-                context.isConstructor &&
-                context.compilationId === compilationId &&
-                context.contractId === id
-            );
-            let immutableReferences = deployedContext
-              ? deployedContext.immutableReferences
-              : undefined;
+            const contract = contracts[compilationId].byAstId[id];
+            const deployedContext = contexts[contract.deployedContext];
+            const constructorContext = contexts[contract.constructorContext];
+            const immutableReferences = (deployedContext || {})
+              .immutableReferences;
             return {
               contractNode: scopes[sourceId][id].definition,
               compilationId,
               immutableReferences,
-              //we don't just use deployedContext to get compiler because it might not exist!
               compiler: sources[sourceId].compiler,
-              //the following three are only needed for decoding return values
-              abi: (deployedContext || {}).abi,
+              abi: contract.abi,
               deployedContext,
               constructorContext
             };
@@ -433,6 +422,14 @@ const data = createSelectorTree({
      * data.info.scopes
      */
     scopes: createLeaf(["/state"], state => state.info.scopes.bySourceId),
+
+    /**
+     * data.info.contracts
+     */
+    contracts: createLeaf(
+      ["/state"],
+      state => state.info.contracts.byCompilationId
+    ),
 
     /*
      * data.info.allocations

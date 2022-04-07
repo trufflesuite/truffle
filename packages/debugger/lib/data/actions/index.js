@@ -70,6 +70,14 @@ export function defineTaggedOutput(node, sourceId) {
   };
 }
 
+export const ADD_CONTRACTS = "DATA_ADD_CONTRACTS";
+export function addContracts(contracts) {
+  return {
+    type: ADD_CONTRACTS,
+    contracts
+  };
+}
+
 export const ALLOCATE = "DATA_ALLOCATE";
 export function allocate(
   storage,

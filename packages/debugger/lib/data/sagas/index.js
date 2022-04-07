@@ -1355,6 +1355,10 @@ export function* recordAllocations() {
   );
 }
 
+export function* addContracts(contracts) {
+  yield put(actions.addContracts(contracts));
+}
+
 export function* saga() {
   yield takeEvery(TICK, tickSaga);
 }
