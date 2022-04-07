@@ -1135,7 +1135,7 @@ const data = createSelectorTree({
     eventId: createLeaf(
       ["./node", "./compilationId"],
       (eventNode, compilationId) => {
-        if (eventNode === null) {
+        if (!eventNode) {
           return undefined;
         }
         switch (eventNode.nodeType) {
