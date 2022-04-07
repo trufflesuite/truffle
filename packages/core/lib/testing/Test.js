@@ -315,7 +315,7 @@ const Test = {
       return await hook.debug(operation);
     };
 
-    const template = function (tests) {
+    const template = function (tests, state) {
       this.timeout(runner.TEST_TIMEOUT);
 
       before("prepare suite", async function () {
@@ -331,7 +331,7 @@ const Test = {
         await runner.endTest(this);
       });
 
-      tests(accounts);
+      tests(accounts, state);
     };
 
     global.contract = function (name, tests) {
@@ -343,6 +343,26 @@ const Test = {
     global.contract.only = function (name, tests) {
       Mocha.describe.only("Contract: " + name, function () {
         template.bind(this, tests)();
+      });
+    };
+
+    global.contract.stateful = function (name, state, tests) {
+      Mocha.describe("Contract (state-verification: true): " + name, function () {
+        beforeEach(async () => {
+          await state.reset();
+        });
+
+        afterEach(async () => {
+          // if there are any exceptions here before calling checkDirty(), it means
+          // that a previous test failed.
+          if (!state.exceptions) {
+            await state.checkDirty();
+            state.assertNoExceptions();
+            await state.reset();
+          }
+        });
+
+        template.bind(this, tests, state)();
       });
     };
 
