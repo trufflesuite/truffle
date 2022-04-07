@@ -169,7 +169,7 @@ class CLIDebugger {
         lightMode: true
       }); //note: may throw!
       await this.fetchExternalSources(bugger); //note: mutates bugger!
-      const startSpinner = ("core:debug:cli:start", startMessage);
+      const startSpinner = new Spinner("core:debug:cli:start", startMessage);
       await bugger.startFullMode();
       //I'm removing the failure check here because I don't think that can
       //actually happen
