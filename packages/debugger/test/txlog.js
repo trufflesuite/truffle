@@ -15,7 +15,11 @@ const __TXLOG = `
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract VizTest {
+interface Nothing {
+  event Bloop();
+}
+
+contract VizTest is Nothing {
 
   event Dummy();
 
@@ -54,6 +58,7 @@ contract VizTest {
 
   function testEvent() public {
     emit TakesArgs(1, 2);
+    emit Bloop();
   }
 
   function testConfusing() public {
@@ -490,7 +495,7 @@ describe("Transaction log (visualizer)", function () {
   });
 
   describe("Events", function () {
-    it("Correctly logs an event", async function () {
+    it("Correctly logs events", async function () {
       this.timeout(12000);
       const instance = await abstractions.VizTest.deployed();
       const receipt = await instance.testEvent();
@@ -513,10 +518,11 @@ describe("Transaction log (visualizer)", function () {
       assert.equal(call.address, instance.address);
       assert.equal(call.functionName, "testEvent");
       assert.equal(call.contractName, "VizTest");
-      assert.lengthOf(call.actions, 1);
-      const event = call.actions[0];
+      assert.lengthOf(call.actions, 2);
+      //let's check the first event
+      let event = call.actions[0];
       assert.equal(event.type, "event");
-      const decoding = event.decoding;
+      let decoding = event.decoding;
       assert.equal(decoding.kind, "event");
       assert.equal(decoding.decodingMode, "full");
       assert.equal(decoding.class.typeName, "VizTest");
@@ -534,6 +540,17 @@ describe("Transaction log (visualizer)", function () {
         byName(decoding.arguments)
       );
       assert.deepEqual(args, { x: 1, y: 2 });
+      //now for the second event
+      event = call.actions[1];
+      assert.equal(event.type, "event");
+      decoding = event.decoding;
+      assert.equal(decoding.kind, "event");
+      assert.equal(decoding.decodingMode, "full");
+      assert.equal(decoding.class.typeName, "VizTest");
+      assert.equal(decoding.definedIn.typeName, "Nothing");
+      assert.equal(decoding.abi.name, "Bloop");
+      assert.lengthOf(decoding.abi.inputs, 0);
+      assert.lengthOf(decoding.arguments, 0);
     });
 
     it("Correctly logs an event inside a constructor", async function () {
