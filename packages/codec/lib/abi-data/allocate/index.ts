@@ -1306,6 +1306,10 @@ function getEventAllocationsForContract(
   compilationId: string,
   compiler: Compiler.CompilerVersion | undefined
 ): EventAllocationTemporary[] {
+  if (!abi) {
+    //can't do much if no ABI!
+    return [];
+  }
   return abi
     .filter((abiEntry: Abi.Entry) => abiEntry.type === "event")
     .filter(
