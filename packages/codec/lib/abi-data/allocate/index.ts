@@ -1223,18 +1223,6 @@ export function getReturndataAllocations(
     [],
     additionalAllocations[""] || []
   );
-  /*
-  for (const [contextHash, contextAllocations] of Object.entries(allAllocations)) {
-    for (const [signature, signatureAllocations] of Object.entries(contextAllocations)) {
-      const selector = Web3Utils.soliditySha3({ type: "string", value: signature })
-        .slice(0, 2 + 2 * Evm.Utils.SELECTOR_SIZE); //arithmetic to account for hex string
-      if (!allocations[contextHash][selector]) {
-        allocations[contextHash][selector] = [];
-      }
-      allocations[contextHash][selector] = allocations[contextHash][selector].concat(signatureAllocations);
-    }
-  }
-  */
   debug("error allocations: %O", allocations);
   return allocations;
 }
