@@ -108,7 +108,7 @@ export class Docker {
     }
     const spinner = new Spinner("compile-solidity:docker-download", {
       text: "Downloading Docker image",
-      color: "red"
+      prefixColor: "red"
     });
     try {
       execSync(`docker pull ethereum/solc:${image}`);
