@@ -34,7 +34,10 @@ module.exports = {
         if (this.quiet) {
           return;
         }
-        this.spinners.prepareDownloadSpinner = new Spinner("events:subscribers:unbox:download-prepare", "Preparing to download box");
+        this.spinners.prepareDownloadSpinner = new Spinner(
+          "events:subscribers:unbox:download-prepare",
+          "Preparing to download box"
+        );
       }
     ],
     "unbox:preparingToDownload:succeed": [
@@ -50,7 +53,10 @@ module.exports = {
         if (this.quiet) {
           return;
         }
-        this.spinners.downloadSpinner = new Spinner("events:subscribers:unbox:download", "Downloading");
+        this.spinners.downloadSpinner = new Spinner(
+          "events:subscribers:unbox:download",
+          "Downloading"
+        );
       }
     ],
     "unbox:downloadingBox:succeed": [
@@ -58,7 +64,7 @@ module.exports = {
         if (this.quiet) {
           return;
         }
-        this.spinners.downloadSpinner.succeed("unbox-handler");
+        this.spinners.downloadSpinner.succeed();
       }
     ],
     "unbox:cleaningTempFiles:start": [
@@ -66,7 +72,10 @@ module.exports = {
         if (this.quiet) {
           return;
         }
-        this.spinners.cleanUpSpinner = new Spinner("events:subscribers:unbox:cleanup", "Cleaning up temporary files");
+        this.spinners.cleanUpSpinner = new Spinner(
+          "events:subscribers:unbox:cleanup",
+          "Cleaning up temporary files"
+        );
       }
     ],
     "unbox:cleaningTempFiles:succeed": [
@@ -82,7 +91,10 @@ module.exports = {
         if (this.quiet) {
           return;
         }
-        this.spinners.unboxHandlerSpinner = new Spinner("events:subscribers:unbox:handler", "Setting up box");
+        this.spinners.unboxHandlerSpinner = new Spinner(
+          "events:subscribers:unbox:handler",
+          "Setting up box"
+        );
       }
     ],
     "unbox:settingUpBox:succeed": [
@@ -118,7 +130,7 @@ module.exports = {
         if (this.quiet) {
           return;
         }
-        Object.values(this.spinners).map((spinner) => {
+        Object.values(this.spinners).map(spinner => {
           if (spinner.isSpinning) {
             spinner.fail();
           }
