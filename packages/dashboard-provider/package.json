@@ -43,7 +43,7 @@
     "jest": "^27.4.5",
     "ts-jest": "^27.1.2",
     "typescript": "^4.1.4",
-    "web3": "1.7.1"
+    "web3": "1.7.3"
   },
   "dependencies": {
     "@truffle/dashboard": "^0.1.3",

@@ -20,7 +20,7 @@
   "dependencies": {
     "@truffle/spinners": "^0.1.1",
     "emittery": "^0.4.1",
-    "web3-utils": "1.7.1"
+    "web3-utils": "1.7.3"
   },
   "keywords": [],
   "publishConfig": {
