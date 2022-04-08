@@ -17,7 +17,7 @@ function tieWithTable(
   let reference: number;
   switch (untied.type.typeClass) {
     case "array":
-      let untiedAsArray = <Format.Values.ArrayValue>untied; //dammit TS
+      const untiedAsArray = <Format.Values.ArrayValue>untied; //dammit TS
       reference = untiedAsArray.reference;
       if (reference === undefined) {
         //we need to do some pointer stuff here, so let's first create our new
@@ -26,7 +26,8 @@ function tieWithTable(
         let tied = { ...untiedAsArray, value: [...untiedAsArray.value] };
         //now, we can't use a map here, or we'll screw things up!
         //we want to *mutate* value, not replace it with a new object
-        for (let index in tied.value) {
+        //note: this used to be a for-in loop, changed to avoid problems with VSCode
+        for (let index = 0; index < tied.value.length; index++) {
           tied.value[index] = tieWithTable(tied.value[index], [
             tied,
             ...seenSoFar
@@ -37,7 +38,7 @@ function tieWithTable(
         return { ...seenSoFar[reference - 1], reference };
       }
     case "struct":
-      let untiedAsStruct = <Format.Values.StructValue>untied; //dammit TS
+      const untiedAsStruct = <Format.Values.StructValue>untied; //dammit TS
       reference = untiedAsStruct.reference;
       if (reference === undefined) {
         //we need to do some pointer stuff here, so let's first create our new
@@ -49,7 +50,8 @@ function tieWithTable(
         };
         //now, we can't use a map here, or we'll screw things up!
         //we want to *mutate* value, not replace it with a new object
-        for (let index in tied.value) {
+        //note: this used to be a for-in loop, changed to avoid problems with VSCode
+        for (let index = 0; index < tied.value.length; index++) {
           tied.value[index] = {
             ...tied.value[index],
             value: tieWithTable(tied.value[index].value, [tied, ...seenSoFar])
@@ -62,7 +64,7 @@ function tieWithTable(
     case "tuple": //currently there are no memory tuples, but may as well
       //can't be circular, just recurse
       //note we can just recurse with a straight tie here; don't need tieWithTable
-      let untiedAsTuple = <Format.Values.TupleValue>untied; //dammit TS
+      const untiedAsTuple = <Format.Values.TupleValue>untied; //dammit TS
       //we need to do some pointer stuff here, so let's first create our new
       //object we'll be pointing to
       let tied = { ...untiedAsTuple };
