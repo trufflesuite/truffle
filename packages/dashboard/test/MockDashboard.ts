@@ -58,8 +58,7 @@ export const forwardDashboardProviderRequest = async (
 ) => {
   const send = promisify(provider.send.bind(provider));
   try {
-    const response = await send(payload);
-    return response;
+    return await send(payload);
   } catch (error) {
     return {
       jsonrpc: payload.jsonrpc,

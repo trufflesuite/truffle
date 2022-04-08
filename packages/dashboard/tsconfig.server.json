@@ -18,5 +18,6 @@
     "baseUrl": ".",
     "types": ["jest", "react", "node"]
   },
-  "include": ["lib/**/*", "bin/**/*"]
+  "include": ["./lib/", "./bin"],
+  "exclude": ["node_modules", "dist"]
 }
