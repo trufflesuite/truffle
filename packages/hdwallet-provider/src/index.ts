@@ -306,13 +306,13 @@ class HDWalletProvider {
     phrase: string;
     password?: string;
   }) {
-    this.hdwallet = EthereumHDKey.fromMasterSeed(
-      Buffer.from(mnemonicToSeedSync(phrase, password))
-    );
-
     if (!validateMnemonic(phrase, wordlist)) {
       throw new Error("Mnemonic invalid or undefined");
     }
+
+    this.hdwallet = EthereumHDKey.fromMasterSeed(
+      Buffer.from(mnemonicToSeedSync(phrase, password))
+    );
 
     // crank the addresses out
     for (let i = addressIndex; i < addressIndex + numberOfAddresses; i++) {
