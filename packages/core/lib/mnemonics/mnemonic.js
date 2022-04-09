@@ -45,7 +45,9 @@ const mnemonic = {
     let accounts = [];
     let privateKeys = [];
 
-    let hdwallet = hdkey.fromMasterSeed(mnemonicToSeedSync(mnemonic));
+    let hdwallet = hdkey.fromMasterSeed(
+      Buffer.from(mnemonicToSeedSync(mnemonic))
+    );
     let addressIndex = 0;
     let walletHdpath = "m/44'/60'/0'/0/";
 

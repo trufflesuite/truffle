@@ -307,7 +307,7 @@ class HDWalletProvider {
     password?: string;
   }) {
     this.hdwallet = EthereumHDKey.fromMasterSeed(
-      mnemonicToSeedSync(phrase, password)
+      Buffer.from(mnemonicToSeedSync(phrase, password))
     );
 
     if (!validateMnemonic(phrase, wordlist)) {
