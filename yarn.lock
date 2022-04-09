@@ -28325,10 +28325,10 @@ spark-md5@3.0.1:
   resolved "https://registry.yarnpkg.com/spark-md5/-/spark-md5-3.0.1.tgz#83a0e255734f2ab4e5c466e5a2cfc9ba2aa2124d"
   integrity sha512-0tF3AGSD1ppQeuffsLDIOWlKUd3lS92tFxcsrh5Pe3ZphhnoK+oXIBTzOAThZCiuINZLvpiLH/1VS1/ANEJVig==
 
-spawn-args@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/spawn-args/-/spawn-args-0.1.0.tgz#3e0232a0571b387907f8b3f544aa531c6224848c"
-  integrity sha1-PgIyoFcbOHkH+LP1RKpTHGIkhIw=
+spawn-args@0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/spawn-args/-/spawn-args-0.2.0.tgz#fb7d0bd1d70fd4316bd9e3dec389e65f9d6361bb"
+  integrity sha1-+30L0dcP1DFr2ePew4nmX51jYbs=
 
 spawn-command@^0.0.2-1:
   version "0.0.2-1"
