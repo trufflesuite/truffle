@@ -11,7 +11,7 @@ describe("HD Wallet Provider", function () {
   let server: any;
   let provider: HDWalletProvider;
 
-  before(done => {
+  before(async () => {
     server = Ganache.server({
       miner: {
         instamine: "strict"
@@ -20,7 +20,7 @@ describe("HD Wallet Provider", function () {
         quiet: true
       }
     });
-    server.listen(port, done);
+    await server.listen(port);
   });
 
   after(async () => {
@@ -29,7 +29,9 @@ describe("HD Wallet Provider", function () {
 
   afterEach(() => {
     web3.setProvider(new Web3.providers.HttpProvider("ws://localhost:8545"));
-    provider.engine.stop();
+    if (provider) {
+      provider.engine.stop();
+    }
   });
 
   describe("instantiating with positional arguments", () => {
