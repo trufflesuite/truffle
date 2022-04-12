@@ -28,7 +28,7 @@
     "@types/mocha": "^5.2.7",
     "@types/node": "12.12.21",
     "mocha": "9.2.2",
-    "ts-node": "^9.0.0",
+    "ts-node": "10.7.0",
     "typescript": "^4.1.4"
   },
   "publishConfig": {

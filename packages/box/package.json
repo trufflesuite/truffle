@@ -36,7 +36,7 @@
     "@types/tmp": "^0.1.0",
     "mocha": "9.2.2",
     "sinon": "^9.0.2",
-    "ts-node": "^9.0.0",
+    "ts-node": "10.7.0",
     "typescript": "^4.1.4"
   },
   "keywords": [

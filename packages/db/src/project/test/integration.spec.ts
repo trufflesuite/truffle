@@ -20,12 +20,12 @@ import type { Query, Mutation } from "@truffle/db/process";
 let server;
 const port = 8545;
 // @ts-ignore jest-specific pedantry
-beforeAll(async done => {
+beforeAll(async () => {
   server = Ganache.server({
     // note instamine must be set to eager (default) with vmErrorsOnRPCResponse enabled
     vmErrorsOnRPCResponse: true
   });
-  server.listen(port, done);
+  await server.listen(port);
 });
 
 afterAll(async () => {

@@ -2,8 +2,8 @@
   "name": "@truffle/encoder",
   "version": "0.1.4",
   "description": "Recognizes user input for Soldiity values, resolves overloads, and encodes to binary",
-  "author": "Harry Altman",
   "license": "MIT",
+  "author": "Harry Altman",
   "homepage": "https://github.com/trufflesuite/truffle#readme",
   "repository": {
     "type": "git",
@@ -13,6 +13,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
+  "version": "0.1.2",
   "main": "dist/index.js",
   "directories": {
     "lib": "lib"
@@ -24,18 +25,6 @@
     "test": "jest --detectOpenHandles --forceExit --verbose --silent=false"
   },
   "types": "dist/index.d.ts",
-  "keywords": [
-    "abi",
-    "contract",
-    "encoder",
-    "ethereum",
-    "solidity",
-    "overload",
-    "resolution"
-  ],
-  "publishConfig": {
-    "access": "public"
-  },
   "dependencies": {
     "@ensdomains/ensjs": "^2.0.0",
     "@ethersproject/address": "^5.0.10",
@@ -62,7 +51,7 @@
     "@types/bn.js": "^5.1.0",
     "@types/chai": "^4.2.16",
     "@types/debug": "^4.1.5",
-    "@types/jest": "^26.0.22",
+    "@types/jest": "27.4.1",
     "@types/lodash": "^4.14.179",
     "@types/node": "12.12.21",
     "@types/utf8": "^2.1.6",
@@ -71,12 +60,24 @@
     "fast-check": "^2.14.0",
     "fs-extra": "^9.1.0",
     "ganache": "^7.0.0",
-    "jest": "^26.6.3",
+    "jest": "27.5.1",
     "jest-fast-check": "^1.0.2",
     "jest-transform-stealthy-require": "^1.0.0",
-    "ts-jest": "^26.5.4",
+    "ts-jest": "27.1.4",
     "typescript": "^4.1.4",
     "utf8": "^3.0.0",
     "web3": "1.5.3"
+  },
+  "keywords": [
+    "abi",
+    "contract",
+    "encoder",
+    "ethereum",
+    "overload",
+    "resolution",
+    "solidity"
+  ],
+  "publishConfig": {
+    "access": "public"
   }
 }
