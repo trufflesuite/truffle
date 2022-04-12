@@ -2,9 +2,11 @@ import * as path from "path";
 import Provider from "@truffle/provider";
 import TruffleConfig from "./";
 
-// @ts-ignore
-global.__provider = null;
-let counter = 0;
+let provider: any = null;
+
+export const resetProvider = () => {
+  provider = null;
+};
 
 export const getInitialConfig = ({
   truffleDirectory,
@@ -295,8 +297,9 @@ export const configProps = ({
         // @ts-ignore
         if (!global.__provider) {
           console.log("No memo provider");
-          // @ts-ignore
-          global.__provider = Provider.create(options);
+          provider = Provider.create(options);
+        } else {
+          console.log("Using memo provider");
         }
         // @ts-ignore
         return global.__provider;
