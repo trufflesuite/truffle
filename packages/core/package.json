@@ -78,7 +78,7 @@
     "sane": "^4.0.2",
     "semver": "^7.3.4",
     "source-map-support": "^0.5.19",
-    "spawn-args": "^0.1.0",
+    "spawn-args": "0.2.0",
     "tmp": "^0.2.1",
     "universal-analytics": "^0.4.17",
     "web3": "1.5.3",
