@@ -19,6 +19,22 @@ import { startDashboardInBackground } from "@truffle/dashboard";
 import { timeout } from "promise-timeout";
 import debugModule from "debug";
 
+/**
+ * Public ethereum chains that can be added to a wallet and switched via the
+ * dashboard's network manager. Currently based off of https://docs.metamask.io/guide/rpc-api.html#unrestricted-methods
+ */
+export interface DashboardChain {
+  chainId: string;
+  chainName: string;
+  nativeCurrency: {
+    name?: string;
+    symbol: string;
+    decimals: number;
+  };
+  rpcUrls: string[];
+  blockExplorerUrls?: string[];
+  iconUrls?: string[];
+}
 export interface DashboardProviderOptions {
   /** Host of the Dashboard (default: localhost) */
   dashboardHost?: string;
@@ -37,6 +53,8 @@ export interface DashboardProviderOptions {
 
   /** Boolean indicating whether the dashboard should automatically get opened in the default browser (default: true) */
   autoOpen?: boolean;
+  /** Chain array used to populate the list of public chains to display in the dashboard network manager. */
+  dashboardChains?: DashboardChain[];
 }
 
 export class DashboardProvider {
@@ -44,6 +62,7 @@ export class DashboardProvider {
   public dashboardPort: number;
   public keepAlive: boolean;
   public autoOpen: boolean;
+  public dashboardChains: DashboardChain[];
 
   private socket: WebSocket;
   private timeoutSeconds: number;
@@ -58,6 +77,7 @@ export class DashboardProvider {
     this.keepAlive = options.keepAlive ?? false;
     this.verbose = options.verbose ?? false;
     this.autoOpen = options.autoOpen ?? true;
+    this.dashboardChains = options.dashboardChains ?? [];
 
     // Start a dashboard at the provided port (will silently fail if the dashboard address is already in use)
     const dashboardOptions = {
@@ -65,7 +85,8 @@ export class DashboardProvider {
       host: this.dashboardHost,
       rpc: false,
       verbose: this.verbose,
-      autoOpen: false
+      autoOpen: false,
+      dashboardChains: this.dashboardChains
     };
     startDashboardInBackground(dashboardOptions);
 
