@@ -1,9 +1,9 @@
 import WebSocket from "isomorphic-ws";
 import ReactJson from "react-json-view";
-import { handleDashboardProviderRequest, respond } from "../../utils/utils";
-import Button from "../common/Button";
-import Card from "../common/Card";
+import { handleDashboardProviderRequest, respond } from "src/utils/utils";
 import { DashboardProviderMessage } from "@truffle/dashboard-message-bus";
+import Button from "src/components/common/Button";
+import Card from "src/components/common/Card";
 import { useState } from "react";
 
 interface Props {
@@ -34,6 +34,7 @@ function IncomingRequest({
   };
 
   const process = async () => {
+    setDisable(true);
     await handleDashboardProviderRequest(request, provider, connector, socket);
     removeFromRequests();
   };
@@ -116,18 +117,14 @@ function IncomingRequest({
 
   const footer = disable ? (
     <div className="flex justify-start items-center gap-2">
-      <Button disabled onClick={() => {}} text="Processing..." />
+      <Button disabled onClick={() => {}}>
+        Processing...{" "}
+      </Button>
     </div>
   ) : (
     <div className="flex justify-start items-center gap-2">
-      <Button
-        onClick={() => {
-          process();
-          setDisable(true);
-        }}
-        text="Process"
-      />
-      <Button onClick={reject} text="Reject" />
+      <Button onClick={process}>Process</Button>
+      <Button onClick={reject}>Reject</Button>
     </div>
   );
 
