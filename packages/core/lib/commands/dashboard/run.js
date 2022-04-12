@@ -76,7 +76,7 @@ module.exports = async function (options) {
         chainName !== "test" &&
         chainName !== "develop" &&
         ((chain.host && chain.port) || // either has a host/port
-          (chain.url && chain.url.length > 0)) // or they provided an rpc url
+          (chain.rpcUrls && chain.rpcUrls.length > 0)) // or they provided an rpc url
       ) {
         filtered.push({
           chainId: chain.chainId ? chain.chainId : undefined,
@@ -84,8 +84,8 @@ module.exports = async function (options) {
           nativeCurrency: chain.nativeCurrency
             ? chain.nativeCurrency
             : mainnet.nativeCurrency,
-          rpcUrls: chain.url
-            ? [chain.url]
+          rpcUrls: chain.rpcUrls
+            ? chain.rpcUrls
             : [`http://${chain.host}:${chain.port}`],
           blockExplorerUrls: chain.blockExplorerUrls
             ? chain.blockExplorerUrls
