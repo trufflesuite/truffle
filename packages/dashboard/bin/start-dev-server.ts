@@ -55,16 +55,6 @@ const options = {
       },
       rpcUrls: ["https://goerli.infura.io/v3/"],
       blockExplorerUrls: ["https://goerli.etherscan.com"]
-    },
-    {
-      chainId: "0xFA",
-      chainName: "Fantom Opera",
-      nativeCurrency: {
-        symbol: "FTM",
-        decimals: 18
-      },
-      rpcUrls: ["https://rpc.ftm.tools/"],
-      blockExplorerUrls: ["https://ftmscan.com/"]
     }
   ]
 };
