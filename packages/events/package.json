@@ -1,6 +1,6 @@
 {
   "name": "@truffle/events",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Event system for Truffle",
   "main": "index.js",
   "keywords": [],
@@ -22,7 +22,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@truffle/spinners": "^0.1.1",
+    "@truffle/spinners": "^0.1.2",
     "emittery": "^0.4.1",
     "web3-utils": "1.5.3"
   }
