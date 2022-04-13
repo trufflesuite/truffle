@@ -13,7 +13,6 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.1.62",
   "main": "dist/src/index.js",
   "bin": {
     "db-kit": "./dist/bin/cli.js"
