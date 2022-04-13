@@ -8,9 +8,12 @@ module.exports = {
   handlers: {
     "rpc:request": [
       function (event) {
+        if (!isDashboardNetwork(this.config)) {
+          return;
+        }
+
         const { payload } = event;
         if (payload.method === "eth_sendTransaction") {
-          // TODO: Do we care about ID collisions?
           this.pendingTransactions[payload.id] = payload;
 
           this.spinner = new Spinner("events:subscribers:dashboard", {
@@ -21,6 +24,10 @@ module.exports = {
     ],
     "rpc:result": [
       function (event) {
+        if (!isDashboardNetwork(this.config)) {
+          return;
+        }
+
         let { error } = event;
         const { payload, result } = event;
 
@@ -39,3 +46,7 @@ module.exports = {
     ]
   }
 };
+
+function isDashboardNetwork(config) {
+  return config.network === "dashboard";
+}
