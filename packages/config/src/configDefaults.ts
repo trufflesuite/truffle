@@ -294,18 +294,10 @@ export const configProps = ({
         options.verboseRpc = configObject.verboseRpc;
         options.events = configObject.events;
 
-        // @ts-ignore
-        if (!global.__provider) {
-          console.log("No memo provider");
+        if (!provider) {
           provider = Provider.create(options);
-        } else {
-          console.log("Using memo provider");
         }
-        // @ts-ignore
-        return global.__provider;
-
-        //console.log(new Error("new error").stack);
-        //return Provider.create(options);
+        return provider;
       },
       set() {
         throw new Error(
