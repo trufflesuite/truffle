@@ -145,7 +145,9 @@ export function shimContracts(
     //ast needs to be coerced because schema doesn't quite match our types here...
 
     //if files or sources was passed, trust that to determine the source index
-    //(assuming we have a sourcePath!)
+    //(assuming we have a sourcePath! currently it will be absent when dealing with
+    //Solidity versions <0.4.9; presumably we will fix this if we ever properly
+    //support versions that old, but for now this is necessary to get debug -x to work)
     if ((files || inputSources) && sourcePath) {
       //note: we never set the unreliableSourceOrder flag in this branch;
       //we just trust files/sources.  If this info is bad, then, uh, too bad.
@@ -266,12 +268,8 @@ export function getContractNode(
   contract: Contract,
   compilation: Compilation
 ): AstNode {
-  const {
-    contractName,
-    sourceMap,
-    deployedSourceMap,
-    primarySourceId
-  } = contract;
+  const { contractName, sourceMap, deployedSourceMap, primarySourceId } =
+    contract;
   const { unreliableSourceOrder, sources } = compilation;
 
   let sourcesToCheck: Source[];
@@ -545,7 +543,7 @@ export function collectUserDefinedTypesAndTaggedOutputs(
                 subNode.nodeType === "EventDefinition" ||
                 subNode.nodeType === "ErrorDefinition"
               ) {
-                  references[compilation.id][subNode.id] = subNode;
+                references[compilation.id][subNode.id] = subNode;
               }
             }
           }
@@ -580,14 +578,18 @@ export function findCompilationAndContract(
   for (const compilation of compilations) {
     for (const contract of compilation.contracts) {
       const nameMatches =
-        contract.contractName === (artifact.contractName || <string>artifact.contract_name);
+        contract.contractName ===
+        (artifact.contractName || <string>artifact.contract_name);
       if (nameMatches) {
         if (bytecode) {
           if (Shims.NewToLegacy.forBytecode(contract.bytecode) === bytecode) {
             return { compilation, contract };
           }
         } else if (deployedBytecode) {
-          if (Shims.NewToLegacy.forBytecode(contract.deployedBytecode) === deployedBytecode) {
+          if (
+            Shims.NewToLegacy.forBytecode(contract.deployedBytecode) ===
+            deployedBytecode
+          ) {
             return { compilation, contract };
           }
         } else if (!firstNameMatch) {
