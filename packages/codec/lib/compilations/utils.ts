@@ -145,9 +145,13 @@ export function shimContracts(
     //ast needs to be coerced because schema doesn't quite match our types here...
 
     //if files or sources was passed, trust that to determine the source index
-    if (files || inputSources) {
+    //(assuming we have a sourcePath!)
+    if ((files || inputSources) && sourcePath) {
       //note: we never set the unreliableSourceOrder flag in this branch;
       //we just trust files/sources.  If this info is bad, then, uh, too bad.
+      debug("inputSources: %O", inputSources);
+      debug("files: %O", files);
+      debug("sourcePath: %O", sourcePath);
       const index = inputSources
         ? inputSources.findIndex(source => source.sourcePath === sourcePath)
         : files.indexOf(sourcePath);
@@ -156,6 +160,7 @@ export function shimContracts(
         sourceObject.id = index.toString(); //HACK
         sources[index] = sourceObject;
       }
+      debug("files || inputSources; index: %d", index);
       contractObject.primarySourceId = index.toString(); //HACK
     } else {
       //if neither was passed, attempt to determine it from the ast
@@ -185,6 +190,7 @@ export function shimContracts(
         //if we're in this case, inputSources was not passed
         sourceObject.id = index.toString(); //HACK
         sources[index] = sourceObject;
+        debug("else; index: %d", index);
         contractObject.primarySourceId = index.toString();
       }
     }
@@ -615,7 +621,7 @@ export function findCompilationAndContract(
   return {
     compilation: defaultCompilation,
     contract: defaultContract
-  }
+  };
 }
 
 function projectInfoIsCodecStyle(
