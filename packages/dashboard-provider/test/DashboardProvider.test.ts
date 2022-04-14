@@ -6,28 +6,26 @@ import { getMessageBusPorts } from "@truffle/dashboard-message-bus";
 import { DashboardProvider } from "../lib";
 import MockDashboard from "./MockDashboard";
 
-jest.setTimeout(200000);
+jest.setTimeout(45000);
 
 describe("DashboardProvider", () => {
-  const ganachePort = 8545;
   const dashboardPort = 8546;
 
   let dashboardProvider: DashboardProvider;
   let mockDashboard: MockDashboard;
   let messageBusPorts: any;
-  let ganacheServer: Ganache.Server;
+  let ganacheProvider: Ganache.Provider;
 
-  beforeAll(done => {
-    ganacheServer = Ganache.server();
-    ganacheServer.listen(ganachePort, done);
+  beforeAll(() => {
+    ganacheProvider = Ganache.provider();
   });
 
   afterAll(done => {
-    ganacheServer?.close(done);
+    ganacheProvider?.close(done);
   });
 
   beforeEach(async () => {
-    mockDashboard = new MockDashboard(ganacheServer.provider);
+    mockDashboard = new MockDashboard(ganacheProvider);
     dashboardProvider = new DashboardProvider({
       dashboardPort,
       autoOpen: false
@@ -114,13 +112,10 @@ describe("DashboardProvider", () => {
     let ethersProvider: providers.Web3Provider;
 
     beforeEach(() => {
-      ethersProvider = new providers.Web3Provider(dashboardProvider);
-    });
-
-    afterEach(async () => {
-      // Ethers sends a request to get the chainId on connection, so we await it
-      // to make sure that the provider is finished with that request as well
-      await ethersProvider.ready;
+      ethersProvider = new providers.Web3Provider(dashboardProvider, {
+        name: "ganache",
+        chainId: 1337
+      });
     });
 
     it("should retrieve unlocked accounts", async () => {
