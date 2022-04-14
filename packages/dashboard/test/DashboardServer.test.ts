@@ -5,27 +5,25 @@ import { getMessageBusPorts } from "@truffle/dashboard-message-bus";
 import MockDashboard from "./MockDashboard";
 import { DashboardServer } from "../lib";
 
-jest.setTimeout(200000);
+jest.setTimeout(45000);
 
 // TODO: These tests were copy-pasted from the browser-provider tests
 // We should figure out whether we want to make this DRYer
 describe("DashboardServer", () => {
-  const ganachePort = 8545;
   const dashboardPort = 8546;
   const rpcUrl = `http://localhost:${dashboardPort}/rpc`;
 
   let dashboardServer: DashboardServer;
   let mockDashboard: MockDashboard;
   let messageBusPorts: any;
-  let ganacheServer: Ganache.Server;
+  let ganacheProvider: Ganache.Provider;
 
-  beforeAll(done => {
-    ganacheServer = Ganache.server();
-    ganacheServer.listen(ganachePort, done);
+  beforeAll(() => {
+    ganacheProvider = Ganache.provider();
   });
 
   afterAll(done => {
-    ganacheServer?.close(done);
+    ganacheProvider?.close(done);
   });
 
   beforeEach(async () => {
@@ -36,7 +34,7 @@ describe("DashboardServer", () => {
 
     await dashboardServer.start();
 
-    mockDashboard = new MockDashboard(ganacheServer.provider);
+    mockDashboard = new MockDashboard(ganacheProvider);
     messageBusPorts = await getMessageBusPorts(dashboardPort);
   });
 
@@ -49,13 +47,10 @@ describe("DashboardServer", () => {
     let ethersProvider: providers.JsonRpcProvider;
 
     beforeEach(() => {
-      ethersProvider = new providers.JsonRpcProvider(rpcUrl);
-    });
-
-    afterEach(async () => {
-      // Ethers sends a request to get the chainId on connection, so we await it
-      // to make sure that the provider is finished with that request as well
-      await ethersProvider.ready;
+      ethersProvider = new providers.JsonRpcProvider(rpcUrl, {
+        name: "ganache",
+        chainId: 1337
+      });
     });
 
     it("should retrieve unlocked accounts", async () => {
