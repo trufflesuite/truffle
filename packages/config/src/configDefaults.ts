@@ -1,6 +1,13 @@
 import * as path from "path";
 import Provider from "@truffle/provider";
 import TruffleConfig from "./";
+//@ts-ignore
+let memoProvider = null;
+
+export const resetMemoProvider = () => {
+  memoProvider = null;
+  console.log(new Error("RESET PROVIDER!!!").stack);
+};
 
 export const getInitialConfig = ({
   truffleDirectory,
@@ -284,11 +291,16 @@ export const configProps = ({
           return null;
         }
 
-        const options = configObject.network_config;
-        options.verboseRpc = configObject.verboseRpc;
-        options.events = configObject.events;
+        //@ts-ignore
+        if (!memoProvider) {
+          const options = configObject.network_config;
+          options.verboseRpc = configObject.verboseRpc;
+          options.events = configObject.events;
 
-        return Provider.create(options);
+          memoProvider = Provider.create(options);
+        }
+        //@ts-ignore
+        return memoProvider;
       },
       set() {
         throw new Error(

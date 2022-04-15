@@ -5,7 +5,11 @@ import findUp from "find-up";
 import Conf from "conf";
 import TruffleError from "@truffle/error";
 import originalRequire from "original-require";
-import { getInitialConfig, configProps } from "./configDefaults";
+import {
+  getInitialConfig,
+  configProps,
+  resetMemoProvider
+} from "./configDefaults";
 import { EventManager } from "@truffle/events";
 
 const DEFAULT_CONFIG_FILENAME = "truffle-config.js";
@@ -91,6 +95,7 @@ class TruffleConfig {
   }
 
   public with(obj: any): TruffleConfig {
+    resetMemoProvider();
     //Normalized, or shallow clowning only copies an object's own enumerable
     //properties ignoring properties up the prototype chain
     const current = this.normalize(this);
