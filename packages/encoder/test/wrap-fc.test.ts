@@ -22,8 +22,6 @@ const Bits = () => Bytes().map(k => 8 * k);
 const DecimalPlaces = () => fc.nat(79).map(k => ((k + 17) % 80) + 1);
 const Precision = () => fc.record({ bits: Bits(), places: DecimalPlaces() });
 
-const tolerance = 1e-24; //for encoding of JS numbers only!
-
 const addBoxes = (inputs: any[]) => {
   let boxed: any[] = [];
   for (const input of inputs) {
@@ -313,6 +311,19 @@ const BoolInput = (value: boolean) => {
   return fc.oneof(...addBoxes(representations).map(fc.constant));
 };
 
+function testDecimalAgreementWithTolerance(actual: Big, expected: Big): void {
+  const negativeLog10OfRelativeTolerance = (2 ** 53).toString().length - 1; //15
+  const firstDecimalPlace = expected.e; //note: decreases, not increases, to the right of the decimal point
+  const firstDifferingDecimalPlace = actual.minus(expected).e; //note: will be 0 if difference is 0, so don't trust it in that case
+  const approximateNegativeLog10OfDifference =
+    firstDecimalPlace - firstDifferingDecimalPlace; //don't trust this if they're equal!
+  assert(
+    actual.eq(expected) ||
+      approximateNegativeLog10OfDifference >= negativeLog10OfRelativeTolerance,
+    `Wrapped Big ${actual.toFixed()} was not within relative tolerance 10^-${negativeLog10OfRelativeTolerance} of original value ${expected.toFixed()}, difference approximately 10^-${approximateNegativeLog10OfDifference} of original value`
+  );
+}
+
 describe("Wrapping of elementary values", () => {
   let encoder: Encoder.ProjectEncoder;
 
@@ -389,12 +400,13 @@ describe("Wrapping of elementary values", () => {
     const wrapped = <Codec.Format.Values.UfixedValue>(
       await encoder.wrapElementaryValue(info.type, info.input)
     );
-    if (isNumber(info.input)) {
-      //for numbers and Numbers, we'll allow a tiny bit of wiggle room
-      assert(
-        wrapped.value.asBig.minus(info.value).abs().lte(tolerance),
-        `Wrapped Big ${wrapped.value.asBig.toFixed()} was not within tolerance ${tolerance} of original value ${info.value.toFixed()}`
-      );
+    if (
+      isNumber(info.input) &&
+      Codec.Conversion.countDecimalPlaces(info.value) > 0 //if it's not an integer
+    ) {
+      //for numbers and Numbers, we'll allow a tiny bit of wiggle room if they don't
+      //represent integers
+      testDecimalAgreementWithTolerance(wrapped.value.asBig, info.value);
     } else {
       //normal case: compare for exact equality
       assert(
@@ -408,12 +420,13 @@ describe("Wrapping of elementary values", () => {
     const wrapped = <Codec.Format.Values.FixedValue>(
       await encoder.wrapElementaryValue(info.type, info.input)
     );
-    if (isNumber(info.input)) {
-      //for numbers and Numbers, we'll allow a tiny bit of wiggle room
-      assert(
-        wrapped.value.asBig.minus(info.value).abs().lte(tolerance),
-        `Wrapped Big ${wrapped.value.asBig.toFixed()} was not within tolerance ${tolerance} of original value ${info.value.toFixed()}`
-      );
+    if (
+      isNumber(info.input) &&
+      Codec.Conversion.countDecimalPlaces(info.value) > 0 //if it's not an integer
+    ) {
+      //for numbers and Numbers, we'll allow a tiny bit of wiggle room if they don't
+      //represent integers
+      testDecimalAgreementWithTolerance(wrapped.value.asBig, info.value);
     } else {
       //normal case: compare for exact equality
       assert(
