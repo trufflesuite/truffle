@@ -64,6 +64,7 @@ describe("truffle obtain", function () {
     };
 
     const loggedStuff = removeGanacheWarning(logger.contents());
+    console.log("the logged stuff -- %o", loggedStuff);
     assert(
       !loggedStuff,
       "The command logged to the console when it shouldn't have."
