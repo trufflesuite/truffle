@@ -10,6 +10,8 @@ const {
 } = require("@truffle/interface-adapter");
 const Config = require("@truffle/config");
 
+let memoConfig;
+
 // options.file: path to file to execute. Must be a module that exports a function.
 // options.args: arguments passed to the exported function within file. If a callback
 //   is not included in args, exported function is treated as synchronous.
@@ -23,9 +25,13 @@ const Require = {
 
     expect.options(options, ["file"]);
 
-    options = Config.default().with(options);
+    if (!memoConfig) {
+      memoConfig = Config.default();
+    }
+    options = memoConfig.merge(options);
 
     source = fs.readFileSync(options.file, { encoding: "utf8" });
+    console.log("require.js:Require source:", options.file);
 
     // Modified from here: https://gist.github.com/anatoliychakkaev/1599423
     const m = new Module(file);
