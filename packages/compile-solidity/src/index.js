@@ -15,7 +15,7 @@ const fs = require("fs-extra");
 async function compileYulPaths(yulPaths, options) {
   let yulCompilations = [];
   for (const path of yulPaths) {
-    const yulOptions = options.with({ compilationTargets: [path] });
+    const yulOptions = options.merge({ compilationTargets: [path] });
     //load up Yul sources, since they weren't loaded up earlier
     //(we'll just use FS for this rather than going through the resolver,
     //for simplicity, since there are no imports to worry about)
@@ -139,7 +139,7 @@ const Compile = {
     debug("invoking profiler");
     //only invoke profiler on Solidity, not Yul
     const { allSources, compilationTargets } = await Profiler.requiredSources(
-      options.with({
+      options.merge({
         paths: solidityPaths,
         base_path: options.contracts_directory,
         resolver: options.resolver,
@@ -165,7 +165,7 @@ const Compile = {
     let solidityCompilations = [];
     // only call run if there are sources to run on!
     if (Object.keys(allSources).length > 0) {
-      const solidityOptions = options.with({ compilationTargets });
+      const solidityOptions = options.merge({ compilationTargets });
       debug("Compiling Solidity");
       const compilation = await run(allSources, solidityOptions, { solc });
       debug("Solidity compiled successfully");
