@@ -12,6 +12,8 @@ const expect = require("@truffle/expect");
 const partition = require("lodash/partition");
 const fs = require("fs-extra");
 
+let memoConfig = null;
+
 async function compileYulPaths(yulPaths, options) {
   let yulCompilations = [];
   for (const path of yulPaths) {
@@ -45,7 +47,10 @@ const Compile = {
   // NOTE: this function does *not* transform the source path prefix to
   // "project:/" before passing to the compiler!
   async sources({ sources, options }) {
-    options = Config.default().merge(options);
+    if (!memoConfig) {
+      memoConfig = Config.default();
+    }
+    options = memoConfig.merge(options);
     options = normalizeOptions(options);
     //note: "solidity" here includes JSON as well!
     const [yulNames, solidityNames] = partition(Object.keys(sources), name =>
@@ -122,7 +127,10 @@ const Compile = {
       "resolver"
     ]);
 
-    options = Config.default().merge(options);
+    if (!memoConfig) {
+      memoConfig = Config.default();
+    }
+    options = memoConfig.merge(options);
     options = normalizeOptions(options);
 
     const supplier = new CompilerSupplier({
