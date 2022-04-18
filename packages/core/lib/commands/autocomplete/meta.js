@@ -1,29 +1,26 @@
-const install = require("./commands/install");
-const uninstall = require("./commands/uninstall");
+const shell = require("./commands/shell");
+
+const shellTypes = ["bash", "zsh"];
 
 module.exports = {
   command: "autocomplete",
-  description: false, // Will not be displayed on help menu
+  description: "Outputs completion settings",
   builder: function (yargs) {
-    return yargs
-      .command({
-        ...install.run,
-        ...install.meta
-      })
-      .demandCommand()
-      .command({
-        ...uninstall.run,
-        ...uninstall.meta
-      })
-      .demandCommand();
+    shellTypes.forEach(type => {
+      yargs
+        .command({
+          ...shell(type).run,
+          ...shell(type).meta
+        })
+        .demandCommand();
+    });
+
+    return yargs;
   },
   help: {
-    usage: "truffle autocomplete <command>",
+    usage: "truffle autocomplete <shell>",
     options: [],
     allowedGlobalOptions: []
   },
-  commands: {
-    install: install.meta,
-    uninstall: uninstall.meta
-  }
+  commands: Object.fromEntries(shellTypes.map(type => [type, shell(type).meta]))
 };
