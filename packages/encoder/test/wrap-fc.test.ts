@@ -312,7 +312,9 @@ const BoolInput = (value: boolean) => {
 };
 
 function testDecimalAgreementWithTolerance(actual: Big, expected: Big): void {
-  const negativeLog10OfRelativeTolerance = (2 ** 53).toString().length - 1; //15
+  const negativeLog10OfRelativeTolerance = Math.floor(
+    Math.log10(Number.MAX_SAFE_INTEGER)
+  ); //15
   const firstDecimalPlace = expected.e; //note: decreases, not increases, to the right of the decimal point
   const firstDifferingDecimalPlace = actual.minus(expected).e; //note: will be 0 if difference is 0, so don't trust it in that case
   const approximateNegativeLog10OfDifference =
