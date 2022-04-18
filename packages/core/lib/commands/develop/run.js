@@ -1,6 +1,6 @@
 const emoji = require("node-emoji");
 const mnemonicInfo = require("../../mnemonics/mnemonic");
-const configureGanacheOptions = require("../configureGanacheOptions");
+const configureGanacheOptions = require("../../configureGanacheOptions");
 
 const runConsole = async (config, ganacheOptions) => {
   const Console = require("../../console");
