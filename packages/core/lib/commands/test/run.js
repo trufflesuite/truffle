@@ -1,5 +1,3 @@
-const defaultNetworkIdForTestCommand = 4447;
-
 const parseCommandLineFlags = options => {
   // parse out command line flags to merge in to the config
   const grep = options.grep || options.g;
@@ -17,30 +15,13 @@ const parseCommandLineFlags = options => {
     : { mocha: { grep, bail, reporter } };
 };
 
-function sanitizeGanacheOptions(ganacheOptions) {
-  const network_id = ganacheOptions.network_id;
-
-  // Use default network_id if "*" is defined in config
-  if (network_id === "*") {
-    return { ...ganacheOptions, network_id: defaultNetworkIdForTestCommand };
-  }
-
-  const parsedNetworkId = parseInt(network_id, 10);
-  if (isNaN(parsedNetworkId)) {
-    const error =
-      `The network id specified in the truffle config ` +
-      `(${network_id}) is not valid. Please properly configure the network id as an integer value.`;
-    throw new Error(error);
-  }
-  return { ...ganacheOptions, network_id: parsedNetworkId };
-}
-
 module.exports = async function (options) {
   const Config = require("@truffle/config");
   const { Environment, Develop } = require("@truffle/environment");
   const { copyArtifactsToTempDir } = require("./copyArtifactsToTempDir");
   const { determineTestFilesToRun } = require("./determineTestFilesToRun");
   const { prepareConfigAndRunTests } = require("./prepareConfigAndRunTests");
+  const configureGanacheOptions = require("../configureGanacheOptions");
 
   const optionsToMerge = parseCommandLineFlags(options);
   const config = Config.detect(options).merge(optionsToMerge);
@@ -105,31 +86,18 @@ module.exports = async function (options) {
     (testNetworkDefinedAndUsed && noProviderHostOrUrlConfigured) ||
     !configuredNetwork
   ) {
-    // Use managed ganache with overriding user specified config or without any specification in the config
-    const defaultPort = await require("get-port")();
-    const defaultHost = "127.0.0.1";
     const defaultMnemonic =
       "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
-
-    // configuredNetwork will spread only when it is defined and ignored when undefined
-    const ganacheOptions = {
-      host: defaultHost,
-      port: defaultPort,
-      network_id: defaultNetworkIdForTestCommand,
-      mnemonic: defaultMnemonic,
-      time: config.genesis_time,
-      miner: {
-        instamine: "strict"
-      },
-      ...configuredNetwork
-    };
-
-    const sanitizedGanacheOptions = sanitizeGanacheOptions(ganacheOptions);
+    const ganacheOptions = configureGanacheOptions.getGanacheOptions(
+      config,
+      configuredNetwork,
+      defaultMnemonic
+    );
 
     const ipcOptions = { network: "test" };
     numberOfFailures = await startGanacheAndRunTests(
       ipcOptions,
-      sanitizedGanacheOptions,
+      ganacheOptions,
       config
     );
   } else {
