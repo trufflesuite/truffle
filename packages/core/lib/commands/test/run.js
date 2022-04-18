@@ -21,7 +21,7 @@ module.exports = async function (options) {
   const { copyArtifactsToTempDir } = require("./copyArtifactsToTempDir");
   const { determineTestFilesToRun } = require("./determineTestFilesToRun");
   const { prepareConfigAndRunTests } = require("./prepareConfigAndRunTests");
-  const configureGanacheOptions = require("../configureGanacheOptions");
+  const configureGanacheOptions = require("../../configureGanacheOptions");
 
   const optionsToMerge = parseCommandLineFlags(options);
   const config = Config.detect(options).merge(optionsToMerge);
