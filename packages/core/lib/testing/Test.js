@@ -21,7 +21,7 @@ const Debugger = require("@truffle/debugger");
 
 let Mocha; // Late init with "mocha" or "mocha-parallel-tests"
 
-chai.use(require("../assertions"));
+chai.use(require("./assertions"));
 
 const Test = {
   run: async function (options) {
@@ -106,7 +106,7 @@ const Test = {
 
     const runner = new TestRunner(config);
 
-    if (config.migrateNone || config['migrate-none']) {
+    if (config.migrateNone || config["migrate-none"]) {
       if (config.events) {
         config.events.emit("test:migration:skipped");
       }
@@ -122,9 +122,8 @@ const Test = {
 
     await this.defineSolidityTests(mocha, testContracts, sourcePaths, runner);
 
-    const debuggerCompilations = Codec.Compilations.Utils.shimCompilations(
-      compilations
-    );
+    const debuggerCompilations =
+      Codec.Compilations.Utils.shimCompilations(compilations);
 
     //for stack traces, we'll need to set up a light-mode debugger...
     let bugger;
