@@ -40,7 +40,7 @@ module.exports = async options => {
     "Ensure you do not use it on production blockchains, or else you risk losing funds.";
 
   const ipcOptions = { log: options.log };
-  const ganacheOptions = configureGanacheOptions.getGanacheOptions(
+  const ganacheOptions = configureGanacheOptions.configureManagedGanache(
     config,
     customConfig,
     mnemonic
