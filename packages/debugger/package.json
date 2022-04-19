@@ -16,7 +16,6 @@
   "main": "dist/debugger.js",
   "scripts": {
     "build": "webpack --config webpack/webpack.config.js",
-    "docs": "esdoc",
     "prepare": "yarn build",
     "test": "mochapack --webpack-config webpack/webpack.config-test.js --recursive",
     "test:coverage": "nyc mochapack --webpack-config webpack/webpack.config-test.js --recursive",
@@ -52,9 +51,6 @@
     "babel-runtime": "^6.26.0",
     "chai": "^4.2.0",
     "change-case": "3.0.2",
-    "esdoc": "^1.0.4",
-    "esdoc-ecmascript-proposal-plugin": "^1.0.0",
-    "esdoc-standard-plugin": "^1.0.0",
     "faker": "5.5.3",
     "fs-extra": "^9.1.0",
     "ganache": "^7.0.3",
