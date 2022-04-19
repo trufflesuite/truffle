@@ -66,7 +66,7 @@ export class DashboardMessageBusConnection extends TypedEmitter<DashboardMessage
     if (this._socket) {
       switch (this._socket.readyState) {
         case WebSocket.CONNECTING:
-          await delay(100);
+          await delay(10);
           return this.connect();
 
         case WebSocket.OPEN:
@@ -82,7 +82,7 @@ export class DashboardMessageBusConnection extends TypedEmitter<DashboardMessage
     }
 
     if (this._connecting) {
-      await delay(100);
+      await delay(10);
       return this.connect();
     }
 
@@ -120,7 +120,7 @@ export class DashboardMessageBusConnection extends TypedEmitter<DashboardMessage
           debug(
             "connect: %s connection succeeded to url %s",
             this._connectionType,
-            url
+            this._socket?.url
           );
           if (this._connectionType === "subscribe") {
             this._socket?.send("ready");
@@ -133,7 +133,7 @@ export class DashboardMessageBusConnection extends TypedEmitter<DashboardMessage
           debug(
             "connect: %s connection to url %s failed due to error %s",
             this._connectionType,
-            url,
+            this._socket?.url,
             event.error
           );
           reject(
@@ -149,7 +149,7 @@ export class DashboardMessageBusConnection extends TypedEmitter<DashboardMessage
           debug(
             "connect: %s connection to url %s closed before successfully connecting due to code %s and reason %s",
             this._connectionType,
-            url,
+            this._socket?.url,
             event.code,
             event.reason
           );

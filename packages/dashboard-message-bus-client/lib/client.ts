@@ -17,6 +17,7 @@ import {
   DashboardMessageBusSubscription,
   PublishMessageLifecycle
 } from "./lifecycle";
+import { getOutstandingPromises } from "./promiseTracking";
 
 const debug = debugModule(`dashboard-message-bus-client:client`);
 
@@ -27,11 +28,18 @@ export class DashboardMessageBusClient {
   private _subscribeConnection: DashboardMessageBusConnection;
   private _subscriptions: DashboardMessageBusSubscription<Message>[] = [];
 
-  public get options(): ResolvedDashboardMessageBusClientOptions {
+  get options(): ResolvedDashboardMessageBusClientOptions {
     return { ...this._options };
   }
 
-  public constructor(options: DashboardMessageBusClientOptions) {
+  private get _outstandingTasks(): Array<Promise<any>> {
+    return [
+      ...getOutstandingPromises(this._publishConnection),
+      ...getOutstandingPromises(this._subscribeConnection)
+    ];
+  }
+
+  constructor(options: DashboardMessageBusClientOptions) {
     this._options = {
       host: "localhost",
       port: 24012,
@@ -101,13 +109,26 @@ export class DashboardMessageBusClient {
     return subscription;
   }
 
-  async close(): Promise<void> {
+  async close(force: boolean = false): Promise<void> {
+    if (!force) {
+      await this.waitForOutstandingTasks();
+    }
+
     this._subscriptions.map(sub => sub._end());
     this._subscriptions = [];
     await Promise.all([
       this._subscribeConnection.close(),
       this._publishConnection.close()
     ]);
+  }
+
+  async waitForOutstandingTasks(squelchErrors: boolean = true): Promise<void> {
+    const all = squelchErrors
+      ? Promise.all(this._outstandingTasks.map(task => task.catch(() => {})))
+      : Promise.all(this._outstandingTasks);
+    await all;
+
+    return;
   }
 
   private _messageHandler(message: Message) {
@@ -145,85 +166,5 @@ export class DashboardMessageBusClient {
         }
       }
     }
-  }
-}
-
-export class TaskTrackingDashboardMessageBusClient extends DashboardMessageBusClient {
-  private static _singletonInstance: TaskTrackingDashboardMessageBusClient | null;
-  private _outstandingTasks: Map<Promise<any>, true> = new Map<
-    Promise<any>,
-    true
-  >();
-
-  public constructor(options: DashboardMessageBusClientOptions) {
-    super(options);
-  }
-
-  static getSingletonInstance(options: DashboardMessageBusClientOptions) {
-    if (!TaskTrackingDashboardMessageBusClient._singletonInstance) {
-      const instanceProxyHandler: ProxyHandler<TaskTrackingDashboardMessageBusClient> =
-        {
-          get: (target: any, propertyName) => {
-            const prop: any = target[propertyName];
-
-            if (typeof prop === "function") {
-              return target._wrapFunction(prop);
-            }
-            return prop;
-          }
-        };
-
-      const constructorProxyHandler: ProxyHandler<
-        typeof TaskTrackingDashboardMessageBusClient
-      > = {
-        construct: (target, args) => {
-          return new Proxy(
-            new TaskTrackingDashboardMessageBusClient(args[0]),
-            instanceProxyHandler
-          );
-        }
-      };
-
-      const ProxiedDashboardMessageBusClient = new Proxy(
-        TaskTrackingDashboardMessageBusClient,
-        constructorProxyHandler
-      );
-
-      TaskTrackingDashboardMessageBusClient._singletonInstance =
-        new ProxiedDashboardMessageBusClient(options);
-    }
-
-    return TaskTrackingDashboardMessageBusClient._singletonInstance;
-  }
-
-  async waitForOutstandingTasks(): Promise<void> {
-    await Promise.all(this._outstandingTasks);
-  }
-
-  private _wrapFunction(f: Function): (...args: any[]) => Promise<unknown> {
-    return ((...args: any[]) => {
-      const returnValue = f.call(this, ...args);
-
-      if (typeof returnValue.then === "function") {
-        this._outstandingTasks.set(returnValue, true);
-
-        return returnValue
-          .then((val: Promise<unknown>) => {
-            try {
-              return val;
-            } finally {
-              this._outstandingTasks.delete(returnValue);
-            }
-          })
-          .catch((err: any) => {
-            try {
-              throw err;
-            } finally {
-              this._outstandingTasks.delete(returnValue);
-            }
-          });
-      }
-      return returnValue;
-    }).bind(this);
   }
 }
