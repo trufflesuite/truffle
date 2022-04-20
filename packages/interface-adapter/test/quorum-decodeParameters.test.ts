@@ -1,36 +1,30 @@
 import { describe, it } from "mocha";
 import { assert } from "chai";
 
-import Web3 from "web3";
-import Ganache, { Server } from "ganache";
+import Ganache, { EthereumProvider } from "ganache";
 
 import { Web3Shim } from "../lib";
 
-const port = 12345;
-
-async function prepareGanache(
-  quorumEnabled: boolean
-): Promise<{ server: Server; web3Shim: Web3Shim }> {
-  return new Promise(resolve => {
-    const server = Ganache.server({
-      miner: {
-        instamine: "strict"
-      },
-      logging: {
-        quiet: true
-      }
-    });
-    server.listen(port, () => {
-      const web3Shim = new Web3Shim({
-        provider: new Web3.providers.HttpProvider(`http://127.0.0.1:${port}`),
-        networkType: quorumEnabled ? "quorum" : "ethereum"
-      });
-      resolve({
-        server,
-        web3Shim
-      });
-    });
+function prepareGanache(quorumEnabled: boolean): {
+  provider: EthereumProvider;
+  web3Shim: Web3Shim;
+} {
+  const provider = Ganache.provider({
+    miner: {
+      instamine: "strict"
+    },
+    logging: {
+      quiet: true
+    }
   });
+  const web3Shim = new Web3Shim({
+    provider,
+    networkType: quorumEnabled ? "quorum" : "ethereum"
+  });
+  return {
+    provider,
+    web3Shim
+  };
 }
 
 const expectedOutput = [{ name: "retVal", type: "uint256" }];
@@ -47,7 +41,7 @@ describe("Quorum decodeParameters Overload", function () {
       assert(result);
       assert(result.retVal === "0");
     } finally {
-      await preparedGanache.server.close();
+      await preparedGanache.provider.disconnect();
     }
   });
 
@@ -63,9 +57,9 @@ describe("Quorum decodeParameters Overload", function () {
             emptyByte
           );
         });
-        preparedGanache.server.close().then(() => resolve());
+        preparedGanache.provider.disconnect().then(() => resolve());
       } catch (e) {
-        preparedGanache.server.close().then(() => reject(2));
+        preparedGanache.provider.disconnect().then(() => reject(2));
       }
     });
   });
