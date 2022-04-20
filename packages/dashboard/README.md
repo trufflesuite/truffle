@@ -1,10 +1,10 @@
 # Truffle Dashboard
 
-The Truffle Dashboard is the frontend that is used in certain parts of the Truffle stack. Currently it is only used for the dashboard-provider by forwarding any provider requests to the dashboard, where they can be processed by an injected browser wallet such as Metamask. Additional use cases may be added to the Dashboard in the future.
+The Truffle Dashboard is the frontend that is used in certain parts of the Truffle stack. Currently it is only used for forwarding any provider requests to the dashboard via the `dashboard-message-bus`, where they can be processed by an injected browser wallet such as Metamask. Additional use cases may be added to the Dashboard in the future.
 
 ## Installation & Usage
 
-There is usually no reason to install the @truffle/dashboard package directly, since it will be started automatically when running `truffle dashboard` or when using @truffle/dashboard-provider. But if you are developing extensions to the Truffle Dashboard it can be useful to install the dashboard.
+There is usually no reason to install the @truffle/dashboard package directly, since it will be started automatically when running `truffle dashboard`. But if you are developing extensions to the Truffle Dashboard it can be useful to install the dashboard.
 
 ```
 npm install @truffle/dashboard
