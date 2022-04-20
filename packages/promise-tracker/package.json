@@ -1,0 +1,48 @@
+{
+  "name": "@truffle/promise-tracker",
+  "version": "0.1.0-0",
+  "description": "A tool for wrangling async operations that need to complete before the truffle process exits",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "prepare": "yarn build",
+    "test": "jest --verbose"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/promise-tracker#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trufflesuite/truffle.git",
+    "directory": "packages/promise-tracker"
+  },
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "files": [
+    "dist"
+  ],
+  "directories": {
+    "lib": "lib"
+  },
+  "types": "dist/index.d.ts",
+  "keywords": [
+    "ethereum",
+    "etherscan",
+    "ipfs",
+    "solidity",
+    "verify-source",
+    "sourcify",
+    "compile"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/jest": "^27.0.3",
+    "@types/node": "^16.11.6",
+    "delay": "^5.0.0",
+    "jest": "^27.4.5",
+    "ts-jest": "^27.1.2",
+    "typescript": "^4.1.4"
+  }
+}
