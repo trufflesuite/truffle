@@ -1,37 +1,31 @@
 import { describe, it } from "mocha";
 import { assert } from "chai";
 
-import Web3 from "web3";
-import Ganache, { Server } from "ganache";
+import Ganache, { EthereumProvider } from "ganache";
 
 import { createInterfaceAdapter } from "../lib";
 import { InterfaceAdapter } from "../lib/adapter/types";
 
-const port = 12345;
-
-async function prepareGanache(
-  fabricEvmEnabled: boolean
-): Promise<{ server: Server; interfaceAdapter: InterfaceAdapter }> {
-  return new Promise(resolve => {
-    const server = Ganache.server({
-      miner: {
-        instamine: "strict"
-      },
-      logging: {
-        quiet: true
-      }
-    });
-    server.listen(port, () => {
-      const interfaceAdapter = createInterfaceAdapter({
-        provider: new Web3.providers.HttpProvider(`http://127.0.0.1:${port}`),
-        networkType: fabricEvmEnabled ? "fabric-evm" : "ethereum"
-      });
-      resolve({
-        server,
-        interfaceAdapter
-      });
-    });
+function prepareGanache(fabricEvmEnabled: boolean): {
+  provider: EthereumProvider;
+  interfaceAdapter: InterfaceAdapter;
+} {
+  const provider = Ganache.provider({
+    miner: {
+      instamine: "strict"
+    },
+    logging: {
+      quiet: true
+    }
   });
+  const interfaceAdapter = createInterfaceAdapter({
+    provider,
+    networkType: fabricEvmEnabled ? "fabric-evm" : "ethereum"
+  });
+  return {
+    provider,
+    interfaceAdapter
+  };
 }
 
 describe("fabric-evm getId Overload", function () {
@@ -41,7 +35,7 @@ describe("fabric-evm getId Overload", function () {
       const networkID = await preparedGanache.interfaceAdapter.getNetworkId();
       assert(typeof networkID === "string");
     } finally {
-      await preparedGanache.server.close();
+      await preparedGanache.provider.disconnect();
     }
   });
 
@@ -51,7 +45,7 @@ describe("fabric-evm getId Overload", function () {
       const networkID = await preparedGanache.interfaceAdapter.getNetworkId();
       assert(typeof networkID === "number");
     } finally {
-      await preparedGanache.server.close();
+      await preparedGanache.provider.disconnect();
     }
   });
 });

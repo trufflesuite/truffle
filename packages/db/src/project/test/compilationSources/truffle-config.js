@@ -1,13 +1,21 @@
+const Ganache = require("ganache");
+
+const provider = Ganache.provider({
+  // note instamine must be set to eager (default) with vmErrorsOnRPCResponse enabled
+  vmErrorsOnRPCResponse: true,
+  logging: {
+    quiet: true
+  }
+});
+
 module.exports = {
   networks: {
     development: {
-      host: "127.0.0.1",
-      port: 8545,
+      provider,
       network_id: "*"
     },
     test: {
-      host: "127.0.0.1",
-      port: 8545,
+      provider,
       network_id: "*"
     }
   },
