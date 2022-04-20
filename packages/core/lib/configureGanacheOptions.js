@@ -1,11 +1,9 @@
-const defaultNetworkIdForGanache = 5777;
-
 function sanitizeGanacheOptions(ganacheOptions) {
   const network_id = ganacheOptions.network_id;
 
   // Use default network_id if "*" is defined in config
   if (network_id === "*") {
-    return { ...ganacheOptions, network_id: defaultNetworkIdForGanache };
+    return { ...ganacheOptions, network_id: Date.now() };
   }
 
   const parsedNetworkId = parseInt(network_id, 10);
@@ -18,11 +16,11 @@ function sanitizeGanacheOptions(ganacheOptions) {
   return { ...ganacheOptions, network_id: parsedNetworkId };
 }
 
-function configureManagedGanache(networkConfig, mnemonic) {
+function configureManagedGanache(config, networkConfig, mnemonic) {
   const ganacheOptions = {
     host: networkConfig.host || "127.0.0.1", // Default host for managed ganache
     port: networkConfig.port || 9545, // Default port for managed ganache
-    network_id: networkConfig.network_id || defaultNetworkIdForGanache,
+    network_id: networkConfig.network_id || Date.now(),
     total_accounts:
       networkConfig.accounts || networkConfig.total_accounts || 10,
     default_balance_ether:
@@ -33,7 +31,7 @@ function configureManagedGanache(networkConfig, mnemonic) {
     fork: networkConfig.fork,
     mnemonic: mnemonic,
     gasPrice: networkConfig.gasPrice || 0x77359400,
-    time: networkConfig.genesis_time,
+    time: networkConfig.genesis_time || config.genesis_time,
     miner: {
       instamine: "strict"
     }

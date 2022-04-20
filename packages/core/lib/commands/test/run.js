@@ -95,6 +95,7 @@ module.exports = async function (options) {
     const defaultMnemonic =
       "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
     const ganacheOptions = configureGanacheOptions.configureManagedGanache(
+      config,
       configuredManagedNetwork,
       defaultMnemonic
     );
