@@ -41,7 +41,6 @@ module.exports = async options => {
 
   const ipcOptions = { log: options.log };
   const ganacheOptions = configureGanacheOptions.configureManagedGanache(
-    config,
     customConfig,
     mnemonic
   );

@@ -72,7 +72,7 @@ module.exports = async function (options) {
     inputFile: file
   });
 
-  let configuredNetwork = config.networks[config.network] || {};
+  let configuredNetwork = config.networks[config.network];
   const testNetworkDefinedAndUsed =
     configuredNetwork && config.network === "test";
   const noProviderHostOrUrlConfigured =
@@ -95,7 +95,6 @@ module.exports = async function (options) {
     const defaultMnemonic =
       "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
     const ganacheOptions = configureGanacheOptions.configureManagedGanache(
-      config,
       configuredManagedNetwork,
       defaultMnemonic
     );
