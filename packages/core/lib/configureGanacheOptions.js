@@ -18,7 +18,7 @@ function sanitizeGanacheOptions(ganacheOptions) {
   return { ...ganacheOptions, network_id: parsedNetworkId };
 }
 
-function configureManagedGanache(config, networkConfig, mnemonic) {
+function configureManagedGanache(networkConfig, mnemonic) {
   const ganacheOptions = {
     host: networkConfig.host || "127.0.0.1", // Default host for managed ganache
     port: networkConfig.port || 9545, // Default port for managed ganache
@@ -33,7 +33,7 @@ function configureManagedGanache(config, networkConfig, mnemonic) {
     fork: networkConfig.fork,
     mnemonic: mnemonic,
     gasPrice: networkConfig.gasPrice || 0x77359400,
-    time: config.genesis_time,
+    time: networkConfig.genesis_time,
     miner: {
       instamine: "strict"
     }
