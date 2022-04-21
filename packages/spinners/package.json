@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.1.2",
+  "version": "0.2.0-0",
   "main": "dist/index.js",
   "files": [
     "dist"
@@ -26,7 +26,7 @@
   },
   "types": "dist/index.d.ts",
   "dependencies": {
-    "spinnies": "^0.5.1"
+    "@trufflesuite/spinnies": "^0.1.0"
   },
   "devDependencies": {
     "@types/mocha": "^9.0.0",

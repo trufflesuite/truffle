@@ -1,4 +1,8 @@
-import Spinnies, { SpinnerOptions, StopAllStatus } from "spinnies";
+import Spinnies, {
+  SpinnerOptions,
+  StopAllStatus,
+  Color
+} from "@trufflesuite/spinnies";
 
 const spinnies = new Spinnies();
 
@@ -45,55 +49,54 @@ export class Spinner {
       return;
     }
     spinnies.remove(this.name);
-    spinnies.checkIfActiveSpinners();
   }
 
   /**
    * Stops the spinner without a failed or succeeded status
    */
-  stop(options?: Partial<SpinnerOptions>) {
-    const currentOptions = spinnies.pick(this.name);
-    if (!currentOptions) {
+  stop(text?: string): void;
+  stop(options?: Partial<SpinnerOptions>): void;
+  stop(textOrOptions?: string | Partial<SpinnerOptions>): void {
+    if (!spinnies.pick(this.name)) {
       return;
     }
-
-    spinnies.update(this.name, {
-      ...currentOptions,
-      ...options,
-      status: "stopped"
-    });
+    spinnies.stop(this.name, textOrOptions);
   }
 
   /**
    * Stops the spinner and sets its status to succeeded.
    */
-  succeed(text?: string) {
-    const options = spinnies.pick(this.name);
-
-    if (!options) {
+  succeed(text?: string): void;
+  succeed(options?: Partial<SpinnerOptions>): void;
+  succeed(textOrOptions?: string | Partial<SpinnerOptions>): void {
+    if (!spinnies.pick(this.name)) {
       return;
     }
-
-    spinnies.succeed(this.name, {
-      ...options,
-      text
-    });
+    spinnies.succeed(this.name, textOrOptions);
   }
 
   /**
    * Stops the spinner and sets its status to fail.
    */
-  fail(text?: string) {
-    const options = spinnies.pick(this.name);
-
-    if (!options) {
+  fail(text?: string): void;
+  fail(options?: Partial<SpinnerOptions>): void;
+  fail(textOrOptions?: string | Partial<SpinnerOptions>): void {
+    if (!spinnies.pick(this.name)) {
       return;
     }
+    spinnies.fail(this.name, textOrOptions);
+  }
 
-    spinnies.fail(this.name, {
-      ...options,
-      text
-    });
+  /**
+   * Stops the spinner and sets its status to warn.
+   */
+  warn(text?: string): void;
+  warn(options?: Partial<SpinnerOptions>): void;
+  warn(textOrOptions?: string | Partial<SpinnerOptions>): void {
+    if (!spinnies.pick(this.name)) {
+      return;
+    }
+    spinnies.warn(this.name, textOrOptions);
   }
 
   /**
@@ -144,59 +147,85 @@ export class Spinner {
   /**
    * @returns string the `chalk` color of this spinner's text
    */
-  public get color(): string | undefined {
-    return spinnies.pick(this.name)?.color;
+  public get textColor(): Color | undefined {
+    return spinnies.pick(this.name)?.textColor;
   }
 
   /**
    * updates the `chalk` color of this spinner's text
    */
-  public set color(value: string | undefined) {
-    this._mutateOptions("color", value);
+  public set textColor(value: Color | undefined) {
+    this._mutateOptions("textColor", value);
   }
 
   /**
    * @returns string the `chalk` color of this spinner decoration
    */
-  public get spinnerColor(): string | undefined {
-    return spinnies.pick(this.name)?.spinnerColor;
+  public get prefixColor(): Color | undefined {
+    return spinnies.pick(this.name)?.prefixColor;
   }
 
   /**
    * updates the `chalk` color of this spinner's decoration
    */
-  public set spinnerColor(value: string | undefined) {
-    this._mutateOptions("spinnerColor", value);
+  public set prefixColor(value: Color | undefined) {
+    this._mutateOptions("prefixColor", value);
   }
 
   /**
-   * @returns string the `chalk` color of this spinner text on success (note: on
-   * success, the spinner decoration is always green)
+   * @returns string the prefix used when this spinner is stopped
    */
-  public get succeedColor(): string | undefined {
-    return spinnies.pick(this.name)?.succeedColor;
+  public get stoppedPrefix(): Color | undefined {
+    return spinnies.pick(this.name)?.stoppedPrefix;
   }
 
   /**
-   * Updates the `chalk` color of this spinner's text on success
+   * updates the prefix used when this spinner is stopped
    */
-  public set succeedColor(value: string | undefined) {
-    this._mutateOptions("succeedColor", value);
+  public set stoppedPrefix(value: Color | undefined) {
+    this._mutateOptions("stoppedPrefix", value);
   }
 
   /**
-   * @returns string the `chalk` color of this spinner text on failure (note: on
-   * failure, the spinner decoration is always red)
+   * @returns string the prefix used on success
    */
-  public get failColor(): string | undefined {
-    return spinnies.pick(this.name)?.failColor;
+  public get succeedPrefix(): Color | undefined {
+    return spinnies.pick(this.name)?.succeedPrefix;
   }
 
   /**
-   * Updates the `chalk` color of this spinner's text on failure
+   * updates the prefix used on success
    */
-  public set failColor(value: string | undefined) {
-    this._mutateOptions("failColor", value);
+  public set succeedPrefix(value: Color | undefined) {
+    this._mutateOptions("succeedPrefix", value);
+  }
+
+  /**
+   * @returns string the prefix used on failure
+   */
+  public get failPrefix(): Color | undefined {
+    return spinnies.pick(this.name)?.failPrefix;
+  }
+
+  /**
+   * updates the prefix used on failure
+   */
+  public set failPrefix(value: Color | undefined) {
+    this._mutateOptions("failPrefix", value);
+  }
+
+  /**
+   * @returns string the prefix used on warn
+   */
+  public get warnPrefix(): Color | undefined {
+    return spinnies.pick(this.name)?.warnPrefix;
+  }
+
+  /**
+   * updates the prefix used on warn
+   */
+  public set warnPrefix(value: Color | undefined) {
+    this._mutateOptions("warnPrefix", value);
   }
 
   /**
@@ -213,7 +242,9 @@ export class Spinner {
   }
 
   private _mutateOptions<T>(key: string, value: T) {
-    const options = spinnies.pick(this.name) as { [index: string]: T };
+    const options = spinnies.pick(this.name) as unknown as {
+      [index: string]: T;
+    };
 
     if (!options) {
       return;

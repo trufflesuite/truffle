@@ -43,10 +43,13 @@ module.exports = {
         if (this.quiet) {
           return;
         }
-        this.downloadSpinner = new Spinner("events:subscribers:obtain:download", {
-          text: `Downloading compiler. Attempt #${attemptNumber}.`,
-          color: "red"
-        });
+        this.downloadSpinner = new Spinner(
+          "events:subscribers:obtain:download",
+          {
+            text: `Downloading compiler. Attempt #${attemptNumber}.`,
+            prefixColor: "red"
+          }
+        );
       }
     ],
     "downloadCompiler:succeed": [
@@ -72,7 +75,7 @@ module.exports = {
         }
         this.fetchSpinner = new Spinner("events:subscribers:obtain:fetch", {
           text: `Fetching solc version list from solc-bin. Attempt #${attemptNumber}`,
-          color: "yellow"
+          prefixColor: "yellow"
         });
       }
     ],
