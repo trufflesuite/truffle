@@ -312,17 +312,10 @@ const BoolInput = (value: boolean) => {
 };
 
 function testDecimalAgreementWithTolerance(actual: Big, expected: Big): void {
-  const negativeLog10OfRelativeTolerance = Math.floor(
-    Math.log10(Number.MAX_SAFE_INTEGER)
-  ); //15
-  const firstDecimalPlace = expected.e; //note: decreases, not increases, to the right of the decimal point
-  const firstDifferingDecimalPlace = actual.minus(expected).e; //note: will be 0 if difference is 0, so don't trust it in that case
-  const approximateNegativeLog10OfDifference =
-    firstDecimalPlace - firstDifferingDecimalPlace; //don't trust this if they're equal!
   assert(
-    actual.eq(expected) ||
-      approximateNegativeLog10OfDifference >= negativeLog10OfRelativeTolerance,
-    `Wrapped Big ${actual.toFixed()} was not within relative tolerance 10^-${negativeLog10OfRelativeTolerance} of original value ${expected.toFixed()}, difference approximately 10^-${approximateNegativeLog10OfDifference} of original value`
+    actual.eq(expected) || //next check will fail for zero, so need this one
+      actual.minus(expected).abs().lt(expected.abs().times(Number.EPSILON)),
+    `Wrapped Big ${actual.toFixed()} was not within relative epsilon of original value ${expected.toFixed()}`
   );
 }
 
