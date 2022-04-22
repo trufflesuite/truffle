@@ -1,33 +1,33 @@
 {
   "name": "@truffle/profiler",
-  "version": "0.1.16",
+  "version": "0.1.19",
   "description": "Package for dealing with Solidity sources along with their Truffle artifacts",
-  "main": "dist/src/index.js",
-  "types": "dist/src/index.d.ts",
+  "license": "MIT",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/profiler#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/trufflesuite/truffle.git",
     "directory": "packages/profiler"
   },
-  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/profiler#readme",
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "license": "MIT",
+  "main": "dist/src/index.js",
   "scripts": {
     "build": "tsc",
     "prepare": "yarn build",
     "watch": "tsc -w"
   },
-  "devDependencies": {
-    "@truffle/config": "^1.3.24",
-    "@types/node": "12.12.21",
-    "ts-node": "^9.0.0",
-    "typescript": "^4.1.4"
-  },
+  "types": "dist/src/index.d.ts",
   "dependencies": {
     "@truffle/contract-sources": "^0.1.12",
     "debug": "^4.3.1"
+  },
+  "devDependencies": {
+    "@truffle/config": "^1.3.27",
+    "@types/node": "12.12.21",
+    "ts-node": "10.7.0",
+    "typescript": "^4.1.4"
   },
   "publishConfig": {
     "access": "public"

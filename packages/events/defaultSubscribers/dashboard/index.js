@@ -21,9 +21,12 @@ module.exports = {
     ],
     "rpc:request": [
       function (event) {
+        if (!isDashboardNetwork(this.config)) {
+          return;
+        }
+
         const { payload } = event;
         if (payload.method === "eth_sendTransaction") {
-          // TODO: Do we care about ID collisions?
           this.pendingTransactions[payload.id] = payload;
 
           this.spinner = new Spinner("events:subscribers:dashboard", {
@@ -34,6 +37,10 @@ module.exports = {
     ],
     "rpc:result": [
       function (event) {
+        if (!isDashboardNetwork(this.config)) {
+          return;
+        }
+
         let { error } = event;
         const { payload, result } = event;
 
@@ -43,9 +50,7 @@ module.exports = {
             const errMessage = `Transaction submission failed with error ${error.code}: '${error.message}'`;
             this.spinner.fail(errMessage);
           } else {
-            this.spinner.succeed(
-              `Transaction submitted successfully. Hash: ${result.result}`
-            );
+            this.spinner.remove();
           }
 
           delete this.pendingTransactions[payload.id];
@@ -54,3 +59,7 @@ module.exports = {
     ]
   }
 };
+
+function isDashboardNetwork(config) {
+  return config.network === "dashboard";
+}

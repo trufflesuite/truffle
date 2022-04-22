@@ -6,15 +6,14 @@ import {
   Message
 } from "@truffle/dashboard-message-bus";
 import type { JSONRPCRequestPayload } from "ethereum-protocol";
-import { promisify } from "util";
 import WebSocket from "ws";
-import Ganache from "ganache-core";
+import { EthereumProvider } from "ganache";
 
 // NOTE This mock dashboard was copy-pasted from the dashboard-provider tests
 export default class MockDashboard {
   socket?: WebSocket;
 
-  constructor(public forwardProvider: Ganache.Provider) {}
+  constructor(public forwardProvider: EthereumProvider) {}
 
   async connect(subscribePort: number) {
     if (this.socket) return;
@@ -53,13 +52,22 @@ export default class MockDashboard {
 }
 
 export const forwardDashboardProviderRequest = async (
-  provider: Ganache.Provider,
+  provider: EthereumProvider,
   payload: JSONRPCRequestPayload
 ) => {
-  const send = promisify(provider.send.bind(provider));
   try {
-    const response = await send(payload);
-    return response;
+    const { method, params } = payload;
+
+    // yeah, the any below is ugly, but the ganache API doesn't appear to expose
+    // a method type that I can easily import and use
+    const result = await provider.request({ method, params } as any);
+    const reply = {
+      jsonrpc: payload.jsonrpc,
+      id: payload.id,
+      result
+    };
+
+    return reply;
   } catch (error) {
     return {
       jsonrpc: payload.jsonrpc,

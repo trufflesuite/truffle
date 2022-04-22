@@ -2,7 +2,7 @@
 
 :warning: **This is a middleware package and should only be used when developing integrations for the truffle dashboard** :warning:
 
-The `@truffle/dashboard-message-bus` manages the communication between the Truffle Dashboard and any other Truffle components, such as @truffle/dashboard-provider.
+The `@truffle/dashboard-message-bus` manages the communication between the Truffle Dashboard and any other Truffle components via a specialized proxy RPC server instance.
 
 ## Installation
 
@@ -30,10 +30,10 @@ The message bus works by running two separate WebSocket servers. One server is f
 
 ### Testing
 
-This package is meant to be used with the `@truffle/dashboard` package. So manual testing is most likely done through the dashboard package. Some automated tests are defined in the `test/` folder, but these still need to be expanded. The message bus functionality is also tested indirectly by the automated tests in the `@truffle/dashboard-provider` and `@truffle/dashboard` packages.
+This package is meant to be used with the `@truffle/dashboard` package. So manual testing is most likely done through the dashboard package. Some automated tests are defined in the `test/` folder, but these still need to be expanded.
 
 ### Adding new message types
 
-Right now there are very few message types. The most important one is `"provider"`, which sends RPC requests for the dashboard-provider. Other message types are `"invalidate"`, which can be sent to invalidate earlier messages, and `"log"`, which is sent by the message bus to send log messages over the wire. The interfaces of these messages are defined inside the `@truffle/dashboard-message-bus` package, from where they can be imported by consumers.
+Right now there are very few message types. The most important one is `"provider"`, which sends RPC requests to the `@truffle/dashboard` so that they can be handled by the injected web3 provider that your wallet (e.g. MetaMask) provides. Other message types are `"invalidate"`, which can be sent to invalidate earlier messages, and `"log"`, which is sent by the message bus to send log messages over the wire. The interfaces of these messages are defined inside the `@truffle/dashboard-message-bus` package, from where they can be imported by consumers.
 
 To add additional message types, the interface for the new message type should be defined in this package under `lib/message/types.ts`. To use these new messge formats, support needs to be added to any consuming packages such as `@truffle/dashboard` as well.

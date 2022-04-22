@@ -64,7 +64,7 @@ module.exports = {
         if (this.quiet) {
           return;
         }
-        this.spinners.downloadSpinner.succeed("unbox-handler");
+        this.spinners.downloadSpinner.succeed();
       }
     ],
     "unbox:cleaningTempFiles:start": [

@@ -145,9 +145,15 @@ export function shimContracts(
     //ast needs to be coerced because schema doesn't quite match our types here...
 
     //if files or sources was passed, trust that to determine the source index
-    if (files || inputSources) {
+    //(assuming we have a sourcePath! currently it will be absent when dealing with
+    //Solidity versions <0.4.9; presumably we will fix this if we ever properly
+    //support versions that old, but for now this is necessary to get debug -x to work)
+    if ((files || inputSources) && sourcePath) {
       //note: we never set the unreliableSourceOrder flag in this branch;
       //we just trust files/sources.  If this info is bad, then, uh, too bad.
+      debug("inputSources: %O", inputSources);
+      debug("files: %O", files);
+      debug("sourcePath: %O", sourcePath);
       const index = inputSources
         ? inputSources.findIndex(source => source.sourcePath === sourcePath)
         : files.indexOf(sourcePath);
@@ -156,6 +162,7 @@ export function shimContracts(
         sourceObject.id = index.toString(); //HACK
         sources[index] = sourceObject;
       }
+      debug("files || inputSources; index: %d", index);
       contractObject.primarySourceId = index.toString(); //HACK
     } else {
       //if neither was passed, attempt to determine it from the ast
@@ -185,6 +192,7 @@ export function shimContracts(
         //if we're in this case, inputSources was not passed
         sourceObject.id = index.toString(); //HACK
         sources[index] = sourceObject;
+        debug("else; index: %d", index);
         contractObject.primarySourceId = index.toString();
       }
     }
@@ -260,12 +268,8 @@ export function getContractNode(
   contract: Contract,
   compilation: Compilation
 ): AstNode {
-  const {
-    contractName,
-    sourceMap,
-    deployedSourceMap,
-    primarySourceId
-  } = contract;
+  const { contractName, sourceMap, deployedSourceMap, primarySourceId } =
+    contract;
   const { unreliableSourceOrder, sources } = compilation;
 
   let sourcesToCheck: Source[];
@@ -539,7 +543,7 @@ export function collectUserDefinedTypesAndTaggedOutputs(
                 subNode.nodeType === "EventDefinition" ||
                 subNode.nodeType === "ErrorDefinition"
               ) {
-                  references[compilation.id][subNode.id] = subNode;
+                references[compilation.id][subNode.id] = subNode;
               }
             }
           }
@@ -574,14 +578,18 @@ export function findCompilationAndContract(
   for (const compilation of compilations) {
     for (const contract of compilation.contracts) {
       const nameMatches =
-        contract.contractName === (artifact.contractName || <string>artifact.contract_name);
+        contract.contractName ===
+        (artifact.contractName || <string>artifact.contract_name);
       if (nameMatches) {
         if (bytecode) {
           if (Shims.NewToLegacy.forBytecode(contract.bytecode) === bytecode) {
             return { compilation, contract };
           }
         } else if (deployedBytecode) {
-          if (Shims.NewToLegacy.forBytecode(contract.deployedBytecode) === deployedBytecode) {
+          if (
+            Shims.NewToLegacy.forBytecode(contract.deployedBytecode) ===
+            deployedBytecode
+          ) {
             return { compilation, contract };
           }
         } else if (!firstNameMatch) {
@@ -615,7 +623,7 @@ export function findCompilationAndContract(
   return {
     compilation: defaultCompilation,
     contract: defaultContract
-  }
+  };
 }
 
 function projectInfoIsCodecStyle(

@@ -1,7 +1,6 @@
 const copy = require("../../copy");
 const path = require("path");
 const fs = require("fs");
-const { promisify } = require("util");
 
 const templates = {
   test: {
@@ -28,7 +27,7 @@ const replaceContents = (filePath, find, replacement) => {
   fs.writeFileSync(filePath, result, { encoding: "utf8" });
 };
 
-const toUnderscoreFromCamel = (string) => {
+const toUnderscoreFromCamel = string => {
   string = string.replace(/([A-Z])/g, function ($1) {
     return "_" + $1.toLowerCase();
   });
@@ -42,9 +41,10 @@ const toUnderscoreFromCamel = (string) => {
 
 // getLicense return the license property value from Truffle config first and
 // in case that the file doesn't exist it will fallback to package.json
-const getLicense = (options) => {
+const getLicense = options => {
   try {
-    if ((license = require("@truffle/config").detect(options).license)) {
+    const license = require("@truffle/config").detect(options).license;
+    if (license) {
       return license;
     }
   } catch (err) {
@@ -54,7 +54,7 @@ const getLicense = (options) => {
   try {
     return require(path.join(process.cwd(), "package.json")).license;
   } catch {}
-}
+};
 
 const Create = {
   contract: async function (directory, name, options) {
@@ -65,10 +65,11 @@ const Create = {
       throw new Error("Can not create " + name + ".sol: file exists");
     }
 
-    await promisify(copy.file.bind(copy))(from, to);
+    await copy(from, to);
 
     replaceContents(to, templates.contract.name, name);
-    if ((license = getLicense(options))) {
+    const license = (license = getLicense(options));
+    if (license) {
       replaceContents(to, templates.contract.license, license);
     }
   },
@@ -83,7 +84,7 @@ const Create = {
       throw new Error("Can not create " + underscored + ".js: file exists");
     }
 
-    await promisify(copy.file.bind(copy))(from, to);
+    await copy(from, to);
     replaceContents(to, templates.contract.name, name);
     replaceContents(to, templates.contract.variable, underscored);
   },
@@ -104,7 +105,7 @@ const Create = {
     if (!options.force && fs.existsSync(to)) {
       throw new Error("Can not create " + filename + ": file exists");
     }
-    return await promisify(copy.file.bind(copy))(from, to);
+    await copy(from, to);
   }
 };
 

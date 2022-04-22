@@ -19,9 +19,7 @@ export function message(error: Format.Errors.ErrorForThrowing): string {
       let typeName = Format.Types.isContractDefinedType(error.type)
         ? error.type.definingContractName + "." + error.type.typeName
         : error.type.typeName;
-      return `Unknown ${error.type.typeClass} type ${typeName} of id ${
-        error.type.id
-      }`;
+      return `Unknown ${error.type.typeClass} type ${typeName} of id ${error.type.id}`;
     case "UnsupportedConstantError":
       return `Unsupported constant type ${AstUtils.typeClass(
         error.definition
@@ -31,9 +29,7 @@ export function message(error: Format.Errors.ErrorForThrowing): string {
     case "ReadErrorStack":
       return `Can't read stack from position ${error.from} to ${error.to}`;
     case "ReadErrorBytes":
-      return `Can't read ${error.length} bytes from ${
-        error.location
-      } starting at ${error.start}`;
+      return `Can't read ${error.length} bytes from ${error.location} starting at ${error.start}`;
     case "ReadErrorStorage":
       if (error.range.length) {
         return `Can't read ${
@@ -43,6 +39,20 @@ export function message(error: Format.Errors.ErrorForThrowing): string {
         } in ${slotAddressPrintout(error.range.from.slot)}`;
       } else {
         return `Can't read storage from index ${
+          error.range.from.index
+        } in ${slotAddressPrintout(error.range.from.slot)} to index ${
+          error.range.to.index
+        } in ${slotAddressPrintout(error.range.to.slot)}`;
+      }
+    case "StorageNotSuppliedError":
+      if (error.range.length) {
+        return `Unknown storage for ${
+          error.range.length
+        } bytes starting at index ${
+          error.range.from.index
+        } in ${slotAddressPrintout(error.range.from.slot)}`;
+      } else {
+        return `Unknown storage from index ${
           error.range.from.index
         } in ${slotAddressPrintout(error.range.from.slot)} to index ${
           error.range.to.index
@@ -78,9 +88,10 @@ function slotAddressPrintout(slot: Storage.Slot): string {
 //this is like the old toSoliditySha3Input, but for debugging purposes ONLY
 //it will NOT produce correct input to soliditySha3
 //please use mappingKeyAsHex instead if you wish to encode a mapping key.
-function keyInfoForPrinting(
-  input: Format.Values.ElementaryValue
-): { type: string; value: string } {
+function keyInfoForPrinting(input: Format.Values.ElementaryValue): {
+  type: string;
+  value: string;
+} {
   switch (input.type.typeClass) {
     case "uint":
       return {

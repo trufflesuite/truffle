@@ -1,5 +1,4 @@
 const { Environment } = require("@truffle/environment");
-const { promisify } = require("util");
 const Artifactor = require("@truffle/artifactor");
 const Resolver = require("@truffle/resolver");
 const copy = require("../../copy");
@@ -24,7 +23,7 @@ module.exports = async function (config) {
     prefix: "migrate-dry-run-"
   }).name;
 
-  await promisify(copy)(config.contracts_build_directory, temporaryDirectory);
+  await copy(config.contracts_build_directory, temporaryDirectory);
 
   config.contracts_build_directory = temporaryDirectory;
   // Note: Create a new artifactor and resolver with the updated config.

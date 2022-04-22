@@ -1,4 +1,7 @@
-import * as bip39 from "ethereum-cryptography/bip39";
+import {
+  mnemonicToSeedSync,
+  validateMnemonic
+} from "ethereum-cryptography/bip39";
 import { wordlist } from "ethereum-cryptography/bip39/wordlists/english";
 import * as EthUtil from "ethereumjs-util";
 import ethJSWallet from "ethereumjs-wallet";
@@ -95,7 +98,7 @@ class HDWalletProvider {
         [
           `No provider or an invalid provider was specified: '${providerToUse}'`,
           "Please specify a valid provider or URL, using the http, https, " +
-          "ws, or wss protocol.",
+            "ws, or wss protocol.",
           ""
         ].join("\n")
       );
@@ -303,13 +306,13 @@ class HDWalletProvider {
     phrase: string;
     password?: string;
   }) {
-    this.hdwallet = EthereumHDKey.fromMasterSeed(
-      bip39.mnemonicToSeedSync(phrase, password)
-    );
-
-    if (!bip39.validateMnemonic(phrase, wordlist)) {
+    if (!validateMnemonic(phrase, wordlist)) {
       throw new Error("Mnemonic invalid or undefined");
     }
+
+    this.hdwallet = EthereumHDKey.fromMasterSeed(
+      Buffer.from(mnemonicToSeedSync(phrase, password))
+    );
 
     // crank the addresses out
     for (let i = addressIndex; i < addressIndex + numberOfAddresses; i++) {

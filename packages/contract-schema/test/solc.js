@@ -4,20 +4,21 @@ const Schema = require("../");
 const debug = require("debug")("test:solc");
 
 describe("solc", function () {
-  const exampleSolidity = `pragma solidity ^0.6.0;
+  const exampleSolidity = `// SPDX-License-Identifier: MIT
+  pragma solidity ^0.8.0;
 
-contract A {
-  uint x;
+  contract A {
+    uint x;
 
-  function doStuff() public {
-    x = 5;
+    function doStuff() public {
+      x = 5;
+    }
   }
-}
 
-contract B {
-  function somethingElse() public pure {}
-}
-`;
+  contract B {
+    function somethingElse() public pure {}
+  }
+  `;
 
   it("processes solc standard JSON output correctly", function () {
     this.timeout(5000);
@@ -87,9 +88,8 @@ contract B {
       );
     });
 
-    //check that ast and legacyAST have the correct form
+    //check that ast has the correct form
     assert.equal(A.ast.nodeType, "SourceUnit");
-    assert.equal(A.legacyAST.name, "SourceUnit");
 
     // throws error if invalid
     Schema.validate(A);

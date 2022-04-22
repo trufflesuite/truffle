@@ -6,9 +6,8 @@ const ENS = require("../ens");
 const sinon = require("sinon");
 const ENSJS = require("@ensdomains/ensjs").default;
 
-let ganacheOptions,
+let providerOptions,
   options,
-  server,
   ens,
   fromAddress,
   provider,
@@ -19,7 +18,7 @@ let ganacheOptions,
 
 describe("ENS class", () => {
   before(() => {
-    ganacheOptions = {
+    providerOptions = {
       // note that when vmErrorsOnRPCResponse is true, `"eager"` instamine must be enabled (default)
       vmErrorsOnRPCResponse: true,
       mnemonic:
@@ -28,18 +27,12 @@ describe("ENS class", () => {
       default_ether_balance: 100,
       logging: { quiet: true }
     };
-    server = Ganache.server(ganacheOptions);
-    server.listen(8545, () => {});
-    let providerOptions = Object.assign({}, ganacheOptions, {
-      port: "8545",
-      host: "127.0.0.1"
-    });
     provider = Ganache.provider(providerOptions);
   });
   after(async () => {
-    if (server) {
-      await server.close();
-      server = null;
+    if (provider) {
+      await provider.disconnect();
+      provider = null;
     }
   });
   beforeEach(async () => {

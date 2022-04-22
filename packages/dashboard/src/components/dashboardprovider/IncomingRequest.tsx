@@ -47,7 +47,7 @@ function IncomingRequest({
         id: request.payload.id,
         error: {
           code: 4001,
-          message: "User rejected @truffle/dashboard-provider request"
+          message: "User rejected @truffle/dashboard request"
         }
       }
     };

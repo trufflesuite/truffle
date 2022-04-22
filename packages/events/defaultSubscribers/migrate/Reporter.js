@@ -289,7 +289,7 @@ class Reporter {
       {
         text: message,
         indent: 3,
-        color: "red"
+        prefixColor: "red"
       }
     );
   }
@@ -301,7 +301,7 @@ class Reporter {
   async endTransaction(data) {
     data.message = data.message || "Ending unknown transaction....";
     const message = this.messages.steps("endTransaction", data);
-    this.transactionSpinner.succeed();
+    this.transactionSpinner.remove();
     return message;
   }
 
@@ -338,7 +338,7 @@ class Reporter {
     this.blockSpinner = new Spinner("events:subscribers:migrate:reporter", {
       text: this.currentBlockWait,
       indent: 3,
-      color: "red"
+      prefixColor: "red"
     });
   }
 

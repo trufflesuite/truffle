@@ -381,6 +381,9 @@ export class ResultInspector {
           case "ReadErrorStorage":
           case "ReadErrorBytes":
             return Exception.message(errorResult.error); //yay, these five are already defined!
+          case "StorageNotSuppliedError":
+            //this one has a message, but we're going to special-case it
+            return options.stylize("?", "undefined");
         }
       }
     }
@@ -543,7 +546,7 @@ function unsafeNativizeWithTable(
         let output: any[] = [...coercedResult.value];
         //now, we can't use a map here, or we'll screw things up!
         //we want to *mutate* output, not replace it with a new object
-        for (let index in output) {
+        for (let index = 0; index < output.length; index++) {
           output[index] = unsafeNativizeWithTable(output[index], [
             output,
             ...seenSoFar

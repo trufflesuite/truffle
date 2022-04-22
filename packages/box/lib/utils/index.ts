@@ -2,8 +2,6 @@ import unbox from "./unbox";
 import fs from "fs";
 import config from "../config";
 import tmp from "tmp";
-import process from "process";
-const cwd = require("process").cwd();
 import path from "path";
 import type { boxConfig, unboxOptions } from "typings";
 
@@ -11,14 +9,9 @@ export = {
   downloadBox: async (source: string, destination: string, events: any) => {
     events.emit("unbox:downloadingBox:start");
 
-    try {
-      await unbox.verifySourcePath(source);
-      await unbox.fetchRepository(source, destination);
-      events.emit("unbox:downloadingBox:succeed");
-    } catch (error) {
-      events.emit("unbox:fail");
-      throw error;
-    }
+    await unbox.verifySourcePath(source);
+    await unbox.fetchRepository(source, destination);
+    events.emit("unbox:downloadingBox:succeed");
   },
 
   readBoxConfig: async (destination: string) => {
@@ -40,17 +33,12 @@ export = {
     const options = {
       unsafeCleanup: true
     };
-    try {
-      const tmpDir = tmp.dirSync(options);
-      events.emit("unbox:preparingToDownload:succeed");
-      return {
-        path: path.join(tmpDir.name, "box"),
-        cleanupCallback: tmpDir.removeCallback
-      };
-    } catch (error) {
-      events.emit("unbox:fail");
-      throw error;
-    }
+    const tmpDir = tmp.dirSync(options);
+    events.emit("unbox:preparingToDownload:succeed");
+    return {
+      path: path.join(tmpDir.name, "box"),
+      cleanupCallback: tmpDir.removeCallback
+    };
   },
 
   unpackBox: async (
@@ -65,12 +53,7 @@ export = {
 
   setUpBox: (boxConfig: boxConfig, destination: string, events: any) => {
     events.emit("unbox:settingUpBox:start");
-    try {
-      unbox.installBoxDependencies(boxConfig, destination);
-      events.emit("unbox:settingUpBox:succeed");
-    } catch (error) {
-      events.emit("unbox:fail");
-      throw error;
-    }
+    unbox.installBoxDependencies(boxConfig, destination);
+    events.emit("unbox:settingUpBox:succeed");
   }
 };

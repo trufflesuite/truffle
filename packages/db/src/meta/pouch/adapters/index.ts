@@ -11,9 +11,6 @@ export { Base };
 import * as Couch from "./couch";
 export { Couch };
 
-import * as Fs from "./fs";
-export { Fs };
-
 import * as Memory from "./memory";
 export { Memory };
 
@@ -24,10 +21,6 @@ export type Adapters = {
   couch: {
     databases: typeof Couch.Databases;
     settings: Couch.DatabasesSettings;
-  };
-  fs: {
-    databases: typeof Fs.Databases;
-    settings: Fs.DatabasesSettings;
   };
   memory: {
     databases: typeof Memory.Databases;
@@ -58,9 +51,8 @@ export type AdapterConstructor<
 
 export type AdapterOptions = Generic.AdapterOptions<Adapters>;
 
-export type AttachOptions<
-  N extends AdapterName = AdapterName
-> = Generic.AttachOptions<Adapters, N>;
+export type AttachOptions<N extends AdapterName = AdapterName> =
+  Generic.AttachOptions<Adapters, N>;
 
 export type ConcretizeResult<
   C extends Collections,
@@ -78,12 +70,6 @@ export const concretize = <C extends Collections, N extends AdapterName>(
       return {
         constructor: Couch.Databases,
         settings: settings || Couch.getDefaultSettings()
-      };
-    }
-    case "fs": {
-      return {
-        constructor: Fs.Databases,
-        settings: settings || Fs.getDefaultSettings()
       };
     }
     case "sqlite": {

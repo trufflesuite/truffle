@@ -8,24 +8,34 @@
  */
 
 function createAccounts() {
+  let acc;
   for (var i = 0; i < 10; i++) {
+    // eslint-disable-next-line no-undef
     acc = personal.newAccount("");
+    // eslint-disable-next-line no-undef
     personal.unlockAccount(acc, "");
-    eth.sendTransaction({from: eth.accounts[0], to: acc, value: web3.toWei(1000, "ether")});
+    // eslint-disable-next-line no-undef
+    eth.sendTransaction({
+      from: eth.accounts[0],
+      to: acc,
+      value: web3.toWei(1000, "ether")
+    });
   }
 }
 
 function unlockAccounts() {
+  // eslint-disable-next-line no-undef
   eth.accounts.forEach(function (account) {
-    console.log('Unlocking ' + account + '...');
-    personal.unlockAccount(account, '', 86400);
+    console.log("Unlocking " + account + "...");
+    // eslint-disable-next-line no-undef
+    personal.unlockAccount(account, "", 86400);
   });
 }
 
 function setupDevNode() {
   // keep accounts unlocked
   while (true) {
-      unlockAccounts();
+    unlockAccounts();
   }
 }
 

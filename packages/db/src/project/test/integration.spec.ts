@@ -9,7 +9,6 @@ import { generateId } from "@truffle/db/system";
 import Migrate from "@truffle/migrate";
 import { Environment } from "@truffle/environment";
 import Config from "@truffle/config";
-import Ganache from "ganache";
 import Web3 from "web3";
 import * as fse from "fs-extra";
 import * as tmp from "tmp";
@@ -17,20 +16,9 @@ import { Shims } from "@truffle/compile-common";
 import type { DataModel, Resource, IdObject } from "@truffle/db/resources";
 import type { Query, Mutation } from "@truffle/db/process";
 
-let server;
-const port = 8545;
-// @ts-ignore jest-specific pedantry
-beforeAll(async done => {
-  server = Ganache.server({
-    // note instamine must be set to eager (default) with vmErrorsOnRPCResponse enabled
-    vmErrorsOnRPCResponse: true
-  });
-  server.listen(port, done);
-});
-
 afterAll(async () => {
   tempDir.removeCallback();
-  await server.close();
+  await migrationConfig.provider.disconnect();
 });
 
 const compilationResult = require(path.join(
