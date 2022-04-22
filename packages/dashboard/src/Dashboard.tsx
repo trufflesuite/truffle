@@ -13,7 +13,7 @@ import WebSocket from "isomorphic-ws";
 import { useEffect, useState } from "react";
 import { useAccount, useConnect, useNetwork } from "wagmi";
 import ConfirmNetworkChanged from "./components/ConfirmNetworkChange";
-import { getPorts, respond } from "./utils/utils";
+import { getPorts, postRpc, respond } from "./utils/utils";
 import Header from "./components/header/Header";
 import DashboardProvider from "./components/dashboardprovider";
 import ConnectNetwork from "./components/ConnectNetwork";
@@ -105,9 +105,36 @@ function Dashboard() {
     // since our socket is open, request some initial data from the server
     const message = createMessage("initialize", ""); // no payload needed
     const response = await sendAndAwait(socket, message);
-    setDashboardChains(response.payload.dashboardChains);
+    fixDashboardChains(response.payload.dashboardChains);
 
     setPublishSocket(socket);
+  };
+
+  /**
+   * Attempts to set the chainId for all chains that don't have one by
+   * requesting `eth_chainId` from the RPC url.
+   * @param chains
+   */
+  const fixDashboardChains = async (chains: any[]) => {
+    const errors = [];
+    for (const chain of chains) {
+      if (!chain.chainId) {
+        chain.chainId = await postRpc(chain.rpcUrls[0], "eth_chainId");
+        if (!chain.chainId) {
+          errors.push(
+            `Failed to find a chainId for chain ${chain.chainName}. Provide a chainId in the truffle-config, or ensure that the RPC URL is valid.`
+          );
+        }
+      }
+    }
+    if (errors.length > 0) {
+      console.group("Failed to set chainId(s).");
+      errors.forEach(error => {
+        console.warn(error);
+      });
+      console.groupEnd();
+    }
+    setDashboardChains(chains);
   };
 
   return (
