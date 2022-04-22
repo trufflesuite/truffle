@@ -1,4 +1,4 @@
-import Ganache from "ganache-core";
+import Ganache, { EthereumProvider } from "ganache";
 import { providers, utils } from "ethers";
 import Web3 from "web3";
 import { getMessageBusPorts } from "@truffle/dashboard-message-bus";
@@ -16,14 +16,18 @@ describe("DashboardServer", () => {
   let dashboardServer: DashboardServer;
   let mockDashboard: MockDashboard;
   let messageBusPorts: any;
-  let ganacheProvider: Ganache.Provider;
+  let ganacheProvider: EthereumProvider;
 
   beforeAll(() => {
-    ganacheProvider = Ganache.provider();
+    ganacheProvider = Ganache.provider({
+      logging: {
+        quiet: true
+      }
+    });
   });
 
-  afterAll(done => {
-    ganacheProvider?.close(done);
+  afterAll(async () => {
+    await ganacheProvider?.disconnect();
   });
 
   beforeEach(async () => {
