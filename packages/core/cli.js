@@ -71,7 +71,11 @@ const options = prepareOptions({
 
 runCommand(command, options)
   .then(returnStatus => {
-    setInterval(() => process.exit(returnStatus), 1000);
+    process.exitCode = returnStatus;
+    return require("@truffle/promise-tracker").waitForOutstandingPromises();
+  })
+  .then(() => {
+    process.exit();
   })
   .catch(error => {
     if (error instanceof TaskError) {
