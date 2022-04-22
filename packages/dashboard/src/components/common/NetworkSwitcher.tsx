@@ -1,11 +1,9 @@
-import { useWeb3React } from "@web3-react/core";
-import axios from "axios";
-import { providers } from "ethers";
 import { useEffect, useState } from "react";
 import {
   forwardDashboardProviderRequest,
   getNetworkName
 } from "src/utils/utils";
+import { useConnect } from "wagmi";
 
 interface Props {
   chainId: number;
@@ -15,7 +13,9 @@ interface Props {
 function NetworkSwitcher({ chainId, dashboardChains }: Props) {
   const [networkName, setNetworkName] = useState<string>(`Chain ID ${chainId}`);
   const textColor = chainId === 1 ? "text-truffle-red" : "";
-  const { library } = useWeb3React<providers.Web3Provider>();
+  const [{ data: connectData }] = useConnect();
+  const provider = connectData.connector?.getProvider();
+  const connector = connectData.connector;
 
   useEffect(() => {
     const updateNetwork = async (chainId: number) => {
@@ -28,23 +28,8 @@ function NetworkSwitcher({ chainId, dashboardChains }: Props) {
     updateNetwork(chainId);
   }, [chainId, dashboardChains]);
 
-  async function getVerifiedChainId(chain: any) {
-    try {
-      const { data } = await axios.post(chain.rpcUrls[0], {
-        jsonrpc: "2.0",
-        method: "eth_chainId",
-        params: [],
-        id: 0
-      });
-      return data.result;
-    } catch (e) {
-      console.log(e);
-    }
-  }
-
   async function addNetwork(chain: any) {
-    if (!library) return; // handle better
-    const provider = library.provider;
+    if (!provider) return; // handle b
     const addNetworkPayload = {
       jsonrpc: "2.0",
       method: "wallet_addEthereumChain",
@@ -53,6 +38,7 @@ function NetworkSwitcher({ chainId, dashboardChains }: Props) {
     };
     const addNetworkResponse = await forwardDashboardProviderRequest(
       provider,
+      connector,
       addNetworkPayload
     );
     if (addNetworkResponse.error) {
@@ -63,11 +49,7 @@ function NetworkSwitcher({ chainId, dashboardChains }: Props) {
   }
 
   async function setOrAddNetwork(chain: any) {
-    if (!library) return; // handle better
-    const provider = library.provider;
-    if (!chain.chainId) {
-      chain.chainId = await getVerifiedChainId(chain);
-    }
+    if (!provider) return; // TODO: handle better
     const switchNetworkPayload = {
       jsonrpc: "2.0",
       method: "wallet_switchEthereumChain",
@@ -77,6 +59,7 @@ function NetworkSwitcher({ chainId, dashboardChains }: Props) {
     console.log(switchNetworkPayload);
     const switchNetworkResponse = await forwardDashboardProviderRequest(
       provider,
+      connector,
       switchNetworkPayload
     );
     if (switchNetworkResponse.error) {
