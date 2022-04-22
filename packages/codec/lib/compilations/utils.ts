@@ -166,7 +166,8 @@ export function shimContracts(
       contractObject.primarySourceId = index.toString(); //HACK
     } else {
       //if neither was passed, attempt to determine it from the ast
-      let index;
+      let index: number;
+      let needsAdding: boolean;
       if (sourceObject.ast) {
         //note: this works for both Solidity and Vyper
         index = sourceIndexForAst(sourceObject.ast); //sourceObject.ast for typing reasons
@@ -182,19 +183,21 @@ export function shimContracts(
         index = extractPrimarySource(sourceMapString);
       }
       //else leave undefined for now
-      ({ index, unreliableSourceOrder } = getIndexToAddAt(
+      ({ index, needsAdding, unreliableSourceOrder } = getIndexToAddAt(
         sourceObject,
         index,
         sources,
         unreliableSourceOrder
       ));
-      if (index !== null) {
+      if (needsAdding) {
         //if we're in this case, inputSources was not passed
         sourceObject.id = index.toString(); //HACK
         sources[index] = sourceObject;
         debug("else; index: %d", index);
-        contractObject.primarySourceId = index.toString();
       }
+      //whether needed adding or not, set the source ID on the contract object
+      contractObject.primarySourceId = index.toString(); //HACK
+      debug("(no index unless mentioned)");
     }
 
     contracts.push(contractObject);
@@ -398,7 +401,7 @@ function getIndexToAddAt(
   index: number,
   sources: Source[],
   unreliableSourceOrder: boolean
-): { index: number | null; unreliableSourceOrder: boolean } {
+): { index: number; needsAdding: boolean; unreliableSourceOrder: boolean } {
   //first: is this already there? only add it if it's not.
   //(we determine this by sourcePath if present, and the actual source
   //contents if not)
@@ -431,6 +434,7 @@ function getIndexToAddAt(
     }
     return {
       index,
+      needsAdding: true,
       unreliableSourceOrder
     };
   } else {
@@ -438,7 +442,8 @@ function getIndexToAddAt(
     //already present
     debug("already present, not adding");
     return {
-      index: null,
+      index,
+      needsAdding: false,
       unreliableSourceOrder
     };
   }
