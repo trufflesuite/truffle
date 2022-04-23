@@ -7,11 +7,45 @@ export function internalCall(pointer, newPointer) {
   };
 }
 
+export const IDENTIFIED_INTERNAL_CALL = "TXLOG_IDENTIFIED_INTERNAL_CALL";
+export function identifiedInternalCall(
+  pointer,
+  newPointer,
+  functionNode,
+  contractNode,
+  variables
+) {
+  return {
+    type: IDENTIFIED_INTERNAL_CALL,
+    pointer,
+    newPointer,
+    functionNode,
+    contractNode,
+    variables
+  };
+}
+
 export const ABSORBED_CALL = "TXLOG_ABSORBED_CALL";
 export function absorbedCall(pointer) {
   return {
     type: ABSORBED_CALL,
     pointer
+  };
+}
+
+export const IDENTIFIED_ABSORBED_CALL = "TXLOG_IDENTIFIED_ABSORBED_CALL";
+export function identifiedAbsorbedCall(
+  pointer,
+  functionNode,
+  contractNode,
+  variables
+) {
+  return {
+    type: IDENTIFIED_ABSORBED_CALL,
+    pointer,
+    functionNode,
+    contractNode,
+    variables
   };
 }
 

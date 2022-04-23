@@ -52,10 +52,53 @@ function* updateTransactionLogSaga() {
         if (!(yield select(txlog.current.waitingForInternalCallToAbsorb))) {
           const newPointer = yield select(txlog.current.nextCallPointer);
           debug("internal call: %o %o", pointer, newPointer);
-          yield put(actions.internalCall(pointer, newPointer));
+          if (yield select(txlog.current.onFunctionDefinition)) {
+            const inputAllocations = yield select(
+              txlog.current.inputParameterAllocations
+            );
+            if (inputAllocations) {
+              debug("identify [combined]: %o", pointer);
+              const { functionNode, contractNode, variables } =
+                yield* identifySaga();
+              yield put(
+                actions.identifiedInternalCall(
+                  pointer,
+                  newPointer,
+                  functionNode,
+                  contractNode,
+                  variables
+                )
+              );
+            } else {
+              yield put(actions.internalCall(pointer, newPointer));
+            }
+          } else {
+            yield put(actions.internalCall(pointer, newPointer));
+          }
         } else {
           debug("absorbed call: %o", pointer);
-          yield put(actions.absorbedCall(pointer));
+          if (yield select(txlog.current.onFunctionDefinition)) {
+            const inputAllocations = yield select(
+              txlog.current.inputParameterAllocations
+            );
+            if (inputAllocations) {
+              debug("identify [combined]: %o", pointer);
+              const { functionNode, contractNode, variables } =
+                yield* identifySaga();
+              yield put(
+                actions.identifiedAbsorbedCall(
+                  pointer,
+                  functionNode,
+                  contractNode,
+                  variables
+                )
+              );
+            } else {
+              yield put(actions.absorbedCall(pointer));
+            }
+          } else {
+            yield put(actions.absorbedCall(pointer));
+          }
         }
       }
     } else if (jumpDirection === "o") {
@@ -189,20 +232,8 @@ function* updateTransactionLogSaga() {
       );
       debug("inputAllocations: %O", inputAllocations);
       if (inputAllocations) {
-        const functionNode = yield select(txlog.current.astNode);
-        const contractNode = yield select(txlog.current.contract);
-        const compilationId = yield select(txlog.current.compilationId);
-        //can't do a yield* inside a map, have to do this loop manually
-        let variables = [];
-        for (let { name, definition, pointer } of inputAllocations) {
-          const decodedValue = yield* data.decode(
-            definition,
-            pointer,
-            compilationId
-          );
-          variables.push({ name, value: decodedValue });
-        }
-        debug("identify: %o", pointer);
+        debug("identify [standalone]: %o", pointer);
+        const { functionNode, contractNode, variables } = yield* identifySaga();
         yield put(
           actions.identifyFunctionCall(
             pointer,
@@ -214,6 +245,23 @@ function* updateTransactionLogSaga() {
       }
     }
   }
+}
+
+function* identifySaga() {
+  debug("identifying");
+  const inputAllocations = yield select(
+    txlog.current.inputParameterAllocations
+  );
+  const functionNode = yield select(txlog.current.astNode);
+  const contractNode = yield select(txlog.current.contract);
+  const compilationId = yield select(txlog.current.compilationId);
+  //can't do a yield* inside a map, have to do this loop manually
+  let variables = [];
+  for (const { name, definition, pointer } of inputAllocations) {
+    const decodedValue = yield* data.decode(definition, pointer, compilationId);
+    variables.push({ name, value: decodedValue });
+  }
+  return { functionNode, contractNode, variables };
 }
 
 function callKind(context, calldata, instant) {
