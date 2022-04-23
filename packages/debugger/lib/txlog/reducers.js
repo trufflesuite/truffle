@@ -24,6 +24,39 @@ const DEFAULT_TX_LOG = {
 function transactionLog(state = DEFAULT_TX_LOG, action) {
   const { pointer, newPointer } = action;
   const node = state.byPointer[pointer];
+
+  const identify = (node, action) => {
+    const { functionNode, contractNode, variables } = action;
+    const functionName = functionNode.name || undefined; //replace "" with undefined
+    const contractName =
+      contractNode && contractNode.nodeType === "ContractDefinition"
+        ? contractNode.name
+        : null;
+    let modifiedNode = {
+      ...node,
+      waitingForFunctionDefinition: false
+    };
+    //note: I don't handle the following in the object spread above
+    //because I don't want undefined or null counting against it
+    if (!modifiedNode.functionName) {
+      modifiedNode.functionName = functionName;
+    }
+    if (!modifiedNode.contractName) {
+      modifiedNode.contractName = contractName;
+    }
+    if (!modifiedNode.arguments) {
+      modifiedNode.arguments = variables;
+    }
+    if (
+      modifiedNode.type === "callexternal" &&
+      modifiedNode.kind === "library"
+    ) {
+      modifiedNode.kind = "function";
+      delete modifiedNode.data;
+    }
+    return modifiedNode;
+  };
+
   switch (action.type) {
     case actions.RECORD_ORIGIN:
       if (node.type === "transaction") {
@@ -55,6 +88,25 @@ function transactionLog(state = DEFAULT_TX_LOG, action) {
           }
         }
       };
+    case actions.IDENTIFIED_INTERNAL_CALL:
+      const newNode = identify(
+        {
+          type: "callinternal",
+          actions: [],
+          waitingForFunctionDefinition: true
+        },
+        action
+      );
+      return {
+        byPointer: {
+          ...state.byPointer,
+          [pointer]: {
+            ...node,
+            actions: [...node.actions, newPointer]
+          },
+          [newPointer]: newNode
+        }
+      };
     case actions.ABSORBED_CALL:
       return {
         byPointer: {
@@ -65,7 +117,19 @@ function transactionLog(state = DEFAULT_TX_LOG, action) {
           }
         }
       };
-    case actions.INTERNAL_RETURN:
+    case actions.IDENTIFIED_ABSORBED_CALL: {
+      const modifiedNode = identify(node, action);
+      return {
+        byPointer: {
+          ...state.byPointer,
+          [pointer]: {
+            ...modifiedNode,
+            absorbNextInternalCall: false
+          }
+        }
+      };
+    }
+    case actions.INTERNAL_RETURN: {
       //pop the top call from the stack if it's internal (and set its return values)
       //if the top call is instead external, just set its return values if appropriate.
       //(this is how we handle internal/external return absorption)
@@ -88,6 +152,7 @@ function transactionLog(state = DEFAULT_TX_LOG, action) {
           [pointer]: modifiedNode
         }
       };
+    }
     case actions.INSTANT_EXTERNAL_CALL:
     case actions.EXTERNAL_CALL:
     case actions.INSTANT_CREATE:
@@ -285,34 +350,7 @@ function transactionLog(state = DEFAULT_TX_LOG, action) {
       return newState;
     }
     case actions.IDENTIFY_FUNCTION_CALL: {
-      const { functionNode, contractNode, variables } = action;
-      const functionName = functionNode.name || undefined; //replace "" with undefined
-      const contractName =
-        contractNode && contractNode.nodeType === "ContractDefinition"
-          ? contractNode.name
-          : null;
-      let modifiedNode = {
-        ...node,
-        waitingForFunctionDefinition: false
-      };
-      //note: I don't handle the following in the object spread above
-      //because I don't want undefined or null counting against it
-      if (!modifiedNode.functionName) {
-        modifiedNode.functionName = functionName;
-      }
-      if (!modifiedNode.contractName) {
-        modifiedNode.contractName = contractName;
-      }
-      if (!modifiedNode.arguments) {
-        modifiedNode.arguments = variables;
-      }
-      if (
-        modifiedNode.type === "callexternal" &&
-        modifiedNode.kind === "library"
-      ) {
-        modifiedNode.kind = "function";
-        delete modifiedNode.data;
-      }
+      const modifiedNode = identify(node, action);
       return {
         byPointer: {
           ...state.byPointer,
