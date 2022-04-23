@@ -60,7 +60,9 @@ function* updateTransactionLogSaga() {
       }
     } else if (jumpDirection === "o") {
       const internal = yield select(txlog.current.inInternalSourceOrYul); //don't log jumps out of internal sources or Yul
-      const astMatchesTxLog = yield select(txlog.current.currentFunctionIsAsExpected); //don't log returns from the wrong function...?
+      const astMatchesTxLog = yield select(
+        txlog.current.currentFunctionIsAsExpected
+      ); //don't log returns from the wrong function...?
       //(I've added this second check due to a strange case Amal found, hopefully this doesn't screw anything up)
       if (!internal && astMatchesTxLog) {
         //in this case, we have to do decoding & fn identification
@@ -179,10 +181,7 @@ function* updateTransactionLogSaga() {
         )
       );
     }
-  }
-  //we process this last in case jump & function def on same step
-  //(which is in fact how it typically goes!)
-  if (yield select(txlog.current.onFunctionDefinition)) {
+  } else if (yield select(txlog.current.onFunctionDefinition)) {
     if (yield select(txlog.current.waitingForFunctionDefinition)) {
       debug("identifying");
       const inputAllocations = yield select(
@@ -271,30 +270,34 @@ export function* begin() {
     const kind = callKind(context, calldata, false); //no insta-calls here!
     const absorb = yield select(txlog.transaction.absorbFirstInternalCall);
     debug("initial call: %o %o", pointer, newPointer);
-    yield put(actions.externalCall(
-      pointer,
-      newPointer,
-      address,
-      context,
-      value,
-      false, //initial call is never delegate
-      kind,
-      decoding,
-      calldata,
-      absorb
-    ));
+    yield put(
+      actions.externalCall(
+        pointer,
+        newPointer,
+        address,
+        context,
+        value,
+        false, //initial call is never delegate
+        kind,
+        decoding,
+        calldata,
+        absorb
+      )
+    );
   } else {
     debug("initial create: %o %o", pointer, newPointer);
-    yield put(actions.create(
-      pointer,
-      newPointer,
-      storageAddress,
-      context,
-      value,
-      null, //initial create never has salt
-      decoding,
-      binary
-    ));
+    yield put(
+      actions.create(
+        pointer,
+        newPointer,
+        storageAddress,
+        context,
+        value,
+        null, //initial create never has salt
+        decoding,
+        binary
+      )
+    );
   }
 }
 
