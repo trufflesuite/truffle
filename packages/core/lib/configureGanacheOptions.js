@@ -30,12 +30,30 @@ function configureManagedGanache(config, networkConfig, mnemonic) {
     blockTime: networkConfig.blockTime || 0,
     fork: networkConfig.fork,
     mnemonic: mnemonic,
+    gasLimit: networkConfig.gasLimit || 0x6691b7,
     gasPrice: networkConfig.gasPrice || 0x77359400,
-    time: networkConfig.genesis_time || config.genesis_time,
+    // config.genesis_time is for compatibility with older versions
+    time:
+      networkConfig.genesis_time || networkConfig.time || config.genesis_time,
     miner: {
       instamine: "strict"
     }
   };
+
+  if (networkConfig.accounts === 0 || networkConfig.total_accounts === 0) {
+    ganacheOptions.total_accounts = 0;
+  }
+
+  if (
+    networkConfig.defaultEtherBalance === 0 ||
+    networkConfig.default_balance_ether === 0
+  ) {
+    ganacheOptions.default_balance_ether = 0;
+  }
+
+  if (networkConfig.gasPrice === 0) {
+    ganacheOptions.gasPrice = 0;
+  }
 
   if (networkConfig.hardfork !== null && networkConfig.hardfork !== undefined) {
     ganacheOptions["hardfork"] = networkConfig.hardfork;

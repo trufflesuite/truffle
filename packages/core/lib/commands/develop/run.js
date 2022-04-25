@@ -27,10 +27,20 @@ module.exports = async options => {
 
   const config = Config.detect(options);
   const customConfig = config.networks.develop || {};
+  let mnemonic = "";
+  let accounts = [];
+  let privateKeys = [];
 
-  const { mnemonic, accounts, privateKeys } = mnemonicInfo.getAccountsInfo(
-    customConfig.accounts || customConfig.total_accounts || 10
-  );
+  if (customConfig.accounts === 0 || customConfig.total_accounts === 0) {
+    mnemonic = mnemonicInfo.getOrGenerateMnemonic();
+  } else {
+    let accountsInfo = mnemonicInfo.getAccountsInfo(
+      customConfig.accounts || customConfig.total_accounts || 10
+    );
+    mnemonic = accountsInfo.mnemonic;
+    accounts = accountsInfo.accounts;
+    privateKeys = accountsInfo.privateKeys;
+  }
 
   const onMissing = () => "**";
 
