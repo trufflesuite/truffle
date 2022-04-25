@@ -72,7 +72,7 @@ module.exports = async function (options) {
     inputFile: file
   });
 
-  let configuredNetwork = config.networks[config.network];
+  const configuredNetwork = config.networks[config.network];
   const testNetworkDefinedAndUsed =
     configuredNetwork && config.network === "test";
   const noProviderHostOrUrlConfigured =
@@ -87,17 +87,19 @@ module.exports = async function (options) {
     !configuredNetwork
   ) {
     const defaultPort = await require("get-port")();
+    const defaultMnemonic =
+      "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
     // configuredNetwork will spread only when it is defined and ignored when undefined
     const configuredManagedNetwork = {
       port: defaultPort,
       ...configuredNetwork
     };
-    const defaultMnemonic =
-      "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
+
+    const mnemonic = configuredManagedNetwork.mnemonic || defaultMnemonic;
     const ganacheOptions = configureGanacheOptions.configureManagedGanache(
       config,
       configuredManagedNetwork,
-      defaultMnemonic
+      mnemonic
     );
 
     const ipcOptions = { network: "test" };
