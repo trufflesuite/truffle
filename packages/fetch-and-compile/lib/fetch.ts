@@ -12,15 +12,18 @@ import Config from "@truffle/config";
 const { Compile } = require("@truffle/compile-solidity"); //sorry for untyped import!
 import type { Recognizer, FailureType, FetchAndCompileOptions } from "./types";
 import type { WorkflowCompileResult } from "@truffle/compile-common";
-import { normalizeInput } from "./utils";
+import {
+  normalizeFetchAndCompileOptions,
+  normalizeFetcherNames
+} from "./utils";
 
 export async function fetchAndCompileForRecognizer(
   recognizer: Recognizer,
   options: FetchAndCompileOptions | Config
 ): Promise<void> {
-  const normalizedOptions = normalizeInput(options);
+  const normalizedOptions = normalizeFetchAndCompileOptions(options);
   const fetcherConstructors: FetcherConstructor[] =
-    getSortedFetcherConstructors(normalizedOptions);
+    getSortedFetcherConstructors(normalizeFetcherNames(normalizedOptions));
   const fetchers = await getFetchers(
     fetcherConstructors,
     normalizedOptions,
@@ -40,11 +43,8 @@ export async function fetchAndCompileForRecognizer(
 
 //sort/filter fetchers by user's order, if given; otherwise use default order
 export function getSortedFetcherConstructors(
-  options?: FetchAndCompileOptions
+  userFetcherNames?: string[]
 ): FetcherConstructor[] {
-  const userFetcherNames: string[] | undefined = (
-    (options || { fetch: undefined }).fetch || { precedence: undefined }
-  ).precedence;
   let sortedFetchers: FetcherConstructor[] = [];
   if (userFetcherNames) {
     for (let name of userFetcherNames) {
