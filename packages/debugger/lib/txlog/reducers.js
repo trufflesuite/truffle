@@ -295,7 +295,7 @@ function transactionLog(state = DEFAULT_TX_LOG, action) {
         ...node,
         waitingForFunctionDefinition: false
       };
-      //note: I don't handle the following in the object spread above
+      //note: I don't handle the following three fields in the object spread above
       //because I don't want undefined or null counting against it
       if (!modifiedNode.functionName) {
         modifiedNode.functionName = functionName;
