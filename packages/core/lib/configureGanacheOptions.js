@@ -17,21 +17,41 @@ function sanitizeGanacheOptions(ganacheOptions) {
 }
 
 function configureManagedGanache(config, networkConfig, mnemonic) {
+  const calcTotalAccounts = networkConfig => {
+    // Respect user's number of accounts choice to 0 in truffle config
+    const isZeroAccount =
+      networkConfig.accounts === 0 || networkConfig.total_accounts === 0;
+    const userAccounts = networkConfig.accounts || networkConfig.total_accounts;
+    return isZeroAccount ? 0 : userAccounts || 10;
+  };
+
+  const calcTotalEtherBalance = networkConfig => {
+    // Respect user's accounts ether balance choice to 0 in truffle config
+    const isZeroEtherBalance =
+      networkConfig.defaultEtherBalance === 0 ||
+      networkConfig.default_balance_ether === 0;
+    const userAccountsEtherBalance =
+      networkConfig.defaultEtherBalance || networkConfig.default_balance_ether;
+    return isZeroEtherBalance ? 0 : userAccountsEtherBalance || 100;
+  };
+
+  const calcGasPrice = networkConfig => {
+    return networkConfig.gasPrice === 0
+      ? 0
+      : networkConfig.gasPrice || 0x77359400;
+  };
+
   const ganacheOptions = {
     host: networkConfig.host || "127.0.0.1", // Default host for managed ganache
     port: networkConfig.port || 9545, // Default port for managed ganache
     network_id: networkConfig.network_id || Date.now(),
-    total_accounts:
-      networkConfig.accounts || networkConfig.total_accounts || 10,
-    default_balance_ether:
-      networkConfig.defaultEtherBalance ||
-      networkConfig.default_balance_ether ||
-      100,
+    total_accounts: calcTotalAccounts(networkConfig),
+    default_balance_ether: calcTotalEtherBalance(networkConfig),
     blockTime: networkConfig.blockTime || 0,
     fork: networkConfig.fork,
     mnemonic: mnemonic,
     gasLimit: networkConfig.gasLimit || 0x6691b7,
-    gasPrice: networkConfig.gasPrice || 0x77359400,
+    gasPrice: calcGasPrice(networkConfig),
     // config.genesis_time is for compatibility with older versions
     time:
       networkConfig.genesis_time || networkConfig.time || config.genesis_time,
@@ -39,21 +59,6 @@ function configureManagedGanache(config, networkConfig, mnemonic) {
       instamine: "strict"
     }
   };
-
-  if (networkConfig.accounts === 0 || networkConfig.total_accounts === 0) {
-    ganacheOptions.total_accounts = 0;
-  }
-
-  if (
-    networkConfig.defaultEtherBalance === 0 ||
-    networkConfig.default_balance_ether === 0
-  ) {
-    ganacheOptions.default_balance_ether = 0;
-  }
-
-  if (networkConfig.gasPrice === 0) {
-    ganacheOptions.gasPrice = 0;
-  }
 
   if (networkConfig.hardfork !== null && networkConfig.hardfork !== undefined) {
     ganacheOptions["hardfork"] = networkConfig.hardfork;
