@@ -112,6 +112,16 @@ function byName(variables) {
   );
 }
 
+function verifyNoIntermediates(untied) {
+  for (const node of Object.values(untied)) {
+    assert.notProperty(node, "waitingForFunctionDefinition"); //should be deleted by finish
+    assert.notProperty(node, "absorbNextInternalCall"); //should be deleted by finish
+    if (node.type === "callexternal") {
+      assert.notEqual(node.kind, "library"); //should be changed to something else by finish
+    }
+  }
+}
+
 describe("Transaction log (visualizer)", function () {
   let provider;
   let abstractions;
@@ -150,6 +160,9 @@ describe("Transaction log (visualizer)", function () {
     });
 
     await bugger.runToEnd();
+
+    const untied = bugger.view(txlog.proc.transactionLog);
+    verifyNoIntermediates(untied);
 
     const root = bugger.view(txlog.views.transactionLog);
     assert.equal(root.type, "transaction");
@@ -207,6 +220,9 @@ describe("Transaction log (visualizer)", function () {
 
     await bugger.runToEnd();
 
+    const untied = bugger.view(txlog.proc.transactionLog);
+    verifyNoIntermediates(untied);
+
     const root = bugger.view(txlog.views.transactionLog);
     assert.equal(root.type, "transaction");
     assert.lengthOf(root.actions, 1);
@@ -260,6 +276,9 @@ describe("Transaction log (visualizer)", function () {
 
     await bugger.runToEnd();
 
+    const untied = bugger.view(txlog.proc.transactionLog);
+    verifyNoIntermediates(untied);
+
     const root = bugger.view(txlog.views.transactionLog);
     assert.equal(root.type, "transaction");
     assert.lengthOf(root.actions, 1);
@@ -308,6 +327,9 @@ describe("Transaction log (visualizer)", function () {
 
     await bugger.runToEnd();
 
+    const untied = bugger.view(txlog.proc.transactionLog);
+    verifyNoIntermediates(untied);
+
     const root = bugger.view(txlog.views.transactionLog);
     assert.equal(root.type, "transaction");
     let origin = root.origin;
@@ -342,6 +364,9 @@ describe("Transaction log (visualizer)", function () {
     });
 
     await bugger.runToEnd();
+
+    const untied = bugger.view(txlog.proc.transactionLog);
+    verifyNoIntermediates(untied);
 
     const root = bugger.view(txlog.views.transactionLog);
     assert.equal(root.type, "transaction");
@@ -394,6 +419,9 @@ describe("Transaction log (visualizer)", function () {
     });
 
     await bugger.runToEnd();
+
+    const untied = bugger.view(txlog.proc.transactionLog);
+    verifyNoIntermediates(untied);
 
     const root = bugger.view(txlog.views.transactionLog);
     assert.equal(root.type, "transaction");
