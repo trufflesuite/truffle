@@ -1006,7 +1006,7 @@ export class ContractDecoder {
  * information and will make use of it, making it possible for it to decode
  * transactions sent to this instance, or logs originating from it, or decode
  * return values received from it in full mode, even if the deployedBytecode
- * field is misssing.
+ * field is missing.
  * @category Decoder
  */
 export class ContractInstanceDecoder {
