@@ -9,7 +9,10 @@ import {
   getSortedFetcherConstructors
 } from "./fetch";
 import type * as Types from "./types";
-import { normalizeInput } from "./utils";
+import {
+  normalizeFetchAndCompileOptions,
+  normalizeFetcherNames
+} from "./utils";
 
 export { fetchAndCompileForRecognizer };
 
@@ -17,7 +20,7 @@ export async function fetchAndCompile(
   address: string,
   options: Types.FetchAndCompileOptions | Config
 ): Promise<Types.FetchAndCompileResult> {
-  const normalizedOptions = normalizeInput(options);
+  const normalizedOptions = normalizeFetchAndCompileOptions(options);
   const recognizer = new SingleRecognizer(address);
   await fetchAndCompileForRecognizer(recognizer, normalizedOptions);
   return recognizer.getResult();
@@ -33,7 +36,7 @@ export async function fetchAndCompileMultiple(
   addresses: string[],
   options: Types.FetchAndCompileOptions | Config
 ): Promise<Types.FetchAndCompileMultipleResult> {
-  const normalizedOptions = normalizeInput(options);
+  const normalizedOptions = normalizeFetchAndCompileOptions(options);
   const recognizer = new MultipleRecognizer(addresses);
   await fetchAndCompileForRecognizer(recognizer, normalizedOptions);
   return recognizer.getResults();
@@ -45,17 +48,17 @@ export async function fetchAndCompileForDebugger(
   bugger: any, //sorry; this should be a debugger object
   options: Types.FetchAndCompileOptions | Config
 ): Promise<Types.FetchExternalErrors> {
-  const normalizedOptions = normalizeInput(options);
+  const normalizedOptions = normalizeFetchAndCompileOptions(options);
   const recognizer = new DebugRecognizer(bugger);
   await fetchAndCompileForRecognizer(recognizer, normalizedOptions);
   return recognizer.getErrors();
 }
 
 export function getSupportedNetworks(
-  options?: Types.FetchAndCompileOptions | Config
+  optionsOrFetcherNames?: Types.FetchAndCompileOptions | Config | string[]
 ): Types.SupportedNetworks {
-  const normalizedOptions = options ? normalizeInput(options) : options;
-  const fetchers = getSortedFetcherConstructors(normalizedOptions);
+  const fetcherNames = normalizeFetcherNames(optionsOrFetcherNames);
+  const fetchers = getSortedFetcherConstructors(fetcherNames);
   //strictly speaking these are fetcher constructors, but since we
   //won't be using fetcher instances in this function, I'm not going
   //to worry about the difference

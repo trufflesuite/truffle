@@ -2,7 +2,7 @@ import Config from "@truffle/config";
 import type { FetchAndCompileOptions } from "./types";
 import Fetchers from "@truffle/source-fetcher";
 
-export function normalizeInput(
+export function normalizeFetchAndCompileOptions(
   options: FetchAndCompileOptions | Config
 ): FetchAndCompileOptions {
   if (options instanceof Config) {
@@ -27,5 +27,18 @@ export function normalizeInput(
     return normalizedOptions;
   } else {
     return options;
+  }
+}
+
+export function normalizeFetcherNames(
+  optionsOrFetcherNames?: FetchAndCompileOptions | Config | string[]
+): string[] | undefined {
+  if (Array.isArray(optionsOrFetcherNames)) {
+    return optionsOrFetcherNames;
+  } else if (!optionsOrFetcherNames) {
+    return optionsOrFetcherNames;
+  } else {
+    const options = normalizeFetchAndCompileOptions(optionsOrFetcherNames);
+    return ((options || {}).fetch || {}).precedence;
   }
 }
