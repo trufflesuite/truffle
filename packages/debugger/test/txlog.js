@@ -508,6 +508,9 @@ describe("Transaction log (visualizer)", function () {
 
       await bugger.runToEnd();
 
+      const untied = bugger.view(txlog.proc.transactionLog);
+      verifyNoIntermediates(untied);
+
       const root = bugger.view(txlog.views.transactionLog);
       assert.equal(root.type, "transaction");
       assert.lengthOf(root.actions, 1);
@@ -565,6 +568,9 @@ describe("Transaction log (visualizer)", function () {
 
       await bugger.runToEnd();
 
+      const untied = bugger.view(txlog.proc.transactionLog);
+      verifyNoIntermediates(untied);
+
       const root = bugger.view(txlog.views.transactionLog);
       assert.equal(root.type, "transaction");
       assert.lengthOf(root.actions, 1);
@@ -608,6 +614,9 @@ describe("Transaction log (visualizer)", function () {
       });
 
       await bugger.runToEnd();
+
+      const untied = bugger.view(txlog.proc.transactionLog);
+      verifyNoIntermediates(untied);
 
       const root = bugger.view(txlog.views.transactionLog);
       assert.equal(root.type, "transaction");
@@ -653,6 +662,9 @@ describe("Transaction log (visualizer)", function () {
       });
 
       await bugger.runToEnd();
+
+      const untied = bugger.view(txlog.proc.transactionLog);
+      verifyNoIntermediates(untied);
 
       const root = bugger.view(txlog.views.transactionLog);
       assert.equal(root.type, "transaction");
