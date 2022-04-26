@@ -27,20 +27,16 @@ module.exports = async options => {
 
   const config = Config.detect(options);
   const customConfig = config.networks.develop || {};
-  let mnemonic = "";
-  let accounts = [];
-  let privateKeys = [];
 
-  if (customConfig.accounts === 0 || customConfig.total_accounts === 0) {
-    mnemonic = mnemonicInfo.getOrGenerateMnemonic();
-  } else {
-    let accountsInfo = mnemonicInfo.getAccountsInfo(
-      customConfig.accounts || customConfig.total_accounts || 10
-    );
-    mnemonic = accountsInfo.mnemonic;
-    accounts = accountsInfo.accounts;
-    privateKeys = accountsInfo.privateKeys;
-  }
+  // Respect user's number of accounts choice to 0 in truffle config
+  const isZeroAccount =
+    customConfig.accounts === 0 || customConfig.total_accounts === 0;
+  const userAccounts = customConfig.accounts || customConfig.total_accounts;
+  const accountsInfo = isZeroAccount
+    ? mnemonicInfo.getAccountsInfo(0)
+    : mnemonicInfo.getAccountsInfo(userAccounts || 10);
+
+  const { mnemonic, accounts, privateKeys } = accountsInfo;
 
   const onMissing = () => "**";
 
