@@ -11,7 +11,7 @@ export interface FetchAndCompileOptions {
   };
   fetch?: {
     precedence?: string[]; // eg. ["etherscan", "sourcify"]
-    fetcherOptions: {
+    fetcherOptions?: {
       [fetcherName: string]: FetcherOptions;
     };
   };
