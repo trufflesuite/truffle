@@ -89,6 +89,7 @@ export class ProjectEncoder {
   constructor(info: Types.EncoderInfoInternal) {
     //first, set up the basic info that we need to run
     if (info.userDefinedTypes && info.allocations) {
+      debug("internal route!");
       this.userDefinedTypes = info.userDefinedTypes;
       this.allocations = info.allocations;
     } else {
@@ -117,11 +118,14 @@ export class ProjectEncoder {
         this.userDefinedTypes,
         this.allocations.abi
       );
-      this.provider = info.provider || null;
-      if (info.registryAddress !== undefined) {
-        this.registryAddress = info.registryAddress;
-      }
     }
+
+    this.provider = info.provider || null;
+    debug("provider: %o", this.provider);
+    if (info.registryAddress !== undefined) {
+      this.registryAddress = info.registryAddress;
+    }
+    debug("registryAddress: %o", this.registryAddress);
 
     this.networkId = info.networkId || null;
   }
@@ -131,7 +135,9 @@ export class ProjectEncoder {
    */
   public async init(): Promise<void> {
     if (this.provider) {
+      debug("provider given!");
       if (this.registryAddress !== undefined) {
+        debug("using custom registry address: %o", this.registryAddress);
         this.ens = new ENS({
           provider: this.provider,
           ensAddress: this.registryAddress
@@ -141,6 +147,7 @@ export class ProjectEncoder {
         //but what is that?  We have to look it up.
         //NOTE: ENS is supposed to do this for us in the constructor,
         //but due to a bug it doesn't.
+        debug("using default registry address");
         const networkId = await new ProviderAdapter(
           this.provider
         ).getNetworkId();
@@ -156,6 +163,7 @@ export class ProjectEncoder {
         }
       }
     } else {
+      debug("no provider given, ens off");
       this.ens = null;
     }
   }
