@@ -1,8 +1,24 @@
 import type { WorkflowCompileResult } from "@truffle/compile-common";
 import type {
   SourceInfo,
-  NetworkInfo as FetcherNetworkInfo
+  NetworkInfo as FetcherNetworkInfo,
+  FetcherOptions
 } from "@truffle/source-fetcher";
+
+export interface FetchAndCompileOptions {
+  network: {
+    networkId: number;
+  };
+  fetch?: {
+    precedence?: string[]; // eg. ["etherscan", "sourcify"]
+    fetcherOptions?: {
+      [fetcherName: string]: FetcherOptions;
+    };
+  };
+  compile?: {
+    docker?: boolean;
+  };
+}
 
 export interface NetworkInfo extends FetcherNetworkInfo {
   fetchers: string[];

@@ -9,15 +9,20 @@ import {
   getSortedFetcherConstructors
 } from "./fetch";
 import type * as Types from "./types";
+import {
+  normalizeFetchAndCompileOptions,
+  normalizeFetcherNames
+} from "./utils";
 
 export { fetchAndCompileForRecognizer };
 
 export async function fetchAndCompile(
   address: string,
-  config: Config
+  options: Types.FetchAndCompileOptions | Config
 ): Promise<Types.FetchAndCompileResult> {
+  const normalizedOptions = normalizeFetchAndCompileOptions(options);
   const recognizer = new SingleRecognizer(address);
-  await fetchAndCompileForRecognizer(recognizer, config);
+  await fetchAndCompileForRecognizer(recognizer, normalizedOptions);
   return recognizer.getResult();
 }
 
@@ -29,10 +34,11 @@ export async function fetchAndCompile(
  */
 export async function fetchAndCompileMultiple(
   addresses: string[],
-  config: Config
+  options: Types.FetchAndCompileOptions | Config
 ): Promise<Types.FetchAndCompileMultipleResult> {
+  const normalizedOptions = normalizeFetchAndCompileOptions(options);
   const recognizer = new MultipleRecognizer(addresses);
-  await fetchAndCompileForRecognizer(recognizer, config);
+  await fetchAndCompileForRecognizer(recognizer, normalizedOptions);
   return recognizer.getResults();
 }
 
@@ -40,15 +46,19 @@ export async function fetchAndCompileMultiple(
 //(i.e. adding compilations to the debugger), NOT its return value!
 export async function fetchAndCompileForDebugger(
   bugger: any, //sorry; this should be a debugger object
-  config: Config
+  options: Types.FetchAndCompileOptions | Config
 ): Promise<Types.FetchExternalErrors> {
+  const normalizedOptions = normalizeFetchAndCompileOptions(options);
   const recognizer = new DebugRecognizer(bugger);
-  await fetchAndCompileForRecognizer(recognizer, config);
+  await fetchAndCompileForRecognizer(recognizer, normalizedOptions);
   return recognizer.getErrors();
 }
 
-export function getSupportedNetworks(config?: Config): Types.SupportedNetworks {
-  const fetchers = getSortedFetcherConstructors(config);
+export function getSupportedNetworks(
+  optionsOrFetcherNames?: Types.FetchAndCompileOptions | Config | string[]
+): Types.SupportedNetworks {
+  const fetcherNames = normalizeFetcherNames(optionsOrFetcherNames);
+  const fetchers = getSortedFetcherConstructors(fetcherNames);
   //strictly speaking these are fetcher constructors, but since we
   //won't be using fetcher instances in this function, I'm not going
   //to worry about the difference

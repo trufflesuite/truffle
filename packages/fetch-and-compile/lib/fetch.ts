@@ -8,32 +8,43 @@ import {
   Fetcher,
   SourceInfo
 } from "@truffle/source-fetcher";
-import type Config from "@truffle/config";
+import Config from "@truffle/config";
 const { Compile } = require("@truffle/compile-solidity"); //sorry for untyped import!
-import type { Recognizer, FailureType } from "./types";
+import type { Recognizer, FailureType, FetchAndCompileOptions } from "./types";
 import type { WorkflowCompileResult } from "@truffle/compile-common";
+import {
+  normalizeFetchAndCompileOptions,
+  normalizeFetcherNames
+} from "./utils";
 
 export async function fetchAndCompileForRecognizer(
   recognizer: Recognizer,
-  config: Config
+  options: FetchAndCompileOptions | Config
 ): Promise<void> {
+  const normalizedOptions = normalizeFetchAndCompileOptions(options);
   const fetcherConstructors: FetcherConstructor[] =
-    getSortedFetcherConstructors(config);
-  const fetchers = await getFetchers(fetcherConstructors, config, recognizer);
+    getSortedFetcherConstructors(normalizeFetcherNames(normalizedOptions));
+  const fetchers = await getFetchers(
+    fetcherConstructors,
+    normalizedOptions,
+    recognizer
+  );
   //now: the main loop!
   let address: string | undefined;
   while ((address = recognizer.getAnUnrecognizedAddress()) !== undefined) {
-    await tryFetchAndCompileAddress(address, fetchers, recognizer, config);
+    await tryFetchAndCompileAddress(
+      address,
+      fetchers,
+      recognizer,
+      normalizedOptions
+    );
   }
 }
 
 //sort/filter fetchers by user's order, if given; otherwise use default order
 export function getSortedFetcherConstructors(
-  config?: Config
+  userFetcherNames?: string[]
 ): FetcherConstructor[] {
-  const userFetcherNames: string[] | undefined = (
-    config || { sourceFetchers: undefined }
-  ).sourceFetchers;
   let sortedFetchers: FetcherConstructor[] = [];
   if (userFetcherNames) {
     for (let name of userFetcherNames) {
@@ -52,10 +63,10 @@ export function getSortedFetcherConstructors(
 
 async function getFetchers(
   fetcherConstructors: FetcherConstructor[],
-  config: Config,
+  options: FetchAndCompileOptions,
   recognizer: Recognizer
 ): Promise<Fetcher[]> {
-  const networkId: number = config.network_id;
+  const networkId: number = options.network.networkId;
   //make fetcher instances. we'll filter out ones that don't support this
   //network (and note ones that yielded errors)
   return (
@@ -64,7 +75,7 @@ async function getFetchers(
         try {
           return await Fetcher.forNetworkId(
             networkId,
-            config[Fetcher.fetcherName]
+            ((options.fetch || {}).fetcherOptions || {})[Fetcher.fetcherName]
           );
         } catch (error) {
           if (!(error instanceof InvalidNetworkError)) {
@@ -83,7 +94,7 @@ async function tryFetchAndCompileAddress(
   address: string,
   fetchers: Fetcher[],
   recognizer: Recognizer,
-  config: Config
+  fetchAndCompileOptions: FetchAndCompileOptions
 ): Promise<void> {
   let found: boolean = false;
   let failureReason: FailureType | undefined; //undefined if no failure
@@ -109,7 +120,7 @@ async function tryFetchAndCompileAddress(
     }
     //if we do have it, extract sources & options
     debug("got sources!");
-    const { sources, options } = result;
+    const { sources, options } = result; //not same options as above, sorry for name confusion
     if (options.language === "Vyper") {
       //if it's not Solidity, bail out now
       debug("found Vyper, bailing out!");
@@ -118,13 +129,16 @@ async function tryFetchAndCompileAddress(
       break;
     }
     //set up the config
-    let externalConfig: Config = config.with({
+    let externalConfig: Config = Config.default().with({
       compilers: {
         solc: options
       }
     });
     //if using docker, transform it (this does nothing if not using docker)
-    externalConfig = transformIfUsingDocker(externalConfig, config);
+    externalConfig = transformIfUsingDocker(
+      externalConfig,
+      fetchAndCompileOptions
+    );
     //compile the sources
     let compileResult: WorkflowCompileResult;
     try {
@@ -171,11 +185,9 @@ async function tryFetchAndCompileAddress(
 
 function transformIfUsingDocker(
   externalConfig: Config,
-  projectConfig: Config
+  fetchAndCompileOptions: FetchAndCompileOptions
 ): Config {
-  const useDocker = Boolean(
-    ((projectConfig.compilers || {}).solc || {}).docker
-  );
+  const useDocker = Boolean((fetchAndCompileOptions.compile || {}).docker);
   if (!useDocker) {
     //if they're not using docker, no need to transform anything :)
     return externalConfig;

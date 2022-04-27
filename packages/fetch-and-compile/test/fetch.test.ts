@@ -98,6 +98,18 @@ describe("Supported networks", function () {
       fetchers: ["etherscan", "sourcify"]
     });
   });
+
+  it("Lists supported networks for specified fetchers only", function () {
+    const networks = getSupportedNetworks(["etherscan"]);
+    assert.property(networks, "mainnet");
+    assert.notProperty(networks, "sokol"); //suported by sourcify but not etherscan
+    assert.deepEqual(networks.mainnet, {
+      name: "mainnet",
+      networkId: 1,
+      chainId: 1,
+      fetchers: ["etherscan"] //should not include sourcify if that fetcher not requested
+    });
+  });
 });
 
 describe("Etherscan single-source Solidity case", function () {
