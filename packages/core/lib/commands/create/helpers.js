@@ -68,7 +68,7 @@ const Create = {
     await copy(from, to);
 
     replaceContents(to, templates.contract.name, name);
-    const license = (license = getLicense(options));
+    const license = getLicense(options);
     if (license) {
       replaceContents(to, templates.contract.license, license);
     }
