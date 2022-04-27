@@ -87,6 +87,37 @@ for (const address in failures) {
 }
 ```
 
+### Alternate input format
+
+Instead of using a Truffle Config as input, you can instead pass in a `FetchAndCompileOptions` anwyhere that
+a `config` is used above. The format is as follows:
+
+```ts
+export interface FetchAndCompileOptions {
+  network: {
+    networkId: number;
+  };
+  fetch?: {
+    precedence?: string[]; //which fetchers to use and in what order; defaults
+    //to ["etherscan", "sourcify"]
+    fetcherOptions?: {
+      etherscan?: {
+        apiKey: string; //etherscan API key if you have one to speed things up
+      };
+      sourcify?: {
+        //nothing to go here at present
+      };
+      //potentially options for other fetchers in the future
+    };
+  };
+  compile?: {
+    docker?: boolean; //indicates that compilation should use dockerized solc;
+    //note this won't work with contracts compiled with prerelease versions
+    //of solidity
+  };
+}
+```
+
 ### `getSupportedNetworks`
 
 If you want a list of supported networks, you can call `getSupportedNetworks`:
@@ -105,14 +136,14 @@ const networks = getSupportedNetworks();
 //}
 ```
 
-If you have a config with the `sourceFetchers` property set, you can call `getSupportedNetworks(config)`
-and the output will be restricted to the networks supported by the fetchers listed there.
+You can also pass in a list of fetchers if you want to restrict the output to the networks
+supported by the fetchers you list. (You can also pass in a config and it will use the `sourceFetchers`
+property if set, or a `FetchAndCompileOptions` and it will use the `fetch.precedence` field if set.)
 
 ```ts
 import { getSupportedNetworks } from "@truffle/fetch-and-compile";
 import Config from "@truffle/config";
-const config = Config.default().with({ sourceFetchers: ["etherscan"] });
-const networks = getSupportedNetworks(config); //will only list those supported by etherscan fetcher
+const networks = getSupportedNetworks(["etherscan"]); //will only list those supported by etherscan fetcher
 // networks = {
 //  mainnet: {
 //    name: "mainnet",
