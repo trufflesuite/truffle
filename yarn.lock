@@ -15542,24 +15542,10 @@ ganache-cli@^6.1.0:
     source-map-support "0.5.12"
     yargs "13.2.4"
 
-ganache@^7.0.0:
-  version "7.0.0"
-  resolved "https://registry.yarnpkg.com/ganache/-/ganache-7.0.0.tgz#a3896f049793401de5353fbd263f194609da9eb5"
-  integrity sha512-XkAYQ/xT/sBkV69gED0Uqv992okK0oP3ulzapsIg1pnf7BQX9Zz3G4blu3xGsrQAxyTXyXcdT/EjBpkluKkcxA==
-  dependencies:
-    "@trufflesuite/bigint-buffer" "1.1.9"
-    emittery "0.10.0"
-    keccak "3.0.1"
-    leveldown "6.1.0"
-    secp256k1 "4.0.2"
-  optionalDependencies:
-    bufferutil "4.0.5"
-    utf-8-validate "5.0.7"
-
-ganache@^7.0.4:
-  version "7.0.4"
-  resolved "https://registry.yarnpkg.com/ganache/-/ganache-7.0.4.tgz#a1ec33f8e264a7691397dc9efdc4b9f85c8119e4"
-  integrity sha512-/ur2WNQoCwmobZb/TcpMgJlJy4TLtCUMtnCIldChAn5LleeAETaHB80knGqOgGc3ZS+ksokSqmQHuHqMAmlRkg==
+ganache@^7.1.0:
+  version "7.1.0"
+  resolved "https://registry.yarnpkg.com/ganache/-/ganache-7.1.0.tgz#f38287ae86c415d0a62b762faaef4732811e89e7"
+  integrity sha512-f794GTIxHcb9o889GOh0Ad6/Q09nsNhJtN11oi8m+nxsuPHkkMNaGRHav3hApZLY3GPrSBT3XIKlDIUFxcBq8g==
   dependencies:
     "@trufflesuite/bigint-buffer" "1.1.9"
     emittery "0.10.0"
