@@ -18,27 +18,27 @@ function sanitizeGanacheOptions(ganacheOptions) {
 
 function configureManagedGanache(config, networkConfig, mnemonic) {
   const calcTotalAccounts = networkConfig => {
-    // Respect user's number of accounts choice to 0 in truffle config
-    const isZeroAccount =
-      networkConfig.accounts === 0 || networkConfig.total_accounts === 0;
-    const userAccounts = networkConfig.accounts || networkConfig.total_accounts;
-    return isZeroAccount ? 0 : userAccounts || 10;
+    if ("accounts" in networkConfig) {
+      return networkConfig.accounts;
+    }
+    if ("total_accounts" in networkConfig) {
+      return networkConfig.total_accounts;
+    }
+    return 10; // Default number of accounts when undefined in the truffle config
   };
 
   const calcTotalEtherBalance = networkConfig => {
-    // Respect user's accounts ether balance choice to 0 in truffle config
-    const isZeroEtherBalance =
-      networkConfig.defaultEtherBalance === 0 ||
-      networkConfig.default_balance_ether === 0;
-    const userAccountsEtherBalance =
-      networkConfig.defaultEtherBalance || networkConfig.default_balance_ether;
-    return isZeroEtherBalance ? 0 : userAccountsEtherBalance || 100;
+    if ("defaultEtherBalance" in networkConfig) {
+      return networkConfig.defaultEtherBalance;
+    }
+    if ("default_balance_ether" in networkConfig) {
+      return networkConfig.default_balance_ether;
+    }
+    return 100; // Default ether balance when undefined in the truffle config
   };
 
   const calcGasPrice = networkConfig => {
-    return networkConfig.gasPrice === 0
-      ? 0
-      : networkConfig.gasPrice || 0x77359400;
+    return "gasPrice" in networkConfig ? networkConfig.gasPrice : 0x77359400;
   };
 
   const ganacheOptions = {
