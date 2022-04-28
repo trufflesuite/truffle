@@ -1,6 +1,6 @@
 const emoji = require("node-emoji");
 const mnemonicInfo = require("../../mnemonics/mnemonic");
-const configureGanacheOptions = require("../../configureGanacheOptions");
+const { configureManagedGanache } = require("../../configureGanacheOptions");
 
 const runConsole = async (config, ganacheOptions) => {
   const Console = require("../../console");
@@ -28,15 +28,17 @@ module.exports = async options => {
   const config = Config.detect(options);
   const customConfig = config.networks.develop || {};
 
-  // Respect user's number of accounts choice to 0 in truffle config
-  const isZeroAccount =
-    customConfig.accounts === 0 || customConfig.total_accounts === 0;
-  const userAccounts = customConfig.accounts || customConfig.total_accounts;
-  const accountsInfo = isZeroAccount
-    ? mnemonicInfo.getAccountsInfo(0)
-    : mnemonicInfo.getAccountsInfo(userAccounts || 10);
+  const getAccounts = customConfig => {
+    if ("accounts" in customConfig) {
+      return mnemonicInfo.getAccountsInfo(customConfig.accounts);
+    }
+    if ("total_accounts" in customConfig) {
+      return mnemonicInfo.getAccountsInfo(customConfig.total_accounts);
+    }
+    return mnemonicInfo.getAccountsInfo(10);
+  };
 
-  const { mnemonic, accounts, privateKeys } = accountsInfo;
+  const { mnemonic, accounts, privateKeys } = getAccounts(customConfig);
 
   const onMissing = () => "**";
 
@@ -46,7 +48,7 @@ module.exports = async options => {
     "Ensure you do not use it on production blockchains, or else you risk losing funds.";
 
   const ipcOptions = { log: options.log };
-  const ganacheOptions = configureGanacheOptions.configureManagedGanache(
+  const ganacheOptions = configureManagedGanache(
     config,
     customConfig,
     mnemonic

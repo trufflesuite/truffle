@@ -21,7 +21,7 @@ module.exports = async function (options) {
   const { copyArtifactsToTempDir } = require("./copyArtifactsToTempDir");
   const { determineTestFilesToRun } = require("./determineTestFilesToRun");
   const { prepareConfigAndRunTests } = require("./prepareConfigAndRunTests");
-  const configureGanacheOptions = require("../../configureGanacheOptions");
+  const { configureManagedGanache } = require("../../configureGanacheOptions");
 
   const optionsToMerge = parseCommandLineFlags(options);
   const config = Config.detect(options).merge(optionsToMerge);
@@ -90,15 +90,15 @@ module.exports = async function (options) {
     const defaultMnemonic =
       "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
     // configuredNetwork will spread only when it is defined and ignored when undefined
-    const configuredManagedNetwork = {
+    const managedNetworkOptions = {
       port: defaultPort,
       ...configuredNetwork
     };
 
-    const mnemonic = configuredManagedNetwork.mnemonic || defaultMnemonic;
-    const ganacheOptions = configureGanacheOptions.configureManagedGanache(
+    const mnemonic = managedNetworkOptions.mnemonic || defaultMnemonic;
+    const ganacheOptions = configureManagedGanache(
       config,
-      configuredManagedNetwork,
+      managedNetworkOptions,
       mnemonic
     );
 
