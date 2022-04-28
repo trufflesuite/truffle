@@ -42,37 +42,6 @@ const compilationConfig = {
   all: true
 };
 
-const migratedArtifacts = [
-  require(path.join(
-    __dirname,
-    "compilationSources",
-    "build",
-    "contracts",
-    "MagicSquare.json"
-  )),
-  require(path.join(
-    __dirname,
-    "compilationSources",
-    "build",
-    "contracts",
-    "Migrations.json"
-  )),
-  require(path.join(
-    __dirname,
-    "compilationSources",
-    "build",
-    "contracts",
-    "SquareLib.json"
-  )),
-  require(path.join(
-    __dirname,
-    "compilationSources",
-    "build",
-    "contracts",
-    "VyperStorage.json"
-  ))
-];
-
 const migrationFileNames = [
   "MagicSquare.json",
   "Migrations.json",
@@ -368,20 +337,6 @@ const GetWorkspaceCompilation = gql`
         }
         length
         offsets
-      }
-    }
-  }
-`;
-
-const GetWorkspaceNetwork = gql`
-  query GetWorkspaceNetwork($id: ID!) {
-    network(id: $id) {
-      networkId
-      id
-      name
-      historicBlock {
-        height
-        hash
       }
     }
   }
@@ -931,22 +886,6 @@ describe("Compilation", () => {
       const nameRecord = resolve[0];
 
       expect(nameRecord.resource.id).toEqual(contractIds[index].id);
-    }
-  });
-
-  it("loads networks", async () => {
-    for (let index in migratedArtifacts) {
-      let {
-        data: {
-          network: { name, networkId, historicBlock }
-        }
-      } = (await db.execute(GetWorkspaceNetwork, netIds[index])) as {
-        data: Query<"network"> & { network: Resource<"networks"> };
-      };
-
-      expect(name).toEqual("development");
-      expect(networkId).toEqual(migratedNetworks[index]["networkId"]);
-      expect(historicBlock).toEqual(migratedNetworks[index]["historicBlock"]);
     }
   });
 
