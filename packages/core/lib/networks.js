@@ -205,7 +205,6 @@ const Networks = {
     };
 
     for (const networkName of networks) {
-      console.log("Networks asURIs");
       const provider = Provider.create(options.networks[networkName]);
       try {
         const uri = await BlockchainUtils.asURI(provider);
@@ -219,7 +218,6 @@ const Networks = {
   },
 
   matchesNetwork: async function (network_id, network_options) {
-    console.log("Networks matchesNetwork");
     const provider = Provider.create(network_options);
 
     const first = network_id + "";

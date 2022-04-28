@@ -295,14 +295,9 @@ export const configProps = ({
         options.events = configObject.events;
 
         if (!provider) {
-          console.log("No memo provider");
           provider = Provider.create(options);
-        } else {
-          console.log("Using memo provider");
         }
         return provider;
-
-        //return Provider.create(options);
       },
       set() {
         throw new Error(
