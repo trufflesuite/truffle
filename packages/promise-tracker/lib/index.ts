@@ -15,7 +15,7 @@ export function tracked<T extends Object>(
       const returnValue = impl.apply(this, args);
 
       // only track async functions
-      if (returnValue.then && typeof returnValue.then === "function") {
+      if (returnValue?.then && typeof returnValue.then === "function") {
         const trackedTask = returnValue
           .then((result: any) => {
             _cleanUpTrackedTask(this, trackedTask);

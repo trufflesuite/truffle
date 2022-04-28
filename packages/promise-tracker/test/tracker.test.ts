@@ -40,6 +40,16 @@ describe("promise-tracker", () => {
 
       await p;
     });
+
+    it("handles functions that return null", async () => {
+      const target = new TrackedObject();
+
+      target.returnsNullTrackedMethod();
+
+      let promises = getOutstandingPromises({ target });
+      assert.lengthOf(promises, 0);
+      assert.strictEqual(target.executedReturnsNullTrackedMethodCount, 1);
+    });
   });
 
   describe("waitForOutstandingPromises", () => {
@@ -115,6 +125,7 @@ describe("promise-tracker", () => {
 class TrackedObject {
   executedTrackedMethodCount: number = 0;
   executedThrowingTrackedMethodCount: number = 0;
+  executedReturnsNullTrackedMethodCount: number = 0;
 
   @tracked
   async trackedMethod(duration: number = 25): Promise<void> {
@@ -127,6 +138,12 @@ class TrackedObject {
     await delay(25);
     this.executedThrowingTrackedMethodCount++;
     throw new Error("expected");
+  }
+
+  @tracked
+  returnsNullTrackedMethod(): null {
+    this.executedReturnsNullTrackedMethodCount++;
+    return null;
   }
 
   async untrackedMethod(): Promise<void> {
