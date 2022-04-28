@@ -6,40 +6,40 @@ export function tracked<T extends Object>(
   key: string | Symbol,
   descriptor: PropertyDescriptor
 ) {
-  if (typeof descriptor.value === "function") {
-    const impl = descriptor.value;
-
-    // wrapper function that keeps a list of outstanding promises for each
-    // instance of DashboardMessageBusClient
-    function newImpl(...args: any[]) {
-      const returnValue = impl.apply(this, args);
-
-      // only track async functions
-      if (returnValue?.then && typeof returnValue.then === "function") {
-        const trackedTask = returnValue
-          .then((result: any) => {
-            _cleanUpTrackedTask(this, trackedTask);
-            return result;
-          })
-          .catch((err: any) => {
-            _cleanUpTrackedTask(this, trackedTask);
-            throw err;
-          });
-
-        _trackTask(this, trackedTask);
-        return trackedTask;
-      }
-
-      return returnValue;
-    }
-
-    return {
-      ...descriptor,
-      value: newImpl
-    };
+  if (typeof descriptor.value !== "function" || !target.constructor) {
+    throw new Error("The 'tracked' decorator can only be applied to methods.");
   }
 
-  return descriptor;
+  const impl = descriptor.value;
+
+  // wrapper function that keeps a list of outstanding promises for each
+  // instance of DashboardMessageBusClient
+  function newImpl(...args: any[]) {
+    const returnValue = impl.apply(this, args);
+
+    // only track async functions
+    if (returnValue?.then && typeof returnValue.then === "function") {
+      const trackedTask = returnValue
+        .then((result: any) => {
+          _cleanUpTrackedTask(this, trackedTask);
+          return result;
+        })
+        .catch((err: any) => {
+          _cleanUpTrackedTask(this, trackedTask);
+          throw err;
+        });
+
+      _trackTask(this, trackedTask);
+      return trackedTask;
+    }
+
+    return returnValue;
+  }
+
+  return {
+    ...descriptor,
+    value: newImpl
+  };
 }
 
 export interface WaitForOutstandingPromiseOptions<T> {

@@ -7,7 +7,7 @@ import {
 } from "../lib";
 
 describe("promise-tracker", () => {
-  describe("tracking", () => {
+  describe("tracked decorator", () => {
     it("tracks outstanding promises for a tracked class", async () => {
       const target = new TrackedObject();
 
