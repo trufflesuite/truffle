@@ -73,7 +73,8 @@ describe("Provider", function () {
       await Provider.testConnection({ provider });
       assert(false);
     } catch (error) {
-      const snippet = `Could not connect to your Ethereum client`;
+      // this is the message that the provider errors with for a ws provider
+      const snippet = `connection not open on send()`;
       if (error.message.includes(snippet)) {
         assert(true);
       } else {
@@ -189,7 +190,12 @@ describe("Provider", function () {
 
         assert.deepStrictEqual(error, err);
         const _stubbedRawError = _stubbedFailedResult(payload);
-        assert.deepStrictEqual(error, new ProviderError(_stubbedRawError.error.message, { underlyingError: _stubbedRawError.error }));
+        assert.deepStrictEqual(
+          error,
+          new ProviderError(_stubbedRawError.error.message, {
+            underlyingError: _stubbedRawError.error
+          })
+        );
 
         assert.strictEqual(result, undefined);
       }
