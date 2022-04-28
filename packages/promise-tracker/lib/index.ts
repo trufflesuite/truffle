@@ -19,15 +19,9 @@ export function tracked<T extends Object>(
 
     // only track async functions
     if (returnValue?.then && typeof returnValue.then === "function") {
-      const trackedTask = returnValue
-        .then((result: any) => {
-          _cleanUpTrackedTask(this, trackedTask);
-          return result;
-        })
-        .catch((err: any) => {
-          _cleanUpTrackedTask(this, trackedTask);
-          throw err;
-        });
+      const trackedTask = returnValue.finally(() => {
+        _cleanUpTrackedTask(this, trackedTask);
+      });
 
       _trackTask(this, trackedTask);
       return trackedTask;
