@@ -68,6 +68,12 @@ function configureManagedGanache(config, networkConfig, mnemonic) {
     0x77359400 // Use default gas price 2000000000 wei
   );
 
+  const genesisTime = getFirstDefinedValue(
+    networkConfig.time,
+    networkConfig.genesis_time,
+    Date.now() // Use current time as default
+  );
+
   const ganacheOptions = {
     host,
     port,
@@ -79,16 +85,14 @@ function configureManagedGanache(config, networkConfig, mnemonic) {
     mnemonic,
     gasLimit,
     gasPrice,
-    // config.genesis_time is for compatibility with older versions
-    // NOTE: config.genesis_time can be "undefined", so '||' operator is used unlike other properties
-    time:
-      networkConfig.genesis_time || networkConfig.time || config.genesis_time,
+    time: genesisTime,
     miner: {
       instamine: "strict"
     }
   };
 
-  if (networkConfig.hardfork !== null && networkConfig.hardfork !== undefined) {
+  // Set hardfork if defined, otherwise rely on Ganache's default which will always be correct
+  if (networkConfig.hardfork != null) {
     ganacheOptions["hardfork"] = networkConfig.hardfork;
   }
 
