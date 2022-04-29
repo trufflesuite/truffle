@@ -1,6 +1,9 @@
 const emoji = require("node-emoji");
 const mnemonicInfo = require("../../mnemonics/mnemonic");
-const { configureManagedGanache } = require("../../configureGanacheOptions");
+const {
+  configureManagedGanache,
+  getFirstDefinedValue
+} = require("../../configAdapter");
 
 const runConsole = async (config, ganacheOptions) => {
   const Console = require("../../console");
@@ -28,17 +31,13 @@ module.exports = async options => {
   const config = Config.detect(options);
   const customConfig = config.networks.develop || {};
 
-  const getAccounts = customConfig => {
-    if ("accounts" in customConfig) {
-      return mnemonicInfo.getAccountsInfo(customConfig.accounts);
-    }
-    if ("total_accounts" in customConfig) {
-      return mnemonicInfo.getAccountsInfo(customConfig.total_accounts);
-    }
-    return mnemonicInfo.getAccountsInfo(10);
-  };
-
-  const { mnemonic, accounts, privateKeys } = getAccounts(customConfig);
+  const numberOfAccounts = getFirstDefinedValue(
+    customConfig.accounts,
+    customConfig.total_accounts,
+    10 // Use as default number of accounts
+  );
+  const { mnemonic, accounts, privateKeys } =
+    mnemonicInfo.getAccountsInfo(numberOfAccounts);
 
   const onMissing = () => "**";
 
