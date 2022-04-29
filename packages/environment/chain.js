@@ -229,10 +229,10 @@ class GanacheMixin {
   exit(_supervisor) {
     this.ganache
       .close()
-      .then(() => process.exit())
+      .then(() => (process.exitCode = 0))
       .catch(err => {
         console.error(err.stack || err);
-        process.exit(1);
+        process.exitCode = 1;
       });
   }
 }
