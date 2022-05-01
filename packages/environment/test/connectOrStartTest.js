@@ -23,29 +23,35 @@ describe("connectOrStart test network", async function () {
   });
 
   it("connects to an established Ganache instance", async function () {
-    let connectionOneDisconnect, connectionTwoDisconnect;
+    let connectionOneDisconnect, connectionTwo;
+    let spawnedGanache;
 
     try {
-      //establish a connection
-      connectionOneDisconnect = (
-        await Develop.connectOrStart(ipcOptions, ganacheOptions)
-      ).disconnect;
+      //Establish IPC Ganache service
+      spawnedGanache = await Develop.start(ipcOptions.network, ganacheOptions);
+      connectionOneDisconnect = await Develop.connect({
+        ...ipcOptions,
+        retry: true
+      });
 
-      //invoke the method again
-      const result = await Develop.connectOrStart(ipcOptions, ganacheOptions);
-      connectionTwoDisconnect = result.disconnect;
-      assert.isFalse(
-        result.started,
-        "Should have connected to established Ganache server"
-      );
+      //Test
+      connectionTwo = await Develop.connectOrStart(ipcOptions, ganacheOptions);
+
+      //Validate
+      assert.isFalse(connectionTwo.started);
     } finally {
-      //cleanup
+      //Cleanup IPC2
+      if (connectionTwo.disconnect) {
+        connectionTwo.disconnect();
+      }
+      //Cleanup IPC1
       if (connectionOneDisconnect) {
         connectionOneDisconnect();
       }
-      if (connectionTwoDisconnect) {
-        connectionTwoDisconnect();
-      }
+      //Signal Ganache Process to exit
+      process.kill(spawnedGanache.pid, "SIGHUP");
+      //Resolve on confirmation of process exit
+      await new Promise(resolve => spawnedGanache.on("exit", () => resolve()));
     }
   });
 });
