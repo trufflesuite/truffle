@@ -29,17 +29,15 @@ describe("Environment develop", function () {
         gas: expectedNetwork.gas
       }
     };
+  });
+
+  it("Environment.develop overwrites the network_id of the network", async function () {
+    //Stub detect in order to prevent its executing during this test
+    //which is invoked during `Environment.develop(..)`
     sinon.stub(Environment, "detect");
-  });
-
-  afterEach("Restore Environment detect", async function () {
-    Environment.detect.restore();
-  });
-
-  it("Environment.develop overwrites the network_id of the network", async function() {
     await Environment.develop(config, testOptions);
-    const mutatedNetwork = config.networks[config.network];
 
+    const mutatedNetwork = config.networks[config.network];
     assert.equal(
       mutatedNetwork.port,
       expectedNetwork.port,
@@ -55,6 +53,8 @@ describe("Environment develop", function () {
       expectedNetwork.gas,
       "The gas of the network should be unchanged."
     );
-  });
 
+    //Restore `detect` functionality
+    Environment.detect.restore();
+  });
 }).timeout(10000);
