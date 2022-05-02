@@ -24,6 +24,13 @@ describe("Happy path (truffle unbox)", function () {
     options = { name: "default", force: true };
     config = await Box.sandbox(options);
     config.network = "development";
+    config.networks = {
+      development: {
+        host: "127.0.0.1",
+        port: 8545,
+        network_id: "*"
+      }
+    };
     config.logger = logger;
     config.mocha = {
       reporter: new Reporter(logger)
