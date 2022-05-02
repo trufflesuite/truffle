@@ -143,7 +143,7 @@ describe("migration errors", function () {
       const output = logger.contents();
       console.log(output);
       assert(output.includes("10_migrations_funds_geth.js"));
-      assert(output.includes("Deploying 'Example'"));
+      assert(output.includes('"Example" could not deploy'));
       assert(output.includes("insufficient funds"));
     }
   });
