@@ -51,4 +51,21 @@ describe("TruffleConfig unit tests", async () => {
       hits.forEach(hit => assert.equal(undefined, newConfig[hit]));
     });
   });
+
+  describe("load", () => {
+    const pathToConfig =
+      "/home/hayek/proj/truffle/packages/config/test/testConfig.js";
+    const pathToOtherConfig =
+      "/home/hayek/proj/truffle/packages/config/test/testConfig2.js";
+
+    it("should fail, no?", () => {
+      const config1 = TruffleConfig.load(pathToConfig);
+      const config2 = TruffleConfig.load(pathToOtherConfig);
+
+      assert.notStrictEqual(
+        config1.networks.develop.provider,
+        config2.networks.develop.provider
+      );
+    });
+  });
 });
