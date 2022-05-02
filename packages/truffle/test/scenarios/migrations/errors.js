@@ -82,7 +82,7 @@ describe("migration errors", function () {
   });
 
   it("runs out of gas correctly", async function () {
-    this.timeout(70000);
+    this.timeout(100000);
 
     try {
       await CommandRunner.run("migrate -f 4", config);
