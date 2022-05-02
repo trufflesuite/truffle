@@ -23,7 +23,7 @@
   "scripts": {
     "build": "tsc",
     "prepare": "yarn build",
-    "test": "yarn build && mocha --exit -r ts-node/register test/**/*.test.ts --timeout 35000"
+    "test": "yarn build && mocha --exit -r ts-node/register test/**/*.test.ts --timeout 50000"
   },
   "types": "dist/index.d.ts",
   "dependencies": {
