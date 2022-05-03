@@ -34,6 +34,7 @@ function configureManagedGanache(config, networkConfig, mnemonic) {
     networkConfig.network_id,
     5777 // Use as default network_id
   );
+  const resolvedNetworkId = resolveNetworkId(network_id);
 
   const total_accounts = getFirstDefinedValue(
     networkConfig.accounts,
@@ -71,14 +72,12 @@ function configureManagedGanache(config, networkConfig, mnemonic) {
   );
 
   const fork = networkConfig.fork;
-
-  // If not defined in the config, default hardfork value is "london"
   const hardfork = networkConfig.hardfork;
 
   const ganacheOptions = {
     host,
     port,
-    network_id,
+    network_id: resolvedNetworkId,
     total_accounts,
     default_balance_ether,
     blockTime,
@@ -93,7 +92,6 @@ function configureManagedGanache(config, networkConfig, mnemonic) {
     }
   };
 
-  ganacheOptions.network_id = resolveNetworkId(network_id);
   return ganacheOptions;
 }
 
