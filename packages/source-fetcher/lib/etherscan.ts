@@ -65,12 +65,22 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
     "testnet-binance",
     "fantom",
     "testnet-fantom",
-    //we don't support avalanche, even though etherscan has snowtrace.io
+    "avalanche",
+    "fuji-avalanche",
     "heco",
     "testnet-heco",
     "moonbeam",
     "moonriver",
-    "moonbase-alpha"
+    "moonbase-alpha",
+    "hoo",
+    "cronos",
+    "bttc",
+    "donau-bttc",
+    "aurora",
+    "testnet-aurora",
+    "celo",
+    "alfajores-celo",
+    "clover"
   ]);
 
   constructor(networkId: number, apiKey: string = "") {
@@ -122,10 +132,21 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       arbitrum: "arbiscan.io",
       binance: "bscscan.com",
       fantom: "ftmscan.com",
-      //we don't support avalanche's snowtrace.io
-      heco: "hecoinfo.com"
+      avalanche: "snowtrace.io",
+      heco: "hecoinfo.com",
       //moonscan.io is treated separately
+      hoo: "hooscan.com",
+      cronos: "cronoscan.com",
+      bttc: "bttcscan.com",
+      aurora: "aurorascan.dev",
+      celo: "celoscan.xyz",
+      clover: "clvscan.com"
     };
+    const exceptionalTestnets = new Set([
+      "rinkeby-arbitrum",
+      "fuji-avalanche",
+      "donau-bttc"
+    ]);
     const [part1, part2] = this.networkName.split("-");
     if (part2 === undefined && this.networkName in scanners) {
       //mainnet for one of the above scanners
@@ -134,10 +155,9 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       //a testnet for one of the above scanners;
       //part1 is the testnet name, part2 is the broader mainnet name
       let [testnet, network] = [part1, part2];
-      if (network === "arbitrum" && testnet === "rinkeby") {
-        //special case: arbitrum rinkeby is testnet.arbiscan.io,
-        //not rinkeby.arbiscan.io
-        //note: if we supported avalanche, it would have a similar special case
+      if (exceptionalTestnets.has(this.networkName)) {
+        //special case: certain exceptional testnets just use "testnet"
+        //rather than the specific testnet name
         testnet = "testnet";
       }
       return `https://api-${testnet}.${scanners[network]}/api`;

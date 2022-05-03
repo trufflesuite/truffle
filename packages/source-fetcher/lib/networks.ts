@@ -6,6 +6,7 @@ export const networkNamesById: { [id: number]: string } = {
   4: "rinkeby",
   5: "goerli",
   42: "kovan",
+  11155111: "sepolia",
   10: "optimistic",
   69: "kovan-optimistic",
   42161: "arbitrum",
@@ -13,13 +14,15 @@ export const networkNamesById: { [id: number]: string } = {
   137: "polygon",
   80001: "mumbai-polygon",
   100: "xdai",
-  77: "sokol",
+  99: "poa", //not presently supported by either fetcher, but...
+  77: "sokol-poa",
   56: "binance",
   97: "testnet-binance",
   42220: "celo",
   44787: "alfajores-celo",
   62320: "baklava-celo",
-  //we don't support avalanche, so it's excluded
+  43114: "avalanche",
+  43113: "fuji-avalanche",
   40: "telos",
   41: "testnet-telos",
   8: "ubiq",
@@ -40,7 +43,15 @@ export const networkNamesById: { [id: number]: string } = {
   256: "testnet-heco",
   1284: "moonbeam",
   1285: "moonriver",
-  1287: "moonbase-alpha"
+  1287: "moonbase-alpha",
+  122: "fuse",
+  11297108109: "palm",
+  11297108099: "testnet-palm",
+  70: "hoo",
+  25: "cronos",
+  199: "bttc",
+  1029: "donau-bttc",
+  1024: "clover"
 };
 
 export const networksByName: Types.SupportedNetworks = Object.fromEntries(
