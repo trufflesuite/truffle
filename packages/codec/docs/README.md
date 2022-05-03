@@ -49,7 +49,7 @@ The decoder operates in either of two modes:
    contract ABI and returns less information, e.g. returning
    [[Format.Values.UintResult|`UintResult`]]s in place of
    [[Format.Values.EnumResult|`EnumResult`]]s and
-   [[Format.Values.AddressResult|`AddressResult`]]s istead of
+   [[Format.Values.AddressResult|`AddressResult`]]s instead of
    [[Format.Values.ContractResult|`ContractResult`]]s
 
 By default, the decoder uses **full mode**, but for technical reasons, this may
