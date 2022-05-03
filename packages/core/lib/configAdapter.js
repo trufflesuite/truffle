@@ -47,22 +47,33 @@ function configureManagedGanache(config, networkConfig, mnemonic) {
     100 // Use as default ether balance for each account
   );
 
-  const blockTime = getFirstDefinedValue(networkConfig.blockTime);
+  const blockTime = getFirstDefinedValue(
+    networkConfig.blockTime,
+    0 // Use as default block time
+  );
 
-  const fork = getFirstDefinedValue(networkConfig.fork);
+  const gasLimit = getFirstDefinedValue(
+    networkConfig.gasLimit,
+    0x6691b7 // Use as default gasLimit
+  );
 
-  const hardfork = getFirstDefinedValue(networkConfig.hardfork);
-
-  const gasLimit = getFirstDefinedValue(networkConfig.gasLimit);
-
-  const gasPrice = getFirstDefinedValue(networkConfig.gasPrice);
+  const gasPrice = getFirstDefinedValue(
+    networkConfig.gasPrice,
+    0x77359400 // Use default gas price 2000000000 wei
+  );
 
   const genesisTime = getFirstDefinedValue(
-    config.time,
-    config.genesis_time,
+    // Higher precedence is given to the networkConfig.time or networkConfig.genesis_time
     networkConfig.time,
-    networkConfig.genesis_time
+    networkConfig.genesis_time,
+    config.time,
+    config.genesis_time
   );
+
+  const fork = networkConfig.fork;
+
+  // If not defined in the config, default hardfork value is "london"
+  const hardfork = networkConfig.hardfork;
 
   const ganacheOptions = {
     host,
