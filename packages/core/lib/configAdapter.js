@@ -1,9 +1,7 @@
-function sanitizeGanacheOptions(ganacheOptions) {
-  const network_id = ganacheOptions.network_id;
-
+function resolveNetworkId(network_id) {
   // Use default network_id if "*" is defined in config
   if (network_id === "*") {
-    return { ...ganacheOptions, network_id: Date.now() };
+    return Date.now();
   }
 
   const parsedNetworkId = parseInt(network_id, 10);
@@ -14,16 +12,12 @@ function sanitizeGanacheOptions(ganacheOptions) {
     throw new Error(error);
   }
 
-  return { ...ganacheOptions, network_id: parsedNetworkId };
+  return parsedNetworkId;
 }
 
-// This function returns the first defined argument value and throws if all arguments are undefined
-const getFirstDefinedValue = (...values) => {
-  for (const value of values) {
-    if (value !== undefined) return value;
-  }
-  throw new Error("No values supplied");
-};
+// This function returns the first defined argument value
+const getFirstDefinedValue = (...values) =>
+  values.find(value => value !== undefined);
 
 function configureManagedGanache(config, networkConfig, mnemonic) {
   const host = getFirstDefinedValue(
@@ -38,7 +32,7 @@ function configureManagedGanache(config, networkConfig, mnemonic) {
 
   const network_id = getFirstDefinedValue(
     networkConfig.network_id,
-    Date.now() // Use current time as default
+    5777 // Use as default network_id
   );
 
   const total_accounts = getFirstDefinedValue(
@@ -53,25 +47,21 @@ function configureManagedGanache(config, networkConfig, mnemonic) {
     100 // Use as default ether balance for each account
   );
 
-  const blockTime = getFirstDefinedValue(
-    networkConfig.blockTime,
-    0 // Use as default block time
-  );
+  const blockTime = getFirstDefinedValue(networkConfig.blockTime);
 
-  const gasLimit = getFirstDefinedValue(
-    networkConfig.gasLimit,
-    0x6691b7 // Use as default gasLimit
-  );
+  const fork = getFirstDefinedValue(networkConfig.fork);
 
-  const gasPrice = getFirstDefinedValue(
-    networkConfig.gasPrice,
-    0x77359400 // Use default gas price 2000000000 wei
-  );
+  const hardfork = getFirstDefinedValue(networkConfig.hardfork);
+
+  const gasLimit = getFirstDefinedValue(networkConfig.gasLimit);
+
+  const gasPrice = getFirstDefinedValue(networkConfig.gasPrice);
 
   const genesisTime = getFirstDefinedValue(
+    config.time,
+    config.genesis_time,
     networkConfig.time,
-    networkConfig.genesis_time,
-    Date.now() // Use current time as default
+    networkConfig.genesis_time
   );
 
   const ganacheOptions = {
@@ -81,7 +71,8 @@ function configureManagedGanache(config, networkConfig, mnemonic) {
     total_accounts,
     default_balance_ether,
     blockTime,
-    fork: networkConfig.fork,
+    fork,
+    hardfork,
     mnemonic,
     gasLimit,
     gasPrice,
@@ -91,13 +82,8 @@ function configureManagedGanache(config, networkConfig, mnemonic) {
     }
   };
 
-  // Set hardfork if defined, otherwise rely on Ganache's default which will always be correct
-  if (networkConfig.hardfork != null) {
-    ganacheOptions["hardfork"] = networkConfig.hardfork;
-  }
-
-  const sanitizedGanacheOptions = sanitizeGanacheOptions(ganacheOptions);
-  return sanitizedGanacheOptions;
+  ganacheOptions.network_id = resolveNetworkId(network_id);
+  return ganacheOptions;
 }
 
 module.exports = { configureManagedGanache, getFirstDefinedValue };
