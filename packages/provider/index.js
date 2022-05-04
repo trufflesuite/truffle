@@ -37,6 +37,8 @@ module.exports = {
         options.url || `ws://${options.host}:${options.port}`
       );
     } else {
+      // the constructor for HttpProvider doesn't throw when passed `undefined`
+      // (and that is previous behavior), but WebsocketProvider does
       provider = new Web3.providers.HttpProvider(options.url);
     }
     return provider;
