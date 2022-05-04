@@ -39,7 +39,7 @@ export class Docker {
 
     const versionString = await this.validateAndGetSolcVersion();
     const command =
-      "docker run --rm -i ethereum/solc:" +
+      "docker run --platform=linux/amd64 --rm -i ethereum/solc:" +
       this.config.version +
       " --standard-json";
 
@@ -147,7 +147,7 @@ export class Docker {
 
     // Get version & cache.
     const version = execSync(
-      "docker run ethereum/solc:" + image + " --version"
+      "docker run --platform=linux/amd64 ethereum/solc:" + image + " --version"
     );
     const normalized = normalizeSolcVersion(version);
     this.cache.add(normalized, fileName);
