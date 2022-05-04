@@ -26,17 +26,17 @@ async function compile(config) {
       const Compile = SUPPORTED_COMPILERS[name];
       if (!Compile) throw new Error("Unsupported compiler: " + name);
 
-      let compileMethod;
       if (config.all === true || config.compileAll === true) {
-        compileMethod = Compile.all;
-      } else if (config.paths && config.paths > 0) {
+        return await Compile.all(config);
+      } else if (config.paths && config.paths.length > 0) {
         // compile only user specified sources
-        compileMethod = Compile.sourcesWithDependencies;
+        return await Compile.sourcesWithDependencies({
+          options: config,
+          paths: config.paths
+        });
       } else {
-        compileMethod = Compile.necessary;
+        return await Compile.necessary(config);
       }
-
-      return await compileMethod(config);
     })
   );
 
