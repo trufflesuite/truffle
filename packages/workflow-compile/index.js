@@ -26,10 +26,15 @@ async function compile(config) {
       const Compile = SUPPORTED_COMPILERS[name];
       if (!Compile) throw new Error("Unsupported compiler: " + name);
 
-      const compileMethod =
-        config.all === true || config.compileAll === true
-          ? Compile.all
-          : Compile.necessary;
+      let compileMethod;
+      if (config.all === true || config.compileAll === true) {
+        compileMethod = Compile.all;
+      } else if (config.paths && config.paths > 0) {
+        // compile only user specified sources
+        compileMethod = Compile.sourcesWithDependencies;
+      } else {
+        compileMethod = Compile.necessary;
+      }
 
       return await compileMethod(config);
     })
