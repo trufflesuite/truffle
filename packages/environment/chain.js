@@ -84,7 +84,9 @@ class Logger {
     subscriberIDs.forEach(subscriberID => {
       const callback = this.subscribers[subscriberID];
 
-      callback(message);
+      if (typeof callback === 'function') {
+        callback(message);
+      }
     });
   }
 }
