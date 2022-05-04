@@ -19,7 +19,8 @@ module.exports = {
     }
   },
   help: {
-    usage: "truffle compile [--list <filter>] [--all] [--quiet]",
+    usage:
+      "truffle compile [<source1> <source2>...] [--list <filter>] [--all] [--quiet]",
     options: [
       {
         option: "--all",
