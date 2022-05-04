@@ -290,6 +290,101 @@ export class ProjectDecoder {
       //it's not shared with anything else, so for convenience I'm just going to
       //mutate rather than cloning
       decoding.interpretations.multicall = multicallArray;
+    } else if (
+      decoding.kind === "function" &&
+      decoding.abi.name === "aggregate" &&
+      decoding.arguments.length === 1 &&
+      decoding.arguments[0].value.type.typeClass === "array" &&
+      // maybe switch to abify -> tuple
+      decoding.arguments[0].value.type.baseType.typeClass === "struct" &&
+      decoding.arguments[0].value.kind === "value" &&
+      (decoding.arguments[0].value.value as Format.Values.StructResult[]).every(
+        callResult =>
+          callResult.kind === "value" &&
+          callResult.value.length === 2 &&
+          callResult.value[0].name === "target" &&
+          callResult.value[1].name === "callData"
+      )
+    ) {
+      const decodedArray = decoding.arguments[0]
+        .value as Format.Values.ArrayValue;
+      const multicallArray = await Promise.all(
+        decodedArray.value.map(async (callResult: any) => {
+          const target = callResult.value[0].value.value.asAddress;
+          const callData = callResult.value[1].value.value.asHex;
+          return await this.decodeTransactionWithAdditionalContexts(
+            { ...transaction, to: target, input: callData },
+            additionalContexts,
+            additionalAllocations
+          );
+        })
+      );
+      //it's safe to modify decoding -- we've gotten it straight out of codec,
+      //it's not shared with anything else, so for convenience I'm just going to
+      //mutate rather than cloning
+      decoding.interpretations.multicall = multicallArray;
+    } else if (
+      decoding.kind === "function" &&
+      decoding.abi.name === "tryAggregate" &&
+      decoding.arguments.length === 2 &&
+      decoding.arguments[1].value.type.typeClass === "array" &&
+      decoding.arguments[1].value.type.baseType.typeClass === "struct" &&
+      decoding.arguments[1].value.kind === "value" &&
+      (decoding.arguments[1].value.value as Format.Values.StructResult[]).every(
+        callResult =>
+          callResult.kind === "value" &&
+          callResult.value.length === 2 &&
+          callResult.value[0].name === "target" &&
+          callResult.value[1].name === "callData"
+      )
+    ) {
+      const decodedArray = decoding.arguments[1]
+        .value as Format.Values.ArrayValue;
+      const multicallArray = await Promise.all(
+        decodedArray.value.map(async (callResult: any) => {
+          const target = callResult.value[0].value.value.asAddress;
+          const callData = callResult.value[1].value.value.asHex;
+          return await this.decodeTransactionWithAdditionalContexts(
+            { ...transaction, to: target, input: callData },
+            additionalContexts,
+            additionalAllocations
+          );
+        })
+      );
+      //it's safe to modify decoding -- we've gotten it straight out of codec,
+      //it's not shared with anything else, so for convenience I'm just going to
+      //mutate rather than cloning
+      decoding.interpretations.multicall = multicallArray;
+    } else if (
+      decoding.kind === "function" &&
+      decoding.abi.name === "multicall" &&
+      decoding.arguments.length === 2 &&
+      decoding.arguments[1].value.type.typeClass === "array" &&
+      decoding.arguments[1].value.type.baseType.typeClass === "bytes" &&
+      decoding.arguments[1].value.type.baseType.kind === "dynamic" &&
+      decoding.arguments[1].value.kind === "value"
+    ) {
+      const decodedArray = decoding.arguments[1]
+        .value as Format.Values.ArrayValue;
+      const multicallArray = await Promise.all(
+        decodedArray.value.map(async callResult => {
+          const coercedResult = callResult as Format.Values.BytesResult;
+          switch (coercedResult.kind) {
+            case "value":
+              return await this.decodeTransactionWithAdditionalContexts(
+                { ...transaction, input: coercedResult.value.asHex },
+                additionalContexts,
+                additionalAllocations
+              );
+            case "error":
+              return null;
+          }
+        })
+      );
+      //it's safe to modify decoding -- we've gotten it straight out of codec,
+      //it's not shared with anything else, so for convenience I'm just going to
+      //mutate rather than cloning
+      decoding.interpretations.multicall = multicallArray;
     }
 
     return decoding;
