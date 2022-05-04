@@ -1,5 +1,5 @@
-var debug = require("debug")("provider:wrapper"); // eslint-disable-line no-unused-vars
-var ProviderError = require("./error");
+const debug = require("debug")("provider:wrapper"); // eslint-disable-line no-unused-vars
+const ProviderError = require("./error");
 
 module.exports = {
   /*

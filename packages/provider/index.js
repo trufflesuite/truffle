@@ -26,7 +26,7 @@ module.exports = {
       provider = new Web3.providers.WebsocketProvider(
         options.url || "ws://" + options.host + ":" + options.port
       );
-    } else {
+    } else if (options.host && options.port) {
       // WARNING BREAKING BREAKING BREAKING
       // this would be a breaking change to all
       // truffle projects that don't have a provider defined that
@@ -36,6 +36,8 @@ module.exports = {
       provider = new Web3.providers.WebsocketProvider(
         options.url || `ws://${options.host}:${options.port}`
       );
+    } else {
+      provider = new Web3.providers.HttpProvider(options.url);
     }
     return provider;
   },
@@ -56,17 +58,18 @@ module.exports = {
     return new Promise((resolve, reject) => {
       const noResponseFromNetworkCall = setTimeout(() => {
         let errorMessage =
-          "There was a timeout while attempting to connect to the network at " + host +
+          "There was a timeout while attempting to connect to the network at " +
+          host +
           ".\n       Check to see that your provider is valid." +
           "\n       If you have a slow internet connection, try configuring a longer " +
           "timeout in your Truffle config. Use the " +
           "networks[networkName].networkCheckTimeout property to do this.";
 
-          if (network === "dashboard") {
-            errorMessage +=
-              "\n       Also make sure that your Truffle Dashboard browser " +
-              "tab is open and connected to MetaMask.";
-          }
+        if (network === "dashboard") {
+          errorMessage +=
+            "\n       Also make sure that your Truffle Dashboard browser " +
+            "tab is open and connected to MetaMask.";
+        }
 
         throw new Error(errorMessage);
       }, networkCheckTimeout);
