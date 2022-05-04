@@ -77,7 +77,7 @@ describe("Solidity Tests", function () {
   });
 
   describe("compatibility", function () {
-    before(async () => {
+    before(async function () {
       await initSandbox("ImportEverything.sol");
     });
 

@@ -33,7 +33,7 @@ describe("production", function () {
     });
 
     it("auto dry-runs and honors confirmations option", async function () {
-      this.timeout(70000);
+      this.timeout(100000);
 
       await CommandRunner.run("migrate --network ropsten", config);
       const output = logger.contents();

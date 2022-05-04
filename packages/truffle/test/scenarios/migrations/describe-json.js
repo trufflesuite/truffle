@@ -94,14 +94,14 @@ describe("truffle migrate --describe-json", () => {
   describe("when run on the most basic truffle project without --describe-json", () => {
     let contents;
 
-    it("runs the migration without throwing", async () => {
+    it("runs the migration without throwing", async function () {
+      this.timeout(50000);
       await CommandRunner.run("migrate --reset", config);
       contents = logger.contents();
-    }).timeout(20000);
+    });
 
-    it("does not include any `MIGRATION_STATUS` lines", done => {
+    it("does not include any `MIGRATION_STATUS` lines", function () {
       assert(!contents.includes("MIGRATION_STATUS"));
-      done();
     });
   });
 
@@ -109,7 +109,8 @@ describe("truffle migrate --describe-json", () => {
     describe("with existing migration", () => {
       let statuses = [];
 
-      it("runs the migration without throwing", async () => {
+      it("runs the migration without throwing", async function () {
+        this.timeout(50000);
         await CommandRunner.run("migrate --reset --describe-json", config);
         const contents = logger.contents();
         statuses.push(
@@ -118,7 +119,7 @@ describe("truffle migrate --describe-json", () => {
             .filter(line => line.includes("MIGRATION_STATUS"))
             .map(line => JSON.parse(line.replace("MIGRATION_STATUS:", "")))
         );
-      }).timeout(20000);
+      });
 
       verifyMigrationStatuses(statuses, "replacing");
     });
@@ -138,7 +139,8 @@ describe("truffle migrate --describe-json", () => {
           .then(done);
       });
 
-      it("runs the migration without throwing", async () => {
+      it("runs the migration without throwing", async function () {
+        this.timeout(50000);
         await CommandRunner.run("migrate --describe-json", config);
 
         const contents = logger.contents();
@@ -148,7 +150,7 @@ describe("truffle migrate --describe-json", () => {
             .filter(line => line.includes("MIGRATION_STATUS"))
             .map(line => JSON.parse(line.replace("MIGRATION_STATUS:", "")))
         );
-      }).timeout(20000);
+      });
 
       verifyMigrationStatuses(statuses, "deploying");
     });

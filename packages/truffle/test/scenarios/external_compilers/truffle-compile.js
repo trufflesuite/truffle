@@ -63,7 +63,7 @@ describe("`truffle compile` as external", function () {
   });
 
   it("will migrate", async function () {
-    this.timeout(50000);
+    this.timeout(100000);
 
     await CommandRunner.run("migrate", config);
     var MetaCoin = contract(

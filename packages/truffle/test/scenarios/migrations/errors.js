@@ -26,7 +26,7 @@ describe("migration errors", function () {
     config.networks = {
       development: {
         host: "127.0.0.1",
-        port: 8545,
+        port: 8545
       }
     };
     config.logger = logger;
@@ -36,7 +36,7 @@ describe("migration errors", function () {
   });
 
   it("errors and stops", async function () {
-    this.timeout(70000);
+    this.timeout(100000);
 
     try {
       await CommandRunner.run("migrate", config);
@@ -67,7 +67,7 @@ describe("migration errors", function () {
   });
 
   it("runs from the last successfully completely migration", async function () {
-    this.timeout(70000);
+    this.timeout(100000);
 
     try {
       await CommandRunner.run("migrate", config);

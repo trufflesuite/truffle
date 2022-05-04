@@ -67,7 +67,7 @@ describe("migrate (success)", function () {
   });
 
   it("forces a migration with the -f option", async function () {
-    this.timeout(70000);
+    this.timeout(100000);
 
     await CommandRunner.run("migrate -f 3", config);
     const output = logger.contents();

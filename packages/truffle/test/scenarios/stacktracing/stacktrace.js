@@ -62,7 +62,7 @@ describe("Stack tracing", function () {
   });
 
   it("runs tests and produces stacktraces", async function () {
-    this.timeout(70000);
+    this.timeout(100000);
     try {
       await CommandRunner.run("test --stacktrace", config);
       assert.fail("Test should have failed");
