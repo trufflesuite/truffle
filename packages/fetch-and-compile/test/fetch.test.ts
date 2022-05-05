@@ -102,7 +102,7 @@ describe("Supported networks", function () {
   it("Lists supported networks for specified fetchers only", function () {
     const networks = getSupportedNetworks(["etherscan"]);
     assert.property(networks, "mainnet");
-    assert.notProperty(networks, "sokol"); //suported by sourcify but not etherscan
+    assert.notProperty(networks, "sokol-poa"); //suported by sourcify but not etherscan
     assert.deepEqual(networks.mainnet, {
       name: "mainnet",
       networkId: 1,
