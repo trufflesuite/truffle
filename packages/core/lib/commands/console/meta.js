@@ -2,10 +2,20 @@ module.exports = {
   command: "console",
   description:
     "Run a console with contract abstractions and commands available",
-  builder: {},
+  builder: {
+    url: {
+      describe: "Use specified URL for provider",
+      type: "string"
+    }
+  },
   help: {
     usage: "truffle console [--verbose-rpc] [--require|-r <file>]",
     options: [
+      {
+        option: "--url",
+        description:
+          "Connects to a specified provider given via URL, ignoring networks in config. This option allows using the console outside of a Truffle project."
+      },
       {
         option: "--verbose-rpc",
         description:
