@@ -1,25 +1,23 @@
 const assert = require("chai").assert;
 const path = require("path");
 const fse = require("fs-extra");
-const glob = require("glob");
-const { default: Box } = require("@truffle/box");
 const Create = require("../../lib/commands/create/helpers");
-const { Resolver } = require("@truffle/resolver");
-const Artifactor = require("@truffle/artifactor");
+const tmp = require("tmp");
+const Config = require("@truffle/config");
+const copy = require("../../lib/copy");
+const glob = require("glob");
+let config;
+let tempDir;
 
 describe("create", function () {
-  let config;
-
-  before("Create a sandbox", async function () {
+  before("create a sandbox", async function () {
     this.timeout(5000);
-    config = await Box.sandbox("default");
-    config.resolver = new Resolver(config);
-    config.artifactor = new Artifactor(config.contracts_build_directory);
+    tempDir = tmp.dirSync({ unsafeCleanup: true });
+    await copy(path.join(__dirname, "../sources/metacoin"), tempDir.name);
+    config = new Config(undefined, tempDir.name);
   });
-
-  after("Cleanup tmp files", async function () {
-    const files = glob.sync("tmp-*");
-    files.forEach(file => fse.removeSync(file));
+  after("cleanup tmp files", async function () {
+    tempDir.removeCallback();
   });
 
   it("creates a new contract", async function () {

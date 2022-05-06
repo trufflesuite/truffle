@@ -1,4 +1,4 @@
-const assert = require("chai").assert;
+const { assert } = require("chai");
 const {
   determineTestFilesToRun
 } = require("../../../lib/commands/test/determineTestFilesToRun");
@@ -23,17 +23,12 @@ function updateFile(filename) {
 }
 
 describe("test command", () => {
-  let memStream;
-  let output = "";
-
-  before("create a sandbox", async () => {
+  before("create a test project", async () => {
     tempDir = tmp.dirSync({ unsafeCleanup: true });
     await copy(path.join(__dirname, "../../sources/metacoin"), tempDir.name);
     config = new Config(undefined, tempDir.name);
-    config.logger = { log: val => val && memStream.write(val) };
   });
-
-  after("Cleanup tmp files", () => {
+  after("cleanup tmp files", () => {
     tempDir.removeCallback();
   });
 
