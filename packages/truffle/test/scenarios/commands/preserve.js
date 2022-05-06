@@ -7,12 +7,11 @@ const path = require("path");
 const logger = new MemoryLogger();
 let config, project;
 
-const loadSandboxLogger = source => {
+const loadSandboxLogger = async function (source) {
   project = path.join(__dirname, source);
-  return sandbox.load(project).then(conf => {
-    config = conf;
-    config.logger = logger;
-  });
+  config = await sandbox.load(project);
+  config.logger = logger;
+  return config;
 };
 
 describe("truffle preserve [ @standalone @>=12 ]", () => {

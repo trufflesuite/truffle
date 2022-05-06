@@ -12,12 +12,11 @@ describe("truffle exec [ @standalone ]", function () {
   const project = path.join(__dirname, "../../sources/exec");
   const logger = new MemoryLogger();
 
-  before("set up the server", function (done) {
-    Server.start(done);
+  before(async function () {
+    await Server.start();
   });
-
-  after("stop server", function (done) {
-    Server.stop(done);
+  after(async function () {
+    await Server.stop();
   });
 
   beforeEach("set up sandbox", function () {

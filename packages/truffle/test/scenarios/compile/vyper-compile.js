@@ -53,12 +53,11 @@ describe("Repeated compilation of Vyper contracts with imports [ @standalone ]",
 
   // ----------------------- Setup -----------------------------
 
-  before("set up the server", function (done) {
-    Server.start(done);
+  before(async function () {
+    await Server.start();
   });
-
-  after("stop server", function (done) {
-    Server.stop(done);
+  after(async function () {
+    await Server.stop();
   });
 
   beforeEach("set up sandbox and do initial compile", async function () {

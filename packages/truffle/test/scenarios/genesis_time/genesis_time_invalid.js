@@ -3,20 +3,19 @@ const CommandRunner = require("../commandRunner");
 const assert = require("assert");
 const Reporter = require("../reporter");
 const Server = require("../server");
-var path = require("path");
-var sandbox = require("../sandbox");
+const path = require("path");
+const sandbox = require("../sandbox");
 const fs = require("fs-extra");
 
 describe("Genesis time config for truffle test, failing tests [ @standalone ]", function () {
   const logger = new MemoryLogger();
   let config;
 
-  before("set up the server", function (done) {
-    Server.start(done);
+  before(async function () {
+    await Server.start();
   });
-
-  after("stop server", function (done) {
-    Server.stop(done);
+  after(async function () {
+    await Server.stop();
   });
 
   describe("test with a bad time stamp", function () {

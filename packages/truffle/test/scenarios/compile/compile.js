@@ -1,5 +1,5 @@
-const MemoryLogger = require("../MemoryLogger");
 const CommandRunner = require("../commandRunner");
+const MemoryLogger = require("../MemoryLogger");
 const path = require("path");
 const assert = require("assert");
 const Server = require("../server");
@@ -11,9 +11,9 @@ const { connect } = require("@truffle/db");
 const gql = require("graphql-tag");
 const pascalCase = require("pascal-case");
 const Config = require("@truffle/config");
+let config, artifactPaths, initialTimes, finalTimes, output;
 
 describe("Repeated compilation of contracts with inheritance [ @standalone ]", function () {
-  let config, artifactPaths, initialTimes, finalTimes, output;
   const mapping = {};
 
   const project = path.join(__dirname, "../../sources/inheritance");
@@ -66,12 +66,11 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
 
   // ----------------------- Setup -----------------------------
 
-  before("set up the server", function (done) {
-    Server.start(done);
+  before(async function () {
+    await Server.start();
   });
-
-  after("stop server", function (done) {
-    Server.stop(done);
+  after(async function () {
+    await Server.stop();
   });
 
   beforeEach("set up sandbox and do initial compile", async function () {

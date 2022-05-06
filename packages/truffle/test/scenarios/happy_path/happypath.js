@@ -14,10 +14,10 @@ describe("Happy path (truffle unbox)", function () {
   const logger = new MemoryLogger();
 
   before(async function () {
-    Server.start();
+    await Server.start();
   });
   after(async function () {
-    Server.stop();
+    await Server.stop();
   });
 
   before("set up sandbox", async () => {
