@@ -38,6 +38,28 @@ describe("TruffleConfig.detect", () => {
   });
 });
 
+describe(".load", () => {
+  const config1 = `${__dirname}/testConfig.js`;
+  const config2 = `${__dirname}/testConfig2.js`; // identical to config1
+  const config3 = `${__dirname}/testConfig3.js`; // different mnemonic from 1&2
+
+  it("providers should not be ===", () => {
+    const Config1 = TruffleConfig.load(config1);
+    const Config2 = TruffleConfig.load(config2);
+    const Config3 = TruffleConfig.load(config3);
+
+    const prov1 = Config1.networks.develop.provider();
+    const prov2 = Config2.networks.develop.provider();
+    const prov3 = Config3.networks.develop.provider();
+
+    assert.equal(prov1 === prov2, false);
+    assert.equal(prov2 === prov3, false);
+
+    assert.notStrictEqual(prov1, prov2);
+    assert.notStrictEqual(prov2, prov3);
+  });
+});
+
 describe("when it can't find a config file", () => {
   beforeEach(() => {
     sinon.stub(TruffleConfig, "search").returns(null);
