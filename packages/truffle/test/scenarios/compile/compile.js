@@ -5,7 +5,6 @@ const assert = require("assert");
 const Server = require("../server");
 const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
-const log = console.log;
 const fse = require("fs-extra");
 const { connect } = require("@truffle/db");
 const gql = require("graphql-tag");
@@ -33,7 +32,7 @@ describe("repeated compilation of contracts with inheritance [ @standalone ]", f
   // ----------------------- Utils -----------------------------
   function processErr(err, output) {
     if (err) {
-      log(output);
+      console.log(output);
       throw new Error(err);
     }
   }
@@ -351,7 +350,7 @@ describe("compilation with db enabled", async () => {
       await CommandRunner.run("compile", config);
     } catch (error) {
       output = logger.contents();
-      log(output);
+      console.log(output);
       throw new Error(error);
     }
   });
