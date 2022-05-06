@@ -10,6 +10,7 @@ describe("config", function () {
   let config;
   let output = "";
   let memStream;
+  let tempDir;
 
   before(function () {
     config = createTestProject(path.join(__dirname, "../../sources/metacoin"));
@@ -22,7 +23,12 @@ describe("config", function () {
       output += data.toString();
     });
   });
-  afterEach(function () {
+
+  after("Cleanup tmp files", async function () {
+    tempDir.removeCallback();
+  });
+
+  afterEach("Clear MemoryStream", () => {
     memStream.end("");
     output = "";
   });

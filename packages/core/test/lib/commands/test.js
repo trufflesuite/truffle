@@ -8,8 +8,10 @@ const WorkflowCompile = require("@truffle/workflow-compile");
 const Test = require("../../../lib/testing/Test");
 const Config = require("@truffle/config");
 const tmp = require("tmp");
+const copy = require("../../../lib/copy");
 let config;
 let tempDir;
+let memStream;
 
 function updateFile(filename) {
   const fileToUpdate = path.resolve(
@@ -26,6 +28,7 @@ describe("test command", () => {
     tempDir = tmp.dirSync({ unsafeCleanup: true });
     fse.copySync(path.join(__dirname, "../../sources/metacoin"), tempDir.name);
     config = new Config(undefined, tempDir.name);
+    config.logger = { log: val => val && memStream.write(val) };
   });
 
   it("Check test with subdirectories", () => {
