@@ -28,7 +28,7 @@ describe("Console", function () {
           }
         },
         network_id: 666,
-        provider: new Web3.providers.HttpProvider("http://localhost:666"),
+        provider: new Web3.providers.WebsocketProvider("ws://localhost:666"),
         resolver: new Resolver(config)
       });
       const pathToUserJs = path.join(
@@ -78,7 +78,7 @@ describe("Console", function () {
             }
           },
           network_id: 666,
-          provider: new Web3.providers.HttpProvider("http://localhost:666"),
+          provider: new Web3.providers.WebsocketProvider("ws://localhost:666"),
           resolver: new Resolver(config)
         });
         otherConsoleOptions.require = path.join(
@@ -112,7 +112,7 @@ describe("Console", function () {
             }
           },
           network_id: 666,
-          provider: new Web3.providers.HttpProvider("http://localhost:666"),
+          provider: new Web3.providers.WebsocketProvider("ws://localhost:666"),
           resolver: new Resolver(config)
         });
         otherConsoleOptions.console.require = path.join(
@@ -142,7 +142,7 @@ describe("Console", function () {
             }
           },
           network_id: 666,
-          provider: new Web3.providers.HttpProvider("http://localhost:666"),
+          provider: new Web3.providers.WebsocketProvider("ws://localhost:666"),
           resolver: new Resolver(config)
         });
         otherTruffleConsole = new Console(consoleCommands, otherConsoleOptions);
