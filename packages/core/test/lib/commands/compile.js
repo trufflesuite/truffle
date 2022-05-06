@@ -1,13 +1,9 @@
 const assert = require("chai").assert;
-const { default: Box } = require("@truffle/box");
 const WorkflowCompile = require("@truffle/workflow-compile");
-const Artifactor = require("@truffle/artifactor");
-const { Resolver } = require("@truffle/resolver");
 const MemoryStream = require("memorystream");
 const command = require("../../../lib/commands/compile");
 const path = require("path");
 const fs = require("fs-extra");
-const glob = require("glob");
 const tmp = require("tmp");
 const copy = require("../../../lib/copy");
 const Config = require("@truffle/config");
@@ -25,8 +21,6 @@ describe("compile", function () {
   });
 
   after("cleanup tmp files", async function () {
-    const files = glob.sync("tmp-*");
-    files.forEach(file => fs.removeSync(file));
     tempDir.removeCallback();
   });
 

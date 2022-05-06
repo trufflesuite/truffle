@@ -1,18 +1,16 @@
 const assert = require("chai").assert;
-const { default: Box } = require("@truffle/box");
 const {
   determineTestFilesToRun
 } = require("../../../lib/commands/test/determineTestFilesToRun");
-const Artifactor = require("@truffle/artifactor");
-const { Resolver } = require("@truffle/resolver");
-const MemoryStream = require("memorystream");
 const path = require("path");
 const fs = require("fs-extra");
-const glob = require("glob");
 const WorkflowCompile = require("@truffle/workflow-compile");
 const Test = require("../../../lib/testing/Test");
-
+const Config = require("@truffle/config");
+const tmp = require("tmp");
+const copy = require("../../../lib/copy");
 let config;
+let tempDir;
 
 function updateFile(filename) {
   const fileToUpdate = path.resolve(
@@ -28,38 +26,16 @@ describe("test command", () => {
   let memStream;
   let output = "";
 
-  before("Create a sandbox", async () => {
-    config = await Box.sandbox("default");
-    config.resolver = new Resolver(config);
-    config.artifactor = new Artifactor(config.contracts_build_directory);
-    config.networks = {
-      default: {
-        network_id: "1"
-      },
-      secondary: {
-        network_id: "12345"
-      }
-    };
-    config.network = "default";
+  before("create a sandbox", async () => {
+    tempDir = tmp.dirSync({ unsafeCleanup: true });
+    await copy(path.join(__dirname, "../../sources/metacoin"), tempDir.name);
+    config = new Config(undefined, tempDir.name);
     config.logger = { log: val => val && memStream.write(val) };
   });
 
-  beforeEach(() => {
-    memStream = new MemoryStream();
-    memStream.on("data", data => {
-      output += data.toString();
-    });
-  });
-
   after("Cleanup tmp files", () => {
-    const files = glob.sync("tmp-*");
-    files.forEach(file => fs.removeSync(file));
+    tempDir.removeCallback();
   });
-
-  // eslint can't see what is happening in the
-  // beforeEach above for some reason to realize that output is used
-  // eslint-disable-next-line
-  afterEach("Clear MemoryStream", () => (output = ""));
 
   it("Check test with subdirectories", () => {
     let testFiles = determineTestFilesToRun({ config });
