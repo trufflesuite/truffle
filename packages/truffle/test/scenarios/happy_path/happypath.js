@@ -13,12 +13,11 @@ describe("Happy path (truffle unbox)", function () {
   let options;
   const logger = new MemoryLogger();
 
-  before("set up the server", function (done) {
-    Server.start(done);
+  before(async function () {
+    Server.start();
   });
-
-  after("stop server", function (done) {
-    Server.stop(done);
+  after(async function () {
+    Server.stop();
   });
 
   before("set up sandbox", async () => {
@@ -31,7 +30,7 @@ describe("Happy path (truffle unbox)", function () {
     };
   });
 
-  it("will compile", async function () {
+  it("compiles", async function () {
     this.timeout(20000);
 
     await CommandRunner.run("compile", config);
@@ -53,22 +52,22 @@ describe("Happy path (truffle unbox)", function () {
     );
   });
 
-  it("will migrate", async function () {
+  it("migrates", async function () {
     this.timeout(50000);
 
     await CommandRunner.run("migrate", config);
 
-    var MetaCoin = contract(
+    const MetaCoin = contract(
       require(path.join(config.contracts_build_directory, "MetaCoin.json"))
     );
-    var ConvertLib = contract(
+    const ConvertLib = contract(
       require(path.join(config.contracts_build_directory, "ConvertLib.json"))
     );
-    var Migrations = contract(
+    const Migrations = contract(
       require(path.join(config.contracts_build_directory, "Migrations.json"))
     );
 
-    var promises = [];
+    const promises = [];
 
     [MetaCoin, ConvertLib, Migrations].forEach(function (abstraction) {
       abstraction.setProvider(config.provider);
@@ -86,10 +85,10 @@ describe("Happy path (truffle unbox)", function () {
     await Promise.all(promises);
   });
 
-  it("will run tests", async function () {
+  it("runs tests", async function () {
     this.timeout(70000);
     await CommandRunner.run("test", config);
-    var output = logger.contents();
+    const output = logger.contents();
 
     assert(output.indexOf("5 passing") >= 0);
   });

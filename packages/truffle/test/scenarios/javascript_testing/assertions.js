@@ -11,9 +11,6 @@ describe("Javascript testing", function () {
   const project = path.join(__dirname, "../../sources/javascript_testing");
   const logger = new MemoryLogger();
 
-  before(done => Server.start(done));
-  after(done => Server.stop(done));
-
   before(async function () {
     this.timeout(10000);
     config = await sandbox.create(project);
@@ -22,6 +19,10 @@ describe("Javascript testing", function () {
     config.mocha = {
       reporter: new Reporter(logger)
     };
+    await Server.start();
+  });
+  after(async function () {
+    await Server.stop();
   });
 
   it("allows use of isAddress", async function () {
