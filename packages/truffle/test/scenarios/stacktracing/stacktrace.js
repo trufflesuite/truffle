@@ -59,11 +59,11 @@ describe("Stack tracing", function () {
     );
   });
 
-  before(function (done) {
-    Server.start(done);
+  before(async function () {
+    await Server.start();
   });
-  after(function (done) {
-    Server.stop(done);
+  after(async function () {
+    await Server.stop();
   });
 
   it("runs tests and produces stacktraces", async function () {

@@ -32,8 +32,12 @@ describe("Solidity Tests", function () {
     await fs.copy(from, config.test_directory + `/${file}`);
   }
 
-  before(done => Server.start(done));
-  after(done => Server.stop(done));
+  before(async function () {
+    await Server.start();
+  });
+  after(async function () {
+    await Server.stop();
+  });
 
   describe("test with balance", function () {
     before(async () => {
