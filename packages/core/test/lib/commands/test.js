@@ -28,7 +28,6 @@ describe("test command", () => {
     tempDir = tmp.dirSync({ unsafeCleanup: true });
     fse.copySync(path.join(__dirname, "../../sources/metacoin"), tempDir.name);
     config = new Config(undefined, tempDir.name);
-    config.logger = { log: val => val && memStream.write(val) };
   });
 
   it("Check test with subdirectories", () => {
