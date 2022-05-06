@@ -13,7 +13,7 @@ const pascalCase = require("pascal-case");
 const Config = require("@truffle/config");
 let config, artifactPaths, initialTimes, finalTimes, output;
 
-describe("Repeated compilation of contracts with inheritance [ @standalone ]", function () {
+describe("repeated compilation of contracts with inheritance [ @standalone ]", function () {
   const mapping = {};
 
   const project = path.join(__dirname, "../../sources/inheritance");
@@ -75,9 +75,7 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
 
   beforeEach("set up sandbox and do initial compile", async function () {
     this.timeout(30000);
-
-    const conf = await sandbox.create(project);
-    config = conf;
+    config = await sandbox.create(project);
     config.network = "development";
     config.logger = logger;
     config.mocha = {
@@ -324,7 +322,7 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
   });
 });
 
-describe("Compilation with db enabled", async () => {
+describe("compilation with db enabled", async () => {
   let config, project;
   const logger = new MemoryLogger();
 
@@ -336,12 +334,11 @@ describe("Compilation with db enabled", async () => {
     return dbExists;
   }
 
-  before("set up the server", function (done) {
-    Server.start(done);
+  before(async function () {
+    await Server.start();
   });
-
-  after("stop server", function (done) {
-    Server.stop(done);
+  after(async function () {
+    await Server.stop();
   });
 
   beforeEach("set up sandbox and do initial compile", async function () {
@@ -361,9 +358,7 @@ describe("Compilation with db enabled", async () => {
 
   it("creates a populated .db directory when db is enabled", async function () {
     this.timeout(12000);
-
     const dbExists = checkForDb();
-
     assert(dbExists === true);
   });
 
