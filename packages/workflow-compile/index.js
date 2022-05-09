@@ -28,7 +28,7 @@ async function compile(config) {
 
       if (config.all === true || config.compileAll === true) {
         return await Compile.all(config);
-      } else if (config.paths && config.paths.length > 0) {
+      } else if (Array.isArray(config.paths) && config.paths.length > 0) {
         // compile only user specified sources
         return await Compile.sourcesWithDependencies({
           options: config,
