@@ -5,7 +5,7 @@ const path = require("path");
 const assert = require("assert");
 const Server = require("../server");
 const Reporter = require("../reporter");
-const Sandbox = require("../sandbox");
+const sandbox = require("../sandbox");
 
 const TEST = `
 const StacktraceTest = artifacts.require("StacktraceTest");
@@ -31,7 +31,7 @@ describe("Stack tracing", function () {
   const logger = new MemoryLogger();
 
   before(async function () {
-    config = await Sandbox.create(path.join(__dirname, "../../sources/init"));
+    config = await sandbox.create(path.join(__dirname, "../../sources/init"));
     config.network = "development";
     config.logger = logger;
     config.mocha = {

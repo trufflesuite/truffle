@@ -5,9 +5,9 @@ const path = require("path");
 const assert = require("assert");
 const Server = require("../server");
 const Reporter = require("../reporter");
-const Sandbox = require("../sandbox");
+const sandbox = require("../sandbox");
 
-describe.only("Solidity Tests", function () {
+describe("Solidity Tests", function () {
   const logger = new MemoryLogger();
   let config;
 
@@ -18,7 +18,7 @@ describe.only("Solidity Tests", function () {
    * @param  {String}   file Solidity test target
    */
   async function initSandbox(file) {
-    config = await Sandbox.create(path.join(__dirname, "../../sources/init"));
+    config = await sandbox.create(path.join(__dirname, "../../sources/init"));
     config.logger = logger;
     config.network = "development";
     config.mocha = {
