@@ -1,4 +1,3 @@
-const { default: Box } = require("@truffle/box");
 const MemoryLogger = require("../MemoryLogger");
 const CommandRunner = require("../commandRunner");
 const fs = require("fs-extra");
@@ -6,11 +5,11 @@ const path = require("path");
 const assert = require("assert");
 const Server = require("../server");
 const Reporter = require("../reporter");
+const Sandbox = require("../sandbox");
 
-describe("Solidity Tests", function () {
+describe.only("Solidity Tests", function () {
   const logger = new MemoryLogger();
   let config;
-  let options;
 
   /**
    * Installs a bare truffle project and deposits a solidity test target
@@ -19,8 +18,7 @@ describe("Solidity Tests", function () {
    * @param  {String}   file Solidity test target
    */
   async function initSandbox(file) {
-    options = { name: "bare-box", force: true };
-    config = await Box.sandbox(options);
+    config = await Sandbox.create(path.join(__dirname, "../../sources/init"));
     config.logger = logger;
     config.network = "development";
     config.mocha = {
@@ -44,7 +42,7 @@ describe("Solidity Tests", function () {
       await initSandbox("TestWithBalance.sol");
     });
 
-    it("will run the test and have the correct balance", function () {
+    it("runs the tests and has the correct balance", function () {
       this.timeout(70000);
 
       return CommandRunner.run("test", config)
@@ -63,7 +61,7 @@ describe("Solidity Tests", function () {
       await initSandbox("TestFailures.sol");
     });
 
-    it("will throw errors correctly", function () {
+    it("throws errors correctly", function () {
       this.timeout(70000);
 
       return CommandRunner.run("test", config)
@@ -83,7 +81,7 @@ describe("Solidity Tests", function () {
       await initSandbox("ImportEverything.sol");
     });
 
-    it("compile with latest Solidity", function () {
+    it("compiles with latest Solidity", function () {
       this.timeout(70000);
 
       return CommandRunner.run(
