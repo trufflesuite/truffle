@@ -1,11 +1,11 @@
-const { default: Box } = require("@truffle/box");
 const MemoryLogger = require("../MemoryLogger");
 const CommandRunner = require("../commandRunner");
-const fs = require("fs-extra");
+const fse = require("fs-extra");
 const path = require("path");
 const assert = require("assert");
 const Server = require("../server");
 const Reporter = require("../reporter");
+const Sandbox = require("../sandbox");
 
 const TEST = `
 const StacktraceTest = artifacts.require("StacktraceTest");
@@ -28,38 +28,33 @@ module.exports = function(deployer) {
 
 describe("Stack tracing", function () {
   let config;
-  let options;
   const logger = new MemoryLogger();
 
-  before("set up sandbox", async function () {
-    options = { name: "bare-box", force: true };
-    config = await Box.sandbox(options);
+  before(async function () {
+    config = await Sandbox.create(path.join(__dirname, "../../sources/init"));
     config.network = "development";
     config.logger = logger;
     config.mocha = {
       reporter: new Reporter(logger)
     };
-    await fs.ensureDir(config.test_directory);
-    await fs.ensureDir(config.contracts_directory);
-    await fs.ensureDir(config.migrations_directory);
+    await fse.ensureDir(config.test_directory);
+    await fse.ensureDir(config.contracts_directory);
+    await fse.ensureDir(config.migrations_directory);
     const fileName = "StacktraceTest.sol";
     //add our own contract to the contracts
-    await fs.copy(
+    await fse.copy(
       path.join(__dirname, fileName),
       path.join(config.contracts_directory, fileName)
     );
     //add our own test to the tests
     const testFileName = "stacktrace-test.js";
-    await fs.writeFile(path.join(config.test_directory, testFileName), TEST);
+    await fse.writeFile(path.join(config.test_directory, testFileName), TEST);
     //...and add a migration
     const migrationFileName = "2_deploy_contracts.js";
-    await fs.writeFile(
+    await fse.writeFile(
       path.join(config.migrations_directory, migrationFileName),
       MIGRATION
     );
-  });
-
-  before(async function () {
     await Server.start();
   });
   after(async function () {
