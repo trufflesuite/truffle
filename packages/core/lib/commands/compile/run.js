@@ -23,6 +23,33 @@ module.exports = async function (options) {
     );
   }
 
+  if (config._ && config._.length > 0) {
+    // set paths based on command-line inputs, transforming to absolute
+    // paths where appropriate
+    config.paths = config._.map(specifiedPath => {
+      // convert relative paths to absolute paths based on whether
+      // the naive absolute path exists on disk
+      //
+      // NOTE in case of collision where the specified path refers to some
+      // non-FS source (e.g. `truffle/Assert.sol`) and where that specified
+      // path corresponds to an existing file relative to the working dir.,
+      // this selects the latter as priority over the former.
+
+      const absolutePath = path.resolve(
+        config.working_directory,
+        specifiedPath
+      );
+
+      // i.e., pass the absolutePath if it's a real file, otherwise just
+      // pass whatever was specified.
+      if (fse.existsSync(absolutePath)) {
+        return absolutePath;
+      } else {
+        return specifiedPath;
+      }
+    });
+  }
+
   const compilationOutput = await WorkflowCompile.compile(config);
   if (options.saveIntermediate) {
     // Get the filename the user provided to save the compilation results to
