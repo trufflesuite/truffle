@@ -22,14 +22,14 @@ The contract-schema matches the output of the [@truffle/artifactor](https://gith
 
 ```javascript
 const provider = new Web3.providers.HttpProvider("http://localhost:8545");
-const MyContract = require("./path/to/contractArtifact.json"); //produced by truffle compile
+const MyContract = require("./path/to/contractArtifact.json"); //produced by Truffle compile
 const contract = require("@truffle/contract");
 
 const instance = contract(MyContract);
 ```
 
-If you aren't using truffle artifacts, the input to the `contract` function is a JSON blob defined by [@truffle/contract-schema](https://github.com/trufflesuite/truffle/tree/master/packages/contract-schema). This JSON blob is structured in a way that can be passed to all Truffle-related projects.
-Minimally, it requires the contract ABI, but passing this alone may cause issues using certain features of truffle contract.
+If you aren't using Truffle artifacts, the input to the `contract` function is a JSON blob defined by [@truffle/contract-schema](https://github.com/trufflesuite/truffle/tree/master/packages/contract-schema). This JSON blob is structured in a way that can be passed to all Truffle-related projects.
+Minimally, it requires the contract ABI, but passing this alone may cause issues using certain features of Truffle contract.
 
 ```javascript
 const instance = contract({
