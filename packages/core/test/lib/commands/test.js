@@ -3,12 +3,11 @@ const {
   determineTestFilesToRun
 } = require("../../../lib/commands/test/determineTestFilesToRun");
 const path = require("path");
-const fs = require("fs-extra");
+const fse = require("fs-extra");
 const WorkflowCompile = require("@truffle/workflow-compile");
 const Test = require("../../../lib/testing/Test");
 const Config = require("@truffle/config");
 const tmp = require("tmp");
-const copy = require("../../../lib/copy");
 let config;
 let tempDir;
 
@@ -19,17 +18,14 @@ function updateFile(filename) {
 
   // Update the modification time to simulate an edit.
   const newTime = new Date().getTime();
-  fs.utimesSync(fileToUpdate, newTime, newTime);
+  fse.utimesSync(fileToUpdate, newTime, newTime);
 }
 
 describe("test command", () => {
-  before("create a test project", async () => {
+  before(function () {
     tempDir = tmp.dirSync({ unsafeCleanup: true });
-    await copy(path.join(__dirname, "../../sources/metacoin"), tempDir.name);
+    fse.copySync(path.join(__dirname, "../../sources/metacoin"), tempDir.name);
     config = new Config(undefined, tempDir.name);
-  });
-  after("cleanup tmp files", () => {
-    tempDir.removeCallback();
   });
 
   it("Check test with subdirectories", () => {
@@ -41,10 +37,10 @@ describe("test command", () => {
       "sub_directory",
       "test.sol"
     );
-    fs.createFileSync(filename);
+    fse.createFileSync(filename);
 
     filename = path.join(config.test_directory, "sub_directory", "test.js");
-    fs.createFileSync(filename);
+    fse.createFileSync(filename);
 
     filename = path.join(
       config.test_directory,
@@ -52,7 +48,7 @@ describe("test command", () => {
       "sub_sub_directory",
       "test.js"
     );
-    fs.createFileSync(filename);
+    fse.createFileSync(filename);
 
     let dirName = path.join(
       config.test_directory,
@@ -62,7 +58,7 @@ describe("test command", () => {
 
     // Create empty subdirectory to check if
     // determineTestFilesTo run function can process it without crashing
-    fs.ensureDirSync(dirName);
+    fse.ensureDirSync(dirName);
 
     let newTestFiles = determineTestFilesToRun({ config });
     assert.equal(
@@ -243,8 +239,8 @@ describe("test command", () => {
       if (!files[index]) return 0;
       var fileName = path.join(dirName, files[index]);
       let filesCount = 0;
-      if (!fs.existsSync(fileName)) {
-        fs.createFileSync(fileName);
+      if (!fse.existsSync(fileName)) {
+        fse.createFileSync(fileName);
         filesCount++;
       }
       if (files.length > index + 1) {

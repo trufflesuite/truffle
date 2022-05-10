@@ -2,10 +2,9 @@ const assert = require("chai").assert;
 const MemoryStream = require("memorystream");
 const command = require("../../../lib/commands/config");
 const path = require("path");
-const fs = require("fs-extra");
+const fse = require("fs-extra");
 const Config = require("@truffle/config");
 const tmp = require("tmp");
-const copy = require("../../../lib/copy");
 
 describe("config", function () {
   let config;
@@ -13,25 +12,20 @@ describe("config", function () {
   let memStream;
   let tempDir;
 
-  before("Create a sandbox", async () => {
+  before(function () {
     tempDir = tmp.dirSync({ unsafeCleanup: true });
-    await copy(path.join(__dirname, "../../sources/metacoin"), tempDir.name);
+    fse.copySync(path.join(__dirname, "../../sources/metacoin"), tempDir.name);
     config = new Config(undefined, tempDir.name);
     config.logger = { log: val => val && memStream.write(val) };
   });
 
-  beforeEach(() => {
+  beforeEach(function () {
     memStream = new MemoryStream();
     memStream.on("data", data => {
       output += data.toString();
     });
   });
-
-  after("Cleanup tmp files", async function () {
-    tempDir.removeCallback();
-  });
-
-  afterEach("Clear MemoryStream", () => {
+  afterEach(function () {
     memStream.end("");
     output = "";
   });
@@ -50,7 +44,7 @@ describe("config", function () {
     const configFile = Config.search({
       working_directory: config.working_directory
     });
-    fs.writeFileSync(
+    fse.writeFileSync(
       configFile,
       "module.exports = { migrations_directory: './a-different-dir' };",
       { encoding: "utf8" }

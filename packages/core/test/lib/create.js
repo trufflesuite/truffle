@@ -4,20 +4,16 @@ const fse = require("fs-extra");
 const Create = require("../../lib/commands/create/helpers");
 const tmp = require("tmp");
 const Config = require("@truffle/config");
-const copy = require("../../lib/copy");
 const glob = require("glob");
 let config;
 let tempDir;
 
 describe("create", function () {
-  before("create a sandbox", async function () {
+  before(function () {
     this.timeout(5000);
     tempDir = tmp.dirSync({ unsafeCleanup: true });
-    await copy(path.join(__dirname, "../sources/metacoin"), tempDir.name);
+    fse.copySync(path.join(__dirname, "../sources/metacoin"), tempDir.name);
     config = new Config(undefined, tempDir.name);
-  });
-  after("cleanup tmp files", async function () {
-    tempDir.removeCallback();
   });
 
   it("creates a new contract", async function () {

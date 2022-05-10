@@ -3,9 +3,8 @@ const WorkflowCompile = require("@truffle/workflow-compile");
 const MemoryStream = require("memorystream");
 const command = require("../../../lib/commands/compile");
 const path = require("path");
-const fs = require("fs-extra");
+const fse = require("fs-extra");
 const tmp = require("tmp");
-const copy = require("../../../lib/copy");
 const Config = require("@truffle/config");
 let tempDir;
 let config;
@@ -13,15 +12,11 @@ let output = "";
 let memStream;
 
 describe("compile", function () {
-  before("create a test project", async () => {
+  before(function () {
     tempDir = tmp.dirSync({ unsafeCleanup: true });
-    await copy(path.join(__dirname, "../../sources/metacoin"), tempDir.name);
+    fse.copySync(path.join(__dirname, "../../sources/metacoin"), tempDir.name);
     config = new Config(undefined, tempDir.name);
     config.logger = { log: val => val && memStream.write(val) };
-  });
-
-  after("cleanup tmp files", async function () {
-    tempDir.removeCallback();
   });
 
   afterEach("clear MemoryStream", () => (output = ""));
@@ -58,11 +53,11 @@ describe("compile", function () {
     const fileToUpdate = path.resolve(
       path.join(config.contracts_directory, "ConvertLib.sol")
     );
-    const stat = fs.statSync(fileToUpdate);
+    const stat = fse.statSync(fileToUpdate);
 
     // Update the modification time to simulate an edit.
     const newTime = new Date().getTime();
-    fs.utimesSync(fileToUpdate, newTime, newTime);
+    fse.utimesSync(fileToUpdate, newTime, newTime);
 
     const { contracts } = await WorkflowCompile.compileAndSave(
       config.with({
@@ -77,7 +72,7 @@ describe("compile", function () {
     );
 
     // reset time
-    fs.utimesSync(fileToUpdate, stat.atime, stat.mtime);
+    fse.utimesSync(fileToUpdate, stat.atime, stat.mtime);
   });
 
   it("compiling shouldn't create any network artifacts", function () {
@@ -146,9 +141,9 @@ describe("compile", function () {
       const sources = ["ConvertLib.sol", "MetaCoin.sol", "Migrations.sol"];
       for (const source of sources) {
         const filename = path.join(config.contracts_directory, source);
-        const contents = fs.readFileSync(filename).toString();
+        const contents = fse.readFileSync(filename).toString();
         // make a trivial update to each file
-        fs.writeFileSync(filename, `${contents}\n`);
+        fse.writeFileSync(filename, `${contents}\n`);
       }
 
       const { contracts } = await WorkflowCompile.compileAndSave(
