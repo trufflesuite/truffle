@@ -29,15 +29,14 @@ export class VersionRange {
   constructor(options: StrategyOptions) {
     const defaultConfig = {
       compilerRoots: [
-        // Official repo of Solidity's releases
-        "https://binaries.soliditylang.org/bin/",
-        // Backup repo. Please note sometime this URL just redirects (302 Found) or returns error (i.e. 522 Connection Timed Out)
-        "https://relay.trufflesuite.com/solc/bin/",
-        // The last two relay addresses exist so that we have a backup option in
-        // case more official distribution mechanisms fail.
-        // Note both are DEPRECATED because they are not updated anymore after 0.7.2
-        "https://solc-bin.ethereum.org/bin/",
-        "https://ethereum.github.io/solc-bin/bin/"
+        // Best performance binaries, via Truffle relay node
+        "https://relay.trufflesuite.com/solc/emscripten-wasm32/",
+        // Fallback binaries, via Truffle relay node
+        "https://relay.trufflesuite.com/solc/emscripten-asmjs/",
+        // The last two addresses exist so that we have a backup option
+        // in case relay node fails
+        "https://binaries.soliditylang.org/emscripten-wasm32/",
+        "https://binaries.soliditylang.org/emscripten-asmjs/"
       ]
     };
     this.config = Object.assign({}, defaultConfig, options);
