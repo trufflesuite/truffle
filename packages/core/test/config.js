@@ -3,9 +3,9 @@ const WorkflowCompile = require("@truffle/workflow-compile");
 const Ganache = require("ganache");
 const provision = require("@truffle/provisioner");
 const Config = require("@truffle/config");
-const copy = require("../lib/copy");
 const tmp = require("tmp");
 const path = require("path");
+const fse = require("fs-extra");
 let tempDir, config;
 
 describe("config", function () {
@@ -18,7 +18,7 @@ describe("config", function () {
   before(async function () {
     this.timeout(5000);
     tempDir = tmp.dirSync({ unsafeCleanup: true });
-    await copy(path.join(__dirname, "sources/metacoin"), tempDir.name);
+    fse.copySync(path.join(__dirname, "sources/metacoin"), tempDir.name);
     config = new Config(undefined, tempDir.name);
     config.network = "development";
     config.networks = {
