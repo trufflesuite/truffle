@@ -69,7 +69,9 @@ export class Web3InterfaceAdapter implements InterfaceAdapter {
     return this.web3.eth.getBlockNumber();
   }
 
-  public async getTransactionCostReport(receipt: TransactionReceipt): Promise<TransactionCostReport> {
+  public async getTransactionCostReport(
+    receipt: TransactionReceipt
+  ): Promise<TransactionCostReport> {
     const tx = await this.getTransaction(receipt.transactionHash);
     const block = await this.getBlock(receipt.blockNumber);
 
@@ -78,6 +80,8 @@ export class Web3InterfaceAdapter implements InterfaceAdapter {
     const balance = await this.getBalance(tx.from);
     // gasPrice has been deprecated in favor of effectiveGasPrice
     // via https://github.com/ethereum/execution-specs/pull/251
+    // Note: this incidentally conforms to Arbitrum as well
+    // via https://github.com/trufflesuite/truffle/issues/4559
     const gasPrice = new BN(receipt.effectiveGasPrice || tx.gasPrice);
     const gas = new BN(receipt.gasUsed);
     const value = new BN(tx.value);
