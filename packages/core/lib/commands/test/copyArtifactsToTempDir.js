@@ -1,6 +1,5 @@
 const copyArtifactsToTempDir = async config => {
-  const copy = require("../../copy");
-  const fs = require("fs");
+  const fse = require("fs-extra");
   const OS = require("os");
   const tmp = require("tmp");
   tmp.setGracefulCleanup();
@@ -13,12 +12,12 @@ const copyArtifactsToTempDir = async config => {
     prefix: "test-"
   }).name;
   try {
-    fs.statSync(config.contracts_build_directory);
+    fse.statSync(config.contracts_build_directory);
   } catch (_error) {
     return { temporaryDirectory };
   }
 
-  await copy(config.contracts_build_directory, temporaryDirectory);
+  fse.copySync(config.contracts_build_directory, temporaryDirectory);
 
   if (config.runnerOutputOnly !== true) {
     config.logger.log("Using network '" + config.network + "'." + OS.EOL);
