@@ -9,12 +9,18 @@ module.exports = {
     }
   },
   help: {
-    usage: "truffle console [--verbose-rpc] [--require|-r <file>]",
+    usage:
+      "truffle console [--verbose-rpc] [--require|-r <file>] [--network <network>|--url <provider_url>]",
     options: [
       {
         option: "--url",
         description:
-          "Connects to a specified provider given via URL, ignoring networks in config. This option allows using the console outside of a Truffle project."
+          "Uses the provided url to create a provider and connect to the network. This can be used outside of a Truffle project."
+      },
+      {
+        option: "--network",
+        description:
+          "The network to connect to, as specified in the Truffle config."
       },
       {
         option: "--verbose-rpc",
@@ -37,6 +43,8 @@ module.exports = {
           "in your project's truffle-config.js."
       }
     ],
-    allowedGlobalOptions: ["network", "config"]
+    // The 'network' option is excluded from here and added manually above as a workaround to combine its usage
+    // instructions with url to show that they are mutually exclusive.
+    allowedGlobalOptions: ["config"]
   }
 };
