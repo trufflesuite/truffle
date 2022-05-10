@@ -51,6 +51,6 @@ module.exports = async function (options) {
   } else if (fn == null) {
     throw new ConfigurationError(`Cannot find creation type: ${type}`);
   } else {
-    return await create[type](destinations[type], name, options);
+    return create[type](destinations[type], name, options);
   }
 };
