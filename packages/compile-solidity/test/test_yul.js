@@ -2,7 +2,7 @@ const debug = require("debug")("compile:test:test_yul");
 const path = require("path");
 const { Compile } = require("@truffle/compile-solidity");
 const assert = require("assert");
-const Resolver = require("@truffle/resolver");
+const { Resolver } = require("@truffle/resolver");
 
 describe("Yul compilation", function () {
   this.timeout(5000); // solc
@@ -28,9 +28,9 @@ describe("Yul compilation", function () {
 
   it("Compiles Yul", async function () {
     this.timeout(150000);
-    const paths = [
-      "YulSource.yul",
-    ].map(filePath => path.join(options.contracts_directory, filePath));
+    const paths = ["YulSource.yul"].map(filePath =>
+      path.join(options.contracts_directory, filePath)
+    );
 
     const { compilations } = await Compile.sourcesWithDependencies({
       paths,

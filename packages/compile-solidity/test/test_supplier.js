@@ -2,7 +2,7 @@ const debug = require("debug")("compile:test:test_supplier");
 const fse = require("fs-extra");
 const path = require("path");
 const assert = require("assert");
-const Resolver = require("@truffle/resolver");
+const { Resolver } = require("@truffle/resolver");
 const { Compile } = require("@truffle/compile-solidity");
 const Config = require("@truffle/config");
 const { findOne } = require("./helpers");
@@ -18,7 +18,6 @@ describe("CompilerSupplier", function () {
     let oldPragmaFloatSource; // ^0.4.15
     let version4PragmaSource; // ^0.4.21
     let version5PragmaSource; // ^0.5.0
-    let version6PragmaSource; // ^0.6.0
     let version8PragmaSource; // ^0.8.0
     let versionLatestPragmaSource; // Currently: ^0.8.0
     let compileConfig;
@@ -46,10 +45,6 @@ describe("CompilerSupplier", function () {
         path.join(__dirname, "./sources/v0.5.x/Version5Pragma.sol"),
         "utf-8"
       );
-      const version6Pragma = await fse.readFile(
-        path.join(__dirname, "./sources/v0.6.x/Version6Pragma.sol"),
-        "utf-8"
-      );
       const version8Pragma = await fse.readFile(
         path.join(__dirname, "./sources/v0.8.x/Version8Pragma.sol"),
         "utf-8"
@@ -60,7 +55,6 @@ describe("CompilerSupplier", function () {
       oldPragmaFloatSource = { "OldPragmaFloat.sol": oldPragmaFloat };
       version4PragmaSource = { "NewPragma.sol": version4Pragma };
       version5PragmaSource = { "Version5Pragma.sol": version5Pragma };
-      version6PragmaSource = { "Version6Pragma.sol": version6Pragma };
       version8PragmaSource = { "Version8Pragma.sol": version8Pragma };
       versionLatestPragmaSource = { "Version8Pragma.sol": versionLatestPragma }; //update when necessary
     });
@@ -122,9 +116,12 @@ describe("CompilerSupplier", function () {
     });
 
     it("compiles w/ local path solc when options specify path", async function () {
-      // If multiple child projects have same solc version dependency, then yarn hoists the solc dependency 
+      // If multiple child projects have same solc version dependency, then yarn hoists the solc dependency
       // in the truffle root node_modules folder rather than the local package node_modules folder
-      const pathToSolc = path.join(__dirname, "../../../node_modules/solc/index.js");
+      const pathToSolc = path.join(
+        __dirname,
+        "../../../node_modules/solc/index.js"
+      );
 
       options.compilers = {
         solc: {

@@ -7,7 +7,7 @@ const {
 } = require("@truffle/interface-adapter");
 const Config = require("@truffle/config");
 const WorkflowCompile = require("@truffle/workflow-compile");
-const Resolver = require("@truffle/resolver");
+const { Resolver } = require("@truffle/resolver");
 const TestRunner = require("./TestRunner");
 const SolidityTest = require("./SolidityTest");
 const RangeUtils = require("@truffle/compile-solidity/dist/compilerSupplier/rangeUtils");

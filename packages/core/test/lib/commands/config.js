@@ -1,7 +1,7 @@
 const assert = require("chai").assert;
 const { default: Box } = require("@truffle/box");
 const Artifactor = require("@truffle/artifactor");
-const Resolver = require("@truffle/resolver");
+const { Resolver } = require("@truffle/resolver");
 const MemoryStream = require("memorystream");
 const command = require("../../../lib/commands/config");
 const path = require("path");
@@ -27,7 +27,7 @@ describe("config", function () {
       }
     };
     config.network = "default";
-    config.logger = {log: val => val && memStream.write(val)};
+    config.logger = { log: val => val && memStream.write(val) };
   });
 
   beforeEach(() => {
@@ -64,7 +64,7 @@ describe("config", function () {
     fs.writeFileSync(
       configFile,
       "module.exports = { migrations_directory: './a-different-dir' };",
-      {encoding: "utf8"}
+      { encoding: "utf8" }
     );
 
     await command.run({

@@ -1,6 +1,6 @@
 const debug = require("debug")("compile-vyper:profiler");
 const { Profiler } = require("@truffle/profiler");
-const Resolver = require("@truffle/resolver");
+const { Resolver } = require("@truffle/resolver");
 const { parseImports } = require("./parser");
 
 // Returns the minimal set of sources to pass to vyper-json as compilations targets,
