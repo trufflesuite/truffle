@@ -28,7 +28,7 @@ module.exports = merge(commonConfig, {
             plugins: ["@babel/plugin-transform-runtime"]
           }
         },
-        exclude: path.resolve(__dirname, "..", "node_modules"),
+        exclude: [path.resolve(__dirname, "..", "node_modules")],
         include: [
           path.resolve(__dirname, "..", "lib"),
           path.resolve(__dirname, "..", "test")
@@ -37,9 +37,7 @@ module.exports = merge(commonConfig, {
     ]
   },
 
-  externals: [
-    /^ganache$/,
-  ],
+  externals: [/^ganache$/],
 
   plugins: [
     new webpack.DefinePlugin({
