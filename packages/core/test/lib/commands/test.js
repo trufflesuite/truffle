@@ -83,7 +83,7 @@ describe("test command", () => {
     assert.equal(
       contracts.length,
       0,
-      "It should try to compile 0 contracts With compileNone == false"
+      "It should try to compile 0 contracts With compileNone === true"
     );
   });
 
@@ -102,7 +102,7 @@ describe("test command", () => {
     assert.equal(
       contracts.length,
       3,
-      "It should compile 3 contracts With compileNone == true"
+      "It should compile 3 contracts With compileNone === false"
     );
   });
 
@@ -135,7 +135,7 @@ describe("test command", () => {
     assert.equal(
       contracts.length,
       0,
-      "It should try to compile 0 contracts With compileNone == false. Because there are no updated files."
+      "It should try to compile 0 contracts With compileNone === false. Because there are no updated files."
     );
   });
 
@@ -164,7 +164,7 @@ describe("test command", () => {
   it("Update all contracts and build it.", async () => {
     updateFile("ConvertLib.sol");
     updateFile("MetaCoin.sol");
-    updateFile("Migrations.sol");
+    updateFile("OtherContract.sol");
 
     const { contracts } = await WorkflowCompile.compile(
       config.with({

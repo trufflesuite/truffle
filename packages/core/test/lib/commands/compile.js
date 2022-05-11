@@ -4,18 +4,14 @@ const MemoryStream = require("memorystream");
 const command = require("../../../lib/commands/compile");
 const path = require("path");
 const fse = require("fs-extra");
-const tmp = require("tmp");
-const Config = require("@truffle/config");
-let tempDir;
+const { createTestProject } = require("../../helpers");
 let config;
 let output = "";
 let memStream;
 
 describe("compile", function () {
   before(function () {
-    tempDir = tmp.dirSync({ unsafeCleanup: true });
-    fse.copySync(path.join(__dirname, "../../sources/metacoin"), tempDir.name);
-    config = new Config(undefined, tempDir.name);
+    config = createTestProject(path.join(__dirname, "../../sources/metacoin"));
     config.logger = { log: val => val && memStream.write(val) };
   });
 
@@ -138,7 +134,7 @@ describe("compile", function () {
     it("compiles one specified contract after three are updated", async function () {
       this.timeout(10000);
       // update all three files
-      const sources = ["ConvertLib.sol", "MetaCoin.sol", "Migrations.sol"];
+      const sources = ["OtherContract.sol", "MetaCoin.sol", "ConvertLib.sol"];
       for (const source of sources) {
         const filename = path.join(config.contracts_directory, source);
         const contents = fse.readFileSync(filename).toString();
@@ -150,15 +146,15 @@ describe("compile", function () {
         config.with({
           all: false,
           quiet: true,
-          paths: [path.resolve(config.contracts_directory, "ConvertLib.sol")]
+          paths: [path.resolve(config.contracts_directory, "OtherContract.sol")]
         })
       );
 
       // confirm it didn't compile all contracts
       assert.equal(
         Object.keys(contracts).length,
-        2, //ConvertLib.sol is imported by MetaCoin.sol so there should be two files.
-        "Didn't compile specified contracts."
+        1,
+        "Didn't compile specified contract."
       );
     });
   });

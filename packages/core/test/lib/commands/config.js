@@ -4,18 +4,15 @@ const command = require("../../../lib/commands/config");
 const path = require("path");
 const fse = require("fs-extra");
 const Config = require("@truffle/config");
-const tmp = require("tmp");
+const { createTestProject } = require("../../helpers");
 
 describe("config", function () {
   let config;
   let output = "";
   let memStream;
-  let tempDir;
 
   before(function () {
-    tempDir = tmp.dirSync({ unsafeCleanup: true });
-    fse.copySync(path.join(__dirname, "../../sources/metacoin"), tempDir.name);
-    config = new Config(undefined, tempDir.name);
+    config = createTestProject(path.join(__dirname, "../../sources/metacoin"));
     config.logger = { log: val => val && memStream.write(val) };
   });
 
