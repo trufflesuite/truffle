@@ -61,8 +61,13 @@ describe("Solidity Tests", function () {
       await initSandbox("TestFailures.sol");
     });
 
+<<<<<<< HEAD
     it("throws errors correctly", function () {
       this.timeout(100000);
+=======
+    it("will throw errors correctly", function () {
+      this.timeout(130000);
+>>>>>>> 93ce70329 (up more test timeouts)
 
       return CommandRunner.run("test", config)
         .then(() => {
@@ -81,8 +86,13 @@ describe("Solidity Tests", function () {
       await initSandbox("ImportEverything.sol");
     });
 
+<<<<<<< HEAD
     it("compiles with latest Solidity", function () {
       this.timeout(100000);
+=======
+    it("compile with latest Solidity", function () {
+      this.timeout(130000);
+>>>>>>> 93ce70329 (up more test timeouts)
 
       return CommandRunner.run(
         "test",

@@ -92,13 +92,8 @@ describe("Happy path (truffle unbox)", function () {
     await Promise.all(promises);
   });
 
-<<<<<<< HEAD
   it("runs tests", async function () {
-    this.timeout(70000);
-=======
-  it("will run tests", async function () {
-    this.timeout(100000);
->>>>>>> 71fc48df3 (up a bunch of test timeouts and make minor syntax changes)
+    this.timeout(130000);
     await CommandRunner.run("test", config);
     const output = logger.contents();
 
