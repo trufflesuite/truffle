@@ -396,6 +396,13 @@ class ContractInfoInspector {
   constructor(value: Format.Values.ContractValueInfo) {
     this.value = value;
   }
+  /**
+   * @dev non-standard alternative interface name used by browser-util-inspect
+   *      package
+   */
+  inspect(depth: number | null, options: InspectOptions): string {
+    return this[util.inspect.custom].bind(this)(depth, options);
+  }
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
     switch (this.value.kind) {
       case "known":
