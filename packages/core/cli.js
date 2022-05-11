@@ -1,10 +1,8 @@
 #!/usr/bin/env node
 require("source-map-support/register");
 
-const semver = require("semver"); // to validate Node version
 const TruffleError = require("@truffle/error");
 const TaskError = require("./lib/errors/taskerror");
-const analytics = require("./lib/services/analytics");
 const version = require("./lib/version");
 const versionInfo = version.info();
 const XRegExp = require("xregexp");
@@ -15,25 +13,6 @@ const XRegExp = require("xregexp");
 global.crypto = {
   getRandomValues: require("get-random-values")
 };
-
-// pre-flight check: Node version compatibility
-const minimumNodeVersion = "12.0.0";
-if (!semver.gte(process.version, minimumNodeVersion)) {
-  console.log(
-    "Error: Node version not supported. You are currently using version " +
-      process.version.slice(1) +
-      " of Node. Truffle requires Node v" +
-      minimumNodeVersion +
-      " or higher."
-  );
-
-  analytics.send({
-    exception: "wrong node version",
-    version: versionInfo.bundle || "(unbundled) " + versionInfo.core
-  });
-
-  process.exit(1);
-}
 
 const Command = require("./lib/command");
 const command = new Command(require("./lib/commands"));
@@ -58,6 +37,7 @@ command
   .run(inputArguments, options)
   .then(returnStatus => process.exit(returnStatus))
   .catch(error => {
+    const analytics = require("./lib/services/analytics");
     if (error instanceof TaskError) {
       analytics.send({
         exception: "TaskError - display general help message",
