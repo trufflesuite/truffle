@@ -91,7 +91,7 @@ describe("production", function () {
     });
 
     it("migrates without dry-run", async function () {
-      this.timeout(70000);
+      this.timeout(100000);
 
       await CommandRunner.run("migrate --network fakeRopsten", config);
       const output = logger.contents();

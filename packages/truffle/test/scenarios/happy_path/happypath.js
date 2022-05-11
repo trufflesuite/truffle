@@ -93,7 +93,7 @@ describe("Happy path (truffle unbox)", function () {
   });
 
   it("runs tests", async function () {
-    this.timeout(130000);
+    this.timeout(150000);
     await CommandRunner.run("test", config);
     const output = logger.contents();
 
