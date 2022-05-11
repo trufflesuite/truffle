@@ -57,8 +57,6 @@
     "fs-extra": "^9.1.0",
     "glob": "^7.1.6",
     "js-scrypt": "^0.2.0",
-    "meta-npm": "^0.0.22",
-    "meta-pkgs": "^0.2.0",
     "nyc": "^13.0.1",
     "semver": "^7.3.4",
     "shebang-loader": "0.0.1",
