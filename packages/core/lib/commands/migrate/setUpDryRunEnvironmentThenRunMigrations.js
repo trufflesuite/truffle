@@ -1,7 +1,9 @@
 const { Environment } = require("@truffle/environment");
 const Artifactor = require("@truffle/artifactor");
-const Resolver = require("@truffle/resolver");
+
+const { Resolver } = require("@truffle/resolver");
 const fse = require("fs-extra");
+
 const tmp = require("tmp");
 tmp.setGracefulCleanup();
 const runMigrations = require("./runMigrations");

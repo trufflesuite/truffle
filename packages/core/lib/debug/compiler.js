@@ -1,5 +1,5 @@
 const WorkflowCompile = require("@truffle/workflow-compile");
-const Resolver = require("@truffle/resolver");
+const { Resolver } = require("@truffle/resolver");
 const glob = require("glob");
 const path = require("path");
 
@@ -25,7 +25,9 @@ class DebugCompiler {
       });
     }
 
-    const { compilations } = await WorkflowCompile.compile(compileConfig.with({ all: true }));
+    const { compilations } = await WorkflowCompile.compile(
+      compileConfig.with({ all: true })
+    );
 
     return compilations;
   }

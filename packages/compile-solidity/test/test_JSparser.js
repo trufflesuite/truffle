@@ -1,6 +1,6 @@
 const path = require("path");
 const assert = require("assert");
-const Resolver = require("@truffle/resolver");
+const { Resolver } = require("@truffle/resolver");
 const { Compile } = require("@truffle/compile-solidity");
 const Config = require("@truffle/config");
 

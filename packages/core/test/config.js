@@ -5,7 +5,7 @@ var { default: Box } = require("@truffle/box");
 var WorkflowCompile = require("@truffle/workflow-compile");
 var Ganache = require("ganache");
 var provision = require("@truffle/provisioner");
-var Resolver = require("@truffle/resolver");
+var { Resolver } = require("@truffle/resolver");
 var Artifactor = require("@truffle/artifactor");
 
 describe("config", function () {
