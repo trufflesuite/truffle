@@ -44,7 +44,6 @@ describe("Solidity Tests", function () {
 
     it("runs the tests and has the correct balance", function () {
       this.timeout(100000);
-
       return CommandRunner.run("test", config)
         .then(() => {
           const output = logger.contents();
@@ -61,14 +60,8 @@ describe("Solidity Tests", function () {
       await initSandbox("TestFailures.sol");
     });
 
-<<<<<<< HEAD
     it("throws errors correctly", function () {
-      this.timeout(100000);
-=======
-    it("will throw errors correctly", function () {
       this.timeout(130000);
->>>>>>> 93ce70329 (up more test timeouts)
-
       return CommandRunner.run("test", config)
         .then(() => {
           assert(false, "The tests should have failed.");
@@ -86,14 +79,8 @@ describe("Solidity Tests", function () {
       await initSandbox("ImportEverything.sol");
     });
 
-<<<<<<< HEAD
     it("compiles with latest Solidity", function () {
-      this.timeout(100000);
-=======
-    it("compile with latest Solidity", function () {
       this.timeout(130000);
->>>>>>> 93ce70329 (up more test timeouts)
-
       return CommandRunner.run(
         "test",
         config.with({ solc: { version: "native" } })
