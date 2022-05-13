@@ -111,11 +111,32 @@ export interface FunctionDecoding {
   interpretations: {
     /**
      * If this interpretation is present, indicates that the transaction can be
-     * understood as a multicall.  The field contains decodings for the individual
-     * calls that the multicall can be broken into.  Note that in case of an error,
-     * individual decodings will be returned as null, so be sure to check for this.
+     * understood as a multicall (v1).  The field contains decodings for the
+     * individual calls that the multicall can be broken into.  Note that in
+     * case of an error, individual decodings will be returned as null, so be
+     * sure to check for this.
      */
     multicall?: (CalldataDecoding | null)[];
+    /**
+     * If this interpretation is present, indicates that the transaction can be
+     * understood as an `aggregate` (from multicallv2).  This also includes
+     * `blockAndAggregate`.  See [[CallInterpretationInfo]] for more
+     * information.
+     */
+    aggregate?: CallInterpretationInfo[];
+    /**
+     * Similar to the `aggregate` interpretation, but for `tryAggregate`.  Also
+     * includes `tryBlockAndAggregate`.
+     */
+    tryAggregate?: TryAggregateInfo;
+    /**
+     * Similar to `multicall`, but for Uniswap's deadlined multicall.
+     */
+    deadlinedMulticall?: DeadlinedMulticallInfo;
+    /**
+     * Similar to `multicall`, but for Uniswap's multicall with previous block hash.
+     */
+    specifiedBlockhashMulticall?: BlockhashedMulticallInfo;
   };
 }
 
@@ -884,3 +905,66 @@ export type BlockSpecifier = number | "genesis" | "latest" | "pending";
  * @hidden
  */
 export type RegularizedBlockSpecifier = number | "pending";
+
+/**
+ * Used by some multicall-like interpretations.
+ * @category Output
+ */
+export interface CallInterpretationInfo {
+  /**
+   * The address the call was sent to; may be null in case of
+   * an error.
+   */
+  address: string | null;
+  /**
+   * The decoding of the call; may be null in case of error.
+   */
+  decoding: CalldataDecoding | null;
+}
+
+/**
+ * Used by the `tryAggregate` interpretation.
+ * @category Output
+ */
+export interface TryAggregateInfo {
+  /**
+   * Whether success was required.
+   */
+  requireSuccess: boolean;
+  /**
+   * The decodings of the individual calls.
+   */
+  calls: CallInterpretationInfo[];
+}
+
+/**
+ * Used by the `deadlinedMulticall` interpretation.
+ * @category Output
+ */
+export interface DeadlinedMulticallInfo {
+  /**
+   * The deadline.
+   */
+  deadline: BN;
+  /**
+   * The decodings of the individual calls; these may each be null in
+   * case of an error.
+   */
+  calls: (CalldataDecoding | null)[];
+}
+
+/**
+ * Used by the `specifiedBlockhashMulticall` interpretation.
+ * @category Output
+ */
+export interface BlockhashedMulticallInfo {
+  /**
+   * The specified parent blockhash.
+   */
+  specifiedBlockhash: string;
+  /**
+   * The decodings of the individual calls; these may each be null in
+   * case of an error.
+   */
+  calls: (CalldataDecoding | null)[];
+}
