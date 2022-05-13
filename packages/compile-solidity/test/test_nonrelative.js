@@ -2,11 +2,12 @@ const debug = require("debug")("compile:test:test_nonrelative");
 const path = require("path");
 const { Compile } = require("@truffle/compile-solidity");
 const assert = require("assert");
-const Resolver = require("@truffle/resolver");
+const { Resolver } = require("@truffle/resolver");
 const process = require("process");
 const tmp = require("tmp");
 tmp.setGracefulCleanup();
 const fs = require("fs");
+let originalWorkingDirectory;
 
 describe("Non-relative non-absolute file paths", function () {
   this.timeout(5000); // solc
@@ -37,9 +38,9 @@ describe("Non-relative non-absolute file paths", function () {
 
   it("Refuses to compile non-relative non-absolute paths", async function () {
     this.timeout(150000);
-    const paths = [
-      "Nonrelative.sol",
-    ].map(filePath => path.join(options.contracts_directory, filePath));
+    const paths = ["Nonrelative.sol"].map(filePath =>
+      path.join(options.contracts_directory, filePath)
+    );
 
     debug("current dir: %s", process.cwd());
 
@@ -51,7 +52,7 @@ describe("Non-relative non-absolute file paths", function () {
       assert.fail("Compilation should have failed");
     } catch (error) {
       debug("error: %O", error);
-      if(!error.message.includes('Source "Imported.sol" not found')) {
+      if (!error.message.includes('Source "Imported.sol" not found')) {
         throw error; //rethrow errors that aren't the one we expect
       }
       //otherwise, we're good
@@ -91,7 +92,10 @@ describe("Non-canonical absolute file paths", function () {
     };
     options.resolver = new Resolver(options);
     const importedPath = path.join(options.contracts_directory, "Imported.sol");
-    const importerPath = path.join(options.contracts_directory, "DoubleSlash.sol");
+    const importerPath = path.join(
+      options.contracts_directory,
+      "DoubleSlash.sol"
+    );
     await fs.promises.copyFile(
       path.join(__dirname, "./sources/badSources/Imported.sol"),
       importedPath
@@ -110,7 +114,7 @@ describe("Non-canonical absolute file paths", function () {
       assert.fail("Compilation should have failed");
     } catch (error) {
       debug("error: %O", error);
-      if(!error.message.match(/Source "\/\/[^"]*" not found/)) {
+      if (!error.message.match(/Source "\/\/[^"]*" not found/)) {
         throw error; //rethrow errors that aren't the one we expect
       }
       //otherwise, we're good

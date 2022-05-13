@@ -1,7 +1,7 @@
 const assert = require("assert");
 const Config = require("@truffle/config");
 const { CompilerSupplier } = require("../dist/index");
-const Resolver = require("@truffle/resolver");
+const { Resolver } = require("@truffle/resolver");
 const sinon = require("sinon");
 const {
   compileWithPragmaAnalysis

@@ -4,7 +4,7 @@ const {
   determineTestFilesToRun
 } = require("../../../lib/commands/test/determineTestFilesToRun");
 const Artifactor = require("@truffle/artifactor");
-const Resolver = require("@truffle/resolver");
+const { Resolver } = require("@truffle/resolver");
 const MemoryStream = require("memorystream");
 const path = require("path");
 const fs = require("fs-extra");
@@ -13,7 +13,6 @@ const WorkflowCompile = require("@truffle/workflow-compile");
 const Test = require("../../../lib/testing/Test");
 
 let config;
-output = "";
 
 function updateFile(filename) {
   const fileToUpdate = path.resolve(
@@ -27,6 +26,7 @@ function updateFile(filename) {
 
 describe("test command", () => {
   let memStream;
+  let output = "";
 
   before("Create a sandbox", async () => {
     config = await Box.sandbox("default");
@@ -56,6 +56,9 @@ describe("test command", () => {
     files.forEach(file => fs.removeSync(file));
   });
 
+  // eslint can't see what is happening in the
+  // beforeEach above for some reason to realize that output is used
+  // eslint-disable-next-line
   afterEach("Clear MemoryStream", () => (output = ""));
 
   it("Check test with subdirectories", () => {

@@ -3,7 +3,7 @@ const debug = logger("db:project:test:artifacts");
 
 import gql from "graphql-tag";
 import Config from "@truffle/config";
-import TruffleResolver from "@truffle/resolver";
+import { Resolver as TruffleResolver } from "@truffle/resolver";
 import type { Resolver } from "@truffle/resolver";
 import { Environment } from "@truffle/environment";
 import { ContractObject } from "@truffle/contract-schema/spec";

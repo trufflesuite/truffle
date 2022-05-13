@@ -263,7 +263,7 @@ export class ProjectDecoder {
   /**
    * **This method is asynchronous.**
    *
-   * Takes a [[Log]] object and decodes it.  Logs can be ambiguous, so this so
+   * Takes a [[Log]] object and decodes it.  Logs can be ambiguous, so
    * this function returns an array of [[LogDecoding|LogDecodings]].
    *
    * Note that logs are decoded in strict mode, so (with one exception) none of the decodings should
@@ -286,7 +286,7 @@ export class ProjectDecoder {
    *
    * Note that different decodings may use different decoding modes.
    *
-   * Changing `options.extras = "on"` or `options.extras = "necessary"` will change the
+   * Using `options.extras = "on"` or `options.extras = "necessary"` will change the
    * above behavior; see the documentation on [[ExtrasAllowed]] for more.
    *
    * If absolutely necessary, you can also set `options.disableChecks = true` to allow
@@ -761,7 +761,7 @@ export class ContractDecoder {
   /**
    * **This method is asynchronous.**
    *
-   * Decodes the return value of a call.  Return values can be ambiguous, so this so
+   * Decodes the return value of a call.  Return values can be ambiguous, so
    * this function returns an array of [[ReturndataDecoding|ReturndataDecodings]].
    *
    * Note that return values are decoded in strict mode, so none of the decodings should
@@ -1006,7 +1006,7 @@ export class ContractDecoder {
  * information and will make use of it, making it possible for it to decode
  * transactions sent to this instance, or logs originating from it, or decode
  * return values received from it in full mode, even if the deployedBytecode
- * field is misssing.
+ * field is missing.
  * @category Decoder
  */
 export class ContractInstanceDecoder {
