@@ -3,8 +3,6 @@ require("source-map-support/register");
 
 const TruffleError = require("@truffle/error");
 const TaskError = require("./lib/errors/taskerror");
-const version = require("./lib/version");
-const versionInfo = version.info();
 const XRegExp = require("xregexp");
 
 // we need to make sure this function exists so ensjs doesn't complain as it requires
@@ -37,6 +35,8 @@ command
   .run(inputArguments, options)
   .then(returnStatus => process.exit(returnStatus))
   .catch(error => {
+    const version = require("./lib/version");
+    const versionInfo = version.info();
     const analytics = require("./lib/services/analytics");
     if (error instanceof TaskError) {
       analytics.send({
