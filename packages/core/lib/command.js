@@ -7,34 +7,31 @@ const commandOptions = require("./command-options");
 const debugModule = require("debug");
 const debug = debugModule("core:command:run");
 
-const getYargs = commands => {
+const getYargsForGeneralHelp = commands => {
   let args = require("yargs/yargs")();
-
-  Object.keys(commands).forEach(command => {
-    args = args.command(commands[command].meta);
+  commands.forEach(command => {
+    args = args.command(require(`./commands/${command}/meta`));
   });
   return args;
 };
 
-const parseInput = (inputStrings, noAliases, yargs, commands) => {
-  const argv = yargs.parse(inputStrings);
-
-  if (argv._.length === 0) {
+const parseInput = (inputStrings, commands) => {
+  if (inputStrings.length === 0) {
     throw new TaskError(
       "Cannot find command based on input: " + JSON.stringify(inputStrings)
     );
   }
 
-  const firstInputString = argv._[0];
+  const firstInputString = inputStrings[0];
   let chosenCommand = null;
 
   // If the command wasn't specified directly, go through a process
   // for inferring the command.
-  if (commands[firstInputString]) {
+  if (commands.includes(firstInputString)) {
     chosenCommand = firstInputString;
-  } else if (noAliases !== true) {
+  } else {
     let currentLength = 1;
-    const availableCommandNames = Object.keys(commands);
+    const availableCommandNames = commands;
 
     // Loop through each letter of the input until we find a command
     // that uniquely matches.
@@ -63,7 +60,23 @@ const parseInput = (inputStrings, noAliases, yargs, commands) => {
     );
   }
 
-  const command = commands[chosenCommand];
+  // determine whether Truffle is being run from the bundle or from ./cli.js
+  // and require commands accordingly
+  let command;
+  if (typeof BUNDLE_VERSION !== "undefined") {
+    const path = require("path");
+    const filePath = path.join(__dirname, `${chosenCommand}.bundled.js`);
+    // we need to use this library to bypass webpack's require which can't
+    // access the user's filesystem
+    const originalRequire = require("original-require");
+    command = originalRequire(filePath);
+  } else {
+    const filePath = `./commands/${chosenCommand}`;
+    command = require(filePath);
+  }
+
+  const yargs = require("yargs/yargs")();
+  const argv = yargs.parse(inputStrings);
 
   return {
     name: chosenCommand,
@@ -189,6 +202,6 @@ const displayGeneralHelp = yargs => {
 module.exports = {
   runCommand,
   displayGeneralHelp,
-  getYargs,
+  getYargsForGeneralHelp,
   parseInput
 };

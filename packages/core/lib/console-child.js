@@ -1,4 +1,3 @@
-const Command = require("../lib/command");
 const TruffleError = require("@truffle/error");
 const Config = require("@truffle/config");
 const Web3 = require("web3");
@@ -37,10 +36,11 @@ detectedConfig.networks.develop = {
   }
 };
 
-const command = new Command(require("./commands"));
+const commands = require("./commands/commands");
+const { parseInput, runCommand } = require("./command");
+const command = parseInput(inputStrings, commands);
 
-command
-  .run(inputStrings, detectedConfig)
+runCommand(command, inputStrings, detectedConfig)
   .then(() => process.exit(0))
   .catch(error => {
     // Perform error handling ourselves.

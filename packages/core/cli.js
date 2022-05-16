@@ -42,24 +42,27 @@ const inputArguments = process.argv.slice(2);
 const listeners = process.listeners("warning");
 listeners.forEach(listener => process.removeListener("warning", listener));
 
-let options = { logger: console };
+const options = { logger: console };
 
 const userWantsGeneralHelp =
   inputArguments.length === 1 && ["help", "--help"].includes(inputArguments[0]);
 
-const { getYargs } = require("./lib/command");
-const commands = require("./lib/commands");
+const commands = require("./lib/commands/commands");
+
 if (userWantsGeneralHelp) {
-  const yargs = getYargs(commands);
+  const { getYargsForGeneralHelp } = require("./lib/command");
+  // collect all command info and display it
+  const yargs = getYargsForGeneralHelp(commands);
   const { displayGeneralHelp } = require("./lib/command");
   displayGeneralHelp(yargs);
   process.exit(0);
 }
 
 const { parseInput, runCommand } = require("./lib/command");
-const yargs = getYargs(commands);
-const command = parseInput(inputArguments, options, yargs, commands);
 
+const command = parseInput(inputArguments, commands);
+
+// load only the requested command and run it
 runCommand(command, inputArguments, options)
   .then(returnStatus => process.exit(returnStatus))
   .catch(error => {

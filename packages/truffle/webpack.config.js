@@ -23,6 +23,26 @@ module.exports = {
       "@truffle/core",
       "cli.js"
     ),
+    version: path.join(
+      __dirname,
+      "../..",
+      "node_modules",
+      "@truffle/core",
+      "lib",
+      "commands",
+      "version",
+      "index.js"
+    ),
+    compile: path.join(
+      __dirname,
+      "../..",
+      "node_modules",
+      "@truffle/core",
+      "lib",
+      "commands",
+      "compile",
+      "index.js"
+    ),
     chain: path.join(
       __dirname,
       "../..",
@@ -153,7 +173,7 @@ module.exports = {
         "bn.js"
       ),
       "original-fs": path.join(__dirname, "./nil.js"),
-      "scrypt": "js-scrypt"
+      scrypt: "js-scrypt"
     }
   },
 
