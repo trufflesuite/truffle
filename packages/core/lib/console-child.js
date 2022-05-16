@@ -36,8 +36,8 @@ detectedConfig.networks.develop = {
   }
 };
 
-const { parseInput, runCommand } = require("./command-utils");
-const command = parseInput(inputStrings);
+const { getCommand, runCommand } = require("./command-utils");
+const command = getCommand(inputStrings);
 
 runCommand(command, inputStrings, detectedConfig)
   .then(() => process.exit(0))

@@ -8,7 +8,7 @@ const debugModule = require("debug");
 const debug = debugModule("core:command:run");
 const commands = require("./commands/commands");
 
-const parseInput = (inputStrings, noAliases) => {
+const getCommand = (inputStrings, noAliases) => {
   if (inputStrings.length === 0) {
     throw new TaskError(
       "Cannot find command based on input: " + JSON.stringify(inputStrings)
@@ -199,5 +199,5 @@ const displayGeneralHelp = () => {
 module.exports = {
   runCommand,
   displayGeneralHelp,
-  parseInput
+  getCommand
 };

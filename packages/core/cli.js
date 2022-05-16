@@ -53,9 +53,9 @@ if (userWantsGeneralHelp) {
   process.exit(0);
 }
 
-const { parseInput, runCommand } = require("./lib/command-utils");
+const { getCommand, runCommand } = require("./lib/command-utils");
 
-const command = parseInput(inputArguments);
+const command = getCommand(inputArguments);
 
 // load only the requested command and run it
 runCommand(command, inputArguments, options)
