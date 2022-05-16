@@ -4,7 +4,7 @@ const Web3 = require("web3");
 const yargs = require("yargs");
 
 const input = process.argv[2].split(" -- ");
-const inputStrings = input[1];
+const inputStrings = input[1].split(" ");
 
 // we need to make sure this function exists so ensjs doesn't complain as it requires
 // getRandomValues for some functionalities - webpack strips out the crypto lib
@@ -36,9 +36,8 @@ detectedConfig.networks.develop = {
   }
 };
 
-const commands = require("./commands/commands");
 const { parseInput, runCommand } = require("./command");
-const command = parseInput(inputStrings, commands);
+const command = parseInput(inputStrings);
 
 runCommand(command, inputStrings, detectedConfig)
   .then(() => process.exit(0))

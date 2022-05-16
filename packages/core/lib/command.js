@@ -6,16 +6,9 @@ const { extractFlags } = require("./utils/utils"); // Contains utility methods
 const commandOptions = require("./command-options");
 const debugModule = require("debug");
 const debug = debugModule("core:command:run");
+const commands = require("./commands/commands");
 
-const getYargsForGeneralHelp = commands => {
-  let args = require("yargs/yargs")();
-  commands.forEach(command => {
-    args = args.command(require(`./commands/${command}/meta`));
-  });
-  return args;
-};
-
-const parseInput = (inputStrings, noAliases, commands) => {
+const parseInput = (inputStrings, noAliases) => {
   if (inputStrings.length === 0) {
     throw new TaskError(
       "Cannot find command based on input: " + JSON.stringify(inputStrings)
@@ -29,7 +22,7 @@ const parseInput = (inputStrings, noAliases, commands) => {
   // for inferring the command.
   if (commands.includes(firstInputString)) {
     chosenCommand = firstInputString;
-  } else if (noAliases === false) {
+  } else if (noAliases !== true) {
     let currentLength = 1;
     const availableCommandNames = commands;
 
@@ -185,7 +178,11 @@ const runCommand = async function (command, inputStrings, options) {
   return await command.command.run(newOptions);
 };
 
-const displayGeneralHelp = yargs => {
+const displayGeneralHelp = () => {
+  const yargs = require("yargs/yargs")();
+  commands.forEach(command => {
+    yargs.command(require(`./commands/${command}/meta`));
+  });
   yargs
     .usage(
       "Truffle v" +
@@ -202,6 +199,5 @@ const displayGeneralHelp = yargs => {
 module.exports = {
   runCommand,
   displayGeneralHelp,
-  getYargsForGeneralHelp,
   parseInput
 };

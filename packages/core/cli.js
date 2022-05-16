@@ -47,20 +47,15 @@ const options = { logger: console };
 const userWantsGeneralHelp =
   inputArguments.length === 1 && ["help", "--help"].includes(inputArguments[0]);
 
-const commands = require("./lib/commands/commands");
-
 if (userWantsGeneralHelp) {
-  const { getYargsForGeneralHelp } = require("./lib/command");
-  // collect all command info and display it
-  const yargs = getYargsForGeneralHelp(commands);
   const { displayGeneralHelp } = require("./lib/command");
-  displayGeneralHelp(yargs);
+  displayGeneralHelp();
   process.exit(0);
 }
 
 const { parseInput, runCommand } = require("./lib/command");
 
-const command = parseInput(inputArguments, false, commands);
+const command = parseInput(inputArguments);
 
 // load only the requested command and run it
 runCommand(command, inputArguments, options)
