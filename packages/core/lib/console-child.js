@@ -36,7 +36,7 @@ detectedConfig.networks.develop = {
   }
 };
 
-const { parseInput, runCommand } = require("./command");
+const { parseInput, runCommand } = require("./command-utils");
 const command = parseInput(inputStrings);
 
 runCommand(command, inputStrings, detectedConfig)

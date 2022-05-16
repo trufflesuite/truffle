@@ -48,12 +48,12 @@ const userWantsGeneralHelp =
   inputArguments.length === 1 && ["help", "--help"].includes(inputArguments[0]);
 
 if (userWantsGeneralHelp) {
-  const { displayGeneralHelp } = require("./lib/command");
+  const { displayGeneralHelp } = require("./lib/command-utils");
   displayGeneralHelp();
   process.exit(0);
 }
 
-const { parseInput, runCommand } = require("./lib/command");
+const { parseInput, runCommand } = require("./lib/command-utils");
 
 const command = parseInput(inputArguments);
 
