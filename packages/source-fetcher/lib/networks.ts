@@ -49,6 +49,7 @@ export const networkNamesById: { [id: number]: string } = {
   11297108099: "testnet-palm",
   70: "hoo",
   25: "cronos",
+  338: "testnet-cronos",
   199: "bttc",
   1029: "donau-bttc",
   1024: "clover"
