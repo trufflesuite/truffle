@@ -60,7 +60,7 @@ if (userWantsGeneralHelp) {
 
 const { parseInput, runCommand } = require("./lib/command");
 
-const command = parseInput(inputArguments, commands);
+const command = parseInput(inputArguments, false, commands);
 
 // load only the requested command and run it
 runCommand(command, inputArguments, options)

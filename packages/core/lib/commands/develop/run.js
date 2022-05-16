@@ -9,10 +9,10 @@ const runConsole = async (config, ganacheOptions) => {
   const Console = require("../../console");
   const { Environment } = require("@truffle/environment");
 
-  const commands = require("../index");
+  const commands = require("../commands");
   const excluded = new Set(["console", "develop", "unbox", "init"]);
 
-  const consoleCommands = Object.keys(commands).reduce((acc, name) => {
+  const consoleCommands = commands.reduce((acc, name) => {
     return !excluded.has(name)
       ? Object.assign(acc, { [name]: commands[name] })
       : acc;

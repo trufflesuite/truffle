@@ -1,5 +1,4 @@
 const repl = require("repl");
-const Command = require("./command");
 const provision = require("@truffle/provisioner");
 const {
   Web3Shim,
@@ -45,8 +44,6 @@ class Console extends EventEmitter {
     ]);
 
     this.options = options;
-
-    this.command = new Command(tasks);
 
     this.repl = null;
 
@@ -284,10 +281,10 @@ class Console extends EventEmitter {
   }
 
   interpret(input, context, filename, callback) {
+    // processInput returns a sanitized string
     const processedInput = processInput(input);
-    if (
-      this.command.getCommand(processedInput, this.options.noAliases) != null
-    ) {
+    const commands = require("./commands/commands");
+    if (commands.includes(processedInput.split(" ")[0])) {
       try {
         this.runSpawn(processedInput, this.options);
       } catch (error) {

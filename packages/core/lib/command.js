@@ -15,7 +15,7 @@ const getYargsForGeneralHelp = commands => {
   return args;
 };
 
-const parseInput = (inputStrings, commands) => {
+const parseInput = (inputStrings, noAliases, commands) => {
   if (inputStrings.length === 0) {
     throw new TaskError(
       "Cannot find command based on input: " + JSON.stringify(inputStrings)
@@ -29,7 +29,7 @@ const parseInput = (inputStrings, commands) => {
   // for inferring the command.
   if (commands.includes(firstInputString)) {
     chosenCommand = firstInputString;
-  } else {
+  } else if (noAliases === false) {
     let currentLength = 1;
     const availableCommandNames = commands;
 

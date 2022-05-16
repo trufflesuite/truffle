@@ -5,10 +5,10 @@ module.exports = async function (options) {
 
   const config = Config.detect(options);
 
-  const commands = require("../index");
+  const commands = require("../commands");
   const excluded = new Set(["console", "init", "watch", "develop"]);
 
-  const consoleCommands = Object.keys(commands).reduce((acc, name) => {
+  const consoleCommands = commands.reduce((acc, name) => {
     return !excluded.has(name)
       ? Object.assign(acc, { [name]: commands[name] })
       : acc;
