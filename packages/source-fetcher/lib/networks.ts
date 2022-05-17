@@ -23,6 +23,7 @@ export const networkNamesById: { [id: number]: string } = {
   62320: "baklava-celo",
   43114: "avalanche",
   43113: "fuji-avalanche",
+  11111: "wagmi-avalanche",
   40: "telos",
   41: "testnet-telos",
   8: "ubiq",
@@ -57,8 +58,7 @@ export const networkNamesById: { [id: number]: string } = {
   43: "pangolin-darwinia",
   9001: "evmos",
   9000: "testnet-evmos",
-  62621: "multivac",
-  11111: "wagmi"
+  62621: "multivac"
 };
 
 export const networksByName: Types.SupportedNetworks = Object.fromEntries(

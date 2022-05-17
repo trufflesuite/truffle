@@ -58,6 +58,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "baklava-celo",
     "avalanche",
     "fuji-avalanche",
+    "wagmi-avalanche",
     "telos",
     "testnet-telos",
     "ubiq",
@@ -82,8 +83,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "pangolin-darwinia",
     "evmos",
     "testnet-evmos",
-    "multivac",
-    "wagmi"
+    "multivac"
   ]);
 
   constructor(networkId: number) {
