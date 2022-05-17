@@ -22,25 +22,25 @@ The contract-schema matches the output of the [@truffle/artifactor](https://gith
 
 ```javascript
 const provider = new Web3.providers.HttpProvider("http://localhost:8545");
-const MyContract = require("./path/to/contractArtifact.json"); //produced by Truffle compile
+const contractArtifact = require("./path/to/contractArtifact.json"); //produced by Truffle compile
 const contract = require("@truffle/contract");
 
-const instance = contract(MyContract);
+const MyContract = contract(contractArtifact);
 ```
 
 If you aren't using Truffle artifacts, the input to the `contract` function is a JSON blob defined by [@truffle/contract-schema](https://github.com/trufflesuite/truffle/tree/master/packages/contract-schema). This JSON blob is structured in a way that can be passed to all Truffle-related projects.
 Minimally, it requires the contract ABI, but passing this alone may cause issues using certain features of Truffle contract.
 
 ```javascript
-const instance = contract({
+const MyContract = contract({
   abi: [...], // minimum required
   address: "0x...", // optional
   // many more
 });
-instance.setProvider(provider);
+MyContract.setProvider(provider);
 ```
 
-You now have access to the following functions on `instance`, as well as many others:
+You now have access to the following functions on `MyContract`, as well as many others:
 
 - `at()`: Create an instance of `MyContract` that represents your contract at a specific address.
 - `deployed()`: Create an instance of `MyContract` that represents the default address managed by `MyContract`.
@@ -49,9 +49,7 @@ You now have access to the following functions on `instance`, as well as many ot
 Each instance is tied to a specific address on the Ethereum network, and each instance has a 1-to-1 mapping from Javascript functions to contract functions. For instance, if your Solidity contract had a function defined `someFunction(uint value) {}` (solidity), then you could execute that function on the network like so:
 
 ```javascript
-const deployed;
 const instance = await MyContract.deployed();
-deployed = instance;
 const result = await instance.someFunction(5);
 // Do something with the result or continue with more transactions.
 ```
@@ -82,11 +80,11 @@ Let's use `@truffle/contract` with an example contract from [Dapps For Beginners
 ```javascript
 const contract = require("@truffle/contract");
 // Require the package that was previosly saved by @truffle/artifactor
-const MetacoinArtifact = require("./path/to/MetaCoin.json");
-const instance = contract(MetacoinArtifact);
+const metacoinArtifact = require("./path/to/MetaCoin.json");
+const MetaCoin = contract(metacoinArtifact);
 
 // Remember to set the Web3 provider (see above).
-instance.setProvider(provider);
+MetaCoin.setProvider(provider);
 
 // In this scenario, two users will send MetaCoin back and forth, showing
 // how @truffle/contract allows for easy control flow.
@@ -96,26 +94,26 @@ const accountTwo = "e1fd0d4a52...";
 // Note our MetaCoin contract exists at a specific address.
 const contractAddress = "8e2e2cf785...";
 
-const coin = await instance.at(contractAddress);
+const instance = await MetaCoin.at(contractAddress);
 
 try {
   // Make a transaction that calls the function `sendCoin`, sending 3 MetaCoin
   // to the account listed as accountTwo.
-  let result = await coin.sendCoin(accountTwo, 3, { from: accountOne });
+  let result = await instance.sendCoin(accountTwo, 3, { from: accountOne });
   // This code block will not be executed until @truffle/contract has verified
   // the transaction has been processed and it is included in a mined block.
   // @truffle/contract will error if the transaction hasn't been processed in 120 seconds.
 
   // Since we're using promises, we can return a promise for a call that will
   // check account two's balance.
-  let balancerOfAccountTwo = await coin.balances.call(accountTwo);
+  let balancerOfAccountTwo = await instance.balances.call(accountTwo);
   console.log("Balance of account two is " + balancerOfAccountTwo + "!"); // => 3
 
   // But maybe too much was sent. Let's send some back.
   // Like before, will create a transaction that returns a promise, where
   // the callback won't be executed until the transaction has been processed.
-  result = await coin.sendCoin(accountOne, 1.5, { from: accountTwo });
-  balancerOfAccountTwo = await coin.balances.call(accountTwo);
+  result = await instance.sendCoin(accountOne, 1.5, { from: accountTwo });
+  balancerOfAccountTwo = await instance.balances.call(accountTwo);
   console.log("Balance of account two is " + balancerOfAccountTwo + "!"); // => 1.5
 } catch (err) {
   // Easily catch all errors along the whole execution.
