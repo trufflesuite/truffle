@@ -69,6 +69,7 @@ const getCommand = (inputStrings, noAliases) => {
   }
 
   const yargs = require("yargs/yargs")();
+  yargs.command(require(`./commands/${chosenCommand}/meta`));
   const argv = yargs.parse(inputStrings);
 
   return {
