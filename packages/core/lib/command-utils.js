@@ -105,8 +105,6 @@ const runCommand = async function (command, inputStrings, options) {
     }
   });
 
-  // while in `console` & `develop`, input is passed as a string, not as an array
-  if (!Array.isArray(inputStrings)) inputStrings = inputStrings.split(" ");
   // Method `extractFlags(args)` : Extracts the `--option` flags from arguments
   const inputOptions = extractFlags(inputStrings);
 

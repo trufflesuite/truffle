@@ -3,6 +3,7 @@ const Config = require("@truffle/config");
 const Web3 = require("web3");
 const yargs = require("yargs");
 
+// we split off the part Truffle cares about and need to convert to an array
 const input = process.argv[2].split(" -- ");
 const inputStrings = input[1].split(" ");
 
