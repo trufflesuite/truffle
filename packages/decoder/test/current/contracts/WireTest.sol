@@ -229,6 +229,33 @@ contract WireTest is WireTestParent, WireTestAbstract {
       address(this).call(datas[i]);
     }
   }
+
+  struct Call {
+    address target;
+    bytes data;
+  }
+
+  function aggregate(Call[] calldata calls) external {
+    for (uint i = 0; i < calls.length; i++) {
+      calls[i].target.call(calls[i].data);
+    }
+  }
+
+  event Result(bytes);
+
+  function tryAggregate(bool requireSuccess, Call[] calldata calls) external {
+    for (uint i = 0; i < calls.length; i++) {
+      (bool success, bytes memory result) = calls[i].target.call(calls[i].data);
+      if (requireSuccess) require(success);
+    }
+  }
+
+  function multicall(uint deadline, bytes[] calldata datas) external {
+    require(block.timestamp <= deadline);
+    for (uint i = 0; i < datas.length; i++) {
+      address(this).call(datas[i]);
+    }
+  }
 }
 
 library WireTestLibrary {
@@ -268,5 +295,9 @@ contract WireTestRedHerring {
 
   function run() public {
     emit NonAmbiguousEvent();
+  }
+
+  function otherMethod(uint k) public {
+    emit SemiAmbiguousEvent(k, 0);
   }
 }
