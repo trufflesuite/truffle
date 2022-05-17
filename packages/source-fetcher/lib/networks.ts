@@ -26,7 +26,7 @@ export const networkNamesById: { [id: number]: string } = {
   40: "telos",
   41: "testnet-telos",
   8: "ubiq",
-  311752642: "oneledger", //not presently supported by either fetcher, but...
+  311752642: "oneledger",
   4216137055: "frankenstein-oneledger",
   57: "syscoin",
   5700: "tanenbaum-syscoin",
@@ -52,7 +52,13 @@ export const networkNamesById: { [id: number]: string } = {
   338: "testnet-cronos",
   199: "bttc",
   1029: "donau-bttc",
-  1024: "clover"
+  1024: "clover",
+  44: "crab-darwinia",
+  43: "pangolin-darwinia",
+  9001: "evmos",
+  9000: "testnet-evmos",
+  62621: "multivac",
+  11111: "wagmi"
 };
 
 export const networksByName: Types.SupportedNetworks = Object.fromEntries(

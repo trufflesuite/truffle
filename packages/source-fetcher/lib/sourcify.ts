@@ -61,7 +61,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "telos",
     "testnet-telos",
     "ubiq",
-    //sourcify does *not* support oneledger mainnet...?
+    "oneledger",
     "frankenstein-oneledger",
     "syscoin",
     "tanenbaum-syscoin",
@@ -77,7 +77,13 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "moonriver",
     "moonbase-alpha",
     "palm",
-    "testnet-palm"
+    "testnet-palm",
+    "crab-darwinia",
+    "pangolin-darwinia",
+    "evmos",
+    "testnet-evmos",
+    "multivac",
+    "wagmi"
   ]);
 
   constructor(networkId: number) {
