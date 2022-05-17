@@ -8,10 +8,8 @@ const WorkflowCompile = require("@truffle/workflow-compile");
 const Test = require("../../../lib/testing/Test");
 const Config = require("@truffle/config");
 const tmp = require("tmp");
-const copy = require("../../../lib/copy");
 let config;
 let tempDir;
-let memStream;
 
 function updateFile(filename) {
   const fileToUpdate = path.resolve(
