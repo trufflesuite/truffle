@@ -1306,6 +1306,10 @@ function getEventAllocationsForContract(
   compilationId: string,
   compiler: Compiler.CompilerVersion | undefined
 ): EventAllocationTemporary[] {
+  if (!abi) {
+    //can't do much if no ABI!
+    return [];
+  }
   return abi
     .filter((abiEntry: Abi.Entry) => abiEntry.type === "event")
     .filter(
@@ -1329,13 +1333,13 @@ function getEventAllocationsForContract(
   //note we do *not* filter out undefined allocations; we need these as placeholders
 }
 
-//note: constructor context is ignored by this function; no need to pass it in
 //WARNING: this function is full of hacks... sorry
 export function getEventAllocations(
   contracts: ContractAllocationInfo[],
   referenceDeclarations: { [compilationId: string]: Ast.AstNodes },
   userDefinedTypes: Format.Types.TypesById,
-  abiAllocations: AbiAllocations
+  abiAllocations: AbiAllocations,
+  allowConstructorEvents: boolean = false
 ): EventAllocations {
   //first: do allocations for individual contracts
   let individualAllocations: {
@@ -1357,19 +1361,21 @@ export function getEventAllocations(
       };
     };
   } = {};
+  let contextSwapMap: { [contextHash: string]: string } = {}; //maps deployed to constructor & vice versa
   let allocations: EventAllocations = {};
-  for (let {
+  for (const {
     abi,
     deployedContext,
+    constructorContext,
     contractNode,
     compilationId,
     compiler
   } of contracts) {
-    if (!deployedContext && !contractNode) {
-      //we'll need *one* of these two at least
+    if (!deployedContext && !constructorContext && !contractNode) {
+      //we'll need *one* of these at least
       continue;
     }
-    let contractAllocations = getEventAllocationsForContract(
+    const contractAllocations = getEventAllocationsForContract(
       abi,
       contractNode,
       referenceDeclarations[compilationId],
@@ -1378,23 +1384,28 @@ export function getEventAllocations(
       compilationId,
       compiler
     );
-    let key = makeContractKey(
-      deployedContext,
+    const key = makeContractKey(
+      deployedContext || constructorContext,
       contractNode ? contractNode.id : undefined,
       compilationId
     );
     if (individualAllocations[key] === undefined) {
       individualAllocations[key] = {};
     }
-    for (let allocationTemporary of contractAllocations) {
+    for (const allocationTemporary of contractAllocations) {
       //we'll use selector *even for anonymous* here, because it's just
       //for determining what overrides what at this point
       individualAllocations[key][allocationTemporary.selector] = {
-        context: deployedContext,
+        context: deployedContext || constructorContext, //this is only used for determining contractKind, so we cna use either one
         contractNode,
         allocationTemporary,
         compilationId
       };
+    }
+    //also: set up the swap map
+    if (deployedContext && constructorContext) {
+      contextSwapMap[deployedContext.context] = constructorContext.context;
+      contextSwapMap[constructorContext.context] = deployedContext.context;
     }
   }
   //now: put things together for inheritance
@@ -1453,7 +1464,9 @@ export function getEventAllocations(
             debug("failed to find contract info for baseId: %d", baseId);
             break;
           }
-          let baseContext = baseContractInfo.deployedContext;
+          let baseContext =
+            baseContractInfo.deployedContext ||
+            baseContractInfo.constructorContext;
           let baseKey = makeContractKey(baseContext, baseId, compilationId);
           if (individualAllocations[baseKey][selector] !== undefined) {
             let baseAllocation =
@@ -1506,6 +1519,7 @@ export function getEventAllocations(
               library: {}
             };
           }
+          //push the allocation (non-anonymous case)
           if (
             allocations[topics].bySelector[selector][contractKind][
               contextHash
@@ -1518,7 +1532,31 @@ export function getEventAllocations(
           allocations[topics].bySelector[selector][contractKind][
             contextHash
           ].push(allocation);
+          //...and push it in the swapped context too if that exists
+          //HACK: don't do this for libraries! library events are already
+          //considered always in play, so including them *twice* would cause
+          //problems... fortunately library constructors don't emit events!
+          if (
+            allowConstructorEvents &&
+            contextHash in contextSwapMap &&
+            contractKind !== "library"
+          ) {
+            const swappedHash = contextSwapMap[contextHash];
+            if (
+              allocations[topics].bySelector[selector][contractKind][
+                swappedHash
+              ] === undefined
+            ) {
+              allocations[topics].bySelector[selector][contractKind][
+                swappedHash
+              ] = [];
+            }
+            allocations[topics].bySelector[selector][contractKind][
+              swappedHash
+            ].push(allocation);
+          }
         } else {
+          //push the allocation (anonymous case)
           if (
             allocations[topics].anonymous[contractKind][contextHash] ===
             undefined
@@ -1528,6 +1566,24 @@ export function getEventAllocations(
           allocations[topics].anonymous[contractKind][contextHash].push(
             allocation
           );
+          //...and push it in the swapped context too if that exists
+          //(and it's not a library, see above)
+          if (
+            allowConstructorEvents &&
+            contextHash in contextSwapMap &&
+            contractKind !== "library"
+          ) {
+            const swappedHash = contextSwapMap[contextHash];
+            if (
+              allocations[topics].anonymous[contractKind][swappedHash] ===
+              undefined
+            ) {
+              allocations[topics].anonymous[contractKind][swappedHash] = [];
+            }
+            allocations[topics].anonymous[contractKind][swappedHash].push(
+              allocation
+            );
+          }
         }
       }
     }

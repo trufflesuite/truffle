@@ -44,16 +44,16 @@ export default class Session {
     /**
      * @private
      */
-    let { store, sagaMiddleware } = configureStore(reducer, rootSaga, [
+    const { store, sagaMiddleware } = configureStore(reducer, rootSaga, [
       moduleOptions
     ]);
     this._store = store;
     this._sagaMiddleware = sagaMiddleware;
 
-    let { contexts, sources } = Session.normalize(compilations);
+    const { contexts, sources, contracts } = Session.normalize(compilations);
 
     // record contracts
-    this._store.dispatch(actions.recordContracts(contexts, sources));
+    this._store.dispatch(actions.recordContracts(contexts, sources, contracts));
 
     //set up the ready listener
     this._ready = new Promise((accept, reject) => {
@@ -124,6 +124,7 @@ export default class Session {
       user: {}, //by compilation
       internal: {} //by context
     };
+    let contracts = {}; //other info such as ABIs
 
     //we're actually going to ignore the passed-in IDs and make our own.
     //note we'll set contextHash to null for user sources, and only set it
@@ -131,14 +132,15 @@ export default class Session {
     const makeSourceId = (compilationId, contextHash, index) =>
       stableKeccak256({ compilationId, contextHash, index });
 
-    for (let compilation of compilations) {
+    for (const compilation of compilations) {
       if (compilation.unreliableSourceOrder) {
         throw new Error(
           `Error: Compilation ${compilation.id} has unreliable source order.`
         );
       }
-      let compiler = compilation.compiler; //note: we'll prefer one listed on contract or source
+      const compiler = compilation.compiler; //note: we'll prefer one listed on contract or source
       sources.user[compilation.id] = [];
+      contracts[compilation.id] = {};
       for (let index in compilation.sources) {
         //not the recommended way to iterate over an array,
         //but the order doesn't matter here so it's safe
@@ -222,6 +224,21 @@ export default class Session {
         debug("compiler %o", compiler);
         debug("abi %o", abi);
 
+        if (contractId) {
+          contracts[compilation.id][contractId] = {
+            compilationId: compilation.id,
+            contractId,
+            abi,
+            //set context hashes temporarily to null; they'll be set for real below
+            //if they exist
+            deployedContext: null,
+            constructorContext: null
+            //things to consider adding in the future:
+            //primarySource, contractName, compiler, contractKind,
+            //linearizedBaseContracts, primaryLanguage
+          };
+        }
+
         //note: simpleShimSourceMap does not handle the case where we can't just extract
         //the Solidity-style source map
         sourceMap = Codec.Compilations.Utils.simpleShimSourceMap(sourceMap);
@@ -269,6 +286,10 @@ export default class Session {
               }
             }
           }
+          if (contractId) {
+            contracts[compilation.id][contractId].constructorContext =
+              contextHash;
+          }
         }
 
         if (deployedBinary && deployedBinary != "0x") {
@@ -313,6 +334,9 @@ export default class Session {
               }
             }
           }
+          if (contractId) {
+            contracts[compilation.id][contractId].deployedContext = contextHash;
+          }
         }
       }
     }
@@ -332,7 +356,7 @@ export default class Session {
     //fortunately it's good enough to work
     contexts = Codec.Contexts.Utils.normalizeContexts(contexts);
 
-    return { contexts, sources };
+    return { contexts, sources, contracts };
   }
 
   get state() {
@@ -541,8 +565,10 @@ export default class Session {
   }
 
   async addExternalCompilations(compilations) {
-    let { contexts, sources } = Session.normalize(compilations);
-    return await this.dispatch(actions.addCompilations(sources, contexts));
+    const { contexts, sources, contracts } = Session.normalize(compilations);
+    return await this.dispatch(
+      actions.addCompilations(sources, contexts, contracts)
+    );
   }
 
   async startFullMode() {
