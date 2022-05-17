@@ -1,18 +1,15 @@
-const assert = require("chai").assert;
-const { default: Box } = require("@truffle/box");
+const { assert } = require("chai");
 const {
   determineTestFilesToRun
 } = require("../../../lib/commands/test/determineTestFilesToRun");
-const Artifactor = require("@truffle/artifactor");
-const { Resolver } = require("@truffle/resolver");
-const MemoryStream = require("memorystream");
 const path = require("path");
-const fs = require("fs-extra");
-const glob = require("glob");
+const fse = require("fs-extra");
 const WorkflowCompile = require("@truffle/workflow-compile");
 const Test = require("../../../lib/testing/Test");
-
+const Config = require("@truffle/config");
+const tmp = require("tmp");
 let config;
+let tempDir;
 
 function updateFile(filename) {
   const fileToUpdate = path.resolve(
@@ -21,45 +18,15 @@ function updateFile(filename) {
 
   // Update the modification time to simulate an edit.
   const newTime = new Date().getTime();
-  fs.utimesSync(fileToUpdate, newTime, newTime);
+  fse.utimesSync(fileToUpdate, newTime, newTime);
 }
 
 describe("test command", () => {
-  let memStream;
-  let output = "";
-
-  before("Create a sandbox", async () => {
-    config = await Box.sandbox("default");
-    config.resolver = new Resolver(config);
-    config.artifactor = new Artifactor(config.contracts_build_directory);
-    config.networks = {
-      default: {
-        network_id: "1"
-      },
-      secondary: {
-        network_id: "12345"
-      }
-    };
-    config.network = "default";
-    config.logger = { log: val => val && memStream.write(val) };
+  before(function () {
+    tempDir = tmp.dirSync({ unsafeCleanup: true });
+    fse.copySync(path.join(__dirname, "../../sources/metacoin"), tempDir.name);
+    config = new Config(undefined, tempDir.name);
   });
-
-  beforeEach(() => {
-    memStream = new MemoryStream();
-    memStream.on("data", data => {
-      output += data.toString();
-    });
-  });
-
-  after("Cleanup tmp files", () => {
-    const files = glob.sync("tmp-*");
-    files.forEach(file => fs.removeSync(file));
-  });
-
-  // eslint can't see what is happening in the
-  // beforeEach above for some reason to realize that output is used
-  // eslint-disable-next-line
-  afterEach("Clear MemoryStream", () => (output = ""));
 
   it("Check test with subdirectories", () => {
     let testFiles = determineTestFilesToRun({ config });
@@ -70,10 +37,10 @@ describe("test command", () => {
       "sub_directory",
       "test.sol"
     );
-    fs.createFileSync(filename);
+    fse.createFileSync(filename);
 
     filename = path.join(config.test_directory, "sub_directory", "test.js");
-    fs.createFileSync(filename);
+    fse.createFileSync(filename);
 
     filename = path.join(
       config.test_directory,
@@ -81,7 +48,7 @@ describe("test command", () => {
       "sub_sub_directory",
       "test.js"
     );
-    fs.createFileSync(filename);
+    fse.createFileSync(filename);
 
     let dirName = path.join(
       config.test_directory,
@@ -91,7 +58,7 @@ describe("test command", () => {
 
     // Create empty subdirectory to check if
     // determineTestFilesTo run function can process it without crashing
-    fs.ensureDirSync(dirName);
+    fse.ensureDirSync(dirName);
 
     let newTestFiles = determineTestFilesToRun({ config });
     assert.equal(
@@ -116,7 +83,7 @@ describe("test command", () => {
     assert.equal(
       contracts.length,
       0,
-      "It should try to compile 0 contracts With compileNone == false"
+      "It should try to compile 0 contracts With compileNone === true"
     );
   });
 
@@ -135,7 +102,7 @@ describe("test command", () => {
     assert.equal(
       contracts.length,
       3,
-      "It should compile 3 contracts With compileNone == true"
+      "It should compile 3 contracts With compileNone === false"
     );
   });
 
@@ -168,7 +135,7 @@ describe("test command", () => {
     assert.equal(
       contracts.length,
       0,
-      "It should try to compile 0 contracts With compileNone == false. Because there are no updated files."
+      "It should try to compile 0 contracts With compileNone === false. Because there are no updated files."
     );
   });
 
@@ -197,7 +164,7 @@ describe("test command", () => {
   it("Update all contracts and build it.", async () => {
     updateFile("ConvertLib.sol");
     updateFile("MetaCoin.sol");
-    updateFile("Migrations.sol");
+    updateFile("OtherContract.sol");
 
     const { contracts } = await WorkflowCompile.compile(
       config.with({
@@ -272,8 +239,8 @@ describe("test command", () => {
       if (!files[index]) return 0;
       var fileName = path.join(dirName, files[index]);
       let filesCount = 0;
-      if (!fs.existsSync(fileName)) {
-        fs.createFileSync(fileName);
+      if (!fse.existsSync(fileName)) {
+        fse.createFileSync(fileName);
         filesCount++;
       }
       if (files.length > index + 1) {

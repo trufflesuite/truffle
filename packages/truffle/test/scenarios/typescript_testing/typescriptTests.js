@@ -10,8 +10,12 @@ describe("Typescript Tests", () => {
   let config;
   let options;
 
-  before(done => Server.start(done));
-  after(done => Server.stop(done));
+  before(async function () {
+    await Server.start();
+  });
+  after(async function () {
+    await Server.stop();
+  });
 
   before("set up sandbox", async function () {
     options = { name: "default#typescript", force: true };

@@ -10,7 +10,8 @@ describe("truffle help [ @standalone ]", function () {
   });
 
   describe("when run without arguments", function () {
-    it("displays general help", async () => {
+    it("displays general help", async function () {
+      this.timeout(10000);
       await CommandRunner.run("help", config);
       const output = logger.contents();
       assert(output.includes("Usage: truffle <command> [options]"));
@@ -31,6 +32,7 @@ describe("truffle help [ @standalone ]", function () {
     }).timeout(20000);
 
     it("displays help for the given command with help function [ @>=12 ]", async function () {
+      this.timeout(10000);
       await CommandRunner.run("help preserve", config);
       const output = logger.contents();
       assert(

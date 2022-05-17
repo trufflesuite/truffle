@@ -11,8 +11,12 @@ describe("TestEvents and mixed sol/js testing", function () {
   const project = path.join(__dirname, "../../sources/mixed_testing");
   const logger = new MemoryLogger();
 
-  before(done => Server.start(done));
-  after(done => Server.stop(done));
+  before(async function () {
+    await Server.start();
+  });
+  after(async function () {
+    await Server.stop();
+  });
 
   before(async function () {
     this.timeout(10000);
@@ -25,7 +29,7 @@ describe("TestEvents and mixed sol/js testing", function () {
   });
 
   it("will correctly decode events as appropriate", async function () {
-    this.timeout(120000);
+    this.timeout(150000);
 
     try {
       //will fail, since we included a failing test

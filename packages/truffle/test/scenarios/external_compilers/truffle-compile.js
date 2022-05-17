@@ -1,31 +1,30 @@
-var MemoryLogger = require("../MemoryLogger");
-var CommandRunner = require("../commandRunner");
-var contract = require("@truffle/contract");
-var fs = require("fs");
-var path = require("path");
-var assert = require("assert");
-var sandbox = require("../sandbox");
-var Server = require("../server");
-var Reporter = require("../reporter");
+const MemoryLogger = require("../MemoryLogger");
+const CommandRunner = require("../commandRunner");
+const contract = require("@truffle/contract");
+const fs = require("fs");
+const path = require("path");
+const assert = require("assert");
+const sandbox = require("../sandbox");
+const Server = require("../server");
+const Reporter = require("../reporter");
 
-describe("`truffle compile` as external", function() {
+describe("`truffle compile` as external", function () {
   // These tests rely on a solc jq dependency installed with apt-get
   // You can run them locally with `CI=true npm test`
   if (!process.env.CI) return;
 
-  var config;
-  var project = path.join(__dirname, "../../sources/external_compile");
-  var logger = new MemoryLogger();
+  let config;
+  const project = path.join(__dirname, "../../sources/external_compile");
+  const logger = new MemoryLogger();
 
-  before("set up the server", function(done) {
-    Server.start(done);
+  before(async function () {
+    await Server.start();
+  });
+  after(async function () {
+    await Server.stop();
   });
 
-  after("stop server", function(done) {
-    Server.stop(done);
-  });
-
-  before("set up sandbox", function() {
+  before("set up sandbox", function () {
     this.timeout(10000);
     return sandbox.create(project).then(conf => {
       config = conf;
@@ -37,7 +36,7 @@ describe("`truffle compile` as external", function() {
     });
   });
 
-  it("will compile", async function() {
+  it("will compile", async function () {
     this.timeout(20000);
 
     await CommandRunner.run("compile --compiler=external", config);
@@ -63,7 +62,7 @@ describe("`truffle compile` as external", function() {
     );
   });
 
-  it("will migrate", async function() {
+  it("will migrate", async function () {
     this.timeout(50000);
 
     await CommandRunner.run("migrate", config);
@@ -82,13 +81,13 @@ describe("`truffle compile` as external", function() {
 
     var promises = [];
 
-    [MetaCoin, ConvertLib, Migrations, ExtraMetaCoin].forEach(function(
+    [MetaCoin, ConvertLib, Migrations, ExtraMetaCoin].forEach(function (
       abstraction
     ) {
       abstraction.setProvider(config.provider);
 
       promises.push(
-        abstraction.deployed().then(function(instance) {
+        abstraction.deployed().then(function (instance) {
           assert.notEqual(
             instance.address,
             null,
@@ -101,7 +100,7 @@ describe("`truffle compile` as external", function() {
     await Promise.all(promises);
   });
 
-  it("will run tests", async function() {
+  it("will run tests", async function () {
     this.timeout(70000);
     await CommandRunner.run("test", config);
     const output = logger.contents();
