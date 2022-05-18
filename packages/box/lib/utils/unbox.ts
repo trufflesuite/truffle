@@ -181,6 +181,33 @@ function traverseDir(dir: string, returnRelative = true, relativeDir = "") {
 }
 
 /**
+ * Recursively remove all empty dirs.
+ * @param dir Root dir that (nested) empty dirs should be removed from.
+ */
+function removeEmptyDirs(dir: string, isRoot = true) {
+  const isDir = fse.statSync(dir).isDirectory();
+  // Bail if not dir.
+  if (!isDir) {
+    return;
+  }
+
+  let files = fse.readdirSync(dir);
+  if (files.length > 0) {
+    files.forEach(file => {
+      const fileAbs = path.join(dir, file);
+      removeEmptyDirs(fileAbs, false);
+    });
+
+    // Dir may be empty after deleting nested dirs. Re-evaluate.
+    files = fse.readdirSync(dir);
+  }
+
+  if (files.length === 0 && !isRoot) {
+    fse.rmdirSync(dir);
+  }
+}
+
+/**
  * Prompt user to select box recipe, modify (rename, remove, move files) box as needed.
  * @param modifiers Modifiers specified in truffle-box.json, if any.
  * @param destination Box path.
@@ -226,16 +253,23 @@ async function modifyBoxByRecipe(
   // Remove files not in recipe.
   const allFiles = traverseDir(destination);
   const extraFiles = allFiles.filter(file => !recipeFiles.has(file));
-  extraFiles.forEach(file => {
-    fse.removeSync(path.join(destination, file));
+  extraFiles.forEach(extraFile => {
+    fse.removeSync(path.join(destination, extraFile));
   });
 
   // Move / rename files.
   recipeMvs.forEach(mv => {
     const mvFrom = path.join(destination, mv.from);
     const mvTo = path.join(destination, mv.to);
+
+    // Create parent dir of mvTo in case it doens't exist.
+    fse.ensureDirSync(path.dirname(mvTo));
+
     fse.renameSync(mvFrom, mvTo);
   });
+
+  // After removing + moving + renaming, some dirs may be empty. Clean up.
+  removeEmptyDirs(destination);
 }
 
 export = {
@@ -243,6 +277,7 @@ export = {
   fetchRepository,
   installBoxDependencies,
   modifyBoxByRecipe,
+  removeEmptyDirs,
   traverseDir,
   prepareToCopyFiles,
   verifySourcePath,
