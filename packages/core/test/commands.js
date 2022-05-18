@@ -1,46 +1,36 @@
-const Command = require("../lib/command");
-const commands = require("../lib/commands");
-const commander = new Command(commands);
-const assert = require("assert");
+const { getCommand, runCommand } = require("../lib/command-utils");
+const { assert } = require("chai");
 
-describe("Commander", function () {
-  before("assert preconditions", function () {
-    // These commands are expected to exist in tests.
-    assert.notEqual(commands.migrate, null);
-    assert.notEqual(commands.compile, null);
-    assert.notEqual(commands.console, null);
+describe.only("Commander", function () {
+  it("infers commands based on initial letters entered", function () {
+    const result = getCommand(["m"]).name;
+    assert.equal(result, "migrate");
   });
 
-  it("will infer commands based on initial letters entered", function () {
-    var actualCommand = commander.getCommand("m").command;
-    assert.equal(actualCommand, commands.migrate);
+  it("infers commands based on initial letters entered, even when typos exist later", function () {
+    const result = getCommand(["complie"]).name;
+    assert.equal(result, "compile");
   });
 
-  it("will infer commands based on initial letters entered, even when typos exist later", function () {
-    var actualCommand = commander.getCommand("complie").command;
-    assert.equal(actualCommand, commands.compile);
-  });
-
-  it("will NOT infer a command if not given enough information", function () {
+  it("doesn't infer a command if not given enough information", function () {
     // Note: "co" matches "console" and "compile"
-    var actualCommand = commander.getCommand("co");
-    assert.equal(actualCommand, null);
+    assert.throws(() => getCommand(["co"]));
   });
 
-  it("will infer commands based on initial letters entered, given matches for shorter substrings", function () {
+  it("infers commands based on initial letters entered, given matches for shorter substrings", function () {
     // Note: "co" matches "console" and "compile"
-    var actualCommand = commander.getCommand("com").command;
-    assert.equal(actualCommand, commands.compile);
+    const result = getCommand(["com"]).name;
+    assert.equal(result, "compile");
   });
 
-  it("will ignore inferring if full command is specified", function () {
-    var actualCommand = commander.getCommand("console").command;
-    assert.equal(actualCommand, commands.console);
+  it("ignores inferring if full command is specified", function () {
+    const result = getCommand(["console"]).name;
+    assert.equal(result, "console");
   });
 
-  it("will warn and display error for unsupported flags in commands", async function () {
-    var actualCommand = commander.getCommand("mig").command;
-    assert.equal(actualCommand, commands.migrate);
+  it("warns and displays an error for unsupported flags in commands", async function () {
+    const result = getCommand(["mig"]);
+    assert.equal(result.name, "migrate");
 
     const originalLog = console.log || console.debug;
     let warning = "";
@@ -49,28 +39,26 @@ describe("Commander", function () {
       warning = msg;
     };
 
+    const inputs = [
+      "migrate",
+      "--network",
+      "localhost",
+      "--unsupportedflag",
+      "invalidoption",
+      "--unsupportedflag2",
+      "invalidflag2"
+    ];
+
     try {
-      await commander.run(
-        [
-          "migrate",
-          "--network",
-          "localhost",
-          "--unsupportedflag",
-          "invalidoption",
-          "--unsupportedflag2",
-          "invalidflag2",
-        ],
-        { noAliases: true, logger: console },
-        function () {
-          //ignore. not part of test
-        },
-      );
+      await runCommand(result, inputs, { noAliases: true, logger: console });
     } catch (error) {
-      console.log("error", error);
+      // this errors due to no config file but we don't care, we just want
+      // to ensure it prints the unsupported option message
     } finally {
-      assert.equal(
-        warning,
-        "> Warning: possible unsupported (undocumented in help) command line option(s): --unsupportedflag,--unsupportedflag2",
+      assert(
+        warning.includes(
+          "> Warning: possible unsupported (undocumented in help) command line option(s): --unsupportedflag,--unsupportedflag2"
+        )
       );
     }
   });
