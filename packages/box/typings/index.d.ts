@@ -1,4 +1,5 @@
 import Console from "console";
+import inquirer from "inquirer";
 
 export type sandboxOptionsObject = {
   name?: string;
@@ -17,8 +18,20 @@ export type unboxOptions = {
   force?: boolean;
 };
 
+export type boxConfigMv = {
+  from: string;
+  to: string;
+};
+
 export interface boxConfig {
   ignore: Array<string>;
   commands: object;
   hooks: { "post-unpack": string };
+  modifiers: {
+    prompts?: inquirer.Question[];
+    "recipe-common"?: string[];
+    recipes?: {
+      [key: string]: Array<string | boxConfigMv>;
+    };
+  };
 }

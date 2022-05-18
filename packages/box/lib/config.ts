@@ -3,6 +3,7 @@ import type { boxConfig } from "typings";
 
 function setDefaults(config: any = {}): boxConfig {
   const hooks = config.hooks || {};
+  const modifiers = config.modifiers || {};
 
   return {
     ignore: config.ignore || [],
@@ -13,7 +14,8 @@ function setDefaults(config: any = {}): boxConfig {
     },
     hooks: {
       "post-unpack": hooks["post-unpack"] || ""
-    }
+    },
+    modifiers
   };
 }
 

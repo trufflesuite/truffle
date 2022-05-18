@@ -6,7 +6,7 @@ import vcsurl from "vcsurl";
 import { parse as parseURL } from "url";
 import { execSync } from "child_process";
 import inquirer from "inquirer";
-import type { boxConfig, unboxOptions } from "typings";
+import type { boxConfig, boxConfigMv, unboxOptions } from "typings";
 import { promisify } from "util";
 import ignore from "ignore";
 
@@ -28,10 +28,7 @@ async function verifyVCSURL(url: string) {
 
   const repoUrl = `https://${configURL.host}${configURL.path}`;
   try {
-    await axios.head(
-      repoUrl,
-      { maxRedirects: 50 }
-    );
+    await axios.head(repoUrl, { maxRedirects: 50 });
   } catch (error) {
     if (error.response && error.response.status === 404) {
       throw new Error(
@@ -39,7 +36,7 @@ async function verifyVCSURL(url: string) {
       );
     } else {
       const prefix = `Error connecting to ${repoUrl}. Please check your internet connection and try again.`;
-      error.message = `${prefix}\n\n${error.message || ''}`;
+      error.message = `${prefix}\n\n${error.message || ""}`;
       throw error;
     }
   }
@@ -153,10 +150,100 @@ function installBoxDependencies({ hooks }: boxConfig, destination: string) {
   execSync(postUnpack, { cwd: destination });
 }
 
+/**
+ * Recursively travel through dir and return all file paths.
+ * @param dir Directory to traverse.
+ * @param returnRelative Return result as relative paths to dir.
+ * @param relativeDir Parent's relative path of current recursive call.
+ */
+function traverseDir(dir: string, returnRelative = true, relativeDir = "") {
+  const result: string[] = [];
+
+  fse.readdirSync(dir).forEach(file => {
+    const absPath = path.join(dir, file);
+    const relativePath = path.join(relativeDir, file);
+    const isDir = fse.statSync(absPath).isDirectory();
+
+    if (isDir) {
+      // Recurse if file is dir.
+      const nested = returnRelative
+        ? traverseDir(absPath, true, relativePath)
+        : traverseDir(absPath, false);
+      result.push(...nested);
+    } else {
+      // Base case: File is not dir.
+      const filePath = returnRelative ? relativePath : absPath;
+      result.push(filePath);
+    }
+  });
+
+  return result;
+}
+
+/**
+ * Prompt user to select box recipe, modify (rename, remove, move files) box as needed.
+ * @param modifiers Modifiers specified in truffle-box.json, if any.
+ * @param destination Box path.
+ */
+async function modifyBoxByRecipe(
+  { modifiers }: boxConfig,
+  destination: string
+) {
+  // Bail if no modifiers in truffle-box.json
+  if (Object.keys(modifiers).length === 0) {
+    return;
+  }
+
+  // Prompt for recipe selection.
+  const { prompts } = modifiers;
+  const answer = await inquirer.prompt(prompts);
+
+  // Get recipe key from answer.
+  // Recipe key maps to a recipe (list of files) in modifiers.recipes.
+  let recipeKey = "";
+  const promptOrder = prompts.map(prompt => prompt.name);
+  for (let i = 0; i < promptOrder.length; i++) {
+    const separator = i != promptOrder.length - 1 ? "-" : "";
+    recipeKey += answer[promptOrder[i]] + separator;
+  }
+
+  // Get recipe: File common to every recipe + files specific to chosen recipe.
+  const recipeCommon = modifiers["recipe-common"];
+  const recipeChosen = modifiers.recipes[recipeKey];
+  const recipe = recipeChosen.concat(recipeCommon);
+  // Using set for better time complexity when finding difference between all files and recipe files.
+  const recipeFiles = new Set();
+  const recipeMvs: boxConfigMv[] = [];
+  recipe.forEach(file => {
+    if (typeof file === "string") {
+      recipeFiles.add(file);
+    } else {
+      recipeFiles.add(file.from);
+      recipeMvs.push(file);
+    }
+  });
+
+  // Remove files not in recipe.
+  const allFiles = traverseDir(destination);
+  const extraFiles = allFiles.filter(file => !recipeFiles.has(file));
+  extraFiles.forEach(file => {
+    fse.removeSync(path.join(destination, file));
+  });
+
+  // Move / rename files.
+  recipeMvs.forEach(mv => {
+    const mvFrom = path.join(destination, mv.from);
+    const mvTo = path.join(destination, mv.to);
+    fse.renameSync(mvFrom, mvTo);
+  });
+}
+
 export = {
   copyTempIntoDestination,
   fetchRepository,
   installBoxDependencies,
+  modifyBoxByRecipe,
+  traverseDir,
   prepareToCopyFiles,
   verifySourcePath,
   verifyVCSURL
