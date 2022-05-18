@@ -1,5 +1,4 @@
-@truffle/box
-===========
+# @truffle/box
 
 Truffle Box management functionality.
 
@@ -16,16 +15,21 @@ const unboxOptions = { force: false };
 
 // .unbox() validates & unboxes truffle box repos
 // pass the current working directory as directory to unbox into
-TruffleBox.unbox("https://github.com/trufflesuite/truffle-init-default", process.cwd(), unboxOptions);
+TruffleBox.unbox(
+  "https://github.com/trufflesuite/truffle-init-default",
+  process.cwd(),
+  unboxOptions
+);
 
 // or specify relative path to unbox into (path must already exist)
-TruffleBox.unbox("https://github.com/trufflesuite/truffle-init-default", "some/relativePath", unboxOptions);
-
+TruffleBox.unbox(
+  "https://github.com/trufflesuite/truffle-init-default",
+  "some/relativePath",
+  unboxOptions
+);
 ```
 
-
-Box Configuration
------------------
+## Box Configuration
 
 Truffle Boxes are configured via a required `truffle-box.json` file in the
 box repo's root directory.
@@ -78,8 +82,81 @@ properties:
   }
   ```
 
-Available Unbox Hooks
----------------------
+- `modifiers`
+
+  An object that describes two things:
+
+  - Prompts: Questions presented in an interactive menu, in which user creates a 'recipe key' by answering the questions).
+  - Recipes: Mapping from 'recipe key' to a set of files which make up the recipe.
+
+  Example:
+
+  ```json
+  "modifiers": {
+    // Prompts for user to answer.
+    "prompts": [
+      // Prompts follow inquirer.Questions format (from SBoudrias/Inquirer.js).
+      // Prompt 1
+      {
+        "type": "list",
+        "message": "Select a framework",
+        "name": "framework",
+        "choices": [
+          { "name": "React", "checked": true },
+          { "name": "Vue" }
+        ]
+      },
+      // Prompt 2
+      {
+        "type": "list",
+        "message": "TypeScript or JavaScript?",
+        "name": "package",
+        "choices": [
+          { "name": "TypeScript", "checked": true },
+          { "name": "JavaScript" }
+        ]
+      }
+    ],
+
+    // Files to be included in all recipes.
+    "recipe-common": [
+      "file-common-to-all-recipes-0.txt",
+      "file-common-to-all-recipes-1.txt",
+      "foo/nested-file-common-to-all-recipes.txt"
+    ],
+
+    // Recipe specs mapping.
+    // Mapping keys are prompt answers joined by "-",
+    // mapping values are lists of files specific to that recipe.
+    // A file can be represented as a string, or an object with `from` and `to` properties, which moves / renames the file.
+    "recipes": {
+      "React-TypeScript": [
+        "foo.ts",
+        "tsconfig.json",
+        { "from": "react-ts/package.json", "to": "package.json" },
+        { "from": "react-ts/src/some-react-ts-file.tsx", "to": "src/App.tsx" }
+      ],
+      "React-JavaScript": [
+        "foo.js",
+        { "from": "react-js/package.json", "to": "package.json" },
+        { "from": "react-js/src/some-react-js-file.jsx", "to": "src/App.jsx" }
+      ],
+      "Vue-TypeScript": [
+        "foo.ts",
+        "tsconfig.json",
+        { "from": "vue-ts/package.json", "to": "package.json" },
+        { "from": "vue-ts/src/some-vue-ts-file.vue", "to": "src/App.vue" }
+      ],
+      "Vue-JavaScript": [
+        "foo.js",
+        { "from": "vue-js/package.json", "to": "package.json" },
+        { "from": "vue-js/src/some-vue-js-file.vue", "to": "src/App.vue" }
+      ]
+    }
+  }
+  ```
+
+## Available Unbox Hooks
 
 - `post-unpack`
 
