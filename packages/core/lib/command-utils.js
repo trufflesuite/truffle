@@ -93,10 +93,8 @@ const runCommand = async function (command, inputStrings, options) {
     debug("Truffle data migration failed: %o", error);
   }
 
-  const commandOptions = command.options;
-
   // remove the task name itself put there by yargs
-  if (commandOptions._) commandOptions._.shift();
+  if (command.options._) command.options._.shift();
 
   // Some options might throw if options is a Config object. If so, let's ignore those options.
   const clone = {};
@@ -146,11 +144,11 @@ const runCommand = async function (command, inputStrings, options) {
     }
   }
 
-  const newOptions = Object.assign({}, clone, commandOptions);
+  const newOptions = Object.assign({}, clone, command.options);
 
   analytics.send({
     command: command.name ? command.name : "other",
-    args: commandOptions._,
+    args: command.options._,
     version: bundled || "(unbundled) " + core
   });
 
