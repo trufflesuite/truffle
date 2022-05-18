@@ -35,8 +35,6 @@ if (!semver.gte(process.version, minimumNodeVersion)) {
   process.exit(1);
 }
 
-const inputArguments = process.argv.slice(2);
-
 // This should be removed when issue is resolved upstream:
 // https://github.com/ethereum/web3.js/issues/1648
 const listeners = process.listeners("warning");
@@ -44,6 +42,7 @@ listeners.forEach(listener => process.removeListener("warning", listener));
 
 const options = { logger: console };
 
+const inputArguments = process.argv.slice(2);
 const userWantsGeneralHelp =
   inputArguments.length === 1 && ["help", "--help"].includes(inputArguments[0]);
 
@@ -57,7 +56,6 @@ const { getCommand, runCommand } = require("./lib/command-utils");
 
 const command = getCommand(inputArguments, options);
 
-// load only the requested command and run it
 runCommand(command, inputArguments, options)
   .then(returnStatus => process.exit(returnStatus))
   .catch(error => {

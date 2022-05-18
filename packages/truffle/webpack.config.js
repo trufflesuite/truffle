@@ -70,14 +70,6 @@ module.exports = {
       "@truffle/core",
       "lib",
       "console-child.js"
-    ),
-    commands: path.join(
-      __dirname,
-      "../..",
-      "node_modules",
-      "@truffle/core",
-      "lib",
-      "commands/index.js"
     )
   },
 
@@ -169,7 +161,7 @@ module.exports = {
         "bn.js"
       ),
       "original-fs": path.join(__dirname, "./nil.js"),
-      "scrypt": "js-scrypt"
+      scrypt: "js-scrypt"
     }
   },
 
