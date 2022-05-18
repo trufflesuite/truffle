@@ -17,7 +17,7 @@ export function* decodeBasic(
   pointer: Pointer.DataPointer,
   info: Evm.EvmInfo,
   options: DecoderOptions = {}
-): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
+): Generator<DecoderRequest, Format.Values.Result, Uint8Array | null> {
   const { state } = info;
   const { strictAbiMode: strict } = options; //if this is undefined it'll still be falsy so it's OK
   const paddingMode: PaddingMode = options.paddingMode || "default";
@@ -515,14 +515,18 @@ export function* decodeBasic(
 export function* decodeContract(
   addressBytes: Uint8Array,
   info: Evm.EvmInfo
-): Generator<DecoderRequest, Format.Values.ContractValueInfo, Uint8Array> {
+): Generator<
+  DecoderRequest,
+  Format.Values.ContractValueInfo,
+  Uint8Array | null
+> {
   return (yield* decodeContractAndContext(addressBytes, info)).contractInfo;
 }
 
 function* decodeContractAndContext(
   addressBytes: Uint8Array,
   info: Evm.EvmInfo
-): Generator<DecoderRequest, ContractInfoAndContext, Uint8Array> {
+): Generator<DecoderRequest, ContractInfoAndContext, Uint8Array | null> {
   let address = Evm.Utils.toAddress(addressBytes);
   let rawAddress = Conversion.toHexString(addressBytes);
   let codeBytes: Uint8Array = yield {
@@ -562,7 +566,7 @@ export function* decodeExternalFunction(
 ): Generator<
   DecoderRequest,
   Format.Values.FunctionExternalValueInfo,
-  Uint8Array
+  Uint8Array | null
 > {
   let { contractInfo: contract, context } = yield* decodeContractAndContext(
     addressBytes,

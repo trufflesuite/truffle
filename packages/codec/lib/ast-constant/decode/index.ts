@@ -20,7 +20,7 @@ export function* decodeConstant(
   dataType: Format.Types.Type,
   pointer: Pointer.ConstantDefinitionPointer,
   info: Evm.EvmInfo
-): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
+): Generator<DecoderRequest, Format.Values.Result, Uint8Array | null> {
   debug("pointer %o", pointer);
 
   //normally, we just dispatch to decodeBasic or decodeBytes.

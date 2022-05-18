@@ -14,7 +14,7 @@ export function* decodeTopic(
   pointer: Pointer.EventTopicPointer,
   info: Evm.EvmInfo,
   options: DecoderOptions = {}
-): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
+): Generator<DecoderRequest, Format.Values.Result, Uint8Array | null> {
   if (
     Format.Types.isReferenceType(dataType) ||
     dataType.typeClass === "tuple"

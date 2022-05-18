@@ -377,6 +377,7 @@ export function containsDeliberateReadError(
     case "error":
       switch (result.error.kind) {
         case "StorageNotSuppliedError":
+        case "CodeNotSuppliedError":
           return true;
         default:
           return false;
