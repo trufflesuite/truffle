@@ -1,6 +1,6 @@
 module.exports = async function (selectedCommand, subCommand, options) {
   const commands = require("../index");
-  const commandOptions = require("../../command-options");
+  const globalCommandOptions = require("../../global-command-options");
 
   let commandHelp, commandDescription;
 
@@ -19,8 +19,8 @@ module.exports = async function (selectedCommand, subCommand, options) {
   }
 
   const allowedGlobalOptions = commandHelp.allowedGlobalOptions
-    .filter(tag => tag in commandOptions)
-    .map(tag => commandOptions[tag]);
+    .filter(tag => tag in globalCommandOptions)
+    .map(tag => globalCommandOptions[tag]);
   const validOptionsUsage = allowedGlobalOptions
     .map(({ option }) => `[${option}]`)
     .join(" ");
