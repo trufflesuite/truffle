@@ -55,7 +55,7 @@ if (userWantsGeneralHelp) {
 
 const { getCommand, runCommand } = require("./lib/command-utils");
 
-const command = getCommand(inputArguments);
+const command = getCommand(inputArguments, options);
 
 // load only the requested command and run it
 runCommand(command, inputArguments, options)

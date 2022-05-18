@@ -19,7 +19,7 @@ const runConsole = async (config, ganacheOptions) => {
   }, {});
 
   await Environment.develop(config, ganacheOptions);
-  const c = new Console(consoleCommands, config.with({ noAliases: true }));
+  const c = new Console(consoleCommands, config);
   c.on("exit", () => process.exit());
   return await c.start();
 };

@@ -3,12 +3,12 @@ const { bundled, core } = require("../lib/version").info();
 const OS = require("os");
 const analytics = require("../lib/services/analytics");
 const { extractFlags } = require("./utils/utils"); // Contains utility methods
-const commandOptions = require("./command-options");
+const globalCommandOptions = require("./global-command-options");
 const debugModule = require("debug");
 const debug = debugModule("core:command:run");
 const commands = require("./commands/commands");
 
-const getCommand = (inputStrings, noAliases) => {
+const getCommand = (inputStrings, options, noAliases) => {
   if (inputStrings.length === 0) {
     throw new TaskError(
       "Cannot find command based on input: " + JSON.stringify(inputStrings)
@@ -42,7 +42,6 @@ const getCommand = (inputStrings, noAliases) => {
         chosenCommand = possibleCommands[0];
         break;
       }
-
       currentLength += 1;
     }
   }
@@ -70,12 +69,18 @@ const getCommand = (inputStrings, noAliases) => {
 
   const yargs = require("yargs/yargs")();
   yargs.command(require(`./commands/${chosenCommand}/meta`));
-  const argv = yargs.parse(inputStrings);
+  const commandOptions = yargs.parse(inputStrings);
+
+  // several commands have a help property that is a function
+  if (typeof command.meta.help === "function") {
+    command.meta.help = command.meta.help(options);
+  }
 
   return {
     name: chosenCommand,
-    argv,
-    command
+    options: commandOptions,
+    run: command.run,
+    meta: command.meta
   };
 };
 
@@ -88,13 +93,10 @@ const runCommand = async function (command, inputStrings, options) {
     debug("Truffle data migration failed: %o", error);
   }
 
-  const argv = command.argv;
+  const commandOptions = command.options;
 
-  // Remove the task name itself.
-  if (argv._) argv._.shift();
-
-  // We don't need this.
-  delete argv["$0"];
+  // remove the task name itself put there by yargs
+  if (commandOptions._) commandOptions._.shift();
 
   // Some options might throw if options is a Config object. If so, let's ignore those options.
   const clone = {};
@@ -110,12 +112,12 @@ const runCommand = async function (command, inputStrings, options) {
   const inputOptions = extractFlags(inputStrings);
 
   //adding allowed global options as enumerated in each command
-  const allowedGlobalOptions = command.command.meta.help.allowedGlobalOptions
-    .filter(tag => tag in commandOptions)
-    .map(tag => commandOptions[tag]);
+  const allowedGlobalOptions = command.meta.help.allowedGlobalOptions
+    .filter(tag => tag in globalCommandOptions)
+    .map(tag => globalCommandOptions[tag]);
 
   const allValidOptions = [
-    ...command.command.meta.help.options,
+    ...command.meta.help.options,
     ...allowedGlobalOptions
   ];
 
@@ -144,11 +146,11 @@ const runCommand = async function (command, inputStrings, options) {
     }
   }
 
-  const newOptions = Object.assign({}, clone, argv);
+  const newOptions = Object.assign({}, clone, commandOptions);
 
   analytics.send({
     command: command.name ? command.name : "other",
-    args: command.argv._,
+    args: commandOptions._,
     version: bundled || "(unbundled) " + core
   });
 
@@ -174,7 +176,7 @@ const runCommand = async function (command, inputStrings, options) {
     }
   });
 
-  return await command.command.run(newOptions);
+  return await command.run(newOptions);
 };
 
 const displayGeneralHelp = () => {

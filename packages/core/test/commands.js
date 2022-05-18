@@ -29,7 +29,7 @@ describe.only("Commander", function () {
   });
 
   it("warns and displays an error for unsupported flags in commands", async function () {
-    const result = getCommand(["mig"]);
+    const result = getCommand(["mig"], {});
     assert.equal(result.name, "migrate");
 
     const originalLog = console.log || console.debug;
@@ -50,7 +50,7 @@ describe.only("Commander", function () {
     ];
 
     try {
-      await runCommand(result, inputs, { noAliases: true, logger: console });
+      await runCommand(result, inputs, { logger: console });
     } catch (error) {
       // this errors due to no config file but we don't care, we just want
       // to ensure it prints the unsupported option message
