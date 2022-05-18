@@ -20,7 +20,7 @@ export default function* decode(
   pointer: Pointer.DataPointer,
   info: Evm.EvmInfo,
   options: DecoderOptions = {}
-): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
+): Generator<DecoderRequest, Format.Values.Result, Uint8Array | null> {
   return Format.Utils.Circularity.tie(
     yield* decodeDispatch(dataType, pointer, info, options)
   );
@@ -31,7 +31,7 @@ function* decodeDispatch(
   pointer: Pointer.DataPointer,
   info: Evm.EvmInfo,
   options: DecoderOptions = {}
-): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
+): Generator<DecoderRequest, Format.Values.Result, Uint8Array | null> {
   debug("type %O", dataType);
   debug("pointer %O", pointer);
 
@@ -85,7 +85,12 @@ function* decodeDispatch(
             paddingMode: "right"
           });
         default:
-          return yield* Memory.Decode.decodeMemory(dataType, pointer, info, options);
+          return yield* Memory.Decode.decodeMemory(
+            dataType,
+            pointer,
+            info,
+            options
+          );
       }
   }
 }

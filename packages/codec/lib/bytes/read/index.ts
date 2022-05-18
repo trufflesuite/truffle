@@ -6,13 +6,21 @@ import type { DecoderRequest } from "@truffle/codec/types";
 export function* readCode(
   pointer: Pointer.CodePointer,
   state: Evm.EvmState
-): Generator<DecoderRequest, Uint8Array, Uint8Array> {
+): Generator<DecoderRequest, Uint8Array, Uint8Array | null> {
   let code = state.code;
   if (!code) {
+    const address = Evm.Utils.toAddress(state.specials.this);
     code = yield {
       type: "code",
-      address: Evm.Utils.toAddress(state.specials.this)
+      address
     };
+    if (code === null) {
+      //check for null as a way to deliberately indicate an error
+      throw new DecodingError({
+        kind: "CodeNotSuppliedError" as const,
+        address
+      });
+    }
   }
   return readBytes(pointer, { ...state, code });
 }

@@ -15,7 +15,7 @@ export function* decodeBytes(
   pointer: Pointer.DataPointer,
   info: Evm.EvmInfo,
   options: DecoderOptions = {}
-): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
+): Generator<DecoderRequest, Format.Values.Result, Uint8Array | null> {
   const { state } = info;
   const { strictAbiMode: strict } = options; //if this is undefined it'll still be falsy so OK
 

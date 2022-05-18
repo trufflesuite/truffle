@@ -24,7 +24,7 @@ export function* decodeMemory(
   pointer: Pointer.MemoryPointer,
   info: Evm.EvmInfo,
   options: DecoderOptions = {}
-): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
+): Generator<DecoderRequest, Format.Values.Result, Uint8Array | null> {
   if (Format.Types.isReferenceType(dataType)) {
     if (isSkippedInMemoryStructs(dataType)) {
       //special case; these types are always empty in memory
@@ -67,7 +67,7 @@ export function* decodeMemoryReferenceByAddress(
   pointer: Pointer.DataPointer,
   info: Evm.EvmInfo,
   options: DecoderOptions = {}
-): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
+): Generator<DecoderRequest, Format.Values.Result, Uint8Array | null> {
   const { state } = info;
   const memoryVisited = options.memoryVisited || [];
   debug("pointer %o", pointer);

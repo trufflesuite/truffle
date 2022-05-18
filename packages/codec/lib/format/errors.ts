@@ -815,7 +815,8 @@ export type ReadError =
   | ReadErrorBytes
   | ReadErrorStorage
   | StorageNotSuppliedError
-  | UnusedImmutableError;
+  | UnusedImmutableError
+  | CodeNotSuppliedError;
 
 /**
  * An error resulting from overlarge length or pointer values
@@ -922,7 +923,7 @@ export interface ReadErrorStorage {
  */
 export interface StorageNotSuppliedError {
   kind: "StorageNotSuppliedError";
-  range: Storage.Range;
+  slot: BN;
 }
 
 /**
@@ -932,6 +933,18 @@ export interface StorageNotSuppliedError {
  */
 export interface UnusedImmutableError {
   kind: "UnusedImmutableError";
+}
+
+/**
+ * A read error in code, but one triggered deliberately to indicate that
+ * bytecode is unknown, rather than due to an unexpected error condition.  This
+ * error is triggered by passing null in response to a storage request.
+ *
+ * @Category Generic errors
+ */
+export interface CodeNotSuppliedError {
+  kind: "CodeNotSuppliedError";
+  address: string;
 }
 
 /**
