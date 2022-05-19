@@ -37,10 +37,11 @@ detectedConfig.networks.develop = {
   }
 };
 
-const { getCommand, runCommand } = require("./command-utils");
-const command = getCommand(inputStrings, {});
+const { getCommand, prepareOptions, runCommand } = require("./command-utils");
+const command = getCommand(inputStrings, {}, false);
+const options = prepareOptions(command, inputStrings, detectedConfig);
 
-runCommand(command, inputStrings, detectedConfig)
+runCommand(command, inputStrings, options)
   .then(() => process.exit(0))
   .catch(error => {
     // Perform error handling ourselves.

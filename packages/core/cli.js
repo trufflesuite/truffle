@@ -40,11 +40,9 @@ if (!semver.gte(process.version, minimumNodeVersion)) {
 const listeners = process.listeners("warning");
 listeners.forEach(listener => process.removeListener("warning", listener));
 
-const options = { logger: console };
-
-const inputArguments = process.argv.slice(2);
+const inputStrings = process.argv.slice(2);
 const userWantsGeneralHelp =
-  inputArguments.length === 1 && ["help", "--help"].includes(inputArguments[0]);
+  inputStrings.length === 1 && ["help", "--help"].includes(inputStrings[0]);
 
 if (userWantsGeneralHelp) {
   const { displayGeneralHelp } = require("./lib/command-utils");
@@ -52,11 +50,16 @@ if (userWantsGeneralHelp) {
   process.exit(0);
 }
 
-const { getCommand, runCommand } = require("./lib/command-utils");
+const {
+  getCommand,
+  prepareOptions,
+  runCommand
+} = require("./lib/command-utils");
 
-const command = getCommand(inputArguments, options);
+const command = getCommand(inputStrings, {}, false);
+const options = prepareOptions(command, inputStrings, {});
 
-runCommand(command, inputArguments, options)
+runCommand(command, inputStrings, options)
   .then(returnStatus => process.exit(returnStatus))
   .catch(error => {
     if (error instanceof TaskError) {

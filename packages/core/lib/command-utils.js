@@ -2,7 +2,7 @@ const TaskError = require("./errors/taskerror");
 const { bundled, core } = require("../lib/version").info();
 const OS = require("os");
 const analytics = require("../lib/services/analytics");
-const { extractFlags } = require("./utils/utils"); // Contains utility methods
+const { extractFlags } = require("./utils/utils"); // contains utility methods
 const globalCommandOptions = require("./global-command-options");
 const debugModule = require("debug");
 const debug = debugModule("core:command:run");
@@ -84,32 +84,22 @@ const getCommand = (inputStrings, options, noAliases) => {
   };
 };
 
-const runCommand = async function (command, inputStrings, options) {
-  try {
-    // migrate Truffle data to the new location if necessary
-    const configMigration = require("./config-migration");
-    await configMigration.migrateTruffleDataIfNecessary();
-  } catch (error) {
-    debug("Truffle data migration failed: %o", error);
-  }
-
-  // remove the task name itself put there by yargs
-  if (command.options._) command.options._.shift();
-
-  // Some options might throw if options is a Config object. If so, let's ignore those options.
+const prepareOptions = (command, inputStrings, options) => {
+  // some options might throw if options is a Config object
+  // if so, let's ignore those values
   const clone = {};
   Object.keys(options).forEach(key => {
     try {
       clone[key] = options[key];
-    } catch (e) {
-      // Do nothing with values that throw.
+    } catch {
+      // do nothing with values that throw
     }
   });
 
-  // Method `extractFlags(args)` : Extracts the `--option` flags from arguments
+  // method `extractFlags(args)` : Extracts the `--option` flags from arguments
   const inputOptions = extractFlags(inputStrings);
 
-  //adding allowed global options as enumerated in each command
+  // adding allowed global options as enumerated in each command
   const allowedGlobalOptions = command.meta.help.allowedGlobalOptions
     .filter(tag => tag in globalCommandOptions)
     .map(tag => globalCommandOptions[tag]);
@@ -144,7 +134,23 @@ const runCommand = async function (command, inputStrings, options) {
     }
   }
 
-  const newOptions = Object.assign({}, clone, command.options);
+  return {
+    ...clone,
+    ...command.options
+  };
+};
+
+const runCommand = async function (command, inputStrings, options) {
+  try {
+    // migrate Truffle data to the new location if necessary
+    const configMigration = require("./config-migration");
+    await configMigration.migrateTruffleDataIfNecessary();
+  } catch (error) {
+    debug("Truffle data migration failed: %o", error);
+  }
+
+  // remove the task name itself put there by yargs
+  if (command.options._) command.options._.shift();
 
   analytics.send({
     command: command.name ? command.name : "other",
@@ -174,7 +180,7 @@ const runCommand = async function (command, inputStrings, options) {
     }
   });
 
-  return await command.run(newOptions);
+  return await command.run(options);
 };
 
 const displayGeneralHelp = () => {
@@ -196,7 +202,8 @@ const displayGeneralHelp = () => {
 };
 
 module.exports = {
-  runCommand,
   displayGeneralHelp,
-  getCommand
+  getCommand,
+  prepareOptions,
+  runCommand
 };
