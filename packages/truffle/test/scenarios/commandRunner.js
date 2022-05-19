@@ -1,6 +1,7 @@
 const { exec } = require("child_process");
 const { EOL } = require("os");
 const path = require("path");
+const { URL } = require("node:url");
 
 module.exports = {
   getExecString: function () {
@@ -65,6 +66,44 @@ module.exports = {
           commands.forEach(command => {
             child.stdin.write(command + EOL);
           });
+          child.stdin.end();
+        }
+
+        config.logger.log("OUT: ", data);
+      });
+
+      child.on("close", code => {
+        config.logger.log("EXIT: ", code);
+        resolve();
+      });
+    });
+  },
+  runInConsoleEnvironment: function (options, config) {
+    const cmdLine = `${this.getExecString()} console --url ${options}`;
+    const url = new URL(options);
+    const readyPrompt = `truffle(${url.hostname})>`;
+
+    let seenChildPrompt = false;
+    let outputBuffer = "";
+
+    return new Promise((resolve, reject) => {
+      const child = exec(cmdLine, { cwd: config.working_directory });
+
+      if (child.error) return reject(child.error);
+
+      child.stderr.on("data", data => {
+        config.logger.log("ERR: ", data);
+      });
+
+      child.stdout.on("data", data => {
+        // accumulate buffer from chunks
+        if (!seenChildPrompt) {
+          outputBuffer += data;
+        }
+
+        // child process is ready for input when it displays the readyPrompt
+        if (!seenChildPrompt && outputBuffer.includes(readyPrompt)) {
+          seenChildPrompt = true;
           child.stdin.end();
         }
 

@@ -10,12 +10,15 @@ module.exports = {
   },
   help: {
     usage:
-      "truffle console [--verbose-rpc] [--require|-r <file>] [--network <network>|--url <provider_url>]",
+      "truffle console [--verbose-rpc] \n" +
+      "                truffle console [--require|-r <file>] \n" +
+      "                truffle console [--network <network>] or [--url <provider_url>] \n" +
+      "                truffle console",
     options: [
       {
         option: "--url",
         description:
-          "Uses the provided url to create a provider and connect to the network. This can be used outside of a Truffle project."
+          "Creates a provider and connect to the network. This can be used outside of a Truffle project."
       },
       {
         option: "--network",

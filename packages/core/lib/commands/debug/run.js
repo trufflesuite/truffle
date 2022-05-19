@@ -1,7 +1,7 @@
 module.exports = async function (options) {
   const { promisify } = require("util");
   const debugModule = require("debug");
-  const loadConfig = require("./loadConfig");
+  const loadConfig = require("../../loadConfig");
   const debug = debugModule("lib:commands:debug");
 
   const { Environment } = require("@truffle/environment");
