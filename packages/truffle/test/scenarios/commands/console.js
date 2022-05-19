@@ -17,7 +17,7 @@ describe("truffle console", () => {
   });
 
   describe("when run with --url option", () => {
-    it.only("displays the hostname in the prompt", async () => {
+    it("displays the hostname in the prompt", async () => {
       await CommandRunner.runInConsoleEnvironment(
         "http://localhost:8545",
         config
