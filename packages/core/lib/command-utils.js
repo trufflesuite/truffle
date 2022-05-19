@@ -205,5 +205,5 @@ module.exports = {
   displayGeneralHelp,
   getCommand,
   prepareOptions,
-  runCommand
+  runCommand,
 };
