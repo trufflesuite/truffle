@@ -28,6 +28,6 @@ describe("truffle console", () => {
         output.includes(expectedValue),
         `Expected "${expectedValue}" in output`
       );
-    }).timeout(20000);
+    }).timeout(90000);
   });
 });
