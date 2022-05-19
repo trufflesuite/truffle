@@ -41,7 +41,7 @@ const { getCommand, prepareOptions, runCommand } = require("./command-utils");
 const command = getCommand(inputStrings, {}, false);
 const options = prepareOptions(command, inputStrings, detectedConfig);
 
-runCommand(command, inputStrings, options)
+runCommand(command, options)
   .then(() => process.exit(0))
   .catch(error => {
     // Perform error handling ourselves.

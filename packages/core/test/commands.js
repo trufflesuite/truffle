@@ -1,7 +1,11 @@
-const { getCommand, runCommand } = require("../lib/command-utils");
+const {
+  getCommand,
+  prepareOptions,
+  runCommand
+} = require("../lib/command-utils");
 const { assert } = require("chai");
 
-describe.only("Commander", function () {
+describe("Commander", function () {
   it("infers commands based on initial letters entered", function () {
     const result = getCommand(["m"]).name;
     assert.equal(result, "migrate");
@@ -29,7 +33,7 @@ describe.only("Commander", function () {
   });
 
   it("warns and displays an error for unsupported flags in commands", async function () {
-    const result = getCommand(["mig"], {});
+    const result = getCommand(["mig"], { logger: console }, false);
     assert.equal(result.name, "migrate");
 
     const originalLog = console.log || console.debug;
@@ -50,7 +54,8 @@ describe.only("Commander", function () {
     ];
 
     try {
-      await runCommand(result, inputs, { logger: console });
+      const options = prepareOptions(result, inputs, { logger: console });
+      await runCommand(result, options);
     } catch (error) {
       // this errors due to no config file but we don't care, we just want
       // to ensure it prints the unsupported option message

@@ -59,7 +59,7 @@ const {
 const command = getCommand(inputStrings, {}, false);
 const options = prepareOptions(command, inputStrings, {});
 
-runCommand(command, inputStrings, options)
+runCommand(command, options)
   .then(returnStatus => process.exit(returnStatus))
   .catch(error => {
     if (error instanceof TaskError) {

@@ -71,6 +71,9 @@ const getCommand = (inputStrings, options, noAliases) => {
   yargs.command(require(`./commands/${chosenCommand}/meta`));
   const commandOptions = yargs.parse(inputStrings);
 
+  // remove the task name itself put there by yargs
+  if (commandOptions._) commandOptions._.shift();
+
   // several commands have a help property that is a function
   if (typeof command.meta.help === "function") {
     command.meta.help = command.meta.help(options);
@@ -140,7 +143,7 @@ const prepareOptions = (command, inputStrings, options) => {
   };
 };
 
-const runCommand = async function (command, inputStrings, options) {
+const runCommand = async function (command, options) {
   try {
     // migrate Truffle data to the new location if necessary
     const configMigration = require("./config-migration");
@@ -148,9 +151,6 @@ const runCommand = async function (command, inputStrings, options) {
   } catch (error) {
     debug("Truffle data migration failed: %o", error);
   }
-
-  // remove the task name itself put there by yargs
-  if (command.options._) command.options._.shift();
 
   analytics.send({
     command: command.name ? command.name : "other",
@@ -205,5 +205,5 @@ module.exports = {
   displayGeneralHelp,
   getCommand,
   prepareOptions,
-  runCommand,
+  runCommand
 };
