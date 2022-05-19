@@ -1,7 +1,7 @@
 const { exec } = require("child_process");
 const { EOL } = require("os");
 const path = require("path");
-const { URL } = require("node:url");
+const { URL } = require("url");
 
 module.exports = {
   getExecString: function () {

@@ -1,4 +1,4 @@
-const { URL } = require("node:url");
+const { URL } = require("url");
 
 module.exports = function (config, options) {
   const url = new URL(options.url);
