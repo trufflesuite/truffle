@@ -17,9 +17,9 @@
   "scripts": {
     "build": "webpack --config webpack/webpack.config.js",
     "prepare": "yarn build",
-    "test": "mochapack --webpack-config webpack/webpack.config-test.js --recursive",
-    "test:coverage": "nyc mochapack --webpack-config webpack/webpack.config-test.js --recursive",
-    "test:debug": "NODE_ENV=testing node --inspect ./node_modules/.bin/mochapack --webpack-config webpack/webpack.config-test.js --recursive"
+    "test": "mochapack --webpack-config webpack/webpack.config-test.js \"./test/*.js\" \"./test/data/*.js\"",
+    "test:coverage": "nyc mochapack --webpack-config webpack/webpack.config-test.js \"./test/*.js\" \"./test/data/*.js\"",
+    "test:debug": "NODE_ENV=testing node --inspect ./node_modules/.bin/mochapack --webpack-config webpack/webpack.config-test.js \"./test/*.js\" \"./test/data/*.js\""
   },
   "dependencies": {
     "@truffle/abi-utils": "^0.2.13",
@@ -43,10 +43,10 @@
     "@babel/preset-env": "^7.16.4",
     "@jsdevtools/coverage-istanbul-loader": "^3.0.5",
     "@truffle/artifactor": "^4.0.154",
-    "@truffle/box": "^2.1.48",
     "@truffle/migrate": "^3.2.80",
     "@truffle/resolver": "^9.0.0",
     "@truffle/workflow-compile": "^4.0.17",
+    "@truffle/config": "^1.3.28",
     "babel-loader": "^8.2.3",
     "babel-runtime": "^6.26.0",
     "chai": "^4.2.0",
@@ -57,6 +57,7 @@
     "mocha": "9.2.2",
     "mochapack": "^2.1.2",
     "nyc": "^13.0.1",
+    "tmp": "^0.2.1",
     "webpack": "^5.65.0",
     "webpack-cli": "^4.9.1",
     "webpack-merge": "^5.8.0",

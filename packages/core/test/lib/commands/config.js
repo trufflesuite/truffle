@@ -22,7 +22,8 @@ describe("config", function () {
       output += data.toString();
     });
   });
-  afterEach(function () {
+
+  afterEach("Clear MemoryStream", () => {
     memStream.end("");
     output = "";
   });

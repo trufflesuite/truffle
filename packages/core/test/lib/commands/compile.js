@@ -15,7 +15,7 @@ describe("compile", function () {
     config.logger = { log: val => val && memStream.write(val) };
   });
 
-  afterEach("clear MemoryStream", () => (output = ""));
+  afterEach(() => (output = ""));
 
   it("compiles all initial contracts", async function () {
     const { contracts } = await WorkflowCompile.compileAndSave(

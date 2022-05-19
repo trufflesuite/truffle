@@ -1,4 +1,3 @@
-const { default: Box } = require("@truffle/box");
 const MemoryLogger = require("../MemoryLogger");
 const CommandRunner = require("../commandRunner");
 const fs = require("fs-extra");
@@ -6,22 +5,25 @@ const path = require("path");
 const assert = require("assert");
 const Ganache = require("ganache");
 const Reporter = require("../reporter");
+const sandbox = require("../sandbox");
 
 describe("Cyclic Dependencies [ @standalone ]", function () {
   let config;
-  let options;
   const logger = new MemoryLogger();
 
   before("set up sandbox", async () => {
-    options = { name: "default", force: true };
-    config = await Box.sandbox(options);
+    config = await sandbox.create(path.join(__dirname, "../../sources/init"));
     config.logger = logger;
-    config.networks.development.provider = Ganache.provider({
-      miner: {
-        instamine: "strict"
-      },
-      gasLimit: config.gas
-    });
+    config.networks = {
+      development: {
+        provider: Ganache.provider({
+          miner: {
+            instamine: "strict"
+          },
+          gasLimit: config.gas
+        })
+      }
+    };
     config.mocha = {
       reporter: new Reporter(logger)
     };
@@ -38,7 +40,7 @@ describe("Cyclic Dependencies [ @standalone ]", function () {
     );
   });
 
-  it("will compile cyclic dependencies that Solidity is fine with (no `new`'s)", async function () {
+  it("compiles cyclic dependencies that Solidity is fine with (no `new`'s)", async function () {
     this.timeout(20000);
 
     await CommandRunner.run("compile", config);
