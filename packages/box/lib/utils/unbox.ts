@@ -181,11 +181,21 @@ function traverseDir(dir: string, returnRelative = true, relativeDir = "") {
   return result;
 }
 
+async function followBoxRecipe({ recipes }: boxConfig, destination: string) {
+  // Bail if no recipe defined.
+  if (Object.keys(recipes).length === 0) {
+    return;
+  }
+  console.log(destination);
+  // TODO: Logic.
+}
+
 export = {
   copyTempIntoDestination,
   fetchRepository,
   installBoxDependencies,
   traverseDir,
+  followBoxRecipe,
   prepareToCopyFiles,
   verifySourcePath,
   verifyVCSURL

@@ -51,9 +51,10 @@ export = {
     await unbox.copyTempIntoDestination(tempDir, destination, unpackBoxOptions);
   },
 
-  setUpBox: (boxConfig: boxConfig, destination: string, events: any) => {
+  setUpBox: async (boxConfig: boxConfig, destination: string, events: any) => {
     events.emit("unbox:settingUpBox:start");
     unbox.installBoxDependencies(boxConfig, destination);
-    events.emit("unbox:settingUpBox:succeed");
+    await events.emit("unbox:settingUpBox:succeed");
+    await unbox.followBoxRecipe(boxConfig, destination);
   }
 };
