@@ -8,8 +8,8 @@ describe("truffle console", () => {
   let config;
   const logger = new MemoryLogger();
 
-  before(done => Server.start(done));
-  after(done => Server.stop(done));
+  before(async () => await Server.start());
+  after(async () => await Server.stop());
 
   before("before all setup", () => {
     config = Config.default();
@@ -17,7 +17,7 @@ describe("truffle console", () => {
   });
 
   describe("when run with --url option", () => {
-    it.only("displays the hostname in the prompt", async () => {
+    it("displays the hostname in the prompt", async () => {
       await CommandRunner.runInConsoleEnvironment(
         "http://localhost:8545",
         config
