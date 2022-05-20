@@ -60,7 +60,7 @@ describe("Happy path (truffle unbox)", function () {
   });
 
   it("migrates", async function () {
-    this.timeout(50000);
+    this.timeout(100000);
 
     await CommandRunner.run("migrate", config);
 
