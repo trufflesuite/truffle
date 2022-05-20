@@ -18,7 +18,6 @@ export type unboxOptions = {
 };
 
 type boxConfigRecipePrompt = {
-  key: string;
   message: string;
   default?: string;
 };
