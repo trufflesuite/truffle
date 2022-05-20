@@ -17,19 +17,21 @@ export type unboxOptions = {
   force?: boolean;
 };
 
-type boxConfigRecipePrompt = {
+export type boxConfigRecipePrompt = {
   message: string;
   default?: string;
 };
 
-type boxConfigRecipeSpecMv = {
+export type boxConfigRecipeSpecMv = {
   from: string;
   to: string;
 };
 
-type boxConfigRecipeSpec = {
-  [key: string]: boxConfigRecipeSpec | Array<string | boxConfigRecipeSpecMv>;
-};
+export type boxConfigRecipeSpecs =
+  | Array<string | boxConfigRecipeSpecMv>
+  | {
+      [key: string]: boxConfigRecipeSpecs;
+    };
 
 export interface boxConfig {
   ignore: Array<string>;
@@ -38,6 +40,6 @@ export interface boxConfig {
   recipes: {
     prompts?: boxConfigRecipePrompt[];
     common?: string[];
-    specs?: boxConfigRecipeSpec;
+    specs?: boxConfigRecipeSpecs;
   };
 }
