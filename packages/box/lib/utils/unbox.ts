@@ -181,13 +181,39 @@ function traverseDir(dir: string, returnRelative = true, relativeDir = "") {
   return result;
 }
 
+/**
+ * Recursively remove all empty dirs.
+ * @param {string} dir Root dir that (nested) empty dirs should be removed from.
+ */
+function removeEmptyDirs(dir: string, isRoot = true) {
+  const isDir = fse.statSync(dir).isDirectory();
+  // Bail if not dir.
+  if (!isDir) {
+    return;
+  }
+
+  let files = fse.readdirSync(dir);
+  if (files.length > 0) {
+    files.forEach(file => {
+      const fileAbs = path.join(dir, file);
+      removeEmptyDirs(fileAbs, false);
+    });
+    // Dir may be empty after deleting nested dirs. Re-evaluate.
+    files = fse.readdirSync(dir);
+  }
+
+  if (files.length === 0 && !isRoot) {
+    fse.rmdirSync(dir);
+  }
+}
+
 async function followBoxRecipe({ recipes }: boxConfig, destination: string) {
   // Bail if no recipe defined.
   if (Object.keys(recipes).length === 0) {
     return;
   }
-  console.log(destination);
-  // TODO: Logic.
+  // Some dirs may be empty after removing + moving + renaming. Clean up.
+  removeEmptyDirs(destination);
 }
 
 export = {
