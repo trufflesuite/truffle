@@ -28,10 +28,7 @@ async function verifyVCSURL(url: string) {
 
   const repoUrl = `https://${configURL.host}${configURL.path}`;
   try {
-    await axios.head(
-      repoUrl,
-      { maxRedirects: 50 }
-    );
+    await axios.head(repoUrl, { maxRedirects: 50 });
   } catch (error) {
     if (error.response && error.response.status === 404) {
       throw new Error(
@@ -39,7 +36,7 @@ async function verifyVCSURL(url: string) {
       );
     } else {
       const prefix = `Error connecting to ${repoUrl}. Please check your internet connection and try again.`;
-      error.message = `${prefix}\n\n${error.message || ''}`;
+      error.message = `${prefix}\n\n${error.message || ""}`;
       throw error;
     }
   }
@@ -153,10 +150,42 @@ function installBoxDependencies({ hooks }: boxConfig, destination: string) {
   execSync(postUnpack, { cwd: destination });
 }
 
+/**
+ * Recursively travel through directory.
+ * @param {string} dir Directory to traverse.
+ * @param {boolean} returnRelative Return result as relative paths to dir.
+ * @param {string} relativeDir Parent's relative path of current recursive call.
+ * @returns {string[]} Path of every file in directory.
+ */
+function traverseDir(dir: string, returnRelative = true, relativeDir = "") {
+  const result: string[] = [];
+
+  fse.readdirSync(dir).forEach(file => {
+    const absPath = path.join(dir, file);
+    const relativePath = path.join(relativeDir, file);
+    const isDir = fse.statSync(absPath).isDirectory();
+
+    if (isDir) {
+      // Recurse if file is dir.
+      const nested = returnRelative
+        ? traverseDir(absPath, true, relativePath)
+        : traverseDir(absPath, false);
+      result.push(...nested);
+    } else {
+      // Base case: File is not dir.
+      const filePath = returnRelative ? relativePath : absPath;
+      result.push(filePath);
+    }
+  });
+
+  return result;
+}
+
 export = {
   copyTempIntoDestination,
   fetchRepository,
   installBoxDependencies,
+  traverseDir,
   prepareToCopyFiles,
   verifySourcePath,
   verifyVCSURL
