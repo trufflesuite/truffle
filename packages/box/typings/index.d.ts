@@ -17,8 +17,28 @@ export type unboxOptions = {
   force?: boolean;
 };
 
+type boxConfigRecipePrompt = {
+  key: string;
+  message: string;
+  default?: string;
+};
+
+type boxConfigRecipeSpecMv = {
+  from: string;
+  to: string;
+};
+
+type boxConfigRecipeSpec = {
+  [key: string]: boxConfigRecipeSpec | Array<string | boxConfigRecipeSpecMv>;
+};
+
 export interface boxConfig {
   ignore: Array<string>;
   commands: object;
   hooks: { "post-unpack": string };
+  recipes: {
+    prompts?: boxConfigRecipePrompt[];
+    common?: string[];
+    specs?: boxConfigRecipeSpec;
+  };
 }
