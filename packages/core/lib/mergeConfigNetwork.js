@@ -1,8 +1,8 @@
 const { URL } = require("url");
 
 module.exports = function (config, options) {
-  const url = new URL(options.url);
   if (options.url) {
+    const url = new URL(options.url);
     config.networks[url.host] = {
       url: options.url,
       network_id: "*"
