@@ -81,7 +81,7 @@ module.exports = {
   runInConsoleEnvironment: function (options, config) {
     const cmdLine = `${this.getExecString()} console --url ${options}`;
     const url = new URL(options);
-    const readyPrompt = `truffle(${url.hostname})>`;
+    const readyPrompt = `truffle(${url.host})>`;
 
     let seenChildPrompt = false;
     let outputBuffer = "";

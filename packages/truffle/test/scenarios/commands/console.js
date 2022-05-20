@@ -17,13 +17,13 @@ describe("truffle console", () => {
   });
 
   describe("when run with --url option", () => {
-    it("displays the hostname in the prompt", async () => {
+    it.only("displays the hostname in the prompt", async () => {
       await CommandRunner.runInConsoleEnvironment(
         "http://localhost:8545",
         config
       );
       const output = logger.contents();
-      const expectedValue = "truffle(localhost)>";
+      const expectedValue = "truffle(localhost:8545)>";
       assert(
         output.includes(expectedValue),
         `Expected "${expectedValue}" in output`
