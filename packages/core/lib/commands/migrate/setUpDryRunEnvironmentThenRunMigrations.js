@@ -1,14 +1,10 @@
-const { Environment } = require("@truffle/environment");
-const Artifactor = require("@truffle/artifactor");
-
-const { Resolver } = require("@truffle/resolver");
 const fse = require("fs-extra");
 
 const tmp = require("tmp");
 tmp.setGracefulCleanup();
-const runMigrations = require("./runMigrations");
 
 module.exports = async function (config) {
+  const { Environment } = require("@truffle/environment");
   await Environment.fork(config, {
     logging: {
       quiet: true
@@ -31,8 +27,12 @@ module.exports = async function (config) {
   // Note: Create a new artifactor and resolver with the updated config.
   // This is because the contracts_build_directory changed.
   // Ideally we could architect them to be reactive of the config changes.
+  const Artifactor = require("@truffle/artifactor");
   config.artifactor = new Artifactor(temporaryDirectory);
+
+  const { Resolver } = require("@truffle/resolver");
   config.resolver = new Resolver(config);
 
+  const runMigrations = require("./runMigrations");
   return await runMigrations(config);
 };
