@@ -3,7 +3,7 @@ import fs from "fs";
 import config from "../config";
 import tmp from "tmp";
 import path from "path";
-import type { boxConfig, unboxOptions } from "typings";
+import type { boxConfig, unpackBoxOptions, setUpBoxOptions } from "typings";
 
 export = {
   downloadBox: async (source: string, destination: string, events: any) => {
@@ -45,16 +45,21 @@ export = {
     tempDir: string,
     destination: string,
     boxConfig: boxConfig,
-    unpackBoxOptions: unboxOptions
+    unpackBoxOptions: unpackBoxOptions
   ) => {
     unbox.prepareToCopyFiles(tempDir, boxConfig);
     await unbox.copyTempIntoDestination(tempDir, destination, unpackBoxOptions);
   },
 
-  setUpBox: async (boxConfig: boxConfig, destination: string, events: any) => {
+  setUpBox: async (
+    boxConfig: boxConfig,
+    destination: string,
+    events: any,
+    setupBoxOptions: setUpBoxOptions
+  ) => {
     events.emit("unbox:settingUpBox:start");
     unbox.installBoxDependencies(boxConfig, destination);
     await events.emit("unbox:settingUpBox:succeed");
-    await unbox.followBoxRecipe(boxConfig, destination);
+    await unbox.followBoxRecipe(boxConfig, destination, setupBoxOptions.recipe);
   }
 };

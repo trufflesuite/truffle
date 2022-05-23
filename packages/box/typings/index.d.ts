@@ -12,10 +12,16 @@ export type sandboxOptionsString = string;
 
 export type sandboxOptions = sandboxOptionsObject | sandboxOptionsString;
 
-export type unboxOptions = {
+export type unpackBoxOptions = {
   logger?: Console;
   force?: boolean;
 };
+
+export type setUpBoxOptions = {
+  recipe?: string;
+};
+
+export type unboxOptions = unpackBoxOptions & setUpBoxOptions;
 
 export type boxConfigRecipePrompt = {
   message: string;

@@ -6,7 +6,7 @@ import vcsurl from "vcsurl";
 import { parse as parseURL } from "url";
 import { execSync } from "child_process";
 import inquirer from "inquirer";
-import type { boxConfig, unboxOptions } from "typings";
+import type { unboxOptions, boxConfig, boxConfigRecipeSpecMv } from "typings";
 import { promisify } from "util";
 import ignore from "ignore";
 
@@ -207,11 +207,86 @@ function removeEmptyDirs(dir: string, isRoot = true) {
   }
 }
 
-async function followBoxRecipe({ recipes }: boxConfig, destination: string) {
+async function followBoxRecipe(
+  { recipes }: boxConfig,
+  destination: string,
+  option: string
+) {
   // Bail if no recipe defined.
   if (Object.keys(recipes).length === 0) {
     return;
   }
+
+  // Locate recipe: User provides option / answers prompts
+  let useOption = option !== undefined;
+  const optionArr = option.split?.(",") || [];
+  let recipeFiles = null;
+  let recipeScope = recipes.specs;
+  let counter = 0;
+  while (!recipeFiles) {
+    if (Array.isArray(recipeScope)) {
+      recipeFiles = recipeScope.concat(recipes.common);
+      break;
+    }
+
+    const curScopeChoices = Object.keys(recipeScope);
+
+    const { choice } = await inquirer.prompt([
+      {
+        type: "list",
+        message: recipes.prompts[counter].message,
+        choices: curScopeChoices,
+        name: "choice",
+        when: hash => {
+          if (useOption) {
+            const curOptionChoice = optionArr[counter];
+            const validChoice = curScopeChoices.includes(curOptionChoice);
+            if (validChoice) {
+              // Don't prompt if current option choice is valid.
+              hash.choice = curOptionChoice;
+              return false;
+            }
+            useOption = false;
+          }
+          return true;
+        }
+      }
+    ]);
+
+    recipeScope = recipeScope[choice];
+    counter += 1;
+  }
+
+  // Given recipeFiles, find:
+  // recipeMvs: List of all rename / move ops.
+  // recipeFilesSet: Set of file paths, ignoring rename / move.
+  const recipeMvs: boxConfigRecipeSpecMv[] = [];
+  const recipeFilesSet = new Set();
+  recipeFiles.forEach(file => {
+    if (typeof file === "string") {
+      recipeFilesSet.add(file);
+    } else {
+      recipeFilesSet.add(file.from);
+      recipeMvs.push(file);
+    }
+  });
+
+  // Remove files not in recipe.
+  const allFiles = traverseDir(destination);
+  const extraFiles = allFiles.filter(file => !recipeFilesSet.has(file));
+  extraFiles.forEach(extraFile => {
+    fse.removeSync(path.join(destination, extraFile));
+  });
+
+  // Move / rename files.
+  recipeMvs.forEach(mv => {
+    const mvFrom = path.join(destination, mv.from);
+    const mvTo = path.join(destination, mv.to);
+    // Create parent dir of mvTo in case it doens't exist.
+    fse.ensureDirSync(path.dirname(mvTo));
+    fse.renameSync(mvFrom, mvTo);
+  });
+
   // Some dirs may be empty after removing + moving + renaming. Clean up.
   removeEmptyDirs(destination);
 }
@@ -221,6 +296,7 @@ export = {
   fetchRepository,
   installBoxDependencies,
   traverseDir,
+  removeEmptyDirs,
   followBoxRecipe,
   prepareToCopyFiles,
   verifySourcePath,
