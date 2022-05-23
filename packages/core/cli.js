@@ -41,8 +41,10 @@ const listeners = process.listeners("warning");
 listeners.forEach(listener => process.removeListener("warning", listener));
 
 const inputStrings = process.argv.slice(2);
+
 const userWantsGeneralHelp =
-  inputStrings.length === 1 && ["help", "--help"].includes(inputStrings[0]);
+  inputStrings.length === 0 ||
+  (inputStrings.length === 1 && ["help", "--help"].includes(inputStrings[0]));
 
 if (userWantsGeneralHelp) {
   const { displayGeneralHelp } = require("./lib/command-utils");
