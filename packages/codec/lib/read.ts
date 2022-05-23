@@ -12,7 +12,7 @@ import * as Evm from "@truffle/codec/evm";
 export default function* read(
   pointer: Pointer.DataPointer,
   state: Evm.EvmState
-): Generator<DecoderRequest, Uint8Array, Uint8Array> {
+): Generator<DecoderRequest, Uint8Array, Uint8Array | null> {
   switch (pointer.location) {
     case "stack":
       return StackRead.readStack(pointer, state);

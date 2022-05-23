@@ -25,7 +25,7 @@ export function* decodeStorage(
   dataType: Format.Types.Type,
   pointer: Pointer.StoragePointer,
   info: Evm.EvmInfo
-): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
+): Generator<DecoderRequest, Format.Values.Result, Uint8Array | null> {
   if (Format.Types.isReferenceType(dataType)) {
     return yield* decodeStorageReference(dataType, pointer, info);
   } else {
@@ -40,7 +40,7 @@ export function* decodeStorageReferenceByAddress(
   dataType: Format.Types.ReferenceType,
   pointer: Pointer.DataPointer,
   info: Evm.EvmInfo
-): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
+): Generator<DecoderRequest, Format.Values.Result, Uint8Array | null> {
   const allocations = info.allocations.storage;
 
   let rawValue: Uint8Array;
@@ -91,7 +91,7 @@ export function* decodeStorageReference(
   dataType: Format.Types.ReferenceType,
   pointer: Pointer.StoragePointer,
   info: Evm.EvmInfo
-): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
+): Generator<DecoderRequest, Format.Values.Result, Uint8Array | null> {
   var data;
   var length;
 
@@ -267,9 +267,7 @@ export function* decodeStorageReference(
           info
         );
       } else {
-        let lengthAsBN: BN = Conversion.toBN(data)
-          .subn(1)
-          .divn(2);
+        let lengthAsBN: BN = Conversion.toBN(data).subn(1).divn(2);
         try {
           length = lengthAsBN.toNumber();
         } catch {
