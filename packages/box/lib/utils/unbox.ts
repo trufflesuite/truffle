@@ -234,8 +234,9 @@ async function followBoxRecipe(
     const { choice } = await inquirer.prompt([
       {
         type: "list",
-        message: recipes.prompts[counter].message,
         choices: curScopeChoices,
+        message: recipes.prompts[counter].message,
+        default: recipes.prompts[counter].default,
         name: "choice",
         when: hash => {
           if (useOption) {
