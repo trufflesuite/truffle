@@ -219,7 +219,7 @@ async function followBoxRecipe(
 
   // Locate recipe: User provides option / answers prompts
   let useOption = option !== undefined;
-  const optionArr = option.split?.(",") || [];
+  const optionArr = option?.split?.(",") || [];
   let recipeFiles = null;
   let recipeScope = recipes.specs;
   let counter = 0;
