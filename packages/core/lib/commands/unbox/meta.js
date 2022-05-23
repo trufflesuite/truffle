@@ -24,6 +24,12 @@ module.exports = {
           "Unbox project in the current directory regardless of its " +
           "state. Be careful, this\n                    will potentially overwrite files " +
           "that exist in the directory."
+      },
+      {
+        option: "--recipe",
+        description:
+          "Box recipe ID used to bypass user interaction during unbox. A valid ID consists of prompt\n" +
+          "                    answers connected by commas(,) in the correct order."
       }
     ],
     allowedGlobalOptions: ["quiet"]
