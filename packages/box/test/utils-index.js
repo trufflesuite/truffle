@@ -7,8 +7,8 @@ describe("utils", () => {
   it("setUpBox rejects when passed an invalid boxConfig", () => {
     let boxConfig = {};
 
-    assert.rejects(() => {
-      utils.setUpBox(boxConfig);
+    assert.rejects(async () => {
+      await utils.setUpBox(boxConfig);
     }, "should have rejected!");
   });
 
