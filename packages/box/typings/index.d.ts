@@ -12,8 +12,14 @@ export type sandboxOptionsString = string;
 
 export type sandboxOptions = sandboxOptionsObject | sandboxOptionsString;
 
+export type voidableConsole =
+  | Console
+  | {
+      log: () => void;
+    };
+
 export type unpackBoxOptions = {
-  logger?: Console;
+  logger?: voidableConsole;
   force?: boolean;
 };
 
