@@ -13,7 +13,8 @@ function setDefaults(config: any = {}): boxConfig {
     },
     hooks: {
       "post-unpack": hooks["post-unpack"] || ""
-    }
+    },
+    recipes: config.recipes || {}
   };
 }
 
