@@ -187,7 +187,7 @@ async function followBoxRecipe(
   removeEmptyDirs(destination);
 }
 
-export {
+export default {
   traverseDir,
   removeEmptyDirs,
   boxHasRecipe,

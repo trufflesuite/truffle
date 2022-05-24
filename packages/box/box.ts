@@ -187,11 +187,12 @@ const Box = {
   ) => {
     const { events } = config;
     let tempDirCleanup;
-    const { logger, force } = options;
+    const { recipe, logger, force } = options;
     const unpackBoxOptions = {
       logger: logger || { log: () => {} },
       force
     };
+    const setUpBoxOptions = { recipe };
 
     try {
       const normalizedSourcePath = normalizeSourcePath(url);
@@ -216,7 +217,7 @@ const Box = {
       tempDirCleanup();
       events.emit("unbox:cleaningTempFiles:succeed");
 
-      utils.setUpBox(boxConfig, destination, events);
+      await utils.setUpBox(boxConfig, destination, events, setUpBoxOptions);
 
       return boxConfig;
     } catch (error) {
