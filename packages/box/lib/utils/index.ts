@@ -4,7 +4,7 @@ import fs from "fs";
 import config from "../config";
 import tmp from "tmp";
 import path from "path";
-import type { boxConfig, unboxOptions, setUpBoxOptions } from "typings";
+import type { boxConfig, setUpBoxOptions, unpackBoxOptions } from "typings";
 
 export = {
   downloadBox: async (source: string, destination: string, events: any) => {
@@ -46,7 +46,7 @@ export = {
     tempDir: string,
     destination: string,
     boxConfig: boxConfig,
-    unpackBoxOptions: unboxOptions
+    unpackBoxOptions: unpackBoxOptions
   ) => {
     unbox.prepareToCopyFiles(tempDir, boxConfig);
     await unbox.copyTempIntoDestination(tempDir, destination, unpackBoxOptions);
