@@ -8,6 +8,7 @@ describe("boxConfig", () => {
     assert(configDefaults.ignore);
     assert(configDefaults.commands);
     assert(configDefaults.hooks);
+    assert(configDefaults.recipes);
     done();
   });
   it(".read reads a filepath and returns config defaults", done => {
@@ -16,6 +17,7 @@ describe("boxConfig", () => {
       assert(config.ignore);
       assert(config.commands);
       assert(config.hooks);
+      assert(config.recipes);
     });
     done();
   });
