@@ -153,6 +153,33 @@ describe("truffle unbox [ @standalone ]", () => {
           );
         }).timeout(20000);
       });
+
+      describe("recipes", () => {
+        it("modifies box according to specified recipe", async () => {
+          const cmd =
+            "unbox realcliffzhang/truffle-box-example --recipe React,TypeScript";
+          await CommandRunner.run(cmd, config);
+
+          const correctFiles = [
+            "client/package.json",
+            "client/shared.ts",
+            "client/src/App.tsx",
+            "contracts/Migrations.sol",
+            "migrations/1_initial_migration.js",
+            "test/.gitkeep",
+            "truffle-config.js"
+          ]
+            .map(file => path.join(tempDir.name, file))
+            .map(fse.pathExistsSync)
+            .every(exists => exists === true);
+
+          assert.deepStrictEqual(
+            correctFiles,
+            true,
+            "should have all files for this recipe!"
+          );
+        }).timeout(20000);
+      });
     });
 
     describe("with invalid input", () => {
