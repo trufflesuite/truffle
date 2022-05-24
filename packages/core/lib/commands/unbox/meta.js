@@ -3,7 +3,8 @@ module.exports = {
   description: "Download a Truffle Box, a pre-built Truffle project",
   builder: {},
   help: {
-    usage: "truffle unbox [<box_name>] [destination] [--force]",
+    usage:
+      "truffle unbox [<box_name>] [destination] [--recipe <recipe_id>] [--force]",
     options: [
       {
         option: "destination",
@@ -17,6 +18,12 @@ module.exports = {
         description:
           "Name of the truffle box. If no box_name is specified, a default " +
           "truffle box will be downloaded."
+      },
+      {
+        option: "--recipe",
+        description:
+          "Box recipe ID used to bypass user interaction during unbox. A valid ID consists of prompt\n" +
+          "                    answers connected by commas(,) in the correct order."
       },
       {
         option: "--force",
