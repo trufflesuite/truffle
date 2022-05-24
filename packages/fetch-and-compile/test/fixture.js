@@ -162,7 +162,7 @@ const etherscanFixture = {
     }
   },
 
-  "https://api-goerli.etherscan.com/api": {
+  "https://api-goerli.etherscan.io/api": {
     "0xeBC990735Aafd169415D675B6e90aB901f8BDae1": {
       status: "1",
       message: "OK-Missing/Invalid API Key, rate limit of 1/5sec applied",
@@ -200,7 +200,7 @@ const etherscanFixture = {
     }
   },
 
-  "https://api-optimistic.etherscan.com/api": {
+  "https://api-optimistic.etherscan.io/api": {
     "0xca5f37e6D8bB24c5A7958d5eccE7Bd9Aacc944f2": {
       status: "1",
       message: "OK",
@@ -237,7 +237,7 @@ const etherscanFixture = {
     }
   },
 
-  "https://api-kovan-optimistic.etherscan.com/api": {
+  "https://api-kovan-optimistic.etherscan.io/api": {
     "0x5bb6699ef885ca997d1467380ff9e51c606a07e1": {
       status: "1",
       message: "OK",
@@ -425,7 +425,7 @@ const etherscanFixture = {
     }
   },
 
-  "https://api-moonbeam.moonscan.com/api": {
+  "https://api-moonbeam.moonscan.io/api": {
     "0x23eA13c920aF82353872E36CaE99797fb28a8981": {
       status: "1",
       message: "OK",
@@ -463,7 +463,7 @@ const etherscanFixture = {
     }
   },
 
-  "https://api-moonriver.moonscan.com/api": {
+  "https://api-moonriver.moonscan.io/api": {
     "0x56f4ca4f9dbb29c9438d9de48bd07f4b7fa765a3": {
       status: "1",
       message: "OK",
@@ -501,7 +501,7 @@ const etherscanFixture = {
     }
   },
 
-  "https://api-moonbase.moonscan.com/api": {
+  "https://api-moonbase.moonscan.io/api": {
     "0xf85544ea3dd634ebe9a61d963295b054adb0c803": {
       status: "1",
       message: "OK",
