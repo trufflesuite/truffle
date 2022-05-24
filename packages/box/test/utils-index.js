@@ -4,12 +4,12 @@ const sinon = require("sinon");
 const tmp = require("tmp");
 
 describe("utils", () => {
-  it("setUpBox throws when passed an invalid boxConfig", () => {
+  it("setUpBox rejects when passed an invalid boxConfig", () => {
     let boxConfig = {};
 
-    assert.throws(() => {
+    assert.rejects(() => {
       utils.setUpBox(boxConfig);
-    }, "should have thrown!");
+    }, "should have rejected!");
   });
 
   it("setUpTempDirectory throws when tmpDir creation fails", () => {
