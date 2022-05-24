@@ -1,4 +1,3 @@
-const TaskError = require("./errors/taskerror");
 const { bundled, core } = require("../lib/version").info();
 const OS = require("os");
 const analytics = require("../lib/services/analytics");
@@ -10,9 +9,7 @@ const commands = require("./commands/commands");
 
 const getCommand = (inputStrings, options, noAliases) => {
   if (inputStrings.length === 0) {
-    throw new TaskError(
-      "Cannot find command based on input: " + JSON.stringify(inputStrings)
-    );
+    return null;
   }
 
   const firstInputString = inputStrings[0];
@@ -47,9 +44,7 @@ const getCommand = (inputStrings, options, noAliases) => {
   }
 
   if (chosenCommand == null) {
-    throw new TaskError(
-      "Cannot find command based on input: " + JSON.stringify(inputStrings)
-    );
+    return null;
   }
 
   // determine whether Truffle is being run from the bundle or from ./cli.js

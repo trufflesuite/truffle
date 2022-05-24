@@ -14,6 +14,7 @@ const EventEmitter = require("events");
 const spawnSync = require("child_process").spawnSync;
 const Require = require("@truffle/require");
 const debug = require("debug")("console");
+const { getCommand } = require("./command-utils");
 
 const processInput = input => {
   const inputComponents = input.trim().split(" ");
@@ -283,8 +284,9 @@ class Console extends EventEmitter {
   interpret(input, context, filename, callback) {
     // processInput returns a sanitized string
     const processedInput = processInput(input);
-    const commands = require("./commands/commands");
-    if (commands.includes(processedInput.split(" ")[0])) {
+    if (
+      getCommand(processedInput.split(" "), {}, this.options.noAliases) !== null
+    ) {
       try {
         this.runSpawn(processedInput, this.options);
       } catch (error) {
