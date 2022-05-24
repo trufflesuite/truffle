@@ -18,7 +18,8 @@ describe("Commander", function () {
 
   it("doesn't infer a command if not given enough information", function () {
     // Note: "co" matches "console" and "compile"
-    assert.throws(() => getCommand(["co"]));
+    const result = getCommand(["co"]);
+    assert.isNull(result);
   });
 
   it("infers commands based on initial letters entered, given matches for shorter substrings", function () {
