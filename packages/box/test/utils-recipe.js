@@ -117,7 +117,9 @@ describe("utils", () => {
 
   describe("locateRecipe", () => {
     afterEach(() => {
-      inquirer.prompt.restore?.();
+      if (inquirer.prompt.restore) {
+        inquirer.prompt.restore();
+      }
     });
 
     it("returns the correct recipe through inquirer", async () => {
