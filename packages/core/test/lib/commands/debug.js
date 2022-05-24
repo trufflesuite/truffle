@@ -1,4 +1,5 @@
 const assert = require("chai").assert;
+const { URL } = require("url");
 const {
   mergeConfigNetwork,
   loadConfig
@@ -26,24 +27,26 @@ describe("debug", function () {
   });
 
   describe("mergeConfigNetwork(config, options)", function () {
+    const url = "http://urlhost:1234";
+    const parsedUrl = new URL(url);
+    const expectedNetworkName = parsedUrl.host;
+
     beforeEach(function () {
       config = Config.default();
-      options = {
-        url: "http://urlhost:1234"
-      };
+      options = { url: url };
     });
 
     it("should create networks item in config", function () {
       result = mergeConfigNetwork(config, options);
 
-      assert.notEqual(result.networks["urlhost:1234"], undefined);
-      assert.equal(result.networks["urlhost:1234"].url, "http://urlhost:1234");
-      assert.equal(result.networks["urlhost:1234"].network_id, "*");
+      assert.notEqual(result.networks[expectedNetworkName], undefined);
+      assert.equal(result.networks[expectedNetworkName].url, url);
+      assert.equal(result.networks[expectedNetworkName].network_id, "*");
     });
 
     it("should set host of the url by default", function () {
       result = mergeConfigNetwork(result, options);
-      assert.equal(result.network, "urlhost:1234");
+      assert.equal(result.network, expectedNetworkName);
     });
 
     it("should override network field when specified in options", function () {
@@ -55,7 +58,7 @@ describe("debug", function () {
 
     it("should not use url when url not passed", function () {
       result = mergeConfigNetwork(config, {});
-      assert.notEqual(result.netwok, "urlhost:1234");
+      assert.notEqual(result.netwok, expectedNetworkName);
     });
   });
 });
