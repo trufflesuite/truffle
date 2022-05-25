@@ -156,17 +156,12 @@ function* stepInto() {
  * Step out of the current function
  *
  * This will run until the debugger encounters a decrease in function depth
- * (or finishes)
+ * (or finishes).
  */
 function* stepOut() {
-  if (yield select(controller.current.location.isMultiline)) {
-    yield* stepOver();
-    return;
-  }
-
   const startingDepth = yield select(controller.current.functionDepth);
-  var currentDepth;
-  var finished;
+  let currentDepth;
+  let finished;
 
   do {
     yield* stepNext();
@@ -180,14 +175,30 @@ function* stepOut() {
  * stepOver - step over the current line
  *
  * Step over the current line. This will step to the next instruction that
- * exists on a different line of code within the same function depth.
+ * exists on a different line of code within the same function depth (or lower).
+ * (However, if you are on the definition of a function, it will step over that
+ * function entirely, returning you to the next function depth.)
  */
 function* stepOver() {
   const startingDepth = yield select(controller.current.functionDepth);
   const startingLocation = yield select(controller.current.location);
-  var currentDepth;
-  var currentLocation;
-  var finished;
+  const startingNode = yield select(controller.current.location.node);
+  let currentDepth;
+  let currentLocation;
+  let finished;
+
+  //special case: what if you're on a function definition?
+  //note that we exclude base constructors here, because we don't have a
+  //good way to go to the end of a base constructor; we'll just perform
+  //an ordinary stepOver in that case
+  if (
+    startingNode &&
+    startingNode.nodeType === "FunctionDefinition" &&
+    !(yield select(controller.current.onBaseConstructorDefinition))
+  ) {
+    yield* stepOut();
+    return;
+  }
 
   do {
     yield* stepNext();

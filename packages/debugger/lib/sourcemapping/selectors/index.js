@@ -6,6 +6,7 @@ import SourceMapUtils from "@truffle/source-map-utils";
 import * as Codec from "@truffle/codec";
 
 import semver from "semver";
+import jsonpointer from "json-pointer";
 
 import evm from "lib/evm/selectors";
 import trace from "lib/trace/selectors";
@@ -121,6 +122,22 @@ function createMultistepSelectors(stepSelector) {
       ["./source", "./pointerAndNode"],
 
       ({ ast }, pointerAndNode) => (pointerAndNode ? pointerAndNode.node : ast)
+    ),
+
+    /**
+     * .contractNode
+     * WARNING: ad-hoc selector only meant to be used
+     * when you're on a function node!
+     * should probably be replaced by something better;
+     * the data submodule handles these things a better way
+     */
+    contractNode: createLeaf(["./source", "./pointer"], ({ ast }, pointer) =>
+      pointer
+        ? jsonpointer.get(
+            ast,
+            pointer.replace(/\/nodes\/\d+$/, "") //cut off end
+          )
+        : ast
     )
   };
 }
