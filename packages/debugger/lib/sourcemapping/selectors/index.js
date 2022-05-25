@@ -380,6 +380,24 @@ let sourcemapping = createSelectorTree({
     ),
 
     /**
+     * sourcemapping.current.onYulFunctionDefinitionWhileEntering
+     */
+    onYulFunctionDefinitionWhileEntering: createLeaf(
+      ["./node", "./pointer", "../next/pointer"],
+      (node, pointer, nextPointer) =>
+        node &&
+        node.nodeType === "YulFunctionDefinition" &&
+        nextPointer !== null &&
+        (nextPointer.startsWith(`${pointer}/body/`) ||
+          nextPointer.startsWith(`${pointer}/returnVariables`))
+      //if neither of these conditions hold, we're seeing the function
+      //as it's being defined, rather than as it's being called.
+      //notice the final slash; when you enter a function, you go *strictly inside*
+      //its body (if you hit the body node itself you are seeing the definition)
+      //(as of Solidity 0.8.4, you may also go to the return parameters)
+    ),
+
+    /**
      * sourcemapping.current.willJump
      */
     willJump: createLeaf([evm.current.step.isJump], isJump => isJump),

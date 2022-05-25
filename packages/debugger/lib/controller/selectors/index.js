@@ -88,6 +88,14 @@ const controller = createSelectorTree({
     ),
 
     /**
+     * controller.current.location.onYulFunctionDefinitionWhileEntering
+     */
+    onYulFunctionDefinitionWhileEntering: createLeaf(
+      [sourcemapping.current.onYulFunctionDefinitionWhileEntering],
+      identity
+    ),
+
+    /**
      * controller.current.location
      */
     location: {

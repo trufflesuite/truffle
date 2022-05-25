@@ -188,13 +188,16 @@ function* stepOver() {
   let finished;
 
   //special case: what if you're on a function definition?
-  //note that we exclude base constructors here, because we don't have a
-  //good way to go to the end of a base constructor; we'll just perform
-  //an ordinary stepOver in that case
   if (
     startingNode &&
-    startingNode.nodeType === "FunctionDefinition" &&
-    !(yield select(controller.current.onBaseConstructorDefinition))
+    ((startingNode.nodeType === "FunctionDefinition" &&
+      //note that we exclude base constructors here, because we don't have a
+      //good way to go to the end of a base constructor; we'll just perform
+      //an ordinary stepOver in that case
+      !(yield select(controller.current.onBaseConstructorDefinition))) ||
+      //for Yul functions, we use a special selector to make sure we're seeing
+      //the function definition as we enter it rather than as it's defined
+      (yield select(controller.current.onYulFunctionDefinitionWhileEntering)))
   ) {
     yield* stepOut();
     return;

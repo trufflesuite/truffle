@@ -217,22 +217,9 @@ function* variablesAndMappingsSaga() {
 
     case "YulFunctionDefinition": {
       const nextPointer = yield select(data.next.pointer);
-      if (
-        nextPointer === null ||
-        !(
-          nextPointer.startsWith(`${pointer}/body/`) ||
-          nextPointer.startsWith(`${pointer}/returnVariables`)
-        )
-      ) {
-        //in this case, we're seeing the function
-        //as it's being defined, rather than as it's
-        //being called
-        //notice the final slash; when you enter a function, you go *strictly inside*
-        //its body (if you hit the body node itself you are seeing the definition)
-        //(as of Solidity 0.8.4, you may also go to the return parameters; rather
-        //than switch on the version, and use a different mechanism for that,
-        //we'll use the same mechanism but alter the condition above to account
-        //for that)
+      if (!(yield select(data.current.onYulFunctionDefinitionWhileEntering))) {
+        //in this case, we're seeing the function as it's being defined, rather
+        //than as it's being called
         break;
       }
       //yul parameters are a bit weird.
