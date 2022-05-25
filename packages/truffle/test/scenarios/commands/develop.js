@@ -15,7 +15,7 @@ const formatLines = lines =>
     .map(line => `\t---truffle develop log---\t${line}`)
     .join("\n");
 
-describe("truffle develop", function () {
+describe.only("truffle develop", function () {
   project = path.join(__dirname, "../../sources/develop");
 
   before(async function () {
@@ -33,7 +33,13 @@ describe("truffle develop", function () {
     before(async function () {
       this.timeout(10000);
       const input = "Object.keys(global)";
-      await CommandRunner.runInDevelopEnvironment([input], config);
+
+      await CommandRunner.runInREPL({
+        commands: [input],
+        config: config,
+        replType: "develop",
+        displayHost: "develop"
+      });
       output = logger.contents();
     });
 
@@ -60,7 +66,14 @@ describe("truffle develop", function () {
   it("handles awaits", async function () {
     this.timeout(70000);
     const input = "await Promise.resolve(`${6*7} is probably not a prime`)";
-    await CommandRunner.runInDevelopEnvironment([input], config);
+
+    await CommandRunner.runInREPL({
+      commands: [input],
+      config: config,
+      replType: "develop",
+      displayHost: "develop"
+    });
+
     const output = logger.contents();
     const expectedValue = "42 is probably not a prime";
     assert(
@@ -71,7 +84,14 @@ describe("truffle develop", function () {
 
   it("loads snippets", async function () {
     this.timeout(70000);
-    await CommandRunner.runInDevelopEnvironment(["breakfast"], config);
+
+    await CommandRunner.runInREPL({
+      commands: ["breakfast"],
+      config: config,
+      replType: "develop",
+      displayHost: "develop"
+    });
+
     const output = logger.contents();
     const expectedValue = "eggs and sausage, and a side of toast";
     assert(
@@ -83,7 +103,12 @@ describe("truffle develop", function () {
   it("loads snippets which have access to Truffle variables", async function () {
     this.timeout(70000);
 
-    await CommandRunner.runInDevelopEnvironment(["twoAccounts"], config);
+    await CommandRunner.runInREPL({
+      commands: ["twoAccounts"],
+      config: config,
+      replType: "develop",
+      displayHost: "develop"
+    });
     const output = logger.contents();
 
     // `twoAccounts` is the concatenation of the first 2 accounts in `accounts`
