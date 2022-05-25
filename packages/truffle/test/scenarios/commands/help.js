@@ -41,7 +41,6 @@ describe("truffle help [ @standalone ]", function () {
         )
       );
       assert(output.includes("--environment"));
-      assert(output.includes("--ipfs"));
     });
   });
 });
