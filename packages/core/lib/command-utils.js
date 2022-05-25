@@ -7,6 +7,10 @@ const debugModule = require("debug");
 const debug = debugModule("core:command:run");
 const commands = require("./commands/commands");
 
+// this function takes an object with an array of input strings, an options
+// object, and a boolean determining whether we allow inexact matches for
+// command names - it returns an object with the command name, the run method,
+// and the command's meta object containing help and command description
 const getCommand = ({ inputStrings, options, noAliases }) => {
   if (inputStrings.length === 0) {
     return null;
@@ -62,13 +66,6 @@ const getCommand = ({ inputStrings, options, noAliases }) => {
     command = require(filePath);
   }
 
-  const yargs = require("yargs/yargs")();
-  yargs.command(require(`./commands/${chosenCommand}/meta`));
-  const commandOptions = yargs.parse(inputStrings);
-
-  // remove the task name itself put there by yargs
-  if (commandOptions._) commandOptions._.shift();
-
   // several commands have a help property that is a function
   if (typeof command.meta.help === "function") {
     command.meta.help = command.meta.help(options);
@@ -76,13 +73,22 @@ const getCommand = ({ inputStrings, options, noAliases }) => {
 
   return {
     name: chosenCommand,
-    options: commandOptions,
     run: command.run,
     meta: command.meta
   };
 };
 
+// takes an object containing the command (name, run method, and meta object),
+// the array of strings that were input, and an options object - it sanitizes
+// the input options, merges it with the input options, and returns the result
 const prepareOptions = ({ command, inputStrings, options }) => {
+  const yargs = require("yargs/yargs")();
+  yargs.command(require(`./commands/${command.name}/meta`));
+  const commandOptions = yargs.parse(inputStrings);
+
+  // remove the task name itself put there by yargs
+  if (commandOptions._) commandOptions._.shift();
+
   // some options might throw if options is a Config object
   // if so, let's ignore those values
   const clone = {};
@@ -134,7 +140,7 @@ const prepareOptions = ({ command, inputStrings, options }) => {
 
   return {
     ...clone,
-    ...command.options
+    ...commandOptions
   };
 };
 
