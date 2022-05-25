@@ -159,7 +159,7 @@ properties:
 
 - `post-unpack`
 
-  If provided, runs command after box files are fetched and cleaned up for a
+  If provided, runs command after box files are fetched, cleaned up, modified according to recipe (if any) for a
   new project.
 
   Commonly useful to install dependencies, e.g.
