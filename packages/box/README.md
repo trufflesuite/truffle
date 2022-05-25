@@ -1,5 +1,4 @@
-@truffle/box
-===========
+# @truffle/box
 
 Truffle Box management functionality.
 
@@ -16,16 +15,21 @@ const unboxOptions = { force: false };
 
 // .unbox() validates & unboxes truffle box repos
 // pass the current working directory as directory to unbox into
-TruffleBox.unbox("https://github.com/trufflesuite/truffle-init-default", process.cwd(), unboxOptions);
+TruffleBox.unbox(
+  "https://github.com/trufflesuite/truffle-init-default",
+  process.cwd(),
+  unboxOptions
+);
 
 // or specify relative path to unbox into (path must already exist)
-TruffleBox.unbox("https://github.com/trufflesuite/truffle-init-default", "some/relativePath", unboxOptions);
-
+TruffleBox.unbox(
+  "https://github.com/trufflesuite/truffle-init-default",
+  "some/relativePath",
+  unboxOptions
+);
 ```
 
-
-Box Configuration
------------------
+## Box Configuration
 
 Truffle Boxes are configured via a required `truffle-box.json` file in the
 box repo's root directory.
@@ -78,8 +82,80 @@ properties:
   }
   ```
 
-Available Unbox Hooks
----------------------
+- `recipes`
+
+  An object that describes box recipes, which are variations of a given box. It has three properties:
+
+  - `prompts`
+    Array of questions to prompt the user. Each prompt is an object with the following properties:
+
+    - `message`
+      Prompt text to print.
+    - `default`
+      (optional) Default answer to prompt.
+
+  - `common`
+    Array of files (relative paths) that belong to every recipe.
+
+  - `specs`
+    An object that maps prompt answers to arrays of files specific to a recipe. A file can be a:
+
+    - string: Relative path.
+    - object: An object with `from` and `to` string properties, which are relative paths, representing a move/rename operation.
+
+    A given answer's depth, _d_, corresponds to the prompt at index _d_. (See example.)
+
+  Example for a box with three recipes:
+
+  ```txt
+                          │
+         Prompt 1         │      Prompt 2
+  Select an Ethereum lib. │      TS or JS?
+                          │
+
+                  ┌────────────> TypeScript
+                  │      (web3.js,TypeScript recipe)
+        web3.js ──┤
+                  └────────────> JavaScript
+                         (web3.js,JavaScript recipe)
+
+                          │
+        ethers.js         │
+    (ethers.js recipe)    │
+                          │
+  ```
+
+  ```json
+  "recipes": {
+    "prompts": [
+      { "message": "Select an Ethereum lib." },
+      {
+        "message": "TS or JS?",
+        "default": "TypeScript"
+      }
+    ],
+    "common": [ "welcome-to-ethereum.md" ],
+    "specs": {
+      "web3.js": {
+        "TypeScript": [
+          "tsconfig.json",
+          { "from": "tutorials/web3js-ts/package.json", "to": "package.json" },
+          { "from": "tutorials/web3js-ts/index.ts", "to": "tutorial.ts" }
+        ],
+        "JavaScript": [
+          { "from": "tutorials/web3js-js/package.json", "to": "package.json" },
+          { "from": "tutorials/web3js-js/index.js", "to": "tutorial.js" }
+        ]
+      },
+      "ethers.js": [
+        { "from": "tutorials/ethersjs/package.json", "to": "package.json" },
+        { "from": "tutorials/ethersjs/index.js", "to": "tutorial.js" }
+      ]
+    }
+  }
+  ```
+
+## Available Unbox Hooks
 
 - `post-unpack`
 
