@@ -58,13 +58,13 @@ export = {
     events: any,
     setUpBoxOptions: setUpBoxOptions
   ) => {
-    events.emit("unbox:settingUpBox:start");
-    unbox.installBoxDependencies(boxConfig, destination);
-    await events.emit("unbox:settingUpBox:succeed");
     await recipe.followBoxRecipe(
       boxConfig,
       destination,
       setUpBoxOptions.recipe
     );
+    events.emit("unbox:settingUpBox:start");
+    unbox.installBoxDependencies(boxConfig, destination);
+    events.emit("unbox:settingUpBox:succeed");
   }
 };
