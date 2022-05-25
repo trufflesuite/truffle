@@ -35,7 +35,7 @@ const verbosePanicTable = {
 
 const commandReference = {
   "o": "step over",
-  "i": "step into",
+  "i": "step line / step into",
   "u": "step out",
   "n": "step next",
   ";": "step instruction (include number to step multiple)",
