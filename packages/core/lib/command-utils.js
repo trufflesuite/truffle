@@ -7,7 +7,7 @@ const debugModule = require("debug");
 const debug = debugModule("core:command:run");
 const commands = require("./commands/commands");
 
-const getCommand = (inputStrings, options, noAliases) => {
+const getCommand = ({ inputStrings, options, noAliases }) => {
   if (inputStrings.length === 0) {
     return null;
   }
@@ -82,7 +82,7 @@ const getCommand = (inputStrings, options, noAliases) => {
   };
 };
 
-const prepareOptions = (command, inputStrings, options) => {
+const prepareOptions = ({ command, inputStrings, options }) => {
   // some options might throw if options is a Config object
   // if so, let's ignore those values
   const clone = {};

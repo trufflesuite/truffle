@@ -285,7 +285,11 @@ class Console extends EventEmitter {
     // processInput returns a sanitized string
     const processedInput = processInput(input);
     if (
-      getCommand(processedInput.split(" "), {}, this.options.noAliases) !== null
+      getCommand({
+        inputStrings: processedInput.split(" "),
+        options: {},
+        noAliases: this.options.noAliases
+      }) !== null
     ) {
       try {
         this.runSpawn(processedInput, this.options);

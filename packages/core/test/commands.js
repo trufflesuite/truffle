@@ -29,34 +29,38 @@ describe("commands", function () {
 
   describe("getCommand utility", function () {
     it("infers commands based on initial letters entered", function () {
-      const result = getCommand(["m"]).name;
+      const result = getCommand({ inputStrings: ["m"] }).name;
       assert.equal(result, "migrate");
     });
 
     it("infers commands based on initial letters entered, even when typos exist later", function () {
-      const result = getCommand(["complie"]).name;
+      const result = getCommand({ inputStrings: ["complie"] }).name;
       assert.equal(result, "compile");
     });
 
     it("doesn't infer a command if not given enough information", function () {
       // Note: "co" matches "console" and "compile"
-      const result = getCommand(["co"]);
+      const result = getCommand({ inputStrings: ["co"] });
       assert.isNull(result);
     });
 
     it("infers commands based on initial letters entered, given matches for shorter substrings", function () {
       // Note: "co" matches "console" and "compile"
-      const result = getCommand(["com"]).name;
+      const result = getCommand({ inputStrings: ["com"] }).name;
       assert.equal(result, "compile");
     });
 
     it("ignores inferring if full command is specified", function () {
-      const result = getCommand(["console"]).name;
+      const result = getCommand({ inputStrings: ["console"] }).name;
       assert.equal(result, "console");
     });
 
     it("warns and displays an error for unsupported flags in commands", async function () {
-      const result = getCommand(["mig"], { logger: console }, false);
+      const result = getCommand({
+        inputStrings: ["mig"],
+        options: { logger: console },
+        noAliases: false
+      });
       assert.equal(result.name, "migrate");
 
       const originalLog = console.log || console.debug;
@@ -66,7 +70,7 @@ describe("commands", function () {
         warning = msg;
       };
 
-      const inputs = [
+      const inputStrings = [
         "migrate",
         "--network",
         "localhost",
@@ -77,7 +81,11 @@ describe("commands", function () {
       ];
 
       try {
-        const options = prepareOptions(result, inputs, { logger: console });
+        const options = prepareOptions({
+          command: result,
+          inputStrings,
+          options: { logger: console }
+        });
         await runCommand(result, options);
       } catch (error) {
         // this errors due to no config file but we don't care, we just want

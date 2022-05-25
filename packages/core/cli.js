@@ -58,8 +58,16 @@ const {
   runCommand
 } = require("./lib/command-utils");
 
-const command = getCommand(inputStrings, {}, false);
-const options = prepareOptions(command, inputStrings, {});
+const command = getCommand({
+  inputStrings,
+  options: {},
+  noAliases: false
+});
+const options = prepareOptions({
+  command,
+  inputStrings,
+  options: {}
+});
 
 runCommand(command, options)
   .then(returnStatus => process.exit(returnStatus))
