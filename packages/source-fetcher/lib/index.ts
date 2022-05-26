@@ -1,6 +1,7 @@
 import type {
   Fetcher,
   FetcherConstructor,
+  FetcherOptions,
   SourceInfo,
   NetworkInfo
 } from "./types";
@@ -8,6 +9,7 @@ import { InvalidNetworkError } from "./common";
 export {
   Fetcher,
   FetcherConstructor,
+  FetcherOptions,
   InvalidNetworkError,
   SourceInfo,
   NetworkInfo

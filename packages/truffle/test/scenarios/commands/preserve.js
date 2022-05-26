@@ -7,18 +7,17 @@ const path = require("path");
 const logger = new MemoryLogger();
 let config, project;
 
-const loadSandboxLogger = source => {
+const loadSandboxLogger = async function (source) {
   project = path.join(__dirname, source);
-  return sandbox.load(project).then(conf => {
-    config = conf;
-    config.logger = logger;
-  });
+  config = await sandbox.load(project);
+  config.logger = logger;
+  return config;
 };
 
 describe("truffle preserve [ @standalone @>=12 ]", () => {
   // These tests are basically duplicates from "truffle run", but for "truffle preserve"
   describe("plugin error handling", () => {
-    it("should throw when plugins are configured but not installed", async () => {
+    it("throws when plugins are configured but not installed", async () => {
       await loadSandboxLogger(
         "../../sources/run/mockProjectWithMissingPluginModule"
       );
@@ -27,7 +26,7 @@ describe("truffle preserve [ @standalone @>=12 ]", () => {
       assert(output.includes("listed as a plugin, but not found"));
     }).timeout(10000);
 
-    it("should throw when plugins are missing truffle-plugin.json", async () => {
+    it("throws when plugins are missing truffle-plugin.json", async () => {
       await loadSandboxLogger(
         "../../sources/run/mockProjectWithMissingPluginConfig"
       );
@@ -36,7 +35,7 @@ describe("truffle preserve [ @standalone @>=12 ]", () => {
       assert(output.includes("Error: truffle-plugin.json not found"));
     }).timeout(10000);
 
-    it("should throw if recipe in truffle-plugin.json uses an absolute path", async () => {
+    it("throws if recipe in truffle-plugin.json uses an absolute path", async () => {
       await loadSandboxLogger(
         "../../sources/preserve/mockProjectWithAbsolutePath"
       );
@@ -47,7 +46,7 @@ describe("truffle preserve [ @standalone @>=12 ]", () => {
   });
 
   describe("preserve error handling", () => {
-    it("should throw when an unknown environment is specified", async () => {
+    it("throws when an unknown environment is specified", async () => {
       await loadSandboxLogger(
         "../../sources/preserve/mockProjectWithWorkingPlugin"
       );
@@ -58,7 +57,7 @@ describe("truffle preserve [ @standalone @>=12 ]", () => {
       assert(output.includes("Unknown environment"));
     }).timeout(20000);
 
-    it("should throw when no recipe is specified", async () => {
+    it("throws when no recipe is specified", async () => {
       await loadSandboxLogger(
         "../../sources/preserve/mockProjectWithWorkingPlugin"
       );
@@ -67,7 +66,7 @@ describe("truffle preserve [ @standalone @>=12 ]", () => {
       assert(output.includes("No (valid) recipe specified"));
     }).timeout(20000);
 
-    it("should throw when the specified recipe is not installed", async () => {
+    it("throws when the specified recipe is not installed", async () => {
       await loadSandboxLogger(
         "../../sources/preserve/mockProjectWithWorkingPlugin"
       );
@@ -76,7 +75,7 @@ describe("truffle preserve [ @standalone @>=12 ]", () => {
       assert(output.includes("No (valid) recipe specified"));
     }).timeout(20000);
 
-    it("should throw when no target path is specified", async () => {
+    it("throws when no target path is specified", async () => {
       await loadSandboxLogger(
         "../../sources/preserve/mockProjectWithWorkingPlugin"
       );
@@ -87,7 +86,8 @@ describe("truffle preserve [ @standalone @>=12 ]", () => {
   });
 
   describe("success", () => {
-    it("should run the specified recipe with default environment", async () => {
+    it("runs the specified recipe with default environment", async function () {
+      this.timeout(10000);
       await loadSandboxLogger(
         "../../sources/preserve/mockProjectWithWorkingPlugin"
       );
@@ -96,7 +96,8 @@ describe("truffle preserve [ @standalone @>=12 ]", () => {
       assert(output.includes("Provided environment name: development"));
     });
 
-    it("should run the specified recipe with a custom environment", async () => {
+    it("runs the specified recipe with a custom environment", async function () {
+      this.timeout(10000);
       await loadSandboxLogger(
         "../../sources/preserve/mockProjectWithWorkingPlugin"
       );

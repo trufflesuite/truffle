@@ -15,10 +15,16 @@ import * as Conversion from "@truffle/codec/conversion";
 import {
   ResultInspector,
   unsafeNativize,
+  unsafeNativizeVariables,
   InspectOptions,
   nativizeAccessList
 } from "@truffle/codec/format/utils/inspect";
-export { ResultInspector, unsafeNativize, nativizeAccessList };
+export {
+  ResultInspector,
+  unsafeNativize,
+  unsafeNativizeVariables,
+  nativizeAccessList
+};
 
 type NumberFormatter = (n: BigInt) => any; //not parameterized since we output any anyway
 
@@ -371,6 +377,7 @@ export function containsDeliberateReadError(
     case "error":
       switch (result.error.kind) {
         case "StorageNotSuppliedError":
+        case "CodeNotSuppliedError":
           return true;
         default:
           return false;

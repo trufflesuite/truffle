@@ -1,25 +1,14 @@
 const assert = require("chai").assert;
 const path = require("path");
 const fse = require("fs-extra");
-const glob = require("glob");
-const { default: Box } = require("@truffle/box");
 const Create = require("../../lib/commands/create/helpers");
-const Resolver = require("@truffle/resolver");
-const Artifactor = require("@truffle/artifactor");
+const glob = require("glob");
+const { createTestProject } = require("../helpers");
+let config;
 
 describe("create", function () {
-  let config;
-
-  before("Create a sandbox", async function() {
-    this.timeout(5000);
-    config = await Box.sandbox("default");
-    config.resolver = new Resolver(config);
-    config.artifactor = new Artifactor(config.contracts_build_directory);
-  });
-
-  after("Cleanup tmp files", async function () {
-    const files = glob.sync("tmp-*");
-    files.forEach(file => fse.removeSync(file));
+  before(function () {
+    config = createTestProject(path.join(__dirname, "../sources/metacoin"));
   });
 
   it("creates a new contract", async function () {
@@ -34,7 +23,7 @@ describe("create", function () {
       `Contract to be created doesns't exist, ${expectedFile}`
     );
 
-    const fileData = fse.readFileSync(expectedFile, {encoding: "utf8"});
+    const fileData = fse.readFileSync(expectedFile, { encoding: "utf8" });
     assert.isNotNull(fileData, "File's data is null");
     assert.notEqual(fileData, "", "File's data is blank");
     assert.isTrue(
@@ -75,7 +64,7 @@ describe("create", function () {
       `Contract to be created doesns't exist, ${expectedFile}`
     );
 
-    const options = {force: true};
+    const options = { force: true };
     await Create.contract(
       config.contracts_directory,
       "MyNewContract3",
@@ -92,7 +81,7 @@ describe("create", function () {
       `Test to be created doesns't exist, ${expectedFile}`
     );
 
-    const fileData = fse.readFileSync(expectedFile, {encoding: "utf8"});
+    const fileData = fse.readFileSync(expectedFile, { encoding: "utf8" });
     assert.isNotNull(fileData, "File's data is null");
     assert.notEqual(fileData, "", "File's data is blank");
   });
@@ -109,7 +98,7 @@ describe("create", function () {
         file.indexOf(expectedSuffix) ===
         file.length - expectedSuffix.length
       ) {
-        const fileData = fse.readFileSync(file, {encoding: "utf8"});
+        const fileData = fse.readFileSync(file, { encoding: "utf8" });
         assert.isNotNull(fileData, "File's data is null");
         assert.notEqual(fileData, "", "File's data is blank");
         return;

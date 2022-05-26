@@ -1,38 +1,31 @@
 const Ganache = require("ganache");
 const fs = require("fs-extra");
 const glob = require("glob");
-
 let server = null;
 
 module.exports = {
-  start: function (done) {
-    this.stop(function () {
-      if (!process.env.GETH) {
-        server = Ganache.server({
-          gasLimit: 6721975,
-          logging: {
-            quiet: true
-          },
-          miner: {
-            instamine: "strict"
-          }
-        });
-        server.listen(8545, done);
-      } else {
-        done();
-      }
-    });
-  },
-  stop: function (done) {
-    const self = this;
-    if (server) {
-      server.close().then(function () {
-        server = null;
-        self.cleanUp().then(done);
+  start: async function () {
+    await this.stop();
+    if (!process.env.GETH) {
+      server = Ganache.server({
+        gasLimit: 6721975,
+        logging: {
+          quiet: true
+        },
+        miner: {
+          instamine: "strict"
+        }
       });
-    } else {
-      self.cleanUp().then(done);
+      await server.listen(8545);
     }
+  },
+
+  stop: async function () {
+    if (server) {
+      await server.close();
+      server = null;
+    }
+    await this.cleanUp();
   },
 
   cleanUp: function () {

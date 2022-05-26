@@ -1,18 +1,22 @@
-var MemoryLogger = require("../MemoryLogger");
-var CommandRunner = require("../commandRunner");
-var path = require("path");
-var assert = require("assert");
-var Server = require("../server");
-var Reporter = require("../reporter");
-var sandbox = require("../sandbox");
+const MemoryLogger = require("../MemoryLogger");
+const CommandRunner = require("../commandRunner");
+const path = require("path");
+const assert = require("assert");
+const Server = require("../server");
+const Reporter = require("../reporter");
+const sandbox = require("../sandbox");
 
 describe("Solidity Imports [ @standalone ]", function () {
-  var config;
-  var project = path.join(__dirname, "../../sources/monorepo");
-  var logger = new MemoryLogger();
+  let config;
+  const project = path.join(__dirname, "../../sources/monorepo");
+  const logger = new MemoryLogger();
 
-  before(done => Server.start(done));
-  after(done => Server.stop(done));
+  before(async function () {
+    await Server.start();
+  });
+  after(async function () {
+    await Server.stop();
+  });
 
   /**
    * Directory Structure

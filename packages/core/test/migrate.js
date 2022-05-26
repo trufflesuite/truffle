@@ -7,7 +7,7 @@ const path = require("path");
 const fs = require("fs-extra");
 const glob = require("glob");
 const Ganache = require("ganache");
-const Resolver = require("@truffle/resolver");
+const { Resolver } = require("@truffle/resolver");
 const Artifactor = require("@truffle/artifactor");
 const Web3 = require("web3");
 

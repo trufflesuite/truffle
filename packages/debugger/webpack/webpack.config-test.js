@@ -37,9 +37,7 @@ module.exports = merge(commonConfig, {
     ]
   },
 
-  externals: [
-    /^ganache$/,
-  ],
+  externals: [/^ganache$/],
 
   plugins: [
     new webpack.DefinePlugin({

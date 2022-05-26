@@ -40,6 +40,22 @@ function transactionLog(state = DEFAULT_TX_LOG, action) {
         debug("attempt to set origin of bad node type!");
         return state;
       }
+
+    case actions.LOG_EVENT:
+      return {
+        byPointer: {
+          ...state.byPointer,
+          [pointer]: {
+            ...node,
+            actions: [...node.actions, newPointer]
+          },
+          [newPointer]: {
+            type: "event",
+            decoding: action.decoding
+          }
+        }
+      };
+
     case actions.INTERNAL_CALL:
       return {
         byPointer: {
@@ -295,7 +311,7 @@ function transactionLog(state = DEFAULT_TX_LOG, action) {
         ...node,
         waitingForFunctionDefinition: false
       };
-      //note: I don't handle the following in the object spread above
+      //note: I don't handle the following three fields in the object spread above
       //because I don't want undefined or null counting against it
       if (!modifiedNode.functionName) {
         modifiedNode.functionName = functionName;
@@ -353,6 +369,7 @@ function currentNodePointer(state = "", action) {
     case actions.UNLOAD_TRANSACTION:
       return "";
     default:
+      //includes events
       return state;
   }
 }
@@ -373,6 +390,7 @@ function pointerStack(state = [], action) {
     case actions.UNLOAD_TRANSACTION:
       return [];
     default:
+      //includes events
       return state;
   }
 }

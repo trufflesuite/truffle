@@ -23,7 +23,7 @@ export function* decodeStack(
   dataType: Format.Types.Type,
   pointer: Pointer.StackPointer,
   info: Evm.EvmInfo
-): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
+): Generator<DecoderRequest, Format.Values.Result, Uint8Array | null> {
   let rawValue: Uint8Array;
   try {
     rawValue = yield* read(pointer, info.state);
@@ -41,7 +41,7 @@ export function* decodeLiteral(
   dataType: Format.Types.Type,
   pointer: Pointer.StackLiteralPointer,
   info: Evm.EvmInfo
-): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
+): Generator<DecoderRequest, Format.Values.Result, Uint8Array | null> {
   debug("type %O", dataType);
   debug("pointer %o", pointer);
 

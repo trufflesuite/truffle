@@ -7,17 +7,21 @@ const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const Web3 = require("web3");
 
-describe("solo migration", function() {
+describe("solo migration", function () {
   let config;
   let web3;
   let networkId;
   const project = path.join(__dirname, "../../sources/migrations/init");
   const logger = new MemoryLogger();
 
-  before(done => Server.start(done));
-  after(done => Server.stop(done));
+  before(async function () {
+    await Server.start();
+  });
+  after(async function () {
+    await Server.stop();
+  });
 
-  before(async function() {
+  before(async function () {
     this.timeout(10000);
     config = await sandbox.create(project);
     config.network = "development";
@@ -33,7 +37,7 @@ describe("solo migration", function() {
     networkId = await web3.eth.net.getId();
   });
 
-  it("runs a migration with just Migrations.sol ", async function() {
+  it("runs a migration with just Migrations.sol ", async function () {
     this.timeout(70000);
 
     await CommandRunner.run("migrate", config);

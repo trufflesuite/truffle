@@ -26,7 +26,7 @@ export function* decodeAbi(
   pointer: Pointer.AbiDataPointer,
   info: Evm.EvmInfo,
   options: DecoderOptions = {}
-): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
+): Generator<DecoderRequest, Format.Values.Result, Uint8Array | null> {
   if (
     Format.Types.isReferenceType(dataType) ||
     dataType.typeClass === "tuple"
@@ -60,7 +60,7 @@ export function* decodeAbiReferenceByAddress(
   pointer: Pointer.AbiDataPointer | Pointer.StackFormPointer,
   info: Evm.EvmInfo,
   options: DecoderOptions = {}
-): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
+): Generator<DecoderRequest, Format.Values.Result, Uint8Array | null> {
   let { strictAbiMode: strict, abiPointerBase: base, lengthOverride } = options;
   base = base || 0; //in case base was undefined
   const {
@@ -314,7 +314,7 @@ export function* decodeAbiReferenceStatic(
   pointer: Pointer.AbiDataPointer,
   info: Evm.EvmInfo,
   options: DecoderOptions = {}
-): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
+): Generator<DecoderRequest, Format.Values.Result, Uint8Array | null> {
   debug("static");
   debug("pointer %o", pointer);
   const location = pointer.location;
@@ -398,7 +398,7 @@ function* decodeAbiStructByPosition(
   startPosition: number,
   info: Evm.EvmInfo,
   options: DecoderOptions = {}
-): Generator<DecoderRequest, Format.Values.StructResult, Uint8Array> {
+): Generator<DecoderRequest, Format.Values.StructResult, Uint8Array | null> {
   const {
     allocations: { abi: allocations }
   } = info;
@@ -462,7 +462,7 @@ function* decodeAbiTupleByPosition(
   startPosition: number,
   info: Evm.EvmInfo,
   options: DecoderOptions = {}
-): Generator<DecoderRequest, Format.Values.TupleResult, Uint8Array> {
+): Generator<DecoderRequest, Format.Values.TupleResult, Uint8Array | null> {
   //WARNING: This case is written in a way that involves a bunch of unnecessary recomputation!
   //I'm writing it this way anyway for simplicity, to avoid rewriting the decoder
   //However it may be worth revisiting this in the future if performance turns out to be a problem

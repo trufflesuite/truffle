@@ -50,11 +50,12 @@ export function error(error) {
 }
 
 export const RECORD_CONTRACTS = "SESSION_RECORD_CONTRACTS";
-export function recordContracts(contexts, sources) {
+export function recordContracts(contexts, sources, contracts) {
   return {
     type: RECORD_CONTRACTS,
     contexts,
-    sources
+    sources,
+    contracts
   };
 }
 
@@ -98,10 +99,11 @@ export function startFullMode() {
 }
 
 export const ADD_COMPILATIONS = "SESSION_ADD_COMPILATIONS";
-export function addCompilations(sources, contexts) {
+export function addCompilations(sources, contexts, contracts) {
   return {
     type: ADD_COMPILATIONS,
     sources,
-    contexts
+    contexts,
+    contracts
   };
 }

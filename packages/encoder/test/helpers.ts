@@ -15,7 +15,7 @@ import type * as Common from "@truffle/compile-common";
 const Box = require("@truffle/box").default; //Box is TS, but TS has problems with sandbox??
 const WorkflowCompile = require("@truffle/workflow-compile");
 const Deployer = require("@truffle/deployer");
-const Resolver = require("@truffle/resolver"); //resolver is TS too but I can't make it typecheck :-/
+const { Resolver } = require("@truffle/resolver"); //resolver is TS too but I can't make it typecheck :-/
 
 interface StringMap {
   [key: string]: string;

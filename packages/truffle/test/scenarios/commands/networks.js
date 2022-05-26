@@ -7,20 +7,17 @@ const path = require("path");
 describe("truffle networks", () => {
   let config, projectPath;
 
-  before("before all setup", function(done) {
+  before(async function () {
     this.timeout(10000);
     projectPath = path.join(__dirname, "../../sources/networks/metacoin");
-    sandbox
-      .create(projectPath)
-      .then(tempConfig => {
-        config = tempConfig;
-        config.network = "development";
-        config.logger = { log: () => {} };
-      })
-      .then(() => Server.start(done));
+    config = await sandbox.create(projectPath);
+    config.network = "development";
+    config.logger = { log: () => {} };
+    await Server.start();
   });
-
-  after(done => Server.stop(done));
+  after(async function () {
+    await Server.stop();
+  });
 
   describe("when run on a simple project", () => {
     it("doesn't throw", async () => {
@@ -29,7 +26,8 @@ describe("truffle networks", () => {
   });
 
   describe("when run with --clean", () => {
-    it("removes networks with id's not listed in the config", async () => {
+    it("removes networks with id's not listed in the config", async function () {
+      this.timeout(10000);
       const workingDirectory = config.working_directory;
       const pathToArtifact = path.join(
         workingDirectory,

@@ -1,6 +1,6 @@
 const Config = require("@truffle/config");
 const expect = require("@truffle/expect");
-const Resolver = require("@truffle/resolver");
+const { Resolver } = require("@truffle/resolver");
 const Artifactor = require("@truffle/artifactor");
 
 function prepareConfig(options) {
@@ -37,5 +37,5 @@ function multiPromisify(func) {
 
 module.exports = {
   prepareConfig,
-  multiPromisify,
+  multiPromisify
 };

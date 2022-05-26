@@ -45,19 +45,9 @@ export function message(error: Format.Errors.ErrorForThrowing): string {
         } in ${slotAddressPrintout(error.range.to.slot)}`;
       }
     case "StorageNotSuppliedError":
-      if (error.range.length) {
-        return `Unknown storage for ${
-          error.range.length
-        } bytes starting at index ${
-          error.range.from.index
-        } in ${slotAddressPrintout(error.range.from.slot)}`;
-      } else {
-        return `Unknown storage from index ${
-          error.range.from.index
-        } in ${slotAddressPrintout(error.range.from.slot)} to index ${
-          error.range.to.index
-        } in ${slotAddressPrintout(error.range.to.slot)}`;
-      }
+      return `Unknown storage at slot ${error.slot.toString()}`; //note: not actually used at present
+    case "CodeNotSuppliedError":
+      return `Unknown code for address ${error.address}`; //note: not actually used at present
   }
 }
 

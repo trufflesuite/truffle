@@ -298,10 +298,11 @@ const data = createSelectorTree({
       [
         "/info/userDefinedTypes",
         "/views/scopes/inlined",
+        "/info/contracts",
         sourcemapping.views.sources,
         evm.info.contexts
       ],
-      (userDefinedTypes, scopes, sources, contexts) =>
+      (userDefinedTypes, scopes, contracts, sources, contexts) =>
         Object.values(userDefinedTypes)
           .filter(
             ({ sourceId, id }) =>
@@ -312,29 +313,17 @@ const data = createSelectorTree({
             debug("id: %O", id);
             const compilationId = sources[sourceId].compilationId;
             debug("compilationId: %O", compilationId);
-            let deployedContext = Object.values(contexts).find(
-              context =>
-                !context.isConstructor &&
-                context.compilationId === compilationId &&
-                context.contractId === id
-            );
-            let constructorContext = Object.values(contexts).find(
-              context =>
-                context.isConstructor &&
-                context.compilationId === compilationId &&
-                context.contractId === id
-            );
-            let immutableReferences = deployedContext
-              ? deployedContext.immutableReferences
-              : undefined;
+            const contract = contracts[compilationId].byAstId[id];
+            const deployedContext = contexts[contract.deployedContext];
+            const constructorContext = contexts[contract.constructorContext];
+            const immutableReferences = (deployedContext || {})
+              .immutableReferences;
             return {
               contractNode: scopes[sourceId][id].definition,
               compilationId,
               immutableReferences,
-              //we don't just use deployedContext to get compiler because it might not exist!
               compiler: sources[sourceId].compiler,
-              //the following three are only needed for decoding return values
-              abi: (deployedContext || {}).abi,
+              abi: contract.abi,
               deployedContext,
               constructorContext
             };
@@ -409,20 +398,18 @@ const data = createSelectorTree({
     /*
      * data.views.contexts
      * same as evm.info.contexts, but:
-     * 0. we only include non-constructor contexts
-     * 1. we strip out sourceMap and primarySource
-     * 2. we alter abi in two ways:
+     * 1. we strip out fields irrelevant to codec
+     * 2. we alter abi in a few ways ways:
      * 2a. we strip out everything but functions
      * 2b. abi is now an object, not an array, and indexed by these signatures
+     * 2c. fallback/receive stuff instead goes in the fallbackAbi field
      */
     contexts: createLeaf([evm.info.contexts], contexts =>
       Object.assign(
         {},
-        ...Object.values(contexts)
-          .filter(context => !context.isConstructor)
-          .map(context => ({
-            [context.contractId]: debuggerContextToDecoderContext(context)
-          }))
+        ...Object.values(contexts).map(context => ({
+          [context.context]: debuggerContextToDecoderContext(context)
+        }))
       )
     )
   },
@@ -435,6 +422,14 @@ const data = createSelectorTree({
      * data.info.scopes
      */
     scopes: createLeaf(["/state"], state => state.info.scopes.bySourceId),
+
+    /**
+     * data.info.contracts
+     */
+    contracts: createLeaf(
+      ["/state"],
+      state => state.info.contracts.byCompilationId
+    ),
 
     /*
      * data.info.allocations
@@ -474,7 +469,12 @@ const data = createSelectorTree({
       returndata: createLeaf(
         ["/state"],
         state => state.info.allocations.returndata
-      )
+      ),
+
+      /*
+       * data.info.allocations.event
+       */
+      event: createLeaf(["/state"], state => state.info.allocations.event)
     },
 
     /**
@@ -554,6 +554,24 @@ const data = createSelectorTree({
         [evm.current.call],
 
         ({ data }) => Codec.Conversion.toBytes(data)
+      ),
+
+      /**
+       * data.current.state.eventdata
+       * usually undefined; used for log decoding
+       */
+      eventdata: createLeaf([evm.current.step.logData], data =>
+        data !== null ? Codec.Conversion.toBytes(data) : undefined
+      ),
+
+      /**
+       * data.current.state.eventtopics
+       * usually undefined; used for log decoding
+       */
+      eventtopics: createLeaf([evm.current.step.logTopics], words =>
+        words !== null
+          ? words.map(word => Codec.Conversion.toBytes(word))
+          : undefined
       ),
 
       /**
@@ -1093,9 +1111,48 @@ const data = createSelectorTree({
             errorNode = errorNode.errorCall;
           //DELIBERATE FALL-THROUGH
           case "FunctionCall":
+            if (
+              Codec.Ast.Utils.functionClass(errorNode.expression) !== "error"
+            ) {
+              return undefined;
+            }
             //this should work for both qualified & unqualified errors
             const errorId = errorNode.expression.referencedDeclaration;
             return Codec.Contexts.Import.makeTypeId(errorId, compilationId);
+          default:
+            //I'm not going to try to handle other cases that maybe could
+            //occur with the optimizer on
+            return undefined;
+        }
+      }
+    ),
+
+    /**
+     * data.current.eventId
+     * similar to errorId but for events
+     * (and unlike errorId it can just use the current node!)
+     */
+    eventId: createLeaf(
+      ["./node", "./compilationId"],
+      (eventNode, compilationId) => {
+        if (!eventNode) {
+          return undefined;
+        }
+        switch (eventNode.nodeType) {
+          case "EmitStatement":
+            //I don't think this case should happen, but I'm including it
+            //for extra certainty
+            eventNode = eventNode.eventCall;
+          //DELIBERATE FALL-THROUGH
+          case "FunctionCall":
+            if (
+              Codec.Ast.Utils.functionClass(eventNode.expression) !== "event"
+            ) {
+              return undefined;
+            }
+            //this should work for both qualified & unqualified errors
+            const eventId = eventNode.expression.referencedDeclaration;
+            return Codec.Contexts.Import.makeTypeId(eventId, compilationId);
           default:
             //I'm not going to try to handle other cases that maybe could
             //occur with the optimizer on

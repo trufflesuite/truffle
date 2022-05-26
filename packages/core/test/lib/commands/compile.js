@@ -1,40 +1,21 @@
 const assert = require("chai").assert;
-const { default: Box } = require("@truffle/box");
 const WorkflowCompile = require("@truffle/workflow-compile");
-const Artifactor = require("@truffle/artifactor");
-const Resolver = require("@truffle/resolver");
 const MemoryStream = require("memorystream");
 const command = require("../../../lib/commands/compile");
 const path = require("path");
-const fs = require("fs-extra");
-const glob = require("glob");
+const fse = require("fs-extra");
+const { createTestProject } = require("../../helpers");
 let config;
 let output = "";
 let memStream;
 
 describe("compile", function () {
-  before("Create a sandbox", async () => {
-    config = await Box.sandbox("default");
-    config.resolver = new Resolver(config);
-    config.artifactor = new Artifactor(config.contracts_build_directory);
-    config.networks = {
-      default: {
-        network_id: "1"
-      },
-      secondary: {
-        network_id: "12345"
-      }
-    };
-    config.network = "default";
+  before(function () {
+    config = createTestProject(path.join(__dirname, "../../sources/metacoin"));
     config.logger = { log: val => val && memStream.write(val) };
   });
 
-  after("Cleanup tmp files", async function () {
-    const files = glob.sync("tmp-*");
-    files.forEach(file => fs.removeSync(file));
-  });
-
-  afterEach("Clear MemoryStream", () => (output = ""));
+  afterEach(() => (output = ""));
 
   it("compiles all initial contracts", async function () {
     const { contracts } = await WorkflowCompile.compileAndSave(
@@ -68,11 +49,11 @@ describe("compile", function () {
     const fileToUpdate = path.resolve(
       path.join(config.contracts_directory, "ConvertLib.sol")
     );
-    const stat = fs.statSync(fileToUpdate);
+    const stat = fse.statSync(fileToUpdate);
 
     // Update the modification time to simulate an edit.
     const newTime = new Date().getTime();
-    fs.utimesSync(fileToUpdate, newTime, newTime);
+    fse.utimesSync(fileToUpdate, newTime, newTime);
 
     const { contracts } = await WorkflowCompile.compileAndSave(
       config.with({
@@ -87,7 +68,7 @@ describe("compile", function () {
     );
 
     // reset time
-    fs.utimesSync(fileToUpdate, stat.atime, stat.mtime);
+    fse.utimesSync(fileToUpdate, stat.atime, stat.mtime);
   });
 
   it("compiling shouldn't create any network artifacts", function () {
@@ -108,9 +89,7 @@ describe("compile", function () {
     });
 
     it("prints a truncated list of solcjs versions", async function () {
-      const options = {
-        list: ""
-      };
+      const options = { list: "" };
 
       await command.run(config.with(options));
       memStream.on("end", () => {
@@ -148,6 +127,35 @@ describe("compile", function () {
         assert(typeof arr[0] === "string");
       });
       memStream.end("");
+    });
+  });
+
+  describe("compiling specific sources", function () {
+    it("compiles one specified contract after three are updated", async function () {
+      this.timeout(10000);
+      // update all three files
+      const sources = ["OtherContract.sol", "MetaCoin.sol", "ConvertLib.sol"];
+      for (const source of sources) {
+        const filename = path.join(config.contracts_directory, source);
+        const contents = fse.readFileSync(filename).toString();
+        // make a trivial update to each file
+        fse.writeFileSync(filename, `${contents}\n`);
+      }
+
+      const { contracts } = await WorkflowCompile.compileAndSave(
+        config.with({
+          all: false,
+          quiet: true,
+          paths: [path.resolve(config.contracts_directory, "OtherContract.sol")]
+        })
+      );
+
+      // confirm it didn't compile all contracts
+      assert.equal(
+        Object.keys(contracts).length,
+        1,
+        "Didn't compile specified contract."
+      );
     });
   });
 });

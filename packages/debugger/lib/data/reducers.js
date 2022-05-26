@@ -99,6 +99,7 @@ const DEFAULT_ALLOCATIONS = {
   abi: {},
   calldata: {},
   returndata: {},
+  event: {},
   state: {}
 };
 
@@ -111,6 +112,7 @@ function allocations(state = DEFAULT_ALLOCATIONS, action) {
       abi: action.abi,
       calldata: action.calldata,
       returndata: action.returndata,
+      event: action.event,
       state: action.state
     };
   } else {
@@ -118,8 +120,37 @@ function allocations(state = DEFAULT_ALLOCATIONS, action) {
   }
 }
 
+const DEFAULT_CONTRACTS = {
+  byCompilationId: {}
+};
+
+function contracts(state = DEFAULT_CONTRACTS, action) {
+  if (action.type === actions.ADD_CONTRACTS) {
+    //NOTE: this code assumes that we are only ever adding compilations
+    //wholesale, and never adding to existing ones!
+    return {
+      byCompilationId: {
+        ...state.byCompilationId,
+        ...Object.assign(
+          {},
+          ...Object.entries(action.contracts).map(
+            ([compilationId, compilation]) => ({
+              [compilationId]: {
+                byAstId: compilation
+              }
+            })
+          )
+        )
+      }
+    };
+  } else {
+    return state;
+  }
+}
+
 const info = combineReducers({
   scopes,
+  contracts,
   userDefinedTypes,
   taggedOutputs,
   allocations
@@ -256,10 +287,9 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
           //parent!
           newSlot = {
             ...slot,
-            path:
-              newState.byAddress[address].byType[parentType].bySlotAddress[
-                parentAddress
-              ]
+            path: newState.byAddress[address].byType[parentType].bySlotAddress[
+              parentAddress
+            ]
           };
         } else {
           newSlot = slot;

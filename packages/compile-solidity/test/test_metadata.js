@@ -4,7 +4,7 @@ tmp.setGracefulCleanup();
 const fs = require("fs");
 const path = require("path");
 const { Compile } = require("@truffle/compile-solidity");
-const Resolver = require("@truffle/resolver");
+const { Resolver } = require("@truffle/resolver");
 const { CompilerSupplier } = require("../dist/compilerSupplier");
 const assert = require("assert");
 const { findOne } = require("./helpers");
@@ -25,21 +25,19 @@ const supplierOptions = {
 };
 
 describe("Compile - solidity ^0.4.0", function () {
-  this.timeout(5000); // solc
-  let source = null;
-  let solc = null; // gets loaded via supplier
+  this.timeout(5000); // solc // gets loaded via supplier
   let options;
 
   before("get solc", async function () {
     this.timeout(40000);
 
     const supplier = new CompilerSupplier(supplierOptions);
-    ({ solc } = await supplier.load());
+    await supplier.load();
   });
 
   describe("Metadata", function () {
-
     let sourcePath;
+    let tmpdir;
 
     before("Set up temporary directory and project", async function () {
       tmpdir = tmp.dirSync({ unsafeCleanup: true }).name; //tmp uses callbacks, not promises, so using sync
@@ -50,7 +48,7 @@ describe("Compile - solidity ^0.4.0", function () {
         contracts_directory,
         contracts_build_directory: path.join(tmpdir, "./build/contracts"), //nothing is actually written, but resolver demands it
         compilers: {
-          solc: solcConfig,
+          solc: solcConfig
         },
         quiet: true
       };
@@ -74,10 +72,12 @@ describe("Compile - solidity ^0.4.0", function () {
       const metadataTargets = Object.keys(metadata.settings.compilationTarget);
       const metadataPaths = metadataSources.concat(metadataTargets);
       debug("metadataPaths: %O", metadataPaths);
-      assert(metadataPaths.every(
-        sourcePath => sourcePath.startsWith("project:/") &&
-          !sourcePath.includes(tmpdir)
-      ));
+      assert(
+        metadataPaths.every(
+          sourcePath =>
+            sourcePath.startsWith("project:/") && !sourcePath.includes(tmpdir)
+        )
+      );
     });
   });
 });

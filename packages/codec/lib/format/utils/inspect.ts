@@ -382,7 +382,8 @@ export class ResultInspector {
           case "ReadErrorBytes":
             return Exception.message(errorResult.error); //yay, these five are already defined!
           case "StorageNotSuppliedError":
-            //this one has a message, but we're going to special-case it
+          case "CodeNotSuppliedError": //this latter one is not used at present
+            //these ones have a message, but we're going to special-case it
             return options.stylize("?", "undefined");
         }
       }
@@ -395,6 +396,13 @@ class ContractInfoInspector {
   value: Format.Values.ContractValueInfo;
   constructor(value: Format.Values.ContractValueInfo) {
     this.value = value;
+  }
+  /**
+   * @dev non-standard alternative interface name used by browser-util-inspect
+   *      package
+   */
+  inspect(depth: number | null, options: InspectOptions): string {
+    return this[util.inspect.custom].bind(this)(depth, options);
   }
   [util.inspect.custom](depth: number | null, options: InspectOptions): string {
     switch (this.value.kind) {

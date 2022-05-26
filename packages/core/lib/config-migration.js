@@ -2,8 +2,6 @@ const OS = require("os");
 const path = require("path");
 const fse = require("fs-extra");
 const Conf = require("conf");
-const { promisify } = require("util");
-const copy = require("./copy");
 const TruffleConfig = require("@truffle/config");
 const debugModule = require("debug");
 const debug = debugModule("core:config-migration");
@@ -58,9 +56,9 @@ module.exports = {
     const targetPath = path.join(this.oldTruffleDataDirectory, folderName);
     // use conf to determine the new Truffle folder as it uses OS-appropriate locations
     const conf = new Conf({ projectName: "truffle" });
-    const destinationPath = path.join(TruffleConfig.getTruffleDataDirectory(), folderName);
+    const destinationPath = path.join(conf.getTruffleDataDirectory(), folderName);
     if (fse.existsSync(targetPath)) {
-      await promisify(copy)(targetPath, destinationPath, {});
+      fse.copySync(targetPath, destinationPath);
     }
   }
 };

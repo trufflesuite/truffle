@@ -79,19 +79,17 @@ describe("truffle migrate --describe-json", () => {
   let config, projectPath;
   let logger = new MemoryLogger();
 
-  before("before all setup", done => {
+  before(async function () {
     projectPath = path.join(__dirname, "../../sources/migrations/init");
-    sandbox
-      .create(projectPath)
-      .then(conf => {
-        config = conf;
-        config.network = "development";
-        config.logger = logger;
-      })
-      .then(() => Server.start(done));
+    config = await sandbox.create(projectPath);
+    config.network = "development";
+    config.logger = logger;
+    await Server.start();
   });
 
-  after(done => Server.stop(done));
+  after(async function () {
+    await Server.stop();
+  });
 
   describe("when run on the most basic truffle project without --describe-json", () => {
     let contents;

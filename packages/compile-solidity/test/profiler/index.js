@@ -3,7 +3,7 @@ const fs = require("fs-extra");
 const glob = require("glob");
 const { default: Box } = require("@truffle/box");
 const Profiler = require("../../dist/profiler");
-const Resolver = require("@truffle/resolver");
+const { Resolver } = require("@truffle/resolver");
 const Artifactor = require("@truffle/artifactor");
 
 describe("profiler", function () {

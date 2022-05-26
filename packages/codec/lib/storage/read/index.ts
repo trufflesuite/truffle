@@ -19,7 +19,7 @@ import type BN from "bn.js";
 export function* readSlot(
   storage: Evm.WordMapping,
   slot: Storage.Slot
-): Generator<DecoderRequest, Uint8Array, Uint8Array> {
+): Generator<DecoderRequest, Uint8Array, Uint8Array | null> {
   const address: BN = Utils.slotAddress(slot);
 
   // debug("reading slot: %o", Conversion.toHexString(address));
@@ -35,6 +35,13 @@ export function* readSlot(
       type: "storage",
       slot: address
     };
+    if (word === null) {
+      //check for null as a way to deliberately indicate an error
+      throw new DecodingError({
+        kind: "StorageNotSuppliedError" as const,
+        slot: address
+      });
+    }
   }
 
   return word;
@@ -43,7 +50,7 @@ export function* readSlot(
 export function* readStorage(
   pointer: Pointer.StoragePointer,
   state: Evm.EvmState
-): Generator<DecoderRequest, Uint8Array, Uint8Array> {
+): Generator<DecoderRequest, Uint8Array, Uint8Array | null> {
   const { storage } = state;
   const { range } = pointer;
   debug("readRange %o", range);
@@ -85,13 +92,6 @@ export function* readStorage(
   for (let i = 0; i < totalWords; i++) {
     let offset = from.slot.offset.addn(i);
     const word = yield* readSlot(storage, { ...from.slot, offset });
-    if (word === null) {
-      //check for null as a way to deliberately indicate an error
-      throw new DecodingError({
-        kind: "StorageNotSuppliedError" as const,
-        range
-      });
-    }
     data.set(word, i * Evm.Utils.WORD_SIZE);
   }
   debug("words %o", data);

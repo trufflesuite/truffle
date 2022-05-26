@@ -1,5 +1,9 @@
 const emoji = require("node-emoji");
 const mnemonicInfo = require("../../mnemonics/mnemonic");
+const {
+  configureManagedGanache,
+  getFirstDefinedValue
+} = require("../../configAdapter");
 
 const runConsole = async (config, ganacheOptions) => {
   const Console = require("../../console");
@@ -27,9 +31,13 @@ module.exports = async options => {
   const config = Config.detect(options);
   const customConfig = config.networks.develop || {};
 
-  const { mnemonic, accounts, privateKeys } = mnemonicInfo.getAccountsInfo(
-    customConfig.accounts || 10
+  const numberOfAccounts = getFirstDefinedValue(
+    customConfig.accounts,
+    customConfig.total_accounts,
+    10 // Use as default number of accounts
   );
+  const { mnemonic, accounts, privateKeys } =
+    mnemonicInfo.getAccountsInfo(numberOfAccounts);
 
   const onMissing = () => "**";
 
@@ -39,41 +47,11 @@ module.exports = async options => {
     "Ensure you do not use it on production blockchains, or else you risk losing funds.";
 
   const ipcOptions = { log: options.log };
-
-  const ganacheOptions = {
-    host: customConfig.host || "127.0.0.1",
-    port: customConfig.port || 9545,
-    network_id: customConfig.network_id || 5777,
-    total_accounts: customConfig.accounts || 10,
-    default_balance_ether: customConfig.defaultEtherBalance || 100,
-    blockTime: customConfig.blockTime || 0,
-    fork: customConfig.fork,
-    mnemonic,
-    gasLimit: customConfig.gas || 0x6691b7,
-    gasPrice: customConfig.gasPrice || 0x77359400,
-    time: config.genesis_time
-  };
-
-  if (customConfig.hardfork !== null && customConfig.hardfork !== undefined) {
-    ganacheOptions["hardfork"] = customConfig.hardfork;
-  }
-
-  function sanitizeNetworkID(network_id) {
-    if (network_id !== "*") {
-      if (!parseInt(network_id, 10)) {
-        const error =
-          `The network id specified in the truffle config ` +
-          `(${network_id}) is not valid. Please properly configure the network id as an integer value.`;
-        throw new Error(error);
-      }
-      return network_id;
-    } else {
-      // We have a "*" network. Return the default.
-      return 5777;
-    }
-  }
-
-  ganacheOptions.network_id = sanitizeNetworkID(ganacheOptions.network_id);
+  const ganacheOptions = configureManagedGanache(
+    config,
+    customConfig,
+    mnemonic
+  );
 
   const { started } = await Develop.connectOrStart(ipcOptions, ganacheOptions);
   const url = `http://${ganacheOptions.host}:${ganacheOptions.port}/`;

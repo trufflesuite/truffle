@@ -7,9 +7,10 @@ import WorkflowCompile from "@truffle/workflow-compile";
 import Artifactor from "@truffle/artifactor";
 import Web3 from "web3";
 import Migrate from "@truffle/migrate";
-import Box from "@truffle/box";
-import Resolver from "@truffle/resolver";
+import { Resolver } from "@truffle/resolver";
 import * as Codec from "@truffle/codec";
+import tmp from "tmp";
+import Config from "@truffle/config";
 
 export async function prepareContracts(provider, sources = {}, migrations) {
   let config = await createSandbox();
@@ -63,15 +64,21 @@ export async function prepareContracts(provider, sources = {}, migrations) {
 }
 
 export async function createSandbox() {
-  const config = await Box.sandbox({
-    unsafeCleanup: true,
-    setGracefulCleanup: true,
-    name: "bare-box"
-  });
+  const tempDir = tmp.dirSync({ unsafeCleanup: true });
+  fs.copySync(
+    path.join(
+      __dirname,
+      "..",
+      "test",
+      "sources",
+      "init"
+    ),
+    tempDir.name
+  );
+  const config = new Config(undefined, tempDir.name);
   config.resolver = new Resolver(config);
   config.artifactor = new Artifactor(config.contracts_build_directory);
   config.networks = {};
-
   return config;
 }
 

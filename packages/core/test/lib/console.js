@@ -5,7 +5,7 @@ const commands = require("../../lib/commands");
 const sinon = require("sinon");
 const Config = require("@truffle/config");
 const Web3 = require("web3");
-const Resolver = require("@truffle/resolver");
+const { Resolver } = require("@truffle/resolver");
 const config = new Config();
 
 // Console uses the following for instantiation in packages/core/lib/console.js
@@ -28,7 +28,7 @@ describe("Console", function () {
           }
         },
         network_id: 666,
-        provider: new Web3.providers.HttpProvider("http://localhost:666"),
+        provider: new Web3.providers.WebsocketProvider("ws://localhost:666"),
         resolver: new Resolver(config)
       });
       const pathToUserJs = path.join(
@@ -78,7 +78,7 @@ describe("Console", function () {
             }
           },
           network_id: 666,
-          provider: new Web3.providers.HttpProvider("http://localhost:666"),
+          provider: new Web3.providers.WebsocketProvider("ws://localhost:666"),
           resolver: new Resolver(config)
         });
         otherConsoleOptions.require = path.join(
@@ -94,7 +94,8 @@ describe("Console", function () {
       });
 
       it("won't load any user-defined JS", async function () {
-        const result = await otherTruffleConsole.calculateTruffleAndUserGlobals();
+        const result =
+          await otherTruffleConsole.calculateTruffleAndUserGlobals();
         assert.equal(typeof result.bingBam, "undefined");
         assert.equal(typeof result.abraham, "undefined");
       });
@@ -111,7 +112,7 @@ describe("Console", function () {
             }
           },
           network_id: 666,
-          provider: new Web3.providers.HttpProvider("http://localhost:666"),
+          provider: new Web3.providers.WebsocketProvider("ws://localhost:666"),
           resolver: new Resolver(config)
         });
         otherConsoleOptions.console.require = path.join(
@@ -122,7 +123,8 @@ describe("Console", function () {
       });
 
       it("won't let users clobber Truffle variables", async function () {
-        const result = await otherTruffleConsole.calculateTruffleAndUserGlobals();
+        const result =
+          await otherTruffleConsole.calculateTruffleAndUserGlobals();
         assert.notEqual(result.accounts, "0x666");
         assert.notEqual(result.web3, "fakeWeb3");
         assert.notEqual(result.interfaceAdapter, "fakeInterfaceAdapter");
@@ -140,7 +142,7 @@ describe("Console", function () {
             }
           },
           network_id: 666,
-          provider: new Web3.providers.HttpProvider("http://localhost:666"),
+          provider: new Web3.providers.WebsocketProvider("ws://localhost:666"),
           resolver: new Resolver(config)
         });
         otherTruffleConsole = new Console(consoleCommands, otherConsoleOptions);
@@ -151,7 +153,8 @@ describe("Console", function () {
           config.working_directory,
           "test/sources/userVariables.js"
         );
-        const result = await otherTruffleConsole.calculateTruffleAndUserGlobals();
+        const result =
+          await otherTruffleConsole.calculateTruffleAndUserGlobals();
         assert.equal(result.bingBam, "boom");
       });
 
@@ -160,7 +163,8 @@ describe("Console", function () {
           config.working_directory,
           "test/sources/userVariables.js"
         );
-        const result = await otherTruffleConsole.calculateTruffleAndUserGlobals();
+        const result =
+          await otherTruffleConsole.calculateTruffleAndUserGlobals();
         assert.equal(result.bingBam, "boom");
       });
 
@@ -173,7 +177,8 @@ describe("Console", function () {
           config.working_directory,
           "test/sources/userVariables.js"
         );
-        const result = await otherTruffleConsole.calculateTruffleAndUserGlobals();
+        const result =
+          await otherTruffleConsole.calculateTruffleAndUserGlobals();
         assert.equal(result.abraham, "lincoln");
         assert.notEqual(result.bingBam, "boom");
       });

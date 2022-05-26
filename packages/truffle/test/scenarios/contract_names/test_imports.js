@@ -1,22 +1,26 @@
-var MemoryLogger = require("../MemoryLogger");
-var CommandRunner = require("../commandRunner");
-var contract = require("@truffle/contract");
-var fs = require("fs-extra");
-var path = require("path");
-var assert = require("assert");
-var Server = require("../server");
-var Reporter = require("../reporter");
+const MemoryLogger = require("../MemoryLogger");
+const CommandRunner = require("../commandRunner");
+const contract = require("@truffle/contract");
+const fs = require("fs-extra");
+const path = require("path");
+const assert = require("assert");
+const Server = require("../server");
+const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 
-describe("Contract names", function() {
+describe("Contract names", function () {
   let config;
   const logger = new MemoryLogger();
   const project = path.join(__dirname, "../../sources/contract_names");
 
-  before(done => Server.start(done));
-  after(done => Server.stop(done));
+  before(async function () {
+    await Server.start();
+  });
+  after(async function () {
+    await Server.stop();
+  });
 
-  before(async function() {
+  before(async function () {
     this.timeout(10000);
     config = await sandbox.create(project);
     config.network = "development";
@@ -26,7 +30,7 @@ describe("Contract names", function() {
     };
   });
 
-  it("will compile if file names do not match contract names", async function() {
+  it("will compile if file names do not match contract names", async function () {
     this.timeout(40000);
 
     await CommandRunner.run("compile", config);
@@ -41,7 +45,7 @@ describe("Contract names", function() {
     );
   });
 
-  it("will migrate when artifacts.require() doesn't have an extension and names do not match", async function() {
+  it("will migrate when artifacts.require() doesn't have an extension and names do not match", async function () {
     this.timeout(50000);
 
     await CommandRunner.run("migrate", config);
@@ -70,7 +74,7 @@ describe("Contract names", function() {
     );
   });
 
-  it("will compile and migrate with relative imports (using filename)", async function() {
+  it("will compile and migrate with relative imports (using filename)", async function () {
     this.timeout(50000);
 
     const contractPath = path.join(

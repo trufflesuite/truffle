@@ -47,13 +47,18 @@ export function* saga(moduleOptions) {
 
   // receiving & saving contracts into state
   debug("waiting for contract information");
-  let { contexts, sources } = yield take(actions.RECORD_CONTRACTS);
+  const { contexts, sources, contracts } = yield take(actions.RECORD_CONTRACTS);
 
   debug("recording contract binaries");
   yield* recordContexts(contexts);
 
   debug("recording contract sources");
   yield* recordSources(sources);
+
+  //note: even this goes in data, we'll do it even in light
+  //mode for simplicity
+  debug("recording other contract info");
+  yield* recordContracts(contracts);
 
   debug("waiting for start");
   // wait for start signal
@@ -90,12 +95,16 @@ export function* saga(moduleOptions) {
 }
 
 //please only use in light mode!
-function* addCompilations({ sources, contexts }) {
+function* addCompilations({ sources, contexts, contracts }) {
   debug("recording contract binaries");
   yield* recordContexts(contexts);
 
   debug("recording contract sources");
   yield* recordSources(sources);
+
+  //see comment above about this
+  debug("recording other contract info");
+  yield* recordContracts(contracts);
 
   debug("refreshing instances");
   yield* evm.refreshInstances();
@@ -210,13 +219,17 @@ function* fetchTx(txHash) {
 }
 
 function* recordContexts(contexts) {
-  for (let context of Object.values(contexts)) {
+  for (const context of Object.values(contexts)) {
     yield* evm.addContext(context);
   }
 }
 
 function* recordSources(sources) {
   yield* sourcemapping.addSources(sources);
+}
+
+function* recordContracts(contracts) {
+  yield* data.addContracts(contracts);
 }
 
 //creationBinary can be omitted; should only be used for creations

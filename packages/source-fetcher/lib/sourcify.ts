@@ -41,6 +41,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "rinkeby",
     "goerli",
     "kovan",
+    "sepolia",
     "optimistic",
     "kovan-optimistic",
     "arbitrum",
@@ -48,17 +49,20 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "polygon",
     "mumbai-polygon",
     "xdai",
-    "sokol",
+    //sourcify does *not* support poa core...?
+    "sokol-poa",
     "binance",
     "testnet-binance",
     "celo",
     "alfajores-celo",
     "baklava-celo",
-    //again, we don't support avalanche, even though sourcify does
+    "avalanche",
+    "fuji-avalanche",
+    "wagmi-avalanche",
     "telos",
     "testnet-telos",
     "ubiq",
-    //sourcify does *not* support oneledger mainnet...?
+    "oneledger",
     "frankenstein-oneledger",
     "syscoin",
     "tanenbaum-syscoin",
@@ -68,7 +72,18 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "meter",
     "testnet-meter",
     "aurora",
-    "testnet-aurora"
+    "testnet-aurora",
+    "fuse",
+    "moonbeam",
+    "moonriver",
+    "moonbase-alpha",
+    "palm",
+    "testnet-palm",
+    "crab-darwinia",
+    "pangolin-darwinia",
+    "evmos",
+    "testnet-evmos",
+    "multivac"
   ]);
 
   constructor(networkId: number) {

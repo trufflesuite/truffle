@@ -1,6 +1,5 @@
-const copy = require("../../copy");
 const path = require("path");
-const fs = require("fs");
+const fse = require("fs-extra");
 
 const templates = {
   test: {
@@ -19,12 +18,12 @@ const templates = {
 };
 
 const replaceContents = (filePath, find, replacement) => {
-  const data = fs.readFileSync(filePath, { encoding: "utf8" });
+  const data = fse.readFileSync(filePath, { encoding: "utf8" });
   if (typeof find === "string") {
     find = new RegExp(find, "g");
   }
   const result = data.replace(find, replacement);
-  fs.writeFileSync(filePath, result, { encoding: "utf8" });
+  fse.writeFileSync(filePath, result, { encoding: "utf8" });
 };
 
 const toUnderscoreFromCamel = string => {
@@ -57,15 +56,15 @@ const getLicense = options => {
 };
 
 const Create = {
-  contract: async function (directory, name, options) {
+  contract: function (directory, name, options) {
     const from = templates.contract.filename;
     const to = path.join(directory, name + ".sol");
 
-    if (!options.force && fs.existsSync(to)) {
+    if (!options.force && fse.existsSync(to)) {
       throw new Error("Can not create " + name + ".sol: file exists");
     }
 
-    await copy(from, to);
+    fse.copySync(from, to);
 
     replaceContents(to, templates.contract.name, name);
     const license = getLicense(options);
@@ -74,22 +73,22 @@ const Create = {
     }
   },
 
-  test: async function (directory, name, options) {
+  test: function (directory, name, options) {
     let underscored = toUnderscoreFromCamel(name);
     underscored = underscored.replace(/\./g, "_");
     const from = templates.test.filename;
     const to = path.join(directory, underscored + ".js");
 
-    if (!options.force && fs.existsSync(to)) {
+    if (!options.force && fse.existsSync(to)) {
       throw new Error("Can not create " + underscored + ".js: file exists");
     }
 
-    await copy(from, to);
+    fse.copySync(from, to);
     replaceContents(to, templates.contract.name, name);
     replaceContents(to, templates.contract.variable, underscored);
   },
 
-  migration: async function (directory, name, options) {
+  migration: function (directory, name, options) {
     let underscored = toUnderscoreFromCamel(name || "");
     underscored = underscored.replace(/\./g, "_");
     const from = templates.migration.filename;
@@ -102,10 +101,10 @@ const Create = {
     filename += ".js";
     const to = path.join(directory, filename);
 
-    if (!options.force && fs.existsSync(to)) {
+    if (!options.force && fse.existsSync(to)) {
       throw new Error("Can not create " + filename + ": file exists");
     }
-    await copy(from, to);
+    fse.copySync(from, to);
   }
 };
 

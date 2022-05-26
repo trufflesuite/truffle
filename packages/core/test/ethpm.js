@@ -7,7 +7,7 @@ const WorkflowCompile = require("@truffle/workflow-compile");
 const Package = require("../lib/package.js");
 const Blockchain = require("@truffle/blockchain-utils");
 const Ganache = require("ganache");
-const Resolver = require("@truffle/resolver");
+const { Resolver } = require("@truffle/resolver");
 const Artifactor = require("@truffle/artifactor");
 
 describe.skip("EthPM integration", function () {
@@ -29,24 +29,25 @@ describe.skip("EthPM integration", function () {
     );
   }
 
-  beforeEach("Create a Ganache provider and get a blockchain uri", function (
-    done
-  ) {
-    provider = Ganache.provider({
-      miner: {
-        instamine: "strict"
-      },
-      logging: {
-        quiet: true
-      }
-    });
+  beforeEach(
+    "Create a Ganache provider and get a blockchain uri",
+    function (done) {
+      provider = Ganache.provider({
+        miner: {
+          instamine: "strict"
+        },
+        logging: {
+          quiet: true
+        }
+      });
 
-    Blockchain.asURI(provider, function (err, uri) {
-      if (err) return done(err);
-      blockchain_uri = uri;
-      done();
-    });
-  });
+      Blockchain.asURI(provider, function (err, uri) {
+        if (err) return done(err);
+        blockchain_uri = uri;
+        done();
+      });
+    }
+  );
 
   // Super slow doing these in a beforeEach, but it ensures nothing conflicts.
   beforeEach("Create a sandbox", function (done) {
@@ -67,23 +68,25 @@ describe.skip("EthPM integration", function () {
     });
   });
 
-  beforeEach("Create a fake EthPM host and memory registry", function (done) {
-    this.timeout(30000); // I've had varrying runtimes with this block, likely due to networking.
+  // commented out because GithubExamples is improperly defined and flagged by es-lint
+  // NOTE: this test is in a skip block
+  // beforeEach("Create a fake EthPM host and memory registry", function (done) {
+  //   this.timeout(30000); // I've had varrying runtimes with this block, likely due to networking.
 
-    GithubExamples.initialize(
-      {
-        blockchain: blockchain_uri
-      },
-      function (err, results) {
-        if (err) return done(err);
+  // GithubExamples.initialize(
+  //   {
+  //     blockchain: blockchain_uri
+  //   },
+  //   function (err, results) {
+  //     if (err) return done(err);
 
-        host = results.host;
-        registry = results.registry;
+  //     host = results.host;
+  //     registry = results.registry;
 
-        done();
-      }
-    );
-  });
+  //     done();
+  //   }
+  // );
+  // });
 
   after("Cleanup tmp files", function (done) {
     glob("tmp-*", (err, files) => {
@@ -276,7 +279,7 @@ describe.skip("EthPM integration", function () {
         assert.ok(
           lockfile.deployments[blockchain_uri][expected_contract_name],
           expected_contract_name +
-            " does nto appear in deployed contracts for expected blockchain"
+            " does not appear in deployed contracts for expected blockchain"
         );
 
         // Finally assert the address.

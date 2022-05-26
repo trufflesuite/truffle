@@ -11,8 +11,12 @@ describe("migrate (empty)", function () {
   const project = path.join(__dirname, "../../sources/migrations/empty");
   const logger = new MemoryLogger();
 
-  before(done => Server.start(done));
-  after(done => Server.stop(done));
+  before(async function () {
+    await Server.start();
+  });
+  after(async function () {
+    await Server.stop();
+  });
 
   before(async function () {
     this.timeout(10000);

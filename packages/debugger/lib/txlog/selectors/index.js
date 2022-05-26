@@ -141,10 +141,10 @@ let txlog = createSelectorTree({
     ),
 
     /**
-     * txlog.current.nextCallPointer
-     * the pointer where a new call will be added
+     * txlog.current.nextActionPointer
+     * the pointer where a new action will be added
      */
-    nextCallPointer: createLeaf(
+    nextActionPointer: createLeaf(
       ["./pointer", "./node"],
       (pointer, node) => `${pointer}/actions/${node.actions.length}`
     ),
@@ -250,6 +250,11 @@ let txlog = createSelectorTree({
      * txlog.current.jumpDirection
      */
     jumpDirection: createLeaf([sourcemapping.current.jumpDirection], identity),
+
+    /**
+     * txlog.current.isLog
+     */
+    isLog: createLeaf([evm.current.step.isLog], identity),
 
     /**
      * txlog.current.isCall
