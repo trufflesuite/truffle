@@ -6,7 +6,7 @@ module.exports = async function (options) {
   const config = Config.detect(options);
 
   const commands = require("../commands");
-  const excluded = new Set(["console", "init", "watch", "develop"]);
+  const excluded = new Set(["console", "db", "init", "watch", "develop"]);
 
   const consoleCommands = commands.reduce((acc, name) => {
     return !excluded.has(name)
