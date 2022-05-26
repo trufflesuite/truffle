@@ -3,6 +3,9 @@ deployed:
       - contract: SumDAO
         links:
           - SafeMathLib
+        options:
+          from: "0xtesting"
+          gasPrice: 15000
       - contract: SafeMathLib
   - arbitrum:
       - contract: ArbiDAO
