@@ -1,15 +1,13 @@
 module.exports = async function (options) {
   const Config = require("@truffle/config");
-  const Console = require("../../console");
+  const { Console, excludedCommands } = require("../../console");
   const { Environment } = require("@truffle/environment");
 
   const config = Config.detect(options);
-
   const commands = require("../commands");
-  const excluded = new Set(["console", "db", "init", "watch", "develop"]);
 
   const consoleCommands = commands.reduce((acc, name) => {
-    return !excluded.has(name)
+    return !excludedCommands.has(name)
       ? Object.assign(acc, { [name]: commands[name] })
       : acc;
   }, {});

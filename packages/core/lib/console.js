@@ -395,4 +395,15 @@ class Console extends EventEmitter {
   }
 }
 
-module.exports = Console;
+const excludedCommandsInConsole = new Set([
+  "console",
+  "db",
+  "init",
+  "watch",
+  "develop"
+]);
+
+module.exports = {
+  excludedCommandsInConsole,
+  Console
+};

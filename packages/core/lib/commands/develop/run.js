@@ -6,14 +6,13 @@ const {
 } = require("../../configAdapter");
 
 const runConsole = async (config, ganacheOptions) => {
-  const Console = require("../../console");
+  const { Console, excludedCommands } = require("../../console");
   const { Environment } = require("@truffle/environment");
 
   const commands = require("../commands");
-  const excluded = new Set(["console", "db", "develop", "unbox", "init"]);
 
   const consoleCommands = commands.reduce((acc, name) => {
-    return !excluded.has(name)
+    return !excludedCommands.has(name)
       ? Object.assign(acc, { [name]: commands[name] })
       : acc;
   }, {});
