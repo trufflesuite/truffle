@@ -13,7 +13,7 @@ export interface DeclarationTarget {
   //this is the function to complete this target, this is the function that will
   //actually deploy, link, execute, etc.; ultimately the execution layer of the declarative
   //deployments module will look something like DeploymentSteps[0].run(contractName, options), etc.;
-  run: any;
+  run: Array<string>;
 }
 
 export interface DeclarationEntry {

@@ -65,7 +65,10 @@ const expectedResult = [
 ];
 let runnerResult;
 beforeAll(async () => {
-  runnerResult = await Runner.Runner.orchestrate(expectedDeclarationTargets);
+  runnerResult = await Runner.Runner.orchestrate(
+    expectedDeclarationTargets,
+    {}
+  );
 });
 
 describe("Runner", () => {

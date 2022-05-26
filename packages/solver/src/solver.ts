@@ -41,10 +41,12 @@ export const Solver = {
         // part and then the deploy
         const entryValues: Array<any> = Object.values(entry)[0];
         entryValues.map(contract => {
+          let runActions: Array<string> = ["deploy"];
           // will have capture variables to add to dependencies also, this is just the start
           //pairs of dependencies for topological sort
           let links = [];
           if (contract.links) {
+            runActions.push("link");
             links = contract.links;
             links.map(link => {
               dependencies.push([link, contract.contract]);
@@ -57,8 +59,9 @@ export const Solver = {
             contractName: contract.contract,
             network: Object.keys(entry)[0],
             dependencies: links,
+            links: links,
             isCompleted: false,
-            run: () => {}
+            run: runActions
           };
           deploymentSteps.push(declarationTarget);
         });
@@ -67,7 +70,6 @@ export const Solver = {
 
     // ok now get our deploymentSteps in the correct order accounting for dependencies
     const sortedSteps = await this.sort(dependencies, deploymentSteps);
-
     return sortedSteps;
   }
 };
