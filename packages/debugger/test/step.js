@@ -15,15 +15,26 @@ pragma solidity ^0.8.0;
 
 contract Steppy {
   function run() public {
-    this.called(1); //CALL LINE
-    emit Num(23); //AFTER LINE
+    this.called(1); //SOL CALL LINE
+    emit Num(23); //SOL AFTER LINE
   }
 
   event Num(uint);
 
-  function called(uint x) public { //CALLED LINE
+  function called(uint x) public { //SOL CALLED LINE
     //we include an argument here to ensure there's a generated source
-    emit Num(x); //INSIDE LINE
+    emit Num(x); //SOL INSIDE LINE
+  }
+
+  function yulTest() public {
+    assembly {
+      function f() { //YUL CALLED LINE
+        log1(0, 0, 2) //YUL INSIDE LINE
+      }
+      log1(0, 0, 1) //YUL INTERMED LINE
+      f() //YUL CALL LINE
+      log1(0, 0, 3) //YUL AFTER LINE
+    }
   }
 }
 `;
@@ -152,14 +163,14 @@ describe("Stepping functions", function () {
 
     await bugger.addBreakpoint({
       sourceId,
-      line: lineOf("CALL LINE", source)
+      line: lineOf("SOL CALL LINE", source)
     });
     await bugger.continueUntilBreakpoint();
     //now: do we step over correctly?
     await bugger.stepOver();
     assert.equal(
       bugger.view(controller.current.location.sourceRange).lines.start.line,
-      lineOf("AFTER LINE", source)
+      lineOf("SOL AFTER LINE", source)
     );
   });
 
@@ -179,14 +190,14 @@ describe("Stepping functions", function () {
 
     await bugger.addBreakpoint({
       sourceId,
-      line: lineOf("CALLED LINE", source)
+      line: lineOf("SOL CALLED LINE", source)
     });
     await bugger.continueUntilBreakpoint();
     //now: do we step over correctly?
     await bugger.stepOver();
     assert.equal(
       bugger.view(controller.current.location.sourceRange).lines.start.line,
-      lineOf("CALL LINE", source)
+      lineOf("SOL CALL LINE", source)
     );
   });
 
@@ -206,14 +217,14 @@ describe("Stepping functions", function () {
 
     await bugger.addBreakpoint({
       sourceId,
-      line: lineOf("INSIDE LINE", source)
+      line: lineOf("SOL INSIDE LINE", source)
     });
     await bugger.continueUntilBreakpoint();
-    //now: do we step over correctly?
+    //now: do we step out correctly?
     await bugger.stepOut();
     assert.equal(
       bugger.view(controller.current.location.sourceRange).lines.start.line,
-      lineOf("CALL LINE", source)
+      lineOf("SOL CALL LINE", source)
     );
   });
 
@@ -233,14 +244,132 @@ describe("Stepping functions", function () {
 
     await bugger.addBreakpoint({
       sourceId,
-      line: lineOf("CALLED LINE", source)
+      line: lineOf("SOL CALLED LINE", source)
     });
     await bugger.continueUntilBreakpoint();
-    //now: do we step over correctly?
+    //now: do we step out correctly?
     await bugger.stepOut();
     assert.equal(
       bugger.view(controller.current.location.sourceRange).lines.start.line,
-      lineOf("CALL LINE", source)
+      lineOf("SOL CALL LINE", source)
+    );
+  });
+
+  it("Steps over a Yul function from the call site", async function () {
+    this.timeout(4000);
+    let instance = await abstractions.Steppy.deployed();
+    let receipt = await instance.yulTest();
+    let txHash = receipt.tx;
+
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      compilations
+    });
+
+    let sourceId = bugger.view(controller.current.location.source).id;
+    let source = bugger.view(controller.current.location.source).source;
+
+    await bugger.addBreakpoint({
+      sourceId,
+      line: lineOf("YUL CALL LINE", source)
+    });
+    await bugger.continueUntilBreakpoint();
+    //now: do we step over correctly?
+    await bugger.stepOver();
+    assert.equal(
+      bugger.view(controller.current.location.sourceRange).lines.start.line,
+      lineOf("YUL AFTER LINE", source)
+    );
+  });
+
+  it("Steps over a Yul function from the definition", async function () {
+    this.timeout(4000);
+    let instance = await abstractions.Steppy.deployed();
+    let receipt = await instance.yulTest();
+    let txHash = receipt.tx;
+
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      compilations
+    });
+
+    let sourceId = bugger.view(controller.current.location.source).id;
+    let source = bugger.view(controller.current.location.source).source;
+
+    await bugger.addBreakpoint({
+      sourceId,
+      line: lineOf("YUL CALLED LINE", source)
+    });
+    await bugger.continueUntilBreakpoint();
+    //first time we hit it, it should be because it's being defined, *not* because
+    //it's being called!  let's check that stepOver gets us past that
+    await bugger.stepOver();
+    assert.equal(
+      bugger.view(controller.current.location.sourceRange).lines.start.line,
+      lineOf("YUL INTERMED LINE", source)
+    );
+    await bugger.continueUntilBreakpoint();
+    //OK, back to the definition.  it should actually be being called now.
+    //now: do we step over correctly?
+    await bugger.stepOver();
+    assert.equal(
+      bugger.view(controller.current.location.sourceRange).lines.start.line,
+      lineOf("YUL CALL LINE", source)
+    );
+  });
+
+  it("Steps out of a Yul function", async function () {
+    this.timeout(4000);
+    let instance = await abstractions.Steppy.deployed();
+    let receipt = await instance.yulTest();
+    let txHash = receipt.tx;
+
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      compilations
+    });
+
+    let sourceId = bugger.view(controller.current.location.source).id;
+    let source = bugger.view(controller.current.location.source).source;
+
+    await bugger.addBreakpoint({
+      sourceId,
+      line: lineOf("YUL INSIDE LINE", source)
+    });
+    await bugger.continueUntilBreakpoint();
+    //now: do we step out correctly?
+    await bugger.stepOut();
+    assert.equal(
+      bugger.view(controller.current.location.sourceRange).lines.start.line,
+      lineOf("YUL CALL LINE", source)
+    );
+  });
+
+  it("Steps out of a Yul function from the definition", async function () {
+    this.timeout(4000);
+    let instance = await abstractions.Steppy.deployed();
+    let receipt = await instance.yulTest();
+    let txHash = receipt.tx;
+
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      compilations
+    });
+
+    let sourceId = bugger.view(controller.current.location.source).id;
+    let source = bugger.view(controller.current.location.source).source;
+
+    await bugger.addBreakpoint({
+      sourceId,
+      line: lineOf("YUL CALLED LINE", source)
+    });
+    await bugger.continueUntilBreakpoint(); //first occurrence is definition, not call
+    await bugger.continueUntilBreakpoint(); //the *second* occurrence is the one we want
+    //now: do we step out correctly?
+    await bugger.stepOut();
+    assert.equal(
+      bugger.view(controller.current.location.sourceRange).lines.start.line,
+      lineOf("YUL CALL LINE", source)
     );
   });
 });
