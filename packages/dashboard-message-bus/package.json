@@ -22,28 +22,24 @@
   ],
   "scripts": {
     "build": "tsc",
-    "prepare": "yarn build",
-    "test": "jest --verbose"
+    "prepare": "yarn build"
   },
   "types": "dist/lib/index.d.ts",
-  "dependencies": {
-    "@types/ws": "^7.2.0",
-    "axios": "0.26.1",
-    "delay": "^5.0.0",
-    "isomorphic-ws": "^4.0.1",
-    "promise.any": "^2.0.2",
-    "ws": "^7.2.0"
-  },
   "devDependencies": {
-    "@types/jest": "27.4.1",
     "@types/node": "^12.0.0",
     "@types/promise.any": "^2.0.0",
     "@types/web3": "^1.2.2",
-    "jest": "27.5.1",
-    "ts-jest": "27.1.4",
     "typescript": "^4.1.4"
   },
   "publishConfig": {
     "access": "public"
+  },
+  "dependencies": {
+    "@truffle/dashboard-message-bus-common": "0.1.0-0",
+    "@types/ws": "^7.2.0",
+    "delay": "^5.0.0",
+    "isomorphic-ws": "^4.0.1",
+    "promise.any": "^2.0.2",
+    "ws": "^7.2.0"
   }
 }

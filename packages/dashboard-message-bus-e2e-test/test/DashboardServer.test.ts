@@ -1,11 +1,11 @@
 import Ganache, { EthereumProvider } from "ganache";
 import { providers, utils } from "ethers";
 import Web3 from "web3";
-import { getMessageBusPorts } from "@truffle/dashboard-message-bus";
 import MockDashboard from "./MockDashboard";
-import { DashboardServer } from "../lib";
+import { DashboardServer } from "@truffle/dashboard";
+import { DashboardMessageBusClientOptions } from "@truffle/dashboard-message-bus-client";
 
-jest.setTimeout(45000);
+jest.setTimeout(10000);
 
 // TODO: These tests were copy-pasted from the browser-provider tests
 // We should figure out whether we want to make this DRYer
@@ -15,14 +15,12 @@ describe("DashboardServer", () => {
 
   let dashboardServer: DashboardServer;
   let mockDashboard: MockDashboard;
-  let messageBusPorts: any;
   let ganacheProvider: EthereumProvider;
+  let clientOptions: DashboardMessageBusClientOptions;
 
-  beforeAll(() => {
-    ganacheProvider = Ganache.provider({
-      logging: {
-        quiet: true
-      }
+  beforeAll(async () => {
+    ganacheProvider = Ganache.provider<"ethereum">({
+      logging: { quiet: true }
     });
   });
 
@@ -38,12 +36,18 @@ describe("DashboardServer", () => {
 
     await dashboardServer.start();
 
+    clientOptions = {
+      host: "localhost",
+      port: dashboardPort,
+      subscribePort: dashboardServer.subscribePort,
+      publishPort: dashboardServer.publishPort
+    };
+
     mockDashboard = new MockDashboard(ganacheProvider);
-    messageBusPorts = await getMessageBusPorts(dashboardPort);
   });
 
   afterEach(async () => {
-    mockDashboard.disconnect();
+    await mockDashboard.disconnect();
     await dashboardServer.stop();
   });
 
@@ -51,6 +55,8 @@ describe("DashboardServer", () => {
     let ethersProvider: providers.JsonRpcProvider;
 
     beforeEach(() => {
+      // IMPORTANT: don't drop the second argument from this, or else this suite
+      // will hang on exit, sometimes for two minutes or longer.
       ethersProvider = new providers.JsonRpcProvider(rpcUrl, {
         name: "ganache",
         chainId: 1337
@@ -59,7 +65,7 @@ describe("DashboardServer", () => {
 
     it("should retrieve unlocked accounts", async () => {
       // First connect the dashboard
-      await mockDashboard.connect(messageBusPorts.subscribePort);
+      await mockDashboard.connect(clientOptions);
 
       // Then send the request
       const accounts = await ethersProvider.listAccounts();
@@ -72,7 +78,7 @@ describe("DashboardServer", () => {
       const request = ethersProvider.listAccounts();
 
       // Then connect the dashboard
-      await mockDashboard.connect(messageBusPorts.subscribePort);
+      await mockDashboard.connect(clientOptions);
 
       // Then await the response
       const accounts = await request;
@@ -81,10 +87,11 @@ describe("DashboardServer", () => {
     });
 
     it("should send ETH", async () => {
-      await mockDashboard.connect(messageBusPorts.subscribePort);
+      await mockDashboard.connect(clientOptions);
 
       const accounts = await ethersProvider.listAccounts();
       const signer = ethersProvider.getSigner();
+
       const response = await signer.sendTransaction({
         from: accounts[0],
         to: accounts[1],
@@ -103,9 +110,17 @@ describe("DashboardServer", () => {
       web3 = new Web3(rpcUrl);
     });
 
+    afterEach(() => {
+      if ((web3.currentProvider as any).reset) {
+        (web3.currentProvider as any).reset();
+      }
+
+      web3.setProvider(null);
+    });
+
     it("should retrieve unlocked accounts", async () => {
       // First connect the dashboard
-      await mockDashboard.connect(messageBusPorts.subscribePort);
+      await mockDashboard.connect(clientOptions);
 
       // Then send the request
       const accounts = await web3.eth.getAccounts();
@@ -118,7 +133,7 @@ describe("DashboardServer", () => {
       const request = web3.eth.getAccounts();
 
       // Then connect the dashboard
-      await mockDashboard.connect(messageBusPorts.subscribePort);
+      await mockDashboard.connect(clientOptions);
 
       // Then await the response
       const accounts = await request;
@@ -127,7 +142,7 @@ describe("DashboardServer", () => {
     });
 
     it("should send ETH", async () => {
-      await mockDashboard.connect(messageBusPorts.subscribePort);
+      await mockDashboard.connect(clientOptions);
 
       const accounts = await web3.eth.getAccounts();
       const response = await web3.eth.sendTransaction({

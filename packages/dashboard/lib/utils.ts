@@ -1,4 +1,4 @@
-import { jsonToBase64 } from "@truffle/dashboard-message-bus";
+import { jsonToBase64 } from "@truffle/dashboard-message-bus-common";
 import { spawn } from "child_process";
 import type { DashboardServerOptions } from "./DashboardServer";
 import path from "path";
