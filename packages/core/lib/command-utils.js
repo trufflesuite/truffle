@@ -155,7 +155,7 @@ const runCommand = async function (command, options) {
 
   analytics.send({
     command: command.name ? command.name : "other",
-    args: command.options._,
+    args: options._,
     version: bundled || "(unbundled) " + core
   });
 
