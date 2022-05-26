@@ -44,26 +44,43 @@ $ lerna add truffle-mycmd --scope=@truffle/core
 
 ### Create a new command in `@truffle/core`
 
-Create a new file in `packages/core/lib/commands/`, let's call it `mycmd.js`.
+1. Create a new directory in `packages/core/lib/commands/`, let's call it `truffle-mycmd`.
+2. Create 3 javascript files inside the **truffle-mycmd** directory with the filenames **run.js**, **meta.js** and **index.js**:  
+    * **run.js** contains the entry function after a user calls your command. The entry function has to be anonymous and of type async.
+    * **meta.js** contains information such as command name and command description. 
+    * **index.js** exports both the run module and the meta module. 
 
+#### run.js
 ```shell
-$ cat << EOF > core/lib/commands/mycmd.js
-const command = {
+$ cat << EOF > core/lib/commands/truffle-mycmd/run.js
+
+module.exports = async function (options){
+  const mycmd = require("truffle-mycmd");
+  // TODO: write the run command here, something like:
+  // mycmd(options, done)
+};
+EOF
+```
+#### meta.js
+```shell
+$ cat << EOF > core/lib/commands/truffle-mycmd/meta.js
+module.exports = {
   command: "mycmd",
   description: "Run mycmd",
   builder: {},
   help: {
     usage: "truffle mycmd",
     options: []
-  },
-  run: function(options, done) {
-    const mycmd = require("truffle-mycmd");
-    // TODO: write the run command here, something like:
-    // mycmd(options, done)
   }
+EOF
+```
+#### index.js
+```shell
+$ cat << EOF > core/lib/commands/truffle-mycmd/index.js
+module.exports = {
+  run: require("./run"),
+  meta: require("./meta")
 };
-
-module.exports = command;
 EOF
 ```
 
@@ -74,7 +91,7 @@ EOF
 +++ packages/core/lib/commands/index.js
 @@ -1,4 +1,5 @@
  module.exports = {
-+  mycmd: require("./mycmd"),
++  truffle-mycmd: require("./truffle-mycmd"),
 ```
 
 From there, you should see it in the help screen:
@@ -94,3 +111,9 @@ Commands:
 ### Write your module/command
 
 The setup is done, you can now write your command and organize your module as you want in: `packages/truffle-mycmd/`. You can have a look at `packages/box/` which is a good starting example to follow.
+
+### Execute the command
+```shell
+$ cd packages/core
+$ node cli.js truffle-mycmd
+```
