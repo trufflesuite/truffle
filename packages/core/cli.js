@@ -35,27 +35,41 @@ if (!semver.gte(process.version, minimumNodeVersion)) {
   process.exit(1);
 }
 
-const Command = require("./lib/command");
-const command = new Command(require("./lib/commands"));
-
 // This should be removed when issue is resolved upstream:
 // https://github.com/ethereum/web3.js/issues/1648
 const listeners = process.listeners("warning");
 listeners.forEach(listener => process.removeListener("warning", listener));
 
-let options = { logger: console };
+const inputStrings = process.argv.slice(2);
 
-const inputArguments = process.argv.slice(2);
 const userWantsGeneralHelp =
-  inputArguments.length === 1 && ["help", "--help"].includes(inputArguments[0]);
+  inputStrings.length === 0 ||
+  (inputStrings.length === 1 && ["help", "--help"].includes(inputStrings[0]));
 
 if (userWantsGeneralHelp) {
-  command.displayGeneralHelp();
+  const { displayGeneralHelp } = require("./lib/command-utils");
+  displayGeneralHelp();
   process.exit(0);
 }
 
-command
-  .run(inputArguments, options)
+const {
+  getCommand,
+  prepareOptions,
+  runCommand
+} = require("./lib/command-utils");
+
+const command = getCommand({
+  inputStrings,
+  options: {},
+  noAliases: false
+});
+const options = prepareOptions({
+  command,
+  inputStrings,
+  options: {}
+});
+
+runCommand(command, options)
   .then(returnStatus => process.exit(returnStatus))
   .catch(error => {
     if (error instanceof TaskError) {

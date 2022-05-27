@@ -1,11 +1,11 @@
-const Command = require("../lib/command");
 const TruffleError = require("@truffle/error");
 const Config = require("@truffle/config");
 const Web3 = require("web3");
 const yargs = require("yargs");
 
+// we split off the part Truffle cares about and need to convert to an array
 const input = process.argv[2].split(" -- ");
-const inputStrings = input[1];
+const inputStrings = input[1].split(" ");
 
 // we need to make sure this function exists so ensjs doesn't complain as it requires
 // getRandomValues for some functionalities - webpack strips out the crypto lib
@@ -37,10 +37,15 @@ detectedConfig.networks.develop = {
   }
 };
 
-const command = new Command(require("./commands"));
+const { getCommand, prepareOptions, runCommand } = require("./command-utils");
+const command = getCommand({ inputStrings, options: {}, noAliases: false });
+const options = prepareOptions({
+  command,
+  inputStrings,
+  options: detectedConfig
+});
 
-command
-  .run(inputStrings, detectedConfig)
+runCommand(command, options)
   .then(() => process.exit(0))
   .catch(error => {
     // Perform error handling ourselves.

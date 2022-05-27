@@ -5,6 +5,7 @@ const webpack = require("webpack");
 const pkg = require("./package.json");
 const rootDir = path.join(__dirname, "../..");
 const outputDir = path.join(__dirname, "build");
+const commands = require("../core/lib/commands/commands");
 const truffleLibraryDirectory = path.join(
   __dirname,
   "../..",
@@ -13,9 +14,24 @@ const truffleLibraryDirectory = path.join(
   "solidity"
 );
 
+const commandsEntries = commands.reduce((a, command) => {
+  a[command] = path.join(
+    __dirname,
+    "../..",
+    "node_modules",
+    "@truffle/core",
+    "lib",
+    "commands",
+    command,
+    "index.js"
+  );
+  return a;
+}, {});
+
 module.exports = {
   mode: "production",
   entry: {
+    ...commandsEntries,
     cli: path.join(
       __dirname,
       "../..",
@@ -54,14 +70,6 @@ module.exports = {
       "@truffle/core",
       "lib",
       "console-child.js"
-    ),
-    commands: path.join(
-      __dirname,
-      "../..",
-      "node_modules",
-      "@truffle/core",
-      "lib",
-      "commands/index.js"
     )
   },
 
@@ -153,7 +161,7 @@ module.exports = {
         "bn.js"
       ),
       "original-fs": path.join(__dirname, "./nil.js"),
-      "scrypt": "js-scrypt"
+      scrypt: "js-scrypt"
     }
   },
 

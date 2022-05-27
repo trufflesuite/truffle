@@ -14,4 +14,4 @@ const options = {
     description: "Suppress excess logging output."
   }
 };
- module.exports = options;
+module.exports = options;

@@ -1,77 +1,102 @@
-const Command = require("../lib/command");
-const commands = require("../lib/commands");
-const commander = new Command(commands);
-const assert = require("assert");
+const {
+  getCommand,
+  prepareOptions,
+  runCommand
+} = require("../lib/command-utils");
+const commandsArray = require("../lib/commands/commands");
+const allCommands = require("../lib/commands");
+const { assert } = require("chai");
 
-describe("Commander", function () {
-  before("assert preconditions", function () {
-    // These commands are expected to exist in tests.
-    assert.notEqual(commands.migrate, null);
-    assert.notEqual(commands.compile, null);
-    assert.notEqual(commands.console, null);
-  });
-
-  it("will infer commands based on initial letters entered", function () {
-    var actualCommand = commander.getCommand("m").command;
-    assert.equal(actualCommand, commands.migrate);
-  });
-
-  it("will infer commands based on initial letters entered, even when typos exist later", function () {
-    var actualCommand = commander.getCommand("complie").command;
-    assert.equal(actualCommand, commands.compile);
-  });
-
-  it("will NOT infer a command if not given enough information", function () {
-    // Note: "co" matches "console" and "compile"
-    var actualCommand = commander.getCommand("co");
-    assert.equal(actualCommand, null);
-  });
-
-  it("will infer commands based on initial letters entered, given matches for shorter substrings", function () {
-    // Note: "co" matches "console" and "compile"
-    var actualCommand = commander.getCommand("com").command;
-    assert.equal(actualCommand, commands.compile);
-  });
-
-  it("will ignore inferring if full command is specified", function () {
-    var actualCommand = commander.getCommand("console").command;
-    assert.equal(actualCommand, commands.console);
-  });
-
-  it("will warn and display error for unsupported flags in commands", async function () {
-    var actualCommand = commander.getCommand("mig").command;
-    assert.equal(actualCommand, commands.migrate);
-
-    const originalLog = console.log || console.debug;
-    let warning = "";
-    console.log = function (msg) {
-      console.log = originalLog;
-      warning = msg;
-    };
-
-    try {
-      await commander.run(
-        [
-          "migrate",
-          "--network",
-          "localhost",
-          "--unsupportedflag",
-          "invalidoption",
-          "--unsupportedflag2",
-          "invalidflag2",
-        ],
-        { noAliases: true, logger: console },
-        function () {
-          //ignore. not part of test
-        },
+describe("commands", function () {
+  describe("Truffle commands", function () {
+    // these tests ensure that the command name array contains one command name
+    // per command and vice versa so they don't get out of sync
+    it("contains an array item for each command", function () {
+      assert(
+        Object.keys(allCommands).every(command =>
+          commandsArray.includes(command)
+        )
       );
-    } catch (error) {
-      console.log("error", error);
-    } finally {
-      assert.equal(
-        warning,
-        "> Warning: possible unsupported (undocumented in help) command line option(s): --unsupportedflag,--unsupportedflag2",
+    });
+    it("contains a command for every array item", function () {
+      assert(
+        commandsArray.every(command =>
+          Object.keys(allCommands).includes(command)
+        )
       );
-    }
+    });
+  });
+
+  describe("getCommand utility", function () {
+    it("infers commands based on initial letters entered", function () {
+      const result = getCommand({ inputStrings: ["m"] }).name;
+      assert.equal(result, "migrate");
+    });
+
+    it("infers commands based on initial letters entered, even when typos exist later", function () {
+      const result = getCommand({ inputStrings: ["complie"] }).name;
+      assert.equal(result, "compile");
+    });
+
+    it("doesn't infer a command if not given enough information", function () {
+      // Note: "co" matches "console" and "compile"
+      const result = getCommand({ inputStrings: ["co"] });
+      assert.isNull(result);
+    });
+
+    it("infers commands based on initial letters entered, given matches for shorter substrings", function () {
+      // Note: "co" matches "console" and "compile"
+      const result = getCommand({ inputStrings: ["com"] }).name;
+      assert.equal(result, "compile");
+    });
+
+    it("ignores inferring if full command is specified", function () {
+      const result = getCommand({ inputStrings: ["console"] }).name;
+      assert.equal(result, "console");
+    });
+
+    it("warns and displays an error for unsupported flags in commands", async function () {
+      const result = getCommand({
+        inputStrings: ["mig"],
+        options: { logger: console },
+        noAliases: false
+      });
+      assert.equal(result.name, "migrate");
+
+      const originalLog = console.log || console.debug;
+      let warning = "";
+      console.log = function (msg) {
+        console.log = originalLog;
+        warning = msg;
+      };
+
+      const inputStrings = [
+        "migrate",
+        "--network",
+        "localhost",
+        "--unsupportedflag",
+        "invalidoption",
+        "--unsupportedflag2",
+        "invalidflag2"
+      ];
+
+      try {
+        const options = prepareOptions({
+          command: result,
+          inputStrings,
+          options: { logger: console }
+        });
+        await runCommand(result, options);
+      } catch (error) {
+        // this errors due to no config file but we don't care, we just want
+        // to ensure it prints the unsupported option message
+      } finally {
+        assert(
+          warning.includes(
+            "> Warning: possible unsupported (undocumented in help) command line option(s): --unsupportedflag,--unsupportedflag2"
+          )
+        );
+      }
+    });
   });
 });

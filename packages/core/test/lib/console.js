@@ -1,6 +1,6 @@
 const assert = require("chai").assert;
 const path = require("path");
-const Console = require("../../lib/console");
+const { Console, excludedCommands } = require("../../lib/console");
 const commands = require("../../lib/commands");
 const sinon = require("sinon");
 const Config = require("@truffle/config");
@@ -8,10 +8,8 @@ const Web3 = require("web3");
 const { Resolver } = require("@truffle/resolver");
 const config = new Config();
 
-// Console uses the following for instantiation in packages/core/lib/console.js
-const excluded = new Set(["console", "init", "watch", "develop"]);
 const consoleCommands = Object.keys(commands).reduce((acc, name) => {
-  return !excluded.has(name)
+  return !excludedCommands.has(name)
     ? Object.assign(acc, { [name]: commands[name] })
     : acc;
 }, {});

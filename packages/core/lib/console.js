@@ -1,5 +1,4 @@
 const repl = require("repl");
-const Command = require("./command");
 const provision = require("@truffle/provisioner");
 const {
   Web3Shim,
@@ -15,6 +14,7 @@ const EventEmitter = require("events");
 const spawnSync = require("child_process").spawnSync;
 const Require = require("@truffle/require");
 const debug = require("debug")("console");
+const { getCommand } = require("./command-utils");
 
 const processInput = input => {
   const inputComponents = input.trim().split(" ");
@@ -45,8 +45,6 @@ class Console extends EventEmitter {
     ]);
 
     this.options = options;
-
-    this.command = new Command(tasks);
 
     this.repl = null;
 
@@ -284,9 +282,14 @@ class Console extends EventEmitter {
   }
 
   interpret(input, context, filename, callback) {
+    // processInput returns a sanitized string
     const processedInput = processInput(input);
     if (
-      this.command.getCommand(processedInput, this.options.noAliases) != null
+      getCommand({
+        inputStrings: processedInput.split(" "),
+        options: {},
+        noAliases: this.options.noAliases
+      }) !== null
     ) {
       try {
         this.runSpawn(processedInput, this.options);
@@ -392,4 +395,9 @@ class Console extends EventEmitter {
   }
 }
 
-module.exports = Console;
+const excludedCommands = new Set(["console", "db", "init", "watch", "develop"]);
+
+module.exports = {
+  excludedCommands,
+  Console
+};
