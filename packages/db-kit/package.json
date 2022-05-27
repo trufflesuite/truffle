@@ -1,6 +1,6 @@
 {
   "name": "@truffle/db-kit",
-  "version": "0.1.70",
+  "version": "0.1.71",
   "description": "Utility belt for Truffle and @truffle/db",
   "license": "MIT",
   "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
@@ -33,14 +33,14 @@
     "test": "jest --verbose --detectOpenHandles --forceExit --passWithNoTests"
   },
   "dependencies": {
-    "@truffle/codec": "^0.12.13",
+    "@truffle/codec": "^0.13.0",
     "@truffle/compile-common": "^0.7.31",
-    "@truffle/compile-solidity": "^6.0.28",
+    "@truffle/compile-solidity": "^6.0.29",
     "@truffle/config": "^1.3.28",
-    "@truffle/db": "^1.0.7",
-    "@truffle/decoder": "^5.2.13",
-    "@truffle/environment": "^0.2.108",
-    "@truffle/fetch-and-compile": "^0.5.3",
+    "@truffle/db": "^1.0.8",
+    "@truffle/decoder": "^5.2.14",
+    "@truffle/environment": "^0.2.109",
+    "@truffle/fetch-and-compile": "^0.5.4",
     "ink": "^3.0.8",
     "ink-big-text": "^1.2.0",
     "ink-divider": "^3.0.0",
