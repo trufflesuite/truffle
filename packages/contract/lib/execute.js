@@ -20,9 +20,10 @@ const execute = {
    */
   getGasEstimate: function (params, blockLimit, stacktrace = false) {
     const constructor = this;
-    const interfaceAdapter = this.interfaceAdapter;
+    const interfaceAdapter = constructor.interfaceAdapter;
+    const web3 = constructor.web3;
 
-    return new Promise(function (accept) {
+    return new Promise(function (accept, reject) {
       // Always prefer gas specified by user (if a user sets gas to 0, that is treated
       // as undefined here and we do proceed to do gas estimation)
       if (params.gas) return accept(params.gas);
@@ -56,7 +57,23 @@ const execute = {
               : accept(bestEstimate.toHexString());
           }
         })
-        .catch(() => accept());
+        .catch(error => {
+          //HACK: Frankenstein together an error in a destructive fashion!!
+          debug("error: %O", error);
+          const reason = Reason._extract({ error }, web3);
+          error.reason = reason;
+          if (reason) {
+            error.message = error.message.replace(
+              /: revert$/,
+              `: revert ${reason}`
+            );
+            error.stack = error.stack.replace(
+              /: revert$/m,
+              `: revert ${reason}`
+            );
+          }
+          reject(error);
+        });
     });
   },
 
@@ -208,18 +225,12 @@ const execute = {
             contract: constructor
           });
 
-          const stacktrace = promiEvent.debug ? promiEvent.debug : false;
-          try {
-            params.gas = await execute.getGasEstimate.call(
-              constructor,
-              params,
-              network.blockLimit,
-              stacktrace
-            );
-          } catch (error) {
-            promiEvent.reject(error);
-            return;
-          }
+          params.gas = await execute.getGasEstimate.call(
+            constructor,
+            params,
+            network.blockLimit,
+            promiEvent.debug //apply stacktracing mode if promiEvent.debug is true
+          );
 
           execute
             .sendTransaction(web3, params, promiEvent, context) //the crazy things we do for stacktracing...
@@ -273,13 +284,12 @@ const execute = {
 
           const contract = new web3.eth.Contract(constructor.abi);
           params.data = contract.deploy(options).encodeABI();
-          const stacktrace = promiEvent.debug ? promiEvent.debug : false;
 
           params.gas = await execute.getGasEstimate.call(
             constructor,
             params,
             blockLimit,
-            stacktrace
+            promiEvent.debug //apply stacktracing mode if promiEvent.debug is true
           );
 
           context.params = params;
