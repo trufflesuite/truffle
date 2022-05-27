@@ -1,9 +1,7 @@
 const assert = require("chai").assert;
 const { URL } = require("url");
-const {
-  mergeConfigNetwork,
-  loadConfig
-} = require("../../../lib/commands/debug");
+const loadConfig = require("../../../lib/loadConfig");
+const mergeConfigNetwork = require("../../../lib/mergeConfigNetwork");
 const Config = require("@truffle/config");
 let config, result, options;
 
@@ -33,7 +31,7 @@ describe("debug", function () {
 
     beforeEach(function () {
       config = Config.default();
-      options = { url: url };
+      options = { url };
     });
 
     it("should create networks item in config", function () {

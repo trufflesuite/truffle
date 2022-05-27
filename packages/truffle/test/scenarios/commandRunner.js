@@ -37,8 +37,14 @@ module.exports = {
       }
     });
   },
-  runInREPL: function ({ commands = [], config, replType, displayHost } = {}) {
-    const cmdLine = `${this.getExecString()} ${replType}`;
+  runInREPL: function ({
+    commands = [],
+    config,
+    replCommand,
+    replArgs,
+    displayHost
+  } = {}) {
+    const cmdLine = `${this.getExecString()} ${replCommand} ${replArgs}`;
     const readyPrompt = `truffle(${displayHost})>`;
 
     let seenChildPrompt = false;

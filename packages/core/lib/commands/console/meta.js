@@ -18,7 +18,7 @@ module.exports = {
       {
         option: "--url",
         description:
-          "Creates a provider and connects to the network. This can be used outside of a Truffle project."
+          "Creates a provider using the given url and connects to the network. This can be used outside of a Truffle project."
       },
       {
         option: "--network",

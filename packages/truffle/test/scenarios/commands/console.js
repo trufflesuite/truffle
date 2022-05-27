@@ -24,7 +24,8 @@ describe("truffle console", () => {
 
       await CommandRunner.runInREPL({
         config: config,
-        replType: `console --url ${url}`,
+        replCommand: "console",
+        replArgs: `--url ${url}`,
         displayHost: displayHost
       });
 

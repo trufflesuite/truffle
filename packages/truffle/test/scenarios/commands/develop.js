@@ -15,7 +15,7 @@ const formatLines = lines =>
     .map(line => `\t---truffle develop log---\t${line}`)
     .join("\n");
 
-describe.only("truffle develop", function () {
+describe("truffle develop", function () {
   project = path.join(__dirname, "../../sources/develop");
 
   before(async function () {
@@ -37,7 +37,7 @@ describe.only("truffle develop", function () {
       await CommandRunner.runInREPL({
         commands: [input],
         config: config,
-        replType: "develop",
+        replCommand: "develop",
         displayHost: "develop"
       });
       output = logger.contents();
@@ -70,7 +70,7 @@ describe.only("truffle develop", function () {
     await CommandRunner.runInREPL({
       commands: [input],
       config: config,
-      replType: "develop",
+      replCommand: "develop",
       displayHost: "develop"
     });
 
@@ -88,7 +88,7 @@ describe.only("truffle develop", function () {
     await CommandRunner.runInREPL({
       commands: ["breakfast"],
       config: config,
-      replType: "develop",
+      replCommand: "develop",
       displayHost: "develop"
     });
 
@@ -106,7 +106,7 @@ describe.only("truffle develop", function () {
     await CommandRunner.runInREPL({
       commands: ["twoAccounts"],
       config: config,
-      replType: "develop",
+      replCommand: "develop",
       displayHost: "develop"
     });
     const output = logger.contents();
