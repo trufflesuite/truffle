@@ -38,11 +38,11 @@ module.exports = {
     });
   },
   runInREPL: function ({
-    commands = [],
-    config,
-    replCommand,
-    replArgs,
-    displayHost
+    commands = [], // array of commands to enter when the prompt is ready to take input
+    config, // truffle config to be used for the test
+    replCommand, // truffle command to be tested (develop/console)
+    replArgs, // arguments to be sent with the replCommand
+    displayHost // name of the network host to be displayed in the prompt
   } = {}) {
     const cmdLine = `${this.getExecString()} ${replCommand} ${replArgs}`;
     const readyPrompt = `truffle(${displayHost})>`;

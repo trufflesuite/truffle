@@ -37,7 +37,10 @@ describe("debug", function () {
     it("should create networks item in config", function () {
       result = mergeConfigNetwork(config, options);
 
-      assert.notEqual(result.networks[expectedNetworkName], undefined);
+      assert.isDefined(
+        result.networks[expectedNetworkName],
+        "network is defined"
+      );
       assert.equal(result.networks[expectedNetworkName].url, url);
       assert.equal(result.networks[expectedNetworkName].network_id, "*");
     });
