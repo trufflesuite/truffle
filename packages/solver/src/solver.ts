@@ -4,7 +4,7 @@ import { DeploymentSteps, DeclarationEntry } from "./types/";
 
 const toposort = require("toposort");
 
-export const Solver = {
+const Solver = {
   read: async function (filepath: string): Promise<any> {
     const declarations: any = loadAll(await readFile(filepath, "utf8"));
     // @TODO check specifically for yaml in case this is a JSON file!
@@ -73,3 +73,5 @@ export const Solver = {
     return sortedSteps;
   }
 };
+
+export default Solver;

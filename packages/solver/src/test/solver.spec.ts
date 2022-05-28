@@ -57,12 +57,12 @@ let yamlDeploymentSteps;
 let jsonDeploymentSteps;
 beforeAll(async () => {
   //first we make sure we can read the files
-  yamlDeclarations = await Solver.Solver.read(yamlPath);
-  jsonDeclarations = await Solver.Solver.read(jsonPath);
+  yamlDeclarations = await Solver.read(yamlPath);
+  jsonDeclarations = await Solver.read(jsonPath);
   //then we want to ensure the files are processed to produce an
   //ordered list of Truffle commands
-  yamlDeploymentSteps = await Solver.Solver.orchestrate(yamlPath);
-  jsonDeploymentSteps = await Solver.Solver.orchestrate(jsonPath);
+  yamlDeploymentSteps = await Solver.orchestrate(yamlPath);
+  jsonDeploymentSteps = await Solver.orchestrate(jsonPath);
 });
 
 describe("Solver", () => {

@@ -5,7 +5,7 @@ import { Resolver } from "@truffle/resolver";
 import Config from "@truffle/config";
 import TruffleError from "@truffle/error";
 
-export const Runner = {
+const Runner = {
   orchestrate: async function (declarationSteps, options) {
     // run each target through the run function, hold output until all are completed,
     // or throw an error
@@ -17,19 +17,18 @@ export const Runner = {
     return deploymentSteps;
   },
   solve: async function (filepath: string, options: any) {
-    const declarationSteps = await Solver.Solver.orchestrate(filepath);
+    const declarationSteps = await Solver.orchestrate(filepath);
     this.orchestrate(declarationSteps, options);
     return declarationSteps;
   },
   run: async function (deploymentStep: DeclarationTarget, options: any) {
     const config = Config.detect(options);
-    // let resolver: resolver;
     config.resolver = new Resolver(config);
-    // config.resolver = resolver;
 
     let Contract;
     try {
       Contract = config.resolver.require(deploymentStep.contractName);
+      console.log("GOT CONTRACT! " + JSON.stringify(Contract, null, 2));
     } catch (e) {
       throw new TruffleError(e);
     }
@@ -50,3 +49,5 @@ export const Runner = {
     // }
   }
 };
+
+export default Runner;
