@@ -23,11 +23,11 @@ const getProvider = (_config: { chainId?: number; connector?: Connector }) => {
   } else {
     wProvider
       .enable()
-      .then((r: any) => console.log(r))
+      .then((r: any) => console.debug(r))
       .catch((e: any) => console.error(e));
     ret = new ethproviders.Web3Provider(wProvider);
   }
-  console.log("getProvider.returning", {
+  console.debug("getProvider.returning", {
     wProvider,
     winEth: window.ethereum,
     ret

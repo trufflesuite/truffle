@@ -11,7 +11,6 @@ interface Props {
 
 function Header({ disconnect }: Props) {
   const [displayName, setDisplayName] = useState<string>();
-  // const { account, library, chainId } = useWeb3React<providers.Web3Provider>();
 
   const [{ data: accountData }] = useAccount();
   const [{ data: networkData }] = useNetwork();
