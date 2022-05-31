@@ -2,7 +2,7 @@ module.exports = async function (options) {
   const { Console, excludedCommands } = require("../../console");
   const { Environment } = require("@truffle/environment");
   const commands = require("../commands");
-  const loadConfig = require("../debug/loadConfig");
+  const loadConfig = require("../../loadConfig");
 
   if (options.url && options.network) {
     throw new Error(
