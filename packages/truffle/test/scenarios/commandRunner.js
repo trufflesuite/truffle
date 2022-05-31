@@ -38,13 +38,13 @@ module.exports = {
     });
   },
   runInREPL: function ({
-    commands = [], // array of commands to enter when the prompt is ready to take input
+    inputCommands = [], // array of commands to enter when the prompt is ready to take input
     config, // truffle config to be used for the test
-    replCommand, // truffle command to be tested (develop/console)
-    replArgs, // arguments to be sent with the replCommand
+    executableCommand, // truffle command to be tested (develop/console)
+    executableArgs, // arguments to be sent with the replCommand
     displayHost // name of the network host to be displayed in the prompt
   } = {}) {
-    const cmdLine = `${this.getExecString()} ${replCommand} ${replArgs}`;
+    const cmdLine = `${this.getExecString()} ${executableCommand} ${executableArgs}`;
     const readyPrompt = `truffle(${displayHost})>`;
 
     let seenChildPrompt = false;
@@ -68,7 +68,7 @@ module.exports = {
         // child process is ready for input when it displays the readyPrompt
         if (!seenChildPrompt && outputBuffer.includes(readyPrompt)) {
           seenChildPrompt = true;
-          commands.forEach(command => {
+          inputCommands.forEach(command => {
             child.stdin.write(command + EOL);
           });
           child.stdin.end();

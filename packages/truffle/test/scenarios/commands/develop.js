@@ -35,9 +35,9 @@ describe("truffle develop", function () {
       const input = "Object.keys(global)";
 
       await CommandRunner.runInREPL({
-        commands: [input],
+        inputCommands: [input],
         config: config,
-        replCommand: "develop",
+        executableCommand: "develop",
         displayHost: "develop"
       });
       output = logger.contents();
@@ -68,9 +68,9 @@ describe("truffle develop", function () {
     const input = "await Promise.resolve(`${6*7} is probably not a prime`)";
 
     await CommandRunner.runInREPL({
-      commands: [input],
+      inputCommands: [input],
       config: config,
-      replCommand: "develop",
+      executableCommand: "develop",
       displayHost: "develop"
     });
 
@@ -86,9 +86,9 @@ describe("truffle develop", function () {
     this.timeout(70000);
 
     await CommandRunner.runInREPL({
-      commands: ["breakfast"],
+      inputCommands: ["breakfast"],
       config: config,
-      replCommand: "develop",
+      executableCommand: "develop",
       displayHost: "develop"
     });
 
@@ -104,9 +104,9 @@ describe("truffle develop", function () {
     this.timeout(70000);
 
     await CommandRunner.runInREPL({
-      commands: ["twoAccounts"],
+      inputCommands: ["twoAccounts"],
       config: config,
-      replCommand: "develop",
+      executableCommand: "develop",
       displayHost: "develop"
     });
     const output = logger.contents();
