@@ -24,6 +24,8 @@ export const networkNamesById: { [id: number]: string } = {
   43114: "avalanche",
   43113: "fuji-avalanche",
   11111: "wagmi-avalanche",
+  53935: "dfk-avalanche", //not presently supported by either fetcher, but...
+  335: "testnet-dfk-avalance",
   40: "telos",
   41: "testnet-telos",
   8: "ubiq",
@@ -58,7 +60,11 @@ export const networkNamesById: { [id: number]: string } = {
   43: "pangolin-darwinia",
   9001: "evmos",
   9000: "testnet-evmos",
-  62621: "multivac"
+  62621: "multivac",
+  534: "candle",
+  192837465: "gather",
+  486217935: "devnet-gather",
+  356256156: "testnet-gather"
 };
 
 export const networksByName: Types.SupportedNetworks = Object.fromEntries(
