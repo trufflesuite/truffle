@@ -46,10 +46,6 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
           !e.message.includes("Reason"),
           "Should not include reason message"
         );
-        assert(
-          e.message.includes("intrinsic gas too low"),
-          "Error should be gas limit err"
-        );
       }
     });
 
@@ -65,10 +61,6 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
         assert(
           e.message.includes("reasonstring"),
           "Error message should include reason"
-        );
-        assert(
-          e.message.includes("intrinsic gas too low"),
-          "Error should be gas limit err"
         );
       }
     });
