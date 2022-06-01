@@ -10,10 +10,7 @@ module.exports = {
   },
   help: {
     usage:
-      "truffle console [--verbose-rpc] \n" +
-      "                truffle console [--require|-r <file>] \n" +
-      "                truffle console [--network <network>] or [--url <provider_url>] \n" +
-      "                truffle console",
+      "truffle console [--verbose-rpc] [--require|-r <file>] [--network <network>|--url <provider_url>]",
     options: [
       {
         option: "--url",

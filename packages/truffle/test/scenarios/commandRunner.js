@@ -37,12 +37,21 @@ module.exports = {
       }
     });
   },
+  /**
+   * This is a function to test the output of a truffle develop/console command with arguments.
+   * @param {string[]} inputCommands - An array of input commands to enter when the prompt is ready.
+   * @param {TruffleConfig} config - Truffle config to be used for the test.
+   * @param {string} executableCommand - Truffle command to be tested (develop/console).
+   * @param {string} executableArgs - Arguments/options to be used with the executableCommand.
+   * @param {string} displayHost - Name of the network host to be displayed in the prompt.
+   * @returns a Promise
+   */
   runInREPL: function ({
-    inputCommands = [], // array of commands to enter when the prompt is ready to take input
-    config, // truffle config to be used for the test
-    executableCommand, // truffle command to be tested (develop/console)
-    executableArgs, // arguments to be sent with the replCommand
-    displayHost // name of the network host to be displayed in the prompt
+    inputCommands = [],
+    config,
+    executableCommand,
+    executableArgs,
+    displayHost
   } = {}) {
     const cmdLine = `${this.getExecString()} ${executableCommand} ${executableArgs}`;
     const readyPrompt = `truffle(${displayHost})>`;
