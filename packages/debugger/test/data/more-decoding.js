@@ -6,7 +6,7 @@ import Web3 from "web3"; //just using for utils
 
 import Ganache from "ganache";
 
-import { prepareContracts, lineOf } from "../helpers";
+import { prepareContracts, lineOf, gasLimit } from "../helpers";
 import Debugger from "lib/debugger";
 
 import sourcemapping from "lib/sourcemapping/selectors";
@@ -373,7 +373,7 @@ describe("Further Decoding", function () {
   before("Create Provider", async function () {
     provider = Ganache.provider({
       seed: "debugger",
-      gasLimit: 7000000,
+      gasLimit,
       miner: {
         instamine: "strict"
       },
@@ -457,7 +457,7 @@ describe("Further Decoding", function () {
       bytesMap: { "0x01": "0x01" },
       uintMap: { 1: 1, 2: 2 },
       intMap: { "-1": -1 },
-      stringMap: { "0xdeadbeef": "0xdeadbeef", 12345: "12345", hello: "hello" },
+      stringMap: { "0xdeadbeef": "0xdeadbeef", "12345": "12345", "hello": "hello" },
       addressMap: { [address]: address },
       contractMap: { [address]: address },
       enumMap: { "ElementaryTest.Ternary.Blue": "ElementaryTest.Ternary.Blue" },

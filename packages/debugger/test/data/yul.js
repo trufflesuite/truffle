@@ -5,7 +5,7 @@ import { assert } from "chai";
 
 import Ganache from "ganache";
 
-import { prepareContracts, lineOf } from "../helpers";
+import { prepareContracts, lineOf, gasLimit } from "../helpers";
 import Debugger from "lib/debugger";
 
 import sourcemapping from "lib/sourcemapping/selectors";
@@ -58,7 +58,7 @@ describe("Assembly decoding", function () {
   before("Create Provider", async function () {
     provider = Ganache.provider({
       seed: "debugger",
-      gasLimit: 7000000,
+      gasLimit,
       miner: {
         instamine: "strict"
       },

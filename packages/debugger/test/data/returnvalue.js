@@ -5,7 +5,7 @@ import { assert } from "chai";
 
 import Ganache from "ganache";
 
-import { prepareContracts } from "../helpers";
+import { prepareContracts, gasLimit } from "../helpers";
 import Debugger from "lib/debugger";
 
 import * as Codec from "@truffle/codec";
@@ -161,7 +161,7 @@ describe("Return value decoding", function () {
   before("Create Provider", async function () {
     provider = Ganache.provider({
       seed: "debugger",
-      gasLimit: 7000000,
+      gasLimit,
       miner: {
         instamine: "strict"
       },
@@ -297,7 +297,7 @@ describe("Return value decoding", function () {
     let instance = await abstractions.ReturnValues.deployed();
     let txHash;
     try {
-      await instance.fail(); //web3 throws on failure
+      await instance.fail({ gas: gasLimit }); //web3 throws on failure
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -322,7 +322,7 @@ describe("Return value decoding", function () {
     let instance = await abstractions.ReturnValues.deployed();
     let txHash;
     try {
-      await instance.failNoisy(); //web3 throws on failure
+      await instance.failNoisy({ gas: gasLimit }); //web3 throws on failure
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -354,7 +354,7 @@ describe("Return value decoding", function () {
     let instance = await abstractions.ReturnValues.deployed();
     let txHash;
     try {
-      await instance.panic(); //web3 throws on failure
+      await instance.panic({ gas: gasLimit }); //web3 throws on failure
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -389,7 +389,7 @@ describe("Return value decoding", function () {
       let instance = await abstractions.ErrorTest.deployed();
       let txHash;
       try {
-        await instance.local(); //web3 throws on failure
+        await instance.local({ gas: gasLimit }); //web3 throws on failure
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }
@@ -429,7 +429,7 @@ describe("Return value decoding", function () {
       let instance = await abstractions.ErrorTest.deployed();
       let txHash;
       try {
-        await instance.global(); //web3 throws on failure
+        await instance.global({ gas: gasLimit }); //web3 throws on failure
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }
@@ -459,7 +459,7 @@ describe("Return value decoding", function () {
       let instance = await abstractions.ErrorTest.deployed();
       let txHash;
       try {
-        await instance.foreign(); //web3 throws on failure
+        await instance.foreign({ gas: gasLimit }); //web3 throws on failure
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }
@@ -489,7 +489,7 @@ describe("Return value decoding", function () {
       let instance = await abstractions.ErrorTest.deployed();
       let txHash;
       try {
-        await instance.inlined(); //web3 throws on failure
+        await instance.inlined({ gas: gasLimit }); //web3 throws on failure
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }
@@ -519,7 +519,7 @@ describe("Return value decoding", function () {
       let instance = await abstractions.ErrorTest.deployed();
       let txHash;
       try {
-        await instance.makeCall(); //web3 throws on failure
+        await instance.makeCall({ gas: gasLimit }); //web3 throws on failure
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }
@@ -549,7 +549,7 @@ describe("Return value decoding", function () {
       let instance = await abstractions.ErrorTest.deployed();
       let txHash;
       try {
-        await instance.ambiguous(); //web3 throws on failure
+        await instance.ambiguous({ gas: gasLimit }); //web3 throws on failure
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }
@@ -584,7 +584,7 @@ describe("Return value decoding", function () {
       let instance = await abstractions.ErrorTest.deployed();
       let txHash;
       try {
-        await instance.ambiguousCall(); //web3 throws on failure
+        await instance.ambiguousCall({ gas: gasLimit }); //web3 throws on failure
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }

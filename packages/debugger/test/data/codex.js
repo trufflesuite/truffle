@@ -6,7 +6,7 @@ import * as Codec from "@truffle/codec";
 
 import Ganache from "ganache";
 
-import { prepareContracts, lineOf } from "../helpers";
+import { prepareContracts, lineOf, gasLimit } from "../helpers";
 import Debugger from "lib/debugger";
 
 import sourcemapping from "lib/sourcemapping/selectors";
@@ -124,7 +124,7 @@ describe("Codex", function () {
   before("Create Provider", async function () {
     provider = Ganache.provider({
       seed: "debugger",
-      gasLimit: 7000000,
+      gasLimit,
       logging: {
         quiet: true
       },

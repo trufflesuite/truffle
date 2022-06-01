@@ -5,7 +5,7 @@ import { assert } from "chai";
 
 import Ganache from "ganache";
 
-import { prepareContracts } from "./helpers";
+import { prepareContracts, gasLimit } from "./helpers";
 import Debugger from "lib/debugger";
 import * as Codec from "@truffle/codec";
 
@@ -154,7 +154,7 @@ describe("Transaction log (visualizer)", function () {
   before("Create Provider", async function () {
     provider = Ganache.provider({
       seed: "debugger",
-      gasLimit: 7000000,
+      gasLimit,
       logging: {
         quiet: true
       },
@@ -417,7 +417,7 @@ describe("Transaction log (visualizer)", function () {
     //does not presently work)
     let txHash;
     try {
-      await instance.testRevert(); //this will throw because of the revert
+      await instance.testRevert({ gas: gasLimit }); //this will throw because of the revert
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }

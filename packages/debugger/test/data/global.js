@@ -5,7 +5,7 @@ import { assert } from "chai";
 
 import Ganache from "ganache";
 
-import { prepareContracts, lineOf } from "../helpers";
+import { prepareContracts, lineOf, gasLimit } from "../helpers";
 import Debugger from "lib/debugger";
 
 import * as Codec from "@truffle/codec";
@@ -163,7 +163,7 @@ describe("Globally-available variables", function () {
   before("Create Provider", async function () {
     provider = Ganache.provider({
       seed: "debugger",
-      gasLimit: 7000000,
+      gasLimit,
       logging: {
         quiet: true
       },

@@ -5,7 +5,7 @@ import { assert } from "chai";
 
 import Ganache from "ganache";
 
-import { prepareContracts } from "./helpers";
+import { prepareContracts, gasLimit } from "./helpers";
 import Debugger from "lib/debugger";
 
 import evm from "lib/evm/selectors";
@@ -46,7 +46,7 @@ describe("End State", function () {
   before("Create Provider", async function () {
     provider = Ganache.provider({
       seed: "debugger",
-      gasLimit: 7000000,
+      gasLimit,
       logging: {
         quiet: true
       },
@@ -71,7 +71,7 @@ describe("End State", function () {
     //does not presently work)
     let txHash;
     try {
-      await instance.run();
+      await instance.run({ gas: gasLimit });
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }

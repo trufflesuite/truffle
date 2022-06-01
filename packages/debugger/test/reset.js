@@ -5,7 +5,7 @@ import { assert } from "chai";
 
 import Ganache from "ganache";
 
-import { prepareContracts, lineOf } from "./helpers";
+import { prepareContracts, lineOf, gasLimit } from "./helpers";
 import * as Codec from "@truffle/codec";
 import Debugger from "lib/debugger";
 
@@ -40,7 +40,7 @@ describe("Reset Button", function () {
   before("Create Provider", async function () {
     provider = Ganache.provider({
       seed: "debugger",
-      gasLimit: 7000000,
+      gasLimit,
       logging: {
         quiet: true
       },
