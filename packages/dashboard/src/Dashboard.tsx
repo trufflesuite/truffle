@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
 import { useAccount, useConnect, useNetwork } from "wagmi";
 import ConfirmNetworkChanged from "./components/ConfirmNetworkChange";
-import Header from "./components/Header/Header";
-import DashboardProvider from "./components/DashboardProvider";
+import Header from "./components/header/Header";
+import DashboardProvider from "./components/dashboardprovider";
 import ConnectNetwork from "./components/ConnectNetwork";
 import {
   DashboardProviderMessage,
   isDashboardProviderMessage,
   isDebugMessage,
-  isInvalidateMessage
+  isInvalidateMessage,
+  isLogMessage,
+  Message
 } from "@truffle/dashboard-message-bus-common";
 import {
   DashboardMessageBusClient,
@@ -33,11 +35,17 @@ function Dashboard() {
   useEffect(() => {
     setChainId(chainId);
 
-    if (!chainId || !client) return;
+    if (!chainId || !client) {
+      return;
+    }
 
     if (connectedChainId) {
-      if (connectedChainId !== chainId) setPaused(true);
-      if (connectedChainId === chainId) setPaused(false);
+      if (connectedChainId !== chainId) {
+        setPaused(true);
+      }
+      if (connectedChainId === chainId) {
+        setPaused(false);
+      }
     } else {
       setConnectedChainId(chainId);
     }
@@ -60,37 +68,50 @@ function Dashboard() {
       port
     });
 
+    await c.ready();
+    console.debug(`Connected to message bus at ws://${host}:${port}`);
+
     const subscription = c.subscribe({});
 
-    subscription.on("message", lifecycle => {
-      const message = lifecycle.message;
+    subscription.on(
+      "message",
+      (lifecycle: ReceivedMessageLifecycle<Message>) => {
+        const message = lifecycle.message;
 
-      console.debug("Received message", message);
+        if (isDashboardProviderMessage(message)) {
+          console.debug(`received provider message`, message);
+          setDashboardProviderRequests(previousRequests => [
+            ...previousRequests,
+            lifecycle as ReceivedMessageLifecycle<DashboardProviderMessage>
+          ]);
+        } else if (isInvalidateMessage(message)) {
+          console.debug(`received invalidate message `, message);
+          setDashboardProviderRequests(previousRequests =>
+            previousRequests.filter(
+              request => request.message.id !== message.payload
+            )
+          );
+        } else if (isDebugMessage(message)) {
+          console.debug(`received invalidate message `, message);
+          const { payload } = message;
+          console.log(payload.message);
 
-      if (isDashboardProviderMessage(message)) {
-        setDashboardProviderRequests(previousRequests => [
-          ...previousRequests,
-          lifecycle as ReceivedMessageLifecycle<DashboardProviderMessage>
-        ]);
-      } else if (isInvalidateMessage(message)) {
-        setDashboardProviderRequests(previousRequests =>
-          previousRequests.filter(
-            request => request.message.id !== message.payload
-          )
-        );
-      } else if (isDebugMessage(message)) {
-        const { payload } = message;
-        console.log(payload.message);
+          lifecycle.respond({ payload: undefined });
+        } else if (isLogMessage(message)) {
+          console.debug(`received log message `, message);
+          const { payload } = message;
+          console.log(payload.message);
 
-        lifecycle.respond({ payload: undefined });
+          lifecycle.respond({ payload: undefined });
+        }
       }
-    });
+    );
 
     setClient(c);
   };
 
   const disconnectAccount = () => {
-    console.log("Disconnecting:");
+    console.debug(`Disconnecting`);
     // turn everything off.
     disconnect();
     setConnectedChainId(undefined);
