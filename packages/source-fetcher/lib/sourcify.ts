@@ -59,6 +59,8 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "avalanche",
     "fuji-avalanche",
     "wagmi-avalanche",
+    //sourcify does *not* support non-testnet dfk?
+    "testnet-dfk-avalanche",
     "telos",
     "testnet-telos",
     "ubiq",
@@ -83,7 +85,11 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "pangolin-darwinia",
     "evmos",
     "testnet-evmos",
-    "multivac"
+    "multivac",
+    "candle",
+    "gather",
+    "devnet-gather",
+    "testnet-gather"
   ]);
 
   constructor(networkId: number) {
