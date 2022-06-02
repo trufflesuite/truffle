@@ -46,7 +46,7 @@ $ lerna add mycmd --scope=@truffle/core
 
 1. Create a new directory in `packages/core/lib/commands/`, let's call it `mycmd`.
 2. Create 3 javascript files inside the **mycmd** directory with the filenames **run.js**, **meta.js** and **index.js**:  
-    * **run.js** contains the entry function after a user calls your command. The entry function has to be anonymous and of type async.
+    * **run.js** contains the entry function after a user calls your command.
     * **meta.js** contains information such as command name and command description. 
     * **index.js** exports both the run module and the meta module. 
 
