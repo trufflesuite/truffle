@@ -94,6 +94,16 @@ EOF
 +  mycmd: require("./mycmd"),
 ```
 
+### Link it from the commands/commands.js file
+
+```diff
+--- packages/core/lib/commands/commands.js
++++ packages/core/lib/commands/commands.js
+@@ -1,4 +1,5 @@
+ module.exports = [
++  "mycmd",
+```
+
 From there, you should see it in the help screen:
 ```shell
 $ cd packages/core
