@@ -204,6 +204,7 @@ const execute = {
           const context = {
             contract: constructor, // Can't name this field `constructor` or `_constructor`
             promiEvent: promiEvent,
+            blockLimit: network.blockLimit,
             params: params
           };
 
@@ -267,6 +268,7 @@ const execute = {
           const context = {
             contract: constructor,
             promiEvent,
+            blockLimit,
             onlyEmitReceipt: true
           };
 
