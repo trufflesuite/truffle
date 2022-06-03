@@ -33,37 +33,54 @@ as well as other packages in the monorepo.
 ### Create a new lerna package
 
 ```shell
-$ lerna create truffle-mycmd
+$ lerna create mycmd
 ```
 
 ### Add the package to `@truffle/core`
 
 ```shell
-$ lerna add truffle-mycmd --scope=@truffle/core
+$ lerna add mycmd --scope=@truffle/core
 ```
 
 ### Create a new command in `@truffle/core`
 
-Create a new file in `packages/core/lib/commands/`, let's call it `mycmd.js`.
+1. Create a new directory in `packages/core/lib/commands/`, let's call it `mycmd`.
+2. Create 3 javascript files inside the **mycmd** directory with the filenames **run.js**, **meta.js** and **index.js**:  
+    * **run.js** contains the entry function after a user calls your command.
+    * **meta.js** contains information such as command name and command description. 
+    * **index.js** exports both the run module and the meta module. 
 
+#### run.js
 ```shell
-$ cat << EOF > core/lib/commands/mycmd.js
-const command = {
+$ cat << EOF > core/lib/commands/mycmd/run.js
+
+module.exports = async function (options){
+  const mycmd = require("mycmd");
+  // TODO: write the run command here, something like:
+  // mycmd(options)
+};
+EOF
+```
+#### meta.js
+```shell
+$ cat << EOF > core/lib/commands/mycmd/meta.js
+module.exports = {
   command: "mycmd",
   description: "Run mycmd",
   builder: {},
   help: {
     usage: "truffle mycmd",
     options: []
-  },
-  run: function(options, done) {
-    const mycmd = require("truffle-mycmd");
-    // TODO: write the run command here, something like:
-    // mycmd(options, done)
   }
+EOF
+```
+#### index.js
+```shell
+$ cat << EOF > core/lib/commands/mycmd/index.js
+module.exports = {
+  run: require("./run"),
+  meta: require("./meta")
 };
-
-module.exports = command;
 EOF
 ```
 
@@ -75,6 +92,16 @@ EOF
 @@ -1,4 +1,5 @@
  module.exports = {
 +  mycmd: require("./mycmd"),
+```
+
+### Link it from the commands/commands.js file
+
+```diff
+--- packages/core/lib/commands/commands.js
++++ packages/core/lib/commands/commands.js
+@@ -1,4 +1,5 @@
+ module.exports = [
++  "mycmd",
 ```
 
 From there, you should see it in the help screen:
@@ -93,4 +120,10 @@ Commands:
 
 ### Write your module/command
 
-The setup is done, you can now write your command and organize your module as you want in: `packages/truffle-mycmd/`. You can have a look at `packages/box/` which is a good starting example to follow.
+The setup is done, you can now write your command and organize your module as you want in: `packages/mycmd/`. You can have a look at `packages/box/` which is a good starting example to follow.
+
+### Execute the command
+```shell
+$ cd packages/core
+$ node cli.js mycmd
+```
