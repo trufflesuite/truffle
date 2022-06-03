@@ -63,14 +63,7 @@ const execute = {
           const reason = Reason._extract({ error }, web3);
           error.reason = reason;
           if (reason) {
-            error.message = error.message.replace(
-              /: revert$/,
-              `: revert ${reason}`
-            );
-            error.stack = error.stack.replace(
-              /: revert$/m,
-              `: revert ${reason}`
-            );
+            error.message += ` -- Reason given: ${reason}.`;
           }
           reject(error);
         });
