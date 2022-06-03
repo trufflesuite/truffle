@@ -35,7 +35,7 @@ const override = {
    * @param  {Object} context execution state
    * @param  {Object} err     error
    */
-  start: async function(context, web3Error) {
+  start: async function (context, web3Error) {
     const constructor = this;
     let currentBlock = override.defaultMaxBlocks;
 
@@ -53,7 +53,7 @@ const override = {
       // This will run if there's a reason and no status field
       // e.g: revert with reason ganache --vmErrorsOnRPCResponse=true
       const reason = await Reason.get(
-        context.params,
+        { ...context.params, gas: undefined }, //don't be gas-limited here!
         constructor.web3,
         constructor.interfaceAdapter
       );
@@ -66,7 +66,7 @@ const override = {
     }
 
     // This will run every block from now until contract.timeoutBlocks
-    const listener = function(pollID) {
+    const listener = function (pollID) {
       currentBlock++;
 
       if (currentBlock > constructor.timeoutBlocks) {
@@ -95,7 +95,8 @@ const override = {
     };
 
     // Start polling
-    let currentPollingBlock = await constructor.interfaceAdapter.getBlockNumber();
+    let currentPollingBlock =
+      await constructor.interfaceAdapter.getBlockNumber();
 
     const pollID = setInterval(async () => {
       const newBlock = await constructor.interfaceAdapter.getBlockNumber();
