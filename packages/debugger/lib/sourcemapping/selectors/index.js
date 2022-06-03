@@ -6,6 +6,7 @@ import SourceMapUtils from "@truffle/source-map-utils";
 import * as Codec from "@truffle/codec";
 
 import semver from "semver";
+import jsonpointer from "json-pointer";
 
 import evm from "lib/evm/selectors";
 import trace from "lib/trace/selectors";
@@ -121,6 +122,22 @@ function createMultistepSelectors(stepSelector) {
       ["./source", "./pointerAndNode"],
 
       ({ ast }, pointerAndNode) => (pointerAndNode ? pointerAndNode.node : ast)
+    ),
+
+    /**
+     * .contractNode
+     * WARNING: ad-hoc selector only meant to be used
+     * when you're on a function node!
+     * should probably be replaced by something better;
+     * the data submodule handles these things a better way
+     */
+    contractNode: createLeaf(["./source", "./pointer"], ({ ast }, pointer) =>
+      pointer
+        ? jsonpointer.get(
+            ast,
+            pointer.replace(/\/nodes\/\d+$/, "") //cut off end
+          )
+        : ast
     )
   };
 }
@@ -360,6 +377,24 @@ let sourcemapping = createSelectorTree({
       ["./sourceRange"],
 
       ({ lines }) => lines.start.line != lines.end.line
+    ),
+
+    /**
+     * sourcemapping.current.onYulFunctionDefinitionWhileEntering
+     */
+    onYulFunctionDefinitionWhileEntering: createLeaf(
+      ["./node", "./pointer", "../next/pointer"],
+      (node, pointer, nextPointer) =>
+        node &&
+        node.nodeType === "YulFunctionDefinition" &&
+        nextPointer !== null &&
+        (nextPointer.startsWith(`${pointer}/body/`) ||
+          nextPointer.startsWith(`${pointer}/returnVariables`))
+      //if neither of these conditions hold, we're seeing the function
+      //as it's being defined, rather than as it's being called.
+      //notice the final slash; when you enter a function, you go *strictly inside*
+      //its body (if you hit the body node itself you are seeing the definition)
+      //(as of Solidity 0.8.4, you may also go to the return parameters)
     ),
 
     /**
