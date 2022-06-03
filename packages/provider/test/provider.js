@@ -10,7 +10,7 @@ describe("Provider", function () {
   const port = 12345;
   const host = "127.0.0.1";
 
-  before("Initialize Ganache server", done => {
+  before("Initialize Ganache server", async function () {
     server = Ganache.server({
       miner: {
         instamine: "strict"
@@ -19,10 +19,7 @@ describe("Provider", function () {
         quiet: true
       }
     });
-    server.listen(port, function (err) {
-      assert.ifError(err);
-      done();
-    });
+    await server.listen(port);
   });
 
   after("Shutdown Ganache", async () => {
@@ -73,7 +70,7 @@ describe("Provider", function () {
       await Provider.testConnection({ provider });
       assert(false);
     } catch (error) {
-      const snippet = `Could not connect to your Ethereum client`;
+      const snippet = `connection not open on send`;
       if (error.message.includes(snippet)) {
         assert(true);
       } else {
@@ -189,7 +186,12 @@ describe("Provider", function () {
 
         assert.deepStrictEqual(error, err);
         const _stubbedRawError = _stubbedFailedResult(payload);
-        assert.deepStrictEqual(error, new ProviderError(_stubbedRawError.error.message, { underlyingError: _stubbedRawError.error }));
+        assert.deepStrictEqual(
+          error,
+          new ProviderError(_stubbedRawError.error.message, {
+            underlyingError: _stubbedRawError.error
+          })
+        );
 
         assert.strictEqual(result, undefined);
       }
