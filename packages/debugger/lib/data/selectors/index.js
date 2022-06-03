@@ -1303,6 +1303,14 @@ const data = createSelectorTree({
     ),
 
     /**
+     * data.current.onYulFunctionDefinitionWhileEntering
+     */
+    onYulFunctionDefinitionWhileEntering: createLeaf(
+      [sourcemapping.current.onYulFunctionDefinitionWhileEntering],
+      identity
+    ),
+
+    /**
      * data.current.identifiers (namespace)
      */
     identifiers: {

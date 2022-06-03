@@ -24,7 +24,7 @@ export const networkNamesById: { [id: number]: string } = {
   43114: "avalanche",
   43113: "fuji-avalanche",
   11111: "wagmi-avalanche",
-  53935: "dfk-avalanche", //not presently supported by either fetcher, but...
+  53935: "dfk-avalanche",
   335: "testnet-dfk-avalance",
   40: "telos",
   41: "testnet-telos",

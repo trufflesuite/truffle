@@ -31,11 +31,7 @@
     "test:raw": "NO_BUILD=true mocha"
   },
   "optionalDependencies": {
-    "@truffle/db": "^1.0.8",
-    "@truffle/preserve-fs": "^0.2.7",
-    "@truffle/preserve-to-buckets": "^0.2.8",
-    "@truffle/preserve-to-filecoin": "^0.2.8",
-    "@truffle/preserve-to-ipfs": "^0.2.8"
+    "@truffle/db": "^1.0.8"
   },
   "dependencies": {
     "@truffle/db-loader": "^0.1.18",

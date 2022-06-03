@@ -3,6 +3,7 @@ const debug = debugModule("debugger:controller:selectors"); //eslint-disable-lin
 
 import { createSelectorTree, createLeaf } from "reselect-tree";
 import { isSkippedNodeType } from "lib/helpers";
+import * as Codec from "@truffle/codec";
 
 import evm from "lib/evm/selectors";
 import sourcemapping from "lib/sourcemapping/selectors";
@@ -65,6 +66,34 @@ const controller = createSelectorTree({
      * controller.current.willJump
      */
     willJump: createLeaf([evm.current.step.isJump], identity),
+
+    /**
+     * controller.current.onBaseConstructorDefinition
+     */
+    onBaseConstructorDefinition: createLeaf(
+      [
+        "./location/node",
+        evm.current.context,
+        sourcemapping.current.contractNode
+      ],
+      (node, context, contract) =>
+        node &&
+        node.nodeType === "FunctionDefinition" &&
+        Codec.Ast.Utils.functionKind(node) === "constructor" &&
+        context.contractId !== contract.id //when are we on a *base* constructor
+      //definition?  precisely when the contract we're in according to the source
+      //mapping is different from the contract whose bytecode is executing
+      //(note that we don't need to check whether the compilation IDs are different,
+      //since these will always be the same)
+    ),
+
+    /**
+     * controller.current.location.onYulFunctionDefinitionWhileEntering
+     */
+    onYulFunctionDefinitionWhileEntering: createLeaf(
+      [sourcemapping.current.onYulFunctionDefinitionWhileEntering],
+      identity
+    ),
 
     /**
      * controller.current.location

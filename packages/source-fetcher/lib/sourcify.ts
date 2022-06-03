@@ -59,7 +59,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "avalanche",
     "fuji-avalanche",
     "wagmi-avalanche",
-    //sourcify does *not* support non-testnet dfk?
+    "dfk-avalanche",
     "testnet-dfk-avalanche",
     "telos",
     "testnet-telos",

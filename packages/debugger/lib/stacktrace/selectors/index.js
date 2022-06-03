@@ -7,7 +7,6 @@ import trace from "lib/trace/selectors";
 import evm from "lib/evm/selectors";
 import sourcemapping from "lib/sourcemapping/selectors";
 
-import jsonpointer from "json-pointer";
 import zipWith from "lodash/zipWith";
 import { popNWhere } from "lib/helpers";
 import * as Codec from "@truffle/codec";
@@ -126,21 +125,10 @@ function createMultistepSelectors(stepSelector) {
 
     /**
      * .contractNode
-     * WARNING: ad-hoc selector only meant to be used
-     * when you're on a function node!
-     * should probably be replaced by something better;
-     * the data submodule handles these things a better way
+     * WARNING: see the warning in sourcemapping before
+     * using this selector!
      */
-    contractNode: createLeaf(
-      ["./location/source", "./location/pointer"],
-      ({ ast }, pointer) =>
-        pointer
-          ? jsonpointer.get(
-              ast,
-              pointer.replace(/\/nodes\/\d+$/, "") //cut off end
-            )
-          : ast
-    )
+    contractNode: createLeaf([stepSelector.contractNode], identity)
   };
 }
 
