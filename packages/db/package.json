@@ -12,6 +12,9 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
+  "engines": {
+    "node": ">=12 <17"
+  },
   "version": "1.0.8",
   "main": "dist/src/index.js",
   "files": [
@@ -28,7 +31,7 @@
     "build:types": "ts-node -r ./bin/register -r tsconfig-paths/register --project tsconfig.codegen.json ./bin/codegen.js",
     "clean": "rm -rf ./dist ./types/schema.d.ts",
     "madge": "madge ./src/index.ts",
-    "prepare": "yarn build",
+    "prepare": " ./scripts/node-check.js || yarn build",
     "start": "ts-node-dev -r tsconfig-paths/register ./bin/server",
     "start:debug": "DEBUG=pouchdb:api ts-node-dev -r tsconfig-paths/register ./bin/server",
     "start:drizzle": "ts-node-dev -r tsconfig-paths/register ./bin/server ./test/truffle-projects/drizzle-box",
@@ -56,6 +59,7 @@
     "pouchdb-adapter-node-websql": "^7.0.0",
     "pouchdb-debug": "^7.1.1",
     "pouchdb-find": "^7.0.0",
+    "semver": "^7.3.7",
     "web3-utils": "1.5.3"
   },
   "devDependencies": {
