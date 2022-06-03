@@ -36,7 +36,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
         .catch(() => null);
     });
 
-    it("errors w/gas limit error if constructor reverts", async function () {
+    it("errors w/o message if constructor reverts", async function () {
       try {
         await Example.new(13); // 13 fails a constructor require gate
         assert.fail();
@@ -45,6 +45,23 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
         assert(
           !e.message.includes("Reason"),
           "Should not include reason message"
+        );
+      }
+    });
+
+    it("errors w/gas limit error if constructor reverts", async function () {
+      try {
+        await Example.new(13, { gas: 10000 }); // 13 fails a constructor require gate
+        assert.fail();
+      } catch (e) {
+        assert(!e.reason, "Error should not include reason property");
+        assert(
+          !e.message.includes("Reason"),
+          "Should not include reason message"
+        );
+        assert(
+          e.message.includes("intrinsic gas too low"),
+          "Error should be gas limit err"
         );
       }
     });
@@ -61,6 +78,26 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
         assert(
           e.message.includes("reasonstring"),
           "Error message should include reason"
+        );
+      }
+    });
+
+    it("errors w/reason string and gas limit error if constructor reverts", async function () {
+      try {
+        await Example.new(2001, { gas: 100000 }); // 2001 fails a constructor require gate w/ a reason
+        assert.fail();
+      } catch (e) {
+        assert(
+          e.reason === "reasonstring",
+          "Error should include reason property"
+        );
+        assert(
+          e.message.includes("reasonstring"),
+          "Error message should include reason"
+        );
+        assert(
+          e.message.includes("intrinsic gas too low"),
+          "Error should be gas limit err"
         );
       }
     });

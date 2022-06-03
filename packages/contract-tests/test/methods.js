@@ -543,6 +543,19 @@ describe("Methods", function () {
         assert(e.message.includes("revert"));
       }
     });
+
+    it("errors with receipt and revert message when gas specified", async function () {
+      const example = await Example.new(1);
+      try {
+        await example.triggerRequireWithReasonError({ gas: 100000 });
+        assert.fail();
+      } catch (e) {
+        assert(e.reason === "reasonstring");
+        assert(e.message.includes("reasonstring"));
+        assert(e.message.includes("revert"));
+        assert(e.receipt.status === false);
+      }
+    });
   });
 
   // This doesn't work on geth --dev because chainId is too high: 1337? Apparently
