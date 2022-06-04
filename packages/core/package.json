@@ -80,6 +80,7 @@
     "universal-analytics": "^0.4.17",
     "web3": "1.7.4",
     "web3-utils": "1.7.4",
+    "walkdir": "^0.4.1",
     "xregexp": "^4.2.4",
     "yargs": "^13.3.0"
   },

@@ -1,15 +1,23 @@
-const determineTestFilesToRun = ({ inputFile, inputArgs = [], config }) => {
-  const path = require("path");
-  const fs = require("fs");
-  const glob = require("glob");
-  let filesToRun = [];
+const path = require("path");
+const fs = require("fs");
+const glob = require("glob");
+const walkdir = require("walkdir");
 
+const determineTestFilesToRun = ({ inputFile, inputArgs = [], config }) => {
+  let filesToRun = [];
   if (inputFile) {
     filesToRun.push(inputFile);
   } else if (inputArgs.length > 0) {
-    inputArgs.forEach(inputArg => filesToRun.push(inputArg));
+    for (let fileOrDir of inputArgs) {
+      fileOrDir = path.join(fileOrDir);
+      walkdir.sync(fileOrDir, { follow_symlinks: true }, function (path, stat) {
+        const isFile = fs.statSync(path).isFile();
+        if (isFile) {
+          filesToRun.push(path);
+        }
+      });
+    }
   }
-
   if (filesToRun.length === 0) {
     const directoryContents = glob.sync(
       `${config.test_directory}${path.sep}**${path.sep}*`
@@ -25,3 +33,4 @@ const determineTestFilesToRun = ({ inputFile, inputArgs = [], config }) => {
 module.exports = {
   determineTestFilesToRun
 };
+
