@@ -83,6 +83,13 @@ describe("truffle migrate --describe-json", () => {
     projectPath = path.join(__dirname, "../../sources/migrations/init");
     config = await sandbox.create(projectPath);
     config.network = "development";
+    config.networks = {
+      development: {
+        host: "127.0.0.1",
+        port: 8545,
+        network_id: "*"
+      }
+    };
     config.logger = logger;
     await Server.start();
   });
@@ -99,9 +106,8 @@ describe("truffle migrate --describe-json", () => {
       contents = logger.contents();
     }).timeout(20000);
 
-    it("does not include any `MIGRATION_STATUS` lines", done => {
+    it("does not include any `MIGRATION_STATUS` lines", function () {
       assert(!contents.includes("MIGRATION_STATUS"));
-      done();
     });
   });
 
@@ -126,19 +132,22 @@ describe("truffle migrate --describe-json", () => {
     describe("without existing migration (i.e. clean slate)", () => {
       let statuses = [];
 
-      before("before all setup", done => {
+      before(async function () {
         projectPath = path.join(__dirname, "../../sources/migrations/init");
-        sandbox
-          .create(projectPath)
-          .then(conf => {
-            config = conf;
-            config.network = "development";
-            config.logger = logger;
-          })
-          .then(done);
+        config = await sandbox.create(projectPath);
+        config.network = "development";
+        config.networks = {
+          development: {
+            host: "127.0.0.1",
+            port: 8545,
+            network_id: "*"
+          }
+        };
+        config.logger = logger;
       });
 
-      it("runs the migration without throwing", async () => {
+      it("runs the migration without throwing", async function () {
+        this.timeout(50000);
         await CommandRunner.run("migrate --describe-json", config);
 
         const contents = logger.contents();
@@ -148,7 +157,7 @@ describe("truffle migrate --describe-json", () => {
             .filter(line => line.includes("MIGRATION_STATUS"))
             .map(line => JSON.parse(line.replace("MIGRATION_STATUS:", "")))
         );
-      }).timeout(20000);
+      });
 
       verifyMigrationStatuses(statuses, "deploying");
     });
