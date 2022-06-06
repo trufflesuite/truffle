@@ -150,6 +150,17 @@ describe("Deployments", function () {
         await Example.new(2001); // Triggers error with a normal reason string
         assert.fail();
       } catch (error) {
+        assert(error.message.includes("reasonstring"));
+        assert(error.receipt === undefined, "Expected no receipt");
+        assert(error.reason === "reasonstring");
+      }
+    });
+
+    it("rejects with reason string on revert with too low intrinsic gas", async function () {
+      try {
+        await Example.new(2001, { gas: 10000 }); // Triggers error with a normal reason string
+        assert.fail();
+      } catch (error) {
         assert(error.message.includes("intrinsic gas too low"));
         assert(error.message.includes("reasonstring"));
         assert(error.receipt === undefined, "Expected no receipt");
@@ -160,6 +171,23 @@ describe("Deployments", function () {
     it("rejects with long reason string on revert", async function () {
       try {
         await Example.new(20001); // Triggers error with a long reason string
+        assert.fail();
+      } catch (error) {
+        assert(
+          error.message.includes(
+            "solidity storage is a fun lesson in endianness"
+          )
+        );
+        assert(error.receipt === undefined, "Expected no receipt");
+        assert(
+          error.reason === "solidity storage is a fun lesson in endianness"
+        );
+      }
+    });
+
+    it("rejects with long reason string on revert with too low intrinsic gas", async function () {
+      try {
+        await Example.new(20001, { gas: 10000 }); // Triggers error with a long reason string
         assert.fail();
       } catch (error) {
         assert(error.message.includes("intrinsic gas too low"));

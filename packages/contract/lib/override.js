@@ -1,5 +1,6 @@
 const Reason = require("./reason");
 const handlers = require("./handlers");
+const utils = require("./utils");
 
 const override = {
   timeoutMessage: "not mined within", // Substring of timeout err fired by web3
@@ -35,7 +36,7 @@ const override = {
    * @param  {Object} context execution state
    * @param  {Object} err     error
    */
-  start: async function(context, web3Error) {
+  start: async function (context, web3Error) {
     const constructor = this;
     let currentBlock = override.defaultMaxBlocks;
 
@@ -50,10 +51,15 @@ const override = {
         return;
       }
 
+      //set up gas for getting reason -- we want it to be a lot, but not infinite
+      const defaultGas = utils
+        .bigNumberify(Math.floor(context.blockLimit / 2))
+        .toHexString();
+
       // This will run if there's a reason and no status field
       // e.g: revert with reason ganache --vmErrorsOnRPCResponse=true
       const reason = await Reason.get(
-        context.params,
+        { ...context.params, gas: defaultGas }, //don't be gas-limited here!
         constructor.web3,
         constructor.interfaceAdapter
       );
@@ -66,7 +72,7 @@ const override = {
     }
 
     // This will run every block from now until contract.timeoutBlocks
-    const listener = function(pollID) {
+    const listener = function (pollID) {
       currentBlock++;
 
       if (currentBlock > constructor.timeoutBlocks) {
@@ -95,7 +101,8 @@ const override = {
     };
 
     // Start polling
-    let currentPollingBlock = await constructor.interfaceAdapter.getBlockNumber();
+    let currentPollingBlock =
+      await constructor.interfaceAdapter.getBlockNumber();
 
     const pollID = setInterval(async () => {
       const newBlock = await constructor.interfaceAdapter.getBlockNumber();

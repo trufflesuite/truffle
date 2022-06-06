@@ -12,6 +12,9 @@ import * as Codec from "@truffle/codec";
 import tmp from "tmp";
 import Config from "@truffle/config";
 
+export const testBlockGasLimit = 7000000;
+export const testDefaultTxGasLimit = testBlockGasLimit;
+
 export async function prepareContracts(provider, sources = {}, migrations) {
   let config = await createSandbox();
 
@@ -66,13 +69,7 @@ export async function prepareContracts(provider, sources = {}, migrations) {
 export async function createSandbox() {
   const tempDir = tmp.dirSync({ unsafeCleanup: true });
   fs.copySync(
-    path.join(
-      __dirname,
-      "..",
-      "test",
-      "sources",
-      "init"
-    ),
+    path.join(__dirname, "..", "test", "sources", "init"),
     tempDir.name
   );
   const config = new Config(undefined, tempDir.name);

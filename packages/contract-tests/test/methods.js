@@ -432,8 +432,7 @@ describe("Methods", function () {
         example
           .setValue(10, { gas: 10 })
           .on("error", e => {
-            const errorCorrect =
-              e.message.includes("intrinsic gas too low");
+            const errorCorrect = e.message.includes("intrinsic gas too low");
 
             assert(errorCorrect, "Should OOG");
             done();
@@ -533,10 +532,22 @@ describe("Methods", function () {
   });
 
   describe("revert with reason (ganache only)", function () {
-    it("errors with receipt and revert message", async function () {
+    it("errors with revert message", async function () {
       const example = await Example.new(1);
       try {
         await example.triggerRequireWithReasonError();
+        assert.fail();
+      } catch (e) {
+        assert(e.reason === "reasonstring");
+        assert(e.message.includes("reasonstring"));
+        assert(e.message.includes("revert"));
+      }
+    });
+
+    it("errors with receipt and revert message when gas specified", async function () {
+      const example = await Example.new(1);
+      try {
+        await example.triggerRequireWithReasonError({ gas: 100000 });
         assert.fail();
       } catch (e) {
         assert(e.reason === "reasonstring");

@@ -5,7 +5,7 @@ import { assert } from "chai";
 
 import Ganache from "ganache";
 
-import { prepareContracts } from "./helpers";
+import { prepareContracts, testBlockGasLimit } from "./helpers";
 import Debugger from "lib/debugger";
 
 import evm from "lib/evm/selectors";
@@ -56,7 +56,7 @@ describe("Precompiled Contracts", function () {
   before("Create Provider", async function () {
     provider = Ganache.provider({
       seed: "debugger",
-      gasLimit: 7000000,
+      gasLimit: testBlockGasLimit,
       logging: {
         quiet: true
       },

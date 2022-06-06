@@ -5,7 +5,7 @@ import { assert } from "chai";
 
 import Ganache from "ganache";
 
-import { prepareContracts, lineOf } from "../helpers";
+import { prepareContracts, lineOf, testBlockGasLimit } from "../helpers";
 import Debugger from "lib/debugger";
 
 import trace from "lib/trace/selectors";
@@ -208,7 +208,7 @@ describe("Variable IDs", function () {
   before("Create Provider", async function () {
     provider = Ganache.provider({
       seed: "debugger",
-      gasLimit: 7000000,
+      gasLimit: testBlockGasLimit,
       miner: {
         instamine: "strict"
       },

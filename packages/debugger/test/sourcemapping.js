@@ -5,7 +5,12 @@ import { assert } from "chai";
 
 import Ganache from "ganache";
 
-import { prepareContracts, lineOf } from "./helpers";
+import {
+  prepareContracts,
+  lineOf,
+  testBlockGasLimit,
+  testDefaultTxGasLimit
+} from "./helpers";
 import Debugger from "lib/debugger";
 
 import sourcemapping from "lib/sourcemapping/selectors";
@@ -255,7 +260,7 @@ describe("Source mapping (location and jumps)", function () {
   before("Create Provider", async function () {
     provider = Ganache.provider({
       seed: "debugger",
-      gasLimit: 7000000,
+      gasLimit: testBlockGasLimit,
       logging: {
         quiet: true
       },
@@ -428,7 +433,7 @@ describe("Source mapping (location and jumps)", function () {
       //does not presently work)
       let txHash;
       try {
-        await instance.run(); //this will throw because of the revert
+        await instance.run({ gas: testDefaultTxGasLimit }); //this will throw because of the revert
       } catch (error) {
         txHash = error.receipt.transactionHash;
       }
