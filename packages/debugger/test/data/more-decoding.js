@@ -6,7 +6,7 @@ import Web3 from "web3"; //just using for utils
 
 import Ganache from "ganache";
 
-import { prepareContracts, lineOf, gasLimit } from "../helpers";
+import { prepareContracts, lineOf, testBlockGasLimit } from "../helpers";
 import Debugger from "lib/debugger";
 
 import sourcemapping from "lib/sourcemapping/selectors";
@@ -373,7 +373,7 @@ describe("Further Decoding", function () {
   before("Create Provider", async function () {
     provider = Ganache.provider({
       seed: "debugger",
-      gasLimit,
+      gasLimit: testBlockGasLimit,
       miner: {
         instamine: "strict"
       },

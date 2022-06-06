@@ -5,7 +5,7 @@ import { assert } from "chai";
 
 import Ganache from "ganache";
 
-import { prepareContracts, gasLimit } from "./helpers";
+import { prepareContracts, testBlockGasLimit } from "./helpers";
 import Debugger from "lib/debugger";
 
 import sessionSelector from "lib/session/selectors";
@@ -144,7 +144,7 @@ describe("Contexts", function () {
   before("Create Provider", async function () {
     provider = Ganache.provider({
       seed: "debugger",
-      gasLimit,
+      gasLimit: testBlockGasLimit,
       logging: {
         quiet: true
       },

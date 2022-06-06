@@ -5,7 +5,7 @@ import { assert } from "chai";
 
 import Ganache from "ganache";
 
-import { prepareContracts, lineOf, gasLimit } from "../helpers";
+import { prepareContracts, lineOf, testBlockGasLimit } from "../helpers";
 import Debugger from "lib/debugger";
 
 import * as Codec from "@truffle/codec";
@@ -117,7 +117,7 @@ describe("Calldata Decoding", function () {
   before("Create Provider", async function () {
     provider = Ganache.provider({
       seed: "debugger",
-      gasLimit,
+      gasLimit: testBlockGasLimit,
       logging: {
         quiet: true
       },

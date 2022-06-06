@@ -5,7 +5,12 @@ import { assert } from "chai";
 
 import Ganache from "ganache";
 
-import { prepareContracts, lineOf, gasLimit } from "./helpers";
+import {
+  prepareContracts,
+  lineOf,
+  testBlockGasLimit,
+  testDefaultTxGasLimit
+} from "./helpers";
 import Debugger from "lib/debugger";
 
 import sourcemapping from "lib/sourcemapping/selectors";
@@ -159,7 +164,7 @@ describe("Stack tracing", function () {
   before("Create Provider", async function () {
     provider = Ganache.provider({
       seed: "debugger",
-      gasLimit,
+      gasLimit: testBlockGasLimit,
       logging: {
         quiet: true
       },
@@ -185,7 +190,7 @@ describe("Stack tracing", function () {
     //does not presently work)
     let txHash;
     try {
-      await instance.run(0, { gas: gasLimit }); //this will throw because of the revert
+      await instance.run(0, { gas: testDefaultTxGasLimit }); //this will throw because of the revert
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -234,7 +239,7 @@ describe("Stack tracing", function () {
     //does not presently work)
     let txHash;
     try {
-      await instance.run(0, { gas: gasLimit }); //this will throw because of the revert
+      await instance.run(0, { gas: testDefaultTxGasLimit }); //this will throw because of the revert
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -302,7 +307,7 @@ describe("Stack tracing", function () {
     //does not presently work)
     let txHash;
     try {
-      await instance.run(1, { gas: gasLimit }); //this will throw because of the revert
+      await instance.run(1, { gas: testDefaultTxGasLimit }); //this will throw because of the revert
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -351,7 +356,7 @@ describe("Stack tracing", function () {
     //does not presently work)
     let txHash;
     try {
-      await instance.run(2, { gas: gasLimit }); //this will throw because of the revert
+      await instance.run(2, { gas: testDefaultTxGasLimit }); //this will throw because of the revert
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -404,7 +409,7 @@ describe("Stack tracing", function () {
     //does not presently work)
     let txHash;
     try {
-      await instance.run(3, { gas: gasLimit }); //this will throw because of the revert
+      await instance.run(3, { gas: testDefaultTxGasLimit }); //this will throw because of the revert
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -467,7 +472,7 @@ describe("Stack tracing", function () {
     //does not presently work)
     let txHash;
     try {
-      await instance.run(4, { gas: gasLimit }); //this will throw because of the revert
+      await instance.run(4, { gas: testDefaultTxGasLimit }); //this will throw because of the revert
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -541,7 +546,7 @@ describe("Stack tracing", function () {
     //does not presently work)
     let txHash;
     try {
-      await instance.run(5, { gas: gasLimit }); //this will throw because of the revert
+      await instance.run(5, { gas: testDefaultTxGasLimit }); //this will throw because of the revert
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }
@@ -601,7 +606,7 @@ describe("Stack tracing", function () {
     //does not presently work)
     let txHash;
     try {
-      await instance.run(6, { gas: gasLimit }); //this will throw because of the revert
+      await instance.run(6, { gas: testDefaultTxGasLimit }); //this will throw because of the revert
     } catch (error) {
       txHash = error.receipt.transactionHash;
     }

@@ -5,7 +5,7 @@ import { assert } from "chai";
 
 import Ganache from "ganache";
 
-import { prepareContracts, gasLimit } from "./helpers";
+import { prepareContracts, testBlockGasLimit } from "./helpers";
 import * as Codec from "@truffle/codec";
 import Debugger from "lib/debugger";
 
@@ -42,7 +42,7 @@ describe("Loading and unloading transactions", function () {
   before("Create Provider", async function () {
     provider = Ganache.provider({
       seed: "debugger",
-      gasLimit,
+      gasLimit: testBlockGasLimit,
       logging: {
         quiet: true
       },

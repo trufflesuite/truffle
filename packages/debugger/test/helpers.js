@@ -12,7 +12,8 @@ import * as Codec from "@truffle/codec";
 import tmp from "tmp";
 import Config from "@truffle/config";
 
-export const gasLimit = 7000000;
+export const testBlockGasLimit = 7000000;
+export const testDefaultTxGasLimit = testBlockGasLimit;
 
 export async function prepareContracts(provider, sources = {}, migrations) {
   let config = await createSandbox();

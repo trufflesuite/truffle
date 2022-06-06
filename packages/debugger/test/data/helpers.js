@@ -6,7 +6,7 @@ import { assert } from "chai";
 import changeCase from "change-case";
 import * as Codec from "@truffle/codec";
 
-import { prepareContracts, gasLimit } from "test/helpers";
+import { prepareContracts, testBlockGasLimit } from "test/helpers";
 
 import Debugger from "lib/debugger";
 
@@ -50,7 +50,7 @@ function lastStatementLine(source) {
 async function prepareDebugger(testName, sources) {
   const provider = Ganache.provider({
     seed: "debugger",
-    gasLimit,
+    gasLimit: testBlockGasLimit,
     logging: {
       quiet: true
     },
