@@ -79,9 +79,7 @@ const util = {
     const web3 = new Web3();
 
     process.env.GETH
-      ? (provider = new Web3.providers.HttpProvider("http://127.0.0.1:8545", {
-          keepAlive: false
-        }))
+      ? (provider = new Web3.providers.WebsocketProvider("ws://127.0.0.1:8545"))
       : (provider = ganache.provider(options));
 
     web3.setProvider(provider);
