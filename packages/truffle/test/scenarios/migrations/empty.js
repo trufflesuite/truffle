@@ -12,20 +12,16 @@ describe("migrate (empty)", function () {
   const logger = new MemoryLogger();
 
   before(async function () {
-    await Server.start();
-  });
-  after(async function () {
-    await Server.stop();
-  });
-
-  before(async function () {
     this.timeout(10000);
+    await Server.start();
     config = await sandbox.create(project);
-    config.network = "development";
     config.logger = logger;
     config.mocha = {
       reporter: new Reporter(logger)
     };
+  });
+  after(async function () {
+    await Server.stop();
   });
 
   it("indicates no ETH was spent on migration", async function () {

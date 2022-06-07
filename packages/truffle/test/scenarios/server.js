@@ -1,6 +1,4 @@
 const Ganache = require("ganache");
-const fs = require("fs-extra");
-const glob = require("glob");
 let server = null;
 
 module.exports = {
@@ -25,17 +23,5 @@ module.exports = {
       await server.close();
       server = null;
     }
-    await this.cleanUp();
-  },
-
-  cleanUp: function () {
-    return new Promise((resolve, reject) => {
-      glob("tmp-*", (err, files) => {
-        if (err) reject(err);
-
-        files.forEach(file => fs.removeSync(file));
-        resolve();
-      });
-    });
   }
 };

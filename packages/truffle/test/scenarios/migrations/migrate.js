@@ -3,7 +3,6 @@ const CommandRunner = require("../commandRunner");
 const path = require("path");
 const assert = require("assert");
 const Server = require("../server");
-const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const Web3 = require("web3");
 
@@ -18,7 +17,6 @@ describe("migrate (success)", function () {
     this.timeout(10000);
     await Server.start();
     config = await sandbox.create(project);
-    config.network = "development";
     config.networks = {
       development: {
         host: "127.0.0.1",
@@ -27,13 +25,7 @@ describe("migrate (success)", function () {
       }
     };
     config.logger = logger;
-    config.mocha = {
-      reporter: new Reporter(logger)
-    };
-    const provider = new Web3.providers.WebsocketProvider(
-      "ws://localhost:8545"
-    );
-    web3 = new Web3(provider);
+    web3 = new Web3("ws://localhost:8545");
     networkId = await web3.eth.net.getId();
   });
   after(async function () {
@@ -41,7 +33,7 @@ describe("migrate (success)", function () {
   });
 
   it("runs migrations (sync & async/await)", async function () {
-    this.timeout(70000);
+    this.timeout(100000);
 
     await CommandRunner.run("migrate", config);
     const output = logger.contents();
@@ -70,7 +62,7 @@ describe("migrate (success)", function () {
   });
 
   it("forces a migration with the -f option", async function () {
-    this.timeout(70000);
+    this.timeout(100000);
 
     await CommandRunner.run("migrate -f 3", config);
     const output = logger.contents();

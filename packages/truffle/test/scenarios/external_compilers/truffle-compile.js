@@ -18,22 +18,24 @@ describe("`truffle compile` as external", function () {
   const logger = new MemoryLogger();
 
   before(async function () {
+    this.timeout(10000);
     await Server.start();
+    config = await sandbox.create(project);
+    config.network = "development";
+    config.networks = {
+      development: {
+        host: "127.0.0.1",
+        port: 8545,
+        network_id: "*"
+      }
+    };
+    config.logger = logger;
+    config.mocha = {
+      reporter: new Reporter(logger)
+    };
   });
   after(async function () {
     await Server.stop();
-  });
-
-  before("set up sandbox", function () {
-    this.timeout(10000);
-    return sandbox.create(project).then(conf => {
-      config = conf;
-      config.network = "development";
-      config.logger = logger;
-      config.mocha = {
-        reporter: new Reporter(logger)
-      };
-    });
   });
 
   it("will compile", async function () {
@@ -101,7 +103,7 @@ describe("`truffle compile` as external", function () {
   });
 
   it("will run tests", async function () {
-    this.timeout(70000);
+    this.timeout(100000);
     await CommandRunner.run("test", config);
     const output = logger.contents();
     assert(output.indexOf("3 passing") >= 0);

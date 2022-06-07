@@ -5,23 +5,16 @@ const fs = require("fs-extra");
 const path = require("path");
 const assert = require("assert");
 const Server = require("../server");
-const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 
-describe("Contract names", function () {
+describe("contract names", function () {
   let config;
   const logger = new MemoryLogger();
   const project = path.join(__dirname, "../../sources/contract_names");
 
   before(async function () {
-    await Server.start();
-  });
-  after(async function () {
-    await Server.stop();
-  });
-
-  before(async function () {
     this.timeout(10000);
+    await Server.start();
     config = await sandbox.create(project);
     config.network = "development";
     config.networks = {
@@ -32,12 +25,12 @@ describe("Contract names", function () {
       }
     };
     config.logger = logger;
-    config.mocha = {
-      reporter: new Reporter(logger)
-    };
+  });
+  after(async function () {
+    await Server.stop();
   });
 
-  it("will compile if file names do not match contract names", async function () {
+  it("compiles if file names do not match contract names", async function () {
     this.timeout(40000);
 
     await CommandRunner.run("compile", config);
@@ -52,7 +45,7 @@ describe("Contract names", function () {
     );
   });
 
-  it("will migrate when artifacts.require() doesn't have an extension and names do not match", async function () {
+  it("migrates when artifacts.require() doesn't have an extension and names do not match", async function () {
     this.timeout(50000);
 
     await CommandRunner.run("migrate", config);
@@ -81,7 +74,7 @@ describe("Contract names", function () {
     );
   });
 
-  it("will compile and migrate with relative imports (using filename)", async function () {
+  it("compiles and migrates with relative imports (using filename)", async function () {
     this.timeout(50000);
 
     const contractPath = path.join(

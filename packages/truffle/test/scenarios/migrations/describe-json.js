@@ -82,7 +82,6 @@ describe("truffle migrate --describe-json", () => {
   before(async function () {
     projectPath = path.join(__dirname, "../../sources/migrations/init");
     config = await sandbox.create(projectPath);
-    config.network = "development";
     config.networks = {
       development: {
         host: "127.0.0.1",

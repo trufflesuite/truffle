@@ -2,7 +2,6 @@ const MemoryLogger = require("../MemoryLogger");
 const CommandRunner = require("../commandRunner");
 const path = require("path");
 const assert = require("assert");
-const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const Web3 = require("web3");
 
@@ -21,14 +20,7 @@ describe("production", function () {
       config = await sandbox.create(project);
       config.network = "ropsten";
       config.logger = logger;
-      config.mocha = {
-        reporter: new Reporter(logger)
-      };
-
-      const provider = new Web3.providers.WebsocketProvider(
-        "ws://localhost:8545"
-      );
-      web3 = new Web3(provider);
+      web3 = new Web3("ws://localhost:8545");
       networkId = await web3.eth.net.getId();
     });
 
@@ -79,14 +71,7 @@ describe("production", function () {
       config = await sandbox.create(project);
       config.network = "fakeRopsten";
       config.logger = logger;
-      config.mocha = {
-        reporter: new Reporter(logger)
-      };
-
-      const provider = new Web3.providers.WebsocketProvider(
-        "ws://localhost:8545"
-      );
-      web3 = new Web3(provider);
+      web3 = new Web3("ws://localhost:8545");
       networkId = await web3.eth.net.getId();
     });
 
