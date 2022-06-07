@@ -24,6 +24,13 @@ describe("Contract names", function () {
     this.timeout(10000);
     config = await sandbox.create(project);
     config.network = "development";
+    config.networks = {
+      development: {
+        host: "127.0.0.1",
+        port: 8545,
+        network_id: "*"
+      }
+    };
     config.logger = logger;
     config.mocha = {
       reporter: new Reporter(logger)

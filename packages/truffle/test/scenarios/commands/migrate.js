@@ -10,6 +10,13 @@ describe("truffle migrate", () => {
     projectPath = path.join(__dirname, "../../sources/migrations/init");
     config = await sandbox.create(projectPath);
     config.network = "development";
+    config.networks = {
+      development: {
+        host: "127.0.0.1",
+        port: 8545,
+        network_id: "*"
+      }
+    };
     config.logger = { log: () => {} };
     await Server.start();
   });
