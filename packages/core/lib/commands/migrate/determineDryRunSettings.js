@@ -1,19 +1,9 @@
-module.exports = function (config, options) {
-  // Source: ethereum.stackexchange.com/questions/17051
-  const networkWhitelist = [
-    1, // Mainnet (ETH & ETC)
-    2, // Morden (ETC)
-    3, // Ropsten
-    4, // Rinkeby
-    5, // Goerli
-    8, // Ubiq
-    42, // Kovan (Parity)
-    77, // Sokol
-    99, // Core
+const Ganache = require("ganache");
 
-    7762959, // Musiccoin
-    61717561 // Aquachain
-  ];
+module.exports = function (config, options) {
+  //note: this is a list of chain IDs but we're still using
+  //network ID.  This should be fixed later.
+  const supportedChainIds = Ganache.__experimental_info().fork.knownChainIds;
 
   let dryRunOnly, skipDryRun;
   const networkSettingsInConfig = config.networks[config.network];
@@ -31,7 +21,8 @@ module.exports = function (config, options) {
     skipDryRun = options.skipDryRun === true;
   }
   const production =
-    networkWhitelist.includes(parseInt(config.network_id)) || config.production;
+    supportedChainIds.includes(parseInt(config.network_id)) ||
+    config.production;
   const dryRunAndMigrations = production && !skipDryRun;
   return { dryRunOnly, dryRunAndMigrations };
 };
