@@ -15,14 +15,8 @@ describe("migrate (success)", function () {
   const logger = new MemoryLogger();
 
   before(async function () {
-    await Server.start();
-  });
-  after(async function () {
-    await Server.stop();
-  });
-
-  before(async function () {
     this.timeout(10000);
+    await Server.start();
     config = await sandbox.create(project);
     config.network = "development";
     config.networks = {
@@ -36,12 +30,14 @@ describe("migrate (success)", function () {
     config.mocha = {
       reporter: new Reporter(logger)
     };
-
     const provider = new Web3.providers.WebsocketProvider(
       "ws://localhost:8545"
     );
     web3 = new Web3(provider);
     networkId = await web3.eth.net.getId();
+  });
+  after(async function () {
+    await Server.stop();
   });
 
   it("runs migrations (sync & async/await)", async function () {

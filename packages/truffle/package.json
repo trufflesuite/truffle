@@ -28,7 +28,7 @@
     "publish:next": "node ./scripts/prereleaseVersion.js next next",
     "publish:user-level-mnemonic": "node ./scripts/prereleaseVersion.js user-level-mnemonic user-level-mnemonic",
     "test": "./scripts/test.sh",
-    "test:raw": "NO_BUILD=true mocha ./test/scenarios/**"
+    "test:raw": "NO_BUILD=true mocha ./test/scenarios/** --exit"
   },
   "optionalDependencies": {
     "@truffle/db": "^1.0.8"
