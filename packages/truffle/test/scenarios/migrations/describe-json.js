@@ -80,6 +80,8 @@ describe("truffle migrate --describe-json", () => {
   let logger = new MemoryLogger();
 
   before(async function () {
+    this.timeout(10000);
+    await Server.start();
     projectPath = path.join(__dirname, "../../sources/migrations/init");
     config = await sandbox.create(projectPath);
     config.networks = {
@@ -90,9 +92,7 @@ describe("truffle migrate --describe-json", () => {
       }
     };
     config.logger = logger;
-    await Server.start();
   });
-
   after(async function () {
     await Server.stop();
   });
