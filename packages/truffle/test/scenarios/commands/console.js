@@ -23,6 +23,7 @@ describe("truffle console", () => {
       const displayHost = parsedUrl.host;
 
       await CommandRunner.runInREPL({
+        inputCommands: [],
         config: config,
         executableCommand: "console",
         executableArgs: `--url ${url}`,

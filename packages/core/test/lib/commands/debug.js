@@ -1,5 +1,4 @@
 const assert = require("chai").assert;
-const { URL } = require("url");
 const loadConfig = require("../../../lib/loadConfig");
 const mergeConfigNetwork = require("../../../lib/mergeConfigNetwork");
 const Config = require("@truffle/config");
@@ -24,10 +23,11 @@ describe("debug", function () {
     });
   });
 
-  describe("mergeConfigNetwork(config, options)", function () {
-    const url = "http://urlhost:1234";
-    const parsedUrl = new URL(url);
-    const expectedNetworkName = parsedUrl.host;
+  describe.only("mergeConfigNetwork(config, options)", function () {
+    const host = "urlhost";
+    const port = 1234;
+    const url = `http://${host}:${port}`;
+    const expectedNetworkName = `${host}:${port}`;
 
     beforeEach(function () {
       config = Config.default();

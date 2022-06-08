@@ -42,7 +42,7 @@ module.exports = {
    * @param {string[]} inputCommands - An array of input commands to enter when the prompt is ready.
    * @param {TruffleConfig} config - Truffle config to be used for the test.
    * @param {string} executableCommand - Truffle command to be tested (develop/console).
-   * @param {string} executableArgs - Arguments/options to be used with the executableCommand.
+   * @param {string} executableArgs - Space separated arguments/options to be used with the executableCommand.
    * @param {string} displayHost - Name of the network host to be displayed in the prompt.
    * @returns a Promise
    */
