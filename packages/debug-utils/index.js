@@ -254,7 +254,7 @@ var DebugUtils = {
       } else if (node !== null && typeof node === "object") {
         if (node.id !== undefined) {
           if (astIds.has(node.id)) {
-            debug("id occured twice: %o", node.id);
+            debug("id occurred twice: %o", node.id);
             return false;
           } else {
             astIds.add(node.id);
