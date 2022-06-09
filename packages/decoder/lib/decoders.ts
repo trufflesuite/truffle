@@ -14,10 +14,15 @@ import {
   Compilations,
   Compiler,
   CalldataDecoding,
+  FunctionDecoding,
   LogDecoding,
   ReturndataDecoding,
   BlockSpecifier,
   RegularizedBlockSpecifier,
+  CallInterpretationInfo,
+  TryAggregateInfo,
+  DeadlinedMulticallInfo,
+  BlockhashedMulticallInfo,
   decodeCalldata,
   decodeEvent,
   decodeReturndata
@@ -257,7 +262,19 @@ export class ProjectDecoder {
       result = decoder.next(response);
     }
     //at this point, result.value holds the final value
-    return result.value;
+    let decoding = result.value;
+
+    //...except wait!  we're not done yet! we need to do multicall processing!
+    if (decoding.kind === "function") {
+      decoding = await this.withMulticallInterpretations(
+        decoding,
+        transaction,
+        additionalContexts,
+        additionalAllocations
+      );
+    }
+
+    return decoding;
   }
 
   /**
@@ -484,13 +501,11 @@ export class ProjectDecoder {
    */
 
   public async forArtifact(artifact: Artifact): Promise<ContractDecoder> {
-    let {
-      compilation,
-      contract
-    } = Compilations.Utils.findCompilationAndContract(
-      this.compilations,
-      artifact
-    );
+    let { compilation, contract } =
+      Compilations.Utils.findCompilationAndContract(
+        this.compilations,
+        artifact
+      );
     //to be *sure* we've got the right ABI, we trust the input over what was
     //found
     contract = {
@@ -622,6 +637,342 @@ export class ProjectDecoder {
    */
   public getDeployedContexts(): Contexts.Contexts {
     return this.deployedContexts;
+  }
+
+  //now, the interpretation stuff.  ideally this would be a separate file
+  //(I mean, as would each decoder!) but that would cause circular imports, so... :-/
+  private async withMulticallInterpretations(
+    decoding: FunctionDecoding,
+    transaction: DecoderTypes.Transaction,
+    additionalContexts: Contexts.Contexts = {},
+    additionalAllocations?: {
+      [
+        selector: string
+      ]: AbiData.Allocate.FunctionCalldataAndReturndataAllocation;
+    }
+  ): Promise<CalldataDecoding> {
+    //first, let's clone our decoding and its interpretations
+    decoding = {
+      ...decoding,
+      interpretations: {
+        ...decoding.interpretations
+      }
+    };
+
+    //now we can freely modify decoding.interpretations
+    //(note: these may return undefined)
+    decoding.interpretations.multicall = await this.interpretMulticall(
+      decoding,
+      transaction,
+      additionalContexts,
+      additionalAllocations
+    );
+    decoding.interpretations.aggregate = await this.interpretAggregate(
+      decoding,
+      transaction,
+      additionalContexts,
+      additionalAllocations
+    );
+    decoding.interpretations.tryAggregate = await this.interpretTryAggregate(
+      decoding,
+      transaction,
+      additionalContexts,
+      additionalAllocations
+    );
+    decoding.interpretations.deadlinedMulticall =
+      await this.interpretDeadlinedMulticall(
+        decoding,
+        transaction,
+        additionalContexts,
+        additionalAllocations
+      );
+    decoding.interpretations.specifiedBlockhashMulticall =
+      await this.interpretBlockhashedMulticall(
+        decoding,
+        transaction,
+        additionalContexts,
+        additionalAllocations
+      );
+
+    return decoding;
+  }
+
+  private async interpretMulticall(
+    decoding: Codec.CalldataDecoding,
+    transaction: DecoderTypes.Transaction,
+    additionalContexts: Contexts.Contexts = {},
+    additionalAllocations?: {
+      [
+        selector: string
+      ]: AbiData.Allocate.FunctionCalldataAndReturndataAllocation;
+    }
+  ): Promise<(Codec.CalldataDecoding | null)[] | undefined> {
+    if (
+      decoding.kind === "function" &&
+      decoding.abi.name === "multicall" &&
+      decoding.abi.inputs.length === 1 &&
+      decoding.abi.inputs[0].type === "bytes[]" &&
+      decoding.arguments[0].value.kind === "value"
+    ) {
+      //sorry, this is going to involve some coercion...
+      const decodedArray = decoding.arguments[0]
+        .value as Format.Values.ArrayValue;
+      return await Promise.all(
+        decodedArray.value.map(
+          async callResult =>
+            await this.interpretCallInMulti(
+              callResult as Format.Values.BytesResult,
+              transaction,
+              additionalContexts,
+              additionalAllocations
+            )
+        )
+      );
+    } else {
+      return undefined;
+    }
+  }
+
+  private async interpretCallInMulti(
+    callResult: Format.Values.BytesResult,
+    transaction: DecoderTypes.Transaction,
+    additionalContexts: Contexts.Contexts = {},
+    additionalAllocations?: {
+      [
+        selector: string
+      ]: AbiData.Allocate.FunctionCalldataAndReturndataAllocation;
+    }
+  ): Promise<Codec.CalldataDecoding | null> {
+    switch (callResult.kind) {
+      case "value":
+        return await this.decodeTransactionWithAdditionalContexts(
+          { ...transaction, input: callResult.value.asHex },
+          additionalContexts,
+          additionalAllocations
+        );
+      case "error":
+        return null;
+    }
+  }
+
+  private async interpretAggregate(
+    decoding: Codec.CalldataDecoding,
+    transaction: DecoderTypes.Transaction,
+    additionalContexts: Contexts.Contexts = {},
+    additionalAllocations?: {
+      [
+        selector: string
+      ]: AbiData.Allocate.FunctionCalldataAndReturndataAllocation;
+    }
+  ): Promise<CallInterpretationInfo[] | undefined> {
+    if (
+      decoding.kind === "function" &&
+      (decoding.abi.name === "aggregate" ||
+        decoding.abi.name === "blockAndAggregate") &&
+      decoding.abi.inputs.length === 1 &&
+      decoding.abi.inputs[0].type === "tuple[]" &&
+      decoding.abi.inputs[0].components.length === 2 &&
+      decoding.abi.inputs[0].components[0].type === "address" &&
+      decoding.abi.inputs[0].components[1].type === "bytes" &&
+      decoding.arguments[0].value.kind === "value"
+    ) {
+      //sorry, this is going to involve some coercion...
+      const decodedArray = decoding.arguments[0]
+        .value as Format.Values.ArrayValue;
+      return await Promise.all(
+        decodedArray.value.map(
+          async callResult =>
+            await this.interpretCallInAggregate(
+              callResult as
+                | Format.Values.StructResult
+                | Format.Values.TupleResult,
+              transaction,
+              additionalContexts,
+              additionalAllocations
+            )
+        )
+      );
+    } else {
+      return undefined;
+    }
+  }
+
+  private async interpretCallInAggregate(
+    callResult: Format.Values.StructResult | Format.Values.TupleResult,
+    transaction: DecoderTypes.Transaction,
+    additionalContexts: Contexts.Contexts = {},
+    additionalAllocations?: {
+      [
+        selector: string
+      ]: AbiData.Allocate.FunctionCalldataAndReturndataAllocation;
+    }
+  ): Promise<CallInterpretationInfo> {
+    switch (callResult.kind) {
+      case "value":
+        const addressResult = callResult.value[0]
+          .value as Codec.Format.Values.AddressResult;
+        const bytesResult = callResult.value[1]
+          .value as Codec.Format.Values.BytesResult;
+        let address: string;
+        switch (addressResult.kind) {
+          case "value":
+            address = addressResult.value.asAddress;
+            break;
+          case "error":
+            //can't decode in this case
+            return { address: null, decoding: null };
+        }
+        switch (bytesResult.kind) {
+          case "value":
+            const subDecoding =
+              await this.decodeTransactionWithAdditionalContexts(
+                {
+                  ...transaction,
+                  input: bytesResult.value.asHex,
+                  to: address
+                },
+                additionalContexts,
+                additionalAllocations
+              );
+            return { address, decoding: subDecoding };
+          case "error":
+            return { address, decoding: null };
+        }
+      case "error":
+        return { address: null, decoding: null };
+    }
+  }
+
+  private async interpretTryAggregate(
+    decoding: Codec.CalldataDecoding,
+    transaction: DecoderTypes.Transaction,
+    additionalContexts: Contexts.Contexts = {},
+    additionalAllocations?: {
+      [
+        selector: string
+      ]: AbiData.Allocate.FunctionCalldataAndReturndataAllocation;
+    }
+  ): Promise<TryAggregateInfo | undefined> {
+    if (
+      decoding.kind === "function" &&
+      (decoding.abi.name === "tryAggregate" ||
+        decoding.abi.name === "tryBlockAndAggregate") &&
+      decoding.abi.inputs.length === 2 &&
+      decoding.abi.inputs[0].type === "bool" &&
+      decoding.abi.inputs[1].type === "tuple[]" &&
+      decoding.abi.inputs[1].components.length === 2 &&
+      decoding.abi.inputs[1].components[0].type === "address" &&
+      decoding.abi.inputs[1].components[1].type === "bytes" &&
+      decoding.arguments[0].value.kind === "value" &&
+      decoding.arguments[1].value.kind === "value"
+    ) {
+      //sorry, this is going to involve some coercion...
+      const decodedBool = decoding.arguments[0]
+        .value as Format.Values.BoolValue;
+      const decodedArray = decoding.arguments[1]
+        .value as Format.Values.ArrayValue;
+      const requireSuccess: boolean = decodedBool.value.asBoolean;
+      const calls = await Promise.all(
+        decodedArray.value.map(
+          async callResult =>
+            await this.interpretCallInAggregate(
+              callResult as
+                | Format.Values.StructResult
+                | Format.Values.TupleResult,
+              transaction,
+              additionalContexts,
+              additionalAllocations
+            )
+        )
+      );
+      return { requireSuccess, calls };
+    } else {
+      return undefined;
+    }
+  }
+
+  private async interpretDeadlinedMulticall(
+    decoding: Codec.CalldataDecoding,
+    transaction: DecoderTypes.Transaction,
+    additionalContexts: Contexts.Contexts = {},
+    additionalAllocations?: {
+      [
+        selector: string
+      ]: AbiData.Allocate.FunctionCalldataAndReturndataAllocation;
+    }
+  ): Promise<DeadlinedMulticallInfo | undefined> {
+    if (
+      decoding.kind === "function" &&
+      decoding.abi.name === "multicall" &&
+      decoding.abi.inputs.length === 2 &&
+      decoding.abi.inputs[0].type === "uint256" &&
+      decoding.abi.inputs[1].type === "bytes[]" &&
+      decoding.arguments[0].value.kind === "value" &&
+      decoding.arguments[1].value.kind === "value"
+    ) {
+      //sorry, this is going to involve some coercion...
+      const decodedUint = decoding.arguments[0]
+        .value as Format.Values.UintValue;
+      const decodedArray = decoding.arguments[1]
+        .value as Format.Values.ArrayValue;
+      const deadline: BN = decodedUint.value.asBN;
+      const calls = await Promise.all(
+        decodedArray.value.map(
+          async callResult =>
+            await this.interpretCallInMulti(
+              callResult as Format.Values.BytesResult,
+              transaction,
+              additionalContexts,
+              additionalAllocations
+            )
+        )
+      );
+      return { deadline, calls };
+    } else {
+      return undefined;
+    }
+  }
+
+  private async interpretBlockhashedMulticall(
+    decoding: Codec.CalldataDecoding,
+    transaction: DecoderTypes.Transaction,
+    additionalContexts: Contexts.Contexts = {},
+    additionalAllocations?: {
+      [
+        selector: string
+      ]: AbiData.Allocate.FunctionCalldataAndReturndataAllocation;
+    }
+  ): Promise<BlockhashedMulticallInfo | undefined> {
+    if (
+      decoding.kind === "function" &&
+      decoding.abi.name === "multicall" &&
+      decoding.abi.inputs.length === 2 &&
+      decoding.abi.inputs[0].type === "bytes32" &&
+      decoding.abi.inputs[1].type === "bytes[]" &&
+      decoding.arguments[0].value.kind === "value" &&
+      decoding.arguments[1].value.kind === "value"
+    ) {
+      //sorry, this is going to involve some coercion...
+      const decodedHash = decoding.arguments[0]
+        .value as Format.Values.BytesValue;
+      const decodedArray = decoding.arguments[1]
+        .value as Format.Values.ArrayValue;
+      const specifiedBlockhash: string = decodedHash.value.asHex;
+      const calls = await Promise.all(
+        decodedArray.value.map(
+          async callResult =>
+            await this.interpretCallInMulti(
+              callResult as Format.Values.BytesResult,
+              transaction,
+              additionalContexts,
+              additionalAllocations
+            )
+        )
+      );
+      return { specifiedBlockhash, calls };
+    } else {
+      return undefined;
+    }
   }
 }
 
@@ -1128,10 +1479,8 @@ export class ContractInstanceDecoder {
 
     //set up encoder for wrapping elementary values.
     //we pass it a provider, so it can handle ENS names.
-    let {
-      provider: ensProvider,
-      registryAddress
-    } = this.projectDecoder.getEnsSettings();
+    let { provider: ensProvider, registryAddress } =
+      this.projectDecoder.getEnsSettings();
     if (ensProvider === undefined) {
       //note: NOT if it's null, if it's null we leave it null
       ensProvider = this.providerAdapter.provider;
@@ -1750,9 +2099,10 @@ export class ContractInstanceDecoder {
             ({ name }) => name === rawIndex
           ); //there should be exactly one
         if (!allocation) {
-          const stringIndex = typeof rawIndex === "string"
-            ? rawIndex
-            : "specified by non-string argument";
+          const stringIndex =
+            typeof rawIndex === "string"
+              ? rawIndex
+              : "specified by non-string argument";
           throw new MemberNotFoundError(
             stringIndex,
             parentType,

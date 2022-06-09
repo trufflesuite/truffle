@@ -103,6 +103,41 @@ export interface FunctionDecoding {
    * more on these.
    */
   decodingMode: DecodingMode;
+  /**
+   * Further information about how the decoding may be interpreted.  Note that interpretations
+   * may be added by things that use @truffle/codec, such as @truffle/decoder, rather than by
+   * @truffle/codec itself.  See individual interpretations for details.
+   */
+  interpretations: {
+    /**
+     * If this interpretation is present, indicates that the transaction can be
+     * understood as a multicall (v1).  The field contains decodings for the
+     * individual calls that the multicall can be broken into.  Note that in
+     * case of an error, individual decodings will be returned as null, so be
+     * sure to check for this.
+     */
+    multicall?: (CalldataDecoding | null)[];
+    /**
+     * If this interpretation is present, indicates that the transaction can be
+     * understood as an `aggregate` (from multicallv2).  This also includes
+     * `blockAndAggregate`.  See [[CallInterpretationInfo]] for more
+     * information.
+     */
+    aggregate?: CallInterpretationInfo[];
+    /**
+     * Similar to the `aggregate` interpretation, but for `tryAggregate`.  Also
+     * includes `tryBlockAndAggregate`.
+     */
+    tryAggregate?: TryAggregateInfo;
+    /**
+     * Similar to `multicall`, but for Uniswap's deadlined multicall.
+     */
+    deadlinedMulticall?: DeadlinedMulticallInfo;
+    /**
+     * Similar to `multicall`, but for Uniswap's multicall with previous block hash.
+     */
+    specifiedBlockhashMulticall?: BlockhashedMulticallInfo;
+  };
 }
 
 /**
@@ -144,6 +179,13 @@ export interface ConstructorDecoding {
    * more on these.
    */
   decodingMode: DecodingMode;
+  /**
+   * Further information about how the decoding may be interpreted.  Note that interpretations
+   * may be added by things that use @truffle/codec, such as @truffle/decoder, rather than by
+   * @truffle/codec itself.  See individual interpretations for details.
+   * (Currently there are none for this type.)
+   */
+  interpretations: {};
 }
 
 /**
@@ -176,6 +218,13 @@ export interface MessageDecoding {
    * more on these.
    */
   decodingMode: DecodingMode;
+  /**
+   * Further information about how the decoding may be interpreted.  Note that interpretations
+   * may be added by things that use @truffle/codec, such as @truffle/decoder, rather than by
+   * @truffle/codec itself.  See individual interpretations for details.
+   * (Currently there are none for this type.)
+   */
+  interpretations: {};
 }
 
 /**
@@ -198,6 +247,13 @@ export interface UnknownCallDecoding {
    * The data that was sent to the contract.
    */
   data: string;
+  /**
+   * Further information about how the decoding may be interpreted.  Note that interpretations
+   * may be added by things that use @truffle/codec, such as @truffle/decoder, rather than by
+   * @truffle/codec itself.  See individual interpretations for details.
+   * (Currently there are none for this type.)
+   */
+  interpretations: {};
 }
 
 /**
@@ -220,6 +276,13 @@ export interface UnknownCreationDecoding {
    * The bytecode of the contract creation.
    */
   bytecode: string;
+  /**
+   * Further information about how the decoding may be interpreted.  Note that interpretations
+   * may be added by things that use @truffle/codec, such as @truffle/decoder, rather than by
+   * @truffle/codec itself.  See individual interpretations for details.
+   * (Currently there are none for this type.)
+   */
+  interpretations: {};
 }
 
 /**
@@ -262,6 +325,13 @@ export interface EventDecoding {
    * more on these.
    */
   decodingMode: DecodingMode;
+  /**
+   * Further information about how the decoding may be interpreted.  Note that interpretations
+   * may be added by things that use @truffle/codec, such as @truffle/decoder, rather than by
+   * @truffle/codec itself.  See individual interpretations for details.
+   * (Currently there are none for this type.)
+   */
+  interpretations: {};
 }
 
 /**
@@ -300,6 +370,13 @@ export interface AnonymousDecoding {
    * more on these.
    */
   decodingMode: DecodingMode;
+  /**
+   * Further information about how the decoding may be interpreted.  Note that interpretations
+   * may be added by things that use @truffle/codec, such as @truffle/decoder, rather than by
+   * @truffle/codec itself.  See individual interpretations for details.
+   * (Currently there are none for this type.)
+   */
+  interpretations: {};
 }
 
 /**
@@ -325,6 +402,13 @@ export interface ReturnDecoding {
    * more on these.
    */
   decodingMode: DecodingMode;
+  /**
+   * Further information about how the decoding may be interpreted.  Note that interpretations
+   * may be added by things that use @truffle/codec, such as @truffle/decoder, rather than by
+   * @truffle/codec itself.  See individual interpretations for details.
+   * (Currently there are none for this type.)
+   */
+  interpretations: {};
 }
 
 /**
@@ -350,6 +434,13 @@ export interface RawReturnDecoding {
    * more on these.
    */
   decodingMode: DecodingMode;
+  /**
+   * Further information about how the decoding may be interpreted.  Note that interpretations
+   * may be added by things that use @truffle/codec, such as @truffle/decoder, rather than by
+   * @truffle/codec itself.  See individual interpretations for details.
+   * (Currently there are none for this type.)
+   */
+  interpretations: {};
 }
 
 /**
@@ -371,6 +462,13 @@ export interface SelfDestructDecoding {
    * more on these.
    */
   decodingMode: DecodingMode;
+  /**
+   * Further information about how the decoding may be interpreted.  Note that interpretations
+   * may be added by things that use @truffle/codec, such as @truffle/decoder, rather than by
+   * @truffle/codec itself.  See individual interpretations for details.
+   * (Currently there are none for this type.)
+   */
+  interpretations: {};
 }
 
 /**
@@ -392,6 +490,13 @@ export interface EmptyFailureDecoding {
    * more on these.
    */
   decodingMode: DecodingMode;
+  /**
+   * Further information about how the decoding may be interpreted.  Note that interpretations
+   * may be added by things that use @truffle/codec, such as @truffle/decoder, rather than by
+   * @truffle/codec itself.  See individual interpretations for details.
+   * (Currently there are none for this type.)
+   */
+  interpretations: {};
 }
 
 /**
@@ -433,6 +538,13 @@ export interface RevertMessageDecoding {
    * more on these.
    */
   decodingMode: DecodingMode;
+  /**
+   * Further information about how the decoding may be interpreted.  Note that interpretations
+   * may be added by things that use @truffle/codec, such as @truffle/decoder, rather than by
+   * @truffle/codec itself.  See individual interpretations for details.
+   * (Currently there are none for this type.)
+   */
+  interpretations: {};
 }
 
 /**
@@ -479,6 +591,13 @@ export interface BytecodeDecoding {
    * otherwise!
    */
   address?: string;
+  /**
+   * Further information about how the decoding may be interpreted.  Note that interpretations
+   * may be added by things that use @truffle/codec, such as @truffle/decoder, rather than by
+   * @truffle/codec itself.  See individual interpretations for details.
+   * (Currently there are none for this type.)
+   */
+  interpretations: {};
 }
 
 /**
@@ -509,6 +628,13 @@ export interface UnknownBytecodeDecoding {
    * The bytecode of the contract that was created.
    */
   bytecode: string;
+  /**
+   * Further information about how the decoding may be interpreted.  Note that interpretations
+   * may be added by things that use @truffle/codec, such as @truffle/decoder, rather than by
+   * @truffle/codec itself.  See individual interpretations for details.
+   * (Currently there are none for this type.)
+   */
+  interpretations: {};
 }
 
 /**
@@ -620,7 +746,10 @@ export interface LogOptions {
  *
  * @Category Requests
  */
-export type WrapRequest = IntegerWrapRequest | DecimalWrapRequest | AddressWrapRequest;
+export type WrapRequest =
+  | IntegerWrapRequest
+  | DecimalWrapRequest
+  | AddressWrapRequest;
 
 /**
  * A request to understand an integer value.
@@ -676,7 +805,10 @@ export interface AddressWrapRequest {
  *
  * @Category Requests
  */
-export type WrapResponse = IntegerWrapResponse | DecimalWrapResponse | AddressWrapResponse;
+export type WrapResponse =
+  | IntegerWrapResponse
+  | DecimalWrapResponse
+  | AddressWrapResponse;
 
 /**
  * A response with an integral numeric value, as BigInt.
@@ -773,3 +905,66 @@ export type BlockSpecifier = number | "genesis" | "latest" | "pending";
  * @hidden
  */
 export type RegularizedBlockSpecifier = number | "pending";
+
+/**
+ * Used by some multicall-like interpretations.
+ * @category Output
+ */
+export interface CallInterpretationInfo {
+  /**
+   * The address the call was sent to; may be null in case of
+   * an error.
+   */
+  address: string | null;
+  /**
+   * The decoding of the call; may be null in case of error.
+   */
+  decoding: CalldataDecoding | null;
+}
+
+/**
+ * Used by the `tryAggregate` interpretation.
+ * @category Output
+ */
+export interface TryAggregateInfo {
+  /**
+   * Whether success was required.
+   */
+  requireSuccess: boolean;
+  /**
+   * The decodings of the individual calls.
+   */
+  calls: CallInterpretationInfo[];
+}
+
+/**
+ * Used by the `deadlinedMulticall` interpretation.
+ * @category Output
+ */
+export interface DeadlinedMulticallInfo {
+  /**
+   * The deadline.
+   */
+  deadline: BN;
+  /**
+   * The decodings of the individual calls; these may each be null in
+   * case of an error.
+   */
+  calls: (CalldataDecoding | null)[];
+}
+
+/**
+ * Used by the `specifiedBlockhashMulticall` interpretation.
+ * @category Output
+ */
+export interface BlockhashedMulticallInfo {
+  /**
+   * The specified parent blockhash.
+   */
+  specifiedBlockhash: string;
+  /**
+   * The decodings of the individual calls; these may each be null in
+   * case of an error.
+   */
+  calls: (CalldataDecoding | null)[];
+}

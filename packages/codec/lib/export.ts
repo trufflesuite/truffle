@@ -8,7 +8,8 @@ import type {
   CalldataDecoding,
   LogDecoding,
   ReturndataDecoding,
-  AbiArgument
+  AbiArgument,
+  CallInterpretationInfo
 } from "@truffle/codec/types";
 import * as Conversion from "@truffle/codec/conversion";
 
@@ -311,6 +312,49 @@ export class CalldataDecodingInspector {
     switch (this.decoding.kind) {
       case "function":
         const fullName = `${this.decoding.class.typeName}.${this.decoding.abi.name}`;
+        if (this.decoding.interpretations.multicall) {
+          return formatMulticall(
+            fullName,
+            this.decoding.interpretations.multicall,
+            options
+          );
+        } else if (this.decoding.interpretations.aggregate) {
+          return formatAggregate(
+            fullName,
+            this.decoding.interpretations.aggregate,
+            options
+          );
+        } else if (this.decoding.interpretations.tryAggregate) {
+          const { requireSuccess, calls } =
+            this.decoding.interpretations.tryAggregate;
+          return formatAggregate(
+            fullName,
+            calls,
+            options,
+            "requireSuccess",
+            options.stylize(requireSuccess.toString(), "number")
+          );
+        } else if (this.decoding.interpretations.deadlinedMulticall) {
+          const { deadline, calls: decodings } =
+            this.decoding.interpretations.deadlinedMulticall;
+          return formatMulticall(
+            fullName,
+            decodings,
+            options,
+            "deadline",
+            options.stylize(deadline.toString(), "number")
+          );
+        } else if (this.decoding.interpretations.specifiedBlockhashMulticall) {
+          const { specifiedBlockhash, calls: decodings } =
+            this.decoding.interpretations.specifiedBlockhashMulticall;
+          return formatMulticall(
+            fullName,
+            decodings,
+            options,
+            "previousBlockhash",
+            options.stylize(specifiedBlockhash, "number")
+          );
+        }
         return formatFunctionLike(fullName, this.decoding.arguments, options);
       case "constructor":
         return formatFunctionLike(
@@ -515,10 +559,21 @@ function indentArray(input: string[], indentation: number): string[] {
   return input.map(line => " ".repeat(indentation) + line);
 }
 
-//copied from TestRunner, but simplified for our purposes :)
 function indentExcludingFirstLine(input: string, indentation: number): string {
   const lines = input.split(/\r?\n/);
   return [lines[0], ...indentArray(lines.slice(1), indentation)].join(OS.EOL);
+}
+
+function indentMiddleLines(input: string, indentation: number): string {
+  const lines = input.split(/\r?\n/);
+  if (lines.length < 2) {
+    return input;
+  }
+  return [
+    lines[0],
+    ...indentArray(lines.slice(1, -1), indentation),
+    lines[lines.length - 1]
+  ].join(OS.EOL);
 }
 
 //used for formatting things that look like function calls:
@@ -546,15 +601,76 @@ export function formatFunctionLike(
     const typeString = suppressType
       ? ""
       : ` (type: ${Format.Types.typeStringWithoutLocation(value.type)})`;
-    return indentExcludingFirstLine(
+    return indentMiddleLines(
       prefix +
         displayValue +
         typeString +
         (index < values.length - 1 ? "," : ""),
-      2 * indent
+      indent
     );
   });
-  return `${header}(${OS.EOL}${indentArray(formattedValues, indent).join(
-    OS.EOL
-  )}${OS.EOL})`;
+  return indentMiddleLines(
+    `${header}(${OS.EOL}${formattedValues.join(OS.EOL)}${OS.EOL})`,
+    indent
+  );
+}
+
+function formatMulticall(
+  fullName: string,
+  decodings: (CalldataDecoding | null)[],
+  options: InspectOptions,
+  additionalParameterName?: string,
+  additionalParameterValue?: string
+): string {
+  if (decodings.length === 0) {
+    return `${fullName}()`;
+  }
+  const indent = 2;
+  let formattedDecodings = decodings.map((decoding, index) => {
+    const formattedDecoding =
+      decoding === null
+        ? "<decoding error>"
+        : util.inspect(new CalldataDecodingInspector(decoding), options);
+    return formattedDecoding + (index < decodings.length - 1 ? "," : "");
+  });
+  if (additionalParameterName) {
+    formattedDecodings.unshift(
+      `${additionalParameterName}: ${additionalParameterValue},`
+    );
+  }
+  return indentMiddleLines(
+    `${fullName}(${OS.EOL}${formattedDecodings.join(OS.EOL)}${OS.EOL})`,
+    indent
+  );
+}
+
+function formatAggregate(
+  fullName: string,
+  calls: CallInterpretationInfo[],
+  options: InspectOptions,
+  additionalParameterName?: string,
+  additionalParameterValue?: string
+): string {
+  if (calls.length === 0) {
+    return `${fullName}()`;
+  }
+  const indent = 2;
+  let formattedCalls = calls.map(({ address, decoding }, index) => {
+    const formattedCall =
+      decoding === null
+        ? "<decoding error>"
+        : util
+            .inspect(new CalldataDecodingInspector(decoding), options)
+            .replace(".", `(${options.stylize(address, "number")}).`); //HACK: splice in the address
+    return formattedCall + (index < calls.length - 1 ? "," : "");
+  });
+  if (additionalParameterName) {
+    formattedCalls.unshift(
+      `${additionalParameterName}: ${additionalParameterValue},`
+    );
+  }
+  return indentMiddleLines(
+    `${fullName}(${OS.EOL}${formattedCalls.join(OS.EOL)}${OS.EOL})`,
+    indent
+  );
 }

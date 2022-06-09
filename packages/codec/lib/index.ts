@@ -77,11 +77,7 @@ export {
   decodeReturndata,
   decodeRevert
 } from "./core";
-export {
-  DecodingError,
-  StopDecodingError,
-  NoProjectInfoError
-} from "./errors";
+export { DecodingError, StopDecodingError, NoProjectInfoError } from "./errors";
 
 //now: what types should we export? (other than the ones from ./format)
 //public-facing types for the interface
@@ -120,7 +116,11 @@ export type {
   DecimalWrapResponse,
   AddressWrapResponse,
   BlockSpecifier,
-  RegularizedBlockSpecifier
+  RegularizedBlockSpecifier,
+  CallInterpretationInfo,
+  TryAggregateInfo,
+  DeadlinedMulticallInfo,
+  BlockhashedMulticallInfo
 } from "./types";
 export * from "./common";
 
@@ -148,14 +148,7 @@ import * as Stack from "./stack";
 import * as Storage from "./storage";
 import * as AstConstant from "./ast-constant";
 
-export {
-  MappingKey,
-  Memory,
-  Special,
-  Stack,
-  Storage,
-  AstConstant
-};
+export { MappingKey, Memory, Special, Stack, Storage, AstConstant };
 
 import * as Ast from "./ast";
 export { Ast };

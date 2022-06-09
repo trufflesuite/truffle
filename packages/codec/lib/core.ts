@@ -60,13 +60,15 @@ export function* decodeCalldata(
       return {
         kind: "create" as const,
         decodingMode: "full" as const,
-        bytecode: Conversion.toHexString(info.state.calldata)
+        bytecode: Conversion.toHexString(info.state.calldata),
+        interpretations: {}
       };
     } else {
       return {
         kind: "unknown" as const,
         decodingMode: "full" as const,
-        data: Conversion.toHexString(info.state.calldata)
+        data: Conversion.toHexString(info.state.calldata),
+        interpretations: {}
       };
     }
   }
@@ -111,7 +113,8 @@ export function* decodeCalldata(
       class: contractType,
       abi: abiEntry,
       data: Conversion.toHexString(info.state.calldata),
-      decodingMode: "full" as const
+      decodingMode: "full" as const,
+      interpretations: {}
     };
   }
   let decodingMode: DecodingMode = allocation.allocationMode; //starts out this way, degrades to ABI if necessary
@@ -180,7 +183,8 @@ export function* decodeCalldata(
       bytecode: Conversion.toHexString(
         info.state.calldata.slice(0, allocation.offset)
       ),
-      decodingMode
+      decodingMode,
+      interpretations: {}
     };
   } else {
     return {
@@ -189,7 +193,8 @@ export function* decodeCalldata(
       abi: <Abi.FunctionEntry>allocation.abi, //we know it's a function, but typescript doesn't
       arguments: decodedArguments,
       selector,
-      decodingMode
+      decodingMode,
+      interpretations: {}
     };
   }
 }
@@ -471,7 +476,8 @@ export function* decodeEvent(
         class: emittingContractType,
         abi: allocation.abi,
         arguments: decodedArguments,
-        decodingMode
+        decodingMode,
+        interpretations: {}
       };
     } else {
       decoding = {
@@ -481,7 +487,8 @@ export function* decodeEvent(
         abi: allocation.abi,
         arguments: decodedArguments,
         selector,
-        decodingMode
+        decodingMode,
+        interpretations: {}
       };
     }
     decodings.push(decoding);
@@ -687,7 +694,8 @@ export function* decodeReturndata(
         kind: "returnmessage" as const,
         status: true as const,
         data: Conversion.toHexString(info.state.returndata),
-        decodingMode: allocation.allocationMode
+        decodingMode: allocation.allocationMode,
+        interpretations: {}
       };
       decodings.push(decoding);
       continue;
@@ -784,7 +792,8 @@ export function* decodeReturndata(
           kind: "return" as const,
           status: true as const,
           arguments: decodedArguments,
-          decodingMode
+          decodingMode,
+          interpretations: {}
         };
         break;
       case "revert":
@@ -794,21 +803,24 @@ export function* decodeReturndata(
           definedIn: allocation.definedIn,
           status: false as const,
           arguments: decodedArguments,
-          decodingMode
+          decodingMode,
+          interpretations: {}
         };
         break;
       case "selfdestruct":
         decoding = {
           kind: "selfdestruct" as const,
           status: true as const,
-          decodingMode
+          decodingMode,
+          interpretations: {}
         };
         break;
       case "failure":
         decoding = {
           kind: "failure" as const,
           status: false as const,
-          decodingMode
+          decodingMode,
+          interpretations: {}
         };
         break;
     }
@@ -838,7 +850,8 @@ function* decodeBytecode(
       kind: "unknownbytecode" as const,
       status: true as const,
       decodingMode: "full" as const,
-      bytecode
+      bytecode,
+      interpretations: {}
     };
   }
   const contractType = Contexts.Import.contextToType(context);
@@ -886,7 +899,8 @@ function* decodeBytecode(
     decodingMode,
     bytecode,
     immutables,
-    class: contractType
+    class: contractType,
+    interpretations: {}
   };
   //finally: add address if applicable
   if (allocation.delegatecallGuard) {
