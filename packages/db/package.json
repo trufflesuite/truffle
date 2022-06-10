@@ -50,7 +50,7 @@
     "json-stable-stringify": "^1.0.1",
     "pascal-case": "^2.0.1",
     "pluralize": "^8.0.0",
-    "pouchdb": "7.2.2",
+    "pouchdb": "7.3.0",
     "pouchdb-adapter-memory": "^7.1.1",
     "pouchdb-adapter-node-websql": "^7.0.0",
     "pouchdb-debug": "^7.1.1",
