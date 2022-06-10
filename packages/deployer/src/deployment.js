@@ -26,18 +26,6 @@ class Deployment {
     }
   }
 
-  // ------------------------------------  Utils ---------------------------------------------------
-
-  /**
-   * Stub for future error code assignments on process.exit
-   * @private
-   * @param  {String} name contract name
-   * @return {Number}      code to exit
-   */
-  _errors() {
-    return `Migrations failure`;
-  }
-
   /**
    * Helper to parse a deploy statement's overwrite option
    * @private
@@ -187,42 +175,6 @@ class Deployment {
 
     // Check network
     await contract.detectNetwork();
-  }
-
-  /**
-   * Handler for contract's `transactionHash` event. Rebroadcasts as a deployer event
-   * @private
-   * @param  {Object} parent Deployment instance. Local `this` belongs to promievent
-   * @param  {String} hash   tranactionHash
-   */
-  async _hashCb(parent, state, hash) {
-    const eventArgs = {
-      contractName: state.contractName,
-      transactionHash: hash
-    };
-    state.transactionHash = hash;
-    await parent.emitter.emit("transactionHash", eventArgs);
-    this.removeListener("transactionHash", parent._hashCb);
-  }
-
-  /**
-   * Handler for contract's `receipt` event. Rebroadcasts as a deployer event
-   * @private
-   * @param  {Object} parent  Deployment instance. Local `this` belongs to promievent
-   * @param  {Object} state   store for the receipt value
-   * @param  {Object} receipt
-   */
-  async _receiptCb(parent, state, receipt) {
-    const eventArgs = {
-      contractName: state.contractName,
-      receipt: receipt
-    };
-
-    // We want this receipt available for the post-deploy event
-    // so gas reporting is at hand there.
-    state.receipt = receipt;
-    await parent.emitter.emit("receipt", eventArgs);
-    this.removeListener("receipt", parent._receiptCb);
   }
 
   // ----------------- Confirmations Handling (temporarily disabled) -------------------------------
