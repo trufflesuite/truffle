@@ -16,26 +16,37 @@ global.crypto = {
 
 //detect config so we can get the provider and resolver without having to serialize
 //and deserialize them
-const { network, config } = yargs(input[0]).argv;
+const { network, config, url } = yargs(input[0]).argv;
 const detectedConfig = Config.detect({ network, config });
-const customConfig = detectedConfig.networks.develop || {};
 
-//need host and port for provider url
-const ganacheOptions = {
-  host: customConfig.host || "127.0.0.1",
-  port: customConfig.port || 9545
-};
-const url = `http://${ganacheOptions.host}:${ganacheOptions.port}/`;
+//set up the specified network to use when "url" option is passed with the truffle console command
+if (url) {
+  detectedConfig.networks[network] = {
+    network_id: "*",
+    provider: function () {
+      return new Web3.providers.HttpProvider(url, { keepAlive: false });
+    }
+  };
+} else {
+  const customConfig = detectedConfig.networks.develop || {};
 
-//set up the develop network to use, including setting up provider
-detectedConfig.networks.develop = {
-  host: customConfig.host || "127.0.0.1",
-  port: customConfig.port || 9545,
-  network_id: customConfig.network_id || 5777,
-  provider: function () {
-    return new Web3.providers.HttpProvider(url, { keepAlive: false });
-  }
-};
+  //need host and port for provider url
+  const ganacheOptions = {
+    host: customConfig.host || "127.0.0.1",
+    port: customConfig.port || 9545
+  };
+  const ganacheUrl = `http://${ganacheOptions.host}:${ganacheOptions.port}/`;
+
+  //set up the develop network to use, including setting up provider
+  detectedConfig.networks.develop = {
+    host: customConfig.host || "127.0.0.1",
+    port: customConfig.port || 9545,
+    network_id: customConfig.network_id || 5777,
+    provider: function () {
+      return new Web3.providers.HttpProvider(ganacheUrl, { keepAlive: false });
+    }
+  };
+}
 
 const { getCommand, prepareOptions, runCommand } = require("./command-utils");
 const command = getCommand({ inputStrings, options: {}, noAliases: false });
