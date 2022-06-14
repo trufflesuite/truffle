@@ -50,12 +50,12 @@ function lastStatementLine(source) {
 async function prepareDebugger(testName, sources) {
   const provider = Ganache.provider({
     seed: "debugger",
-    gasLimit: testBlockGasLimit,
     logging: {
       quiet: true
     },
     miner: {
-      instamine: "strict"
+      instamine: "strict",
+      blockGasLimit: testBlockGasLimit
     }
   });
 

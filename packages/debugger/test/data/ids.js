@@ -208,9 +208,9 @@ describe("Variable IDs", function () {
   before("Create Provider", async function () {
     provider = Ganache.provider({
       seed: "debugger",
-      gasLimit: testBlockGasLimit,
       miner: {
-        instamine: "strict"
+        instamine: "strict",
+        blockGasLimit: testBlockGasLimit
       },
       logging: {
         quiet: true
