@@ -36,7 +36,7 @@ describe("truffle develop", function () {
 
       await CommandRunner.runInREPL({
         inputCommands: [input],
-        config: config,
+        config,
         executableCommand: "develop",
         displayHost: "develop"
       });
@@ -69,7 +69,7 @@ describe("truffle develop", function () {
 
     await CommandRunner.runInREPL({
       inputCommands: [input],
-      config: config,
+      config,
       executableCommand: "develop",
       displayHost: "develop"
     });
@@ -87,7 +87,7 @@ describe("truffle develop", function () {
 
     await CommandRunner.runInREPL({
       inputCommands: ["breakfast"],
-      config: config,
+      config,
       executableCommand: "develop",
       displayHost: "develop"
     });
@@ -105,7 +105,7 @@ describe("truffle develop", function () {
 
     await CommandRunner.runInREPL({
       inputCommands: ["twoAccounts"],
-      config: config,
+      config,
       executableCommand: "develop",
       displayHost: "develop"
     });

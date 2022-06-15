@@ -24,10 +24,10 @@ describe("truffle console", () => {
 
       await CommandRunner.runInREPL({
         inputCommands: [],
-        config: config,
+        config,
         executableCommand: "console",
         executableArgs: `--url ${url}`,
-        displayHost: displayHost
+        displayHost
       });
 
       const output = logger.contents();

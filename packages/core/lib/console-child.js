@@ -19,14 +19,24 @@ global.crypto = {
 const { network, config, url } = yargs(input[0]).argv;
 const detectedConfig = Config.detect({ network, config });
 
-//set up the specified network to use when "url" option is passed with the truffle console command
-if (url) {
+function setUpNetwork({ network, host, port, network_id, url } = {}) {
   detectedConfig.networks[network] = {
-    network_id: "*",
+    host,
+    port,
+    network_id,
     provider: function () {
       return new Web3.providers.HttpProvider(url, { keepAlive: false });
     }
   };
+}
+
+//set up the specified network to use when "url" option is passed with the truffle console command
+if (url) {
+  setUpNetwork({
+    network,
+    network_id: "*",
+    url
+  });
 } else {
   const customConfig = detectedConfig.networks.develop || {};
 
@@ -38,14 +48,13 @@ if (url) {
   const ganacheUrl = `http://${ganacheOptions.host}:${ganacheOptions.port}/`;
 
   //set up the develop network to use, including setting up provider
-  detectedConfig.networks.develop = {
+  setUpNetwork({
+    network: "develop",
     host: customConfig.host || "127.0.0.1",
     port: customConfig.port || 9545,
     network_id: customConfig.network_id || 5777,
-    provider: function () {
-      return new Web3.providers.HttpProvider(ganacheUrl, { keepAlive: false });
-    }
-  };
+    url: ganacheUrl
+  });
 }
 
 const { getCommand, prepareOptions, runCommand } = require("./command-utils");
