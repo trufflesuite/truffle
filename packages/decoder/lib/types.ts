@@ -15,7 +15,7 @@ import type { Provider } from "@truffle/encoder";
 
 //StateVariable used to be defined here, so let's continue
 //to export it
-export { StateVariable, ExtrasAllowed };
+export { StateVariable, ExtrasAllowed, RegularizedBlockSpecifier };
 
 /**
  * This type contains information needed to initialize the decoder.
