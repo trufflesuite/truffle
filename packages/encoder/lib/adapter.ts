@@ -1,6 +1,6 @@
 import debugModule from "debug";
 const debug = debugModule("decoder:adapter");
-import type { BlockSpecifier, RegularizedBlockSpecifier } from "@truffle/codec";
+import type { BlockSpecifier } from "@truffle/codec";
 import type BN from "bn.js";
 import type {
   Provider as LegacyProvider,
@@ -82,12 +82,7 @@ type FormattedBlock = {
   transactions: string[];
   uncles: string[];
 };
-const stringWhitelist = [
-  "latest",
-  "pending",
-  "genesis",
-  "earliest"
-];
+const stringWhitelist = ["latest", "pending", "genesis", "earliest"];
 
 const formatBlockSpecifier = (block: BlockSpecifier): string => {
   if (typeof block === "string" && stringWhitelist.includes(block)) {
@@ -129,9 +124,8 @@ export type Provider = LegacyProvider | Eip1193Provider;
 // EIP-1193 providers use `request()` instead of `send()`
 // NOTE this provider returns `response.result` already unwrapped
 // https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1193.md
-const isEip1193Provider = (
-  provider: Provider
-): provider is Eip1193Provider => "request" in provider;
+const isEip1193Provider = (provider: Provider): provider is Eip1193Provider =>
+  "request" in provider;
 
 /**
  * @hidden
@@ -143,7 +137,7 @@ export class ProviderAdapter {
     this.provider = provider;
   }
 
-  private async sendRequest ({
+  private async sendRequest({
     method,
     params,
     formatOutput
@@ -166,24 +160,23 @@ export class ProviderAdapter {
 
       // HACK this uses a manual `new Promise` instead of promisify because
       // users reported difficulty running this package in a browser extension
-      result = await new Promise(
-        (accept, reject) =>
-          send(
-            {
-              jsonrpc: "2.0",
-              id: new Date().getTime(),
-              method,
-              params
-            },
-            ((error: Error, response: JsonRPCResponse) => {
-              if (error) {
-                return reject(error);
-              }
+      result = await new Promise((accept, reject) =>
+        send(
+          {
+            jsonrpc: "2.0",
+            id: new Date().getTime(),
+            method,
+            params
+          },
+          ((error: Error, response: JsonRPCResponse) => {
+            if (error) {
+              return reject(error);
+            }
 
-              const { result: res } = response;
-              accept(res);
-            }) as Callback<JsonRPCResponse>
-          )
+            const { result: res } = response;
+            accept(res);
+          }) as Callback<JsonRPCResponse>
+        )
       );
     }
     if (formatOutput) return formatOutput(result);
@@ -201,7 +194,9 @@ export class ProviderAdapter {
     });
   }
 
-  public async getBlockByNumber (block: BlockSpecifier): Promise<FormattedBlock> {
+  public async getBlockByNumber(
+    block: BlockSpecifier
+  ): Promise<FormattedBlock> {
     const blockToFetch = formatBlockSpecifier(block);
     return await this.sendRequest({
       method: "eth_getBlockByNumber",
@@ -221,7 +216,7 @@ export class ProviderAdapter {
     });
   }
 
-  public async getNetworkId (): Promise<number> {
+  public async getNetworkId(): Promise<number> {
     return await this.sendRequest({
       method: "net_version",
       params: [],
@@ -229,7 +224,7 @@ export class ProviderAdapter {
     });
   }
 
-  public async getBlockNumber (): Promise<number> {
+  public async getBlockNumber(): Promise<number> {
     return await this.sendRequest({
       method: "eth_blockNumber",
       params: [],
@@ -237,7 +232,10 @@ export class ProviderAdapter {
     });
   }
 
-  public async getBalance (address: string, block: BlockSpecifier): Promise<string> {
+  public async getBalance(
+    address: string,
+    block: BlockSpecifier
+  ): Promise<string> {
     return await this.sendRequest({
       method: "eth_getBalance",
       params: [address, formatBlockSpecifier(block)],
@@ -263,7 +261,11 @@ export class ProviderAdapter {
   ): Promise<string> {
     return await this.sendRequest({
       method: "eth_getStorageAt",
-      params: [address, `0x${position.toString(16)}`, formatBlockSpecifier(block)]
+      params: [
+        address,
+        `0x${position.toString(16)}`,
+        formatBlockSpecifier(block)
+      ]
     });
   }
 }
