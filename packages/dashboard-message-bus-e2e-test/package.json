@@ -1,4 +1,5 @@
 {
+  "private": true,
   "name": "@truffle/dashboard-message-bus-e2e-test",
   "version": "0.1.0-0",
   "description": "Private e2e test package for testing the dashboard-message-bus and the dashboard-message-bus-client without circular dependencies",
@@ -20,9 +21,6 @@
   ],
   "directories": {
     "test": "test"
-  },
-  "publishConfig": {
-    "access": "private"
   },
   "devDependencies": {
     "@types/debug": "^4.1.5",
