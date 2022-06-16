@@ -51,6 +51,7 @@ const Environment = {
       ...ganacheOptions,
       fork: config.provider,
       miner: {
+        ...ganacheOptions.miner,
         blockGasLimit: block.gasLimit
       }
     };
