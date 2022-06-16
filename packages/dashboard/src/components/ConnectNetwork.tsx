@@ -1,23 +1,28 @@
-import { useWeb3React } from "@web3-react/core";
-import { providers } from "ethers";
-import Card from "./common/Card";
-import Button from "./common/Button";
-import { InjectedConnector } from "@web3-react/injected-connector";
-import NetworkIndicator from "./common/NetworkIndicator";
+import { useConnect, useNetwork } from "wagmi";
+import Button from "src/components/common/Button";
+import NetworkIndicator from "src/components/common/NetworkIndicator";
+import Card from "src/components/common/Card";
 
 interface Props {
   confirm: () => void;
 }
 
 function ConnectNetwork({ confirm }: Props) {
-  const { chainId, activate } = useWeb3React<providers.Web3Provider>();
-  const injectedConnector = new InjectedConnector({});
+  const [{ data: connectData }, connect] = useConnect();
+  const [{ data: networkData }] = useNetwork();
 
+  const chainId = networkData.chain?.id;
   const connectBody =
     "Please connect your wallet to use the Truffle Dashboard Provider.";
 
   const connectButton = (
-    <Button text="Connect Wallet" onClick={() => activate(injectedConnector)} />
+    <div>
+      {connectData.connectors.map(connector => (
+        <Button key={connector.id} onClick={() => connect(connector)}>
+          {connector.name}
+        </Button>
+      ))}
+    </div>
   );
 
   const confirmBody = chainId && (
@@ -31,9 +36,7 @@ function ConnectNetwork({ confirm }: Props) {
       </div>
     </div>
   );
-
-  const confirmButton = <Button text="Confirm" onClick={confirm} />;
-
+  const confirmButton = <Button onClick={confirm}>Confirm</Button>;
   return (
     <div className="flex justify-center items-center py-20">
       <div className="mx-3 w-3/4 max-w-4xl h-2/3 text-center">

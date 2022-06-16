@@ -1,50 +1,49 @@
-import WebSocket from "isomorphic-ws";
 import ReactJson from "react-json-view";
-import { handleDashboardProviderRequest, respond } from "../../utils/utils";
+import { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
+import { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
+import { handleDashboardProviderRequest } from "../../utils/utils";
 import Button from "../common/Button";
 import Card from "../common/Card";
-import { DashboardProviderMessage } from "@truffle/dashboard-message-bus";
 import { useState } from "react";
 
 interface Props {
-  request: DashboardProviderMessage;
+  request: ReceivedMessageLifecycle<DashboardProviderMessage>;
   setRequests: (
     requests:
-      | DashboardProviderMessage[]
-      | ((requests: DashboardProviderMessage[]) => DashboardProviderMessage[])
+      | ReceivedMessageLifecycle<DashboardProviderMessage>[]
+      | ((
+          requests: ReceivedMessageLifecycle<DashboardProviderMessage>[]
+        ) => ReceivedMessageLifecycle<DashboardProviderMessage>[])
   ) => void;
   provider: any;
-  socket: WebSocket;
+  connector: any;
 }
 
-function IncomingRequest({ provider, socket, request, setRequests }: Props) {
+function IncomingRequest({ provider, connector, request, setRequests }: Props) {
   const [disable, setDisable] = useState(false);
-
   const removeFromRequests = () => {
     setRequests(previousRequests =>
-      previousRequests.filter(other => other.id !== request.id)
+      previousRequests.filter(other => other.message.id !== request.message.id)
     );
   };
 
   const process = async () => {
-    await handleDashboardProviderRequest(request, provider, socket);
+    setDisable(true);
+    await handleDashboardProviderRequest(request, provider, connector);
     removeFromRequests();
   };
 
   const reject = async () => {
-    const errorResponse = {
-      id: request.id,
-      payload: {
-        jsonrpc: request.payload.jsonrpc,
-        id: request.payload.id,
-        error: {
-          code: 4001,
-          message: "User rejected @truffle/dashboard request"
-        }
+    const payload = {
+      jsonrpc: request.message.payload.jsonrpc,
+      id: request.message.payload.id,
+      error: {
+        code: 4001,
+        message: "User rejected @truffle/dashboard request"
       }
     };
 
-    respond(errorResponse, socket);
+    request.respond({ payload });
     removeFromRequests();
   };
 
@@ -103,21 +102,36 @@ function IncomingRequest({ provider, socket, request, setRequests }: Props) {
     }
   };
 
-  const header = <div className="normal-case">{request.payload.method}</div>;
+  const header = (
+    <div className="normal-case">{request.message.payload.method}</div>
+  );
 
-  const body = <div>{formatDashboardProviderRequestParameters(request)}</div>;
+  const body = (
+    <div>{formatDashboardProviderRequestParameters(request.message)}</div>
+  );
 
-  const footer = disable
-    ? <div className="flex justify-start items-center gap-2">
-        <Button disabled onClick={() => {}} text="Processing..." />
-      </div>
-    : <div className="flex justify-start items-center gap-2">
-        <Button onClick={() => {process(); setDisable(true);}} text="Process" />
-        <Button onClick={reject} text="Reject" />
-      </div>;
+  const footer = disable ? (
+    <div className="flex justify-start items-center gap-2">
+      <Button disabled onClick={() => {}}>
+        Processing...
+      </Button>
+    </div>
+  ) : (
+    <div className="flex justify-start items-center gap-2">
+      <Button
+        onClick={() => {
+          process();
+          setDisable(true);
+        }}
+      >
+        Process
+      </Button>
+      <Button onClick={reject}>Reject</Button>
+    </div>
+  );
 
   return (
-    <div key={request.id} className="flex justify-center items-center">
+    <div key={request.message.id} className="flex justify-center items-center">
       <Card header={header} body={body} footer={footer} />
     </div>
   );

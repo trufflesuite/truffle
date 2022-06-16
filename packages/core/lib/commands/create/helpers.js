@@ -42,7 +42,8 @@ const toUnderscoreFromCamel = (string) => {
 // in case that the file doesn't exist it will fallback to package.json
 const getLicense = (options) => {
   try {
-    if ((license = require("@truffle/config").detect(options).license)) {
+    const license = require("@truffle/config").detect(options).license;
+    if (license) {
       return license;
     }
   } catch (err) {
@@ -52,7 +53,7 @@ const getLicense = (options) => {
   try {
     return require(path.join(process.cwd(), "package.json")).license;
   } catch {}
-}
+};
 
 const Create = {
   contract: function (directory, name, options) {
@@ -66,7 +67,8 @@ const Create = {
     fse.copySync(from, to);
 
     replaceContents(to, templates.contract.name, name);
-    if ((license = getLicense(options))) {
+    const license = getLicense(options);
+    if (license) {
       replaceContents(to, templates.contract.license, license);
     }
   },

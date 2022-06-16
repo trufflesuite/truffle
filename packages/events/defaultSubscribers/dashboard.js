@@ -1,11 +1,44 @@
 const Spinner = require("@truffle/spinners").Spinner;
+const {
+  DashboardMessageBusClient
+} = require("@truffle/dashboard-message-bus-client");
 
 module.exports = {
-  initialization: function () {
-    this.logger = this.logger || console;
+  initialization: function (config) {
+    const dashboardConfig = config.dashboard || {
+      host: "localhost",
+      port: 24012
+    };
+
+    this.messageBus = new DashboardMessageBusClient(dashboardConfig);
+
+    this._logger = {
+      log: ((...args) => {
+        if (config.quiet) {
+          return;
+        }
+
+        (this.logger || config.logger || console).log(...args);
+      }).bind(this)
+    };
     this.pendingTransactions = [];
   },
   handlers: {
+    "compile:start": [
+      async function () {
+        try {
+          const publishLifecycle = await this.messageBus.publish({
+            type: "debug",
+            payload: {
+              message: "compile:start"
+            }
+          });
+          publishLifecycle.abandon();
+        } catch (err) {
+          // best effort only, dashboard might not even be alive
+        }
+      }
+    ],
     "rpc:request": [
       function (event) {
         if (!isDashboardNetwork(this.config)) {

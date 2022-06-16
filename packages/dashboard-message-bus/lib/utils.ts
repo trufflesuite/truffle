@@ -1,33 +1,12 @@
 import WebSocket, { ServerOptions } from "isomorphic-ws";
-import type { Message, PortsConfig } from "./types";
+import {
+  Message,
+  jsonToBase64,
+  base64ToJson
+} from "@truffle/dashboard-message-bus-common";
 import any from "promise.any";
-import delay from "delay";
-import axios from "axios";
 
 any.shim();
-
-/**
- * Convert any JS object or value to a base64 representation of it
- */
-export const jsonToBase64 = (json: any) => {
-  const stringifiedJson = JSON.stringify(json);
-  const buffer = Buffer.from(stringifiedJson);
-  const base64 = buffer.toString("base64");
-
-  return base64;
-};
-
-/**
- * Convert the base64 representation of a JS object or value to its JS representation
- * @dev This is the reverse of `jsonToBase64` and is not expected to work with other base64 formats
- */
-export const base64ToJson = (base64: string) => {
-  const buffer = Buffer.from(base64, "base64");
-  const stringifiedJson = buffer.toString("utf8");
-  const json = JSON.parse(stringifiedJson);
-
-  return json;
-};
 
 /**
  * Starts a websocket server and waits for it to be opened
@@ -36,13 +15,10 @@ export const base64ToJson = (base64: string) => {
  */
 export const startWebSocketServer = (options: ServerOptions) => {
   return new Promise<WebSocket.Server>(resolve => {
-    const server = new WebSocket.Server(options, () => resolve(server));
+    const server = new WebSocket.Server(options, () => {
+      resolve(server);
+    });
   });
-};
-
-export const createMessage = (type: string, payload: any): Message => {
-  const id = Math.random();
-  return { id, type, payload };
 };
 
 /**
@@ -102,57 +78,4 @@ export const sendAndAwait = (socket: WebSocket, message: Message) => {
     const encodedMessage = jsonToBase64(message);
     socket.send(encodedMessage);
   });
-};
-
-export const connectToMessageBusWithRetries = async (
-  port: number,
-  host: string = "localhost",
-  retries: number = 50
-): Promise<WebSocket> => {
-  let error = new Error();
-  for (let tryCount = 0; tryCount < retries; tryCount += 1) {
-    try {
-      return await connectToMessageBus(port, host);
-    } catch (e) {
-      error = e;
-      await delay(1000);
-    }
-  }
-
-  throw error;
-};
-
-export const connectToMessageBus = (
-  port: number,
-  host: string = "localhost"
-) => {
-  const socket = new WebSocket(`ws://${host}:${port}`);
-
-  return new Promise<WebSocket>((resolve, reject) => {
-    socket.addEventListener("open", () => resolve(socket));
-    socket.addEventListener("error", (event: WebSocket.ErrorEvent) =>
-      reject(event.error)
-    );
-  });
-};
-
-export const getMessageBusPorts = async (
-  dashboardPort: number,
-  dashboardHost: string = "localhost",
-  retries: number = 5
-): Promise<PortsConfig> => {
-  for (let tryCount = 0; tryCount < retries; tryCount += 1) {
-    try {
-      const { data } = await axios.get(
-        `http://${dashboardHost}:${dashboardPort}/ports`
-      );
-      return data;
-    } catch (e) {
-      await delay(1000);
-    }
-  }
-
-  throw new Error(
-    `Could not connect to dashboard at http://${dashboardHost}:${dashboardPort}/ports`
-  );
 };

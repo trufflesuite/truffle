@@ -30,11 +30,12 @@
     "start:dev-server": "ts-node --project tsconfig.server.json bin/start-dev-server.ts",
     "start:prebuilt": "node dist/bin/start-dev-server.js",
     "start:react": "DISABLE_ESLINT_PLUGIN=true SKIP_PREFLIGHT_CHECK=true craco start",
-    "test": "jest"
+    "test": "jest --passWithNoTests"
   },
   "types": "dist/lib/index.d.ts",
   "dependencies": {
     "@truffle/dashboard-message-bus": "^0.1.3",
+    "@truffle/dashboard-message-bus-client": "0.1.0-0",
     "cors": "^2.8.5",
     "debug": "^4.3.2",
     "express": "^4.17.1",
@@ -54,18 +55,14 @@
     "@types/node": "^12.0.0",
     "@types/react": "^17.0.37",
     "@types/react-dom": "^17.0.11",
-    "@types/web3": "^1.2.2",
     "@types/ws": "^7.2.0",
-    "@web3-react/core": "^6.1.9",
-    "@web3-react/injected-connector": "^6.0.7",
     "autoprefixer": "^9",
     "axios": "0.26.1",
     "concurrently": "^6.5.1",
     "cpy-cli": "^3.1.1",
     "delay": "^5.0.0",
     "ethereum-protocol": "^1.0.1",
-    "ethers": "^5.5.2",
-    "jest": "27.5.1",
+    "ethers": "^5.6.1",
     "postcss": "^8",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
@@ -74,7 +71,8 @@
     "tailwindcss": "npm:@tailwindcss/postcss7-compat",
     "ts-jest": "27.1.4",
     "ts-node": "10.7.0",
-    "typescript": "^4.1.4"
+    "typescript": "^4.1.4",
+    "wagmi": "^0.2.21"
   },
   "publishConfig": {
     "access": "public"
