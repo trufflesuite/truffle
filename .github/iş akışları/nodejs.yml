@@ -1,4 +1,4 @@
-name: Node CI
+isim e: D CI
 
 on:
   push:
