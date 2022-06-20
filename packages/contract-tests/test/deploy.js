@@ -6,10 +6,10 @@ describe("Deployments", function () {
   let web3;
   // ganache v2 had a default blockGasLimit of 0x6691b7, which these tests rely on
   const providerOptions = {
-    gasLimit: 0x6691b7,
     hardfork: "istanbul",
     miner: {
-      instamine: "strict"
+      instamine: "strict",
+      blockGasLimit: 0x6691b7
     }
   };
   before(async function () {

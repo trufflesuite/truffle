@@ -50,7 +50,10 @@ const Environment = {
     ganacheOptions = {
       ...ganacheOptions,
       fork: config.provider,
-      gasLimit: block.gasLimit
+      miner: {
+        ...ganacheOptions.miner,
+        blockGasLimit: block.gasLimit
+      }
     };
     if (accounts.length > 0) ganacheOptions.unlocked_accounts = accounts;
 

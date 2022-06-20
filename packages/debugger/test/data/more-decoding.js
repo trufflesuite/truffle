@@ -373,9 +373,9 @@ describe("Further Decoding", function () {
   before("Create Provider", async function () {
     provider = Ganache.provider({
       seed: "debugger",
-      gasLimit: testBlockGasLimit,
       miner: {
-        instamine: "strict"
+        instamine: "strict",
+        blockGasLimit: testBlockGasLimit
       },
       logging: {
         quiet: true
@@ -457,7 +457,7 @@ describe("Further Decoding", function () {
       bytesMap: { "0x01": "0x01" },
       uintMap: { 1: 1, 2: 2 },
       intMap: { "-1": -1 },
-      stringMap: { "0xdeadbeef": "0xdeadbeef", "12345": "12345", "hello": "hello" },
+      stringMap: { "0xdeadbeef": "0xdeadbeef", 12345: "12345", hello: "hello" },
       addressMap: { [address]: address },
       contractMap: { [address]: address },
       enumMap: { "ElementaryTest.Ternary.Blue": "ElementaryTest.Ternary.Blue" },

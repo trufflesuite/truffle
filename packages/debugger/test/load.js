@@ -42,12 +42,12 @@ describe("Loading and unloading transactions", function () {
   before("Create Provider", async function () {
     provider = Ganache.provider({
       seed: "debugger",
-      gasLimit: testBlockGasLimit,
       logging: {
         quiet: true
       },
       miner: {
-        instamine: "strict"
+        instamine: "strict",
+        blockGasLimit: testBlockGasLimit
       }
     });
   });
