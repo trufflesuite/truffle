@@ -23,7 +23,7 @@ describe("debug", function () {
     });
   });
 
-  describe.only("mergeConfigNetwork(config, options)", function () {
+  describe("mergeConfigNetwork(config, options)", function () {
     const host = "urlhost";
     const port = 1234;
     const url = `http://${host}:${port}`;
