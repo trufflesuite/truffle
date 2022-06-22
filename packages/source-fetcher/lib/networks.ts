@@ -50,7 +50,7 @@ export const networkNamesById: { [id: number]: string } = {
   122: "fuse",
   11297108109: "palm",
   11297108099: "testnet-palm",
-  70: "hoo",
+  70: "hoo", //not presently supported by ether fetcher, but formerly by etherscan
   25: "cronos",
   338: "testnet-cronos",
   199: "bttc",
