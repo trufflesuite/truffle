@@ -18,11 +18,16 @@ describe("Over-the-wire decoding (legacy features)", function () {
 
   before("Create Provider", async function () {
     provider = Ganache.provider({
+      miner: { instamine: "strict" },
       seed: "decoder",
       gasLimit: 7000000,
       logging: { quiet: true }
     });
     web3 = new Web3(provider);
+  });
+
+  after(async () => {
+    provider && (await provider.disconnect());
   });
 
   before("Prepare contracts and artifacts", async function () {
