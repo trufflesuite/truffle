@@ -10,8 +10,19 @@ const truffleLibraryDirectory = path.join(
   __dirname,
   "../..",
   "node_modules",
-  "@truffle/resolver",
+  "@truffle",
+  "resolver",
   "solidity"
+);
+
+const truffleRequireDistDirectory = path.join(
+  __dirname,
+  "..",
+  "..",
+  "node_modules",
+  "@truffle",
+  "require",
+  "dist"
 );
 
 const commandsEntries = commands.reduce((a, command) => {
@@ -75,7 +86,8 @@ module.exports = {
 
   target: "node",
   node: {
-    // For this option, see here: https://github.com/webpack/webpack/issues/1599
+    // For this option, see here:
+    // https://github.com/webpack/webpack/issues/1599#issuecomment-186841345
     __dirname: false,
     __filename: false
   },
@@ -147,7 +159,9 @@ module.exports = {
     /^@truffle\/db-loader/,
     /^ganache$/,
     // this is the commands portion shared by cli.js and console-child.js
-    /^\.\/commands.bundled.js$/
+    /^\.\/commands.bundled.js$/,
+    /^ts-node$/,
+    /^typescript$/
   ],
 
   resolve: {
@@ -265,6 +279,12 @@ module.exports = {
             "dashboard-frontend"
           ),
           to: "dashboard-frontend"
+        },
+        {
+          from: path.join(
+            truffleRequireDistDirectory,
+            "sandboxGlobalContextTypes.ts"
+          )
         }
       ]
     }),
