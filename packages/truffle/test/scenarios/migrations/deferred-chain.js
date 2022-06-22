@@ -31,7 +31,7 @@ describe("migrate (empty)", function () {
     };
   });
 
-  it("Correctly handles control flow in deployments", async function () {
+  it("Correctly handles control flow on rejection in deployment", async function () {
     this.timeout(70000);
 
     try {
