@@ -4,6 +4,7 @@ import { assert } from "chai";
 import Ganache, { EthereumProvider } from "ganache";
 
 import { Web3Shim } from "../lib";
+import { Provider } from "../lib/adapter/types";
 
 function prepareGanache(quorumEnabled: boolean): {
   provider: EthereumProvider;
@@ -18,7 +19,7 @@ function prepareGanache(quorumEnabled: boolean): {
     }
   });
   const web3Shim = new Web3Shim({
-    provider,
+    provider: provider as Provider,
     networkType: quorumEnabled ? "quorum" : "ethereum"
   });
   return {

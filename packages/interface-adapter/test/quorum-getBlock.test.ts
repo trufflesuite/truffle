@@ -5,7 +5,7 @@ const BN = require("bn.js");
 import Ganache, { EthereumProvider } from "ganache";
 
 import { createInterfaceAdapter } from "../lib";
-import { InterfaceAdapter } from "../lib/adapter/types";
+import { InterfaceAdapter, Provider } from "../lib/adapter/types";
 
 const genesisBlockTime = new Date();
 
@@ -23,7 +23,7 @@ function prepareGanache(quorumEnabled: boolean): {
     }
   });
   const interfaceAdapter = createInterfaceAdapter({
-    provider,
+    provider: provider as Provider,
     networkType: quorumEnabled ? "quorum" : "ethereum"
   });
   return {

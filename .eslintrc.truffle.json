@@ -1,7 +1,7 @@
 {
   "overrides": [
     {
-      "files": ["./test/**/*.js"],
+      "files": ["./test/**/*.js", "./test/**/*.ts"],
       "env": {
         "mocha": true
       },
@@ -17,7 +17,7 @@
       }
     },
     {
-      "files": ["./migrations/**/*.js"],
+      "files": ["./migrations/**/*.js", "./migrations/**/*.ts"],
       "globals": {
         "artifacts": "readonly",
         "config": "readonly"

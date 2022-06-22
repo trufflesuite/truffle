@@ -1,6 +1,6 @@
 // mocha is a dependency of @truffle/require, thus it is locally installed.
-const mocha = require("mocha");
+import mocha from "mocha";
 
-module.exports = function () {
+export default function () {
   return mocha;
-};
+}
