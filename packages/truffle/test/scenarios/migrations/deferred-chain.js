@@ -35,8 +35,9 @@ describe("migrate (empty)", function () {
     this.timeout(70000);
 
     try {
-      //the migration fails (due to me being unable to fully fix the
-      //problem), so we have to put it in a try
+      //the migration fails due to
+      //https://github.com/trufflesuite/truffle/issues/5225
+      //so we have to put it in a try
       await CommandRunner.run("migrate", config);
     } catch {
       //do nothing
