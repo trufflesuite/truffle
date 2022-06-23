@@ -11,7 +11,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.1.6",
+  "version": "0.1.7",
   "main": "dist/lib/index.js",
   "browser": {
     "ws": false
@@ -34,8 +34,8 @@
   },
   "types": "dist/lib/index.d.ts",
   "dependencies": {
-    "@truffle/dashboard-message-bus": "^0.1.3",
-    "@truffle/dashboard-message-bus-client": "0.1.0-0",
+    "@truffle/dashboard-message-bus": "^0.1.4",
+    "@truffle/dashboard-message-bus-client": "^0.1.0",
     "cors": "^2.8.5",
     "debug": "^4.3.2",
     "express": "^4.17.1",
