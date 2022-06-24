@@ -19,6 +19,7 @@
     "test": "mocha"
   },
   "dependencies": {
+    "@truffle/compile-common": "^0.7.31",
     "@truffle/config": "^1.3.30",
     "@truffle/contract-schema": "^3.4.7",
     "@truffle/expect": "^0.1.1",
