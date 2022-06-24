@@ -1,4 +1,4 @@
-  {
+{
   "name": "@truffle/compile-solidity",
   "description": "Compiler helper and artifact manager for Solidity files",
   "license": "MIT",
