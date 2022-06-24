@@ -33,7 +33,7 @@ import { getOptions } from "./constructor/getOptions";
 import { getPrivateKeys } from "./constructor/getPrivateKeys";
 import { getMnemonic } from "./constructor/getMnemonic";
 import type { ChainId, ChainSettings, Hardfork } from "./constructor/types";
-import { signTypedData } from "eth-sig-util";
+import { signTypedData, SignTypedDataVersion } from "@metamask/eth-sig-util";
 
 // Important: do not use debug module. Reason: https://github.com/trufflesuite/truffle/issues/2374#issuecomment-536109086
 
@@ -144,6 +144,7 @@ class HDWalletProvider {
         : "london";
 
     const self = this;
+
     this.engine.addProvider(
       new HookedSubprovider({
         getAccounts(cb: any) {
@@ -219,17 +220,24 @@ class HDWalletProvider {
         signPersonalMessage(...args: any[]) {
           this.signMessage(...args);
         },
-        signTypedMessage({ data, from }: any, cb: any) {
+        signTypedMessage(
+          { data, from }: { data: string; from: string },
+          cb: any
+        ) {
           const dataIfExists = data;
           if (!dataIfExists) {
-            cb("No data to sign");
+            return cb("No data to sign");
           }
-          if (!tmpWallets[from]) {
-            cb("Account not found");
+          // convert to lowercase in case it is in checksum format
+          if (!tmpWallets[from.toLowerCase()]) {
+            return cb("Account not found");
           }
-          const pkey = tmpWallets[from].getPrivateKey();
-          const sig = signTypedData(pkey, { data });
-          cb(null, sig);
+          const signature = signTypedData({
+            data: JSON.parse(data),
+            privateKey: tmpWallets[from.toLowerCase()].getPrivateKey(),
+            version: SignTypedDataVersion.V4
+          });
+          cb(null, signature);
         }
       })
     );

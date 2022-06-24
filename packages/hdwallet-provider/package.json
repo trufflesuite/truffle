@@ -23,7 +23,7 @@
   "dependencies": {
     "@ethereumjs/common": "^2.4.0",
     "@ethereumjs/tx": "^3.3.0",
-    "eth-sig-util": "^3.0.1",
+    "@metamask/eth-sig-util": "4.0.1",
     "ethereum-cryptography": "1.0.3",
     "ethereum-protocol": "^1.0.1",
     "ethereumjs-util": "^6.1.0",
