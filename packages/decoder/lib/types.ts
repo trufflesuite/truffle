@@ -267,6 +267,18 @@ export interface Transaction {
    * Data sent with the transaction, as hex string.
    */
   input: string;
+  /**
+   * A positive unsigned 8-bit number between 0 and 0x7f that represents the type of the transaction.
+   */
+  type?: number;
+  /**
+   * The maximum fee per gas that the transaction is willing to pay in total.
+   */
+  maxFeePerGas?: string;
+  /**
+   * The maximum fee per gas to give miners to incentivize them to include the transaction (Priority fee).
+   */
+  maxPriorityFeePerGas?: string;
 }
 
 /**
