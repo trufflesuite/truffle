@@ -25,6 +25,7 @@
     "@truffle/expect": "^0.1.1",
     "@truffle/interface-adapter": "^0.5.17",
     "@truffle/require": "^2.0.99",
+    "debug": "^4.3.1",
     "glob": "^7.1.6",
     "inquirer": "8.2.2"
   },
