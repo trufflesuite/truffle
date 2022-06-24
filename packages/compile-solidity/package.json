@@ -35,7 +35,7 @@
     "original-require": "^1.0.1",
     "require-from-string": "^2.0.2",
     "semver": "^7.3.4",
-    "solc": "0.8.12"
+    "solc": "0.8.15"
   },
   "devDependencies": {
     "@truffle/artifactor": "^4.0.158",
