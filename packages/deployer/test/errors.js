@@ -6,7 +6,7 @@ const utils = require("./helpers/utils");
 const Config = require("@truffle/config");
 const { Environment } = require("@truffle/environment");
 
-describe("Error cases", function () {
+describe.only("Error cases", function () {
   let owner;
   let accounts;
   let options;
@@ -20,17 +20,24 @@ describe("Error cases", function () {
   let UsesExample;
   let IsLibrary;
   let UsesLibrary;
+  let provider, web3;
 
-  const provider = ganache.provider({
-    gasLimit: "0x6691b7",
-    hardfork: "istanbul",
-    miner: {
-      instamine: "strict"
-    },
-    logging: { quiet: true }
+  before(() => {
+    provider = ganache.provider({
+      gasLimit: "0x6691b7",
+      hardfork: "istanbul",
+      miner: {
+        instamine: "strict"
+      },
+      logging: { quiet: true }
+    });
+    web3 = new Web3(provider);
   });
 
-  const web3 = new Web3(provider);
+  after(async () => {
+    provider && (await provider.disconnect());
+    provider = web3 = null;
+  });
 
   beforeEach(async function () {
     networkId = await web3.eth.net.getId();
