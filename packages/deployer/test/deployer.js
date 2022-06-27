@@ -14,7 +14,7 @@ const {
   linkingOccurred
 } = require("./helpers/eventSystem");
 
-describe("Deployer (sync)", function () {
+describe.only("Deployer (sync)", function () {
   let owner;
   let options;
   let networkId;
@@ -24,14 +24,24 @@ describe("Deployer (sync)", function () {
   let IsLibrary;
   let UsesLibrary;
 
-  const provider = ganache.provider({
-    miner: {
-      instamine: "strict"
-    },
-    logging: { quiet: true }
+  let provider, web3;
+  before(() => {
+    provider = ganache.provider({
+      miner: {
+        instamine: "strict"
+      },
+      logging: { quiet: true }
+    });
+    web3 = new Web3(provider);
   });
 
-  const web3 = new Web3(provider);
+  //TODO: provider.disconnect() causes the tests to hang for some unknown reason
+  // see outstanding Ganache issue: https://github.com/trufflesuite/ganache/issues/3293
+  // Leaving it commented out for now.
+  after(async () => {
+    // provider && await provider.disconnect();
+    provider = web3 = null;
+  });
 
   beforeEach(async function () {
     networkId = await web3.eth.net.getId();
@@ -322,7 +332,7 @@ describe("Deployer (sync)", function () {
         deployer.then(async function () {
           await deployer._startBlockPolling(interfaceAdapter);
           await utils.waitMS(9000);
-          await deployer._startBlockPolling(interfaceAdapter);
+          await deployer._stopBlockPolling(interfaceAdapter);
         });
       };
 

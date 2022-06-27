@@ -4,6 +4,7 @@ const assert = require("assert");
 const Ganache = require("ganache");
 const ENS = require("../ens");
 const sinon = require("sinon");
+const { afterEach } = require("mocha");
 const ENSJS = require("@ensdomains/ensjs").default;
 
 let providerOptions,
@@ -16,9 +17,10 @@ let providerOptions,
   ensjs,
   registry;
 
-describe("ENS class", () => {
+describe.only("ENS class", () => {
   before(() => {
     providerOptions = {
+      miner: { instamine: "eager" }, //default
       // note that when vmErrorsOnRPCResponse is true, `"eager"` instamine must be enabled (default)
       vmErrorsOnRPCResponse: true,
       mnemonic:
@@ -29,12 +31,17 @@ describe("ENS class", () => {
     };
     provider = Ganache.provider(providerOptions);
   });
-  after(async () => {
-    if (provider) {
-      await provider.disconnect();
-      provider = null;
-    }
-  });
+
+  //TODO: provider.disconnect() causes the tests to hang for some unknown reason
+  // see outstanding Ganache issue: https://github.com/trufflesuite/ganache/issues/3293
+  // Leaving it commented out for now.
+  // after(async () => {
+  //   if (provider) {
+  //     await provider.disconnect();
+  //     provider = null;
+  //   }
+  // });
+
   beforeEach(async () => {
     options = {
       provider,
@@ -46,6 +53,14 @@ describe("ENS class", () => {
     // First address generated from the above mnemonic
     fromAddress = "0x627306090abaB3A6e1400e9345bC60c78a8BEf57";
   });
+
+  afterEach(() => {
+    ens = ens.provider = ens.ens = null;
+  });
+
+  // it('blanks', async () => {
+  //   await ens.deployNewDevENSRegistry(fromAddress);
+  // });
 
   describe("deployNewDevENSRegistry", () => {
     it("deploys a new registry and returns the registry object", async () => {
