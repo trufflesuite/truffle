@@ -11,13 +11,22 @@ describe("Deployer (async / await)", function () {
   let example;
   let options;
   let networkId;
-  const provider = ganache.provider({
-    miner: {
-      instamine: "strict"
-    },
-    logging: { quiet: true }
+  let provider, web3;
+
+  before(() => {
+    provider = ganache.provider({
+      miner: {
+        instamine: "strict"
+      },
+      logging: { quiet: true }
+    });
+    web3 = new Web3(provider);
   });
-  const web3 = new Web3(provider);
+
+  after(async () => {
+    provider && (await provider.disconnect());
+    provider = web3 = null;
+  });
 
   beforeEach(async function () {
     this.timeout(20000);
