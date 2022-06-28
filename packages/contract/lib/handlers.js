@@ -41,7 +41,7 @@ const handlers = {
    * @param {Object}       context  execution state
    * @param {PromiEvent}   emitter  promiEvent returned by a web3 method call
    */
-  setup: function(emitter, context) {
+  setup: function (emitter, context) {
     emitter.on("error", handlers.error.bind(emitter, context));
     emitter.on("transactionHash", handlers.hash.bind(emitter, context));
     // web3 block polls if the confirmation listener is enabled so we want to
@@ -59,7 +59,7 @@ const handlers = {
    * @param  {Object} context   execution state
    * @param  {Object} error     error
    */
-  error: function(context, error) {
+  error: function (context, error) {
     if (!handlers.ignoreTimeoutError(context, error)) {
       context.promiEvent.eventEmitter.emit("error", error);
       this.removeListener("error", handlers.error);
@@ -72,15 +72,18 @@ const handlers = {
    * @param  {Object} context   execution state
    * @param  {String} hash      transaction hash
    */
-  hash: function(context, hash) {
+  hash: function (context, hash) {
     context.transactionHash = hash;
     context.promiEvent.eventEmitter.emit("transactionHash", hash);
     this.removeListener("transactionHash", handlers.hash);
   },
 
-  confirmation: function(context, number, receipt) {
+  confirmation: function (context, number, receipt) {
     context.promiEvent.eventEmitter.emit("confirmation", number, receipt);
 
+    console.log(
+      `confirmation # is curently ${number}/${handlers.maxConfirmations + 1}`
+    );
     // Per web3: initial confirmation index is 0
     if (number === handlers.maxConfirmations + 1) {
       this.removeListener("confirmation", handlers.confirmation);
@@ -93,7 +96,7 @@ const handlers = {
    * @param  {Object} context   execution state
    * @param  {Object} receipt   transaction receipt
    */
-  receipt: async function(context, receipt) {
+  receipt: async function (context, receipt) {
     // keep around the raw (not decoded) logs in the raw logs field as a
     // stopgap until we can get the ABI for all events, not just the current
     // contract
