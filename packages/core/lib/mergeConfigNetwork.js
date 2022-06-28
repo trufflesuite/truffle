@@ -1,11 +1,13 @@
+const { URL } = require("url");
+
 module.exports = function (config, options) {
   if (options.url) {
-    const inlineConfigNetwork = "inline_config";
-    config.networks[inlineConfigNetwork] = {
+    const url = new URL(options.url);
+    config.networks[url.host] = {
       url: options.url,
       network_id: "*"
     };
-    config.network = inlineConfigNetwork;
+    config.network = url.host;
   }
   config.merge(options);
   return config;

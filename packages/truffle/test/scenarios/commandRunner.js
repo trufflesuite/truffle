@@ -37,9 +37,24 @@ module.exports = {
       }
     });
   },
-  runInDevelopEnvironment: function (commands = [], config) {
-    const cmdLine = `${this.getExecString()} develop`;
-    const readyPrompt = "truffle(develop)>";
+  /**
+   * This is a function to test the output of a truffle develop/console command with arguments.
+   * @param {string[]} inputCommands - An array of input commands to enter when the prompt is ready.
+   * @param {TruffleConfig} config - Truffle config to be used for the test.
+   * @param {string} executableCommand - Truffle command to be tested (develop/console).
+   * @param {string} executableArgs - Space separated arguments/options to be used with the executableCommand.
+   * @param {string} displayHost - Name of the network host to be displayed in the prompt.
+   * @returns a Promise
+   */
+  runInREPL: function ({
+    inputCommands = [],
+    config,
+    executableCommand,
+    executableArgs,
+    displayHost
+  } = {}) {
+    const cmdLine = `${this.getExecString()} ${executableCommand} ${executableArgs}`;
+    const readyPrompt = `truffle(${displayHost})>`;
 
     let seenChildPrompt = false;
     let outputBuffer = "";
@@ -62,7 +77,7 @@ module.exports = {
         // child process is ready for input when it displays the readyPrompt
         if (!seenChildPrompt && outputBuffer.includes(readyPrompt)) {
           seenChildPrompt = true;
-          commands.forEach(command => {
+          inputCommands.forEach(command => {
             child.stdin.write(command + EOL);
           });
           child.stdin.end();

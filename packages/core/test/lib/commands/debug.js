@@ -1,8 +1,6 @@
 const assert = require("chai").assert;
-const {
-  mergeConfigNetwork,
-  loadConfig
-} = require("../../../lib/commands/debug");
+const loadConfig = require("../../../lib/loadConfig");
+const mergeConfigNetwork = require("../../../lib/mergeConfigNetwork");
 const Config = require("@truffle/config");
 let config, result, options;
 
@@ -26,24 +24,30 @@ describe("debug", function () {
   });
 
   describe("mergeConfigNetwork(config, options)", function () {
+    const host = "urlhost";
+    const port = 1234;
+    const url = `http://${host}:${port}`;
+    const expectedNetworkName = `${host}:${port}`;
+
     beforeEach(function () {
       config = Config.default();
-      options = {
-        url: "http://urlhost:1234"
-      };
+      options = { url };
     });
 
     it("should create networks item in config", function () {
       result = mergeConfigNetwork(config, options);
 
-      assert.notEqual(result.networks.inline_config, undefined);
-      assert.equal(result.networks.inline_config.url, "http://urlhost:1234");
-      assert.equal(result.networks.inline_config.network_id, "*");
+      assert.isDefined(
+        result.networks[expectedNetworkName],
+        "network is defined"
+      );
+      assert.equal(result.networks[expectedNetworkName].url, url);
+      assert.equal(result.networks[expectedNetworkName].network_id, "*");
     });
 
-    it("should set inline_network by default", function () {
+    it("should set host of the url by default", function () {
       result = mergeConfigNetwork(result, options);
-      assert.equal(result.network, "inline_config");
+      assert.equal(result.network, expectedNetworkName);
     });
 
     it("should override network field when specified in options", function () {
@@ -55,7 +59,7 @@ describe("debug", function () {
 
     it("should not use url when url not passed", function () {
       result = mergeConfigNetwork(config, {});
-      assert.notEqual(result.netwok, "inline_config");
+      assert.notEqual(result.netwok, expectedNetworkName);
     });
   });
 });

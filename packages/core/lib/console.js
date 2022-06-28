@@ -254,7 +254,7 @@ class Console extends EventEmitter {
     // errors/warnings in child process - specifically the error re: having
     // multiple config files
     const spawnOptions = { stdio: ["inherit", "inherit", "pipe"] };
-    const settings = ["config", "network"]
+    const settings = ["config", "network", "url"]
       .filter(setting => options[setting])
       .map(setting => `--${setting} ${options[setting]}`)
       .join(" ");

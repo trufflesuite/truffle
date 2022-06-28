@@ -7,6 +7,10 @@ const yargs = require("yargs");
 const input = process.argv[2].split(" -- ");
 const inputStrings = input[1].split(" ");
 
+const managedGanacheDefaultHost = "127.0.0.1";
+const managedGanacheDefaultPort = 9545;
+const managedGanacheDefaultNetworkId = 5777;
+
 // we need to make sure this function exists so ensjs doesn't complain as it requires
 // getRandomValues for some functionalities - webpack strips out the crypto lib
 // so we shim it here
@@ -16,24 +20,45 @@ global.crypto = {
 
 //detect config so we can get the provider and resolver without having to serialize
 //and deserialize them
-const { network, config } = yargs(input[0]).argv;
+const { network, config, url } = yargs(input[0]).argv;
 const detectedConfig = Config.detect({ network, config });
-const customConfig = detectedConfig.networks.develop || {};
 
-//need host and port for provider url
-const ganacheOptions = {
-  host: customConfig.host || "127.0.0.1",
-  port: customConfig.port || 9545
-};
-const url = `http://${ganacheOptions.host}:${ganacheOptions.port}/`;
+function getGanacheUrl(customConfig) {
+  const ganacheOptions = {
+    host: customConfig.host || managedGanacheDefaultHost,
+    port: customConfig.port || managedGanacheDefaultPort
+  };
+  return `http://${ganacheOptions.host}:${ganacheOptions.port}/`;
+}
 
-//set up the develop network to use, including setting up provider
-detectedConfig.networks.develop = {
-  host: customConfig.host || "127.0.0.1",
-  port: customConfig.port || 9545,
-  network_id: customConfig.network_id || 5777,
+let configuredNetwork;
+
+if (url) {
+  // Use "url" to configure network
+  configuredNetwork = {
+    network,
+    network_id: "*",
+    url
+  };
+} else {
+  // Otherwise derive network settings
+  const customConfig = detectedConfig.networks.develop || {};
+
+  configuredNetwork = {
+    network: "develop",
+    host: customConfig.host || managedGanacheDefaultHost,
+    port: customConfig.port || managedGanacheDefaultPort,
+    network_id: customConfig.network_id || managedGanacheDefaultNetworkId,
+    url: getGanacheUrl(customConfig)
+  };
+}
+
+detectedConfig.networks[network] = {
+  ...configuredNetwork,
   provider: function () {
-    return new Web3.providers.HttpProvider(url, { keepAlive: false });
+    return new Web3.providers.HttpProvider(configuredNetwork.url, {
+      keepAlive: false
+    });
   }
 };
 
