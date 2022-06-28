@@ -19,43 +19,43 @@ global.crypto = {
 const { network, config, url } = yargs(input[0]).argv;
 const detectedConfig = Config.detect({ network, config });
 
-function setUpNetwork({ network, host, port, network_id, url } = {}) {
-  detectedConfig.networks[network] = {
-    host,
-    port,
-    network_id,
-    provider: function () {
-      return new Web3.providers.HttpProvider(url, { keepAlive: false });
-    }
-  };
-}
-
-//set up the specified network to use when "url" option is passed with the truffle console command
-if (url) {
-  setUpNetwork({
-    network,
-    network_id: "*",
-    url
-  });
-} else {
-  const customConfig = detectedConfig.networks.develop || {};
-
-  //need host and port for provider url
+function getGanacheUrl(customConfig) {
   const ganacheOptions = {
     host: customConfig.host || "127.0.0.1",
     port: customConfig.port || 9545
   };
-  const ganacheUrl = `http://${ganacheOptions.host}:${ganacheOptions.port}/`;
+  return `http://${ganacheOptions.host}:${ganacheOptions.port}/`;
+}
 
-  //set up the develop network to use, including setting up provider
-  setUpNetwork({
+let configuredNetwork;
+
+//set up the specified network to use when "url" option is passed with the truffle console command
+if (url) {
+  configuredNetwork = {
+    network,
+    network_id: "*",
+    url
+  };
+} else {
+  const customConfig = detectedConfig.networks.develop || {};
+
+  configuredNetwork = {
     network: "develop",
     host: customConfig.host || "127.0.0.1",
     port: customConfig.port || 9545,
     network_id: customConfig.network_id || 5777,
-    url: ganacheUrl
-  });
+    url: getGanacheUrl(customConfig)
+  };
 }
+
+detectedConfig.networks[network] = {
+  ...configuredNetwork,
+  provider: function () {
+    return new Web3.providers.HttpProvider(configuredNetwork.url, {
+      keepAlive: false
+    });
+  }
+};
 
 const { getCommand, prepareOptions, runCommand } = require("./command-utils");
 const command = getCommand({ inputStrings, options: {}, noAliases: false });
