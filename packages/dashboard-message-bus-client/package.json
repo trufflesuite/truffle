@@ -42,7 +42,8 @@
     "axios": "^0.24.0",
     "debug": "^4.3.1",
     "delay": "^5.0.0",
-    "isomorphic-ws": "^4.0.1"
+    "isomorphic-ws": "^4.0.1",
+    "ws": "^7.2.0"
   },
   "devDependencies": {
     "@types/debug": "^4.1.5",
