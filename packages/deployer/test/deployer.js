@@ -14,7 +14,7 @@ const {
   linkingOccurred
 } = require("./helpers/eventSystem");
 
-describe.only("Deployer (sync)", function () {
+describe("Deployer (sync)", function () {
   let owner;
   let options;
   let networkId;
@@ -35,11 +35,10 @@ describe.only("Deployer (sync)", function () {
     web3 = new Web3(provider);
   });
 
-  //TODO: provider.disconnect() causes the tests to hang for some unknown reason
   // see outstanding Ganache issue: https://github.com/trufflesuite/ganache/issues/3293
   // Leaving it commented out for now.
   after(async () => {
-    // provider && await provider.disconnect();
+    provider && (await provider.disconnect());
     provider = web3 = null;
   });
 
