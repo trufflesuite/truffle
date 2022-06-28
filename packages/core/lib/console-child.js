@@ -7,6 +7,10 @@ const yargs = require("yargs");
 const input = process.argv[2].split(" -- ");
 const inputStrings = input[1].split(" ");
 
+const managedGanacheDefaultHost = "127.0.0.1";
+const managedGanacheDefaultPort = 9545;
+const managedGanacheDefaultNetworkId = 5777;
+
 // we need to make sure this function exists so ensjs doesn't complain as it requires
 // getRandomValues for some functionalities - webpack strips out the crypto lib
 // so we shim it here
@@ -21,29 +25,30 @@ const detectedConfig = Config.detect({ network, config });
 
 function getGanacheUrl(customConfig) {
   const ganacheOptions = {
-    host: customConfig.host || "127.0.0.1",
-    port: customConfig.port || 9545
+    host: customConfig.host || managedGanacheDefaultHost,
+    port: customConfig.port || managedGanacheDefaultPort
   };
   return `http://${ganacheOptions.host}:${ganacheOptions.port}/`;
 }
 
 let configuredNetwork;
 
-//set up the specified network to use when "url" option is passed with the truffle console command
 if (url) {
+  // Use "url" to configure network
   configuredNetwork = {
     network,
     network_id: "*",
     url
   };
 } else {
+  // Otherwise derive network settings
   const customConfig = detectedConfig.networks.develop || {};
 
   configuredNetwork = {
     network: "develop",
-    host: customConfig.host || "127.0.0.1",
-    port: customConfig.port || 9545,
-    network_id: customConfig.network_id || 5777,
+    host: customConfig.host || managedGanacheDefaultHost,
+    port: customConfig.port || managedGanacheDefaultPort,
+    network_id: customConfig.network_id || managedGanacheDefaultNetworkId,
     url: getGanacheUrl(customConfig)
   };
 }
