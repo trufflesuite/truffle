@@ -22,6 +22,7 @@
     "@ensdomains/ensjs": "^2.0.1",
     "@truffle/contract": "^4.5.14",
     "@truffle/expect": "^0.1.1",
+    "debug": "^4.3.1",
     "eth-ens-namehash": "^2.0.8",
     "web3-utils": "1.5.3"
   },

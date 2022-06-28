@@ -36,9 +36,11 @@
   "dependencies": {
     "@truffle/dashboard-message-bus": "^0.1.4",
     "@truffle/dashboard-message-bus-client": "^0.1.0",
+    "@truffle/dashboard-message-bus-common": "^0.1.0",
     "cors": "^2.8.5",
     "debug": "^4.3.2",
     "express": "^4.17.1",
+    "get-port": "^5.1.1",
     "isomorphic-ws": "^4.0.1",
     "open": "^8.4.0",
     "ws": "^7.2.0"

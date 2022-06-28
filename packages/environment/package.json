@@ -24,6 +24,7 @@
     "@truffle/error": "^0.1.0",
     "@truffle/expect": "^0.1.1",
     "@truffle/interface-adapter": "^0.5.17",
+    "@truffle/provider": "^0.2.55",
     "@truffle/resolver": "^9.0.5",
     "ganache": "7.2.0",
     "node-ipc": "9.2.1",
