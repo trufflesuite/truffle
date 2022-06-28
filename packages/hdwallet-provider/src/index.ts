@@ -224,17 +224,17 @@ class HDWalletProvider {
           { data, from }: { data: string; from: string },
           cb: any
         ) {
-          const dataIfExists = data;
-          if (!dataIfExists) {
+          if (!data) {
             return cb("No data to sign");
           }
-          // convert to lowercase in case it is in checksum format
-          if (!tmpWallets[from.toLowerCase()]) {
+          // convert address to lowercase in case it is in checksum format
+          const fromAddress = from.toLowerCase();
+          if (!tmpWallets[fromAddress]) {
             return cb("Account not found");
           }
           const signature = signTypedData({
             data: JSON.parse(data),
-            privateKey: tmpWallets[from.toLowerCase()].getPrivateKey(),
+            privateKey: tmpWallets[fromAddress].getPrivateKey(),
             version: SignTypedDataVersion.V4
           });
           cb(null, signature);
