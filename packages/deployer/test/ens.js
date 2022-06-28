@@ -35,12 +35,12 @@ describe.only("ENS class", () => {
   //TODO: provider.disconnect() causes the tests to hang for some unknown reason
   // see outstanding Ganache issue: https://github.com/trufflesuite/ganache/issues/3293
   // Leaving it commented out for now.
-  // after(async () => {
-  //   if (provider) {
-  //     await provider.disconnect();
-  //     provider = null;
-  //   }
-  // });
+  after(async () => {
+    if (provider) {
+      await provider.disconnect();
+      provider = null;
+    }
+  });
 
   beforeEach(async () => {
     options = {
@@ -58,9 +58,9 @@ describe.only("ENS class", () => {
     ens = ens.provider = ens.ens = null;
   });
 
-  // it('blanks', async () => {
-  //   await ens.deployNewDevENSRegistry(fromAddress);
-  // });
+  it.only("blanks", async () => {
+    await ens.deployNewDevENSRegistry(fromAddress);
+  });
 
   describe("deployNewDevENSRegistry", () => {
     it("deploys a new registry and returns the registry object", async () => {

@@ -16,8 +16,7 @@
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0",
-    "test": "mocha --no-warnings --timeout 10000",
-    "testx": "why-is-node-running $(yarn bin)/mocha --no-warnings --timeout 10000"
+    "test": "mocha --no-warnings --timeout 10000 test/ens.js"
   },
   "dependencies": {
     "@ensdomains/ensjs": "^2.1.0",
