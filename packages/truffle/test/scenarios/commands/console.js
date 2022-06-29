@@ -3,7 +3,6 @@ const Server = require("../server");
 const MemoryLogger = require("../MemoryLogger");
 const assert = require("assert");
 const path = require("path");
-const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const tmp = require("tmp");
 
@@ -21,9 +20,6 @@ describe("truffle console", () => {
     config = await sandbox.create(project);
     config.network = "development";
     config.logger = logger;
-    config.mocha = {
-      reporter: new Reporter(logger)
-    };
   });
 
   describe("when runs with network option with a config", () => {
@@ -76,12 +72,6 @@ describe("truffle console", () => {
         sandlot = tmp.dirSync({ unsafeCleanup: true });
         config = { working_directory: sandlot.name };
         config.logger = logger;
-        config.mocha = {
-          reporter: new Reporter(logger)
-        };
-      });
-      after(() => {
-        sandlot.removeCallback();
       });
 
       it("displays the url hostname in the prompt", async () => {
