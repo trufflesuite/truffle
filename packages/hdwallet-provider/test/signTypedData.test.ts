@@ -1,4 +1,4 @@
-import { describe, it, beforeEach, after } from "mocha";
+import { describe, it, beforeEach, afterEach } from "mocha";
 import Ganache from "ganache";
 import { assert } from "chai";
 import HDWalletProvider from "..";
@@ -35,7 +35,7 @@ describe("eth_signTypedData_v4", function () {
     msgParams_v4 = JSON.stringify(getTypedData(chainId));
   });
 
-  after(async function () {
+  afterEach(async function () {
     await ganacheProvider.disconnect();
   });
 
