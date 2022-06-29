@@ -152,7 +152,8 @@ class HDWalletProvider {
         },
         getPrivateKey(address: string, cb: any) {
           if (!tmpWallets[address]) {
-            return cb("Account not found");
+            cb("Account not found");
+            return;
           } else {
             cb(null, tmpWallets[address].getPrivateKey().toString("hex"));
           }
@@ -169,6 +170,7 @@ class HDWalletProvider {
             pkey = tmpWallets[from].getPrivateKey();
           } else {
             cb("Account not found");
+            return;
           }
           const chain = self.chainId;
           const KNOWN_CHAIN_IDS = new Set([1, 3, 4, 5, 42]);
@@ -206,9 +208,11 @@ class HDWalletProvider {
           const dataIfExists = data;
           if (!dataIfExists) {
             cb("No data to sign");
+            return;
           }
           if (!tmpWallets[from]) {
             cb("Account not found");
+            return;
           }
           let pkey = tmpWallets[from].getPrivateKey();
           const dataBuff = EthUtil.toBuffer(dataIfExists);
@@ -225,12 +229,14 @@ class HDWalletProvider {
           cb: any
         ) {
           if (!data) {
-            return cb("No data to sign");
+            cb("No data to sign");
+            return;
           }
           // convert address to lowercase in case it is in checksum format
           const fromAddress = from.toLowerCase();
           if (!tmpWallets[fromAddress]) {
-            return cb("Account not found");
+            cb("Account not found");
+            return;
           }
           const signature = signTypedData({
             data: JSON.parse(data),
