@@ -154,6 +154,10 @@ const WorkflowCompile = {
         contracts: contracts.map(({ db: { contract } }) => contract)
       }
     });
+  },
+
+  abc() {
+    console.log("1");
   }
 };
 
