@@ -23,44 +23,33 @@ global.crypto = {
 const { network, config, url } = yargs(input[0]).argv;
 const detectedConfig = Config.detect({ network, config });
 
-function getGanacheUrl(customConfig) {
+if (url) {
+  detectedConfig.networks[network] = {
+    network_id: "*",
+    provider: function () {
+      return new Web3.providers.HttpProvider(url, { keepAlive: false });
+    }
+  };
+} else {
+  const customConfig = detectedConfig.networks.develop || {};
+
+  //need host and port for provider url
   const ganacheOptions = {
     host: customConfig.host || managedGanacheDefaultHost,
     port: customConfig.port || managedGanacheDefaultPort
   };
-  return `http://${ganacheOptions.host}:${ganacheOptions.port}/`;
-}
+  const ganacheUrl = `http://${ganacheOptions.host}:${ganacheOptions.port}/`;
 
-let configuredNetwork;
-
-if (url) {
-  // Use "url" to configure network
-  configuredNetwork = {
-    network,
-    network_id: "*",
-    url
-  };
-} else {
-  // Otherwise derive network settings
-  const customConfig = detectedConfig.networks.develop || {};
-
-  configuredNetwork = {
-    network: "develop",
+  //set up the develop network to use, including setting up provider
+  detectedConfig.networks.develop = {
     host: customConfig.host || managedGanacheDefaultHost,
     port: customConfig.port || managedGanacheDefaultPort,
     network_id: customConfig.network_id || managedGanacheDefaultNetworkId,
-    url: getGanacheUrl(customConfig)
+    provider: function () {
+      return new Web3.providers.HttpProvider(ganacheUrl, { keepAlive: false });
+    }
   };
 }
-
-detectedConfig.networks[network] = {
-  ...configuredNetwork,
-  provider: function () {
-    return new Web3.providers.HttpProvider(configuredNetwork.url, {
-      keepAlive: false
-    });
-  }
-};
 
 const { getCommand, prepareOptions, runCommand } = require("./command-utils");
 const command = getCommand({ inputStrings, options: {}, noAliases: false });
