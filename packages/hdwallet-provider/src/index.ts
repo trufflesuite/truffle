@@ -33,7 +33,7 @@ import { getOptions } from "./constructor/getOptions";
 import { getPrivateKeys } from "./constructor/getPrivateKeys";
 import { getMnemonic } from "./constructor/getMnemonic";
 import type { ChainId, ChainSettings, Hardfork } from "./constructor/types";
-import { signTypedData } from "eth-sig-util";
+import { signTypedData, SignTypedDataVersion } from "@metamask/eth-sig-util";
 
 // Important: do not use debug module. Reason: https://github.com/trufflesuite/truffle/issues/2374#issuecomment-536109086
 
@@ -144,6 +144,7 @@ class HDWalletProvider {
         : "london";
 
     const self = this;
+
     this.engine.addProvider(
       new HookedSubprovider({
         getAccounts(cb: any) {
@@ -151,7 +152,8 @@ class HDWalletProvider {
         },
         getPrivateKey(address: string, cb: any) {
           if (!tmpWallets[address]) {
-            return cb("Account not found");
+            cb("Account not found");
+            return;
           } else {
             cb(null, tmpWallets[address].getPrivateKey().toString("hex"));
           }
@@ -168,6 +170,7 @@ class HDWalletProvider {
             pkey = tmpWallets[from].getPrivateKey();
           } else {
             cb("Account not found");
+            return;
           }
           const chain = self.chainId;
           const KNOWN_CHAIN_IDS = new Set([1, 3, 4, 5, 42]);
@@ -205,9 +208,11 @@ class HDWalletProvider {
           const dataIfExists = data;
           if (!dataIfExists) {
             cb("No data to sign");
+            return;
           }
           if (!tmpWallets[from]) {
             cb("Account not found");
+            return;
           }
           let pkey = tmpWallets[from].getPrivateKey();
           const dataBuff = EthUtil.toBuffer(dataIfExists);
@@ -219,17 +224,26 @@ class HDWalletProvider {
         signPersonalMessage(...args: any[]) {
           this.signMessage(...args);
         },
-        signTypedMessage({ data, from }: any, cb: any) {
-          const dataIfExists = data;
-          if (!dataIfExists) {
+        signTypedMessage(
+          { data, from }: { data: string; from: string },
+          cb: any
+        ) {
+          if (!data) {
             cb("No data to sign");
+            return;
           }
-          if (!tmpWallets[from]) {
+          // convert address to lowercase in case it is in checksum format
+          const fromAddress = from.toLowerCase();
+          if (!tmpWallets[fromAddress]) {
             cb("Account not found");
+            return;
           }
-          const pkey = tmpWallets[from].getPrivateKey();
-          const sig = signTypedData(pkey, { data });
-          cb(null, sig);
+          const signature = signTypedData({
+            data: JSON.parse(data),
+            privateKey: tmpWallets[fromAddress].getPrivateKey(),
+            version: SignTypedDataVersion.V4
+          });
+          cb(null, signature);
         }
       })
     );
