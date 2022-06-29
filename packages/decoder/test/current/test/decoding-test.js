@@ -15,10 +15,15 @@ describe("State variable decoding", function () {
 
   before("Create Provider", async function () {
     provider = Ganache.provider({
+      miner: { instamine: "strict" },
       seed: "decoder",
       gasLimit: 7000000,
       logging: { quiet: true }
     });
+  });
+
+  after(async () => {
+    provider && (await provider.disconnect());
   });
 
   before("Prepare contracts and artifacts", async function () {

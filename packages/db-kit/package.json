@@ -52,7 +52,7 @@
     "meow": "^9.0.0",
     "react": "^16.8.0",
     "source-map-support": "^0.5.19",
-    "web3": "1.5.3"
+    "web3": "1.7.4"
   },
   "devDependencies": {
     "@types/jest": "27.4.1",
@@ -69,7 +69,7 @@
     "typedoc": "^0.20.19",
     "typescript": "^4.1.4",
     "typescript-transform-paths": "^2.1.0",
-    "web3-core": "1.5.3"
+    "web3-core": "1.7.4"
   },
   "keywords": [
     "smart-contract",
