@@ -66,39 +66,29 @@ const Migrate = {
     return migrations;
   },
 
-  run: async function (options, callback) {
-    const callbackPassed = typeof callback === "function";
-    try {
-      expect.options(options, [
-        "working_directory",
-        "migrations_directory",
-        "contracts_build_directory",
-        "provider",
-        "artifactor",
-        "resolver",
-        "network",
-        "network_id",
-        "logger",
-        "from" // address doing deployment
-      ]);
+  run: async function (options) {
+    expect.options(options, [
+      "working_directory",
+      "migrations_directory",
+      "contracts_build_directory",
+      "provider",
+      "artifactor",
+      "resolver",
+      "network",
+      "network_id",
+      "logger",
+      "from" // address doing deployment
+    ]);
 
-      if (options.reset === true) {
-        await this.runAll(options);
-        if (callbackPassed) return callback();
-        return;
-      }
-
-      const lastMigration = await this.lastCompletedMigration(options);
-
-      // Don't rerun the last completed migration.
-      await this.runFrom(lastMigration + 1, options);
-
-      if (callbackPassed) return callback();
+    if (options.reset === true) {
+      await this.runAll(options);
       return;
-    } catch (error) {
-      if (callbackPassed) return callback(error);
-      throw error;
     }
+
+    const lastMigration = await this.lastCompletedMigration(options);
+
+    // Don't rerun the last completed migration.
+    await this.runFrom(lastMigration + 1, options);
   },
 
   runFrom: async function (number, options) {
