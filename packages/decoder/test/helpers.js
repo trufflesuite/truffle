@@ -74,17 +74,7 @@ async function compile(config) {
 }
 
 async function migrate(config) {
-  return new Promise(function (accept, reject) {
-    Migrate.run(
-      config.with({
-        quiet: true
-      }),
-      function (err, contracts) {
-        if (err) return reject(err);
-        accept(contracts);
-      }
-    );
-  });
+  return await Migrate.run(config.with({ quiet: true }));
 }
 
 module.exports = {
