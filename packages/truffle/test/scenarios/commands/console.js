@@ -73,6 +73,9 @@ describe("truffle console", () => {
         config = { working_directory: sandlot.name };
         config.logger = logger;
       });
+      after("clear working_directory", () => {
+        sandlot.removeCallback();
+      });
 
       it("displays the url hostname in the prompt", async () => {
         const url = "http://localhost:8545";
