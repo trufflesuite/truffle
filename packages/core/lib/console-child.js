@@ -34,8 +34,7 @@ function getConfiguredNetworkUrl(customConfig) {
 let configuredNetwork;
 
 if (url) {
-  // implies not "develop"
-  // Use "url" to configure network
+  // Use "url" to configure network (implies not "develop")
   configuredNetwork = {
     network_id: "*",
     url
