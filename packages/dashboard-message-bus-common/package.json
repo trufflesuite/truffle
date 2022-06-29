@@ -5,8 +5,11 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist/lib"
+    "dist"
   ],
+  "directories": {
+    "dist": "dist"
+  },
   "scripts": {
     "build": "tsc",
     "prepare": "yarn build"
