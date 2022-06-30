@@ -17,24 +17,20 @@ describe("Genesis time config for truffle test, passing tests [ @standalone ]", 
   });
 
   describe("test with valid date", function () {
-    before("set up sandbox", function () {
+    before(async function () {
       this.timeout(10000);
       let project = path.join(
         __dirname,
         "../../sources/genesis_time/genesis_time_valid"
       );
-      return sandbox.create(project).then(conf => {
-        config = conf;
-        config.network = "test";
-        config.logger = logger;
-      });
-    });
-
-    before("ensure path", async () => {
+      config = await sandbox.create(project);
+      config.network = "test";
+      config.logger = logger;
+      // create test dir
       await fs.ensureDir(config.test_directory);
     });
 
-    it("will run test and error should be undefined", async function () {
+    it("runs test and won't error", async function () {
       this.timeout(90000);
       await CommandRunner.run("test", config);
     });
