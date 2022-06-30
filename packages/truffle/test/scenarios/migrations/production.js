@@ -20,11 +20,7 @@ describe("production", function () {
       config = await sandbox.create(project);
       config.network = "ropsten";
       config.logger = logger;
-      const provider = new Web3.providers.HttpProvider(
-        "http://localhost:8545",
-        { keepAlive: false }
-      );
-      web3 = new Web3(provider);
+      web3 = new Web3("http://localhost:8545");
       networkId = await web3.eth.net.getId();
     });
 
@@ -75,12 +71,7 @@ describe("production", function () {
       config = await sandbox.create(project);
       config.network = "fakeRopsten";
       config.logger = logger;
-
-      const provider = new Web3.providers.HttpProvider(
-        "http://localhost:8545",
-        { keepAlive: false }
-      );
-      web3 = new Web3(provider);
+      web3 = new Web3("http://localhost:8545");
       networkId = await web3.eth.net.getId();
     });
 
