@@ -43,12 +43,11 @@ describe("truffle console", () => {
   });
 
   describe("when runs with url option", () => {
+    const url = "http://localhost:8545";
+    const parsedUrl = new URL(url);
+    const displayHost = parsedUrl.host;
     describe("with a config", () => {
       it("displays the url hostname in the prompt", async () => {
-        const url = "http://localhost:8545";
-        const parsedUrl = new URL(url);
-        const displayHost = parsedUrl.host;
-
         await CommandRunner.runInREPL({
           inputCommands: [],
           config,
@@ -78,10 +77,6 @@ describe("truffle console", () => {
       });
 
       it("displays the url hostname in the prompt", async () => {
-        const url = "http://localhost:8545";
-        const parsedUrl = new URL(url);
-        const displayHost = parsedUrl.host;
-
         await CommandRunner.runInREPL({
           inputCommands: [],
           config,
