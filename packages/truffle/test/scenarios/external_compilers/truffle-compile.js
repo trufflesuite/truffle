@@ -6,7 +6,6 @@ const path = require("path");
 const assert = require("assert");
 const sandbox = require("../sandbox");
 const Server = require("../server");
-const Reporter = require("../reporter");
 
 describe("`truffle compile` as external", function () {
   // These tests rely on a solc jq dependency installed with apt-get
@@ -18,25 +17,17 @@ describe("`truffle compile` as external", function () {
   const logger = new MemoryLogger();
 
   before(async function () {
+    this.timeout(10000);
     await Server.start();
+    config = await sandbox.create(project);
+    config.network = "development";
+    config.logger = logger;
   });
   after(async function () {
     await Server.stop();
   });
 
-  before("set up sandbox", function () {
-    this.timeout(10000);
-    return sandbox.create(project).then(conf => {
-      config = conf;
-      config.network = "development";
-      config.logger = logger;
-      config.mocha = {
-        reporter: new Reporter(logger)
-      };
-    });
-  });
-
-  it("will compile", async function () {
+  it("compiles", async function () {
     this.timeout(20000);
 
     await CommandRunner.run("compile --compiler=external", config);
@@ -62,24 +53,24 @@ describe("`truffle compile` as external", function () {
     );
   });
 
-  it("will migrate", async function () {
+  it("migrates", async function () {
     this.timeout(50000);
 
     await CommandRunner.run("migrate", config);
-    var MetaCoin = contract(
+    const MetaCoin = contract(
       require(path.join(config.contracts_build_directory, "MetaCoin.json"))
     );
-    var ConvertLib = contract(
+    const ConvertLib = contract(
       require(path.join(config.contracts_build_directory, "ConvertLib.json"))
     );
-    var Migrations = contract(
+    const Migrations = contract(
       require(path.join(config.contracts_build_directory, "Migrations.json"))
     );
-    var ExtraMetaCoin = contract(
+    const ExtraMetaCoin = contract(
       require(path.join(config.contracts_build_directory, "ExtraMetaCoin.json"))
     );
 
-    var promises = [];
+    const promises = [];
 
     [MetaCoin, ConvertLib, Migrations, ExtraMetaCoin].forEach(function (
       abstraction
@@ -100,7 +91,7 @@ describe("`truffle compile` as external", function () {
     await Promise.all(promises);
   });
 
-  it("will run tests", async function () {
+  it("runs tests", async function () {
     this.timeout(70000);
     await CommandRunner.run("test", config);
     const output = logger.contents();
