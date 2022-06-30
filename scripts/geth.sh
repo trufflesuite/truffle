@@ -20,4 +20,4 @@ docker run \
 	--dev \
 	--dev.period 0 \
 	--allow-insecure-unlock \
-	js ./scripts/geth-accounts.js
+	--exec "loadScript('scripts/geth-accounts.js')" console
