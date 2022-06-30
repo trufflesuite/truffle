@@ -5,8 +5,7 @@ const { promisify } = require("util");
 
 const DEFAULT_PATTERN = "**/*.{sol,vy,v.py,vyper.py,json,yul}";
 
-module.exports = (pattern, callback) => {
-  const callbackPassed = typeof callback === "function";
+module.exports = async pattern => {
   // pattern is either a directory (contracts directory), or an absolute path
   // with a glob expression
   if (!glob.hasMagic(pattern)) {
@@ -18,19 +17,5 @@ module.exports = (pattern, callback) => {
     dot: true //check hidden files and directories
   };
 
-  return promisify(glob)(pattern, globOptions)
-    .then(files => {
-      if (callbackPassed) {
-        callback(null, files);
-      } else {
-        return files;
-      }
-    })
-    .catch(error => {
-      if (callbackPassed) {
-        callback(error);
-      } else {
-        throw error;
-      }
-    });
+  return await promisify(glob)(pattern, globOptions);
 };
