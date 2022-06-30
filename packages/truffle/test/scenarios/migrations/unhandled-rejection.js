@@ -3,7 +3,6 @@ const CommandRunner = require("../commandRunner");
 const path = require("path");
 const assert = require("assert");
 const Server = require("../server");
-const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 
 describe("unhandledRejection detection", function () {
@@ -15,20 +14,14 @@ describe("unhandledRejection detection", function () {
   const logger = new MemoryLogger();
 
   before(async function () {
-    await Server.start();
-  });
-  after(async function () {
-    await Server.stop();
-  });
-
-  before(async function () {
     this.timeout(10000);
+    await Server.start();
     config = await sandbox.create(project);
     config.network = "development";
     config.logger = logger;
-    config.mocha = {
-      reporter: new Reporter(logger)
-    };
+  });
+  after(async function () {
+    await Server.stop();
   });
 
   it("should detect unhandled-rejection", async function () {

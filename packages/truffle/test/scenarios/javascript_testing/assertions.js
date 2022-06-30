@@ -3,7 +3,6 @@ const CommandRunner = require("../commandRunner");
 const path = require("path");
 const assert = require("assert");
 const Server = require("../server");
-const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 
 describe("Javascript testing", function () {
@@ -16,9 +15,6 @@ describe("Javascript testing", function () {
     config = await sandbox.create(project);
     config.network = "development";
     config.logger = logger;
-    config.mocha = {
-      reporter: new Reporter(logger)
-    };
     await Server.start();
   });
   after(async function () {

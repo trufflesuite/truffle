@@ -2,7 +2,6 @@ const MemoryLogger = require("../MemoryLogger");
 const CommandRunner = require("../commandRunner");
 const path = require("path");
 const assert = require("assert");
-const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const Web3 = require("web3");
 
@@ -21,10 +20,6 @@ describe("production", function () {
       config = await sandbox.create(project);
       config.network = "ropsten";
       config.logger = logger;
-      config.mocha = {
-        reporter: new Reporter(logger)
-      };
-
       const provider = new Web3.providers.HttpProvider(
         "http://localhost:8545",
         { keepAlive: false }
@@ -80,9 +75,6 @@ describe("production", function () {
       config = await sandbox.create(project);
       config.network = "fakeRopsten";
       config.logger = logger;
-      config.mocha = {
-        reporter: new Reporter(logger)
-      };
 
       const provider = new Web3.providers.HttpProvider(
         "http://localhost:8545",

@@ -4,7 +4,6 @@ const fs = require("fs");
 const path = require("path");
 const assert = require("assert");
 const Server = require("../server");
-const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const log = console.log;
 
@@ -14,22 +13,14 @@ describe("truffle publish", function () {
   const logger = new MemoryLogger();
 
   before(async function () {
+    this.timeout(10000);
     await Server.start();
+    config = await sandbox.create(project);
+    config.network = "development";
+    config.logger = logger;
   });
   after(async function () {
     await Server.stop();
-  });
-
-  before("set up sandbox", function () {
-    this.timeout(10000);
-    return sandbox.create(project).then(conf => {
-      config = conf;
-      config.network = "development";
-      config.logger = logger;
-      config.mocha = {
-        reporter: new Reporter(logger)
-      };
-    });
   });
 
   // This test only validates package assembly. We expect it to run logic up to the attempt to

@@ -4,7 +4,6 @@ const fs = require("fs");
 const path = require("path");
 const assert = require("assert");
 const Server = require("../server");
-const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 
 describe("truffle exec [ @standalone ]", function () {
@@ -12,23 +11,15 @@ describe("truffle exec [ @standalone ]", function () {
   const project = path.join(__dirname, "../../sources/exec");
   const logger = new MemoryLogger();
 
-  before(async function () {
+  beforeEach(async function () {
+    this.timeout(10000);
+    config = await sandbox.create(project);
+    config.network = "development";
+    config.logger = logger;
     await Server.start();
   });
   after(async function () {
     await Server.stop();
-  });
-
-  beforeEach("set up sandbox", function () {
-    this.timeout(10000);
-    return sandbox.create(project).then(conf => {
-      config = conf;
-      config.network = "development";
-      config.logger = logger;
-      config.mocha = {
-        reporter: new Reporter(logger)
-      };
-    });
   });
 
   it("runs script after compiling", async function () {

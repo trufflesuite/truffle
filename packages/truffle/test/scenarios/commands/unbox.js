@@ -10,15 +10,11 @@ describe("truffle unbox [ @standalone ]", () => {
   let config, tempDir;
   const logger = new MemoryLogger();
 
-  beforeEach("set up config for logger", () => {
+  beforeEach(() => {
     tempDir = tmp.dirSync({ unsafeCleanup: true });
     config = { working_directory: tempDir.name };
     config.logger = logger;
     config = Config.default().merge(config);
-  });
-
-  afterEach("clear working_directory", () => {
-    tempDir.removeCallback();
   });
 
   describe("when run without arguments", () => {

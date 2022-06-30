@@ -2,7 +2,6 @@ const MemoryLogger = require("../MemoryLogger");
 const CommandRunner = require("../commandRunner");
 const path = require("path");
 const assert = require("assert");
-const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 
 const logger = new MemoryLogger();
@@ -23,9 +22,6 @@ describe("truffle develop", function () {
     config = await sandbox.create(project);
     config.network = "development";
     config.logger = logger;
-    config.mocha = {
-      reporter: new Reporter(logger)
-    };
   });
 
   describe("Globals", function () {

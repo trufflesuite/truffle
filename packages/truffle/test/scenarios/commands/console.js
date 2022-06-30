@@ -7,20 +7,17 @@ const sandbox = require("../sandbox");
 const tmp = require("tmp");
 
 describe("truffle console", () => {
-  let config, project;
+  let config;
   const logger = new MemoryLogger();
+  const project = path.join(__dirname, "../../sources/console");
 
-  before(async () => await Server.start());
-  after(async () => await Server.stop());
-
-  project = path.join(__dirname, "../../sources/console");
-
-  before(async function () {
-    this.timeout(10000);
+  before(async () => {
     config = await sandbox.create(project);
     config.network = "development";
     config.logger = logger;
+    await Server.start();
   });
+  after(async () => await Server.stop());
 
   describe("when runs with network option with a config", () => {
     it("displays the network name in the prompt", async () => {

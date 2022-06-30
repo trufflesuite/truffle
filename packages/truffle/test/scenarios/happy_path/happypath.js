@@ -6,28 +6,21 @@ const fs = require("fs");
 const path = require("path");
 const assert = require("assert");
 const Server = require("../server");
-const Reporter = require("../reporter");
 
 describe("Happy path (truffle unbox)", function () {
   let config;
   let options;
   const logger = new MemoryLogger();
 
-  before(async function () {
+  before(async () => {
     await Server.start();
-  });
-  after(async function () {
-    await Server.stop();
-  });
-
-  before("set up sandbox", async () => {
     options = { name: "default", force: true };
     config = await Box.sandbox(options);
     config.network = "development";
     config.logger = logger;
-    config.mocha = {
-      reporter: new Reporter(logger)
-    };
+  });
+  after(async function () {
+    await Server.stop();
   });
 
   it("compiles", async function () {
