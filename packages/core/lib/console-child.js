@@ -23,33 +23,31 @@ global.crypto = {
 const { network, config, url } = yargs(input[0]).argv;
 const detectedConfig = Config.detect({ network, config });
 
-function getGanacheUrl(customConfig) {
-  const ganacheOptions = {
+function getConfiguredNetworkUrl(customConfig) {
+  const configuredNetworkOptions = {
     host: customConfig.host || managedGanacheDefaultHost,
     port: customConfig.port || managedGanacheDefaultPort
   };
-  return `http://${ganacheOptions.host}:${ganacheOptions.port}/`;
+  return `http://${configuredNetworkOptions.host}:${configuredNetworkOptions.port}/`;
 }
 
 let configuredNetwork;
 
 if (url) {
-  // Use "url" to configure network
+  // Use "url" to configure network (implies not "develop")
   configuredNetwork = {
-    network,
     network_id: "*",
     url
   };
 } else {
   // Otherwise derive network settings
-  const customConfig = detectedConfig.networks.develop || {};
+  const customConfig = detectedConfig.networks[network] || {};
 
   configuredNetwork = {
-    network: "develop",
     host: customConfig.host || managedGanacheDefaultHost,
     port: customConfig.port || managedGanacheDefaultPort,
     network_id: customConfig.network_id || managedGanacheDefaultNetworkId,
-    url: getGanacheUrl(customConfig)
+    url: getConfiguredNetworkUrl(customConfig)
   };
 }
 
