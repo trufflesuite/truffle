@@ -6,7 +6,7 @@ const path = require("path");
 const { assert } = require("chai");
 const Server = require("../server");
 
-describe("basic commands on a fresh project", function () {
+describe("truffle compile", function () {
   let config;
   const logger = new MemoryLogger();
   const project = path.join(__dirname, "../../sources/toyProject");
@@ -14,7 +14,6 @@ describe("basic commands on a fresh project", function () {
   before(async () => {
     await Server.start();
     config = await sandbox.create(project);
-    config.network = "development";
     config.logger = logger;
   });
   after(async function () {
@@ -29,12 +28,5 @@ describe("basic commands on a fresh project", function () {
         path.join(config.contracts_build_directory, "Migrations.json")
       )
     );
-  });
-
-  it("runs tests", async function () {
-    this.timeout(70000);
-    await CommandRunner.run("test", config);
-    const output = logger.contents();
-    assert(output.indexOf("0 passing") >= 0);
   });
 });
