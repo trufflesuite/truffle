@@ -1,6 +1,6 @@
 {
   "name": "@truffle/abi-utils",
-  "version": "0.2.13",
+  "version": "0.2.14",
   "description": "Utilities for working with ABIs",
   "license": "MIT",
   "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
@@ -29,7 +29,7 @@
     "fast-check": "^2.12.1"
   },
   "devDependencies": {
-    "@truffle/contract-schema": "^3.4.7",
+    "@truffle/contract-schema": "^3.4.8",
     "@types/faker": "^5.1.2",
     "@types/jest": "27.4.1",
     "@types/jest-json-schema": "^2.1.2",
