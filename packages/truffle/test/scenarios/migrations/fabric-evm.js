@@ -2,7 +2,6 @@ const MemoryLogger = require("../MemoryLogger");
 const CommandRunner = require("../commandRunner");
 const path = require("path");
 const assert = require("assert");
-const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const Web3 = require("web3");
 const { createInterfaceAdapter } = require("@truffle/interface-adapter");
@@ -19,10 +18,6 @@ describe("migrate with [ @fabric-evm ] interface", () => {
     config = await sandbox.create(project);
     config.network = "development";
     config.logger = logger;
-    config.mocha = {
-      reporter: new Reporter(logger)
-    };
-
     const provider = new Web3.providers.HttpProvider("http://localhost:5000", {
       keepAlive: false
     });

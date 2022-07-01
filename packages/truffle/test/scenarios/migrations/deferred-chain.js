@@ -3,7 +3,6 @@ const CommandRunner = require("../commandRunner");
 const path = require("path");
 const assert = require("assert");
 const Server = require("../server");
-const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 
 describe("migrate (empty)", function () {
@@ -15,20 +14,14 @@ describe("migrate (empty)", function () {
   const logger = new MemoryLogger();
 
   before(async function () {
-    await Server.start();
-  });
-  after(async function () {
-    await Server.stop();
-  });
-
-  before(async function () {
     this.timeout(10000);
+    await Server.start();
     config = await sandbox.create(project);
     config.network = "development";
     config.logger = logger;
-    config.mocha = {
-      reporter: new Reporter(logger)
-    };
+  });
+  after(async function () {
+    await Server.stop();
   });
 
   it("Correctly handles control flow on rejection in deployment", async function () {

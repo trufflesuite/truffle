@@ -1,7 +1,6 @@
 const MemoryLogger = require("../MemoryLogger");
 const CommandRunner = require("../commandRunner");
 const assert = require("assert");
-const Reporter = require("../reporter");
 const Server = require("../server");
 const path = require("path");
 const sandbox = require("../sandbox");
@@ -29,9 +28,6 @@ describe("Genesis time config for truffle test, failing tests [ @standalone ]", 
         config = conf;
         config.network = "test";
         config.logger = logger;
-        config.mocha = {
-          reporter: new Reporter(logger)
-        };
       });
     });
 

@@ -4,7 +4,6 @@ const fs = require("fs");
 const path = require("path");
 const assert = require("assert");
 const Server = require("../server");
-const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const log = console.log;
 
@@ -67,9 +66,6 @@ describe("Repeated compilation of Vyper contracts with imports [ @standalone ]",
     config = conf;
     config.network = "development";
     config.logger = logger;
-    config.mocha = {
-      reporter: new Reporter(logger)
-    };
 
     // create artifact path array
     artifactPaths = names.map(name => {

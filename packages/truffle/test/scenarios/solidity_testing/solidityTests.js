@@ -4,7 +4,6 @@ const fs = require("fs-extra");
 const path = require("path");
 const assert = require("assert");
 const Server = require("../server");
-const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 
 describe("Solidity Tests", function () {
@@ -21,9 +20,6 @@ describe("Solidity Tests", function () {
     config = await sandbox.create(path.join(__dirname, "../../sources/init"));
     config.logger = logger;
     config.network = "development";
-    config.mocha = {
-      reporter: new Reporter(logger)
-    };
     const from = path.join(__dirname, file);
 
     await fs.ensureDir(config.test_directory);

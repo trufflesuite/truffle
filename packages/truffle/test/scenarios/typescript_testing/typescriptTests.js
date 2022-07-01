@@ -2,7 +2,6 @@ const { default: Box } = require("@truffle/box");
 const MemoryLogger = require("../MemoryLogger");
 const CommandRunner = require("../commandRunner");
 const assert = require("assert");
-const Reporter = require("../reporter");
 const Server = require("../server");
 
 describe("Typescript Tests", () => {
@@ -11,20 +10,14 @@ describe("Typescript Tests", () => {
   let options;
 
   before(async function () {
-    await Server.start();
-  });
-  after(async function () {
-    await Server.stop();
-  });
-
-  before("set up sandbox", async function () {
     options = { name: "default#typescript", force: true };
     config = await Box.sandbox(options);
     config.logger = logger;
     config.network = "development";
-    config.mocha = {
-      reporter: new Reporter(logger)
-    };
+    await Server.start();
+  });
+  after(async function () {
+    await Server.stop();
   });
 
   describe("testing contract behavior", () => {

@@ -4,7 +4,6 @@ const fse = require("fs-extra");
 const path = require("path");
 const assert = require("assert");
 const Server = require("../server");
-const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 
 const TEST = `
@@ -34,9 +33,6 @@ describe("Stack tracing", function () {
     config = await sandbox.create(path.join(__dirname, "../../sources/init"));
     config.network = "development";
     config.logger = logger;
-    config.mocha = {
-      reporter: new Reporter(logger)
-    };
     await fse.ensureDir(config.test_directory);
     await fse.ensureDir(config.contracts_directory);
     await fse.ensureDir(config.migrations_directory);

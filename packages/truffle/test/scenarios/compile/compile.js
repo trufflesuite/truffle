@@ -3,7 +3,6 @@ const MemoryLogger = require("../MemoryLogger");
 const path = require("path");
 const assert = require("assert");
 const Server = require("../server");
-const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const fse = require("fs-extra");
 const { connect } = require("@truffle/db");
@@ -77,9 +76,6 @@ describe("repeated compilation of contracts with inheritance [ @standalone ]", f
     config = await sandbox.create(project);
     config.network = "development";
     config.logger = logger;
-    config.mocha = {
-      reporter: new Reporter(logger)
-    };
 
     // create artifact path array
     artifactPaths = names.map(name => {

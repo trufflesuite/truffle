@@ -3,7 +3,6 @@ const CommandRunner = require("../commandRunner");
 const path = require("path");
 const assert = require("assert");
 const Server = require("../server");
-const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 
 describe("Solidity Imports [ @standalone ]", function () {
@@ -46,16 +45,11 @@ describe("Solidity Imports [ @standalone ]", function () {
    */
 
   describe("success", function () {
-    before(function () {
+    before(async function () {
       this.timeout(10000);
-      return sandbox.create(project, "truffleproject").then(conf => {
-        config = conf;
-        config.network = "development";
-        config.logger = logger;
-        config.mocha = {
-          reporter: new Reporter(logger)
-        };
-      });
+      config = await sandbox.create(project, "truffleproject");
+      config.network = "development";
+      config.logger = logger;
     });
 
     it("resolves solidity imports located outside the working directory", async function () {
@@ -73,16 +67,11 @@ describe("Solidity Imports [ @standalone ]", function () {
   });
 
   describe("failure", function () {
-    before(function () {
+    before(async function () {
       this.timeout(10000);
-      return sandbox.create(project, "errorproject").then(conf => {
-        config = conf;
-        config.network = "development";
-        config.logger = logger;
-        config.mocha = {
-          reporter: new Reporter(logger)
-        };
-      });
+      config = await sandbox.create(project, "errorproject");
+      config.network = "development";
+      config.logger = logger;
     });
 
     it("exposes compile error if an import is not found", async function () {

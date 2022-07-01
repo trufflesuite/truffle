@@ -4,7 +4,6 @@ const fs = require("fs-extra");
 const path = require("path");
 const assert = require("assert");
 const Ganache = require("ganache");
-const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 
 describe("Cyclic Dependencies [ @standalone ]", function () {
@@ -23,9 +22,6 @@ describe("Cyclic Dependencies [ @standalone ]", function () {
           gasLimit: config.gas
         })
       }
-    };
-    config.mocha = {
-      reporter: new Reporter(logger)
     };
   });
 
