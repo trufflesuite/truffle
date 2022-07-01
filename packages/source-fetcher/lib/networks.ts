@@ -25,6 +25,7 @@ export const networkNamesById: { [id: number]: string } = {
   43113: "fuji-avalanche",
   11111: "wagmi-avalanche",
   53935: "dfk-avalanche",
+  432201: "dexalot-avalanche",
   335: "testnet-dfk-avalance",
   40: "telos",
   41: "testnet-telos",
@@ -64,7 +65,12 @@ export const networkNamesById: { [id: number]: string } = {
   534: "candle",
   192837465: "gather",
   486217935: "devnet-gather",
-  356256156: "testnet-gather"
+  356256156: "testnet-gather",
+  246: "energyweb",
+  73799: "volta-energyweb",
+  71402: "godwoken", //not presently supported by either fetcher, but...
+  71401: "testnet-godwoken"
+  //I'm not including crystaleum as it has network ID different from chain ID
 };
 
 export const networksByName: Types.SupportedNetworks = Object.fromEntries(
