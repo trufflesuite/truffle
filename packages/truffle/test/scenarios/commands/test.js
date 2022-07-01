@@ -23,6 +23,6 @@ describe("truffle test", function () {
     this.timeout(70000);
     await CommandRunner.run("test", config);
     const output = logger.contents();
-    assert(output.indexOf("0 passing") >= 0);
+    assert(output.includes("1 passing"));
   });
 });
