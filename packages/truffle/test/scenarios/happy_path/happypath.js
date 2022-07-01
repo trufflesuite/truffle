@@ -1,7 +1,6 @@
 const sandbox = require("../sandbox");
 const MemoryLogger = require("../MemoryLogger");
 const CommandRunner = require("../commandRunner");
-const contract = require("@truffle/contract");
 const fs = require("fs");
 const path = require("path");
 const { assert } = require("chai");
@@ -30,18 +29,6 @@ describe("basic commands on a fresh project", function () {
         path.join(config.contracts_build_directory, "Migrations.json")
       )
     );
-  });
-
-  it("migrates", async function () {
-    this.timeout(50000);
-    await CommandRunner.run("migrate", config);
-    const Migrations = contract(
-      require(path.join(config.contracts_build_directory, "Migrations.json"))
-    );
-    Migrations.setProvider(config.provider);
-
-    const instance = await Migrations.deployed();
-    assert.isNotNull(instance.address);
   });
 
   it("runs tests", async function () {
