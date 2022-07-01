@@ -126,16 +126,11 @@ describe("truffle migrate --describe-json", () => {
     describe("without existing migration (i.e. clean slate)", () => {
       let statuses = [];
 
-      before("before all setup", done => {
+      before(async () => {
         projectPath = path.join(__dirname, "../../sources/migrations/init");
-        sandbox
-          .create(projectPath)
-          .then(conf => {
-            config = conf;
-            config.network = "development";
-            config.logger = logger;
-          })
-          .then(done);
+        config = await sandbox.create(projectPath);
+        config.network = "development";
+        config.logger = logger;
       });
 
       it("runs the migration without throwing", async () => {
