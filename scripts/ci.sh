@@ -22,7 +22,8 @@ run_geth() {
 		--dev \
 		--dev.period 0 \
 		--allow-insecure-unlock \
-		js ./scripts/geth-accounts.js \
+		--preload ./scripts/geth-accounts.js \
+		console
 		>/dev/null &
 }
 
