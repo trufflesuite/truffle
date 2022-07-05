@@ -221,7 +221,7 @@ const Utils = {
    * `bignumber.js`.
    * @param  {BigNumber} bignum            an ethers.js BigNumber (use bigNumberify)
    * @param  {Number}    decimal           a number which has 0+ decimal places
-   * @param  {Number}    [maxPrecision=5]  the max number of signficant figures
+   * @param  {Number}    [maxPrecision=5]  the max number of significant figures
    *                                       `decimal` can have. (default: 5)
    * @return {BigNumber}                   floor(bignum * decimal)
    */
