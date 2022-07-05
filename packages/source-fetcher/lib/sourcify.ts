@@ -36,8 +36,8 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
 
   private static readonly supportedNetworks = new Set([
     "mainnet",
-    "ropsten",
-    "kovan",
+    "ropsten", //can no longer verify but can still fetch existing
+    "kovan", //can no longer verify but can still fetch existing
     "rinkeby",
     "goerli",
     "kovan",
@@ -61,6 +61,7 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "wagmi-avalanche",
     "dfk-avalanche",
     "testnet-dfk-avalanche",
+    "dexalot-avalanche",
     "telos",
     "testnet-telos",
     "ubiq",
@@ -89,7 +90,12 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "candle",
     "gather",
     "devnet-gather",
-    "testnet-gather"
+    "testnet-gather",
+    "energyweb",
+    "volta-energyweb",
+    //sourcify does *not* support godwoken mainnet...?
+    "testnet-godwoken"
+    //I'm excluding crystaleum as it has network ID different from chain ID
   ]);
 
   constructor(networkId: number) {
