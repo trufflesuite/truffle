@@ -6,11 +6,12 @@ set -o errexit
 run_geth() {
 	docker run \
 		-v /$PWD/scripts:/scripts \
+		-t \
 		-d \
 		-p 8545:8545 \
 		-p 8546:8546 \
 		-p 30303:30303 \
-		ethereum/client-go:v1.10.19 \
+		ethereum/client-go:stable \
 		--http \
 		--http.addr '0.0.0.0' \
 		--http.port 8545 \
@@ -22,7 +23,8 @@ run_geth() {
 		--dev \
 		--dev.period 0 \
 		--allow-insecure-unlock \
-		js ./scripts/geth-accounts.js \
+		--preload ./scripts/geth-accounts.js \
+		console \
 		>/dev/null &
 }
 
