@@ -21,9 +21,18 @@ jobs:
       - run: npm install -g yarn
       - run: yarn install --ignore-scripts --ignore-engines
       - run: test -z "$(git diff)" || (echo 'Please run yarn and commit all changes to yarn.lock'; false)
-
+      - uses: 8398a7/action-slack@v3
+        with:
+          channel: '#truffle-ci-notifications'
+          status: ${{ job.status }}
+          fields: commit,author,pullRequest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: failure()
 
   build:
+    needs: yarncheck
     strategy:
       matrix:
         platform: [ubuntu-latest]
@@ -44,14 +53,19 @@ jobs:
       run: npm -g install npm@6
 
     - run: npm install -g yarn
+
     - run: yarn bootstrap
+    
+    - run: yarn depcheck || (echo 'Please add missing dependencies to appropriate package'; false)
+    
     - run: ${{ matrix.env }} yarn ci
       env:
         CI: true
-    - uses: 8398a7/action-slack@v1.1.1
+    - uses: 8398a7/action-slack@v3
       with:
-        type: failure
-        failedMenthon: ""
+        channel: '#truffle-ci-notifications'
+        status: ${{ job.status }}
+        fields: commit,author,pullRequest
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -60,13 +74,11 @@ jobs:
   slack_notification:
     needs: [yarncheck, build]
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: 8398a7/action-slack@v3
-        continue-on-error: true
         with:
           channel: '#truffle-ci-notifications'
-          status: ${{ job.status }}
+          status: success
           fields: commit,author,pullRequest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
