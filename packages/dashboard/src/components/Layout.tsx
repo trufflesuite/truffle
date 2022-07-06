@@ -1,10 +1,10 @@
 import { AppShell } from "@mantine/core";
 import { Outlet } from "react-router-dom";
+import Nav from "src/components/Nav";
 
 function Layout(): JSX.Element {
   return (
-    <AppShell>
-      <nav>nav</nav>
+    <AppShell navbar={<Nav />}>
       <Outlet />
     </AppShell>
   );
