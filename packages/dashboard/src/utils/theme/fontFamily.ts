@@ -1,3 +1,3 @@
-const fontFamily: string = "sans-serif";
+const fontFamily: string = "'Open Sans', serif";
 
 export default fontFamily;

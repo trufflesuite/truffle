@@ -11,6 +11,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "src/components/Layout";
 import Txs from "src/components/Txs";
 import Contracts from "src/components/Contracts";
+import OpenSans from "src/components/fonts/OpenSans";
 import Palette from "src/components/Palette";
 
 function App(): JSX.Element {
@@ -35,6 +36,7 @@ function App(): JSX.Element {
         colorScheme={colorScheme}
         toggleColorScheme={toggleColorScheme}
       >
+        <OpenSans />
         <MantineProvider
           theme={{ colorScheme, ...theme }}
           emotionOptions={{ key: EMOTION_KEY }}
