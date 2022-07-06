@@ -2,14 +2,11 @@ import type { MnemonicPhrase, PrivateKey } from "./types";
 import type { ConstructorArguments } from "./ConstructorArguments";
 import type * as Constructor from "./Constructor";
 import type * as LegacyConstructor from "./LegacyConstructor";
-import { validateMnemonic } from "ethereum-cryptography/bip39";
-import { wordlist } from "ethereum-cryptography/bip39/wordlists/english";
 
 // check that the first argument is a mnemonic phrase
 const isMnemonicPhrase = (
   credentials: LegacyConstructor.Credentials
-): credentials is MnemonicPhrase =>
-  typeof credentials === "string" && validateMnemonic(credentials, wordlist);
+): credentials is MnemonicPhrase => typeof credentials === "string";
 
 // check that the first argument is a list of private keys
 const isPrivateKeys = (
@@ -20,29 +17,31 @@ const isPrivateKeys = (
 const isPrivateKey = (
   credentials: LegacyConstructor.Credentials
 ): credentials is PrivateKey =>
-  !isPrivateKeys(credentials) && !isMnemonicPhrase(credentials);
+  typeof credentials === "string" &&
+  credentials.length === 64 &&
+  // this is added since parseInt(mnemonic) should equal NaN and private keys
+  // should parse into a valid number
+  parseInt(credentials) !== NaN;
 
 // turn polymorphic first argument into { mnemonic } or { privateKeys }
 const getSigningAuthorityOptions = (
   credentials: LegacyConstructor.Credentials
 ): Constructor.SigningAuthority => {
-  if (isMnemonicPhrase(credentials)) {
+  if (isPrivateKey(credentials)) {
     return {
-      mnemonic: {
-        phrase: credentials
-      }
+      privateKeys: [credentials]
     };
   } else if (isPrivateKeys(credentials)) {
     return {
       privateKeys: credentials
     };
-  } else if (isPrivateKey(credentials)) {
-    // if(...) included for explicitness
+  } else if (isMnemonicPhrase(credentials)) {
     return {
-      privateKeys: [credentials]
+      mnemonic: {
+        phrase: credentials
+      }
     };
   } else {
-    // this won't be reached until/unless we validate private key(s)
     throw new Error(
       `First argument to new HDWalletProvider() must be a mnemonic phrase, a ` +
         `single private key, or a list of private keys. ` +
