@@ -2,7 +2,7 @@ import { Text } from "@mantine/core";
 import type { MantineSize, MantineSizes } from "@mantine/core";
 
 const logoTextSizes: MantineSizes = {
-  xs: 14,
+  xs: 18,
   sm: 18,
   md: 24,
   lg: 32,
