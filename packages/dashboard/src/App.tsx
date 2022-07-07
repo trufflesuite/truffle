@@ -1,10 +1,6 @@
-import { useEffect } from "react";
-import { EMOTION_KEY, COLOR_SCHEME_KEY } from "src/utils/constants";
-// Mantine
-import { MantineProvider, ColorSchemeProvider } from "@mantine/core";
-import type { ColorScheme } from "@mantine/core";
-import { useColorScheme, useLocalStorage } from "@mantine/hooks";
-import theme from "src/utils/theme";
+// Wrappers
+import MantineWrapper from "src/components/wrappers/MantineWrapper";
+import ColorSchemeWrapper from "src/components/wrappers/ColorSchemeWrapper";
 // Router
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 // Components
@@ -15,35 +11,13 @@ import OpenSans from "src/components/fonts/OpenSans";
 import Palette from "src/components/Palette";
 
 function App(): JSX.Element {
-  // Color scheme
-  // Priority: Local storage > system > light > dark
-  const preferredColorScheme = useColorScheme();
-  const [colorScheme, setColorScheme] = useLocalStorage<ColorScheme>({
-    key: COLOR_SCHEME_KEY
-  });
-  const toggleColorScheme = (val?: ColorScheme) => {
-    setColorScheme(val || (colorScheme === "light" ? "dark" : "light"));
-  };
-  useEffect(() => {
-    if (!colorScheme && preferredColorScheme === "dark") {
-      setColorScheme("dark");
-    }
-  }, [preferredColorScheme, colorScheme, setColorScheme]);
-
   return (
     <div id="app">
-      <ColorSchemeProvider
-        colorScheme={colorScheme}
-        toggleColorScheme={toggleColorScheme}
-      >
+      <ColorSchemeWrapper>
         <OpenSans />
-        <MantineProvider
-          theme={{ colorScheme, ...theme }}
-          emotionOptions={{ key: EMOTION_KEY }}
-          withGlobalStyles
-          withNormalizeCSS
-        >
+        <MantineWrapper>
           <BrowserRouter>
+            {/*  Everything maps to /txs except for /contracts  */}
             <Routes>
               <Route path="/" element={<Layout />}>
                 <Route index element={<Navigate to="/txs" replace />} />
@@ -54,8 +28,8 @@ function App(): JSX.Element {
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </BrowserRouter>
-        </MantineProvider>
-      </ColorSchemeProvider>
+        </MantineWrapper>
+      </ColorSchemeWrapper>
     </div>
   );
 }
