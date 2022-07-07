@@ -1,14 +1,18 @@
-import { Navbar } from "@mantine/core";
-import Logo from "src/components/common/Logo";
+import { Navbar, Divider } from "@mantine/core";
+import Top from "src/components/composed/Sidebar/Top";
+import Middle from "src/components/composed/Sidebar/Middle";
+import Bottom from "src/components/composed/Sidebar/Bottom";
 
-const width = { base: 316 };
+const width = { base: 366 };
 
 function Sidebar(): JSX.Element {
   return (
-    <Navbar width={width} py="lg">
-      <Navbar.Section>
-        <Logo />
-      </Navbar.Section>
+    <Navbar width={width} px="sm">
+      <Top />
+      <Divider />
+      <Middle />
+      <Divider />
+      <Bottom />
     </Navbar>
   );
 }
