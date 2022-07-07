@@ -4,11 +4,11 @@ import ColorSchemeWrapper from "src/components/wrappers/ColorSchemeWrapper";
 // Router
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 // Components
-import Layout from "src/components/Layout";
-import Txs from "src/components/Txs";
-import Contracts from "src/components/Contracts";
+import Layout from "src/components/composed/Layout";
+import Txs from "src/components/composed/Txs";
+import Contracts from "src/components/composed/Contracts";
+import Palette from "src/components/composed/Palette";
 import OpenSans from "src/components/fonts/OpenSans";
-import Palette from "src/components/Palette";
 
 function App(): JSX.Element {
   return (
@@ -27,6 +27,7 @@ function App(): JSX.Element {
               <Route path="colors" element={<Palette />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
+            {/*    */}
           </BrowserRouter>
         </MantineWrapper>
       </ColorSchemeWrapper>
