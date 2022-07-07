@@ -22,8 +22,9 @@ function LogoText({ size }: LogoTextProps): JSX.Element {
     <Text
       sx={{
         fontSize: size,
-        fontWeight: 900
+        userSelect: "none"
       }}
+      weight={600}
     >
       {/* TODO: Just "DASHBOARD" on small window */}
       TRUFFLE DASHBOARD

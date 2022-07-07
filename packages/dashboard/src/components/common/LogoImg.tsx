@@ -19,7 +19,18 @@ function LogoImg({ size }: LogoImgProps): JSX.Element {
     size = logoImgSizes[size || "sm"];
   }
 
-  return <Image src={imgSrc} alt="Truffle logo" width={size} height={size} />;
+  return (
+    <Image
+      src={imgSrc}
+      alt="Truffle logo"
+      width={size}
+      height={size}
+      sx={{
+        userSelect: "none",
+        pointerEvents: "none"
+      }}
+    />
+  );
 }
 
 export default LogoImg;
