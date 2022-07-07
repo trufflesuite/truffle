@@ -25,7 +25,7 @@ jobs:
         with:
           channel: '#truffle-ci-notifications'
           status: ${{ job.status }}
-          fields: commit,author,pullRequest
+          fields: job,commit,author,pullRequest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -65,9 +65,10 @@ jobs:
       with:
         channel: '#truffle-ci-notifications'
         status: ${{ job.status }}
-        fields: commit,author,pullRequest
+        fields: job,commit,author,pullRequest
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        MATRIX_CONTEXT: ${{ toJson(matrix) }} # required for matrix field: job
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       if: failure()
 
