@@ -5744,6 +5744,13 @@
   dependencies:
     spinnies "^0.5.1"
 
+"@trufflesuite/bigint-buffer@1.1.10":
+  version "1.1.10"
+  resolved "https://registry.yarnpkg.com/@trufflesuite/bigint-buffer/-/bigint-buffer-1.1.10.tgz#a1d9ca22d3cad1a138b78baaf15543637a3e1692"
+  integrity sha512-pYIQC5EcMmID74t26GCC67946mgTJFiLXOT/BYozgrd4UEY2JHEGLhWi9cMiQCt5BSqFEvKkCHNnoj82SRjiEw==
+  dependencies:
+    node-gyp-build "4.4.0"
+
 "@trufflesuite/bigint-buffer@1.1.9":
   version "1.1.9"
   resolved "https://registry.yarnpkg.com/@trufflesuite/bigint-buffer/-/bigint-buffer-1.1.9.tgz#e2604d76e1e4747b74376d68f1312f9944d0d75d"
@@ -6264,6 +6271,11 @@
   resolved "https://registry.yarnpkg.com/@types/long/-/long-4.0.1.tgz#459c65fa1867dafe6a8f322c4c51695663cc55e9"
   integrity sha512-5tXH6Bx/kNGd3MgffdmP4dy2Z+G4eaXw0SE81Tq3BNadtnMR5/ySMzX4SLEzHJzSmPNn4HIdpQsBvXMUykr58w==
 
+"@types/lru-cache@5.1.1":
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/@types/lru-cache/-/lru-cache-5.1.1.tgz#c48c2e27b65d2a153b19bfc1a317e30872e01eef"
+  integrity sha512-ssE3Vlrys7sdIzs5LOxCzTVMsU7i9oa/IaW92wF32JFb3CVczqOkru2xspuKczHEbG3nvmPY7IFqVmGGHdNbYw==
+
 "@types/mime@*":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@types/mime/-/mime-2.0.0.tgz#5a7306e367c539b9f6543499de8dd519fac37a8b"
@@ -6630,6 +6642,11 @@
   integrity sha512-+ZjSA8ELlOp8SlKi0YLB2tz9d5iPNEmOBd+8Rz21wTMdaXQIa9b6TEnD6l5qKOCypE7FSyPyck12qZJxSDNoog==
   dependencies:
     "@types/node" "*"
+
+"@types/seedrandom@3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@types/seedrandom/-/seedrandom-3.0.1.tgz#1254750a4fec4aff2ebec088ccd0bb02e91fedb4"
+  integrity sha512-giB9gzDeiCeloIXDgzFBCgjj1k4WxcDrZtGl6h1IqmUPlxF+Nx8Ve+96QCyDZ/HseB/uvDsKbpib9hU5cU53pw==
 
 "@types/semver@^6.0.0":
   version "6.2.0"
@@ -15497,12 +15514,15 @@ ganache-cli@^6.1.0:
     source-map-support "0.5.12"
     yargs "13.2.4"
 
-ganache@7.2.0:
-  version "7.2.0"
-  resolved "https://registry.yarnpkg.com/ganache/-/ganache-7.2.0.tgz#2da7b0c609c5b0aff36d4e5216568a34fa1724f4"
-  integrity sha512-KsKysVeVN6CALALOkIPSIxNZbl5s2/DE6Z0lFpj05gH1XsvYMit3djP4LxpxdjUfSSyb9gIPEOzqMw7v56ihJg==
+ganache@7.3.2:
+  version "7.3.2"
+  resolved "https://registry.yarnpkg.com/ganache/-/ganache-7.3.2.tgz#f2cd9df8244851f3d62c19cb5a71cc0c782932eb"
+  integrity sha512-X1IXfqrFQuiMqrONvb4zQqXwjf2Skg8iuofYlFrzWnCI+JZN2hJA5V5Egu/go3YgD8IRpQyLP/Jny0fZM0A5UA==
   dependencies:
-    "@trufflesuite/bigint-buffer" "1.1.9"
+    "@trufflesuite/bigint-buffer" "1.1.10"
+    "@types/bn.js" "^5.1.0"
+    "@types/lru-cache" "5.1.1"
+    "@types/seedrandom" "3.0.1"
     emittery "0.10.0"
     keccak "3.0.1"
     leveldown "6.1.0"
@@ -21327,6 +21347,11 @@ node-gyp-build@4.3.0, node-gyp-build@^4.3.0:
   version "4.3.0"
   resolved "https://registry.yarnpkg.com/node-gyp-build/-/node-gyp-build-4.3.0.tgz#9f256b03e5826150be39c764bf51e993946d71a3"
   integrity sha512-iWjXZvmboq0ja1pUGULQBexmxq8CV4xBhX7VDOTbL7ZR4FOowwY/VOtRxBN/yKxmdGoIp4j5ysNT4u3S2pDQ3Q==
+
+node-gyp-build@4.4.0:
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/node-gyp-build/-/node-gyp-build-4.4.0.tgz#42e99687ce87ddeaf3a10b99dc06abc11021f3f4"
+  integrity sha512-amJnQCcgtRVw9SvoebO3BKGESClrfXGCUTX9hSn1OuGQTQBOZmVd0Z0OlecpuRksKvbsUqALE8jls/ErClAPuQ==
 
 node-gyp-build@^4.2.0:
   version "4.2.2"
