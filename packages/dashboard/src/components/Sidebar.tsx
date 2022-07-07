@@ -3,9 +3,9 @@ import Logo from "src/components/common/Logo";
 
 const width = { base: 316 };
 
-function Nav(): JSX.Element {
+function Sidebar(): JSX.Element {
   return (
-    <Navbar width={width} p="xs">
+    <Navbar width={width} py="lg">
       <Navbar.Section>
         <Logo />
       </Navbar.Section>
@@ -13,4 +13,4 @@ function Nav(): JSX.Element {
   );
 }
 
-export default Nav;
+export default Sidebar;
