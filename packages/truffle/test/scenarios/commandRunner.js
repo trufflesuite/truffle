@@ -54,13 +54,11 @@ module.exports = {
     displayHost
   } = {}) {
     const cmdLine = `${this.getExecString()} ${executableCommand} ${executableArgs}`;
-    let readyPrompt;
 
-    if (executableCommand === "debug") {
-      readyPrompt = `debug(${displayHost})>`;
-    } else {
-      readyPrompt = `truffle(${displayHost})>`;
-    }
+    const readyPrompt =
+      executableCommand === "debug"
+        ? `debug(${displayHost})>`
+        : `truffle(${displayHost})>`;
 
     let seenChildPrompt = false;
     let outputBuffer = "";

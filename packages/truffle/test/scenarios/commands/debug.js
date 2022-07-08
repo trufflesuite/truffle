@@ -19,7 +19,7 @@ describe("truffle debug", () => {
   });
   after(async () => await Server.stop());
 
-  describe("when runs with network option with a config", () => {
+  describe("when run with network option with a config", () => {
     it("displays the network name in the prompt", async () => {
       const networkName = config.network;
       await CommandRunner.runInREPL({
@@ -39,7 +39,7 @@ describe("truffle debug", () => {
     }).timeout(90000);
   });
 
-  describe("when runs with url option", () => {
+  describe("when run with url option", () => {
     const url = "http://localhost:8545";
     const parsedUrl = new URL(url);
     const displayHost = parsedUrl.host;
