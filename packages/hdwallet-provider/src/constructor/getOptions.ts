@@ -6,7 +6,9 @@ import type * as LegacyConstructor from "./LegacyConstructor";
 // check that the first argument is a mnemonic phrase
 const isMnemonicPhrase = (
   credentials: LegacyConstructor.Credentials
-): credentials is MnemonicPhrase => typeof credentials === "string";
+): credentials is MnemonicPhrase => {
+  return typeof credentials === "string" && credentials.includes(" ");
+};
 
 // check that the first argument is a list of private keys
 const isPrivateKeys = (
@@ -19,9 +21,11 @@ const isPrivateKey = (
 ): credentials is PrivateKey =>
   typeof credentials === "string" &&
   credentials.length === 64 &&
-  // this is added since parseInt(mnemonic) should equal NaN and private keys
-  // should parse into a valid number
-  parseInt(credentials) !== NaN;
+  // this is added since parseInt(mnemonic) should equal NaN (unless it starts
+  // with a-f) and private keys should parse into a valid number - this will
+  // also parse with the largest hex value, namely "f" * 64
+  parseInt(credentials, 16) !== NaN &&
+  !credentials.includes(" ");
 
 // turn polymorphic first argument into { mnemonic } or { privateKeys }
 const getSigningAuthorityOptions = (
