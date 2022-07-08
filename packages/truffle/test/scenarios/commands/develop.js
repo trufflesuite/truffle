@@ -78,6 +78,25 @@ describe("truffle develop", function () {
     );
   });
 
+  it("returns values after assignments with await", async function () {
+    this.timeout(70000);
+    const input = "x = await Promise.resolve('This is an example of a string')";
+
+    await CommandRunner.runInREPL({
+      inputCommands: [input],
+      config,
+      executableCommand: "develop",
+      displayHost: "develop"
+    });
+
+    const output = logger.contents();
+    const expectedValue = "This is an example of a string";
+    assert(
+      output.includes(expectedValue),
+      `Expected "${expectedValue}" in output:\n${formatLines(output)}`
+    );
+  });
+
   it("loads snippets", async function () {
     this.timeout(70000);
 
