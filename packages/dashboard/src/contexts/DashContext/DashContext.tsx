@@ -1,5 +1,11 @@
 import { createContext } from "react";
+import { stateType, actionType } from "src/contexts/DashContext";
 
-const DashContext = createContext({});
+type contextValue = {
+  state: stateType;
+  dispatch: React.Dispatch<actionType>;
+};
+
+const DashContext = createContext<contextValue | null>(null);
 
 export default DashContext;

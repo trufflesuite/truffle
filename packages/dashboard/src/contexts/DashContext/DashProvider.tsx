@@ -1,5 +1,6 @@
-import { useReducer } from "react";
+import { useReducer, useEffect } from "react";
 import { useDidUpdate } from "@mantine/hooks";
+import { useAccount } from "wagmi";
 import { DashboardMessageBusClient } from "@truffle/dashboard-message-bus-client";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { Message } from "@truffle/dashboard-message-bus-common";
@@ -11,6 +12,7 @@ type DashProviderProps = {
 };
 
 function DashProvider({ children }: DashProviderProps): JSX.Element {
+  const { isConnected } = useAccount();
   const [state, dispatch] = useReducer(reducer, initialState);
 
   console.debug({ state });
@@ -34,6 +36,16 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
 
     init();
   }, []);
+
+  useEffect(() => {
+    dispatch({
+      type: "set-notice",
+      data: {
+        show: !isConnected,
+        type: "CONNECT"
+      }
+    });
+  }, [isConnected]);
 
   return (
     <DashContext.Provider value={{ state, dispatch }}>

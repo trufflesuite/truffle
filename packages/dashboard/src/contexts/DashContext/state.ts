@@ -9,9 +9,14 @@ import {
   isDebugMessage
 } from "@truffle/dashboard-message-bus-common";
 import type { Message } from "@truffle/dashboard-message-bus-common";
+import type noticeContentType from "src/components/composed/Notice/noticeContentType";
 
 type actionType =
   | { type: "set-client"; data: DashboardMessageBusClient }
+  | {
+      type: "set-notice";
+      data: { show: boolean; type: noticeContentType | null };
+    }
   | { type: "handle-message"; data: ReceivedMessageLifecycle<Message> };
 
 type stateType = {
@@ -19,6 +24,10 @@ type stateType = {
   port: number;
   client: DashboardMessageBusClient | null;
   providerMessages: Map<number, ReceivedMessageLifecycle<Message>>;
+  notice: {
+    show: boolean;
+    type: noticeContentType | null;
+  };
 };
 
 const initialState: stateType = {
@@ -28,7 +37,11 @@ const initialState: stateType = {
       ? 24012
       : Number(window.location.port),
   client: null,
-  providerMessages: new Map()
+  providerMessages: new Map(),
+  notice: {
+    show: false,
+    type: "LOADING"
+  }
 };
 
 const reducer = (state: stateType, action: actionType): stateType => {
@@ -36,6 +49,8 @@ const reducer = (state: stateType, action: actionType): stateType => {
   switch (type) {
     case "set-client":
       return { ...state, client: data };
+    case "set-notice":
+      return { ...state, notice: data };
     case "handle-message":
       const lifecycle = data;
       const message = lifecycle.message;
@@ -62,3 +77,4 @@ const reducer = (state: stateType, action: actionType): stateType => {
 };
 
 export { initialState, reducer };
+export type { actionType, stateType };
