@@ -4,6 +4,8 @@ import Ganache from "ganache";
 import { describe, it } from "mocha";
 
 const { isValidProvider } = WalletProvider;
+const mnemonic =
+  "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
 
 describe("HD Wallet Provider Validator", () => {
   it("fails missing protocol", () => {
@@ -17,7 +19,7 @@ describe("HD Wallet Provider Validator", () => {
   it("throws a meaningful error", () => {
     const badUrl = "localhost/v1/badbeef";
     try {
-      new WalletProvider("", badUrl, 0, 100);
+      new WalletProvider(mnemonic, badUrl, 0, 100);
       assert.fail("did not throw!");
     } catch (e) {
       const expectedMessage = [
@@ -32,7 +34,7 @@ describe("HD Wallet Provider Validator", () => {
   it("throws a meaningful error when url is without slashes or slash", () => {
     const badUrl = "http:localhost/v1/badbeef";
     try {
-      new WalletProvider("", badUrl, 0, 100);
+      new WalletProvider(mnemonic, badUrl, 0, 100);
       assert.fail("did not throw!");
     } catch (e) {
       const expectedMessage = [
