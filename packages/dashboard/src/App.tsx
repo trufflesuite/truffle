@@ -1,6 +1,7 @@
 // Wrappers
 import MantineWrapper from "src/components/wrappers/MantineWrapper";
 import ColorSchemeWrapper from "src/components/wrappers/ColorSchemeWrapper";
+import WagmiWrapper from "./components/wrappers/WagmiWrapper";
 // Router
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 // Components
@@ -16,19 +17,21 @@ function App(): JSX.Element {
       <ColorSchemeWrapper>
         <OpenSans />
         <MantineWrapper>
-          <BrowserRouter>
-            {/*  Everything maps to /txs except for /contracts  */}
-            <Routes>
-              <Route path="/" element={<Layout />}>
-                <Route index element={<Navigate to="/txs" replace />} />
-                <Route path="txs" element={<Txs />} />
-                <Route path="contracts" element={<Contracts />} />
-              </Route>
-              <Route path="colors" element={<Palette />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-            {/*    */}
-          </BrowserRouter>
+          <WagmiWrapper>
+            <BrowserRouter>
+              {/*  Everything maps to /txs except for /contracts  */}
+              <Routes>
+                <Route path="/" element={<Layout />}>
+                  <Route index element={<Navigate to="/txs" replace />} />
+                  <Route path="txs" element={<Txs />} />
+                  <Route path="contracts" element={<Contracts />} />
+                </Route>
+                <Route path="colors" element={<Palette />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+              {/*    */}
+            </BrowserRouter>
+          </WagmiWrapper>
         </MantineWrapper>
       </ColorSchemeWrapper>
     </div>
