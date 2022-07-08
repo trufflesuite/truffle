@@ -58,7 +58,7 @@
     "chai": "^4.2.0",
     "fast-check": "^2.14.0",
     "fs-extra": "^9.1.0",
-    "ganache": "7.2.0",
+    "ganache": "7.3.2",
     "jest": "27.5.1",
     "jest-fast-check": "^1.0.2",
     "jest-transform-stealthy-require": "^1.0.0",
