@@ -11,7 +11,7 @@ const isMnemonicLike = (
 };
 
 // check that the first argument is a list of private keys
-const isPrivateKeys = (
+const isPrivateKeysLike = (
   credentials: LegacyConstructor.Credentials
 ): credentials is PrivateKey[] => credentials instanceof Array;
 
@@ -35,7 +35,7 @@ const getSigningAuthorityOptions = (
     return {
       privateKeys: [credentials]
     };
-  } else if (isPrivateKeys(credentials)) {
+  } else if (isPrivateKeysLike(credentials)) {
     return {
       privateKeys: credentials
     };
