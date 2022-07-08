@@ -356,6 +356,18 @@ class Console extends EventEmitter {
       assignment = assign
         ? `${assign.trim()} global.${RESULT}; void delete global.${RESULT};`
         : null;
+
+      //finally, if the assignment did not use var, const, or let, make sure to
+      //return the result afterward
+      if (assign) {
+        const bareAssignmentMatch = assign.match(
+          /^\s*([a-zA-Z_$][0-9a-zA-Z_$]*)\s*=\s*/
+        );
+        if (bareAssignmentMatch) {
+          const varName = bareAssignmentMatch[1];
+          assignment += varName;
+        }
+      }
     }
 
     const runScript = script => {
