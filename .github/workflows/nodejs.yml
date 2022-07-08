@@ -56,7 +56,7 @@ jobs:
 
     - run: yarn bootstrap
     
-    - run: yarn depcheck || (echo 'Please add missing dependencies to appropriate package'; false)
+    - run: yarn depcheck
     
     - run: ${{ matrix.env }} yarn ci
       env:
