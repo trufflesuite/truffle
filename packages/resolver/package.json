@@ -39,7 +39,7 @@
     "fs-extra": "^9.1.0",
     "get-installed-path": "^4.0.8",
     "glob": "^7.1.6",
-    "web3-utils": "1.10.0"
+    "web3-utils": "^4.0.3"
   },
   "devDependencies": {
     "@types/node": "~12.12.0",

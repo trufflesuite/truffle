@@ -30,7 +30,7 @@
     "axios": "1.2.4",
     "debug": "^4.3.1",
     "node-abort-controller": "^3.0.1",
-    "web3-utils": "1.10.0"
+    "web3-utils": "^4.0.3"
   },
   "devDependencies": {
     "@types/async-retry": "^1.4.3",

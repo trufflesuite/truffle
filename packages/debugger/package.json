@@ -34,9 +34,8 @@
     "redux": "^3.7.2",
     "redux-saga": "1.0.0",
     "reselect-tree": "^1.3.7",
-    "semver": "7.5.2",
-    "web3": "1.10.0",
-    "web3-eth-abi": "1.10.0"
+    "web3": "^4.0.3",
+    "web3-eth-abi": "^4.0.3"
   },
   "devDependencies": {
     "@jsdevtools/coverage-istanbul-loader": "^3.0.5",

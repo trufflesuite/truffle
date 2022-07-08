@@ -61,7 +61,7 @@
     "shebang-loader": "0.0.1",
     "stream-buffers": "^3.0.1",
     "tmp": "^0.2.1",
-    "web3": "1.10.0",
+    "web3": "^4.0.3",
     "webpack": "^5.73.0",
     "webpack-bundle-analyzer": "^4.6.1",
     "webpack-cli": "^4.10.0",
