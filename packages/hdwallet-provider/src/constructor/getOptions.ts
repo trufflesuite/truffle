@@ -4,7 +4,7 @@ import type * as Constructor from "./Constructor";
 import type * as LegacyConstructor from "./LegacyConstructor";
 
 // check that the first argument is a mnemonic phrase
-const isMnemonicPhrase = (
+const isMnemonicLike = (
   credentials: LegacyConstructor.Credentials
 ): credentials is MnemonicPhrase => {
   return typeof credentials === "string" && credentials.includes(" ");
@@ -16,7 +16,7 @@ const isPrivateKeys = (
 ): credentials is PrivateKey[] => credentials instanceof Array;
 
 // check that the first argument is a single private key (default case for invalid mnemonics)
-const isPrivateKey = (
+const isPrivateKeyLike = (
   credentials: LegacyConstructor.Credentials
 ): credentials is PrivateKey =>
   typeof credentials === "string" &&
@@ -31,7 +31,7 @@ const isPrivateKey = (
 const getSigningAuthorityOptions = (
   credentials: LegacyConstructor.Credentials
 ): Constructor.SigningAuthority => {
-  if (isPrivateKey(credentials)) {
+  if (isPrivateKeyLike(credentials)) {
     return {
       privateKeys: [credentials]
     };
@@ -39,7 +39,7 @@ const getSigningAuthorityOptions = (
     return {
       privateKeys: credentials
     };
-  } else if (isMnemonicPhrase(credentials)) {
+  } else if (isMnemonicLike(credentials)) {
     return {
       mnemonic: {
         phrase: credentials
