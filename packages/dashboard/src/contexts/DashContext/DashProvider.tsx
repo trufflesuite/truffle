@@ -32,9 +32,15 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
       const messageHandler = (lifecycle: ReceivedMessageLifecycle<Message>) =>
         void dispatch({ type: "handle-message", data: lifecycle });
       subscription.on("message", messageHandler);
+
+      // Clean up
+      return () => {
+        subscription.removeAllListeners();
+        client.close();
+      };
     }
 
-    init();
+    return init();
   }, []);
 
   useEffect(() => {
