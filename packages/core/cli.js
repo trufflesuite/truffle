@@ -63,6 +63,15 @@ const command = getCommand({
   options: {},
   noAliases: false
 });
+
+//getCommand() will return null if a command not recognized by truffle is used.
+if (command === null) {
+  console.log(
+    `\`truffle ${inputStrings}\` is not a valid truffle command. Please see \`truffle help\` for available commands.`
+  );
+  process.exit(1);
+}
+
 const options = prepareOptions({
   command,
   inputStrings,

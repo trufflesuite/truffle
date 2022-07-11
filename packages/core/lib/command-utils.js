@@ -47,7 +47,7 @@ const getCommand = ({ inputStrings, options, noAliases }) => {
     }
   }
 
-  if (chosenCommand == null) {
+  if (chosenCommand === null) {
     return null;
   }
 
