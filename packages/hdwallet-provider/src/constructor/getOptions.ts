@@ -2,47 +2,50 @@ import type { MnemonicPhrase, PrivateKey } from "./types";
 import type { ConstructorArguments } from "./ConstructorArguments";
 import type * as Constructor from "./Constructor";
 import type * as LegacyConstructor from "./LegacyConstructor";
-import { validateMnemonic } from "ethereum-cryptography/bip39";
-import { wordlist } from "ethereum-cryptography/bip39/wordlists/english";
 
 // check that the first argument is a mnemonic phrase
-const isMnemonicPhrase = (
+const isMnemonicLike = (
   credentials: LegacyConstructor.Credentials
-): credentials is MnemonicPhrase =>
-  typeof credentials === "string" && validateMnemonic(credentials, wordlist);
+): credentials is MnemonicPhrase => {
+  return typeof credentials === "string" && credentials.includes(" ");
+};
 
 // check that the first argument is a list of private keys
-const isPrivateKeys = (
+const isPrivateKeysLike = (
   credentials: LegacyConstructor.Credentials
 ): credentials is PrivateKey[] => credentials instanceof Array;
 
 // check that the first argument is a single private key (default case for invalid mnemonics)
-const isPrivateKey = (
+const isPrivateKeyLike = (
   credentials: LegacyConstructor.Credentials
 ): credentials is PrivateKey =>
-  !isPrivateKeys(credentials) && !isMnemonicPhrase(credentials);
+  typeof credentials === "string" &&
+  credentials.length === 64 &&
+  // this is added since parseInt(mnemonic) should equal NaN (unless it starts
+  // with a-f) and private keys should parse into a valid number - this will
+  // also parse with the largest hex value, namely "f" * 64
+  parseInt(credentials, 16) !== NaN &&
+  !credentials.includes(" ");
 
 // turn polymorphic first argument into { mnemonic } or { privateKeys }
 const getSigningAuthorityOptions = (
   credentials: LegacyConstructor.Credentials
 ): Constructor.SigningAuthority => {
-  if (isMnemonicPhrase(credentials)) {
+  if (isPrivateKeyLike(credentials)) {
+    return {
+      privateKeys: [credentials]
+    };
+  } else if (isPrivateKeysLike(credentials)) {
+    return {
+      privateKeys: credentials
+    };
+  } else if (isMnemonicLike(credentials)) {
     return {
       mnemonic: {
         phrase: credentials
       }
     };
-  } else if (isPrivateKeys(credentials)) {
-    return {
-      privateKeys: credentials
-    };
-  } else if (isPrivateKey(credentials)) {
-    // if(...) included for explicitness
-    return {
-      privateKeys: [credentials]
-    };
   } else {
-    // this won't be reached until/unless we validate private key(s)
     throw new Error(
       `First argument to new HDWalletProvider() must be a mnemonic phrase, a ` +
         `single private key, or a list of private keys. ` +

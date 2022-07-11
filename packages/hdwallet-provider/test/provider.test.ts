@@ -1,4 +1,4 @@
-import assert from "assert";
+import { assert } from "chai";
 import Ganache from "ganache";
 import * as EthUtil from "ethereumjs-util";
 import Web3 from "web3";
@@ -66,7 +66,7 @@ describe("HD Wallet Provider", function () {
         );
         assert.fail("Should throw on invalid mnemonic");
       } catch (e) {
-        assert(e.message.includes("Could not create addresses"));
+        assert(e.message.includes("Mnemonic invalid or undefined"));
       }
     });
 
