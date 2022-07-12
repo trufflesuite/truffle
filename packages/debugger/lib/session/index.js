@@ -409,11 +409,13 @@ export default class Session {
   }
 
   //returns true on success, false on already loaded; throws on failure
-  async load(txHash) {
+  async load(txHash, loadOptions = {}) {
     if (this.view(session.status.loaded)) {
       return false;
     }
-    return await this.readyAgainAfterLoading(actions.loadTransaction(txHash));
+    return await this.readyAgainAfterLoading(
+      actions.loadTransaction(txHash, loadOptions)
+    );
   }
 
   //returns true on success, false on already unloaded
