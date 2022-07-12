@@ -10,7 +10,7 @@ function Layout(): JSX.Element {
   } = useDash()!;
 
   return (
-    <AppShell navbar={<Sidebar />}>
+    <AppShell navbar={<Sidebar />} padding={0}>
       {notice.show ? <Notice contentType={notice.type!} /> : <Outlet />}
     </AppShell>
   );
