@@ -45,12 +45,16 @@ export async function prepareContracts(provider, sources = {}, migrations) {
   await addContracts(config, sources);
   let { contractNames, compilations: rawCompilations } = await compile(config);
 
-  if (!migrations) {
-    migrations = await defaultMigrations(contractNames);
-  }
+  if (migrations !== null) {
+    //we'll use migrations === null (as opposed to undefined) as a signal that
+    //we don't want to do any migrating
+    if (!migrations) {
+      migrations = await defaultMigrations(contractNames);
+    }
 
-  await addMigrations(config, migrations);
-  await migrate(config);
+    await addMigrations(config, migrations);
+    await migrate(config);
+  }
 
   let abstractions = {};
   for (let name of contractNames) {
