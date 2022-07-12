@@ -504,6 +504,22 @@ const evm = createSelectorTree({
     },
 
     /**
+     * evm.transaction.blockHash
+     */
+    blockHash: createLeaf(
+      ["/state"],
+      state => state.transaction.txIdentification.blockHash
+    ),
+
+    /**
+     * evm.transaction.txIndex
+     */
+    txIndex: createLeaf(
+      ["/state"],
+      state => state.transaction.txIdentification.txIndex
+    ),
+
+    /**
      * evm.transaction.status
      */
     status: createLeaf(["/state"], state => state.transaction.status),

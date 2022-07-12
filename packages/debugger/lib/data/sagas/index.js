@@ -1044,6 +1044,7 @@ export function* decode(
   const internalFunctionsTable = yield select(
     data.current.functionsByProgramCounter
   );
+  const allStorageVisible = yield select(data.application.allStorageVisible);
 
   debug("definition: %o");
   debug("ref: %o");
@@ -1074,11 +1075,18 @@ export function* decode(
     let response;
     switch (request.type) {
       case "storage":
-        //the debugger supplies all storage it knows at the beginning.
-        //any storage it does not know is presumed to be zero.
-        //(unlesss indicateUnknown is passed, in which case we use
-        //null as a deliberately invalid response)
-        response = indicateUnknown ? null : ZERO_WORD;
+        if (allStorageVisible) {
+          response = yield* requestStorage(request.slot);
+        } else if (indicateUnknown) {
+          //the debugger supplies all storage it knows at the beginning.
+          //so anything it gets a request for can be presumed to be
+          //unknown.
+          response = null;
+        } else {
+          //if indicateUnknown isn't set, all unknown storage is assumed
+          //to be zero.
+          response = ZERO_WORD;
+        }
         break;
       case "code":
         response = yield* requestCode(request.address);
@@ -1087,6 +1095,7 @@ export function* decode(
         debug("unrecognized request type!");
     }
     debug("sending response");
+    debug("response: %O", response);
     result = decoder.next(response);
   }
   //at this point, result.value holds the final value
@@ -1284,6 +1293,64 @@ function* requestCode(address) {
     yield* evm.addInstance(address, binary);
     return Codec.Conversion.toBytes(binary);
   }
+}
+
+//NOTE: just like requestCode, this can also add to the codex!
+//yes, this is also weird.
+function* requestStorage(slot) {
+  //since the debugger only requests storage when it doesn't know it,
+  //we won't bother here with a check regarding whether we already
+  //know this storage or not; we can assume that we don't
+  //NOTE: this is also assuming that no individual variable ever requires
+  //reading the same storage value twice in the course of decoding!
+  //this assumption is presently true, but if it ever becomes false, then it
+  //will become necessary to add that check here (not that the result would
+  //be *wrong* without such a check, but it would cause unnecessary network
+  //requests)
+  const address = yield select(data.current.address);
+  const blockHash = yield select(data.views.blockHash); //cannot use number here!
+  const txIndex = yield select(data.views.txIndex);
+  const word = yield* web3.obtainStorage(address, slot, blockHash, txIndex);
+  yield* evm.recordStorage(address, slot, word);
+  return Codec.Conversion.toBytes(word);
+}
+
+function* isStorageVisibilitySupported() {
+  const storedValue = yield select(data.application.storageVisibilitySupported);
+  //exit out early if it's already set
+  if (storedValue !== null) {
+    return storedValue;
+  }
+  const blockHash = yield select(data.views.blockHash); //cannot use number here!
+  let supported;
+  try {
+    //note we need to use a blockHash and txIndex that actually exists, otherwise
+    //we'll get an error for a different reason; that's why this procedure is
+    //only performed once we have a transaction loaded, even though notionally it's
+    //independent of any transaction
+    yield* web3.obtainStorage(
+      Codec.Evm.Utils.ZERO_ADDRESS,
+      new BN(0),
+      blockHash,
+      0 //to avoid delays, we'll use 0 rather than the actual tx index...
+      //index 0 certainly exists as long as the block has any transactions!
+    ); //throw away the value
+    supported = true;
+  } catch {
+    supported = false;
+  }
+  yield put(actions.setStorageVisibilitySupport(supported));
+  return supported;
+}
+
+export function* setStorageVisibility(visibility) {
+  const supported = yield* isStorageVisibilitySupported();
+  if (visibility && !supported) {
+    throw new Error(
+      "The fetchStorage option was passed, but the debug_storageRangeAt method is not available on this client."
+    );
+  }
+  yield put(actions.setStorageVisibility(visibility));
 }
 
 export function* reset() {

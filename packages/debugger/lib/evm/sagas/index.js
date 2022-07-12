@@ -3,6 +3,7 @@ const debug = debugModule("debugger:evm:sagas");
 
 import { put, takeEvery, select } from "redux-saga/effects";
 import { prefixName, keccak256 } from "lib/helpers";
+import * as Codec from "@truffle/codec";
 
 import { TICK } from "lib/trace/actions";
 import * as actions from "../actions";
@@ -44,6 +45,14 @@ export function* addInstance(address, binary) {
   yield put(actions.addInstance(address, context, binary));
 
   return context;
+}
+
+export function* recordStorage(address, slot, word) {
+  const slotAsPrefixlessHex = Codec.Conversion.toHexString(
+    slot,
+    Codec.Evm.Utils.WORD_SIZE
+  ).slice(2); //remove "0x" prefix in addition to converting to hex
+  yield put(actions.load(address, slotAsPrefixlessHex, word));
 }
 
 /**
@@ -113,11 +122,13 @@ export function* begin({
   sender,
   value,
   gasprice,
-  block
+  block,
+  blockHash,
+  txIndex
 }) {
   yield put(actions.saveGlobals(sender, gasprice, block));
   yield put(actions.saveStatus(status));
-  debug("codex: %O", yield select(evm.current.codex));
+  yield put(actions.saveTxIdentification(blockHash, txIndex));
   if (address) {
     yield put(actions.call(address, data, storageAddress, sender, value));
   } else {

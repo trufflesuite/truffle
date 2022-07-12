@@ -310,14 +310,36 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
   }
 }
 
+function allStorageVisible(state = null, action) {
+  if (action.type === actions.SET_STORAGE_VISIBILITY) {
+    return Boolean(action.visibility); //force Boolean to prevent undefined
+  } else {
+    return state;
+  }
+}
+
+function storageVisibilitySupported(state = null, action) {
+  if (action.type === actions.SET_STORAGE_VISIBILITY_SUPPORT) {
+    return action.visibility;
+  } else {
+    return state;
+  }
+}
+
 const proc = combineReducers({
   assignments,
   mappedPaths
 });
 
+const application = combineReducers({
+  storageVisibilitySupported,
+  allStorageVisible
+});
+
 const reducer = combineReducers({
   info,
-  proc
+  proc,
+  application
 });
 
 export default reducer;

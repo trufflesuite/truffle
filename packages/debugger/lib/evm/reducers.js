@@ -87,6 +87,33 @@ const globals = combineReducers({
   block
 });
 
+function blockHash(state = null, action) {
+  switch (action.type) {
+    case actions.SAVE_TX_IDENTIFICATION:
+      return action.blockHash;
+    case actions.UNLOAD_TRANSACTION:
+      return null;
+    default:
+      return state;
+  }
+}
+
+function txIndex(state = null, action) {
+  switch (action.type) {
+    case actions.SAVE_TX_IDENTIFICATION:
+      return action.txIndex;
+    case actions.UNLOAD_TRANSACTION:
+      return null;
+    default:
+      return state;
+  }
+}
+
+const txIdentification = combineReducers({
+  blockHash,
+  txIndex
+});
+
 function status(state = null, action) {
   switch (action.type) {
     case actions.SAVE_STATUS:
@@ -145,6 +172,7 @@ function affectedInstances(state = DEFAULT_AFFECTED_INSTANCES, action) {
 
 const transaction = combineReducers({
   globals,
+  txIdentification,
   status,
   initialCall,
   affectedInstances
