@@ -78,7 +78,10 @@ const reducer = (state: stateType, action: actionType): stateType => {
 
       // Determine message type
       if (isDashboardProviderMessage(message)) {
-        console.debug(`Received provider message (id: ${id})`, message);
+        console.debug(
+          `Received provider message: ${message.payload.method}`,
+          message
+        );
         const strictlyTypedLifecycle =
           lifecycle as ReceivedMessageLifecycle<DashboardProviderMessage>;
         if (messageIsUnsupported(message)) {
@@ -90,14 +93,14 @@ const reducer = (state: stateType, action: actionType): stateType => {
           confirmMessage(strictlyTypedLifecycle, provider);
         }
       } else if (isInvalidateMessage(message)) {
-        console.debug(`Received invalidate message (id: ${id})`, message);
+        console.debug("Received invalidate message", message);
         const invalidatedID = message.payload;
         updatedProviderMessages.delete(invalidatedID);
       } else if (isLogMessage(message)) {
-        console.debug(`Received log message (id: ${id})`, message);
+        console.debug(`Received log message`, message);
         lifecycle.respond({ payload: undefined });
       } else if (isDebugMessage(message)) {
-        console.debug(`Received debug message (id: ${id})`, message);
+        console.debug("Received debug message", message);
         lifecycle.respond({ payload: undefined });
       }
 
