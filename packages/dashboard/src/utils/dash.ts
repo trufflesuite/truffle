@@ -57,6 +57,15 @@ export async function confirmMessage(
     console.error(err);
     payload["error"] = err;
   }
-  lifecycle.respond({ payload });
+  try {
+    await lifecycle.respond({ payload });
+  } catch (err: any) {
+    // TODO: Fix message bus client, do not send duplicate messages
+    const muteErrPattern =
+      /A response has already been sent for message id.*of type "provider"./;
+    if (!muteErrPattern.test(err.message)) {
+      console.error(err);
+    }
+  }
   return payload;
 }
