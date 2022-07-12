@@ -76,7 +76,8 @@
     "ts-jest": "27.1.4",
     "ts-node": "10.7.0",
     "typescript": "^4.1.4",
-    "wagmi": "^0.2.21"
+    "wagmi": "^0.2.21",
+    "@headlessui/react": "1.6.6"
   },
   "publishConfig": {
     "access": "public"
