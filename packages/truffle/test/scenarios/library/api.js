@@ -39,16 +39,6 @@ describe("Truffle Library APIs [ @standalone ]", () => {
     );
   });
 
-  it("truffle.package API definition", () => {
-    assert(truffle.package.publish, "package.publish undefined");
-    assert(truffle.package.install, "package.install undefined");
-    assert(truffle.package.digest, "package.digest undefined");
-    assert(
-      truffle.package.publishable_artifacts,
-      "package.publishable_artifacts undefined"
-    );
-  });
-
   it("truffle.test API", () => {
     assert(truffle.test.run, "test.run undefined");
     assert(truffle.test.createMocha, "test.createMocha undefined");
