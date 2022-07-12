@@ -1,9 +1,10 @@
 import { WagmiConfig, createClient } from "wagmi";
-import { getDefaultProvider } from "ethers";
+import { providers } from "ethers";
 
 const client = createClient({
   autoConnect: true,
-  provider: getDefaultProvider()
+  // @ts-ignore
+  provider: new providers.Web3Provider(window.ethereum || "ws://localhost:8545")
 });
 
 type WagmiWrapperProps = {
