@@ -150,9 +150,19 @@ class CLIDebugger {
       if (this.txHash !== undefined) {
         try {
           debug("loading %s", this.txHash);
-          await bugger.load(this.txHash);
+          if (this.config.noFetchStorage) {
+            await bugger.load(this.txHash);
+          } else {
+            //if noFetchStorage isn't set, then we first try it with storageLookup
+            //set, then retry without it if needed
+            try {
+              await bugger.load(this.txHash, { storageLookup: true });
+            } catch {
+              await bugger.load(this.txHash);
+            }
+          }
           startSpinner.succeed();
-        } catch (_) {
+        } catch {
           debug("loading error");
           startSpinner.fail();
           //just start up unloaded
@@ -165,12 +175,25 @@ class CLIDebugger {
       //note that in this case we start in light mode
       //and only wake up to full mode later!
       //also, in this case, we can be sure that txHash is defined
-      bugger = await Debugger.forTx(this.txHash, {
+      bugger = await Debugger.forProject({
         provider: this.config.provider,
         compilations,
         ens: { registryAddress: registry },
         lightMode: true
-      }); //note: may throw!
+      });
+      if (this.config.noFetchStorage) {
+        //if this throws, too bad; we error out
+        await bugger.load(this.txHash);
+      } else {
+        //if noFetchStorage isn't set, then we first try it with storageLookup
+        //set, then retry without it if needed
+        try {
+          await bugger.load(this.txHash, { storageLookup: true });
+        } catch {
+          //if this throws, too bad; we error out
+          await bugger.load(this.txHash);
+        }
+      }
       await this.fetchExternalSources(bugger); //note: mutates bugger!
       const startSpinner = new Spinner("core:debug:cli:start", startMessage);
       await bugger.startFullMode();

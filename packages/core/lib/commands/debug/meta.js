@@ -4,16 +4,22 @@ module.exports = {
   command: "debug",
   description: "Interactively debug any transaction on the blockchain",
   builder: {
-    "url": {
+    url: {
       describe: "Use specified URL for provider",
       type: "string"
     },
-    "_": {
+    _: {
       type: "string"
     },
     "fetch-external": {
       describe: "Allow debugging of external contracts",
       alias: "x",
+      type: "boolean",
+      default: false
+    },
+    "no-fetch-storage": {
+      describe: "Do not fetch storage not touched in the transaction",
+      alias: "z",
       type: "boolean",
       default: false
     },
@@ -44,7 +50,7 @@ module.exports = {
   },
   help: {
     usage:
-      "truffle debug [<transaction_hash>] [--fetch-external|-x]" +
+      "truffle debug [<transaction_hash>] [--fetch-external|-x] [--no-fetch-storage|-z]" +
       OS.EOL +
       "                             [--network <network>|--url <provider_url>]" +
       OS.EOL +
@@ -61,6 +67,11 @@ module.exports = {
         option: "--fetch-external|-x",
         description:
           "Allows debugging of external contracts with verified sources."
+      },
+      {
+        option: "--no-fetch-storage|-z",
+        description:
+          "Disables storage view for storage not touched in transaction; useful for contracts with lots of storage."
       },
       {
         option: "--network",
