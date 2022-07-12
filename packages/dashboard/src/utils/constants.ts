@@ -1,2 +1,29 @@
 export const EMOTION_KEY = "trfl";
 export const COLOR_SCHEME_KEY = "trfl-dash-color-scheme";
+
+export const INTERACTIVE_RPC_METHODS = [
+  "eth_signTransaction",
+  "eth_sendTransaction",
+  "eth_decrypt",
+  "eth_signTypedData",
+  "eth_signTypedData_v1",
+  "eth_signTypedData_v3",
+  "eth_signTypedData_v4",
+  "personal_sign"
+] as const;
+
+export type INTERACTIVE_RPC_METHOD = typeof INTERACTIVE_RPC_METHODS[number];
+
+export const UNSUPPORTED_RPC_METHODS = ["eth_sign"] as const;
+
+export type UNSUPPORTED_RPC_METHOD = typeof UNSUPPORTED_RPC_METHODS[number];
+
+export const unsupportedMessageResponse = new Map<
+  UNSUPPORTED_RPC_METHOD,
+  string
+>([
+  [
+    "eth_sign",
+    `Method "eth_sign" is not supported by @truffle/dashboard, please use "personal_sign" instead`
+  ]
+]);

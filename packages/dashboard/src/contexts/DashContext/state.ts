@@ -1,3 +1,4 @@
+import type { providers } from "ethers";
 import type {
   DashboardMessageBusClient,
   ReceivedMessageLifecycle
@@ -8,7 +9,16 @@ import {
   isLogMessage,
   isDebugMessage
 } from "@truffle/dashboard-message-bus-common";
-import type { Message } from "@truffle/dashboard-message-bus-common";
+import type {
+  Message,
+  DashboardProviderMessage
+} from "@truffle/dashboard-message-bus-common";
+import {
+  messageNeedsInteraction,
+  messageIsUnsupported,
+  rejectMessage,
+  confirmMessage
+} from "src/utils/dash";
 import type noticeContentType from "src/components/composed/Notice/noticeContentType";
 
 type actionType =
@@ -17,13 +27,22 @@ type actionType =
       type: "set-notice";
       data: { show: boolean; type: noticeContentType | null };
     }
-  | { type: "handle-message"; data: ReceivedMessageLifecycle<Message> };
+  | {
+      type: "handle-message";
+      data: {
+        lifecycle: ReceivedMessageLifecycle<Message>;
+        provider: providers.JsonRpcProvider;
+      };
+    };
 
 type stateType = {
   host: string;
   port: number;
   client: DashboardMessageBusClient | null;
-  providerMessages: Map<number, ReceivedMessageLifecycle<Message>>;
+  providerMessages: Map<
+    number,
+    ReceivedMessageLifecycle<DashboardProviderMessage>
+  >;
   notice: {
     show: boolean;
     type: noticeContentType | null;
@@ -52,13 +71,24 @@ const reducer = (state: stateType, action: actionType): stateType => {
     case "set-notice":
       return { ...state, notice: data };
     case "handle-message":
-      const lifecycle = data;
-      const message = lifecycle.message;
+      const { lifecycle, provider } = data;
+      const { message } = lifecycle;
       const { id } = message;
       const updatedProviderMessages = new Map(state.providerMessages);
+
+      // Determine message type
       if (isDashboardProviderMessage(message)) {
         console.debug(`Received provider message (id: ${id})`, message);
-        updatedProviderMessages.set(id, lifecycle);
+        const strictlyTypedLifecycle =
+          lifecycle as ReceivedMessageLifecycle<DashboardProviderMessage>;
+        if (messageIsUnsupported(message)) {
+          rejectMessage(strictlyTypedLifecycle, "UNSUPPORTED");
+        } else if (messageNeedsInteraction(message)) {
+          updatedProviderMessages.set(id, strictlyTypedLifecycle);
+        } else {
+          // Confirm supported and non-interactive messages
+          confirmMessage(strictlyTypedLifecycle, provider);
+        }
       } else if (isInvalidateMessage(message)) {
         console.debug(`Received invalidate message (id: ${id})`, message);
         const invalidatedID = message.payload;
@@ -70,6 +100,7 @@ const reducer = (state: stateType, action: actionType): stateType => {
         console.debug(`Received debug message (id: ${id})`, message);
         lifecycle.respond({ payload: undefined });
       }
+
       return { ...state, providerMessages: updatedProviderMessages };
     default:
       throw new Error("Undefined reducer action type");

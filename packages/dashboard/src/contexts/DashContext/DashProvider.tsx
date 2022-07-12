@@ -1,6 +1,7 @@
 import { useReducer, useEffect } from "react";
 import { useDidUpdate } from "@mantine/hooks";
-import { useAccount } from "wagmi";
+import { useAccount, useProvider } from "wagmi";
+import type { providers } from "ethers";
 import { DashboardMessageBusClient } from "@truffle/dashboard-message-bus-client";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { Message } from "@truffle/dashboard-message-bus-common";
@@ -13,6 +14,7 @@ type DashProviderProps = {
 
 function DashProvider({ children }: DashProviderProps): JSX.Element {
   const { isConnected } = useAccount();
+  const provider: providers.Web3Provider = useProvider();
   const [state, dispatch] = useReducer(reducer, initialState);
 
   console.debug({ state });
@@ -30,7 +32,10 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
       // Client subscribes to and handles messages
       const subscription = client.subscribe({});
       const messageHandler = (lifecycle: ReceivedMessageLifecycle<Message>) =>
-        void dispatch({ type: "handle-message", data: lifecycle });
+        void dispatch({
+          type: "handle-message",
+          data: { lifecycle, provider }
+        });
       subscription.on("message", messageHandler);
 
       // Clean up
