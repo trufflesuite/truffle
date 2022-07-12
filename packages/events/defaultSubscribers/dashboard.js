@@ -1,9 +1,16 @@
-const Writable = require("stream").Writable;
-const DashboardMessageBusClient = require("./client");
+const Spinner = require("@truffle/spinners").Spinner;
+const {
+  DashboardMessageBusClient
+} = require("@truffle/dashboard-message-bus-client");
 
 module.exports = {
   initialization: function (config) {
-    this.messageBus = new DashboardMessageBusClient(config);
+    const dashboardConfig = config.dashboard || {
+      host: "localhost",
+      port: 24012
+    };
+
+    this.messageBus = new DashboardMessageBusClient(dashboardConfig);
 
     this._logger = {
       log: ((...args) => {
@@ -14,54 +21,56 @@ module.exports = {
         (this.logger || config.logger || console).log(...args);
       }).bind(this)
     };
+    this.pendingTransactions = [];
   },
   handlers: {
     "compile:start": [
       async function () {
-        await this.messageBus.sendAndAwait({
-          type: "debug",
-          payload: {
-            message: "compile:start"
-          }
-        });
+        try {
+          const publishLifecycle = await this.messageBus.publish({
+            type: "debug",
+            payload: {
+              message: "compile:start"
+            }
+          });
+          publishLifecycle.abandon();
+        } catch (err) {
+          // best effort only, dashboard might not even be alive
+        }
       }
     ],
     "rpc:request": [
       function (event) {
+        if (!isDashboardNetwork(this.config)) {
+          return;
+        }
+
         const { payload } = event;
         if (payload.method === "eth_sendTransaction") {
-          // TODO: Do we care about ID collisions?
           this.pendingTransactions[payload.id] = payload;
 
-          this.spinner = this.getSpinner({
-            text: `Waiting for transaction signature. Please check your wallet for a transaction approval message.`,
-            color: "red",
-            stream: new Writable({
-              write: function (chunk, encoding, next) {
-                this._logger.log(chunk.toString());
-                next();
-              }.bind(this)
-            })
+          this.spinner = new Spinner("events:subscribers:dashboard", {
+            text: `Waiting for transaction signature. Please check your wallet for a transaction approval message.`
           });
         }
       }
     ],
     "rpc:result": [
       function (event) {
-        const { payload, error, result } = event;
+        if (!isDashboardNetwork(this.config)) {
+          return;
+        }
+
+        let { error } = event;
+        const { payload, result } = event;
 
         if (payload.method === "eth_sendTransaction") {
+          error = error || result.error;
           if (error) {
             const errMessage = `Transaction submission failed with error ${error.code}: '${error.message}'`;
-            if (this.spinner && this.spinner.isSpinning) {
-              this.spinner.fail(errMessage);
-            }
+            this.spinner.fail(errMessage);
           } else {
-            if (this.spinner && this.spinner.isSpinning) {
-              this.spinner.succeed(
-                `Transaction submitted successfully. Hash: ${result.result}`
-              );
-            }
+            this.spinner.remove();
           }
 
           delete this.pendingTransactions[payload.id];
@@ -70,3 +79,7 @@ module.exports = {
     ]
   }
 };
+
+function isDashboardNetwork(config) {
+  return config.network === "dashboard";
+}
