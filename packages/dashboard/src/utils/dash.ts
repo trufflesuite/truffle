@@ -58,4 +58,5 @@ export async function confirmMessage(
     payload["error"] = err;
   }
   lifecycle.respond({ payload });
+  return payload;
 }

@@ -4,9 +4,13 @@ import { useAccount, useProvider } from "wagmi";
 import type { providers } from "ethers";
 import { DashboardMessageBusClient } from "@truffle/dashboard-message-bus-client";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
-import type { Message } from "@truffle/dashboard-message-bus-common";
+import type {
+  Message,
+  DashboardProviderMessage
+} from "@truffle/dashboard-message-bus-common";
 import { DashContext } from "src/contexts/DashContext";
 import { reducer, initialState } from "src/contexts/DashContext/state";
+import { confirmMessage, rejectMessage } from "src/utils/dash";
 
 type DashProviderProps = {
   children: React.ReactNode;
@@ -58,8 +62,17 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
     });
   }, [isConnected]);
 
+  const ops = {
+    userConfirmMessage: async (
+      lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>
+    ) => await confirmMessage(lifecycle, provider),
+    userRejectMessage: (
+      lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>
+    ) => void rejectMessage(lifecycle, "USER")
+  };
+
   return (
-    <DashContext.Provider value={{ state, dispatch }}>
+    <DashContext.Provider value={{ state, ops }}>
       {children}
     </DashContext.Provider>
   );

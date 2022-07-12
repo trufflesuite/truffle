@@ -1,6 +1,8 @@
 import { Paper, Code, createStyles } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
+import Modal from "src/components/composed/Txs/Modal";
 
 const useStyles = createStyles((_theme, _params, _getRef) => ({
   card: {
@@ -26,28 +28,37 @@ type CardProps = {
 
 function Card({ lifecycle }: CardProps): JSX.Element {
   const { classes } = useStyles();
+  const [modalOpened, modalHandlers] = useDisclosure(false);
   const { method, params } = lifecycle.message.payload;
 
   const handleClick: React.MouseEventHandler<HTMLDivElement> = e => {
     if (e.target === e.currentTarget) {
-      // TODO: Open modal here
+      modalHandlers.open();
     }
   };
 
   return (
-    <Paper
-      shadow="lg"
-      radius="md"
-      withBorder
-      className={classes.card}
-      onClick={handleClick}
-    >
-      <Code block={true} className={classes.codeBlock}>
-        {method}
-        <br />
-        {JSON.stringify(params, null, 2)}
-      </Code>
-    </Paper>
+    <>
+      <Modal
+        lifecycle={lifecycle}
+        opened={modalOpened}
+        close={modalHandlers.close}
+      />
+
+      <Paper
+        shadow="lg"
+        radius="md"
+        withBorder
+        className={classes.card}
+        onClick={handleClick}
+      >
+        <Code block={true} className={classes.codeBlock}>
+          {method}
+          <br />
+          {JSON.stringify(params, null, 2)}
+        </Code>
+      </Paper>
+    </>
   );
 }
 
