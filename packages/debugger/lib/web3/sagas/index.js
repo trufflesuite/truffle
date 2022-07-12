@@ -8,7 +8,9 @@ import {
   fork,
   join,
   take,
-  put
+  put,
+  race,
+  call
 } from "redux-saga/effects";
 import { prefixName } from "lib/helpers";
 
@@ -68,7 +70,7 @@ function* fetchTransactionInfo(adapter, { txHash }) {
   yield put(session.saveBlock(block));
 
   //these ones get grouped together for convenience
-  let solidityBlock = {
+  const solidityBlock = {
     coinbase: block.miner,
     difficulty: new BN(block.difficulty),
     gaslimit: new BN(block.gasLimit),
@@ -90,11 +92,13 @@ function* fetchTransactionInfo(adapter, { txHash }) {
         sender: tx.from,
         value: new BN(tx.value),
         gasprice: new BN(tx.gasPrice),
-        block: solidityBlock
+        block: solidityBlock,
+        blockHash: block.hash,
+        txIndex: tx.transactionIndex
       })
     );
   } else {
-    let storageAddress = Web3.utils.isAddress(receipt.contractAddress)
+    const storageAddress = Web3.utils.isAddress(receipt.contractAddress)
       ? receipt.contractAddress
       : Codec.Evm.Utils.ZERO_ADDRESS;
     yield put(
@@ -105,18 +109,12 @@ function* fetchTransactionInfo(adapter, { txHash }) {
         sender: tx.from,
         value: new BN(tx.value),
         gasprice: new BN(tx.gasPrice),
-        block: solidityBlock
+        block: solidityBlock,
+        blockHash: block.hash,
+        txIndex: tx.transactionIndex
       })
     );
   }
-}
-
-function* fetchBinary(adapter, { address, block }) {
-  debug("fetching binary for %s", address);
-  let binary = yield apply(adapter, adapter.getDeployedCode, [address, block]);
-
-  debug("received binary for %s", address);
-  yield put(actions.receiveBinary(address, binary));
 }
 
 export function* inspectTransaction(txHash) {
@@ -142,7 +140,9 @@ export function* inspectTransaction(txHash) {
     sender,
     value,
     gasprice,
-    block
+    block,
+    blockHash,
+    txIndex
   } = yield take(actions.RECEIVE_CALL);
   debug("received call");
 
@@ -156,7 +156,9 @@ export function* inspectTransaction(txHash) {
     sender,
     value,
     gasprice,
-    block
+    block,
+    blockHash,
+    txIndex
   };
 }
 
@@ -175,6 +177,14 @@ export function* obtainBinaries(addresses, block) {
   return binaries;
 }
 
+function* fetchBinary(adapter, { address, block }) {
+  debug("fetching binary for %s", address);
+  let binary = yield apply(adapter, adapter.getDeployedCode, [address, block]);
+
+  debug("received binary for %s", address);
+  yield put(actions.receiveBinary(address, binary));
+}
+
 function* receiveBinary(address) {
   let { binary } = yield take(
     action => action.type == actions.RECEIVE_BINARY && action.address == address
@@ -182,6 +192,59 @@ function* receiveBinary(address) {
   debug("got binary for %s", address);
 
   return binary;
+}
+
+export function* obtainStorage(address, slot, blockHash, txIndex) {
+  debug("forking");
+  const task = yield fork(function* () {
+    return yield race({
+      success: call(receiveStorage, address, slot),
+      failure: call(receiveStorageErrorHandler)
+    });
+  });
+  yield put(actions.fetchStorage(address, slot, blockHash, txIndex));
+  debug("joining");
+  const result = yield join(task);
+  debug("result: %O", result);
+  if (result.failure) {
+    throw result.failure;
+  } else {
+    return result.success;
+  }
+}
+
+function* fetchStorage(adapter, { address, slot, blockHash, txIndex }) {
+  const slotAsHex = Codec.Conversion.toHexString(
+    slot,
+    Codec.Evm.Utils.WORD_SIZE
+  );
+  try {
+    const word = yield apply(adapter, adapter.getExistingStorage, [
+      address,
+      slotAsHex,
+      blockHash,
+      txIndex
+    ]);
+    yield put(actions.receiveStorage(address, slot, word));
+  } catch (error) {
+    yield put(actions.receiveStorageFail(error));
+  }
+}
+
+function* receiveStorage(address, slot) {
+  const { word } = yield take(
+    action =>
+      action.type == actions.RECEIVE_STORAGE &&
+      action.address == address &&
+      action.slot.eq(slot) //remember, these are BNs
+  );
+  return word;
+}
+
+function* receiveStorageErrorHandler() {
+  const { error } = yield take(actions.RECEIVE_STORAGE_FAIL);
+  return error; //because this is forked, we need to return
+  //rather than throw to prevent redux-saga from giving up
 }
 
 export function* init(provider) {
@@ -195,6 +258,7 @@ export function* saga() {
 
   yield takeEvery(actions.INSPECT, fetchTransactionInfo, adapter);
   yield takeEvery(actions.FETCH_BINARY, fetchBinary, adapter);
+  yield takeEvery(actions.FETCH_STORAGE, fetchStorage, adapter);
 }
 
 export default prefixName("web3", saga);
