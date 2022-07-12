@@ -1,4 +1,5 @@
 import { Message } from "./messages";
+import { Buffer } from "buffer";
 
 /**
  * Convert any JS object or value to a base64 representation of it
