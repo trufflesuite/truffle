@@ -1,7 +1,6 @@
-module.exports = async function (options) {
-  const Config = require("@truffle/config");
-  const Package = require("../../package");
-
-  const config = Config.detect(options);
-  return await Package.publish(config);
+module.exports = async function () {
+  console.log(
+    "Oops! ethpm has moved on faster than truffle's integration. " +
+      "This feature has been broken for some time, so we've disabled it."
+  );
 };

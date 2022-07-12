@@ -1,9 +1,10 @@
 module.exports = {
   command: "publish",
-  description: "Publish a package to the Ethereum Package Registry",
+  description:
+    "[deprecated] Publish a package to the Ethereum Package Registry",
   builder: {},
   help: {
-    usage: "truffle publish",
+    usage: "[deprecated] truffle publish",
     options: [],
     allowedGlobalOptions: []
   }

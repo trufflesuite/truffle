@@ -1,9 +1,10 @@
 module.exports = {
   command: "install",
-  description: "Install a package from the Ethereum Package Registry",
+  description:
+    "[deprecated] Install a package from the Ethereum Package Registry",
   builder: {},
   help: {
-    usage: "truffle install <package_name>[@<version>]",
+    usage: "[deprecated] truffle install <package_name>[@<version>]",
     options: [
       {
         option: "package_name",
