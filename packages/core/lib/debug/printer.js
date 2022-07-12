@@ -26,6 +26,7 @@ class DebugPrinter {
   constructor(config, session) {
     this.config = config;
     this.session = session;
+    this.storagePopulatedAddresses = new Set();
     this.select = expr => {
       let selector, result;
 
@@ -102,6 +103,13 @@ class DebugPrinter {
     this.warnIfNoSteps();
     this.printHelp();
     debug("Help printed");
+    if (
+      !this.config.noFetchStorage && //sorry
+      !this.session.view(evm.application.storageLookupSupported)
+    ) {
+      //if -z wasn't used, but debug_storageRangeAt isn't supported, warn
+      this.warnStorageRangeAtNotSupported();
+    }
     this.printFile();
     debug("File printed");
     this.printState();
@@ -131,6 +139,15 @@ class DebugPrinter {
         )} this transaction has no trace steps. This may happen if you are attempting to debug a transaction sent to an externally-owned account, or if the node you are connecting to failed to produce a trace for some reason. Please check your configuration and try again.`
       );
     }
+  }
+
+  warnStorageRangeAtNotSupported() {
+    this.config.logger.log("");
+    this.config.logger.log(
+      `${colors.bold(
+        "Warning:"
+      )} Your client does not support the debug_storageRangeAt method.  Only storage touched in the transaction being debugged will be visible.`
+    );
   }
 
   printHelp(lastCommand) {
@@ -228,7 +245,8 @@ class DebugPrinter {
     this.config.logger.log("");
   }
 
-  printInstruction(locations = this.locationPrintouts) {
+  //this is async because it may need to populate storage
+  async printInstruction(locations = this.locationPrintouts) {
     const instruction = this.session.view(sourcemapping.current.instruction);
     const instructions = this.session.view(sourcemapping.current.instructions);
     const step = this.session.view(trace.step);
@@ -241,6 +259,7 @@ class DebugPrinter {
 
     this.config.logger.log("");
     if (locations.has("sto")) {
+      await this.populateStorage();
       this.config.logger.log(DebugUtils.formatStorage(storage));
       this.config.logger.log("");
     }
@@ -751,7 +770,7 @@ class DebugPrinter {
   }
 
   async printVariables(sectionOuts = this.sectionPrintouts) {
-    const values = await this.session.variables();
+    const values = await this.getVariables();
     const sections = this.session.view(data.current.identifiers.sections);
 
     const sectionNames = {
@@ -812,7 +831,7 @@ class DebugPrinter {
    *        :!<trace.step.stack>[1]
    */
   async evalAndPrintExpression(raw, indent, suppress) {
-    let variables = await this.session.variables({ indicateUnknown: true });
+    let variables = await this.getVariables();
 
     //if we're just dealing with a single variable, handle that case
     //separately (so that we can do things in a better way for that
@@ -926,6 +945,35 @@ class DebugPrinter {
     });
     interpreter.run();
     return interpreter.pseudoToNative(interpreter.value);
+  }
+
+  async getVariables() {
+    const values = await this.session.variables();
+    const fetchStorage = this.session.view(evm.application.storageLookup);
+    if (fetchStorage) {
+      const address = this.session.view(evm.current.call).storageAddress;
+      if (address) {
+        this.storagePopulatedAddresses.add(address); //mark as populated
+      }
+    }
+    return values;
+  }
+
+  async populateStorage() {
+    const fetchStorage = this.session.view(evm.application.storageLookup);
+    if (fetchStorage) {
+      const address = this.session.view(evm.current.call).storageAddress;
+      //don't populate for addresses that are already populated
+      if (address && !this.storagePopulatedAddresses.has(address)) {
+        await this.session.variables(); //throw away the result, we're just doing this
+        //for the side effect of populating storage
+        this.storagePopulatedAddresses.add(address); //mark as populated
+      }
+    }
+  }
+
+  resetPopulatedStorageAddresses() {
+    this.storagePopulatedAddresses.clear();
   }
 }
 
