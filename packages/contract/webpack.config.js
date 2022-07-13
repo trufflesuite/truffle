@@ -14,8 +14,7 @@ module.exports = {
     filename: "[name].js",
     path: path.resolve(__dirname, "dist"),
     library: {
-      name: "TruffleContract",
-      type: "commonjs"
+      type: "commonjs2"
     }
   },
   devtool: "source-map",
