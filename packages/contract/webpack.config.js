@@ -13,7 +13,10 @@ module.exports = {
   output: {
     filename: "[name].js",
     path: path.resolve(__dirname, "dist"),
-    libraryTarget: "commonjs"
+    library: {
+      name: "TruffleContract",
+      type: "commonjs"
+    }
   },
   devtool: "source-map",
   resolve: {

@@ -16,7 +16,7 @@
   "main": "index.js",
   "scripts": {
     "build": "yarn compile",
-    "compile": "NODE_ENV=production webpack --config ./webpack-config.js && NODE_ENV=development webpack --config ./webpack-config.js",
+    "compile": "NODE_ENV=production webpack --config ./webpack.config.js && NODE_ENV=development webpack --config ./webpack.config.js",
     "prepare": "yarn compile",
     "publish:next": "node ../truffle/scripts/prereleaseVersion.js next next"
   },
