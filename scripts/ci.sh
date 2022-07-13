@@ -87,7 +87,7 @@ elif [ "$PACKAGES" = true ]; then
 	wget https://bootstrap.pypa.io/get-pip.py
 	sudo python3.8 get-pip.py
 	sudo pip3 install vyper
-	lerna run --ignore truffle test --stream --concurrency=1
+	lerna run --scope @truffle/compile-solidity test --stream --concurrency=1
 
 elif [ "$COVERAGE" = true ]; then
 

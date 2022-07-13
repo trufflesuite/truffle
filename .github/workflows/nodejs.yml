@@ -36,8 +36,8 @@ jobs:
     strategy:
       matrix:
         platform: [ubuntu-latest]
-        node-version: [12.x, 14.x, 16.x]
-        env: [GETH=true, PACKAGES=true, INTEGRATION=true]
+        node-version: [16.x]
+        env: [PACKAGES=true]
     runs-on: ${{ matrix.platform }}
 
     steps:
