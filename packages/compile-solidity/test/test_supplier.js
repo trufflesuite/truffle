@@ -142,7 +142,7 @@ describe("CompilerSupplier", function () {
       assert(Version8Pragma.contractName === "Version8Pragma");
     });
 
-    it("caches releases and uses them if available", async function () {
+    it.only("caches releases and uses them if available", async function () {
       let initialAccessTime;
       let finalAccessTime;
 
@@ -191,10 +191,14 @@ describe("CompilerSupplier", function () {
 
       // atime is not getting updatd on read in CI.
       if (!process.env.TEST) {
+        console.log("TEST env is NOT set ... will assert");
         assert(
           initialAccessTime < finalAccessTime,
           "Should have used cached compiler"
         );
+      } else {
+        console.log("TEST env IS set ... will skip assert");
+        console.log(Object.keys(process.env));
       }
     });
 
