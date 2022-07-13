@@ -1,3 +1,5 @@
+import chainIDtoNameJson from "src/assets/chainIDtoName.json";
+
 export const EMOTION_KEY = "trfl";
 export const COLOR_SCHEME_KEY = "trfl-dash-color-scheme";
 
@@ -27,3 +29,9 @@ export const unsupportedMessageResponse = new Map<
     `Method "eth_sign" is not supported by @truffle/dashboard, please use "personal_sign" instead`
   ]
 ]);
+
+export const chainIDtoName = {
+  ...chainIDtoNameJson
+} as const;
+
+export type knownChainID = keyof typeof chainIDtoName;

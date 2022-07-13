@@ -1,12 +1,15 @@
 import { Navbar, Stack, Group, Text, Code, Button, Badge } from "@mantine/core";
-import { useAccount, useConnect, useDisconnect, useNetwork } from "wagmi";
+import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { InjectedConnector } from "@wagmi/core";
+import { useDash } from "src/contexts/DashContext";
 
 function Bottom(): JSX.Element {
   const { connect } = useConnect({ connector: new InjectedConnector() });
   const { disconnect } = useDisconnect();
   const { address, isConnected } = useAccount();
-  const { chain } = useNetwork();
+  const {
+    state: { chainInfo }
+  } = useDash()!;
 
   const handleConnectBtnClick = () => void connect();
   const handleDisconnectBtnClick = () => void disconnect();
@@ -18,9 +21,9 @@ function Bottom(): JSX.Element {
         <Code mx="lg">
           address = {address?.slice(0, 8)}...{address?.slice(-6)}
           <br />
-          chain id = {chain?.id}
+          chain id = {chainInfo.id}
           <br />
-          chain name = {chain?.name}
+          chain name = {chainInfo.name}
         </Code>
         <Group position="center">
           {isConnected ? (

@@ -23,10 +23,8 @@ import type noticeContentType from "src/components/composed/Notice/noticeContent
 
 type actionType =
   | { type: "set-client"; data: DashboardMessageBusClient }
-  | {
-      type: "set-notice";
-      data: { show: boolean; type: noticeContentType | null };
-    }
+  | { type: "set-chain-info"; data: stateType["chainInfo"] }
+  | { type: "set-notice"; data: stateType["notice"] }
   | {
       type: "handle-message";
       data: {
@@ -43,6 +41,10 @@ type stateType = {
     number,
     ReceivedMessageLifecycle<DashboardProviderMessage>
   >;
+  chainInfo: {
+    id: number | null;
+    name: string | null;
+  };
   notice: {
     show: boolean;
     type: noticeContentType | null;
@@ -57,6 +59,10 @@ const initialState: stateType = {
       : Number(window.location.port),
   client: null,
   providerMessages: new Map(),
+  chainInfo: {
+    id: null,
+    name: null
+  },
   notice: {
     show: false,
     type: "LOADING"
@@ -68,6 +74,8 @@ const reducer = (state: stateType, action: actionType): stateType => {
   switch (type) {
     case "set-client":
       return { ...state, client: data };
+    case "set-chain-info":
+      return { ...state, chainInfo: data };
     case "set-notice":
       return { ...state, notice: data };
     case "handle-message":

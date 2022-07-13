@@ -1,6 +1,6 @@
 import { useReducer, useEffect } from "react";
 import { useDidUpdate } from "@mantine/hooks";
-import { useAccount, useProvider } from "wagmi";
+import { useAccount, useProvider, useNetwork } from "wagmi";
 import type { providers } from "ethers";
 import { DashboardMessageBusClient } from "@truffle/dashboard-message-bus-client";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
@@ -8,9 +8,13 @@ import type {
   Message,
   DashboardProviderMessage
 } from "@truffle/dashboard-message-bus-common";
-import { DashContext } from "src/contexts/DashContext";
-import { reducer, initialState } from "src/contexts/DashContext/state";
-import { confirmMessage, rejectMessage } from "src/utils/dash";
+import { DashContext, reducer, initialState } from "src/contexts/DashContext";
+import type { stateType } from "src/contexts/DashContext";
+import {
+  confirmMessage,
+  rejectMessage,
+  getChainNameByID
+} from "src/utils/dash";
 
 type DashProviderProps = {
   children: React.ReactNode;
@@ -19,6 +23,7 @@ type DashProviderProps = {
 function DashProvider({ children }: DashProviderProps): JSX.Element {
   const { isConnected } = useAccount();
   const provider: providers.Web3Provider = useProvider();
+  const { chain } = useNetwork();
   const [state, dispatch] = useReducer(reducer, initialState);
 
   console.debug({ state });
@@ -61,6 +66,26 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
       }
     });
   }, [isConnected]);
+
+  useEffect(() => {
+    const updateChangeInfo = () => {
+      const data: stateType["chainInfo"] = { id: null, name: null };
+
+      if (chain) {
+        const { id, name } = chain;
+        let updated;
+        if (name === `Chain ${id}`) {
+          updated = getChainNameByID(id);
+        }
+        data.id = id;
+        data.name = updated ?? name;
+      }
+
+      dispatch({ type: "set-chain-info", data });
+    };
+
+    updateChangeInfo();
+  }, [chain]);
 
   const ops = {
     userConfirmMessage: async (

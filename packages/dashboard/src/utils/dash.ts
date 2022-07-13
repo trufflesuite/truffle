@@ -4,7 +4,9 @@ import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-co
 import {
   INTERACTIVE_RPC_METHODS,
   UNSUPPORTED_RPC_METHODS,
-  unsupportedMessageResponse
+  unsupportedMessageResponse,
+  chainIDtoName,
+  knownChainID
 } from "src/utils/constants";
 import type { UNSUPPORTED_RPC_METHOD } from "src/utils/constants";
 
@@ -68,4 +70,8 @@ export async function confirmMessage(
     }
   }
   return payload;
+}
+
+export function getChainNameByID(id: number) {
+  return chainIDtoName[id.toString() as knownChainID];
 }
