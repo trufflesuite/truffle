@@ -42,10 +42,10 @@ jobs:
 
     steps:
     - name ENVY CI
-      run: echo "env.CI == ${{ env.CI }}
+      run: echo "env.CI == ${{ env.CI }}"
 
     - name ENVY TEST
-      run: echo "env.test == ${{ env.TEST }}
+      run: echo "env.test == ${{ env.TEST }}"
 
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
