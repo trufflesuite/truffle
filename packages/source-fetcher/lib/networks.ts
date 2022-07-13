@@ -69,7 +69,9 @@ export const networkNamesById: { [id: number]: string } = {
   246: "energyweb",
   73799: "volta-energyweb",
   71402: "godwoken", //not presently supported by either fetcher, but...
-  71401: "testnet-godwoken"
+  71401: "testnet-godwoken",
+  50: "xinfin", //not presently supported by either fetcher, but...
+  51: "apothem-xinfin"
   //I'm not including crystaleum as it has network ID different from chain ID
 };
 
