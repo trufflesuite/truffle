@@ -60,10 +60,7 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
   useEffect(() => {
     dispatch({
       type: "set-notice",
-      data: {
-        show: !isConnected,
-        type: "CONNECT"
-      }
+      data: { show: !isConnected, type: "CONNECT" }
     });
   }, [isConnected]);
 
@@ -79,6 +76,10 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
         }
         data.id = id;
         data.name = updated ?? name;
+        dispatch({
+          type: "set-notice",
+          data: { show: true, type: "CONFIRM_CHAIN" }
+        });
       }
 
       dispatch({ type: "set-chain-info", data });
@@ -93,7 +94,9 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
     ) => await confirmMessage(lifecycle, provider),
     userRejectMessage: (
       lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>
-    ) => void rejectMessage(lifecycle, "USER")
+    ) => void rejectMessage(lifecycle, "USER"),
+    toggleNotice: () =>
+      void dispatch({ type: "set-notice", data: { show: !state.notice.show } })
   };
 
   return (

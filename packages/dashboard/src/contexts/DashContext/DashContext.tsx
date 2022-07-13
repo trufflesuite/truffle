@@ -13,6 +13,7 @@ type contextValue = {
     userRejectMessage: (
       lifecycle: ReceivedMessageLifecycle<DashboardProviderMessage>
     ) => any;
+    toggleNotice: () => void;
   };
 };
 

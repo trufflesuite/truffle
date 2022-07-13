@@ -24,7 +24,7 @@ import type noticeContentType from "src/components/composed/Notice/noticeContent
 type actionType =
   | { type: "set-client"; data: DashboardMessageBusClient }
   | { type: "set-chain-info"; data: stateType["chainInfo"] }
-  | { type: "set-notice"; data: stateType["notice"] }
+  | { type: "set-notice"; data: Partial<stateType["notice"]> }
   | {
       type: "handle-message";
       data: {
@@ -77,7 +77,7 @@ const reducer = (state: stateType, action: actionType): stateType => {
     case "set-chain-info":
       return { ...state, chainInfo: data };
     case "set-notice":
-      return { ...state, notice: data };
+      return { ...state, notice: { ...state.notice, ...data } };
     case "handle-message":
       const { lifecycle, provider } = data;
       const { message } = lifecycle;
