@@ -39,6 +39,7 @@ describe("nativize (ethers format)", function () {
   });
 
   it("should compatibly nativize return values and event arguments", async function () {
+    this.timeout(4000);
     const { CompatibleNativizeTest } = abstractions;
     const instance = await CompatibleNativizeTest.new();
 
