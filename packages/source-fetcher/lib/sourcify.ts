@@ -94,7 +94,9 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     "energyweb",
     "volta-energyweb",
     //sourcify does *not* support godwoken mainnet...?
-    "testnet-godwoken"
+    "testnet-godwoken",
+    //sourcify does *not* support xinfin mainnet...?
+    "apothem-xinfin"
     //I'm excluding crystaleum as it has network ID different from chain ID
   ]);
 
