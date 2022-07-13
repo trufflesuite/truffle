@@ -2396,20 +2396,6 @@
     ethers "^5.0.13"
     js-sha3 "^0.8.0"
 
-"@ensdomains/ensjs@^2.0.1":
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/@ensdomains/ensjs/-/ensjs-2.0.1.tgz#c27438f9ca074825ddb08430988c7decf2062a91"
-  integrity sha512-gZLntzE1xqPNkPvaHdJlV5DXHms8JbHBwrXc2xNrL1AylERK01Lj/txCCZyVQqFd3TvUO1laDbfUv8VII0qrjg==
-  dependencies:
-    "@babel/runtime" "^7.4.4"
-    "@ensdomains/address-encoder" "^0.1.7"
-    "@ensdomains/ens" "0.4.3"
-    "@ensdomains/resolver" "0.2.4"
-    content-hash "^2.5.2"
-    eth-ens-namehash "^2.0.8"
-    ethers "^5.0.13"
-    js-sha3 "^0.8.0"
-
 "@ensdomains/ensjs@^2.1.0":
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/@ensdomains/ensjs/-/ensjs-2.1.0.tgz#0a7296c1f3d735ef019320d863a7846a0760c460"
