@@ -20,7 +20,6 @@
     "prepare": "yarn compile",
     "publish:next": "node ../truffle/scripts/prereleaseVersion.js next next"
   },
-  "typings": "./typings/index.d.ts",
   "dependencies": {
     "@ensdomains/ensjs": "^2.0.1",
     "@truffle/blockchain-utils": "^0.1.3",
