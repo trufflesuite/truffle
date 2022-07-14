@@ -222,7 +222,7 @@ function* fetchTx(txHash, loadOptions) {
     yield* txlog.begin();
   }
   try {
-    //finally, set storage visibility.  We do this even in light mode, since
+    //finally, enable storage lookup.  We do this even in light mode, since
     //full mode might be set later, and we have to do it on loading the tx.
     //Ideally this would be done earlier, but in the current setup, it can't
     //occur until after evm.begin(), so it's here.
