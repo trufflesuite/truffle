@@ -187,6 +187,8 @@ const runCommand = async function (command, options) {
 const displayGeneralHelp = () => {
   const yargs = require("yargs/yargs")();
   commands.forEach(command => {
+    // Exclude "install" and "publish" commands from the generated help list
+    // because they have been deprecated/removed.
     if (command !== "install" && command !== "publish") {
       yargs.command(require(`./commands/${command}/meta`));
     }
