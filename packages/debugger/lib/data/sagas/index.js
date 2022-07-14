@@ -747,11 +747,22 @@ function* variablesAndMappingsSaga() {
 
 function* decodeMappingKeySaga(indexDefinition, keyDefinition) {
   //something of a HACK -- cleans any out-of-range booleans
-  //resulting from the main mapping key decoding loop
-  const indexValue = yield* decodeMappingKeyCore(
-    indexDefinition,
-    keyDefinition
-  );
+  //resulting from the main mapping key decoding loop,
+  //and also filters out errors
+  let indexValue = yield* decodeMappingKeyCore(indexDefinition, keyDefinition);
+  if (indexValue) {
+    indexValue = Codec.Conversion.cleanBool(indexValue);
+    switch (indexValue.kind) {
+      case "value":
+        return indexValue;
+      case "error":
+        //if it's still an error after cleaning booleans...
+        //let's not store it as a mapping key
+        return null;
+    }
+  } else {
+    return indexValue;
+  }
   return indexValue ? Codec.Conversion.cleanBool(indexValue) : indexValue;
 }
 
@@ -1028,12 +1039,7 @@ function fetchBasePath(
   return null;
 }
 
-export function* decode(
-  definition,
-  ref,
-  compilationId,
-  indicateUnknown = false
-) {
+export function* decode(definition, ref, compilationId) {
   const userDefinedTypes = yield select(data.views.userDefinedTypes);
   const state = yield select(data.current.state);
   const mappingKeys = yield select(data.views.mappingKeys);
@@ -1071,7 +1077,7 @@ export function* decode(
     let response;
     switch (request.type) {
       case "storage":
-        response = yield* evm.requestStorage(request.slot, indicateUnknown);
+        response = yield* evm.requestStorage(request.slot);
         break;
       case "code":
         response = yield* evm.requestCode(request.address);

@@ -492,10 +492,7 @@ export default class Session {
     return true;
   }
 
-  /**
-   * see variables() for supported options
-   */
-  async variable(name, options) {
+  async variable(name) {
     const definitions = this.view(data.current.identifiers.definitions);
     const refs = this.view(data.current.identifiers.refs);
     const compilationId = this.view(data.current.compilationId);
@@ -507,16 +504,11 @@ export default class Session {
       dataSagas.decode,
       definitions[name],
       refs[name],
-      compilationId,
-      (options || {}).indicateUnknown
+      compilationId
     );
   }
 
-  /**
-   * only current option is indicateUnknown, which causes unknown storage
-   * to yield a StorageNotSuppliedError instead of zero
-   */
-  async variables(options) {
+  async variables() {
     if (!this.view(session.status.loaded)) {
       return {};
     }
@@ -530,8 +522,7 @@ export default class Session {
           dataSagas.decode,
           definitions[identifier],
           ref,
-          compilationId,
-          (options || {}).indicateUnknown
+          compilationId
         );
       }
     }

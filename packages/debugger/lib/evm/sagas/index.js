@@ -61,7 +61,6 @@ export function* recordStorage(address, slot, word) {
 //go away on a reset!  Yes, this is a little weird, but we
 //decided this is OK for now
 export function* requestCode(address) {
-  const NO_CODE = new Uint8Array(); //empty array
   const blockNumber = (yield select(
     evm.transaction.globals.block
   )).number.toString();
@@ -70,12 +69,8 @@ export function* requestCode(address) {
   if (address in instances) {
     //because this function is used by data, we return a Uint8Array
     return Codec.Conversion.toBytes(instances[address].binary);
-  } else if (address === Codec.Evm.Utils.ZERO_ADDRESS) {
-    //HACK: to avoid displaying the zero address to the user as an
-    //affected address just because they decoded a contract or external
-    //function variable that hadn't been initialized yet, we give the
-    //zero address's codelessness its own private cache :P
-    return NO_CODE;
+    //former special case here for zero address is now gone since it's
+    //now covered by this case
   } else {
     //I don't want to write a new web3 saga, so let's just use
     //obtainBinaries with a one-element array
@@ -89,7 +84,7 @@ export function* requestCode(address) {
 
 //NOTE: just like requestCode, this can also add to the codex!
 //yes, this is also weird.
-export function* requestStorage(slot, indicateUnknown) {
+export function* requestStorage(slot) {
   //slot is a BN here
   const currentStorage = yield select(evm.current.codex.storage);
   const slotAsHex = Codec.Conversion.toHexString(slot).slice(2); //remove 0x prefix
@@ -106,13 +101,9 @@ export function* requestStorage(slot, indicateUnknown) {
     const word = yield* web3.obtainStorage(address, slot, blockHash, txIndex);
     yield* recordStorage(address, slot, word);
     return Codec.Conversion.toBytes(word);
-  } else if (indicateUnknown) {
+  } else {
     //indicates to codec this storage is unknown
     return null;
-  } else {
-    const ZERO_WORD = new Uint8Array(Codec.Evm.Utils.WORD_SIZE); //automatically filled with zeroes
-    return ZERO_WORD; //if we weren't told to indicate unknowns, and
-    //storage lookup is turned off, we assume anything unknown is zero
   }
 }
 
