@@ -28,7 +28,7 @@ const Debugger = {
    * @return {Debugger} instance
    */
   forTx: async function (txHash, options = {}) {
-    let { contracts, files, provider, compilations, lightMode, fetchStorage } =
+    let { contracts, files, provider, compilations, lightMode, storageLookup } =
       options;
     if (!compilations) {
       compilations = Compilations.Utils.shimArtifacts(contracts, files);
@@ -36,7 +36,7 @@ const Debugger = {
     let session = new Session(
       compilations,
       provider,
-      { lightMode, fetchStorage },
+      { lightMode, storageLookup },
       txHash
     );
 

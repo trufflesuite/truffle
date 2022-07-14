@@ -191,20 +191,9 @@ const data = createSelectorTree({
    */
   application: {
     /**
-     * data.application.allStorageVisible
+     * data.application.storageLookup
      */
-    allStorageVisible: createLeaf(
-      ["/state"],
-      state => state.application.allStorageVisible
-    ),
-
-    /**
-     * data.application.storageVisibilitySupported
-     */
-    storageVisibilitySupported: createLeaf(
-      ["/state"],
-      state => state.application.storageVisibilitySupported
-    )
+    storageLookup: createLeaf([evm.application.storageLookup], identity)
   },
 
   /**

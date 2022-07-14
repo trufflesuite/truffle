@@ -12,9 +12,8 @@ import {
 
 import { TICK } from "lib/trace/actions";
 import * as actions from "../actions";
-import * as trace from "lib/trace/sagas";
 import * as evm from "lib/evm/sagas";
-import * as web3 from "lib/web3/sagas";
+import * as trace from "lib/trace/sagas";
 
 import data from "../selectors";
 
@@ -1044,7 +1043,7 @@ export function* decode(
   const internalFunctionsTable = yield select(
     data.current.functionsByProgramCounter
   );
-  const allStorageVisible = yield select(data.application.allStorageVisible);
+  const storageLookup = yield select(data.application.storageLookup);
 
   debug("definition: %o");
   debug("ref: %o");
@@ -1075,8 +1074,8 @@ export function* decode(
     let response;
     switch (request.type) {
       case "storage":
-        if (allStorageVisible) {
-          response = yield* requestStorage(request.slot);
+        if (storageLookup) {
+          response = yield* evm.requestStorage(request.slot);
         } else if (indicateUnknown) {
           //the debugger supplies all storage it knows at the beginning.
           //so anything it gets a request for can be presumed to be
@@ -1089,7 +1088,7 @@ export function* decode(
         }
         break;
       case "code":
-        response = yield* requestCode(request.address);
+        response = yield* evm.requestCode(request.address);
         break;
       default:
         debug("unrecognized request type!");
@@ -1141,7 +1140,7 @@ export function* decodeReturnValue() {
     switch (request.type) {
       //skip storage case, it won't happen here
       case "code":
-        response = yield* requestCode(request.address);
+        response = yield* evm.requestCode(request.address);
         break;
       default:
         debug("unrecognized request type!");
@@ -1206,7 +1205,7 @@ export function* decodeCall(decodeCurrent = false) {
     switch (request.type) {
       //skip storage case, it won't happen here
       case "code":
-        response = yield* requestCode(request.address);
+        response = yield* evm.requestCode(request.address);
         break;
       default:
         debug("unrecognized request type!");
@@ -1254,7 +1253,7 @@ export function* decodeLog() {
     switch (request.type) {
       //skip storage case, it won't happen here
       case "code":
-        response = yield* requestCode(request.address);
+        response = yield* evm.requestCode(request.address);
         break;
       default:
         debug("unrecognized request type!");
@@ -1266,91 +1265,6 @@ export function* decodeLog() {
   debug("done decoding");
   debug("decoded value: %O", result.value);
   return result.value;
-}
-
-//NOTE: calling this *can* add a new instance, which will not
-//go away on a reset!  Yes, this is a little weird, but we
-//decided this is OK for now
-function* requestCode(address) {
-  const NO_CODE = new Uint8Array(); //empty array
-  const blockNumber = yield select(data.views.blockNumber);
-  const instances = yield select(data.views.instances);
-
-  if (address in instances) {
-    return instances[address];
-  } else if (address === Codec.Evm.Utils.ZERO_ADDRESS) {
-    //HACK: to avoid displaying the zero address to the user as an
-    //affected address just because they decoded a contract or external
-    //function variable that hadn't been initialized yet, we give the
-    //zero address's codelessness its own private cache :P
-    return NO_CODE;
-  } else {
-    //I don't want to write a new web3 saga, so let's just use
-    //obtainBinaries with a one-element array
-    debug("fetching binary");
-    let binary = (yield* web3.obtainBinaries([address], blockNumber))[0];
-    debug("adding instance");
-    yield* evm.addInstance(address, binary);
-    return Codec.Conversion.toBytes(binary);
-  }
-}
-
-//NOTE: just like requestCode, this can also add to the codex!
-//yes, this is also weird.
-function* requestStorage(slot) {
-  //since the debugger only requests storage when it doesn't know it,
-  //we won't bother here with a check regarding whether we already
-  //know this storage or not; we can assume that we don't
-  //NOTE: this is also assuming that no individual variable ever requires
-  //reading the same storage value twice in the course of decoding!
-  //this assumption is presently true, but if it ever becomes false, then it
-  //will become necessary to add that check here (not that the result would
-  //be *wrong* without such a check, but it would cause unnecessary network
-  //requests)
-  const address = yield select(data.current.address);
-  const blockHash = yield select(data.views.blockHash); //cannot use number here!
-  const txIndex = yield select(data.views.txIndex);
-  const word = yield* web3.obtainStorage(address, slot, blockHash, txIndex);
-  yield* evm.recordStorage(address, slot, word);
-  return Codec.Conversion.toBytes(word);
-}
-
-function* isStorageVisibilitySupported() {
-  const storedValue = yield select(data.application.storageVisibilitySupported);
-  //exit out early if it's already set
-  if (storedValue !== null) {
-    return storedValue;
-  }
-  const blockHash = yield select(data.views.blockHash); //cannot use number here!
-  let supported;
-  try {
-    //note we need to use a blockHash and txIndex that actually exists, otherwise
-    //we'll get an error for a different reason; that's why this procedure is
-    //only performed once we have a transaction loaded, even though notionally it's
-    //independent of any transaction
-    yield* web3.obtainStorage(
-      Codec.Evm.Utils.ZERO_ADDRESS,
-      new BN(0),
-      blockHash,
-      0 //to avoid delays, we'll use 0 rather than the actual tx index...
-      //index 0 certainly exists as long as the block has any transactions!
-    ); //throw away the value
-    supported = true;
-  } catch {
-    supported = false;
-  }
-  yield put(actions.setStorageVisibilitySupport(supported));
-  return supported;
-}
-
-export function* setStorageVisibility(visibility) {
-  const supported = yield* isStorageVisibilitySupported();
-  if (visibility && !supported) {
-    throw new Error(
-      "The fetchStorage option was passed, but the debug_storageRangeAt method is not available on this client."
-    );
-  }
-  yield put(actions.setStorageVisibility(visibility));
 }
 
 export function* reset() {

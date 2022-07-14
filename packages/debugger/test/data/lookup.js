@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("debugger:test:data:fetch-storage");
+const debug = debugModule("debugger:test:data:lookup");
 
 import { assert } from "chai";
 import { promisify } from "util";
@@ -32,7 +32,7 @@ const sources = {
   "SimpleStorage.sol": __SIMPLE
 };
 
-describe("Fetch storage option", function () {
+describe("Storage lookup option", function () {
   let provider;
 
   let abstractions;
@@ -47,7 +47,7 @@ describe("Fetch storage option", function () {
     });
   }
 
-  async function waitForSent(promiEvent) {
+  async function waitForTransactionHash(promiEvent) {
     return new Promise((accept, reject) =>
       promiEvent.once("transactionHash", accept).once("error", reject)
     );
@@ -88,17 +88,17 @@ describe("Fetch storage option", function () {
 
     const instancePromiEvent = abstractions.SimpleStorage.new(1); //don't await it yet!
     debug("awaiting sending...");
-    await waitForSent(instancePromiEvent);
+    await waitForTransactionHash(instancePromiEvent);
     debug("awaiting first mine...");
     await mine();
     debug("first mined");
     const instance = await instancePromiEvent; //await it once we've done a mine
     debug("got instance, awaiting sending of tx #1");
-    await waitForSent(instance.set(3)); //just here to provide a previous value
+    await waitForTransactionHash(instance.set(3)); //just here to provide a previous value
     debug("tx #1 sent, sending tx #2");
     const txPromiEvent = instance.set(5); //again, don't await it yet
     debug("awaiting sending of #2");
-    await waitForSent(txPromiEvent);
+    await waitForTransactionHash(txPromiEvent);
     debug("awaiting second mine...");
     await mine();
     debug("second mined");
@@ -112,7 +112,7 @@ describe("Fetch storage option", function () {
     const bugger = await Debugger.forTx(txHash, {
       provider,
       compilations,
-      fetchStorage: true
+      storageLookup: true
     });
 
     await bugger.stepNext(); //just step into the contract

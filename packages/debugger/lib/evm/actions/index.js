@@ -151,3 +151,19 @@ export function unloadTransaction() {
     type: UNLOAD_TRANSACTION
   };
 }
+
+export const SET_STORAGE_LOOKUP = "EVM_SET_STORAGE_LOOKUP";
+export function setStorageLookup(status) {
+  return {
+    type: SET_STORAGE_LOOKUP,
+    status
+  };
+}
+
+export const SET_STORAGE_LOOKUP_SUPPORT = "EVM_SET_STORAGE_LOOKUP_SUPPORT";
+export function setStorageLookupSupport(status) {
+  return {
+    type: SET_STORAGE_LOOKUP_SUPPORT,
+    status
+  };
+}

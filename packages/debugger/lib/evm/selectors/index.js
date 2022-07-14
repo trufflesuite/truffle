@@ -452,6 +452,27 @@ const evm = createSelectorTree({
   state: state => state.evm,
 
   /**
+   * evm.application
+   */
+  application: {
+    /**
+     * evm.application.storageLookup
+     */
+    storageLookup: createLeaf(
+      ["/state"],
+      state => state.application.storageLookup
+    ),
+
+    /**
+     * evm.application.storageLookupSupported
+     */
+    storageLookupSupported: createLeaf(
+      ["/state"],
+      state => state.application.storageLookupSupported
+    )
+  },
+
+  /**
    * evm.info
    */
   info: {

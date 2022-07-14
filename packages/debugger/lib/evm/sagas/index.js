@@ -4,12 +4,14 @@ const debug = debugModule("debugger:evm:sagas");
 import { put, takeEvery, select } from "redux-saga/effects";
 import { prefixName, keccak256 } from "lib/helpers";
 import * as Codec from "@truffle/codec";
+import BN from "bn.js";
 
 import { TICK } from "lib/trace/actions";
 import * as actions from "../actions";
 
 import evm from "../selectors";
 
+import * as web3 from "lib/web3/sagas";
 import * as trace from "lib/trace/sagas";
 
 /**
@@ -53,6 +55,57 @@ export function* recordStorage(address, slot, word) {
     Codec.Evm.Utils.WORD_SIZE
   ).slice(2); //remove "0x" prefix in addition to converting to hex
   yield put(actions.load(address, slotAsPrefixlessHex, word));
+}
+
+//NOTE: calling this *can* add a new instance, which will not
+//go away on a reset!  Yes, this is a little weird, but we
+//decided this is OK for now
+export function* requestCode(address) {
+  const NO_CODE = new Uint8Array(); //empty array
+  const blockNumber = (yield select(
+    evm.transaction.globals.block
+  )).number.toString();
+  const instances = yield select(evm.current.codex.instances);
+
+  if (address in instances) {
+    //because this function is used by data, we return a Uint8Array
+    return Codec.Conversion.toBytes(instances[address].binary);
+  } else if (address === Codec.Evm.Utils.ZERO_ADDRESS) {
+    //HACK: to avoid displaying the zero address to the user as an
+    //affected address just because they decoded a contract or external
+    //function variable that hadn't been initialized yet, we give the
+    //zero address's codelessness its own private cache :P
+    return NO_CODE;
+  } else {
+    //I don't want to write a new web3 saga, so let's just use
+    //obtainBinaries with a one-element array
+    debug("fetching binary");
+    let binary = (yield* web3.obtainBinaries([address], blockNumber))[0];
+    debug("adding instance");
+    yield* addInstance(address, binary);
+    return Codec.Conversion.toBytes(binary);
+  }
+}
+
+//NOTE: just like requestCode, this can also add to the codex!
+//yes, this is also weird.
+export function* requestStorage(slot) {
+  //since the debugger only requests storage when it doesn't know it,
+  //we won't bother here with a check regarding whether we already
+  //know this storage or not; we can assume that we don't
+  //NOTE: this is also assuming that no individual variable ever requires
+  //reading the same storage value twice in the course of decoding!
+  //this assumption is presently true, but if it ever becomes false, then it
+  //will become necessary to add that check here (not that the result would
+  //be *wrong* without such a check, but it would cause unnecessary network
+  //requests)
+  const address = (yield select(evm.current.call)).storageAddress;
+  const blockHash = yield select(evm.transaction.blockHash); //cannot use number here!
+  const txIndex = yield select(evm.transaction.txIndex);
+  const word = yield* web3.obtainStorage(address, slot, blockHash, txIndex);
+  yield* recordStorage(address, slot, word);
+  //because this function is used by data, we return a Uint8Array
+  return Codec.Conversion.toBytes(word);
 }
 
 /**
@@ -233,6 +286,44 @@ export function* reset() {
 
 export function* unload() {
   yield put(actions.unloadTransaction());
+}
+
+export function* setStorageLookup(status) {
+  const supported = yield* isStorageLookupSupported();
+  if (status && !supported) {
+    throw new Error(
+      "The storageLookup option was passed, but the debug_storageRangeAt method is not available on this client."
+    );
+  }
+  yield put(actions.setStorageLookup(status));
+}
+
+function* isStorageLookupSupported() {
+  const storedValue = yield select(evm.application.storageLookupSupported);
+  //exit out early if it's already set
+  if (storedValue !== null) {
+    return storedValue;
+  }
+  const blockHash = yield select(evm.transaction.blockHash); //cannot use number here!
+  let supported;
+  try {
+    //note we need to use a blockHash and txIndex that actually exists, otherwise
+    //we'll get an error for a different reason; that's why this procedure is
+    //only performed once we have a transaction loaded, even though notionally it's
+    //independent of any transaction
+    yield* web3.obtainStorage(
+      Codec.Evm.Utils.ZERO_ADDRESS,
+      new BN(0),
+      blockHash,
+      0 //to avoid delays, we'll use 0 rather than the actual tx index...
+      //index 0 certainly exists as long as the block has any transactions!
+    ); //throw away the value
+    supported = true;
+  } catch {
+    supported = false;
+  }
+  yield put(actions.setStorageLookupSupport(supported));
+  return supported;
 }
 
 export function* saga() {

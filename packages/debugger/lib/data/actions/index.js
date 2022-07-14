@@ -99,20 +99,3 @@ export function allocate(
     state
   };
 }
-
-export const SET_STORAGE_VISIBILITY = "DATA_SET_STORAGE_VISIBILITY";
-export function setStorageVisibility(visibility) {
-  return {
-    type: SET_STORAGE_VISIBILITY,
-    visibility
-  };
-}
-
-export const SET_STORAGE_VISIBILITY_SUPPORT =
-  "DATA_SET_STORAGE_VISIBILITY_SUPPORT";
-export function setStorageVisibilitySupport(visibility) {
-  return {
-    type: SET_STORAGE_VISIBILITY_SUPPORT,
-    visibility
-  };
-}

@@ -432,10 +432,32 @@ const proc = combineReducers({
   codex
 });
 
+function storageLookup(state = null, action) {
+  if (action.type === actions.SET_STORAGE_LOOKUP) {
+    return Boolean(action.status); //force Boolean to prevent undefined
+  } else {
+    return state;
+  }
+}
+
+function storageLookupSupported(state = null, action) {
+  if (action.type === actions.SET_STORAGE_LOOKUP_SUPPORT) {
+    return action.status;
+  } else {
+    return state;
+  }
+}
+
+const application = combineReducers({
+  storageLookupSupported,
+  storageLookup
+});
+
 const reducer = combineReducers({
   info,
   transaction,
-  proc
+  proc,
+  application
 });
 
 export default reducer;

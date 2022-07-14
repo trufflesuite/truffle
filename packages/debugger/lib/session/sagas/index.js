@@ -226,7 +226,7 @@ function* fetchTx(txHash, loadOptions) {
     //full mode might be set later, and we have to do it on loading the tx.
     //Ideally this would be done earlier, but in the current setup, it can't
     //occur until after evm.begin(), so it's here.
-    yield* data.setStorageVisibility(loadOptions.fetchStorage);
+    yield* evm.setStorageLookup(loadOptions.storageLookup);
   } catch (error) {
     //remember, this function *returns* errors rather than throwing them!
     return error;
