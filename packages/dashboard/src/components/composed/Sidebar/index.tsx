@@ -1,7 +1,8 @@
-import { Navbar, Divider } from "@mantine/core";
+import { Navbar } from "@mantine/core";
 import Top from "src/components/composed/Sidebar/Top";
 import Middle from "src/components/composed/Sidebar/Middle";
 import Bottom from "src/components/composed/Sidebar/Bottom";
+import Divider from "src/components/composed/Sidebar/Divider";
 
 function Sidebar(): JSX.Element {
   return (
