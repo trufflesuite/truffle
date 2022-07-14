@@ -53,6 +53,15 @@ export function saveGlobals(origin, gasprice, block) {
   };
 }
 
+export const SAVE_TX_IDENTIFICATION = "EVM_SAVE_TX_IDENTIFICATION";
+export function saveTxIdentification(blockHash, txIndex) {
+  return {
+    type: SAVE_TX_IDENTIFICATION,
+    blockHash,
+    txIndex
+  };
+}
+
 export const SAVE_STATUS = "EVM_SAVE_STATUS";
 export function saveStatus(status) {
   return {
@@ -140,5 +149,21 @@ export const UNLOAD_TRANSACTION = "EVM_UNLOAD_TRANSACTION";
 export function unloadTransaction() {
   return {
     type: UNLOAD_TRANSACTION
+  };
+}
+
+export const SET_STORAGE_LOOKUP = "EVM_SET_STORAGE_LOOKUP";
+export function setStorageLookup(status) {
+  return {
+    type: SET_STORAGE_LOOKUP,
+    status
+  };
+}
+
+export const SET_STORAGE_LOOKUP_SUPPORT = "EVM_SET_STORAGE_LOOKUP_SUPPORT";
+export function setStorageLookupSupport(status) {
+  return {
+    type: SET_STORAGE_LOOKUP_SUPPORT,
+    status
   };
 }

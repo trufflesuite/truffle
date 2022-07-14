@@ -23,12 +23,41 @@ export function fetchBinary(address, block) {
   };
 }
 
+export const FETCH_STORAGE = "FETCH_STORAGE";
+export function fetchStorage(address, slot, blockHash, txIndex) {
+  return {
+    type: FETCH_STORAGE,
+    address,
+    slot,
+    blockHash,
+    txIndex
+  };
+}
+
 export const RECEIVE_BINARY = "RECEIVE_BINARY";
 export function receiveBinary(address, binary) {
   return {
     type: RECEIVE_BINARY,
     address,
     binary
+  };
+}
+
+export const RECEIVE_STORAGE = "RECEIVE_STORAGE";
+export function receiveStorage(address, slot, word) {
+  return {
+    type: RECEIVE_STORAGE,
+    address,
+    slot,
+    word
+  };
+}
+
+export const RECEIVE_STORAGE_FAIL = "RECEIVE_STORAGE_FAIL";
+export function receiveStorageFail(error) {
+  return {
+    type: RECEIVE_STORAGE_FAIL,
+    error
   };
 }
 
@@ -50,7 +79,9 @@ export function receiveCall({
   sender,
   value,
   gasprice,
-  block
+  block,
+  blockHash,
+  txIndex
 }) {
   return {
     type: RECEIVE_CALL,
@@ -62,7 +93,9 @@ export function receiveCall({
     sender,
     value,
     gasprice,
-    block
+    block,
+    blockHash,
+    txIndex
   };
 }
 

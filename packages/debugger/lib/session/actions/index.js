@@ -8,10 +8,11 @@ export function start(provider, txHash) {
 }
 
 export const LOAD_TRANSACTION = "SESSION_LOAD_TRANSACTION";
-export function loadTransaction(txHash) {
+export function loadTransaction(txHash, options) {
   return {
     type: LOAD_TRANSACTION,
-    txHash
+    txHash,
+    options
   };
 }
 
@@ -95,7 +96,9 @@ export function setFullMode() {
 
 export const START_FULL_MODE = "SESSION_START_FULL_MODE";
 export function startFullMode() {
-  return { type: START_FULL_MODE };
+  return {
+    type: START_FULL_MODE
+  };
 }
 
 export const ADD_COMPILATIONS = "SESSION_ADD_COMPILATIONS";
@@ -105,5 +108,13 @@ export function addCompilations(sources, contexts, contracts) {
     sources,
     contexts,
     contracts
+  };
+}
+
+export const SET_STORAGE_VISIBILITY = "SESSION_SET_STORAGE_VISIBILITY";
+export function setStorageVisibility(visibility) {
+  return {
+    type: SET_STORAGE_VISIBILITY,
+    visibility
   };
 }

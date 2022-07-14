@@ -12,9 +12,8 @@ import {
 
 import { TICK } from "lib/trace/actions";
 import * as actions from "../actions";
-import * as trace from "lib/trace/sagas";
 import * as evm from "lib/evm/sagas";
-import * as web3 from "lib/web3/sagas";
+import * as trace from "lib/trace/sagas";
 
 import data from "../selectors";
 
@@ -748,11 +747,22 @@ function* variablesAndMappingsSaga() {
 
 function* decodeMappingKeySaga(indexDefinition, keyDefinition) {
   //something of a HACK -- cleans any out-of-range booleans
-  //resulting from the main mapping key decoding loop
-  const indexValue = yield* decodeMappingKeyCore(
-    indexDefinition,
-    keyDefinition
-  );
+  //resulting from the main mapping key decoding loop,
+  //and also filters out errors
+  let indexValue = yield* decodeMappingKeyCore(indexDefinition, keyDefinition);
+  if (indexValue) {
+    indexValue = Codec.Conversion.cleanBool(indexValue);
+    switch (indexValue.kind) {
+      case "value":
+        return indexValue;
+      case "error":
+        //if it's still an error after cleaning booleans...
+        //let's not store it as a mapping key
+        return null;
+    }
+  } else {
+    return indexValue;
+  }
   return indexValue ? Codec.Conversion.cleanBool(indexValue) : indexValue;
 }
 
@@ -1029,12 +1039,7 @@ function fetchBasePath(
   return null;
 }
 
-export function* decode(
-  definition,
-  ref,
-  compilationId,
-  indicateUnknown = false
-) {
+export function* decode(definition, ref, compilationId) {
   const userDefinedTypes = yield select(data.views.userDefinedTypes);
   const state = yield select(data.current.state);
   const mappingKeys = yield select(data.views.mappingKeys);
@@ -1048,8 +1053,6 @@ export function* decode(
   debug("definition: %o");
   debug("ref: %o");
   debug("compilationId: %s", compilationId);
-
-  const ZERO_WORD = new Uint8Array(Codec.Evm.Utils.WORD_SIZE); //automatically filled with zeroes
 
   const decoder = Codec.decodeVariable(
     definition,
@@ -1074,19 +1077,16 @@ export function* decode(
     let response;
     switch (request.type) {
       case "storage":
-        //the debugger supplies all storage it knows at the beginning.
-        //any storage it does not know is presumed to be zero.
-        //(unlesss indicateUnknown is passed, in which case we use
-        //null as a deliberately invalid response)
-        response = indicateUnknown ? null : ZERO_WORD;
+        response = yield* evm.requestStorage(request.slot);
         break;
       case "code":
-        response = yield* requestCode(request.address);
+        response = yield* evm.requestCode(request.address);
         break;
       default:
         debug("unrecognized request type!");
     }
     debug("sending response");
+    debug("response: %O", response);
     result = decoder.next(response);
   }
   //at this point, result.value holds the final value
@@ -1132,7 +1132,7 @@ export function* decodeReturnValue() {
     switch (request.type) {
       //skip storage case, it won't happen here
       case "code":
-        response = yield* requestCode(request.address);
+        response = yield* evm.requestCode(request.address);
         break;
       default:
         debug("unrecognized request type!");
@@ -1197,7 +1197,7 @@ export function* decodeCall(decodeCurrent = false) {
     switch (request.type) {
       //skip storage case, it won't happen here
       case "code":
-        response = yield* requestCode(request.address);
+        response = yield* evm.requestCode(request.address);
         break;
       default:
         debug("unrecognized request type!");
@@ -1245,7 +1245,7 @@ export function* decodeLog() {
     switch (request.type) {
       //skip storage case, it won't happen here
       case "code":
-        response = yield* requestCode(request.address);
+        response = yield* evm.requestCode(request.address);
         break;
       default:
         debug("unrecognized request type!");
@@ -1257,33 +1257,6 @@ export function* decodeLog() {
   debug("done decoding");
   debug("decoded value: %O", result.value);
   return result.value;
-}
-
-//NOTE: calling this *can* add a new instance, which will not
-//go away on a reset!  Yes, this is a little weird, but we
-//decided this is OK for now
-function* requestCode(address) {
-  const NO_CODE = new Uint8Array(); //empty array
-  const blockNumber = yield select(data.views.blockNumber);
-  const instances = yield select(data.views.instances);
-
-  if (address in instances) {
-    return instances[address];
-  } else if (address === Codec.Evm.Utils.ZERO_ADDRESS) {
-    //HACK: to avoid displaying the zero address to the user as an
-    //affected address just because they decoded a contract or external
-    //function variable that hadn't been initialized yet, we give the
-    //zero address's codelessness its own private cache :P
-    return NO_CODE;
-  } else {
-    //I don't want to write a new web3 saga, so let's just use
-    //obtainBinaries with a one-element array
-    debug("fetching binary");
-    let binary = (yield* web3.obtainBinaries([address], blockNumber))[0];
-    debug("adding instance");
-    yield* evm.addInstance(address, binary);
-    return Codec.Conversion.toBytes(binary);
-  }
 }
 
 export function* reset() {

@@ -373,7 +373,7 @@ const data = createSelectorTree({
           .filter(slot => slot.key !== undefined)
     ),
 
-    /*
+    /**
      * data.views.blockNumber
      * returns block number as string
      */
@@ -381,7 +381,17 @@ const data = createSelectorTree({
       block.number.toString()
     ),
 
-    /*
+    /**
+     * data.views.blockHash
+     */
+    blockHash: createLeaf([evm.transaction.blockHash], identity),
+
+    /**
+     * data.views.txIndex
+     */
+    txIndex: createLeaf([evm.transaction.txIndex], identity),
+
+    /**
      * data.views.instances
      * same as evm.current.codex.instances, but we just map address => binary,
      * we don't bother with context, and also the code is a Uint8Array
@@ -395,7 +405,7 @@ const data = createSelectorTree({
       )
     ),
 
-    /*
+    /**
      * data.views.contexts
      * same as evm.info.contexts, but:
      * 1. we strip out fields irrelevant to codec

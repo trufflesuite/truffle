@@ -73,6 +73,7 @@ export function* saga(moduleOptions) {
     //save allocation table
     debug("saving allocation table");
     yield* data.recordAllocations();
+
     //note: we don't need to explicitly set full mode, it's the default
   } else {
     debug("setting light mode");
@@ -86,7 +87,7 @@ export function* saga(moduleOptions) {
   //process transaction (if there is one)
   //(note: this part may also set the error state)
   if (txHash !== undefined) {
-    yield* processTransaction(txHash);
+    yield* processTransaction(txHash, moduleOptions);
   }
 
   debug("readying");
@@ -112,14 +113,14 @@ function* addCompilations({ sources, contexts, contracts }) {
 
 function* startFullMode() {
   debug("session: %O", session);
-  let lightMode = yield select(session.status.lightMode);
+  const lightMode = yield select(session.status.lightMode);
   if (!lightMode) {
     //better not start this twice!
     return;
   }
   debug("turning on data & txlog listeners");
   const listenersToActivate = [data.saga, txlog.saga];
-  for (let listener of listenersToActivate) {
+  for (const listener of listenersToActivate) {
     yield fork(listener);
   }
 
@@ -133,16 +134,20 @@ function* startFullMode() {
 
   yield* trace.addSubmoduleToCount(listenersToActivate.length);
 
-  //begin any full-mode modules that need beginning
-  yield* txlog.begin();
+  if (yield select(session.status.loaded)) {
+    //begin any full-mode modules that need beginning
+    yield* txlog.begin();
+    //we don't need to perform setup regarding storage visibility,
+    //as that will have been already been done on tx load
+  }
 
   yield put(actions.setFullMode());
 }
 
-export function* processTransaction(txHash) {
+export function* processTransaction(txHash, loadOptions) {
   // process transaction
   debug("fetching transaction info");
-  let err = yield* fetchTx(txHash);
+  let err = yield* fetchTx(txHash, loadOptions);
   if (err) {
     debug("error %o", err);
     yield* error(err);
@@ -166,7 +171,7 @@ function* forkListeners(moduleOptions) {
   return yield all(apps.map(app => fork(app.saga)));
 }
 
-function* fetchTx(txHash) {
+function* fetchTx(txHash, loadOptions) {
   let result = yield* web3.inspectTransaction(txHash);
   debug("result %o", result);
 
@@ -215,6 +220,16 @@ function* fetchTx(txHash) {
   if (!(yield select(session.status.lightMode))) {
     //full-mode-only modules
     yield* txlog.begin();
+  }
+  try {
+    //finally, enable storage lookup.  We do this even in light mode, since
+    //full mode might be set later, and we have to do it on loading the tx.
+    //Ideally this would be done earlier, but in the current setup, it can't
+    //occur until after evm.begin(), so it's here.
+    yield* evm.setStorageLookup(loadOptions.storageLookup);
+  } catch (error) {
+    //remember, this function *returns* errors rather than throwing them!
+    return error;
   }
 }
 
@@ -268,6 +283,6 @@ export function* unload() {
 
 //note that load takes an action as its argument, which is why it's separate
 //from processTransaction
-function* load({ txHash }) {
-  yield* processTransaction(txHash);
+function* load({ txHash, options }) {
+  yield* processTransaction(txHash, options);
 }

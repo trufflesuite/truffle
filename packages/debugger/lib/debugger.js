@@ -28,11 +28,17 @@ const Debugger = {
    * @return {Debugger} instance
    */
   forTx: async function (txHash, options = {}) {
-    let { contracts, files, provider, compilations, lightMode } = options;
+    let { contracts, files, provider, compilations, lightMode, storageLookup } =
+      options;
     if (!compilations) {
       compilations = Compilations.Utils.shimArtifacts(contracts, files);
     }
-    let session = new Session(compilations, provider, { lightMode }, txHash);
+    let session = new Session(
+      compilations,
+      provider,
+      { lightMode, storageLookup },
+      txHash
+    );
 
     await session.ready();
 
@@ -50,7 +56,9 @@ const Debugger = {
     if (!compilations) {
       compilations = Compilations.Utils.shimArtifacts(contracts, files);
     }
-    let session = new Session(compilations, provider, { lightMode });
+    let session = new Session(compilations, provider, {
+      lightMode
+    });
 
     await session.ready();
 

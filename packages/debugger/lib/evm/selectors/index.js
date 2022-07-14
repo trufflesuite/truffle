@@ -452,6 +452,27 @@ const evm = createSelectorTree({
   state: state => state.evm,
 
   /**
+   * evm.application
+   */
+  application: {
+    /**
+     * evm.application.storageLookup
+     */
+    storageLookup: createLeaf(
+      ["/state"],
+      state => state.application.storageLookup
+    ),
+
+    /**
+     * evm.application.storageLookupSupported
+     */
+    storageLookupSupported: createLeaf(
+      ["/state"],
+      state => state.application.storageLookupSupported
+    )
+  },
+
+  /**
    * evm.info
    */
   info: {
@@ -502,6 +523,22 @@ const evm = createSelectorTree({
        */
       block: createLeaf(["/state"], state => state.transaction.globals.block)
     },
+
+    /**
+     * evm.transaction.blockHash
+     */
+    blockHash: createLeaf(
+      ["/state"],
+      state => state.transaction.txIdentification.blockHash
+    ),
+
+    /**
+     * evm.transaction.txIndex
+     */
+    txIndex: createLeaf(
+      ["/state"],
+      state => state.transaction.txIdentification.txIndex
+    ),
 
     /**
      * evm.transaction.status
