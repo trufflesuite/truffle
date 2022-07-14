@@ -187,16 +187,6 @@ const data = createSelectorTree({
   state: state => state.data,
 
   /**
-   * data.application
-   */
-  application: {
-    /**
-     * data.application.storageLookup
-     */
-    storageLookup: createLeaf([evm.application.storageLookup], identity)
-  },
-
-  /**
    * data.views
    */
   views: {

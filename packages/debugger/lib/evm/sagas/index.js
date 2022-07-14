@@ -89,23 +89,31 @@ export function* requestCode(address) {
 
 //NOTE: just like requestCode, this can also add to the codex!
 //yes, this is also weird.
-export function* requestStorage(slot) {
-  //since the debugger only requests storage when it doesn't know it,
-  //we won't bother here with a check regarding whether we already
-  //know this storage or not; we can assume that we don't
-  //NOTE: this is also assuming that no individual variable ever requires
-  //reading the same storage value twice in the course of decoding!
-  //this assumption is presently true, but if it ever becomes false, then it
-  //will become necessary to add that check here (not that the result would
-  //be *wrong* without such a check, but it would cause unnecessary network
-  //requests)
-  const address = (yield select(evm.current.call)).storageAddress;
-  const blockHash = yield select(evm.transaction.blockHash); //cannot use number here!
-  const txIndex = yield select(evm.transaction.txIndex);
-  const word = yield* web3.obtainStorage(address, slot, blockHash, txIndex);
-  yield* recordStorage(address, slot, word);
-  //because this function is used by data, we return a Uint8Array
-  return Codec.Conversion.toBytes(word);
+export function* requestStorage(slot, indicateUnknown) {
+  //slot is a BN here
+  const currentStorage = yield select(evm.current.codex.storage);
+  const slotAsHex = Codec.Conversion.toHexString(slot).slice(2); //remove 0x prefix
+  if (slotAsHex in currentStorage) {
+    //because this function is used by data, we return a Uint8Array
+    return Codec.Conversion.toBytes(currentStorage[slotAsHex]);
+  }
+  //if we don't already know it, we'll have to look it up
+  const storageLookup = yield select(evm.application.storageLookup);
+  if (storageLookup) {
+    const address = (yield select(evm.current.call)).storageAddress;
+    const blockHash = yield select(evm.transaction.blockHash); //cannot use number here!
+    const txIndex = yield select(evm.transaction.txIndex);
+    const word = yield* web3.obtainStorage(address, slot, blockHash, txIndex);
+    yield* recordStorage(address, slot, word);
+    return Codec.Conversion.toBytes(word);
+  } else if (indicateUnknown) {
+    //indicates to codec this storage is unknown
+    return null;
+  } else {
+    const ZERO_WORD = new Uint8Array(Codec.Evm.Utils.WORD_SIZE); //automatically filled with zeroes
+    return ZERO_WORD; //if we weren't told to indicate unknowns, and
+    //storage lookup is turned off, we assume anything unknown is zero
+  }
 }
 
 /**

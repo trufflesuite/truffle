@@ -1043,13 +1043,10 @@ export function* decode(
   const internalFunctionsTable = yield select(
     data.current.functionsByProgramCounter
   );
-  const storageLookup = yield select(data.application.storageLookup);
 
   debug("definition: %o");
   debug("ref: %o");
   debug("compilationId: %s", compilationId);
-
-  const ZERO_WORD = new Uint8Array(Codec.Evm.Utils.WORD_SIZE); //automatically filled with zeroes
 
   const decoder = Codec.decodeVariable(
     definition,
@@ -1074,18 +1071,7 @@ export function* decode(
     let response;
     switch (request.type) {
       case "storage":
-        if (storageLookup) {
-          response = yield* evm.requestStorage(request.slot);
-        } else if (indicateUnknown) {
-          //the debugger supplies all storage it knows at the beginning.
-          //so anything it gets a request for can be presumed to be
-          //unknown.
-          response = null;
-        } else {
-          //if indicateUnknown isn't set, all unknown storage is assumed
-          //to be zero.
-          response = ZERO_WORD;
-        }
+        response = yield* evm.requestStorage(request.slot, indicateUnknown);
         break;
       case "code":
         response = yield* evm.requestCode(request.address);
