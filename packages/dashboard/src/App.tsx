@@ -10,13 +10,13 @@ import Layout from "src/components/composed/Layout";
 import Txs from "src/components/composed/Txs";
 import Contracts from "src/components/composed/Contracts";
 import Palette from "src/components/composed/Palette";
-import OpenSans from "src/components/fonts/OpenSans";
+import MantineGlobal from "src/components/MantineGlobal";
 
 function App(): JSX.Element {
   return (
     <div id="app">
       <ColorSchemeWrapper>
-        <OpenSans />
+        <MantineGlobal />
         <MantineWrapper>
           <WagmiWrapper>
             <DashProvider>
