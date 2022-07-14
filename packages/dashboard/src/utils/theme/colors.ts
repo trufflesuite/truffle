@@ -6,7 +6,7 @@ import type {
 } from "@mantine/core";
 
 export type TruffleColorPrefix = "truffle";
-export type TruffleColor = "teal" | "brown";
+export type TruffleColor = "teal" | "beige" | "brown";
 
 export type ExtendedColor =
   | DefaultMantineColor
@@ -32,6 +32,18 @@ const colors: MantineThemeColorsOverride["colors"] = {
     "#30c6a5",
     "#27a186"
   ],
+  "truffle-beige": [
+    "#fcfbfa",
+    "#f8f6f4",
+    "#f5f2ee",
+    "#f1ede8",
+    "#ede8e2",
+    "#cabaa7",
+    "#b6a187",
+    "#a28867",
+    "#846d51",
+    "#64533d"
+  ],
   "truffle-brown": [
     "#a28a91",
     "#92767e",
@@ -41,8 +53,8 @@ const colors: MantineThemeColorsOverride["colors"] = {
     "#45373b",
     "#31272a",
     "#2c2325",
-    "#261e21",
-    "#211a1c"
+    "#292123",
+    "#271f21"
   ]
 };
 

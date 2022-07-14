@@ -16,8 +16,8 @@ function App(): JSX.Element {
   return (
     <div id="app">
       <ColorSchemeWrapper>
-        <MantineGlobal />
         <MantineWrapper>
+          <MantineGlobal />
           <WagmiWrapper>
             <DashProvider>
               <BrowserRouter>
