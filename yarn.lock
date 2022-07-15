@@ -27650,15 +27650,10 @@ typescript-logic@^0.0.0:
   resolved "https://registry.yarnpkg.com/typescript-logic/-/typescript-logic-0.0.0.tgz#66ebd82a2548f2b444a43667bec120b496890196"
   integrity sha512-zXFars5LUkI3zP492ls0VskH3TtdeHCqu0i7/duGt60i5IGPIpAHE/DWo5FqJ6EjQ15YKXrt+AETjv60Dat34Q==
 
-typescript-transform-paths@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/typescript-transform-paths/-/typescript-transform-paths-2.1.0.tgz#3d5c492910c59ce1a7bb762d3078185cbd11940d"
-  integrity sha512-xBzFzS5LTfTjyuT4fuqIk3MLDWsrJTNFs3y17CwVR54G6G/KtTZcVc9UjChgDTuoBffd+Q3oD99UtyDXRpuy/g==
-
-typescript-transform-paths@^3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/typescript-transform-paths/-/typescript-transform-paths-3.1.0.tgz#48f3e50b6b1fb8275cb5657f0651346467da32f4"
-  integrity sha512-JEdKeRgsTlfuzQABkLLyqMvNsHsbXkTgeOwuVTCVG7RYxpVs6wZSsnf9z39l09LBljOiXXpEv3AL2eQnKlJupA==
+typescript-transform-paths@3.3.1:
+  version "3.3.1"
+  resolved "https://registry.yarnpkg.com/typescript-transform-paths/-/typescript-transform-paths-3.3.1.tgz#74526bc1b6dc575ffe269cc81833db7bd81763e1"
+  integrity sha512-c+8Cqd2rsRtTU68rJI0NX/OtqgBDddNs1fIxm1nCNyhn0WpoyqtpUxc1w9Ke5c5kgE4/OT5xYbKf2cf694RYEg==
   dependencies:
     minimatch "^3.0.4"
 
