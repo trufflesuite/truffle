@@ -12,16 +12,16 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "2.0.100",
+  "version": "2.0.101",
   "main": "require.js",
   "scripts": {
     "prepare": "exit 0",
     "test": "mocha"
   },
   "dependencies": {
-    "@truffle/config": "^1.3.31",
+    "@truffle/config": "^1.3.32",
     "@truffle/expect": "^0.1.1",
-    "@truffle/interface-adapter": "^0.5.18",
+    "@truffle/interface-adapter": "^0.5.19",
     "original-require": "^1.0.1"
   },
   "devDependencies": {
