@@ -50,7 +50,7 @@
     "ttypescript": "^1.5.7",
     "typedoc": "0.23.7",
     "typedoc-plugin-remove-references": "^0.0.5",
-    "typescript": "^4.1.4"
+    "typescript": "4.7.4"
   },
   "keywords": [
     "abi",
