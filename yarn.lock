@@ -18032,15 +18032,10 @@ jest-extended@^0.11.5:
     jest-get-type "^22.4.3"
     jest-matcher-utils "^22.0.0"
 
-jest-fast-check@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/jest-fast-check/-/jest-fast-check-1.0.1.tgz#efc8f9041579474b2f37597fd99bceceee0d1449"
-  integrity sha512-zH1pYivl34+rNmF9A63tPmABJmTs3/uUPMBQrXpj/T+D1FxpgSPUF+vEVzxSF8oOAhvSWv0QM4MHjX/rvPqJsw==
-
-jest-fast-check@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/jest-fast-check/-/jest-fast-check-1.0.2.tgz#d670b0a5e646777e6cf54b9b9758342e5f021439"
-  integrity sha512-XuPENBGUN2gaTdPxgPJwFsYp0oj+MieRLpBha0flMxfI01zPHgGkZjGSLThimmsU5XFTGhJYZGVnift7UmsSuw==
+jest-fast-check@2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/jest-fast-check/-/jest-fast-check-2.0.0.tgz#f1aae02c397913cce858866a1c13b9fd979cef0d"
+  integrity sha512-krHAj5Sdx4/Ytk/z9sbPU4C/mMSON+mDX6/e9a6LWlugd3+G9tT7aboyaXzUCNsjb/4xfJt2eXrQDPCq7TxdXA==
 
 jest-get-type@^22.4.3:
   version "22.4.3"
