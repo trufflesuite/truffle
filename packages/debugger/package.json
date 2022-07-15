@@ -58,8 +58,8 @@
     "mochapack": "^2.1.2",
     "nyc": "^13.0.1",
     "tmp": "^0.2.1",
-    "webpack": "^5.65.0",
-    "webpack-cli": "^4.9.1",
+    "webpack": "^5.73.0",
+    "webpack-cli": "^4.10.0",
     "webpack-merge": "^5.8.0",
     "webpack-node-externals": "^3.0.0"
   },
