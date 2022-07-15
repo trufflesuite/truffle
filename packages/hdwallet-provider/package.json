@@ -27,7 +27,7 @@
     "ethereum-cryptography": "1.0.3",
     "ethereum-protocol": "^1.0.1",
     "ethereumjs-util": "^7.1.5",
-    "ethereumjs-wallet": "^1.0.1",
+    "ethereumjs-wallet": "^1.0.2",
     "web3-provider-engine": "16.0.3"
   },
   "devDependencies": {

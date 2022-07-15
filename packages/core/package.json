@@ -58,7 +58,7 @@
     "debug": "^4.3.1",
     "del": "^2.2.0",
     "ethereum-cryptography": "1.0.3",
-    "ethereumjs-wallet": "^1.0.1",
+    "ethereumjs-wallet": "^1.0.2",
     "fs-extra": "^9.1.0",
     "ganache": "7.3.2",
     "get-port": "^5.1.1",
