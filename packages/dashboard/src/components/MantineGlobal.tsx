@@ -50,6 +50,14 @@ function MantineGlobal(): JSX.Element {
             },
             [`${truffleBgColorSelectors}, ${truffleOffBgColorSelectors}`]: {
               transition: "background-color 0.1s"
+            },
+            ".mantine-Alert-icon": {
+              width: 28,
+              height: "auto",
+              "> svg": {
+                height: 28,
+                width: 28
+              }
             }
           }
         ];

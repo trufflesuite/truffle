@@ -1,11 +1,22 @@
-import { Alert } from "@mantine/core";
+import { Alert, Title, Text } from "@mantine/core";
+import { Coffee } from "react-feather";
 
 function Connect(): JSX.Element {
-  const title = "Welcome!";
-  const desc = "Please connect your wallet to start using Truffle Dashboard.";
+  const title = <Title order={4}>Welcome!</Title>;
+  const desc = (
+    <Text size="sm">Connect your wallet to start using Truffle Dashboard.</Text>
+  );
 
   return (
-    <Alert title={title} variant="outline">
+    <Alert
+      title={title}
+      icon={<Coffee />}
+      variant="light"
+      color="truffle-beige"
+      px={30}
+      py="lg"
+      radius="sm"
+    >
       {desc}
     </Alert>
   );
