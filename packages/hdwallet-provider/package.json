@@ -24,7 +24,7 @@
     "@ethereumjs/common": "^2.4.0",
     "@ethereumjs/tx": "^3.3.0",
     "@metamask/eth-sig-util": "4.0.1",
-    "ethereum-cryptography": "1.0.3",
+    "ethereum-cryptography": "1.1.2",
     "ethereum-protocol": "^1.0.1",
     "ethereumjs-util": "^7.1.5",
     "ethereumjs-wallet": "^1.0.2",
