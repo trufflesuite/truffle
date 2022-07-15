@@ -1,3 +1,4 @@
+// The list of commands that Truffle supports
 module.exports = [
   "build",
   "compile",
@@ -12,13 +13,13 @@ module.exports = [
   "exec",
   "help",
   "init",
-  "install",
+  "install", // removed/deprecated
   "migrate",
   "networks",
   "obtain",
   "opcode",
   "preserve",
-  "publish",
+  "publish", // removed/deprecated
   "run",
   "test",
   "unbox",
