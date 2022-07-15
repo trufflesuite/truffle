@@ -34,7 +34,7 @@
     "lodash": "^4.17.21",
     "original-require": "^1.0.1",
     "require-from-string": "^2.0.2",
-    "semver": "^7.3.4",
+    "semver": "7.3.7",
     "solc": "0.8.15"
   },
   "devDependencies": {
