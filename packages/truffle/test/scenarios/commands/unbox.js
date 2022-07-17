@@ -9,6 +9,7 @@ const Config = require("@truffle/config");
 describe("truffle unbox [ @standalone ]", () => {
   let config, tempDir;
   const logger = new MemoryLogger();
+  const DEBUG_ENV_STRING = "*";
 
   beforeEach(() => {
     tempDir = tmp.dirSync({ unsafeCleanup: true });
@@ -19,7 +20,7 @@ describe("truffle unbox [ @standalone ]", () => {
 
   describe("when run without arguments", () => {
     it("unboxes truffle-init-default", async () => {
-      await CommandRunner.run("unbox --force", config);
+      await CommandRunner.run("unbox --force", config, DEBUG_ENV_STRING);
       assert(
         fse.pathExistsSync(
           path.join(tempDir.name, "contracts", "ConvertLib.sol")
@@ -47,7 +48,8 @@ describe("truffle unbox [ @standalone ]", () => {
         it("unboxes successfully", async () => {
           await CommandRunner.run(
             "unbox https://github.com/truffle-box/bare-box",
-            config
+            config,
+            DEBUG_ENV_STRING
           );
           assert(fse.existsSync(path.join(tempDir.name, "truffle-config.js")));
         }).timeout(20000);
@@ -57,7 +59,8 @@ describe("truffle unbox [ @standalone ]", () => {
         it("unboxes successfully", async () => {
           await CommandRunner.run(
             "unbox https://github.com/truffle-box/bare-box#truffle-test-branch",
-            config
+            config,
+            DEBUG_ENV_STRING
           );
           assert(fse.existsSync(path.join(tempDir.name, "truffle-config.js")));
         }).timeout(20000);
@@ -65,7 +68,11 @@ describe("truffle unbox [ @standalone ]", () => {
 
       describe("origin/master", () => {
         it("unboxes successfully", async () => {
-          await CommandRunner.run("unbox truffle-box/bare-box", config);
+          await CommandRunner.run(
+            "unbox truffle-box/bare-box",
+            config,
+            DEBUG_ENV_STRING
+          );
           assert(fse.existsSync(path.join(tempDir.name, "truffle-config.js")));
         }).timeout(20000);
       });
@@ -74,7 +81,8 @@ describe("truffle unbox [ @standalone ]", () => {
         it("unboxes successfully", async () => {
           await CommandRunner.run(
             "unbox truffle-box/bare-box#truffle-test-branch",
-            config
+            config,
+            DEBUG_ENV_STRING
           );
           assert(fse.existsSync(path.join(tempDir.name, "truffle-config.js")));
         }).timeout(20000);
@@ -82,21 +90,25 @@ describe("truffle unbox [ @standalone ]", () => {
 
       describe("official truffle box", () => {
         it("unboxes successfully", async () => {
-          await CommandRunner.run("unbox bare", config);
+          await CommandRunner.run("unbox bare", config, DEBUG_ENV_STRING);
           assert(fse.existsSync(path.join(tempDir.name, "truffle-config.js")));
         }).timeout(20000);
       });
 
       describe("official truffle-box", () => {
         it("unboxes successfully", async () => {
-          await CommandRunner.run("unbox bare-box", config);
+          await CommandRunner.run("unbox bare-box", config, DEBUG_ENV_STRING);
           assert(fse.existsSync(path.join(tempDir.name, "truffle-config.js")));
         }).timeout(20000);
       });
 
       describe("official truffle box + branch", () => {
         it("unboxes successfully", async () => {
-          await CommandRunner.run("unbox bare#truffle-test-branch", config);
+          await CommandRunner.run(
+            "unbox bare#truffle-test-branch",
+            config,
+            DEBUG_ENV_STRING
+          );
           assert(fse.existsSync(path.join(tempDir.name, "truffle-config.js")));
         }).timeout(20000);
       });
@@ -105,7 +117,8 @@ describe("truffle unbox [ @standalone ]", () => {
         it("unboxes successfully", async () => {
           await CommandRunner.run(
             "unbox git@github.com:truffle-box/bare-box",
-            config
+            config,
+            DEBUG_ENV_STRING
           );
           assert(fse.existsSync(path.join(tempDir.name, "truffle-config.js")));
         }).timeout(20000);
@@ -116,7 +129,8 @@ describe("truffle unbox [ @standalone ]", () => {
           try {
             await CommandRunner.run(
               "unbox git@github.com:truffle-box/bare-boxer",
-              config
+              config,
+              DEBUG_ENV_STRING
             );
           } catch (_error) {
             const output = logger.contents();
@@ -129,7 +143,8 @@ describe("truffle unbox [ @standalone ]", () => {
         it("unboxes successfully", async () => {
           await CommandRunner.run(
             "unbox git@github.com:truffle-box/bare-box#truffle-test-branch",
-            config
+            config,
+            DEBUG_ENV_STRING
           );
           assert(fse.existsSync(path.join(tempDir.name, "truffle-config.js")));
         }).timeout(20000);
@@ -140,7 +155,8 @@ describe("truffle unbox [ @standalone ]", () => {
           const myPath = "./candy/cane/lane";
           await CommandRunner.run(
             `unbox truffle-box/bare-box ${myPath}`,
-            config
+            config,
+            DEBUG_ENV_STRING
           );
           assert(
             fse.pathExistsSync(
@@ -157,7 +173,8 @@ describe("truffle unbox [ @standalone ]", () => {
           try {
             await CommandRunner.run(
               "unbox https://github.com/truffle-box/bare-boxing",
-              config
+              config,
+              DEBUG_ENV_STRING
             );
             assert(false, "This should have thrown an error.");
           } catch (_error) {
@@ -170,7 +187,11 @@ describe("truffle unbox [ @standalone ]", () => {
       describe("invalid origin/master", () => {
         it("throws an error", async () => {
           try {
-            await CommandRunner.run("unbox truffle-box/bare-boxer", config);
+            await CommandRunner.run(
+              "unbox truffle-box/bare-boxer",
+              config,
+              DEBUG_ENV_STRING
+            );
             assert(false, "This should have thrown an error.");
           } catch (_error) {
             const output = logger.contents();
@@ -182,7 +203,7 @@ describe("truffle unbox [ @standalone ]", () => {
       describe("invalid official truffle box", () => {
         it("throws an error", async () => {
           try {
-            await CommandRunner.run("unbox barer", config);
+            await CommandRunner.run("unbox barer", config, DEBUG_ENV_STRING);
             assert(false, "This should have thrown an error.");
           } catch (_error) {
             const output = logger.contents();
@@ -196,7 +217,8 @@ describe("truffle unbox [ @standalone ]", () => {
           try {
             await CommandRunner.run(
               "unbox git@github.com:truffle-box/bare-boxer",
-              config
+              config,
+              DEBUG_ENV_STRING
             );
             assert(false, "This should have thrown an error");
           } catch (error) {
@@ -209,7 +231,7 @@ describe("truffle unbox [ @standalone ]", () => {
       describe("invalid box format", () => {
         it("throws an error", async () => {
           try {
-            await CommandRunner.run("unbox bare//", config);
+            await CommandRunner.run("unbox bare//", config, DEBUG_ENV_STRING);
             assert(false, "This should have thrown an error.");
           } catch (_error) {
             const output = logger.contents();
