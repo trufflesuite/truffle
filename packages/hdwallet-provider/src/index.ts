@@ -5,7 +5,7 @@ import {
 import { wordlist } from "ethereum-cryptography/bip39/wordlists/english";
 import * as EthUtil from "ethereumjs-util";
 import ethJSWallet from "ethereumjs-wallet";
-import { hdkey as EthereumHDKey } from "ethereumjs-wallet";
+import { hdkey as EthereumHDKey, default as Wallet } from "ethereumjs-wallet";
 import { Transaction, FeeMarketEIP1559Transaction } from "@ethereumjs/tx";
 import Common from "@ethereumjs/common";
 
@@ -330,7 +330,7 @@ class HDWalletProvider {
 
     // crank the addresses out
     for (let i = addressIndex; i < addressIndex + numberOfAddresses; i++) {
-      const wallet = this.hdwallet
+      const wallet: Wallet = this.hdwallet
         .derivePath(this.walletHdpath + i)
         .getWallet();
       const addr = `0x${wallet.getAddress().toString("hex")}`;

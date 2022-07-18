@@ -31,9 +31,9 @@
     "@types/node": "12.12.21",
     "mocha": "9.2.2",
     "tsd": "^0.15.1",
-    "ttypescript": "^1.5.7",
-    "typescript": "^4.1.4",
-    "typescript-transform-paths": "^2.1.0"
+    "ttypescript": "1.5.13",
+    "typescript-transform-paths": "3.3.1",
+    "typescript": "^4.1.4"
   },
   "keywords": [
     "ethereum",

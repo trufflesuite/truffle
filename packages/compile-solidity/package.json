@@ -34,7 +34,7 @@
     "lodash": "^4.17.21",
     "original-require": "^1.0.1",
     "require-from-string": "^2.0.2",
-    "semver": "^7.3.4",
+    "semver": "7.3.7",
     "solc": "0.8.15"
   },
   "devDependencies": {
@@ -49,9 +49,9 @@
     "mocha": "9.2.2",
     "sinon": "^9.0.2",
     "tmp": "^0.2.1",
-    "ttypescript": "^1.5.12",
-    "typescript": "^4.3.5",
-    "typescript-transform-paths": "^3.1.0"
+    "ttypescript": "1.5.13",
+    "typescript-transform-paths": "3.3.1",
+    "typescript": "^4.3.5"
   },
   "keywords": [
     "compile",

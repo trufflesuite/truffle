@@ -54,7 +54,7 @@
     "glob": "^7.1.6",
     "js-scrypt": "^0.2.0",
     "nyc": "^13.0.1",
-    "semver": "^7.3.4",
+    "semver": "7.3.7",
     "shebang-loader": "0.0.1",
     "stream-buffers": "^3.0.1",
     "tmp": "^0.2.1",
