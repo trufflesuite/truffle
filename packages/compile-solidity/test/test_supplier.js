@@ -118,7 +118,10 @@ describe("CompilerSupplier", function () {
     it("compiles w/ local path solc when options specify path", async function () {
       // If multiple child projects have same solc version dependency, then yarn hoists the solc dependency
       // in the truffle root node_modules folder rather than the local package node_modules folder
-      const pathToSolc = path.join(__dirname, "../node_modules/solc/index.js");
+      const pathToSolc = path.join(
+        __dirname,
+        "../../../node_modules/solc/index.js"
+      );
 
       options.compilers = {
         solc: {
