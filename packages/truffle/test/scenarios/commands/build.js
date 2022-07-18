@@ -9,15 +9,13 @@ describe("truffle build [ @standalone ]", () => {
   let config, project;
 
   describe("when there is no build script in config", () => {
-    beforeEach("set up sandbox", function () {
+    beforeEach("set up sandbox", async function () {
       project = path.join(
         __dirname,
         "../../sources/build/projectWithoutBuildScript"
       );
-      return sandbox.create(project).then(conf => {
-        config = conf;
-        config.logger = logger;
-      });
+      config = await sandbox.create(project);
+      config.logger = logger;
     });
 
     it("should not error", async () => {
@@ -36,16 +34,15 @@ describe("truffle build [ @standalone ]", () => {
   });
 
   describe("when there is a proper build config", () => {
-    beforeEach("set up sandbox", function () {
+    beforeEach("set up sandbox", async function () {
       project = path.join(
         __dirname,
         "../../sources/build/projectWithBuildScript"
       );
-      return sandbox.create(project).then(conf => {
-        config = conf;
-        config.logger = logger;
-      });
+      config = await sandbox.create(project);
+      config.logger = logger;
     });
+
     it("runs the build script", async function () {
       await CommandRunner.run("build", config);
       const output = logger.contents();
@@ -54,16 +51,15 @@ describe("truffle build [ @standalone ]", () => {
   });
 
   describe("when there is an object in the build config", () => {
-    beforeEach("set up sandbox", function () {
+    beforeEach("set up sandbox", async function () {
       project = path.join(
         __dirname,
         "../../sources/build/projectWithObjectInBuildScript"
       );
-      return sandbox.create(project).then(conf => {
-        config = conf;
-        config.logger = logger;
-      });
+      config = await sandbox.create(project);
+      config.logger = logger;
     });
+
     it("tells the user it shouldn't use an object", async function () {
       try {
         await CommandRunner.run("build", config);
