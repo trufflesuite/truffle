@@ -25,7 +25,7 @@
   },
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@ensdomains/ensjs": "^2.0.0",
+    "@ensdomains/ensjs": "^2.1.0",
     "@ethersproject/address": "^5.0.10",
     "@ethersproject/bignumber": "^5.0.14",
     "@truffle/codec": "^0.13.2",
