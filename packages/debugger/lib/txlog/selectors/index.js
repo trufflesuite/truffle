@@ -257,6 +257,34 @@ let txlog = createSelectorTree({
     isLog: createLeaf([evm.current.step.isLog], identity),
 
     /**
+     * txlog.current.rawEventInfo
+     */
+    rawEventInfo: {
+      /**
+       * txlog.current.rawEventInfo.address
+       */
+      address: createLeaf([evm.current.call], call => call.storageAddress),
+
+      /**
+       * txlog.current.rawEventInfo.codeAddress
+       */
+      codeAddress: createLeaf(
+        [evm.current.call],
+        call => call.address || call.storageAddress
+      ),
+
+      /**
+       * txlog.current.rawEventInfo.topics
+       */
+      topics: createLeaf([evm.current.step.logTopics], identity),
+
+      /**
+       * txlog.current.rawEventInfo.data
+       */
+      data: createLeaf([evm.current.step.logData], identity)
+    },
+
+    /**
      * txlog.current.isCall
      */
     isCall: createLeaf([evm.current.step.isCall], identity),

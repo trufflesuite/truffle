@@ -181,12 +181,13 @@ export function identifyFunctionCall(
 }
 
 export const LOG_EVENT = "TXLOG_LOG_EVENT";
-export function logEvent(pointer, newPointer, decoding) {
+export function logEvent(pointer, newPointer, decoding, rawEventInfo) {
   return {
     type: LOG_EVENT,
     pointer,
     newPointer, //does not actually affect current pointer!
-    decoding
+    decoding,
+    rawEventInfo
   };
 }
 
