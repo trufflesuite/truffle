@@ -2,7 +2,7 @@ import path from "path";
 
 import type { CreateOptions, Service } from "ts-node";
 import TruffleConfig from "@truffle/config";
-import { readFileSync } from "fs";
+import { readFile } from "fs/promises";
 
 import originalRequire from "original-require";
 
@@ -22,12 +22,12 @@ const _tsExtensionExpr = /^\.(cts|tsx?)$/i;
  *   transpiled to JavaScript when `scriptPath` has a TypeScript file extension,
  *   otherwise it returns the contents of the `scriptPath` file.
  */
-export function compile(
+export async function compile(
   conf: TruffleConfig,
   sourceFilePath: string,
   context: Object
-): string {
-  const source = readFileSync(sourceFilePath, { encoding: "utf-8" });
+): Promise<string> {
+  const source = await readFile(sourceFilePath, { encoding: "utf-8" });
 
   // we only compile TS files, so just return the source unless we are dealing
   // with one of those
@@ -35,7 +35,7 @@ export function compile(
     return source;
   }
 
-  const compilationService = _getOrCreateCompilationService(
+  const compilationService = await _getOrCreateCompilationService(
     conf,
     sourceFilePath,
     context
@@ -62,11 +62,11 @@ let _compilationService: Service | null = null;
  *
  * @returns an instance of a TypeScript compiler service (TS Compiler API)
  */
-function _getOrCreateCompilationService(
+async function _getOrCreateCompilationService(
   conf: TruffleConfig,
   sourceFilePath: string,
   context: Object
-): Service {
+): Promise<Service> {
   if (_compilationService === null) {
     const createOptions: CreateOptions = {
       cwd: path.dirname(sourceFilePath),
@@ -89,7 +89,7 @@ function _getOrCreateCompilationService(
 
     _compilationService = originalRequire("ts-node").create(createOptions);
 
-    _compileSandboxGlobalContextTypes(_compilationService!);
+    await _compileSandboxGlobalContextTypes(_compilationService!);
 
     _registerTsNode(conf, sourceFilePath, context);
   }
@@ -135,7 +135,7 @@ export function _registerTsNode(
  * Initializes the compiler service with the global types for the sandbox
  * environment.
  */
-function _compileSandboxGlobalContextTypes(compilationService: Service) {
+async function _compileSandboxGlobalContextTypes(compilationService: Service) {
   /*
    * It may seem a bit weird that we're compiling a typescript file here to
    * register the global types w/ the compiler service, but this is
@@ -165,7 +165,7 @@ function _compileSandboxGlobalContextTypes(compilationService: Service) {
     "sandboxGlobalContextTypes.ts"
   );
   compilationService!.compile(
-    readFileSync(sandboxGlobalContextTypesPath, { encoding: "utf-8" }),
+    await readFile(sandboxGlobalContextTypesPath, { encoding: "utf-8" }),
     sandboxGlobalContextTypesPath
   );
 }

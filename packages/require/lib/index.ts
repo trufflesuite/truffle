@@ -11,7 +11,7 @@ import originalRequire from "original-require";
 import { ExecOptions, RequireOptions } from "./types";
 import { compile } from "./typescript";
 
-export function file(options: RequireOptions) {
+export async function file(options: RequireOptions) {
   const sourceFilePath = path.resolve(options.file);
 
   expectOptions(options, ["file"]);
@@ -80,7 +80,7 @@ export function file(options: RequireOptions) {
   const cwd = path.dirname(sourceFilePath);
   process.chdir(cwd);
 
-  const source = compile(conf, sourceFilePath, context);
+  const source = await compile(conf, sourceFilePath, context);
 
   const script = new vm.Script(source, { filename: sourceFilePath });
 
@@ -115,13 +115,12 @@ export function exec(options: ExecOptions, done: (...args: any[]) => void) {
   });
 
   try {
-    const fn = this.file({
+    file({
       file: options.file,
-      context: { web3, interfaceAdapter },
-      resolver: options.resolver,
       config: options
-    });
-    fn(done);
+    })
+      .then(() => done())
+      .catch((error: Error) => done(error));
   } catch (error) {
     done(error);
   }
