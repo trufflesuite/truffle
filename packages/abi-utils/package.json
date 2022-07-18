@@ -26,7 +26,7 @@
   "dependencies": {
     "change-case": "3.0.2",
     "faker": "5.5.3",
-    "fast-check": "^2.12.1"
+    "fast-check": "2.15.1"
   },
   "devDependencies": {
     "@truffle/contract-schema": "^3.4.8",
