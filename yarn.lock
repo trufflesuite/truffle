@@ -20069,10 +20069,10 @@ marked@^1.2.9:
   resolved "https://registry.yarnpkg.com/marked/-/marked-1.2.9.tgz#53786f8b05d4c01a2a5a76b7d1ec9943d29d72dc"
   integrity sha512-H8lIX2SvyitGX+TRdtS06m1jHMijKN/XjfH6Ooii9fvxMlh8QdqBfBDkGUpMWH2kQNrtixjzYUa3SH8ROTgRRw==
 
-marked@^4.0.10:
-  version "4.0.18"
-  resolved "https://registry.yarnpkg.com/marked/-/marked-4.0.18.tgz#cd0ac54b2e5610cfb90e8fd46ccaa8292c9ed569"
-  integrity sha512-wbLDJ7Zh0sqA0Vdg6aqlbT+yPxqLblpAZh1mK2+AO2twQkPywvvqQNfEPVwSSRjZ7dZcdeVBIAgiO7MMp3Dszw==
+marked@~2.0.3:
+  version "2.0.7"
+  resolved "https://registry.yarnpkg.com/marked/-/marked-2.0.7.tgz#bc5b857a09071b48ce82a1f7304913a993d4b7d1"
+  integrity sha512-BJXxkuIfJchcXOJWTT2DOL+yFWifFv2yGYOUzvXg8Qz610QKw+sHCvTMYwA+qWGhlA2uivBezChZ/pBy1tWdkQ==
 
 mcl-wasm@0.9.0:
   version "0.9.0"
@@ -25917,7 +25917,7 @@ shiki@^0.9.2:
     onigasm "^2.2.5"
     vscode-textmate "^5.2.0"
 
-shiki@^0.9.8:
+shiki@^0.9.3:
   version "0.9.15"
   resolved "https://registry.yarnpkg.com/shiki/-/shiki-0.9.15.tgz#2481b46155364f236651319d2c18e329ead6fa44"
   integrity sha512-/Y0z9IzhJ8nD9nbceORCqu6NgT9X6I8Fk8c3SICHI5NbZRLdZYFaB233gwct9sU0vvSypyaL/qaKvzyQGJBZSw==
@@ -27874,18 +27874,21 @@ typedoc-plugin-remove-references@^0.0.5:
   resolved "https://registry.yarnpkg.com/typedoc-plugin-remove-references/-/typedoc-plugin-remove-references-0.0.5.tgz#08b129d2697e50208c807e06c3662fd2fc86a925"
   integrity sha512-DSZ7kM/Y90CgZUKt8MiDsoi4fvrJyleHydj3ncGyqDqMdhuMes2E/4I6mSmXBrVdTjYhVH6BeoOFSbj2pQ821g==
 
-typedoc@0.21.10:
-  version "0.21.10"
-  resolved "https://registry.yarnpkg.com/typedoc/-/typedoc-0.21.10.tgz#1abfcc1b0be2be9608461572d4a4153e2658c8bf"
-  integrity sha512-Y0wYIehkjkPfsp3pv86fp3WPHUcOf8pnQUDLwG1PqSccUSqdsv7Pz1Gd5WrTJvXQB2wO1mKlZ8qW8qMiopKyjA==
+typedoc@0.20.37:
+  version "0.20.37"
+  resolved "https://registry.yarnpkg.com/typedoc/-/typedoc-0.20.37.tgz#9b9417149cb815e3d569fc300b5d2c6e4e6c5d93"
+  integrity sha512-9+qDhdc4X00qTNOtii6QX2z7ndAeWVOso7w3MPSoSJdXlVhpwPfm1yEp4ooKuWA9fiQILR8FKkyjmeqa13hBbw==
   dependencies:
-    glob "^7.1.7"
+    colors "^1.4.0"
+    fs-extra "^9.1.0"
     handlebars "^4.7.7"
+    lodash "^4.17.21"
     lunr "^2.3.9"
-    marked "^4.0.10"
+    marked "~2.0.3"
     minimatch "^3.0.0"
     progress "^2.0.3"
-    shiki "^0.9.8"
+    shelljs "^0.8.4"
+    shiki "^0.9.3"
     typedoc-default-themes "^0.12.10"
 
 typedoc@~0.20.13:
