@@ -9,13 +9,13 @@ const determineTestFilesToRun = ({ inputFile, inputArgs = [], config }) => {
     filesToRun.push(inputFile);
   } else if (inputArgs.length > 0) {
     for (let fileOrDir of inputArgs) {
-      fileOrDir = path.join(fileOrDir);
-      walkdir.sync(fileOrDir, { follow_symlinks: true }, function (path, stat) {
-        const isFile = fs.statSync(path).isFile();
+      const results = walkdir.sync(fileOrDir, { follow_symlinks: true });
+      for (let fileOrDir of results) {
+        const isFile = fs.statSync(fileOrDir).isFile();
         if (isFile) {
-          filesToRun.push(path);
+          filesToRun.push(fileOrDir);
         }
-      });
+      }
     }
   }
   if (filesToRun.length === 0) {
