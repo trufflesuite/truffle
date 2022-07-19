@@ -32,32 +32,45 @@ function getConfiguredNetworkUrl(customConfig) {
 }
 
 let configuredNetwork;
+const configNetworkWithProvider =
+  detectedConfig.networks[network] && detectedConfig.networks[network].provider;
 
-if (url) {
+if (configNetworkWithProvider) {
+  // Use "provider" specified in the network config
+  configuredNetwork = {
+    network_id: "*",
+    provider: detectedConfig.networks[network].provider
+  };
+} else if (url) {
   // Use "url" to configure network (implies not "develop")
   configuredNetwork = {
     network_id: "*",
-    url
+    url,
+    provider: function () {
+      return new Web3.providers.HttpProvider(url, {
+        keepAlive: false
+      });
+    }
   };
 } else {
   // Otherwise derive network settings
   const customConfig = detectedConfig.networks[network] || {};
+  const configuredNetworkUrl = getConfiguredNetworkUrl(customConfig);
 
   configuredNetwork = {
     host: customConfig.host || managedGanacheDefaultHost,
     port: customConfig.port || managedGanacheDefaultPort,
     network_id: customConfig.network_id || managedGanacheDefaultNetworkId,
-    url: getConfiguredNetworkUrl(customConfig)
+    provider: function () {
+      return new Web3.providers.HttpProvider(configuredNetworkUrl, {
+        keepAlive: false
+      });
+    }
   };
 }
 
 detectedConfig.networks[network] = {
-  ...configuredNetwork,
-  provider: function () {
-    return new Web3.providers.HttpProvider(configuredNetwork.url, {
-      keepAlive: false
-    });
-  }
+  ...configuredNetwork
 };
 
 const { getCommand, prepareOptions, runCommand } = require("./command-utils");
