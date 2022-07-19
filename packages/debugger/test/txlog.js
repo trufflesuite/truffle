@@ -547,8 +547,6 @@ describe("Transaction log (visualizer)", function () {
         byName(decoding.arguments)
       );
       assert.deepEqual(args, { x: 1, y: 2 });
-      assert.equal(raw.address, instance.address);
-      assert.equal(raw.codeAddress, instance.address);
       assert.deepEqual(raw.topics, [
         Codec.AbiData.Utils.abiSelector(decoding.abi),
         "0x0000000000000000000000000000000000000000000000000000000000000001"
@@ -568,8 +566,6 @@ describe("Transaction log (visualizer)", function () {
       assert.equal(decoding.abi.name, "Bloop");
       assert.lengthOf(decoding.abi.inputs, 0);
       assert.lengthOf(decoding.arguments, 0);
-      assert.equal(raw.address, instance.address);
-      assert.equal(raw.codeAddress, instance.address);
       assert.deepEqual(raw.topics, [
         Codec.AbiData.Utils.abiSelector(decoding.abi)
       ]);
@@ -619,8 +615,6 @@ describe("Transaction log (visualizer)", function () {
         Codec.Export.unsafeNativize(decoding.arguments[0].value),
         683
       );
-      assert.equal(raw.address, instance.address);
-      assert.equal(raw.codeAddress, instance.address);
       assert.deepEqual(raw.topics, [
         Codec.AbiData.Utils.abiSelector(decoding.abi)
       ]);
@@ -677,8 +671,6 @@ describe("Transaction log (visualizer)", function () {
       assert.equal(decoding.abi.name, "Noise");
       assert.lengthOf(decoding.abi.inputs, 0);
       assert.lengthOf(decoding.arguments, 0);
-      assert.equal(raw.address, instance.address);
-      assert.equal(raw.codeAddress, library.address);
       assert.deepEqual(raw.topics, [
         Codec.AbiData.Utils.abiSelector(decoding.abi)
       ]);
