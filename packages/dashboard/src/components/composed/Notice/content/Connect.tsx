@@ -11,11 +11,9 @@ function Connect(): JSX.Element {
     <Alert
       title={title}
       icon={<Coffee />}
-      variant="light"
       color="truffle-beige"
       px={30}
       py="lg"
-      radius="sm"
     >
       {desc}
     </Alert>

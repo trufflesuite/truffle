@@ -1,16 +1,78 @@
-import { Alert, Button, Stack, Code } from "@mantine/core";
+import {
+  Alert,
+  Stack,
+  Space,
+  Button,
+  Badge,
+  Title,
+  Text,
+  createStyles
+} from "@mantine/core";
+import { Info } from "react-feather";
+import ChainIcon from "src/components/common/ChainIcon";
 import { useDash } from "src/contexts/DashContext";
 
+const useStyles = createStyles((_theme, _params, _getRef) => ({
+  title: {
+    justifyContent: "center"
+  },
+  label: {
+    "> .mantine-Title-root": {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
+    }
+  }
+}));
+
 function ConfirmChain(): JSX.Element {
-  const { state, ops } = useDash()!;
-  const title = "Confirm network";
-  const desc = <Code>{state.chainInfo.name}</Code>;
+  const {
+    state: { chainInfo },
+    ops: { toggleNotice }
+  } = useDash()!;
+  const { classes } = useStyles();
+
+  const title = (
+    <Title order={4}>
+      <Info size={18} />
+      <Space w={6} />
+      Confirm Network
+    </Title>
+  );
+  const desc = (
+    <Text size="sm" align="center">
+      Confirm&nbsp;
+      <Badge
+        size="md"
+        color="orange"
+        leftSection={<ChainIcon chainID={chainInfo.id!} height={11} />}
+        pl={5}
+        pr={6}
+      >
+        {chainInfo.name}
+      </Badge>
+      &nbsp;is the desired network,
+      <br />
+      or switch before continuing.
+    </Text>
+  );
 
   return (
-    <Alert title={title} variant="outline">
+    <Alert
+      title={title}
+      color="truffle-beige"
+      px={30}
+      py="lg"
+      classNames={{
+        title: classes.title,
+        label: classes.label
+      }}
+    >
       <Stack align="center">
         {desc}
-        <Button onClick={ops.toggleNotice}>Confirm</Button>
+        <Button onClick={toggleNotice} color="truffle-beige">
+          Confirm
+        </Button>
       </Stack>
     </Alert>
   );
