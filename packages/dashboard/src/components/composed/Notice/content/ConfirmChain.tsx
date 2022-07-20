@@ -9,8 +9,8 @@ import {
   createStyles
 } from "@mantine/core";
 import { Info } from "react-feather";
+import { useDash } from "src/hooks";
 import ChainIcon from "src/components/common/ChainIcon";
-import { useDash } from "src/contexts/DashContext";
 
 const useStyles = createStyles((_theme, _params, _getRef) => ({
   title: {

@@ -9,7 +9,7 @@ import {
 } from "@mantine/core";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
-import useDash from "src/contexts/DashContext/useDash";
+import { useDash } from "src/hooks";
 import ChainIcon from "src/components/common/ChainIcon";
 
 const useStyles = createStyles((theme, _params, _getRef) => ({

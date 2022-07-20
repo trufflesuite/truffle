@@ -1,6 +1,6 @@
 import { AppShell, createStyles } from "@mantine/core";
 import { Outlet } from "react-router-dom";
-import { useDash } from "src/contexts/DashContext";
+import { useDash } from "src/hooks";
 import Sidebar from "src/components/composed/Sidebar";
 import Notice from "src/components/composed/Notice";
 

@@ -8,7 +8,7 @@ import {
 } from "@mantine/core";
 import { useAccount } from "wagmi";
 import { Sliders } from "react-feather";
-import { useDash } from "src/contexts/DashContext";
+import { useDash } from "src/hooks";
 import ChainIcon from "src/components/common/ChainIcon";
 
 const useStyles = createStyles((theme, _params, _getRef) => {

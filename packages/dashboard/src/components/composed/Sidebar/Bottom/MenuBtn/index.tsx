@@ -2,7 +2,7 @@ import { Menu, Text, createStyles } from "@mantine/core";
 import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { InjectedConnector } from "@wagmi/core";
 import { Slash } from "react-feather";
-import { useDash } from "src/contexts/DashContext";
+import { useDash } from "src/hooks";
 import Btn from "src/components/composed/Sidebar/Bottom/MenuBtn/Btn";
 
 const useStyles = createStyles((theme, _params, _getRef) => {
