@@ -1,5 +1,6 @@
 module.exports = {
   build: require("./build"),
+  call: require("./call"),
   compile: require("./compile"),
   config: require("./config"),
   console: require("./console"),

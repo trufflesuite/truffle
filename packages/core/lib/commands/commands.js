@@ -1,6 +1,7 @@
 // The list of commands that Truffle supports
 module.exports = [
   "build",
+  "call",
   "compile",
   "config",
   "console",
