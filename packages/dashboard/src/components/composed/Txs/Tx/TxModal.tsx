@@ -27,10 +27,10 @@ const useStyles = createStyles((theme, _params, _getRef) => ({
   table: {
     tableLayout: "fixed",
     color: theme.colors["truffle-teal"][9],
-    "tbody > tr > td:first-child": {
+    "tbody > tr > td:first-of-type": {
       width: "20%"
     },
-    "tbody > tr > td:nth-child(2)": {
+    "tbody > tr > td:nth-of-type(2)": {
       width: "80%"
     }
   },
