@@ -257,6 +257,21 @@ let txlog = createSelectorTree({
     isLog: createLeaf([evm.current.step.isLog], identity),
 
     /**
+     * txlog.current.rawEventInfo
+     */
+    rawEventInfo: {
+      /**
+       * txlog.current.rawEventInfo.topics
+       */
+      topics: createLeaf([evm.current.step.logTopics], identity),
+
+      /**
+       * txlog.current.rawEventInfo.data
+       */
+      data: createLeaf([evm.current.step.logData], identity)
+    },
+
+    /**
      * txlog.current.isCall
      */
     isCall: createLeaf([evm.current.step.isCall], identity),

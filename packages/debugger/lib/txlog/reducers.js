@@ -51,7 +51,8 @@ function transactionLog(state = DEFAULT_TX_LOG, action) {
           },
           [newPointer]: {
             type: "event",
-            decoding: action.decoding
+            decoding: action.decoding,
+            raw: action.rawEventInfo
           }
         }
       };
