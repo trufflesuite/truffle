@@ -137,7 +137,7 @@ export class ProviderAdapter {
     this.provider = provider;
   }
 
-  private async sendRequest({
+  public async request({
     method,
     params,
     formatOutput
@@ -188,7 +188,7 @@ export class ProviderAdapter {
     block: BlockSpecifier //making this one not regularized to support encoder
   ): Promise<string> {
     const blockToFetch = formatBlockSpecifier(block);
-    return await this.sendRequest({
+    return await this.request({
       method: "eth_getCode",
       params: [address, blockToFetch]
     });
@@ -198,7 +198,7 @@ export class ProviderAdapter {
     block: BlockSpecifier
   ): Promise<FormattedBlock> {
     const blockToFetch = formatBlockSpecifier(block);
-    return await this.sendRequest({
+    return await this.request({
       method: "eth_getBlockByNumber",
       params: [blockToFetch, false],
       formatOutput: formatBlock
@@ -210,14 +210,14 @@ export class ProviderAdapter {
     fromBlock,
     toBlock
   }: PastLogsOptions): Promise<Log[]> {
-    return await this.sendRequest({
+    return await this.request({
       method: "eth_getLogs",
       params: [{ fromBlock, toBlock, address }]
     });
   }
 
   public async getNetworkId(): Promise<number> {
-    return await this.sendRequest({
+    return await this.request({
       method: "net_version",
       params: [],
       formatOutput: result => parseInt(result)
@@ -225,7 +225,7 @@ export class ProviderAdapter {
   }
 
   public async getBlockNumber(): Promise<number> {
-    return await this.sendRequest({
+    return await this.request({
       method: "eth_blockNumber",
       params: [],
       formatOutput: result => parseInt(result)
@@ -236,7 +236,7 @@ export class ProviderAdapter {
     address: string,
     block: BlockSpecifier
   ): Promise<string> {
-    return await this.sendRequest({
+    return await this.request({
       method: "eth_getBalance",
       params: [address, formatBlockSpecifier(block)],
       formatOutput: result => parseInt(result).toString()
@@ -247,7 +247,7 @@ export class ProviderAdapter {
     address: string,
     block: BlockSpecifier
   ): Promise<string> {
-    return await this.sendRequest({
+    return await this.request({
       method: "eth_getTransactionCount",
       params: [address, formatBlockSpecifier(block)],
       formatOutput: result => parseInt(result).toString()
@@ -259,7 +259,7 @@ export class ProviderAdapter {
     position: BN,
     block: BlockSpecifier
   ): Promise<string> {
-    return await this.sendRequest({
+    return await this.request({
       method: "eth_getStorageAt",
       params: [
         address,
