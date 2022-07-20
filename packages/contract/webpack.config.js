@@ -1,4 +1,5 @@
 const path = require("path");
+const webpack = require("webpack");
 
 //TODO: there's probably a better way to do this where webpack is called once
 //and it will generate both production and development packs
@@ -18,8 +19,17 @@ module.exports = {
     }
   },
   devtool: "source-map",
+  plugins: [
+    new webpack.ProvidePlugin({
+      process: "process/browser"
+    }),
+    new webpack.ProvidePlugin({
+      Buffer: ["buffer", "Buffer"]
+    })
+  ],
   resolve: {
     fallback: {
+      buffer: require.resolve("buffer"),
       crypto: require.resolve("crypto-browserify"),
       http: require.resolve("stream-http"),
       https: require.resolve("https-browserify"),
