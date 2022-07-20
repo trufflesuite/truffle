@@ -1,20 +1,18 @@
-import { Stack, ScrollArea } from "@mantine/core";
+import { Stack } from "@mantine/core";
 import { useDash } from "src/contexts/DashContext";
-import Card from "src/components/composed/Txs/Card";
+import Tx from "src/components/composed/Txs/Tx";
 
 function Txs(): JSX.Element {
   const { state } = useDash()!;
 
-  const cards = Array.from(state.providerMessages, ([, lifecycle]) => (
-    <Card key={lifecycle.message.id} lifecycle={lifecycle} />
+  const content = Array.from(state.providerMessages, ([, lifecycle]) => (
+    <Tx key={lifecycle.message.id} lifecycle={lifecycle} />
   ));
 
   return (
-    <ScrollArea>
-      <Stack align="center" sx={{ maxHeight: "100vh" }}>
-        {cards}
-      </Stack>
-    </ScrollArea>
+    <Stack align="center" pt="16vh" pb="8vh">
+      {content}
+    </Stack>
   );
 }
 
