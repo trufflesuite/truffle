@@ -4,9 +4,9 @@ import {
   Table,
   Button,
   Title,
-  Code,
   createStyles
 } from "@mantine/core";
+import { Prism } from "@mantine/prism";
 import type { ReceivedMessageLifecycle } from "@truffle/dashboard-message-bus-client";
 import type { DashboardProviderMessage } from "@truffle/dashboard-message-bus-common";
 import { useDash } from "src/hooks";
@@ -78,7 +78,9 @@ function TxModal({ lifecycle, opened, close }: TxModalProps): JSX.Element {
               <Title order={6}>RPC method</Title>
             </td>
             <td>
-              <Code color="truffle-teal">{method}</Code>
+              <Prism language="javascript" copyLabel="Copy RPC method">
+                {method}
+              </Prism>
             </td>
           </tr>
           <tr>
@@ -86,7 +88,9 @@ function TxModal({ lifecycle, opened, close }: TxModalProps): JSX.Element {
               <Title order={6}>Params</Title>
             </td>
             <td>
-              <Code block>{JSON.stringify(params, null, 2)}</Code>
+              <Prism language="json" copyLabel="Copy params" withLineNumbers>
+                {JSON.stringify(params, null, 2)}
+              </Prism>
             </td>
           </tr>
         </tbody>
