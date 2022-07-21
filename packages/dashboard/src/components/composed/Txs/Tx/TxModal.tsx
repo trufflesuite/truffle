@@ -47,6 +47,8 @@ type TxModalProps = {
 
 function TxModal({ lifecycle, opened, close }: TxModalProps): JSX.Element {
   const { method, params } = lifecycle.message.payload;
+  const paramsStringified = JSON.stringify(params, null, 2);
+  const paramsNumLines = (paramsStringified.match(/\n/g)?.length || 0) + 1;
   const {
     state: { chainInfo },
     ops: { userConfirmMessage, userRejectMessage }
@@ -84,12 +86,18 @@ function TxModal({ lifecycle, opened, close }: TxModalProps): JSX.Element {
             </td>
           </tr>
           <tr>
-            <td>
+            <td
+              style={
+                paramsNumLines > 16
+                  ? { verticalAlign: "top", paddingTop: "4em" }
+                  : undefined
+              }
+            >
               <Title order={6}>Params</Title>
             </td>
             <td>
               <Prism language="json" copyLabel="Copy params" withLineNumbers>
-                {JSON.stringify(params, null, 2)}
+                {paramsStringified}
               </Prism>
             </td>
           </tr>
