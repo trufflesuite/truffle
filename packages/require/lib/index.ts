@@ -13,7 +13,7 @@ import { compile } from "./typescript";
 
 import Debug from "debug";
 
-const debug = Debug("@truffle/require:index");
+const debug = Debug("require:index");
 
 export function file(options: RequireOptions) {
   const sourceFilePath = path.resolve(options.file);

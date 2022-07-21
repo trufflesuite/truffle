@@ -10,7 +10,7 @@ import { TsNodeDependencyError } from "./types";
 
 import Debug from "debug";
 
-const debug = Debug("@truffle/require:typescript");
+const debug = Debug("require:typescript");
 
 const _tsExtensionExpr = /^\.(cts|tsx?)$/i;
 
@@ -69,7 +69,6 @@ function _getOrCreateCompilationService(
   sourceFilePath: string
 ): TSNode.Service {
   if (!tsNode) {
-    // TODO: add error chaining support
     throw new TsNodeDependencyError(sourceFilePath);
   }
 
