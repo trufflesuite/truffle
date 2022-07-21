@@ -20,7 +20,7 @@
   "scripts": {
     "analyze": "./scripts/analyze.sh",
     "build": "yarn build:cli",
-    "build:cli": "node --max-old-space-size=8192 ./node_modules/webpack/bin/webpack.js --config ./webpack.config.js",
+    "build:cli": "NODE_OPTIONS=\"--max-old-space-size=8192\" webpack --config ./webpack.config.js",
     "postinstall": "node ./scripts/postinstall.js",
     "prepare": "yarn build",
     "publish:byoc": "node ./scripts/prereleaseVersion.js byoc-safe byoc",
