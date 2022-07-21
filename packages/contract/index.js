@@ -13,7 +13,3 @@ const contract = (json = {}) => {
 contract.version = truffleContractVersion;
 
 module.exports = contract;
-
-if (typeof window !== "undefined") {
-  window.TruffleContract = contract;
-}

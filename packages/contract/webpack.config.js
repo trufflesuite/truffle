@@ -15,21 +15,21 @@ module.exports = {
     filename: "[name].js",
     path: path.resolve(__dirname, "dist"),
     library: {
-      type: "commonjs2"
+      name: "TruffleContract",
+      type: "global"
     }
   },
   devtool: "source-map",
   plugins: [
     new webpack.ProvidePlugin({
-      process: "process/browser"
+      Buffer: ["buffer", "Buffer"]
     }),
     new webpack.ProvidePlugin({
-      Buffer: ["buffer", "Buffer"]
+      process: "process/browser"
     })
   ],
   resolve: {
     fallback: {
-      buffer: require.resolve("buffer"),
       crypto: require.resolve("crypto-browserify"),
       http: require.resolve("stream-http"),
       https: require.resolve("https-browserify"),
