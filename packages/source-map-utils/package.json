@@ -12,14 +12,14 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "1.3.88",
+  "version": "1.3.89",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0"
   },
   "dependencies": {
     "@truffle/code-utils": "^1.2.34",
-    "@truffle/codec": "^0.13.2",
+    "@truffle/codec": "^0.13.3",
     "debug": "^4.3.1",
     "json-pointer": "^0.6.1",
     "node-interval-tree": "^1.3.3",

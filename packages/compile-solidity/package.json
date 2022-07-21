@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "6.0.35",
+  "version": "6.0.36",
   "main": "dist/index.js",
   "scripts": {
     "build": "ttsc",
@@ -21,10 +21,10 @@
   },
   "dependencies": {
     "@truffle/compile-common": "^0.7.32",
-    "@truffle/config": "^1.3.32",
+    "@truffle/config": "^1.3.33",
     "@truffle/contract-sources": "^0.2.0",
-    "@truffle/expect": "^0.1.1",
-    "@truffle/profiler": "^0.1.24",
+    "@truffle/expect": "^0.1.2",
+    "@truffle/profiler": "^0.1.25",
     "@truffle/spinners": "^0.2.0",
     "axios": "0.27.2",
     "axios-retry": "^3.1.9",
@@ -38,9 +38,9 @@
     "solc": "0.8.15"
   },
   "devDependencies": {
-    "@truffle/artifactor": "^4.0.161",
-    "@truffle/box": "^2.1.52",
-    "@truffle/resolver": "^9.0.8",
+    "@truffle/artifactor": "^4.0.162",
+    "@truffle/box": "^2.1.53",
+    "@truffle/resolver": "^9.0.9",
     "babel-core": "^6.26.0",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
@@ -50,8 +50,8 @@
     "sinon": "^9.0.2",
     "tmp": "^0.2.1",
     "ttypescript": "1.5.13",
-    "typescript-transform-paths": "3.3.1",
-    "typescript": "^4.3.5"
+    "typescript": "^4.3.5",
+    "typescript-transform-paths": "3.3.1"
   },
   "keywords": [
     "compile",
