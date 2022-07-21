@@ -1,6 +1,6 @@
 {
   "name": "@truffle/dashboard-message-bus-client",
-  "version": "0.1.2",
+  "version": "0.1.3-typescript-migrations.0",
   "description": "Client library for accessing the truffle dashboard's message bus",
   "main": "dist/index.js",
   "scripts": {
@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@truffle/dashboard-message-bus-common": "^0.1.2",
-    "@truffle/promise-tracker": "^0.1.0",
+    "@truffle/promise-tracker": "^0.1.1-typescript-migrations.0",
     "axios": "0.27.2",
     "debug": "^4.3.1",
     "delay": "^5.0.0",

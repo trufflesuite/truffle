@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.5.10",
+  "version": "0.5.11-typescript-migrations.0",
   "main": "dist/index.js",
   "files": [
     "dist"
@@ -27,10 +27,10 @@
   },
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@truffle/codec": "^0.13.2",
-    "@truffle/compile-solidity": "^6.0.35",
-    "@truffle/config": "^1.3.32",
-    "@truffle/source-fetcher": "^1.0.11",
+    "@truffle/codec": "^0.13.3-typescript-migrations.0",
+    "@truffle/compile-solidity": "^6.0.36-typescript-migrations.0",
+    "@truffle/config": "^1.3.33-typescript-migrations.0",
+    "@truffle/source-fetcher": "^1.0.12-typescript-migrations.0",
     "debug": "^4.3.2",
     "semver": "7.3.7",
     "web3-utils": "1.7.4"

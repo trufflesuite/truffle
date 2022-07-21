@@ -11,7 +11,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.5.19",
+  "version": "0.5.20-typescript-migrations.0",
   "main": "dist/index.js",
   "directories": {
     "lib": "lib"

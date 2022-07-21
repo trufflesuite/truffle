@@ -1,6 +1,6 @@
 {
   "name": "@truffle/events",
-  "version": "0.1.9",
+  "version": "0.1.10-typescript-migrations.0",
   "description": "Event system for Truffle",
   "main": "index.js",
   "keywords": [],
@@ -22,7 +22,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@truffle/dashboard-message-bus-client": "^0.1.2",
+    "@truffle/dashboard-message-bus-client": "^0.1.3-typescript-migrations.0",
     "@truffle/spinners": "^0.2.0",
     "debug": "^4.3.1",
     "emittery": "^0.4.1",
