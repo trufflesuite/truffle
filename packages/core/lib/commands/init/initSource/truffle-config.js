@@ -16,12 +16,16 @@
  * public/private key pairs. If you're publishing your code to GitHub make sure you load this
  * phrase from a file you've .gitignored so it doesn't accidentally become public.
  *
+ * If you want to use .env for keeping your secret variables, you'll need to install 'dotenv'
+ * (npm install dotenv). To get started with .env file is already added with this project along with
+ * a .gitignore file.
  */
 
+// require('dotenv').config();
 // const HDWalletProvider = require('@truffle/hdwallet-provider');
-//
-// const fs = require('fs');
-// const mnemonic = fs.readFileSync(".secret").toString().trim();
+
+// const mnemonic = process.env.MNEMONIC;
+// const projectId = process.env.PROJECT_ID;
 
 module.exports = {
   /**
@@ -60,7 +64,7 @@ module.exports = {
     // Useful for deploying to a public network.
     // Note: It's important to wrap the provider as a function to ensure truffle uses a new provider every time.
     // goerli: {
-    //   provider: () => new HDWalletProvider(mnemonic, `https://goerli.infura.io/v3/YOUR-PROJECT-ID`),
+    //   provider: () => new HDWalletProvider(mnemonic, `https://goerli.infura.io/v3/${projectId}`),
     //   network_id: 5,       // Goerli's id
     //   gas: 5500000,        // Goerli has a lower block limit than mainnet
     //   confirmations: 2,    // # of confirmations to wait between deployments. (default: 0)
