@@ -23,7 +23,7 @@
   "dependencies": {
     "@truffle/error": "^0.1.0",
     "@truffle/events": "^0.1.10",
-    "@truffle/provider": "^0.2.57",
+    "@truffle/provider": "^0.2.58-typescript-migrations.0",
     "conf": "^10.0.2",
     "find-up": "^2.1.0",
     "lodash": "^4.17.21",

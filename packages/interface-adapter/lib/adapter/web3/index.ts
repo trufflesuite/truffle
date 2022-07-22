@@ -69,7 +69,9 @@ export class Web3InterfaceAdapter implements InterfaceAdapter {
     return this.web3.eth.getBlockNumber();
   }
 
-  public async getTransactionCostReport(receipt: TransactionReceipt): Promise<TransactionCostReport> {
+  public async getTransactionCostReport(
+    receipt: TransactionReceipt
+  ): Promise<TransactionCostReport> {
     const tx = await this.getTransaction(receipt.transactionHash);
     const block = await this.getBlock(receipt.blockNumber);
 
@@ -80,9 +82,13 @@ export class Web3InterfaceAdapter implements InterfaceAdapter {
     const gas = new BN(receipt.gasUsed);
     const value = new BN(tx.value);
     const cost = gasPrice.mul(gas).add(value);
+    const timestamp =
+      typeof block.timestamp === "string"
+        ? parseInt(block.timestamp)
+        : block.timestamp;
 
     return {
-      timestamp: block.timestamp,
+      timestamp,
       from: tx.from,
       balance: Web3Shim.utils.fromWei(balance, "ether"),
       gasUnit: "gwei",

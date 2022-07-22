@@ -1,5 +1,5 @@
 import Web3 from "web3";
-import type { Provider } from "web3/providers";
+import type { provider as Provider } from "web3-core/types";
 
 import { EthereumDefinition } from "./overloads/ethereum";
 import { QuorumDefinition } from "./overloads/quorum";
@@ -9,9 +9,9 @@ import { Web3JsDefinition } from "./overloads/web3js";
 const initInterface = async (web3Shim: Web3Shim) => {
   const networkTypes: NetworkTypesConfig = new Map(
     Object.entries({
-      web3js: Web3JsDefinition,
-      ethereum: EthereumDefinition,
-      quorum: QuorumDefinition,
+      "web3js": Web3JsDefinition,
+      "ethereum": EthereumDefinition,
+      "quorum": QuorumDefinition,
       "fabric-evm": FabricEvmDefinition
     })
   );

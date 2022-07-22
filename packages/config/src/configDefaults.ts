@@ -129,7 +129,7 @@ export const configProps = ({
       transform: resolveDirectory
     },
     migrations_file_extension_regexp() {
-      return /^\.(js|es6?)$/;
+      return /^\.(js|ts|es6?)$/;
     },
     test_directory: {
       default: () => path.join(configObject.working_directory, "test"),

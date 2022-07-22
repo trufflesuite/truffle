@@ -50,7 +50,10 @@ export class Resolver {
   }
 
   // This function might be doing too much. If so, too bad (for now).
-  require(import_path: string, search_path: string) {
+  require(
+    import_path: string,
+    search_path?: string
+  ): ReturnType<typeof contract> {
     let abstraction;
     this.sources.forEach((source: ResolverSource) => {
       const result = source.require(import_path, search_path);

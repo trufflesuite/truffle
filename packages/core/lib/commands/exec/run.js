@@ -2,7 +2,7 @@ module.exports = async function (options) {
   const Config = require("@truffle/config");
   const WorkflowCompile = require("@truffle/workflow-compile");
   const ConfigurationError = require("../../errors/configurationerror");
-  const Require = require("@truffle/require");
+  const exec = require("@truffle/require").exec;
   const { Environment } = require("@truffle/environment");
   const path = require("path");
   const OS = require("os");
@@ -40,5 +40,5 @@ module.exports = async function (options) {
   if (compilationOutput) {
     await WorkflowCompile.save(config, compilationOutput);
   }
-  return await promisify(Require.exec.bind(Require))(config.with({ file }));
+  return await promisify(exec)(config.with({ file }));
 };

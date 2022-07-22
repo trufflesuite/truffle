@@ -12,7 +12,7 @@ export {
   Tx as EvmTransaction
 } from "web3/eth/types";
 export { TransactionReceipt as EvmTransactionReceipt } from "web3-eth/types";
-export { Provider } from "web3/providers";
+export { provider as Provider } from "web3-core/types";
 export type NetworkId = Number | String;
 export type Block = EvmBlock | any;
 export type BlockType = EvmBlockType | any;
@@ -40,7 +40,12 @@ export interface InterfaceAdapter {
   getBalance(address: string): Promise<string>;
   getCode(address: string): Promise<string>;
   getAccounts(): Promise<string[]>;
-  estimateGas(transactionConfig: Transaction, stacktrace: boolean): Promise<number> | null;
-  getTransactionCostReport(receipt: TransactionReceipt): Promise<TransactionCostReport>;
+  estimateGas(
+    transactionConfig: Transaction,
+    stacktrace: boolean
+  ): Promise<number> | null;
+  getTransactionCostReport(
+    receipt: TransactionReceipt
+  ): Promise<TransactionCostReport>;
   displayCost(value: BN): string;
 }

@@ -4,19 +4,25 @@
     "module": "commonjs",
     "esModuleInterop": true,
     "target": "es2016",
+    "downlevelIteration": true,
     "noImplicitAny": true,
+    "strictNullChecks": true,
+    "skipLibCheck": true,
     "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "dist",
     "baseUrl": ".",
     "lib": ["es2019"],
+    "paths": {
+    },
     "rootDir": "lib",
-    "typeRoots": [
-      "../../node_modules/@types/bn.js",
-      "../../node_modules/@types/mocha"
-    ]
+    "types": ["node", "mocha"]
   },
   "include": [
-    "./lib/**/*.ts"
+    "./lib/**/*.ts",
+    "./typings/**/*.d.ts"
+  ],
+  "exclude": [
+    "./lib/sandboxGlobalContextTypes.ts"
   ]
 }

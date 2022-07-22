@@ -4,7 +4,7 @@ import { assert } from "chai";
 import Ganache, { EthereumProvider } from "ganache";
 
 import { createInterfaceAdapter } from "../lib";
-import { InterfaceAdapter } from "../lib/adapter/types";
+import { InterfaceAdapter, Provider } from "../lib/adapter/types";
 
 function prepareGanache(fabricEvmEnabled: boolean): {
   provider: EthereumProvider;
@@ -19,7 +19,7 @@ function prepareGanache(fabricEvmEnabled: boolean): {
     }
   });
   const interfaceAdapter = createInterfaceAdapter({
-    provider,
+    provider: provider as Provider,
     networkType: fabricEvmEnabled ? "fabric-evm" : "ethereum"
   });
   return {

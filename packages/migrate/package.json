@@ -23,8 +23,8 @@
     "@truffle/db-loader": "^0.1.25",
     "@truffle/deployer": "^3.2.89",
     "@truffle/expect": "^0.1.2",
-    "@truffle/interface-adapter": "^0.5.19",
-    "@truffle/require": "^2.0.102",
+    "@truffle/interface-adapter": "^0.5.20-typescript-migrations.0",
+    "@truffle/require": "^2.1.0-typescript-migrations.0",
     "debug": "^4.3.1",
     "glob": "^7.1.6",
     "inquirer": "8.2.2"
