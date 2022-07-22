@@ -529,7 +529,7 @@ describe("Transaction log (visualizer)", function () {
       //let's check the first event
       let event = call.actions[0];
       assert.equal(event.type, "event");
-      let decoding = event.decoding;
+      let { decoding, raw } = event;
       assert.equal(decoding.kind, "event");
       assert.equal(decoding.decodingMode, "full");
       assert.equal(decoding.class.typeName, "VizTest");
@@ -547,10 +547,18 @@ describe("Transaction log (visualizer)", function () {
         byName(decoding.arguments)
       );
       assert.deepEqual(args, { x: 1, y: 2 });
+      assert.deepEqual(raw.topics, [
+        Codec.AbiData.Utils.abiSelector(decoding.abi),
+        "0x0000000000000000000000000000000000000000000000000000000000000001"
+      ]);
+      assert.equal(
+        raw.data,
+        "0x0000000000000000000000000000000000000000000000000000000000000002"
+      );
       //now for the second event
       event = call.actions[1];
       assert.equal(event.type, "event");
-      decoding = event.decoding;
+      ({ decoding, raw } = event);
       assert.equal(decoding.kind, "event");
       assert.equal(decoding.decodingMode, "full");
       assert.equal(decoding.class.typeName, "VizTest");
@@ -558,6 +566,10 @@ describe("Transaction log (visualizer)", function () {
       assert.equal(decoding.abi.name, "Bloop");
       assert.lengthOf(decoding.abi.inputs, 0);
       assert.lengthOf(decoding.arguments, 0);
+      assert.deepEqual(raw.topics, [
+        Codec.AbiData.Utils.abiSelector(decoding.abi)
+      ]);
+      assert.equal(raw.data, "0x");
     });
 
     it("Correctly logs an event inside a constructor", async function () {
@@ -588,7 +600,7 @@ describe("Transaction log (visualizer)", function () {
       assert.lengthOf(call.actions, 2); //call to another, then log of Set
       const event = call.actions[1];
       assert.equal(event.type, "event");
-      const decoding = event.decoding;
+      const { decoding, raw } = event;
       assert.equal(decoding.kind, "event");
       assert.equal(decoding.decodingMode, "full");
       assert.equal(decoding.class.typeName, "Secondary");
@@ -603,6 +615,13 @@ describe("Transaction log (visualizer)", function () {
         Codec.Export.unsafeNativize(decoding.arguments[0].value),
         683
       );
+      assert.deepEqual(raw.topics, [
+        Codec.AbiData.Utils.abiSelector(decoding.abi)
+      ]);
+      assert.equal(
+        raw.data,
+        "0x00000000000000000000000000000000000000000000000000000000000002ab"
+      ); //683 in hex
     });
 
     it("Correctly logs an event inside a library", async function () {
@@ -644,7 +663,7 @@ describe("Transaction log (visualizer)", function () {
       assert.lengthOf(libCall.actions, 1);
       const event = libCall.actions[0];
       assert.equal(event.type, "event");
-      const decoding = event.decoding;
+      const { decoding, raw } = event;
       assert.equal(decoding.kind, "event");
       assert.equal(decoding.decodingMode, "full");
       assert.equal(decoding.class.typeName, "VizLibrary");
@@ -652,6 +671,10 @@ describe("Transaction log (visualizer)", function () {
       assert.equal(decoding.abi.name, "Noise");
       assert.lengthOf(decoding.abi.inputs, 0);
       assert.lengthOf(decoding.arguments, 0);
+      assert.deepEqual(raw.topics, [
+        Codec.AbiData.Utils.abiSelector(decoding.abi)
+      ]);
+      assert.equal(raw.data, "0x");
     });
 
     it("Correctly disambiguates ambiguous events", async function () {

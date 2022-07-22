@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.2.8-typescript-migrations.0",
+  "version": "0.2.8",
   "main": "dist/lib/index.js",
   "files": [
     "dist"

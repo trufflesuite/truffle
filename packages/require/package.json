@@ -28,11 +28,11 @@
     "test": "mocha --require ts-node/register --extension ts,js"
   },
   "dependencies": {
-    "@truffle/config": "^1.3.33-typescript-migrations.0",
+    "@truffle/config": "^1.3.33",
     "@truffle/error": "^0.1.0",
-    "@truffle/expect": "^0.1.2-typescript-migrations.0",
+    "@truffle/expect": "^0.1.2",
     "@truffle/interface-adapter": "^0.5.20-typescript-migrations.0",
-    "@truffle/resolver": "^9.0.9-typescript-migrations.0",
+    "@truffle/resolver": "^9.0.9",
     "debug": "^4.3.1",
     "original-require": "^1.0.1"
   },

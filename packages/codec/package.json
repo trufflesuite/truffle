@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.13.3-typescript-migrations.0",
+  "version": "0.13.3",
   "main": "dist/lib/index.js",
   "files": [
     "dist"
@@ -25,7 +25,7 @@
   },
   "types": "dist/lib/index.d.ts",
   "dependencies": {
-    "@truffle/abi-utils": "^0.2.15-typescript-migrations.0",
+    "@truffle/abi-utils": "^0.2.15",
     "@truffle/compile-common": "^0.7.32",
     "big.js": "^6.0.3",
     "bn.js": "^5.1.3",

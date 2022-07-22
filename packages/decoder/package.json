@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.2.21-typescript-migrations.0",
+  "version": "5.2.21",
   "main": "dist/index.js",
   "directories": {
     "lib": "lib"
@@ -25,21 +25,21 @@
   },
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@truffle/abi-utils": "^0.2.15-typescript-migrations.0",
-    "@truffle/codec": "^0.13.3-typescript-migrations.0",
+    "@truffle/abi-utils": "^0.2.15",
+    "@truffle/codec": "^0.13.3",
     "@truffle/compile-common": "^0.7.32",
-    "@truffle/encoder": "^0.1.18-typescript-migrations.0",
-    "@truffle/source-map-utils": "^1.3.89-typescript-migrations.0",
+    "@truffle/encoder": "^0.1.18",
+    "@truffle/source-map-utils": "^1.3.89",
     "bn.js": "^5.1.3",
     "debug": "^4.3.1",
     "web3-utils": "1.7.4"
   },
   "devDependencies": {
-    "@truffle/config": "^1.3.33-typescript-migrations.0",
+    "@truffle/config": "^1.3.33",
     "@truffle/contract-schema": "^3.4.8",
-    "@truffle/migrate": "^3.4.0-typescript-migrations.0",
+    "@truffle/migrate": "^3.3.3",
     "@truffle/provider": "^0.2.58-typescript-migrations.0",
-    "@truffle/workflow-compile": "^4.0.26-typescript-migrations.0",
+    "@truffle/workflow-compile": "^4.0.26",
     "@types/big.js": "^6.0.2",
     "@types/bn.js": "^5.1.0",
     "@types/debug": "^4.1.5",

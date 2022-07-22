@@ -13,19 +13,19 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.2.116-typescript-migrations.0",
+  "version": "0.2.116",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0",
     "test": "mocha ./test/** ./test/**/*"
   },
   "dependencies": {
-    "@truffle/artifactor": "^4.0.162-typescript-migrations.0",
+    "@truffle/artifactor": "^4.0.162",
     "@truffle/error": "^0.1.0",
-    "@truffle/expect": "^0.1.2-typescript-migrations.0",
+    "@truffle/expect": "^0.1.2",
     "@truffle/interface-adapter": "^0.5.20-typescript-migrations.0",
     "@truffle/provider": "^0.2.58-typescript-migrations.0",
-    "@truffle/resolver": "^9.0.9-typescript-migrations.0",
+    "@truffle/resolver": "^9.0.9",
     "ganache": "7.3.2",
     "node-ipc": "9.2.1",
     "source-map-support": "^0.5.19",

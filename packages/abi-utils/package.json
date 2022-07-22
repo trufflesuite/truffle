@@ -1,6 +1,6 @@
 {
   "name": "@truffle/abi-utils",
-  "version": "0.2.15-typescript-migrations.0",
+  "version": "0.2.15",
   "description": "Utilities for working with ABIs",
   "license": "MIT",
   "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",

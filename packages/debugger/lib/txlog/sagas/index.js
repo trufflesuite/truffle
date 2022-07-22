@@ -184,8 +184,9 @@ function* updateTransactionLogSaga() {
   } else if (yield select(txlog.current.isLog)) {
     const decoding = (yield* data.decodeLog())[0]; //just assume first decoding is correct
     //(note: because we know the event ID, there should typically only be one decoding)
+    const rawInfo = yield select(txlog.current.rawEventInfo);
     const newPointer = yield select(txlog.current.nextActionPointer);
-    yield put(actions.logEvent(pointer, newPointer, decoding));
+    yield put(actions.logEvent(pointer, newPointer, decoding, rawInfo));
   } else if (yield select(txlog.current.onFunctionDefinition)) {
     if (yield select(txlog.current.waitingForFunctionDefinition)) {
       debug("identifying");
