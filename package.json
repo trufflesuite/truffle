@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "bootstrap": "npx lerna bootstrap",
+    "bootstrap": "yarn exec lerna bootstrap",
     "prepare": "lerna run prepare --stream --concurrency=1 && husky install",
     "publish-release": "./scripts/publish-release.sh",
     "publish-dist-tag": "./scripts/publish-dist-tag.sh",
