@@ -17,7 +17,8 @@
  * phrase from a file you've .gitignored so it doesn't accidentally become public.
  *
  * If you want to use .env for keeping your secret variables, you'll need to install 'dotenv'
- * (npm install dotenv). To get started with, add .env file in the root directory.
+ * (npm install dotenv). To get started with, add .env file in the root directory and declare
+ * your Infura MNEMONIC and PROJECT_ID variables.
  * .gitignore is already added with this project with .env in it.
  */
 
