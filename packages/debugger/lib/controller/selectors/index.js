@@ -137,7 +137,7 @@ const controller = createSelectorTree({
       )
     },
 
-    /*
+    /**
      * controller.current.trace
      */
     trace: {

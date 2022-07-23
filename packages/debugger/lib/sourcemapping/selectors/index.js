@@ -348,7 +348,7 @@ let sourcemapping = createSelectorTree({
       }
     ),
 
-    /*
+    /**
      * sourcemapping.current.functionsByProgramCounter
      */
     functionsByProgramCounter: createLeaf(

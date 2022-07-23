@@ -21,7 +21,7 @@ let trace = createSelectorTree({
    */
   index: state => state.trace.proc.index,
 
-  /*
+  /**
    * trace.loaded
    * is a trace loaded?
    */
@@ -84,7 +84,7 @@ let trace = createSelectorTree({
     index < steps.length - 1 ? steps[index + 1] : PAST_END_OF_TRACE
   ),
 
-  /*
+  /**
    * trace.nextOfSameDepth
    * next trace step that's at the same depth as this one
    * NOTE: if there is none, will return undefined
