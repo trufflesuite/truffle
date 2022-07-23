@@ -8,7 +8,7 @@ import trace from "lib/trace/selectors";
 import sourcemapping from "lib/sourcemapping/selectors";
 
 const session = createSelectorTree({
-  /*
+  /**
    * session.state
    */
   state: state => state.session,

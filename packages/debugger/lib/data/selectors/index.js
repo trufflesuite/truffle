@@ -190,7 +190,7 @@ const data = createSelectorTree({
    * data.views
    */
   views: {
-    /*
+    /**
      * data.views.atLastInstructionForSourceRange
      */
     atLastInstructionForSourceRange: createLeaf(
@@ -202,7 +202,7 @@ const data = createSelectorTree({
      * data.views.scopes (namespace)
      */
     scopes: {
-      /*
+      /**
        * data.views.scopes (selector)
        * the raw scopes data, just with intermediate
        * layers cut out
@@ -441,11 +441,11 @@ const data = createSelectorTree({
       state => state.info.contracts.byCompilationId
     ),
 
-    /*
+    /**
      * data.info.allocations
      */
     allocations: {
-      /*
+      /**
        * data.info.allocations.storage
        */
       storage: createLeaf(["/state"], state => state.info.allocations.storage),
@@ -455,17 +455,17 @@ const data = createSelectorTree({
        */
       state: createLeaf(["/state"], state => state.info.allocations.state),
 
-      /*
+      /**
        * data.info.allocations.memory
        */
       memory: createLeaf(["/state"], state => state.info.allocations.memory),
 
-      /*
+      /**
        * data.info.allocations.abi
        */
       abi: createLeaf(["/state"], state => state.info.allocations.abi),
 
-      /*
+      /**
        * data.info.allocations.calldata
        */
       calldata: createLeaf(
@@ -473,7 +473,7 @@ const data = createSelectorTree({
         state => state.info.allocations.calldata
       ),
 
-      /*
+      /**
        * data.info.allocations.returndata
        */
       returndata: createLeaf(
@@ -481,7 +481,7 @@ const data = createSelectorTree({
         state => state.info.allocations.returndata
       ),
 
-      /*
+      /**
        * data.info.allocations.event
        */
       event: createLeaf(["/state"], state => state.info.allocations.event)
@@ -518,7 +518,7 @@ const data = createSelectorTree({
      */
     assignments: createLeaf(["/state"], state => state.proc.assignments.byId),
 
-    /*
+    /**
      * data.proc.mappedPaths
      */
     mappedPaths: createLeaf(["/state"], state => state.proc.mappedPaths)
@@ -599,7 +599,7 @@ const data = createSelectorTree({
           )
       ),
 
-      /*
+      /**
        * data.current.state.specials
        * I've named these after the solidity variables they correspond to,
        * which are *mostly* the same as the corresponding EVM opcodes
@@ -1441,7 +1441,7 @@ const data = createSelectorTree({
           }
         ),
 
-        /*
+        /**
          * data.current.identifiers.definitions.this
          *
          * returns a spoofed definition for the this variable

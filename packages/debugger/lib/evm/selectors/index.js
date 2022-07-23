@@ -139,17 +139,17 @@ function createStepSelectors(step, state = null) {
      */
     isCreate2: createLeaf(["./trace"], step => step.op === "CREATE2"),
 
-    /*
+    /**
      * .isStore
      */
     isStore: createLeaf(["./trace"], step => step.op === "SSTORE"),
 
-    /*
+    /**
      * .isLoad
      */
     isLoad: createLeaf(["./trace"], step => step.op === "SLOAD"),
 
-    /*
+    /**
      * .touchesStorage
      *
      * whether the instruction involves storage
@@ -159,7 +159,7 @@ function createStepSelectors(step, state = null) {
       (stores, loads) => stores || loads
     ),
 
-    /*
+    /**
      * .isPop
      * used by data
      */
@@ -859,7 +859,7 @@ const evm = createSelectorTree({
           codex[codex.length - 1].accounts[storageAddress].storage
       ),
 
-      /*
+      /**
        * evm.current.codex.instances
        */
       instances: createLeaf(["./_"], codex =>
@@ -891,7 +891,7 @@ const evm = createSelectorTree({
       }))
     ),
 
-    /*
+    /**
      * evm.next.step
      */
     step: createStepSelectors(trace.next, "./state")
