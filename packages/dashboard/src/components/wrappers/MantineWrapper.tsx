@@ -1,17 +1,14 @@
 import { MantineProvider } from "@mantine/core";
-import type { ColorScheme } from "@mantine/core";
-import { useLocalStorage } from "@mantine/hooks";
+import { useSavedColorScheme } from "src/hooks";
 import theme from "src/utils/theme";
-import { COLOR_SCHEME_KEY, EMOTION_KEY } from "src/utils/constants";
+import { EMOTION_KEY } from "src/utils/constants";
 
 type MantineWrapperProps = {
   children: React.ReactNode;
 };
 
 function MantineWrapper({ children }: MantineWrapperProps): JSX.Element {
-  const [colorScheme] = useLocalStorage<ColorScheme>({
-    key: COLOR_SCHEME_KEY
-  });
+  const [colorScheme] = useSavedColorScheme();
 
   return (
     <MantineProvider

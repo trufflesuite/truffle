@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { ColorSchemeProvider } from "@mantine/core";
 import type { ColorScheme } from "@mantine/core";
-import { useColorScheme, useLocalStorage } from "@mantine/hooks";
-import { COLOR_SCHEME_KEY } from "src/utils/constants";
+import { useColorScheme } from "@mantine/hooks";
+import { useSavedColorScheme } from "src/hooks";
 
 type ColorSchemeWrapperProps = {
   children: React.ReactNode;
@@ -13,18 +13,16 @@ function ColorSchemeWrapper({
 }: ColorSchemeWrapperProps): JSX.Element {
   // Color scheme
   // Priority: Local storage > system > light > dark
-  const preferredColorScheme = useColorScheme();
-  const [colorScheme, setColorScheme] = useLocalStorage<ColorScheme>({
-    key: COLOR_SCHEME_KEY
-  });
+  const systemColorScheme = useColorScheme();
+  const [colorScheme, setColorScheme] = useSavedColorScheme();
   const toggleColorScheme = (val?: ColorScheme) => {
     setColorScheme(val || (colorScheme === "light" ? "dark" : "light"));
   };
   useEffect(() => {
-    if (!colorScheme && preferredColorScheme === "dark") {
+    if (!colorScheme && systemColorScheme === "dark") {
       setColorScheme("dark");
     }
-  }, [preferredColorScheme, colorScheme, setColorScheme]);
+  }, [systemColorScheme, colorScheme, setColorScheme]);
 
   return (
     <ColorSchemeProvider
