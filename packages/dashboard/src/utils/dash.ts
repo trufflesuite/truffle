@@ -11,15 +11,11 @@ import {
 import type { UNSUPPORTED_RPC_METHOD } from "src/utils/constants";
 
 export function messageNeedsInteraction(message: DashboardProviderMessage) {
-  return (INTERACTIVE_RPC_METHODS as ReadonlyArray<string>).includes(
-    message.payload.method
-  );
+  return (INTERACTIVE_RPC_METHODS as Set<string>).has(message.payload.method);
 }
 
 export function messageIsUnsupported(message: DashboardProviderMessage) {
-  return (UNSUPPORTED_RPC_METHODS as ReadonlyArray<string>).includes(
-    message.payload.method
-  );
+  return (UNSUPPORTED_RPC_METHODS as Set<string>).has(message.payload.method);
 }
 
 export function rejectMessage(
