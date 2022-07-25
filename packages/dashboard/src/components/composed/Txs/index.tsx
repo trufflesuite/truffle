@@ -1,4 +1,5 @@
-import { Stack, Text, Anchor, createStyles } from "@mantine/core";
+import { Stack, Space, Text, Anchor, createStyles } from "@mantine/core";
+import { ExternalLink } from "react-feather";
 import { useDash } from "src/hooks";
 import Tx from "src/components/composed/Txs/Tx";
 import LogoImg from "src/components/common/LogoImg";
@@ -7,6 +8,10 @@ const useStyles = createStyles((_theme, _params, _getRef) => ({
   maxSize: {
     width: "100%",
     height: "100%"
+  },
+  docsAnchor: {
+    display: "inline-flex",
+    alignItems: "center"
   }
 }));
 
@@ -40,10 +45,12 @@ function Txs(): JSX.Element {
             target="_blank"
             color="truffle-beige"
             inherit
+            className={classes.docsAnchor}
           >
             our docs
+            <Space w={3} />
+            <ExternalLink size={12} />
           </Anchor>
-          .
         </Text>
       </Stack>
     );
