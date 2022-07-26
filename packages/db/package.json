@@ -130,6 +130,7 @@
       "<rootDir>/test/**/test/index.(ts|js)",
       "<rootDir>/src/**/test/*\\.(spec|test)\\.(ts|js)",
       "<rootDir>/test/**/test/*\\.(spec|test)\\.(ts|js)"
-    ]
+    ],
+    "resolver": "<rootDir>/test/jest-resolver.js"
   }
 }
