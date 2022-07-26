@@ -7,7 +7,7 @@ const yargs = require("yargs");
 const input = process.argv[2].split(" -- ");
 const inputStrings = input[1].split(" ");
 
-const managedDefaultHost = "127.0.0.1";
+const defaultHost = "127.0.0.1";
 const managedGanacheDefaultPort = 9545;
 const managedGanacheDefaultNetworkId = 5777;
 const managedDashboardDefaultPort = 24012;
@@ -24,97 +24,67 @@ global.crypto = {
 const { network, config, url } = yargs(input[0]).argv;
 const detectedConfig = Config.detect({ network, config });
 
-function getConfiguredNetworkUrl(customConfig) {
+function getConfiguredNetworkUrl(customConfig, isDashboardNetwork) {
+  const defaultPort = isDashboardNetwork
+    ? managedDashboardDefaultPort
+    : managedGanacheDefaultPort;
   const configuredNetworkOptions = {
-    host: customConfig.host || managedDefaultHost,
-    port: customConfig.port || managedGanacheDefaultPort
+    host: customConfig.host || defaultHost,
+    port: customConfig.port || defaultPort
   };
-  return `http://${configuredNetworkOptions.host}:${configuredNetworkOptions.port}`;
-}
-
-function getDashboardUrl(customDashboardConfig) {
-  const configuredDashboardOptions = {
-    host: customDashboardConfig.host || managedDefaultHost,
-    port: customDashboardConfig.port || managedDashboardDefaultPort
-  };
-  return `http://${configuredDashboardOptions.host}:${configuredDashboardOptions.port}/rpc`;
+  const urlSuffix = isDashboardNetwork ? "/rpc" : "";
+  return `http://${configuredNetworkOptions.host}:${configuredNetworkOptions.port}${urlSuffix}`;
 }
 
 let configuredNetwork;
 
-network === "dashboard"
-  ? setNetworkConfigurationForDashboard()
-  : setNetworkConfigurationForOthers();
+const configNetworkWithProvider =
+  detectedConfig.networks[network] && detectedConfig.networks[network].provider;
 
-function setNetworkConfigurationForDashboard() {
-  if (detectedConfig.networks.dashboard.provider) {
-    // Use "provider" specified in the dashboard network config
-    configuredNetwork = {
-      ...detectedConfig.networks.dashboard,
-      network_id: "*",
-      provider: detectedConfig.networks.dashboard.provider
-    };
-  } else {
-    // Otherwise derive dashboard network settings
-    const configuredDashboardNetworkUrl = getDashboardUrl(
-      detectedConfig.networks.dashboard
-    );
+if (configNetworkWithProvider) {
+  // Use "provider" specified in the network config
+  configuredNetwork = {
+    ...detectedConfig.networks[network],
+    network_id: "*",
+    provider: detectedConfig.networks[network].provider
+  };
+} else if (url) {
+  // Use "url" to configure network (implies not "develop")
+  configuredNetwork = {
+    network_id: "*",
+    url,
+    provider: function () {
+      return new Web3.providers.HttpProvider(url, {
+        keepAlive: false
+      });
+    }
+  };
+} else {
+  // Otherwise derive network settings
+  const customConfig = detectedConfig.networks[network] || {};
+  const isDashboardNetwork = network === "dashboard" ? true : false;
+  const configuredNetworkUrl = getConfiguredNetworkUrl(
+    customConfig,
+    isDashboardNetwork
+  );
+  const defaultPort = isDashboardNetwork
+    ? managedDashboardDefaultPort
+    : managedGanacheDefaultPort;
+  const defaultNetworkId = isDashboardNetwork
+    ? "*"
+    : managedGanacheDefaultNetworkId;
 
-    configuredNetwork = {
-      ...detectedConfig.networks.dashboard,
-      host: detectedConfig.networks.dashboard.host || managedDefaultHost,
-      port:
-        detectedConfig.networks.dashboard.port || managedDashboardDefaultPort,
-      network_id: detectedConfig.networks.dashboard.network_id || "*",
-      provider: function () {
-        return new Web3.providers.HttpProvider(configuredDashboardNetworkUrl, {
-          keepAlive: false
-        });
-      }
-    };
-  }
-}
-
-function setNetworkConfigurationForOthers() {
-  const configNetworkWithProvider =
-    detectedConfig.networks[network] &&
-    detectedConfig.networks[network].provider;
-
-  if (configNetworkWithProvider) {
-    // Use "provider" specified in the network config
-    configuredNetwork = {
-      ...detectedConfig.networks[network],
-      network_id: "*",
-      provider: detectedConfig.networks[network].provider
-    };
-  } else if (url) {
-    // Use "url" to configure network (implies not "develop")
-    configuredNetwork = {
-      network_id: "*",
-      url,
-      provider: function () {
-        return new Web3.providers.HttpProvider(url, {
-          keepAlive: false
-        });
-      }
-    };
-  } else {
-    // Otherwise derive network settings
-    const customConfig = detectedConfig.networks[network] || {};
-    const configuredNetworkUrl = getConfiguredNetworkUrl(customConfig);
-
-    configuredNetwork = {
-      ...customConfig,
-      host: customConfig.host || managedDefaultHost,
-      port: customConfig.port || managedGanacheDefaultPort,
-      network_id: customConfig.network_id || managedGanacheDefaultNetworkId,
-      provider: function () {
-        return new Web3.providers.HttpProvider(configuredNetworkUrl, {
-          keepAlive: false
-        });
-      }
-    };
-  }
+  configuredNetwork = {
+    ...customConfig,
+    host: customConfig.host || defaultHost,
+    port: customConfig.port || defaultPort,
+    network_id: customConfig.network_id || defaultNetworkId,
+    provider: function () {
+      return new Web3.providers.HttpProvider(configuredNetworkUrl, {
+        keepAlive: false
+      });
+    }
+  };
 }
 
 detectedConfig.networks[network] = {
