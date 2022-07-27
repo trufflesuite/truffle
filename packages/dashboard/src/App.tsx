@@ -16,7 +16,7 @@ function App(): JSX.Element {
     <div id="app">
       <ColorSchemeWrapper>
         <MantineWrapper>
-          <MantineGlobal />
+          <MantineGlobal /> {/* Set global styles */}
           <WagmiWrapper>
             <DashProvider>
               <BrowserRouter>
