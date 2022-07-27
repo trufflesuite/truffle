@@ -91,7 +91,6 @@ export class DashboardServer {
 
     this.expressApp.use(cors());
     this.expressApp.use(express.json());
-    this.expressApp.use(express.static(this.frontendPath));
 
     this.expressApp.get("/ports", this.getPorts.bind(this));
 
@@ -99,6 +98,11 @@ export class DashboardServer {
       await this.connectToMessageBus();
       this.expressApp.post("/rpc", this.postRpc.bind(this));
     }
+
+    this.expressApp.use(express.static(this.frontendPath));
+    this.expressApp.get("*", (_req, res) => {
+      res.sendFile("index.html", { root: this.frontendPath });
+    });
 
     await new Promise<void>(resolve => {
       this.httpServer = this.expressApp!.listen(this.port, this.host, () => {
