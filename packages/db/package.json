@@ -84,9 +84,8 @@
     "ts-node-dev": "^1.0.0-pre.32",
     "tsconfig-paths": "^3.9.0",
     "ttypescript": "1.5.13",
-    "typedoc": "0.20.37",
-    "typedoc-neo-theme": "^1.1.0",
-    "typescript": "^4.1.4",
+    "typedoc": "0.22.18",
+    "typescript": "^4.7.4",
     "typescript-transform-paths": "3.3.1",
     "web3": "1.7.4"
   },

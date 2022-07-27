@@ -43,6 +43,6 @@
     "delay": "^5.0.0",
     "jest": "28.1.3",
     "ts-jest": "28.0.7",
-    "typescript": "^4.1.4"
+    "typescript": "^4.7.4"
   }
 }

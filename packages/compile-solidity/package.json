@@ -51,7 +51,7 @@
     "sinon": "^9.0.2",
     "tmp": "^0.2.1",
     "ttypescript": "1.5.13",
-    "typescript": "^4.3.5",
+    "typescript": "^4.7.4",
     "typescript-transform-paths": "3.3.1"
   },
   "keywords": [

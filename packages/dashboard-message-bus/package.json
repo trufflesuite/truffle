@@ -29,7 +29,7 @@
     "@types/node": "~12.12.0",
     "@types/promise.any": "^2.0.0",
     "@types/web3": "^1.2.2",
-    "typescript": "^4.1.4"
+    "typescript": "^4.7.4"
   },
   "publishConfig": {
     "access": "public"
