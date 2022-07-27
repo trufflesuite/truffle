@@ -5,18 +5,32 @@ import path from "path";
 import { assert } from "chai";
 import BN from "bn.js";
 import fs from "fs-extra";
+import tmp from "tmp";
 import Web3 from "web3";
 import type { Provider } from "web3/providers";
 import * as Codec from "@truffle/codec";
-import type TruffleConfig from "@truffle/config";
+import TruffleConfig from "@truffle/config";
 import type { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import type * as Common from "@truffle/compile-common";
 //sorry, some untyped imports here :-/
-const Box = require("@truffle/box").default; //Box is TS, but TS has problems with sandbox??
+
 const WorkflowCompile = require("@truffle/workflow-compile");
 const Deployer = require("@truffle/deployer");
 const { Resolver } = require("@truffle/resolver"); //resolver is TS too but I can't make it typecheck :-/
 
+function createSandboxFrom(source: string) {
+  if (!fs.existsSync(source)) {
+    throw new Error(`Sandbox failed: source: ${source} does not exist`);
+  }
+
+  const tempDir = tmp.dirSync({ unsafeCleanup: true });
+  fs.copySync(source, tempDir.name);
+  const config = TruffleConfig.load(
+    path.join(tempDir.name, "truffle-config.js"),
+    {}
+  );
+  return config;
+}
 interface StringMap {
   [key: string]: string;
 }
@@ -35,8 +49,7 @@ export async function prepareContracts(
 ): Promise<Prepared> {
   const from = (await new Web3(provider).eth.getAccounts())[0];
 
-  let config = await createSandbox();
-
+  const config = createSandbox();
   config.compilers.solc.version = "0.8.9";
 
   config.networks["encoder"] = {
@@ -72,15 +85,10 @@ export async function prepareContracts(
   };
 }
 
-async function createSandbox(): Promise<TruffleConfig> {
-  const config = await Box.sandbox({
-    unsafeCleanup: true,
-    setGracefulCleanup: true,
-    name: "bare-box"
-  });
+function createSandbox(): TruffleConfig {
+  const config = createSandboxFrom(path.join(__dirname, "fixture", "bare-box"));
   config.resolver = new Resolver(config);
   config.networks = {};
-
   return config;
 }
 
