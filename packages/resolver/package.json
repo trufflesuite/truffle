@@ -41,7 +41,7 @@
     "web3-utils": "1.7.4"
   },
   "devDependencies": {
-    "@types/node": "12.12.21",
+    "@types/node": "~12.12.0",
     "@types/sinon": "^9.0.10",
     "mocha": "9.2.2",
     "sinon": "^9.0.2",

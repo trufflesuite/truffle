@@ -1,5 +1,9 @@
 import { Spinner } from "@truffle/spinners";
+
+// must polyfill AbortController to use axios >=0.20.0, <=0.27.2 on node <= v14.x
+import "../../polyfill";
 import axios from "axios";
+
 import axiosRetry from "axios-retry";
 import fs from "fs";
 import { execSync } from "child_process";

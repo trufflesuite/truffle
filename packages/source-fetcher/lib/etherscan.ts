@@ -12,7 +12,11 @@ import {
   InvalidNetworkError
 } from "./common";
 import { networkNamesById, networksByName } from "./networks";
+
+// must polyfill AbortController to use axios >=0.20.0, <=0.27.2 on node <= v14.x
+import "./polyfill";
 import axios from "axios";
+
 import retry from "async-retry";
 
 const etherscanCommentHeader = `/**
@@ -51,38 +55,38 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
 
   private static readonly apiDomainsByNetworkName: { [name: string]: string } =
     {
-      "mainnet": "api.etherscan.io",
-      "ropsten": "api-ropsten.etherscan.io",
-      "kovan": "api-kovan.etherscan.io",
-      "rinkeby": "api-rinkeby.etherscan.io",
-      "goerli": "api-goerli.etherscan.io",
-      "sepolia": "api-sepolia.etherscan.io",
-      "optimistic": "api-optimistic.etherscan.io",
+      mainnet: "api.etherscan.io",
+      ropsten: "api-ropsten.etherscan.io",
+      kovan: "api-kovan.etherscan.io",
+      rinkeby: "api-rinkeby.etherscan.io",
+      goerli: "api-goerli.etherscan.io",
+      sepolia: "api-sepolia.etherscan.io",
+      optimistic: "api-optimistic.etherscan.io",
       "kovan-optimistic": "api-kovan-optimistic.etherscan.io",
-      "arbitrum": "api.arbiscan.io",
+      arbitrum: "api.arbiscan.io",
       "rinkeby-arbitrum": "api-testnet.arbiscan.io",
-      "polygon": "api.polygonscan.com",
+      polygon: "api.polygonscan.com",
       "mumbai-polygon": "api-mumbai.polygonscan.com",
-      "binance": "api.bscscan.com",
+      binance: "api.bscscan.com",
       "testnet-binance": "api-testnet.bscscan.com",
-      "fantom": "api.ftmscan.com",
+      fantom: "api.ftmscan.com",
       "testnet-fantom": "api-testnet.ftmscan.com",
-      "avalanche": "api.snowtrace.io",
+      avalanche: "api.snowtrace.io",
       "fuji-avalanche": "api-testnet.snowtrace.io",
       "heco": "api.hecoinfo.com",
       "moonbeam": "api-moonbeam.moonscan.io",
       "moonriver": "api-moonriver.moonscan.io",
       "moonbase-alpha": "api-moonbase.moonscan.io",
-      "cronos": "api.cronoscan.com",
+      cronos: "api.cronoscan.com",
       "testnet-cronos": "api-testnet.cronoscan.com",
-      "bttc": "api.bttcscan.com",
+      bttc: "api.bttcscan.com",
       "donau-bttc": "api-testnet.bttcscan.com",
-      "aurora": "api.aurorascan.dev",
+      aurora: "api.aurorascan.dev",
       "testnet-aurora": "api-testnet.aurorascan.dev",
-      "celo": "api.celoscan.io",
+      celo: "api.celoscan.io",
       "alfajores-celo": "api-alfajores.celoscan.io",
-      "clover": "api.clvscan.com",
-      "boba": "api.bobascan.com",
+      clover: "api.clvscan.com",
+      boba: "api.bobascan.com",
       "rinkeby-boba": "api-testnet.bobascan.com"
     };
 

@@ -19,12 +19,7 @@
       ]
     },
     "rootDir": ".",
-    "typeRoots": [
-      "./typings",
-      "../../**/node_modules/@types/mocha",
-      "../../**/node_modules/@types/fs-extra",
-      "../../**/node_modules/@types/node"
-    ]
+    "types": ["node", "mocha"]
   },
   "include": [
     "./**/*.ts",

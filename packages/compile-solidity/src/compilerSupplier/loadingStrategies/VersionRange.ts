@@ -3,8 +3,13 @@ const debug = debugModule("compile:compilerSupplier");
 
 import requireFromString from "require-from-string";
 import originalRequire from "original-require";
+
+// must polyfill AbortController to use axios >=0.20.0, <=0.27.2 on node <= v14.x
+import "../../polyfill";
 import { default as axios, AxiosResponse } from "axios";
+
 import semver from "semver";
+
 import solcWrap from "solc/wrapper";
 import { Cache } from "../Cache";
 import { observeListeners } from "../observeListeners";

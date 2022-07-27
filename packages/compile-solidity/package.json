@@ -32,6 +32,7 @@
     "fs-extra": "^9.1.0",
     "iter-tools": "^7.0.2",
     "lodash": "^4.17.21",
+    "node-abort-controller": "^3.0.1",
     "original-require": "^1.0.1",
     "require-from-string": "^2.0.2",
     "semver": "7.3.7",

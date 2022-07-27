@@ -5,8 +5,12 @@ import type { Fetcher, FetcherConstructor } from "./types";
 import type * as Types from "./types";
 import { removeLibraries, InvalidNetworkError } from "./common";
 import { networkNamesById, networksByName } from "./networks";
-import axios from "axios";
 import retry from "async-retry";
+
+// must polyfill AbortController to use axios >=0.20.0, <=0.27.2 on node <= v14.x
+import "./polyfill";
+
+import axios from "axios";
 
 //this looks awkward but the TS docs actually suggest this :P
 const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher

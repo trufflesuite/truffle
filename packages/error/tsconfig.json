@@ -8,7 +8,6 @@
     "rootDir": "./",
     "strict": true,
     "esModuleInterop": true,
-    "typeRoots": [
-    ]
+    "types": ["node"]
   }
 }
