@@ -28,12 +28,7 @@
       }
     ],
     "rootDir": ".",
-    "typeRoots": [
-      "./typings",
-      "../../**/node_modules/@types/bn.js",
-      "../../**/node_modules/@types/debug",
-      "../../**/node_modules/@types/lodash"
-    ]
+    "types": ["node"]
   },
   "include": [
     "./lib/**/*.ts",

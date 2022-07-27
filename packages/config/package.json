@@ -24,7 +24,7 @@
     "@truffle/error": "^0.1.0",
     "@truffle/events": "^0.1.10",
     "@truffle/provider": "^0.2.58-typescript-migrations.0",
-    "conf": "^10.0.2",
+    "conf": "^10.1.2",
     "find-up": "^2.1.0",
     "lodash": "^4.17.21",
     "original-require": "^1.0.1"
@@ -33,7 +33,7 @@
     "@types/configstore": "^4.0.0",
     "@types/find-up": "^2.1.0",
     "@types/lodash": "^4.14.179",
-    "@types/node": "12.12.21",
+    "@types/node": "^18.6.1",
     "@types/sinon": "^9.0.10",
     "mocha": "9.2.2",
     "sinon": "^9.0.2",

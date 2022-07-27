@@ -21,10 +21,7 @@
     },
     "rootDir": "src",
     "baseUrl": ".",
-    "typeRoots": ["../../node_modules/@types/node"],
-    "types": [
-      "mocha"
-    ],
+    "types": [ "mocha" ],
     "plugins": [
       { "transform": "typescript-transform-paths" },
       { "transform": "typescript-transform-paths", "afterDeclarations": true }

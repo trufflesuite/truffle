@@ -28,7 +28,7 @@
   },
   "types": "dist/src/index.d.ts",
   "devDependencies": {
-    "@types/node": "12.12.21",
+    "@types/node": "^18.6.1",
     "mocha": "9.2.2",
     "tsd": "^0.15.1",
     "ttypescript": "1.5.13",
