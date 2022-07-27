@@ -38,11 +38,12 @@ function getConfiguredNetworkUrl(customConfig, isDashboardNetwork) {
 
 let configuredNetwork;
 
-const configNetworkWithProvider =
+const configDefinesProvider =
   detectedConfig.networks[network] && detectedConfig.networks[network].provider;
 
-if (configNetworkWithProvider) {
-  // Use "provider" specified in the network config
+if (configDefinesProvider) {
+  // Use "provider" specified in the config to connect to the network
+  // along with the other specified network properties
   configuredNetwork = {
     ...detectedConfig.networks[network],
     network_id: "*",
@@ -62,7 +63,7 @@ if (configNetworkWithProvider) {
 } else {
   // Otherwise derive network settings
   const customConfig = detectedConfig.networks[network] || {};
-  const isDashboardNetwork = network === "dashboard" ? true : false;
+  const isDashboardNetwork = network === "dashboard";
   const configuredNetworkUrl = getConfiguredNetworkUrl(
     customConfig,
     isDashboardNetwork
@@ -75,6 +76,7 @@ if (configNetworkWithProvider) {
     : managedGanacheDefaultNetworkId;
 
   configuredNetwork = {
+    // customConfig will spread only when it is defined and ignored when undefined
     ...customConfig,
     host: customConfig.host || defaultHost,
     port: customConfig.port || defaultPort,
