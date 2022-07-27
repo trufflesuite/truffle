@@ -1,5 +1,4 @@
-import { useReducer, useEffect } from "react";
-import { useDidUpdate } from "@mantine/hooks";
+import { useReducer, useEffect, useRef } from "react";
 import { useAccount, useProvider, useNetwork } from "wagmi";
 import type { providers } from "ethers";
 import { DashboardMessageBusClient } from "@truffle/dashboard-message-bus-client";
@@ -25,12 +24,18 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
   const provider: providers.Web3Provider = useProvider();
   const { chain } = useNetwork();
   const [state, dispatch] = useReducer(reducer, initialState);
+  const initCalled = useRef(false);
 
   console.debug({ state });
-  useDidUpdate(() => {
+  useEffect(() => {
     async function init() {
-      console.debug("Called init() in <DashProvider />");
+      // This obviates the need for a cleanup callback
+      if (initCalled.current) {
+        return;
+      }
+      initCalled.current = true;
 
+      console.debug("Initializing message bus client");
       // Create message bus client
       const { host, port } = state;
       const client = new DashboardMessageBusClient({ host, port });
@@ -46,16 +51,10 @@ function DashProvider({ children }: DashProviderProps): JSX.Element {
           data: { lifecycle, provider }
         });
       subscription.on("message", messageHandler);
-
-      // Clean up
-      return () => {
-        subscription.removeAllListeners();
-        client.close();
-      };
     }
 
-    return init();
-  }, []);
+    init();
+  }, [state, provider]);
 
   useEffect(() => {
     dispatch({
