@@ -15431,6 +15431,23 @@ ganache@7.3.2:
     bufferutil "4.0.5"
     utf-8-validate "5.0.7"
 
+ganache@7.4.0:
+  version "7.4.0"
+  resolved "https://registry.yarnpkg.com/ganache/-/ganache-7.4.0.tgz#24c56a55c15f6031ffbbb8a634fbb52d752f155e"
+  integrity sha512-e1x0ZJsJ5zUP+hWtpSNv+FaavRdcrQhQwe+QZ4kVon5mDm6RgFpe3PzNDJXg82AeqqslohJeK9UinZbZzjewjQ==
+  dependencies:
+    "@trufflesuite/bigint-buffer" "1.1.10"
+    "@types/bn.js" "^5.1.0"
+    "@types/lru-cache" "5.1.1"
+    "@types/seedrandom" "3.0.1"
+    emittery "0.10.0"
+    keccak "3.0.1"
+    leveldown "6.1.0"
+    secp256k1 "4.0.2"
+  optionalDependencies:
+    bufferutil "4.0.5"
+    utf-8-validate "5.0.7"
+
 gauge@~2.7.3:
   version "2.7.4"
   resolved "https://registry.yarnpkg.com/gauge/-/gauge-2.7.4.tgz#2c03405c7538c39d7eb37b317022e325fb018bf7"
