@@ -19,9 +19,12 @@ function Txs(): JSX.Element {
   const { state } = useDash()!;
   const { classes } = useStyles();
 
-  const content = Array.from(state.providerMessages, ([, lifecycle]) => (
-    <Tx key={lifecycle.message.id} lifecycle={lifecycle} />
-  ));
+  const content = Array.from(
+    state.providerMessages,
+    ([lifecycleMessageID, lifecycle]) => (
+      <Tx key={lifecycleMessageID} lifecycle={lifecycle} />
+    )
+  );
 
   if (content.length > 0) {
     return (
