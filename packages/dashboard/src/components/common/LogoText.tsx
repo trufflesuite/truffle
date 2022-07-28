@@ -33,7 +33,6 @@ function LogoText({ size }: LogoTextProps): JSX.Element {
 
   return (
     <Title order={1} className={classes.logoText} sx={{ fontSize: size }}>
-      {/* TODO: Just "Dashboard" when window small */}
       TRUFFLE&nbsp;
       <Text
         inherit
