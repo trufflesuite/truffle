@@ -75,7 +75,8 @@ describe("Error cases", function () {
           provider
         }
       },
-      network: "test"
+      network: "test",
+      quiet: true //want to test that errors still work when quiet turned on
     });
     await Environment.detect(options);
     deployer = new Deployer(options);

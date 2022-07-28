@@ -75,18 +75,20 @@ module.exports = {
 
     "deployment:error": [
       async function (data) {
-        if (this.config.quiet) return;
         const message = await this.reporter.error(data);
-        this.logger.error(message);
-        return message;
+        if (!this.config.quiet) {
+          this.logger.error(message);
+        }
+        return message; //we want to return the message no matter what for use in errors
       }
     ],
     "deployment:failed": [
       async function (data) {
-        if (this.config.quiet) return;
         const message = await this.reporter.deployFailed(data);
-        this.logger.log(message);
-        return message;
+        if (!this.config.quiet) {
+          this.logger.log(message);
+        }
+        return message; //we want to return the message no matter what for use in errors
       }
     ],
     "deployment:start": [
